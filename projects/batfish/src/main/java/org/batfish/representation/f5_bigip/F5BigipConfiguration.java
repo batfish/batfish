@@ -4,6 +4,7 @@ import static com.google.common.base.Predicates.notNull;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.representation.f5_bigip.F5NatUtil.orElseChain;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableRangeSet;
@@ -11,6 +12,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Range;
+import com.google.common.collect.RangeSet;
 import com.google.common.collect.Streams;
 import java.util.Collection;
 import java.util.Comparator;
@@ -85,20 +87,22 @@ import org.batfish.vendor.VendorConfiguration;
 @ParametersAreNonnullByDefault
 public class F5BigipConfiguration extends VendorConfiguration {
 
+  // Ephemeral port range defined in https://support.f5.com/csp/article/K8246
+  private static final TransformationStep ASSIGN_EPHEMERAL_SOURCE_PORT =
+      new AssignPortFromPool(TransformationType.SOURCE_NAT, PortField.SOURCE, 1024, 65535);
+
   private static final long serialVersionUID = 1L;
 
-  private static boolean appliesToInterface(@Nullable Snat snat, String ifaceName) {
-    return snat != null
-        && (!snat.getVlansEnabled()
-            || snat.getVlans().isEmpty()
-            || snat.getVlans().contains(ifaceName));
+  private static boolean appliesToVlan(Snat snat, String vlanName) {
+    return !snat.getVlansEnabled()
+        || snat.getVlans().isEmpty()
+        || snat.getVlans().contains(vlanName);
   }
 
-  private static boolean appliesToInterface(@Nullable Virtual virtual, String ifaceName) {
-    return virtual != null
-        && (!virtual.getVlansEnabled()
-            || virtual.getVlans().isEmpty()
-            || virtual.getVlans().contains(ifaceName));
+  private static boolean appliesToVlan(Virtual virtual, String vlanName) {
+    return !virtual.getVlansEnabled()
+        || virtual.getVlans().isEmpty()
+        || virtual.getVlans().contains(vlanName);
   }
 
   private static WithEnvironmentExpr bgpRedistributeWithEnvironmentExpr(
@@ -210,21 +214,21 @@ public class F5BigipConfiguration extends VendorConfiguration {
     builder.build();
   }
 
-  private void addNatRules(org.batfish.datamodel.Interface iface) {
-    String ifaceName = iface.getName();
-    iface.setIncomingTransformation(computeInterfaceIncomingTransformation(ifaceName));
-    iface.setOutgoingTransformation(computeInterfaceOutgoingTransformation(ifaceName));
-    iface.setAdditionalArpIps(computeAdditionalArpIps(ifaceName));
+  private void addNatRules(org.batfish.datamodel.Interface vlanInterface) {
+    String vlanName = vlanInterface.getName();
+    vlanInterface.setIncomingTransformation(computeInterfaceIncomingTransformation(vlanName));
+    vlanInterface.setOutgoingTransformation(computeInterfaceOutgoingTransformation(vlanName));
+    vlanInterface.setAdditionalArpIps(computeAdditionalArpIps(vlanName));
   }
 
-  private IpSpace computeAdditionalArpIps(String ifaceName) {
+  private IpSpace computeAdditionalArpIps(String vlanName) {
     Stream<IpSpace> virtualDnatIps =
         _virtuals.values().stream()
             .filter(
                 virtual ->
                     !virtual.getVlansEnabled()
                         || virtual.getVlans().isEmpty()
-                        || virtual.getVlans().contains(ifaceName))
+                        || virtual.getVlans().contains(vlanName))
             .flatMap(virtual -> _virtualAdditionalDnatArpIps.get(virtual.getName()).stream());
     Stream<IpSpace> virtualSnatIps =
         _virtuals.values().stream()
@@ -235,71 +239,67 @@ public class F5BigipConfiguration extends VendorConfiguration {
                 snat ->
                     !snat.getVlansEnabled()
                         || snat.getVlans().isEmpty()
-                        || snat.getVlans().contains(ifaceName))
+                        || snat.getVlans().contains(vlanName))
             .flatMap(snat -> _snatAdditionalArpIps.get(snat.getName()).stream());
     return AclIpSpace.union(
         Streams.concat(virtualDnatIps, virtualSnatIps, snatIps)
             .collect(ImmutableList.toImmutableList()));
   }
 
-  private Transformation computeInterfaceIncomingTransformation(String ifaceName) {
-    return _virtualIncomingTransformations.entrySet().stream()
-        .filter(
-            virtualIncomingTransformationEntry ->
-                appliesToInterface(
-                    _virtuals.get(virtualIncomingTransformationEntry.getKey()), ifaceName))
-        .map(Entry::getValue)
-        .reduce(
-            Transformation.when(FalseExpr.INSTANCE).build(),
-            (transformation, otherTransformation) ->
-                Transformation.when(otherTransformation.getGuard())
-                    .apply(otherTransformation.getTransformationSteps())
-                    .setOrElse(transformation)
-                    .build());
+  private Transformation computeInterfaceIncomingTransformation(String vlanName) {
+    ImmutableList.Builder<Transformation> applicableTransformations = ImmutableList.builder();
+    _virtualIncomingTransformations.forEach(
+        (virtualName, transformation) -> {
+          if (appliesToVlan(_virtuals.get(virtualName), vlanName)) {
+            applicableTransformations.add(transformation);
+          }
+        });
+    return orElseChain(applicableTransformations.build());
   }
 
-  private Stream<Transformation> computeInterfaceOutgoingSnatTransformations(String ifaceName) {
+  private Stream<Transformation> computeInterfaceOutgoingSnatTransformations(String vlanName) {
     return _snatTransformations.entrySet().stream()
         .filter(
             snatTransformationEntry ->
-                appliesToInterface(_snats.get(snatTransformationEntry.getKey()), ifaceName))
+                appliesToVlan(_snats.get(snatTransformationEntry.getKey()), vlanName))
         .map(Entry::getValue);
   }
 
-  private Transformation computeInterfaceOutgoingTransformation(String ifaceName) {
+  private Transformation computeInterfaceOutgoingTransformation(String vlanName) {
     Stream<Transformation> virtualTransformations =
         _virtualOutgoingTransformations.values().stream();
     Stream<Transformation> snatTransformations =
-        computeInterfaceOutgoingSnatTransformations(ifaceName);
+        computeInterfaceOutgoingSnatTransformations(vlanName);
     // Note that these streams come from maps whose keys are sorted in reverse order. The first
     // transformation guard checked will be the condition for the virtual that is first
     // lexicographically. The last transformation guard checked will be the condition for the snat
-    // that is last lexicographically. The reduction constructs the final transformation from back
-    // to front.
-    return Stream.concat(snatTransformations, virtualTransformations)
-        .reduce(
-            Transformation.when(FalseExpr.INSTANCE).build(),
-            (transformation, otherTransformation) ->
-                Transformation.when(otherTransformation.getGuard())
-                    .apply(otherTransformation.getTransformationSteps())
-                    .setOrElse(transformation)
-                    .build());
+    // that is last lexicographically. The final transformation is constructed from the constituent
+    // stream from back to front.
+
+    // TODO: Implement correct order of precedence for virtual matching
+    // https://support.f5.com/csp/article/K14800
+    return orElseChain(
+        Stream.concat(snatTransformations, virtualTransformations)
+            .collect(ImmutableList.toImmutableList()));
   }
 
-  private @Nonnull TransformationStep computeOutgoingSnatPoolTransformation(SnatPool snatPool) {
-    return new ApplyAny(
-        snatPool.getMembers().stream()
-            .map(_snatTranslations::get)
-            .filter(Objects::nonNull)
-            .map(SnatTranslation::getAddress)
-            .filter(Objects::nonNull)
-            .map(
-                address ->
-                    new AssignIpAddressFromPool(
-                        TransformationType.SOURCE_NAT,
-                        IpField.SOURCE,
-                        ImmutableRangeSet.of(Range.singleton(address))))
-            .collect(ImmutableList.toImmutableList()));
+  private @Nonnull Optional<TransformationStep> computeOutgoingSnatPoolTransformation(
+      SnatPool snatPool) {
+    RangeSet<Ip> pool =
+        ImmutableRangeSet.copyOf(
+            snatPool.getMembers().stream()
+                .map(_snatTranslations::get)
+                .filter(Objects::nonNull)
+                .map(SnatTranslation::getAddress)
+                .filter(Objects::nonNull)
+                .map(Range::singleton)
+                .collect(ImmutableList.toImmutableList()));
+    return pool.isEmpty()
+        ? Optional.empty()
+        : Optional.of(
+            new ApplyAll(
+                ASSIGN_EPHEMERAL_SOURCE_PORT,
+                new AssignIpAddressFromPool(TransformationType.SOURCE_NAT, IpField.SOURCE, pool)));
   }
 
   private @Nonnull Stream<IpSpace> computeSnatAdditionalArpIps(Snat snat) {
@@ -357,10 +357,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
     AclLineMatchExpr matchCondition =
         new MatchHeaderSpace(
             HeaderSpace.builder().setSrcIps(sourceIpSpace).build(), snat.getName());
-    return Optional.of(
-        Transformation.when(matchCondition)
-            .apply(computeOutgoingSnatPoolTransformation(snatPool))
-            .build());
+    return computeOutgoingSnatPoolTransformation(snatPool)
+        .map(step -> Transformation.when(matchCondition).apply(step).build());
   }
 
   private @Nonnull Set<IpSpace> computeVirtualDnatIps(Virtual virtual) {
@@ -483,10 +481,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
     }
     // TODO: Replace FalseExpr.INSTANCE with condition that matches token set by incoming
     // transformation https://github.com/batfish/batfish/issues/3243
-    return Optional.of(
-        Transformation.when(FalseExpr.INSTANCE)
-            .apply(computeOutgoingSnatPoolTransformation(snatPool))
-            .build());
+    return computeOutgoingSnatPoolTransformation(snatPool)
+        .map(step -> Transformation.when(FalseExpr.INSTANCE).apply(step).build());
   }
 
   private @Nonnull Set<IpSpace> computeVirtualSnatIps(Virtual virtual) {

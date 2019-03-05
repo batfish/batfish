@@ -18,6 +18,8 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRoute6FilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
+import static org.batfish.datamodel.matchers.FlowDiffMatchers.isIpRewrite;
+import static org.batfish.datamodel.matchers.FlowDiffMatchers.isPortRewrite;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
@@ -60,12 +62,15 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureType.SNAT_TRAN
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VIRTUAL;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VIRTUAL_ADDRESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VLAN;
+import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
@@ -118,6 +123,7 @@ import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.transformation.IpField;
+import org.batfish.datamodel.transformation.PortField;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -1109,10 +1115,14 @@ public final class F5BigipStructuredGrammarTest {
 
     assertThat(
         detail.getFlowDiffs(),
+        hasItem(isIpRewrite(IpField.SOURCE, Ip.parse("10.100.1.1"), Ip.parse("10.200.1.2"))));
+    assertThat(
+        detail.getFlowDiffs(),
         hasItem(
-            equalTo(
-                FlowDiff.flowDiff(
-                    IpField.SOURCE, Ip.parse("10.100.1.1"), Ip.parse("10.200.1.2")))));
+            isPortRewrite(
+                PortField.SOURCE,
+                equalTo(50000),
+                both(greaterThanOrEqualTo(1024)).and(lessThanOrEqualTo(65535)))));
   }
 
   // TODO: re-enable after it becomes possible to remember state between incoming and outgoing
@@ -1162,6 +1172,13 @@ public final class F5BigipStructuredGrammarTest {
         hasItem(
             equalTo(
                 FlowDiff.flowDiff(IpField.SOURCE, Ip.parse("8.8.8.8"), Ip.parse("10.200.1.1")))));
+    assertThat(
+        detail.getFlowDiffs(),
+        hasItem(
+            isPortRewrite(
+                PortField.SOURCE,
+                equalTo(50000),
+                both(greaterThanOrEqualTo(1024)).and(lessThanOrEqualTo(65535)))));
   }
 
   @Test
