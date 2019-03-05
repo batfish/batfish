@@ -1,10 +1,12 @@
 package org.batfish.question.testfilters;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.SetFlowStartLocation.setStartLocation;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multiset;
@@ -15,7 +17,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
@@ -44,8 +45,6 @@ import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.datamodel.visitors.IpSpaceRepresentative;
 import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
-import org.batfish.specifier.InterfaceLinkLocation;
-import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.IpSpaceSpecifier;
@@ -156,7 +155,7 @@ public class TestFiltersAnswerer extends Answerer {
     for (Location srcLocation : srcLocations) {
       try {
         Flow.Builder flowBuilder = headerConstraintsToFlow(question.getHeaders(), srcLocation);
-        setSourceLocation(flowBuilder, srcLocation, c);
+        setStartLocation(ImmutableMap.of(node, c), flowBuilder, srcLocation);
         flowBuilder.setTag("FlowTag"); // dummy tag; consistent tags enable flow diffs
         setBuilder.add(flowBuilder.build());
       } catch (IllegalArgumentException e) {
@@ -345,33 +344,5 @@ public class TestFiltersAnswerer extends Answerer {
           srcLocation);
       builder.setSrcIp(srcIp.get());
     }
-  }
-
-  private static void setSourceLocation(Builder flowBuilder, Location loc, Configuration c) {
-    loc.accept(
-        new LocationVisitor<Void>() {
-          @Override
-          public Void visitInterfaceLinkLocation(
-              @Nonnull InterfaceLinkLocation interfaceLinkLocation) {
-            flowBuilder
-                .setIngressInterface(interfaceLinkLocation.getInterfaceName())
-                .setIngressNode(interfaceLinkLocation.getNodeName())
-                .setIngressVrf(null);
-            return null;
-          }
-
-          @Override
-          public Void visitInterfaceLocation(@Nonnull InterfaceLocation interfaceLocation) {
-            flowBuilder
-                .setIngressInterface(null)
-                .setIngressNode(interfaceLocation.getNodeName())
-                .setIngressVrf(
-                    c.getAllInterfaces()
-                        .get(interfaceLocation.getInterfaceName())
-                        .getVrf()
-                        .getName());
-            return null;
-          }
-        });
   }
 }
