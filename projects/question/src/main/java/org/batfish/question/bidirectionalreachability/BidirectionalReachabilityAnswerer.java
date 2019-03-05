@@ -6,6 +6,7 @@ import static org.batfish.datamodel.SetFlowStartLocation.setStartLocation;
 import static org.batfish.question.specifiers.PathConstraintsUtil.createPathConstraints;
 import static org.batfish.specifier.SpecifierFactories.getIpSpaceSpecifierOrDefault;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
@@ -104,7 +105,8 @@ public final class BidirectionalReachabilityAnswerer extends Answerer {
         _question, flows, _batfish.getTracerouteEngine(), false, TracePruner.DEFAULT_MAX_TRACES);
   }
 
-  private static Map<Location, BDD> getAnswerBdds(
+  @VisibleForTesting
+  static Map<Location, BDD> getAnswerBdds(
       BidirectionalReachabilityResult result, ReturnFlowType returnFlowType) {
     Map<Location, BDD> successBdds = result.getStartLocationReturnPassSuccessBdds();
     Map<Location, BDD> failureBdds = result.getStartLocationReturnPassFailureBdds();
