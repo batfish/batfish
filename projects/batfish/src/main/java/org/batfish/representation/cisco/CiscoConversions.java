@@ -244,8 +244,14 @@ class CiscoConversions {
     return policy;
   }
 
+  /**
+   * Returns the name of a {@link RoutingPolicy} to be used as the BGP import policy for the given
+   * {@link LeafBgpPeerGroup}, or {@code null} if no constraints are imposed on the peer's inbound
+   * routes. When a nonnull policy name is returned, the corresponding policy is guaranteed to exist
+   * in the given configuration's routing policies.
+   */
   @Nullable
-  static RoutingPolicy generateBgpImportPolicy(
+  static String generateBgpImportPolicy(
       LeafBgpPeerGroup lpg, String vrfName, Configuration c, Warnings w) {
     // TODO Support filter-list and distribute-list
     // https://www.cisco.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/5816-bgpfaq-5816.html
@@ -263,14 +269,14 @@ class CiscoConversions {
     if (inboundRouteMapName != null && c.getRoutingPolicies().containsKey(inboundRouteMapName)) {
       // Inbound route-map is defined. Use that as the BGP import policy.
       // TODO Ignore route-map if it has lines inapplicable to inbound BGP routes (e.g. match tag)
-      return c.getRoutingPolicies().get(inboundRouteMapName);
+      return inboundRouteMapName;
     }
     if (inboundPrefixListName != null
         && c.getRouteFilterLists().containsKey(inboundPrefixListName)) {
       // Inbound prefix-list is defined. Build an import policy around it.
       String generatedImportPolicyName =
           "~BGP_PEER_IMPORT_POLICY:" + vrfName + ":" + lpg.getName() + "~";
-      return RoutingPolicy.builder()
+      RoutingPolicy.builder()
           .setOwner(c)
           .setName(generatedImportPolicyName)
           .addStatement(
@@ -280,6 +286,7 @@ class CiscoConversions {
                   ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
                   ImmutableList.of(Statements.ExitReject.toStaticStatement())))
           .build();
+      return generatedImportPolicyName;
     }
     // Return null to indicate no constraints were imposed on inbound BGP routes.
     return null;

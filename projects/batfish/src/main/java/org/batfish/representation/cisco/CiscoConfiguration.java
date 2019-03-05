@@ -1865,7 +1865,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       boolean ipv4 = lpg.getNeighborPrefix() != null;
       Ip updateSource = getUpdateSource(c, vrfName, lpg, updateSourceInterface, ipv4);
 
-      RoutingPolicy peerImportPolicy = generateBgpImportPolicy(lpg, vrfName, c, _w);
+      String peerImportPolicyName = generateBgpImportPolicy(lpg, vrfName, c, _w);
 
       String peerExportPolicyName =
           "~BGP_PEER_EXPORT_POLICY:" + vrfName + ":" + lpg.getName() + "~";
@@ -2017,8 +2017,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
           newNeighborBuilder.setGeneratedRoutes(ImmutableSet.of(defaultRoute.build()));
         }
         newNeighborBuilder.setGroup(lpg.getGroupName());
-        if (peerImportPolicy != null) {
-          newNeighborBuilder.setImportPolicy(peerImportPolicy.getName());
+        if (peerImportPolicyName != null) {
+          newNeighborBuilder.setImportPolicy(peerImportPolicyName);
         }
         newNeighborBuilder.setLocalAs(localAs);
         newNeighborBuilder.setLocalIp(updateSource);

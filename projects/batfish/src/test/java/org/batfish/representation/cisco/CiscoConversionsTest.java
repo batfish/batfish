@@ -217,9 +217,9 @@ public class CiscoConversionsTest {
         _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
     LeafBgpPeerGroup lpg = new IpBgpPeerGroup(Ip.parse("1.2.3.4"));
     Warnings w = new Warnings(true, true, true);
-    RoutingPolicy bgpImportPolicy = generateBgpImportPolicy(lpg, DEFAULT_VRF_NAME, c, w);
+    String bgpImportPolicyName = generateBgpImportPolicy(lpg, DEFAULT_VRF_NAME, c, w);
 
-    assertThat(bgpImportPolicy, nullValue());
+    assertThat(bgpImportPolicyName, nullValue());
     assertThat(w.getRedFlagWarnings(), empty());
   }
 
@@ -243,9 +243,12 @@ public class CiscoConversionsTest {
     LeafBgpPeerGroup lpg = new IpBgpPeerGroup(peerAddress);
     lpg.setInboundPrefixList(prefixListName);
     Warnings w = new Warnings(true, true, true);
-    RoutingPolicy bgpImportPolicy = generateBgpImportPolicy(lpg, DEFAULT_VRF_NAME, c, w);
-    assertThat(bgpImportPolicy, notNullValue());
+    String bgpImportPolicyName = generateBgpImportPolicy(lpg, DEFAULT_VRF_NAME, c, w);
+    assertThat(bgpImportPolicyName, notNullValue());
     assertThat(w.getRedFlagWarnings(), empty());
+
+    RoutingPolicy bgpImportPolicy = c.getRoutingPolicies().get(bgpImportPolicyName);
+    assertThat(bgpImportPolicy, notNullValue());
 
     // Test the generated policy against some routes
     BgpRoute.Builder r =
@@ -296,9 +299,10 @@ public class CiscoConversionsTest {
     lpg.setInboundRouteMap(routeMapName);
     Warnings w = new Warnings(true, true, true);
 
-    RoutingPolicy bgpImportPolicy = generateBgpImportPolicy(lpg, DEFAULT_VRF_NAME, c, w);
+    String bgpImportPolicyName = generateBgpImportPolicy(lpg, DEFAULT_VRF_NAME, c, w);
 
-    assertThat(bgpImportPolicy, equalTo(routeMap));
+    assertThat(bgpImportPolicyName, equalTo(routeMapName));
+    assertThat(c.getRoutingPolicies().get(bgpImportPolicyName), equalTo(routeMap));
     assertThat(w.getRedFlagWarnings(), empty());
   }
 
@@ -332,9 +336,10 @@ public class CiscoConversionsTest {
     lpg.setInboundRouteMap(routeMapName);
     Warnings w = new Warnings(true, true, true);
 
-    RoutingPolicy bgpImportPolicy = generateBgpImportPolicy(lpg, DEFAULT_VRF_NAME, c, w);
+    String bgpImportPolicyName = generateBgpImportPolicy(lpg, DEFAULT_VRF_NAME, c, w);
 
-    assertThat(bgpImportPolicy, equalTo(routeMap));
+    assertThat(bgpImportPolicyName, equalTo(routeMapName));
+    assertThat(c.getRoutingPolicies().get(bgpImportPolicyName), equalTo(routeMap));
     assertThat(w.getRedFlagWarnings(), hasSize(1));
     assertThat(
         w.getRedFlagWarnings().get(0).getText(),
