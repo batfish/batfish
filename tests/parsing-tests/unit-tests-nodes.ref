@@ -12358,22 +12358,12 @@
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "incomingTransformation" : {
-              "guard" : {
-                "class" : "org.batfish.datamodel.acl.FalseExpr"
-              }
-            },
             "mtu" : 1500,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "outgoingTransformation" : {
-              "guard" : {
-                "class" : "org.batfish.datamodel.acl.FalseExpr"
-              }
-            },
             "prefix" : "10.0.0.1/24",
             "proxyArp" : false,
             "ripEnabled" : false,
