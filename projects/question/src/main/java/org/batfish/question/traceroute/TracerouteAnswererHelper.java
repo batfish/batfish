@@ -1,6 +1,7 @@
 package org.batfish.question.traceroute;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.SetFlowStartLocation.setStartLocation;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -8,7 +9,6 @@ import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import javax.annotation.Nonnull;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
@@ -20,14 +20,11 @@ import org.batfish.datamodel.PacketHeaderConstraintsUtil;
 import org.batfish.datamodel.visitors.IpSpaceRepresentative;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
-import org.batfish.specifier.InterfaceLinkLocation;
-import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationSpecifier;
-import org.batfish.specifier.LocationVisitor;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierFactories;
 
@@ -183,7 +180,7 @@ public final class TracerouteAnswererHelper {
     for (Location srcLocation : srcLocations) {
       try {
         Flow.Builder flowBuilder = headerConstraintsToFlow(_packetHeaderConstraints, srcLocation);
-        setSourceLocation(flowBuilder, srcLocation);
+        setStartLocation(_specifierContext.getConfigs(), flowBuilder, srcLocation);
         flowBuilder.setTag(tag);
         setBuilder.add(flowBuilder.build());
       } catch (IllegalArgumentException e) {
@@ -198,41 +195,5 @@ public final class TracerouteAnswererHelper {
         "Could not construct a flow for traceroute. Found issues: %s",
         String.join(",", allProblems.build()));
     return flows;
-  }
-
-  private void setSourceLocation(Flow.Builder flowBuilder, Location loc) {
-    loc.accept(
-        new LocationVisitor<Void>() {
-          @Override
-          public Void visitInterfaceLinkLocation(
-              @Nonnull InterfaceLinkLocation interfaceLinkLocation) {
-            flowBuilder
-                .setIngressInterface(interfaceLinkLocation.getInterfaceName())
-                .setIngressNode(interfaceLinkLocation.getNodeName())
-                .setIngressVrf(null);
-            return null;
-          }
-
-          @Override
-          public Void visitInterfaceLocation(@Nonnull InterfaceLocation interfaceLocation) {
-            flowBuilder
-                .setIngressInterface(null)
-                .setIngressNode(interfaceLocation.getNodeName())
-                .setIngressVrf(
-                    interfaceVrf(
-                        interfaceLocation.getNodeName(), interfaceLocation.getInterfaceName()));
-            return null;
-          }
-        });
-  }
-
-  private String interfaceVrf(String node, String iface) {
-    return _specifierContext
-        .getConfigs()
-        .get(node)
-        .getAllInterfaces()
-        .get(iface)
-        .getVrf()
-        .getName();
   }
 }

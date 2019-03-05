@@ -3,6 +3,7 @@ hostname arista_acl
 !
 ip access-list abcd
  5 permit vlan 123 0x000 udp any 224.0.0.0/4
+ 10 deny tcp any 102.66.49.113/24 neq www https syn
  20 deny ip any any
 !
 !

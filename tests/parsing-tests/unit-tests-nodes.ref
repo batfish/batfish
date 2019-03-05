@@ -635,6 +635,54 @@
                   "headerSpace" : {
                     "dstIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "102.66.49.0/24"
+                    },
+                    "dstPorts" : [
+                      "0-79",
+                      "81-442",
+                      "444-65535"
+                    ],
+                    "ipProtocols" : [
+                      "TCP"
+                    ],
+                    "negate" : false,
+                    "srcIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    },
+                    "tcpFlagsMatchConditions" : [
+                      {
+                        "tcpFlags" : {
+                          "ack" : false,
+                          "cwr" : false,
+                          "ece" : false,
+                          "fin" : false,
+                          "psh" : false,
+                          "rst" : false,
+                          "syn" : true,
+                          "urg" : false
+                        },
+                        "useAck" : false,
+                        "useCwr" : false,
+                        "useEce" : false,
+                        "useFin" : false,
+                        "usePsh" : false,
+                        "useRst" : false,
+                        "useSyn" : true,
+                        "useUrg" : false
+                      }
+                    ]
+                  }
+                },
+                "name" : "10 deny tcp any 102.66.49.113/24 neq www https syn"
+              },
+              {
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "negate" : false,
@@ -4875,8 +4923,7 @@
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "dstPorts" : [
-                      "67-67",
-                      "68-68",
+                      "67-68",
                       "123-123"
                     ],
                     "ipProtocols" : [
