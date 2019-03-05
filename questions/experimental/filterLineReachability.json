@@ -14,8 +14,8 @@
         ],
         "variables": {
             "filters": {
-                "description": "Name or regex identifying the filters to test",
-                "type": "filter",
+                "description": "Specifier for filters to test",
+                "type": "filterSpec",
                 "optional": true,
                 "displayName": "Filters"
             },

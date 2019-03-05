@@ -345,7 +345,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
   static Map<String, Set<IpAccessList>> getSpecifiedFilters(
       FilterLineReachabilityQuestion question, SpecifierContext ctxt) {
     Set<String> specifiedNodes = question.nodeSpecifier().resolve(ctxt);
-    FilterSpecifier filterSpecifier = question.filterSpecifier();
+    FilterSpecifier filterSpecifier = question.getFilterSpecifier();
 
     return CommonUtil.toImmutableMap(
         specifiedNodes,

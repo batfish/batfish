@@ -14,7 +14,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.NodeSpecifier;
@@ -75,7 +74,7 @@ public class RoutesQuestion extends Question {
   /**
    * Create a new question.
    *
-   * @param nodes {@link NodesSpecifier} indicating which nodes' RIBs should be considered
+   * @param nodes {@link NodeSpecifier} indicating which nodes' RIBs should be considered
    * @param vrfs a regex pattern indicating which VRFs should be considered
    * @param rib a specific protocol RIB to return routes from.
    */

@@ -189,12 +189,12 @@ public class FilterLineReachabilityAnswererTest {
 
     // we should get an empty set when we are ignoring generated filters
     assertThat(
-        getSpecifiedFilters(new FilterLineReachabilityQuestion(null, null, true), ctxt),
+        getSpecifiedFilters(new FilterLineReachabilityQuestion((String) null, null, true), ctxt),
         equalTo(ImmutableMap.of("c1", ImmutableSet.of())));
 
     // we should get the one acl we put in otherwise
     assertThat(
-        getSpecifiedFilters(new FilterLineReachabilityQuestion(null, null, false), ctxt),
+        getSpecifiedFilters(new FilterLineReachabilityQuestion((String) null, null, false), ctxt),
         equalTo(ImmutableMap.of("c1", ImmutableSet.of(aclGenerated))));
   }
 
