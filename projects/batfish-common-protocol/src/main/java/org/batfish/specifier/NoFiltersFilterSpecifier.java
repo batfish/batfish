@@ -6,7 +6,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.IpAccessList;
 
-/** A {@link FilterSpecifier} that matches all filters. */
+/** A {@link FilterSpecifier} that matches no filters. */
 @ParametersAreNonnullByDefault
 public final class NoFiltersFilterSpecifier implements FilterSpecifier {
   public static final NoFiltersFilterSpecifier INSTANCE = new NoFiltersFilterSpecifier();
