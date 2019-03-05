@@ -2553,6 +2553,18 @@
       },
       {
         "File_Name" : "configs/ios_bgp",
+        "Struct_Type" : "ipv6 prefix-list",
+        "Ref_Name" : "VPNV6_PL",
+        "Context" : "bgp inbound ipv6 prefix-list",
+        "Lines" : {
+          "filename" : "configs/ios_bgp",
+          "lines" : [
+            11
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_bgp",
         "Struct_Type" : "route-map",
         "Ref_Name" : "ADVERTISE_MAP",
         "Context" : "bgp address-family aggregate-address advertise-map",
@@ -2595,7 +2607,7 @@
         "Lines" : {
           "filename" : "configs/ios_bgp",
           "lines" : [
-            7
+            8
           ]
         }
       },
@@ -4009,10 +4021,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 325 results",
+      "notes" : "Found 326 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 325
+      "numResults" : 326
     }
   }
 ]
