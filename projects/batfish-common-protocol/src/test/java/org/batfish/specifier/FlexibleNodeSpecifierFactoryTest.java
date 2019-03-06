@@ -16,7 +16,7 @@ public class FlexibleNodeSpecifierFactoryTest {
   @Test
   public void testGarbageIn() {
     exception.expect(IllegalArgumentException.class);
-    new FlexibleNodeSpecifierFactory().buildNodeSpecifier("fofoao:klklk:opopo:oo");
+    new FlexibleNodeSpecifierFactory().buildNodeSpecifier("f\\of"); // bad regex
   }
 
   @Test
@@ -44,7 +44,7 @@ public class FlexibleNodeSpecifierFactoryTest {
   public void testNameRegexNodeSpecifier() {
     assertThat(
         new FlexibleNodeSpecifierFactory().buildNodeSpecifier("name.*"),
-        equalTo(new NameRegexNodeSpecifier(Pattern.compile("name:.*", Pattern.CASE_INSENSITIVE))));
+        equalTo(new NameRegexNodeSpecifier(Pattern.compile("name.*", Pattern.CASE_INSENSITIVE))));
   }
 
   @Test
