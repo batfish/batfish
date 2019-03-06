@@ -215,6 +215,54 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
+  public void testVirtualMatchesIpProtocol() throws IOException {
+    String hostname = "f5_bigip_structured_ltm_virtual_ip_protocol";
+    Configuration c = parseConfig(hostname);
+    Transformation incomingTransformation =
+        c.getAllInterfaces().get("/Common/vlan1").getIncomingTransformation();
+
+    Flow matchingFlow =
+        Flow.builder()
+            .setTag("tag")
+            .setDstIp(Ip.parse("192.0.2.1"))
+            .setDstPort(80)
+            .setIngressInterface("/Common/SOME_VLAN")
+            .setIngressNode(hostname)
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcIp(Ip.parse("8.8.8.8"))
+            .setSrcPort(50000)
+            .build();
+    Flow nonMatchingFlow =
+        Flow.builder()
+            .setTag("tag")
+            .setDstIp(Ip.parse("192.0.2.1"))
+            .setDstPort(80)
+            .setIngressInterface("/Common/SOME_VLAN")
+            .setIngressNode(hostname)
+            .setIpProtocol(IpProtocol.UDP)
+            .setSrcIp(Ip.parse("8.8.8.8"))
+            .setSrcPort(50000)
+            .build();
+
+    assertTrue(
+        "Flow with correct IpProtocol TCP is matched by incoming transformation",
+        eval(incomingTransformation, matchingFlow, "dummy", ImmutableMap.of(), ImmutableMap.of())
+            .getTraceSteps().stream()
+            .map(Step::getDetail)
+            .filter(Predicates.instanceOf(TransformationStepDetail.class))
+            .map(TransformationStepDetail.class::cast)
+            .anyMatch(d -> d.getTransformationType() == TransformationType.DEST_NAT));
+    assertFalse(
+        "Flow with incorrect IpProtocol UDP is not matched by incoming transformation",
+        eval(incomingTransformation, nonMatchingFlow, "dummy", ImmutableMap.of(), ImmutableMap.of())
+            .getTraceSteps().stream()
+            .map(Step::getDetail)
+            .filter(Predicates.instanceOf(TransformationStepDetail.class))
+            .map(TransformationStepDetail.class::cast)
+            .anyMatch(d -> d.getTransformationType() == TransformationType.DEST_NAT));
+  }
+
+  @Test
   public void testBgpKernelRouteRedistribution() throws IOException {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(

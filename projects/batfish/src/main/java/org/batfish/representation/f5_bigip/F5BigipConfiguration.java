@@ -38,6 +38,7 @@ import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.LineAction;
@@ -454,14 +455,16 @@ public class F5BigipConfiguration extends VendorConfiguration {
     if (source == null) {
       source = Prefix.ZERO;
     }
-    AclLineMatchExpr matchCondition =
-        new MatchHeaderSpace(
-            HeaderSpace.builder()
-                .setDstIps(Prefix.create(destinationIp, destinationMask).toIpSpace())
-                .setDstPorts(ImmutableList.of(new SubRange(destinationPort, destinationPort)))
-                .setSrcIps(source.toIpSpace())
-                .build(),
-            virtual.getName());
+    HeaderSpace.Builder headerSpace =
+        HeaderSpace.builder()
+            .setDstIps(Prefix.create(destinationIp, destinationMask).toIpSpace())
+            .setDstPorts(ImmutableList.of(new SubRange(destinationPort, destinationPort)))
+            .setSrcIps(source.toIpSpace());
+    IpProtocol protocol = virtual.getIpProtocol();
+    if (protocol != null) {
+      headerSpace.setIpProtocols(ImmutableList.of(protocol));
+    }
+    AclLineMatchExpr matchCondition = new MatchHeaderSpace(headerSpace.build(), virtual.getName());
     // TODO: track information needed for SNAT in outgoing transformation
     // https://github.com/batfish/batfish/issues/3243
     return Optional.of(
