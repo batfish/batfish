@@ -88,7 +88,6 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
    *     NatPacketLocation}.
    * @param andThen The next {@link Transformation} to apply after any {@link NatRule} matches.
    * @param orElse The next {@link Transformation} to apply if no {@link NatRule} matches.
-   * @param warnings
    */
   public Optional<Transformation> toOutgoingTransformation(
       Nat nat,
