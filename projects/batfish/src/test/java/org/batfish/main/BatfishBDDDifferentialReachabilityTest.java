@@ -18,7 +18,6 @@ import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressNode;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressVrf;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcIp;
 import static org.batfish.main.BatfishTestUtils.getBatfish;
-import static org.batfish.specifier.LocationSpecifiers.ALL_LOCATIONS;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -59,6 +58,7 @@ import org.batfish.question.differentialreachability.DifferentialReachabilityPar
 import org.batfish.question.differentialreachability.DifferentialReachabilityResult;
 import org.batfish.question.loop.LoopNetwork;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
+import org.batfish.specifier.LocationSpecifier;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -163,7 +163,8 @@ public class BatfishBDDDifferentialReachabilityTest {
         ignoreFilters,
         invertSearch,
         InferFromLocationIpSpaceSpecifier.INSTANCE.resolve(
-            ALL_LOCATIONS.resolve(batfish.specifierContext()), batfish.specifierContext()),
+            LocationSpecifier.ALL_LOCATIONS.resolve(batfish.specifierContext()),
+            batfish.specifierContext()),
         TracePruner.DEFAULT_MAX_TRACES,
         ImmutableSet.of());
   }

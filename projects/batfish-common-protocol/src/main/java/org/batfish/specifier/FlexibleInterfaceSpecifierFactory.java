@@ -6,20 +6,19 @@ import com.google.auto.service.AutoService;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.questions.InterfacesSpecifier;
 
 /**
  * A {@link InterfaceSpecifierFactory} that accepts three forms of input
  *
  * <ul>
- *   <li>null: returns ShorthandInterfaceSpecifier(InterfacesSpecifier.ALL)
+ *   <li>null: returns {@link AllInterfacesInterfaceSpecifier}
  *   <li>connectedTo(ip, prefix, or wildcard): returns {@link InterfaceWithConnectedIpsSpecifier}
  *   <li>{@code ref.interfaceGroup(foo, bar)}, which returns {@link
  *       ReferenceInterfaceGroupInterfaceSpecifier};
  *   <li>vrf(regex): returns {@link VrfNameRegexInterfaceSpecifier}
  *   <li>zone(regex): returns {@link ZoneNameRegexInterfaceSpecifier}
  *   <li>type(regex): returns {@link TypesInterfaceSpecifier}
- *   <li>all other inputs go directly to {@link ShorthandInterfaceSpecifier}
+ *   <li>name regex
  * </ul>
  */
 @AutoService(InterfaceSpecifierFactory.class)
@@ -49,7 +48,7 @@ public class FlexibleInterfaceSpecifierFactory implements InterfaceSpecifierFact
   @Override
   public InterfaceSpecifier buildInterfaceSpecifier(@Nullable Object input) {
     if (input == null) {
-      return new ShorthandInterfaceSpecifier(InterfacesSpecifier.ALL);
+      return AllInterfacesInterfaceSpecifier.INSTANCE;
     }
     checkArgument(input instanceof String, NAME + " requires String input");
     String str = ((String) input).trim();
@@ -106,6 +105,6 @@ public class FlexibleInterfaceSpecifierFactory implements InterfaceSpecifierFact
           Pattern.compile(words[0].trim(), Pattern.CASE_INSENSITIVE));
     }
 
-    return new ShorthandInterfaceSpecifier(new InterfacesSpecifier(str));
+    return new NameRegexInterfaceSpecifier(Pattern.compile(str, Pattern.CASE_INSENSITIVE));
   }
 }

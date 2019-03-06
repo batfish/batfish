@@ -26,7 +26,7 @@ public final class SpecifiersQuestionTest {
     // query type is filter for everything because it is immaterial to which specifier is used
     SpecifiersQuestion question = new SpecifiersQuestion(QueryType.FILTER);
     assertThat(question.getFilterSpecifier(), equalTo(AllFiltersFilterSpecifier.INSTANCE));
-    assertThat(question.getInterfaceSpecifier(), instanceOf(AllInterfacesInterfaceSpecifier.class));
+    assertThat(question.getInterfaceSpecifier(), equalTo(AllInterfacesInterfaceSpecifier.INSTANCE));
     assertThat(question.getIpSpaceSpecifier(), instanceOf(InferFromLocationIpSpaceSpecifier.class));
     assertThat(question.getLocationSpecifier(), instanceOf(AllInterfacesLocationSpecifier.class));
     assertThat(question.getNodeSpecifier(), instanceOf(AllNodesNodeSpecifier.class));
