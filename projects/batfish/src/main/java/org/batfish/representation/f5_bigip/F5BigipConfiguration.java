@@ -35,6 +35,8 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.Interface.Dependency;
+import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
@@ -144,6 +146,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, Snat> _snats;
   private transient SortedMap<String, SimpleTransformation> _snatTransformations;
   private final @Nonnull Map<String, SnatTranslation> _snatTranslations;
+  private final @Nonnull Map<String, Trunk> _trunks;
   private transient Map<String, Set<IpSpace>> _virtualAdditionalDnatArpIps;
   private transient Map<String, Set<IpSpace>> _virtualAdditionalSnatArpIps;
   private final @Nonnull Map<String, VirtualAddress> _virtualAddresses;
@@ -163,6 +166,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     _snats = new HashMap<>();
     _snatPools = new HashMap<>();
     _snatTranslations = new HashMap<>();
+    _trunks = new HashMap<>();
     _virtualAddresses = new HashMap<>();
     _virtuals = new HashMap<>();
     _vlans = new HashMap<>();
@@ -550,6 +554,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return _snatTranslations;
   }
 
+  public @Nonnull Map<String, Trunk> getTrunks() {
+    return _trunks;
+  }
+
   private Ip getUpdateSource(BgpNeighbor neighbor, String updateSourceInterface) {
     Ip updateSource = null;
     if (updateSourceInterface != null) {
@@ -647,9 +655,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     markConcreteStructure(
         F5BigipStructureType.BGP_PROCESS, F5BigipStructureUsage.BGP_PROCESS_SELF_REFERENCE);
     markConcreteStructure(
-        F5BigipStructureType.INTERFACE,
-        F5BigipStructureUsage.INTERFACE_SELF_REFERENCE,
-        F5BigipStructureUsage.VLAN_INTERFACE);
+        F5BigipStructureType.INTERFACE, F5BigipStructureUsage.INTERFACE_SELF_REFERENCE);
     markAbstractStructure(
         F5BigipStructureType.MONITOR,
         F5BigipStructureUsage.POOL_MONITOR,
@@ -724,6 +730,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
         F5BigipStructureUsage.SELF_VLAN,
         F5BigipStructureUsage.SNAT_VLANS_VLAN,
         F5BigipStructureUsage.VIRTUAL_VLANS_VLAN);
+    markAbstractStructure(
+        F5BigipStructureType.VLAN_MEMBER_INTERFACE,
+        F5BigipStructureUsage.VLAN_INTERFACE,
+        ImmutableList.of(F5BigipStructureType.INTERFACE, F5BigipStructureType.TRUNK));
   }
 
   private void processSelf(Self self) {
@@ -751,7 +761,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     if (tag == null) {
       return;
     }
-    _interfaces.keySet().stream()
+    vlan.getInterfaces().keySet().stream()
         .map(ifaceName -> _c.getAllInterfaces().get(ifaceName))
         .filter(notNull())
         .forEach(
@@ -852,6 +862,19 @@ public class F5BigipConfiguration extends VendorConfiguration {
     Double speed = iface.getSpeed();
     newIface.setSpeed(speed);
     newIface.setBandwidth(firstNonNull(iface.getBandwidth(), speed, Interface.DEFAULT_BANDWIDTH));
+    // Assume all interfaces are in default VRF for now
+    newIface.setVrf(_c.getDefaultVrf());
+    return newIface;
+  }
+
+  private org.batfish.datamodel.Interface toInterface(Trunk trunk) {
+    org.batfish.datamodel.Interface newIface =
+        new org.batfish.datamodel.Interface(trunk.getName(), _c, InterfaceType.AGGREGATED);
+    newIface.setDependencies(
+        trunk.getInterfaces().stream()
+            .filter(_interfaces::containsKey)
+            .map(member -> new Dependency(member, DependencyType.AGGREGATE))
+            .collect(ImmutableSet.toImmutableSet()));
     // Assume all interfaces are in default VRF for now
     newIface.setVrf(_c.getDefaultVrf());
     return newIface;
@@ -960,6 +983,15 @@ public class F5BigipConfiguration extends VendorConfiguration {
     _interfaces.forEach(
         (name, iface) -> {
           org.batfish.datamodel.Interface newIface = toInterface(iface);
+          _c.getAllInterfaces().put(name, newIface);
+          // Assume all interfaces are in default VRF for now
+          _c.getDefaultVrf().getInterfaces().put(name, newIface);
+        });
+
+    // Add trunks
+    _trunks.forEach(
+        (name, trunk) -> {
+          org.batfish.datamodel.Interface newIface = toInterface(trunk);
           _c.getAllInterfaces().put(name, newIface);
           // Assume all interfaces are in default VRF for now
           _c.getDefaultVrf().getInterfaces().put(name, newIface);

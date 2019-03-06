@@ -1,6 +1,8 @@
 package org.batfish.grammar.f5_bigip_structured;
 
 import static org.batfish.common.util.CommonUtil.communityStringToLong;
+import static org.batfish.datamodel.Interface.DependencyType.AGGREGATE;
+import static org.batfish.datamodel.InterfaceType.AGGREGATED;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasDescription;
@@ -22,6 +24,9 @@ import static org.batfish.datamodel.matchers.FlowDiffMatchers.isIpRewrite;
 import static org.batfish.datamodel.matchers.FlowDiffMatchers.isPortRewrite;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasBandwidth;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDependencies;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
@@ -60,9 +65,11 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureType.SELF;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.SNAT;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.SNATPOOL;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.SNAT_TRANSLATION;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.TRUNK;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VIRTUAL;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VIRTUAL_ADDRESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VLAN;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.VLAN_MEMBER_INTERFACE;
 import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -102,6 +109,7 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDiff;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
@@ -557,7 +565,7 @@ public final class F5BigipStructuredGrammarTest {
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     // detect undefined reference
-    assertThat(ans, hasUndefinedReference(file, INTERFACE, undefined));
+    assertThat(ans, hasUndefinedReference(file, VLAN_MEMBER_INTERFACE, undefined));
 
     // detected unused structure (except self-reference)
     assertThat(ans, hasNumReferrers(file, INTERFACE, unused, 1));
@@ -1239,6 +1247,55 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
+  public void testTrunk() throws IOException {
+    Configuration c = parseConfig("f5_bigip_structured_trunk");
+    String trunk1Name = "trunk1";
+    String trunk2Name = "trunk2";
+
+    assertThat(
+        c.getAllInterfaces().keySet(), containsInAnyOrder(trunk1Name, trunk2Name, "1.0", "2.0"));
+
+    //// trunk1
+    // Should be disabled since it has no members
+    assertThat(c, hasInterface(trunk1Name, isActive(false)));
+    assertThat(c, hasInterface(trunk1Name, hasInterfaceType(AGGREGATED)));
+
+    //// trunk2
+    assertThat(c, hasInterface(trunk2Name, isActive(true)));
+    // Each of the two constituent interfaces has bandwidth of 40E9
+    assertThat(c, hasInterface(trunk2Name, hasBandwidth(equalTo(80E9))));
+    assertThat(
+        c,
+        hasInterface(
+            trunk2Name,
+            hasDependencies(
+                containsInAnyOrder(
+                    new Dependency("1.0", AGGREGATE), new Dependency("2.0", AGGREGATE)))));
+    assertThat(c, hasInterface(trunk2Name, hasInterfaceType(AGGREGATED)));
+  }
+
+  @Test
+  public void testTrunkReferences() throws IOException {
+    String hostname = "f5_bigip_structured_trunk_references";
+    String file = "configs/" + hostname;
+    String undefined = "trunk_undefined";
+    String unused = "trunk_unused";
+    String used = "trunk_used";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // detect undefined reference
+    assertThat(ans, hasUndefinedReference(file, VLAN_MEMBER_INTERFACE, undefined));
+
+    // detected unused structure
+    assertThat(ans, hasNumReferrers(file, TRUNK, unused, 0));
+
+    // detect all structure references
+    assertThat(ans, hasNumReferrers(file, TRUNK, used, 1));
+  }
+
+  @Test
   public void testVirtualAddressReferences() throws IOException {
     String hostname = "f5_bigip_structured_ltm_references";
     String file = "configs/" + hostname;
@@ -1299,9 +1356,12 @@ public final class F5BigipStructuredGrammarTest {
   public void testVlan() throws IOException {
     Configuration c = parseConfig("f5_bigip_structured_vlan");
     String portName = "1.0";
+    String trunkName = "trunk1";
     String vlanName = "/Common/MYVLAN";
 
-    assertThat(c.getAllInterfaces().keySet(), containsInAnyOrder(portName, vlanName));
+    assertThat(
+        c.getAllInterfaces().keySet(),
+        containsInAnyOrder(portName, trunkName, "2.0", "3.0", vlanName));
 
     // port interface
     assertThat(c, hasInterface(portName, isActive()));
@@ -1309,6 +1369,13 @@ public final class F5BigipStructuredGrammarTest {
     assertThat(c, hasInterface(portName, hasSwitchPortMode(SwitchportMode.TRUNK)));
     assertThat(c, hasInterface(portName, hasAllowedVlans(IntegerSpace.of(123))));
     assertThat(c, hasInterface(portName, hasNativeVlan(nullValue())));
+
+    // trunk interface
+    assertThat(c, hasInterface(trunkName, isActive()));
+    assertThat(c, hasInterface(trunkName, isSwitchport()));
+    assertThat(c, hasInterface(trunkName, hasSwitchPortMode(SwitchportMode.TRUNK)));
+    assertThat(c, hasInterface(trunkName, hasAllowedVlans(IntegerSpace.of(123))));
+    assertThat(c, hasInterface(trunkName, hasNativeVlan(nullValue())));
 
     // vlan interface
     assertThat(c, hasInterface(vlanName, isActive()));

@@ -52,6 +52,37 @@ net_self
   )? BRACE_RIGHT NEWLINE
 ;
 
+net_trunk
+:
+  TRUNK name = word BRACE_LEFT
+  (
+    NEWLINE
+    (
+      nt_interfaces
+      | nt_lacp
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+nt_interfaces
+:
+  INTERFACES BRACE_LEFT
+  (
+    NEWLINE nti_interface*
+  )? BRACE_RIGHT NEWLINE
+;
+
+nti_interface
+:
+  name = word NEWLINE
+;
+
+nt_lacp
+:
+  LACP ENABLED NEWLINE
+;
+
 net_vlan
 :
   VLAN name = word BRACE_LEFT
@@ -123,6 +154,7 @@ s_net
     net_interface
     | net_routing
     | net_self
+    | net_trunk
     | net_vlan
     | unrecognized
   )
