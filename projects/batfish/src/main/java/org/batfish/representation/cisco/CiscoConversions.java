@@ -4,6 +4,8 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Collections.singletonList;
 import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
+import static org.batfish.representation.cisco.CiscoConfiguration.MATCH_DEFAULT_ROUTE;
+import static org.batfish.representation.cisco.CiscoConfiguration.MATCH_DEFAULT_ROUTE6;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpCommonExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpDefaultRouteExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerExportPolicyName;
@@ -39,6 +41,7 @@ import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.HeaderSpace;
@@ -63,6 +66,7 @@ import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.PrefixRange;
@@ -92,6 +96,7 @@ import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric;
+import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProcessAsn;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
@@ -100,6 +105,7 @@ import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
+import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.visitors.HeaderSpaceConverter;
@@ -301,7 +307,7 @@ class CiscoConversions {
    * LeafBgpPeerGroup}. The generated policy is added to the given configuration's routing policies.
    */
   static void generateBgpExportPolicy(
-      LeafBgpPeerGroup lpg, String vrfName, Configuration c, Warnings w) {
+      LeafBgpPeerGroup lpg, String vrfName, boolean ipv4, Configuration c, Warnings w) {
     List<Statement> exportPolicyStatements = new ArrayList<>();
     if (lpg.getNextHopSelf() != null && lpg.getNextHopSelf()) {
       exportPolicyStatements.add(new SetNextHop(SelfNextHop.getInstance(), false));
@@ -312,7 +318,11 @@ class CiscoConversions {
 
     List<BooleanExpr> localOrCommonOriginationDisjuncts = new ArrayList<>();
     localOrCommonOriginationDisjuncts.add(new CallExpr(computeBgpCommonExportPolicyName(vrfName)));
+
+    // If defaultOriginate is set, generate a default route export policy.
+    // When exporting default route, can match this policy instead of the common export policy.
     if (lpg.getDefaultOriginate()) {
+      generateBgpDefaultRouteExportPolicy(lpg, vrfName, ipv4, c);
       localOrCommonOriginationDisjuncts.add(
           new CallExpr(computeBgpDefaultRouteExportPolicyName(vrfName, lpg.getName())));
     }
@@ -347,6 +357,26 @@ class CiscoConversions {
         .setOwner(c)
         .setName(computeBgpPeerExportPolicyName(vrfName, lpg.getName()))
         .setStatements(exportPolicyStatements)
+        .build();
+  }
+
+  static void generateBgpDefaultRouteExportPolicy(
+      LeafBgpPeerGroup lpg, String vrfName, boolean ipv4, Configuration c) {
+    RoutingPolicy.builder()
+        .setOwner(c)
+        .setName(computeBgpDefaultRouteExportPolicyName(vrfName, lpg.getName()))
+        .addStatement(
+            new If(
+                ipv4 ? MATCH_DEFAULT_ROUTE : MATCH_DEFAULT_ROUTE6,
+                ImmutableList.of(
+                    new SetOrigin(
+                        new LiteralOrigin(
+                            c.getConfigurationFormat() == ConfigurationFormat.CISCO_IOS
+                                ? OriginType.IGP
+                                : OriginType.INCOMPLETE,
+                            null)),
+                    Statements.ReturnTrue.toStaticStatement())))
+        .addStatement(Statements.ReturnFalse.toStaticStatement())
         .build();
   }
 

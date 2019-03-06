@@ -1893,30 +1893,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
       // Generate import and export policies
       String peerImportPolicyName = generateBgpImportPolicy(lpg, vrfName, c, _w);
-      generateBgpExportPolicy(lpg, vrfName, c, _w);
+      generateBgpExportPolicy(lpg, vrfName, ipv4, c, _w);
 
-      // set up default export policy for this peer group
+      // If defaultOriginate is set, create default route for this peer group
       GeneratedRoute.Builder defaultRoute = null;
       GeneratedRoute6.Builder defaultRoute6;
       if (lpg.getDefaultOriginate()) {
-        String defaultRouteExportPolicyName =
-            computeBgpDefaultRouteExportPolicyName(vrfName, lpg.getName());
-        RoutingPolicy.builder()
-            .setOwner(c)
-            .setName(defaultRouteExportPolicyName)
-            .addStatement(
-                new If(
-                    ipv4 ? MATCH_DEFAULT_ROUTE : MATCH_DEFAULT_ROUTE6,
-                    ImmutableList.of(
-                        new SetOrigin(
-                            new LiteralOrigin(
-                                c.getConfigurationFormat() == ConfigurationFormat.CISCO_IOS
-                                    ? OriginType.IGP
-                                    : OriginType.INCOMPLETE,
-                                null)),
-                        Statements.ReturnTrue.toStaticStatement())))
-            .addStatement(Statements.ReturnFalse.toStaticStatement())
-            .build();
         defaultRoute = GeneratedRoute.builder();
         defaultRoute.setNetwork(Prefix.ZERO);
         defaultRoute.setAdmin(MAX_ADMINISTRATIVE_COST);
