@@ -1,6 +1,7 @@
 package org.batfish.question.aaaauthenticationlogin;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -46,6 +47,7 @@ public class AaaAuthenticationLoginQuestion extends Question {
     return _nodes;
   }
 
+  @JsonIgnore
   NodeSpecifier getNodeSpecifier() {
     return SpecifierFactories.getNodeSpecifierOrDefault(_nodes, AllNodesNodeSpecifier.INSTANCE);
   }
