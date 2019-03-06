@@ -184,7 +184,7 @@ public class CommonParser extends BaseParser<AstNode> {
         TestNot(Digit()),
         TestNot(Slash()),
         Sequence(
-            ZeroOrMore(AsciiButNot(SPECIAL_CHARS + "*")),
+            OneOrMore(AsciiButNot(SPECIAL_CHARS + "*")),
             "*",
             ZeroOrMore(AsciiButNot(SPECIAL_CHARS))),
         push(new StringAstNode(match())));
