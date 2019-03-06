@@ -10,6 +10,7 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.transformation.Transformation;
@@ -53,10 +54,11 @@ public final class NatRule implements Serializable {
   }
 
   /** Convert to vendor-independent {@link Transformation}. */
-  public Optional<Transformation.Builder> toTransformationBuilder(Nat nat, Ip interfaceIp) {
+  public Optional<Transformation.Builder> toTransformationBuilder(
+      Nat nat, Ip interfaceIp, Warnings warnings) {
 
     List<TransformationStep> steps =
-        _then == null ? null : _then.toTransformationSteps(nat, interfaceIp);
+        _then == null ? null : _then.toTransformationSteps(nat, interfaceIp, warnings);
 
     // steps can be empty when the pool used by the rule is not found
     return (_then == null || steps.isEmpty())

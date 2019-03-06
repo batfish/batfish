@@ -8,6 +8,7 @@ import static org.batfish.representation.juniper.Nat.Type.STATIC;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import org.batfish.common.BatfishException;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.transformation.Noop;
@@ -18,7 +19,8 @@ public enum NatRuleThenOff implements NatRuleThen {
   INSTANCE;
 
   @Override
-  public List<TransformationStep> toTransformationSteps(Nat nat, Ip interfaceIp) {
+  public List<TransformationStep> toTransformationSteps(
+      Nat nat, Ip interfaceIp, Warnings warnings) {
     if (nat.getType() == STATIC) {
       throw new BatfishException("Juniper static nat is not supported");
     }
