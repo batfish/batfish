@@ -1643,7 +1643,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private Transformation buildIncomingTransformation(Interface iface) {
-
     Nat dnat = _masterLogicalSystem.getNatDestination();
     if (dnat == null) {
       return null;
