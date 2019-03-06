@@ -112,6 +112,7 @@ final class ParserUtils {
       retString.append(
           potentialMatches.stream()
               .map(ParserUtils::getErrorString)
+              .distinct()
               .collect(Collectors.joining(" or ")));
       retString.append(".");
     }

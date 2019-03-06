@@ -222,6 +222,18 @@ public class ParserLocationTest {
   }
 
   @Test
+  public void testParseLocationInterfaceDeprecatedOvereating() {
+    // the whole expression should not be eaten by the deprecated regex parser
+    String input = "tor-001a.sea3[/.*/]";
+    LocationAstNode expectedAst =
+        InterfaceLocationAstNode.createFromNodeInterface(
+            new NameNodeAstNode("tor-001a.sea3"), new NameRegexInterfaceAstNode(".*"));
+
+    assertThat(ParserUtils.getAst(getRunner().run(input)), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run(" " + input + " ")), equalTo(expectedAst));
+  }
+
+  @Test
   public void testParseLocationInterfaceSpecifier() {
     String input = "@interfaceType(physical)";
     InterfaceLocationAstNode expectedAst =
