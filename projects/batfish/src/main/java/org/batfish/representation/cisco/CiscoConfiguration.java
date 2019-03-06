@@ -148,6 +148,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
@@ -1899,9 +1900,26 @@ public final class CiscoConfiguration extends VendorConfiguration {
       Disjunction localOrCommonOrigination = new Disjunction();
       peerExportConditions.getConjuncts().add(localOrCommonOrigination);
       localOrCommonOrigination.getDisjuncts().add(new CallExpr(bgpCommonExportPolicy.getName()));
+
+      // Add constraints on export routes from configured route-map or prefix-list. If both are
+      // configured, use route-map and warn. TODO support configuring route-map + prefix-list here.
+      String outboundPrefixListName = lpg.getOutboundPrefixList();
       String outboundRouteMapName = lpg.getOutboundRouteMap();
-      if (outboundRouteMapName != null && _routeMaps.containsKey(outboundRouteMapName)) {
+      if (outboundPrefixListName != null && outboundRouteMapName != null) {
+        _w.redFlag(
+            "Batfish does not support configuring both a route-map and a prefix-list for outgoing BGP routes."
+                + " When this occurs, the prefix-list will be ignored.");
+      }
+      if (outboundRouteMapName != null
+          && c.getRoutingPolicies().containsKey(outboundRouteMapName)) {
         peerExportConditions.getConjuncts().add(new CallExpr(outboundRouteMapName));
+      } else if (outboundPrefixListName != null
+          && c.getRouteFilterLists().containsKey(outboundPrefixListName)) {
+        peerExportConditions
+            .getConjuncts()
+            .add(
+                new MatchPrefixSet(
+                    DestinationNetwork.instance(), new NamedPrefixSet(outboundPrefixListName)));
       }
 
       // set up default export policy for this peer group
