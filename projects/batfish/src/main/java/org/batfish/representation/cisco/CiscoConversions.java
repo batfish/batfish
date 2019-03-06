@@ -4,6 +4,10 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Collections.singletonList;
 import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpCommonExportPolicyName;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpDefaultRouteExportPolicyName;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerExportPolicyName;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerImportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeProtocolObjectGroupAclName;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -92,8 +96,10 @@ import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProcessAsn;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
+import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.visitors.HeaderSpaceConverter;
@@ -273,8 +279,7 @@ class CiscoConversions {
     if (inboundPrefixListName != null
         && c.getRouteFilterLists().containsKey(inboundPrefixListName)) {
       // Inbound prefix-list is defined. Build an import policy around it.
-      String generatedImportPolicyName =
-          "~BGP_PEER_IMPORT_POLICY:" + vrfName + ":" + lpg.getName() + "~";
+      String generatedImportPolicyName = computeBgpPeerImportPolicyName(vrfName, lpg.getName());
       RoutingPolicy.builder()
           .setOwner(c)
           .setName(generatedImportPolicyName)
@@ -289,6 +294,60 @@ class CiscoConversions {
     }
     // Return null to indicate no constraints were imposed on inbound BGP routes.
     return null;
+  }
+
+  /**
+   * Creates a {@link RoutingPolicy} to be used as the BGP export policy for the given {@link
+   * LeafBgpPeerGroup}. The generated policy is added to the given configuration's routing policies.
+   */
+  static void generateBgpExportPolicy(
+      LeafBgpPeerGroup lpg, String vrfName, Configuration c, Warnings w) {
+    List<Statement> exportPolicyStatements = new ArrayList<>();
+    if (lpg.getNextHopSelf() != null && lpg.getNextHopSelf()) {
+      exportPolicyStatements.add(new SetNextHop(SelfNextHop.getInstance(), false));
+    }
+    if (lpg.getRemovePrivateAs() != null && lpg.getRemovePrivateAs()) {
+      exportPolicyStatements.add(Statements.RemovePrivateAs.toStaticStatement());
+    }
+
+    List<BooleanExpr> localOrCommonOriginationDisjuncts = new ArrayList<>();
+    localOrCommonOriginationDisjuncts.add(new CallExpr(computeBgpCommonExportPolicyName(vrfName)));
+    if (lpg.getDefaultOriginate()) {
+      localOrCommonOriginationDisjuncts.add(
+          new CallExpr(computeBgpDefaultRouteExportPolicyName(vrfName, lpg.getName())));
+    }
+
+    List<BooleanExpr> peerExportConjuncts = new ArrayList<>();
+    peerExportConjuncts.add(new Disjunction(localOrCommonOriginationDisjuncts));
+
+    // Add constraints on export routes from configured route-map or prefix-list. If both are
+    // configured, use route-map and warn. TODO support configuring route-map + prefix-list here.
+    String outboundPrefixListName = lpg.getOutboundPrefixList();
+    String outboundRouteMapName = lpg.getOutboundRouteMap();
+    if (outboundPrefixListName != null && outboundRouteMapName != null) {
+      w.redFlag(
+          "Batfish does not support configuring both a route-map and a prefix-list for outgoing BGP routes."
+              + " When this occurs, the prefix-list will be ignored.");
+    }
+    if (outboundRouteMapName != null && c.getRoutingPolicies().containsKey(outboundRouteMapName)) {
+      peerExportConjuncts.add(new CallExpr(outboundRouteMapName));
+    } else if (outboundPrefixListName != null
+        && c.getRouteFilterLists().containsKey(outboundPrefixListName)) {
+      peerExportConjuncts.add(
+          new MatchPrefixSet(
+              DestinationNetwork.instance(), new NamedPrefixSet(outboundPrefixListName)));
+    }
+    exportPolicyStatements.add(
+        new If(
+            "peer-export policy main conditional: exitAccept if true / exitReject if false",
+            new Conjunction(peerExportConjuncts),
+            ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+            ImmutableList.of(Statements.ExitReject.toStaticStatement())));
+    RoutingPolicy.builder()
+        .setOwner(c)
+        .setName(computeBgpPeerExportPolicyName(vrfName, lpg.getName()))
+        .setStatements(exportPolicyStatements)
+        .build();
   }
 
   /**
