@@ -1,25 +1,33 @@
 package org.batfish.question.aaaauthenticationlogin;
 
-import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.questions.NodesSpecifier;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.specifier.AllNodesNodeSpecifier;
+import org.batfish.specifier.NodeSpecifier;
+import org.batfish.specifier.SpecifierFactories;
 
+@ParametersAreNonnullByDefault
 public class AaaAuthenticationLoginQuestion extends Question {
 
   private static final String PROP_NODES = "nodes";
 
-  @Nonnull private NodesSpecifier _nodes;
+  @Nullable private String _nodes;
 
-  public AaaAuthenticationLoginQuestion() {
+  @JsonCreator
+  private static AaaAuthenticationLoginQuestion create(
+      @Nullable @JsonProperty(PROP_NODES) String nodes) {
+    return new AaaAuthenticationLoginQuestion(nodes);
+  }
+
+  AaaAuthenticationLoginQuestion() {
     this(null);
   }
 
-  public AaaAuthenticationLoginQuestion(@Nullable @JsonProperty(PROP_NODES) NodesSpecifier nodes) {
-    _nodes = firstNonNull(nodes, NodesSpecifier.ALL);
+  public AaaAuthenticationLoginQuestion(@Nullable String nodes) {
+    _nodes = nodes;
   }
 
   @Override
@@ -32,13 +40,13 @@ public class AaaAuthenticationLoginQuestion extends Question {
     return "AaaAuthenticationLogin";
   }
 
+  @Nullable
   @JsonProperty(PROP_NODES)
-  public NodesSpecifier getNodes() {
+  public String getNodes() {
     return _nodes;
   }
 
-  @JsonProperty(PROP_NODES)
-  public void setNodes(NodesSpecifier nodes) {
-    _nodes = nodes;
+  NodeSpecifier getNodeSpecifier() {
+    return SpecifierFactories.getNodeSpecifierOrDefault(_nodes, AllNodesNodeSpecifier.INSTANCE);
   }
 }
