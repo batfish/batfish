@@ -137,8 +137,8 @@ public class CiscoConversionsBgpPoliciesTest {
             .setOriginatorIp(PEER_ADDRESS)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.IBGP);
-    BgpRoute permitted = r.setCommunities(ImmutableSet.of(10L)).build();
-    BgpRoute denied = r.setCommunities(ImmutableSet.of(20L)).build();
+    BgpRoute permitted = r.setCommunities(PERMITTED_COMMUNITY_SET).build();
+    BgpRoute denied = r.setCommunities(DENIED_COMMUNITY_SET).build();
     BgpRoute unmatched = r.setCommunities(ImmutableSet.of(30L)).build();
     assertThat(
         p.process(permitted, permitted.toBuilder(), PEER_ADDRESS, DEFAULT_VRF_NAME, direction),
