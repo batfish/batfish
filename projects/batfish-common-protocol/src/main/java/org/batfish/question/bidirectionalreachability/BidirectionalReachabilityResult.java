@@ -2,10 +2,12 @@ package org.batfish.question.bidirectionalreachability;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
+import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.specifier.Location;
 
 /** The result of a bidirectional reachability analysis. */
+@ParametersAreNonnullByDefault
 public class BidirectionalReachabilityResult {
   private final Map<Location, BDD> _startLocationReturnPassFailureBdds;
 

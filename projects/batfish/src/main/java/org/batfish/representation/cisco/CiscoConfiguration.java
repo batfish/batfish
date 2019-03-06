@@ -1860,6 +1860,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
     exportConditions.add(new MatchProtocol(RoutingProtocol.IBGP));
 
     for (LeafBgpPeerGroup lpg : leafGroups) {
+      if (!lpg.getActive() || lpg.getShutdown()) {
+        continue;
+      }
+      if (lpg.getRemoteAs() == null) {
+        _w.redFlag("No remote-as set for peer: " + lpg.getName());
+        continue;
+      }
+      if (lpg instanceof Ipv6BgpPeerGroup || lpg instanceof DynamicIpv6BgpPeerGroup) {
+        // TODO: implement ipv6 bgp neighbors
+        continue;
+      }
       // update source
       String updateSourceInterface = lpg.getUpdateSource();
       boolean ipv4 = lpg.getNeighborPrefix() != null;
@@ -1870,9 +1881,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       String peerExportPolicyName =
           "~BGP_PEER_EXPORT_POLICY:" + vrfName + ":" + lpg.getName() + "~";
       RoutingPolicy peerExportPolicy = new RoutingPolicy(peerExportPolicyName, c);
-      if (lpg.getActive() && !lpg.getShutdown()) {
-        c.getRoutingPolicies().put(peerExportPolicyName, peerExportPolicy);
-      }
+      c.getRoutingPolicies().put(peerExportPolicyName, peerExportPolicy);
       if (lpg.getNextHopSelf() != null && lpg.getNextHopSelf()) {
         peerExportPolicy.getStatements().add(new SetNextHop(SelfNextHop.getInstance(), false));
       }
@@ -1891,16 +1900,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
       peerExportConditions.getConjuncts().add(localOrCommonOrigination);
       localOrCommonOrigination.getDisjuncts().add(new CallExpr(bgpCommonExportPolicy.getName()));
       String outboundRouteMapName = lpg.getOutboundRouteMap();
-      if (outboundRouteMapName != null) {
-        RouteMap outboundRouteMap = _routeMaps.get(outboundRouteMapName);
-        if (outboundRouteMap != null) {
-          peerExportConditions.getConjuncts().add(new CallExpr(outboundRouteMapName));
-        }
+      if (outboundRouteMapName != null && _routeMaps.containsKey(outboundRouteMapName)) {
+        peerExportConditions.getConjuncts().add(new CallExpr(outboundRouteMapName));
       }
 
       // set up default export policy for this peer group
       GeneratedRoute.Builder defaultRoute = null;
-      GeneratedRoute6.Builder defaultRoute6 = null;
+      GeneratedRoute6.Builder defaultRoute6;
       if (lpg.getDefaultOriginate()) {
         String defaultRouteExportPolicyName;
         defaultRouteExportPolicyName =
@@ -1933,12 +1939,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
         defaultRoute6.setAdmin(MAX_ADMINISTRATIVE_COST);
 
         String defaultOriginateMapName = lpg.getDefaultOriginateMap();
-        if (defaultOriginateMapName != null) { // originate contingent on
-          // generation policy
-          RoutingPolicy defaultRouteGenerationPolicy =
-              c.getRoutingPolicies().get(defaultOriginateMapName);
-          if (defaultRouteGenerationPolicy != null) {
+        if (defaultOriginateMapName != null
+            && c.getRoutingPolicies().containsKey(defaultOriginateMapName)) {
+          // originate contingent on generation policy
+          if (ipv4) {
             defaultRoute.setGenerationPolicy(defaultOriginateMapName);
+          } else {
+            defaultRoute6.setGenerationPolicy(defaultOriginateMapName);
           }
         } else {
           If defaultRouteGenerationConditional =
@@ -1949,10 +1956,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
               new RoutingPolicy(
                   "~BGP_DEFAULT_ROUTE_GENERATION_POLICY:" + vrfName + ":" + lpg.getName() + "~", c);
           defaultRouteGenerationPolicy.getStatements().add(defaultRouteGenerationConditional);
-          if (lpg.getActive() && !lpg.getShutdown()) {
-            c.getRoutingPolicies()
-                .put(defaultRouteGenerationPolicy.getName(), defaultRouteGenerationPolicy);
-          }
+          c.getRoutingPolicies()
+              .put(defaultRouteGenerationPolicy.getName(), defaultRouteGenerationPolicy);
           if (ipv4) {
             defaultRoute.setGenerationPolicy(defaultRouteGenerationPolicy.getName());
           } else {
@@ -1966,66 +1971,57 @@ public final class CiscoConfiguration extends VendorConfiguration {
         clusterId = bgpRouterId;
       }
       String description = lpg.getDescription();
-      if (lpg.getActive() && !lpg.getShutdown()) {
-        if (lpg.getRemoteAs() == null) {
-          _w.redFlag("No remote-as set for peer: " + lpg.getName());
-          continue;
-        }
-        Long pgLocalAs = lpg.getLocalAs();
-        long localAs = pgLocalAs != null ? pgLocalAs : proc.getProcnum();
+      Long pgLocalAs = lpg.getLocalAs();
+      long localAs = pgLocalAs != null ? pgLocalAs : proc.getProcnum();
 
-        BgpPeerConfig.Builder<?, ?> newNeighborBuilder;
-        if (lpg instanceof IpBgpPeerGroup) {
-          IpBgpPeerGroup ipg = (IpBgpPeerGroup) lpg;
-          newNeighborBuilder =
-              BgpActivePeerConfig.builder()
-                  .setPeerAddress(ipg.getIp())
-                  .setRemoteAs(lpg.getRemoteAs());
-        } else if (lpg instanceof DynamicIpBgpPeerGroup) {
-          DynamicIpBgpPeerGroup dpg = (DynamicIpBgpPeerGroup) lpg;
-          // Sort the remove AS numbers for consistent refs.
-          SortedSet<Long> asns =
-              ImmutableSortedSet.<Long>naturalOrder()
-                  .add(dpg.getRemoteAs())
-                  .addAll(firstNonNull(dpg.getAlternateAs(), ImmutableList.of()))
-                  .build();
-          newNeighborBuilder =
-              BgpPassivePeerConfig.builder()
-                  .setPeerPrefix(dpg.getPrefix())
-                  .setRemoteAs(ImmutableList.copyOf(asns));
-        } else if (lpg instanceof Ipv6BgpPeerGroup || lpg instanceof DynamicIpv6BgpPeerGroup) {
-          // TODO: implement ipv6 bgp neighbors
-          continue;
-        } else {
-          throw new VendorConversionException("Invalid BGP leaf neighbor type");
-        }
-        newNeighborBuilder.setBgpProcess(newBgpProcess);
-
-        newNeighborBuilder.setAdditionalPathsReceive(lpg.getAdditionalPathsReceive());
-        newNeighborBuilder.setAdditionalPathsSelectAll(lpg.getAdditionalPathsSelectAll());
-        newNeighborBuilder.setAdditionalPathsSend(lpg.getAdditionalPathsSend());
-        newNeighborBuilder.setAdvertiseInactive(lpg.getAdvertiseInactive());
-        newNeighborBuilder.setAllowLocalAsIn(lpg.getAllowAsIn());
-        newNeighborBuilder.setAllowRemoteAsOut(
-            firstNonNull(lpg.getDisablePeerAsCheck(), Boolean.TRUE));
-        newNeighborBuilder.setRouteReflectorClient(lpg.getRouteReflectorClient());
-        newNeighborBuilder.setClusterId(clusterId.asLong());
-        newNeighborBuilder.setDefaultMetric(defaultMetric);
-        newNeighborBuilder.setDescription(description);
-        newNeighborBuilder.setEbgpMultihop(lpg.getEbgpMultihop());
-        if (defaultRoute != null) {
-          newNeighborBuilder.setGeneratedRoutes(ImmutableSet.of(defaultRoute.build()));
-        }
-        newNeighborBuilder.setGroup(lpg.getGroupName());
-        if (peerImportPolicyName != null) {
-          newNeighborBuilder.setImportPolicy(peerImportPolicyName);
-        }
-        newNeighborBuilder.setLocalAs(localAs);
-        newNeighborBuilder.setLocalIp(updateSource);
-        newNeighborBuilder.setExportPolicy(peerExportPolicyName);
-        newNeighborBuilder.setSendCommunity(lpg.getSendCommunity());
-        newNeighborBuilder.build();
+      BgpPeerConfig.Builder<?, ?> newNeighborBuilder;
+      if (lpg instanceof IpBgpPeerGroup) {
+        IpBgpPeerGroup ipg = (IpBgpPeerGroup) lpg;
+        newNeighborBuilder =
+            BgpActivePeerConfig.builder()
+                .setPeerAddress(ipg.getIp())
+                .setRemoteAs(lpg.getRemoteAs());
+      } else if (lpg instanceof DynamicIpBgpPeerGroup) {
+        DynamicIpBgpPeerGroup dpg = (DynamicIpBgpPeerGroup) lpg;
+        // Sort the remote AS numbers for consistent refs.
+        SortedSet<Long> asns =
+            ImmutableSortedSet.<Long>naturalOrder()
+                .add(dpg.getRemoteAs())
+                .addAll(firstNonNull(dpg.getAlternateAs(), ImmutableList.of()))
+                .build();
+        newNeighborBuilder =
+            BgpPassivePeerConfig.builder()
+                .setPeerPrefix(dpg.getPrefix())
+                .setRemoteAs(ImmutableList.copyOf(asns));
+      } else {
+        throw new VendorConversionException("Invalid BGP leaf neighbor type");
       }
+      newNeighborBuilder.setBgpProcess(newBgpProcess);
+
+      newNeighborBuilder.setAdditionalPathsReceive(lpg.getAdditionalPathsReceive());
+      newNeighborBuilder.setAdditionalPathsSelectAll(lpg.getAdditionalPathsSelectAll());
+      newNeighborBuilder.setAdditionalPathsSend(lpg.getAdditionalPathsSend());
+      newNeighborBuilder.setAdvertiseInactive(lpg.getAdvertiseInactive());
+      newNeighborBuilder.setAllowLocalAsIn(lpg.getAllowAsIn());
+      newNeighborBuilder.setAllowRemoteAsOut(
+          firstNonNull(lpg.getDisablePeerAsCheck(), Boolean.TRUE));
+      newNeighborBuilder.setRouteReflectorClient(lpg.getRouteReflectorClient());
+      newNeighborBuilder.setClusterId(clusterId.asLong());
+      newNeighborBuilder.setDefaultMetric(defaultMetric);
+      newNeighborBuilder.setDescription(description);
+      newNeighborBuilder.setEbgpMultihop(lpg.getEbgpMultihop());
+      if (defaultRoute != null) {
+        newNeighborBuilder.setGeneratedRoutes(ImmutableSet.of(defaultRoute.build()));
+      }
+      newNeighborBuilder.setGroup(lpg.getGroupName());
+      if (peerImportPolicyName != null) {
+        newNeighborBuilder.setImportPolicy(peerImportPolicyName);
+      }
+      newNeighborBuilder.setLocalAs(localAs);
+      newNeighborBuilder.setLocalIp(updateSource);
+      newNeighborBuilder.setExportPolicy(peerExportPolicyName);
+      newNeighborBuilder.setSendCommunity(lpg.getSendCommunity());
+      newNeighborBuilder.build();
     }
     return newBgpProcess;
   }

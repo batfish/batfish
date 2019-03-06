@@ -342,6 +342,7 @@ import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.IntegerSpace.Builder;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
@@ -11305,32 +11306,28 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private List<SubRange> toPortRanges(Port_specifierContext ps) {
-    List<SubRange> ranges = new ArrayList<>();
+    Builder builder = IntegerSpace.builder();
     if (ps.EQ() != null) {
-      for (PortContext pc : ps.args) {
-        int port = getPortNumber(pc);
-        ranges.add(new SubRange(port, port));
-      }
+      ps.args.forEach(p -> builder.including(getPortNumber(p)));
     } else if (ps.GT() != null) {
       int port = getPortNumber(ps.arg);
-      ranges.add(new SubRange(port + 1, 65535));
+      builder.including(new SubRange(port + 1, 65535));
     } else if (ps.NEQ() != null) {
-      int port = getPortNumber(ps.arg);
-      SubRange beforeRange = new SubRange(0, port - 1);
-      SubRange afterRange = new SubRange(port + 1, 65535);
-      ranges.add(beforeRange);
-      ranges.add(afterRange);
+      builder.including(IntegerSpace.PORTS);
+      ps.args.forEach(p -> builder.excluding(getPortNumber(p)));
     } else if (ps.LT() != null) {
       int port = getPortNumber(ps.arg);
-      ranges.add(new SubRange(0, port - 1));
+      builder.including(new SubRange(0, port - 1));
     } else if (ps.RANGE() != null) {
       int lowPort = getPortNumber(ps.arg1);
       int highPort = getPortNumber(ps.arg2);
-      ranges.add(new SubRange(lowPort, highPort));
+      builder.including(new SubRange(lowPort, highPort));
     } else {
       throw convError(List.class, ps);
     }
-    return ranges;
+    return builder.build().getSubRanges().stream()
+        .sorted() // for output/ref determinism
+        .collect(ImmutableList.toImmutableList());
   }
 
   private RoutePolicyBoolean toRoutePolicyBoolean(Boolean_and_rp_stanzaContext ctx) {

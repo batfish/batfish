@@ -1654,15 +1654,15 @@
       },
       {
         "Filename" : "configs/f5_bigip_structured_net",
-        "Line" : 58,
-        "Text" : "tunnels",
+        "Line" : 6,
+        "Text" : "fdb",
         "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "configs/f5_bigip_structured_net",
-        "Line" : 6,
-        "Text" : "fdb",
+        "Line" : 65,
+        "Text" : "tunnels",
         "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },

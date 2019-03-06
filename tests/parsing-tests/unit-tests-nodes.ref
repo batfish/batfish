@@ -635,6 +635,54 @@
                   "headerSpace" : {
                     "dstIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "102.66.49.0/24"
+                    },
+                    "dstPorts" : [
+                      "0-79",
+                      "81-442",
+                      "444-65535"
+                    ],
+                    "ipProtocols" : [
+                      "TCP"
+                    ],
+                    "negate" : false,
+                    "srcIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    },
+                    "tcpFlagsMatchConditions" : [
+                      {
+                        "tcpFlags" : {
+                          "ack" : false,
+                          "cwr" : false,
+                          "ece" : false,
+                          "fin" : false,
+                          "psh" : false,
+                          "rst" : false,
+                          "syn" : true,
+                          "urg" : false
+                        },
+                        "useAck" : false,
+                        "useCwr" : false,
+                        "useEce" : false,
+                        "useFin" : false,
+                        "usePsh" : false,
+                        "useRst" : false,
+                        "useSyn" : true,
+                        "useUrg" : false
+                      }
+                    ]
+                  }
+                },
+                "name" : "10 deny tcp any 102.66.49.113/24 neq www https syn"
+              },
+              {
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "negate" : false,
@@ -4875,8 +4923,7 @@
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "dstPorts" : [
-                      "67-67",
-                      "68-68",
+                      "67-68",
                       "123-123"
                     ],
                     "ipProtocols" : [
@@ -12358,11 +12405,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "incomingTransformation" : {
-              "guard" : {
-                "class" : "org.batfish.datamodel.acl.FalseExpr"
-              }
-            },
             "mtu" : 1500,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
@@ -12406,6 +12448,31 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"
+          },
+          "trunk1" : {
+            "name" : "trunk1",
+            "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 0.0,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "AGGREGATED",
+            "vrf" : "default"
           }
         },
         "vendorFamily" : {
@@ -12416,7 +12483,8 @@
             "name" : "default",
             "interfaces" : [
               "/Common/MYVLAN",
-              "1.0"
+              "1.0",
+              "trunk1"
             ]
           }
         }

@@ -9,7 +9,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
@@ -23,10 +25,12 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAllAddresses;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAllowedVlans;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasBandwidth;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDeclaredNames;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDependencies;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDescription;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasEigrp;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasHsrpGroup;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasHsrpVersion;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasInterfaceType;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasIsis;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasMlagId;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasMtu;
@@ -152,6 +156,15 @@ public final class InterfaceMatchers {
   }
 
   /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link
+   * Interface}'s dependencies.
+   */
+  public static @Nonnull Matcher<Interface> hasDependencies(
+      @Nonnull Matcher<? super Set<Dependency>> subMatcher) {
+    return new HasDependencies(subMatcher);
+  }
+
+  /**
    * Provides a matcher that matches if the {@link Interface}'s description is {@code
    * expectedDescription}.
    */
@@ -166,6 +179,15 @@ public final class InterfaceMatchers {
   public static @Nonnull Matcher<Interface> hasEigrp(
       @Nonnull Matcher<? super EigrpInterfaceSettings> subMatcher) {
     return new HasEigrp(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the {@link Interface}'s interfaceType is {@code
+   * expectedInterfaceType}.
+   */
+  public static @Nonnull Matcher<Interface> hasInterfaceType(
+      @Nonnull InterfaceType expectedInterfaceType) {
+    return new HasInterfaceType(equalTo(expectedInterfaceType));
   }
 
   /**
