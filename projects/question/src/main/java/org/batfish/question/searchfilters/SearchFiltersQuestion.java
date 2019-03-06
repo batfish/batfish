@@ -16,9 +16,9 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.PacketHeaderConstraintsUtil;
 import org.batfish.datamodel.UniverseIpSpace;
-import org.batfish.datamodel.questions.FiltersSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.SearchFiltersParameters;
+import org.batfish.specifier.AllFiltersFilterSpecifier;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
@@ -26,7 +26,6 @@ import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.NodeSpecifier;
-import org.batfish.specifier.ShorthandFilterSpecifier;
 import org.batfish.specifier.SpecifierFactories;
 
 /** A question to determine which flows match a particular ACL action. */
@@ -141,7 +140,7 @@ public final class SearchFiltersQuestion extends Question {
   @JsonIgnore
   FilterSpecifier getFilterSpecifier() {
     return SpecifierFactories.getFilterSpecifierOrDefault(
-        _filters, new ShorthandFilterSpecifier(FiltersSpecifier.ALL));
+        _filters, AllFiltersFilterSpecifier.INSTANCE);
   }
 
   @JsonIgnore
