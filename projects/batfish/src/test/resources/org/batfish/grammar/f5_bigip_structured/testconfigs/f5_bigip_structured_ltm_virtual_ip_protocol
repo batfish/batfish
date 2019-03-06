@@ -1,0 +1,29 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+  hostname f5_bigip_structured_ltm_virtual_ip_protocol
+}
+
+net vlan /Common/vlan1 { }
+
+ltm node /Common/node1 {
+    address 10.0.0.1
+}
+
+ltm pool /Common/pool1 {
+    members {
+        /Common/node1:80 {
+            address 10.0.0.1
+        }
+    }
+}
+
+ltm virtual /Common/virtual1 {
+    destination /Common/192.0.2.1:80
+    ip-protocol tcp
+    pool /Common/pool1
+}
+
+ltm virtual-address /Common/192.0.2.1 {
+    address 192.0.2.1
+}
