@@ -24,7 +24,8 @@ public class FlexibleInterfaceSpecifierFactoryTest {
   @Test
   public void testGarbageIn() {
     exception.expect(IllegalArgumentException.class);
-    new FlexibleInterfaceSpecifierFactory().buildInterfaceSpecifier("fofoao:klklk:opopo:oo");
+    // the input string won't even compile to a pattern, our last resort
+    new FlexibleInterfaceSpecifierFactory().buildInterfaceSpecifier("f\\o");
   }
 
   @Test

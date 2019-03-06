@@ -4,13 +4,13 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.TreeMultimap;
 import java.util.Comparator;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
@@ -22,7 +22,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerSummary;
@@ -95,8 +94,13 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
     private SortedMap<Ip, SortedSet<NodeInterfacePair>> getDuplicateIps() {
       UniqueIpAssignmentsQuestion question = (UniqueIpAssignmentsQuestion) _question;
       Set<String> nodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
-      Map<String, Configuration> configs = _batfish.loadConfigurations();
-      return question.getInterfaceSpecifier().resolve(nodes, _batfish.specifierContext()).stream()
+      // we do nodes and interfaces separately because of interface equality is currently broken
+      // (does not take owner node into account)
+      return nodes.stream()
+          .flatMap(
+              n ->
+                  question.getInterfaceSpecifier()
+                      .resolve(ImmutableSet.of(n), _batfish.specifierContext()).stream())
           // narrow to interfaces of interest
           .filter(iface -> (!question.getEnabledIpsOnly() || iface.getActive()))
           // convert to stream of Entry<Ip, NodeInterfacePair>

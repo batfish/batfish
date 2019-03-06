@@ -289,6 +289,7 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
       return _nodes;
     }
 
+    @JsonIgnore
     NodeSpecifier getNodeSpecifier() {
       return SpecifierFactories.getNodeSpecifierOrDefault(_nodes, AllNodesNodeSpecifier.INSTANCE);
     }
