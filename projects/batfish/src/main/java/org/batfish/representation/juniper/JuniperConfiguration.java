@@ -1464,13 +1464,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     String routingInstance = iface.getRoutingInstance();
     Nat snat = _masterLogicalSystem.getNatSource();
 
-    if (iface.getPrimaryAddress() == null) {
-      _w.redFlag(
-          "Cannot build incoming transformation without an interface IP. Interface name = " + name);
-      return null;
-    }
-    Ip interfaceIp = iface.getPrimaryAddress().getIp();
-
     List<NatRuleSet> ruleSets =
         orderedRuleSetList.stream()
             .filter(
@@ -1481,6 +1474,17 @@ public final class JuniperConfiguration extends VendorConfiguration {
                       || (routingInstance.equals(toLocation.getRoutingInstance()));
                 })
             .collect(Collectors.toList());
+
+    if (ruleSets.isEmpty()) {
+      return null;
+    }
+
+    if (iface.getPrimaryAddress() == null) {
+      _w.redFlag(
+          "Cannot build incoming transformation without an interface IP. Interface name = " + name);
+      return null;
+    }
+    Ip interfaceIp = iface.getPrimaryAddress().getIp();
 
     Transformation transformation = null;
     for (NatRuleSet ruleSet : Lists.reverse(ruleSets)) {
@@ -1639,13 +1643,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private Transformation buildIncomingTransformation(Interface iface) {
-    if (iface.getPrimaryAddress() == null) {
-      _w.redFlag(
-          "Cannot build incoming transformation without an interface IP. Interface name = "
-              + iface.getName());
-      return null;
-    }
-    Ip interfaceIp = iface.getPrimaryAddress().getIp();
 
     Nat dnat = _masterLogicalSystem.getNatDestination();
     if (dnat == null) {
@@ -1677,11 +1674,25 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
     }
 
-    Transformation transformation = null;
-    for (NatRuleSet ruleSet :
+    List<NatRuleSet> ruleSets =
         Stream.of(routingInstanceRuleSet, zoneLocationRuleSet, ifaceLocationRuleSet)
             .filter(Objects::nonNull)
-            .collect(Collectors.toList())) {
+            .collect(Collectors.toList());
+
+    if (ruleSets.isEmpty()) {
+      return null;
+    }
+
+    if (iface.getPrimaryAddress() == null) {
+      _w.redFlag(
+          "Cannot build incoming transformation without an interface IP. Interface name = "
+              + iface.getName());
+      return null;
+    }
+    Ip interfaceIp = iface.getPrimaryAddress().getIp();
+
+    Transformation transformation = null;
+    for (NatRuleSet ruleSet : ruleSets) {
       transformation =
           ruleSet
               .toIncomingTransformation(dnat, interfaceIp, null, transformation)
