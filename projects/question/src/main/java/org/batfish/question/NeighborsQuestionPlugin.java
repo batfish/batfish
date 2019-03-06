@@ -1,6 +1,9 @@
 package org.batfish.question;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.auto.service.AutoService;
@@ -53,9 +56,11 @@ import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.ospf.OspfNeighbor;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.OspfTopologyUtils;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.role.NodeRoleDimension;
+import org.batfish.specifier.AllNodesNodeSpecifier;
+import org.batfish.specifier.NodeSpecifier;
+import org.batfish.specifier.SpecifierFactories;
 
 @AutoService(Plugin.class)
 public class NeighborsQuestionPlugin extends QuestionPlugin {
@@ -561,8 +566,9 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       NeighborsAnswerElement answerElement = new NeighborsAnswerElement();
 
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
-      Set<String> includeNodes1 = question.getNodes().getMatchingNodes(_batfish);
-      Set<String> includeNodes2 = question.getRemoteNodes().getMatchingNodes(_batfish);
+      Set<String> includeNodes1 = question.getNodesSpecifier().resolve(_batfish.specifierContext());
+      Set<String> includeNodes2 =
+          question.getRemoteNodeSpecifier().resolve(_batfish.specifierContext());
 
       if (question.getStyle() == EdgeStyle.ROLE) {
         NodeRoleDimension roleDimension =
@@ -1004,27 +1010,76 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_STYLE = "style";
 
+    private static final EdgeStyle DEFAULT_EDGE_STYLE = EdgeStyle.SUMMARY;
+
     @Nonnull private final SortedSet<NeighborType> _neighborTypes;
 
-    @Nonnull private final NodesSpecifier _nodes;
+    @Nullable private final String _nodes;
 
-    @Nonnull private final NodesSpecifier _remoteNodes;
+    @Nonnull private final NodeSpecifier _nodeSpecifier;
+
+    @Nullable private final String _remoteNodes;
+
+    @Nonnull private final NodeSpecifier _remoteNodeSpecifier;
 
     @Nullable private final String _roleDimension;
 
     @Nonnull private final EdgeStyle _style;
 
     @JsonCreator
+    private static NeighborsQuestion create(
+        @Nullable @JsonProperty(PROP_NODES) String nodes,
+        @Nullable @JsonProperty(PROP_REMOTE_NODES) String remoteNodes,
+        @Nullable @JsonProperty(PROP_NEIGHBOR_TYPES) SortedSet<NeighborType> neighborTypes,
+        @Nullable @JsonProperty(PROP_STYLE) EdgeStyle style,
+        @Nullable @JsonProperty(PROP_ROLE_DIMENSION) String roleDimension) {
+      return new NeighborsQuestion(
+          nodes,
+          remoteNodes,
+          firstNonNull(neighborTypes, ImmutableSortedSet.of()),
+          firstNonNull(style, DEFAULT_EDGE_STYLE),
+          roleDimension);
+    }
+
     public NeighborsQuestion(
-        @JsonProperty(PROP_NODES) NodesSpecifier nodes,
-        @JsonProperty(PROP_REMOTE_NODES) NodesSpecifier remoteNodes,
-        @JsonProperty(PROP_NEIGHBOR_TYPES) SortedSet<NeighborType> neighborTypes,
-        @JsonProperty(PROP_STYLE) EdgeStyle style,
-        @JsonProperty(PROP_ROLE_DIMENSION) String roleDimension) {
-      _nodes = nodes == null ? NodesSpecifier.ALL : nodes;
-      _remoteNodes = remoteNodes == null ? NodesSpecifier.ALL : remoteNodes;
-      _neighborTypes = neighborTypes == null ? new TreeSet<>() : neighborTypes;
-      _style = style == null ? EdgeStyle.SUMMARY : style;
+        @Nullable String nodes,
+        @Nullable String remoteNodes,
+        SortedSet<NeighborType> neighborTypes,
+        EdgeStyle style,
+        @Nullable String roleDimension) {
+      this(
+          nodes,
+          SpecifierFactories.getNodeSpecifierOrDefault(nodes, AllNodesNodeSpecifier.INSTANCE),
+          remoteNodes,
+          SpecifierFactories.getNodeSpecifierOrDefault(remoteNodes, AllNodesNodeSpecifier.INSTANCE),
+          neighborTypes,
+          style,
+          roleDimension);
+    }
+
+    public NeighborsQuestion(
+        NodeSpecifier nodeSpecifier,
+        NodeSpecifier remoteNodeSpecifier,
+        SortedSet<NeighborType> neighborTypes,
+        EdgeStyle style,
+        @Nullable String roleDimension) {
+      this(null, nodeSpecifier, null, remoteNodeSpecifier, neighborTypes, style, roleDimension);
+    }
+
+    private NeighborsQuestion(
+        @Nullable String nodes,
+        NodeSpecifier nodeSpecifier,
+        @Nullable String remoteNodes,
+        NodeSpecifier remoteNodeSpecifier,
+        SortedSet<NeighborType> neighborTypes,
+        EdgeStyle style,
+        @Nullable String roleDimension) {
+      _nodes = nodes;
+      _nodeSpecifier = nodeSpecifier;
+      _remoteNodes = remoteNodes;
+      _remoteNodeSpecifier = remoteNodeSpecifier;
+      _neighborTypes = neighborTypes;
+      _style = style;
       _roleDimension = roleDimension;
     }
 
@@ -1038,26 +1093,43 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       return "neighbors";
     }
 
+    @Nonnull
     @JsonProperty(PROP_NEIGHBOR_TYPES)
     public SortedSet<NeighborType> getNeighborTypes() {
       return _neighborTypes;
     }
 
+    @Nullable
     @JsonProperty(PROP_NODES)
-    public NodesSpecifier getNodes() {
+    public String getNodes() {
       return _nodes;
     }
 
+    @Nonnull
+    @JsonIgnore
+    NodeSpecifier getNodesSpecifier() {
+      return _nodeSpecifier;
+    }
+
+    @Nullable
     @JsonProperty(PROP_REMOTE_NODES)
-    public NodesSpecifier getRemoteNodes() {
+    public String getRemoteNodes() {
       return _remoteNodes;
     }
 
+    @Nonnull
+    @JsonIgnore
+    NodeSpecifier getRemoteNodeSpecifier() {
+      return _remoteNodeSpecifier;
+    }
+
+    @Nullable
     @JsonProperty(PROP_ROLE_DIMENSION)
     public String getRoleDimension() {
       return _roleDimension;
     }
 
+    @Nonnull
     @JsonProperty(PROP_STYLE)
     public EdgeStyle getStyle() {
       return _style;
@@ -1096,6 +1168,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
   @Override
   protected Question createQuestion() {
-    return new NeighborsQuestion(null, null, null, null, null);
+    return new NeighborsQuestion(
+        (String) null, null, ImmutableSortedSet.of(), NeighborsQuestion.DEFAULT_EDGE_STYLE, null);
   }
 }
