@@ -1332,13 +1332,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
    */
   @Override
   public Optional<NodeRoleDimension> getNodeRoleDimension(@Nullable String dimension) {
-    try {
-      NodeRolesData nodeRolesData = getNodeRolesData();
-      return nodeRolesData.getNodeRoleDimension(dimension);
-    } catch (IOException e) {
-      _logger.errorf("Could not read roles data: %s", e);
-      return Optional.empty();
-    }
+    NodeRolesData nodeRolesData = getNodeRolesData();
+    return nodeRolesData.getNodeRoleDimension(dimension);
   }
 
   /**
