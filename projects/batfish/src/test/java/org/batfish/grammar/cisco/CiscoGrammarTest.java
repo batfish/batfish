@@ -157,6 +157,8 @@ import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasL
 import static org.batfish.datamodel.vendor_family.cisco.LoggingMatchers.isOn;
 import static org.batfish.grammar.cisco.CiscoControlPlaneExtractor.SERIAL_LINE;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerExportPolicyName;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerImportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeCombinedOutgoingAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeIcmpObjectGroupAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeInspectClassMapAclName;
@@ -2105,9 +2107,9 @@ public class CiscoGrammarTest {
     Ip peerAddress = Ip.parse("1.2.3.4");
     Configuration c = batfish.loadConfigurations().get(hostname);
     String generatedImportPolicyName =
-        String.format("~BGP_PEER_IMPORT_POLICY:%s:%s~", DEFAULT_VRF_NAME, peerAddress);
+        computeBgpPeerImportPolicyName(DEFAULT_VRF_NAME, peerAddress.toString());
     String generatedExportPolicyName =
-        String.format("~BGP_PEER_EXPORT_POLICY:%s:%s~", DEFAULT_VRF_NAME, peerAddress);
+        computeBgpPeerExportPolicyName(DEFAULT_VRF_NAME, peerAddress.toString());
     RoutingPolicy importPolicy = c.getRoutingPolicies().get(generatedImportPolicyName);
     RoutingPolicy exportPolicy = c.getRoutingPolicies().get(generatedExportPolicyName);
     assertThat(importPolicy, notNullValue());
