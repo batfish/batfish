@@ -1464,6 +1464,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
     String routingInstance = iface.getRoutingInstance();
     Nat snat = _masterLogicalSystem.getNatSource();
 
+    if (iface.getPrimaryAddress() == null) {
+      _w.redFlag(
+          "Cannot build incoming transformation without an interface IP. Interface name = " + name);
+      return null;
+    }
+    Ip interfaceIp = iface.getPrimaryAddress().getIp();
+
     List<NatRuleSet> ruleSets =
         orderedRuleSetList.stream()
             .filter(
@@ -1480,11 +1487,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       transformation =
           ruleSet
               .toOutgoingTransformation(
-                  snat,
-                  iface.getPrimaryAddress().getIp(),
-                  matchFromLocationExprs,
-                  null,
-                  transformation)
+                  snat, interfaceIp, matchFromLocationExprs, null, transformation)
               .orElse(transformation);
     }
     return transformation;
@@ -1636,6 +1639,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private Transformation buildIncomingTransformation(Interface iface) {
+    if (iface.getPrimaryAddress() == null) {
+      _w.redFlag(
+          "Cannot build incoming transformation without an interface IP. Interface name = "
+              + iface.getName());
+      return null;
+    }
+    Ip interfaceIp = iface.getPrimaryAddress().getIp();
+
     Nat dnat = _masterLogicalSystem.getNatDestination();
     if (dnat == null) {
       return null;
@@ -1673,8 +1684,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .collect(Collectors.toList())) {
       transformation =
           ruleSet
-              .toIncomingTransformation(
-                  dnat, iface.getPrimaryAddress().getIp(), null, transformation)
+              .toIncomingTransformation(dnat, interfaceIp, null, transformation)
               .orElse(transformation);
     }
     return transformation;
