@@ -12,15 +12,21 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import javax.annotation.Nullable;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDiff;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.TransformationStep;
@@ -50,6 +56,38 @@ public class NatRuleSetTest {
       default:
         return;
     }
+  }
+
+  private static Optional<Transformation> toOutgoingTransformation(
+      NatRuleSet ruleSet,
+      Nat nat,
+      Ip interfaceIp,
+      Map<NatPacketLocation, AclLineMatchExpr> matchFromLocationExprs,
+      @Nullable Transformation andThen,
+      @Nullable Transformation orElse) {
+    Warnings warnings = new Warnings(true, true, true);
+    Optional<Transformation> transformation =
+        ruleSet.toOutgoingTransformation(
+            nat, interfaceIp, matchFromLocationExprs, andThen, orElse, warnings);
+    assertTrue(warnings.getPedanticWarnings().isEmpty());
+    assertTrue(warnings.getRedFlagWarnings().isEmpty());
+    assertTrue(warnings.getUnimplementedWarnings().isEmpty());
+    return transformation;
+  }
+
+  private static Optional<Transformation> toIncomingTransformation(
+      NatRuleSet ruleSet,
+      Nat nat,
+      Ip interfaceIp,
+      @Nullable Transformation andThen,
+      @Nullable Transformation orElse) {
+    Warnings warnings = new Warnings(true, true, true);
+    Optional<Transformation> transformation =
+        ruleSet.toIncomingTransformation(nat, interfaceIp, andThen, orElse, warnings);
+    assertTrue(warnings.getPedanticWarnings().isEmpty());
+    assertTrue(warnings.getRedFlagWarnings().isEmpty());
+    assertTrue(warnings.getUnimplementedWarnings().isEmpty());
+    return transformation;
   }
 
   @Test
@@ -125,8 +163,8 @@ public class NatRuleSetTest {
 
     Ip interfaceIp = Ip.ZERO;
     assertThat(
-        ruleSet
-            .toOutgoingTransformation(
+        toOutgoingTransformation(
+                ruleSet,
                 dnat,
                 interfaceIp,
                 ImmutableMap.of(interfaceLocation(fromIface), matchFromIface),
@@ -138,7 +176,7 @@ public class NatRuleSetTest {
             when(matchFromIface).setAndThen(rulesTransformation).setOrElse(orElse).build()));
 
     assertThat(
-        ruleSet.toIncomingTransformation(dnat, interfaceIp, andThen, orElse).get(),
+        toIncomingTransformation(ruleSet, dnat, interfaceIp, andThen, orElse).get(),
         equalTo(rulesTransformation));
   }
 
@@ -173,8 +211,8 @@ public class NatRuleSetTest {
 
     Ip interfaceIp = Ip.parse("9.9.9.9");
     Transformation transformation =
-        ruleSet
-            .toOutgoingTransformation(
+        toOutgoingTransformation(
+                ruleSet,
                 snat,
                 interfaceIp,
                 ImmutableMap.of(fromLocation, matchSrcInterface(fromIface)),

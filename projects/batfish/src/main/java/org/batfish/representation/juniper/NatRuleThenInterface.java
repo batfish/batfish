@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableList.Builder;
 import java.io.Serializable;
 import java.util.List;
 import org.batfish.common.BatfishException;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
@@ -28,7 +29,8 @@ public final class NatRuleThenInterface implements NatRuleThen, Serializable {
   private NatRuleThenInterface() {}
 
   @Override
-  public List<TransformationStep> toTransformationSteps(Nat nat, Ip interfaceIp) {
+  public List<TransformationStep> toTransformationSteps(
+      Nat nat, Ip interfaceIp, Warnings warnings) {
     if (nat.getType() == STATIC) {
       throw new BatfishException("Juniper static nat is not supported");
     }

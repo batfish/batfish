@@ -1491,7 +1491,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       transformation =
           ruleSet
               .toOutgoingTransformation(
-                  snat, interfaceIp, matchFromLocationExprs, null, transformation)
+                  snat, interfaceIp, matchFromLocationExprs, null, transformation, _w)
               .orElse(transformation);
     }
     return transformation;
@@ -1694,7 +1694,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (NatRuleSet ruleSet : ruleSets) {
       transformation =
           ruleSet
-              .toIncomingTransformation(dnat, interfaceIp, null, transformation)
+              .toIncomingTransformation(dnat, interfaceIp, null, transformation, _w)
               .orElse(transformation);
     }
     return transformation;
