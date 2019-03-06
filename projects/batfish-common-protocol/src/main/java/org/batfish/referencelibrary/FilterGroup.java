@@ -6,6 +6,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Names;
@@ -26,8 +27,10 @@ public class FilterGroup implements Comparable<FilterGroup> {
     Names.checkName(name, "filter group", Type.REFERENCE_OBJECT);
 
     _name = name;
-    // ImmutableList disallows null values
-    _filters = firstNonNull(ImmutableList.copyOf(filters), ImmutableList.of());
+    _filters =
+        firstNonNull(filters, ImmutableList.<String>of()).stream()
+            .filter(Objects::nonNull) // remove null values
+            .collect(ImmutableList.toImmutableList());
   }
 
   @Override
