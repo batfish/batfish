@@ -5,7 +5,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.regex.Pattern;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -17,7 +16,7 @@ public class FlexibleNodeSpecifierFactoryTest {
   @Test
   public void testGarbageIn() {
     exception.expect(IllegalArgumentException.class);
-    new FlexibleNodeSpecifierFactory().buildNodeSpecifier("fofoao:klklk:opopo:oo");
+    new FlexibleNodeSpecifierFactory().buildNodeSpecifier("f\\of"); // bad regex
   }
 
   @Test
@@ -42,10 +41,10 @@ public class FlexibleNodeSpecifierFactoryTest {
   }
 
   @Test
-  public void testShorthandNodeSpecifier() {
+  public void testNameRegexNodeSpecifier() {
     assertThat(
-        new FlexibleNodeSpecifierFactory().buildNodeSpecifier("name:.*"),
-        equalTo(new ShorthandNodeSpecifier(new NodesSpecifier("name:.*"))));
+        new FlexibleNodeSpecifierFactory().buildNodeSpecifier("name.*"),
+        equalTo(new NameRegexNodeSpecifier(Pattern.compile("name.*", Pattern.CASE_INSENSITIVE))));
   }
 
   @Test
@@ -54,7 +53,7 @@ public class FlexibleNodeSpecifierFactoryTest {
         new FlexibleNodeSpecifierFactory().buildNodeSpecifier("foo - bar"),
         equalTo(
             new DifferenceNodeSpecifier(
-                new ShorthandNodeSpecifier(new NodesSpecifier("foo")),
-                new ShorthandNodeSpecifier(new NodesSpecifier("bar")))));
+                new NameRegexNodeSpecifier(Pattern.compile("foo", Pattern.CASE_INSENSITIVE)),
+                new NameRegexNodeSpecifier(Pattern.compile("bar", Pattern.CASE_INSENSITIVE)))));
   }
 }
