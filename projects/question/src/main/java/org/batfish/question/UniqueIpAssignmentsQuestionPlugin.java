@@ -139,7 +139,7 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_INTERFACES = "interfaces";
 
-    private static final String PROP_NODES = "node";
+    private static final String PROP_NODES = "nodes";
 
     private final boolean _enabledIpsOnly;
 
