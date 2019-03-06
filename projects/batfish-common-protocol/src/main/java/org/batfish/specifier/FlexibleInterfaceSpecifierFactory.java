@@ -18,7 +18,7 @@ import javax.annotation.Nullable;
  *   <li>vrf(regex): returns {@link VrfNameRegexInterfaceSpecifier}
  *   <li>zone(regex): returns {@link ZoneNameRegexInterfaceSpecifier}
  *   <li>type(regex): returns {@link TypesInterfaceSpecifier}
- *   <li>all other inputs are assumed to be a name regex
+ *   <li>name regex
  * </ul>
  */
 @AutoService(InterfaceSpecifierFactory.class)

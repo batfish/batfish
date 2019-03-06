@@ -4,8 +4,9 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.LinkedList;
+import com.google.common.collect.ImmutableList;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Names;
@@ -16,8 +17,8 @@ public class FilterGroup implements Comparable<FilterGroup> {
   private static final String PROP_FILTERS = "filters";
   private static final String PROP_NAME = "name";
 
-  @Nonnull private List<String> _filters;
-  @Nonnull private String _name;
+  @Nonnull private final List<String> _filters;
+  @Nonnull private final String _name;
 
   public FilterGroup(
       @Nullable @JsonProperty(PROP_FILTERS) List<String> filters,
@@ -26,7 +27,10 @@ public class FilterGroup implements Comparable<FilterGroup> {
     Names.checkName(name, "filter group", Type.REFERENCE_OBJECT);
 
     _name = name;
-    _filters = firstNonNull(filters, new LinkedList<>());
+    _filters =
+        firstNonNull(filters, ImmutableList.<String>of()).stream()
+            .filter(Objects::nonNull) // remove null values
+            .collect(ImmutableList.toImmutableList());
   }
 
   @Override

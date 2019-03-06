@@ -64,7 +64,8 @@ public class ReferenceFilterGroupFilterSpecifierTest {
                     new FilterGroup(
                         ImmutableList.of(
                             _filter1.getName(),
-                            "outFilterOf(" + _interfaceName + ")"), // should match _filter3
+                            "outFilterOf(" + _interfaceName + ")", // should match _filter3
+                            ""), // should match nothing; shouldn't accidentally match everything
                         _filterGroupName)))
             .build();
 
@@ -81,12 +82,5 @@ public class ReferenceFilterGroupFilterSpecifierTest {
         new ReferenceFilterGroupFilterSpecifier(_filterGroupName, _refBookName)
             .resolve(_nodeName, _ctxt),
         equalTo(ImmutableSet.of(_filter1, _filter3)));
-  }
-
-  @Test
-  public void resolveMissingNode() {
-    exception.expect(IllegalArgumentException.class);
-    new ReferenceFilterGroupFilterSpecifier(_filterGroupName, _refBookName)
-        .resolve("NonExistentNode", _ctxt);
   }
 }
