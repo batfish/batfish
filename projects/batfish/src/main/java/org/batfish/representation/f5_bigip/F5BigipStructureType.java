@@ -32,9 +32,11 @@ public enum F5BigipStructureType implements StructureType {
   SNAT("snat"),
   SNAT_TRANSLATION("snat-translation"),
   SNATPOOL("snatpool"),
+  TRUNK("trunk"),
   VIRTUAL("virtual"),
   VIRTUAL_ADDRESS("virtual-address"),
-  VLAN("vlan");
+  VLAN("vlan"),
+  VLAN_MEMBER_INTERFACE("vlan member interface");
 
   private final String _description;
 

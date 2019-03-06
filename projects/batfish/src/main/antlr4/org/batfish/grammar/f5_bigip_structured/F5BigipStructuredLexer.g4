@@ -186,6 +186,11 @@ KERNEL
   'kernel'
 ;
 
+LACP
+:
+  'lacp'
+;
+
 LOCAL_AS
 :
   'local-as'
@@ -434,6 +439,11 @@ TRANSLATE_ADDRESS
 TRANSLATE_PORT
 :
   'translate-port'
+;
+
+TRUNK
+:
+  'trunk'
 ;
 
 TYPE
