@@ -18,6 +18,8 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRoute6FilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
+import static org.batfish.datamodel.matchers.FlowDiffMatchers.isIpRewrite;
+import static org.batfish.datamodel.matchers.FlowDiffMatchers.isPortRewrite;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
@@ -32,6 +34,7 @@ import static org.batfish.datamodel.matchers.RouteFilterListMatchers.permits;
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.rejects;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasKernelRoutes;
+import static org.batfish.datamodel.transformation.TransformationEvaluator.eval;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_PROCESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.INTERFACE;
@@ -60,12 +63,15 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureType.SNAT_TRAN
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VIRTUAL;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VIRTUAL_ADDRESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VLAN;
+import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
@@ -73,6 +79,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.Arrays;
@@ -118,6 +125,9 @@ import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.transformation.IpField;
+import org.batfish.datamodel.transformation.PortField;
+import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.datamodel.transformation.TransformationEvaluator.TransformationResult;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -127,6 +137,7 @@ import org.batfish.representation.f5_bigip.BuiltinPersistence;
 import org.batfish.representation.f5_bigip.BuiltinProfile;
 import org.batfish.representation.f5_bigip.F5BigipConfiguration;
 import org.batfish.representation.f5_bigip.F5BigipStructureType;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -1065,6 +1076,111 @@ public final class F5BigipStructuredGrammarTest {
     assertThat(vlan2AdditionalArpIps, containsIp(Ip.parse("192.0.2.2")));
     // vlans
     assertThat(vlan2AdditionalArpIps, not(containsIp(Ip.parse("192.0.2.3"))));
+  }
+
+  @Test
+  public void testSnatMatchingSnatButNoVirtual() throws IOException {
+    String hostname = "f5_bigip_structured_snat";
+    String tag = "tag";
+
+    Configuration c = parseConfig(hostname);
+
+    // Assume a flow is going out of /Common/vlan1
+    Transformation outgoingTransformation =
+        c.getAllInterfaces().get("/Common/vlan1").getOutgoingTransformation();
+
+    // SNAT via snat /Common/snat1
+    Flow flow =
+        Flow.builder()
+            .setTag(tag)
+            .setDstIp(Ip.parse("192.0.2.1"))
+            .setDstPort(80)
+            .setIngressInterface("/Common/vlan1")
+            .setIngressNode(hostname)
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcIp(Ip.parse("10.100.1.1"))
+            .setSrcPort(50000)
+            .build();
+    TransformationResult result =
+        eval(outgoingTransformation, flow, "dummy", ImmutableMap.of(), ImmutableMap.of());
+    Optional<TransformationStepDetail> stepDetailOptional =
+        result.getTraceSteps().stream()
+            .map(Step::getDetail)
+            .filter(Predicates.instanceOf(TransformationStepDetail.class))
+            .map(TransformationStepDetail.class::cast)
+            .filter(d -> d.getTransformationType() == TransformationType.SOURCE_NAT)
+            .findFirst();
+
+    assertTrue("There is an SNAT transformation step.", stepDetailOptional.isPresent());
+
+    TransformationStepDetail detail = stepDetailOptional.get();
+
+    assertThat(
+        detail.getFlowDiffs(),
+        hasItem(isIpRewrite(IpField.SOURCE, Ip.parse("10.100.1.1"), Ip.parse("10.200.1.2"))));
+    assertThat(
+        detail.getFlowDiffs(),
+        hasItem(
+            isPortRewrite(
+                PortField.SOURCE,
+                equalTo(50000),
+                both(greaterThanOrEqualTo(1024)).and(lessThanOrEqualTo(65535)))));
+  }
+
+  // TODO: re-enable after it becomes possible to remember state between incoming and outgoing
+  // transformations https://github.com/batfish/batfish/issues/3243
+  @Ignore
+  @Test
+  public void testSnatMatchingVirtual() throws IOException {
+    String hostname = "f5_bigip_structured_snat";
+    String tag = "tag";
+
+    Configuration c = parseConfig("hostname");
+
+    // Assume a flow is going out of /Common/vlan1
+    Transformation outgoingTransformation =
+        c.getAllInterfaces().get("/Common/vlan1").getOutgoingTransformation();
+
+    // SNAT via virtual /Common/virtual1
+    Flow flow =
+        Flow.builder()
+            .setTag(tag)
+            .setDstIp(Ip.parse("192.0.2.1"))
+            .setDstPort(80)
+            .setIngressInterface("/Common/vlan1")
+            .setIngressNode(hostname)
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcIp(Ip.parse("8.8.8.8"))
+            .setSrcPort(50000)
+            .build();
+    // TODO: transformation context must include fact that /Common/virtual1 was matched during
+    // incoming transformation phase
+    TransformationResult result =
+        eval(outgoingTransformation, flow, "dummy", ImmutableMap.of(), ImmutableMap.of());
+    Optional<TransformationStepDetail> stepDetailOptional =
+        result.getTraceSteps().stream()
+            .map(Step::getDetail)
+            .filter(Predicates.instanceOf(TransformationStepDetail.class))
+            .map(TransformationStepDetail.class::cast)
+            .filter(d -> d.getTransformationType() == TransformationType.SOURCE_NAT)
+            .findFirst();
+
+    assertTrue("There is an SNAT transformation step.", stepDetailOptional.isPresent());
+
+    TransformationStepDetail detail = stepDetailOptional.get();
+
+    assertThat(
+        detail.getFlowDiffs(),
+        hasItem(
+            equalTo(
+                FlowDiff.flowDiff(IpField.SOURCE, Ip.parse("8.8.8.8"), Ip.parse("10.200.1.1")))));
+    assertThat(
+        detail.getFlowDiffs(),
+        hasItem(
+            isPortRewrite(
+                PortField.SOURCE,
+                equalTo(50000),
+                both(greaterThanOrEqualTo(1024)).and(lessThanOrEqualTo(65535)))));
   }
 
   @Test

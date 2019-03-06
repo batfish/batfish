@@ -12405,11 +12405,6 @@
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "incomingTransformation" : {
-              "guard" : {
-                "class" : "org.batfish.datamodel.acl.FalseExpr"
-              }
-            },
             "mtu" : 1500,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
