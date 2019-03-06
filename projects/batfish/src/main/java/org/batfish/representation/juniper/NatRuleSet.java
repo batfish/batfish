@@ -102,7 +102,7 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
       return Optional.empty();
     }
 
-    return rulesTransformation(nat, interfaceIp, andThen, orElse)
+    return rulesTransformation(nat, interfaceIp, andThen, null)
         .map(
             rulesTransformation ->
                 when(matchFromLocation).setAndThen(rulesTransformation).setOrElse(orElse).build());
@@ -115,7 +115,7 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
    */
   public Optional<Transformation> toIncomingTransformation(
       Nat nat, Ip interfaceIp, @Nullable Transformation andThen, @Nullable Transformation orElse) {
-    return rulesTransformation(nat, interfaceIp, andThen, orElse);
+    return rulesTransformation(nat, interfaceIp, andThen, null);
   }
 
   private Optional<Transformation> rulesTransformation(

@@ -116,7 +116,7 @@ public class NatRuleSetTest {
                 when(matchDst(prefix2))
                     .apply(assignDestinationIp(poolStart, poolEnd))
                     .setAndThen(andThen)
-                    .setOrElse(orElse)
+                    .setOrElse(null)
                     .build())
             .build();
 

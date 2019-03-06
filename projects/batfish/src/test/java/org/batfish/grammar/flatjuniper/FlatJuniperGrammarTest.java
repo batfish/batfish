@@ -101,7 +101,6 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.datamodel.transformation.Noop.NOOP_DEST_NAT;
 import static org.batfish.datamodel.transformation.Transformation.when;
-import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
 import static org.batfish.datamodel.vendor_family.juniper.JuniperFamily.AUXILIARY_LINE_NAME;
@@ -203,7 +202,6 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecEncapsulationMode;
@@ -260,6 +258,8 @@ import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.datamodel.transformation.TransformationEvaluator;
+import org.batfish.datamodel.transformation.TransformationEvaluator.TransformationResult;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.VendorConfigurationFormatDetector;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
@@ -3440,53 +3440,10 @@ public final class FlatJuniperGrammarTest {
 
     Interface iface = interfaces.get("ge-0/0/0.0");
 
-    Ip pool1Start = Prefix.parse("10.10.10.10/24").getFirstHostIp();
-    Ip pool1End = Prefix.parse("10.10.10.10/24").getLastHostIp();
-
-    Ip pool2Start = Ip.parse("10.10.10.10");
-    Ip pool2End = Ip.parse("10.10.10.20");
-
-    Transformation ruleSetRIRule1Transformation =
-        when(match(HeaderSpace.builder().setSrcPorts(ImmutableList.of(new SubRange(5, 5))).build()))
-            .apply(NOOP_DEST_NAT)
-            .build();
-
-    Transformation ruleSetZoneRule3Transformation =
-        when(match(
-                HeaderSpace.builder()
-                    .setSrcIps(Prefix.parse("3.3.3.3/24").toIpSpace())
-                    .setDstIps(Prefix.parse("1.1.1.1/32").toIpSpace())
-                    .build()))
-            .apply(assignDestinationIp(pool1Start, pool1End))
-            .setOrElse(ruleSetRIRule1Transformation)
-            .build();
-
-    Transformation ruleSetZoneRule2Transformation =
-        when(match(
-                HeaderSpace.builder()
-                    .setDstIps(new IpSpaceReference("global~DA-NAME"))
-                    .setSrcIps(Prefix.parse("2.2.2.2/24").toIpSpace())
-                    .build()))
-            .apply(assignDestinationIp(pool2Start, pool2End))
-            .setOrElse(ruleSetZoneRule3Transformation)
-            .build();
-
-    Transformation ruleSetZoneRule1Transformation =
-        when(match(
-                HeaderSpace.builder()
-                    .setDstIps(new IpSpaceReference("global~NAME"))
-                    .setDstPorts(ImmutableList.of(new SubRange(100, 200)))
-                    .setSrcPorts(ImmutableList.of(new SubRange(80, 80)))
-                    .setSrcIps(new IpSpaceReference("global~SA-NAME"))
-                    .build()))
-            .apply(NOOP_DEST_NAT)
-            .setOrElse(ruleSetZoneRule2Transformation)
-            .build();
-
     Transformation ruleSetIfaceRule3Transformation =
         when(match(HeaderSpace.builder().setSrcPorts(ImmutableList.of(new SubRange(6, 6))).build()))
             .apply(NOOP_DEST_NAT)
-            .setOrElse(ruleSetZoneRule1Transformation)
+            .setOrElse(null)
             .build();
 
     assertThat(iface.getIncomingTransformation(), equalTo(ruleSetIfaceRule3Transformation));
@@ -3602,9 +3559,10 @@ public final class FlatJuniperGrammarTest {
     Transformation ruleSet3Transformation =
         when(matchSrcInterface("ge-0/0/0.0", "ge-0/0/1.0"))
             .setAndThen(
+                // rules in rule set 3
                 when(matchDst(Prefix.parse("3.3.3.3/24")))
                     .apply(transformationStep, portTransformationStep)
-                    .setOrElse(ruleSet1Transformation)
+                    .setOrElse(null)
                     .build())
             .setOrElse(ruleSet1Transformation)
             .build();
@@ -3613,16 +3571,17 @@ public final class FlatJuniperGrammarTest {
     Transformation ruleSet2Transformation =
         when(matchSrcInterface("ge-0/0/0.0"))
             .setAndThen(
+                // rules in rule set 2
                 when(matchDst(Prefix.parse("2.2.2.2/24")))
                     .apply(transformationStep, portTransformationStep)
-                    .setOrElse(
-                        // routing instance rule set
-                        ruleSet3Transformation)
+                    .setOrElse(null)
                     .build())
             .setOrElse(ruleSet3Transformation)
             .build();
 
-    assertThat(iface1.getOutgoingTransformation(), equalTo(ruleSet2Transformation));
+    Transformation output = iface1.getOutgoingTransformation();
+
+    assertThat(output, equalTo(ruleSet2Transformation));
   }
 
   @Test
@@ -4681,8 +4640,42 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testNatRuleSet() {
-    JuniperConfiguration juniperConfiguration = parseJuniperConfig("juniper-nat-source-ruleset");
-    juniperConfiguration.getLogicalSystems();
+  public void testNatRuleSet() throws IOException {
+    Configuration config = parseConfig("juniper-nat-ruleset");
+    Transformation transformation =
+        config.getAllInterfaces().get("ge-0/0/1.0").getOutgoingTransformation();
+    Flow.Builder builder =
+        Flow.builder()
+            .setIngressNode(config.getHostname())
+            .setIngressInterface("FROM-INTERFACE")
+            .setDstIp(Ip.parse("2.2.2.2"))
+            .setSrcIp(Ip.parse("3.3.3.3"))
+            .setTag("TAG");
+    Flow flow = builder.build();
+
+    TransformationResult result =
+        TransformationEvaluator.eval(
+            transformation, flow, "ge-0/0/0.0", ImmutableMap.of(), ImmutableMap.of());
+    Flow transformedFlow = result.getOutputFlow();
+    // flow matches ruleset 1, but matches no rules in the rule set; thus no transformation happens
+    assertThat(transformedFlow.getSrcIp(), equalTo(Ip.parse("3.3.3.3")));
+
+    result =
+        TransformationEvaluator.eval(
+            transformation, flow, "ge-0/0/1.0", ImmutableMap.of(), ImmutableMap.of());
+    transformedFlow = result.getOutputFlow();
+    // flow matches ruleset 2 and there is also a matching the rule in the ruleset, transformation
+    // happens
+    assertThat(transformedFlow.getSrcIp(), equalTo(Ip.parse("10.10.10.1")));
+
+    flow = builder.setDstIp(Ip.parse("1.1.1.1")).build();
+    result =
+        TransformationEvaluator.eval(
+            transformation, flow, "ge-0/0/0.0", ImmutableMap.of(), ImmutableMap.of());
+    transformedFlow = result.getOutputFlow();
+
+    // flow matches ruleset 1 and there is also a matching the rule in the ruleset, transformation
+    // happens
+    assertThat(transformedFlow.getSrcIp(), equalTo(Ip.parse("10.10.10.1")));
   }
 }
