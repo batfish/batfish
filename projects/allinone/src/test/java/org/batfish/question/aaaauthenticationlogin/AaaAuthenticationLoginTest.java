@@ -46,7 +46,7 @@ public class AaaAuthenticationLoginTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname1, hostname2, hostname3, hostname4);
 
     AaaAuthenticationLoginQuestion question =
-        new AaaAuthenticationLoginQuestion("((ios)|(juniper)).*");
+        new AaaAuthenticationLoginQuestion("/((ios)|(juniper)).*/");
     AaaAuthenticationLoginAnswerer answerer = new AaaAuthenticationLoginAnswerer(question, batfish);
     TableAnswerElement answer = answerer.answer();
 
