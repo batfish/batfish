@@ -16,11 +16,7 @@ import javax.annotation.Nullable;
  *       to {@link FlexibleInterfaceSpecifierFactory}
  *   <li>outFilterOf(foo), as above but for output filters
  *   <li>ref.filtergroup(foo, bar), which returns {@link ReferenceFilterGroupFilterSpecifier};
-<<<<<<< HEAD
- *   <li>assume that input is a name regex
-=======
  *   <li>name regex
->>>>>>> origin/master
  * </ul>
  */
 @AutoService(FilterSpecifierFactory.class)
