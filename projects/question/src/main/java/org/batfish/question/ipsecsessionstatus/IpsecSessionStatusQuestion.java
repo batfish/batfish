@@ -1,6 +1,7 @@
 package org.batfish.question.ipsecsessionstatus;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 import java.util.regex.Pattern;
@@ -65,6 +66,7 @@ public class IpsecSessionStatusQuestion extends Question {
     return _nodes;
   }
 
+  @JsonIgnore
   NodeSpecifier getNodeSpecifier() {
     return SpecifierFactories.getNodeSpecifierOrDefault(_nodes, AllNodesNodeSpecifier.INSTANCE);
   }
@@ -75,6 +77,7 @@ public class IpsecSessionStatusQuestion extends Question {
     return _remoteNodes;
   }
 
+  @JsonIgnore
   NodeSpecifier getRemoteNodeSpecifier() {
     return SpecifierFactories.getNodeSpecifierOrDefault(
         _remoteNodes, AllNodesNodeSpecifier.INSTANCE);
