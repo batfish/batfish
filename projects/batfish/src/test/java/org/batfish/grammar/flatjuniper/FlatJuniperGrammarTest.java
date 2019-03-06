@@ -4679,4 +4679,10 @@ public final class FlatJuniperGrammarTest {
     assertThat(pool0.getOwner(), equalTo("R1"));
     assertNull(pool1.getOwner());
   }
+
+  @Test
+  public void testNatRuleSet() {
+    JuniperConfiguration juniperConfiguration = parseJuniperConfig("juniper-nat-source-ruleset");
+    juniperConfiguration.getLogicalSystems();
+  }
 }
