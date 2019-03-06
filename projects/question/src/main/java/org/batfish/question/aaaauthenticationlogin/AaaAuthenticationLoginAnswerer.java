@@ -69,7 +69,7 @@ public class AaaAuthenticationLoginAnswerer extends Answerer {
 
     TableAnswerElement answerElement = create(question);
 
-    Set<String> specifiedNodes = question.getNodes().getMatchingNodes(_batfish);
+    Set<String> specifiedNodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
 
     SortedMap<String, Configuration> configs = _batfish.loadConfigurations();
     configs.forEach(

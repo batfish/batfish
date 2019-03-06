@@ -6,7 +6,6 @@ import com.google.auto.service.AutoService;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.questions.NodesSpecifier;
 
 /**
  * A {@link NodeSpecifierFactory} that accepts three forms of input
@@ -15,7 +14,7 @@ import org.batfish.datamodel.questions.NodesSpecifier;
  *   <li>null: returns AllNodesNodeSpecifier
  *   <li>ref.noderole(roleRegex, roleDim): returns {@link RoleRegexNodeSpecifier} (dim is optional)
  *   <li>a - b: difference of nodes denoted by a and b
- *   <li>all other inputs go directly to {@link ShorthandNodeSpecifier}
+ *   <li>name regex
  * </ul>
  */
 @AutoService(NodeSpecifierFactory.class)
@@ -63,7 +62,6 @@ public class FlexibleNodeSpecifierFactory implements NodeSpecifierFactory {
           buildNodeSpecifier(differenceMatcher.group(2)));
     }
 
-    // pass through to nodes specifier
-    return new ShorthandNodeSpecifier(new NodesSpecifier(trimmedInput));
+    return new NameRegexNodeSpecifier(Pattern.compile(trimmedInput, Pattern.CASE_INSENSITIVE));
   }
 }

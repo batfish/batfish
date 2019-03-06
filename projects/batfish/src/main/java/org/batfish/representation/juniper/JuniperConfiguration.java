@@ -1475,17 +1475,23 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 })
             .collect(Collectors.toList());
 
+    if (ruleSets.isEmpty()) {
+      return null;
+    }
+
+    if (iface.getPrimaryAddress() == null) {
+      _w.redFlag(
+          "Cannot build incoming transformation without an interface IP. Interface name = " + name);
+      return null;
+    }
+    Ip interfaceIp = iface.getPrimaryAddress().getIp();
+
     Transformation transformation = null;
     for (NatRuleSet ruleSet : Lists.reverse(ruleSets)) {
       transformation =
           ruleSet
               .toOutgoingTransformation(
-                  snat,
-                  iface.getPrimaryAddress().getIp(),
-                  matchFromLocationExprs,
-                  null,
-                  transformation,
-                  _w)
+                  snat, interfaceIp, matchFromLocationExprs, null, transformation, _w)
               .orElse(transformation);
     }
     return transformation;
@@ -1667,15 +1673,28 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
     }
 
-    Transformation transformation = null;
-    for (NatRuleSet ruleSet :
+    List<NatRuleSet> ruleSets =
         Stream.of(routingInstanceRuleSet, zoneLocationRuleSet, ifaceLocationRuleSet)
             .filter(Objects::nonNull)
-            .collect(Collectors.toList())) {
+            .collect(Collectors.toList());
+
+    if (ruleSets.isEmpty()) {
+      return null;
+    }
+
+    if (iface.getPrimaryAddress() == null) {
+      _w.redFlag(
+          "Cannot build incoming transformation without an interface IP. Interface name = "
+              + iface.getName());
+      return null;
+    }
+    Ip interfaceIp = iface.getPrimaryAddress().getIp();
+
+    Transformation transformation = null;
+    for (NatRuleSet ruleSet : ruleSets) {
       transformation =
           ruleSet
-              .toIncomingTransformation(
-                  dnat, iface.getPrimaryAddress().getIp(), null, transformation, _w)
+              .toIncomingTransformation(dnat, interfaceIp, null, transformation, _w)
               .orElse(transformation);
     }
     return transformation;

@@ -61,8 +61,9 @@ class IpsecSessionStatusAnswerer extends Answerer {
     ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology =
         IpsecUtil.initIpsecTopology(configurations);
 
-    Set<String> initiatorNodes = question.getInitiatorRegex().getMatchingNodes(_batfish);
-    Set<String> responderNodes = question.getResponderRegex().getMatchingNodes(_batfish);
+    Set<String> initiatorNodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
+    Set<String> responderNodes =
+        question.getRemoteNodeSpecifier().resolve(_batfish.specifierContext());
 
     TableAnswerElement answerElement = new TableAnswerElement(createTableMetaData(question));
 

@@ -27,6 +27,7 @@ import com.google.common.collect.Range;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -39,11 +40,11 @@ import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
-import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
+import org.batfish.specifier.AllInterfacesInterfaceSpecifier;
 import org.batfish.specifier.InterfaceSpecifier;
-import org.batfish.specifier.ShorthandInterfaceSpecifier;
+import org.batfish.specifier.NameRegexInterfaceSpecifier;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierFactories;
 import org.batfish.specifier.TestSpecifierContext;
@@ -87,7 +88,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
     int vlan = 1;
     InterfaceSpecifier interfacesSpecifier =
         SpecifierFactories.getInterfaceSpecifierOrDefault(
-            null, new ShorthandInterfaceSpecifier(InterfacesSpecifier.ALL));
+            null, AllInterfacesInterfaceSpecifier.INSTANCE);
     boolean excludeShutInterfaces = false;
     IntegerSpace vlans = IntegerSpace.of(vlan);
     Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
@@ -168,8 +169,6 @@ public final class SwitchedVlanPropertiesAnswererTest {
   public void testGetProperties() {
     int vlan = 1;
     int vni = 10000;
-    InterfaceSpecifier interfacesSpecifier =
-        new ShorthandInterfaceSpecifier(InterfacesSpecifier.ALL);
     boolean excludeShutInterfaces = false;
     IntegerSpace vlans = IntegerSpace.of(vlan);
     Map<String, ColumnMetadata> columns =
@@ -189,7 +188,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
             _specifierContext,
             _configurations,
             ImmutableSet.of(NODE),
-            interfacesSpecifier,
+            AllInterfacesInterfaceSpecifier.INSTANCE,
             excludeShutInterfaces,
             vlans,
             columns),
@@ -275,8 +274,6 @@ public final class SwitchedVlanPropertiesAnswererTest {
   @Test
   public void testTryAddInterfaceToVlansAccess() {
     int vlan = 1;
-    InterfaceSpecifier interfacesSpecifier =
-        new ShorthandInterfaceSpecifier(InterfacesSpecifier.ALL);
     boolean excludeShutInterfaces = false;
     IntegerSpace vlans = IntegerSpace.of(vlan);
     Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
@@ -287,7 +284,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
 
     tryAddInterfaceToVlans(
         _specifierContext,
-        interfacesSpecifier,
+        AllInterfacesInterfaceSpecifier.INSTANCE,
         excludeShutInterfaces,
         vlans,
         switchedVlanInterfaces,
@@ -302,8 +299,6 @@ public final class SwitchedVlanPropertiesAnswererTest {
   @Test
   public void testTryAddInterfaceToVlansExcludedInterfaceByShutdown() {
     int vlan = 1;
-    InterfaceSpecifier interfacesSpecifier =
-        new ShorthandInterfaceSpecifier(InterfacesSpecifier.ALL);
     boolean excludeShutInterfaces = true;
     IntegerSpace vlans = IntegerSpace.of(vlan);
     Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
@@ -314,7 +309,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
 
     tryAddInterfaceToVlans(
         _specifierContext,
-        interfacesSpecifier,
+        AllInterfacesInterfaceSpecifier.INSTANCE,
         excludeShutInterfaces,
         vlans,
         switchedVlanInterfaces,
@@ -327,8 +322,6 @@ public final class SwitchedVlanPropertiesAnswererTest {
   @Test
   public void testTryAddInterfaceToVlansExcludedInterfaceBySpecifier() {
     int vlan = 1;
-    InterfaceSpecifier interfacesSpecifier =
-        new ShorthandInterfaceSpecifier(new InterfacesSpecifier(""));
     boolean excludeShutInterfaces = false;
     IntegerSpace vlans = IntegerSpace.of(vlan);
     Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
@@ -339,7 +332,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
 
     tryAddInterfaceToVlans(
         _specifierContext,
-        interfacesSpecifier,
+        new NameRegexInterfaceSpecifier(Pattern.compile("blahblahblah")),
         excludeShutInterfaces,
         vlans,
         switchedVlanInterfaces,
@@ -352,8 +345,6 @@ public final class SwitchedVlanPropertiesAnswererTest {
   @Test
   public void testTryAddInterfaceToVlansExcludedInterfaceByType() {
     int vlan = 1;
-    InterfaceSpecifier interfacesSpecifier =
-        new ShorthandInterfaceSpecifier(InterfacesSpecifier.ALL);
     boolean excludeShutInterfaces = true;
     IntegerSpace vlans = IntegerSpace.of(vlan);
     Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
@@ -362,7 +353,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
 
     tryAddInterfaceToVlans(
         _specifierContext,
-        interfacesSpecifier,
+        AllInterfacesInterfaceSpecifier.INSTANCE,
         excludeShutInterfaces,
         vlans,
         switchedVlanInterfaces,
@@ -375,8 +366,6 @@ public final class SwitchedVlanPropertiesAnswererTest {
   @Test
   public void testTryAddInterfaceToVlansIncludeShutWithFlag() {
     int vlan = 1;
-    InterfaceSpecifier interfacesSpecifier =
-        new ShorthandInterfaceSpecifier(InterfacesSpecifier.ALL);
     boolean excludeShutInterfaces = false;
     IntegerSpace vlans = IntegerSpace.of(vlan);
     Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
@@ -387,7 +376,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
 
     tryAddInterfaceToVlans(
         _specifierContext,
-        interfacesSpecifier,
+        AllInterfacesInterfaceSpecifier.INSTANCE,
         excludeShutInterfaces,
         vlans,
         switchedVlanInterfaces,
@@ -402,8 +391,6 @@ public final class SwitchedVlanPropertiesAnswererTest {
   @Test
   public void testTryAddInterfaceToVlansIrb() {
     int vlan = 1;
-    InterfaceSpecifier interfacesSpecifier =
-        new ShorthandInterfaceSpecifier(InterfacesSpecifier.ALL);
     boolean excludeShutInterfaces = false;
     IntegerSpace vlans = IntegerSpace.of(vlan);
     Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
@@ -414,7 +401,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
 
     tryAddInterfaceToVlans(
         _specifierContext,
-        interfacesSpecifier,
+        AllInterfacesInterfaceSpecifier.INSTANCE,
         excludeShutInterfaces,
         vlans,
         switchedVlanInterfaces,
@@ -429,8 +416,6 @@ public final class SwitchedVlanPropertiesAnswererTest {
   @Test
   public void testTryAddInterfaceToVlansTrunk() {
     int vlan = 1;
-    InterfaceSpecifier interfacesSpecifier =
-        new ShorthandInterfaceSpecifier(InterfacesSpecifier.ALL);
     boolean excludeShutInterfaces = false;
     IntegerSpace vlans = IntegerSpace.of(Range.closed(1, 3));
     Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
@@ -442,7 +427,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
 
     tryAddInterfaceToVlans(
         _specifierContext,
-        interfacesSpecifier,
+        AllInterfacesInterfaceSpecifier.INSTANCE,
         excludeShutInterfaces,
         vlans,
         switchedVlanInterfaces,
