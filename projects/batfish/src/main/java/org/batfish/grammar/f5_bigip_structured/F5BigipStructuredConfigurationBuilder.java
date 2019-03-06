@@ -29,6 +29,7 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureType.SNAT_TRAN
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VIRTUAL;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VIRTUAL_ADDRESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VLAN;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.VLAN_MEMBER_INTERFACE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_ADDRESS_FAMILY_REDISTRIBUTE_KERNEL_ROUTE_MAP;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_NEIGHBOR_IPV4_ROUTE_MAP_OUT;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_NEIGHBOR_IPV6_ROUTE_MAP_OUT;
@@ -56,6 +57,7 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.SNATPOOL
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.SNAT_SELF_REFERENCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.SNAT_SNATPOOL;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.SNAT_VLANS_VLAN;
+import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.TRUNK_INTERFACE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.VIRTUAL_DESTINATION;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.VIRTUAL_PERSIST_PERSISTENCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.VIRTUAL_POOL;
@@ -155,6 +157,7 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lvsat_poo
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lvv_vlanContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Net_interfaceContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Net_selfContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Net_trunkContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Net_vlanContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ni_bundleContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nr_bgpContext;
@@ -188,6 +191,7 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ns_addres
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ns_allow_serviceContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ns_traffic_groupContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ns_vlanContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nti_interfaceContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nv_tagContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nvi_interfaceContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Prefix_list_actionContext;
@@ -208,6 +212,7 @@ import org.batfish.representation.f5_bigip.BuiltinPersistence;
 import org.batfish.representation.f5_bigip.BuiltinProfile;
 import org.batfish.representation.f5_bigip.F5BigipConfiguration;
 import org.batfish.representation.f5_bigip.F5BigipRoutingProtocol;
+import org.batfish.representation.f5_bigip.F5BigipStructureType;
 import org.batfish.representation.f5_bigip.F5BigipStructureUsage;
 import org.batfish.representation.f5_bigip.Interface;
 import org.batfish.representation.f5_bigip.Ipv4Origin;
@@ -223,6 +228,7 @@ import org.batfish.representation.f5_bigip.Self;
 import org.batfish.representation.f5_bigip.Snat;
 import org.batfish.representation.f5_bigip.SnatPool;
 import org.batfish.representation.f5_bigip.SnatTranslation;
+import org.batfish.representation.f5_bigip.Trunk;
 import org.batfish.representation.f5_bigip.Vlan;
 import org.batfish.representation.f5_bigip.VlanInterface;
 import org.batfish.vendor.StructureType;
@@ -269,6 +275,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   private @Nullable Snat _currentSnat;
   private @Nullable SnatPool _currentSnatPool;
   private @Nullable SnatTranslation _currentSnatTranslation;
+  private @Nullable Trunk _currentTrunk;
   private @Nullable UnrecognizedContext _currentUnrecognized;
   private @Nullable Virtual _currentVirtual;
   private @Nullable VirtualAddress _currentVirtualAddress;
@@ -493,6 +500,13 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     defineStructure(SELF, name, ctx);
     _c.referenceStructure(SELF, name, SELF_SELF_REFERENCE, ctx.name.getStart().getLine());
     _currentSelf = _c.getSelves().computeIfAbsent(name, Self::new);
+  }
+
+  @Override
+  public void enterNet_trunk(Net_trunkContext ctx) {
+    String name = unquote(ctx.name.getText());
+    defineStructure(F5BigipStructureType.TRUNK, name, ctx);
+    _currentTrunk = _c.getTrunks().computeIfAbsent(name, Trunk::new);
   }
 
   @Override
@@ -981,6 +995,11 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   @Override
+  public void exitNet_trunk(Net_trunkContext ctx) {
+    _currentTrunk = null;
+  }
+
+  @Override
   public void exitNet_vlan(Net_vlanContext ctx) {
     _currentVlan = null;
   }
@@ -1206,6 +1225,13 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   @Override
+  public void exitNti_interface(Nti_interfaceContext ctx) {
+    String name = unquote(ctx.name.getText());
+    _c.referenceStructure(INTERFACE, name, TRUNK_INTERFACE, ctx.name.getStart().getLine());
+    _currentTrunk.getInterfaces().add(name);
+  }
+
+  @Override
   public void exitNv_tag(Nv_tagContext ctx) {
     _currentVlan.setTag(toInteger(ctx.tag));
   }
@@ -1213,7 +1239,8 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void exitNvi_interface(Nvi_interfaceContext ctx) {
     String name = unquote(ctx.name.getText());
-    _c.referenceStructure(INTERFACE, name, VLAN_INTERFACE, ctx.name.getStart().getLine());
+    _c.referenceStructure(
+        VLAN_MEMBER_INTERFACE, name, VLAN_INTERFACE, ctx.name.getStart().getLine());
     _currentVlan.getInterfaces().computeIfAbsent(name, VlanInterface::new);
   }
 

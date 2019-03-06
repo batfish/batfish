@@ -5,7 +5,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.SwitchportMode;
@@ -94,6 +96,17 @@ final class InterfaceMatchersImpl {
     @Override
     protected Set<String> featureValueOf(Interface actual) {
       return actual.getDeclaredNames();
+    }
+  }
+
+  static final class HasDependencies extends FeatureMatcher<Interface, Set<Dependency>> {
+    HasDependencies(@Nonnull Matcher<? super Set<Dependency>> subMatcher) {
+      super(subMatcher, "An Interface with dependencies:", "dependencies");
+    }
+
+    @Override
+    protected Set<Dependency> featureValueOf(Interface actual) {
+      return actual.getDependencies();
     }
   }
 
@@ -257,6 +270,17 @@ final class InterfaceMatchersImpl {
     @Override
     protected IpAccessList featureValueOf(Interface actual) {
       return actual.getIncomingFilter();
+    }
+  }
+
+  static final class HasInterfaceType extends FeatureMatcher<Interface, InterfaceType> {
+    HasInterfaceType(@Nonnull Matcher<? super InterfaceType> subMatcher) {
+      super(subMatcher, "An Interface with interfaceType:", "interfaceType");
+    }
+
+    @Override
+    protected InterfaceType featureValueOf(Interface actual) {
+      return actual.getInterfaceType();
     }
   }
 

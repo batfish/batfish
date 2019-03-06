@@ -41777,6 +41777,35 @@
             "  (statement",
             "    (s_net",
             "      NET:'net'",
+            "      (net_trunk",
+            "        TRUNK:'trunk'",
+            "        name = (word",
+            "          WORD:'trunk1')",
+            "        BRACE_LEFT:'{'",
+            "        NEWLINE:'\\n'",
+            "        (nt_interfaces",
+            "          INTERFACES:'interfaces'",
+            "          BRACE_LEFT:'{'",
+            "          NEWLINE:'\\n'",
+            "          (nti_interface",
+            "            name = (word",
+            "              WORD:'2.0')",
+            "            NEWLINE:'\\n')",
+            "          (nti_interface",
+            "            name = (word",
+            "              WORD:'3.0')",
+            "            NEWLINE:'\\n')",
+            "          BRACE_RIGHT:'}'",
+            "          NEWLINE:'\\n')",
+            "        (nt_lacp",
+            "          LACP:'lacp'",
+            "          ENABLED:'enabled'",
+            "          NEWLINE:'\\n')",
+            "        BRACE_RIGHT:'}'",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net",
+            "      NET:'net'",
             "      (unrecognized",
             "        (u_word",
             "          (word",
@@ -69329,7 +69358,7 @@
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 58,
+              "Line" : 65,
               "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
               "Text" : "tunnels"
             }
@@ -73028,15 +73057,29 @@
               "numReferrers" : 1
             }
           },
+          "trunk" : {
+            "trunk1" : {
+              "definitionLines" : [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
+              ],
+              "numReferrers" : 0
+            }
+          },
           "vlan" : {
             "/Common/MYVLAN" : {
               "definitionLines" : [
-                62,
-                63,
-                64,
-                65,
-                66,
-                67
+                69,
+                70,
+                71,
+                72,
+                73,
+                74
               ],
               "numReferrers" : 2
             }
@@ -77947,9 +77990,16 @@
             "1.0" : {
               "interface self-reference" : [
                 8
-              ],
-              "vlan interface" : [
-                64
+              ]
+            },
+            "2.0" : {
+              "trunk interfaces interface" : [
+                60
+              ]
+            },
+            "3.0" : {
+              "trunk interfaces interface" : [
+                61
               ]
             }
           },
@@ -77970,6 +78020,13 @@
               "self vlan" : [
                 29,
                 33
+              ]
+            }
+          },
+          "vlan member interface" : {
+            "1.0" : {
+              "vlan interface" : [
+                71
               ]
             }
           }
