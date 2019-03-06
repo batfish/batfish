@@ -566,7 +566,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       NeighborsAnswerElement answerElement = new NeighborsAnswerElement();
 
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
-      Set<String> includeNodes1 = question.getNodesSpecifier().resolve(_batfish.specifierContext());
+      Set<String> includeNodes1 = question.getNodeSpecifier().resolve(_batfish.specifierContext());
       Set<String> includeNodes2 =
           question.getRemoteNodeSpecifier().resolve(_batfish.specifierContext());
 
@@ -1107,7 +1107,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     @Nonnull
     @JsonIgnore
-    NodeSpecifier getNodesSpecifier() {
+    NodeSpecifier getNodeSpecifier() {
       return _nodeSpecifier;
     }
 
