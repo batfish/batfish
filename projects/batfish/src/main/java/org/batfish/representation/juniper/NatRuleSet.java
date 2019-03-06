@@ -12,6 +12,7 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.transformation.Transformation;
@@ -82,18 +83,20 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
    * transformation is installed on the egress interface, so we need to encode constraints on the
    * ingress interface using {@link AclLineMatchExpr ACL line match expressions}.
    *
+   * @param interfaceIp The {@link Ip} address of the interface.
    * @param matchFromLocationExprs The {@link AclLineMatchExpr} to match traffic from each {@link
    *     NatPacketLocation}.
-   * @param interfaceIp The {@link Ip} address of the interface.
    * @param andThen The next {@link Transformation} to apply after any {@link NatRule} matches.
    * @param orElse The next {@link Transformation} to apply if no {@link NatRule} matches.
+   * @param warnings
    */
   public Optional<Transformation> toOutgoingTransformation(
       Nat nat,
       Ip interfaceIp,
       Map<NatPacketLocation, AclLineMatchExpr> matchFromLocationExprs,
       @Nullable Transformation andThen,
-      @Nullable Transformation orElse) {
+      @Nullable Transformation orElse,
+      Warnings warnings) {
 
     AclLineMatchExpr matchFromLocation = matchFromLocationExprs.get(_fromLocation);
 
@@ -102,7 +105,7 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
       return Optional.empty();
     }
 
-    return rulesTransformation(nat, interfaceIp, andThen, orElse)
+    return rulesTransformation(nat, interfaceIp, andThen, orElse, warnings)
         .map(
             rulesTransformation ->
                 when(matchFromLocation).setAndThen(rulesTransformation).setOrElse(orElse).build());
@@ -114,15 +117,23 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
    * AclLineMatchExpr} to match it.
    */
   public Optional<Transformation> toIncomingTransformation(
-      Nat nat, Ip interfaceIp, @Nullable Transformation andThen, @Nullable Transformation orElse) {
-    return rulesTransformation(nat, interfaceIp, andThen, orElse);
+      Nat nat,
+      Ip interfaceIp,
+      @Nullable Transformation andThen,
+      @Nullable Transformation orElse,
+      Warnings warnings) {
+    return rulesTransformation(nat, interfaceIp, andThen, orElse, warnings);
   }
 
   private Optional<Transformation> rulesTransformation(
-      Nat nat, Ip interfaceIp, @Nullable Transformation andThen, @Nullable Transformation orElse) {
+      Nat nat,
+      Ip interfaceIp,
+      @Nullable Transformation andThen,
+      @Nullable Transformation orElse,
+      Warnings warnings) {
     Transformation transformation = orElse;
     for (NatRule rule : Lists.reverse(_rules)) {
-      Optional<Builder> optionalBuilder = rule.toTransformationBuilder(nat, interfaceIp);
+      Optional<Builder> optionalBuilder = rule.toTransformationBuilder(nat, interfaceIp, warnings);
       if (optionalBuilder.isPresent()) {
         transformation =
             optionalBuilder.get().setAndThen(andThen).setOrElse(transformation).build();

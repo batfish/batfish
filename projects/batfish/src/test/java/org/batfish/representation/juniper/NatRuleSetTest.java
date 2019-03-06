@@ -131,14 +131,15 @@ public class NatRuleSetTest {
                 interfaceIp,
                 ImmutableMap.of(interfaceLocation(fromIface), matchFromIface),
                 andThen,
-                orElse)
+                orElse,
+                null)
             .get(),
         equalTo(
             // first match from location
             when(matchFromIface).setAndThen(rulesTransformation).setOrElse(orElse).build()));
 
     assertThat(
-        ruleSet.toIncomingTransformation(dnat, interfaceIp, andThen, orElse).get(),
+        ruleSet.toIncomingTransformation(dnat, interfaceIp, andThen, orElse, null).get(),
         equalTo(rulesTransformation));
   }
 
@@ -178,6 +179,7 @@ public class NatRuleSetTest {
                 snat,
                 interfaceIp,
                 ImmutableMap.of(fromLocation, matchSrcInterface(fromIface)),
+                null,
                 null,
                 null)
             .get();
