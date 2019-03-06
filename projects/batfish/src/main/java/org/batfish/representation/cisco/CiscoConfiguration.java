@@ -11,6 +11,7 @@ import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PAT
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.representation.cisco.CiscoConversions.convertCryptoMapSet;
 import static org.batfish.representation.cisco.CiscoConversions.generateAggregateRoutePolicy;
+import static org.batfish.representation.cisco.CiscoConversions.generateBgpExportPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpImportPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveKeyringIfaceNames;
@@ -150,12 +151,10 @@ import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
-import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
-import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
@@ -306,7 +305,23 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private static final int VLAN_NORMAL_MIN_CISCO = 2;
 
   public static String computeBgpCommonExportPolicyName(String vrf) {
-    return "~BGP_COMMON_EXPORT_POLICY:" + vrf + "~";
+    return String.format("~BGP_COMMON_EXPORT_POLICY:%s~", vrf);
+  }
+
+  public static String computeBgpDefaultRouteExportPolicyName(String vrf, String peer) {
+    return String.format("~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:%s:%s~", vrf, peer);
+  }
+
+  public static String computeBgpDefaultRouteGenerationPolicyName(String vrf, String peer) {
+    return String.format("~BGP_DEFAULT_ROUTE_GENERATION_POLICY:%s:%s~", vrf, peer);
+  }
+
+  public static String computeBgpPeerImportPolicyName(String vrf, String peer) {
+    return String.format("~BGP_PEER_IMPORT_POLICY:%s:%s~", vrf, peer);
+  }
+
+  public static String computeBgpPeerExportPolicyName(String vrf, String peer) {
+    return String.format("~BGP_PEER_EXPORT_POLICY:%s:%s~", vrf, peer);
   }
 
   public static String computeIcmpObjectGroupAclName(String name) {
@@ -1876,61 +1891,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
       boolean ipv4 = lpg.getNeighborPrefix() != null;
       Ip updateSource = getUpdateSource(c, vrfName, lpg, updateSourceInterface, ipv4);
 
+      // Generate import and export policies
       String peerImportPolicyName = generateBgpImportPolicy(lpg, vrfName, c, _w);
+      generateBgpExportPolicy(lpg, vrfName, ipv4, c, _w);
 
-      String peerExportPolicyName =
-          "~BGP_PEER_EXPORT_POLICY:" + vrfName + ":" + lpg.getName() + "~";
-      RoutingPolicy peerExportPolicy = new RoutingPolicy(peerExportPolicyName, c);
-      c.getRoutingPolicies().put(peerExportPolicyName, peerExportPolicy);
-      if (lpg.getNextHopSelf() != null && lpg.getNextHopSelf()) {
-        peerExportPolicy.getStatements().add(new SetNextHop(SelfNextHop.getInstance(), false));
-      }
-      if (lpg.getRemovePrivateAs() != null && lpg.getRemovePrivateAs()) {
-        peerExportPolicy.getStatements().add(Statements.RemovePrivateAs.toStaticStatement());
-      }
-      Conjunction peerExportConditions = new Conjunction();
-      If peerExportConditional =
-          new If(
-              "peer-export policy main conditional: exitAccept if true / exitReject if false",
-              peerExportConditions,
-              ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
-              ImmutableList.of(Statements.ExitReject.toStaticStatement()));
-      peerExportPolicy.getStatements().add(peerExportConditional);
-      Disjunction localOrCommonOrigination = new Disjunction();
-      peerExportConditions.getConjuncts().add(localOrCommonOrigination);
-      localOrCommonOrigination.getDisjuncts().add(new CallExpr(bgpCommonExportPolicy.getName()));
-      String outboundRouteMapName = lpg.getOutboundRouteMap();
-      if (outboundRouteMapName != null && _routeMaps.containsKey(outboundRouteMapName)) {
-        peerExportConditions.getConjuncts().add(new CallExpr(outboundRouteMapName));
-      }
-
-      // set up default export policy for this peer group
+      // If defaultOriginate is set, create default route for this peer group
       GeneratedRoute.Builder defaultRoute = null;
       GeneratedRoute6.Builder defaultRoute6;
       if (lpg.getDefaultOriginate()) {
-        String defaultRouteExportPolicyName;
-        defaultRouteExportPolicyName =
-            String.format("~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:%s:%s~", vrfName, lpg.getName());
-        RoutingPolicy defaultRouteExportPolicy = new RoutingPolicy(defaultRouteExportPolicyName, c);
-        c.getRoutingPolicies().put(defaultRouteExportPolicyName, defaultRouteExportPolicy);
-        defaultRouteExportPolicy
-            .getStatements()
-            .add(
-                new If(
-                    ipv4 ? MATCH_DEFAULT_ROUTE : MATCH_DEFAULT_ROUTE6,
-                    ImmutableList.of(
-                        new SetOrigin(
-                            new LiteralOrigin(
-                                c.getConfigurationFormat() == ConfigurationFormat.CISCO_IOS
-                                    ? OriginType.IGP
-                                    : OriginType.INCOMPLETE,
-                                null)),
-                        Statements.ReturnTrue.toStaticStatement())));
-        defaultRouteExportPolicy.getStatements().add(Statements.ReturnFalse.toStaticStatement());
-        localOrCommonOrigination
-            .getDisjuncts()
-            .add(new CallExpr(defaultRouteExportPolicy.getName()));
-
         defaultRoute = GeneratedRoute.builder();
         defaultRoute.setNetwork(Prefix.ZERO);
         defaultRoute.setAdmin(MAX_ADMINISTRATIVE_COST);
@@ -1952,16 +1920,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
               new If(
                   ipv4 ? MATCH_DEFAULT_ROUTE : MATCH_DEFAULT_ROUTE6,
                   ImmutableList.of(Statements.ReturnTrue.toStaticStatement()));
-          RoutingPolicy defaultRouteGenerationPolicy =
-              new RoutingPolicy(
-                  "~BGP_DEFAULT_ROUTE_GENERATION_POLICY:" + vrfName + ":" + lpg.getName() + "~", c);
-          defaultRouteGenerationPolicy.getStatements().add(defaultRouteGenerationConditional);
-          c.getRoutingPolicies()
-              .put(defaultRouteGenerationPolicy.getName(), defaultRouteGenerationPolicy);
+          String defaultRouteGenerationPolicyName =
+              computeBgpDefaultRouteGenerationPolicyName(vrfName, lpg.getName());
+          RoutingPolicy.builder()
+              .setOwner(c)
+              .setName(defaultRouteGenerationPolicyName)
+              .addStatement(defaultRouteGenerationConditional)
+              .build();
           if (ipv4) {
-            defaultRoute.setGenerationPolicy(defaultRouteGenerationPolicy.getName());
+            defaultRoute.setGenerationPolicy(defaultRouteGenerationPolicyName);
           } else {
-            defaultRoute6.setGenerationPolicy(defaultRouteGenerationPolicy.getName());
+            defaultRoute6.setGenerationPolicy(defaultRouteGenerationPolicyName);
           }
         }
       }
@@ -2019,7 +1988,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
       newNeighborBuilder.setLocalAs(localAs);
       newNeighborBuilder.setLocalIp(updateSource);
-      newNeighborBuilder.setExportPolicy(peerExportPolicyName);
+      newNeighborBuilder.setExportPolicy(computeBgpPeerExportPolicyName(vrfName, lpg.getName()));
       newNeighborBuilder.setSendCommunity(lpg.getSendCommunity());
       newNeighborBuilder.build();
     }
