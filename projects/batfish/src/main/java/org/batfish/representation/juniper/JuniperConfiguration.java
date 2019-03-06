@@ -104,6 +104,7 @@ import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.dataplane.rib.RibId;
+import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
@@ -1635,9 +1636,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return combinedAcl;
   }
 
-  private Transformation buildIncomingTransformation(Interface iface) {
-    Nat dnat = _masterLogicalSystem.getNatDestination();
-    if (dnat == null) {
+  @Nullable
+  private Transformation buildIncomingTransformation(
+      Nat nat, Interface iface, Transformation orElse) {
+    if (nat == null) {
       return null;
     }
 
@@ -1654,7 +1656,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     NatRuleSet ifaceLocationRuleSet = null;
     NatRuleSet zoneLocationRuleSet = null;
     NatRuleSet routingInstanceRuleSet = null;
-    for (Entry<String, NatRuleSet> entry : dnat.getRuleSets().entrySet()) {
+    for (Entry<String, NatRuleSet> entry : nat.getRuleSets().entrySet()) {
       NatRuleSet ruleSet = entry.getValue();
       NatPacketLocation fromLocation = ruleSet.getFromLocation();
       if (ifaceName.equals(fromLocation.getInterface())) {
@@ -1666,18 +1668,29 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
     }
 
-    Transformation transformation = null;
+    Transformation transformation = orElse;
     for (NatRuleSet ruleSet :
         Stream.of(routingInstanceRuleSet, zoneLocationRuleSet, ifaceLocationRuleSet)
             .filter(Objects::nonNull)
             .collect(Collectors.toList())) {
+
       transformation =
           ruleSet
               .toIncomingTransformation(
-                  dnat, iface.getPrimaryAddress().getIp(), null, transformation)
+                  nat, iface.getPrimaryAddress().getIp(), null, transformation)
               .orElse(transformation);
     }
+
     return transformation;
+  }
+
+  @Nullable
+  private Transformation buildIncomingTransformation(Interface iface) {
+    Nat dnat = _masterLogicalSystem.getNatDestination();
+    Transformation dstTransformation = buildIncomingTransformation(dnat, iface, null);
+    Nat staticNat = _masterLogicalSystem.getNatDestination();
+    Transformation staticTransformation = buildIncomingTransformation(staticNat, iface, dstTransformation);
+    return staticTransformation;
   }
 
   /** Generate IpAccessList from the specified to-zone's security policies. */
@@ -2975,6 +2988,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 viIface.addDependency(new Dependency(iface.getName(), DependencyType.AGGREGATE));
               }
             });
+
+    Nat staticNat = _masterLogicalSystem.getNatStatic();
 
     Nat snat = _masterLogicalSystem.getNatSource();
     if (snat != null) {

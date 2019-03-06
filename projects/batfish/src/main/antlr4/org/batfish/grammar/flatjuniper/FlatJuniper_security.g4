@@ -407,7 +407,7 @@ rsrtst_prefix
    (
       rsrtstp_mapped_port
       | rsrtstp_prefix
-      | ROUTING_INSTANCE name = variable
+      | rsrtstp_routing_instance
    )
 ;
 
@@ -415,9 +415,9 @@ rsrtst_prefix_name
 :
    PREFIX_NAME
    (
-      name = variable
-      | rsrtstp_mapped_port
-      | ROUTING_INSTANCE name = variable
+      rsrtstp_mapped_port
+      | rsrtstp_prefix_name
+      | rsrtstp_routing_instance
    )
 ;
 
@@ -433,6 +433,16 @@ rsrtstp_mapped_port
 rsrtstp_prefix
 :
    IP_PREFIX
+;
+
+rsrtstp_prefix_name
+:
+   name = variable
+;
+
+rsrtstp_routing_instance
+:
+   ROUTING_INSTANCE name = variable
 ;
 
 s_security
