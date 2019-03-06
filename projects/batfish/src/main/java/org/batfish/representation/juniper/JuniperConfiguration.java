@@ -1484,7 +1484,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
                   iface.getPrimaryAddress().getIp(),
                   matchFromLocationExprs,
                   null,
-                  transformation)
+                  transformation,
+                  _w)
               .orElse(transformation);
     }
     return transformation;
@@ -1674,7 +1675,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       transformation =
           ruleSet
               .toIncomingTransformation(
-                  dnat, iface.getPrimaryAddress().getIp(), null, transformation)
+                  dnat, iface.getPrimaryAddress().getIp(), null, transformation, _w)
               .orElse(transformation);
     }
     return transformation;
