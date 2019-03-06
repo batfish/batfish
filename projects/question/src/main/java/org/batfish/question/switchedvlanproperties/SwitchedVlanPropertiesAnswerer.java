@@ -147,7 +147,7 @@ public final class SwitchedVlanPropertiesAnswerer extends Answerer {
    * @param ctxt context in which to apply {@code interfacesSpecifier}
    * @param configurations configuration to use in extractions
    * @param nodes the set of nodes to consider
-   * @param interfacesSpecifier Specifies which interfaces to consider
+   * @param interfaceSpecifier Specifies which interfaces to consider
    * @param columns a map from column name to {@link ColumnMetadata}
    * @return A multiset of {@link Row}s where each row corresponds to a node/vlan pair and columns
    *     correspond to property values.
@@ -156,7 +156,7 @@ public final class SwitchedVlanPropertiesAnswerer extends Answerer {
       SpecifierContext ctxt,
       Map<String, Configuration> configurations,
       Set<String> nodes,
-      InterfaceSpecifier interfacesSpecifier,
+      InterfaceSpecifier interfaceSpecifier,
       boolean excludeShutInterfaces,
       IntegerSpace vlans,
       Map<String, ColumnMetadata> columns) {
@@ -168,7 +168,7 @@ public final class SwitchedVlanPropertiesAnswerer extends Answerer {
       computeNodeVlanProperties(
           ctxt,
           configurations.get(node),
-          interfacesSpecifier,
+          interfaceSpecifier,
           excludeShutInterfaces,
           vlans,
           switchedVlanInterfaces,

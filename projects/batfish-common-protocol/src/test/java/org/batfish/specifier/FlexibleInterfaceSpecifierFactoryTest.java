@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.regex.Pattern;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -25,7 +24,8 @@ public class FlexibleInterfaceSpecifierFactoryTest {
   @Test
   public void testGarbageIn() {
     exception.expect(IllegalArgumentException.class);
-    new FlexibleInterfaceSpecifierFactory().buildInterfaceSpecifier("fofoao:klklk:opopo:oo");
+    // the input string won't even compile to a pattern, our last resort
+    new FlexibleInterfaceSpecifierFactory().buildInterfaceSpecifier("f\\o");
   }
 
   @Test
@@ -39,7 +39,7 @@ public class FlexibleInterfaceSpecifierFactoryTest {
   public void testNull() {
     assertThat(
         new FlexibleInterfaceSpecifierFactory().buildInterfaceSpecifier(null),
-        equalTo(new ShorthandInterfaceSpecifier(InterfacesSpecifier.ALL)));
+        equalTo(AllInterfacesInterfaceSpecifier.INSTANCE));
   }
 
   @Test
@@ -52,8 +52,9 @@ public class FlexibleInterfaceSpecifierFactoryTest {
   @Test
   public void testShorthand() {
     assertThat(
-        new FlexibleInterfaceSpecifierFactory().buildInterfaceSpecifier("name:.*"),
-        equalTo(new ShorthandInterfaceSpecifier(new InterfacesSpecifier("name:.*"))));
+        new FlexibleInterfaceSpecifierFactory().buildInterfaceSpecifier("name.*"),
+        equalTo(
+            new NameRegexInterfaceSpecifier(Pattern.compile("name.*", Pattern.CASE_INSENSITIVE))));
   }
 
   @Test
