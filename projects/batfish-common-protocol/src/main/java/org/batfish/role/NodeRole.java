@@ -106,7 +106,8 @@ public class NodeRole implements Comparable<NodeRole> {
     return _compiledPattern.matcher(nodeName).matches();
   }
 
-  @Override public String toString() {
+  @Override
+  public String toString() {
     return MoreObjects.toStringHelper(getClass())
         .add("name", _name)
         .add("regex", _regex)
