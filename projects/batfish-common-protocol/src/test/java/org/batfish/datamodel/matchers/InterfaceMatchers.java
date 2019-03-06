@@ -156,7 +156,7 @@ public final class InterfaceMatchers {
   }
 
   /**
-   * Provides a matcher that matchs if the provided {@code subMatcher} matches the {@link
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link
    * Interface}'s dependencies.
    */
   public static @Nonnull Matcher<Interface> hasDependencies(
