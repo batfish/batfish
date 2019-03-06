@@ -27,6 +27,7 @@ import com.google.common.collect.Range;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -43,6 +44,7 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.specifier.AllInterfacesInterfaceSpecifier;
 import org.batfish.specifier.InterfaceSpecifier;
+import org.batfish.specifier.NameRegexInterfaceSpecifier;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierFactories;
 import org.batfish.specifier.TestSpecifierContext;
@@ -330,7 +332,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
 
     tryAddInterfaceToVlans(
         _specifierContext,
-        AllInterfacesInterfaceSpecifier.INSTANCE,
+        new NameRegexInterfaceSpecifier(Pattern.compile("blahblahblah")),
         excludeShutInterfaces,
         vlans,
         switchedVlanInterfaces,
