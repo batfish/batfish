@@ -2089,7 +2089,7 @@ public class CiscoGrammarTest {
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     /* Confirm prefix list uses are counted correctly */
-    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "pre_list", 2));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "pre_list", 3));
     assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "pre_list_unused", 0));
 
     /* Confirm undefined prefix lists are detected in different contexts */
@@ -2098,15 +2098,21 @@ public class CiscoGrammarTest {
     /* Route-map match context */
     assertThat(ccae, hasUndefinedReference(filename, PREFIX_LIST, "pre_list_undef2"));
 
-    // The defined inbound prefix-list should be converted to a BGP import policy
+    /*
+     Neighbor 1.2.3.4 uses pre_list to filter both inbound and outbound routes. Test that both
+     generated policies permit 10.1.1.0/24 and not other routes.
+    */
     Ip peerAddress = Ip.parse("1.2.3.4");
     Configuration c = batfish.loadConfigurations().get(hostname);
     String generatedImportPolicyName =
         String.format("~BGP_PEER_IMPORT_POLICY:%s:%s~", DEFAULT_VRF_NAME, peerAddress);
+    String generatedExportPolicyName =
+        String.format("~BGP_PEER_EXPORT_POLICY:%s:%s~", DEFAULT_VRF_NAME, peerAddress);
     RoutingPolicy importPolicy = c.getRoutingPolicies().get(generatedImportPolicyName);
+    RoutingPolicy exportPolicy = c.getRoutingPolicies().get(generatedExportPolicyName);
     assertThat(importPolicy, notNullValue());
+    assertThat(exportPolicy, notNullValue());
 
-    // Test that the generated import policy only permits 10.1.1.0/24, as expected
     Prefix permittedPrefix = Prefix.parse("10.1.1.0/24");
     BgpRoute.Builder r =
         BgpRoute.builder()
@@ -2124,12 +2130,28 @@ public class CiscoGrammarTest {
             Direction.IN),
         equalTo(true));
     assertThat(
+        exportPolicy.process(
+            permittedRoute,
+            permittedRoute.toBuilder(),
+            peerAddress,
+            DEFAULT_VRF_NAME,
+            Direction.OUT),
+        equalTo(true));
+    assertThat(
         importPolicy.process(
             unmatchedRoute,
             unmatchedRoute.toBuilder(),
             peerAddress,
             DEFAULT_VRF_NAME,
             Direction.IN),
+        equalTo(false));
+    assertThat(
+        exportPolicy.process(
+            unmatchedRoute,
+            unmatchedRoute.toBuilder(),
+            peerAddress,
+            DEFAULT_VRF_NAME,
+            Direction.OUT),
         equalTo(false));
   }
 
