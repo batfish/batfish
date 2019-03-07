@@ -2676,6 +2676,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterNeighbor_flat_rb_stanza(Neighbor_flat_rb_stanzaContext ctx) {
+    if (ctx.ip6 != null) {
+      // Remember we are in IPv6 context so that structure references are identified accordingly
+      _inIpv6BgpPeer = true;
+    }
     // do no further processing for unsupported address families / containers
     if (_currentPeerGroup == _dummyPeerGroup) {
       pushPeer(_dummyPeerGroup);
@@ -2703,7 +2707,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         pushPeer(_currentIpPeerGroup);
       }
     } else if (ctx.ip6 != null) {
-      _inIpv6BgpPeer = true;
       Ip6 ip6 = toIp6(ctx.ip6);
       Ipv6BgpPeerGroup pg6 = proc.getIpv6PeerGroups().get(ip6);
       if (pg6 == null) {
