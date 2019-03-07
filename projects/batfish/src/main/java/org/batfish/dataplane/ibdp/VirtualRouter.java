@@ -534,7 +534,7 @@ public class VirtualRouter implements Serializable {
     for (GeneratedRoute gr : _vrf.getGeneratedRoutes()) {
       String policyName = gr.getGenerationPolicy();
       RoutingPolicy generationPolicy =
-          policyName != null ? _c.getRoutingPolicies().get(gr.getGenerationPolicy()) : null;
+          policyName != null ? _c.getRoutingPolicies().get(policyName) : null;
       GeneratedRoute.Builder grb =
           GeneratedRouteHelper.activateGeneratedRoute(
               gr, generationPolicy, _mainRib.getTypedRoutes(), _vrf.getName());
