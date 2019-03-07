@@ -84,6 +84,7 @@ ltm snatpool /Common/SOME_SNATPOOL {
 }
 ltm virtual /Common/SOME_VIRTUAL {
     destination /Common/192.0.2.7:80
+    ip-forward
     ip-protocol tcp
     mask 255.255.255.255
     persist {
@@ -97,6 +98,7 @@ ltm virtual /Common/SOME_VIRTUAL {
         /Common/P2 { }
         /Common/P3 { }
     }
+    reject
     rules {
         /Common/SOME_RULE1
     }

@@ -33,6 +33,8 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isSwitchport;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.KernelRouteMatchers.isKernelRouteThat;
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.permits;
@@ -40,6 +42,7 @@ import static org.batfish.datamodel.matchers.RouteFilterListMatchers.rejects;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasKernelRoutes;
 import static org.batfish.datamodel.transformation.TransformationEvaluator.eval;
+import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_PROCESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.INTERFACE;
@@ -80,6 +83,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -97,10 +101,14 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.Function;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
@@ -111,6 +119,7 @@ import org.batfish.datamodel.FlowDiff;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.KernelRoute;
@@ -127,6 +136,7 @@ import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
+import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.datamodel.matchers.Route6FilterListMatchers;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
@@ -136,6 +146,7 @@ import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.PortField;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationEvaluator.TransformationResult;
+import org.batfish.datamodel.vendor_family.f5_bigip.Virtual;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -222,52 +233,20 @@ public final class F5BigipStructuredGrammarTest {
     return BatfishTestUtils.parseTextConfigs(_folder, names);
   }
 
-  @Test
-  public void testVirtualMatchesIpProtocol() throws IOException {
-    String hostname = "f5_bigip_structured_ltm_virtual_ip_protocol";
-    Configuration c = parseConfig(hostname);
-    Transformation incomingTransformation =
-        c.getAllInterfaces().get("/Common/vlan1").getIncomingTransformation();
-
-    Flow matchingFlow =
-        Flow.builder()
-            .setTag("tag")
-            .setDstIp(Ip.parse("192.0.2.1"))
-            .setDstPort(80)
-            .setIngressInterface("/Common/SOME_VLAN")
-            .setIngressNode(hostname)
-            .setIpProtocol(IpProtocol.TCP)
-            .setSrcIp(Ip.parse("8.8.8.8"))
-            .setSrcPort(50000)
-            .build();
-    Flow nonMatchingFlow =
-        Flow.builder()
-            .setTag("tag")
-            .setDstIp(Ip.parse("192.0.2.1"))
-            .setDstPort(80)
-            .setIngressInterface("/Common/SOME_VLAN")
-            .setIngressNode(hostname)
-            .setIpProtocol(IpProtocol.UDP)
-            .setSrcIp(Ip.parse("8.8.8.8"))
-            .setSrcPort(50000)
-            .build();
-
-    assertTrue(
-        "Flow with correct IpProtocol TCP is matched by incoming transformation",
-        eval(incomingTransformation, matchingFlow, "dummy", ImmutableMap.of(), ImmutableMap.of())
-            .getTraceSteps().stream()
-            .map(Step::getDetail)
-            .filter(Predicates.instanceOf(TransformationStepDetail.class))
-            .map(TransformationStepDetail.class::cast)
-            .anyMatch(d -> d.getTransformationType() == TransformationType.DEST_NAT));
-    assertFalse(
-        "Flow with incorrect IpProtocol UDP is not matched by incoming transformation",
-        eval(incomingTransformation, nonMatchingFlow, "dummy", ImmutableMap.of(), ImmutableMap.of())
-            .getTraceSteps().stream()
-            .map(Step::getDetail)
-            .filter(Predicates.instanceOf(TransformationStepDetail.class))
-            .map(TransformationStepDetail.class::cast)
-            .anyMatch(d -> d.getTransformationType() == TransformationType.DEST_NAT));
+  private F5BigipConfiguration parseVendorConfig(String hostname) {
+    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
+    Settings settings = new Settings();
+    configureBatfishTestSettings(settings);
+    F5BigipStructuredCombinedParser parser = new F5BigipStructuredCombinedParser(src, settings);
+    F5BigipStructuredControlPlaneExtractor extractor =
+        new F5BigipStructuredControlPlaneExtractor(src, parser, new Warnings());
+    ParserRuleContext tree =
+        Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
+    extractor.processParseTree(tree);
+    F5BigipConfiguration vendorConfiguration =
+        (F5BigipConfiguration) extractor.getVendorConfiguration();
+    vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);
+    return vendorConfiguration;
   }
 
   @Test
@@ -1388,6 +1367,217 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
+  public void testVirtualMatchesIpProtocol() throws IOException {
+    String hostname = "f5_bigip_structured_ltm_virtual_ip_protocol";
+    Configuration c = parseConfig(hostname);
+    Transformation incomingTransformation =
+        c.getAllInterfaces().get("/Common/vlan1").getIncomingTransformation();
+
+    Flow matchingFlow =
+        Flow.builder()
+            .setTag("tag")
+            .setDstIp(Ip.parse("192.0.2.1"))
+            .setDstPort(80)
+            .setIngressInterface("/Common/SOME_VLAN")
+            .setIngressNode(hostname)
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcIp(Ip.parse("8.8.8.8"))
+            .setSrcPort(50000)
+            .build();
+    Flow nonMatchingFlow =
+        Flow.builder()
+            .setTag("tag")
+            .setDstIp(Ip.parse("192.0.2.1"))
+            .setDstPort(80)
+            .setIngressInterface("/Common/SOME_VLAN")
+            .setIngressNode(hostname)
+            .setIpProtocol(IpProtocol.UDP)
+            .setSrcIp(Ip.parse("8.8.8.8"))
+            .setSrcPort(50000)
+            .build();
+
+    assertTrue(
+        "Flow with correct IpProtocol TCP is matched by incoming transformation",
+        eval(incomingTransformation, matchingFlow, "dummy", ImmutableMap.of(), ImmutableMap.of())
+            .getTraceSteps().stream()
+            .map(Step::getDetail)
+            .filter(Predicates.instanceOf(TransformationStepDetail.class))
+            .map(TransformationStepDetail.class::cast)
+            .anyMatch(d -> d.getTransformationType() == TransformationType.DEST_NAT));
+    assertFalse(
+        "Flow with incorrect IpProtocol UDP is not matched by incoming transformation",
+        eval(incomingTransformation, nonMatchingFlow, "dummy", ImmutableMap.of(), ImmutableMap.of())
+            .getTraceSteps().stream()
+            .map(Step::getDetail)
+            .filter(Predicates.instanceOf(TransformationStepDetail.class))
+            .map(TransformationStepDetail.class::cast)
+            .anyMatch(d -> d.getTransformationType() == TransformationType.DEST_NAT));
+  }
+
+  @Test
+  public void testVirtualMisconfigurations() {
+    F5BigipConfiguration c = parseVendorConfig("f5_bigip_structured_virtual_misconfigurations");
+    Stream.of("ip_forward", "reject")
+        .forEach(
+            mode ->
+                IntStream.of(1, 2, 3)
+                    .forEach(
+                        i -> {
+                          Virtual virtual =
+                              c.getVirtuals()
+                                  .get(String.format("/Common/virtual_%s_translate%d", mode, i));
+                          // translation should not occur regardless of whether directives appear
+                          assertFalse(virtual.getTranslateAddress());
+                          assertFalse(virtual.getTranslatePort());
+                        }));
+    IntStream.of(1, 2)
+        .forEach(
+            i -> {
+              Virtual virtual =
+                  c.getVirtuals()
+                      .get(String.format("/Common/virtual_ip_forward_two_incompatible%d", i));
+              // ip-forward first
+              assertTrue(virtual.getIpForward());
+              assertThat(virtual.getPool(), nullValue());
+              assertFalse(virtual.getReject());
+            });
+    IntStream.of(1, 2)
+        .forEach(
+            i -> {
+              Virtual virtual =
+                  c.getVirtuals().get(String.format("/Common/virtual_pool_two_incompatible%d", i));
+              // pool first
+              assertFalse(virtual.getIpForward());
+              assertThat(virtual.getPool(), notNullValue());
+              assertFalse(virtual.getReject());
+            });
+    IntStream.of(1, 2)
+        .forEach(
+            i -> {
+              Virtual virtual =
+                  c.getVirtuals()
+                      .get(String.format("/Common/virtual_reject_two_incompatible%d", i));
+              // reject first
+              assertFalse(virtual.getIpForward());
+              assertThat(virtual.getPool(), nullValue());
+              assertTrue(virtual.getReject());
+            });
+  }
+
+  @Test
+  public void testVirtualPoolTranslationOptions() throws IOException {
+    String hostname = "f5_bigip_structured_virtual_pool_translation_options";
+    String tag = "tag";
+
+    Configuration c = parseConfig(hostname);
+
+    // Assume a flow is received by /Common/vlan1
+    Transformation incomingTransformation =
+        c.getAllInterfaces().get("/Common/vlan1").getIncomingTransformation();
+    Flow.Builder flowBuilder =
+        Flow.builder()
+            .setTag(tag)
+            .setDstPort(80)
+            .setIngressInterface("/Common/vlan1")
+            .setIngressNode(hostname)
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcIp(Ip.parse("8.8.8.8"))
+            .setSrcPort(50000);
+    {
+      // should match virtual /Common/virtual_translate_address
+      Ip dstIp = Ip.parse("192.0.2.1");
+      Flow flow = flowBuilder.setDstIp(dstIp).build();
+      TransformationResult result =
+          eval(incomingTransformation, flow, "dummy", ImmutableMap.of(), ImmutableMap.of());
+      Optional<TransformationStepDetail> stepDetailOptional =
+          result.getTraceSteps().stream()
+              .map(Step::getDetail)
+              .filter(Predicates.instanceOf(TransformationStepDetail.class))
+              .map(TransformationStepDetail.class::cast)
+              .filter(d -> d.getTransformationType() == TransformationType.DEST_NAT)
+              .findFirst();
+
+      assertTrue("There is a DNAT transformation step.", stepDetailOptional.isPresent());
+
+      TransformationStepDetail detail = stepDetailOptional.get();
+
+      assertThat(
+          detail.getFlowDiffs(),
+          contains(isIpRewrite(IpField.DESTINATION, dstIp, Ip.parse("192.0.2.10"))));
+    }
+
+    {
+      // should match virtual /Common/virtual_translate_both
+      Ip dstIp = Ip.parse("192.0.2.2");
+      Flow flow = flowBuilder.setDstIp(dstIp).build();
+      TransformationResult result =
+          eval(incomingTransformation, flow, "dummy", ImmutableMap.of(), ImmutableMap.of());
+      Optional<TransformationStepDetail> stepDetailOptional =
+          result.getTraceSteps().stream()
+              .map(Step::getDetail)
+              .filter(Predicates.instanceOf(TransformationStepDetail.class))
+              .map(TransformationStepDetail.class::cast)
+              .filter(d -> d.getTransformationType() == TransformationType.DEST_NAT)
+              .findFirst();
+
+      assertTrue("There is a DNAT transformation step.", stepDetailOptional.isPresent());
+
+      TransformationStepDetail detail = stepDetailOptional.get();
+
+      assertThat(
+          detail.getFlowDiffs(),
+          hasItem(isIpRewrite(IpField.DESTINATION, dstIp, Ip.parse("192.0.2.10"))));
+      assertThat(
+          detail.getFlowDiffs(),
+          hasItem(isPortRewrite(PortField.DESTINATION, equalTo(80), equalTo(8080))));
+    }
+
+    {
+      // should match virtual /Common/virtual_translate_neither
+      Ip dstIp = Ip.parse("192.0.2.3");
+      Flow flow = flowBuilder.setDstIp(dstIp).build();
+      TransformationResult result =
+          eval(incomingTransformation, flow, "dummy", ImmutableMap.of(), ImmutableMap.of());
+      Optional<TransformationStepDetail> stepDetailOptional =
+          result.getTraceSteps().stream()
+              .map(Step::getDetail)
+              .filter(Predicates.instanceOf(TransformationStepDetail.class))
+              .map(TransformationStepDetail.class::cast)
+              .filter(d -> d.getTransformationType() == TransformationType.DEST_NAT)
+              .findFirst();
+
+      assertTrue("There is a DNAT transformation step.", stepDetailOptional.isPresent());
+
+      TransformationStepDetail detail = stepDetailOptional.get();
+
+      assertThat(detail.getFlowDiffs(), empty());
+    }
+
+    {
+      // should match virtual /Common/virtual_translate_port
+      Ip dstIp = Ip.parse("192.0.2.4");
+      Flow flow = flowBuilder.setDstIp(dstIp).build();
+      TransformationResult result =
+          eval(incomingTransformation, flow, "dummy", ImmutableMap.of(), ImmutableMap.of());
+      Optional<TransformationStepDetail> stepDetailOptional =
+          result.getTraceSteps().stream()
+              .map(Step::getDetail)
+              .filter(Predicates.instanceOf(TransformationStepDetail.class))
+              .map(TransformationStepDetail.class::cast)
+              .filter(d -> d.getTransformationType() == TransformationType.DEST_NAT)
+              .findFirst();
+
+      assertTrue("There is a DNAT transformation step.", stepDetailOptional.isPresent());
+
+      TransformationStepDetail detail = stepDetailOptional.get();
+
+      assertThat(
+          detail.getFlowDiffs(),
+          contains(isPortRewrite(PortField.DESTINATION, equalTo(80), equalTo(8080))));
+    }
+  }
+
+  @Test
   public void testVirtualReferences() throws IOException {
     String hostname = "f5_bigip_structured_ltm_references";
     String file = "configs/" + hostname;
@@ -1398,6 +1588,65 @@ public final class F5BigipStructuredGrammarTest {
 
     // detect all structure references
     assertThat(ans, hasNumReferrers(file, VIRTUAL, used, 1));
+  }
+
+  @Test
+  public void testVirtualRejectFilter() throws IOException {
+    String hostname = "f5_bigip_structured_virtual_reject";
+    String ifaceName = "/Common/vlan1";
+    String tag = "tag";
+
+    Configuration c = parseConfig(hostname);
+    IpAccessList incomingFilter = c.getAllInterfaces().get(ifaceName).getIncomingFilter();
+
+    assertThat("Incoming filter assigned to interface", incomingFilter, notNullValue());
+
+    String expectedName = F5BigipConfiguration.computeInterfaceIncomingFilterName(ifaceName);
+
+    assertThat(
+        "Incoming filter has expected name",
+        incomingFilter,
+        IpAccessListMatchers.hasName(expectedName));
+
+    {
+      // Forwarded traffic
+      Flow flow =
+          Flow.builder()
+              .setTag(tag)
+              .setDstIp(Ip.parse("192.0.2.1"))
+              .setDstPort(80)
+              .setIngressInterface("/Common/vlan1")
+              .setIngressNode(hostname)
+              .setIpProtocol(IpProtocol.TCP)
+              .setSrcIp(Ip.parse("8.8.8.8"))
+              .setSrcPort(50000)
+              .build();
+
+      assertThat(
+          "Filter does not reject traffic to forwarding virtual 'virtual_forward'",
+          incomingFilter,
+          accepts(flow, "dummy", c));
+    }
+
+    {
+      // Rejected traffic
+      Flow flow =
+          Flow.builder()
+              .setTag(tag)
+              .setDstIp(Ip.parse("192.0.2.2"))
+              .setDstPort(80)
+              .setIngressInterface("/Common/vlan1")
+              .setIngressNode(hostname)
+              .setIpProtocol(IpProtocol.TCP)
+              .setSrcIp(Ip.parse("8.8.8.8"))
+              .setSrcPort(50000)
+              .build();
+
+      assertThat(
+          "Filter rejects traffic to rejecting virtual 'virtual_reject'",
+          incomingFilter,
+          rejects(flow, "dummy", c));
+    }
   }
 
   @Test

@@ -141,11 +141,15 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lspm_memb
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lst_addressContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lsv_vlanContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_destinationContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_ip_forwardContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_ip_protocolContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_maskContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_poolContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_profiles_profileContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_rejectContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_sourceContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_translate_addressContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_translate_portContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_vlans_disabledContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_vlans_enabledContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lva_addressContext;
@@ -873,6 +877,27 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   @Override
+  public void exitLv_ip_forward(Lv_ip_forwardContext ctx) {
+    if (_currentVirtual.getPool() != null) {
+      _w.redFlag(
+          String.format(
+              "'ip-forward' mode incompatible with pool '%s' already configured on virtual '%s'",
+              _currentVirtual.getPool(), _currentVirtual.getName()));
+      return;
+    }
+    if (_currentVirtual.getReject()) {
+      _w.redFlag(
+          String.format(
+              "'ip-forward' mode incompatible with 'reject' mode already configured on virtual '%s'",
+              _currentVirtual.getName()));
+      return;
+    }
+    _currentVirtual.setIpForward(true);
+    _currentVirtual.setTranslateAddress(false);
+    _currentVirtual.setTranslatePort(false);
+  }
+
+  @Override
   public void exitLv_ip_protocol(Lv_ip_protocolContext ctx) {
     _currentVirtual.setIpProtocol(toIpProtocol(ctx.ip_protocol()));
   }
@@ -897,7 +922,48 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   public void exitLv_pool(Lv_poolContext ctx) {
     String name = unquote(ctx.name.getText());
     _c.referenceStructure(POOL, name, VIRTUAL_POOL, ctx.name.getStart().getLine());
+    if (_currentVirtual.getIpForward()) {
+      _w.redFlag(
+          String.format(
+              "'pool' incompatible with 'ip-forward' mode already configured on virtual '%s'",
+              _currentVirtual.getName()));
+      return;
+    }
+    if (_currentVirtual.getReject()) {
+      _w.redFlag(
+          String.format(
+              "'pool' incompatible with 'reject' mode already configured on virtual '%s'",
+              _currentVirtual.getName()));
+      return;
+    }
     _currentVirtual.setPool(name);
+    if (_currentVirtual.getTranslateAddress() == null) {
+      _currentVirtual.setTranslateAddress(true);
+    }
+    if (_currentVirtual.getTranslatePort() == null) {
+      _currentVirtual.setTranslatePort(true);
+    }
+  }
+
+  @Override
+  public void exitLv_reject(Lv_rejectContext ctx) {
+    if (_currentVirtual.getIpForward()) {
+      _w.redFlag(
+          String.format(
+              "'reject' mode incompatible with 'ip-forward' mode already configured on virtual '%s'",
+              _currentVirtual.getName()));
+      return;
+    }
+    if (_currentVirtual.getPool() != null) {
+      _w.redFlag(
+          String.format(
+              "'reject' mode incompatible with pool '%s' already configured on virtual '%s'",
+              _currentVirtual.getPool(), _currentVirtual.getName()));
+      return;
+    }
+    _currentVirtual.setReject(true);
+    _currentVirtual.setTranslateAddress(false);
+    _currentVirtual.setTranslatePort(false);
   }
 
   @Override
@@ -915,6 +981,46 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     }
     _w.redFlag(
         String.format("'%s' is neither IPv4 nor IPv6 prefix in: %s", text, getFullText(ctx)));
+  }
+
+  @Override
+  public void exitLv_translate_address(Lv_translate_addressContext ctx) {
+    boolean enabled = ctx.ENABLED() != null;
+    if (enabled && _currentVirtual.getIpForward()) {
+      _w.redFlag(
+          String.format(
+              "'translate-address enabled' incompatible with 'ip-forward' mode already configured on virtual '%s'",
+              _currentVirtual.getName()));
+      return;
+    }
+    if (enabled && _currentVirtual.getReject()) {
+      _w.redFlag(
+          String.format(
+              "'translate-address enabled' incompatible with 'reject' mode already configured on virtual '%s'",
+              _currentVirtual.getName()));
+      return;
+    }
+    _currentVirtual.setTranslateAddress(enabled);
+  }
+
+  @Override
+  public void exitLv_translate_port(Lv_translate_portContext ctx) {
+    boolean enabled = ctx.ENABLED() != null;
+    if (enabled && _currentVirtual.getIpForward()) {
+      _w.redFlag(
+          String.format(
+              "'translate-port enabled' incompatible with 'ip-forward' mode already configured on virtual '%s'",
+              _currentVirtual.getName()));
+      return;
+    }
+    if (enabled && _currentVirtual.getReject()) {
+      _w.redFlag(
+          String.format(
+              "'translate-port enabled' incompatible with 'reject' mode already configured on virtual '%s'",
+              _currentVirtual.getName()));
+      return;
+    }
+    _currentVirtual.setTranslatePort(enabled);
   }
 
   @Override
