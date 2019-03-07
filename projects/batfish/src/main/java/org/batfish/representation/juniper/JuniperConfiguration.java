@@ -2651,10 +2651,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
         if (rg.getAllInterfaces()) {
           interfaces.addAll(_c.getAllInterfaces().values());
         } else {
-          for (String ifaceName : rg.getInterfaces()) {
-            org.batfish.datamodel.Interface iface = _c.getAllInterfaces().get(ifaceName);
-            interfaces.add(iface);
-          }
+          rg.getInterfaces().stream()
+              .map(_c.getAllInterfaces()::get)
+              .filter(Objects::nonNull)
+              .forEach(interfaces::add);
         }
         String asgName = rg.getActiveServerGroup();
         if (asgName != null) {
