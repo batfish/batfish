@@ -46191,6 +46191,15 @@
             "                VARIABLE:'EXIST_MAP')",
             "              NEWLINE:'\\n'))))",
             "      (router_bgp_stanza_tail",
+            "        (neighbor_flat_rb_stanza",
+            "          NEIGHBOR:'neighbor'",
+            "          ip6 = IPV6_ADDRESS:'1::1'  <== mode:M_NEIGHBOR",
+            "          (remote_as_bgp_tail",
+            "            REMOTE_AS:'remote-as'",
+            "            remote = (bgp_asn",
+            "              asn = DEC:'2')",
+            "            NEWLINE:'\\n')))",
+            "      (router_bgp_stanza_tail",
             "        (address_family_rb_stanza",
             "          (address_family_header",
             "            ADDRESS_FAMILY:'address-family'",
@@ -46204,7 +46213,33 @@
             "              (activate_bgp_tail",
             "                ACTIVATE:'activate'",
             "                NEWLINE:'\\n')))",
-            "          (address_family_footer)))))",
+            "          (address_family_footer)))",
+            "      (router_bgp_stanza_tail",
+            "        (address_family_rb_stanza",
+            "          (address_family_header",
+            "            ADDRESS_FAMILY:'address-family'",
+            "            af = (bgp_address_family",
+            "              VPNV6:'vpnv6')",
+            "            NEWLINE:'\\n')",
+            "          (neighbor_flat_rb_stanza",
+            "            NEIGHBOR:'neighbor'",
+            "            ip6 = IPV6_ADDRESS:'1::1'  <== mode:M_NEIGHBOR",
+            "            (bgp_tail",
+            "              (activate_bgp_tail",
+            "                ACTIVATE:'activate'",
+            "                NEWLINE:'\\n')))",
+            "          (neighbor_flat_rb_stanza",
+            "            NEIGHBOR:'neighbor'",
+            "            ip6 = IPV6_ADDRESS:'1::1'  <== mode:M_NEIGHBOR",
+            "            (bgp_tail",
+            "              (prefix_list_bgp_tail",
+            "                PREFIX_LIST:'prefix-list'",
+            "                list_name = VARIABLE:'VPNV6_PL'  <== mode:M_Name",
+            "                IN:'in'",
+            "                NEWLINE:'\\n')))",
+            "          (address_family_footer",
+            "            EXIT_ADDRESS_FAMILY:'exit-address-family'",
+            "            NEWLINE:'\\n')))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -78306,6 +78341,13 @@
           }
         },
         "configs/ios_bgp" : {
+          "ipv6 prefix-list" : {
+            "VPNV6_PL" : {
+              "bgp inbound ipv6 prefix-list" : [
+                11
+              ]
+            }
+          },
           "route-map" : {
             "ADVERTISE_MAP" : {
               "bgp address-family aggregate-address advertise-map" : [
@@ -78328,7 +78370,7 @@
           "undeclared bgp peer-group" : {
             "UNDEFINED_PEER_GROUP" : {
               "bgp peer-group referenced before defined" : [
-                7
+                8
               ]
             }
           }
@@ -81072,6 +81114,13 @@
           }
         },
         "configs/ios_bgp" : {
+          "ipv6 prefix-list" : {
+            "VPNV6_PL" : {
+              "bgp inbound ipv6 prefix-list" : [
+                11
+              ]
+            }
+          },
           "route-map" : {
             "ADVERTISE_MAP" : {
               "bgp address-family aggregate-address advertise-map" : [
@@ -81094,7 +81143,7 @@
           "undeclared bgp peer-group" : {
             "UNDEFINED_PEER_GROUP" : {
               "bgp peer-group referenced before defined" : [
-                7
+                8
               ]
             }
           }
