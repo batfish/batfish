@@ -33,7 +33,6 @@ public class GeneratedRouteHelper {
       @Nullable RoutingPolicy policy,
       Set<AnnotatedRoute<AbstractRoute>> contributingRoutes,
       String vrfName) {
-    boolean active = true;
     GeneratedRoute.Builder grb = generatedRoute.toBuilder();
 
     // Null route if necessary
@@ -41,21 +40,19 @@ public class GeneratedRouteHelper {
       grb.setNextHopInterface(Interface.NULL_INTERFACE_NAME);
     }
 
-    if (policy != null) {
-      active = false;
-      // Find first matching route among candidates
-      for (AnnotatedRoute<AbstractRoute> contributingCandidate : contributingRoutes) {
-        boolean accept = policy.process(contributingCandidate, grb, null, vrfName, Direction.OUT);
-        if (accept) {
-          if (!generatedRoute.getDiscard()) {
-            grb.setNextHopIp(contributingCandidate.getAbstractRoute().getNextHopIp());
-          }
-          active = true;
-          break;
-        }
-      }
+    if (policy == null) {
+      return grb;
     }
 
-    return active ? grb : null;
+    // Find first matching route among candidates
+    for (AnnotatedRoute<AbstractRoute> contributingCandidate : contributingRoutes) {
+      if (policy.process(contributingCandidate, grb, null, vrfName, Direction.OUT)) {
+        if (!generatedRoute.getDiscard()) {
+          grb.setNextHopIp(contributingCandidate.getAbstractRoute().getNextHopIp());
+        }
+        return grb;
+      }
+    }
+    return null;
   }
 }
