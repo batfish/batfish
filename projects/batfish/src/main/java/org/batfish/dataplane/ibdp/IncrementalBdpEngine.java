@@ -895,14 +895,14 @@ class IncrementalBdpEngine {
       int numBgpMultipathRibRoutes =
           nodes.values().stream()
               .flatMap(n -> n.getVirtualRouters().values().stream())
-              .mapToInt(vr -> vr.getBgpRib().getRoutes().size())
+              .mapToInt(vr -> vr.getBgpRib().getTypedRoutes().size())
               .sum();
       ae.getBgpMultipathRibRoutesByIteration()
           .put(dependentRoutesIterations, numBgpMultipathRibRoutes);
       int numMainRibRoutes =
           nodes.values().stream()
               .flatMap(n -> n.getVirtualRouters().values().stream())
-              .mapToInt(vr -> vr._mainRib.getRoutes().size())
+              .mapToInt(vr -> vr._mainRib.getTypedRoutes().size())
               .sum();
       ae.getMainRibRoutesByIteration().put(dependentRoutesIterations, numMainRibRoutes);
     }

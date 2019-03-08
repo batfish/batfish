@@ -2,8 +2,8 @@ package org.batfish.dataplane.rib;
 
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.emptyIterableOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
@@ -11,7 +11,6 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
-import com.google.common.collect.Iterables;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -57,30 +56,14 @@ public class AbstractRibTest {
   public void testRibConstructor() {
     // Assertions: Ensure that a new rib is empty upon construction
     assertThat(_rib.getTypedRoutes(), empty());
-    assertThat(_rib.containsRoute(_mostGeneralRoute), equalTo(false));
+    assertThat(_rib.getTypedRoutes(), contains(_mostGeneralRoute));
   }
 
   @Test
   public void testSingleRouteAdd() {
     // Test: Adding one route
     _rib.mergeRouteGetDelta(_mostGeneralRoute);
-
-    // Assertions
-    // Check routes size
-    assertThat(_rib.getRoutes(), hasSize(1));
-    // Check that containsRoute works as expected for this simple case
-    assertThat(_rib.containsRoute(_mostGeneralRoute), equalTo(true));
-    assertThat(
-        _rib.containsRoute(
-            StaticRoute.builder()
-                .setNetwork(Prefix.parse("1.1.1.1/32"))
-                .setNextHopIp(Ip.ZERO)
-                .setNextHopInterface(null)
-                .setAdministrativeCost(1)
-                .setMetric(0L)
-                .setTag(0)
-                .build()),
-        equalTo(false));
+    assertThat(_rib.getTypedRoutes(), contains(_mostGeneralRoute));
   }
 
   /** Inserts overlapping routes into the RIB and returns a (manually) ordered list of them */
@@ -91,26 +74,24 @@ public class AbstractRibTest {
     List<StaticRoute> routes = new ArrayList<>();
 
     // Test: merge the routes into the RIB
+    StaticRoute.Builder srb =
+        StaticRoute.builder()
+            .setNextHopIp(Ip.ZERO)
+            .setNextHopInterface(null)
+            .setAdministrativeCost(1)
+            .setMetric(0L)
+            .setTag(0);
     for (String prefixStr : testPrefixes) {
-      StaticRoute r =
-          StaticRoute.builder()
-              .setNetwork(Prefix.parse(prefixStr))
-              .setNextHopIp(Ip.ZERO)
-              .setNextHopInterface(null)
-              .setAdministrativeCost(1)
-              .setMetric(0L)
-              .setTag(0)
-              .build();
+      StaticRoute r = srb.setNetwork(Prefix.parse(prefixStr)).build();
       _rib.mergeRouteGetDelta(r);
       routes.add(r);
     }
     return routes;
   }
 
-  /** Ensure that only one copy of a route is stored, regardless of how many times we add it) */
+  /** Ensure that only one copy of a route is stored, regardless of how many times we add it */
   @Test
   public void testRepeatedAdd() {
-    // Setup
     StaticRoute route =
         StaticRoute.builder()
             .setNetwork(Prefix.parse("10.0.0.0/11"))
@@ -120,17 +101,10 @@ public class AbstractRibTest {
             .setMetric(0L)
             .setTag(0)
             .build();
-
-    // Test
     for (int i = 0; i < 5; i++) {
       _rib.mergeRouteGetDelta(route);
     }
-
-    // Assertions
-    // Ensure only one route is stored
-    assertThat(_rib.getRoutes().size(), equalTo(1));
-    // Check that containsRoute works as expected for this simple case
-    assertThat(_rib.containsRoute(route), equalTo(true));
+    assertThat(_rib.getTypedRoutes(), contains(route));
   }
 
   /**
@@ -139,39 +113,20 @@ public class AbstractRibTest {
    */
   @Test
   public void testNonOverlappingRouteAdd() {
-    // Setup
-    StaticRoute r1 =
+    StaticRoute.Builder srb =
         StaticRoute.builder()
-            .setNetwork(Prefix.parse("1.1.1.1/32"))
             .setNextHopIp(Ip.ZERO)
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
             .setMetric(0L)
-            .setTag(0)
-            .build();
-    StaticRoute r2 =
-        StaticRoute.builder()
-            .setNetwork(Prefix.parse("128.1.1.1/32"))
-            .setNextHopIp(Ip.ZERO)
-            .setNextHopInterface(null)
-            .setAdministrativeCost(1)
-            .setMetric(0L)
-            .setTag(0)
-            .build();
-
-    // Test:
+            .setTag(0);
+    StaticRoute r1 = srb.setNetwork(Prefix.parse("1.1.1.1/32")).build();
+    StaticRoute r2 = srb.setNetwork(Prefix.parse("128.1.1.1/32")).build();
     _rib.mergeRouteGetDelta(r1);
     _rib.mergeRouteGetDelta(r2);
 
-    // Assertions
     // Check that both routes exist
-    Set<StaticRoute> collectedRoutes = _rib.getTypedRoutes();
-    assertThat(collectedRoutes, hasSize(2));
-    assertThat(_rib.containsRoute(r1), equalTo(true));
-    assertThat(_rib.containsRoute(r2), equalTo(true));
-    // Also check route collection via getTypedRoutes()
-    assertThat(collectedRoutes, hasItem(r1));
-    assertThat(collectedRoutes, hasItem(r2));
+    assertThat(_rib.getTypedRoutes(), containsInAnyOrder(r1, r2));
   }
 
   /**
@@ -182,22 +137,14 @@ public class AbstractRibTest {
   public void testMultiOverlappingRouteAdd() {
     // Setup/Test: Add multiple routes with overlapping prefixes
     List<StaticRoute> routes = setupOverlappingRoutes();
-
-    // Assertions
-    Set<StaticRoute> collectedRoutes = _rib.getTypedRoutes();
-    assertThat(collectedRoutes, hasSize(routes.size()));
-    assertThat(_rib.containsRoute(_mostGeneralRoute), equalTo(false));
-    for (StaticRoute r : routes) {
-      assertThat(_rib.containsRoute(r), equalTo(true));
-      assertThat(collectedRoutes, hasItem(r));
-    }
+    assertThat(_rib.getTypedRoutes(), contains(routes));
   }
 
   /** Ensure that empty RIB doesn't have any prefix matches */
   @Test
   public void testLongestPrefixMatchWhenEmpty() {
-    assertThat(_rib.longestPrefixMatch(Ip.parse("1.1.1.1")), emptyIterableOf(StaticRoute.class));
-    assertThat(_rib.longestPrefixMatch(Ip.parse("0.0.0.0")), emptyIterableOf(StaticRoute.class));
+    assertThat(_rib.longestPrefixMatch(Ip.parse("1.1.1.1")), empty());
+    assertThat(_rib.longestPrefixMatch(Ip.parse("0.0.0.0")), empty());
   }
 
   /** Ensure that longestPrefixMatch finds route in root (guarantee no off-by-one length error) */
@@ -220,17 +167,14 @@ public class AbstractRibTest {
   public void testLongestPrefixMatch() {
     List<StaticRoute> routes = setupOverlappingRoutes();
 
-    // Assertions
     Set<StaticRoute> match = _rib.longestPrefixMatch(Ip.parse("10.1.1.1"));
-    assertThat(match, hasSize(1));
     assertThat(match, contains(routes.get(3)));
 
     match = _rib.longestPrefixMatch(Ip.parse("10.1.1.2"));
-    assertThat(match, hasSize(1));
     assertThat(match, contains(routes.get(1)));
 
     match = _rib.longestPrefixMatch(Ip.parse("11.1.1.1"));
-    assertThat(match, emptyIterableOf(StaticRoute.class));
+    assertThat(match, empty());
   }
 
   /**
@@ -243,27 +187,17 @@ public class AbstractRibTest {
 
     // Only the first route matches with prefix len of <= 8
     Set<StaticRoute> match = _rib.longestPrefixMatch(Ip.parse("10.1.1.1"), 8);
-    assertThat(match, hasSize(1));
     assertThat(match, contains(routes.get(0)));
-  }
-
-  /** Ensure that a RIB is equal to itself */
-  @Test
-  public void testSelfHasSameRoutes() {
-    assertThat(_rib, equalTo(_rib));
-
-    // Add some stuff to the rib
-    setupOverlappingRoutes();
-    assertThat(_rib, equalTo(_rib));
   }
 
   /** Test equality across different RIB instances */
   @Test
   public void testHasSameRoutes() {
-    List<StaticRoute> routes = setupOverlappingRoutes();
-
     // And create a new different RIB
     AbstractRib<StaticRoute> rib2 = new StaticRib();
+    assertThat(rib2, equalTo(_rib));
+
+    List<StaticRoute> routes = setupOverlappingRoutes();
     assertThat(rib2, not(equalTo(_rib)));
 
     // Add routes
@@ -285,7 +219,7 @@ public class AbstractRibTest {
     // Use OSPF RIBs for this, as routes with better metric can replace other routes
     OspfIntraAreaRib rib = new OspfIntraAreaRib();
     Prefix prefix = Prefix.parse("1.1.1.1/32");
-    rib.mergeRouteGetDelta(
+    OspfIntraAreaRoute ospfRoute =
         (OspfIntraAreaRoute)
             OspfInternalRoute.builder()
                 .setProtocol(RoutingProtocol.OSPF)
@@ -294,34 +228,19 @@ public class AbstractRibTest {
                 .setAdmin(100)
                 .setMetric(30)
                 .setArea(1L)
-                .build());
-
-    assertThat(rib.getRoutes(), hasSize(1));
-    // This new route replaces old route
-    OspfIntraAreaRoute newRoute =
-        (OspfIntraAreaRoute)
-            OspfInternalRoute.builder()
-                .setProtocol(RoutingProtocol.OSPF)
-                .setNetwork(prefix)
-                .setNextHopIp(null)
-                .setAdmin(100)
-                .setMetric(10)
-                .setArea(1L)
                 .build();
+
+    rib.mergeRouteGetDelta(ospfRoute);
+    assertThat(rib.getRoutes(), hasSize(1));
+
+    // This new route replaces old route
+    OspfIntraAreaRoute newRoute = (OspfIntraAreaRoute) ospfRoute.toBuilder().setMetric(10).build();
     rib.mergeRouteGetDelta(newRoute);
     assertThat(rib.getRoutes(), contains(newRoute));
 
     // Add completely new route and check that the size increases
     rib.mergeRouteGetDelta(
-        (OspfIntraAreaRoute)
-            OspfInternalRoute.builder()
-                .setProtocol(RoutingProtocol.OSPF)
-                .setNetwork(Prefix.parse("2.2.2.2/32"))
-                .setNextHopIp(null)
-                .setAdmin(100)
-                .setMetric(30)
-                .setArea(1L)
-                .build());
+        (OspfIntraAreaRoute) ospfRoute.toBuilder().setNetwork(Prefix.parse("2.2.2.2/32")).build());
     assertThat(rib.getRoutes(), hasSize(2));
   }
 
@@ -523,8 +442,7 @@ public class AbstractRibTest {
 
     // Looking for 1.2.3.4, should skip the /32 and /31, and then find the single forwarding /30
     Set<StaticRoute> routes = _rib.longestPrefixMatch(Ip.parse("1.2.3.4"));
-    assertThat(routes, hasSize(1));
-    assertThat(Iterables.getOnlyElement(routes), hasPrefix(Prefix.parse("1.2.3.4/30")));
+    assertThat(routes, contains(hasPrefix(Prefix.parse("1.2.3.4/30"))));
   }
 
   @Test
