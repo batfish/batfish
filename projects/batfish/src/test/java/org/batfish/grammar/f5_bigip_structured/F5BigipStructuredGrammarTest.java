@@ -204,6 +204,22 @@ public final class F5BigipStructuredGrammarTest {
                                 })));
   }
 
+  private static F5BigipConfiguration parseVendorConfig(String hostname) {
+    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
+    Settings settings = new Settings();
+    configureBatfishTestSettings(settings);
+    F5BigipStructuredCombinedParser parser = new F5BigipStructuredCombinedParser(src, settings);
+    F5BigipStructuredControlPlaneExtractor extractor =
+        new F5BigipStructuredControlPlaneExtractor(src, parser, new Warnings());
+    ParserRuleContext tree =
+        Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
+    extractor.processParseTree(tree);
+    F5BigipConfiguration vendorConfiguration =
+        (F5BigipConfiguration) extractor.getVendorConfiguration();
+    vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);
+    return vendorConfiguration;
+  }
+
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
@@ -231,22 +247,6 @@ public final class F5BigipStructuredGrammarTest {
     String[] names =
         Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
     return BatfishTestUtils.parseTextConfigs(_folder, names);
-  }
-
-  private F5BigipConfiguration parseVendorConfig(String hostname) {
-    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
-    Settings settings = new Settings();
-    configureBatfishTestSettings(settings);
-    F5BigipStructuredCombinedParser parser = new F5BigipStructuredCombinedParser(src, settings);
-    F5BigipStructuredControlPlaneExtractor extractor =
-        new F5BigipStructuredControlPlaneExtractor(src, parser, new Warnings());
-    ParserRuleContext tree =
-        Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
-    extractor.processParseTree(tree);
-    F5BigipConfiguration vendorConfiguration =
-        (F5BigipConfiguration) extractor.getVendorConfiguration();
-    vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);
-    return vendorConfiguration;
   }
 
   @Test
