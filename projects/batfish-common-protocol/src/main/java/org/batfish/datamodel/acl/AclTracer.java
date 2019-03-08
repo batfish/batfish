@@ -1,11 +1,11 @@
 package org.batfish.datamodel.acl;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static org.batfish.common.util.CommonUtil.rangesContain;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.graph.Traverser;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +22,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Protocol;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.visitors.IpSpaceDescriber;
 import org.batfish.datamodel.visitors.IpSpaceTracer;
 
@@ -165,6 +166,10 @@ public final class AclTracer extends Evaluator {
       String ipDescription) {
     _currentTreeNode.setEvent(
         new DefaultDeniedByAclIpSpace(aclIpSpaceName, ip, ipDescription, ipSpaceMetadata));
+  }
+
+  private static boolean rangesContain(Collection<SubRange> ranges, @Nullable Integer num) {
+    return num != null && ranges.stream().anyMatch(sr -> sr.includes(num));
   }
 
   public void recordNamedIpSpaceAction(
