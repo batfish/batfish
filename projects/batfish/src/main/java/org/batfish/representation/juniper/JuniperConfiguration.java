@@ -1351,9 +1351,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // create session info
       newIface.setFirewallSessionInterfaceInfo(
           new FirewallSessionInterfaceInfo(
-              zone.getInterfaces().stream().map(Interface::getName).collect(Collectors.toList()),
-              iface.getIncomingFilter(),
-              iface.getOutgoingFilter()));
+              zone.getInterfaces(), iface.getIncomingFilter(), iface.getOutgoingFilter()));
     }
 
     String incomingFilterName = iface.getIncomingFilter();
@@ -1518,11 +1516,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .forEach(
             zone ->
                 builder.put(
-                    zoneLocation(zone.getName()),
-                    matchSrcInterface(
-                        zone.getInterfaces().stream()
-                            .map(Interface::getName)
-                            .toArray(String[]::new))));
+                    zoneLocation(zone.getName()), new MatchSrcInterface(zone.getInterfaces())));
     _masterLogicalSystem
         .getRoutingInstances()
         .values()
@@ -1853,10 +1847,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     String zoneName = filter.getFromZone();
     if (zoneName != null) {
       matchSrcInterface =
-          new MatchSrcInterface(
-              _masterLogicalSystem.getZones().get(zoneName).getInterfaces().stream()
-                  .map(Interface::getName)
-                  .collect(ImmutableList.toImmutableList()));
+          new MatchSrcInterface(_masterLogicalSystem.getZones().get(zoneName).getInterfaces());
     }
 
     /* Return an ACL that is the logical AND of srcInterface filter and headerSpace filter */
@@ -1866,7 +1857,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   @Nullable
   private IpsecPeerConfig toIpsecPeerConfig(IpsecVpn ipsecVpn) {
     IpsecStaticPeerConfig.Builder ipsecStaticConfigBuilder = IpsecStaticPeerConfig.builder();
-    ipsecStaticConfigBuilder.setTunnelInterface(ipsecVpn.getBindInterface().getName());
+    ipsecStaticConfigBuilder.setTunnelInterface(ipsecVpn.getBindInterface());
     IkeGateway ikeGateway = _masterLogicalSystem.getIkeGateways().get(ipsecVpn.getGateway());
 
     if (ikeGateway == null) {
@@ -1877,19 +1868,24 @@ public final class JuniperConfiguration extends VendorConfiguration {
       return null;
     }
     ipsecStaticConfigBuilder.setDestinationAddress(ikeGateway.getAddress());
-    ipsecStaticConfigBuilder.setSourceInterface(ikeGateway.getExternalInterface().getName());
+
+    String externalIfaceName = ikeGateway.getExternalInterface();
+    String masterIfaceName = interfaceUnitMasterName(externalIfaceName);
+
+    Interface externalIface =
+        _masterLogicalSystem.getInterfaces().get(masterIfaceName).getUnits().get(externalIfaceName);
+
+    ipsecStaticConfigBuilder.setSourceInterface(externalIfaceName);
 
     if (ikeGateway.getLocalAddress() != null) {
       ipsecStaticConfigBuilder.setLocalAddress(ikeGateway.getLocalAddress());
-    } else if (ikeGateway.getExternalInterface() != null
-        && ikeGateway.getExternalInterface().getPrimaryAddress() != null) {
-      ipsecStaticConfigBuilder.setLocalAddress(
-          ikeGateway.getExternalInterface().getPrimaryAddress().getIp());
+    } else if (externalIface != null && externalIface.getPrimaryAddress() != null) {
+      ipsecStaticConfigBuilder.setLocalAddress(externalIface.getPrimaryAddress().getIp());
     } else {
       _w.redFlag(
           String.format(
               "External interface %s configured on IKE Gateway %s does not have any IP",
-              ikeGateway.getExternalInterface().getName(), ikeGateway.getName()));
+              externalIfaceName, ikeGateway.getName()));
       return null;
     }
 
@@ -2655,10 +2651,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
         if (rg.getAllInterfaces()) {
           interfaces.addAll(_c.getAllInterfaces().values());
         } else {
-          for (String ifaceName : rg.getInterfaces()) {
-            org.batfish.datamodel.Interface iface = _c.getAllInterfaces().get(ifaceName);
-            interfaces.add(iface);
-          }
+          rg.getInterfaces().stream()
+              .map(_c.getAllInterfaces()::get)
+              .filter(Objects::nonNull)
+              .forEach(interfaces::add);
         }
         String asgName = rg.getActiveServerGroup();
         if (asgName != null) {
@@ -3089,9 +3085,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
 
     newZone.setInboundInterfaceFiltersNames(new TreeMap<>());
-    for (Interface iface : zone.getInterfaces()) {
-      String ifaceName = iface.getName();
+    for (String ifaceName : zone.getInterfaces()) {
       org.batfish.datamodel.Interface newIface = _c.getAllInterfaces().get(ifaceName);
+      if (newIface == null) {
+        // undefined reference to ifaceName
+        continue;
+      }
       newIface.setZoneName(zoneName);
       FirewallFilter inboundInterfaceFilter = zone.getInboundInterfaceFilters().get(ifaceName);
       if (inboundInterfaceFilter != null) {
@@ -3170,5 +3169,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
   @Override
   public void setHostname(String hostname) {
     _masterLogicalSystem.setHostname(hostname);
+  }
+
+  private static String interfaceUnitMasterName(String unitName) {
+    int pos = unitName.indexOf('.');
+    String master = unitName.substring(0, pos);
+    return master;
   }
 }
