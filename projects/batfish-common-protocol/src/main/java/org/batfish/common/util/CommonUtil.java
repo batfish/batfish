@@ -85,7 +85,6 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
-import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
@@ -653,10 +652,6 @@ public class CommonUtil {
       throw new BatfishException(
           "Failed to read and output lines of file: '" + downloadedFile + "'", e);
     }
-  }
-
-  public static boolean rangesContain(Collection<SubRange> ranges, int num) {
-    return ranges.stream().anyMatch(sr -> sr.includes(num));
   }
 
   @Nonnull
