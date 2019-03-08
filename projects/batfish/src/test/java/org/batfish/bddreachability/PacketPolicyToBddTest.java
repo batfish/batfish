@@ -3,8 +3,8 @@ package org.batfish.bddreachability;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.anEmptyMap;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -52,7 +52,7 @@ public class PacketPolicyToBddTest {
             _bddPacket,
             _ipAccessListToBdd);
     // Everything is dropped
-    assertThat(evaluator.getToDrop(), equalTo(_bddPacket.getFactory().one()));
+    assertTrue(evaluator.getToDrop().isOne());
     assertThat(evaluator.getFibLookups(), anEmptyMap());
   }
 
@@ -67,7 +67,7 @@ public class PacketPolicyToBddTest {
             _bddPacket,
             _ipAccessListToBdd);
     // Everything is looked up in "vrf"
-    assertThat(evaluator.getToDrop(), equalTo(_bddPacket.getFactory().zero()));
+    assertTrue(evaluator.getToDrop().isZero());
     assertThat(evaluator.getFibLookups(), aMapWithSize(1));
     assertThat(
         evaluator.getFibLookups(), hasEntry(new FibLookup("vrf"), _bddPacket.getFactory().one()));
@@ -103,7 +103,7 @@ public class PacketPolicyToBddTest {
     BDD dstIpBdd = new IpSpaceToBDD(_bddPacket.getDstIp()).toBDD(dstIps);
 
     // Nothing to Drop
-    assertThat(evaluator.getToDrop(), equalTo(_bddPacket.getFactory().zero()));
+    assertTrue(evaluator.getToDrop().isZero());
     assertThat(evaluator.getFibLookups(), aMapWithSize(3));
     // Inner if captures 10.0.0.0/8, vrf 1
     assertThat(evaluator.getFibLookups(), hasEntry(new FibLookup(vrf1), dstIpBdd));

@@ -151,7 +151,10 @@ class PacketPolicyToBdd {
 
     @Override
     public Void visitFibLookup(FibLookup fibLookup) {
-      _fibLookups.put(fibLookup, _fibLookups.getOrDefault(fibLookup, _zero).or(_constraint));
+      _fibLookups.compute(
+          fibLookup,
+          (k, oldConstraint) ->
+              oldConstraint == null ? _constraint : oldConstraint.or(_constraint));
       return null;
     }
   }
