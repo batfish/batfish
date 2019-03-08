@@ -26,6 +26,10 @@ public interface Fib extends Serializable {
   @Nonnull
   Set<FibEntry> get(Ip ip);
 
+  /** Return the set of all entries */
+  @Nonnull
+  Set<FibEntry> allEntries();
+
   /**
    * Mapping: matching route -&gt; nexthopinterface -&gt; resolved nextHopIP -&gt; interfaceRoutes
    *

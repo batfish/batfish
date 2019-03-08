@@ -95,6 +95,14 @@ public class MockFib implements Fib {
     _fibEntries = ImmutableMap.copyOf(builder._fibEntries);
   }
 
+  @Nonnull
+  @Override
+  public Set<FibEntry> allEntries() {
+    return _fibEntries.values().stream()
+        .flatMap(Set::stream)
+        .collect(ImmutableSet.toImmutableSet());
+  }
+
   @Override
   public @Nonnull Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>
       getNextHopInterfaces() {
