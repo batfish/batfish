@@ -12,7 +12,6 @@ import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.datamodel.packet_policy.Action;
 import org.batfish.datamodel.packet_policy.ActionVisitor;
-import org.batfish.datamodel.packet_policy.BoolExpr;
 import org.batfish.datamodel.packet_policy.BoolExprVisitor;
 import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.FibLookup;
@@ -83,8 +82,8 @@ class PacketPolicyToBdd {
   }
 
   /**
-   * Walks all the statements in the packet policy, statefully building up BDDs based on {@link
-   * BoolExpr}s that are encountered. When a {@link Return} is encountered, calls into a {@link
+   * Walks all the statements in the packet policy, statefully building up BDDs based on boolean
+   * expressions that are encountered. When a {@link Return} is encountered, calls into a {@link
    * Collector}
    */
   private final class StatementToBdd implements StatementVisitor<Void> {
