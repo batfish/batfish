@@ -56,7 +56,7 @@ public class AbstractRibTest {
   public void testRibConstructor() {
     // Assertions: Ensure that a new rib is empty upon construction
     assertThat(_rib.getTypedRoutes(), empty());
-    assertThat(_rib.getTypedRoutes(), contains(_mostGeneralRoute));
+    assertThat(_rib.getTypedRoutes(), not(hasItem(_mostGeneralRoute)));
   }
 
   @Test
@@ -137,7 +137,7 @@ public class AbstractRibTest {
   public void testMultiOverlappingRouteAdd() {
     // Setup/Test: Add multiple routes with overlapping prefixes
     List<StaticRoute> routes = setupOverlappingRoutes();
-    assertThat(_rib.getTypedRoutes(), contains(routes));
+    assertThat(_rib.getTypedRoutes(), containsInAnyOrder(routes.toArray()));
   }
 
   /** Ensure that empty RIB doesn't have any prefix matches */
