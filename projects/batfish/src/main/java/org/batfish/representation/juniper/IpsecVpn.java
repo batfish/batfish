@@ -7,7 +7,7 @@ public final class IpsecVpn implements Serializable {
   /** */
   private static final long serialVersionUID = 1L;
 
-  private Interface _bindInterface;
+  private String _bindInterface;
 
   private String _gateway;
 
@@ -19,7 +19,7 @@ public final class IpsecVpn implements Serializable {
     _name = name;
   }
 
-  public Interface getBindInterface() {
+  public String getBindInterface() {
     return _bindInterface;
   }
 
@@ -35,7 +35,7 @@ public final class IpsecVpn implements Serializable {
     return _name;
   }
 
-  public void setBindInterface(Interface iface) {
+  public void setBindInterface(String iface) {
     _bindInterface = iface;
   }
 
