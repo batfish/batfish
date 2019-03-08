@@ -141,16 +141,7 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
   }
 
   @Override
-  public final SortedSet<Prefix> getPrefixes() {
-    SortedSet<Prefix> prefixes = new TreeSet<>();
-    Set<R> routes = getTypedRoutes();
-    for (R route : routes) {
-      prefixes.add(route.getNetwork());
-    }
-    return prefixes;
-  }
-
-  @Override
+  @Nonnull
   public Set<AbstractRoute> getRoutes() {
     return getTypedRoutes().stream()
         .map(AbstractRouteDecorator::getAbstractRoute)
@@ -158,18 +149,12 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
   }
 
   @Override
+  @Nonnull
   public Set<R> getTypedRoutes() {
     if (_allRoutes == null) {
       _allRoutes = ImmutableSet.copyOf(_tree.getRoutes());
     }
     return _allRoutes;
-  }
-
-  public final Set<R> getTypedRoutes(Prefix p) {
-    // Collect routes that match the prefix
-    return getTypedRoutes().stream()
-        .filter(r -> r.getNetwork().equals(p))
-        .collect(ImmutableSet.toImmutableSet());
   }
 
   /**
