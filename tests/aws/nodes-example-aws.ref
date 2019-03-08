@@ -1298,60 +1298,6 @@
               }
             ]
           },
-          "~BGP_DEFAULT_ROUTE_GENERATION_POLICY:default:169.254.13.237~" : {
-            "name" : "~BGP_DEFAULT_ROUTE_GENERATION_POLICY:default:169.254.13.237~",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                  "comment" : "match default route",
-                  "prefix" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                  },
-                  "prefixSet" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
-                    "prefixSpace" : [
-                      "0.0.0.0/0"
-                    ]
-                  }
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
-                  }
-                ]
-              }
-            ]
-          },
-          "~BGP_DEFAULT_ROUTE_GENERATION_POLICY:default:169.254.15.193~" : {
-            "name" : "~BGP_DEFAULT_ROUTE_GENERATION_POLICY:default:169.254.15.193~",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                  "comment" : "match default route",
-                  "prefix" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                  },
-                  "prefixSet" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
-                    "prefixSpace" : [
-                      "0.0.0.0/0"
-                    ]
-                  }
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
-                  }
-                ]
-              }
-            ]
-          },
           "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:default:169.254.13.237~" : {
             "name" : "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:default:169.254.13.237~",
             "statements" : [
@@ -1885,7 +1831,6 @@
                       "administrativeCost" : 32767,
                       "asPath" : [ ],
                       "discard" : false,
-                      "generationPolicy" : "~BGP_DEFAULT_ROUTE_GENERATION_POLICY:default:169.254.13.237~",
                       "metric" : 0,
                       "network" : "0.0.0.0/0",
                       "nextHopIp" : "AUTO/NONE(-1l)"
@@ -1922,7 +1867,6 @@
                       "administrativeCost" : 32767,
                       "asPath" : [ ],
                       "discard" : false,
-                      "generationPolicy" : "~BGP_DEFAULT_ROUTE_GENERATION_POLICY:default:169.254.15.193~",
                       "metric" : 0,
                       "network" : "0.0.0.0/0",
                       "nextHopIp" : "AUTO/NONE(-1l)"
