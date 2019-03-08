@@ -6,11 +6,12 @@ import static org.batfish.dataplane.ibdp.TestUtils.annotateRoute;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
@@ -62,6 +63,13 @@ public class FibImplTest {
     _config = cb.setHostname(NODE1).build();
     _vrf = nf.vrfBuilder().setOwner(_config).setName(Configuration.DEFAULT_VRF_NAME).build();
     _ib.setOwner(_config).setVrf(_vrf);
+  }
+
+  private static Set<AbstractRoute> getTopLevelRoutesByInterface(Fib fib, String ifaceName) {
+    return fib.allEntries().stream()
+        .filter(e -> e.getInterfaceName().equals(ifaceName))
+        .map(FibEntry::getTopLevelRoute)
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   @Test
@@ -178,7 +186,7 @@ public class FibImplTest {
     rib.mergeRoute(annotateRoute(forwardingRoute));
 
     Fib fib = new FibImpl(rib);
-    Set<AbstractRoute> fibRoutes = fib.getRoutesByNextHopInterface().get("Eth1");
+    Set<AbstractRoute> fibRoutes = getTopLevelRoutesByInterface(fib, "Eth1");
 
     assertThat(fibRoutes, not(hasItem(hasPrefix(Prefix.parse("1.1.1.0/24")))));
     assertThat(fibRoutes, hasItem(hasPrefix(Prefix.parse("2.2.2.0/24"))));
@@ -217,14 +225,14 @@ public class FibImplTest {
     rib.mergeRoute(annotateRoute(testRoute));
 
     Fib fib = new FibImpl(rib);
-    Set<AbstractRoute> fibRoutesEth1 = fib.getRoutesByNextHopInterface().get("Eth1");
+    Set<AbstractRoute> fibRoutesEth1 = getTopLevelRoutesByInterface(fib, "Eth1");
 
     /* 2.2.2.0/24 should resolve to the "forwardingLessSpecificRoute" and thus eth1 */
     assertThat(fibRoutesEth1, hasItem(hasPrefix(Prefix.parse("2.2.2.0/24"))));
 
     /* Nothing can resolve to "eth2" */
-    Set<AbstractRoute> fibRoutesEth2 = fib.getRoutesByNextHopInterface().get("Eth2");
-    assertThat(fibRoutesEth2, nullValue());
+    Set<AbstractRoute> fibRoutesEth2 = getTopLevelRoutesByInterface(fib, "Eth2");
+    assertThat(fibRoutesEth2, empty());
   }
 
   @Test
@@ -280,16 +288,16 @@ public class FibImplTest {
     Fib fib = new FibImpl(rib);
 
     /* 2.2.2.0/24 should resolve to eth3 and eth4*/
-    assertThat(fib.getRoutesByNextHopInterface().get("Eth3"), hasItem(hasPrefix(TEST_PREFIX)));
-    assertThat(fib.getRoutesByNextHopInterface().get("Eth4"), hasItem(hasPrefix(TEST_PREFIX)));
+    assertThat(getTopLevelRoutesByInterface(fib, "Eth3"), hasItem(hasPrefix(TEST_PREFIX)));
+    assertThat(getTopLevelRoutesByInterface(fib, "Eth4"), hasItem(hasPrefix(TEST_PREFIX)));
 
     /* 2.2.2.0/24 should NOT resolve to "forwardingLessSpecificRoute" (and thus Eth1)
-     * because more specific eth3/4
+     * because more specific route exists to eth3/4
      */
-    assertThat(fib.getRoutesByNextHopInterface().get("Eth1"), not(hasItem(hasPrefix(TEST_PREFIX))));
+    assertThat(getTopLevelRoutesByInterface(fib, "Eth1"), not(hasItem(hasPrefix(TEST_PREFIX))));
 
     /* Nothing can resolve to eth2 */
-    Set<AbstractRoute> fibRoutesEth2 = fib.getRoutesByNextHopInterface().get("Eth2");
-    assertThat(fibRoutesEth2, nullValue());
+    Set<AbstractRoute> fibRoutesEth2 = getTopLevelRoutesByInterface(fib, "Eth2");
+    assertThat(fibRoutesEth2, empty());
   }
 }
