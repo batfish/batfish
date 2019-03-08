@@ -3,7 +3,6 @@ package org.batfish.datamodel;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
 
 public interface GenericRib<R extends AbstractRouteDecorator> extends Serializable {
 
@@ -25,8 +24,6 @@ public interface GenericRib<R extends AbstractRouteDecorator> extends Serializab
    * for which {@link AbstractRoute#getNonForwarding()} returns false.
    */
   Map<Prefix, IpSpace> getMatchingIps();
-
-  SortedSet<Prefix> getPrefixes();
 
   /**
    * Get all the IPs that match a forwarding route in the RIB.

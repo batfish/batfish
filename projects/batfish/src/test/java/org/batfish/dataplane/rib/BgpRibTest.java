@@ -1,6 +1,7 @@
 package org.batfish.dataplane.rib;
 
 import static org.batfish.dataplane.ibdp.TestUtils.annotateRoute;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
@@ -13,7 +14,6 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -121,8 +121,8 @@ public class BgpRibTest {
     _multiPathRib.mergeRoute(worse);
     _multiPathRib.mergeRoute(best);
 
-    assertThat(_multiPathRib.getRoutes(), equalTo(Collections.singleton(best)));
-    assertThat(_multiPathRib.getBestPathRoutes(), equalTo(Collections.singleton(best)));
+    assertThat(_multiPathRib.getRoutes(), contains(best));
+    assertThat(_multiPathRib.getBestPathRoutes(), contains(best));
   }
 
   @Test
@@ -133,8 +133,8 @@ public class BgpRibTest {
     _multiPathRib.mergeRoute(worse);
     _multiPathRib.mergeRoute(best);
 
-    assertThat(_multiPathRib.getRoutes(), equalTo(Collections.singleton(best)));
-    assertThat(_multiPathRib.getBestPathRoutes(), equalTo(Collections.singleton(best)));
+    assertThat(_multiPathRib.getRoutes(), contains(best));
+    assertThat(_multiPathRib.getBestPathRoutes(), contains(best));
   }
 
   @Test
@@ -144,8 +144,8 @@ public class BgpRibTest {
     _multiPathRib.mergeRoute(worse);
     _multiPathRib.mergeRoute(best);
 
-    assertThat(_multiPathRib.getRoutes(), equalTo(Collections.singleton(best)));
-    assertThat(_multiPathRib.getBestPathRoutes(), equalTo(Collections.singleton(best)));
+    assertThat(_multiPathRib.getRoutes(), contains(best));
+    assertThat(_multiPathRib.getBestPathRoutes(), contains(best));
   }
 
   @Test
@@ -156,8 +156,8 @@ public class BgpRibTest {
     _multiPathRib.mergeRoute(worse);
     _multiPathRib.mergeRoute(best);
 
-    assertThat(_multiPathRib.getRoutes(), equalTo(Collections.singleton(best)));
-    assertThat(_multiPathRib.getBestPathRoutes(), equalTo(Collections.singleton(best)));
+    assertThat(_multiPathRib.getRoutes(), contains(best));
+    assertThat(_multiPathRib.getBestPathRoutes(), contains(best));
   }
 
   @Test
@@ -169,12 +169,12 @@ public class BgpRibTest {
     _multiPathRib.mergeRoute(worst);
     _multiPathRib.mergeRoute(medium);
 
-    assertThat(_multiPathRib.getRoutes(), equalTo(Collections.singleton(medium)));
-    assertThat(_multiPathRib.getBestPathRoutes(), equalTo(Collections.singleton(medium)));
+    assertThat(_multiPathRib.getRoutes(), contains(medium));
+    assertThat(_multiPathRib.getBestPathRoutes(), contains(medium));
 
     _multiPathRib.mergeRoute(best);
-    assertThat(_multiPathRib.getRoutes(), equalTo(Collections.singleton(best)));
-    assertThat(_multiPathRib.getBestPathRoutes(), equalTo(Collections.singleton(best)));
+    assertThat(_multiPathRib.getRoutes(), contains(best));
+    assertThat(_multiPathRib.getBestPathRoutes(), contains(best));
   }
 
   @Test
@@ -185,8 +185,8 @@ public class BgpRibTest {
     _multiPathRib.mergeRoute(worse);
     _multiPathRib.mergeRoute(best);
 
-    assertThat(_multiPathRib.getRoutes(), equalTo(Collections.singleton(best)));
-    assertThat(_multiPathRib.getBestPathRoutes(), equalTo(Collections.singleton(best)));
+    assertThat(_multiPathRib.getRoutes(), contains(best));
+    assertThat(_multiPathRib.getBestPathRoutes(), contains(best));
   }
 
   @Test
@@ -197,8 +197,8 @@ public class BgpRibTest {
     _multiPathRib.mergeRoute(worse);
     _multiPathRib.mergeRoute(best);
 
-    assertThat(_multiPathRib.getRoutes(), equalTo(Collections.singleton(best)));
-    assertThat(_multiPathRib.getBestPathRoutes(), equalTo(Collections.singleton(best)));
+    assertThat(_multiPathRib.getRoutes(), contains(best));
+    assertThat(_multiPathRib.getBestPathRoutes(), contains(best));
   }
 
   @Test
@@ -225,8 +225,8 @@ public class BgpRibTest {
 
     rib.mergeRoute(worse);
     rib.mergeRoute(best);
-    assertThat(rib.getRoutes(), equalTo(Collections.singleton(best)));
-    assertThat(rib.getBestPathRoutes(), equalTo(Collections.singleton(best)));
+    assertThat(rib.getRoutes(), contains(best));
+    assertThat(rib.getBestPathRoutes(), contains(best));
   }
 
   @Test
@@ -278,7 +278,7 @@ public class BgpRibTest {
     _multiPathRib.mergeRoute(_rb.setOriginatorIp(Ip.parse("2.2.2.3")).build());
     _multiPathRib.mergeRoute(bestPath);
     assertThat(_multiPathRib.getRoutes(), hasSize(3));
-    assertThat(_multiPathRib.getBestPathRoutes(), equalTo(Collections.singleton(bestPath)));
+    assertThat(_multiPathRib.getBestPathRoutes(), contains(bestPath));
   }
 
   @Test
@@ -297,7 +297,7 @@ public class BgpRibTest {
     _multiPathRib.mergeRoute(best);
 
     assertThat(_multiPathRib.getRoutes(), hasSize(3));
-    assertThat(_multiPathRib.getBestPathRoutes(), equalTo(Collections.singleton(earliest)));
+    assertThat(_multiPathRib.getBestPathRoutes(), contains(earliest));
   }
 
   @Test
@@ -309,7 +309,7 @@ public class BgpRibTest {
     _multiPathRib.mergeRoute(_rb.setClusterList(ImmutableSortedSet.of(22L, 33L)).build());
 
     assertThat(_multiPathRib.getRoutes(), hasSize(3));
-    assertThat(_multiPathRib.getBestPathRoutes(), equalTo(Collections.singleton(bestPath)));
+    assertThat(_multiPathRib.getBestPathRoutes(), contains(bestPath));
   }
 
   @Test
@@ -320,7 +320,7 @@ public class BgpRibTest {
     _multiPathRib.mergeRoute(bestPath);
 
     assertThat(_multiPathRib.getRoutes(), hasSize(3));
-    assertThat(_multiPathRib.getBestPathRoutes(), equalTo(Collections.singleton(bestPath)));
+    assertThat(_multiPathRib.getBestPathRoutes(), contains(bestPath));
   }
 
   @Test
@@ -331,7 +331,7 @@ public class BgpRibTest {
     _multiPathRib.mergeRoute(bestPath);
 
     assertThat(_multiPathRib.getRoutes(), hasSize(1));
-    assertThat(_multiPathRib.getBestPathRoutes(), equalTo(Collections.singleton(bestPath)));
+    assertThat(_multiPathRib.getBestPathRoutes(), contains(bestPath));
   }
 
   @Test
@@ -345,8 +345,8 @@ public class BgpRibTest {
     BgpRoute bestPath = _rb.setLocalPreference(1000).build();
     _multiPathRib.mergeRoute(bestPath);
 
-    assertThat(_multiPathRib.getRoutes(), equalTo(Collections.singleton(bestPath)));
-    assertThat(_multiPathRib.getBestPathRoutes(), equalTo(Collections.singleton(bestPath)));
+    assertThat(_multiPathRib.getRoutes(), contains(bestPath));
+    assertThat(_multiPathRib.getBestPathRoutes(), contains(bestPath));
   }
 
   @Test
@@ -357,8 +357,8 @@ public class BgpRibTest {
     bestPathRib.mergeRoute(_rb.setReceivedFromIp(Ip.parse("2.2.2.3")).build());
     bestPathRib.mergeRoute(bestPath);
 
-    assertThat(bestPathRib.getRoutes(), equalTo(Collections.singleton(bestPath)));
-    assertThat(bestPathRib.getBestPathRoutes(), equalTo(Collections.singleton(bestPath)));
+    assertThat(bestPathRib.getRoutes(), contains(bestPath));
+    assertThat(bestPathRib.getBestPathRoutes(), contains(bestPath));
   }
 
   @Test
@@ -384,7 +384,7 @@ public class BgpRibTest {
     BgpRoute bestPath = _rb.setLocalPreference(200).build();
     _bestPathRib.mergeRoute(bestPath);
 
-    assertThat(_bestPathRib.getRoutes(), equalTo(Collections.singleton(bestPath)));
+    assertThat(_bestPathRib.getRoutes(), contains(bestPath));
   }
 
   @Test
@@ -394,7 +394,7 @@ public class BgpRibTest {
     BgpRoute bestPath = _rb.setOriginatorIp(Ip.parse("1.1.0.1")).build();
     _bestPathRib.mergeRoute(bestPath);
 
-    assertThat(_bestPathRib.getRoutes(), equalTo(Collections.singleton(bestPath)));
+    assertThat(_bestPathRib.getRoutes(), contains(bestPath));
   }
 
   @Test
@@ -404,7 +404,7 @@ public class BgpRibTest {
     BgpRoute bestPath = _rb.setReceivedFromIp(Ip.parse("1.1.0.1")).build();
     _bestPathRib.mergeRoute(bestPath);
 
-    assertThat(_bestPathRib.getRoutes(), equalTo(Collections.singleton(bestPath)));
+    assertThat(_bestPathRib.getRoutes(), contains(bestPath));
   }
 
   @Test
@@ -415,7 +415,7 @@ public class BgpRibTest {
     // Oldest route should win despite newer having lower in Originator IP
     _bestPathRib.mergeRoute(_rb.setOriginatorIp(Ip.parse("1.1.0.1")).build());
 
-    assertThat(_bestPathRib.getRoutes(), equalTo(Collections.singleton(bestPath)));
+    assertThat(_bestPathRib.getRoutes(), contains(bestPath));
   }
 
   //////////////////////////////////////////////////////////////////////////////////
