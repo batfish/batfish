@@ -524,7 +524,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
       return Optional.empty();
     }
     Pool pool = _pools.get(poolName);
-    if (!virtual.getIpForward() && pool == null) {
+    if (pool == null) {
       // Cannot translate without pool
       _w.redFlag(
           String.format(
