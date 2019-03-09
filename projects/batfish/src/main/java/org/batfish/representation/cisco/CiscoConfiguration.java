@@ -312,10 +312,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return String.format("~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:%s:%s~", vrf, peer);
   }
 
-  public static String computeBgpDefaultRouteGenerationPolicyName(String vrf, String peer) {
-    return String.format("~BGP_DEFAULT_ROUTE_GENERATION_POLICY:%s:%s~", vrf, peer);
-  }
-
   public static String computeBgpPeerImportPolicyName(String vrf, String peer) {
     return String.format("~BGP_PEER_IMPORT_POLICY:%s:%s~", vrf, peer);
   }
@@ -1914,23 +1910,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
             defaultRoute.setGenerationPolicy(defaultOriginateMapName);
           } else {
             defaultRoute6.setGenerationPolicy(defaultOriginateMapName);
-          }
-        } else {
-          If defaultRouteGenerationConditional =
-              new If(
-                  ipv4 ? MATCH_DEFAULT_ROUTE : MATCH_DEFAULT_ROUTE6,
-                  ImmutableList.of(Statements.ReturnTrue.toStaticStatement()));
-          String defaultRouteGenerationPolicyName =
-              computeBgpDefaultRouteGenerationPolicyName(vrfName, lpg.getName());
-          RoutingPolicy.builder()
-              .setOwner(c)
-              .setName(defaultRouteGenerationPolicyName)
-              .addStatement(defaultRouteGenerationConditional)
-              .build();
-          if (ipv4) {
-            defaultRoute.setGenerationPolicy(defaultRouteGenerationPolicyName);
-          } else {
-            defaultRoute6.setGenerationPolicy(defaultRouteGenerationPolicyName);
           }
         }
       }

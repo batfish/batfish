@@ -190,17 +190,11 @@ public class VirtualRouter implements Serializable {
   transient SortedMap<IsisEdge, Queue<RouteAdvertisement<IsisRoute>>> _isisIncomingRoutes;
 
   transient IsisLevelRib _isisL1Rib;
-
   transient IsisLevelRib _isisL2Rib;
-
   private transient IsisLevelRib _isisL1StagingRib;
-
   private transient IsisLevelRib _isisL2StagingRib;
-
   private transient IsisRib _isisRib;
-
   transient KernelRib _kernelRib;
-
   transient LocalRib _localRib;
 
   /** The finalized RIB, a combination different protocol RIBs */
@@ -212,16 +206,11 @@ public class VirtualRouter implements Serializable {
   @VisibleForTesting
   transient RibDelta.Builder<AnnotatedRoute<AbstractRoute>> _mainRibRouteDeltaBuilder;
 
-  @Nonnull private final Node _node;
-
   @Nonnull final String _name;
-
+  @Nonnull private final Node _node;
   transient OspfExternalType1Rib _ospfExternalType1Rib;
-
   transient OspfExternalType1Rib _ospfExternalType1StagingRib;
-
   transient OspfExternalType2Rib _ospfExternalType2Rib;
-
   transient OspfExternalType2Rib _ospfExternalType2StagingRib;
 
   @VisibleForTesting
@@ -229,23 +218,14 @@ public class VirtualRouter implements Serializable {
       _ospfExternalIncomingRoutes;
 
   transient OspfInterAreaRib _ospfInterAreaRib;
-
   transient OspfInterAreaRib _ospfInterAreaStagingRib;
-
   transient OspfIntraAreaRib _ospfIntraAreaRib;
-
   transient OspfIntraAreaRib _ospfIntraAreaStagingRib;
-
   transient OspfRib _ospfRib;
-
   transient RipInternalRib _ripInternalRib;
-
   transient RipInternalRib _ripInternalStagingRib;
-
   transient RipRib _ripRib;
-
   transient StaticRib _staticInterfaceRib;
-
   transient StaticRib _staticNextHopRib;
 
   /** FIB (forwarding information base) built from the main RIB */
@@ -2115,7 +2095,8 @@ public class VirtualRouter implements Serializable {
          */
         for (Prefix p : mainDelta.getPrefixes()) {
           preExportPolicyDeltaBuilder.add(
-              _bgpRib.getTypedRoutes(p).stream()
+              _bgpRib.getTypedRoutes().stream()
+                  .filter(r -> r.getNetwork().equals(p))
                   .map(r -> new AnnotatedRoute<AbstractRoute>(r, _name))
                   .collect(ImmutableSet.toImmutableSet()));
         }
@@ -2528,7 +2509,7 @@ public class VirtualRouter implements Serializable {
     }
 
     // Note prefixes we tried to originate
-    _mainRib.getRoutes().forEach(r -> _prefixTracer.originated(r.getNetwork()));
+    _mainRib.getTypedRoutes().forEach(r -> _prefixTracer.originated(r.getNetwork()));
 
     /*
      * Export route advertisements by looking at main RIB

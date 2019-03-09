@@ -39,7 +39,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteDecorator;
@@ -486,11 +485,6 @@ public class RoutesAnswererTest {
 
     @Override
     public Map<Prefix, IpSpace> getMatchingIps() {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public SortedSet<Prefix> getPrefixes() {
       throw new UnsupportedOperationException();
     }
 

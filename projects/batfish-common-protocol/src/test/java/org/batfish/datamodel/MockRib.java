@@ -117,11 +117,6 @@ public class MockRib implements GenericRib<AbstractRoute> {
   }
 
   @Override
-  public SortedSet<Prefix> getPrefixes() {
-    return _prefixes;
-  }
-
-  @Override
   public IpSpace getRoutableIps() {
     return _routableIps;
   }
