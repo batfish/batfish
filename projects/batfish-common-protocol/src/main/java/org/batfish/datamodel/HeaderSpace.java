@@ -916,6 +916,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       return false;
     }
     if (!_icmpCodes.isEmpty()
+        && flow.getIcmpCode() != null
         && _icmpCodes.stream().noneMatch(sr -> sr.includes(flow.getIcmpCode()))) {
       return false;
     }
@@ -923,6 +924,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       return false;
     }
     if (!_icmpTypes.isEmpty()
+        && flow.getIcmpType() != null
         && _icmpTypes.stream().noneMatch(sr -> sr.includes(flow.getIcmpType()))) {
       return false;
     }
