@@ -94,6 +94,10 @@ public final class Flow implements Comparable<Flow>, Serializable {
     public Flow build() {
       checkNotNull(_ingressNode, "Cannot build flow without at least specifying ingress node");
       checkNotNull(_tag, "Cannot build flow without specifying tag");
+      if (_ipProtocol == IpProtocol.ICMP) {
+        checkArgument(_icmpType != null, "ICMP packets must have an ICMP type");
+        checkArgument(_icmpCode != null, "ICMP packets must have an ICMP code");
+      }
       return new Flow(
           _ingressNode,
           _ingressInterface,
@@ -465,6 +469,10 @@ public final class Flow implements Comparable<Flow>, Serializable {
             tcpFlagsRst != 0,
             tcpFlagsSyn != 0,
             tcpFlagsUrg != 0);
+    if (_ipProtocol == IpProtocol.ICMP) {
+      checkArgument(_icmpType != null, "ICMP packets must have an ICMP type");
+      checkArgument(_icmpCode != null, "ICMP packets must have an ICMP code");
+    }
   }
 
   @JsonCreator
