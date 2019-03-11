@@ -509,14 +509,6 @@ public class CommonUtil {
                 Comparator.naturalOrder(), keyFunction, valueFunction));
   }
 
-  public static <S extends Set<T>, T> S union(
-      Set<T> set1, Set<T> set2, Supplier<S> setConstructor) {
-    S unionSet = setConstructor.get();
-    unionSet.addAll(set1);
-    unionSet.addAll(set2);
-    return unionSet;
-  }
-
   public static void writeFile(Path outputPath, String output) {
     try (FileOutputStream fs = new FileOutputStream(outputPath.toFile());
         OutputStreamWriter os = new OutputStreamWriter(fs, StandardCharsets.UTF_8)) {
