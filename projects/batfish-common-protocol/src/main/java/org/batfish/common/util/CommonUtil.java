@@ -67,7 +67,6 @@ import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.client.ClientBuilder;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
 import org.batfish.datamodel.Configuration;
@@ -371,20 +370,6 @@ public class CommonUtil {
       biConsumer.accept(i, t);
       i++;
     }
-  }
-
-  public static String getIndentedString(String str, int indentLevel) {
-    String indent = getIndentString(indentLevel);
-    StringBuilder sb = new StringBuilder();
-    String[] lines = str.split("\n", -1);
-    for (String line : lines) {
-      sb.append(indent + line + "\n");
-    }
-    return sb.toString();
-  }
-
-  public static String getIndentString(int indentLevel) {
-    return StringUtils.repeat("  ", indentLevel);
   }
 
   @Nullable
