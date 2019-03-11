@@ -1582,7 +1582,16 @@ public class WorkMgr extends AbstractCoordinator {
         }
       }
       // Copy everything over
-      CommonUtil.copy(subFile, srcTestrigDir.resolve(subFile.getFileName()));
+      Path dstPath = srcTestrigDir.resolve(subFile.getFileName());
+      try {
+        if (Files.isDirectory(subFile)) {
+          FileUtils.copyDirectory(subFile.toFile(), dstPath.toFile());
+        } else {
+          FileUtils.copyFile(subFile.toFile(), dstPath.toFile());
+        }
+      } catch (IOException e) {
+        throw new BatfishException("Failed to copy: '" + subFile + "' to: '" + dstPath + "'", e);
+      }
     }
     _logger.infof(
         "Environment data for snapshot:%s; bgpTables:%s, routingTables:%s, nodeRoles:%s referenceBooks:%s\n",
@@ -1695,7 +1704,7 @@ public class WorkMgr extends AbstractCoordinator {
       throw new BatfishException("Failed to create directory: '" + newSnapshotInputsDir + "'");
     }
     if (baseSnapshotInputsDir.toFile().exists()) {
-      CommonUtil.copyDirectory(baseSnapshotInputsDir, newSnapshotInputsDir);
+      FileUtils.copyDirectory(baseSnapshotInputsDir.toFile(), newSnapshotInputsDir.toFile());
       _logger.infof(
           "Copied snapshot from: %s to new snapshot: %s in network: %s\n",
           baseSnapshotInputsDir, newSnapshotInputsDir, networkName);

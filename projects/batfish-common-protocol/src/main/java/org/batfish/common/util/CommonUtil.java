@@ -227,31 +227,6 @@ public class CommonUtil {
     return 0;
   }
 
-  public static void copy(Path srcPath, Path dstPath) {
-    if (Files.isDirectory(srcPath)) {
-      copyDirectory(srcPath, dstPath);
-    } else {
-      copyFile(srcPath, dstPath);
-    }
-  }
-
-  public static void copyDirectory(Path srcPath, Path dstPath) {
-    try {
-      FileUtils.copyDirectory(srcPath.toFile(), dstPath.toFile());
-    } catch (IOException e) {
-      throw new BatfishException(
-          "Failed to copy directory: '" + srcPath + "' to: '" + dstPath + "'", e);
-    }
-  }
-
-  public static void copyFile(Path srcPath, Path dstPath) {
-    try {
-      FileUtils.copyFile(srcPath.toFile(), dstPath.toFile());
-    } catch (IOException e) {
-      throw new BatfishException("Failed to copy file: '" + srcPath + "' to: '" + dstPath + "'", e);
-    }
-  }
-
   /**
    * Returns a {@link ClientBuilder} with supplied settings
    *
@@ -599,16 +574,6 @@ public class CommonUtil {
     long upper = l >> 16;
     long lower = l & 0xFFFF;
     return upper + ":" + lower;
-  }
-
-  public static void moveByCopy(Path srcPath, Path dstPath) {
-    if (Files.isDirectory(srcPath)) {
-      copyDirectory(srcPath, dstPath);
-      deleteDirectory(srcPath);
-    } else {
-      copyFile(srcPath, dstPath);
-      delete(srcPath);
-    }
   }
 
   public static void outputFileLines(Path downloadedFile, Consumer<String> outputFunction) {
