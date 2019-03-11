@@ -7,8 +7,8 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import org.apache.commons.lang3.StringUtils;
 import org.batfish.common.BatfishException;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.pojo.Environment;
@@ -16,6 +16,16 @@ import org.batfish.datamodel.pojo.Environment;
 public class FlowHistory extends AnswerElement {
 
   private static final String PROP_TRACES = "traces";
+
+  private static String getIndentedString(String str, int indentLevel) {
+    String indent = StringUtils.repeat("  ", indentLevel);
+    StringBuilder sb = new StringBuilder();
+    String[] lines = str.split("\n", -1);
+    for (String line : lines) {
+      sb.append(indent + line + "\n");
+    }
+    return sb.toString();
+  }
 
   public static class FlowHistoryInfo {
 
@@ -149,7 +159,7 @@ public class FlowHistory extends AnswerElement {
           i++;
           sb.append("  Trace: " + i + "\n");
           String rawTraceString = trace.toString();
-          String traceString = CommonUtil.getIndentedString(rawTraceString, 3);
+          String traceString = getIndentedString(rawTraceString, 3);
           sb.append(traceString);
         }
       }

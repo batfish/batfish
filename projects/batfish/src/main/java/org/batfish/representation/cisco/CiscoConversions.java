@@ -34,7 +34,6 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
@@ -1172,7 +1171,7 @@ class CiscoConversions {
 
   static org.batfish.datamodel.StaticRoute toStaticRoute(Configuration c, StaticRoute staticRoute) {
     String nextHopInterface = staticRoute.getNextHopInterface();
-    if (nextHopInterface != null && CommonUtil.isNullInterface(nextHopInterface)) {
+    if (nextHopInterface != null && nextHopInterface.toLowerCase().startsWith("null")) {
       nextHopInterface = org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
     }
     return org.batfish.datamodel.StaticRoute.builder()

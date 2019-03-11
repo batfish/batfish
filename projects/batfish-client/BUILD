@@ -34,6 +34,7 @@ java_library(
         "@jersey_media_multipart//:compile",
         "@jettison//:compile",
         "@jline3//:compile",
+        "@jsonassert//:compile",
         "@jsr305//:compile",
         "@opentracing_api//:compile",
         "@opentracing_util//:compile",
