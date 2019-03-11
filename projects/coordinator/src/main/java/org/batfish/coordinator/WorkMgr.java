@@ -35,6 +35,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.DirectoryIteratorException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -184,6 +186,18 @@ public class WorkMgr extends AbstractCoordinator {
     } catch (IOException e) {
       throw new BatfishException("Could not get canonical path from: '" + path + "'", e);
     }
+  }
+
+  private static SortedSet<Path> getEntries(Path directory) {
+    SortedSet<Path> entries = new TreeSet<>();
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
+      for (Path entry : stream) {
+        entries.add(entry);
+      }
+    } catch (IOException | DirectoryIteratorException e) {
+      throw new BatfishException("Error listing directory '" + directory + "'", e);
+    }
+    return entries;
   }
 
   static final class AssignWorkTask implements Runnable {
@@ -1382,12 +1396,12 @@ public class WorkMgr extends AbstractCoordinator {
       return "Missing folder '" + BfConsts.RELPATH_INPUT + "' for snapshot '" + testrigName + "'\n";
     }
     StringBuilder retStringBuilder = new StringBuilder();
-    SortedSet<Path> entries = CommonUtil.getEntries(submittedTestrigDir);
+    SortedSet<Path> entries = getEntries(submittedTestrigDir);
     for (Path entry : entries) {
       retStringBuilder.append(entry.getFileName());
       if (Files.isDirectory(entry)) {
         String[] subdirEntryNames =
-            CommonUtil.getEntries(entry).stream()
+            getEntries(entry).stream()
                 .map(subdirEntry -> subdirEntry.getFileName().toString())
                 .toArray(String[]::new);
         retStringBuilder.append("/\n");
@@ -1531,7 +1545,7 @@ public class WorkMgr extends AbstractCoordinator {
     Path subDir = getSnapshotSubdir(srcDir);
     validateSnapshotDir(subDir);
 
-    SortedSet<Path> subFileList = CommonUtil.getEntries(subDir);
+    SortedSet<Path> subFileList = getEntries(subDir);
 
     NetworkId networkId = _idManager.getNetworkId(networkName);
     SnapshotId snapshotId = _idManager.generateSnapshotId();
@@ -1646,7 +1660,7 @@ public class WorkMgr extends AbstractCoordinator {
   @VisibleForTesting
   static Path getSnapshotSubdir(Path srcDir) {
     SortedSet<Path> srcDirEntries =
-        CommonUtil.getEntries(srcDir).stream()
+        getEntries(srcDir).stream()
             .filter(path -> !IGNORED_PATHS.contains(path.getFileName().toString()))
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
     /*

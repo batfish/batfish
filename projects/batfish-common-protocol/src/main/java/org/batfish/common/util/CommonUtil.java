@@ -373,18 +373,6 @@ public class CommonUtil {
     }
   }
 
-  public static SortedSet<Path> getEntries(Path directory) {
-    SortedSet<Path> entries = new TreeSet<>();
-    try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
-      for (Path entry : stream) {
-        entries.add(entry);
-      }
-    } catch (IOException | DirectoryIteratorException e) {
-      throw new BatfishException("Error listing directory '" + directory + "'", e);
-    }
-    return entries;
-  }
-
   public static String getIndentedString(String str, int indentLevel) {
     String indent = getIndentString(indentLevel);
     StringBuilder sb = new StringBuilder();
