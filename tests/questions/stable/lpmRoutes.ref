@@ -10,6 +10,11 @@
     "description" : "Show routes which are longest prefix match for a given IP address",
     "instanceName" : "qname",
     "longDescription" : "Return longest prefix match routes for a given IP in the RIBs of specified node/VRF.",
+    "orderedVariableNames" : [
+      "ip",
+      "nodes",
+      "vrfs"
+    ],
     "tags" : [
       "dataPlane",
       "route"
