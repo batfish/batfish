@@ -28,8 +28,6 @@ import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.DirectoryIteratorException;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -47,7 +45,6 @@ import java.util.NavigableMap;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -384,20 +381,6 @@ public class CommonUtil {
       }
     }
     return null;
-  }
-
-  public static SortedSet<Path> getSubdirectories(Path directory) {
-    SortedSet<Path> subdirectories = new TreeSet<>();
-    try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
-      for (Path entry : stream) {
-        if (Files.isDirectory(entry)) {
-          subdirectories.add(entry);
-        }
-      }
-    } catch (IOException | DirectoryIteratorException e) {
-      throw new BatfishException("Error listing directory '" + directory + "'", e);
-    }
-    return subdirectories;
   }
 
   public static String getTime(long millis) {
