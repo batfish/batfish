@@ -91,7 +91,6 @@ import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 public class CommonUtil {
 
@@ -181,19 +180,6 @@ public class CommonUtil {
       } else {
         return false;
       }
-    }
-  }
-
-  public static boolean checkJsonEqual(Object a, Object b) {
-    try {
-      String aString = BatfishObjectMapper.writePrettyString(a);
-      String bString = BatfishObjectMapper.writePrettyString(b);
-      JSONAssert.assertEquals(aString, bString, false);
-      return true;
-    } catch (Exception e) {
-      throw new BatfishException("JSON equality check failed", e);
-    } catch (AssertionError err) {
-      return false;
     }
   }
 

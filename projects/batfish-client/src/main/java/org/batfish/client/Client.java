@@ -128,6 +128,7 @@ import org.jline.reader.impl.completer.NullCompleter;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.jline.utils.InfoCmp.Capability;
+import org.skyscreamer.jsonassert.JSONAssert;
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
 
@@ -2277,6 +2278,19 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
+  private static boolean checkJsonEqual(Object a, Object b) {
+    try {
+      String aString = BatfishObjectMapper.writeString(a);
+      String bString = BatfishObjectMapper.writeString(b);
+      JSONAssert.assertEquals(aString, bString, false);
+      return true;
+    } catch (Exception e) {
+      throw new BatfishException("JSON equality check failed", e);
+    } catch (AssertionError err) {
+      return false;
+    }
+  }
+
   private boolean pollWorkAndGetAnswer(WorkItem wItem, @Nullable FileWriter outWriter) {
 
     boolean pollResult = pollWork(wItem.getId());
@@ -2318,8 +2332,7 @@ public class Client extends AbstractClient implements IClient {
           String newAnswerString = BatfishObjectMapper.writeString(answer);
           JsonNode tree = reader.readTree(answerString);
           JsonNode newTree = reader.readTree(newAnswerString);
-          if (!CommonUtil.checkJsonEqual(tree, newTree)) {
-            // if (!tree.equals(newTree)) {
+          if (!checkJsonEqual(tree, newTree)) {
             _logger.errorf(
                 "Original and recovered Json are different. Recovered = %s\n", newAnswerString);
           }
