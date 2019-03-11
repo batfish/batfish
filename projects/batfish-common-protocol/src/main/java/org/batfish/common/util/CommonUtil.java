@@ -9,7 +9,6 @@ import com.google.common.hash.Hashing;
 import com.ibm.icu.text.CharsetDetector;
 import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
 import io.opentracing.util.GlobalTracer;
-import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -38,7 +37,6 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
@@ -384,18 +382,6 @@ public class CommonUtil {
     long upper = l >> 16;
     long lower = l & 0xFFFF;
     return upper + ":" + lower;
-  }
-
-  public static void outputFileLines(Path downloadedFile, Consumer<String> outputFunction) {
-    try (BufferedReader br = Files.newBufferedReader(downloadedFile, StandardCharsets.UTF_8)) {
-      String line = null;
-      while ((line = br.readLine()) != null) {
-        outputFunction.accept(line + "\n");
-      }
-    } catch (IOException e) {
-      throw new BatfishException(
-          "Failed to read and output lines of file: '" + downloadedFile + "'", e);
-    }
   }
 
   @Nonnull

@@ -53,6 +53,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.annotation.Nonnull;
@@ -758,6 +759,18 @@ public class Client extends AbstractClient implements IClient {
 
   public Client(String[] args) {
     this(new Settings(args));
+  }
+
+  private static void outputFileLines(Path downloadedFile, Consumer<String> outputFunction) {
+    try (BufferedReader br = Files.newBufferedReader(downloadedFile, UTF_8)) {
+      String line = null;
+      while ((line = br.readLine()) != null) {
+        outputFunction.accept(line + "\n");
+      }
+    } catch (IOException e) {
+      throw new BatfishException(
+          "Failed to read and output lines of file: '" + downloadedFile + "'", e);
+    }
   }
 
   private boolean addBatfishOption(String[] words, List<String> options, List<String> parameters) {
@@ -2353,7 +2366,7 @@ public class Client extends AbstractClient implements IClient {
         return false;
       } else {
         Path downloadedFile = Paths.get(downloadedFileStr);
-        CommonUtil.outputFileLines(downloadedFile, _logger::output);
+        outputFileLines(downloadedFile, _logger::output);
       }
     }
     return true;
