@@ -380,11 +380,6 @@ public class CommonUtil {
     return intersectionSet;
   }
 
-  public static boolean isNullInterface(String ifaceName) {
-    String lcIfaceName = ifaceName.toLowerCase();
-    return lcIfaceName.startsWith("null");
-  }
-
   public static boolean isNullOrEmpty(@Nullable Collection<?> collection) {
     return collection == null || collection.isEmpty();
   }
