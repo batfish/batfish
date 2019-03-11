@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import com.google.common.hash.Hashing;
-import com.google.errorprone.annotations.MustBeClosed;
 import com.ibm.icu.text.CharsetDetector;
 import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
 import io.opentracing.util.GlobalTracer;
@@ -43,7 +42,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
-import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.net.ssl.HostnameVerifier;
@@ -378,15 +376,6 @@ public class CommonUtil {
     intersectionSet.addAll(set1);
     intersectionSet.retainAll(set2);
     return intersectionSet;
-  }
-
-  @MustBeClosed
-  public static Stream<Path> list(Path configsPath) {
-    try {
-      return Files.list(configsPath);
-    } catch (IOException e) {
-      throw new BatfishException("Could not list files in '" + configsPath + "'", e);
-    }
   }
 
   /** Convert a given long to a string BGP community representation. */
