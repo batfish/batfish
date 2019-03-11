@@ -336,6 +336,15 @@
         "cisco_ospf" : [
           "configs/cisco_ospf"
         ],
+        "cisco_ospf_ipv6" : [
+          "configs/cisco_ospf_ipv6"
+        ],
+        "cisco_ospf_multi_process" : [
+          "configs/cisco_ospf_multi_process"
+        ],
+        "cisco_ospfv3" : [
+          "configs/cisco_opsfv3"
+        ],
         "cisco_pim" : [
           "configs/cisco_pim"
         ],
@@ -945,7 +954,10 @@
         "configs/cisco_ntp" : "PASSED",
         "configs/cisco_nxos" : "PASSED",
         "configs/cisco_nxos_bgp" : "PASSED",
+        "configs/cisco_opsfv3" : "PASSED",
         "configs/cisco_ospf" : "PASSED",
+        "configs/cisco_ospf_ipv6" : "PASSED",
+        "configs/cisco_ospf_multi_process" : "PASSED",
         "configs/cisco_pim" : "PASSED",
         "configs/cisco_platform" : "PASSED",
         "configs/cisco_privilege" : "PASSED",
@@ -30869,6 +30881,260 @@
             "  EOF:<EOF>)"
           ]
         },
+        "configs/cisco_opsfv3" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'",
+            "      VARIABLE:'cisco_ospfv3'",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'ethernet'  <== mode:M_Interface",
+            "        DEC:'0'  <== mode:M_Interface",
+            "        FORWARD_SLASH:'/'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'0'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          ip = IP_ADDRESS:'2.2.2.0'",
+            "          subnet = IP_ADDRESS:'255.255.255.0'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_ip_router_ospf_area",
+            "          IP:'ip'",
+            "          ROUTER:'router'",
+            "          OSPF:'ospf'",
+            "          procname = (variable",
+            "            DEC:'1')",
+            "          AREA:'area'",
+            "          area = IP_ADDRESS:'0.0.0.0'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_ip_ospf_shutdown",
+            "          IP:'ip'",
+            "          OSPF:'ospf'",
+            "          SHUTDOWN:'shutdown'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_null_block",
+            "          OSPFV3:'ospfv3'",
+            "          NAME_LOOKUP:'name-lookup'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_router_ospfv3",
+            "      ROUTER:'router'",
+            "      OSPFV3:'ospfv3'",
+            "      procname = (variable",
+            "        DEC:'1')",
+            "      NEWLINE:'\\n'",
+            "      (rov3_address_family",
+            "        ADDRESS_FAMILY:'address-family'",
+            "        IPV6:'ipv6'",
+            "        UNICAST:'unicast'",
+            "        NEWLINE:'\\n'",
+            "        (rov3_common",
+            "          (rov3_null",
+            "            REDISTRIBUTE:'redistribute'",
+            "            (null_rest_of_line",
+            "              DIRECT:'direct'",
+            "              ROUTE_MAP:'route-map'",
+            "              VARIABLE:'DIRECT_OSPF'  <== mode:M_RouteMap",
+            "              NEWLINE:'\\n')))",
+            "        (rov3_common",
+            "          (rov3_null",
+            "            TIMERS:'timers'",
+            "            (null_rest_of_line",
+            "              VARIABLE:'throttle'",
+            "              VARIABLE:'spf'",
+            "              DEC:'200'",
+            "              DEC:'1000'",
+            "              DEC:'5000'",
+            "              NEWLINE:'\\n')))",
+            "        (rov3_common",
+            "          (rov3_null",
+            "            DISTANCE:'distance'",
+            "            (null_rest_of_line",
+            "              DEC:'110'",
+            "              NEWLINE:'\\n')))",
+            "        (rov3_common",
+            "          (rov3_null",
+            "            MAXIMUM_PATHS:'maximum-paths'",
+            "            (null_rest_of_line",
+            "              DEC:'8'",
+            "              NEWLINE:'\\n'))))",
+            "      (rov3_address_family",
+            "        ADDRESS_FAMILY:'address-family'",
+            "        IPV6:'ipv6'",
+            "        NEWLINE:'\\n'",
+            "        EXIT_ADDRESS_FAMILY:'exit-address-family'",
+            "        NEWLINE:'\\n')",
+            "      (rov3_common",
+            "        (rov3_null",
+            "          AUTO_COST:'auto-cost'",
+            "          (null_rest_of_line",
+            "            REFERENCE_BANDWIDTH:'reference-bandwidth'",
+            "            DEC:'40'",
+            "            GBPS:'Gbps'",
+            "            NEWLINE:'\\n')))",
+            "      (rov3_common",
+            "        (rov3_null",
+            "          DISCARD_ROUTE:'discard-route'",
+            "          (null_rest_of_line",
+            "            EXTERNAL:'external'",
+            "            NEWLINE:'\\n')))",
+            "      (rov3_common",
+            "        (rov3_null",
+            "          DISCARD_ROUTE:'discard-route'",
+            "          (null_rest_of_line",
+            "            INTERNAL:'internal'",
+            "            NEWLINE:'\\n')))",
+            "      (rov3_common",
+            "        (rov3_null",
+            "          GRACEFUL_RESTART:'graceful-restart'",
+            "          (null_rest_of_line",
+            "            NEWLINE:'\\n')))",
+            "      (rov3_common",
+            "        (rov3_null",
+            "          GRACEFUL_RESTART:'graceful-restart'",
+            "          (null_rest_of_line",
+            "            VARIABLE:'grace-period'",
+            "            DEC:'180'",
+            "            NEWLINE:'\\n')))",
+            "      (rov3_common",
+            "        (rov3_null",
+            "          LOG_ADJACENCY_CHANGES:'log-adjacency-changes'",
+            "          (null_rest_of_line",
+            "            DETAIL:'detail'",
+            "            NEWLINE:'\\n')))",
+            "      (rov3_common",
+            "        (rov3_null",
+            "          MAX_METRIC:'max-metric'",
+            "          (null_rest_of_line",
+            "            ROUTER_LSA:'router-lsa'",
+            "            ON_STARTUP:'on-startup'",
+            "            DEC:'600'",
+            "            NEWLINE:'\\n')))",
+            "      (rov3_common",
+            "        (rov3_null",
+            "          MAXIMUM_PATHS:'maximum-paths'",
+            "          (null_rest_of_line",
+            "            DEC:'16'",
+            "            NEWLINE:'\\n')))",
+            "      (rov3_common",
+            "        (rov3_null",
+            "          OSPFV3:'ospfv3'",
+            "          (null_rest_of_line",
+            "            EVENT_HISTORY:'event-history'",
+            "            HELLO:'hello'",
+            "            SIZE:'size'",
+            "            SMALL:'small'",
+            "            NEWLINE:'\\n')))",
+            "      (rov3_common",
+            "        (rov3_null",
+            "          OSPFV3:'ospfv3'",
+            "          (null_rest_of_line",
+            "            EVENT_HISTORY:'event-history'",
+            "            VARIABLE:'redistribution'",
+            "            SIZE:'size'",
+            "            SMALL:'small'",
+            "            NEWLINE:'\\n')))",
+            "      (rov3_common",
+            "        (rov3_null",
+            "          OSPFV3:'ospfv3'",
+            "          (null_rest_of_line",
+            "            EVENT_HISTORY:'event-history'",
+            "            VARIABLE:'spf'",
+            "            SIZE:'size'",
+            "            SMALL:'small'",
+            "            NEWLINE:'\\n')))",
+            "      (rov3_common",
+            "        (rov3_null",
+            "          OSPFV3:'ospfv3'",
+            "          (null_rest_of_line",
+            "            EVENT_HISTORY:'event-history'",
+            "            VARIABLE:'lsa'",
+            "            SIZE:'size'",
+            "            SMALL:'small'",
+            "            NEWLINE:'\\n')))",
+            "      (rov3_common",
+            "        (rov3_null",
+            "          OSPFV3:'ospfv3'",
+            "          (null_rest_of_line",
+            "            EVENT_HISTORY:'event-history'",
+            "            VARIABLE:'flooding'",
+            "            SIZE:'size'",
+            "            SMALL:'small'",
+            "            NEWLINE:'\\n')))",
+            "      (rov3_common",
+            "        (rov3_null",
+            "          OSPFV3:'ospfv3'",
+            "          (null_rest_of_line",
+            "            EVENT_HISTORY:'event-history'",
+            "            VARIABLE:'ha'",
+            "            SIZE:'size'",
+            "            SMALL:'small'",
+            "            NEWLINE:'\\n')))",
+            "      (rov3_common",
+            "        (rov3_null",
+            "          OSPFV3:'ospfv3'",
+            "          (null_rest_of_line",
+            "            EVENT_HISTORY:'event-history'",
+            "            EVENT:'event'",
+            "            SIZE:'size'",
+            "            SMALL:'small'",
+            "            NEWLINE:'\\n')))",
+            "      (rov3_common",
+            "        (rov3_null",
+            "          OSPFV3:'ospfv3'",
+            "          (null_rest_of_line",
+            "            EVENT_HISTORY:'event-history'",
+            "            ADJACENCY:'adjacency'",
+            "            SIZE:'size'",
+            "            SMALL:'small'",
+            "            NEWLINE:'\\n')))",
+            "      (rov3_common",
+            "        (rov3_null",
+            "          OSPFV3:'ospfv3'",
+            "          (null_rest_of_line",
+            "            EVENT_HISTORY:'event-history'",
+            "            CLI:'cli'",
+            "            SIZE:'size'",
+            "            MEDIUM:'medium'",
+            "            NEWLINE:'\\n')))",
+            "      (rov3_common",
+            "        (rov3_null",
+            "          ROUTER_ID:'router-id'",
+            "          (null_rest_of_line",
+            "            IP_ADDRESS:'2.3.4.5'",
+            "            NEWLINE:'\\n')))",
+            "      (rov3_common",
+            "        (rov3_null",
+            "          TIMERS:'timers'",
+            "          (null_rest_of_line",
+            "            VARIABLE:'lsa-arrival'",
+            "            DEC:'1000'",
+            "            NEWLINE:'\\n')))",
+            "      (rov3_common",
+            "        (rov3_null",
+            "          TIMERS:'timers'",
+            "          (null_rest_of_line",
+            "            VARIABLE:'throttle'",
+            "            VARIABLE:'lsa'",
+            "            DEC:'0'",
+            "            DEC:'50'",
+            "            DEC:'5000'",
+            "            NEWLINE:'\\n')))))",
+            "  EOF:<EOF>)"
+          ]
+        },
         "configs/cisco_ospf" : {
           "sentences" : [
             "(cisco_configuration",
@@ -30995,13 +31261,6 @@
             "          OSPF:'ospf'",
             "          PASSIVE_INTERFACE:'passive-interface'",
             "          NEWLINE:'\\n'  <== mode:M_Interface))))",
-            "  (stanza",
-            "    (s_router_ospf",
-            "      ROUTER:'router'",
-            "      OSPF:'ospf'",
-            "      name = (variable",
-            "        VARIABLE:'abcdefg')",
-            "      NEWLINE:'\\n'))",
             "  (stanza",
             "    (s_router_ospf",
             "      ROUTER:'router'",
@@ -31410,217 +31669,52 @@
             "        OSPF:'ospf'",
             "        NAME_LOOKUP:'name-lookup'",
             "        (null_rest_of_line",
+            "          NEWLINE:'\\n\\n'))))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "configs/cisco_ospf_ipv6" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'",
+            "      VARIABLE:'cisco_ospf_ipv6'",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'ethernet'  <== mode:M_Interface",
+            "        DEC:'0'  <== mode:M_Interface",
+            "        FORWARD_SLASH:'/'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'0'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          ip = IP_ADDRESS:'2.2.2.0'",
+            "          subnet = IP_ADDRESS:'255.255.255.0'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_ip_router_ospf_area",
+            "          IP:'ip'",
+            "          ROUTER:'router'",
+            "          OSPF:'ospf'",
+            "          procname = (variable",
+            "            DEC:'1')",
+            "          AREA:'area'",
+            "          area = IP_ADDRESS:'0.0.0.0'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_ip_ospf_shutdown",
+            "          IP:'ip'",
+            "          OSPF:'ospf'",
+            "          SHUTDOWN:'shutdown'",
             "          NEWLINE:'\\n'))))",
-            "  (stanza",
-            "    (s_null",
-            "      (null_single",
-            "        OSPFV3:'ospfv3'",
-            "        NAME_LOOKUP:'name-lookup'",
-            "        NEWLINE:'\\n')))",
-            "  (stanza",
-            "    (s_router_ospfv3",
-            "      ROUTER:'router'",
-            "      OSPFV3:'ospfv3'",
-            "      procname = (variable",
-            "        DEC:'1')",
-            "      NEWLINE:'\\n'",
-            "      (rov3_address_family",
-            "        ADDRESS_FAMILY:'address-family'",
-            "        IPV6:'ipv6'",
-            "        UNICAST:'unicast'",
-            "        NEWLINE:'\\n'",
-            "        (rov3_common",
-            "          (rov3_null",
-            "            REDISTRIBUTE:'redistribute'",
-            "            (null_rest_of_line",
-            "              DIRECT:'direct'",
-            "              ROUTE_MAP:'route-map'",
-            "              VARIABLE:'DIRECT_OSPF'  <== mode:M_RouteMap",
-            "              NEWLINE:'\\n')))",
-            "        (rov3_common",
-            "          (rov3_null",
-            "            TIMERS:'timers'",
-            "            (null_rest_of_line",
-            "              VARIABLE:'throttle'",
-            "              VARIABLE:'spf'",
-            "              DEC:'200'",
-            "              DEC:'1000'",
-            "              DEC:'5000'",
-            "              NEWLINE:'\\n')))",
-            "        (rov3_common",
-            "          (rov3_null",
-            "            DISTANCE:'distance'",
-            "            (null_rest_of_line",
-            "              DEC:'110'",
-            "              NEWLINE:'\\n')))",
-            "        (rov3_common",
-            "          (rov3_null",
-            "            MAXIMUM_PATHS:'maximum-paths'",
-            "            (null_rest_of_line",
-            "              DEC:'8'",
-            "              NEWLINE:'\\n'))))",
-            "      (rov3_address_family",
-            "        ADDRESS_FAMILY:'address-family'",
-            "        IPV6:'ipv6'",
-            "        NEWLINE:'\\n'",
-            "        EXIT_ADDRESS_FAMILY:'exit-address-family'",
-            "        NEWLINE:'\\n')",
-            "      (rov3_common",
-            "        (rov3_null",
-            "          AUTO_COST:'auto-cost'",
-            "          (null_rest_of_line",
-            "            REFERENCE_BANDWIDTH:'reference-bandwidth'",
-            "            DEC:'40'",
-            "            GBPS:'Gbps'",
-            "            NEWLINE:'\\n')))",
-            "      (rov3_common",
-            "        (rov3_null",
-            "          DISCARD_ROUTE:'discard-route'",
-            "          (null_rest_of_line",
-            "            EXTERNAL:'external'",
-            "            NEWLINE:'\\n')))",
-            "      (rov3_common",
-            "        (rov3_null",
-            "          DISCARD_ROUTE:'discard-route'",
-            "          (null_rest_of_line",
-            "            INTERNAL:'internal'",
-            "            NEWLINE:'\\n')))",
-            "      (rov3_common",
-            "        (rov3_null",
-            "          GRACEFUL_RESTART:'graceful-restart'",
-            "          (null_rest_of_line",
-            "            NEWLINE:'\\n')))",
-            "      (rov3_common",
-            "        (rov3_null",
-            "          GRACEFUL_RESTART:'graceful-restart'",
-            "          (null_rest_of_line",
-            "            VARIABLE:'grace-period'",
-            "            DEC:'180'",
-            "            NEWLINE:'\\n')))",
-            "      (rov3_common",
-            "        (rov3_null",
-            "          LOG_ADJACENCY_CHANGES:'log-adjacency-changes'",
-            "          (null_rest_of_line",
-            "            DETAIL:'detail'",
-            "            NEWLINE:'\\n')))",
-            "      (rov3_common",
-            "        (rov3_null",
-            "          MAX_METRIC:'max-metric'",
-            "          (null_rest_of_line",
-            "            ROUTER_LSA:'router-lsa'",
-            "            ON_STARTUP:'on-startup'",
-            "            DEC:'600'",
-            "            NEWLINE:'\\n')))",
-            "      (rov3_common",
-            "        (rov3_null",
-            "          MAXIMUM_PATHS:'maximum-paths'",
-            "          (null_rest_of_line",
-            "            DEC:'16'",
-            "            NEWLINE:'\\n')))",
-            "      (rov3_common",
-            "        (rov3_null",
-            "          OSPFV3:'ospfv3'",
-            "          (null_rest_of_line",
-            "            EVENT_HISTORY:'event-history'",
-            "            HELLO:'hello'",
-            "            SIZE:'size'",
-            "            SMALL:'small'",
-            "            NEWLINE:'\\n')))",
-            "      (rov3_common",
-            "        (rov3_null",
-            "          OSPFV3:'ospfv3'",
-            "          (null_rest_of_line",
-            "            EVENT_HISTORY:'event-history'",
-            "            VARIABLE:'redistribution'",
-            "            SIZE:'size'",
-            "            SMALL:'small'",
-            "            NEWLINE:'\\n')))",
-            "      (rov3_common",
-            "        (rov3_null",
-            "          OSPFV3:'ospfv3'",
-            "          (null_rest_of_line",
-            "            EVENT_HISTORY:'event-history'",
-            "            VARIABLE:'spf'",
-            "            SIZE:'size'",
-            "            SMALL:'small'",
-            "            NEWLINE:'\\n')))",
-            "      (rov3_common",
-            "        (rov3_null",
-            "          OSPFV3:'ospfv3'",
-            "          (null_rest_of_line",
-            "            EVENT_HISTORY:'event-history'",
-            "            VARIABLE:'lsa'",
-            "            SIZE:'size'",
-            "            SMALL:'small'",
-            "            NEWLINE:'\\n')))",
-            "      (rov3_common",
-            "        (rov3_null",
-            "          OSPFV3:'ospfv3'",
-            "          (null_rest_of_line",
-            "            EVENT_HISTORY:'event-history'",
-            "            VARIABLE:'flooding'",
-            "            SIZE:'size'",
-            "            SMALL:'small'",
-            "            NEWLINE:'\\n')))",
-            "      (rov3_common",
-            "        (rov3_null",
-            "          OSPFV3:'ospfv3'",
-            "          (null_rest_of_line",
-            "            EVENT_HISTORY:'event-history'",
-            "            VARIABLE:'ha'",
-            "            SIZE:'size'",
-            "            SMALL:'small'",
-            "            NEWLINE:'\\n')))",
-            "      (rov3_common",
-            "        (rov3_null",
-            "          OSPFV3:'ospfv3'",
-            "          (null_rest_of_line",
-            "            EVENT_HISTORY:'event-history'",
-            "            EVENT:'event'",
-            "            SIZE:'size'",
-            "            SMALL:'small'",
-            "            NEWLINE:'\\n')))",
-            "      (rov3_common",
-            "        (rov3_null",
-            "          OSPFV3:'ospfv3'",
-            "          (null_rest_of_line",
-            "            EVENT_HISTORY:'event-history'",
-            "            ADJACENCY:'adjacency'",
-            "            SIZE:'size'",
-            "            SMALL:'small'",
-            "            NEWLINE:'\\n')))",
-            "      (rov3_common",
-            "        (rov3_null",
-            "          OSPFV3:'ospfv3'",
-            "          (null_rest_of_line",
-            "            EVENT_HISTORY:'event-history'",
-            "            CLI:'cli'",
-            "            SIZE:'size'",
-            "            MEDIUM:'medium'",
-            "            NEWLINE:'\\n')))",
-            "      (rov3_common",
-            "        (rov3_null",
-            "          ROUTER_ID:'router-id'",
-            "          (null_rest_of_line",
-            "            IP_ADDRESS:'2.3.4.5'",
-            "            NEWLINE:'\\n')))",
-            "      (rov3_common",
-            "        (rov3_null",
-            "          TIMERS:'timers'",
-            "          (null_rest_of_line",
-            "            VARIABLE:'lsa-arrival'",
-            "            DEC:'1000'",
-            "            NEWLINE:'\\n')))",
-            "      (rov3_common",
-            "        (rov3_null",
-            "          TIMERS:'timers'",
-            "          (null_rest_of_line",
-            "            VARIABLE:'throttle'",
-            "            VARIABLE:'lsa'",
-            "            DEC:'0'",
-            "            DEC:'50'",
-            "            DEC:'5000'",
-            "            NEWLINE:'\\n')))))",
             "  (stanza",
             "    (s_ipv6_router_ospf",
             "      IPV6:'ipv6'",
@@ -31680,6 +31774,254 @@
             "          DEC:'50'",
             "          DEC:'5000'",
             "          NEWLINE:'\\n'))))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "configs/cisco_ospf_multi_process" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'",
+            "      VARIABLE:'cisco_ospf_multi_process'",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'ethernet'  <== mode:M_Interface",
+            "        DEC:'0'  <== mode:M_Interface",
+            "        FORWARD_SLASH:'/'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'0'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          ip = IP_ADDRESS:'2.2.2.0'",
+            "          subnet = IP_ADDRESS:'255.255.255.0'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_ip_router_ospf_area",
+            "          IP:'ip'",
+            "          ROUTER:'router'",
+            "          OSPF:'ospf'",
+            "          procname = (variable",
+            "            DEC:'1')",
+            "          AREA:'area'",
+            "          area = IP_ADDRESS:'0.0.0.0'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'loopback'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'0'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          ip = IP_ADDRESS:'1.1.1.1'",
+            "          subnet = IP_ADDRESS:'255.255.255.255'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_router_ospf",
+            "      ROUTER:'router'",
+            "      OSPF:'ospf'",
+            "      name = (variable",
+            "        DEC:'1')",
+            "      NEWLINE:'\\n'",
+            "      (ro_address_family",
+            "        ADDRESS_FAMILY:'address-family'",
+            "        IPV4:'ipv4'",
+            "        NEWLINE:'\\n'",
+            "        (ro_common",
+            "          (ro_null",
+            "            AREA:'area'",
+            "            (variable",
+            "              IP_ADDRESS:'0.0.0.0')",
+            "            AUTHENTICATION:'authentication'",
+            "            (null_rest_of_line",
+            "              MESSAGE_DIGEST:'message-digest'  <== mode:M_Authentication",
+            "              NEWLINE:'\\n'))))",
+            "      (ro_area_default_cost",
+            "        AREA:'area'",
+            "        area_ip = IP_ADDRESS:'0.0.0.0'",
+            "        DEFAULT_COST:'default-cost'",
+            "        cost = DEC:'5'",
+            "        NEWLINE:'\\n')",
+            "      (ro_area_filterlist",
+            "        AREA:'area'",
+            "        area_ip = IP_ADDRESS:'0.0.0.0'",
+            "        FILTER_LIST:'filter-list'",
+            "        PREFIX:'prefix'",
+            "        list = (variable",
+            "          VARIABLE:'filterName')",
+            "        IN:'in'",
+            "        NEWLINE:'\\n')",
+            "      (ro_area_filterlist",
+            "        AREA:'area'",
+            "        area_ip = IP_ADDRESS:'0.0.0.0'",
+            "        FILTER_LIST:'filter-list'",
+            "        PREFIX:'prefix'",
+            "        list = (variable",
+            "          VARIABLE:'filterName')",
+            "        OUT:'out'",
+            "        NEWLINE:'\\n')",
+            "      (ro_area_nssa",
+            "        AREA:'area'",
+            "        area_ip = IP_ADDRESS:'0.0.0.0'",
+            "        NSSA:'nssa'",
+            "        NEWLINE:'\\n')",
+            "      (ro_area_nssa",
+            "        AREA:'area'",
+            "        area_ip = IP_ADDRESS:'0.0.0.0'",
+            "        NSSA:'nssa'",
+            "        default_information_originate = DEFAULT_INFORMATION_ORIGINATE:'default-information-originate'",
+            "        NEWLINE:'\\n')",
+            "      (ro_area_nssa",
+            "        AREA:'area'",
+            "        area_ip = IP_ADDRESS:'0.0.0.0'",
+            "        NSSA:'nssa'",
+            "        default_information_originate = DEFAULT_INFORMATION_ORIGINATE:'default-information-originate'",
+            "        METRIC:'metric'",
+            "        metric = DEC:'5'",
+            "        NEWLINE:'\\n')",
+            "      (ro_area_nssa",
+            "        AREA:'area'",
+            "        area_ip = IP_ADDRESS:'0.0.0.0'",
+            "        NSSA:'nssa'",
+            "        default_information_originate = DEFAULT_INFORMATION_ORIGINATE:'default-information-originate'",
+            "        METRIC_TYPE:'metric-type'",
+            "        metric_type = DEC:'1'",
+            "        NEWLINE:'\\n')",
+            "      (ro_area_nssa",
+            "        AREA:'area'",
+            "        area_ip = IP_ADDRESS:'0.0.0.0'",
+            "        NSSA:'nssa'",
+            "        no_redistribution = NO_REDISTRIBUTION:'no-redistribution'",
+            "        NEWLINE:'\\n')",
+            "      (ro_area_nssa",
+            "        AREA:'area'",
+            "        area_ip = IP_ADDRESS:'0.0.0.0'",
+            "        NSSA:'nssa'",
+            "        no_redistribution = NO_REDISTRIBUTION:'no-redistribution'",
+            "        no_summary = NO_SUMMARY:'no-summary'",
+            "        NEWLINE:'\\n')",
+            "      (ro_area_nssa",
+            "        AREA:'area'",
+            "        area_ip = IP_ADDRESS:'0.0.0.0'",
+            "        NSSA:'nssa'",
+            "        no_redistribution = NO_REDISTRIBUTION:'no-redistribution'",
+            "        default_information_originate = DEFAULT_INFORMATION_ORIGINATE:'default-information-originate'",
+            "        no_summary = NO_SUMMARY:'no-summary'",
+            "        NEWLINE:'\\n')",
+            "      (ro_area_nssa",
+            "        AREA:'area'",
+            "        area_ip = IP_ADDRESS:'0.0.0.0'",
+            "        NSSA:'nssa'",
+            "        no_summary = NO_SUMMARY:'no-summary'",
+            "        NEWLINE:'\\n')",
+            "      (ro_area_range",
+            "        AREA:'area'",
+            "        area_ip = IP_ADDRESS:'0.0.0.0'",
+            "        RANGE:'range'",
+            "        area_prefix = IP_PREFIX:'1.2.3.0/24'",
+            "        NEWLINE:'\\n')",
+            "      (ro_area_range",
+            "        AREA:'area'",
+            "        area_ip = IP_ADDRESS:'0.0.0.0'",
+            "        RANGE:'range'",
+            "        area_prefix = IP_PREFIX:'1.2.3.0/24'",
+            "        COST:'cost'",
+            "        cost = DEC:'17'",
+            "        NEWLINE:'\\n')",
+            "      (ro_area_range",
+            "        AREA:'area'",
+            "        IP_ADDRESS:'0.0.0.0'",
+            "        RANGE:'range'",
+            "        area_ip = IP_ADDRESS:'1.2.3.0'",
+            "        area_subnet = IP_ADDRESS:'255.255.255.0'",
+            "        NEWLINE:'\\n')",
+            "      (ro_area_range",
+            "        AREA:'area'",
+            "        IP_ADDRESS:'0.0.0.0'",
+            "        RANGE:'range'",
+            "        area_ip = IP_ADDRESS:'1.2.3.0'",
+            "        area_subnet = IP_ADDRESS:'255.255.255.0'",
+            "        ADVERTISE:'advertise'",
+            "        NEWLINE:'\\n')",
+            "      (ro_area_range",
+            "        AREA:'area'",
+            "        IP_ADDRESS:'0.0.0.0'",
+            "        RANGE:'range'",
+            "        area_ip = IP_ADDRESS:'1.2.3.0'",
+            "        area_subnet = IP_ADDRESS:'255.255.255.0'",
+            "        ADVERTISE:'advertise'",
+            "        COST:'cost'",
+            "        cost = DEC:'10'",
+            "        NEWLINE:'\\n')",
+            "      (ro_area_range",
+            "        AREA:'area'",
+            "        IP_ADDRESS:'0.0.0.0'",
+            "        RANGE:'range'",
+            "        area_ip = IP_ADDRESS:'1.2.3.0'",
+            "        area_subnet = IP_ADDRESS:'255.255.255.0'",
+            "        COST:'cost'",
+            "        cost = DEC:'10'",
+            "        NEWLINE:'\\n')",
+            "      (ro_area_range",
+            "        AREA:'area'",
+            "        IP_ADDRESS:'0.0.0.0'",
+            "        RANGE:'range'",
+            "        area_ip = IP_ADDRESS:'1.2.3.0'",
+            "        area_subnet = IP_ADDRESS:'255.255.255.0'",
+            "        NOT_ADVERTISE:'not-advertise'",
+            "        NEWLINE:'\\n')",
+            "      (ro_passive_interface",
+            "        PASSIVE_INTERFACE:'passive-interface'",
+            "        i = (interface_name",
+            "          name_prefix_alpha = M_Interface_PREFIX:'loopback'  <== mode:M_Interface",
+            "          (range",
+            "            (subrange",
+            "              low = DEC:'0'  <== mode:M_Interface)))",
+            "        NEWLINE:'\\n'  <== mode:M_Interface)))",
+            "  (stanza",
+            "    (s_router_ospf",
+            "      ROUTER:'router'",
+            "      OSPF:'ospf'",
+            "      name = (variable",
+            "        VARIABLE:'abcdefg')",
+            "      NEWLINE:'\\n'",
+            "      (ro_passive_interface_default",
+            "        PASSIVE_INTERFACE:'passive-interface'",
+            "        DEFAULT:'default'  <== mode:M_Interface",
+            "        NEWLINE:'\\n')",
+            "      (ro_common",
+            "        (ro_null",
+            "          TIMERS:'timers'",
+            "          (null_rest_of_line",
+            "            VARIABLE:'throttle'",
+            "            VARIABLE:'lsa'",
+            "            DEC:'0'",
+            "            DEC:'50'",
+            "            DEC:'5000'",
+            "            NEWLINE:'\\n')))",
+            "      (ro_common",
+            "        (ro_null",
+            "          TIMERS:'timers'",
+            "          (null_rest_of_line",
+            "            VARIABLE:'throttle'",
+            "            VARIABLE:'spf'",
+            "            DEC:'50'",
+            "            DEC:'50'",
+            "            DEC:'5000'",
+            "            NEWLINE:'\\n')))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -68305,93 +68647,127 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 28,
+              "Line" : 26,
               "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0.0.0.0 filter-list prefix filterName in"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 29,
+              "Line" : 27,
               "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0.0.0.0 filter-list prefix filterName out"
             },
             {
               "Comment" : "Unsupported feature: no-redistribution",
-              "Line" : 34,
+              "Line" : 32,
               "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0.0.0.0 nssa no-redistribution"
             },
             {
               "Comment" : "Unsupported feature: no-redistribution",
-              "Line" : 35,
+              "Line" : 33,
               "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0.0.0.0 nssa no-redistribution no-summary"
             },
             {
               "Comment" : "Unsupported feature: no-redistribution",
-              "Line" : 36,
+              "Line" : 34,
               "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0.0.0.0 nssa no-redistribution default-information-originate no-summary"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 53,
+              "Line" : 51,
               "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
               "Text" : "distribute-list aclin in"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 54,
+              "Line" : 52,
               "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
               "Text" : "distribute-list aclin in ethernet0/0"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 55,
+              "Line" : 53,
               "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
               "Text" : "distribute-list aclout out"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 56,
+              "Line" : 54,
               "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
               "Text" : "distribute-list prefix plin in"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 57,
+              "Line" : 55,
               "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
               "Text" : "distribute-list prefix plout out"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 58,
+              "Line" : 56,
               "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
               "Text" : "distribute-list route-map rmin in"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 59,
+              "Line" : 57,
               "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
               "Text" : "distribute-list route-map rmout out"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 66,
+              "Line" : 64,
               "Parser_Context" : "[ro_maximum_paths s_router_ospf stanza cisco_configuration]",
               "Text" : "maximum-paths 32"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 82,
+              "Line" : 80,
               "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0 filter-list prefix INFILTER in"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 83,
+              "Line" : 81,
               "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0 filter-list prefix OUTFILTER out"
+            }
+          ]
+        },
+        "configs/cisco_ospf_multi_process" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 16,
+              "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
+              "Text" : "area 0.0.0.0 filter-list prefix filterName in"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 17,
+              "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
+              "Text" : "area 0.0.0.0 filter-list prefix filterName out"
+            },
+            {
+              "Comment" : "Unsupported feature: no-redistribution",
+              "Line" : 22,
+              "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
+              "Text" : "area 0.0.0.0 nssa no-redistribution"
+            },
+            {
+              "Comment" : "Unsupported feature: no-redistribution",
+              "Line" : 23,
+              "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
+              "Text" : "area 0.0.0.0 nssa no-redistribution no-summary"
+            },
+            {
+              "Comment" : "Unsupported feature: no-redistribution",
+              "Line" : 24,
+              "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
+              "Text" : "area 0.0.0.0 nssa no-redistribution default-information-originate no-summary"
             }
           ]
         },
@@ -70050,7 +70426,10 @@
         "cisco_ntp" : "PASSED",
         "cisco_nxos" : "PASSED",
         "cisco_nxos_bgp" : "WARNINGS",
-        "cisco_ospf" : "PASSED",
+        "cisco_ospf" : "WARNINGS",
+        "cisco_ospf_ipv6" : "PASSED",
+        "cisco_ospf_multi_process" : "PASSED",
+        "cisco_ospfv3" : "PASSED",
         "cisco_pim" : "PASSED",
         "cisco_platform" : "PASSED",
         "cisco_privilege" : "PASSED",
@@ -72155,6 +72534,21 @@
             }
           }
         },
+        "configs/cisco_opsfv3" : {
+          "interface" : {
+            "Ethernet0/0" : {
+              "definitionLines" : [
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/cisco_ospf" : {
           "interface" : {
             "Ethernet0/0" : {
@@ -72168,7 +72562,7 @@
                 14,
                 15
               ],
-              "numReferrers" : 4
+              "numReferrers" : 3
             },
             "Ethernet1/0" : {
               "definitionLines" : [
@@ -72183,6 +72577,38 @@
               "definitionLines" : [
                 4,
                 5
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "configs/cisco_ospf_ipv6" : {
+          "interface" : {
+            "Ethernet0/0" : {
+              "definitionLines" : [
+                4,
+                5,
+                6,
+                7
+              ],
+              "numReferrers" : 2
+            }
+          }
+        },
+        "configs/cisco_ospf_multi_process" : {
+          "interface" : {
+            "Ethernet0/0" : {
+              "definitionLines" : [
+                4,
+                5,
+                6
+              ],
+              "numReferrers" : 1
+            },
+            "Loopback0" : {
+              "definitionLines" : [
+                8,
+                9
               ],
               "numReferrers" : 1
             }
@@ -77371,6 +77797,15 @@
             }
           }
         },
+        "configs/cisco_opsfv3" : {
+          "interface" : {
+            "Ethernet0/0" : {
+              "interface" : [
+                4
+              ]
+            }
+          }
+        },
         "configs/cisco_ospf" : {
           "interface" : {
             "Ethernet0/0" : {
@@ -77378,11 +77813,8 @@
                 7,
                 12
               ],
-              "ipv6 router ospf distribute-list prefix-list out" : [
-                121
-              ],
               "router ospf distribute-list in" : [
-                54
+                52
               ]
             },
             "Ethernet1/0" : {
@@ -77399,75 +77831,109 @@
           "ipv4 prefix-list" : {
             "INFILTER" : {
               "ospf area filter-list" : [
-                82
+                80
               ]
             },
             "OUTFILTER" : {
               "ospf area filter-list" : [
-                83
+                81
               ]
             },
             "filterName" : {
               "ospf area filter-list" : [
-                28,
-                29
+                26,
+                27
               ]
             },
             "plin" : {
               "router ospf distribute-list prefix in" : [
-                56
+                54
               ]
             },
             "plout" : {
               "router ospf distribute-list prefix out" : [
-                57
+                55
               ]
             }
           },
           "ipv4/6 acl" : {
             "aclin" : {
               "router ospf distribute-list in" : [
-                53,
-                54
+                51,
+                52
               ]
             },
             "aclout" : {
               "router ospf distribute-list out" : [
-                55
-              ]
-            }
-          },
-          "ipv6 prefix-list" : {
-            "SWITCHLAN" : {
-              "ipv6 router ospf distribute-list prefix-list in" : [
-                120
-              ]
-            },
-            "SWITCHLAN-OUT" : {
-              "ipv6 router ospf distribute-list prefix-list out" : [
-                121
+                53
               ]
             }
           },
           "route-map" : {
             "DIRECT_OSPF" : {
               "ospf redistribute connected route-map" : [
-                68
+                66
               ]
             },
             "eigrp-ospf-route-map" : {
               "ospf redistribute eigrp route-map" : [
-                69
+                67
               ]
             },
             "rmin" : {
               "router ospf distribute-list route-map in" : [
-                58
+                56
               ]
             },
             "rmout" : {
               "router ospf distribute-list route-map out" : [
-                59
+                57
+              ]
+            }
+          }
+        },
+        "configs/cisco_ospf_ipv6" : {
+          "interface" : {
+            "Ethernet0/0" : {
+              "interface" : [
+                4
+              ],
+              "ipv6 router ospf distribute-list prefix-list out" : [
+                15
+              ]
+            }
+          },
+          "ipv6 prefix-list" : {
+            "SWITCHLAN" : {
+              "ipv6 router ospf distribute-list prefix-list in" : [
+                14
+              ]
+            },
+            "SWITCHLAN-OUT" : {
+              "ipv6 router ospf distribute-list prefix-list out" : [
+                15
+              ]
+            }
+          }
+        },
+        "configs/cisco_ospf_multi_process" : {
+          "interface" : {
+            "Ethernet0/0" : {
+              "interface" : [
+                4
+              ]
+            },
+            "Loopback0" : {
+              "interface" : [
+                8
+              ]
+            }
+          },
+          "ipv4 prefix-list" : {
+            "filterName" : {
+              "ospf area filter-list" : [
+                16,
+                17
               ]
             }
           }
@@ -80573,59 +81039,61 @@
           "ipv4 prefix-list" : {
             "plin" : {
               "router ospf distribute-list prefix in" : [
-                56
+                54
               ]
             },
             "plout" : {
               "router ospf distribute-list prefix out" : [
-                57
+                55
               ]
             }
           },
           "ipv4/6 acl" : {
             "aclin" : {
               "router ospf distribute-list in" : [
-                53,
-                54
+                51,
+                52
               ]
             },
             "aclout" : {
               "router ospf distribute-list out" : [
-                55
-              ]
-            }
-          },
-          "ipv6 prefix-list" : {
-            "SWITCHLAN" : {
-              "ipv6 router ospf distribute-list prefix-list in" : [
-                120
-              ]
-            },
-            "SWITCHLAN-OUT" : {
-              "ipv6 router ospf distribute-list prefix-list out" : [
-                121
+                53
               ]
             }
           },
           "route-map" : {
             "DIRECT_OSPF" : {
               "ospf redistribute connected route-map" : [
-                68
+                66
               ]
             },
             "eigrp-ospf-route-map" : {
               "ospf redistribute eigrp route-map" : [
-                69
+                67
               ]
             },
             "rmin" : {
               "router ospf distribute-list route-map in" : [
-                58
+                56
               ]
             },
             "rmout" : {
               "router ospf distribute-list route-map out" : [
-                59
+                57
+              ]
+            }
+          }
+        },
+        "configs/cisco_ospf_ipv6" : {
+          "ipv6 prefix-list" : {
+            "SWITCHLAN" : {
+              "ipv6 router ospf distribute-list prefix-list in" : [
+                14
+              ]
+            },
+            "SWITCHLAN-OUT" : {
+              "ipv6 router ospf distribute-list prefix-list out" : [
+                15
               ]
             }
           }
@@ -82026,6 +82494,14 @@
             }
           ]
         },
+        "cisco_ospf" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Interface: 'Ethernet1/0' contains OSPF settings, but there is no OSPF process"
+            }
+          ]
+        },
         "f5_bigip_structured_ltm" : {
           "Red flags" : [
             {
@@ -82423,7 +82899,10 @@
         "configs/cisco_ntp" : "PASSED",
         "configs/cisco_nxos" : "PASSED",
         "configs/cisco_nxos_bgp" : "PASSED",
+        "configs/cisco_opsfv3" : "PASSED",
         "configs/cisco_ospf" : "PASSED",
+        "configs/cisco_ospf_ipv6" : "PASSED",
+        "configs/cisco_ospf_multi_process" : "PASSED",
         "configs/cisco_pim" : "PASSED",
         "configs/cisco_platform" : "PASSED",
         "configs/cisco_privilege" : "PASSED",

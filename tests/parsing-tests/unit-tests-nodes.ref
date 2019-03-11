@@ -10087,10 +10087,8 @@
               "ethernet1/0"
             ],
             "mtu" : 1500,
-            "ospfArea" : 0,
-            "ospfCost" : 4000,
             "ospfDeadInterval" : 0,
-            "ospfEnabled" : true,
+            "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
@@ -10305,8 +10303,229 @@
               "areas" : {
                 "0" : {
                   "injectDefaultRoute" : true,
+                  "metricOfDefaultRoute" : 0,
+                  "name" : 0,
+                  "stubType" : "NONE",
+                  "summaries" : {
+                    "1.2.3.0/24" : {
+                      "advertise" : true,
+                      "metric" : 17
+                    }
+                  },
+                  "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:0~"
+                },
+                "16909056" : {
+                  "injectDefaultRoute" : true,
+                  "metricOfDefaultRoute" : 0,
+                  "name" : 16909056,
+                  "stubType" : "NONE",
+                  "summaries" : {
+                    "1.2.3.0/24" : {
+                      "advertise" : false
+                    }
+                  },
+                  "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:16909056~"
+                }
+              },
+              "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+              "processId" : "1",
+              "referenceBandwidth" : 4.0E10,
+              "routerId" : "1.2.3.4"
+            }
+          }
+        }
+      },
+      "cisco_ospf_ipv6" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "cisco_ospf_ipv6",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "interfaces" : {
+          "Ethernet0/0" : {
+            "name" : "Ethernet0/0",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allPrefixes" : [
+              "2.2.2.0/24"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E7,
+            "declaredNames" : [
+              "ethernet0/0"
+            ],
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "2.2.2.0/24",
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          }
+        },
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "cisco_ospf_ipv6",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "Ethernet0/0"
+            ]
+          }
+        }
+      },
+      "cisco_ospf_multi_process" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "cisco_ospf_multi_process",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "ROUTER",
+        "interfaces" : {
+          "Ethernet0/0" : {
+            "name" : "Ethernet0/0",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allPrefixes" : [
+              "2.2.2.0/24"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E7,
+            "declaredNames" : [
+              "ethernet0/0"
+            ],
+            "mtu" : 1500,
+            "ospfArea" : 0,
+            "ospfCost" : 10,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : true,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "2.2.2.0/24",
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "Loopback0" : {
+            "name" : "Loopback0",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allPrefixes" : [
+              "1.1.1.1/32"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 8.0E9,
+            "declaredNames" : [
+              "loopback0"
+            ],
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "1.1.1.1/32",
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOOPBACK",
+            "vrf" : "default"
+          }
+        },
+        "routeFilterLists" : {
+          "~OSPF_SUMMARY_FILTER:default:0~" : {
+            "lines" : [
+              {
+                "action" : "DENY",
+                "ipWildcard" : "1.2.3.0/24",
+                "lengthRange" : "25-32"
+              },
+              {
+                "action" : "PERMIT",
+                "ipWildcard" : "0.0.0.0/0",
+                "lengthRange" : "0-32"
+              }
+            ],
+            "name" : "~OSPF_SUMMARY_FILTER:default:0~"
+          },
+          "~OSPF_SUMMARY_FILTER:default:16909056~" : {
+            "lines" : [
+              {
+                "action" : "DENY",
+                "ipWildcard" : "1.2.3.0/24",
+                "lengthRange" : "24-32"
+              },
+              {
+                "action" : "PERMIT",
+                "ipWildcard" : "0.0.0.0/0",
+                "lengthRange" : "0-32"
+              }
+            ],
+            "name" : "~OSPF_SUMMARY_FILTER:default:16909056~"
+          }
+        },
+        "routingPolicies" : {
+          "~OSPF_EXPORT_POLICY:default~" : {
+            "name" : "~OSPF_EXPORT_POLICY:default~"
+          }
+        },
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "cisco_ospf_multi_process",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "Ethernet0/0",
+              "Loopback0"
+            ],
+            "ospfProcess" : {
+              "areas" : {
+                "0" : {
+                  "injectDefaultRoute" : true,
                   "interfaces" : [
-                    "Ethernet1/0"
+                    "Ethernet0/0"
                   ],
                   "metricOfDefaultRoute" : 0,
                   "name" : 0,
@@ -10338,18 +10557,76 @@
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
               "neighbors" : {
-                "Ethernet1/0" : {
+                "Ethernet0/0" : {
                   "area" : 0,
-                  "hostname" : "cisco_ospf",
-                  "interface" : "Ethernet1/0",
+                  "hostname" : "cisco_ospf_multi_process",
+                  "interface" : "Ethernet0/0",
                   "passive" : false,
                   "vrf" : "default"
                 }
               },
               "processId" : "1",
-              "referenceBandwidth" : 4.0E10,
-              "routerId" : "1.2.3.4"
+              "referenceBandwidth" : 1.0E8,
+              "routerId" : "1.1.1.1"
             }
+          }
+        }
+      },
+      "cisco_ospfv3" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "cisco_ospfv3",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "interfaces" : {
+          "Ethernet0/0" : {
+            "name" : "Ethernet0/0",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allPrefixes" : [
+              "2.2.2.0/24"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E7,
+            "declaredNames" : [
+              "ethernet0/0"
+            ],
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "2.2.2.0/24",
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          }
+        },
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "cisco_ospfv3",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "Ethernet0/0"
+            ]
           }
         }
       },
