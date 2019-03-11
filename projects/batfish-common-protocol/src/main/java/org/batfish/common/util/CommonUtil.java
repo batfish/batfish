@@ -14,7 +14,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -109,8 +108,6 @@ public class CommonUtil {
   }
 
   private static String SALT;
-
-  private static final int STREAMED_FILE_BUFFER_SIZE = 1024;
 
   public static <T extends Throwable> boolean causedBy(Throwable e, Class<T> causeClass) {
     Set<Throwable> seenCauses = Collections.newSetFromMap(new IdentityHashMap<>());
@@ -517,19 +514,6 @@ public class CommonUtil {
       throw new BatfishException("Failed to write file (file not found): " + outputPath, e);
     } catch (IOException e) {
       throw new BatfishException("Failed to write file: " + outputPath, e);
-    }
-  }
-
-  public static void writeStreamToFile(InputStream inputStream, Path outputFile) {
-    try (OutputStream fileOutputStream = new FileOutputStream(outputFile.toFile())) {
-      int read = 0;
-      final byte[] bytes = new byte[STREAMED_FILE_BUFFER_SIZE];
-      while ((read = inputStream.read(bytes)) != -1) {
-        fileOutputStream.write(bytes, 0, read);
-      }
-    } catch (IOException e) {
-      throw new BatfishException(
-          "Failed to write input stream to output file: '" + outputFile + "'", e);
     }
   }
 }

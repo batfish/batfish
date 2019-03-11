@@ -35,6 +35,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.DirectoryIteratorException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -179,6 +180,7 @@ public class WorkMgr extends AbstractCoordinator {
                               Comparator.<Step<?>, String>comparing(
                                       step -> step.getDetail().toString())
                                   .thenComparing(Step::getAction)))));
+  private static final int STREAMED_FILE_BUFFER_SIZE = 1024;
 
   private static Path getCanonicalPath(Path path) {
     try {
@@ -198,6 +200,19 @@ public class WorkMgr extends AbstractCoordinator {
       throw new BatfishException("Error listing directory '" + directory + "'", e);
     }
     return entries;
+  }
+
+  private static void writeStreamToFile(InputStream inputStream, Path outputFile) {
+    try (OutputStream fileOutputStream = new FileOutputStream(outputFile.toFile())) {
+      int read = 0;
+      final byte[] bytes = new byte[STREAMED_FILE_BUFFER_SIZE];
+      while ((read = inputStream.read(bytes)) != -1) {
+        fileOutputStream.write(bytes, 0, read);
+      }
+    } catch (IOException e) {
+      throw new BatfishException(
+          "Failed to write input stream to output file: '" + outputFile + "'", e);
+    }
   }
 
   static final class AssignWorkTask implements Runnable {
@@ -2111,7 +2126,7 @@ public class WorkMgr extends AbstractCoordinator {
         throw new BatfishException(parentFolder + " already exists but is not a folder");
       }
     }
-    CommonUtil.writeStreamToFile(fileStream, file);
+    writeStreamToFile(fileStream, file);
   }
 
   public boolean queueWork(WorkItem workItem) {
@@ -2260,7 +2275,7 @@ public class WorkMgr extends AbstractCoordinator {
       throw new BatfishException("Failed to create directory: '" + originalDir + "'");
     }
     Path snapshotZipFile = originalDir.resolve(BfConsts.RELPATH_SNAPSHOT_ZIP_FILE);
-    CommonUtil.writeStreamToFile(fileStream, snapshotZipFile);
+    writeStreamToFile(fileStream, snapshotZipFile);
     Path unzipDir = CommonUtil.createTempDirectory("tr");
     UnzipUtility.unzip(snapshotZipFile, unzipDir);
 
