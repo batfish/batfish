@@ -383,15 +383,6 @@ public class CommonUtil {
     return null;
   }
 
-  public static String getTime(long millis) {
-    long cs = (millis / 10) % 100;
-    long s = (millis / 1000) % 60;
-    long m = (millis / (1000 * 60)) % 60;
-    long h = (millis / (1000 * 60 * 60)) % 24;
-    String time = String.format("%02d:%02d:%02d.%02d", h, m, s, cs);
-    return time;
-  }
-
   @VisibleForTesting
   static SetMultimap<Ip, IpWildcardSetIpSpace> initPrivateIpsByPublicIp(
       Map<String, Configuration> configurations) {
