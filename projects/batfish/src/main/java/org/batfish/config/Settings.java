@@ -13,7 +13,6 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.Version;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Ip;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.identifiers.AnalysisId;
@@ -144,7 +143,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public Settings(String[] args) {
     super(
-        CommonUtil.getConfig(
+        getConfig(
             BfConsts.PROP_BATFISH_PROPERTIES_PATH,
             BfConsts.ABSPATH_CONFIG_FILE_NAME_BATFISH,
             ConfigurationLocator.class));

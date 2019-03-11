@@ -11,7 +11,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.main.Driver;
@@ -73,6 +72,15 @@ public class BatfishJobExecutor {
 
   static BatfishJobExecutor getBatfishJobExecutor(Settings settings, BatfishLogger logger) {
     return new BatfishJobExecutor(settings, logger);
+  }
+
+  private static String getTime(long millis) {
+    long cs = (millis / 10) % 100;
+    long s = (millis / 1000) % 60;
+    long m = (millis / (1000 * 60)) % 60;
+    long h = (millis / (1000 * 60 * 60)) % 24;
+    String time = String.format("%02d:%02d:%02d.%02d", h, m, s, cs);
+    return time;
   }
 
   /**
@@ -160,7 +168,7 @@ public class BatfishJobExecutor {
           AnswerElementT extends AnswerElement,
           OutputT>
       String getFailureMessage(JobResultT result) {
-    String time = CommonUtil.getTime(result.getElapsedTime());
+    String time = getTime(result.getElapsedTime());
     String failureMessage =
         String.format(
             "Failure running job after elapsed time: %s\n-----"
@@ -174,7 +182,7 @@ public class BatfishJobExecutor {
           AnswerElementT extends AnswerElement,
           OutputT>
       String getSuccessMessage(JobResultT result) {
-    String time = CommonUtil.getTime(result.getElapsedTime());
+    String time = getTime(result.getElapsedTime());
     String successMessage =
         String.format(
             "Job terminated successfully with result: %s after elapsed time: %s - %d/%d "

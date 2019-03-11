@@ -35,7 +35,6 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerSummary;
 import org.batfish.datamodel.questions.Question;
@@ -317,8 +316,9 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
             sb.append(
                 String.format(
                     "  [%d]: %d added and %d removed \n", index, added.size(), removed.size()));
-            SortedSet<String> allKeys =
-                CommonUtil.union(added.keySet(), removed.keySet(), TreeSet::new);
+            SortedSet<String> allKeys = new TreeSet<>();
+            allKeys.addAll(added.keySet());
+            allKeys.addAll(removed.keySet());
             for (String key : allKeys) {
               if (removed.containsKey(key)) {
                 JsonNode removedNode = removed.get(key).getSuffix();
