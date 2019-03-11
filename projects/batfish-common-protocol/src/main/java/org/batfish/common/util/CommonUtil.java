@@ -380,19 +380,6 @@ public class CommonUtil {
   }
 
   /**
-   * Returns an active interface with the specified name for configuration.
-   *
-   * @param name The name to check
-   * @param c The configuration object in which to check
-   * @return Any Interface that matches the condition
-   */
-  public static Optional<Interface> getActiveInterfaceWithName(String name, Configuration c) {
-    return c.getAllInterfaces().values().stream()
-        .filter(iface -> iface.getActive() && iface.getName().equals(name))
-        .findAny();
-  }
-
-  /**
    * Returns an active interface with the specified IP address for configuration.
    *
    * @param ipAddress The IP address to check
