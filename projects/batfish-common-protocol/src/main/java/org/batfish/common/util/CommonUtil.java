@@ -138,15 +138,6 @@ public class CommonUtil {
 
   private static final int STREAMED_FILE_BUFFER_SIZE = 1024;
 
-  public static String applyPrefix(String prefix, String msg) {
-    String[] lines = msg.split("\n", -1);
-    StringBuilder sb = new StringBuilder();
-    for (String line : lines) {
-      sb.append(prefix + line + "\n");
-    }
-    return sb.toString();
-  }
-
   public static <T extends Throwable> boolean causedBy(Throwable e, Class<T> causeClass) {
     Set<Throwable> seenCauses = Collections.newSetFromMap(new IdentityHashMap<>());
     return causedBy(e, causeClass, seenCauses);
