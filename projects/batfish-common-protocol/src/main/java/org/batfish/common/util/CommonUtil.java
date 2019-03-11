@@ -35,7 +35,6 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.FileAttribute;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
@@ -374,14 +373,6 @@ public class CommonUtil {
     for (T t : ts) {
       biConsumer.accept(i, t);
       i++;
-    }
-  }
-
-  public static Path getCanonicalPath(Path path) {
-    try {
-      return Paths.get(path.toFile().getCanonicalPath());
-    } catch (IOException e) {
-      throw new BatfishException("Could not get canonical path from: '" + path + "'", e);
     }
   }
 

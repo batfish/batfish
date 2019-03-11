@@ -178,6 +178,14 @@ public class WorkMgr extends AbstractCoordinator {
                                       step -> step.getDetail().toString())
                                   .thenComparing(Step::getAction)))));
 
+  private static Path getCanonicalPath(Path path) {
+    try {
+      return Paths.get(path.toFile().getCanonicalPath());
+    } catch (IOException e) {
+      throw new BatfishException("Could not get canonical path from: '" + path + "'", e);
+    }
+  }
+
   static final class AssignWorkTask implements Runnable {
     @Override
     public void run() {
@@ -1411,7 +1419,7 @@ public class WorkMgr extends AbstractCoordinator {
      * Check if we got an object name outside of the testrig folder, perhaps because of ".." in the
      * name; disallow it
      */
-    if (!CommonUtil.getCanonicalPath(file).startsWith(CommonUtil.getCanonicalPath(testrigDir))) {
+    if (!getCanonicalPath(file).startsWith(getCanonicalPath(testrigDir))) {
       throw new BatfishException("Illegal object name: '" + objectName + "'");
     }
 
@@ -2076,7 +2084,7 @@ public class WorkMgr extends AbstractCoordinator {
     Path file = snapshotDir.resolve(objectName);
     // check if we got an object name outside of the testrig folder,
     // perhaps because of ".." in the name; disallow it
-    if (!CommonUtil.getCanonicalPath(file).startsWith(CommonUtil.getCanonicalPath(snapshotDir))) {
+    if (!getCanonicalPath(file).startsWith(getCanonicalPath(snapshotDir))) {
       throw new BatfishException("Illegal object name: '" + objectName + "'");
     }
     Path parentFolder = file.getParent();
