@@ -25,9 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryIteratorException;
@@ -67,7 +65,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.client.ClientBuilder;
-import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -373,32 +370,6 @@ public class CommonUtil {
     for (T t : ts) {
       biConsumer.accept(i, t);
       i++;
-    }
-  }
-
-  public static org.apache.commons.configuration2.Configuration getConfig(
-      String overridePropertyName,
-      String defaultPropertyFilename,
-      Class<?> defaultPropertyLocatorClass) {
-    String overriddenPath = System.getProperty(overridePropertyName);
-    URL propertiesUrl;
-    if (overriddenPath != null) {
-      // The user provided an override, so look up that configuration instead.
-      try {
-        propertiesUrl = new URL(new URL("file://"), overriddenPath);
-      } catch (MalformedURLException e) {
-        throw new BatfishException(
-            "Error treating " + overriddenPath + " as a path to a properties file", e);
-      }
-    } else {
-      // Find the default properties file.
-      propertiesUrl =
-          defaultPropertyLocatorClass.getClassLoader().getResource(defaultPropertyFilename);
-    }
-    try {
-      return new Configurations().properties(propertiesUrl);
-    } catch (Exception e) {
-      throw new BatfishException("Error loading configuration from " + overriddenPath, e);
     }
   }
 
