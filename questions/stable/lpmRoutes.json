@@ -28,7 +28,12 @@
                 "value": ".*",
                 "displayName": "VRFs"
             }
-        }
+        },
+        "orderedVariableNames": [
+            "ip",
+            "nodes",
+            "vrfs"
+        ]
     },
     "ip": "${ip}",
     "nodes": "${nodes}",
