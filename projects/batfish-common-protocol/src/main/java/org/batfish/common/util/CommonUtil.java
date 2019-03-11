@@ -380,10 +380,6 @@ public class CommonUtil {
     return intersectionSet;
   }
 
-  public static boolean isNullOrEmpty(@Nullable Collection<?> collection) {
-    return collection == null || collection.isEmpty();
-  }
-
   @MustBeClosed
   public static Stream<Path> list(Path configsPath) {
     try {
