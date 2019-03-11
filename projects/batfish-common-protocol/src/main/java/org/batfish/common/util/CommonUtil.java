@@ -47,8 +47,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -377,23 +375,6 @@ public class CommonUtil {
       biConsumer.accept(i, t);
       i++;
     }
-  }
-
-  /**
-   * Returns an active interface with the specified IP address for configuration.
-   *
-   * @param ipAddress The IP address to check
-   * @param c The configuration object in which to check
-   * @return Any Interface that matches the condition
-   */
-  public static Optional<Interface> getActiveInterfaceWithIp(Ip ipAddress, Configuration c) {
-    return c.getAllInterfaces().values().stream()
-        .filter(
-            iface ->
-                iface.getActive()
-                    && iface.getAllAddresses().stream()
-                        .anyMatch(ifAddr -> Objects.equals(ifAddr.getIp(), ipAddress)))
-        .findAny();
   }
 
   public static Path getCanonicalPath(Path path) {
