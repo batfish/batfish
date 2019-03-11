@@ -2,6 +2,7 @@ package org.batfish.representation.cisco;
 
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -24,7 +25,7 @@ public final class Vrf implements Serializable {
 
   private final String _name;
 
-  private OspfProcess _ospfProcess;
+  private Map<String, OspfProcess> _ospfProcesses;
 
   private RipProcess _ripProcess;
 
@@ -33,6 +34,8 @@ public final class Vrf implements Serializable {
   public Vrf(String name) {
     _eigrpProcesses = new TreeMap<>();
     _name = name;
+    // Ensure that processes are in insertion order.
+    _ospfProcesses = new LinkedHashMap<>(0);
     _staticRoutes = new HashSet<>();
   }
 
@@ -60,8 +63,9 @@ public final class Vrf implements Serializable {
     return _name;
   }
 
-  public OspfProcess getOspfProcess() {
-    return _ospfProcess;
+  /** Return OSPF processes defined on this VRF. Guaranteed to be in insertion order */
+  public Map<String, OspfProcess> getOspfProcesses() {
+    return _ospfProcesses;
   }
 
   public RipProcess getRipProcess() {
@@ -86,10 +90,6 @@ public final class Vrf implements Serializable {
 
   public void setIsisProcess(IsisProcess isisProcess) {
     _isisProcess = isisProcess;
-  }
-
-  public void setOspfProcess(OspfProcess proc) {
-    _ospfProcess = proc;
   }
 
   public void setRipProcess(RipProcess ripProcess) {
