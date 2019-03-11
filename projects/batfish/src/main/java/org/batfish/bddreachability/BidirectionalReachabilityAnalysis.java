@@ -9,8 +9,6 @@ import static org.batfish.datamodel.FlowDisposition.LOOP;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -61,7 +59,7 @@ public final class BidirectionalReachabilityAnalysis {
   private final Supplier<Map<String, List<BDDFirewallSessionTraceInfo>>> _initializedSessions;
   private final Supplier<BDDReachabilityAnalysis> _returnPassAnalysis;
   private final Supplier<Map<Location, BDD>> _forwardPassStartLocationToReturnPassFailureBdds;
-  private final Supplier<BiMap<StateExpr, StateExpr>>
+  private final Supplier<Map<StateExpr, StateExpr>>
       _forwardPassTerminationStateToReturnPassOriginationState;
   private final Supplier<Map<Location, BDD>> _forwardPassStartLocationToReturnPassSuccessBdds;
   private final Supplier<Map<StateExpr, BDD>> _returnPassForwardReachableBdds;
@@ -178,7 +176,7 @@ public final class BidirectionalReachabilityAnalysis {
     return _returnPassAnalysis.get().computeForwardReachableStates();
   }
 
-  private BiMap<StateExpr, StateExpr>
+  private Map<StateExpr, StateExpr>
       computeForwardPassTerminationStateToReturnPassOriginationState() {
     return _forwardPassForwardReachableBdds.get().keySet().stream()
         .map(
@@ -187,12 +185,12 @@ public final class BidirectionalReachabilityAnalysis {
               return orig == null ? null : Maps.immutableEntry(term, orig);
             })
         .filter(Objects::nonNull)
-        .collect(ImmutableBiMap.toImmutableBiMap(Entry::getKey, Entry::getValue));
+        .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
   }
 
   private Map<StateExpr, BDD> computeReturnPassOrigBdds() {
     Map<StateExpr, BDD> forwardReachableBdds = _forwardPassForwardReachableBdds.get();
-    BiMap<StateExpr, StateExpr> forwardPassTerminationStateToReturnPassOriginationState =
+    Map<StateExpr, StateExpr> forwardPassTerminationStateToReturnPassOriginationState =
         _forwardPassTerminationStateToReturnPassOriginationState.get();
 
     // construct the graph root (origination state) bdds for the return pass
