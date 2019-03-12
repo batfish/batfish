@@ -12801,6 +12801,21 @@
           }
         }
       },
+      "f5_bigip_structured_with_imish" : {
+        "configurationFormat" : "F5_BIGIP_STRUCTURED",
+        "name" : "f5_bigip_structured_with_imish",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "f5Bigip" : { }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
       "foundry_access_list" : {
         "configurationFormat" : "FOUNDRY",
         "name" : "foundry_access_list",

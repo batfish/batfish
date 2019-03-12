@@ -200,7 +200,14 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           F5BigipStructuredCombinedParser parser =
               new F5BigipStructuredCombinedParser(_fileText, _settings);
           combinedParser = parser;
-          extractor = new F5BigipStructuredControlPlaneExtractor(_fileText, parser, _warnings);
+          extractor =
+              new F5BigipStructuredControlPlaneExtractor(
+                  _fileText,
+                  parser,
+                  _warnings,
+                  _filename,
+                  _settings.getPrintParseTree() ? () -> _ptSentences : null,
+                  _settings.getPrintParseTreeLineNums());
           break;
 
         case HOST:

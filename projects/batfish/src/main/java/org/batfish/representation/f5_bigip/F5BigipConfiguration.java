@@ -136,6 +136,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private transient Configuration _c;
   private ConfigurationFormat _format;
   private String _hostname;
+  private boolean _imish;
   private final @Nonnull Map<String, Interface> _interfaces;
   private final @Nonnull Map<String, Node> _nodes;
   private final @Nonnull Map<String, Pool> _pools;
@@ -521,6 +522,11 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return _hostname;
   }
 
+  /** Returns {@code true} iff the source of this configuration included an imish component */
+  public boolean getImish() {
+    return _imish;
+  }
+
   public @Nonnull Map<String, Interface> getInterfaces() {
     return _interfaces;
   }
@@ -780,6 +786,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
   @Override
   public void setHostname(String hostname) {
     _hostname = hostname;
+  }
+
+  public void setImish(boolean imish) {
+    _imish = imish;
   }
 
   @Override
