@@ -6,7 +6,6 @@ import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.Version;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.main.Driver;
 import org.batfish.main.Driver.RunMode;
 
@@ -50,7 +49,7 @@ public class Settings extends BaseSettings {
 
   public Settings(String[] args) {
     super(
-        CommonUtil.getConfig(
+        getConfig(
             BfConsts.PROP_ALLINONE_PROPERTIES_PATH,
             BfConsts.ABSPATH_CONFIG_FILE_NAME_ALLINONE,
             ConfigurationLocator.class));

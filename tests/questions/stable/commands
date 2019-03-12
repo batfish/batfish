@@ -21,6 +21,9 @@ test -raw tests/questions/stable/edges.ref validate-template edges edgeType="bgp
 # validate ipsecSessionStatus
 test -raw tests/questions/stable/ipsecSessionStatus.ref validate-template ipsecSessionStatus nodes="n1", remoteNodes="n2", status=".*"
 
+# validate lpmRoutes
+test -raw tests/questions/stable/lpmRoutes.ref validate-template lpmRoutes ip="1.1.1.1", nodes="n1", vrfs="default"
+
 # validate parseWarning
 test -raw tests/questions/stable/parseWarning.ref validate-template parseWarning aggregateDuplicates=true
 

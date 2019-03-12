@@ -467,21 +467,21 @@
         "Line" : 34,
         "Text" : "area 0.0.0.0 nssa no-redistribution",
         "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
-        "Comment" : "This feature is not currently supported"
+        "Comment" : "Unsupported feature: no-redistribution"
       },
       {
         "Filename" : "configs/cisco_ospf",
         "Line" : 35,
         "Text" : "area 0.0.0.0 nssa no-redistribution no-summary",
         "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
-        "Comment" : "This feature is not currently supported"
+        "Comment" : "Unsupported feature: no-redistribution"
       },
       {
         "Filename" : "configs/cisco_ospf",
         "Line" : 36,
         "Text" : "area 0.0.0.0 nssa no-redistribution default-information-originate no-summary",
         "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
-        "Comment" : "This feature is not currently supported"
+        "Comment" : "Unsupported feature: no-redistribution"
       },
       {
         "Filename" : "configs/cisco_ospf",
