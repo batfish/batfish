@@ -20,9 +20,170 @@ public void emit(Token token) {
 }
 
 // Keywords
+
+ACCESS_LIST
+:
+  'access-list'
+;
+
+ADDRESS
+:
+  'address'
+;
+
+BFD
+:
+  'bfd'
+;
+
+BGP
+:
+  'bgp'
+;
+
+CAPABILITY
+:
+  'capability'
+;
+
+COMMUNITY
+:
+  'community'
+;
+
+CON
+:
+  'con'
+;
+
+DENY
+:
+  'deny'
+;
+
+DESCRIPTION
+:
+  'description'
+;
+
+EBGP
+:
+  'ebgp'
+;
+
 END
 :
   'end'
+;
+
+FALL_OVER
+:
+  'fall-over'
+;
+
+GRACEFUL_RESTART
+:
+  'graceful-restart'
+;
+
+INTERFACE
+:
+  'interface'
+;
+
+IP
+:
+  'ip'
+;
+
+KERNEL
+:
+  'kernel'
+;
+
+LINE
+:
+  'line'
+;
+
+LOGIN
+:
+  'login'
+;
+
+MATCH
+:
+  'match'
+;
+
+MAX_PATHS
+:
+  'max-paths'
+;
+
+MAXIMUM_PREFIX
+:
+  'maximum-prefix'
+;
+
+NEIGHBOR
+:
+  'neighbor'
+;
+
+NO
+:
+  'no'
+;
+
+PEER_GROUP
+:
+  'peer-group'
+;
+
+PERMIT
+:
+  'permit'
+;
+
+REDISTRIBUTE
+:
+  'redistribute'
+;
+
+REMOTE_AS
+:
+  'remote-as'
+;
+
+ROUTE_MAP
+:
+  'route-map'
+;
+
+ROUTER
+:
+  'router'
+;
+
+SERVICE
+:
+  'service'
+;
+
+SET
+:
+  'set'
+;
+
+UPDATE_SOURCE
+:
+  'update-source'
+;
+
+VTY
+:
+  'vty'
 ;
 
 // Complex tokens

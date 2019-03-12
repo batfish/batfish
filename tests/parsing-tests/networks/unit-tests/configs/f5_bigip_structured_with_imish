@@ -39,7 +39,7 @@ route-map rm1 deny 2
 !
 line con 0
  login
-loine vty 0 39
+line vty 0 39
  login
 !
 end
