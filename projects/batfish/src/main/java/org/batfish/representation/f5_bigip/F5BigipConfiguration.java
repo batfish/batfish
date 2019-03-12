@@ -157,15 +157,6 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, Virtual> _virtuals;
   private final @Nonnull Map<String, Vlan> _vlans;
 
-  /** Returns {@code true} iff the source of this configuration included an imish component */
-  public boolean getImish() {
-    return _imish;
-  }
-
-  public void setImish(boolean imish) {
-    _imish = imish;
-  }
-
   public F5BigipConfiguration() {
     _bgpProcesses = new HashMap<>();
     _interfaces = new HashMap<>();
@@ -531,6 +522,11 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return _hostname;
   }
 
+  /** Returns {@code true} iff the source of this configuration included an imish component */
+  public boolean getImish() {
+    return _imish;
+  }
+
   public @Nonnull Map<String, Interface> getInterfaces() {
     return _interfaces;
   }
@@ -790,6 +786,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
   @Override
   public void setHostname(String hostname) {
     _hostname = hostname;
+  }
+
+  public void setImish(boolean imish) {
+    _imish = imish;
   }
 
   @Override

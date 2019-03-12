@@ -197,13 +197,6 @@ public final class F5BigipStructuredGrammarTest {
                                 })));
   }
 
-  @Test
-  public void testImish() {
-    assertTrue(
-        "Configuration contains an imish component",
-        parseVendorConfig("f5_bigip_structured_with_imish").getImish());
-  }
-
   private static F5BigipConfiguration parseVendorConfig(String filename) {
     String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + filename);
     Settings settings = new Settings();
@@ -627,6 +620,13 @@ public final class F5BigipStructuredGrammarTest {
     Map<String, Configuration> configurations = parseTextConfigs(filename);
 
     assertThat(configurations, hasKey(hostname));
+  }
+
+  @Test
+  public void testImish() {
+    assertTrue(
+        "Configuration contains an imish component",
+        parseVendorConfig("f5_bigip_structured_with_imish").getImish());
   }
 
   @Test
