@@ -35,8 +35,6 @@
           "dstPort" : 33434,
           "ecn" : 0,
           "fragmentOffset" : 0,
-          "icmpCode" : 255,
-          "icmpVar" : 255,
           "ingressNode" : "host2",
           "ingressVrf" : "default",
           "ipProtocol" : "UDP",

@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
@@ -47,7 +48,7 @@ public class NatRuleThenPrefix implements NatRuleThen, Serializable {
 
   @Override
   public List<TransformationStep> toTransformationSteps(
-      JuniperConfiguration config, Nat nat, Ip interfaceIp, boolean reverse) {
+      JuniperConfiguration config, Nat nat, Ip interfaceIp, boolean reverse, Warnings warnings) {
     checkArgument(nat.getType() == STATIC, "Prefix can only be used in static nat");
 
     TransformationType type = nat.getType().toTransformationType();

@@ -7,7 +7,6 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressInterface;
 import static org.batfish.question.searchfilters.SearchFiltersAnswerer.differentialReachFilter;
-import static org.batfish.specifier.LocationSpecifiers.ALL_LOCATIONS;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -26,6 +25,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.question.SearchFiltersParameters;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
+import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.NameRegexInterfaceLinkLocationSpecifier;
 import org.junit.Before;
 import org.junit.Rule;
@@ -60,7 +60,7 @@ public class SearchFiltersAnswererDifferentialTest {
         SearchFiltersParameters.builder()
             .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
             .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
-            .setStartLocationSpecifier(ALL_LOCATIONS)
+            .setStartLocationSpecifier(LocationSpecifier.ALL_LOCATIONS)
             .setHeaderSpace(HeaderSpace.builder().build())
             .build();
   }

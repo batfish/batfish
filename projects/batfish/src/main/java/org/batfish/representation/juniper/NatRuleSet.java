@@ -13,6 +13,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.transformation.Transformation;
@@ -84,9 +85,9 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
    * transformation is installed on the egress interface, so we need to encode constraints on the
    * ingress interface using {@link AclLineMatchExpr ACL line match expressions}.
    *
+   * @param interfaceIp The {@link Ip} address of the interface.
    * @param matchFromLocationExprs The {@link AclLineMatchExpr} to match traffic from each {@link
    *     NatPacketLocation}.
-   * @param interfaceIp The {@link Ip} address of the interface.
    * @param andThen The next {@link Transformation} to apply after any {@link NatRule} matches.
    * @param orElse The next {@link Transformation} to apply if no {@link NatRule} matches.
    */
@@ -96,7 +97,8 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
       Ip interfaceIp,
       @Nullable Map<NatPacketLocation, AclLineMatchExpr> matchFromLocationExprs,
       @Nullable Transformation andThen,
-      @Nullable Transformation orElse) {
+      @Nullable Transformation orElse,
+      Warnings warnings) {
 
     if (nat.getType() == Type.SOURCE) {
       AclLineMatchExpr matchFromLocation = matchFromLocationExprs.get(_fromLocation);
@@ -106,7 +108,7 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
         return Optional.empty();
       }
 
-      return rulesTransformation(config, nat, interfaceIp, andThen, orElse, false)
+      return rulesTransformation(config, nat, interfaceIp, andThen, orElse, false, warnings)
           .map(
               rulesTransformation ->
                   when(matchFromLocation)
@@ -116,7 +118,7 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
     }
 
     if (nat.getType() == Type.STATIC) {
-      return rulesTransformation(config, nat, interfaceIp, andThen, orElse, true);
+      return rulesTransformation(config, nat, interfaceIp, andThen, orElse, true, warnings);
     }
 
     throw new BatfishException(
@@ -133,8 +135,9 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
       Nat nat,
       Ip interfaceIp,
       @Nullable Transformation andThen,
-      @Nullable Transformation orElse) {
-    return rulesTransformation(config, nat, interfaceIp, andThen, orElse, false);
+      @Nullable Transformation orElse,
+      Warnings warnings) {
+    return rulesTransformation(config, nat, interfaceIp, andThen, orElse, false, warnings);
   }
 
   private Optional<Transformation> rulesTransformation(
@@ -143,13 +146,14 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
       Ip interfaceIp,
       @Nullable Transformation andThen,
       @Nullable Transformation orElse,
-      boolean reverse) {
+      boolean reverse,
+      Warnings warnings) {
     Transformation transformation = orElse;
     for (NatRule rule : Lists.reverse(_rules)) {
       Optional<Builder> optionalBuilder =
           reverse
-              ? rule.toTransformationBuilderReverse(config, nat, interfaceIp)
-              : rule.toTransformationBuilder(config, nat, interfaceIp);
+              ? rule.toTransformationBuilderReverse(config, nat, interfaceIp, warnings)
+              : rule.toTransformationBuilder(config, nat, interfaceIp, warnings);
       if (optionalBuilder.isPresent()) {
         transformation =
             optionalBuilder.get().setAndThen(andThen).setOrElse(transformation).build();

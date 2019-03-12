@@ -1,15 +1,18 @@
 package org.batfish.common.util;
 
-import static org.batfish.common.util.CommonUtil.initPrivateIpsByPublicIp;
+import static org.batfish.datamodel.transformation.TransformationUtil.hasSourceNat;
+import static org.batfish.datamodel.transformation.TransformationUtil.sourceNatPoolIps;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Streams;
 import com.google.common.graph.ImmutableValueGraph;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -27,7 +30,10 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.IpsecDynamicPeerConfig;
 import org.batfish.datamodel.IpsecPeerConfig;
@@ -443,5 +449,40 @@ public class IpsecUtil {
     }
 
     return failedIpsecEdges;
+  }
+
+  private static SetMultimap<Ip, IpWildcardSetIpSpace> initPrivateIpsByPublicIp(
+      Map<String, Configuration> configurations) {
+    /*
+     * Very hacky mapping from public IP to set of spaces of possible natted private IPs.
+     * Does not currently support source-nat acl.
+     *
+     * The current implementation just considers every IP in every prefix on a non-masquerading
+     * interface (except the local address in each such prefix) to be a possible private IP
+     * match for every public IP referred to by every source-nat pool on a masquerading interface.
+     */
+    ImmutableSetMultimap.Builder<Ip, IpWildcardSetIpSpace> builder = ImmutableSetMultimap.builder();
+    for (Configuration c : configurations.values()) {
+      Collection<Interface> interfaces = c.getAllInterfaces().values();
+      Set<InterfaceAddress> nonNattedInterfaceAddresses =
+          interfaces.stream()
+              .filter(i -> !hasSourceNat(i.getOutgoingTransformation()))
+              .flatMap(i -> i.getAllAddresses().stream())
+              .collect(ImmutableSet.toImmutableSet());
+      Set<IpWildcard> blacklist =
+          nonNattedInterfaceAddresses.stream()
+              .map(address -> new IpWildcard(address.getIp(), Ip.ZERO))
+              .collect(ImmutableSet.toImmutableSet());
+      Set<IpWildcard> whitelist =
+          nonNattedInterfaceAddresses.stream()
+              .map(address -> new IpWildcard(address.getPrefix()))
+              .collect(ImmutableSet.toImmutableSet());
+      IpWildcardSetIpSpace ipSpace =
+          IpWildcardSetIpSpace.builder().including(whitelist).excluding(blacklist).build();
+      interfaces.stream()
+          .flatMap(i -> sourceNatPoolIps(i.getOutgoingTransformation()))
+          .forEach(currentPoolIp -> builder.put(currentPoolIp, ipSpace));
+    }
+    return builder.build();
   }
 }

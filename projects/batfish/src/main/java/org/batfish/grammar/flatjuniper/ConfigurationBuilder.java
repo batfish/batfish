@@ -1991,7 +1991,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private FirewallFilter _currentZoneInboundFilter;
 
-  private Interface _currentZoneInterface;
+  private String _currentZoneInterface;
 
   private LineAction _defaultCrossZoneAction;
 
@@ -3354,30 +3354,30 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterSezs_host_inbound_traffic(Sezs_host_inbound_trafficContext ctx) {
     if (_currentZoneInterface != null) {
       _currentZoneInboundFilter =
-          _currentZone.getInboundInterfaceFilters().get(_currentZoneInterface.getName());
+          _currentZone.getInboundInterfaceFilters().get(_currentZoneInterface);
       if (_currentZoneInboundFilter == null) {
         String name =
             "~ZONE_INTERFACE_FILTER~"
                 + _currentZone.getName()
                 + "~INTERFACE~"
-                + _currentZoneInterface.getName();
+                + _currentZoneInterface;
         _currentZoneInboundFilter = new FirewallFilter(name, Family.INET);
         _currentLogicalSystem.getFirewallFilters().put(name, _currentZoneInboundFilter);
         _currentZone
             .getInboundInterfaceFilters()
-            .put(_currentZoneInterface.getName(), _currentZoneInboundFilter);
+            .put(_currentZoneInterface, _currentZoneInboundFilter);
       }
     }
   }
 
   @Override
   public void enterSezs_interfaces(Sezs_interfacesContext ctx) {
-    _currentZoneInterface = initInterface(ctx.interface_id());
+    _currentZoneInterface = getInterfaceFullName(ctx.interface_id());
     _currentZone.getInterfaces().add(_currentZoneInterface);
-    _currentLogicalSystem.getInterfaceZones().put(_currentZoneInterface.getName(), _currentZone);
+    _currentLogicalSystem.getInterfaceZones().put(_currentZoneInterface, _currentZone);
     _configuration.referenceStructure(
         INTERFACE,
-        _currentZoneInterface.getName(),
+        _currentZoneInterface,
         SECURITY_ZONES_SECURITY_ZONES_INTERFACE,
         getLine(ctx.interface_id().getStop()));
   }
@@ -4055,8 +4055,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     if (ctx.ALL() != null) {
       _currentDhcpRelayGroup.setAllInterfaces(true);
     } else {
-      Interface iface = initInterface(ctx.interface_id());
-      String interfaceName = iface.getName();
+      String interfaceName = getInterfaceFullName(ctx.interface_id());
       _currentDhcpRelayGroup.getInterfaces().add(interfaceName);
       _configuration.referenceStructure(
           INTERFACE,
@@ -4675,10 +4674,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitPopsf_interface(Popsf_interfaceContext ctx) {
-    Interface iface = initInterface(ctx.id);
-    _currentPsTerm.getFroms().addFromInterface(new PsFromInterface(iface.getName()));
+    String ifaceName = getInterfaceFullName(ctx.id);
+    _currentPsTerm.getFroms().addFromInterface(new PsFromInterface(ifaceName));
     _configuration.referenceStructure(
-        INTERFACE, iface.getName(), POLICY_STATEMENT_FROM_INTERFACE, getLine(ctx.id.getStop()));
+        INTERFACE, ifaceName, POLICY_STATEMENT_FROM_INTERFACE, getLine(ctx.id.getStop()));
   }
 
   @Override
@@ -4922,9 +4921,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitRi_vtep_source_interface(Ri_vtep_source_interfaceContext ctx) {
-    Interface iface = initInterface(ctx.iface);
+    String ifaceName = getInterfaceFullName(ctx.iface);
     _configuration.referenceStructure(
-        INTERFACE, iface.getName(), VTEP_SOURCE_INTERFACE, getLine(ctx.iface.getStart()));
+        INTERFACE, ifaceName, VTEP_SOURCE_INTERFACE, getLine(ctx.iface.getStart()));
   }
 
   @Override
@@ -5102,11 +5101,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       Ip nextHopIp = Ip.parse(ctx.IP_ADDRESS().getText());
       _currentStaticRoute.setNextHopIp(nextHopIp);
     } else if (ctx.interface_id() != null) {
-      Interface iface = initInterface(ctx.interface_id());
-      _currentStaticRoute.setNextHopInterface(iface.getName());
+      String ifaceName = getInterfaceFullName(ctx.interface_id());
+      _currentStaticRoute.setNextHopInterface(ifaceName);
       _configuration.referenceStructure(
           INTERFACE,
-          iface.getName(),
+          ifaceName,
           STATIC_ROUTE_NEXT_HOP_INTERFACE,
           getLine(ctx.interface_id().getStop()));
     }
@@ -5301,12 +5300,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitSeikg_external_interface(Seikg_external_interfaceContext ctx) {
-    Interface_idContext interfaceId = ctx.interface_id();
-    Interface iface = initInterface(interfaceId);
-    _currentIkeGateway.setExternalInterface(iface);
+    String ifaceName = getInterfaceFullName(ctx.interface_id());
+    _currentIkeGateway.setExternalInterface(ifaceName);
     _configuration.referenceStructure(
         INTERFACE,
-        iface.getName(),
+        ifaceName,
         IKE_GATEWAY_EXTERNAL_INTERFACE,
         getLine(ctx.interface_id().getStart()));
   }
@@ -5451,13 +5449,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitSeipv_bind_interface(Seipv_bind_interfaceContext ctx) {
-    Interface iface = initInterface(ctx.interface_id());
+    String iface = getInterfaceFullName(ctx.interface_id());
     _currentIpsecVpn.setBindInterface(iface);
     _configuration.referenceStructure(
-        INTERFACE,
-        iface.getName(),
-        IPSEC_VPN_BIND_INTERFACE,
-        getLine(ctx.interface_id().getStart()));
+        INTERFACE, iface, IPSEC_VPN_BIND_INTERFACE, getLine(ctx.interface_id().getStart()));
   }
 
   @Override
@@ -5872,12 +5867,17 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     return text;
   }
 
-  private String getInterfaceName(Interface_idContext ctx) {
+  private static String getInterfaceName(Interface_idContext ctx) {
     String name = ctx.name.getText();
     if (ctx.chnl != null) {
       name += ":" + ctx.chnl.getText();
     }
     return name;
+  }
+
+  private static String getInterfaceFullName(Interface_idContext id) {
+    String name = getInterfaceName(id);
+    return id.unit == null ? name : name + "." + id.unit.getText();
   }
 
   private String initIkeProposal(IkeProposal proposal) {

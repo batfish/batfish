@@ -80,7 +80,7 @@ public final class FibImpl implements Fib {
   /** This trie is the source of truth for all resolved FIB routes */
   @Nonnull private final PrefixTrieMultiMap<FibEntry> _root;
 
-  private transient Supplier<Map<AbstractRoute, Set<FibEntry>>> _entries;
+  private transient Supplier<Set<FibEntry>> _entries;
   private transient Supplier<Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>>
       _nextHopInterfaces;
 
@@ -112,13 +112,13 @@ public final class FibImpl implements Fib {
                         Collectors.mapping(FibEntry::getResolvedToRoute, Collectors.toSet())))));
   }
 
-  private Map<AbstractRoute, Set<FibEntry>> computeEntries() {
-    return _root.getAllElements().stream()
-        .collect(Collectors.groupingBy(FibEntry::getTopLevelRoute, Collectors.toSet()));
+  private Set<FibEntry> computeEntries() {
+    return _root.getAllElements();
   }
 
   @Nonnull
-  public Map<AbstractRoute, Set<FibEntry>> getEntries() {
+  @Override
+  public Set<FibEntry> allEntries() {
     return _entries.get();
   }
 

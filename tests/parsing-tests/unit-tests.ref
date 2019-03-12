@@ -1403,6 +1403,25 @@
             "          prefix = IP_PREFIX:'224.0.0.0/4')",
             "        NEWLINE:'\\n')",
             "      (extended_access_list_tail",
+            "        num = DEC:'10'",
+            "        ala = (access_list_action",
+            "          DENY:'deny')",
+            "        prot = (protocol",
+            "          TCP:'tcp')",
+            "        srcipr = (access_list_ip_range",
+            "          ANY:'any')",
+            "        dstipr = (access_list_ip_range",
+            "          prefix = IP_PREFIX:'102.66.49.113/24')",
+            "        alps_dst = (port_specifier",
+            "          NEQ:'neq'",
+            "          (port",
+            "            WWW:'www')",
+            "          (port",
+            "            HTTPS:'https'))",
+            "        (extended_access_list_additional_feature",
+            "          SYN:'syn')",
+            "        NEWLINE:'\\n')",
+            "      (extended_access_list_tail",
             "        num = DEC:'20'",
             "        ala = (access_list_action",
             "          DENY:'deny')",
@@ -41758,6 +41777,35 @@
             "  (statement",
             "    (s_net",
             "      NET:'net'",
+            "      (net_trunk",
+            "        TRUNK:'trunk'",
+            "        name = (word",
+            "          WORD:'trunk1')",
+            "        BRACE_LEFT:'{'",
+            "        NEWLINE:'\\n'",
+            "        (nt_interfaces",
+            "          INTERFACES:'interfaces'",
+            "          BRACE_LEFT:'{'",
+            "          NEWLINE:'\\n'",
+            "          (nti_interface",
+            "            name = (word",
+            "              WORD:'2.0')",
+            "            NEWLINE:'\\n')",
+            "          (nti_interface",
+            "            name = (word",
+            "              WORD:'3.0')",
+            "            NEWLINE:'\\n')",
+            "          BRACE_RIGHT:'}'",
+            "          NEWLINE:'\\n')",
+            "        (nt_lacp",
+            "          LACP:'lacp'",
+            "          ENABLED:'enabled'",
+            "          NEWLINE:'\\n')",
+            "        BRACE_RIGHT:'}'",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net",
+            "      NET:'net'",
             "      (unrecognized",
             "        (u_word",
             "          (word",
@@ -46143,6 +46191,15 @@
             "                VARIABLE:'EXIST_MAP')",
             "              NEWLINE:'\\n'))))",
             "      (router_bgp_stanza_tail",
+            "        (neighbor_flat_rb_stanza",
+            "          NEIGHBOR:'neighbor'",
+            "          ip6 = IPV6_ADDRESS:'1::1'  <== mode:M_NEIGHBOR",
+            "          (remote_as_bgp_tail",
+            "            REMOTE_AS:'remote-as'",
+            "            remote = (bgp_asn",
+            "              asn = DEC:'2')",
+            "            NEWLINE:'\\n')))",
+            "      (router_bgp_stanza_tail",
             "        (address_family_rb_stanza",
             "          (address_family_header",
             "            ADDRESS_FAMILY:'address-family'",
@@ -46156,7 +46213,33 @@
             "              (activate_bgp_tail",
             "                ACTIVATE:'activate'",
             "                NEWLINE:'\\n')))",
-            "          (address_family_footer)))))",
+            "          (address_family_footer)))",
+            "      (router_bgp_stanza_tail",
+            "        (address_family_rb_stanza",
+            "          (address_family_header",
+            "            ADDRESS_FAMILY:'address-family'",
+            "            af = (bgp_address_family",
+            "              VPNV6:'vpnv6')",
+            "            NEWLINE:'\\n')",
+            "          (neighbor_flat_rb_stanza",
+            "            NEIGHBOR:'neighbor'",
+            "            ip6 = IPV6_ADDRESS:'1::1'  <== mode:M_NEIGHBOR",
+            "            (bgp_tail",
+            "              (activate_bgp_tail",
+            "                ACTIVATE:'activate'",
+            "                NEWLINE:'\\n')))",
+            "          (neighbor_flat_rb_stanza",
+            "            NEIGHBOR:'neighbor'",
+            "            ip6 = IPV6_ADDRESS:'1::1'  <== mode:M_NEIGHBOR",
+            "            (bgp_tail",
+            "              (prefix_list_bgp_tail",
+            "                PREFIX_LIST:'prefix-list'",
+            "                list_name = VARIABLE:'VPNV6_PL'  <== mode:M_Name",
+            "                IN:'in'",
+            "                NEWLINE:'\\n')))",
+            "          (address_family_footer",
+            "            EXIT_ADDRESS_FAMILY:'exit-address-family'",
+            "            NEWLINE:'\\n')))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -68234,24 +68317,6 @@
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 34,
-              "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
-              "Text" : "area 0.0.0.0 nssa no-redistribution"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 35,
-              "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
-              "Text" : "area 0.0.0.0 nssa no-redistribution no-summary"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 36,
-              "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
-              "Text" : "area 0.0.0.0 nssa no-redistribution default-information-originate no-summary"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
               "Line" : 53,
               "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
               "Text" : "distribute-list aclin in"
@@ -69310,7 +69375,7 @@
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 58,
+              "Line" : 65,
               "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
               "Text" : "tunnels"
             }
@@ -70147,7 +70212,8 @@
               "definitionLines" : [
                 4,
                 5,
-                6
+                6,
+                7
               ],
               "numReferrers" : 0
             }
@@ -73008,15 +73074,29 @@
               "numReferrers" : 1
             }
           },
+          "trunk" : {
+            "trunk1" : {
+              "definitionLines" : [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
+              ],
+              "numReferrers" : 0
+            }
+          },
           "vlan" : {
             "/Common/MYVLAN" : {
               "definitionLines" : [
-                62,
-                63,
-                64,
-                65,
-                66,
-                67
+                69,
+                70,
+                71,
+                72,
+                73,
+                74
               ],
               "numReferrers" : 2
             }
@@ -77927,9 +78007,16 @@
             "1.0" : {
               "interface self-reference" : [
                 8
-              ],
-              "vlan interface" : [
-                64
+              ]
+            },
+            "2.0" : {
+              "trunk interfaces interface" : [
+                60
+              ]
+            },
+            "3.0" : {
+              "trunk interfaces interface" : [
+                61
               ]
             }
           },
@@ -77950,6 +78037,13 @@
               "self vlan" : [
                 29,
                 33
+              ]
+            }
+          },
+          "vlan member interface" : {
+            "1.0" : {
+              "vlan interface" : [
+                71
               ]
             }
           }
@@ -78229,6 +78323,13 @@
           }
         },
         "configs/ios_bgp" : {
+          "ipv6 prefix-list" : {
+            "VPNV6_PL" : {
+              "bgp inbound ipv6 prefix-list" : [
+                11
+              ]
+            }
+          },
           "route-map" : {
             "ADVERTISE_MAP" : {
               "bgp address-family aggregate-address advertise-map" : [
@@ -78251,7 +78352,7 @@
           "undeclared bgp peer-group" : {
             "UNDEFINED_PEER_GROUP" : {
               "bgp peer-group referenced before defined" : [
-                7
+                8
               ]
             }
           }
@@ -80995,6 +81096,13 @@
           }
         },
         "configs/ios_bgp" : {
+          "ipv6 prefix-list" : {
+            "VPNV6_PL" : {
+              "bgp inbound ipv6 prefix-list" : [
+                11
+              ]
+            }
+          },
           "route-map" : {
             "ADVERTISE_MAP" : {
               "bgp address-family aggregate-address advertise-map" : [
@@ -81017,7 +81125,7 @@
           "undeclared bgp peer-group" : {
             "UNDEFINED_PEER_GROUP" : {
               "bgp peer-group referenced before defined" : [
-                7
+                8
               ]
             }
           }

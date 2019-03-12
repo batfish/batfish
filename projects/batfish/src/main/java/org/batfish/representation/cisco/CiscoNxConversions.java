@@ -5,6 +5,8 @@ import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePr
 import static org.batfish.representation.cisco.CiscoConfiguration.MATCH_DEFAULT_ROUTE;
 import static org.batfish.representation.cisco.CiscoConfiguration.MAX_ADMINISTRATIVE_COST;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpCommonExportPolicyName;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpDefaultRouteExportPolicyName;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerExportPolicyName;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -345,9 +347,8 @@ final class CiscoNxConversions {
 
       String defaultRouteExportPolicyName;
       defaultRouteExportPolicyName =
-          String.format(
-              "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:%s:%s~",
-              vrf.getName(), dynamic ? prefix : prefix.getStartIp());
+          computeBgpDefaultRouteExportPolicyName(
+              vrf.getName(), dynamic ? prefix.toString() : prefix.getStartIp().toString());
       RoutingPolicy defaultRouteExportPolicy = new RoutingPolicy(defaultRouteExportPolicyName, c);
       c.getRoutingPolicies().put(defaultRouteExportPolicyName, defaultRouteExportPolicy);
       defaultRouteExportPolicy
@@ -380,9 +381,8 @@ final class CiscoNxConversions {
 
     RoutingPolicy exportPolicy =
         new RoutingPolicy(
-            String.format(
-                "~BGP_PEER_EXPORT_POLICY:%s:%s~",
-                vrf.getName(), dynamic ? prefix : prefix.getStartIp()),
+            computeBgpPeerExportPolicyName(
+                vrf.getName(), dynamic ? prefix.toString() : prefix.getStartIp().toString()),
             c);
     exportPolicy.setStatements(exportStatements);
     c.getRoutingPolicies().put(exportPolicy.getName(), exportPolicy);

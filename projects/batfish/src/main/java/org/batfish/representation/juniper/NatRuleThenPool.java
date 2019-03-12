@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
@@ -57,7 +58,7 @@ public final class NatRuleThenPool implements NatRuleThen, Serializable {
 
   @Override
   public List<TransformationStep> toTransformationSteps(
-      JuniperConfiguration config, Nat nat, Ip interfaceIp, boolean reverse) {
+      JuniperConfiguration config, Nat nat, Ip interfaceIp, boolean reverse, Warnings warnings) {
     checkArgument(
         !reverse && (nat.getType() == SOURCE || nat.getType() == DESTINATION),
         "Interface actions can only be used in source nat and dest nat, and no reverse needed");
@@ -72,9 +73,15 @@ public final class NatRuleThenPool implements NatRuleThen, Serializable {
       return ImmutableList.of();
     }
 
+    Ip from = pool.getFromAddress();
+    Ip to = pool.getToAddress();
+    if (from.asLong() > to.asLong()) {
+      warnings.redFlag(String.format("NAT pool %s is invalid: %s - %s", _poolName, from, to));
+      return ImmutableList.of();
+    }
+
     ImmutableList.Builder<TransformationStep> builder = new Builder<>();
-    builder.add(
-        new AssignIpAddressFromPool(type, ipField, pool.getFromAddress(), pool.getToAddress()));
+    builder.add(new AssignIpAddressFromPool(type, ipField, from, to));
 
     PortAddressTranslation pat = pool.getPortAddressTranslation();
 

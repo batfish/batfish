@@ -2,6 +2,7 @@ package org.batfish.role;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -103,5 +104,14 @@ public class NodeRole implements Comparable<NodeRole> {
    */
   public boolean matches(String nodeName) {
     return _compiledPattern.matcher(nodeName).matches();
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(getClass())
+        .add("name", _name)
+        .add("regex", _regex)
+        .add("caseSensitive", _caseSensitive)
+        .toString();
   }
 }

@@ -340,12 +340,13 @@ public final class FlatJuniperGrammarTest {
   }
 
   private static Flow createFlow(IpProtocol protocol, int port) {
-    Flow.Builder fb = new Flow.Builder();
-    fb.setIngressNode("node");
-    fb.setIpProtocol(protocol);
-    fb.setDstPort(port);
-    fb.setSrcPort(port);
-    fb.setTag("test");
+    Flow.Builder fb =
+        new Flow.Builder()
+            .setIngressNode("node")
+            .setIpProtocol(protocol)
+            .setDstPort(port)
+            .setSrcPort(port)
+            .setTag("test");
     return fb.build();
   }
 
@@ -2293,7 +2294,14 @@ public final class FlatJuniperGrammarTest {
     Configuration c = parseConfig(hostname);
 
     Flow tcpFlow = createFlow(IpProtocol.TCP, 0);
-    Flow icmpFlow = createFlow(IpProtocol.ICMP, 0);
+    Flow icmpFlow =
+        Flow.builder()
+            .setIngressNode("node")
+            .setIpProtocol(IpProtocol.ICMP)
+            .setIcmpType(0)
+            .setIcmpCode(0)
+            .setTag("tag")
+            .build();
 
     // Tcp flow should be accepted by the filter and others should be rejected
     assertThat(c, hasIpAccessList("FILTER", accepts(tcpFlow, null, c)));

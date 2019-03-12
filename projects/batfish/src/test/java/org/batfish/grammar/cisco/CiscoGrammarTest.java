@@ -23,6 +23,7 @@ import static org.batfish.datamodel.matchers.AaaAuthenticationLoginMatchers.hasL
 import static org.batfish.datamodel.matchers.AaaAuthenticationMatchers.hasLogin;
 import static org.batfish.datamodel.matchers.AaaMatchers.hasAuthentication;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasAllowRemoteAsOut;
@@ -122,6 +123,7 @@ import static org.batfish.datamodel.matchers.MlagMatchers.hasPeerAddress;
 import static org.batfish.datamodel.matchers.MlagMatchers.hasPeerInterface;
 import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasDefaultOriginateType;
 import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasSuppressType3;
+import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasSuppressType7;
 import static org.batfish.datamodel.matchers.OrMatchExprMatchers.hasDisjuncts;
 import static org.batfish.datamodel.matchers.OrMatchExprMatchers.isOrMatchExprThat;
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasNssa;
@@ -157,6 +159,8 @@ import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasL
 import static org.batfish.datamodel.vendor_family.cisco.LoggingMatchers.isOn;
 import static org.batfish.grammar.cisco.CiscoControlPlaneExtractor.SERIAL_LINE;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerExportPolicyName;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerImportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeCombinedOutgoingAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeIcmpObjectGroupAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeInspectClassMapAclName;
@@ -405,6 +409,7 @@ public class CiscoGrammarTest {
         .setTag("")
         .setIpProtocol(IpProtocol.ICMP)
         .setIcmpType(icmpType)
+        .setIcmpCode(0)
         .build();
   }
 
@@ -1813,7 +1818,13 @@ public class CiscoGrammarTest {
     String ogpAclEmptyName = computeProtocolObjectGroupAclName(ogpEmptyName);
     String ogpAclDuplicateName = computeProtocolObjectGroupAclName(ogpDuplicateName);
     Flow icmpFlow =
-        Flow.builder().setTag("").setIngressNode("").setIpProtocol(IpProtocol.ICMP).build();
+        Flow.builder()
+            .setTag("")
+            .setIngressNode("")
+            .setIpProtocol(IpProtocol.ICMP)
+            .setIcmpCode(0)
+            .setIcmpType(0)
+            .build();
     Flow tcpFlow =
         Flow.builder().setTag("").setIngressNode("").setIpProtocol(IpProtocol.TCP).build();
 
@@ -2089,7 +2100,7 @@ public class CiscoGrammarTest {
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     /* Confirm prefix list uses are counted correctly */
-    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "pre_list", 2));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "pre_list", 3));
     assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "pre_list_unused", 0));
 
     /* Confirm undefined prefix lists are detected in different contexts */
@@ -2098,15 +2109,21 @@ public class CiscoGrammarTest {
     /* Route-map match context */
     assertThat(ccae, hasUndefinedReference(filename, PREFIX_LIST, "pre_list_undef2"));
 
-    // The defined inbound prefix-list should be converted to a BGP import policy
+    /*
+     Neighbor 1.2.3.4 uses pre_list to filter both inbound and outbound routes. Test that both
+     generated policies permit 10.1.1.0/24 and not other routes.
+    */
     Ip peerAddress = Ip.parse("1.2.3.4");
     Configuration c = batfish.loadConfigurations().get(hostname);
     String generatedImportPolicyName =
-        String.format("~BGP_PEER_IMPORT_POLICY:%s:%s~", DEFAULT_VRF_NAME, peerAddress);
+        computeBgpPeerImportPolicyName(DEFAULT_VRF_NAME, peerAddress.toString());
+    String generatedExportPolicyName =
+        computeBgpPeerExportPolicyName(DEFAULT_VRF_NAME, peerAddress.toString());
     RoutingPolicy importPolicy = c.getRoutingPolicies().get(generatedImportPolicyName);
+    RoutingPolicy exportPolicy = c.getRoutingPolicies().get(generatedExportPolicyName);
     assertThat(importPolicy, notNullValue());
+    assertThat(exportPolicy, notNullValue());
 
-    // Test that the generated import policy only permits 10.1.1.0/24, as expected
     Prefix permittedPrefix = Prefix.parse("10.1.1.0/24");
     BgpRoute.Builder r =
         BgpRoute.builder()
@@ -2124,12 +2141,28 @@ public class CiscoGrammarTest {
             Direction.IN),
         equalTo(true));
     assertThat(
+        exportPolicy.process(
+            permittedRoute,
+            permittedRoute.toBuilder(),
+            peerAddress,
+            DEFAULT_VRF_NAME,
+            Direction.OUT),
+        equalTo(true));
+    assertThat(
         importPolicy.process(
             unmatchedRoute,
             unmatchedRoute.toBuilder(),
             peerAddress,
             DEFAULT_VRF_NAME,
             Direction.IN),
+        equalTo(false));
+    assertThat(
+        exportPolicy.process(
+            unmatchedRoute,
+            unmatchedRoute.toBuilder(),
+            peerAddress,
+            DEFAULT_VRF_NAME,
+            Direction.OUT),
         equalTo(false));
   }
 
@@ -2422,6 +2455,8 @@ public class CiscoGrammarTest {
             .setIngressNode(c.getHostname())
             .setTag("")
             .setIpProtocol(IpProtocol.ICMP)
+            .setIcmpType(0)
+            .setIcmpCode(0)
             .build();
 
     assertThat(c, hasIpAccessList(policyMapAclName, accepts(flowPass, null, c)));
@@ -3527,6 +3562,86 @@ public class CiscoGrammarTest {
     assertThat(procOnStartup.getMaxMetricStubNetworks(), is(nullValue()));
     assertThat(procOnStartup.getMaxMetricExternalNetworks(), is(nullValue()));
     assertThat(procOnStartup.getMaxMetricSummaryNetworks(), is(nullValue()));
+  }
+
+  @Test
+  public void testOspfNoRedistribution() throws IOException {
+    /*   ________      ________      ________
+        |   R1   |    |        |    |   R2   |
+        | Area 0 |----|  ABR   |----| Area 1 |
+        |        |    |        |    |  NSSA  |
+         --------      --------      --------
+      Will run this setup with two versions of the ABR, one where it has no-redistribution
+      configured for area 1 and one where it doesn't. In both cases, the ABR is configured to
+      redistribute connected subnets, so we should always see its loopback prefix on R1 and should
+      also see it on R2 when no-redistribution is not configured.
+    */
+
+    // First snapshot: no-redistribution is not configured
+    String testrigName = "ospf-no-redistribution";
+    String area0Name = "ios-area-0";
+    String area1NssaName = "ios-area-1-nssa";
+    String abrName = "ios-abr";
+    Prefix abrLoopbackPrefix = Prefix.parse("10.10.10.10/32");
+    List<String> configurationNames = ImmutableList.of(area0Name, area1NssaName, abrName);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Configuration abr = configurations.get(abrName);
+
+    // Sanity check: ensure the ABR does not have suppressType7 set for area 1
+    OspfArea abrToArea1 =
+        abr.getVrfs().get(DEFAULT_VRF_NAME).getInterfaces().get("Ethernet1").getOspfArea();
+    assertThat(abrToArea1.getNssa(), hasSuppressType7(false));
+
+    batfish.computeDataPlane();
+    DataPlane dp = batfish.loadDataPlane();
+    Set<AbstractRoute> area0Routes = dp.getRibs().get(area0Name).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> area1NssaRoutes =
+        dp.getRibs().get(area1NssaName).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> abrRoutes = dp.getRibs().get(abrName).get(DEFAULT_VRF_NAME).getRoutes();
+
+    // All the devices should have a route to the ABR's loopback
+    assertThat(
+        area0Routes,
+        hasItem(allOf(hasPrefix(abrLoopbackPrefix), hasProtocol(RoutingProtocol.OSPF_E2))));
+    assertThat(
+        area1NssaRoutes,
+        hasItem(allOf(hasPrefix(abrLoopbackPrefix), hasProtocol(RoutingProtocol.OSPF_E2))));
+    assertThat(abrRoutes, hasItem(hasPrefix(abrLoopbackPrefix)));
+
+    // Second snapshot: run the same song and dance with no-redistribution configured on the ABR
+    abrName = "ios-abr-no-redistribution";
+    configurationNames = ImmutableList.of(area0Name, area1NssaName, abrName);
+    batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    configurations = batfish.loadConfigurations();
+    abr = configurations.get(abrName);
+
+    // This time the ABR should have suppressType7 set for area 1
+    abrToArea1 = abr.getVrfs().get(DEFAULT_VRF_NAME).getInterfaces().get("Ethernet1").getOspfArea();
+    assertThat(abrToArea1.getNssa(), hasSuppressType7(true));
+
+    batfish.computeDataPlane();
+    dp = batfish.loadDataPlane();
+    area0Routes = dp.getRibs().get(area0Name).get(DEFAULT_VRF_NAME).getRoutes();
+    area1NssaRoutes = dp.getRibs().get(area1NssaName).get(DEFAULT_VRF_NAME).getRoutes();
+    abrRoutes = dp.getRibs().get(abrName).get(DEFAULT_VRF_NAME).getRoutes();
+
+    // Now the device in area 1 should not have a route to the ABR's loopback
+    assertThat(
+        area0Routes,
+        hasItem(allOf(hasPrefix(abrLoopbackPrefix), hasProtocol(RoutingProtocol.OSPF_E2))));
+    assertThat(area1NssaRoutes, not(hasItem(hasPrefix(abrLoopbackPrefix))));
+    assertThat(abrRoutes, hasItem(hasPrefix(abrLoopbackPrefix)));
   }
 
   @Test

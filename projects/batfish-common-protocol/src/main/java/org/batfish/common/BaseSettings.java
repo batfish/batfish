@@ -2,6 +2,8 @@ package org.batfish.common;
 
 import com.google.common.collect.ImmutableList;
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -57,6 +59,32 @@ public abstract class BaseSettings {
    */
   public BaseSettings(Path configFile) {
     this(loadFileConfiguration(configFile.toFile()));
+  }
+
+  protected static Configuration getConfig(
+      String overridePropertyName,
+      String defaultPropertyFilename,
+      Class<?> defaultPropertyLocatorClass) {
+    String overriddenPath = System.getProperty(overridePropertyName);
+    URL propertiesUrl;
+    if (overriddenPath != null) {
+      // The user provided an override, so look up that configuration instead.
+      try {
+        propertiesUrl = new URL(new URL("file://"), overriddenPath);
+      } catch (MalformedURLException e) {
+        throw new BatfishException(
+            "Error treating " + overriddenPath + " as a path to a properties file", e);
+      }
+    } else {
+      // Find the default properties file.
+      propertiesUrl =
+          defaultPropertyLocatorClass.getClassLoader().getResource(defaultPropertyFilename);
+    }
+    try {
+      return new Configurations().properties(propertiesUrl);
+    } catch (Exception e) {
+      throw new BatfishException("Error loading configuration from " + overriddenPath, e);
+    }
   }
 
   protected final void addBooleanOption(String key, String description) {

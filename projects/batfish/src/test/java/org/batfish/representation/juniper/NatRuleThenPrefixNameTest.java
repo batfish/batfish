@@ -43,7 +43,7 @@ public class NatRuleThenPrefixNameTest {
         .put(prefixName, new AddressAddressBookEntry("entry", new IpWildcard(prefix)));
     NatRuleThenPrefixName then = new NatRuleThenPrefixName(prefixName);
     List<TransformationStep> steps =
-        then.toTransformationSteps(config, new Nat(Type.STATIC), null, false);
+        then.toTransformationSteps(config, new Nat(Type.STATIC), null, false, null);
     // should only change dst ip
     assertThat(
         steps,
@@ -65,7 +65,7 @@ public class NatRuleThenPrefixNameTest {
         .put(prefixName, new AddressAddressBookEntry("entry", new IpWildcard(prefix)));
     NatRuleThenPrefixName then = new NatRuleThenPrefixName(prefixName);
     List<TransformationStep> steps =
-        then.toTransformationSteps(config, new Nat(Type.STATIC), null, true);
+        then.toTransformationSteps(config, new Nat(Type.STATIC), null, true, null);
     // should only change src ip
     assertThat(
         steps,
@@ -76,13 +76,13 @@ public class NatRuleThenPrefixNameTest {
   @Test(expected = IllegalArgumentException.class)
   public void testToTransformationStepsNotStaticNat() {
     NatRuleThenPrefixName thenPrefix1 = new NatRuleThenPrefixName("prefix");
-    thenPrefix1.toTransformationSteps(null, new Nat(Type.SOURCE), null, false);
+    thenPrefix1.toTransformationSteps(null, new Nat(Type.SOURCE), null, false, null);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testToTransformationStepsNotStaticNat2() {
     NatRuleThenPrefixName thenPrefix1 = new NatRuleThenPrefixName("prefix");
-    thenPrefix1.toTransformationSteps(null, new Nat(Type.DESTINATION), null, false);
+    thenPrefix1.toTransformationSteps(null, new Nat(Type.DESTINATION), null, false, null);
   }
 
   @Test(expected = BatfishException.class)
@@ -91,7 +91,7 @@ public class NatRuleThenPrefixNameTest {
     String prefixName = "prefix";
 
     NatRuleThenPrefixName then = new NatRuleThenPrefixName(prefixName);
-    then.toTransformationSteps(config, new Nat(Type.STATIC), null, true);
+    then.toTransformationSteps(config, new Nat(Type.STATIC), null, true, null);
   }
 
   @Test(expected = BatfishException.class)
@@ -106,6 +106,6 @@ public class NatRuleThenPrefixNameTest {
         .put(prefixName, new AddressSetAddressBookEntry("name"));
 
     NatRuleThenPrefixName then = new NatRuleThenPrefixName(prefixName);
-    then.toTransformationSteps(config, new Nat(Type.STATIC), null, true);
+    then.toTransformationSteps(config, new Nat(Type.STATIC), null, true, null);
   }
 }

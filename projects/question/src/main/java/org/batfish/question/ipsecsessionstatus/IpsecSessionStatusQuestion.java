@@ -1,19 +1,21 @@
 package org.batfish.question.ipsecsessionstatus;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.questions.IpsecSessionStatus;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.specifier.AllNodesNodeSpecifier;
+import org.batfish.specifier.NodeSpecifier;
+import org.batfish.specifier.SpecifierFactories;
 
 /** Return status of all IPSec sessions in the network */
 public class IpsecSessionStatusQuestion extends Question {
+  static final Pattern DEFAULT_STATUS = Pattern.compile(".*");
 
   private static final String PROP_NODES = "nodes";
 
@@ -23,23 +25,28 @@ public class IpsecSessionStatusQuestion extends Question {
 
   private static final String QUESTION_NAME = "ipsecSessionStatus";
 
-  @Nonnull private NodesSpecifier _nodes;
+  @Nullable private String _nodes;
 
-  @Nonnull private NodesSpecifier _remoteNodes;
+  @Nullable private String _remoteNodes;
 
   @Nonnull private Pattern _status;
 
   @JsonCreator
-  public IpsecSessionStatusQuestion(
-      @Nullable @JsonProperty(PROP_NODES) NodesSpecifier nodes,
-      @Nullable @JsonProperty(PROP_REMOTE_NODES) NodesSpecifier remoteNodes,
+  private static IpsecSessionStatusQuestion create(
+      @Nullable @JsonProperty(PROP_NODES) String nodes,
+      @Nullable @JsonProperty(PROP_REMOTE_NODES) String remoteNodes,
       @Nullable @JsonProperty(PROP_STATUS) String status) {
-    _nodes = firstNonNull(nodes, NodesSpecifier.ALL);
-    _remoteNodes = firstNonNull(remoteNodes, NodesSpecifier.ALL);
-    _status =
-        Strings.isNullOrEmpty(status)
-            ? Pattern.compile(".*")
-            : Pattern.compile(status.toUpperCase());
+    return new IpsecSessionStatusQuestion(
+        nodes,
+        remoteNodes,
+        Strings.isNullOrEmpty(status) ? DEFAULT_STATUS : Pattern.compile(status.toUpperCase()));
+  }
+
+  public IpsecSessionStatusQuestion(
+      @Nullable String nodes, @Nullable String remoteNodes, @Nonnull Pattern status) {
+    _nodes = nodes;
+    _remoteNodes = remoteNodes;
+    _status = status;
   }
 
   @Override
@@ -52,14 +59,27 @@ public class IpsecSessionStatusQuestion extends Question {
     return QUESTION_NAME;
   }
 
+  @Nullable
   @JsonProperty(PROP_NODES)
-  public NodesSpecifier getInitiatorRegex() {
+  public String getNodes() {
     return _nodes;
   }
 
+  @JsonIgnore
+  NodeSpecifier getNodeSpecifier() {
+    return SpecifierFactories.getNodeSpecifierOrDefault(_nodes, AllNodesNodeSpecifier.INSTANCE);
+  }
+
+  @Nullable
   @JsonProperty(PROP_REMOTE_NODES)
-  public NodesSpecifier getResponderRegex() {
+  public String getRemoteNodes() {
     return _remoteNodes;
+  }
+
+  @JsonIgnore
+  NodeSpecifier getRemoteNodeSpecifier() {
+    return SpecifierFactories.getNodeSpecifierOrDefault(
+        _remoteNodes, AllNodesNodeSpecifier.INSTANCE);
   }
 
   @JsonProperty(PROP_STATUS)

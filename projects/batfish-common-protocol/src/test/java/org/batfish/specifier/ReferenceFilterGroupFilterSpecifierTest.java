@@ -12,7 +12,6 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
-import org.batfish.datamodel.questions.FiltersSpecifier;
 import org.batfish.referencelibrary.FilterGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.junit.Rule;
@@ -64,9 +63,9 @@ public class ReferenceFilterGroupFilterSpecifierTest {
                 ImmutableList.of(
                     new FilterGroup(
                         ImmutableList.of(
-                            new FiltersSpecifier(_filter1.getName()),
-                            new FiltersSpecifier(
-                                "outputfilteron:" + _interfaceName)), // should match _filter3
+                            _filter1.getName(),
+                            "outFilterOf(" + _interfaceName + ")", // should match _filter3
+                            ""), // should match nothing; shouldn't accidentally match everything
                         _filterGroupName)))
             .build();
 
@@ -83,12 +82,5 @@ public class ReferenceFilterGroupFilterSpecifierTest {
         new ReferenceFilterGroupFilterSpecifier(_filterGroupName, _refBookName)
             .resolve(_nodeName, _ctxt),
         equalTo(ImmutableSet.of(_filter1, _filter3)));
-  }
-
-  @Test
-  public void resolveMissingNode() {
-    exception.expect(IllegalArgumentException.class);
-    new ReferenceFilterGroupFilterSpecifier(_filterGroupName, _refBookName)
-        .resolve("NonExistentNode", _ctxt);
   }
 }

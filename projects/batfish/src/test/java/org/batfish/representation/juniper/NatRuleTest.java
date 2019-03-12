@@ -30,14 +30,14 @@ public class NatRuleTest {
 
     Ip interfaceIp = Ip.ZERO;
     assertThat(
-        rule.toTransformationBuilder(null, dnat, interfaceIp).map(Builder::build),
+        rule.toTransformationBuilder(null, dnat, interfaceIp, null).map(Builder::build),
         equalTo(Optional.of(when(match(hs)).apply(new Noop(DEST_NAT)).build())));
 
     rule.setThen(new NatRuleThenPool("pool"));
 
     // pool is undefined
     assertThat(
-        rule.toTransformationBuilder(null, dnat, interfaceIp).map(Builder::build),
+        rule.toTransformationBuilder(null, dnat, interfaceIp, null).map(Builder::build),
         equalTo(Optional.empty()));
 
     // pool is defined
@@ -50,7 +50,7 @@ public class NatRuleTest {
 
     // destination NAT
     assertThat(
-        rule.toTransformationBuilder(null, dnat, interfaceIp).map(Builder::build),
+        rule.toTransformationBuilder(null, dnat, interfaceIp, null).map(Builder::build),
         equalTo(
             Optional.of(
                 when(match(hs))
@@ -60,7 +60,7 @@ public class NatRuleTest {
     snat.getPools().put("pool", pool);
     // source NAT
     assertThat(
-        rule.toTransformationBuilder(null, snat, interfaceIp).map(Builder::build),
+        rule.toTransformationBuilder(null, snat, interfaceIp, null).map(Builder::build),
         equalTo(
             Optional.of(
                 when(match(hs))

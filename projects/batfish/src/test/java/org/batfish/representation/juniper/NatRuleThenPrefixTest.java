@@ -33,7 +33,7 @@ public class NatRuleThenPrefixTest {
     Prefix prefix1 = Prefix.parse("1.1.1.1/24");
     NatRuleThenPrefix thenPrefix1 = new NatRuleThenPrefix(prefix1);
     List<TransformationStep> steps =
-        thenPrefix1.toTransformationSteps(null, new Nat(Type.STATIC), null, true);
+        thenPrefix1.toTransformationSteps(null, new Nat(Type.STATIC), null, true, null);
     // should only change src ip
     assertThat(
         steps,
@@ -46,7 +46,7 @@ public class NatRuleThenPrefixTest {
     Prefix prefix1 = Prefix.parse("1.1.1.1/24");
     NatRuleThenPrefix thenPrefix1 = new NatRuleThenPrefix(prefix1);
     List<TransformationStep> steps =
-        thenPrefix1.toTransformationSteps(null, new Nat(Type.STATIC), null, false);
+        thenPrefix1.toTransformationSteps(null, new Nat(Type.STATIC), null, false, null);
     // should only change dst ip
     assertThat(
         steps,
@@ -59,13 +59,13 @@ public class NatRuleThenPrefixTest {
   public void testToTransformationStepsNotStaticNat() {
     Prefix prefix1 = Prefix.parse("1.1.1.1/24");
     NatRuleThenPrefix thenPrefix1 = new NatRuleThenPrefix(prefix1);
-    thenPrefix1.toTransformationSteps(null, new Nat(Type.SOURCE), null, false);
+    thenPrefix1.toTransformationSteps(null, new Nat(Type.SOURCE), null, false, null);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testToTransformationStepsNotStaticNat2() {
     Prefix prefix1 = Prefix.parse("1.1.1.1/24");
     NatRuleThenPrefix thenPrefix1 = new NatRuleThenPrefix(prefix1);
-    thenPrefix1.toTransformationSteps(null, new Nat(Type.DESTINATION), null, false);
+    thenPrefix1.toTransformationSteps(null, new Nat(Type.DESTINATION), null, false, null);
   }
 }

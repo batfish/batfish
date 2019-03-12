@@ -21,7 +21,6 @@ import static org.batfish.question.searchfilters.SearchFiltersAnswerer.toDenyAcl
 import static org.batfish.question.searchfilters.SearchFiltersAnswerer.toMatchLineAcl;
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_ACTION;
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_FILTER_NAME;
-import static org.batfish.specifier.LocationSpecifiers.ALL_LOCATIONS;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -61,6 +60,7 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.question.SearchFiltersParameters;
 import org.batfish.question.testfilters.TestFiltersAnswerer;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
+import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.NameRegexInterfaceLinkLocationSpecifier;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -192,7 +192,7 @@ public final class SearchFiltersTest {
         new SearchFiltersQuestion()
             .toSearchFiltersParameters()
             .toBuilder()
-            .setStartLocationSpecifier(ALL_LOCATIONS)
+            .setStartLocationSpecifier(LocationSpecifier.ALL_LOCATIONS)
             .setGenerateExplanations(false)
             .build();
   }

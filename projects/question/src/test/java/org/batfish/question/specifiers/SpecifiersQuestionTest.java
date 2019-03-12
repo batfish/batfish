@@ -1,14 +1,15 @@
 package org.batfish.question.specifiers;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
 import org.batfish.question.specifiers.SpecifiersQuestion.QueryType;
+import org.batfish.specifier.AllFiltersFilterSpecifier;
+import org.batfish.specifier.AllInterfacesInterfaceSpecifier;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
-import org.batfish.specifier.ShorthandFilterSpecifier;
-import org.batfish.specifier.ShorthandInterfaceSpecifier;
 import org.batfish.specifier.SpecifierFactories;
 import org.batfish.specifier.SpecifierFactories.Version;
 import org.junit.Rule;
@@ -24,8 +25,8 @@ public final class SpecifiersQuestionTest {
   public void testGetSpecifierNullInput() {
     // query type is filter for everything because it is immaterial to which specifier is used
     SpecifiersQuestion question = new SpecifiersQuestion(QueryType.FILTER);
-    assertThat(question.getFilterSpecifier(), instanceOf(ShorthandFilterSpecifier.class));
-    assertThat(question.getInterfaceSpecifier(), instanceOf(ShorthandInterfaceSpecifier.class));
+    assertThat(question.getFilterSpecifier(), equalTo(AllFiltersFilterSpecifier.INSTANCE));
+    assertThat(question.getInterfaceSpecifier(), equalTo(AllInterfacesInterfaceSpecifier.INSTANCE));
     assertThat(question.getIpSpaceSpecifier(), instanceOf(InferFromLocationIpSpaceSpecifier.class));
     assertThat(question.getLocationSpecifier(), instanceOf(AllInterfacesLocationSpecifier.class));
     assertThat(question.getNodeSpecifier(), instanceOf(AllNodesNodeSpecifier.class));

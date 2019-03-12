@@ -10,15 +10,15 @@ import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
-import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.DifferenceLocationSpecifier;
+import org.batfish.specifier.InterfaceSpecifier;
+import org.batfish.specifier.InterfaceSpecifierInterfaceLocationSpecifier;
 import org.batfish.specifier.IntersectionLocationSpecifier;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.LocationSpecifier;
-import org.batfish.specifier.LocationSpecifiers;
 import org.batfish.specifier.NoNodesNodeSpecifier;
 import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.NodeSpecifierInterfaceLocationSpecifier;
@@ -34,7 +34,7 @@ public final class ReachabilitySettings {
 
     private HeaderSpace _headerSpace;
 
-    private InterfacesSpecifier _ingressInterfaces;
+    private InterfaceSpecifier _ingressInterfaces;
 
     private NodeSpecifier _ingressNodes;
 
@@ -166,7 +166,7 @@ public final class ReachabilitySettings {
       return this;
     }
 
-    public Builder setIngressInterfaces(InterfacesSpecifier ingressInterfaces) {
+    public Builder setIngressInterfaces(InterfaceSpecifier ingressInterfaces) {
       _ingressInterfaces = ingressInterfaces;
       return this;
     }
@@ -182,7 +182,7 @@ public final class ReachabilitySettings {
 
   private final HeaderSpace _headerSpace;
 
-  private final InterfacesSpecifier _ingressInterfaces;
+  private final InterfaceSpecifier _ingressInterfaces;
 
   private final NodeSpecifier _ingressNodes;
 
@@ -252,7 +252,7 @@ public final class ReachabilitySettings {
     return _headerSpace;
   }
 
-  public InterfacesSpecifier getIngressInterfaces() {
+  public InterfaceSpecifier getIngressInterfaces() {
     return _ingressInterfaces;
   }
 
@@ -320,7 +320,9 @@ public final class ReachabilitySettings {
   public ReachabilityParameters toReachabilityParameters() {
     // compute the source LocationSpecifier
     LocationSpecifier ingressInterfaces =
-        _ingressInterfaces == null ? null : LocationSpecifiers.from(_ingressInterfaces);
+        _ingressInterfaces == null
+            ? null
+            : new InterfaceSpecifierInterfaceLocationSpecifier(_ingressInterfaces);
     LocationSpecifier ingressNodes =
         _ingressNodes == null ? null : new NodeSpecifierInterfaceLocationSpecifier(_ingressNodes);
     LocationSpecifier notIngressNodes =

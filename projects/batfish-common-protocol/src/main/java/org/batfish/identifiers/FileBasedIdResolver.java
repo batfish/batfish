@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.hash.Hashing;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,6 +15,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.BatfishException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.storage.FileBasedStorageDirectoryProvider;
 
@@ -48,7 +50,7 @@ public class FileBasedIdResolver implements IdResolver {
     if (!Files.exists(idsDir)) {
       return ImmutableSet.of();
     }
-    try (Stream<Path> files = CommonUtil.list(idsDir)) {
+    try (Stream<Path> files = Files.list(idsDir)) {
       return files
           .filter(path -> path.toString().endsWith(ID_EXTENSION))
           .map(Path::getFileName)
@@ -58,6 +60,8 @@ public class FileBasedIdResolver implements IdResolver {
                   nameWithExtension.substring(
                       0, nameWithExtension.length() - ID_EXTENSION.length()))
           .collect(ImmutableSet.toImmutableSet());
+    } catch (IOException e) {
+      throw new BatfishException("Could not list files in '" + idsDir + "'", e);
     }
   }
 

@@ -44,7 +44,7 @@ public class DefinedStructuresAnswerer extends Answerer {
 
   private Multiset<Row> rawAnswer(DefinedStructuresQuestion question) {
     Multiset<Row> structures = HashMultiset.create();
-    Set<String> includeNodes = question.getNodes().getMatchingNodes(_batfish);
+    Set<String> includeNodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
     Multimap<String, String> hostnameFilenameMap =
         _batfish.loadParseVendorConfigurationAnswerElement().getFileMap();
     Set<String> includeFiles =

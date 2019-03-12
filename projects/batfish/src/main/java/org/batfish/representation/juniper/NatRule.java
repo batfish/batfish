@@ -10,6 +10,7 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.transformation.Transformation;
@@ -54,10 +55,12 @@ public final class NatRule implements Serializable {
 
   /** Convert to vendor-independent {@link Transformation}. */
   public Optional<Transformation.Builder> toTransformationBuilder(
-      JuniperConfiguration config, Nat nat, Ip interfaceIp) {
+      JuniperConfiguration config, Nat nat, Ip interfaceIp, Warnings warnings) {
 
     List<TransformationStep> steps =
-        _then == null ? null : _then.toTransformationSteps(config, nat, interfaceIp, false);
+        _then == null
+            ? null
+            : _then.toTransformationSteps(config, nat, interfaceIp, false, warnings);
 
     MatchHeaderSpace match =
         new MatchHeaderSpace(NatRuleMatchToHeaderSpace.toHeaderSpace(_matches));
@@ -70,10 +73,12 @@ public final class NatRule implements Serializable {
 
   /** Convert to vendor-independent {@link Transformation}. */
   public Optional<Transformation.Builder> toTransformationBuilderReverse(
-      JuniperConfiguration config, Nat nat, Ip interfaceIp) {
+      JuniperConfiguration config, Nat nat, Ip interfaceIp, Warnings warnings) {
 
     List<TransformationStep> steps =
-        _then == null ? null : _then.toTransformationSteps(config, nat, interfaceIp, true);
+        _then == null
+            ? null
+            : _then.toTransformationSteps(config, nat, interfaceIp, true, warnings);
 
     MatchHeaderSpace match =
         new MatchHeaderSpace(ReverseNatRuleMatchToHeaderSpace.toHeaderSpace(_matches));

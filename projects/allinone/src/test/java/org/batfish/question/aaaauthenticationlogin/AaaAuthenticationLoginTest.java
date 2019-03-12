@@ -16,7 +16,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -46,8 +45,8 @@ public class AaaAuthenticationLoginTest {
 
     Batfish batfish = getBatfishForConfigurationNames(hostname1, hostname2, hostname3, hostname4);
 
-    AaaAuthenticationLoginQuestion question = new AaaAuthenticationLoginQuestion();
-    question.setNodes(new NodesSpecifier("((ios)|(juniper)).*", true));
+    AaaAuthenticationLoginQuestion question =
+        new AaaAuthenticationLoginQuestion("/((ios)|(juniper)).*/");
     AaaAuthenticationLoginAnswerer answerer = new AaaAuthenticationLoginAnswerer(question, batfish);
     TableAnswerElement answer = answerer.answer();
 

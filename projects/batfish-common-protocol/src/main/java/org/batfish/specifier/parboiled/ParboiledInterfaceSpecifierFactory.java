@@ -10,8 +10,7 @@ import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;
 
 /**
- * An {@link InterfaceSpecifierFactory} whose grammar is encoded in {@link
- * Parser#InterfaceExpression()}
+ * An {@link InterfaceSpecifierFactory} whose grammar is encoded in {@link Parser#InterfaceSpec()}
  */
 @AutoService(InterfaceSpecifierFactory.class)
 public class ParboiledInterfaceSpecifierFactory implements InterfaceSpecifierFactory {

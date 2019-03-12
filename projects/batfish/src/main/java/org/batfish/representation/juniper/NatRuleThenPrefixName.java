@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
@@ -47,7 +48,7 @@ public class NatRuleThenPrefixName implements NatRuleThen, Serializable {
 
   @Override
   public List<TransformationStep> toTransformationSteps(
-      JuniperConfiguration config, Nat nat, Ip interfaceIp, boolean reverse) {
+      JuniperConfiguration config, Nat nat, Ip interfaceIp, boolean reverse, Warnings warnings) {
     checkArgument(nat.getType() == Type.STATIC, "prefix name is only supported in static nat");
 
     AddressBookEntry addressBookEntry =

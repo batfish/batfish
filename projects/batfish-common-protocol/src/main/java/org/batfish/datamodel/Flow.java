@@ -20,8 +20,8 @@ public final class Flow implements Comparable<Flow>, Serializable {
     private int _dstPort;
     private int _ecn;
     private int _fragmentOffset;
-    private int _icmpCode;
-    private int _icmpType;
+    private @Nullable Integer _icmpCode;
+    private @Nullable Integer _icmpType;
     private @Nullable String _ingressInterface;
     // Nullable because no sensible default. User is required to specify.
     private @Nullable String _ingressNode;
@@ -51,8 +51,6 @@ public final class Flow implements Comparable<Flow>, Serializable {
       _ipProtocol = IpProtocol.IP;
       _srcIp = Ip.ZERO;
       _srcPort = 0;
-      _icmpType = IcmpType.UNSET;
-      _icmpCode = IcmpCode.UNSET;
       _ingressVrf = Configuration.DEFAULT_VRF_NAME;
       _packetLength = 0;
       _state = FlowState.NEW;
@@ -96,6 +94,10 @@ public final class Flow implements Comparable<Flow>, Serializable {
     public Flow build() {
       checkNotNull(_ingressNode, "Cannot build flow without at least specifying ingress node");
       checkNotNull(_tag, "Cannot build flow without specifying tag");
+      if (_ipProtocol == IpProtocol.ICMP) {
+        checkArgument(_icmpType != null, "ICMP packets must have an ICMP type");
+        checkArgument(_icmpCode != null, "ICMP packets must have an ICMP code");
+      }
       return new Flow(
           _ingressNode,
           _ingressInterface,
@@ -139,11 +141,11 @@ public final class Flow implements Comparable<Flow>, Serializable {
       return _ecn;
     }
 
-    public int getIcmpCode() {
+    public @Nullable Integer getIcmpCode() {
       return _icmpCode;
     }
 
-    public int getIcmpType() {
+    public @Nullable Integer getIcmpType() {
       return _icmpType;
     }
 
@@ -240,12 +242,12 @@ public final class Flow implements Comparable<Flow>, Serializable {
       return this;
     }
 
-    public Builder setIcmpCode(int icmpCode) {
+    public Builder setIcmpCode(@Nullable Integer icmpCode) {
       _icmpCode = icmpCode;
       return this;
     }
 
-    public Builder setIcmpType(int icmpType) {
+    public Builder setIcmpType(@Nullable Integer icmpType) {
       _icmpType = icmpType;
       return this;
     }
@@ -396,8 +398,8 @@ public final class Flow implements Comparable<Flow>, Serializable {
   private final int _dstPort;
   private final int _ecn;
   private final int _fragmentOffset;
-  private final int _icmpCode;
-  private final int _icmpType;
+  private final @Nullable Integer _icmpCode;
+  private final @Nullable Integer _icmpType;
   private final @Nullable String _ingressInterface;
   private final @Nonnull String _ingressNode;
   private final @Nullable String _ingressVrf;
@@ -421,8 +423,8 @@ public final class Flow implements Comparable<Flow>, Serializable {
       int dscp,
       int ecn,
       int fragmentOffset,
-      int icmpType,
-      int icmpCode,
+      @Nullable Integer icmpType,
+      @Nullable Integer icmpCode,
       int packetLength,
       @Nonnull FlowState state,
       int tcpFlagsCwr,
@@ -467,6 +469,10 @@ public final class Flow implements Comparable<Flow>, Serializable {
             tcpFlagsRst != 0,
             tcpFlagsSyn != 0,
             tcpFlagsUrg != 0);
+    if (_ipProtocol == IpProtocol.ICMP) {
+      checkArgument(_icmpType != null, "ICMP packets must have an ICMP type");
+      checkArgument(_icmpCode != null, "ICMP packets must have an ICMP code");
+    }
   }
 
   @JsonCreator
@@ -482,8 +488,8 @@ public final class Flow implements Comparable<Flow>, Serializable {
       @JsonProperty(PROP_DSCP) int dscp,
       @JsonProperty(PROP_ECN) int ecn,
       @JsonProperty(PROP_FRAGMENT_OFFSET) int fragmentOffset,
-      @JsonProperty(PROP_ICMP_TYPE) int icmpType,
-      @JsonProperty(PROP_ICMP_CODE) int icmpCode,
+      @JsonProperty(PROP_ICMP_TYPE) @Nullable Integer icmpType,
+      @JsonProperty(PROP_ICMP_CODE) @Nullable Integer icmpCode,
       @JsonProperty(PROP_PACKET_LENGTH) int packetLength,
       @JsonProperty(PROP_STATE) FlowState state,
       @JsonProperty(PROP_TCP_FLAGS_CWR) int tcpFlagsCwr,
@@ -535,8 +541,8 @@ public final class Flow implements Comparable<Flow>, Serializable {
         .thenComparing(Flow::getDscp)
         .thenComparing(Flow::getEcn)
         .thenComparing(Flow::getFragmentOffset)
-        .thenComparing(Flow::getIcmpType)
-        .thenComparing(Flow::getIcmpCode)
+        .thenComparing(Flow::getIcmpType, Comparator.nullsLast(Comparator.naturalOrder()))
+        .thenComparing(Flow::getIcmpCode, Comparator.nullsLast(Comparator.naturalOrder()))
         .thenComparing(Flow::getPacketLength)
         .thenComparing(Flow::getState)
         .thenComparing(Flow::getTcpFlags)
@@ -557,8 +563,8 @@ public final class Flow implements Comparable<Flow>, Serializable {
         && _dstPort == other._dstPort
         && _ecn == other._ecn
         && _fragmentOffset == other._fragmentOffset
-        && _icmpCode == other._icmpCode
-        && _icmpType == other._icmpType
+        && Objects.equals(_icmpCode, other._icmpCode)
+        && Objects.equals(_icmpType, other._icmpType)
         && _ingressNode.equals(other._ingressNode)
         && Objects.equals(_ingressInterface, other._ingressInterface)
         && Objects.equals(_ingressVrf, other._ingressVrf)
@@ -598,11 +604,13 @@ public final class Flow implements Comparable<Flow>, Serializable {
   }
 
   @JsonProperty(PROP_ICMP_CODE)
+  @Nullable
   public Integer getIcmpCode() {
     return _icmpCode;
   }
 
   @JsonProperty(PROP_ICMP_TYPE)
+  @Nullable
   public Integer getIcmpType() {
     return _icmpType;
   }
