@@ -11,6 +11,8 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
+import org.batfish.datamodel.transformation.IpField;
+import org.batfish.datamodel.transformation.ShiftIpAddressIntoSubnet;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.representation.juniper.Nat.Type;
 
@@ -44,31 +46,28 @@ public class NatRuleThenPrefixName implements NatRuleThen, Serializable {
   }
 
   @Override
-  public List<TransformationStep> toTransformationSteps(Nat nat, Ip interfaceIp) {
-    // TODO
-    return null;
-  }
-
   public List<TransformationStep> toTransformationSteps(
-      JuniperConfiguration config, Nat nat, TransformationType type, Ip interfaceIp) {
-    checkArgument(nat.getType() == Type.STATIC, "prefix is only supported in static nat");
+      JuniperConfiguration config, Nat nat, Ip interfaceIp, boolean reverse) {
+    checkArgument(nat.getType() == Type.STATIC, "prefix name is only supported in static nat");
 
     AddressBookEntry addressBookEntry =
-        config.getMasterLogicalSystem().getAddressBooks().get("global").getEntries().get(_name);
+        config
+            .getMasterLogicalSystem()
+            .getAddressBooks()
+            .get(LogicalSystem.GLOBAL_ADDRESS_BOOK_NAME)
+            .getEntries()
+            .get(_name);
 
     if (!(addressBookEntry instanceof AddressAddressBookEntry)) {
-      throw new BatfishException("unknown transformation type.");
+      throw new BatfishException("unknown address book entry");
     }
 
     AddressAddressBookEntry addressAddressBookEntry = (AddressAddressBookEntry) addressBookEntry;
     Prefix subnet = addressAddressBookEntry.getIpWildcard().toPrefix();
 
-    if (type == TransformationType.DEST_NAT) {
-      return ImmutableList.of(TransformationStep.shiftDestinationIp(subnet));
-    } else if (type == TransformationType.SOURCE_NAT) {
-      return ImmutableList.of(TransformationStep.shiftSourceIp(subnet));
-    } else {
-      throw new BatfishException("unknown transformation type.");
-    }
+    IpField ipField = reverse ? IpField.SOURCE : IpField.DESTINATION;
+    TransformationType type = nat.getType().toTransformationType();
+
+    return ImmutableList.of(new ShiftIpAddressIntoSubnet(type, ipField, subnet));
   }
 }

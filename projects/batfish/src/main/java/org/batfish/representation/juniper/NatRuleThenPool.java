@@ -1,9 +1,9 @@
 package org.batfish.representation.juniper;
 
-import static org.batfish.datamodel.flow.TransformationStep.TransformationType.DEST_NAT;
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
+import static org.batfish.representation.juniper.Nat.Type.DESTINATION;
 import static org.batfish.representation.juniper.Nat.Type.SOURCE;
-import static org.batfish.representation.juniper.Nat.Type.STATIC;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -13,7 +13,6 @@ import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
@@ -57,12 +56,14 @@ public final class NatRuleThenPool implements NatRuleThen, Serializable {
   }
 
   @Override
-  public List<TransformationStep> toTransformationSteps(Nat nat, Ip interfaceIp) {
-    if (nat.getType() == STATIC) {
-      throw new BatfishException("Juniper static nat is not supported");
-    }
+  public List<TransformationStep> toTransformationSteps(
+      JuniperConfiguration config, Nat nat, Ip interfaceIp, boolean reverse) {
+    checkArgument(
+        !reverse && (nat.getType() == SOURCE || nat.getType() == DESTINATION),
+        "Interface actions can only be used in source nat and dest nat, and no reverse needed");
 
-    TransformationType type = nat.getType() == SOURCE ? SOURCE_NAT : DEST_NAT;
+    TransformationType type = nat.getType().toTransformationType();
+
     IpField ipField = nat.getType() == SOURCE ? IpField.SOURCE : IpField.DESTINATION;
 
     NatPool pool = nat.getPools().get(_poolName);

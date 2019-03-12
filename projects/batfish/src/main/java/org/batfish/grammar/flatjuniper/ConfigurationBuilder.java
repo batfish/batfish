@@ -445,6 +445,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_source_portContext
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrt_nat_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrt_nat_offContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrt_nat_poolContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrtstp_prefixContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrtstp_prefix_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_firewallContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_logical_systemsContext;
@@ -664,6 +665,7 @@ import org.batfish.representation.juniper.NatRuleSet;
 import org.batfish.representation.juniper.NatRuleThenInterface;
 import org.batfish.representation.juniper.NatRuleThenOff;
 import org.batfish.representation.juniper.NatRuleThenPool;
+import org.batfish.representation.juniper.NatRuleThenPrefix;
 import org.batfish.representation.juniper.NatRuleThenPrefixName;
 import org.batfish.representation.juniper.NoPortTranslation;
 import org.batfish.representation.juniper.NodeDevice;
@@ -5208,6 +5210,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitRsrt_nat_interface(Rsrt_nat_interfaceContext ctx) {
     _currentNatRule.setThen(NatRuleThenInterface.INSTANCE);
+  }
+
+  @Override
+  public void exitRsrtstp_prefix(Rsrtstp_prefixContext ctx) {
+    Prefix prefix = Prefix.parse(ctx.getText());
+    _currentNatRule.setThen(new NatRuleThenPrefix(prefix));
   }
 
   @Override

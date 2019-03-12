@@ -41,13 +41,13 @@ public class NatRuleThenPoolTest {
 
     // when using a pool with PAT disabled, only IPs need to be transformed
     NatRuleThenPool then = new NatRuleThenPool("POOL1");
-    List<TransformationStep> steps = then.toTransformationSteps(snat, ip);
+    List<TransformationStep> steps = then.toTransformationSteps(null, snat, ip, false);
 
     assertThat(steps, contains(new AssignIpAddressFromPool(SOURCE_NAT, IpField.SOURCE, ip, ip)));
 
     // when using a pool with PAT enable, both IPs and ports need to be transformed
     then = new NatRuleThenPool("POOL2");
-    steps = then.toTransformationSteps(snat, ip);
+    steps = then.toTransformationSteps(null, snat, ip, false);
 
     assertThat(
         steps,
@@ -57,7 +57,7 @@ public class NatRuleThenPoolTest {
 
     // when using a pool where PAT is not mentioned, PAT should be applied by default
     then = new NatRuleThenPool("POOL3");
-    steps = then.toTransformationSteps(snat, ip);
+    steps = then.toTransformationSteps(null, snat, ip, false);
 
     assertThat(
         steps,
@@ -69,7 +69,7 @@ public class NatRuleThenPoolTest {
     // when default port range is changed, ports should be transform to the specified default range
     snat.setDefaultFromPort(10000);
     snat.setDefaultToPort(20000);
-    steps = then.toTransformationSteps(snat, ip);
+    steps = then.toTransformationSteps(null, snat, ip, false);
 
     assertThat(
         steps,

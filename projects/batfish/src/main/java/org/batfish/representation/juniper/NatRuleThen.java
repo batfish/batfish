@@ -7,5 +7,6 @@ import org.batfish.datamodel.transformation.TransformationStep;
 
 /** Represents the action part of a Juniper nat rule */
 public interface NatRuleThen extends Serializable {
-  List<TransformationStep> toTransformationSteps(Nat nat, Ip interfaceIp);
+  List<TransformationStep> toTransformationSteps(
+      JuniperConfiguration config, Nat nat, Ip interfaceIp, boolean reverse);
 }

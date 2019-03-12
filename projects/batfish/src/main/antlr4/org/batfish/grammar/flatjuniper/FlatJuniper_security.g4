@@ -407,7 +407,6 @@ rsrtst_prefix
    (
       rsrtstp_mapped_port
       | rsrtstp_prefix
-      | rsrtstp_routing_instance
    )
 ;
 
@@ -415,8 +414,7 @@ rsrtst_prefix_name
 :
    PREFIX_NAME
    (
-      rsrtstp_mapped_port
-      | rsrtstp_prefix_name
+      rsrtstp_prefix_name
       | rsrtstp_routing_instance
    )
 ;

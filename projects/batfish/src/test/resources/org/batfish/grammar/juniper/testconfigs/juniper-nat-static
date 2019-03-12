@@ -1,0 +1,31 @@
+#
+set system host-name juniper-nat-static
+#
+set interfaces ge-0/0/0 unit 0 family inet address 1.1.1.1/31
+set interfaces ge-0/0/1 unit 0 family inet address 2.1.1.1/31
+#
+# set address book
+set security address-book global address PREFIXNAME 10.10.10.0/24
+set security address-book global address DESTNAME  1.0.0.0/24
+#
+set security zones security-zone ZONE1 interfaces ge-0/0/0.0
+#
+# rule 1
+set security nat static rule-set RULESET1 from zone ZONE1
+set security nat static rule-set RULESET1 rule RULE1 match destination-address-name DESTNAME
+set security nat static rule-set RULESET1 rule RULE1 then static-nat prefix-name PREFIXNAME
+set security nat static rule-set RULESET1 rule RULE1 then static-nat prefix-name routing-instance RI1
+#
+# rule 2
+set security nat static rule-set RULESET1 rule RULE2 match destination-address 2.0.0.0/24
+set security nat static rule-set RULESET1 rule RULE2 then static-nat prefix 10.10.10.0/24
+#
+# destination nat
+set security nat destination rule-set RULESET2 from zone ZONE1
+set security nat destination rule-set RULESET2 rule RULE3 match source-address 3.3.3.3/24
+set security nat destination rule-set RULESET2 rule RULE3 then destination-nat off
+# source nat
+set security nat source rule-set RULESET3 to zone ZONE1
+set security nat source rule-set RULESET3 from interface ge-0/0/1.0
+set security nat source rule-set RULESET3 rule RULE4 match source-address 3.3.3.3/24
+set security nat source rule-set RULESET3 rule RULE4 then source-nat off

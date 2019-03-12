@@ -1,8 +1,8 @@
 package org.batfish.representation.juniper;
 
 import static org.batfish.datamodel.transformation.Transformation.when;
-import static org.batfish.representation.juniper.NatRuleMatchToHeaderSpace.toHeaderSpace;
 
+import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
@@ -53,14 +53,34 @@ public final class NatRule implements Serializable {
   }
 
   /** Convert to vendor-independent {@link Transformation}. */
-  public Optional<Transformation.Builder> toTransformationBuilder(Nat nat, Ip interfaceIp) {
+  public Optional<Transformation.Builder> toTransformationBuilder(
+      JuniperConfiguration config, Nat nat, Ip interfaceIp) {
 
     List<TransformationStep> steps =
-        _then == null ? null : _then.toTransformationSteps(nat, interfaceIp);
+        _then == null ? null : _then.toTransformationSteps(config, nat, interfaceIp, false);
+
+    MatchHeaderSpace match =
+        new MatchHeaderSpace(NatRuleMatchToHeaderSpace.toHeaderSpace(_matches));
 
     // steps can be empty when the pool used by the rule is not found
     return (_then == null || steps.isEmpty())
         ? Optional.empty()
-        : Optional.of(when(new MatchHeaderSpace(toHeaderSpace(_matches))).apply(steps));
+        : Optional.of(when(match).apply(steps));
+  }
+
+  /** Convert to vendor-independent {@link Transformation}. */
+  public Optional<Transformation.Builder> toTransformationBuilderReverse(
+      JuniperConfiguration config, Nat nat, Ip interfaceIp) {
+
+    List<TransformationStep> steps =
+        _then == null ? null : _then.toTransformationSteps(config, nat, interfaceIp, true);
+
+    MatchHeaderSpace match =
+        new MatchHeaderSpace(ReverseNatRuleMatchToHeaderSpace.toHeaderSpace(_matches));
+
+    // steps can be empty when the pool used by the rule is not found
+    return (_then == null || steps.isEmpty())
+        ? Optional.of(when(match).apply(ImmutableList.of()))
+        : Optional.of(when(match).apply(steps));
   }
 }

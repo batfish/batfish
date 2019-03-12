@@ -12,10 +12,12 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.Transformation.Builder;
+import org.batfish.representation.juniper.Nat.Type;
 
 /** Represents a Juniper nat rule set */
 @ParametersAreNonnullByDefault
@@ -89,23 +91,36 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
    * @param orElse The next {@link Transformation} to apply if no {@link NatRule} matches.
    */
   public Optional<Transformation> toOutgoingTransformation(
+      JuniperConfiguration config,
       Nat nat,
       Ip interfaceIp,
-      Map<NatPacketLocation, AclLineMatchExpr> matchFromLocationExprs,
+      @Nullable Map<NatPacketLocation, AclLineMatchExpr> matchFromLocationExprs,
       @Nullable Transformation andThen,
       @Nullable Transformation orElse) {
 
-    AclLineMatchExpr matchFromLocation = matchFromLocationExprs.get(_fromLocation);
+    if (nat.getType() == Type.SOURCE) {
+      AclLineMatchExpr matchFromLocation = matchFromLocationExprs.get(_fromLocation);
 
-    if (matchFromLocation == null) {
-      // non-existent NatPacketLocation
-      return Optional.empty();
+      if (matchFromLocation == null) {
+        // non-existent NatPacketLocation
+        return Optional.empty();
+      }
+
+      return rulesTransformation(config, nat, interfaceIp, andThen, orElse, false)
+          .map(
+              rulesTransformation ->
+                  when(matchFromLocation)
+                      .setAndThen(rulesTransformation)
+                      .setOrElse(orElse)
+                      .build());
     }
 
-    return rulesTransformation(nat, interfaceIp, andThen, orElse)
-        .map(
-            rulesTransformation ->
-                when(matchFromLocation).setAndThen(rulesTransformation).setOrElse(orElse).build());
+    if (nat.getType() == Type.STATIC) {
+      return rulesTransformation(config, nat, interfaceIp, andThen, orElse, true);
+    }
+
+    throw new BatfishException(
+        "Not supported nat types for outgoing transformation: " + nat.getType());
   }
 
   /**
@@ -114,15 +129,27 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
    * AclLineMatchExpr} to match it.
    */
   public Optional<Transformation> toIncomingTransformation(
-      Nat nat, Ip interfaceIp, @Nullable Transformation andThen, @Nullable Transformation orElse) {
-    return rulesTransformation(nat, interfaceIp, andThen, orElse);
+      JuniperConfiguration config,
+      Nat nat,
+      Ip interfaceIp,
+      @Nullable Transformation andThen,
+      @Nullable Transformation orElse) {
+    return rulesTransformation(config, nat, interfaceIp, andThen, orElse, false);
   }
 
   private Optional<Transformation> rulesTransformation(
-      Nat nat, Ip interfaceIp, @Nullable Transformation andThen, @Nullable Transformation orElse) {
+      JuniperConfiguration config,
+      Nat nat,
+      Ip interfaceIp,
+      @Nullable Transformation andThen,
+      @Nullable Transformation orElse,
+      boolean reverse) {
     Transformation transformation = orElse;
     for (NatRule rule : Lists.reverse(_rules)) {
-      Optional<Builder> optionalBuilder = rule.toTransformationBuilder(nat, interfaceIp);
+      Optional<Builder> optionalBuilder =
+          reverse
+              ? rule.toTransformationBuilderReverse(config, nat, interfaceIp)
+              : rule.toTransformationBuilder(config, nat, interfaceIp);
       if (optionalBuilder.isPresent()) {
         transformation =
             optionalBuilder.get().setAndThen(andThen).setOrElse(transformation).build();
