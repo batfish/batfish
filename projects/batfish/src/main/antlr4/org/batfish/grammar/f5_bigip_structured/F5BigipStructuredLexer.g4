@@ -166,6 +166,11 @@ INTERFACES
   'interfaces'
 ;
 
+IP_FORWARD
+:
+  'ip-forward'
+;
+
 IP_PROTOCOL
 :
   'ip-protocol'
@@ -309,6 +314,11 @@ PROFILES
 REDISTRIBUTE
 :
   'redistribute'
+;
+
+REJECT
+:
+  'reject'
 ;
 
 REMOTE_AS

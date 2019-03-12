@@ -390,11 +390,13 @@ l_virtual
     NEWLINE
     (
       lv_destination
+      | lv_ip_forward
       | lv_ip_protocol
       | lv_mask
       | lv_persist
       | lv_pool
       | lv_profiles
+      | lv_reject
       | lv_rules
       | lv_source
       | lv_source_address_translation
@@ -411,6 +413,11 @@ l_virtual
 lv_destination
 :
   DESTINATION name = word NEWLINE
+;
+
+lv_ip_forward
+:
+  IP_FORWARD NEWLINE
 ;
 
 lv_ip_protocol
@@ -501,14 +508,27 @@ lvsat_type
   TYPE source_address_translation_type NEWLINE
 ;
 
+lv_reject
+:
+  REJECT NEWLINE
+;
+
 lv_translate_address
 :
-  TRANSLATE_ADDRESS ENABLED NEWLINE
+  TRANSLATE_ADDRESS
+  (
+    DISABLED
+    | ENABLED
+  ) NEWLINE
 ;
 
 lv_translate_port
 :
-  TRANSLATE_PORT ENABLED NEWLINE
+  TRANSLATE_PORT
+  (
+    DISABLED
+    | ENABLED
+  ) NEWLINE
 ;
 
 lv_vlans
