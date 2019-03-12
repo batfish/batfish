@@ -40,6 +40,7 @@ import static org.batfish.datamodel.matchers.RouteFilterListMatchers.rejects;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasKernelRoutes;
 import static org.batfish.datamodel.transformation.TransformationEvaluator.eval;
+import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_PROCESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.INTERFACE;
@@ -98,9 +99,12 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
@@ -191,6 +195,23 @@ public final class F5BigipStructuredGrammarTest {
                                       nameToBuiltin.apply(Builtin.COMMON_PREFIX + structureName),
                                       nullValue());
                                 })));
+  }
+
+  private static F5BigipConfiguration parseVendorConfig(String filename) {
+    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + filename);
+    Settings settings = new Settings();
+    configureBatfishTestSettings(settings);
+    F5BigipStructuredCombinedParser parser = new F5BigipStructuredCombinedParser(src, settings);
+    F5BigipStructuredControlPlaneExtractor extractor =
+        new F5BigipStructuredControlPlaneExtractor(
+            src, parser, new Warnings(), filename, null, false);
+    ParserRuleContext tree =
+        Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
+    extractor.processParseTree(tree);
+    F5BigipConfiguration vendorConfiguration =
+        (F5BigipConfiguration) extractor.getVendorConfiguration();
+    vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + filename);
+    return vendorConfiguration;
   }
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
@@ -599,6 +620,13 @@ public final class F5BigipStructuredGrammarTest {
     Map<String, Configuration> configurations = parseTextConfigs(filename);
 
     assertThat(configurations, hasKey(hostname));
+  }
+
+  @Test
+  public void testImish() {
+    assertTrue(
+        "Configuration contains an imish component",
+        parseVendorConfig("f5_bigip_structured_with_imish").getImish());
   }
 
   @Test
