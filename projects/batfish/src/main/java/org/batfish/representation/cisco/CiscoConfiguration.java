@@ -33,6 +33,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
@@ -40,6 +41,7 @@ import com.google.common.collect.Multimaps;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -55,6 +57,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -947,8 +950,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     RouteMap currentMap;
     // check ospf policies
     for (Vrf vrf : _vrfs.values()) {
-      OspfProcess ospfProcess = vrf.getOspfProcess();
-      if (ospfProcess != null) {
+      for (OspfProcess ospfProcess : vrf.getOspfProcesses().values()) {
         for (OspfRedistributionPolicy rp : ospfProcess.getRedistributionPolicies().values()) {
           currentMapName = rp.getRouteMap();
           if (currentMapName != null) {
@@ -2047,7 +2049,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newIface.setAllAddresses(allPrefixes.build());
 
     if (!iface.getOspfShutdown()) {
-      OspfProcess proc = vrf.getOspfProcess();
+      OspfProcess proc =
+          iface.getOspfProcess() != null
+              ? vrf.getOspfProcesses().get(iface.getOspfProcess())
+              : Iterables.getLast(vrf.getOspfProcesses().values(), null);
       if (proc != null) {
         if (firstNonNull(
             iface.getOspfPassive(),
@@ -2500,6 +2505,22 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     for (Entry<String, org.batfish.datamodel.Interface> e : vrf.getInterfaces().entrySet()) {
       org.batfish.datamodel.Interface iface = e.getValue();
+      /*
+       * Filter out interfaces that do not belong to this process, however if the process name is missing,
+       * proceed down to inference based on network addresses.
+       */
+      Interface vsIface = _interfaces.get(iface.getName());
+      if (vsIface == null) {
+        // Need to look at aliases because in ASA the VI model iface will be named using the alias
+        vsIface =
+            _interfaces.values().stream()
+                .filter(i -> iface.getName().equals(i.getAlias()))
+                .findFirst()
+                .get();
+      }
+      if (vsIface.getOspfProcess() != null && !vsIface.getOspfProcess().equals(proc.getName())) {
+        continue;
+      }
       InterfaceAddress interfaceAddress = iface.getAddress();
       Long areaNum = iface.getOspfAreaName();
       // OSPF area number was not configured on the interface itself, so infer from IP address.
@@ -3478,9 +3499,31 @@ public final class CiscoConfiguration extends VendorConfiguration {
             newVrf.setRipProcess(newRipProcess);
           }
 
-          // convert ospf process
-          OspfProcess ospfProcess = vrf.getOspfProcess();
-          if (ospfProcess != null) {
+          /*
+           * Convert OSPF processes.
+           * Note that at this time the datamodel/BDP only supports a single process per VRF.
+           * Therefore we apply a simple heuristic: ignore any empty processes (i.e, with no active interfaces).
+           * If there is still more than one valid process left after filtering,
+           * warn and choose the last one defined.
+           */
+          Collection<OspfProcess> ospfProcesses = vrf.getOspfProcesses().values();
+          if (ospfProcesses.size() > 1) {
+            ospfProcesses =
+                vrf.getOspfProcesses().values().stream()
+                    .filter(
+                        proc ->
+                            _interfaces.values().stream()
+                                .map(Interface::getOspfProcess)
+                                .anyMatch(Predicate.isEqual(proc.getName())))
+                    .collect(ImmutableList.toImmutableList());
+          }
+          if (!ospfProcesses.isEmpty()) {
+            OspfProcess ospfProcess = Iterables.getLast(ospfProcesses);
+            if (ospfProcesses.size() > 1) {
+              _w.redFlag(
+                  "Multiple OSPF processes are not supported, choosing the last defined OSPF process with id %s",
+                  ospfProcess.getName());
+            }
             org.batfish.datamodel.ospf.OspfProcess newOspfProcess =
                 toOspfProcess(ospfProcess, vrfName, c, this);
             newVrf.setOspfProcess(newOspfProcess);
@@ -4231,8 +4274,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     String currentMapName;
     for (Vrf vrf : _vrfs.values()) {
       // check ospf policies
-      OspfProcess ospfProcess = vrf.getOspfProcess();
-      if (ospfProcess != null) {
+      for (OspfProcess ospfProcess : vrf.getOspfProcesses().values()) {
         for (OspfRedistributionPolicy rp : ospfProcess.getRedistributionPolicies().values()) {
           currentMapName = rp.getRouteMap();
           if (containsIpAccessList(aclName, currentMapName)) {
@@ -4295,8 +4337,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     String currentMapName;
     for (Vrf vrf : _vrfs.values()) {
       // check ospf policies
-      OspfProcess ospfProcess = vrf.getOspfProcess();
-      if (ospfProcess != null) {
+      for (OspfProcess ospfProcess : vrf.getOspfProcesses().values()) {
         for (OspfRedistributionPolicy rp : ospfProcess.getRedistributionPolicies().values()) {
           currentMapName = rp.getRouteMap();
           if (containsIpv6AccessList(aclName, currentMapName)) {

@@ -1641,6 +1641,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private AristaEosVxlan _eosVxlan;
 
+  /* Set this when moving to different stanzas (e.g., ro_vrf) inside "router ospf" stanza
+   * to correctly retrieve the OSPF process that was being configured prior to switching stanzas
+   */
+  private String _lastKnownOspfProcess;
+
   public CiscoControlPlaneExtractor(
       String text, CiscoCombinedParser parser, ConfigurationFormat format, Warnings warnings) {
     _text = text;
@@ -3916,14 +3921,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterRo_vrf(Ro_vrfContext ctx) {
     Ip routerId = _currentOspfProcess.getRouterId();
+    _lastKnownOspfProcess = _currentOspfProcess.getName();
     _currentVrf = ctx.name.getText();
-    OspfProcess proc = currentVrf().getOspfProcess();
-    if (proc == null) {
-      proc = new OspfProcess(_currentOspfProcess.getName(), _format);
-      currentVrf().setOspfProcess(proc);
-      proc.setRouterId(routerId);
-    }
-    _currentOspfProcess = proc;
+    _currentOspfProcess =
+        currentVrf()
+            .getOspfProcesses()
+            .computeIfAbsent(
+                _currentOspfProcess.getName(),
+                (procName) -> {
+                  OspfProcess p = new OspfProcess(procName, _format);
+                  p.setRouterId(routerId);
+                  return p;
+                });
   }
 
   @Override
@@ -4308,9 +4317,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.vrf != null) {
       _currentVrf = ctx.vrf.getText();
     }
-    OspfProcess proc = new OspfProcess(procName, _format);
-    currentVrf().setOspfProcess(proc);
-    _currentOspfProcess = proc;
+    _currentOspfProcess =
+        currentVrf()
+            .getOspfProcesses()
+            .computeIfAbsent(procName, (pName) -> new OspfProcess(pName, _format));
   }
 
   @Override
@@ -6102,8 +6112,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIf_ip_ospf_area(If_ip_ospf_areaContext ctx) {
     long area = toInteger(ctx.area);
+    String ospfProcessName = ctx.procname.getText();
     for (Interface iface : _currentInterfaces) {
       iface.setOspfArea(area);
+      iface.setOspfProcess(ospfProcessName);
     }
   }
 
@@ -6183,8 +6195,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIf_ip_router_ospf_area(If_ip_router_ospf_areaContext ctx) {
     long area = toIp(ctx.area).asLong();
+    String ospfProcessName = ctx.procname.getText();
     for (Interface iface : _currentInterfaces) {
       iface.setOspfArea(area);
+      iface.setOspfProcess(ospfProcessName);
     }
   }
 
@@ -8529,7 +8543,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Long cost = ctx.cost == null ? null : toLong(ctx.cost);
 
     Map<Prefix, OspfAreaSummary> area =
-        currentVrf().getOspfProcess().getSummaries().computeIfAbsent(areaNum, k -> new TreeMap<>());
+        _currentOspfProcess.getSummaries().computeIfAbsent(areaNum, k -> new TreeMap<>());
     area.put(prefix, new OspfAreaSummary(advertise, cost));
   }
 
@@ -8802,7 +8816,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitRo_rfc1583_compatibility(Ro_rfc1583_compatibilityContext ctx) {
-    currentVrf().getOspfProcess().setRfc1583Compatible(ctx.NO() == null);
+    _currentOspfProcess.setRfc1583Compatible(ctx.NO() == null);
   }
 
   @Override
@@ -8814,7 +8828,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRo_vrf(Ro_vrfContext ctx) {
     _currentVrf = Configuration.DEFAULT_VRF_NAME;
-    _currentOspfProcess = currentVrf().getOspfProcess();
+    _currentOspfProcess = currentVrf().getOspfProcesses().get(_lastKnownOspfProcess);
+    _lastKnownOspfProcess = null;
   }
 
   @Override
@@ -8844,10 +8859,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Long cost = ctx.cost == null ? null : toLong(ctx.cost);
 
     Map<Prefix, OspfAreaSummary> area =
-        currentVrf()
-            .getOspfProcess()
-            .getSummaries()
-            .computeIfAbsent(_currentOspfArea, k -> new TreeMap<>());
+        _currentOspfProcess.getSummaries().computeIfAbsent(_currentOspfArea, k -> new TreeMap<>());
     area.put(prefix, new OspfAreaSummary(advertise, cost));
   }
 
