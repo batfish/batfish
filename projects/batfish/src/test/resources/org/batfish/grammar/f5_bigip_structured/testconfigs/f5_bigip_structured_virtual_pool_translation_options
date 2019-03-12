@@ -5,22 +5,22 @@ sys global-settings {
 }
 
 ltm virtual /Common/virtual_translate_address {
-    destination /Common/192.0.2.1:80
-    pool /Common/pool1
     translate-address enabled
     translate-port disabled
+    destination /Common/192.0.2.1:80
+    pool /Common/pool1
 }
 ltm virtual /Common/virtual_translate_both {
+    translate-address enabled
     destination /Common/192.0.2.2:80
     pool /Common/pool1
-    translate-address enabled
     translate-port enabled
 }
 ltm virtual /Common/virtual_translate_neither {
     destination /Common/192.0.2.3:80
+    translate-port disabled
     pool /Common/pool1
     translate-address disabled
-    translate-port disabled
 }
 ltm virtual /Common/virtual_translate_port {
     destination /Common/192.0.2.4:80

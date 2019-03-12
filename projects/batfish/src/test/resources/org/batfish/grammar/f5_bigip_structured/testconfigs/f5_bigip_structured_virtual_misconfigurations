@@ -80,19 +80,3 @@ ltm virtual-address /Common/192.0.2.1 {
     mask 255.255.255.255
     route-advertisement selective
 }
-net interface 1.0 {
-    bundle enabled
-    bundle-speed 40G
-}
-net self /Common/self1 {
-    address 192.0.2.254/24
-    allow-service all
-    traffic-group /Common/traffic-group-local-only
-    vlan /Common/vlan1
-}
-net vlan /Common/vlan1 {
-    interfaces {
-        1.0 { }
-    }
-    tag 100
-}

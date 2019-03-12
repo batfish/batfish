@@ -1372,29 +1372,18 @@ public final class F5BigipStructuredGrammarTest {
     Configuration c = parseConfig(hostname);
     Transformation incomingTransformation =
         c.getAllInterfaces().get("/Common/vlan1").getIncomingTransformation();
+    Flow.Builder builder =
+        Flow.builder()
+            .setTag("tag")
+            .setDstIp(Ip.parse("192.0.2.1"))
+            .setDstPort(80)
+            .setIngressInterface("/Common/SOME_VLAN")
+            .setIngressNode(hostname)
+            .setSrcIp(Ip.parse("8.8.8.8"))
+            .setSrcPort(50000);
 
-    Flow matchingFlow =
-        Flow.builder()
-            .setTag("tag")
-            .setDstIp(Ip.parse("192.0.2.1"))
-            .setDstPort(80)
-            .setIngressInterface("/Common/SOME_VLAN")
-            .setIngressNode(hostname)
-            .setIpProtocol(IpProtocol.TCP)
-            .setSrcIp(Ip.parse("8.8.8.8"))
-            .setSrcPort(50000)
-            .build();
-    Flow nonMatchingFlow =
-        Flow.builder()
-            .setTag("tag")
-            .setDstIp(Ip.parse("192.0.2.1"))
-            .setDstPort(80)
-            .setIngressInterface("/Common/SOME_VLAN")
-            .setIngressNode(hostname)
-            .setIpProtocol(IpProtocol.UDP)
-            .setSrcIp(Ip.parse("8.8.8.8"))
-            .setSrcPort(50000)
-            .build();
+    Flow matchingFlow = builder.setIpProtocol(IpProtocol.TCP).build();
+    Flow nonMatchingFlow = builder.setIpProtocol(IpProtocol.UDP).build();
 
     assertTrue(
         "Flow with correct IpProtocol TCP is matched by incoming transformation",
@@ -1466,6 +1455,9 @@ public final class F5BigipStructuredGrammarTest {
 
   @Test
   public void testVirtualPoolTranslationOptions() throws IOException {
+    // Test of pool-mode 'virtual' options:
+    // - translate-address enabled/disabled: rewrite destination IP iff enabled
+    // - translate-port enabled/disabled: rewrite destination port iff enabled
     String hostname = "f5_bigip_structured_virtual_pool_translation_options";
     String tag = "tag";
 
@@ -1501,6 +1493,7 @@ public final class F5BigipStructuredGrammarTest {
 
       TransformationStepDetail detail = stepDetailOptional.get();
 
+      // only destination IP should have been rewritten
       assertThat(
           detail.getFlowDiffs(),
           contains(isIpRewrite(IpField.DESTINATION, dstIp, Ip.parse("192.0.2.10"))));
@@ -1524,6 +1517,7 @@ public final class F5BigipStructuredGrammarTest {
 
       TransformationStepDetail detail = stepDetailOptional.get();
 
+      // both destination IP and destination port should have been rewritten
       assertThat(
           detail.getFlowDiffs(),
           hasItem(isIpRewrite(IpField.DESTINATION, dstIp, Ip.parse("192.0.2.10"))));
@@ -1550,6 +1544,7 @@ public final class F5BigipStructuredGrammarTest {
 
       TransformationStepDetail detail = stepDetailOptional.get();
 
+      // neither destination IP nor destination port should have been rewritten
       assertThat(detail.getFlowDiffs(), empty());
     }
 
@@ -1571,6 +1566,7 @@ public final class F5BigipStructuredGrammarTest {
 
       TransformationStepDetail detail = stepDetailOptional.get();
 
+      // only destination port should have been rewritten
       assertThat(
           detail.getFlowDiffs(),
           contains(isPortRewrite(PortField.DESTINATION, equalTo(80), equalTo(8080))));
@@ -1592,6 +1588,9 @@ public final class F5BigipStructuredGrammarTest {
 
   @Test
   public void testVirtualRejectFilter() throws IOException {
+    // Test that:
+    // - Traffic matching a 'virtual' in 'ip-forward' is not filtered at ingress
+    // - Traffic matching a 'virtual' in 'reject' mode is filtered at ingress
     String hostname = "f5_bigip_structured_virtual_reject";
     String ifaceName = "/Common/vlan1";
     String tag = "tag";
@@ -1608,19 +1607,19 @@ public final class F5BigipStructuredGrammarTest {
         incomingFilter,
         IpAccessListMatchers.hasName(expectedName));
 
+    Flow.Builder builder =
+        Flow.builder()
+            .setTag(tag)
+            .setDstPort(80)
+            .setIngressInterface("/Common/vlan1")
+            .setIngressNode(hostname)
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcIp(Ip.parse("8.8.8.8"))
+            .setSrcPort(50000);
+
     {
       // Forwarded traffic
-      Flow flow =
-          Flow.builder()
-              .setTag(tag)
-              .setDstIp(Ip.parse("192.0.2.1"))
-              .setDstPort(80)
-              .setIngressInterface("/Common/vlan1")
-              .setIngressNode(hostname)
-              .setIpProtocol(IpProtocol.TCP)
-              .setSrcIp(Ip.parse("8.8.8.8"))
-              .setSrcPort(50000)
-              .build();
+      Flow flow = builder.setDstIp(Ip.parse("192.0.2.1")).build();
 
       assertThat(
           "Filter does not reject traffic to forwarding virtual 'virtual_forward'",
@@ -1630,17 +1629,7 @@ public final class F5BigipStructuredGrammarTest {
 
     {
       // Rejected traffic
-      Flow flow =
-          Flow.builder()
-              .setTag(tag)
-              .setDstIp(Ip.parse("192.0.2.2"))
-              .setDstPort(80)
-              .setIngressInterface("/Common/vlan1")
-              .setIngressNode(hostname)
-              .setIpProtocol(IpProtocol.TCP)
-              .setSrcIp(Ip.parse("8.8.8.8"))
-              .setSrcPort(50000)
-              .build();
+      Flow flow = builder.setDstIp(Ip.parse("192.0.2.2")).build();
 
       assertThat(
           "Filter rejects traffic to rejecting virtual 'virtual_reject'",
