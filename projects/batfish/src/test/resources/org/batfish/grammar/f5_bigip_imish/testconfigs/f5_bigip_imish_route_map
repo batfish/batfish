@@ -1,0 +1,18 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+    hostname f5_bigip_imish_route_map
+}
+
+!
+!!! imish configuration starts here
+!
+access-list acl1 permit any
+!
+route-map rm1 permit 1
+ match ip address acl1
+ set community 1:2 3:4
+!
+route-map rm1 deny 2
+!
+end
