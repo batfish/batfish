@@ -42,4 +42,7 @@ public interface Fib extends Serializable {
 
   @Nonnull
   Map<String, Set<AbstractRoute>> getRoutesByNextHopInterface();
+
+  @Nonnull
+  Map<Prefix, IpSpace> getMatchingIps();
 }

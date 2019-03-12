@@ -1,12 +1,14 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.collect.Ordering.natural;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import io.opentracing.ActiveSpan;
@@ -17,7 +19,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -59,7 +60,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   public <T extends AbstractRouteDecorator> ForwardingAnalysisImpl(
       Map<String, Configuration> configurations,
-      SortedMap<String, SortedMap<String, GenericRib<T>>> ribs,
       Map<String, Map<String, Fib>> fibs,
       Topology topology) {
     try (ActiveSpan span =
@@ -75,12 +75,12 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       BDD unownedIpsBDD = ipSpaceToBDD.visit(ownedIps).not();
 
       // IpSpaces matched by each prefix.
-      Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps = computeMatchingIps(ribs);
+      Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps = computeMatchingIps(fibs);
       // Set of routes that forward out each interface
       Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHop =
           computeRoutesWithNextHop(configurations, fibs);
       _nullRoutedIps = computeNullRoutedIps(matchingIps, fibs);
-      _routableIps = computeRoutableIps(ribs);
+      _routableIps = computeRoutableIps(fibs);
 
       /* Compute _arpReplies: for each interface, the set of arp IPs for which that interface will
        * respond.
@@ -90,7 +90,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
         Map<String, Map<String, IpSpace>> ipsRoutedOutInterfaces =
             computeIpsRoutedOutInterfaces(matchingIps, routesWithNextHop);
         _arpReplies =
-            computeArpReplies(configurations, ribs, ipsRoutedOutInterfaces, interfaceOwnedIps);
+            computeArpReplies(
+                configurations, ipsRoutedOutInterfaces, interfaceOwnedIps, _routableIps);
       }
 
       /* Compute ARP stuff bottom-up from _arpReplies. */
@@ -248,15 +249,14 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
    * 4) (Proxy-ARP) PERMIT any statically configured arp IPs.
    */
   @VisibleForTesting
-  static <T extends AbstractRouteDecorator> Map<String, Map<String, IpSpace>> computeArpReplies(
+  static Map<String, Map<String, IpSpace>> computeArpReplies(
       Map<String, Configuration> configurations,
-      SortedMap<String, SortedMap<String, GenericRib<T>>> ribs,
       Map<String, Map<String, IpSpace>> ipsRoutedOutInterfaces,
-      Map<String, Map<String, Set<Ip>>> interfaceOwnedIps) {
+      Map<String, Map<String, Set<Ip>>> interfaceOwnedIps,
+      Map<String, Map<String, IpSpace>> routableIps) {
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeArpReplies").startActive()) {
       assert span != null; // avoid unused warning
-      Map<String, Map<String, IpSpace>> routableIpsByNodeVrf = computeRoutableIpsByNodeVrf(ribs);
       return toImmutableMap(
           configurations,
           Entry::getKey,
@@ -264,7 +264,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
             String hostname = nodeEntry.getKey();
             return computeArpRepliesByInterface(
                 nodeEntry.getValue().getAllInterfaces(),
-                routableIpsByNodeVrf.get(hostname),
+                routableIps.get(hostname),
                 ipsRoutedOutInterfaces.get(hostname),
                 interfaceOwnedIps);
           });
@@ -595,61 +595,41 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   @VisibleForTesting
-  static <T extends AbstractRouteDecorator> Map<String, Map<String, IpSpace>> computeRoutableIps(
-      SortedMap<String, SortedMap<String, GenericRib<T>>> ribs) {
+  static Map<String, Map<String, IpSpace>> computeRoutableIps(Map<String, Map<String, Fib>> fibs) {
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeRoutableIps").startActive()) {
       assert span != null; // avoid unused warning
-      return ribs.entrySet().stream()
-          .collect(
-              ImmutableMap.toImmutableMap(
-                  Entry::getKey /* hostname */,
-                  ribsByHostnameEntry ->
-                      ribsByHostnameEntry.getValue().entrySet().stream()
-                          .collect(
-                              ImmutableMap.toImmutableMap(
-                                  Entry::getKey /* vrf */,
-                                  ribsByVrfEntry -> ribsByVrfEntry.getValue().getRoutableIps()))));
-    }
-  }
-
-  /** Compute for each VRF of each node the IPs that are routable. */
-  @VisibleForTesting
-  private static <T extends AbstractRouteDecorator>
-      Map<String, Map<String, IpSpace>> computeRoutableIpsByNodeVrf(
-          SortedMap<String, SortedMap<String, GenericRib<T>>> ribs) {
-    try (ActiveSpan span =
-        GlobalTracer.get()
-            .buildSpan("ForwardingAnalysisImpl.computeRoutableIpsByNodeVrf")
-            .startActive()) {
-      assert span != null; // avoid unused warning
-      return ribs.entrySet().stream()
-          .collect(
-              ImmutableMap.toImmutableMap(
-                  Entry::getKey, // hostname
-                  ribsByNodeEntry ->
-                      ribsByNodeEntry.getValue().entrySet().stream()
-                          .collect(
-                              ImmutableMap.toImmutableMap(
-                                  Entry::getKey, // vrfName
-                                  ribsByVrfEntry -> ribsByVrfEntry.getValue().getRoutableIps()))));
+      return toImmutableMap(
+          fibs,
+          Entry::getKey, // node
+          nodeEntry ->
+              toImmutableMap(
+                  nodeEntry.getValue(),
+                  Entry::getKey, // vrf
+                  vrfEntry ->
+                      new IpWildcardSetIpSpace(
+                          ImmutableSortedSet.of(),
+                          vrfEntry.getValue().allEntries().stream()
+                              .map(
+                                  fibEntry ->
+                                      new IpWildcard(fibEntry.getTopLevelRoute().getNetwork()))
+                              .collect(ImmutableSortedSet.toImmutableSortedSet(natural())))));
     }
   }
 
   @VisibleForTesting
-  static <T extends AbstractRouteDecorator>
-      Map<String, Map<String, Map<Prefix, IpSpace>>> computeMatchingIps(
-          SortedMap<String, SortedMap<String, GenericRib<T>>> ribs) {
+  static Map<String, Map<String, Map<Prefix, IpSpace>>> computeMatchingIps(
+      Map<String, Map<String, Fib>> fibs) {
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeMatchingIps").startActive()) {
       assert span != null; // avoid unused warning
       return toImmutableMap(
-          ribs,
-          Entry::getKey,
+          fibs,
+          Entry::getKey, // node
           nodeEntry ->
               toImmutableMap(
                   nodeEntry.getValue(),
-                  Entry::getKey,
+                  Entry::getKey, // vrf
                   vrfEntry -> vrfEntry.getValue().getMatchingIps()));
     }
   }

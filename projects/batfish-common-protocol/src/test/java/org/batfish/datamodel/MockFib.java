@@ -11,6 +11,7 @@ import javax.annotation.Nonnull;
 public class MockFib implements Fib {
 
   public static class Builder {
+    private Map<Prefix, IpSpace> _matchingIps;
 
     private Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> _nextHopInterfaces;
 
@@ -24,6 +25,7 @@ public class MockFib implements Fib {
     private Map<Ip, Set<FibEntry>> _fibEntries;
 
     private Builder() {
+      _matchingIps = ImmutableMap.of();
       _nextHopInterfaces = ImmutableMap.of();
       _nextHopInterfacesByIp = ImmutableMap.of();
       _nextHopInterfacesByRoute = ImmutableMap.of();
@@ -33,6 +35,11 @@ public class MockFib implements Fib {
 
     public MockFib build() {
       return new MockFib(this);
+    }
+
+    public Builder setMatchingIps(@Nonnull Map<Prefix, IpSpace> matchingIps) {
+      _matchingIps = matchingIps;
+      return this;
     }
 
     public Builder setNextHopInterfaces(
@@ -76,6 +83,8 @@ public class MockFib implements Fib {
     return new Builder();
   }
 
+  private final Map<Prefix, IpSpace> _matchingIps;
+
   private final Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> _nextHopInterfaces;
 
   private final Map<Ip, Map<String, Map<Ip, Set<AbstractRoute>>>> _nextHopInterfacesByIp;
@@ -88,6 +97,7 @@ public class MockFib implements Fib {
   private Map<Ip, Set<FibEntry>> _fibEntries;
 
   private MockFib(Builder builder) {
+    _matchingIps = ImmutableMap.copyOf(builder._matchingIps);
     _nextHopInterfaces = ImmutableMap.copyOf(builder._nextHopInterfaces);
     _nextHopInterfacesByIp = ImmutableMap.copyOf(builder._nextHopInterfacesByIp);
     _nextHopInterfacesByRoute = ImmutableMap.copyOf(builder._nextHopInterfacesByRoute);
@@ -131,5 +141,11 @@ public class MockFib implements Fib {
   @Override
   public @Nonnull Map<String, Set<AbstractRoute>> getRoutesByNextHopInterface() {
     return _routesByNextHopInterface;
+  }
+
+  @Nonnull
+  @Override
+  public Map<Prefix, IpSpace> getMatchingIps() {
+    return _matchingIps;
   }
 }

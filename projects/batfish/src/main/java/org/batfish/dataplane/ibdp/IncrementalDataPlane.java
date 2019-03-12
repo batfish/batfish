@@ -151,7 +151,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   }
 
   private ForwardingAnalysis computeForwardingAnalysis() {
-    return new ForwardingAnalysisImpl(getConfigurations(), getRibs(), getFibs(), getTopology());
+    return new ForwardingAnalysisImpl(getConfigurations(), getFibs(), getTopology());
   }
 
   private SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
