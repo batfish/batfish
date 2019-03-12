@@ -17,6 +17,6 @@ public class IpsecSessionStatusQuestionPlugin extends QuestionPlugin {
 
   @Override
   protected Question createQuestion() {
-    return new IpsecSessionStatusQuestion(null, null, null);
+    return new IpsecSessionStatusQuestion(null, null, IpsecSessionStatusQuestion.DEFAULT_STATUS);
   }
 }

@@ -14,7 +14,7 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
             String, Map<String, Map<AbstractRoute, Map<String, Map<ArpIpChoice, Set<IpSpace>>>>>>
         _arpRequests;
 
-    private Map<Edge, IpSpace> _arpTrueEdge;
+    private Map<String, Map<String, Map<Edge, IpSpace>>> _arpTrueEdge;
 
     private Map<String, Map<String, Map<String, IpSpace>>> _neighborUnreachableOrExitsNetwork;
 
@@ -47,7 +47,7 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
       return this;
     }
 
-    public Builder setArpTrueEdge(Map<Edge, IpSpace> arpTrueEdge) {
+    public Builder setArpTrueEdge(Map<String, Map<String, Map<Edge, IpSpace>>> arpTrueEdge) {
       _arpTrueEdge = arpTrueEdge;
       return this;
     }
@@ -79,7 +79,7 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
           String, Map<String, Map<AbstractRoute, Map<String, Map<ArpIpChoice, Set<IpSpace>>>>>>
       _arpRequests;
 
-  private final Map<Edge, IpSpace> _arpTrueEdge;
+  private final Map<String, Map<String, Map<Edge, IpSpace>>> _arpTrueEdge;
 
   private final Map<String, Map<String, Map<String, IpSpace>>> _neighborUnreachableOrExitsNetwork;
 
@@ -108,7 +108,7 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
   }
 
   @Override
-  public Map<Edge, IpSpace> getArpTrueEdge() {
+  public Map<String, Map<String, Map<Edge, IpSpace>>> getArpTrueEdge() {
     return _arpTrueEdge;
   }
 
