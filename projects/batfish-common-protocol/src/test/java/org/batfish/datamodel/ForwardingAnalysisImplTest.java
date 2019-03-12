@@ -294,19 +294,26 @@ public class ForwardingAnalysisImplTest {
     IpSpace nextHopIpSpace = new MockIpSpace(1);
     IpSpace dstIpSpace = new MockIpSpace(2);
     Edge e1 = Edge.of("c1", "i1", "c2", "i2");
-    Map<Edge, IpSpace> arpTrueEdgeDestIp = ImmutableMap.of(e1, dstIpSpace);
-    Map<Edge, IpSpace> arpTrueEdgeNextHopIp = ImmutableMap.of(e1, nextHopIpSpace);
-    Map<Edge, IpSpace> result = computeArpTrueEdge(arpTrueEdgeDestIp, arpTrueEdgeNextHopIp);
+    Map<String, Map<String, Map<Edge, IpSpace>>> arpTrueEdgeDestIp =
+        ImmutableMap.of("c1", ImmutableMap.of("v1", ImmutableMap.of(e1, dstIpSpace)));
+    Map<String, Map<String, Map<Edge, IpSpace>>> arpTrueEdgeNextHopIp =
+        ImmutableMap.of("c1", ImmutableMap.of("v1", ImmutableMap.of(e1, nextHopIpSpace)));
+    Map<String, Map<String, Map<Edge, IpSpace>>> result =
+        computeArpTrueEdge(arpTrueEdgeDestIp, arpTrueEdgeNextHopIp);
 
     assertThat(
         result,
         hasEntry(
-            equalTo(e1),
-            isAclIpSpaceThat(
-                hasLines(
-                    containsInAnyOrder(
-                        AclIpSpaceLine.permit(nextHopIpSpace),
-                        AclIpSpaceLine.permit(dstIpSpace))))));
+            equalTo("c1"),
+            hasEntry(
+                equalTo("v1"),
+                hasEntry(
+                    equalTo(e1),
+                    isAclIpSpaceThat(
+                        hasLines(
+                            containsInAnyOrder(
+                                AclIpSpaceLine.permit(nextHopIpSpace),
+                                AclIpSpaceLine.permit(dstIpSpace))))))));
   }
 
   @Test
@@ -318,8 +325,6 @@ public class ForwardingAnalysisImplTest {
     Interface i1 = _ib.setOwner(c1).setVrf(vrf1).build();
     Ip i2Ip = Ip.create(P1.getStartIp().asLong() + 1);
     Interface i2 = _ib.setOwner(c2).setVrf(vrf2).build();
-    Map<String, Configuration> configs =
-        ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
     SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
         ImmutableSortedMap.of(
             c1.getHostname(),
@@ -336,8 +341,12 @@ public class ForwardingAnalysisImplTest {
                                 .build()))
                     .build()));
     Edge edge = Edge.of(c1.getHostname(), i1.getName(), c2.getHostname(), i2.getName());
-    Map<Edge, Set<AbstractRoute>> routesWithDestIpEdge =
-        ImmutableMap.of(edge, ImmutableSet.of(new ConnectedRoute(P1, i1.getName())));
+    Map<String, Map<String, Map<Edge, Set<AbstractRoute>>>> routesWithDestIpEdge =
+        ImmutableMap.of(
+            c1.getHostname(),
+            ImmutableMap.of(
+                vrf1.getName(),
+                ImmutableMap.of(edge, ImmutableSet.of(new ConnectedRoute(P1, i1.getName())))));
     Map<String, Map<String, IpSpace>> arpReplies =
         ImmutableMap.of(
             c2.getHostname(),
@@ -346,16 +355,30 @@ public class ForwardingAnalysisImplTest {
                 AclIpSpace.permitting(i2Ip.toIpSpace())
                     .thenPermitting(P1.getEndIp().toIpSpace())
                     .build()));
-    Map<Edge, IpSpace> result =
-        computeArpTrueEdgeDestIp(
-            configs, computeMatchingIps(ribs), routesWithDestIpEdge, arpReplies);
+    Map<String, Map<String, Map<Edge, IpSpace>>> result =
+        computeArpTrueEdgeDestIp(computeMatchingIps(ribs), routesWithDestIpEdge, arpReplies);
 
     /* Respond to request for IP on i2. */
-    assertThat(result, hasEntry(equalTo(edge), containsIp(i2Ip)));
+    assertThat(
+        result,
+        hasEntry(
+            equalTo(c1.getHostname()),
+            hasEntry(equalTo(vrf1.getName()), hasEntry(equalTo(edge), containsIp(i2Ip)))));
     /* Do not make ARP request for IP matched by more specific route not going out i1.  */
-    assertThat(result, hasEntry(equalTo(edge), not(containsIp(P1.getEndIp()))));
+    assertThat(
+        result,
+        hasEntry(
+            equalTo(c1.getHostname()),
+            hasEntry(
+                equalTo(vrf1.getName()), hasEntry(equalTo(edge), not(containsIp(P1.getEndIp()))))));
     /* Do not receive response for IP i2 does not own. */
-    assertThat(result, hasEntry(equalTo(edge), not(containsIp(P1.getStartIp()))));
+    assertThat(
+        result,
+        hasEntry(
+            equalTo(c1.getHostname()),
+            hasEntry(
+                equalTo(vrf1.getName()),
+                hasEntry(equalTo(edge), not(containsIp(P1.getStartIp()))))));
   }
 
   @Test
@@ -376,8 +399,6 @@ public class ForwardingAnalysisImplTest {
             .setAddress(new InterfaceAddress(i2Ip, P1.getPrefixLength()))
             .build();
     Edge edge = Edge.of(c1.getHostname(), i1.getName(), c2.getHostname(), i2.getName());
-    Map<String, Configuration> configurations =
-        ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
     SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
         ImmutableSortedMap.of(
             c1.getHostname(),
@@ -393,29 +414,60 @@ public class ForwardingAnalysisImplTest {
                                 .thenPermitting(P1.toIpSpace())
                                 .build()))
                     .build()));
-    Map<Edge, Set<AbstractRoute>> routesWithNextHopIpArpTrue =
+    Map<String, Map<String, Map<Edge, Set<AbstractRoute>>>> routesWithNextHopIpArpTrue =
         ImmutableMap.of(
-            edge,
-            ImmutableSet.of(
-                StaticRoute.builder()
-                    .setNetwork(P1)
-                    .setNextHopIp(P2.getStartIp())
-                    .setAdministrativeCost(1)
-                    .build()));
-    Map<Edge, IpSpace> result =
-        computeArpTrueEdgeNextHopIp(
-            configurations, computeMatchingIps(ribs), routesWithNextHopIpArpTrue);
+            c1.getHostname(),
+            ImmutableMap.of(
+                vrf1.getName(),
+                ImmutableMap.of(
+                    edge,
+                    ImmutableSet.of(
+                        StaticRoute.builder()
+                            .setNetwork(P1)
+                            .setNextHopIp(P2.getStartIp())
+                            .setAdministrativeCost(1)
+                            .build()))));
+    Map<String, Map<String, Map<Edge, IpSpace>>> result =
+        computeArpTrueEdgeNextHopIp(computeMatchingIps(ribs), routesWithNextHopIpArpTrue);
 
     /*
      * Respond for any destination IP in network not matching more specific route not going out i1.
      */
-    assertThat(result, hasEntry(equalTo(edge), containsIp(P1.getStartIp())));
-    assertThat(result, hasEntry(equalTo(edge), containsIp(i2Ip)));
+    assertThat(
+        result,
+        hasEntry(
+            equalTo(c1.getHostname()),
+            hasEntry(
+                equalTo(vrf1.getName()), hasEntry(equalTo(edge), containsIp(P1.getStartIp())))));
+
+    assertThat(
+        result,
+        hasEntry(
+            equalTo(c1.getHostname()),
+            hasEntry(equalTo(vrf1.getName()), hasEntry(equalTo(edge), containsIp(i2Ip)))));
+
     /* Do not respond for destination IP matching more specific route not going out i1 */
-    assertThat(result, hasEntry(equalTo(edge), not(containsIp(P1.getEndIp()))));
+    assertThat(
+        result,
+        hasEntry(
+            equalTo(c1.getHostname()),
+            hasEntry(
+                equalTo(vrf1.getName()), hasEntry(equalTo(edge), not(containsIp(P1.getEndIp()))))));
+
     /* Do not respond for destination IPs not matching route */
-    assertThat(result, hasEntry(equalTo(edge), not(containsIp(P2.getStartIp()))));
-    assertThat(result, hasEntry(equalTo(edge), not(containsIp(P2.getEndIp()))));
+    assertThat(
+        result,
+        hasEntry(
+            equalTo(c1.getHostname()),
+            hasEntry(
+                equalTo(vrf1.getName()),
+                hasEntry(equalTo(edge), not(containsIp(P2.getStartIp()))))));
+    assertThat(
+        result,
+        hasEntry(
+            equalTo(c1.getHostname()),
+            hasEntry(
+                equalTo(vrf1.getName()), hasEntry(equalTo(edge), not(containsIp(P2.getEndIp()))))));
   }
 
   @Test
@@ -860,10 +912,13 @@ public class ForwardingAnalysisImplTest {
         ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, ImmutableSet.of(r1))));
     Edge e1 = Edge.of(c1, i1, c2, i2);
     Topology topology = new Topology(ImmutableSortedSet.of(e1));
-    Map<Edge, Set<AbstractRoute>> result =
+    Map<String, Map<String, Map<Edge, Set<AbstractRoute>>>> result =
         computeRoutesWithDestIpEdge(topology, routesWhereDstIpCanBeArpIp);
 
-    assertThat(result, equalTo(ImmutableMap.of(e1, ImmutableSet.of(r1))));
+    assertThat(
+        result,
+        hasEntry(
+            equalTo(c1), hasEntry(equalTo(v1), equalTo(ImmutableMap.of(e1, ImmutableSet.of(r1))))));
   }
 
   @Test
@@ -1076,11 +1131,14 @@ public class ForwardingAnalysisImplTest {
                                 i1,
                                 ImmutableMap.of(r2.getNextHopIp(), ImmutableSet.of(ifaceRoute)))))
                     .build()));
-    Map<Edge, Set<AbstractRoute>> result =
+    Map<String, Map<String, Map<Edge, Set<AbstractRoute>>>> result =
         computeRoutesWithNextHopIpArpTrue(fibs, topology, arpReplies, routesWithNextHop);
 
     /* Only the route with the next hop ip that gets a reply should be present. */
-    assertThat(result, equalTo(ImmutableMap.of(e1, ImmutableSet.of(r1))));
+    assertThat(
+        result,
+        equalTo(
+            ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(e1, ImmutableSet.of(r1))))));
   }
 
   @Test
