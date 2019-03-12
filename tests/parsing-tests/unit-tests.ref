@@ -468,6 +468,9 @@
         "f5_bigip_structured_sys" : [
           "configs/f5_bigip_structured_sys"
         ],
+        "f5_bigip_structured_with_imish" : [
+          "configs/f5_bigip_structured_with_imish"
+        ],
         "foundry_access_list" : [
           "configs/foundry_access_list"
         ],
@@ -990,6 +993,7 @@
         "configs/f5_bigip_structured_net_routing_prefix_list" : "PASSED",
         "configs/f5_bigip_structured_net_routing_route_map" : "PASSED",
         "configs/f5_bigip_structured_sys" : "PASSED",
+        "configs/f5_bigip_structured_with_imish" : "PASSED",
         "configs/foundry_access_list" : "PASSED",
         "configs/foundry_bgp" : "PASSED",
         "configs/foundry_interface" : "PASSED",
@@ -43353,6 +43357,34 @@
             "  EOF:<EOF>)"
           ]
         },
+        "configs/f5_bigip_structured_with_imish" : {
+          "sentences" : [
+            "(f5_bigip_structured_configuration",
+            "  (statement",
+            "    (s_sys",
+            "      SYS:'sys'",
+            "      (sys_global_settings",
+            "        GLOBAL_SETTINGS:'global-settings'",
+            "        BRACE_LEFT:'{'",
+            "        NEWLINE:'\\n'",
+            "        (sgs_hostname",
+            "          HOSTNAME:'hostname'",
+            "          hostname = (word",
+            "            WORD:'f5_bigip_structured_with_imish')",
+            "          NEWLINE:'\\n')",
+            "        BRACE_RIGHT:'}'",
+            "        NEWLINE:'\\n\\n')))",
+            "  (imish_chunk",
+            "    IMISH_CHUNK:'!\\nend\\n\\n\\n')",
+            "  EOF:<EOF>)",
+            "(f5_bigip_imish_configuration",
+            "  (statement",
+            "    (s_end",
+            "      END:'end'",
+            "      NEWLINE:'\\n\\n\\n'))",
+            "  EOF:<EOF>)"
+          ]
+        },
         "configs/foundry_access_list" : {
           "sentences" : [
             "(cisco_configuration",
@@ -70095,6 +70127,7 @@
         "f5_bigip_structured_net_routing_prefix_list" : "PASSED",
         "f5_bigip_structured_net_routing_route_map" : "PASSED",
         "f5_bigip_structured_sys" : "PASSED",
+        "f5_bigip_structured_with_imish" : "PASSED",
         "foundry_access_list" : "PASSED",
         "foundry_bgp" : "PASSED",
         "foundry_interface" : "PASSED",
@@ -73341,6 +73374,7 @@
           }
         },
         "configs/f5_bigip_structured_sys" : { },
+        "configs/f5_bigip_structured_with_imish" : { },
         "configs/foundry_access_list" : {
           "extended ipv6 access-list" : {
             "RT404888-Caltech" : {
@@ -82468,6 +82502,7 @@
         "configs/f5_bigip_structured_net_routing_prefix_list" : "PASSED",
         "configs/f5_bigip_structured_net_routing_route_map" : "PASSED",
         "configs/f5_bigip_structured_sys" : "PASSED",
+        "configs/f5_bigip_structured_with_imish" : "PASSED",
         "configs/foundry_access_list" : "PASSED",
         "configs/foundry_bgp" : "PASSED",
         "configs/foundry_interface" : "PASSED",
