@@ -8,8 +8,14 @@ import org.batfish.representation.f5_bigip.F5BigipConfiguration;
 public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseListener {
 
   private final @Nonnull F5BigipConfiguration _c;
+
+  @SuppressWarnings("unused")
   private final @Nonnull F5BigipImishCombinedParser _parser;
+
+  @SuppressWarnings("unused")
   private final @Nonnull String _text;
+
+  @SuppressWarnings("unused")
   private final @Nonnull Warnings _w;
 
   public F5BigipImishConfigurationBuilder(
