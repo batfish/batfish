@@ -9,7 +9,7 @@ import org.parboiled.errors.InvalidInputError;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;
 
-/** An IpSpaceSpecifierFactory whose grammar is encoded in {@link Parser#IpSpaceExpression()} */
+/** An IpSpaceSpecifierFactory whose grammar is encoded in {@link Parser#IpSpaceSpec()} */
 @AutoService(IpSpaceSpecifierFactory.class)
 public class ParboiledIpSpaceSpecifierFactory implements IpSpaceSpecifierFactory {
 
