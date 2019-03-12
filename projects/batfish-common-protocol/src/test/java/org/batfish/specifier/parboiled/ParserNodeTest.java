@@ -22,7 +22,7 @@ public class ParserNodeTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static AbstractParseRunner<AstNode> getRunner() {
-    return new ReportingParseRunner<>(Parser.INSTANCE.input(Parser.INSTANCE.NodeExpression()));
+    return new ReportingParseRunner<>(Parser.INSTANCE.input(Parser.INSTANCE.NodeSpec()));
   }
 
   /** This testParses if we have proper completion annotations on the rules */
@@ -45,7 +45,7 @@ public class ParserNodeTest {
     ParboiledAutoComplete pac =
         new ParboiledAutoComplete(
             Parser.INSTANCE,
-            Parser.INSTANCE.input(Parser.INSTANCE.NodeExpression()),
+            Parser.INSTANCE.input(Parser.INSTANCE.NodeSpec()),
             Parser.ANCHORS,
             "network",
             "snapshot",
@@ -80,7 +80,7 @@ public class ParserNodeTest {
     ParboiledAutoComplete pac =
         new ParboiledAutoComplete(
             Parser.INSTANCE,
-            Parser.INSTANCE.input(Parser.INSTANCE.NodeExpression()),
+            Parser.INSTANCE.input(Parser.INSTANCE.NodeSpec()),
             Parser.ANCHORS,
             "network",
             "snapshot",

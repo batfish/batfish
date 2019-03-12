@@ -9,10 +9,7 @@ import org.parboiled.errors.InvalidInputError;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;
 
-/**
- * An {@link LocationSpecifierFactory} whose grammar is encoded in {@link
- * Parser#LocationExpression()}
- */
+/** An {@link LocationSpecifierFactory} whose grammar is encoded in {@link Parser#LocationSpec()} */
 @AutoService(LocationSpecifierFactory.class)
 public class ParboiledLocationSpecifierFactory implements LocationSpecifierFactory {
 

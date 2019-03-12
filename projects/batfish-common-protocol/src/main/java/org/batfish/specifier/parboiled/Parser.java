@@ -60,10 +60,10 @@ public class Parser extends CommonParser {
    * Filter grammar
    *
    * <pre>
-   *   filterExpr := filterTerm [{@literal &} | , | \ filterTerm]*
+   *   filterSpec := filterTerm [{@literal &} | , | \ filterTerm]*
    *
-   *   filterTerm := @in(interfaceExpr)  // inFilterOf is also supported for back compat
-   *               | @out(interfaceExpr) // outFilterOf is also supported
+   *   filterTerm := @in(interfaceSpec)  // inFilterOf is also supported for back compat
+   *               | @out(interfaceSpec) // outFilterOf is also supported
    *               | filterName
    *               | filterNameRegex
    *               | ( filterTerm )
@@ -71,7 +71,7 @@ public class Parser extends CommonParser {
    */
 
   /* A Filter expression is one or more intersection terms separated by , or \ */
-  public Rule FilterExpression() {
+  public Rule FilterSpec() {
     Var<Character> op = new Var<>();
     return Sequence(
         FilterIntersection(),
@@ -109,7 +109,7 @@ public class Parser extends CommonParser {
         direction.set(match()),
         WhiteSpace(),
         "( ",
-        InterfaceExpression(),
+        InterfaceSpec(),
         WhiteSpace(),
         ") ",
         push(DirectionFilterAstNode.create(direction.get(), pop())));
@@ -123,7 +123,7 @@ public class Parser extends CommonParser {
         direction.set(match()),
         WhiteSpace(),
         "( ",
-        InterfaceExpression(),
+        InterfaceSpec(),
         WhiteSpace(),
         ") ",
         push(DirectionFilterAstNode.create(direction.get(), pop())));
@@ -146,16 +146,16 @@ public class Parser extends CommonParser {
 
   public Rule FilterParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
-    return Sequence("( ", FilterExpression(), WhiteSpace(), ") ");
+    return Sequence("( ", FilterSpec(), WhiteSpace(), ") ");
   }
 
   /**
    * Interface grammar
    *
    * <pre>
-   *   interfaceExpr := interfaceTerm [{@literal &} | , | \ interfaceTerm]*
+   *   interfaceSpec := interfaceTerm [{@literal &} | , | \ interfaceTerm]*
    *
-   *   interfaceTerm := @connectedTo(ipSpaceExpr)  // non-@ versions also supported for back compat
+   *   interfaceTerm := @connectedTo(ipSpaceSpec)  // non-@ versions also supported for back compat
    *                        | @interfacegroup(a, b)
    *                        | @interfaceType(interfaceType)
    *                        | @vrf(vrfName)
@@ -167,7 +167,7 @@ public class Parser extends CommonParser {
    */
 
   /* An Interface expression is union and difference of one or more intersections */
-  public Rule InterfaceExpression() {
+  public Rule InterfaceSpec() {
     Var<Character> op = new Var<>();
     return Sequence(
         InterfaceIntersection(),
@@ -193,7 +193,7 @@ public class Parser extends CommonParser {
 
   public Rule InterfaceTerm() {
     return FirstOf(
-        InterfaceSpecifier(),
+        InterfaceFunc(),
         InterfaceNameRegexDeprecated(),
         InterfaceNameRegex(),
         InterfaceName(),
@@ -203,7 +203,7 @@ public class Parser extends CommonParser {
   /**
    * To avoid ambiguity in location specification, interface and node specifiers should be distinct
    */
-  public Rule InterfaceSpecifier() {
+  public Rule InterfaceFunc() {
     return FirstOf(
         InterfaceConnectedTo(),
         InterfaceConnectedToDeprecated(),
@@ -222,7 +222,7 @@ public class Parser extends CommonParser {
         IgnoreCase("@connectedTo"),
         WhiteSpace(),
         "( ",
-        IpSpaceExpression(),
+        IpSpaceSpec(),
         WhiteSpace(),
         ") ",
         push(new ConnectedToInterfaceAstNode(pop())));
@@ -234,7 +234,7 @@ public class Parser extends CommonParser {
         IgnoreCase("connectedTo"),
         WhiteSpace(),
         "( ",
-        IpSpaceExpression(),
+        IpSpaceSpec(),
         WhiteSpace(),
         ") ",
         push(new ConnectedToInterfaceAstNode(pop())));
@@ -279,7 +279,7 @@ public class Parser extends CommonParser {
         IgnoreCase("@interfaceType"),
         WhiteSpace(),
         "( ",
-        InterfaceTypeExpr(),
+        InterfaceTypeSpec(),
         WhiteSpace(),
         ") ",
         push(new TypeInterfaceAstNode(pop())));
@@ -291,14 +291,14 @@ public class Parser extends CommonParser {
         IgnoreCase("type"),
         WhiteSpace(),
         "( ",
-        InterfaceTypeExpr(),
+        InterfaceTypeSpec(),
         WhiteSpace(),
         ") ",
         push(new TypeInterfaceAstNode(pop())));
   }
 
   @Anchor(INTERFACE_TYPE)
-  public Rule InterfaceTypeExpr() {
+  public Rule InterfaceTypeSpec() {
     return Sequence(FirstOf(_interfaceTypeRules), push(new StringAstNode(match())));
   }
 
@@ -375,7 +375,7 @@ public class Parser extends CommonParser {
 
   public Rule InterfaceParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
-    return Sequence("( ", InterfaceExpression(), WhiteSpace(), ") ");
+    return Sequence("( ", InterfaceSpec(), WhiteSpace(), ") ");
   }
 
   /**
@@ -385,8 +385,8 @@ public class Parser extends CommonParser {
    * ipSpaceSpec := ipSpecTerm [, ipSpecTerm]*
    *
    * ipSpecTerm := @addgressgroup(groupname, bookname)  //ref.addressgroup for back compat
-   *               | locationExpr
-   *               | ofLocation(locationExpr)           // back compat
+   *               | locationSpec
+   *               | ofLocation(locationSpec)           // back compat
    *               | ipPrefix (e.g., 1.1.1.0/24)
    *               | ipWildcard (e.g., 1.1.1.1:255.255.255.0)
    *               | ipRange (e.g., 1.1.1.1-1.1.1.2)
@@ -395,7 +395,7 @@ public class Parser extends CommonParser {
    */
 
   /* An IpSpace expression is a comma-separated list of IpSpaceTerms */
-  public Rule IpSpaceExpression() {
+  public Rule IpSpaceSpec() {
     return Sequence(
         IpSpaceTerm(),
         WhiteSpace(),
@@ -451,7 +451,7 @@ public class Parser extends CommonParser {
   }
 
   public Rule IpSpaceLocation() {
-    return Sequence(LocationExpression(), push(new LocationIpSpaceAstNode(pop())));
+    return Sequence(LocationSpec(), push(new LocationIpSpaceAstNode(pop())));
   }
 
   @Anchor(IGNORE)
@@ -460,7 +460,7 @@ public class Parser extends CommonParser {
         IgnoreCase("ofLocation"),
         WhiteSpace(),
         "( ",
-        LocationExpression(),
+        LocationSpec(),
         WhiteSpace(),
         ") ",
         push(new LocationIpSpaceAstNode(pop())));
@@ -515,7 +515,7 @@ public class Parser extends CommonParser {
    * Location grammar
    *
    * <pre>
-   *   locationExpr := locationTerm [{@literal &} | , | \ locationTerm]*
+   *   locationSpec := locationTerm [{@literal &} | , | \ locationTerm]*
    *
    *   locationTerm := locationInterface
    *               | @enter(locationInterface)   // non-@ versions also supported
@@ -524,12 +524,12 @@ public class Parser extends CommonParser {
    *
    *   locationInterface := nodeTerm[interfaceTerm]
    *                        | nodeTerm
-   *                        | interfaceSpecifier
+   *                        | interfaceFunc
    * </pre>
    */
 
   /* A Node expression is one or more intersection terms separated by + or - */
-  public Rule LocationExpression() {
+  public Rule LocationSpec() {
     Var<Character> op = new Var<>();
     return Sequence(
         LocationIntersection(),
@@ -589,13 +589,13 @@ public class Parser extends CommonParser {
             NodeTerm(),
             WhiteSpace(),
             "[ ",
-            InterfaceExpression(),
+            InterfaceSpec(),
             WhiteSpace(),
             "] ",
             push(InterfaceLocationAstNode.createFromNodeInterface(pop(1), pop()))),
         Sequence(NodeTerm(), WhiteSpace(), push(InterfaceLocationAstNode.createFromNode(pop()))),
         Sequence(
-            InterfaceSpecifier(),
+            InterfaceFunc(),
             WhiteSpace(),
             push(InterfaceLocationAstNode.createFromInterface(pop()))));
   }
@@ -605,7 +605,7 @@ public class Parser extends CommonParser {
     return Sequence(
         // brackets without node expression
         "[ ",
-        InterfaceExpression(),
+        InterfaceSpec(),
         WhiteSpace(),
         "] ",
         push(InterfaceLocationAstNode.createFromInterface(pop())));
@@ -613,14 +613,14 @@ public class Parser extends CommonParser {
 
   public Rule LocationParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
-    return Sequence("( ", LocationExpression(), WhiteSpace(), ") ");
+    return Sequence("( ", LocationSpec(), WhiteSpace(), ") ");
   }
 
   /**
    * Node grammar
    *
    * <pre>
-   *   nodeExpr := nodeTerm [{@literal &} | , | \ nodeTerm]*
+   *   nodeSpec := nodeTerm [{@literal &} | , | \ nodeTerm]*
    *
    *   nodeTerm := @role(a, b) // ref.noderole is also supported for back compat
    *               | @deviceType(a)
@@ -631,7 +631,7 @@ public class Parser extends CommonParser {
    */
 
   /* A Node expression is one or more intersection terms separated by + or - */
-  public Rule NodeExpression() {
+  public Rule NodeSpec() {
     Var<Character> op = new Var<>();
     return Sequence(
         NodeIntersection(),
@@ -702,14 +702,14 @@ public class Parser extends CommonParser {
         IgnoreCase("@deviceType"),
         WhiteSpace(),
         "( ",
-        NodeTypeExpr(),
+        NodeTypeSpec(),
         WhiteSpace(),
         ") ",
         push(new TypeNodeAstNode(pop())));
   }
 
   @Anchor(NODE_TYPE)
-  public Rule NodeTypeExpr() {
+  public Rule NodeTypeSpec() {
     return Sequence(FirstOf(_deviceTypeRules), push(new StringAstNode(match())));
   }
 
@@ -730,6 +730,6 @@ public class Parser extends CommonParser {
 
   public Rule NodeParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
-    return Sequence("( ", NodeExpression(), WhiteSpace(), ") ");
+    return Sequence("( ", NodeSpec(), WhiteSpace(), ") ");
   }
 }

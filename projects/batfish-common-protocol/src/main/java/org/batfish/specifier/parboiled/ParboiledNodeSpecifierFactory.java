@@ -9,7 +9,7 @@ import org.parboiled.errors.InvalidInputError;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;
 
-/** An {@link NodeSpecifierFactory} whose grammar is encoded in {@link Parser#NodeExpression()} */
+/** An {@link NodeSpecifierFactory} whose grammar is encoded in {@link Parser#NodeSpec()} */
 @AutoService(NodeSpecifierFactory.class)
 public class ParboiledNodeSpecifierFactory implements NodeSpecifierFactory {
 
