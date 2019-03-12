@@ -1540,13 +1540,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       transformation =
           ruleSet
               .toOutgoingTransformation(
-                  this,
-                  snat,
-                  interfaceIp,
-                  matchFromLocationExprs,
-                  null,
-                  transformation,
-                  _w)
+                  this, snat, interfaceIp, matchFromLocationExprs, null, transformation, _w)
               .orElse(transformation);
     }
     return transformation;
