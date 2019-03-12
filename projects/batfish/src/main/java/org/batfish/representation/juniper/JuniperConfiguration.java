@@ -1542,7 +1542,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
               .toOutgoingTransformation(
                   this,
                   snat,
-                  iface.getPrimaryAddress().getIp(),
+                  interfaceIp,
                   matchFromLocationExprs,
                   null,
                   transformation,
