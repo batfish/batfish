@@ -5,5 +5,28 @@ sys global-settings {
 }
 
 !
+access-list acl1 permit any
+access-list acl2 permit 192.0.2.0/24
+!
+interface lo
+!
+interface tmm
+!
+interface vlan1
+!
+router bgp 65500
+ bgp graceful-restart restart-time 123
+ max-paths ebgp 12
+ redistribute kernel route-map rm1
+ neighbor pg1 peer-group
+ no neighbor pg1 capability graceful-restart
+ neighbor pg1 fall-over pfd
+ neighbor pg1 maximum-prefix 12345
+ neighbor 10.0.0.1 remote-as 65501
+ neighbor 10.0.0.1 description desc1
+ neighbor 10.0.0.1 peer-group pg1
+ neighbor 10.0.0.1 update-source 
+no service password-encryption
+
 end
 
