@@ -27,6 +27,7 @@ import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
+/** Implementation of {@link ForwardingAnalysis}. */
 public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   // mapping: node name -> interface name -> ips that the interface would reply arp request
@@ -1110,9 +1111,11 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
    *     be other devices connected to the subnet for which we don't have a config.
    * @param arpFalseDestIp For each interface, dst IPs that can be ARP IPs and that we will not
    *     receive an ARP response for.
-   * @param dstIpsWithUnownedNextHopIpArpFalse
-   * @param dstIpsWithOwnedNextHopIpArpFalse
-   * @param internalIps
+   * @param dstIpsWithUnownedNextHopIpArpFalse node -> vrf -> iface -> dst IPs the vrf forwards out
+   *     the interface, ARPing for some unowned next-hop IP and not receiving a reply.
+   * @param dstIpsWithOwnedNextHopIpArpFalse node -> vrf -> iface -> dst IPs the vrf forwards out
+   *     the interface, ARPing for some owned next-hop IP and not receiving a reply.
+   * @param internalIps IPs owned by devices in the snapshot or in connected subnets.
    */
   @VisibleForTesting
   static Map<String, Map<String, Map<String, IpSpace>>> computeInsufficientInfo(
