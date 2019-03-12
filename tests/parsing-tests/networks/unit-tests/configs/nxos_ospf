@@ -9,5 +9,13 @@ router ospf 1
   redistribute direct route-map RM_OSPF_DIRECT
   redistribute static route-map RM_OSPF_STATIC
 !
+router ospf 2
+ router-id 5.6.7.8
+ vrf OTHER
+  max-metric router-lsa 1111
+
+router ospf 1
+ vrf OTHER
+  redistribute connected subnets
 !
 

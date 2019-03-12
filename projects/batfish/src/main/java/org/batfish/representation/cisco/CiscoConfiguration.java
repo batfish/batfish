@@ -2510,9 +2510,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
        * proceed down to inference based on network addresses.
        */
       Interface vsIface = _interfaces.get(iface.getName());
-      if (vsIface != null
-          && vsIface.getOspfProcess() != null
-          && !vsIface.getOspfProcess().equals(proc.getName())) {
+      if (vsIface == null) {
+        // Need to look at aliases because in ASA the VI model iface will be named using the alias
+        vsIface =
+            _interfaces.values().stream()
+                .filter(i -> iface.getName().equals(i.getAlias()))
+                .findFirst()
+                .get();
+      }
+      if (vsIface.getOspfProcess() != null && !vsIface.getOspfProcess().equals(proc.getName())) {
         continue;
       }
       InterfaceAddress interfaceAddress = iface.getAddress();

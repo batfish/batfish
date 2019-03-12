@@ -299,7 +299,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Iterables;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -1641,6 +1640,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private String _currentTrackingGroup;
 
   private AristaEosVxlan _eosVxlan;
+
+  /* Set this when moving to different stanzas (e.g., ro_vrf) inside "router ospf" stanza
+   * to correctly retrieve the OSPF process that was being configured prior to switching stanzas
+   */
+  private String _lastKnownOspfProcess;
 
   public CiscoControlPlaneExtractor(
       String text, CiscoCombinedParser parser, ConfigurationFormat format, Warnings warnings) {
@@ -3928,6 +3932,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                   p.setRouterId(routerId);
                   return p;
                 });
+    _lastKnownOspfProcess = _currentOspfProcess.getName();
   }
 
   @Override
@@ -8824,8 +8829,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRo_vrf(Ro_vrfContext ctx) {
     _currentVrf = Configuration.DEFAULT_VRF_NAME;
-    // Set the current OSPF process to the last encountered OSPF process for default VRF
-    _currentOspfProcess = Iterables.getLast(currentVrf().getOspfProcesses().values(), null);
+    _currentOspfProcess = currentVrf().getOspfProcesses().get(_lastKnownOspfProcess);
   }
 
   @Override
