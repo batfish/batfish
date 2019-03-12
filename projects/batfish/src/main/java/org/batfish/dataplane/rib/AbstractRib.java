@@ -15,7 +15,6 @@ import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
@@ -283,15 +282,5 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
   @Override
   public int hashCode() {
     return Objects.hash(_tree);
-  }
-
-  @Override
-  public final Map<Prefix, IpSpace> getMatchingIps() {
-    return _tree.getMatchingIps();
-  }
-
-  @Override
-  public final IpSpace getRoutableIps() {
-    return _tree.getRoutableIps();
   }
 }
