@@ -7,7 +7,10 @@ public interface ForwardingAnalysis {
   /** Mapping: hostname -&gt; inInterface -&gt; ipsToArpReplyTo */
   Map<String, Map<String, IpSpace>> getArpReplies();
 
-  /** Mapping: edge -&gt; dstIpsForWhichArpReplySent */
+  /**
+   * Mapping: hostname -&gt; vrfName -&gt; edge -&gt; dst IPs for which that vrf will forward out
+   * the source of the edge and receive an ARP reply from the target of the edge.
+   */
   Map<String, Map<String, Map<Edge, IpSpace>>> getArpTrueEdge();
 
   /** Mapping: hostname -&gt; vrfName -&gt; outInterface -&gt; dstIpsForWhichNoArpResponse */

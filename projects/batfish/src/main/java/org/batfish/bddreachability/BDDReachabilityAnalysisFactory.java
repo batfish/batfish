@@ -138,8 +138,8 @@ public final class BDDReachabilityAnalysisFactory {
   private final Map<String, Map<String, Supplier<BDD>>> _aclPermitBDDs;
 
   /*
-   * edge --> set of packets that will flow out the edge successfully, including that the
-   * neighbor will respond to ARP.
+   * node -> vrf -> edge -> set of packets that vrf will forward out that edge successfully,
+   * including that the neighbor will respond to ARP.
    */
   private final Map<String, Map<String, Map<org.batfish.datamodel.Edge, BDD>>> _arpTrueEdgeBDDs;
 
