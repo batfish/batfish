@@ -2505,7 +2505,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     for (Entry<String, org.batfish.datamodel.Interface> e : vrf.getInterfaces().entrySet()) {
       org.batfish.datamodel.Interface iface = e.getValue();
-      // TODO: filter by OSPF process name, since not all ifaces will belong to the same process
+      /*
+       * Filter out interfaces that do not belong to this process, however if the process name is missing,
+       * proceed down to inference based on network addresses.
+       */
+      Interface vsIface = _interfaces.get(iface.getName());
+      if (vsIface != null
+          && vsIface.getOspfProcess() != null
+          && !vsIface.getOspfProcess().equals(proc.getName())) {
+        continue;
+      }
       InterfaceAddress interfaceAddress = iface.getAddress();
       Long areaNum = iface.getOspfAreaName();
       // OSPF area number was not configured on the interface itself, so infer from IP address.

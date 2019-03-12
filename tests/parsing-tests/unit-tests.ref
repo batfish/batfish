@@ -31817,6 +31817,34 @@
             "    (s_interface",
             "      INTERFACE:'interface'",
             "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'ethernet'  <== mode:M_Interface",
+            "        DEC:'1'  <== mode:M_Interface",
+            "        FORWARD_SLASH:'/'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'0'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          ip = IP_ADDRESS:'3.3.3.0'",
+            "          subnet = IP_ADDRESS:'255.255.255.0'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_ip_router_ospf_area",
+            "          IP:'ip'",
+            "          ROUTER:'router'",
+            "          OSPF:'ospf'",
+            "          procname = (variable",
+            "            VARIABLE:'ignored')",
+            "          AREA:'area'",
+            "          area = IP_ADDRESS:'0.0.0.0'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
             "        name_prefix_alpha = M_Interface_PREFIX:'loopback'  <== mode:M_Interface",
             "        (range",
             "          (subrange",
@@ -31829,6 +31857,20 @@
             "          ip = IP_ADDRESS:'1.1.1.1'",
             "          subnet = IP_ADDRESS:'255.255.255.255'",
             "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_router_ospf",
+            "      ROUTER:'router'",
+            "      OSPF:'ospf'",
+            "      name = (variable",
+            "        VARIABLE:'ignored')",
+            "      NEWLINE:'\\n'",
+            "      (ro_area_range",
+            "        AREA:'area'",
+            "        area_int = DEC:'1'",
+            "        RANGE:'range'",
+            "        area_ip = IP_ADDRESS:'3.3.3.0'",
+            "        area_subnet = IP_ADDRESS:'255.255.255.0'",
+            "        NEWLINE:'\\n')))",
             "  (stanza",
             "    (s_router_ospf",
             "      ROUTER:'router'",
@@ -68741,31 +68783,31 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 16,
+              "Line" : 22,
               "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0.0.0.0 filter-list prefix filterName in"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 17,
+              "Line" : 23,
               "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0.0.0.0 filter-list prefix filterName out"
             },
             {
               "Comment" : "Unsupported feature: no-redistribution",
-              "Line" : 22,
+              "Line" : 28,
               "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0.0.0.0 nssa no-redistribution"
             },
             {
               "Comment" : "Unsupported feature: no-redistribution",
-              "Line" : 23,
+              "Line" : 29,
               "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0.0.0.0 nssa no-redistribution no-summary"
             },
             {
               "Comment" : "Unsupported feature: no-redistribution",
-              "Line" : 24,
+              "Line" : 30,
               "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0.0.0.0 nssa no-redistribution default-information-originate no-summary"
             }
@@ -70428,7 +70470,7 @@
         "cisco_nxos_bgp" : "WARNINGS",
         "cisco_ospf" : "WARNINGS",
         "cisco_ospf_ipv6" : "PASSED",
-        "cisco_ospf_multi_process" : "PASSED",
+        "cisco_ospf_multi_process" : "WARNINGS",
         "cisco_ospfv3" : "PASSED",
         "cisco_pim" : "PASSED",
         "cisco_platform" : "PASSED",
@@ -72605,10 +72647,18 @@
               ],
               "numReferrers" : 1
             },
-            "Loopback0" : {
+            "Ethernet1/0" : {
               "definitionLines" : [
                 8,
-                9
+                9,
+                10
+              ],
+              "numReferrers" : 1
+            },
+            "Loopback0" : {
+              "definitionLines" : [
+                12,
+                13
               ],
               "numReferrers" : 1
             }
@@ -77923,17 +77973,22 @@
                 4
               ]
             },
-            "Loopback0" : {
+            "Ethernet1/0" : {
               "interface" : [
                 8
+              ]
+            },
+            "Loopback0" : {
+              "interface" : [
+                12
               ]
             }
           },
           "ipv4 prefix-list" : {
             "filterName" : {
               "ospf area filter-list" : [
-                16,
-                17
+                22,
+                23
               ]
             }
           }
@@ -82499,6 +82554,14 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Interface: 'Ethernet1/0' contains OSPF settings, but there is no OSPF process"
+            }
+          ]
+        },
+        "cisco_ospf_multi_process" : {
+          "Red flags" : [
+            {
+              "tag" : "1",
+              "text" : "Multiple OSPF processes are not supported, choosing the last defined OSPF process with id %s"
             }
           ]
         },

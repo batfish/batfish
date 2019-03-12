@@ -8824,7 +8824,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRo_vrf(Ro_vrfContext ctx) {
     _currentVrf = Configuration.DEFAULT_VRF_NAME;
-    // Set the current OSPF process the last encountered OSPF process for default VRF
+    // Set the current OSPF process to the last encountered OSPF process for default VRF
     _currentOspfProcess = Iterables.getLast(currentVrf().getOspfProcesses().values(), null);
   }
 

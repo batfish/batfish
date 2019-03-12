@@ -5,9 +5,15 @@ interface ethernet0/0
  ip address 2.2.2.0 255.255.255.0
  ip router ospf 1 area 0.0.0.0
 !
+interface ethernet1/0
+ ip address 3.3.3.0 255.255.255.0
+ ip router ospf ignored area 0.0.0.0
+!
 interface loopback0
  ip address 1.1.1.1 255.255.255.255
 !
+router ospf ignored
+  area 1 range 3.3.3.0 255.255.255.0
 !
 router ospf 1
   address-family ipv4

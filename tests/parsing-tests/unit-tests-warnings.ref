@@ -555,35 +555,35 @@
       },
       {
         "Filename" : "configs/cisco_ospf_multi_process",
-        "Line" : 16,
+        "Line" : 22,
         "Text" : "area 0.0.0.0 filter-list prefix filterName in",
         "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_ospf_multi_process",
-        "Line" : 17,
+        "Line" : 23,
         "Text" : "area 0.0.0.0 filter-list prefix filterName out",
         "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_ospf_multi_process",
-        "Line" : 22,
+        "Line" : 28,
         "Text" : "area 0.0.0.0 nssa no-redistribution",
         "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
         "Comment" : "Unsupported feature: no-redistribution"
       },
       {
         "Filename" : "configs/cisco_ospf_multi_process",
-        "Line" : 23,
+        "Line" : 29,
         "Text" : "area 0.0.0.0 nssa no-redistribution no-summary",
         "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
         "Comment" : "Unsupported feature: no-redistribution"
       },
       {
         "Filename" : "configs/cisco_ospf_multi_process",
-        "Line" : 24,
+        "Line" : 30,
         "Text" : "area 0.0.0.0 nssa no-redistribution default-information-originate no-summary",
         "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
         "Comment" : "Unsupported feature: no-redistribution"
