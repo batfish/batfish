@@ -2260,6 +2260,14 @@ public class VirtualRouter implements Serializable {
         continue;
       }
 
+      // If we're in an ABR that suppresses type 7 LSAs, do not propagate external routes to NSSAs
+      if (_vrf.getOspfProcess().isAreaBorderRouter()
+          && localArea.getNssa() != null
+          && localArea.getNssa().getSuppressType7()
+          && localArea.getStubType() == StubType.NSSA) {
+        continue;
+      }
+
       // Get remote VirtualRouter
       VirtualRouter remoteVr =
           allNodes

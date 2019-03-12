@@ -8509,7 +8509,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       settings.setDefaultInformationOriginate(true);
     }
     if (ctx.no_redistribution != null) {
-      todo(ctx, "Unsupported feature: no-redistribution");
       settings.setNoRedistribution(true);
     }
     if (ctx.no_summary != null) {
