@@ -548,6 +548,14 @@ DOUBLE_QUOTED_STRING
   '"' ~'"'* '"'
 ;
 
+IMISH_CHUNK
+:
+  '!'
+  {lastTokenType == NEWLINE}?
+
+  F_NonNewlineChar* F_Newline+ F_Anything*
+;
+
 NEWLINE
 :
   F_Newline+
@@ -570,6 +578,12 @@ WS
 ;
 
 // Fragments
+
+fragment
+F_Anything
+:
+  .
+;
 
 fragment
 F_Newline

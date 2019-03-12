@@ -99,6 +99,7 @@ import org.batfish.datamodel.vendor_family.f5_bigip.Virtual;
 import org.batfish.datamodel.vendor_family.f5_bigip.VirtualAddress;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Bundle_speedContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.F5_bigip_structured_configurationContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Imish_chunkContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ip_protocolContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.L_nodeContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.L_poolContext;
@@ -284,6 +285,8 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   private @Nullable Virtual _currentVirtual;
   private @Nullable VirtualAddress _currentVirtualAddress;
   private @Nullable Vlan _currentVlan;
+  private @Nullable Integer _imishConfigurationLine;
+  private @Nullable Integer _imishConfigurationOffset;
   private final @Nonnull F5BigipStructuredCombinedParser _parser;
   private final @Nonnull String _text;
   private final @Nonnull Warnings _w;
@@ -603,6 +606,12 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   public void exitBundle_speed(Bundle_speedContext ctx) {
     Double speed = toSpeed(ctx);
     _currentInterface.setSpeed(speed);
+  }
+
+  @Override
+  public void exitImish_chunk(Imish_chunkContext ctx) {
+    _imishConfigurationLine = ctx.getStart().getLine();
+    _imishConfigurationOffset = ctx.getStart().getStartIndex();
   }
 
   @Override
@@ -1374,6 +1383,15 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     int end = ctx.getStop().getStopIndex();
     String text = _text.substring(start, end + 1);
     return text;
+  }
+
+  public @Nullable Integer getImishConfigurationLine() {
+    return _imishConfigurationLine;
+  }
+
+  @Nullable
+  Integer getImishConfigurationOffset() {
+    return _imishConfigurationOffset;
   }
 
   private @Nullable Long toCommunity(Standard_communityContext ctx) {

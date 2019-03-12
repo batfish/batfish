@@ -8,7 +8,6 @@ import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.authorizer.Authorizer;
 import org.batfish.coordinator.queues.WorkQueue;
 import org.batfish.datamodel.Ip;
@@ -111,7 +110,7 @@ public class Settings extends BaseSettings {
 
   public Settings(String[] args) {
     super(
-        CommonUtil.getConfig(
+        getConfig(
             BfConsts.PROP_COORDINATOR_PROPERTIES_PATH,
             BfConsts.ABSPATH_CONFIG_FILE_NAME_COORDINATOR,
             Settings.class));

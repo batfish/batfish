@@ -5,24 +5,16 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
 
 public class MockRib implements GenericRib<AbstractRoute> {
 
   public static class Builder {
 
     private Map<Ip, Set<AbstractRoute>> _longestPrefixMatchResults;
-
     private Map<Prefix, IpSpace> _matchingIps;
-
     private Set<AbstractRoute> _mergeRouteTrues;
-
-    private SortedSet<Prefix> _prefixes;
-
     private IpSpace _routableIps;
-
     private Comparator<AbstractRoute> _routePreferenceComparator;
-
     private Set<AbstractRoute> _routes;
 
     private Builder() {
@@ -53,11 +45,6 @@ public class MockRib implements GenericRib<AbstractRoute> {
       return this;
     }
 
-    public Builder setPrefixes(SortedSet<Prefix> prefixes) {
-      _prefixes = prefixes;
-      return this;
-    }
-
     public Builder setRoutableIps(IpSpace routableIps) {
       _routableIps = routableIps;
       return this;
@@ -75,7 +62,6 @@ public class MockRib implements GenericRib<AbstractRoute> {
     }
   }
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   public static Builder builder() {
@@ -83,24 +69,16 @@ public class MockRib implements GenericRib<AbstractRoute> {
   }
 
   private final Map<Ip, Set<AbstractRoute>> _longestPrefixMatchResults;
-
   private final Map<Prefix, IpSpace> _matchingIps;
-
   private final Set<AbstractRoute> _mergeRouteTrues;
-
-  private final SortedSet<Prefix> _prefixes;
-
   private final IpSpace _routableIps;
-
   private final Comparator<AbstractRoute> _routePreferenceComparator;
-
   private final Set<AbstractRoute> _routes;
 
   private MockRib(Builder builder) {
     _longestPrefixMatchResults = builder._longestPrefixMatchResults;
     _matchingIps = builder._matchingIps;
     _mergeRouteTrues = builder._mergeRouteTrues;
-    _prefixes = builder._prefixes;
     _routableIps = builder._routableIps;
     _routePreferenceComparator = builder._routePreferenceComparator;
     _routes = builder._routes;
@@ -114,11 +92,6 @@ public class MockRib implements GenericRib<AbstractRoute> {
   @Override
   public Map<Prefix, IpSpace> getMatchingIps() {
     return _matchingIps;
-  }
-
-  @Override
-  public SortedSet<Prefix> getPrefixes() {
-    return _prefixes;
   }
 
   @Override

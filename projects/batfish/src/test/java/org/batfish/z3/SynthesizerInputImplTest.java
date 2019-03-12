@@ -226,7 +226,12 @@ public class SynthesizerInputImplTest {
         _inputBuilder
             .setForwardingAnalysis(
                 MockForwardingAnalysis.builder()
-                    .setArpTrueEdge(ImmutableMap.of(edge1, ipSpace1, edge2, ipSpace2))
+                    .setArpTrueEdge(
+                        ImmutableMap.of(
+                            srcNode.getHostname(),
+                            ImmutableMap.of(
+                                srcVrf.getName(),
+                                ImmutableMap.of(edge1, ipSpace1, edge2, ipSpace2))))
                     .build())
             .setTopology(new Topology(ImmutableSortedSet.of(edge1, edge2)))
             .build();

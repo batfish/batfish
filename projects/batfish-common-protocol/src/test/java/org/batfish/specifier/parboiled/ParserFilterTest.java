@@ -21,7 +21,7 @@ public class ParserFilterTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static AbstractParseRunner<AstNode> getRunner() {
-    return new ReportingParseRunner<>(Parser.INSTANCE.input(Parser.INSTANCE.FilterExpression()));
+    return new ReportingParseRunner<>(Parser.INSTANCE.input(Parser.INSTANCE.FilterSpec()));
   }
 
   /** This testParses if we have proper completion annotations on the rules */
@@ -44,7 +44,7 @@ public class ParserFilterTest {
     ParboiledAutoComplete pac =
         new ParboiledAutoComplete(
             Parser.INSTANCE,
-            Parser.INSTANCE.input(Parser.INSTANCE.FilterExpression()),
+            Parser.INSTANCE.input(Parser.INSTANCE.FilterSpec()),
             Parser.ANCHORS,
             "network",
             "snapshot",
@@ -78,7 +78,7 @@ public class ParserFilterTest {
     ParboiledAutoComplete pac =
         new ParboiledAutoComplete(
             Parser.INSTANCE,
-            Parser.INSTANCE.input(Parser.INSTANCE.FilterExpression()),
+            Parser.INSTANCE.input(Parser.INSTANCE.FilterSpec()),
             Parser.ANCHORS,
             "network",
             "snapshot",
