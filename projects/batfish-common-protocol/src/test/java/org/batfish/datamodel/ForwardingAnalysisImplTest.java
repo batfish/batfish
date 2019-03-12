@@ -399,8 +399,6 @@ public class ForwardingAnalysisImplTest {
             .setAddress(new InterfaceAddress(i2Ip, P1.getPrefixLength()))
             .build();
     Edge edge = Edge.of(c1.getHostname(), i1.getName(), c2.getHostname(), i2.getName());
-    Map<String, Configuration> configurations =
-        ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
     SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
         ImmutableSortedMap.of(
             c1.getHostname(),
