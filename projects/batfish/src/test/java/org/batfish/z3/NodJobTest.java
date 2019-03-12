@@ -194,8 +194,7 @@ public class NodJobTest {
         SynthesizerInputImpl.builder()
             .setConfigurations(_configs)
             .setForwardingAnalysis(
-                new ForwardingAnalysisImpl(
-                    _configs, _dataPlane.getRibs(), _dataPlane.getFibs(), topology))
+                new ForwardingAnalysisImpl(_configs, _dataPlane.getFibs(), topology))
             .setSimplify(false)
             .setTopology(topology)
             .build();

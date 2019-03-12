@@ -2,25 +2,18 @@ package org.batfish.dataplane.rib;
 
 import static org.batfish.dataplane.rib.RouteAdvertisement.Reason.REPLACE;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
-import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRouteDecorator;
-import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixTrieMultiMap;
-import org.batfish.datamodel.PrefixTrieMultiMap.FoldOperator;
 import org.batfish.dataplane.rib.RibDelta.Builder;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
@@ -178,71 +171,5 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
   @Override
   public boolean equals(@Nullable Object obj) {
     return (obj == this) || (obj instanceof RibTree && this._root.equals(((RibTree<?>) obj)._root));
-  }
-
-  /** See {@link GenericRib#getMatchingIps()} */
-  Map<Prefix, IpSpace> getMatchingIps() {
-    ImmutableMap.Builder<Prefix, IpSpace> builder = ImmutableMap.builder();
-
-    /* Do a fold over the trie. At each node, create the matching Ips for that prefix (adding it
-     * to the builder) and return the set of all prefixes in that subtrie. To create the matching
-     * Ips of the prefix, whitelist the prefix and blacklist all prefixes of the node's subtries.
-     *
-     */
-    _root.fold(
-        new FoldOperator<R, Set<IpWildcard>>() {
-          @Nonnull
-          @Override
-          public Set<IpWildcard> fold(
-              Prefix prefix,
-              Set<R> elems,
-              @Nullable Set<IpWildcard> leftPrefixes,
-              @Nullable Set<IpWildcard> rightPrefixes) {
-            Set<IpWildcard> subTriePrefixes;
-            if (leftPrefixes == null && rightPrefixes == null) {
-              subTriePrefixes = ImmutableSortedSet.of();
-            } else if (leftPrefixes == null) {
-              subTriePrefixes = rightPrefixes;
-            } else if (rightPrefixes == null) {
-              subTriePrefixes = leftPrefixes;
-            } else {
-              subTriePrefixes =
-                  ImmutableSortedSet.<IpWildcard>naturalOrder()
-                      .addAll(leftPrefixes)
-                      .addAll(rightPrefixes)
-                      .build();
-            }
-
-            if (!hasForwardingRoute(elems)) {
-              return subTriePrefixes;
-            }
-
-            IpWildcard wc = new IpWildcard(prefix);
-
-            if (subTriePrefixes.isEmpty()) {
-              builder.put(prefix, prefix.toIpSpace());
-            } else {
-              // Ips matching prefix are those in prefix and not in any subtrie prefixes.
-              builder.put(
-                  prefix, new IpWildcardSetIpSpace(subTriePrefixes, ImmutableSortedSet.of(wc)));
-            }
-
-            return ImmutableSortedSet.of(wc);
-          }
-        });
-
-    return builder.build();
-  }
-
-  /** See {@link GenericRib#getRoutableIps()} */
-  IpSpace getRoutableIps() {
-    IpWildcardSetIpSpace.Builder builder = IpWildcardSetIpSpace.builder();
-    _root.traverseEntries(
-        (prefix, elems) -> {
-          if (hasForwardingRoute(elems)) {
-            builder.including(new IpWildcard(prefix));
-          }
-        });
-    return builder.build();
   }
 }
