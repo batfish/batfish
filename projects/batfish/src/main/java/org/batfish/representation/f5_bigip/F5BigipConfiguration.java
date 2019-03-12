@@ -274,15 +274,15 @@ public class F5BigipConfiguration extends VendorConfiguration {
     _virtualMatchedHeaders.forEach(
         (virtualName, matchedHeaders) -> {
           Virtual virtual = _virtuals.get(virtualName);
+          IpAccessListLine line =
+              toIpAccessListLine(virtualName, matchedHeaders, virtual.getReject());
           _vlans.keySet().stream()
               .filter(vlanName -> appliesToVlan(virtual, vlanName))
               .forEach(
                   vlanName ->
                       _interfaceIncomingFilterLines
                           .computeIfAbsent(vlanName, n -> ImmutableList.builder())
-                          .add(
-                              toIpAccessListLine(
-                                  virtualName, matchedHeaders, virtual.getReject())));
+                          .add(line));
         });
   }
 

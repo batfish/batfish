@@ -1520,10 +1520,9 @@ public final class F5BigipStructuredGrammarTest {
       // both destination IP and destination port should have been rewritten
       assertThat(
           detail.getFlowDiffs(),
-          hasItem(isIpRewrite(IpField.DESTINATION, dstIp, Ip.parse("192.0.2.10"))));
-      assertThat(
-          detail.getFlowDiffs(),
-          hasItem(isPortRewrite(PortField.DESTINATION, equalTo(80), equalTo(8080))));
+          containsInAnyOrder(
+              isIpRewrite(IpField.DESTINATION, dstIp, Ip.parse("192.0.2.10")),
+              isPortRewrite(PortField.DESTINATION, equalTo(80), equalTo(8080))));
     }
 
     {
