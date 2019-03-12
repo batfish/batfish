@@ -141,7 +141,7 @@ public final class BDDReachabilityAnalysisFactory {
    * edge --> set of packets that will flow out the edge successfully, including that the
    * neighbor will respond to ARP.
    */
-  private final Map<org.batfish.datamodel.Edge, BDD> _arpTrueEdgeBDDs;
+  private final Map<String, Map<String, Map<org.batfish.datamodel.Edge, BDD>>> _arpTrueEdgeBDDs;
 
   /*
    * Symbolic variables corresponding to the different packet header fields. We use these to
@@ -196,6 +196,8 @@ public final class BDDReachabilityAnalysisFactory {
   private final BDD _dstPortVars;
   private final BDD _sourcePortVars;
 
+  private final Set<org.batfish.datamodel.Edge> _topologyEdges;
+
   // ranges of IPs in all transformations in the network, per IP address field.
   private final Map<IpField, BDD> _transformationIpRanges;
 
@@ -220,10 +222,14 @@ public final class BDDReachabilityAnalysisFactory {
     _one = packet.getFactory().one();
     _zero = packet.getFactory().zero();
     _ignoreFilters = ignoreFilters;
+    _topologyEdges =
+        forwardingAnalysis.getArpTrueEdge().values().stream()
+            .flatMap(m -> m.values().stream())
+            .flatMap(m -> m.keySet().stream())
+            .collect(ImmutableSet.toImmutableSet());
     _lastHopMgr =
         initializeSessions
-            ? new LastHopOutgoingInterfaceManager(
-                packet, configs, forwardingAnalysis.getArpTrueEdge().keySet())
+            ? new LastHopOutgoingInterfaceManager(packet, configs, _topologyEdges)
             : null;
     _requiredTransitNodeBDD = _bddPacket.allocateBDDBit("requiredTransitNodes");
     _bddSourceManagers = BDDSourceManager.forNetwork(_bddPacket, configs, initializeSessions);
@@ -388,12 +394,20 @@ public final class BDDReachabilityAnalysisFactory {
     return _requiredTransitNodeBDD;
   }
 
-  private static Map<org.batfish.datamodel.Edge, BDD> computeArpTrueEdgeBDDs(
-      ForwardingAnalysis forwardingAnalysis, IpSpaceToBDD ipSpaceToBDD) {
+  private static Map<String, Map<String, Map<org.batfish.datamodel.Edge, BDD>>>
+      computeArpTrueEdgeBDDs(ForwardingAnalysis forwardingAnalysis, IpSpaceToBDD ipSpaceToBDD) {
     return toImmutableMap(
         forwardingAnalysis.getArpTrueEdge(),
-        Entry::getKey,
-        entry -> entry.getValue().accept(ipSpaceToBDD));
+        Entry::getKey, // node
+        nodeEntry ->
+            toImmutableMap(
+                nodeEntry.getValue(),
+                Entry::getKey, // vrf
+                vrfEntry ->
+                    toImmutableMap(
+                        vrfEntry.getValue(),
+                        Entry::getKey,
+                        edgeEntry -> edgeEntry.getValue().accept(ipSpaceToBDD))));
   }
 
   private static Map<String, Map<String, Map<String, BDD>>> computeDispositionBDDs(
@@ -767,7 +781,7 @@ public final class BDDReachabilityAnalysisFactory {
     if (_ignoreFilters) {
       return Stream.of();
     }
-    return _forwardingAnalysis.getArpTrueEdge().keySet().stream()
+    return _topologyEdges.stream()
         .flatMap(
             edge -> {
               String node1 = edge.getNode1();
@@ -798,7 +812,7 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private Stream<Edge> generateRules_PreOutEdge_PreOutEdgePostNat() {
-    return _forwardingAnalysis.getArpTrueEdge().keySet().stream()
+    return _topologyEdges.stream()
         .flatMap(
             edge -> {
               String node1 = edge.getNode1();
@@ -833,7 +847,7 @@ public final class BDDReachabilityAnalysisFactory {
     if (_ignoreFilters) {
       return Stream.of();
     }
-    return _forwardingAnalysis.getArpTrueEdge().keySet().stream()
+    return _topologyEdges.stream()
         .flatMap(
             edge -> {
               String node1 = edge.getNode1();
@@ -861,7 +875,7 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private Stream<Edge> generateRules_PreOutEdgePostNat_PreInInterface() {
-    return _forwardingAnalysis.getArpTrueEdge().keySet().stream()
+    return _topologyEdges.stream()
         .map(
             edge -> {
               String node1 = edge.getNode1();
@@ -1061,22 +1075,28 @@ public final class BDDReachabilityAnalysisFactory {
 
   private Stream<Edge> generateRules_PreOutVrf_PreOutEdge() {
     return _arpTrueEdgeBDDs.entrySet().stream()
-        .map(
-            entry -> {
-              org.batfish.datamodel.Edge edge = entry.getKey();
-              BDD arpTrue = entry.getValue();
+        .flatMap(
+            nodeEntry ->
+                nodeEntry.getValue().entrySet().stream()
+                    .flatMap(
+                        vrfEntry ->
+                            vrfEntry.getValue().entrySet().stream()
+                                .map(
+                                    edgeEntry -> {
+                                      org.batfish.datamodel.Edge edge = edgeEntry.getKey();
+                                      BDD arpTrue = edgeEntry.getValue();
 
-              String node1 = edge.getNode1();
-              String iface1 = edge.getInt1();
-              String vrf1 = ifaceVrf(edge.getNode1(), edge.getInt1());
-              String node2 = edge.getNode2();
-              String iface2 = edge.getInt2();
+                                      String node1 = edge.getNode1();
+                                      String iface1 = edge.getInt1();
+                                      String vrf1 = ifaceVrf(edge.getNode1(), edge.getInt1());
+                                      String node2 = edge.getNode2();
+                                      String iface2 = edge.getInt2();
 
-              return new Edge(
-                  new PreOutVrf(node1, vrf1),
-                  new PreOutEdge(node1, iface1, node2, iface2),
-                  arpTrue);
-            });
+                                      return new Edge(
+                                          new PreOutVrf(node1, vrf1),
+                                          new PreOutEdge(node1, iface1, node2, iface2),
+                                          arpTrue);
+                                    })));
   }
 
   public BDDReachabilityAnalysis bddReachabilityAnalysis(IpSpaceAssignment srcIpSpaceAssignment) {

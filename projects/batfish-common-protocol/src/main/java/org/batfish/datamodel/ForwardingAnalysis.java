@@ -8,7 +8,7 @@ public interface ForwardingAnalysis {
   Map<String, Map<String, IpSpace>> getArpReplies();
 
   /** Mapping: edge -&gt; dstIpsForWhichArpReplySent */
-  Map<Edge, IpSpace> getArpTrueEdge();
+  Map<String, Map<String, Map<Edge, IpSpace>>> getArpTrueEdge();
 
   /** Mapping: hostname -&gt; vrfName -&gt; outInterface -&gt; dstIpsForWhichNoArpResponse */
   Map<String, Map<String, Map<String, IpSpace>>> getNeighborUnreachableOrExitsNetwork();
