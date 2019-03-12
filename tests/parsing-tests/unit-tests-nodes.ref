@@ -10312,7 +10312,8 @@
                   "name" : 0,
                   "nssa" : {
                     "defaultOriginateType" : "INTER_AREA",
-                    "suppressType3" : true
+                    "suppressType3" : true,
+                    "suppressType7" : true
                   },
                   "stubType" : "NSSA",
                   "summaries" : {
@@ -12363,11 +12364,14 @@
                 ],
                 "destination" : "/Common/192.0.2.7",
                 "destinationPort" : 80,
+                "ipForward" : true,
                 "ipProtocol" : "TCP",
                 "mask" : "255.255.255.255",
-                "pool" : "/Common/SOME_POOL",
+                "reject" : false,
                 "source" : "0.0.0.0/0",
                 "sourceAddressTranslationPool" : "/Common/SOME_SNATPOOL",
+                "translateAddress" : false,
+                "translatePort" : false,
                 "vlansEnabled" : true
               }
             }
@@ -12405,6 +12409,7 @@
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
+            "incomingFilter" : "~incoming_filter:/Common/MYVLAN~",
             "mtu" : 1500,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
@@ -12473,6 +12478,20 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "AGGREGATED",
             "vrf" : "default"
+          }
+        },
+        "ipAccessLists" : {
+          "~incoming_filter:/Common/MYVLAN~" : {
+            "name" : "~incoming_filter:/Common/MYVLAN~",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                },
+                "name" : "ACCEPT_ALL"
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -16476,7 +16495,8 @@
                   "name" : 66051,
                   "nssa" : {
                     "defaultOriginateType" : "INTER_AREA",
-                    "suppressType3" : true
+                    "suppressType3" : true,
+                    "suppressType7" : false
                   },
                   "stubType" : "NSSA",
                   "summaries" : {

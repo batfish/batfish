@@ -33,7 +33,6 @@ import org.batfish.common.ipspace.IpSpaceSpecializer;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
-import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -498,54 +497,42 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   private Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>
-      computeArpTrueEdge(Map<Edge, IpSpace> arpTrueEdge) {
-    Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>> output =
-        new HashMap<>();
-    arpTrueEdge.forEach(
-        (edge, ipSpace) -> {
-          String hostname = edge.getNode1();
-          ipSpace = specialize(hostname, ipSpace);
-          if (ipSpace instanceof EmptyIpSpace) {
-            return;
-          }
-          String outInterface = edge.getInt1();
-          String vrf =
-              _configurations.get(hostname).getAllInterfaces().get(outInterface).getVrfName();
-          String recvNode = edge.getNode2();
-          String recvInterface = edge.getInt2();
-          output
-              .computeIfAbsent(hostname, n -> new HashMap<>())
-              .computeIfAbsent(vrf, n -> new HashMap<>())
-              .computeIfAbsent(outInterface, n -> new HashMap<>())
-              .computeIfAbsent(recvNode, n -> new HashMap<>())
-              .put(
-                  recvInterface,
-                  ipSpace.accept(
-                      new IpSpaceBooleanExprTransformer(
-                          _namedIpSpaces.get(hostname), Field.DST_IP)));
-        });
-
-    // freeze
+      computeArpTrueEdge(Map<String, Map<String, Map<Edge, IpSpace>>> arpTrueEdge) {
     return toImmutableMap(
-        output,
-        Entry::getKey, /* node */
-        outputByHostnameEntry ->
-            toImmutableMap(
-                outputByHostnameEntry.getValue(),
-                Entry::getKey, /* vrf */
-                outputByVrfEntry ->
-                    toImmutableMap(
-                        outputByVrfEntry.getValue(),
-                        Entry::getKey /* outInterface */,
-                        outputByOutInterfaceEntry ->
-                            toImmutableMap(
-                                outputByOutInterfaceEntry.getValue(),
-                                Entry::getKey /* recvNode */,
-                                outputByRecvNodeEntry ->
-                                    toImmutableMap(
-                                        outputByRecvNodeEntry.getValue(),
-                                        Entry::getKey /* recvInterface */,
-                                        Entry::getValue)))));
+        arpTrueEdge,
+        Entry::getKey, // node
+        nodeEntry -> {
+          String hostname = nodeEntry.getKey();
+          IpSpaceBooleanExprTransformer toBooleanExpr =
+              new IpSpaceBooleanExprTransformer(_namedIpSpaces.get(hostname), Field.DST_IP);
+
+          return toImmutableMap(
+              nodeEntry.getValue(),
+              Entry::getKey, // vrf
+              vrfEntry -> {
+                Map<String, Map<String, Map<String, BooleanExpr>>> output = new HashMap<>();
+                Map<Edge, IpSpace> edgeMap = vrfEntry.getValue();
+                edgeMap.forEach(
+                    (edge, ipSpace) ->
+                        output
+                            .computeIfAbsent(edge.getInt1(), k -> new HashMap<>())
+                            .computeIfAbsent(edge.getNode2(), k -> new HashMap<>())
+                            .put(edge.getInt2(), ipSpace.accept(toBooleanExpr)));
+                // freeze
+                return toImmutableMap(
+                    output,
+                    Entry::getKey /* outInterface */,
+                    outputByOutInterfaceEntry ->
+                        toImmutableMap(
+                            outputByOutInterfaceEntry.getValue(),
+                            Entry::getKey /* recvNode */,
+                            outputByRecvNodeEntry ->
+                                toImmutableMap(
+                                    outputByRecvNodeEntry.getValue(),
+                                    Entry::getKey /* recvInterface */,
+                                    Entry::getValue)));
+              });
+        });
   }
 
   private Map<String, Map<String, IpAccessList>> computeEnabledAcls(
