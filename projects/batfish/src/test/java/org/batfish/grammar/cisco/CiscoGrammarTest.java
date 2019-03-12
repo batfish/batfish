@@ -23,6 +23,7 @@ import static org.batfish.datamodel.matchers.AaaAuthenticationLoginMatchers.hasL
 import static org.batfish.datamodel.matchers.AaaAuthenticationMatchers.hasLogin;
 import static org.batfish.datamodel.matchers.AaaMatchers.hasAuthentication;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasAllowRemoteAsOut;
@@ -3551,6 +3552,86 @@ public class CiscoGrammarTest {
     assertThat(procOnStartup.getMaxMetricStubNetworks(), is(nullValue()));
     assertThat(procOnStartup.getMaxMetricExternalNetworks(), is(nullValue()));
     assertThat(procOnStartup.getMaxMetricSummaryNetworks(), is(nullValue()));
+  }
+
+  @Test
+  public void testOspfNoRedistribution() throws IOException {
+    /*   ________      ________      ________
+        |   R1   |    |        |    |   R2   |
+        | Area 0 |----|  ABR   |----| Area 1 |
+        |        |    |        |    |  NSSA  |
+         --------      --------      --------
+      Will run this setup with two versions of the ABR, one where it has no-redistribution
+      configured for area 1 and one where it doesn't. In both cases, the ABR is configured to
+      redistribute connected subnets, so we should always see its loopback prefix on R1 and should
+      also see it on R2 when no-redistribution is not configured.
+    */
+
+    // First snapshot: no-redistribution is not configured
+    String testrigName = "ospf-no-redistribution";
+    String area0Name = "ios-area-0";
+    String area1NssaName = "ios-area-1-nssa";
+    String abrName = "ios-abr";
+    Prefix abrLoopbackPrefix = Prefix.parse("10.10.10.10/32");
+    List<String> configurationNames = ImmutableList.of(area0Name, area1NssaName, abrName);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Configuration abr = configurations.get(abrName);
+
+    // Sanity check: ensure the ABR does not have suppressType7 set for area 1
+    OspfArea abrToArea1 =
+        abr.getVrfs().get(DEFAULT_VRF_NAME).getInterfaces().get("Ethernet1").getOspfArea();
+    assertThat(abrToArea1.getNssa().getSuppressType7(), equalTo(false));
+
+    batfish.computeDataPlane();
+    DataPlane dp = batfish.loadDataPlane();
+    Set<AbstractRoute> area0Routes = dp.getRibs().get(area0Name).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> area1NssaRoutes =
+        dp.getRibs().get(area1NssaName).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> abrRoutes = dp.getRibs().get(abrName).get(DEFAULT_VRF_NAME).getRoutes();
+
+    // All the devices should have a route to the ABR's loopback
+    assertThat(
+        area0Routes,
+        hasItem(allOf(hasPrefix(abrLoopbackPrefix), hasProtocol(RoutingProtocol.OSPF_E2))));
+    assertThat(
+        area1NssaRoutes,
+        hasItem(allOf(hasPrefix(abrLoopbackPrefix), hasProtocol(RoutingProtocol.OSPF_E2))));
+    assertThat(abrRoutes, hasItem(hasPrefix(abrLoopbackPrefix)));
+
+    // Second snapshot: run the same song and dance with no-redistribution configured on the ABR
+    abrName = "ios-abr-no-redistribution";
+    configurationNames = ImmutableList.of(area0Name, area1NssaName, abrName);
+    batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    configurations = batfish.loadConfigurations();
+    abr = configurations.get(abrName);
+
+    // This time the ABR should have suppressType7 set for area 1
+    abrToArea1 = abr.getVrfs().get(DEFAULT_VRF_NAME).getInterfaces().get("Ethernet1").getOspfArea();
+    assertThat(abrToArea1.getNssa().getSuppressType7(), equalTo(true));
+
+    batfish.computeDataPlane();
+    dp = batfish.loadDataPlane();
+    area0Routes = dp.getRibs().get(area0Name).get(DEFAULT_VRF_NAME).getRoutes();
+    area1NssaRoutes = dp.getRibs().get(area1NssaName).get(DEFAULT_VRF_NAME).getRoutes();
+    abrRoutes = dp.getRibs().get(abrName).get(DEFAULT_VRF_NAME).getRoutes();
+
+    // Now the device in area 1 should not have a route to the ABR's loopback
+    assertThat(
+        area0Routes,
+        hasItem(allOf(hasPrefix(abrLoopbackPrefix), hasProtocol(RoutingProtocol.OSPF_E2))));
+    assertThat(area1NssaRoutes, not(hasItem(hasPrefix(abrLoopbackPrefix))));
+    assertThat(abrRoutes, hasItem(hasPrefix(abrLoopbackPrefix)));
   }
 
   @Test
