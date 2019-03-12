@@ -1,7 +1,7 @@
 parser grammar F5BigipImishParser;
 
 /* This is only needed if parser grammar is spread across files */
-//import F5BigipImish_;
+import F5BigipImish_common, F5BigipImish_access_list;
 
 options {
   superClass = 'org.batfish.grammar.BatfishParser';
@@ -24,5 +24,6 @@ s_end
 
 statement
 :
-  s_end
+  s_access_list
+  | s_end
 ;

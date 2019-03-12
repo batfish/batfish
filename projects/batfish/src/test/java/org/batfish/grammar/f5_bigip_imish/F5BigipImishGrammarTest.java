@@ -2,6 +2,7 @@ package org.batfish.grammar.f5_bigip_imish;
 
 import static org.batfish.common.util.CommonUtil.communityStringToLong;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
@@ -30,15 +31,21 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
+import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
+import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.BDDSourceManager;
+import org.batfish.common.bdd.IpAccessListToBdd;
+import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
@@ -47,6 +54,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -116,6 +124,28 @@ public final class F5BigipImishGrammarTest {
     String[] names =
         Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
     return BatfishTestUtils.parseTextConfigs(_folder, names);
+  }
+
+  private @Nonnull IpAccessListToBdd toBDD() {
+    BDDPacket pkt = new BDDPacket();
+    BDDSourceManager mgr = BDDSourceManager.forInterfaces(pkt, ImmutableSet.of("dummy"));
+    return new IpAccessListToBddImpl(pkt, mgr, ImmutableMap.of(), ImmutableMap.of());
+  }
+
+  @Test
+  public void testAccessList() throws IOException {
+    Configuration c = parseConfig("f5_bigip_imish_access_list");
+
+    // setup
+    IpAccessListToBdd toBDD = toBDD();
+
+    // acl1
+    assertThat(c.getIpAccessLists(), hasKey("acl1"));
+
+    IpAccessList acl1 = c.getIpAccessLists().get("acl1");
+
+    // acl1 should permit everything
+    assertTrue(toBDD.toBdd(acl1).isOne());
   }
 
   @Test
@@ -310,6 +340,7 @@ public final class F5BigipImishGrammarTest {
     }
   }
 
+  @Test
   public void testBgpProcessReferences() throws IOException {
     String hostname = "f5_bigip_imish_bgp_process_references";
     String file = "configs/" + hostname;
