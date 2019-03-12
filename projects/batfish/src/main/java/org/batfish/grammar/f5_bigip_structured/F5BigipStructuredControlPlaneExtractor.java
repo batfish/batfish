@@ -52,6 +52,13 @@ public class F5BigipStructuredControlPlaneExtractor implements ControlPlaneExtra
     ParseTreeWalker walker = new BatfishParseTreeWalker(_parser);
     walker.walk(cb, tree);
     _configuration = cb.getConfiguration();
+
+    /*
+     * Everything below is a dirty stinking hack that works around current lack of support for
+     * multi-file configs. All of it will be removed after that feature is added, since
+     * at that point F5 BIG-IP imish configs will not appear in same file as F5 BIG-IP structured
+     * configs.
+     */
     Integer imishConfigurationOffset = cb.getImishConfigurationOffset();
     if (imishConfigurationOffset == null) {
       return;
