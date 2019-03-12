@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.BiFunction;
@@ -30,10 +31,13 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 /** Implementation of {@link ForwardingAnalysis}. */
 public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
-  // mapping: node name -> interface name -> ips that the interface would reply arp request
+  // node -> interface -> ips that the interface would reply arp request
   private final Map<String, Map<String, IpSpace>> _arpReplies;
 
-  private final Map<Edge, IpSpace> _arpTrueEdge;
+  /* node -> vrf -> edge -> dest IPs for which the vrf will forward out the source of the edge,
+   * ARPing for some ARP IP and receiving a reply from thhe target of the edge.
+   */
+  private final Map<String, Map<String, Map<Edge, IpSpace>>> _arpTrueEdge;
 
   private final Map<String, Map<String, Map<String, IpSpace>>> _arpFalse;
 
@@ -41,16 +45,16 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   private final Map<String, Map<String, IpSpace>> _routableIps;
 
-  // mapping: hostname -> vrf name -> interfacename -> dst ips that end up with neighbor unreachable
+  // node -> vrf -> interface -> dst ips that end up with neighbor unreachable
   private final Map<String, Map<String, Map<String, IpSpace>>> _neighborUnreachable;
 
-  // mapping: hostname -> vrf name -> interfacename -> dst ips that end up delivered to subnet
+  // node -> vrf -> interface -> dst ips that end up delivered to subnet
   private final Map<String, Map<String, Map<String, IpSpace>>> _deliveredToSubnet;
 
-  // mapping: hostname -> vrf name -> interfacename -> dst ips that end up exiting the network
+  // node -> vrf -> interface -> dst ips that end up exiting the network
   private final Map<String, Map<String, Map<String, IpSpace>>> _exitsNetwork;
 
-  // mapping: hostname -> vrf name -> interfacename -> dst ips that end up with insufficient info
+  // node -> vrf -> interface -> dst ips that end up with insufficient info
   private final Map<String, Map<String, Map<String, IpSpace>>> _insufficientInfo;
 
   public <T extends AbstractRouteDecorator> ForwardingAnalysisImpl(
@@ -91,39 +95,54 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
       /* Compute ARP stuff bottom-up from _arpReplies. */
 
-      // node -> vrf -> interface -> dst IPs for which arp dst ip itself with no reply
+      /* node -> vrf -> interface -> dst IPs for which that VRF forwards out that interface, ARPing
+       * for the dst ip itself with no reply
+       */
       Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIp;
-      // node -> vrf -> interface -> dst IPs for which arp some unowned next-hop IP with no reply
+      /* node -> vrf -> interface -> dst IPs for which that VRF forwards out that interface, ARPing
+       *for some unowned next-hop IP with no reply
+       */
       Map<String, Map<String, Map<String, IpSpace>>> dstIpsWithUnownedNextHopIpArpFalse;
-      // node -> vrf -> interface -> dst IPs for which arp some owned next-hop IP with no reply
+      /* node -> vrf -> interface -> dst IPs for which that VRF forwards out that interface, ARPing
+       * for some owned next-hop IP with no reply
+       */
       Map<String, Map<String, Map<String, IpSpace>>> dstIpsWithOwnedNextHopIpArpFalse;
       {
         Map<String, Map<String, IpSpace>> someoneReplies =
             computeSomeoneReplies(topology, _arpReplies);
 
-        // mapping: node name -> vrf name -> interface name ->
-        // a set of routes that with next hop ip but no arp replies
+        /* node -> vrf -> interface -> set of routes on that vrf that forward out that interface
+         * with a next hop ip that gets no arp replies
+         */
         Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHopIpArpFalse =
             computeRoutesWithNextHopIpArpFalse(fibs, routesWithNextHop, someoneReplies);
-        // node -> vrf -> interface -> set of routes with next hop ip not owned by any
-        // interfaces and that gets no arp reply
+
+        /* node -> vrf -> interface -> set of routes on that vrf that forward out that interface
+         * with next hop ip not owned by the snapshot devices and that gets no arp reply
+         */
         Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
             routesWithUnownedNextHopIpArpFalse =
                 computeRoutesWithNextHopIpArpFalseFilter(
                     routesWithNextHopIpArpFalse,
                     route -> !ipSpaceToBDD.toBDD(route.getNextHopIp()).and(unownedIpsBDD).isZero());
-        // node -> vrf -> interface -> set of routes with next hop ip owned by some interfaces
-        // and that gets no arp reply
+
+        /* node -> vrf -> interface -> set of routes on that vrf that forward out that interface
+         * with next hop ip owned by the snapshot devices and that gets no arp reply
+         */
         Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithOwnedNextHopIpArpFalse =
             computeRoutesWithNextHopIpArpFalseFilter(
                 routesWithNextHopIpArpFalse,
                 route -> ipSpaceToBDD.toBDD(route.getNextHopIp()).and(unownedIpsBDD).isZero());
 
-        // node -> vrf -> interface -> dst ips for which arp another ip but would not be replied
+        /* node -> vrf -> interface -> dst ips for which that vrf forwards out that interface,
+         * ARPing for a next-hop IP and receiving no reply
+         */
         Map<String, Map<String, Map<String, IpSpace>>> arpFalseNextHopIp =
             computeArpFalseNextHopIp(matchingIps, routesWithNextHopIpArpFalse);
 
-        // node -> vrf -> interface -> set of routes for which the arp ip is dst ip
+        /* node -> vrf -> interface -> set of routes on that vrf that forward out that interface,
+         * ARPing for the destination IP
+         */
         Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWhereDstIpCanBeArpIp =
             computeRoutesWhereDstIpCanBeArpIp(fibs, routesWithNextHop);
 
@@ -131,20 +150,41 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
             computeArpFalseDestIp(matchingIps, routesWhereDstIpCanBeArpIp, someoneReplies);
         _arpFalse = union(arpFalseDestIp, arpFalseNextHopIp);
 
-        Map<Edge, Set<AbstractRoute>> routesWithDestIpEdge =
+        /* node -> vrf -> edge -> routes in that vrf that forward out the source of that edge,
+         * ARPing for the dest IP and receiving a response from the target of the edge.
+         *
+         * Note: the source interface of the edge must be in the node, but may not be in the vrf,
+         * due to route leaking, etc
+         */
+        Map<String, Map<String, Map<Edge, Set<AbstractRoute>>>> routesWithDestIpEdge =
             computeRoutesWithDestIpEdge(topology, routesWhereDstIpCanBeArpIp);
 
-        // edge -> dst ips for which end up forwarding to this edge and arp for the dst ip itself
-        // and get response
-        Map<Edge, IpSpace> arpTrueEdgeDestIp =
-            computeArpTrueEdgeDestIp(
-                configurations, matchingIps, routesWithDestIpEdge, _arpReplies);
-        Map<Edge, Set<AbstractRoute>> routesWithNextHopIpArpTrue =
+        /* node -> vrf -> edge -> dst ips for which that vrf forwards out the source of the edge,
+         * ARPing for the dest IP and receiving a reply from the target of the edge.
+         *
+         * Note: the source interface of the edge must be in the node, but may not be in the vrf,
+         * due to route leaking, etc
+         */
+        Map<String, Map<String, Map<Edge, IpSpace>>> arpTrueEdgeDestIp =
+            computeArpTrueEdgeDestIp(matchingIps, routesWithDestIpEdge, _arpReplies);
+
+        /* node -> vrf -> edge -> dst ips for which that vrf forwards out the source of the edge,
+         * ARPing for some next-hop IP and receiving a reply from the target of the edge.
+         *
+         * Note: the source interface of the edge must be in the node, but may not be in the vrf,
+         * due to route leaking, etc
+         */
+        Map<String, Map<String, Map<Edge, Set<AbstractRoute>>>> routesWithNextHopIpArpTrue =
             computeRoutesWithNextHopIpArpTrue(fibs, topology, _arpReplies, routesWithNextHop);
-        // edge -> dst ip for which end up forwarding to this edge arp for some other ip and get
-        // response
-        Map<Edge, IpSpace> arpTrueEdgeNextHopIp =
-            computeArpTrueEdgeNextHopIp(configurations, matchingIps, routesWithNextHopIpArpTrue);
+
+        /* node -> vrf -> edge -> dst ips for which that vrf forwards out the source of the edge,
+         * ARPing for some next-hop IP and receiving a reply from the target of the edge.
+         *
+         * Note: the source interface of the edge must be in the node, but may not be in the vrf,
+         * due to route leaking, etc
+         */
+        Map<String, Map<String, Map<Edge, IpSpace>>> arpTrueEdgeNextHopIp =
+            computeArpTrueEdgeNextHopIp(matchingIps, routesWithNextHopIpArpTrue);
 
         _arpTrueEdge = computeArpTrueEdge(arpTrueEdgeDestIp, arpTrueEdgeNextHopIp);
 
@@ -249,26 +289,36 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   @VisibleForTesting
-  static Map<Edge, IpSpace> computeArpTrueEdge(
-      Map<Edge, IpSpace> arpTrueEdgeDestIp, Map<Edge, IpSpace> arpTrueEdgeNextHopIp) {
+  static Map<String, Map<String, Map<Edge, IpSpace>>> computeArpTrueEdge(
+      Map<String, Map<String, Map<Edge, IpSpace>>> arpTrueEdgeDestIp,
+      Map<String, Map<String, Map<Edge, IpSpace>>> arpTrueEdgeNextHopIp) {
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeArpTrueEdge").startActive()) {
       assert span != null; // avoid unused warning
-      return Sets.union(arpTrueEdgeDestIp.keySet(), arpTrueEdgeNextHopIp.keySet()).stream()
-          .collect(
-              ImmutableMap.toImmutableMap(
-                  Function.identity(),
-                  edge ->
-                      AclIpSpace.union(
-                          arpTrueEdgeDestIp.get(edge), arpTrueEdgeNextHopIp.get(edge))));
+      return toImmutableMap(
+          arpTrueEdgeDestIp,
+          Entry::getKey, // node
+          nodeEntry ->
+              toImmutableMap(
+                  nodeEntry.getValue(),
+                  Entry::getKey, // vrf
+                  vrfEntry -> {
+                    Map<Edge, IpSpace> dstIp = vrfEntry.getValue();
+                    Map<Edge, IpSpace> nextHopIp =
+                        arpTrueEdgeNextHopIp.get(nodeEntry.getKey()).get(vrfEntry.getKey());
+                    return Sets.union(dstIp.keySet(), nextHopIp.keySet()).stream()
+                        .collect(
+                            ImmutableMap.toImmutableMap(
+                                Function.identity(),
+                                edge -> AclIpSpace.union(dstIp.get(edge), nextHopIp.get(edge))));
+                  }));
     }
   }
 
   @VisibleForTesting
-  static Map<Edge, IpSpace> computeArpTrueEdgeDestIp(
-      Map<String, Configuration> configurations,
+  static Map<String, Map<String, Map<Edge, IpSpace>>> computeArpTrueEdgeDestIp(
       Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
-      Map<Edge, Set<AbstractRoute>> routesWithDestIpEdge,
+      Map<String, Map<String, Map<Edge, Set<AbstractRoute>>>> routesWithDestIpEdge,
       Map<String, Map<String, IpSpace>> arpReplies) {
     try (ActiveSpan span =
         GlobalTracer.get()
@@ -277,48 +327,61 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       assert span != null; // avoid unused warning
       return toImmutableMap(
           routesWithDestIpEdge,
-          Entry::getKey /* edge */,
-          routesWithDestIpEdgeEntry -> {
-            Edge edge = routesWithDestIpEdgeEntry.getKey();
-            Set<AbstractRoute> routes = routesWithDestIpEdgeEntry.getValue();
-            String hostname = edge.getNode1();
-            String iface = edge.getInt1();
-            String vrf = configurations.get(hostname).getAllInterfaces().get(iface).getVrfName();
-            IpSpace dstIpMatchesSomeRoutePrefix =
-                computeRouteMatchConditions(routes, matchingIps.get(hostname).get(vrf));
-            String recvNode = edge.getNode2();
-            String recvInterface = edge.getInt2();
-            IpSpace recvReplies = arpReplies.get(recvNode).get(recvInterface);
-            return AclIpSpace.rejecting(dstIpMatchesSomeRoutePrefix.complement())
-                .thenPermitting(recvReplies)
-                .build();
-          });
+          Entry::getKey, // node
+          nodeEntry ->
+              toImmutableMap(
+                  nodeEntry.getValue(),
+                  Entry::getKey, // vrf
+                  vrfEntry ->
+                      toImmutableMap(
+                          vrfEntry.getValue(),
+                          Entry::getKey, // edge
+                          edgeEntry -> {
+                            Edge edge = edgeEntry.getKey();
+                            Set<AbstractRoute> routes = edgeEntry.getValue();
+                            String hostname = edge.getNode1();
+                            String vrf = vrfEntry.getKey();
+                            IpSpace dstIpMatchesSomeRoutePrefix =
+                                computeRouteMatchConditions(
+                                    routes, matchingIps.get(hostname).get(vrf));
+                            String recvNode = edge.getNode2();
+                            String recvInterface = edge.getInt2();
+                            IpSpace recvReplies = arpReplies.get(recvNode).get(recvInterface);
+                            return AclIpSpace.rejecting(dstIpMatchesSomeRoutePrefix.complement())
+                                .thenPermitting(recvReplies)
+                                .build();
+                          })));
     }
   }
 
   @VisibleForTesting
-  static Map<Edge, IpSpace> computeArpTrueEdgeNextHopIp(
-      Map<String, Configuration> configurations,
+  static Map<String, Map<String, Map<Edge, IpSpace>>> computeArpTrueEdgeNextHopIp(
       Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
-      Map<Edge, Set<AbstractRoute>> routesWithNextHopIpArpTrue) {
+      Map<String, Map<String, Map<Edge, Set<AbstractRoute>>>> routesWithNextHopIpArpTrue) {
     try (ActiveSpan span =
         GlobalTracer.get()
             .buildSpan("ForwardingAnalysisImpl.computeArpTrueEdgeNextHopIp")
             .startActive()) {
       assert span != null; // avoid unused warning
-      return routesWithNextHopIpArpTrue.entrySet().stream()
-          .collect(
-              ImmutableMap.toImmutableMap(
-                  Entry::getKey /* edge */,
-                  routesWithNextHopIpArpTrueEntry -> {
-                    Edge edge = routesWithNextHopIpArpTrueEntry.getKey();
-                    String hostname = edge.getNode1();
-                    String iface = edge.getInt1();
-                    String vrf =
-                        configurations.get(hostname).getAllInterfaces().get(iface).getVrfName();
-                    Set<AbstractRoute> routes = routesWithNextHopIpArpTrueEntry.getValue();
-                    return computeRouteMatchConditions(routes, matchingIps.get(hostname).get(vrf));
-                  }));
+      return toImmutableMap(
+          routesWithNextHopIpArpTrue,
+          Entry::getKey, // node
+          nodeEntry ->
+              toImmutableMap(
+                  nodeEntry.getValue(),
+                  Entry::getKey, // vrf
+                  vrfEntry ->
+                      vrfEntry.getValue().entrySet().stream()
+                          .collect(
+                              ImmutableMap.toImmutableMap(
+                                  Entry::getKey, // edge
+                                  edgeEntry -> {
+                                    String hostname = nodeEntry.getKey();
+                                    String vrf = vrfEntry.getKey();
+                                    Set<AbstractRoute> routes = edgeEntry.getValue();
+                                    return computeRouteMatchConditions(
+                                        routes, matchingIps.get(hostname).get(vrf));
+                                  }))));
     }
   }
 
@@ -655,7 +718,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   @VisibleForTesting
-  static Map<Edge, Set<AbstractRoute>> computeRoutesWithDestIpEdge(
+  static Map<String, Map<String, Map<Edge, Set<AbstractRoute>>>> computeRoutesWithDestIpEdge(
       Topology topology,
       Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWhereDstIpCanBeArpIp) {
     try (ActiveSpan span =
@@ -663,20 +726,27 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
             .buildSpan("ForwardingAnalysisImpl.computeRoutesWithDestIpEdge")
             .startActive()) {
       assert span != null; // avoid unused warning
-      ImmutableMap.Builder<Edge, Set<AbstractRoute>> routesByEdgeBuilder = ImmutableMap.builder();
-      routesWhereDstIpCanBeArpIp.forEach(
-          (hostname, routesWhereDstIpCanBeArpIpByVrf) ->
-              routesWhereDstIpCanBeArpIpByVrf.forEach(
-                  (vrf, routesWhereDstIpCanBeArpIpByOutInterface) ->
-                      routesWhereDstIpCanBeArpIpByOutInterface.forEach(
-                          (outInterface, routes) -> {
-                            NodeInterfacePair out = new NodeInterfacePair(hostname, outInterface);
-                            Set<NodeInterfacePair> receivers = topology.getNeighbors(out);
-                            receivers.forEach(
-                                receiver ->
-                                    routesByEdgeBuilder.put(new Edge(out, receiver), routes));
-                          })));
-      return routesByEdgeBuilder.build();
+
+      return toImmutableMap(
+          routesWhereDstIpCanBeArpIp,
+          Entry::getKey, // node
+          nodeEntry ->
+              toImmutableMap(
+                  nodeEntry.getValue(),
+                  Entry::getKey, // vrf
+                  vrfEntry ->
+                      vrfEntry.getValue().entrySet().stream()
+                          .flatMap(
+                              ifaceEntry -> {
+                                NodeInterfacePair out =
+                                    new NodeInterfacePair(nodeEntry.getKey(), ifaceEntry.getKey());
+                                Set<AbstractRoute> routes = ifaceEntry.getValue();
+                                return topology.getNeighbors(out).stream()
+                                    .map(
+                                        receiver ->
+                                            Maps.immutableEntry(new Edge(out, receiver), routes));
+                              })
+                          .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue))));
     }
   }
 
@@ -795,7 +865,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   @VisibleForTesting
-  static Map<Edge, Set<AbstractRoute>> computeRoutesWithNextHopIpArpTrue(
+  static Map<String, Map<String, Map<Edge, Set<AbstractRoute>>>> computeRoutesWithNextHopIpArpTrue(
       Map<String, Map<String, Fib>> fibs,
       Topology topology,
       Map<String, Map<String, IpSpace>> arpReplies,
@@ -805,42 +875,58 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
             .buildSpan("ForwardingAnalysisImpl.computeRoutesWithNextHopIpArpTrue")
             .startActive()) {
       assert span != null; // avoid unused warning
-      ImmutableMap.Builder<Edge, Set<AbstractRoute>> routesByEdgeBuilder = ImmutableMap.builder();
-      routesWithNextHop.forEach(
-          (hostname, routesWithNextHopByVrf) ->
-              routesWithNextHopByVrf.forEach(
-                  (vrf, routesWithNextHopByInterface) ->
-                      routesWithNextHopByInterface.forEach(
-                          (outInterface, candidateRoutes) -> {
-                            Fib fib = fibs.get(hostname).get(vrf);
-                            NodeInterfacePair out = new NodeInterfacePair(hostname, outInterface);
-                            Set<NodeInterfacePair> receivers = topology.getNeighbors(out);
-                            receivers.forEach(
-                                receiver -> {
-                                  String recvNode = receiver.getHostname();
-                                  String recvInterface = receiver.getInterface();
-                                  IpSpace recvReplies = arpReplies.get(recvNode).get(recvInterface);
-                                  Edge edge = new Edge(out, receiver);
-                                  Set<AbstractRoute> routes =
-                                      candidateRoutes.stream()
-                                          .filter(
-                                              route ->
-                                                  fib.getNextHopInterfaces().get(route)
-                                                      .get(outInterface).keySet() /* nextHopIps */
-                                                      .stream()
-                                                      .filter(
-                                                          ip ->
-                                                              !ip.equals(
-                                                                  Route.UNSET_ROUTE_NEXT_HOP_IP))
-                                                      .anyMatch(
-                                                          nextHopIp ->
-                                                              recvReplies.containsIp(
-                                                                  nextHopIp, ImmutableMap.of())))
-                                          .collect(ImmutableSet.toImmutableSet());
-                                  routesByEdgeBuilder.put(edge, routes);
-                                });
-                          })));
-      return routesByEdgeBuilder.build();
+      return toImmutableMap(
+          routesWithNextHop,
+          Entry::getKey, // node
+          nodeEntry ->
+              toImmutableMap(
+                  nodeEntry.getValue(),
+                  Entry::getKey, // vrf
+                  vrfEntry -> {
+                    String hostname = nodeEntry.getKey();
+                    String vrf = vrfEntry.getKey();
+                    Fib fib = fibs.get(hostname).get(vrf);
+                    return vrfEntry.getValue().entrySet().stream()
+                        .flatMap(
+                            ifaceEntry -> {
+                              String outInterface = ifaceEntry.getKey();
+                              Set<AbstractRoute> candidateRoutes = ifaceEntry.getValue();
+                              NodeInterfacePair out = new NodeInterfacePair(hostname, outInterface);
+                              Set<NodeInterfacePair> receivers = topology.getNeighbors(out);
+                              return receivers.stream()
+                                  .map(
+                                      receiver -> {
+                                        String recvNode = receiver.getHostname();
+                                        String recvInterface = receiver.getInterface();
+                                        IpSpace recvReplies =
+                                            arpReplies.get(recvNode).get(recvInterface);
+                                        Edge edge = new Edge(out, receiver);
+                                        Set<AbstractRoute> routes =
+                                            candidateRoutes.stream()
+                                                .filter(
+                                                    route ->
+                                                        fib.getNextHopInterfaces().get(route)
+                                                            .get(outInterface)
+                                                            .keySet() // nextHopIps
+                                                            .stream()
+                                                            .filter(
+                                                                ip ->
+                                                                    !Route.UNSET_ROUTE_NEXT_HOP_IP
+                                                                        .equals(ip))
+                                                            .anyMatch(
+                                                                nextHopIp ->
+                                                                    recvReplies.containsIp(
+                                                                        nextHopIp,
+                                                                        ImmutableMap.of())))
+                                                .collect(ImmutableSet.toImmutableSet());
+                                        return routes.isEmpty()
+                                            ? null
+                                            : Maps.immutableEntry(edge, routes);
+                                      })
+                                  .filter(Objects::nonNull);
+                            })
+                        .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+                  }));
     }
   }
 
@@ -881,7 +967,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   @Override
-  public Map<Edge, IpSpace> getArpTrueEdge() {
+  public Map<String, Map<String, Map<Edge, IpSpace>>> getArpTrueEdge() {
     return _arpTrueEdge;
   }
 
