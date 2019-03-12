@@ -407,6 +407,7 @@ public class CiscoGrammarTest {
         .setTag("")
         .setIpProtocol(IpProtocol.ICMP)
         .setIcmpType(icmpType)
+        .setIcmpCode(0)
         .build();
   }
 
@@ -1815,7 +1816,13 @@ public class CiscoGrammarTest {
     String ogpAclEmptyName = computeProtocolObjectGroupAclName(ogpEmptyName);
     String ogpAclDuplicateName = computeProtocolObjectGroupAclName(ogpDuplicateName);
     Flow icmpFlow =
-        Flow.builder().setTag("").setIngressNode("").setIpProtocol(IpProtocol.ICMP).build();
+        Flow.builder()
+            .setTag("")
+            .setIngressNode("")
+            .setIpProtocol(IpProtocol.ICMP)
+            .setIcmpCode(0)
+            .setIcmpType(0)
+            .build();
     Flow tcpFlow =
         Flow.builder().setTag("").setIngressNode("").setIpProtocol(IpProtocol.TCP).build();
 
@@ -2446,6 +2453,8 @@ public class CiscoGrammarTest {
             .setIngressNode(c.getHostname())
             .setTag("")
             .setIpProtocol(IpProtocol.ICMP)
+            .setIcmpType(0)
+            .setIcmpCode(0)
             .build();
 
     assertThat(c, hasIpAccessList(policyMapAclName, accepts(flowPass, null, c)));
