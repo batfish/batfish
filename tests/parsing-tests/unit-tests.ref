@@ -68316,24 +68316,6 @@
               "Text" : "area 0.0.0.0 filter-list prefix filterName out"
             },
             {
-              "Comment" : "Unsupported feature: no-redistribution",
-              "Line" : 34,
-              "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
-              "Text" : "area 0.0.0.0 nssa no-redistribution"
-            },
-            {
-              "Comment" : "Unsupported feature: no-redistribution",
-              "Line" : 35,
-              "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
-              "Text" : "area 0.0.0.0 nssa no-redistribution no-summary"
-            },
-            {
-              "Comment" : "Unsupported feature: no-redistribution",
-              "Line" : 36,
-              "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
-              "Text" : "area 0.0.0.0 nssa no-redistribution default-information-originate no-summary"
-            },
-            {
               "Comment" : "This feature is not currently supported",
               "Line" : 53,
               "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",

@@ -10312,7 +10312,8 @@
                   "name" : 0,
                   "nssa" : {
                     "defaultOriginateType" : "INTER_AREA",
-                    "suppressType3" : true
+                    "suppressType3" : true,
+                    "suppressType7" : true
                   },
                   "stubType" : "NSSA",
                   "summaries" : {
@@ -16461,7 +16462,8 @@
                   "name" : 66051,
                   "nssa" : {
                     "defaultOriginateType" : "INTER_AREA",
-                    "suppressType3" : true
+                    "suppressType3" : true,
+                    "suppressType7" : false
                   },
                   "stubType" : "NSSA",
                   "summaries" : {
