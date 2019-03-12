@@ -123,6 +123,7 @@ import static org.batfish.datamodel.matchers.MlagMatchers.hasPeerAddress;
 import static org.batfish.datamodel.matchers.MlagMatchers.hasPeerInterface;
 import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasDefaultOriginateType;
 import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasSuppressType3;
+import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasSuppressType7;
 import static org.batfish.datamodel.matchers.OrMatchExprMatchers.hasDisjuncts;
 import static org.batfish.datamodel.matchers.OrMatchExprMatchers.isOrMatchExprThat;
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasNssa;
@@ -3586,7 +3587,7 @@ public class CiscoGrammarTest {
     // Sanity check: ensure the ABR does not have suppressType7 set for area 1
     OspfArea abrToArea1 =
         abr.getVrfs().get(DEFAULT_VRF_NAME).getInterfaces().get("Ethernet1").getOspfArea();
-    assertThat(abrToArea1.getNssa().getSuppressType7(), equalTo(false));
+    assertThat(abrToArea1.getNssa(), hasSuppressType7(false));
 
     batfish.computeDataPlane();
     DataPlane dp = batfish.loadDataPlane();
@@ -3618,7 +3619,7 @@ public class CiscoGrammarTest {
 
     // This time the ABR should have suppressType7 set for area 1
     abrToArea1 = abr.getVrfs().get(DEFAULT_VRF_NAME).getInterfaces().get("Ethernet1").getOspfArea();
-    assertThat(abrToArea1.getNssa().getSuppressType7(), equalTo(true));
+    assertThat(abrToArea1.getNssa(), hasSuppressType7(true));
 
     batfish.computeDataPlane();
     dp = batfish.loadDataPlane();

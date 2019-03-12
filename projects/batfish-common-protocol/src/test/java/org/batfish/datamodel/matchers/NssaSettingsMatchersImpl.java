@@ -31,5 +31,16 @@ final class NssaSettingsMatchersImpl {
     }
   }
 
+  static final class HasSuppressType7 extends FeatureMatcher<NssaSettings, Boolean> {
+    HasSuppressType7(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "An NssaSettings with suppressType7:", "suppressType7");
+    }
+
+    @Override
+    protected Boolean featureValueOf(NssaSettings actual) {
+      return actual.getSuppressType7();
+    }
+  }
+
   private NssaSettingsMatchersImpl() {}
 }
