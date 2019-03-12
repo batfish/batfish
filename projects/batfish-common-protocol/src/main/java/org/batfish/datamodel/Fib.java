@@ -31,6 +31,13 @@ public interface Fib extends Serializable {
   Set<FibEntry> allEntries();
 
   /**
+   * Returns a mapping from prefixes of forwarding routes in the RIB to the IPs for which that
+   * prefix is the longest match in the RIB (among prefixes of forwarding routes).
+   */
+  @Nonnull
+  Map<Prefix, IpSpace> getMatchingIps();
+
+  /**
    * Mapping: matching route -&gt; nexthopinterface -&gt; resolved nextHopIP -&gt; interfaceRoutes
    *
    * @deprecated in favor of more general {@link Fib#get(Ip)}
@@ -42,7 +49,4 @@ public interface Fib extends Serializable {
 
   @Nonnull
   Map<String, Set<AbstractRoute>> getRoutesByNextHopInterface();
-
-  @Nonnull
-  Map<Prefix, IpSpace> getMatchingIps();
 }

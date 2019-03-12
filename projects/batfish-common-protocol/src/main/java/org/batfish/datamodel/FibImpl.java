@@ -329,7 +329,6 @@ public final class FibImpl implements Fib {
                 routesByNextHopInterfaceEntry -> routesByNextHopInterfaceEntry.getValue().build()));
   }
 
-  /** See {@link Fib#getMatchingIps()} */
   @Override
   public Map<Prefix, IpSpace> getMatchingIps() {
     ImmutableMap.Builder<Prefix, IpSpace> builder = ImmutableMap.builder();
