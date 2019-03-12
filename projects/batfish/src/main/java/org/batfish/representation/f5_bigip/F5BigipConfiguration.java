@@ -145,6 +145,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private transient Configuration _c;
   private ConfigurationFormat _format;
   private String _hostname;
+  private transient Map<String, ImmutableList.Builder<IpAccessListLine>>
+      _interfaceIncomingFilterLines;
   private final @Nonnull Map<String, Interface> _interfaces;
   private final @Nonnull Map<String, Node> _nodes;
   private final @Nonnull Map<String, Pool> _pools;
@@ -267,17 +269,30 @@ public class F5BigipConfiguration extends VendorConfiguration {
             .collect(ImmutableList.toImmutableList()));
   }
 
-  private @Nullable IpAccessList computeInterfaceIncomingFilter(String vlanName) {
-    ImmutableList.Builder<IpAccessListLine> applicableLines = ImmutableList.builder();
+  private void initInterfaceIncomingFilterLines() {
+    _interfaceIncomingFilterLines = new HashMap<>();
     _virtualMatchedHeaders.forEach(
         (virtualName, matchedHeaders) -> {
           Virtual virtual = _virtuals.get(virtualName);
-          if (appliesToVlan(virtual, vlanName)) {
-            applicableLines.add(
-                toIpAccessListLine(virtualName, matchedHeaders, virtual.getReject()));
-          }
+          _vlans.keySet().stream()
+              .filter(vlanName -> appliesToVlan(virtual, vlanName))
+              .forEach(
+                  vlanName ->
+                      _interfaceIncomingFilterLines
+                          .computeIfAbsent(vlanName, n -> ImmutableList.builder())
+                          .add(
+                              toIpAccessListLine(
+                                  virtualName, matchedHeaders, virtual.getReject())));
         });
-    List<IpAccessListLine> lines = applicableLines.add(IpAccessListLine.ACCEPT_ALL).build();
+  }
+
+  private @Nullable IpAccessList computeInterfaceIncomingFilter(String vlanName) {
+    List<IpAccessListLine> lines =
+        firstNonNull(
+                _interfaceIncomingFilterLines.get(vlanName),
+                ImmutableList.<IpAccessListLine>builder())
+            .add(IpAccessListLine.ACCEPT_ALL)
+            .build();
     return IpAccessList.builder()
         .setOwner(_c)
         .setName(computeInterfaceIncomingFilterName(vlanName))
@@ -410,23 +425,27 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // been present for incoming transformation to have been populated.
     VirtualAddress virtualAddress = _virtualAddresses.get(virtual.getDestination());
     Ip destinationIp = virtualAddress.getAddress();
-    Ip mask = virtualAddress.getMask();
-    if (mask == null) {
-      mask = Ip.MAX;
-    }
+    Ip mask = firstNonNull(virtualAddress.getMask(), Ip.MAX);
     return ImmutableSet.of(Prefix.create(destinationIp, mask).toIpSpace());
   }
 
   private @Nonnull TransformationStep computeVirtualIncomingPoolMemberTransformation(
       PoolMember member, boolean translateAddress, boolean translatePort) {
     TransformationStep addressTranslation =
-        new AssignIpAddressFromPool(
-            TransformationType.DEST_NAT,
-            IpField.DESTINATION,
-            ImmutableRangeSet.of(Range.singleton(member.getAddress())));
+        translateAddress
+            ? new AssignIpAddressFromPool(
+                TransformationType.DEST_NAT,
+                IpField.DESTINATION,
+                ImmutableRangeSet.of(Range.singleton(member.getAddress())))
+            : null;
     TransformationStep portTranslation =
-        new AssignPortFromPool(
-            TransformationType.DEST_NAT, PortField.DESTINATION, member.getPort(), member.getPort());
+        translatePort
+            ? new AssignPortFromPool(
+                TransformationType.DEST_NAT,
+                PortField.DESTINATION,
+                member.getPort(),
+                member.getPort())
+            : null;
     if (translateAddress && translatePort) {
       // pool
       return new ApplyAll(addressTranslation, portTranslation);
@@ -480,12 +499,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
     }
     Ip destinationIp = virtualAddress.getAddress();
     if (destinationIp == null) {
-      // Cannot match without destination IP (might be IPv6, so don't warn here)
+      // Cannot match without destination IP (IPv6, so don't warn)
       return Optional.empty();
-    }
-    Ip destinationMask = virtualAddress.getMask();
-    if (destinationMask == null) {
-      destinationMask = Ip.MAX;
     }
     Integer destinationPort = virtual.getDestinationPort();
     if (destinationPort == null) {
@@ -493,6 +508,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
       _w.redFlag(String.format("Virtual '%s' is missing destination port", virtual.getName()));
       return Optional.empty();
     }
+    Ip destinationMask = firstNonNull(virtualAddress.getMask(), Ip.MAX);
     Prefix source = virtual.getSource();
     if (source == null) {
       source = Prefix.ZERO;
@@ -1199,6 +1215,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
     // Create interface filters
     initVirtualMatchedHeaders();
+    initInterfaceIncomingFilterLines();
     _vlans.keySet().stream().map(_c.getAllInterfaces()::get).forEach(this::addIncomingFilter);
 
     // Create NAT transformation rules
