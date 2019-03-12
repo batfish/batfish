@@ -1244,6 +1244,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     return _neighborUnreachable;
   }
 
+  /** hostname -> interfaces that are not full. I.e. could have neighbors not present in snapshot */
   private static Map<String, Set<String>> computeInterfacesWithMissingDevices(
       Map<String, Map<String, BDD>> interfaceHostSubnetIpBDDs, BDD unownedIpsBDD) {
     try (ActiveSpan span =
