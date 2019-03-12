@@ -31,6 +31,11 @@ ADDRESS
   'address'
 ;
 
+ANY
+:
+  'any'
+;
+
 BFD
 :
   'bfd'

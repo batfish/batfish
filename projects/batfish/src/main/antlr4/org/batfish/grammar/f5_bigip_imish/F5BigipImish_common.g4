@@ -4,6 +4,12 @@ options {
   tokenVocab = F5BigipImishLexer;
 }
 
+ip_spec
+:
+  ANY
+  | prefix = word
+;
+
 line_action
 :
   DENY

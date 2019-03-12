@@ -8,5 +8,10 @@ options {
 
 s_access_list
 :
-  actionn = line_action
+  action = line_action src = ip_spec NEWLINE
+;
+
+word
+:
+  ~NEWLINE
 ;
