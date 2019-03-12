@@ -24527,6 +24527,43 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
+        "interfaces" : {
+          "Ethernet0/0" : {
+            "name" : "Ethernet0/0",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allPrefixes" : [
+              "1.1.1.2/31"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "ethernet0/0"
+            ],
+            "mtu" : 1500,
+            "ospfArea" : 1,
+            "ospfCost" : 40,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : true,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "1.1.1.2/31",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          }
+        },
         "routingPolicies" : {
           "~OSPF_EXPORT_POLICY:OTHER~" : {
             "name" : "~OSPF_EXPORT_POLICY:OTHER~",
@@ -24649,8 +24686,34 @@
           },
           "default" : {
             "name" : "default",
+            "interfaces" : [
+              "Ethernet0/0"
+            ],
             "ospfProcess" : {
+              "areas" : {
+                "1" : {
+                  "injectDefaultRoute" : true,
+                  "interfaces" : [
+                    "Ethernet0/0"
+                  ],
+                  "metricOfDefaultRoute" : 0,
+                  "name" : 1,
+                  "stub" : {
+                    "suppressType3" : false
+                  },
+                  "stubType" : "STUB"
+                }
+              },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+              "neighbors" : {
+                "Ethernet0/0" : {
+                  "area" : 1,
+                  "hostname" : "nxos_ospf",
+                  "interface" : "Ethernet0/0",
+                  "passive" : false,
+                  "vrf" : "default"
+                }
+              },
               "processId" : "1",
               "referenceBandwidth" : 4.0E10,
               "routerId" : "1.2.3.4"

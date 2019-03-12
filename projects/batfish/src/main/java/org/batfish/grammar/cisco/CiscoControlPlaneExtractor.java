@@ -3921,6 +3921,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterRo_vrf(Ro_vrfContext ctx) {
     Ip routerId = _currentOspfProcess.getRouterId();
+    _lastKnownOspfProcess = _currentOspfProcess.getName();
     _currentVrf = ctx.name.getText();
     _currentOspfProcess =
         currentVrf()
@@ -3932,7 +3933,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                   p.setRouterId(routerId);
                   return p;
                 });
-    _lastKnownOspfProcess = _currentOspfProcess.getName();
   }
 
   @Override
@@ -8829,6 +8829,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRo_vrf(Ro_vrfContext ctx) {
     _currentVrf = Configuration.DEFAULT_VRF_NAME;
     _currentOspfProcess = currentVrf().getOspfProcesses().get(_lastKnownOspfProcess);
+    _lastKnownOspfProcess = null;
   }
 
   @Override

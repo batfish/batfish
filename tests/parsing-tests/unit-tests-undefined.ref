@@ -3787,7 +3787,8 @@
         "Lines" : {
           "filename" : "configs/nxos_ospf",
           "lines" : [
-            9
+            20,
+            25
           ]
         }
       },
@@ -3799,7 +3800,7 @@
         "Lines" : {
           "filename" : "configs/nxos_ospf",
           "lines" : [
-            10
+            21
           ]
         }
       },

@@ -64892,6 +64892,59 @@
             "        PRIVILEGE:'privilege')",
             "      NEWLINE:'\\n'))",
             "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'ethernet'  <== mode:M_Interface",
+            "        DEC:'0'  <== mode:M_Interface",
+            "        FORWARD_SLASH:'/'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'0'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_ip_ospf_area",
+            "          IP:'ip'",
+            "          OSPF:'ospf'",
+            "          procname = (variable",
+            "            DEC:'1')",
+            "          AREA:'area'",
+            "          area = DEC:'1'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          prefix = IP_PREFIX:'1.1.1.2/31'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_router_ospf",
+            "      ROUTER:'router'",
+            "      OSPF:'ospf'",
+            "      name = (variable",
+            "        VARIABLE:'ignored')",
+            "      NEWLINE:'\\n'",
+            "      (ro_router_id",
+            "        ROUTER_ID:'router-id'",
+            "        ip = IP_ADDRESS:'5.6.7.8'",
+            "        NEWLINE:'\\n')",
+            "      (ro_vrf",
+            "        VRF:'vrf'",
+            "        name = (variable",
+            "          VARIABLE:'OTHER')",
+            "        NEWLINE:'\\n'",
+            "        (ro_max_metric",
+            "          MAX_METRIC:'max-metric'",
+            "          ROUTER_LSA:'router-lsa'",
+            "          external_lsa = EXTERNAL_LSA:'external-lsa'",
+            "          on_startup = ON_STARTUP:'on-startup'",
+            "          DEC:'111'",
+            "          wait_for_bgp = WAIT_FOR:'wait-for'",
+            "          BGP:'bgp'",
+            "          bgptag = (variable_max_metric",
+            "            DEC:'12345')",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
             "    (s_router_ospf",
             "      ROUTER:'router'",
             "      OSPF:'ospf'",
@@ -64930,6 +64983,41 @@
             "          ROUTE_MAP:'route-map'",
             "          map = VARIABLE:'RM_OSPF_STATIC'  <== mode:M_RouteMap",
             "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_router_ospf",
+            "      ROUTER:'router'",
+            "      OSPF:'ospf'",
+            "      name = (variable",
+            "        VARIABLE:'ignored')",
+            "      NEWLINE:'\\n'",
+            "      (ro_vrf",
+            "        VRF:'vrf'",
+            "        name = (variable",
+            "          VARIABLE:'OTHER')",
+            "        NEWLINE:'\\n'",
+            "        (ro_redistribute_connected",
+            "          REDISTRIBUTE:'redistribute'",
+            "          DIRECT:'direct'",
+            "          ROUTE_MAP:'route-map'",
+            "          map = VARIABLE:'RM_OSPF_DIRECT'  <== mode:M_RouteMap",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_router_ospf",
+            "      ROUTER:'router'",
+            "      OSPF:'ospf'",
+            "      name = (variable",
+            "        DEC:'1')",
+            "      NEWLINE:'\\n'",
+            "      (ro_vrf",
+            "        VRF:'vrf'",
+            "        name = (variable",
+            "          VARIABLE:'OTHER')",
+            "        NEWLINE:'\\n')",
+            "      (ro_area_stub",
+            "        AREA:'area'",
+            "        area_int = DEC:'1'",
+            "        STUB:'stub'",
+            "        NEWLINE:'\\n\\n')))",
             "  EOF:<EOF>)"
           ]
         },
@@ -68774,24 +68862,6 @@
               "Line" : 23,
               "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0.0.0.0 filter-list prefix filterName out"
-            },
-            {
-              "Comment" : "Unsupported feature: no-redistribution",
-              "Line" : 28,
-              "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
-              "Text" : "area 0.0.0.0 nssa no-redistribution"
-            },
-            {
-              "Comment" : "Unsupported feature: no-redistribution",
-              "Line" : 29,
-              "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
-              "Text" : "area 0.0.0.0 nssa no-redistribution no-summary"
-            },
-            {
-              "Comment" : "Unsupported feature: no-redistribution",
-              "Line" : 30,
-              "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
-              "Text" : "area 0.0.0.0 nssa no-redistribution default-information-originate no-summary"
             }
           ]
         },
@@ -75908,7 +75978,18 @@
           }
         },
         "configs/nxos_misc" : { },
-        "configs/nxos_ospf" : { },
+        "configs/nxos_ospf" : {
+          "interface" : {
+            "Ethernet0/0" : {
+              "definitionLines" : [
+                5,
+                6,
+                7
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/nxos_route_map_continue" : {
           "route-map" : {
             "foobar" : {
@@ -80016,15 +80097,23 @@
           }
         },
         "configs/nxos_ospf" : {
+          "interface" : {
+            "Ethernet0/0" : {
+              "interface" : [
+                5
+              ]
+            }
+          },
           "route-map" : {
             "RM_OSPF_DIRECT" : {
               "ospf redistribute connected route-map" : [
-                9
+                20,
+                25
               ]
             },
             "RM_OSPF_STATIC" : {
               "ospf redistribute static route-map" : [
-                10
+                21
               ]
             }
           }
@@ -82258,12 +82347,13 @@
           "route-map" : {
             "RM_OSPF_DIRECT" : {
               "ospf redistribute connected route-map" : [
-                9
+                20,
+                25
               ]
             },
             "RM_OSPF_STATIC" : {
               "ospf redistribute static route-map" : [
-                10
+                21
               ]
             }
           }
