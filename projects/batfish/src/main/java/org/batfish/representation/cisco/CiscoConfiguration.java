@@ -2725,6 +2725,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                 ? OspfDefaultOriginateType.INTER_AREA
                 : OspfDefaultOriginateType.NONE)
         .setSuppressType3(nssaSettings.getNoSummary())
+        .setSuppressType7(nssaSettings.getNoRedistribution())
         .build();
   }
 

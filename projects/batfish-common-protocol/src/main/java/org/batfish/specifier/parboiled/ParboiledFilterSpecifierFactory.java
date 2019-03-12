@@ -9,9 +9,7 @@ import org.parboiled.errors.InvalidInputError;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;
 
-/**
- * An {@link FilterSpecifierFactory} whose grammar is encoded in {@link Parser#FilterExpression()}
- */
+/** An {@link FilterSpecifierFactory} whose grammar is encoded in {@link Parser#FilterSpec()} */
 @AutoService(FilterSpecifierFactory.class)
 public class ParboiledFilterSpecifierFactory implements FilterSpecifierFactory {
 

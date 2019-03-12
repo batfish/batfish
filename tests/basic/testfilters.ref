@@ -54,6 +54,49 @@
           "id" : "node-host2",
           "name" : "host2"
         },
+        "Filter_Name" : "filter::OUTPUT",
+        "Flow" : {
+          "dscp" : 0,
+          "dstIp" : "1.1.1.1",
+          "dstPort" : 80,
+          "ecn" : 0,
+          "fragmentOffset" : 0,
+          "ingressNode" : "host2",
+          "ingressVrf" : "default",
+          "ipProtocol" : "TCP",
+          "packetLength" : 512,
+          "srcIp" : "2.128.1.101",
+          "srcPort" : 49152,
+          "state" : "NEW",
+          "tag" : "FlowTag",
+          "tcpFlagsAck" : 0,
+          "tcpFlagsCwr" : 0,
+          "tcpFlagsEce" : 0,
+          "tcpFlagsFin" : 0,
+          "tcpFlagsPsh" : 0,
+          "tcpFlagsRst" : 0,
+          "tcpFlagsSyn" : 0,
+          "tcpFlagsUrg" : 0
+        },
+        "Action" : "PERMIT",
+        "Line_Content" : "default",
+        "Trace" : {
+          "events" : [
+            {
+              "class" : "org.batfish.datamodel.acl.PermittedByIpAccessListLine",
+              "description" : "Flow permitted by filter named filter::OUTPUT, index 1: default",
+              "index" : 1,
+              "lineDescription" : "default",
+              "name" : "filter::OUTPUT"
+            }
+          ]
+        }
+      },
+      {
+        "Node" : {
+          "id" : "node-host2",
+          "name" : "host2"
+        },
         "Filter_Name" : "filter::INPUT",
         "Flow" : {
           "dscp" : 0,
@@ -61,8 +104,6 @@
           "dstPort" : 80,
           "ecn" : 0,
           "fragmentOffset" : 0,
-          "icmpCode" : 255,
-          "icmpVar" : 255,
           "ingressNode" : "host2",
           "ingressVrf" : "default",
           "ipProtocol" : "TCP",
@@ -106,8 +147,6 @@
           "dstPort" : 80,
           "ecn" : 0,
           "fragmentOffset" : 0,
-          "icmpCode" : 255,
-          "icmpVar" : 255,
           "ingressNode" : "host1",
           "ingressVrf" : "default",
           "ipProtocol" : "TCP",
@@ -151,8 +190,6 @@
           "dstPort" : 80,
           "ecn" : 0,
           "fragmentOffset" : 0,
-          "icmpCode" : 255,
-          "icmpVar" : 255,
           "ingressNode" : "host1",
           "ingressVrf" : "default",
           "ipProtocol" : "TCP",
@@ -186,6 +223,49 @@
       },
       {
         "Node" : {
+          "id" : "node-host2",
+          "name" : "host2"
+        },
+        "Filter_Name" : "filter::FORWARD",
+        "Flow" : {
+          "dscp" : 0,
+          "dstIp" : "1.1.1.1",
+          "dstPort" : 80,
+          "ecn" : 0,
+          "fragmentOffset" : 0,
+          "ingressNode" : "host2",
+          "ingressVrf" : "default",
+          "ipProtocol" : "TCP",
+          "packetLength" : 512,
+          "srcIp" : "2.128.1.101",
+          "srcPort" : 49152,
+          "state" : "NEW",
+          "tag" : "FlowTag",
+          "tcpFlagsAck" : 0,
+          "tcpFlagsCwr" : 0,
+          "tcpFlagsEce" : 0,
+          "tcpFlagsFin" : 0,
+          "tcpFlagsPsh" : 0,
+          "tcpFlagsRst" : 0,
+          "tcpFlagsSyn" : 0,
+          "tcpFlagsUrg" : 0
+        },
+        "Action" : "PERMIT",
+        "Line_Content" : "default",
+        "Trace" : {
+          "events" : [
+            {
+              "class" : "org.batfish.datamodel.acl.PermittedByIpAccessListLine",
+              "description" : "Flow permitted by filter named filter::FORWARD, index 0: default",
+              "index" : 0,
+              "lineDescription" : "default",
+              "name" : "filter::FORWARD"
+            }
+          ]
+        }
+      },
+      {
+        "Node" : {
           "id" : "node-host1",
           "name" : "host1"
         },
@@ -196,8 +276,6 @@
           "dstPort" : 80,
           "ecn" : 0,
           "fragmentOffset" : 0,
-          "icmpCode" : 255,
-          "icmpVar" : 255,
           "ingressNode" : "host1",
           "ingressVrf" : "default",
           "ipProtocol" : "TCP",
@@ -225,96 +303,6 @@
               "index" : 0,
               "lineDescription" : "default",
               "name" : "filter::FORWARD"
-            }
-          ]
-        }
-      },
-      {
-        "Node" : {
-          "id" : "node-host2",
-          "name" : "host2"
-        },
-        "Filter_Name" : "filter::FORWARD",
-        "Flow" : {
-          "dscp" : 0,
-          "dstIp" : "1.1.1.1",
-          "dstPort" : 80,
-          "ecn" : 0,
-          "fragmentOffset" : 0,
-          "icmpCode" : 255,
-          "icmpVar" : 255,
-          "ingressNode" : "host2",
-          "ingressVrf" : "default",
-          "ipProtocol" : "TCP",
-          "packetLength" : 512,
-          "srcIp" : "2.128.1.101",
-          "srcPort" : 49152,
-          "state" : "NEW",
-          "tag" : "FlowTag",
-          "tcpFlagsAck" : 0,
-          "tcpFlagsCwr" : 0,
-          "tcpFlagsEce" : 0,
-          "tcpFlagsFin" : 0,
-          "tcpFlagsPsh" : 0,
-          "tcpFlagsRst" : 0,
-          "tcpFlagsSyn" : 0,
-          "tcpFlagsUrg" : 0
-        },
-        "Action" : "PERMIT",
-        "Line_Content" : "default",
-        "Trace" : {
-          "events" : [
-            {
-              "class" : "org.batfish.datamodel.acl.PermittedByIpAccessListLine",
-              "description" : "Flow permitted by filter named filter::FORWARD, index 0: default",
-              "index" : 0,
-              "lineDescription" : "default",
-              "name" : "filter::FORWARD"
-            }
-          ]
-        }
-      },
-      {
-        "Node" : {
-          "id" : "node-host2",
-          "name" : "host2"
-        },
-        "Filter_Name" : "filter::OUTPUT",
-        "Flow" : {
-          "dscp" : 0,
-          "dstIp" : "1.1.1.1",
-          "dstPort" : 80,
-          "ecn" : 0,
-          "fragmentOffset" : 0,
-          "icmpCode" : 255,
-          "icmpVar" : 255,
-          "ingressNode" : "host2",
-          "ingressVrf" : "default",
-          "ipProtocol" : "TCP",
-          "packetLength" : 512,
-          "srcIp" : "2.128.1.101",
-          "srcPort" : 49152,
-          "state" : "NEW",
-          "tag" : "FlowTag",
-          "tcpFlagsAck" : 0,
-          "tcpFlagsCwr" : 0,
-          "tcpFlagsEce" : 0,
-          "tcpFlagsFin" : 0,
-          "tcpFlagsPsh" : 0,
-          "tcpFlagsRst" : 0,
-          "tcpFlagsSyn" : 0,
-          "tcpFlagsUrg" : 0
-        },
-        "Action" : "PERMIT",
-        "Line_Content" : "default",
-        "Trace" : {
-          "events" : [
-            {
-              "class" : "org.batfish.datamodel.acl.PermittedByIpAccessListLine",
-              "description" : "Flow permitted by filter named filter::OUTPUT, index 1: default",
-              "index" : 1,
-              "lineDescription" : "default",
-              "name" : "filter::OUTPUT"
             }
           ]
         }

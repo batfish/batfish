@@ -4,13 +4,11 @@ import org.parboiled.Rule;
 
 /** Contains information on various expressions supported by this package */
 public enum Grammar {
-  FILTER_SPECIFIER("filterSpecifier", Parser.INSTANCE.FilterExpression(), "filter-specifier"),
-  INTERFACE_SPECIFIER(
-      "interfaceSpecifier", Parser.INSTANCE.InterfaceExpression(), "interface-specifier"),
-  IP_SPACE_SPECIFIER("ipSpecifier", Parser.INSTANCE.IpSpaceExpression(), "ip-specifier"),
-  LOCATION_SPECIFIER(
-      "locationSpecifier", Parser.INSTANCE.LocationExpression(), "location-specifier"),
-  NODE_SPECIFIER("nodeSpecifier", Parser.INSTANCE.NodeExpression(), "node-specifier");
+  FILTER_SPECIFIER("filterSpecifier", Parser.INSTANCE.FilterSpec(), "filter-specifier"),
+  INTERFACE_SPECIFIER("interfaceSpecifier", Parser.INSTANCE.InterfaceSpec(), "interface-specifier"),
+  IP_SPACE_SPECIFIER("ipSpecifier", Parser.INSTANCE.IpSpaceSpec(), "ip-specifier"),
+  LOCATION_SPECIFIER("locationSpecifier", Parser.INSTANCE.LocationSpec(), "location-specifier"),
+  NODE_SPECIFIER("nodeSpecifier", Parser.INSTANCE.NodeSpec(), "node-specifier");
 
   static final String BASE_URL =
       "https://github.com/batfish/batfish/blob/master/questions/Parameters.md#";
