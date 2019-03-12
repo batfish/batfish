@@ -1543,7 +1543,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            56
+            54
           ]
         }
       },
@@ -1555,7 +1555,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            57
+            55
           ]
         }
       },
@@ -1567,8 +1567,8 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            53,
-            54
+            51,
+            52
           ]
         }
       },
@@ -1580,31 +1580,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            55
-          ]
-        }
-      },
-      {
-        "File_Name" : "configs/cisco_ospf",
-        "Struct_Type" : "ipv6 prefix-list",
-        "Ref_Name" : "SWITCHLAN",
-        "Context" : "ipv6 router ospf distribute-list prefix-list in",
-        "Lines" : {
-          "filename" : "configs/cisco_ospf",
-          "lines" : [
-            120
-          ]
-        }
-      },
-      {
-        "File_Name" : "configs/cisco_ospf",
-        "Struct_Type" : "ipv6 prefix-list",
-        "Ref_Name" : "SWITCHLAN-OUT",
-        "Context" : "ipv6 router ospf distribute-list prefix-list out",
-        "Lines" : {
-          "filename" : "configs/cisco_ospf",
-          "lines" : [
-            121
+            53
           ]
         }
       },
@@ -1616,7 +1592,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            68
+            66
           ]
         }
       },
@@ -1628,7 +1604,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            69
+            67
           ]
         }
       },
@@ -1640,7 +1616,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            58
+            56
           ]
         }
       },
@@ -1652,7 +1628,31 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            59
+            57
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ospf_ipv6",
+        "Struct_Type" : "ipv6 prefix-list",
+        "Ref_Name" : "SWITCHLAN",
+        "Context" : "ipv6 router ospf distribute-list prefix-list in",
+        "Lines" : {
+          "filename" : "configs/cisco_ospf_ipv6",
+          "lines" : [
+            14
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ospf_ipv6",
+        "Struct_Type" : "ipv6 prefix-list",
+        "Ref_Name" : "SWITCHLAN-OUT",
+        "Context" : "ipv6 router ospf distribute-list prefix-list out",
+        "Lines" : {
+          "filename" : "configs/cisco_ospf_ipv6",
+          "lines" : [
+            15
           ]
         }
       },
@@ -3787,7 +3787,8 @@
         "Lines" : {
           "filename" : "configs/nxos_ospf",
           "lines" : [
-            9
+            20,
+            25
           ]
         }
       },
@@ -3799,7 +3800,7 @@
         "Lines" : {
           "filename" : "configs/nxos_ospf",
           "lines" : [
-            10
+            21
           ]
         }
       },
