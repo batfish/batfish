@@ -2,7 +2,6 @@ package org.batfish.grammar.f5_bigip_imish;
 
 import static org.batfish.common.util.CommonUtil.communityStringToLong;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
@@ -40,10 +39,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import net.sf.javabdd.BDD;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.BDDPrefix;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
@@ -61,8 +62,10 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -102,6 +105,8 @@ public final class F5BigipImishGrammarTest {
     return vendorConfiguration;
   }
 
+  private BDDPrefix _bddPrefix;
+
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
@@ -110,6 +115,10 @@ public final class F5BigipImishGrammarTest {
     String[] names =
         Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
     return BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
+  }
+
+  private void initBddPrefix() {
+    _bddPrefix = new BDDPrefix();
   }
 
   private BgpRoute.Builder makeBgpOutputRouteBuilder() {
@@ -129,12 +138,6 @@ public final class F5BigipImishGrammarTest {
     String[] names =
         Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
     return BatfishTestUtils.parseTextConfigs(_folder, names);
-  }
-
-  private @Nonnull IpAccessListToBdd toBDD() {
-    BDDPacket pkt = new BDDPacket();
-    BDDSourceManager mgr = BDDSourceManager.forInterfaces(pkt, ImmutableSet.of("dummy"));
-    return new IpAccessListToBddImpl(pkt, mgr, ImmutableMap.of(), ImmutableMap.of());
   }
 
   @Test
@@ -173,6 +176,14 @@ public final class F5BigipImishGrammarTest {
                         .build()))));
   }
 
+  private @Nonnull BDD toBDD(PrefixRange prefixRange) {
+    return _bddPrefix.inPrefixRange(prefixRange);
+  }
+
+  private @Nonnull BDD toBDD(RouteFilterList routeFilterList) {
+    return _bddPrefix.permittedByRouteFilterList(routeFilterList);
+  }
+
   @Test
   public void testAccessListToRouteFilter() throws IOException {
     Configuration c = parseConfig("f5_bigip_imish_route_map");
@@ -180,7 +191,9 @@ public final class F5BigipImishGrammarTest {
     String acl2RfName = computeAccessListRouteFilterName("acl2");
 
     // setup
-    IpAccessListToBdd toBDD = toBDD();
+    initBddPrefix();
+    toBDD(
+        new PrefixRange(Prefix.strict("192.0.2.0/24"), new SubRange(24, Prefix.MAX_PREFIX_LENGTH)));
 
     // acl1
     assertThat(c.getRouteFilterLists(), hasKey(acl1RfName));
@@ -188,25 +201,39 @@ public final class F5BigipImishGrammarTest {
     RouteFilterList acl1Rf = c.getRouteFilterLists().get(acl1RfName);
 
     // acl1 should permit everything
-    //    assertTrue(toBDD.toBdd(acl1).isOne());
+    BDD acl1RfBDD = toBDD(acl1Rf);
+    System.err.println(String.format("acl1RfBDD: %s", acl1RfBDD));
+    BDD expectedAcl1RfBDD =
+        toBDD(new PrefixRange(Prefix.ZERO, new SubRange(0, Prefix.MAX_PREFIX_LENGTH)));
+    System.err.println(String.format("expectedAcl1RfBDD: %s", acl1RfBDD));
+    assertThat(toBDD(acl1Rf), equalTo(expectedAcl1RfBDD));
 
     // acl2
     assertThat(c.getRouteFilterLists(), hasKey(acl2RfName));
 
     RouteFilterList acl2Rf = c.getRouteFilterLists().get(acl2RfName);
 
-    //    assertThat(
-    //        "acl2 permits packets with source IP in 192.0.2.0/24 except 192.0.2.128",
-    //        toBDD.toBdd(acl2),
-    //        equalTo(
-    //            toBDD.toBdd(
-    //                new MatchHeaderSpace(
-    //                    HeaderSpace.builder()
-    //                        .setSrcIps(
-    //                            AclIpSpace.difference(
-    //                                Prefix.parse("192.0.2.0/24").toIpSpace(),
-    //                                Ip.parse("192.0.2.128").toIpSpace()))
-    //                        .build()))));
+    BDD acl2RfBDD = toBDD(acl2Rf);
+    BDD bdd24 =
+        toBDD(
+            new PrefixRange(
+                Prefix.strict("192.0.2.0/24"), new SubRange(24, Prefix.MAX_PREFIX_LENGTH)));
+    BDD bdd32 =
+        toBDD(
+            new PrefixRange(
+                Prefix.strict("192.0.2.128/32"),
+                new SubRange(Prefix.MAX_PREFIX_LENGTH, Prefix.MAX_PREFIX_LENGTH)));
+    BDD bddNot32 = bdd32.not();
+    BDD bdd24AndNot32 = bdd24.and(bddNot32);
+    System.err.println(String.format("acl2RfBDD: %s", acl2RfBDD));
+    System.err.println(String.format("bdd24: %s", bdd24));
+    System.err.println(String.format("bdd32: %s", bdd32));
+    System.err.println(String.format("bddNot32: %s", bddNot32));
+    System.err.println(String.format("bdd24AndNot32: %s", bdd24AndNot32));
+    assertThat(
+        "acl2 permits packets with source IP in 192.0.2.0/24 except 192.0.2.128",
+        acl2RfBDD,
+        equalTo(bdd24AndNot32));
   }
 
   @Test
@@ -529,4 +556,11 @@ public final class F5BigipImishGrammarTest {
     // detect all structure references
     assertThat(ans, hasNumReferrers(file, ROUTE_MAP, used, 3));
   }
+
+  private @Nonnull IpAccessListToBdd toBDD() {
+    BDDPacket pkt = new BDDPacket();
+    BDDSourceManager mgr = BDDSourceManager.forInterfaces(pkt, ImmutableSet.of("dummy"));
+    return new IpAccessListToBddImpl(pkt, mgr, ImmutableMap.of(), ImmutableMap.of());
+  }
+
 }
