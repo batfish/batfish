@@ -7,9 +7,14 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Optional;
 import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class BDDIntegerTest {
+  @Rule public ExpectedException _exception = ExpectedException.none();
+
   @Test
   public void testSatAssignmentToLong() {
     BDDInteger dstIp = new BDDPacket().getDstIp();
@@ -45,5 +50,29 @@ public class BDDIntegerTest {
         dstIp.getValuesSatisfying(bdd, 10),
         containsInAnyOrder(
             0xFFFFFFFAL, 0xFFFFFFFBL, 0xFFFFFFFCL, 0xFFFFFFFDL, 0xFFFFFFFEL, 0xFFFFFFFFL));
+  }
+
+  @Test
+  public void testGeqOutOfRange() {
+    BDDFactory factory = BDDUtils.bddFactory(5);
+    BDDInteger var = BDDInteger.makeFromIndex(factory, 5, 0, false);
+    _exception.expect(IllegalArgumentException.class);
+    var.leq(32);
+  }
+
+  @Test
+  public void testLeqOutOfRange() {
+    BDDFactory factory = BDDUtils.bddFactory(5);
+    BDDInteger var = BDDInteger.makeFromIndex(factory, 5, 0, false);
+    _exception.expect(IllegalArgumentException.class);
+    var.leq(32);
+  }
+
+  @Test
+  public void testValueOutOfRange() {
+    BDDFactory factory = BDDUtils.bddFactory(5);
+    BDDInteger var = BDDInteger.makeFromIndex(factory, 5, 0, false);
+    _exception.expect(IllegalArgumentException.class);
+    var.value(32);
   }
 }
