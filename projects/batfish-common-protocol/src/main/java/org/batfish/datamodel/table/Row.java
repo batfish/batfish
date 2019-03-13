@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -200,8 +201,8 @@ public class Row implements Comparable<Row>, Serializable {
   @Override
   public int compareTo(Row o) {
     try {
-      String myStr = BatfishObjectMapper.mapper().writeValueAsString(_data);
-      String oStr = BatfishObjectMapper.mapper().writeValueAsString(o._data);
+      String myStr = getAsString();
+      String oStr = o.getAsString();
       return myStr.compareTo(oStr);
     } catch (JsonProcessingException e) {
       throw new BatfishException("Exception in row comparison", e);
@@ -413,5 +414,17 @@ public class Row implements Comparable<Row>, Serializable {
 
   public boolean hasNonNull(String column) {
     return _data.hasNonNull(column);
+  }
+
+  private volatile String _asString;
+
+  @JsonIgnore
+  private String getAsString() throws JsonProcessingException {
+    String asString = _asString;
+    if (asString == null) {
+      asString = BatfishObjectMapper.writeString(_data);
+      _asString = asString;
+    }
+    return asString;
   }
 }
