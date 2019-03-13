@@ -15,6 +15,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.specifier.InterfaceWithConnectedIpsSpecifier.Factory;
 import org.junit.Rule;
 import org.junit.Test;
@@ -96,17 +97,17 @@ public class InterfaceWithConnectedIpsSpecifierTest {
     assertThat(
         new InterfaceWithConnectedIpsSpecifier(Ip.parse("1.2.3.4").toIpSpace())
             .resolve(ImmutableSet.of("node1", "node2"), ctxt),
-        equalTo(ImmutableSet.of(iface11, iface2)));
+        equalTo(ImmutableSet.of(new NodeInterfacePair(iface11), new NodeInterfacePair(iface2))));
 
     assertThat(
         new InterfaceWithConnectedIpsSpecifier(Ip.parse("1.2.3.8").toIpSpace())
             .resolve(ImmutableSet.of("node1", "node2"), ctxt),
-        equalTo(ImmutableSet.of(iface11)));
+        equalTo(ImmutableSet.of(new NodeInterfacePair(iface11))));
 
     assertThat(
         new InterfaceWithConnectedIpsSpecifier(Ip.parse("2.3.4.5").toIpSpace())
             .resolve(ImmutableSet.of("node1", "node2"), ctxt),
-        equalTo(ImmutableSet.of(iface12)));
+        equalTo(ImmutableSet.of(new NodeInterfacePair(iface12))));
 
     assertThat(
         new InterfaceWithConnectedIpsSpecifier(Prefix.parse("3.0.0.0/24").toIpSpace())

@@ -1,6 +1,5 @@
 package org.batfish.specifier;
 
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertThat;
@@ -14,7 +13,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.junit.Test;
 
-public class NameInterfaceSpecifierTest {
+public class NodeSpecifierInterfaceSpecifierTest {
 
   @Test
   public void testResolve() {
@@ -36,21 +35,16 @@ public class NameInterfaceSpecifierTest {
             .setConfigs(ImmutableMap.of(node1.getHostname(), node1, node2.getHostname(), node2))
             .build();
 
+    // common node
     assertThat(
-        new NameInterfaceSpecifier("iface1").resolve(ImmutableSet.of("node1"), ctxt),
-        contains(new NodeInterfacePair(iface1node1)));
+        new NodeSpecifierInterfaceSpecifier(new NameNodeSpecifier("node1"))
+            .resolve(ImmutableSet.of("node1", "node2"), ctxt),
+        containsInAnyOrder(new NodeInterfacePair(iface1node1), new NodeInterfacePair(iface2node1)));
 
+    // no common nodes
     assertThat(
-        new NameInterfaceSpecifier("iface1").resolve(ImmutableSet.of("node1", "node2"), ctxt),
-        containsInAnyOrder(new NodeInterfacePair(iface1node1), new NodeInterfacePair(iface1node2)));
-
-    // bad name
-    assertThat(
-        new NameInterfaceSpecifier("iface").resolve(ImmutableSet.of("node1"), ctxt), empty());
-
-    // case insensitive
-    assertThat(
-        new NameInterfaceSpecifier("IfACe1").resolve(ImmutableSet.of("node1"), ctxt),
-        contains(new NodeInterfacePair(iface1node1)));
+        new NodeSpecifierInterfaceSpecifier(new NameNodeSpecifier("node1"))
+            .resolve(ImmutableSet.of("node2"), ctxt),
+        empty());
   }
 }

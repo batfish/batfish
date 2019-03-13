@@ -21,4 +21,7 @@ interface InterfaceAstNodeVisitor<T> {
       InterfaceGroupInterfaceAstNode interfaceGroupInterfaceAstNode);
 
   T visitIntersectionInterfaceAstNode(IntersectionInterfaceAstNode intersectionInterfaceAstNode);
+
+  T visitInterfaceWithNodeInterfaceAstNode(
+      InterfaceWithNodeInterfaceAstNode interfaceWithNodeInterfaceAstNode);
 }

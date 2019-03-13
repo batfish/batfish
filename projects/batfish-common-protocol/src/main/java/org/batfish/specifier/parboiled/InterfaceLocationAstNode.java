@@ -33,12 +33,19 @@ final class InterfaceLocationAstNode implements LocationAstNode {
     return new InterfaceLocationAstNode(new NameNodeAstNode(nodeName), null);
   }
 
-  static InterfaceLocationAstNode createFromNodeInterface(AstNode nodeAst, AstNode interfaceAst) {
-    checkArgument(nodeAst instanceof NodeAstNode, "Unexpected first argument: %s", nodeAst);
+  static InterfaceLocationAstNode createFromInterfaceWithNode(AstNode interfaceWithNode) {
     checkArgument(
-        interfaceAst instanceof InterfaceAstNode, "Unexpected second argument: %s", nodeAst);
+        interfaceWithNode instanceof InterfaceWithNodeInterfaceAstNode,
+        "Unexpected argument: %s",
+        interfaceWithNode);
 
-    return new InterfaceLocationAstNode((NodeAstNode) nodeAst, (InterfaceAstNode) interfaceAst);
+    InterfaceWithNodeInterfaceAstNode ast = (InterfaceWithNodeInterfaceAstNode) interfaceWithNode;
+    return createFromInterfaceWithNode(ast.getNodeAstNode(), ast.getInterfaceAstNode());
+  }
+
+  static InterfaceLocationAstNode createFromInterfaceWithNode(
+      NodeAstNode nodeAst, InterfaceAstNode interfaceAst) {
+    return new InterfaceLocationAstNode(nodeAst, interfaceAst);
   }
 
   @Override
