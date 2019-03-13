@@ -6,7 +6,7 @@ import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.specifier.InterfaceSpecifier;
 import org.batfish.specifier.InterfaceWithConnectedIpsSpecifier;
 import org.batfish.specifier.NameInterfaceSpecifier;
@@ -24,7 +24,7 @@ final class ParboiledInterfaceSpecifier implements InterfaceSpecifier {
 
   @ParametersAreNonnullByDefault
   private final class InterfaceAstNodeToInterfaces
-      implements InterfaceAstNodeVisitor<Set<Interface>> {
+      implements InterfaceAstNodeVisitor<Set<NodeInterfacePair>> {
     private final SpecifierContext _ctxt;
     private final Set<String> _nodes;
 
@@ -35,7 +35,7 @@ final class ParboiledInterfaceSpecifier implements InterfaceSpecifier {
 
     @Nonnull
     @Override
-    public Set<Interface> visitConnectedToInterfaceAstNode(
+    public Set<NodeInterfacePair> visitConnectedToInterfaceAstNode(
         ConnectedToInterfaceAstNode connectedToInterfaceAstNode) {
       return new InterfaceWithConnectedIpsSpecifier(
               connectedToInterfaceAstNode
@@ -46,7 +46,7 @@ final class ParboiledInterfaceSpecifier implements InterfaceSpecifier {
 
     @Nonnull
     @Override
-    public Set<Interface> visitDifferenceInterfaceAstNode(
+    public Set<NodeInterfacePair> visitDifferenceInterfaceAstNode(
         DifferenceInterfaceAstNode differenceInterfaceAstNode) {
       return Sets.difference(
           differenceInterfaceAstNode.getLeft().accept(this),
@@ -55,7 +55,7 @@ final class ParboiledInterfaceSpecifier implements InterfaceSpecifier {
 
     @Nonnull
     @Override
-    public Set<Interface> visitInterfaceGroupInterfaceAstNode(
+    public Set<NodeInterfacePair> visitInterfaceGroupInterfaceAstNode(
         InterfaceGroupInterfaceAstNode interfaceGroupInterfaceAstNode) {
       return new ReferenceInterfaceGroupInterfaceSpecifier(
               interfaceGroupInterfaceAstNode.getInterfaceGroup(),
@@ -65,7 +65,7 @@ final class ParboiledInterfaceSpecifier implements InterfaceSpecifier {
 
     @Nonnull
     @Override
-    public Set<Interface> visitIntersectionInterfaceAstNode(
+    public Set<NodeInterfacePair> visitIntersectionInterfaceAstNode(
         IntersectionInterfaceAstNode intersectionInterfaceAstNode) {
       return Sets.intersection(
           intersectionInterfaceAstNode.getLeft().accept(this),
@@ -74,13 +74,14 @@ final class ParboiledInterfaceSpecifier implements InterfaceSpecifier {
 
     @Nonnull
     @Override
-    public Set<Interface> visitNameInterfaceNode(NameInterfaceAstNode nameInterfaceAstNode) {
+    public Set<NodeInterfacePair> visitNameInterfaceNode(
+        NameInterfaceAstNode nameInterfaceAstNode) {
       return new NameInterfaceSpecifier(nameInterfaceAstNode.getName()).resolve(_nodes, _ctxt);
     }
 
     @Nonnull
     @Override
-    public Set<Interface> visitNameRegexInterfaceAstNode(
+    public Set<NodeInterfacePair> visitNameRegexInterfaceAstNode(
         NameRegexInterfaceAstNode nameRegexInterfaceAstNode) {
       return new NameRegexInterfaceSpecifier(nameRegexInterfaceAstNode.getPattern())
           .resolve(_nodes, _ctxt);
@@ -88,14 +89,16 @@ final class ParboiledInterfaceSpecifier implements InterfaceSpecifier {
 
     @Nonnull
     @Override
-    public Set<Interface> visitTypeInterfaceNode(TypeInterfaceAstNode typeInterfaceAstNode) {
+    public Set<NodeInterfacePair> visitTypeInterfaceNode(
+        TypeInterfaceAstNode typeInterfaceAstNode) {
       return new TypesInterfaceSpecifier(ImmutableSet.of(typeInterfaceAstNode.getInterfaceType()))
           .resolve(_nodes, _ctxt);
     }
 
     @Nonnull
     @Override
-    public Set<Interface> visitUnionInterfaceAstNode(UnionInterfaceAstNode unionInterfaceAstNode) {
+    public Set<NodeInterfacePair> visitUnionInterfaceAstNode(
+        UnionInterfaceAstNode unionInterfaceAstNode) {
       return Sets.union(
           unionInterfaceAstNode.getLeft().accept(this),
           unionInterfaceAstNode.getRight().accept(this));
@@ -103,13 +106,15 @@ final class ParboiledInterfaceSpecifier implements InterfaceSpecifier {
 
     @Nonnull
     @Override
-    public Set<Interface> visitVrfInterfaceAstNode(VrfInterfaceAstNode vrfInterfaceAstNode) {
+    public Set<NodeInterfacePair> visitVrfInterfaceAstNode(
+        VrfInterfaceAstNode vrfInterfaceAstNode) {
       return new VrfNameInterfaceSpecifier(vrfInterfaceAstNode.getVrfName()).resolve(_nodes, _ctxt);
     }
 
     @Nonnull
     @Override
-    public Set<Interface> visitZoneInterfaceAstNode(ZoneInterfaceAstNode zoneInterfaceAstNode) {
+    public Set<NodeInterfacePair> visitZoneInterfaceAstNode(
+        ZoneInterfaceAstNode zoneInterfaceAstNode) {
       return new ZoneNameInterfaceSpecifier(zoneInterfaceAstNode.getZoneName())
           .resolve(_nodes, _ctxt);
     }
@@ -138,7 +143,7 @@ final class ParboiledInterfaceSpecifier implements InterfaceSpecifier {
   }
 
   @Override
-  public Set<Interface> resolve(Set<String> nodes, SpecifierContext ctxt) {
+  public Set<NodeInterfacePair> resolve(Set<String> nodes, SpecifierContext ctxt) {
     return _ast.accept(new InterfaceAstNodeToInterfaces(nodes, ctxt));
   }
 }

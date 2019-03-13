@@ -67,10 +67,11 @@ public final class SwitchedVlanPropertiesAnswerer extends Answerer {
       Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces,
       ImmutableMap.Builder<Integer, Integer> vlanVnisBuilder) {
     addVlanVnis(c, vlans, switchedVlanInterfaces, vlanVnisBuilder);
+    Set<NodeInterfacePair> specifiedInterfaces =
+        interfacesSpecifier.resolve(ImmutableSet.of(c.getHostname()), ctxt);
     for (Interface iface : c.getAllInterfaces().values()) {
       tryAddInterfaceToVlans(
-          ctxt,
-          interfacesSpecifier,
+          specifiedInterfaces,
           excludeShutInterfaces,
           vlans,
           switchedVlanInterfaces,
@@ -208,14 +209,13 @@ public final class SwitchedVlanPropertiesAnswerer extends Answerer {
 
   @VisibleForTesting
   static void tryAddInterfaceToVlans(
-      SpecifierContext ctxt,
-      InterfaceSpecifier interfacesSpecifier,
+      Set<NodeInterfacePair> specifiedInterfaces,
       boolean excludeShutInterfaces,
       IntegerSpace vlans,
-      Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces,
+      Map<Integer, Builder<NodeInterfacePair>> switchedVlanInterfaces,
       String node,
       Interface iface) {
-    if (!interfacesSpecifier.resolve(ImmutableSet.of(node), ctxt).contains(iface)
+    if (!specifiedInterfaces.contains(new NodeInterfacePair(iface))
         || (excludeShutInterfaces && !iface.getActive())
         || (iface.getInterfaceType() != InterfaceType.VLAN
             && !Boolean.TRUE.equals(iface.getSwitchport()))) {

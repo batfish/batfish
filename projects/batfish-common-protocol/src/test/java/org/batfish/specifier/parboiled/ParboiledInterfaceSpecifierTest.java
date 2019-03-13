@@ -59,7 +59,7 @@ public class ParboiledInterfaceSpecifierTest {
                 new DifferenceInterfaceAstNode(
                     new NameRegexInterfaceAstNode("iface1.*"), new NameInterfaceAstNode("iface11")))
             .resolve(_nodes, _ctxt),
-        equalTo(ImmutableSet.of(_iface12)));
+        equalTo(ImmutableSet.of(new NodeInterfacePair(_iface12))));
     assertThat(
         new ParboiledInterfaceSpecifier(
                 new DifferenceInterfaceAstNode(
@@ -85,7 +85,7 @@ public class ParboiledInterfaceSpecifierTest {
     assertThat(
         new ParboiledInterfaceSpecifier(new InterfaceGroupInterfaceAstNode(interfaceGroup, book))
             .resolve(_nodes, _ctxt),
-        equalTo(ImmutableSet.of(_iface11)));
+        equalTo(ImmutableSet.of(new NodeInterfacePair(_iface11))));
   }
 
   @Test
@@ -96,7 +96,7 @@ public class ParboiledInterfaceSpecifierTest {
                 new IntersectionInterfaceAstNode(
                     new NameRegexInterfaceAstNode("iface1.*"), new NameInterfaceAstNode("iface11")))
             .resolve(_nodes, _ctxt),
-        equalTo(ImmutableSet.of(_iface11)));
+        equalTo(ImmutableSet.of(new NodeInterfacePair(_iface11))));
     assertThat(
         new ParboiledInterfaceSpecifier(
                 new IntersectionInterfaceAstNode(
@@ -110,7 +110,7 @@ public class ParboiledInterfaceSpecifierTest {
     build();
     assertThat(
         new ParboiledInterfaceSpecifier(new NameInterfaceAstNode("iface11")).resolve(_nodes, _ctxt),
-        equalTo(ImmutableSet.of(_iface11)));
+        equalTo(ImmutableSet.of(new NodeInterfacePair(_iface11))));
     // This regex looking name below should not match anything
     assertThat(
         new ParboiledInterfaceSpecifier(new NameInterfaceAstNode("iface1.*"))
@@ -124,7 +124,7 @@ public class ParboiledInterfaceSpecifierTest {
     assertThat(
         new ParboiledInterfaceSpecifier(new NameRegexInterfaceAstNode("iface.*2"))
             .resolve(_nodes, _ctxt),
-        equalTo(ImmutableSet.of(_iface12, _iface2)));
+        equalTo(ImmutableSet.of(new NodeInterfacePair(_iface12), new NodeInterfacePair(_iface2))));
   }
 
   @Test
@@ -134,7 +134,7 @@ public class ParboiledInterfaceSpecifierTest {
     build();
     assertThat(
         new ParboiledInterfaceSpecifier(new TypeInterfaceAstNode("vpn")).resolve(_nodes, _ctxt),
-        equalTo(ImmutableSet.of(_iface12)));
+        equalTo(ImmutableSet.of(new NodeInterfacePair(_iface12))));
   }
 
   @Test
@@ -145,7 +145,7 @@ public class ParboiledInterfaceSpecifierTest {
                 new UnionInterfaceAstNode(
                     new NameInterfaceAstNode("iface11"), new NameInterfaceAstNode("iface2")))
             .resolve(_nodes, _ctxt),
-        equalTo(ImmutableSet.of(_iface11, _iface2)));
+        equalTo(ImmutableSet.of(new NodeInterfacePair(_iface11), new NodeInterfacePair(_iface2))));
   }
 
   @Test
@@ -157,7 +157,7 @@ public class ParboiledInterfaceSpecifierTest {
     _node1.setVrfs(ImmutableMap.of("node1", vrf1));
     assertThat(
         new ParboiledInterfaceSpecifier(new VrfInterfaceAstNode("vrf1")).resolve(_nodes, _ctxt),
-        equalTo(ImmutableSet.of(_iface11)));
+        equalTo(ImmutableSet.of(new NodeInterfacePair(_iface11))));
   }
 
   @Test
@@ -169,6 +169,6 @@ public class ParboiledInterfaceSpecifierTest {
     build();
     assertThat(
         new ParboiledInterfaceSpecifier(new ZoneInterfaceAstNode("zone1")).resolve(_nodes, _ctxt),
-        equalTo(ImmutableSet.of(_iface11, _iface2)));
+        equalTo(ImmutableSet.of(new NodeInterfacePair(_iface11), new NodeInterfacePair(_iface2))));
   }
 }

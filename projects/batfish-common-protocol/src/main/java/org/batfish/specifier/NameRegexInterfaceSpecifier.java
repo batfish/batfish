@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /** A {@link InterfaceSpecifier} that matches regex pattern over interface names. */
 @ParametersAreNonnullByDefault
@@ -37,12 +37,13 @@ public final class NameRegexInterfaceSpecifier implements InterfaceSpecifier {
   }
 
   @Override
-  public Set<Interface> resolve(Set<String> nodes, SpecifierContext ctxt) {
+  public Set<NodeInterfacePair> resolve(Set<String> nodes, SpecifierContext ctxt) {
     return ctxt.getConfigs().values().stream()
         .filter(c -> nodes.contains(c.getHostname()))
         .map(c -> c.getAllInterfaces().values())
         .flatMap(Collection::stream)
         .filter(iface -> _pattern.matcher(iface.getName()).matches())
+        .map(anInterface -> new NodeInterfacePair(anInterface))
         .collect(ImmutableSet.toImmutableSet());
   }
 }

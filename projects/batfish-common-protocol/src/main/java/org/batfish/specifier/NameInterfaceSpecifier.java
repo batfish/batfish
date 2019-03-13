@@ -7,7 +7,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /** A {@link InterfaceSpecifier} that matches interface names (case insensitive). */
 @ParametersAreNonnullByDefault
@@ -36,12 +36,13 @@ public final class NameInterfaceSpecifier implements InterfaceSpecifier {
   }
 
   @Override
-  public Set<Interface> resolve(Set<String> nodes, SpecifierContext ctxt) {
+  public Set<NodeInterfacePair> resolve(Set<String> nodes, SpecifierContext ctxt) {
     return ctxt.getConfigs().values().stream()
         .filter(c -> nodes.contains(c.getHostname()))
         .map(c -> c.getAllInterfaces().values())
         .flatMap(Collection::stream)
         .filter(iface -> iface.getName().equalsIgnoreCase(_name))
+        .map(anInterface -> new NodeInterfacePair(anInterface))
         .collect(ImmutableSet.toImmutableSet());
   }
 }

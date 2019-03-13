@@ -10,8 +10,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /**
  * An {@link InterfaceSpecifier} that specifies interfaces by {@link InterfaceType type}. Uses a
@@ -34,13 +34,14 @@ public final class TypesInterfaceSpecifier implements InterfaceSpecifier {
   }
 
   @Override
-  public Set<Interface> resolve(Set<String> nodes, SpecifierContext ctxt) {
+  public Set<NodeInterfacePair> resolve(Set<String> nodes, SpecifierContext ctxt) {
     Map<String, Configuration> configs = ctxt.getConfigs();
 
     return nodes.stream()
         .map(configs::get)
         .flatMap(config -> config.getAllInterfaces().values().stream())
         .filter(iface -> _interfaceTypes.contains(iface.getInterfaceType()))
+        .map(anInterface -> new NodeInterfacePair(anInterface))
         .collect(ImmutableSet.toImmutableSet());
   }
 
