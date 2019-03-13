@@ -2,6 +2,7 @@ package org.batfish.common.bdd;
 
 import static org.batfish.common.bdd.BDDInteger.makeFromIndex;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import java.util.HashMap;
 import java.util.List;
@@ -53,10 +54,6 @@ public final class BDDPrefix {
   private int _nextFreeBDDVarIdx = 0;
   private final @Nonnull BDDInteger _prefixLength;
 
-  /*
-   * Creates a collection of BDD variables representing the
-   * various attributes of a control plane advertisement.
-   */
   public BDDPrefix() {
     _factory = JFactory.init(JFACTORY_INITIAL_NODE_TABLE_SIZE, JFACTORY_INITIAL_NODE_CACHE_SIZE);
     _factory.enableReorder();
@@ -95,7 +92,8 @@ public final class BDDPrefix {
    * @param name Used for debugging.
    * @return A {@link BDD} representing the sentence "this variable is true" for the new variable.
    */
-  public BDD allocateBDDBit(String name) {
+  @VisibleForTesting
+  BDD allocateBDDBit(String name) {
     if (_factory.varNum() < _nextFreeBDDVarIdx + 1) {
       _factory.setVarNum(_nextFreeBDDVarIdx + 1);
     }
@@ -113,7 +111,8 @@ public final class BDDPrefix {
    * @param reverse If true, reverse the BDD order of the bits.
    * @return The new variable.
    */
-  public BDDInteger allocateBDDInteger(String name, int bits, boolean reverse) {
+  @VisibleForTesting
+  BDDInteger allocateBDDInteger(String name, int bits, boolean reverse) {
     if (_factory.varNum() < _nextFreeBDDVarIdx + bits) {
       _factory.setVarNum(_nextFreeBDDVarIdx + bits);
     }
@@ -138,13 +137,9 @@ public final class BDDPrefix {
     return Objects.hash(_ip, _prefixLength);
   }
 
-  /*
-   * Check if the first {@code length} bits match the BDDInteger
-   * representing {@code prefix}'s address.
-   *
-   * Note: We assume the prefix is never modified, so it will
-   * be a bitvector containing only the underlying variables:
-   * [var(0), ..., var(n)]
+  /**
+   * Check if the first {@code length} bits match the BDDInteger representing {@code prefix}'s
+   * address.
    */
   public @Nonnull BDD firstBitsEqual(BDD[] bits, Prefix prefix, int length) {
     long address = prefix.getStartIp().asLong();
