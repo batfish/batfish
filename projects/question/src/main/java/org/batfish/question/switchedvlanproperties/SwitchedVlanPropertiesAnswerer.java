@@ -71,12 +71,7 @@ public final class SwitchedVlanPropertiesAnswerer extends Answerer {
         interfacesSpecifier.resolve(ImmutableSet.of(c.getHostname()), ctxt);
     for (Interface iface : c.getAllInterfaces().values()) {
       tryAddInterfaceToVlans(
-          specifiedInterfaces,
-          excludeShutInterfaces,
-          vlans,
-          switchedVlanInterfaces,
-          c.getHostname(),
-          iface);
+          specifiedInterfaces, excludeShutInterfaces, vlans, switchedVlanInterfaces, iface);
     }
   }
 
@@ -196,14 +191,11 @@ public final class SwitchedVlanPropertiesAnswerer extends Answerer {
   @VisibleForTesting
   static void tryAddInterfaceToVlan(
       Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces,
-      String node,
-      Interface iface,
+      NodeInterfacePair iface,
       @Nullable Integer vlan,
       IntegerSpace vlans) {
     if (vlan != null && vlans.contains(vlan)) {
-      switchedVlanInterfaces
-          .computeIfAbsent(vlan, v -> ImmutableSet.builder())
-          .add(new NodeInterfacePair(node, iface.getName()));
+      switchedVlanInterfaces.computeIfAbsent(vlan, v -> ImmutableSet.builder()).add(iface);
     }
   }
 
@@ -213,9 +205,9 @@ public final class SwitchedVlanPropertiesAnswerer extends Answerer {
       boolean excludeShutInterfaces,
       IntegerSpace vlans,
       Map<Integer, Builder<NodeInterfacePair>> switchedVlanInterfaces,
-      String node,
       Interface iface) {
-    if (!specifiedInterfaces.contains(new NodeInterfacePair(iface))
+    NodeInterfacePair ifacePair = new NodeInterfacePair(iface);
+    if (!specifiedInterfaces.contains(ifacePair)
         || (excludeShutInterfaces && !iface.getActive())
         || (iface.getInterfaceType() != InterfaceType.VLAN
             && !Boolean.TRUE.equals(iface.getSwitchport()))) {
@@ -223,16 +215,16 @@ public final class SwitchedVlanPropertiesAnswerer extends Answerer {
     }
     if (iface.getInterfaceType() == InterfaceType.VLAN) {
       // Add VLAN associated with IRB-type interface
-      tryAddInterfaceToVlan(switchedVlanInterfaces, node, iface, iface.getVlan(), vlans);
+      tryAddInterfaceToVlan(switchedVlanInterfaces, ifacePair, iface.getVlan(), vlans);
     } else if (iface.getSwitchportMode() == SwitchportMode.ACCESS) {
       // Add access VLAN when in ACCESS mode
-      tryAddInterfaceToVlan(switchedVlanInterfaces, node, iface, iface.getAccessVlan(), vlans);
+      tryAddInterfaceToVlan(switchedVlanInterfaces, ifacePair, iface.getAccessVlan(), vlans);
     } else if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
       // Add allowed VLANs when in TRUNK mode
       iface.getAllowedVlans().stream()
           .forEach(
               allowedVlan ->
-                  tryAddInterfaceToVlan(switchedVlanInterfaces, node, iface, allowedVlan, vlans));
+                  tryAddInterfaceToVlan(switchedVlanInterfaces, ifacePair, allowedVlan, vlans));
     }
   }
 
