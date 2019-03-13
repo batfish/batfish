@@ -235,7 +235,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
     int vlan = 1;
     IntegerSpace vlans = IntegerSpace.of(2);
 
-    tryAddInterfaceToVlan(switchedVlanInterfaces, NODE, iface, vlan, vlans);
+    tryAddInterfaceToVlan(switchedVlanInterfaces, new NodeInterfacePair(iface), vlan, vlans);
 
     assertThat(switchedVlanInterfaces, anEmptyMap());
   }
@@ -247,7 +247,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
     int vlan = 1;
     IntegerSpace vlans = IntegerSpace.of(vlan);
 
-    tryAddInterfaceToVlan(switchedVlanInterfaces, NODE, iface, vlan, vlans);
+    tryAddInterfaceToVlan(switchedVlanInterfaces, new NodeInterfacePair(iface), vlan, vlans);
 
     assertThat(switchedVlanInterfaces, hasKey(vlan));
     assertThat(
@@ -260,7 +260,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
     Interface iface = _ib.build();
     IntegerSpace vlans = IntegerSpace.of(2);
 
-    tryAddInterfaceToVlan(switchedVlanInterfaces, NODE, iface, null, vlans);
+    tryAddInterfaceToVlan(switchedVlanInterfaces, new NodeInterfacePair(iface), null, vlans);
 
     assertThat(switchedVlanInterfaces, anEmptyMap());
   }
@@ -276,12 +276,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
     iface.setAccessVlan(vlan);
 
     tryAddInterfaceToVlans(
-        ImmutableSet.of(new NodeInterfacePair(iface)),
-        false,
-        vlans,
-        switchedVlanInterfaces,
-        NODE,
-        iface);
+        ImmutableSet.of(new NodeInterfacePair(iface)), false, vlans, switchedVlanInterfaces, iface);
 
     assertThat(switchedVlanInterfaces, hasKey(vlan));
     assertThat(
@@ -299,12 +294,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
     iface.setAccessVlan(vlan);
 
     tryAddInterfaceToVlans(
-        ImmutableSet.of(new NodeInterfacePair(iface)),
-        true,
-        vlans,
-        switchedVlanInterfaces,
-        NODE,
-        iface);
+        ImmutableSet.of(new NodeInterfacePair(iface)), true, vlans, switchedVlanInterfaces, iface);
 
     assertThat(switchedVlanInterfaces, anEmptyMap());
   }
@@ -319,7 +309,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
     iface.setSwitchportMode(SwitchportMode.ACCESS);
     iface.setAccessVlan(vlan);
 
-    tryAddInterfaceToVlans(ImmutableSet.of(), false, vlans, switchedVlanInterfaces, NODE, iface);
+    tryAddInterfaceToVlans(ImmutableSet.of(), false, vlans, switchedVlanInterfaces, iface);
 
     assertThat(switchedVlanInterfaces, anEmptyMap());
   }
@@ -333,12 +323,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
     iface.setSwitchport(false);
 
     tryAddInterfaceToVlans(
-        ImmutableSet.of(new NodeInterfacePair(iface)),
-        true,
-        vlans,
-        switchedVlanInterfaces,
-        NODE,
-        iface);
+        ImmutableSet.of(new NodeInterfacePair(iface)), true, vlans, switchedVlanInterfaces, iface);
 
     assertThat(switchedVlanInterfaces, anEmptyMap());
   }
@@ -354,12 +339,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
     iface.setVlan(vlan);
 
     tryAddInterfaceToVlans(
-        ImmutableSet.of(new NodeInterfacePair(iface)),
-        false,
-        vlans,
-        switchedVlanInterfaces,
-        NODE,
-        iface);
+        ImmutableSet.of(new NodeInterfacePair(iface)), false, vlans, switchedVlanInterfaces, iface);
 
     assertThat(switchedVlanInterfaces, hasKey(vlan));
     assertThat(
@@ -377,12 +357,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
     iface.setVlan(vlan);
 
     tryAddInterfaceToVlans(
-        ImmutableSet.of(new NodeInterfacePair(iface)),
-        false,
-        vlans,
-        switchedVlanInterfaces,
-        NODE,
-        iface);
+        ImmutableSet.of(new NodeInterfacePair(iface)), false, vlans, switchedVlanInterfaces, iface);
 
     assertThat(switchedVlanInterfaces, hasKey(vlan));
     assertThat(
@@ -401,12 +376,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
     iface.setAllowedVlans(vlans);
 
     tryAddInterfaceToVlans(
-        ImmutableSet.of(new NodeInterfacePair(iface)),
-        false,
-        vlans,
-        switchedVlanInterfaces,
-        NODE,
-        iface);
+        ImmutableSet.of(new NodeInterfacePair(iface)), false, vlans, switchedVlanInterfaces, iface);
 
     assertThat(switchedVlanInterfaces.keySet(), containsInAnyOrder(1, 2, 3));
     switchedVlanInterfaces
