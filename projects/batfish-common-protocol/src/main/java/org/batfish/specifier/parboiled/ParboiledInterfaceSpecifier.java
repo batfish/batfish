@@ -74,7 +74,7 @@ final class ParboiledInterfaceSpecifier implements InterfaceSpecifier {
     }
 
     @Override
-    public Set<Interface> visitInterfaceWithNodeInterfaceAstNode(
+    public Set<NodeInterfacePair> visitInterfaceWithNodeInterfaceAstNode(
         InterfaceWithNodeInterfaceAstNode interfaceWithNodeInterfaceAstNode) {
       return Sets.intersection(
           new NodeSpecifierInterfaceSpecifier(
