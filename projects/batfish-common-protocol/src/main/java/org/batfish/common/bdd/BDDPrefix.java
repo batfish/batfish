@@ -1,17 +1,14 @@
 package org.batfish.common.bdd;
 
-import static org.batfish.common.bdd.BDDInteger.makeFromIndex;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.collect.ImmutableList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
-import net.sf.javabdd.JFactory;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
@@ -26,101 +23,32 @@ import org.batfish.datamodel.SubRange;
 public final class BDDPrefix {
 
   private static final int IP_LENGTH = 32;
-
-  /*
-   * The ratio of node table size to node cache size to preserve when resizing. The default
-   * value is 0, which means never resize the cache.
-   */
-  private static final int JFACTORY_CACHE_RATIO = 64;
-
-  /*
-   * Initial size of the BDD factory node cache. Automatically resized when the node table is,
-   * to preserve the cache ratio.
-   */
-  private static final int JFACTORY_INITIAL_NODE_CACHE_SIZE = 1000;
-
-  /*
-   * Initial size of the BDD factory node table. Automatically resized as needed. Increasing this
-   * will reduce time spent garbage collecting for large computations, but will waste memory for
-   * smaller ones.
-   */
-  private static final int JFACTORY_INITIAL_NODE_TABLE_SIZE = 10000;
   private static final int PREFIX_LENGTH_LENGTH = 6;
 
-  private final @Nonnull Map<Integer, String> _bitNames;
   private final @Nonnull BDDFactory _factory;
   private final @Nonnull BDDInteger _ip;
-  private int _nextFreeBDDVarIdx = 0;
   private final @Nonnull BDDInteger _prefixLength;
 
-  /*
-   * Creates a collection of BDD variables representing the
-   * various attributes of a control plane advertisement.
-   */
-  public BDDPrefix() {
-    _factory = JFactory.init(JFACTORY_INITIAL_NODE_TABLE_SIZE, JFACTORY_INITIAL_NODE_CACHE_SIZE);
-    _factory.enableReorder();
-    _factory.setCacheRatio(JFACTORY_CACHE_RATIO);
-    // Do not impose a maximum node table increase
-    _factory.setMaxIncrease(0);
-
-    // Make sure we have the right number of variables
-    int numVars = _factory.varNum();
-    int numNeeded = IP_LENGTH + PREFIX_LENGTH_LENGTH;
-    if (numVars < numNeeded) {
-      _factory.setVarNum(numNeeded);
-    }
-    _bitNames = new HashMap<>();
-    _ip = allocateBDDInteger("ip", IP_LENGTH, false);
-    _prefixLength = allocateBDDInteger("prefixLength", PREFIX_LENGTH_LENGTH, false);
-  }
-
-  /*
-   * Helper function that builds a map from BDD variable index
-   * to some more meaningful name. Helpful for debugging.
-   */
-  private void addBitNames(String s, int length, int index, boolean reverse) {
-    for (int i = index; i < index + length; i++) {
-      if (reverse) {
-        _bitNames.put(i, s + (length - 1 - (i - index)));
-      } else {
-        _bitNames.put(i, s + (i - index + 1));
-      }
-    }
-  }
-
-  /**
-   * Allocate a new single-bit {@link BDD} variable.
-   *
-   * @param name Used for debugging.
-   * @return A {@link BDD} representing the sentence "this variable is true" for the new variable.
-   */
-  public BDD allocateBDDBit(String name) {
-    if (_factory.varNum() < _nextFreeBDDVarIdx + 1) {
-      _factory.setVarNum(_nextFreeBDDVarIdx + 1);
-    }
-    _bitNames.put(_nextFreeBDDVarIdx, name);
-    BDD bdd = _factory.ithVar(_nextFreeBDDVarIdx);
-    _nextFreeBDDVarIdx++;
-    return bdd;
-  }
-
-  /**
-   * Allocate a new {@link BDDInteger} variable.
-   *
-   * @param name Used for debugging.
-   * @param bits The number of bits to allocate.
-   * @param reverse If true, reverse the BDD order of the bits.
-   * @return The new variable.
-   */
-  public BDDInteger allocateBDDInteger(String name, int bits, boolean reverse) {
-    if (_factory.varNum() < _nextFreeBDDVarIdx + bits) {
-      _factory.setVarNum(_nextFreeBDDVarIdx + bits);
-    }
-    BDDInteger var = makeFromIndex(_factory, bits, _nextFreeBDDVarIdx, reverse);
-    addBitNames(name, bits, _nextFreeBDDVarIdx, false);
-    _nextFreeBDDVarIdx += bits;
-    return var;
+  public BDDPrefix(BDDInteger ip, BDDInteger prefixLength) {
+    checkArgument(
+        ip.getBitvec().length == IP_LENGTH,
+        "Expected size of ip BDDInteger to be %d but was %d",
+        IP_LENGTH,
+        ip.getBitvec().length);
+    checkArgument(
+        prefixLength.getBitvec().length == PREFIX_LENGTH_LENGTH,
+        "Expected size of prefixLength BDDInteger to be %d but was %d",
+        PREFIX_LENGTH_LENGTH,
+        ip.getBitvec().length);
+    checkArgument(
+        ip.getFactory() == prefixLength.getFactory(),
+        "Expected ip BDDInteger and prefixLength BDDInteger to use same factory");
+    checkArgument(
+        ip.getFactory() != null,
+        "Expected ip BDDInteger and prefixLength BDDInteger to use non-null factory");
+    _ip = ip;
+    _factory = ip.getFactory();
+    _prefixLength = prefixLength;
   }
 
   @Override
@@ -138,17 +66,13 @@ public final class BDDPrefix {
     return Objects.hash(_ip, _prefixLength);
   }
 
-  /*
-   * Check if the first {@code length} bits match the BDDInteger
-   * representing {@code prefix}'s address.
-   *
-   * Note: We assume the prefix is never modified, so it will
-   * be a bitvector containing only the underlying variables:
-   * [var(0), ..., var(n)]
+  /**
+   * Check if the first {@code length} bits match the BDDInteger representing {@code prefix}'s
+   * address.
    */
   public @Nonnull BDD firstBitsEqual(BDD[] bits, Prefix prefix, int length) {
     long address = prefix.getStartIp().asLong();
-    BDD result = _factory.one();
+    BDD result = _ip.getFactory().one();
     for (int i = 0; i < length; i++) {
       boolean res = Ip.getBitAtPosition(address, i);
       if (res) {
@@ -160,16 +84,16 @@ public final class BDDPrefix {
     return result;
   }
 
-  /** @return The {@link BDDFactory} used by this packet. */
-  public BDDFactory getFactory() {
-    return _factory;
+  /** @return The {@link BDDFactory} used by this {@link BDDPrefix}. */
+  public @Nonnull BDDFactory getFactory() {
+    return _ip.getFactory();
   }
 
-  public BDDInteger getIp() {
+  public @Nonnull BDDInteger getIp() {
     return _ip;
   }
 
-  public BDDInteger getPrefixLength() {
+  public @Nonnull BDDInteger getPrefixLength() {
     return _prefixLength;
   }
 
@@ -200,7 +124,7 @@ public final class BDDPrefix {
    * routeFilterList}.
    */
   public @Nonnull BDD permittedByRouteFilterList(RouteFilterList routeFilterList) {
-    BDD result = _factory.zero();
+    BDD result = getFactory().zero();
     List<RouteFilterLine> lines = ImmutableList.copyOf(routeFilterList.getLines()).reverse();
     for (RouteFilterLine line : lines) {
       if (!line.getIpWildcard().isPrefix()) {
