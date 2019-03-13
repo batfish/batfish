@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.referencelibrary.InterfaceGroup;
 
@@ -41,7 +40,7 @@ public final class ReferenceInterfaceGroupInterfaceSpecifier implements Interfac
   }
 
   @Override
-  public Set<Interface> resolve(Set<String> nodes, SpecifierContext ctxt) {
+  public Set<NodeInterfacePair> resolve(Set<String> nodes, SpecifierContext ctxt) {
     InterfaceGroup interfaceGroup =
         ctxt.getReferenceBook(_bookName)
             .orElseThrow(
@@ -55,16 +54,11 @@ public final class ReferenceInterfaceGroupInterfaceSpecifier implements Interfac
                             + "' not found in ReferenceBook '"
                             + _bookName
                             + "'"));
-
     return nodes.stream()
         .map(n -> ctxt.getConfigs().get(n).getAllInterfaces().values())
         .flatMap(Collection::stream)
-        // we have a stream of Interfaces now
-        .filter(
-            v ->
-                interfaceGroup
-                    .getInterfaces()
-                    .contains(new NodeInterfacePair(v.getOwner().getHostname(), v.getName())))
+        .map(NodeInterfacePair::new)
+        .filter(interfaceGroup.getInterfaces()::contains)
         .collect(ImmutableSet.toImmutableSet());
   }
 }

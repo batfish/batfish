@@ -11,6 +11,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Zone;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.junit.Test;
 
 public class ZoneNameInterfaceSpecifierTest {
@@ -46,17 +47,21 @@ public class ZoneNameInterfaceSpecifierTest {
     // zone1 on node1 should only return two interfaces
     assertThat(
         new ZoneNameInterfaceSpecifier("zone1").resolve(ImmutableSet.of("node1"), ctxt),
-        equalTo(ImmutableSet.of(iface11, iface12)));
+        equalTo(ImmutableSet.of(new NodeInterfacePair(iface11), new NodeInterfacePair(iface12))));
 
     // case insensitivity
     assertThat(
         new ZoneNameInterfaceSpecifier("ZoNe1").resolve(ImmutableSet.of("node1"), ctxt),
-        equalTo(ImmutableSet.of(iface11, iface12)));
+        equalTo(ImmutableSet.of(new NodeInterfacePair(iface11), new NodeInterfacePair(iface12))));
 
     // zone1 on both nodes should only return three interfaces
     assertThat(
         new ZoneNameInterfaceSpecifier("zone1").resolve(ImmutableSet.of("node1", "node2"), ctxt),
-        equalTo(ImmutableSet.of(iface11, iface12, iface2)));
+        equalTo(
+            ImmutableSet.of(
+                new NodeInterfacePair(iface11),
+                new NodeInterfacePair(iface12),
+                new NodeInterfacePair(iface2))));
 
     // empty set with invalid zone names
     assertThat(
