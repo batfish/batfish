@@ -1,6 +1,7 @@
 package org.batfish.specifier;
 
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
@@ -9,6 +10,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.junit.Test;
 
 public class NodeSpecifierInterfaceSpecifierTest {
@@ -37,12 +39,12 @@ public class NodeSpecifierInterfaceSpecifierTest {
     assertThat(
         new NodeSpecifierInterfaceSpecifier(new NameNodeSpecifier("node1"))
             .resolve(ImmutableSet.of("node1", "node2"), ctxt),
-        equalTo(ImmutableSet.of(iface1node1, iface2node1)));
+        containsInAnyOrder(new NodeInterfacePair(iface1node1), new NodeInterfacePair(iface2node1)));
 
     // no common nodes
     assertThat(
         new NodeSpecifierInterfaceSpecifier(new NameNodeSpecifier("node1"))
             .resolve(ImmutableSet.of("node2"), ctxt),
-        equalTo(ImmutableSet.of()));
+        empty());
   }
 }

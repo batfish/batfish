@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /**
  * An {@link InterfaceSpecifier} that yields {@link Interface}s based on a {@code NodeSpecifier}.
@@ -34,9 +35,10 @@ public class NodeSpecifierInterfaceSpecifier implements InterfaceSpecifier {
   }
 
   @Override
-  public Set<Interface> resolve(Set<String> nodes, SpecifierContext ctxt) {
+  public Set<NodeInterfacePair> resolve(Set<String> nodes, SpecifierContext ctxt) {
     return Sets.intersection(_nodeSpecifier.resolve(ctxt), nodes).stream()
         .flatMap(n -> ctxt.getConfigs().get(n).getAllInterfaces().values().stream())
+        .map(NodeInterfacePair::new)
         .collect(ImmutableSet.toImmutableSet());
   }
 }

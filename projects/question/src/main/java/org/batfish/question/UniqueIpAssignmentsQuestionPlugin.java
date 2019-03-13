@@ -11,6 +11,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.TreeMultimap;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
@@ -22,6 +23,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerSummary;
@@ -31,6 +33,7 @@ import org.batfish.specifier.AllInterfacesInterfaceSpecifier;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.InterfaceSpecifier;
 import org.batfish.specifier.NodeSpecifier;
+import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierFactories;
 
 @AutoService(Plugin.class)
@@ -93,14 +96,16 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
 
     private SortedMap<Ip, SortedSet<NodeInterfacePair>> getDuplicateIps() {
       UniqueIpAssignmentsQuestion question = (UniqueIpAssignmentsQuestion) _question;
-      Set<String> nodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
+      SpecifierContext ctxt = _batfish.specifierContext();
+      Map<String, Configuration> configs = ctxt.getConfigs();
+      Set<String> nodes = question.getNodeSpecifier().resolve(ctxt);
       // we do nodes and interfaces separately because of interface equality is currently broken
       // (does not take owner node into account)
       return nodes.stream()
-          .flatMap(
-              n ->
-                  question.getInterfaceSpecifier()
-                      .resolve(ImmutableSet.of(n), _batfish.specifierContext()).stream())
+          .flatMap(n -> question.getInterfaceSpecifier().resolve(ImmutableSet.of(n), ctxt).stream())
+          .map(
+              ifaceId ->
+                  configs.get(ifaceId.getHostname()).getAllInterfaces().get(ifaceId.getInterface()))
           // narrow to interfaces of interest
           .filter(iface -> (!question.getEnabledIpsOnly() || iface.getActive()))
           // convert to stream of Entry<Ip, NodeInterfacePair>

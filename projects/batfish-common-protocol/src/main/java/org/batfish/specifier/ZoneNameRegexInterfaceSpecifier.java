@@ -6,7 +6,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Zone;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /**
  * An {@link InterfaceSpecifier} specifying interfaces that belong to Zones with names matching the
@@ -37,7 +38,7 @@ public final class ZoneNameRegexInterfaceSpecifier implements InterfaceSpecifier
   }
 
   @Override
-  public Set<Interface> resolve(Set<String> nodes, SpecifierContext ctxt) {
+  public Set<NodeInterfacePair> resolve(Set<String> nodes, SpecifierContext ctxt) {
     return nodes.stream()
         .map(n -> resolve(n, ctxt))
         .flatMap(Collection::stream)
@@ -45,16 +46,17 @@ public final class ZoneNameRegexInterfaceSpecifier implements InterfaceSpecifier
   }
 
   // This helper could be avoided if Zones stored Interfaces and not (just) interface names
-  private Set<Interface> resolve(String node, SpecifierContext ctxt) {
+  private Set<NodeInterfacePair> resolve(String node, SpecifierContext ctxt) {
     Configuration config = ctxt.getConfigs().get(node);
     Set<String> interfaceNamesInMatchingZones =
         config.getZones().values().stream()
             .filter(z -> _pattern.matcher(z.getName()).matches())
-            .map(z -> z.getInterfaces())
+            .map(Zone::getInterfaces)
             .flatMap(Collection::stream)
             .collect(ImmutableSet.toImmutableSet());
     return config.getAllInterfaces().values().stream()
         .filter(i -> interfaceNamesInMatchingZones.contains(i.getName()))
+        .map(NodeInterfacePair::new)
         .collect(ImmutableSet.toImmutableSet());
   }
 }

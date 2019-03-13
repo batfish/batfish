@@ -1,7 +1,7 @@
 package org.batfish.specifier;
 
 import java.util.Set;
-import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /** An abstract specification of a set of interfaces in the network. */
 public interface InterfaceSpecifier {
@@ -10,5 +10,5 @@ public interface InterfaceSpecifier {
    *
    * @param ctxt Information about the network that may be used to determine match.
    */
-  Set<Interface> resolve(Set<String> nodes, SpecifierContext ctxt);
+  Set<NodeInterfacePair> resolve(Set<String> nodes, SpecifierContext ctxt);
 }
