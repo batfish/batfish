@@ -11,6 +11,7 @@ import org.batfish.specifier.InterfaceSpecifier;
 import org.batfish.specifier.InterfaceWithConnectedIpsSpecifier;
 import org.batfish.specifier.NameInterfaceSpecifier;
 import org.batfish.specifier.NameRegexInterfaceSpecifier;
+import org.batfish.specifier.NodeSpecifierInterfaceSpecifier;
 import org.batfish.specifier.ReferenceInterfaceGroupInterfaceSpecifier;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.TypesInterfaceSpecifier;
@@ -70,6 +71,17 @@ final class ParboiledInterfaceSpecifier implements InterfaceSpecifier {
       return Sets.intersection(
           intersectionInterfaceAstNode.getLeft().accept(this),
           intersectionInterfaceAstNode.getRight().accept(this));
+    }
+
+    @Override
+    public Set<Interface> visitInterfaceWithNodeInterfaceAstNode(
+        InterfaceWithNodeInterfaceAstNode interfaceWithNodeInterfaceAstNode) {
+      return Sets.intersection(
+          new NodeSpecifierInterfaceSpecifier(
+                  new ParboiledNodeSpecifier(interfaceWithNodeInterfaceAstNode.getNodeAstNode()))
+              .resolve(_nodes, _ctxt),
+          new ParboiledInterfaceSpecifier(interfaceWithNodeInterfaceAstNode.getInterfaceAstNode())
+              .resolve(_nodes, _ctxt));
     }
 
     @Nonnull

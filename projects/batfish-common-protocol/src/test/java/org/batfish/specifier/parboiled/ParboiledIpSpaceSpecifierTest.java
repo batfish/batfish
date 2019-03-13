@@ -96,7 +96,7 @@ public class ParboiledIpSpaceSpecifierTest {
     assertThat(
         computeIpSpace(
             new LocationIpSpaceAstNode(
-                InterfaceLocationAstNode.createFromNodeInterface(
+                InterfaceLocationAstNode.createFromInterfaceWithNode(
                     new NameNodeAstNode(node1), new NameInterfaceAstNode(iface1))),
             ctxt),
         equalTo(Ip.parse("3.3.3.0").toIpSpace()));
