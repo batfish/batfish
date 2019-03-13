@@ -91,7 +91,7 @@ public class ParboiledLocationSpecifierTest {
   public void testResolveNodeInterface() {
     assertThat(
         new ParboiledLocationSpecifier(
-                InterfaceLocationAstNode.createFromNodeInterface(
+                InterfaceLocationAstNode.createFromInterfaceWithNode(
                     new NameNodeAstNode(_node1), new NameInterfaceAstNode(_iface1)))
             .resolve(_ctxt),
         equalTo(ImmutableSet.of(new InterfaceLocation(_node1, _iface1))));

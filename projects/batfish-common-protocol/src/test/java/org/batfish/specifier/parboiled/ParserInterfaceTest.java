@@ -42,6 +42,7 @@ public class ParserInterfaceTest {
 
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder()
+            .setNodes(ImmutableSet.of("node1"))
             .setInterfaces(ImmutableSet.of(new NodeInterfacePair("node1", "iface1")))
             .build();
 
@@ -62,11 +63,22 @@ public class ParserInterfaceTest {
         ImmutableSet.copyOf(pac.run()),
         equalTo(
             ImmutableSet.of(
-                new AutocompleteSuggestion(
-                    "iface1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
+                // valid operators
                 new AutocompleteSuggestion("(", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("/", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
+
+                // node based completions
+                new AutocompleteSuggestion(
+                    "node1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
+                new AutocompleteSuggestion(
+                    "@role", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion(
+                    "@deviceType", true, null, RANK_STRING_LITERAL, query.length()),
+
+                // interface based completions
+                new AutocompleteSuggestion(
+                    "iface1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
                 new AutocompleteSuggestion(
                     "@connectedTo", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
@@ -84,6 +96,7 @@ public class ParserInterfaceTest {
 
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder()
+            .setNodes(ImmutableSet.of("node1"))
             .setInterfaces(
                 ImmutableSet.of(
                     new NodeInterfacePair("node1", "iface1"),
@@ -113,7 +126,8 @@ public class ParserInterfaceTest {
                     "iface11", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
                 new AutocompleteSuggestion("\\", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("&", true, null, RANK_STRING_LITERAL, query.length()))));
+                new AutocompleteSuggestion("&", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion("[", true, null, RANK_STRING_LITERAL, query.length()))));
   }
 
   @Test
@@ -232,6 +246,29 @@ public class ParserInterfaceTest {
     // old style
     assertThat(ParserUtils.getAst(getRunner().run("zone(zone-name)")), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run(" zone ( zone-name ) ")), equalTo(expectedAst));
+  }
+
+  @Test
+  public void testParseInterfaceWithNodeSimple() {
+    InterfaceAstNode expectedAst =
+        new InterfaceWithNodeInterfaceAstNode(
+            new NameNodeAstNode("n"), new NameInterfaceAstNode("e"));
+
+    assertThat(ParserUtils.getAst(getRunner().run("n[e]")), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run(" n [ e ] ")), equalTo(expectedAst));
+  }
+
+  @Test
+  public void testParseInterfaceWithNodeComplexNodeTerm() {
+    InterfaceAstNode expectedAst =
+        new InterfaceWithNodeInterfaceAstNode(
+            new UnionNodeAstNode(new NameNodeAstNode("n1"), new NameNodeAstNode("n2")),
+            new UnionInterfaceAstNode(
+                new NameInterfaceAstNode("e1"), new NameInterfaceAstNode("e2")));
+
+    assertThat(ParserUtils.getAst(getRunner().run("(n1, n2)[e1, e2]")), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run("(n1, n2)[(e1, e2)]")), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run("(n1, (n2))[e1, (e2)]")), equalTo(expectedAst));
   }
 
   @Test
