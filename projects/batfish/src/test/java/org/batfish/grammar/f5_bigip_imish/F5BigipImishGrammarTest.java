@@ -39,7 +39,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
-import net.sf.javabdd.BDD;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
@@ -118,7 +117,8 @@ public final class F5BigipImishGrammarTest {
   }
 
   private void initBddPrefix() {
-    _bddPrefix = new BDDPrefix();
+    BDDPacket packet = new BDDPacket();
+    _bddPrefix = new BDDPrefix(packet.getDstIp(), packet.getDscp());
   }
 
   private BgpRoute.Builder makeBgpOutputRouteBuilder() {
@@ -176,14 +176,6 @@ public final class F5BigipImishGrammarTest {
                         .build()))));
   }
 
-  private @Nonnull BDD toBDD(PrefixRange prefixRange) {
-    return _bddPrefix.inPrefixRange(prefixRange);
-  }
-
-  private @Nonnull BDD toBDD(RouteFilterList routeFilterList) {
-    return _bddPrefix.permittedByRouteFilterList(routeFilterList);
-  }
-
   @Test
   public void testAccessListToRouteFilter() throws IOException {
     Configuration c = parseConfig("f5_bigip_imish_route_map");
@@ -192,8 +184,6 @@ public final class F5BigipImishGrammarTest {
 
     // setup
     initBddPrefix();
-    toBDD(
-        new PrefixRange(Prefix.strict("192.0.2.0/24"), new SubRange(24, Prefix.MAX_PREFIX_LENGTH)));
 
     // acl1
     assertThat(c.getRouteFilterLists(), hasKey(acl1RfName));
@@ -201,39 +191,32 @@ public final class F5BigipImishGrammarTest {
     RouteFilterList acl1Rf = c.getRouteFilterLists().get(acl1RfName);
 
     // acl1 should permit everything
-    BDD acl1RfBDD = toBDD(acl1Rf);
-    System.err.println(String.format("acl1RfBDD: %s", acl1RfBDD));
-    BDD expectedAcl1RfBDD =
-        toBDD(new PrefixRange(Prefix.ZERO, new SubRange(0, Prefix.MAX_PREFIX_LENGTH)));
-    System.err.println(String.format("expectedAcl1RfBDD: %s", acl1RfBDD));
-    assertThat(toBDD(acl1Rf), equalTo(expectedAcl1RfBDD));
+    assertThat(
+        _bddPrefix.permittedByRouteFilterList(acl1Rf),
+        equalTo(
+            _bddPrefix.inPrefixRange(
+                new PrefixRange(Prefix.ZERO, new SubRange(0, Prefix.MAX_PREFIX_LENGTH)))));
 
     // acl2
     assertThat(c.getRouteFilterLists(), hasKey(acl2RfName));
 
     RouteFilterList acl2Rf = c.getRouteFilterLists().get(acl2RfName);
 
-    BDD acl2RfBDD = toBDD(acl2Rf);
-    BDD bdd24 =
-        toBDD(
-            new PrefixRange(
-                Prefix.strict("192.0.2.0/24"), new SubRange(24, Prefix.MAX_PREFIX_LENGTH)));
-    BDD bdd32 =
-        toBDD(
-            new PrefixRange(
-                Prefix.strict("192.0.2.128/32"),
-                new SubRange(Prefix.MAX_PREFIX_LENGTH, Prefix.MAX_PREFIX_LENGTH)));
-    BDD bddNot32 = bdd32.not();
-    BDD bdd24AndNot32 = bdd24.and(bddNot32);
-    System.err.println(String.format("acl2RfBDD: %s", acl2RfBDD));
-    System.err.println(String.format("bdd24: %s", bdd24));
-    System.err.println(String.format("bdd32: %s", bdd32));
-    System.err.println(String.format("bddNot32: %s", bddNot32));
-    System.err.println(String.format("bdd24AndNot32: %s", bdd24AndNot32));
     assertThat(
         "acl2 permits packets with source IP in 192.0.2.0/24 except 192.0.2.128",
-        acl2RfBDD,
-        equalTo(bdd24AndNot32));
+        _bddPrefix.permittedByRouteFilterList(acl2Rf),
+        equalTo(
+            _bddPrefix
+                .inPrefixRange(
+                    new PrefixRange(
+                        Prefix.strict("192.0.2.0/24"), new SubRange(24, Prefix.MAX_PREFIX_LENGTH)))
+                .and(
+                    _bddPrefix
+                        .inPrefixRange(
+                            new PrefixRange(
+                                Prefix.strict("192.0.2.128/32"),
+                                new SubRange(Prefix.MAX_PREFIX_LENGTH, Prefix.MAX_PREFIX_LENGTH)))
+                        .not())));
   }
 
   @Test
@@ -562,5 +545,4 @@ public final class F5BigipImishGrammarTest {
     BDDSourceManager mgr = BDDSourceManager.forInterfaces(pkt, ImmutableSet.of("dummy"));
     return new IpAccessListToBddImpl(pkt, mgr, ImmutableMap.of(), ImmutableMap.of());
   }
-
 }
