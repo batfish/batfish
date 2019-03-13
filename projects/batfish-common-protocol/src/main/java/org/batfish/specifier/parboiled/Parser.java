@@ -155,7 +155,16 @@ public class Parser extends CommonParser {
    * <pre>
    *   interfaceSpec := interfaceTerm [{@literal &} | , | \ interfaceTerm]*
    *
-   *   interfaceTerm := @connectedTo(ipSpaceSpec)  // non-@ versions also supported for back compat
+   *   interfaceTerm := interfaceWithNode
+   *                    | interfaceWithoutNode
+   *                    | ( interfaceTerm )
+   *
+   *   interfaceWithNode := nodeTerm [interfaceWithoutNode]
+   *
+   *   interfaceWithoutNode := interfaceWithoutNodeTerm [{@literal &} | , | \ interfaceWithoutNodeTerm]*
+   *
+   *   interfaceWithoutNodeTerm
+   *                        := @connectedTo(ipSpaceSpec)  // non-@ versions also supported for back compat
    *                        | @interfacegroup(a, b)
    *                        | @interfaceType(interfaceType)
    *                        | @vrf(vrfName)
@@ -192,16 +201,55 @@ public class Parser extends CommonParser {
   }
 
   public Rule InterfaceTerm() {
+    return FirstOf(InterfaceWithNode(), InterfaceWithoutNode(), InterfaceParens());
+  }
+
+  public Rule InterfaceWithNode() {
+    return Sequence(
+        NodeTerm(),
+        WhiteSpace(),
+        "[ ",
+        InterfaceWithoutNode(),
+        WhiteSpace(),
+        "] ",
+        push(new InterfaceWithNodeInterfaceAstNode(pop(1), pop())));
+  }
+
+  public Rule InterfaceWithoutNode() {
+    Var<Character> op = new Var<>();
+    return Sequence(
+        InterfaceWithoutNodeIntersection(),
+        WhiteSpace(),
+        ZeroOrMore(
+            FirstOf(", ", "\\ "),
+            op.set(matchedChar()),
+            InterfaceWithoutNodeIntersection(),
+            push(SetOpInterfaceAstNode.create(op.get(), pop(1), pop())),
+            WhiteSpace()));
+  }
+
+  public Rule InterfaceWithoutNodeIntersection() {
+    return Sequence(
+        InterfaceWithoutNodeTerm(),
+        WhiteSpace(),
+        ZeroOrMore(
+            "& ",
+            InterfaceWithoutNodeTerm(),
+            push(new IntersectionInterfaceAstNode(pop(1), pop())),
+            WhiteSpace()));
+  }
+
+  public Rule InterfaceWithoutNodeTerm() {
     return FirstOf(
         InterfaceFunc(),
         InterfaceNameRegexDeprecated(),
         InterfaceNameRegex(),
         InterfaceName(),
-        InterfaceParens());
+        InterfaceWithoutNodeParens());
   }
 
   /**
-   * To avoid ambiguity in location specification, interface and node specifiers should be distinct
+   * To avoid ambiguity in location specification, interface and node functions should be distinct
    */
   public Rule InterfaceFunc() {
     return FirstOf(
@@ -376,6 +424,11 @@ public class Parser extends CommonParser {
   public Rule InterfaceParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
     return Sequence("( ", InterfaceSpec(), WhiteSpace(), ") ");
+  }
+
+  public Rule InterfaceWithoutNodeParens() {
+    // Leave the stack as is -- no need to remember that this was a parenthetical term
+    return Sequence("( ", InterfaceWithoutNode(), WhiteSpace(), ") ");
   }
 
   /**
@@ -583,16 +636,18 @@ public class Parser extends CommonParser {
         push(new EnterLocationAstNode(pop())));
   }
 
+  /**
+   * LocationInterface specifies interfaces to use as locations. It is not simply pointing to
+   * interfaceSpec because of how we want to treat a simple string like "foo". We want to treat that
+   * string as a node name, not an interface name which interfaceSpec or interfaceWithoutNode will
+   * do. For that reason, valid inputs for LocationInterface are InterfaceWithNode, NodeTerm, and
+   * InterfaceFunc. To avoid confusion, it is a requirement that functions in NodeTerm (e.g., @role)
+   * and InterfaceFunc (e.g., @vrf) be distinct.
+   */
   public Rule LocationInterface() {
     return FirstOf(
         Sequence(
-            NodeTerm(),
-            WhiteSpace(),
-            "[ ",
-            InterfaceSpec(),
-            WhiteSpace(),
-            "] ",
-            push(InterfaceLocationAstNode.createFromNodeInterface(pop(1), pop()))),
+            InterfaceWithNode(), push(InterfaceLocationAstNode.createFromInterfaceWithNode(pop()))),
         Sequence(NodeTerm(), WhiteSpace(), push(InterfaceLocationAstNode.createFromNode(pop()))),
         Sequence(
             InterfaceFunc(),
