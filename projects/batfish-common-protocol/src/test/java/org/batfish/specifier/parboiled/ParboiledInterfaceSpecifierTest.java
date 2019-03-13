@@ -1,5 +1,8 @@
 package org.batfish.specifier.parboiled;
 
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -85,7 +88,7 @@ public class ParboiledInterfaceSpecifierTest {
     assertThat(
         new ParboiledInterfaceSpecifier(new InterfaceGroupInterfaceAstNode(interfaceGroup, book))
             .resolve(_nodes, _ctxt),
-        equalTo(ImmutableSet.of(new NodeInterfacePair(_iface11))));
+        contains(new NodeInterfacePair(_iface11)));
   }
 
   @Test
@@ -97,7 +100,7 @@ public class ParboiledInterfaceSpecifierTest {
                     new NameNodeAstNode(_node1.getHostname()),
                     new NameRegexInterfaceAstNode(".*2")))
             .resolve(_nodes, _ctxt),
-        equalTo(ImmutableSet.of(_iface12)));
+        contains(new NodeInterfacePair(_iface12)));
   }
 
   @Test
@@ -108,13 +111,13 @@ public class ParboiledInterfaceSpecifierTest {
                 new IntersectionInterfaceAstNode(
                     new NameRegexInterfaceAstNode("iface1.*"), new NameInterfaceAstNode("iface11")))
             .resolve(_nodes, _ctxt),
-        equalTo(ImmutableSet.of(new NodeInterfacePair(_iface11))));
+        contains(new NodeInterfacePair(_iface11)));
     assertThat(
         new ParboiledInterfaceSpecifier(
                 new IntersectionInterfaceAstNode(
                     new NameInterfaceAstNode("iface2"), new NameRegexInterfaceAstNode("iface1.*")))
             .resolve(_nodes, _ctxt),
-        equalTo(ImmutableSet.of()));
+        empty());
   }
 
   @Test
@@ -122,12 +125,12 @@ public class ParboiledInterfaceSpecifierTest {
     build();
     assertThat(
         new ParboiledInterfaceSpecifier(new NameInterfaceAstNode("iface11")).resolve(_nodes, _ctxt),
-        equalTo(ImmutableSet.of(new NodeInterfacePair(_iface11))));
+        contains(new NodeInterfacePair(_iface11)));
     // This regex looking name below should not match anything
     assertThat(
         new ParboiledInterfaceSpecifier(new NameInterfaceAstNode("iface1.*"))
             .resolve(_nodes, _ctxt),
-        equalTo(ImmutableSet.of()));
+        empty());
   }
 
   @Test
@@ -136,7 +139,7 @@ public class ParboiledInterfaceSpecifierTest {
     assertThat(
         new ParboiledInterfaceSpecifier(new NameRegexInterfaceAstNode("iface.*2"))
             .resolve(_nodes, _ctxt),
-        equalTo(ImmutableSet.of(new NodeInterfacePair(_iface12), new NodeInterfacePair(_iface2))));
+        containsInAnyOrder(new NodeInterfacePair(_iface12), new NodeInterfacePair(_iface2)));
   }
 
   @Test
@@ -146,7 +149,7 @@ public class ParboiledInterfaceSpecifierTest {
     build();
     assertThat(
         new ParboiledInterfaceSpecifier(new TypeInterfaceAstNode("vpn")).resolve(_nodes, _ctxt),
-        equalTo(ImmutableSet.of(new NodeInterfacePair(_iface12))));
+        contains(new NodeInterfacePair(_iface12)));
   }
 
   @Test
@@ -157,7 +160,7 @@ public class ParboiledInterfaceSpecifierTest {
                 new UnionInterfaceAstNode(
                     new NameInterfaceAstNode("iface11"), new NameInterfaceAstNode("iface2")))
             .resolve(_nodes, _ctxt),
-        equalTo(ImmutableSet.of(new NodeInterfacePair(_iface11), new NodeInterfacePair(_iface2))));
+        containsInAnyOrder(new NodeInterfacePair(_iface11), new NodeInterfacePair(_iface2)));
   }
 
   @Test
@@ -169,7 +172,7 @@ public class ParboiledInterfaceSpecifierTest {
     _node1.setVrfs(ImmutableMap.of("node1", vrf1));
     assertThat(
         new ParboiledInterfaceSpecifier(new VrfInterfaceAstNode("vrf1")).resolve(_nodes, _ctxt),
-        equalTo(ImmutableSet.of(new NodeInterfacePair(_iface11))));
+        contains(new NodeInterfacePair(_iface11)));
   }
 
   @Test
@@ -181,6 +184,6 @@ public class ParboiledInterfaceSpecifierTest {
     build();
     assertThat(
         new ParboiledInterfaceSpecifier(new ZoneInterfaceAstNode("zone1")).resolve(_nodes, _ctxt),
-        equalTo(ImmutableSet.of(new NodeInterfacePair(_iface11), new NodeInterfacePair(_iface2))));
+        containsInAnyOrder(new NodeInterfacePair(_iface11), new NodeInterfacePair(_iface2)));
   }
 }
