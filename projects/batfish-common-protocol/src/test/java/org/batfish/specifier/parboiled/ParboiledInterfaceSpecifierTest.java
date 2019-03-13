@@ -89,6 +89,18 @@ public class ParboiledInterfaceSpecifierTest {
   }
 
   @Test
+  public void testResolveInterfaceWithNode() {
+    build();
+    assertThat(
+        new ParboiledInterfaceSpecifier(
+                new InterfaceWithNodeInterfaceAstNode(
+                    new NameNodeAstNode(_node1.getHostname()),
+                    new NameRegexInterfaceAstNode(".*2")))
+            .resolve(_nodes, _ctxt),
+        equalTo(ImmutableSet.of(_iface12)));
+  }
+
+  @Test
   public void testResolveIntersection() {
     build();
     assertThat(
