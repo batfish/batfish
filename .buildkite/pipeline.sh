@@ -23,7 +23,7 @@ cat <<EOF
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
           image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
           always-pull: true
-  - label: ":python: Templates"
+  - label: ":json: Templates"
     command:
       - "python3 -m virtualenv .venv"
       - ". .venv/bin/activate"
