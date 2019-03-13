@@ -1,6 +1,8 @@
 package org.batfish.specifier;
 
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
@@ -10,6 +12,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.junit.Test;
 
 public class VrfNameInterfaceSpecifierTest {
@@ -46,24 +49,22 @@ public class VrfNameInterfaceSpecifierTest {
     // vrf1 on node1 should yield one interface
     assertThat(
         new VrfNameInterfaceSpecifier("vrf1").resolve(ImmutableSet.of("node1"), ctxt),
-        equalTo(ImmutableSet.of(iface11)));
+        contains(new NodeInterfacePair(iface11)));
 
     // vrf1 on node1, node2 should yield one interface
     assertThat(
         new VrfNameInterfaceSpecifier("vrf1").resolve(ImmutableSet.of("node1", "node2"), ctxt),
-        equalTo(ImmutableSet.of(iface11, iface2)));
+        containsInAnyOrder(new NodeInterfacePair(iface11), new NodeInterfacePair(iface2)));
 
     // case insensitivity
     assertThat(
         new VrfNameInterfaceSpecifier("VrF1").resolve(ImmutableSet.of("node1"), ctxt),
-        equalTo(ImmutableSet.of(iface11)));
+        contains(new NodeInterfacePair(iface11)));
 
     // bad names
     assertThat(
-        new VrfNameInterfaceSpecifier("vrf").resolve(ImmutableSet.of("node1"), ctxt),
-        equalTo(ImmutableSet.of()));
+        new VrfNameInterfaceSpecifier("vrf").resolve(ImmutableSet.of("node1"), ctxt), empty());
     assertThat(
-        new VrfNameInterfaceSpecifier("v.*").resolve(ImmutableSet.of("node1"), ctxt),
-        equalTo(ImmutableSet.of()));
+        new VrfNameInterfaceSpecifier("v.*").resolve(ImmutableSet.of("node1"), ctxt), empty());
   }
 }

@@ -11,6 +11,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.junit.Test;
 
 public class VrfNameRegexInterfaceSpecifierTest {
@@ -44,6 +45,6 @@ public class VrfNameRegexInterfaceSpecifierTest {
     assertThat(
         new VrfNameRegexInterfaceSpecifier(Pattern.compile("vrf1"))
             .resolve(ImmutableSet.of("node1"), ctxt),
-        equalTo(ImmutableSet.of(iface11)));
+        equalTo(ImmutableSet.of(new NodeInterfacePair(iface11))));
   }
 }

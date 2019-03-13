@@ -1,7 +1,6 @@
 package org.batfish.datamodel;
 
 import java.io.Serializable;
-import java.util.Map;
 import java.util.Set;
 
 public interface GenericRib<R extends AbstractRouteDecorator> extends Serializable {
@@ -15,23 +14,6 @@ public interface GenericRib<R extends AbstractRouteDecorator> extends Serializab
    *     preferable (i.e. for multipath routing); 1 if lhs route is strictly more preferred than rhs
    */
   int comparePreference(R lhs, R rhs);
-
-  /**
-   * Returns a mapping from prefixes of forwarding routes in the RIB to the IPs for which that
-   * prefix is the longest match in the RIB (among prefixes of forwarding routes).
-   *
-   * <p><strong>NOTE</strong>: this method only considers forwarding routes in the Rib, i.e. those
-   * for which {@link AbstractRoute#getNonForwarding()} returns false.
-   */
-  Map<Prefix, IpSpace> getMatchingIps();
-
-  /**
-   * Get all the IPs that match a forwarding route in the RIB.
-   *
-   * <p><strong>NOTE</strong>: this method only considers forwarding routes in the Rib, i.e. those
-   * for which {@link AbstractRoute#getNonForwarding()} returns false.
-   */
-  IpSpace getRoutableIps();
 
   /** Return set of {@link AbstractRoute abstract routes} this RIB contains. */
   Set<AbstractRoute> getRoutes();

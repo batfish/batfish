@@ -13,6 +13,7 @@ git_repository(
     name = "org_pubref_rules_maven",
     commit = "fce4f35b5a36109ed4faa820606c518870805bde",
     remote = "https://github.com/dhalperi/rules_maven",
+    shallow_since = "1541091071 -0700",
 )
 
 load("@org_pubref_rules_maven//maven:rules.bzl", "maven_repositories", "maven_repository")
@@ -285,7 +286,7 @@ maven_repository(
     transitive_deps = [
         "9420ba32c29217b54eebd26ff7f9234d31c3fbb2:org.hamcrest:hamcrest:2.1",
     ],
-     deps = [
+    deps = [
         "org.hamcrest:hamcrest:2.1",
     ],
 )

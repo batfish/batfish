@@ -11,15 +11,12 @@ public class MockRib implements GenericRib<AbstractRoute> {
   public static class Builder {
 
     private Map<Ip, Set<AbstractRoute>> _longestPrefixMatchResults;
-    private Map<Prefix, IpSpace> _matchingIps;
     private Set<AbstractRoute> _mergeRouteTrues;
-    private IpSpace _routableIps;
     private Comparator<AbstractRoute> _routePreferenceComparator;
     private Set<AbstractRoute> _routes;
 
     private Builder() {
       _longestPrefixMatchResults = ImmutableMap.of();
-      _matchingIps = ImmutableMap.of();
       _mergeRouteTrues = ImmutableSet.of();
       _routePreferenceComparator = Comparator.naturalOrder();
       _routes = ImmutableSet.of();
@@ -35,18 +32,8 @@ public class MockRib implements GenericRib<AbstractRoute> {
       return this;
     }
 
-    public Builder setMatchingIps(Map<Prefix, IpSpace> matchingIps) {
-      _matchingIps = matchingIps;
-      return this;
-    }
-
     public Builder setMergeRouteTrues(Set<AbstractRoute> mergeRouteTrues) {
       _mergeRouteTrues = mergeRouteTrues;
-      return this;
-    }
-
-    public Builder setRoutableIps(IpSpace routableIps) {
-      _routableIps = routableIps;
       return this;
     }
 
@@ -69,17 +56,13 @@ public class MockRib implements GenericRib<AbstractRoute> {
   }
 
   private final Map<Ip, Set<AbstractRoute>> _longestPrefixMatchResults;
-  private final Map<Prefix, IpSpace> _matchingIps;
   private final Set<AbstractRoute> _mergeRouteTrues;
-  private final IpSpace _routableIps;
   private final Comparator<AbstractRoute> _routePreferenceComparator;
   private final Set<AbstractRoute> _routes;
 
   private MockRib(Builder builder) {
     _longestPrefixMatchResults = builder._longestPrefixMatchResults;
-    _matchingIps = builder._matchingIps;
     _mergeRouteTrues = builder._mergeRouteTrues;
-    _routableIps = builder._routableIps;
     _routePreferenceComparator = builder._routePreferenceComparator;
     _routes = builder._routes;
   }
@@ -87,16 +70,6 @@ public class MockRib implements GenericRib<AbstractRoute> {
   @Override
   public int comparePreference(AbstractRoute lhs, AbstractRoute rhs) {
     return _routePreferenceComparator.compare(lhs, rhs);
-  }
-
-  @Override
-  public Map<Prefix, IpSpace> getMatchingIps() {
-    return _matchingIps;
-  }
-
-  @Override
-  public IpSpace getRoutableIps() {
-    return _routableIps;
   }
 
   @Override

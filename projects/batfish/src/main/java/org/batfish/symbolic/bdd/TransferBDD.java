@@ -696,24 +696,20 @@ class TransferBDD {
    * is not modified, and thus will contain only the underlying variables:
    * [var(0), ..., var(n)]
    */
-  private BDD isRelevantFor(BDDRoute record, PrefixRange range) {
+  static BDD isRelevantFor(BDDRoute record, PrefixRange range) {
     Prefix p = range.getPrefix();
+    BDD prefixMatch = firstBitsEqual(record.getPrefix().getBitvec(), p, p.getPrefixLength());
+
+    BDDInteger prefixLength = record.getPrefixLength();
     SubRange r = range.getLengthRange();
-    int len = p.getPrefixLength();
     int lower = r.getStart();
     int upper = r.getEnd();
+    BDD lenMatch =
+        lower == upper
+            ? prefixLength.value(lower)
+            : prefixLength.geq(lower).and(prefixLength.leq(upper));
 
-    BDD lowerBitsMatch = firstBitsEqual(record.getPrefix().getBitvec(), p, len);
-    BDD acc = factory.zero();
-    if (lower == 0 && upper == 32) {
-      acc = factory.one();
-    } else {
-      for (int i = lower; i <= upper; i++) {
-        BDD equalLen = record.getPrefixLength().value(i);
-        acc = acc.or(equalLen);
-      }
-    }
-    return acc.and(lowerBitsMatch);
+    return lenMatch.and(prefixMatch);
   }
 
   /*

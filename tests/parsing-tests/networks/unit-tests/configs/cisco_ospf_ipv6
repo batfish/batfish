@@ -1,0 +1,19 @@
+!
+hostname cisco_ospf_ipv6
+!
+interface ethernet0/0
+ ip address 2.2.2.0 255.255.255.0
+ ip router ospf 1 area 0.0.0.0
+ ip ospf shutdown
+!
+!
+ipv6 router ospf 1
+ router-id 1.2.3.4
+ log-adjacency-changes
+ log-adjacency-changes detail
+ distribute-list prefix-list SWITCHLAN in
+ distribute-list prefix-list SWITCHLAN-OUT out Ethernet0/0
+ passive-interface default
+ timers throttle lsa 0 50 5000
+ timers throttle spf 50 50 5000
+!

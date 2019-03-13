@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /** A {@link InterfaceSpecifier} that returns all interfaces. */
 @ParametersAreNonnullByDefault
@@ -25,10 +25,11 @@ public final class AllInterfacesInterfaceSpecifier implements InterfaceSpecifier
   }
 
   @Override
-  public Set<Interface> resolve(Set<String> nodes, SpecifierContext ctxt) {
+  public Set<NodeInterfacePair> resolve(Set<String> nodes, SpecifierContext ctxt) {
     return ctxt.getConfigs().values().stream()
         .filter(c -> nodes.contains(c.getHostname()))
         .flatMap(c -> c.getAllInterfaces().values().stream())
+        .map(NodeInterfacePair::new)
         .collect(ImmutableSet.toImmutableSet());
   }
 }

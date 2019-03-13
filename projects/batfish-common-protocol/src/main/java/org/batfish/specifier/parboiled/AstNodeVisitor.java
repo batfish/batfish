@@ -75,4 +75,7 @@ interface AstNodeVisitor<T> {
   T visitEnterLocationAstNode(EnterLocationAstNode enterLocationAstNode);
 
   T visitLocationIpSpaceAstNode(LocationIpSpaceAstNode locationIpSpaceAstNode);
+
+  T visitInterfaceWithNodeInterfaceAstNode(
+      InterfaceWithNodeInterfaceAstNode interfaceWithNodeInterfaceAstNode);
 }

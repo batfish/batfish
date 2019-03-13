@@ -147,8 +147,7 @@ public class NodJobAclTest {
         SynthesizerInputImpl.builder()
             .setConfigurations(configs)
             .setForwardingAnalysis(
-                new ForwardingAnalysisImpl(
-                    configs, dataPlane.getRibs(), dataPlane.getFibs(), topology))
+                new ForwardingAnalysisImpl(configs, dataPlane.getFibs(), topology))
             .setSimplify(false)
             .setTopology(topology)
             .build();
@@ -285,8 +284,7 @@ public class NodJobAclTest {
         SynthesizerInputImpl.builder()
             .setConfigurations(configs)
             .setForwardingAnalysis(
-                new ForwardingAnalysisImpl(
-                    configs, dataPlane.getRibs(), dataPlane.getFibs(), topology))
+                new ForwardingAnalysisImpl(configs, dataPlane.getFibs(), topology))
             .setSimplify(false)
             .setTopology(topology)
             .build();
@@ -428,8 +426,7 @@ public class NodJobAclTest {
         SynthesizerInputImpl.builder()
             .setConfigurations(configs)
             .setForwardingAnalysis(
-                new ForwardingAnalysisImpl(
-                    configs, dataPlane.getRibs(), dataPlane.getFibs(), topology))
+                new ForwardingAnalysisImpl(configs, dataPlane.getFibs(), topology))
             .setSimplify(true)
             .setSpecialize(false)
             .setHeaderSpace(headerSpace)
