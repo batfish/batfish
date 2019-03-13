@@ -44,7 +44,7 @@ public final class VrfNameRegexInterfaceSpecifier implements InterfaceSpecifier 
         .filter(v -> _pattern.matcher(v.getName()).matches())
         .map(v -> v.getInterfaces().values())
         .flatMap(Collection::stream)
-        .map(anInterface -> new NodeInterfacePair(anInterface))
+        .map(NodeInterfacePair::new)
         .collect(ImmutableSet.toImmutableSet());
   }
 }

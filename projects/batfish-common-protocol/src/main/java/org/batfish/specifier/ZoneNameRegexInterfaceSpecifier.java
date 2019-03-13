@@ -56,7 +56,7 @@ public final class ZoneNameRegexInterfaceSpecifier implements InterfaceSpecifier
             .collect(ImmutableSet.toImmutableSet());
     return config.getAllInterfaces().values().stream()
         .filter(i -> interfaceNamesInMatchingZones.contains(i.getName()))
-        .map(anInterface -> new NodeInterfacePair(anInterface))
+        .map(NodeInterfacePair::new)
         .collect(ImmutableSet.toImmutableSet());
   }
 }

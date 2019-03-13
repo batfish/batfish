@@ -41,7 +41,7 @@ public final class TypesInterfaceSpecifier implements InterfaceSpecifier {
         .map(configs::get)
         .flatMap(config -> config.getAllInterfaces().values().stream())
         .filter(iface -> _interfaceTypes.contains(iface.getInterfaceType()))
-        .map(anInterface -> new NodeInterfacePair(anInterface))
+        .map(NodeInterfacePair::new)
         .collect(ImmutableSet.toImmutableSet());
   }
 

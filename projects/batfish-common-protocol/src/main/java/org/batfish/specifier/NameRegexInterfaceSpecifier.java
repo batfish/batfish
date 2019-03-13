@@ -43,7 +43,7 @@ public final class NameRegexInterfaceSpecifier implements InterfaceSpecifier {
         .map(c -> c.getAllInterfaces().values())
         .flatMap(Collection::stream)
         .filter(iface -> _pattern.matcher(iface.getName()).matches())
-        .map(anInterface -> new NodeInterfacePair(anInterface))
+        .map(NodeInterfacePair::new)
         .collect(ImmutableSet.toImmutableSet());
   }
 }
