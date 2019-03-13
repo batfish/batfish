@@ -249,7 +249,7 @@ public class Parser extends CommonParser {
   }
 
   /**
-   * To avoid ambiguity in location specification, interface and node specifiers should be distinct
+   * To avoid ambiguity in location specification, interface and node functions should be distinct
    */
   public Rule InterfaceFunc() {
     return FirstOf(
@@ -636,6 +636,14 @@ public class Parser extends CommonParser {
         push(new EnterLocationAstNode(pop())));
   }
 
+  /**
+   * LocationInterface specifies interfaces to use as locations. It is not simply pointing to
+   * interfaceSpec because of how we want to treat a simple string like "foo". We want to treat that
+   * string as a node name, not an interface name which interfaceSpec or interfaceWithoutNode will
+   * do. For that reason, valid inputs for LocationInterface are InterfaceWithNode, NodeTerm, and
+   * InterfaceFunc. To avoid confusion, it is a requirement that functions in NodeTerm (e.g., @role)
+   * and InterfaceFunc (e.g., @vrf) be distinct.
+   */
   public Rule LocationInterface() {
     return FirstOf(
         Sequence(
