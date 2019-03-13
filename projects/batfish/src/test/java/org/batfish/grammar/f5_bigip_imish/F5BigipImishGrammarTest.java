@@ -19,6 +19,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedRefer
 import static org.batfish.datamodel.matchers.KernelRouteMatchers.isKernelRouteThat;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.representation.f5_bigip.F5BigipConfiguration.computeAccessListRouteFilterName;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_PROCESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.ROUTE_MAP;
@@ -49,16 +50,20 @@ import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
@@ -135,17 +140,73 @@ public final class F5BigipImishGrammarTest {
   @Test
   public void testAccessList() throws IOException {
     Configuration c = parseConfig("f5_bigip_imish_access_list");
+    String acl1Name = "acl1";
+    String acl2Name = "acl2";
 
     // setup
     IpAccessListToBdd toBDD = toBDD();
 
     // acl1
-    assertThat(c.getIpAccessLists(), hasKey("acl1"));
+    assertThat(c.getIpAccessLists(), hasKey(acl1Name));
 
-    IpAccessList acl1 = c.getIpAccessLists().get("acl1");
+    IpAccessList acl1 = c.getIpAccessLists().get(acl1Name);
 
     // acl1 should permit everything
     assertTrue(toBDD.toBdd(acl1).isOne());
+
+    // acl2
+    assertThat(c.getIpAccessLists(), hasKey(acl2Name));
+
+    IpAccessList acl2 = c.getIpAccessLists().get(acl2Name);
+
+    assertThat(
+        "acl2 permits packets with source IP in 192.0.2.0/24 except 192.0.2.128",
+        toBDD.toBdd(acl2),
+        equalTo(
+            toBDD.toBdd(
+                new MatchHeaderSpace(
+                    HeaderSpace.builder()
+                        .setSrcIps(
+                            AclIpSpace.difference(
+                                Prefix.parse("192.0.2.0/24").toIpSpace(),
+                                Ip.parse("192.0.2.128").toIpSpace()))
+                        .build()))));
+  }
+
+  @Test
+  public void testAccessListToRouteFilter() throws IOException {
+    Configuration c = parseConfig("f5_bigip_imish_route_map");
+    String acl1RfName = computeAccessListRouteFilterName("acl1");
+    String acl2RfName = computeAccessListRouteFilterName("acl2");
+
+    // setup
+    IpAccessListToBdd toBDD = toBDD();
+
+    // acl1
+    assertThat(c.getRouteFilterLists(), hasKey(acl1RfName));
+
+    RouteFilterList acl1Rf = c.getRouteFilterLists().get(acl1RfName);
+
+    // acl1 should permit everything
+    //    assertTrue(toBDD.toBdd(acl1).isOne());
+
+    // acl2
+    assertThat(c.getRouteFilterLists(), hasKey(acl2RfName));
+
+    RouteFilterList acl2Rf = c.getRouteFilterLists().get(acl2RfName);
+
+    //    assertThat(
+    //        "acl2 permits packets with source IP in 192.0.2.0/24 except 192.0.2.128",
+    //        toBDD.toBdd(acl2),
+    //        equalTo(
+    //            toBDD.toBdd(
+    //                new MatchHeaderSpace(
+    //                    HeaderSpace.builder()
+    //                        .setSrcIps(
+    //                            AclIpSpace.difference(
+    //                                Prefix.parse("192.0.2.0/24").toIpSpace(),
+    //                                Ip.parse("192.0.2.128").toIpSpace()))
+    //                        .build()))));
   }
 
   @Test

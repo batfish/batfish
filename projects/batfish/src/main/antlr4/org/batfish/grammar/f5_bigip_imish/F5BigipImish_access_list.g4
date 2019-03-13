@@ -6,12 +6,13 @@ options {
   tokenVocab = F5BigipImishLexer;
 }
 
-s_access_list
+ip_spec
 :
-  action = line_action src = ip_spec NEWLINE
+  ANY
+  | prefix = word
 ;
 
-word
+s_access_list
 :
-  ~NEWLINE
+  ACCESS_LIST name = word action = line_action src = ip_spec NEWLINE
 ;

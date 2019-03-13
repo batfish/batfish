@@ -28,6 +28,7 @@ public enum F5BigipStructureUsage implements StructureUsage {
   PROFILE_ONE_CONNECT_DEFAULTS_FROM("profile one-connect defaults-from"),
   PROFILE_SERVER_SSL_DEFAULTS_FROM("profile server-ssl defaults-from"),
   PROFILE_TCP_DEFAULTS_FROM("profile tcp defaults-from"),
+  ROUTE_MAP_MATCH_IP_ADDRESS("route-map match ip address"),
   ROUTE_MAP_MATCH_IPV4_ADDRESS_PREFIX_LIST("route-map match ipv4 address prefix-list"),
   SELF_SELF_REFERENCE("self self-reference"),
   SELF_VLAN("self vlan"),

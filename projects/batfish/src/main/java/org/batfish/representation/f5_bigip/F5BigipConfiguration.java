@@ -51,6 +51,7 @@ import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route6FilterList;
+import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
@@ -127,10 +128,19 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return we;
   }
 
+  /**
+   * Return name of {@link RouteFilterList} generated from access-list with name {@code aclName}.
+   */
+  public static @Nonnull String computeAccessListRouteFilterName(String aclName) {
+    return String.format("~access-list~%s~", aclName);
+  }
+
+  @VisibleForTesting
   public static @Nonnull String computeBgpCommonExportPolicyName(String bgpProcessName) {
     return String.format("~BGP_COMMON_EXPORT_POLICY:%s~", bgpProcessName);
   }
 
+  @VisibleForTesting
   public static @Nonnull String computeBgpPeerExportPolicyName(
       String bgpProcessName, Ip peerAddress) {
     return String.format("~BGP_PEER_EXPORT_POLICY:%s:%s~", bgpProcessName, peerAddress);
@@ -141,6 +151,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return String.format("~incoming_filter:%s~", vlanName);
   }
 
+  private final Map<String, AccessList> _accessLists;
   private final @Nonnull Map<String, BgpProcess> _bgpProcesses;
   private transient Configuration _c;
   private ConfigurationFormat _format;
@@ -167,9 +178,11 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private transient Map<String, HeaderSpace> _virtualMatchedHeaders;
   private transient SortedMap<String, SimpleTransformation> _virtualOutgoingTransformations;
   private final @Nonnull Map<String, Virtual> _virtuals;
+
   private final @Nonnull Map<String, Vlan> _vlans;
 
   public F5BigipConfiguration() {
+    _accessLists = new HashMap<>();
     _bgpProcesses = new HashMap<>();
     _interfaces = new HashMap<>();
     _nodes = new HashMap<>();
@@ -237,6 +250,17 @@ public class F5BigipConfiguration extends VendorConfiguration {
     vlanInterface.setIncomingFilter(computeInterfaceIncomingFilter(vlanName));
   }
 
+  private void addIpAccessList(AccessList acl) {
+    IpAccessList.builder()
+        .setOwner(_c)
+        .setLines(
+            acl.getLines().stream()
+                .map(this::toIpAccessListLine)
+                .collect(ImmutableList.toImmutableList()))
+        .setName(acl.getName())
+        .build();
+  }
+
   private void addNatRules(org.batfish.datamodel.Interface vlanInterface) {
     String vlanName = vlanInterface.getName();
     vlanInterface.setIncomingTransformation(computeInterfaceIncomingTransformation(vlanName));
@@ -267,23 +291,6 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return AclIpSpace.union(
         Streams.concat(virtualDnatIps, virtualSnatIps, snatIps)
             .collect(ImmutableList.toImmutableList()));
-  }
-
-  private void initInterfaceIncomingFilterLines() {
-    _interfaceIncomingFilterLines = new HashMap<>();
-    _virtualMatchedHeaders.forEach(
-        (virtualName, matchedHeaders) -> {
-          Virtual virtual = _virtuals.get(virtualName);
-          IpAccessListLine line =
-              toIpAccessListLine(virtualName, matchedHeaders, virtual.getReject());
-          _vlans.keySet().stream()
-              .filter(vlanName -> appliesToVlan(virtual, vlanName))
-              .forEach(
-                  vlanName ->
-                      _interfaceIncomingFilterLines
-                          .computeIfAbsent(vlanName, n -> ImmutableList.builder())
-                          .add(line));
-        });
   }
 
   private @Nullable IpAccessList computeInterfaceIncomingFilter(String vlanName) {
@@ -630,6 +637,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
         .collect(ImmutableSet.toImmutableSet());
   }
 
+  public Map<String, AccessList> getAccessLists() {
+    return _accessLists;
+  }
+
   public @Nonnull Map<String, BgpProcess> getBgpProcesses() {
     return _bgpProcesses;
   }
@@ -733,6 +744,23 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return _vlans;
   }
 
+  private void initInterfaceIncomingFilterLines() {
+    _interfaceIncomingFilterLines = new HashMap<>();
+    _virtualMatchedHeaders.forEach(
+        (virtualName, matchedHeaders) -> {
+          Virtual virtual = _virtuals.get(virtualName);
+          IpAccessListLine line =
+              toIpAccessListLine(virtualName, matchedHeaders, virtual.getReject());
+          _vlans.keySet().stream()
+              .filter(vlanName -> appliesToVlan(virtual, vlanName))
+              .forEach(
+                  vlanName ->
+                      _interfaceIncomingFilterLines
+                          .computeIfAbsent(vlanName, n -> ImmutableList.builder())
+                          .add(line));
+        });
+  }
+
   private void initSnatTransformations() {
     // Note the use of reverseOrder() comparator. This iteration order allows for efficient
     // construction of chained transformations later on.
@@ -799,7 +827,18 @@ public class F5BigipConfiguration extends VendorConfiguration {
         toImmutableMap(_virtuals, Entry::getKey, e -> computeVirtualSnatIps(e.getValue()));
   }
 
+  private boolean isReferencedByRouteMap(String aclName) {
+    // Return true iff the named acl is referenced via route-map match ip address
+    return Optional.ofNullable(_structureReferences.get(F5BigipStructureType.ACCESS_LIST))
+        .map(byStructureName -> byStructureName.get(aclName))
+        .map(byUsage -> byUsage.get(F5BigipStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS))
+        .map(lines -> !lines.isEmpty())
+        .orElse(false);
+  }
+
   private void markStructures() {
+    markConcreteStructure(
+        F5BigipStructureType.ACCESS_LIST, F5BigipStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS);
     markConcreteStructure(
         F5BigipStructureType.BGP_NEIGHBOR, F5BigipStructureUsage.BGP_NEIGHBOR_SELF_REFERENCE);
     markConcreteStructure(
@@ -1044,6 +1083,16 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return newIface;
   }
 
+  private @Nonnull IpAccessListLine toIpAccessListLine(AccessListLine line) {
+    return IpAccessListLine.builder()
+        .setAction(line.getAction())
+        .setMatchCondition(
+            new MatchHeaderSpace(
+                HeaderSpace.builder().setSrcIps(line.getPrefix().toIpSpace()).build()))
+        .setName(line.getText())
+        .build();
+  }
+
   private @Nonnull IpAccessListLine toIpAccessListLine(
       String virtualName, HeaderSpace matchedHeaders, boolean reject) {
     return IpAccessListLine.builder()
@@ -1069,6 +1118,21 @@ public class F5BigipConfiguration extends VendorConfiguration {
         .filter(Objects::nonNull)
         .forEach(output::addLine);
     return output;
+  }
+
+  private @Nonnull RouteFilterLine toRouteFilterLine(AccessListLine line) {
+    Prefix prefix = line.getPrefix();
+    return new RouteFilterLine(
+        line.getAction(), prefix, new SubRange(prefix.getPrefixLength(), Prefix.MAX_PREFIX_LENGTH));
+  }
+
+  private @Nonnull RouteFilterList toRouteFilterList(AccessList accessList) {
+    String name = accessList.getName();
+    return new RouteFilterList(
+        computeAccessListRouteFilterName(name),
+        accessList.getLines().stream()
+            .map(this::toRouteFilterLine)
+            .collect(ImmutableList.toImmutableList()));
   }
 
   /**
@@ -1141,6 +1205,19 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
     // Add default VRF
     _c.getVrfs().computeIfAbsent(DEFAULT_VRF_NAME, Vrf::new);
+
+    // Add access-lists
+    _accessLists.values().forEach(this::addIpAccessList);
+
+    // Convert access-lists referenced by route-maps to RouteFilterLists
+    _accessLists.forEach(
+        (name, acl) -> {
+          if (!isReferencedByRouteMap(name)) {
+            return;
+          }
+          RouteFilterList rfl = toRouteFilterList(acl);
+          _c.getRouteFilterLists().put(rfl.getName(), rfl);
+        });
 
     // Add interfaces
     _interfaces.forEach(

@@ -9,10 +9,16 @@ sys global-settings {
 !
 access-list acl1 permit any
 !
+access-list acl2 deny 192.0.2.128/32
+access-list acl2 permit 192.0.2.0/24
+!
 route-map rm1 permit 1
  match ip address acl1
  set community 1:2 3:4
 !
 route-map rm1 deny 2
+!
+route-map rm2 permit 1
+ match ip address acl2
 !
 end

@@ -213,6 +213,11 @@ NEWLINE
   F_Newline+
 ;
 
+WORD
+:
+  F_WordChar+
+;
+
 WS
 :
   F_Whitespace+ -> channel ( HIDDEN ) // parser never sees tokens on hidden channel
@@ -240,4 +245,10 @@ F_Whitespace
 :
   [ \t\u000C] // tab or space or unicode 0x000C
 
+;
+
+fragment
+F_WordChar
+:
+  ~[ \t\n\r{}[\]]
 ;
