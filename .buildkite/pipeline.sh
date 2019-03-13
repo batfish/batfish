@@ -17,13 +17,13 @@ EOF
 
 ###### Initial checks plus building the jar
 cat <<EOF
-  - label: "Check Java formatting"
+  - label: ":java: Formatting"
     command: "tools/fix_java_format.sh --check"
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
           image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
           always-pull: true
-  - label: "Check Python templates"
+  - label: ":json: Templates"
     command:
       - "python3 -m virtualenv .venv"
       - ". .venv/bin/activate"
@@ -33,7 +33,7 @@ cat <<EOF
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
           image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
           always-pull: true
-  - label: "Build"
+  - label: ":mvn: Build"
     command:
       - "mkdir workspace"
       - "mvn -f projects package"
@@ -53,7 +53,7 @@ EOF
 
 ###### Maven tests
 cat <<EOF
-  - label: "Maven tests + Coverage"
+  - label: ":mvn: :junit: :coverage: Tests + Coverage"
     command:
       - mvn -f projects/pom.xml test -DskipTests=false -Djacoco.skip=false
       - mkdir -p workspace
@@ -64,19 +64,19 @@ cat <<EOF
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
           image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
           always-pull: true
-  - label: "Maven checkstyle, findbugs, dependency"
+  - label: ":mvn: Checkstyle, findbugs, dependency"
     command: "mvn -f projects/pom.xml verify -Dcheckstyle.skip=false -Dmdep.analyze.skip=false -Dfindbugs.skip=false"
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
           image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
           always-pull: true
-  - label: "Maven javadoc"
+  - label: ":mvn: Javadoc"
     command: "mvn -f projects/pom.xml verify -Dmaven.javadoc.skip=false"
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
           image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
           always-pull: true
-  - label: "Maven pmd"
+  - label: ":mvn: PMD"
     command: "mvn -f projects/pom.xml verify -Dpmd.skip=false"
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
@@ -86,7 +86,7 @@ EOF
 
 ###### Ensure the code still compiles with Bazel
 cat <<EOF
-  - label: "Bazel compilation"
+  - label: ":bazel: Bazel"
     command: "bazel build -- //... -projects:javadoc"
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
@@ -115,7 +115,7 @@ done
 ###### Code coverage
 cat <<EOF
   - wait
-  - label: "Code coverage"
+  - label: ":coverage: Report coverage"
     command:
       - ".buildkite/jacoco_report.sh"
     plugins:
