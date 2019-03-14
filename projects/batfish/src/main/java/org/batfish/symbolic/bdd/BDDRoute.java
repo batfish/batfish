@@ -97,7 +97,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    */
   public BDDRoute(Set<CommunityVar> comms) {
     int numVars = factory.varNum();
-    int numNeeded = 32 * 5 + 5 + comms.size() + 4;
+    int numNeeded = 32 * 5 + 6 + comms.size() + 4;
     if (numVars < numNeeded) {
       factory.setVarNum(numNeeded);
     }
@@ -121,9 +121,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _localPref = BDDInteger.makeFromIndex(factory, 32, idx, false);
     addBitNames("lp", 32, idx, false);
     idx += 32;
-    _prefixLength = BDDInteger.makeFromIndex(factory, 5, idx, true);
+    // need 6 bits for prefix length because there are 33 possible values, 0 - 32
+    _prefixLength = BDDInteger.makeFromIndex(factory, 6, idx, true);
     addBitNames("pfxLen", 5, idx, true);
-    idx += 5;
+    idx += 6;
     _prefix = BDDInteger.makeFromIndex(factory, 32, idx, true);
     addBitNames("pfx", 32, idx, true);
     idx += 32;

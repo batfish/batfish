@@ -34,4 +34,17 @@ public class TransferBDDTest {
     assertTrue(matchingPrefix.and(len8).imp(notRangeBdd).isOne()); // prefix too short
     assertTrue(nonMatchingPrefix.and(len24).imp(notRangeBdd).isOne()); // prefix doesn't match
   }
+
+  @Test
+  public void testIsRelevantFor_range32() {
+    BDDRoute bddRoute = new BDDRoute(ImmutableSet.of());
+
+    PrefixRange range = new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32));
+    BDD rangeBdd = isRelevantFor(bddRoute, range);
+    BDD len0 = bddRoute.getPrefixLength().value(0);
+    BDD len32 = bddRoute.getPrefixLength().value(32);
+
+    assertTrue(len0.imp(rangeBdd.not()).isOne());
+    assertTrue(len32.imp(rangeBdd).isOne());
+  }
 }

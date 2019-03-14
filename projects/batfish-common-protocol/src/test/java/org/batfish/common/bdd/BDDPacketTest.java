@@ -80,7 +80,7 @@ public class BDDPacketTest {
             .and(pkt.getDstPort().value(dstPort))
             .and(pkt.getIcmpCode().value(icmpCode))
             .and(pkt.getIcmpType().value(icmpType))
-            .and(pkt.getIpProtocol().value(ipProtocol.number()))
+            .and(pkt.getIpProtocol().value(ipProtocol))
             .and(pkt.getSrcIp().value(srcIp.asLong()))
             .and(pkt.getSrcPort().value(srcPort))
             .and(pkt.getTcpAck().not())
@@ -138,7 +138,7 @@ public class BDDPacketTest {
 
     BDD bdd = pkt.getDstIp().value(dstIp.asLong()).and(pkt.getSrcIp().value(srcIp.asLong()));
 
-    BDD icmpbdd = pkt.getIpProtocol().value(IpProtocol.ICMP.number());
+    BDD icmpbdd = pkt.getIpProtocol().value(IpProtocol.ICMP);
 
     bdd = bdd.and(icmpbdd.not());
 
@@ -159,9 +159,9 @@ public class BDDPacketTest {
 
     BDD bdd = pkt.getDstIp().value(dstIp.asLong()).and(pkt.getSrcIp().value(srcIp.asLong()));
 
-    BDD icmpbdd = pkt.getIpProtocol().value(IpProtocol.ICMP.number());
+    BDD icmpbdd = pkt.getIpProtocol().value(IpProtocol.ICMP);
 
-    BDD udpbdd = pkt.getIpProtocol().value(IpProtocol.UDP.number());
+    BDD udpbdd = pkt.getIpProtocol().value(IpProtocol.UDP);
 
     bdd = bdd.and(icmpbdd.not()).and(udpbdd.not());
 
