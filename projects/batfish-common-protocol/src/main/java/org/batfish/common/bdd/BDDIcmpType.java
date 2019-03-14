@@ -6,7 +6,7 @@ import net.sf.javabdd.BDD;
 import org.batfish.datamodel.IcmpType;
 
 /** Symbolic IcmpType variable represented by an 8-bit BDD. */
-public class BDDIcmpType {
+public final class BDDIcmpType {
   private final BDDInteger _var;
 
   public BDDIcmpType(BDDInteger var) {
