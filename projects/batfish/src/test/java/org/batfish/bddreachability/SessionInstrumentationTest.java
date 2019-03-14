@@ -144,7 +144,7 @@ public final class SessionInstrumentationTest {
 
     // Setup filter BDDs
     {
-      _permitTcpBdd = PKT.getIpProtocol().value(IpProtocol.TCP.number());
+      _permitTcpBdd = PKT.getIpProtocol().value(IpProtocol.TCP);
       _filterBdds = ImmutableMap.of(FW, ImmutableMap.of(PERMIT_TCP, () -> _permitTcpBdd));
     }
   }

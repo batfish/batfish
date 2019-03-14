@@ -153,8 +153,7 @@ public class HeaderSpaceToBDDTest {
     HeaderSpace headerSpace =
         HeaderSpace.builder().setIpProtocols(ImmutableList.of(proto1, proto2)).build();
     BDD bdd = _toBDD.toBDD(headerSpace);
-    BDD protoBDD =
-        _pkt.getIpProtocol().value(proto1.number()).or(_pkt.getIpProtocol().value(proto2.number()));
+    BDD protoBDD = _pkt.getIpProtocol().value(proto1).or(_pkt.getIpProtocol().value(proto2));
     assertThat(bdd, equalTo(protoBDD));
   }
 

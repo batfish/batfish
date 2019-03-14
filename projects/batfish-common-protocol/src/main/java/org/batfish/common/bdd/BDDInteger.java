@@ -152,7 +152,7 @@ public class BDDInteger {
    */
   public BDD leq(long val) {
     checkArgument(val >= 0, "val is negative");
-    checkArgument(val < (1L << _bitvec.length), "val is out of range");
+    checkArgument(val < (1L << _bitvec.length), "val is out of range", val);
     long currentVal = val;
     BDD[] eq = new BDD[_bitvec.length];
     BDD[] less = new BDD[_bitvec.length];
