@@ -70,9 +70,9 @@ public final class BDDPrefix {
    * Check if the first {@code length} bits match the BDDInteger representing {@code prefix}'s
    * address.
    */
-  public @Nonnull BDD firstBitsEqual(BDD[] bits, Prefix prefix, int length) {
+  private @Nonnull BDD firstBitsEqual(BDD[] bits, Prefix prefix, int length) {
     long address = prefix.getStartIp().asLong();
-    BDD result = _ip.getFactory().one();
+    BDD result = _factory.one();
     for (int i = 0; i < length; i++) {
       boolean res = Ip.getBitAtPosition(address, i);
       if (res) {
