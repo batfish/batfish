@@ -15,7 +15,6 @@ public abstract class AbstractBgpNeighbor implements Serializable {
   private final @Nonnull BgpNeighborIpv4AddressFamily _ipv4AddressFamily;
   private final @Nonnull BgpNeighborIpv6AddressFamily _ipv6AddressFamily;
   private final @Nonnull String _name;
-  private @Nullable String _peerGroup;
   private @Nullable Long _remoteAs;
   private @Nullable String _updateSource;
 

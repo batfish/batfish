@@ -59,6 +59,8 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   private @Nullable String _currentNeighborName;
   private @Nullable BgpPeerGroup _currentPeerGroup;
   private @Nullable RouteMapEntry _currentRouteMapEntry;
+
+  @SuppressWarnings("unused")
   private @Nullable Boolean _no;
 
   @SuppressWarnings("unused")
