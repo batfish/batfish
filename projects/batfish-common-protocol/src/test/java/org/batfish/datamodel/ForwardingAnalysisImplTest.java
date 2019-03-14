@@ -800,8 +800,6 @@ public class ForwardingAnalysisImplTest {
                     ImmutableMap.of(
                         Interface.NULL_INTERFACE_NAME,
                         ImmutableMap.of(Ip.AUTO, ImmutableSet.of(nullRoute)))))
-            .setRoutesByNextHopInterface(
-                ImmutableMap.of(Interface.NULL_INTERFACE_NAME, ImmutableSet.of(nullRoute)))
             .build();
 
     Map<String, Map<String, Fib>> fibs =

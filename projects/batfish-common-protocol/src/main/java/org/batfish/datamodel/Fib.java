@@ -12,15 +12,6 @@ public interface Fib extends Serializable {
   Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> getNextHopInterfaces();
 
   /**
-   * Set of interfaces used to forward traffic destined to this IP.
-   *
-   * @deprecated in favor of more general {@link Fib#get(Ip)}
-   */
-  @Nonnull
-  @Deprecated
-  Set<String> getNextHopInterfaces(Ip ip);
-
-  /**
    * Return a set of {@link FibEntry fib entries} that match a given IP (using longest prefix match)
    */
   @Nonnull
@@ -36,17 +27,4 @@ public interface Fib extends Serializable {
    */
   @Nonnull
   Map<Prefix, IpSpace> getMatchingIps();
-
-  /**
-   * Mapping: matching route -&gt; nexthopinterface -&gt; resolved nextHopIP -&gt; interfaceRoutes
-   *
-   * @deprecated in favor of more general {@link Fib#get(Ip)}
-   */
-  @Nonnull
-  @Deprecated
-  Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> getNextHopInterfacesByRoute(
-      Ip dstIp);
-
-  @Nonnull
-  Map<String, Set<AbstractRoute>> getRoutesByNextHopInterface();
 }
