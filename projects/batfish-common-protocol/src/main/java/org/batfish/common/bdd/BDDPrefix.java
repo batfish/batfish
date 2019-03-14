@@ -67,11 +67,12 @@ public final class BDDPrefix {
   }
 
   /**
-   * Check if the first {@code length} bits match the BDDInteger representing {@code prefix}'s
-   * address.
+   * Check if the first {@code length} bits of {@code _ip} match the BDDInteger representing {@code
+   * ip}.
    */
-  private @Nonnull BDD firstBitsEqual(BDD[] bits, Prefix prefix, int length) {
-    long address = prefix.getStartIp().asLong();
+  private @Nonnull BDD firstBitsEqual(Ip ip, int length) {
+    BDD[] bits = _ip.getBitvec();
+    long address = ip.asLong();
     BDD result = _factory.one();
     for (int i = 0; i < length; i++) {
       boolean res = Ip.getBitAtPosition(address, i);
@@ -100,7 +101,7 @@ public final class BDDPrefix {
   /** Returns a {@link BDD} reprepsenting a {@link Prefix} in the provided {@code prefixRange}. */
   public @Nonnull BDD inPrefixRange(PrefixRange prefixRange) {
     Prefix p = prefixRange.getPrefix();
-    BDD prefixMatch = firstBitsEqual(_ip.getBitvec(), p, p.getPrefixLength());
+    BDD prefixMatch = firstBitsEqual(p.getStartIp(), p.getPrefixLength());
 
     SubRange r = prefixRange.getLengthRange();
     int lower = r.getStart();
@@ -115,7 +116,7 @@ public final class BDDPrefix {
 
   /** Returns a {@link BDD} reprepsenting a {@link Prefix} equal to the provided {@code prefix}. */
   public @Nonnull BDD isPrefix(Prefix prefix) {
-    return firstBitsEqual(_ip.getBitvec(), prefix, prefix.getPrefixLength())
+    return firstBitsEqual(prefix.getStartIp(), prefix.getPrefixLength())
         .and(_prefixLength.value(prefix.getPrefixLength()));
   }
 
