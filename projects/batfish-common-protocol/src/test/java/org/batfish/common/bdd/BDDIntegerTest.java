@@ -57,6 +57,7 @@ public class BDDIntegerTest {
     BDDFactory factory = BDDUtils.bddFactory(5);
     BDDInteger var = BDDInteger.makeFromIndex(factory, 5, 0, false);
     _exception.expect(IllegalArgumentException.class);
+    _exception.expectMessage("value 32 is out of range");
     var.geq(32);
   }
 
@@ -65,6 +66,7 @@ public class BDDIntegerTest {
     BDDFactory factory = BDDUtils.bddFactory(5);
     BDDInteger var = BDDInteger.makeFromIndex(factory, 5, 0, false);
     _exception.expect(IllegalArgumentException.class);
+    _exception.expectMessage("value 32 is out of range");
     var.leq(32);
   }
 
@@ -73,6 +75,7 @@ public class BDDIntegerTest {
     BDDFactory factory = BDDUtils.bddFactory(5);
     BDDInteger var = BDDInteger.makeFromIndex(factory, 5, 0, false);
     _exception.expect(IllegalArgumentException.class);
+    _exception.expectMessage("value 32 is out of range");
     var.value(32);
   }
 }
