@@ -1,6 +1,8 @@
 package org.batfish.specifier;
 
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
@@ -10,6 +12,7 @@ import java.util.regex.Pattern;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.junit.Test;
 
 public class NameRegexInterfaceSpecifierTest {
@@ -37,17 +40,17 @@ public class NameRegexInterfaceSpecifierTest {
     assertThat(
         new NameRegexInterfaceSpecifier(Pattern.compile(".*1"))
             .resolve(ImmutableSet.of("node1"), ctxt),
-        equalTo(ImmutableSet.of(iface1node1)));
+        contains(new NodeInterfacePair(iface1node1)));
 
     assertThat(
         new NameRegexInterfaceSpecifier(Pattern.compile("iface1.*"))
             .resolve(ImmutableSet.of("node1", "node2"), ctxt),
-        equalTo(ImmutableSet.of(iface1node1, iface1node2)));
+        containsInAnyOrder(new NodeInterfacePair(iface1node1), new NodeInterfacePair(iface1node2)));
 
     // bad regex
     assertThat(
         new NameRegexInterfaceSpecifier(Pattern.compile("iface"))
             .resolve(ImmutableSet.of("node1"), ctxt),
-        equalTo(ImmutableSet.of()));
+        empty());
   }
 }

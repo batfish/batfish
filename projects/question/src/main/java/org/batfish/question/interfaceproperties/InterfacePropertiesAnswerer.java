@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -135,9 +136,13 @@ public class InterfacePropertiesAnswerer extends Answerer {
       boolean excludeShutInterfaces,
       Map<String, ColumnMetadata> columns) {
     Multiset<Row> rows = HashMultiset.create();
+    Map<String, Configuration> configs = ctxt.getConfigs();
 
     for (String nodeName : nodeSpecifier.resolve(ctxt)) {
-      for (Interface iface : interfaceSpecifier.resolve(ImmutableSet.of(nodeName), ctxt)) {
+      for (NodeInterfacePair ifaceId :
+          interfaceSpecifier.resolve(ImmutableSet.of(nodeName), ctxt)) {
+        Interface iface =
+            configs.get(ifaceId.getHostname()).getAllInterfaces().get(ifaceId.getInterface());
         if (excludeShutInterfaces && !iface.getActive()) {
           continue;
         }

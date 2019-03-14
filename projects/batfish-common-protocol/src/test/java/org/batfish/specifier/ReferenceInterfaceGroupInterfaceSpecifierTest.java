@@ -1,6 +1,6 @@
 package org.batfish.specifier;
 
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -52,6 +52,6 @@ public class ReferenceInterfaceGroupInterfaceSpecifierTest {
     assertThat(
         new ReferenceInterfaceGroupInterfaceSpecifier("group", "refbook")
             .resolve(ImmutableSet.of(node1.getHostname()), ctxt),
-        equalTo(ImmutableSet.of(iface11)));
+        contains(new NodeInterfacePair(iface11)));
   }
 }

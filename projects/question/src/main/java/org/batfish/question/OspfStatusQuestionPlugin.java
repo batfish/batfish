@@ -140,7 +140,7 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
 
       for (String hostname : includeNodes) {
         Configuration c = configurations.get(hostname);
-        Set<Interface> includeInterfaces =
+        Set<NodeInterfacePair> includeInterfaces =
             question
                 .getInterfaceSpecifier()
                 .resolve(ImmutableSet.of(hostname), _batfish.specifierContext());
@@ -148,7 +148,7 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
           for (Entry<String, Interface> e2 : vrf.getInterfaces().entrySet()) {
             String interfaceName = e2.getKey();
             Interface iface = e2.getValue();
-            if (includeInterfaces.contains(iface)) {
+            if (includeInterfaces.contains(new NodeInterfacePair(iface))) {
               if (iface.getSwitchport()) {
                 // it's a layer2 interface
                 conditionalAdd(

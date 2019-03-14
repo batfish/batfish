@@ -13,6 +13,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -82,26 +83,39 @@ public class TypesInterfaceSpecifierTest {
     new TypesInterfaceSpecifier(Pattern.compile("bad regex"));
   }
 
-  private Set<Interface> specifiedInterfaces(String regex) {
+  private static Set<NodeInterfacePair> specifiedInterfaces(String regex) {
     return new TypesInterfaceSpecifier(Pattern.compile(regex, Pattern.CASE_INSENSITIVE))
         .resolve(ImmutableSet.of(HOSTNAME), CTXT);
   }
 
   @Test
   public void test() {
-    assertThat(specifiedInterfaces("a.*"), equalTo(ImmutableSet.of(AGGREGATED)));
-    assertThat(specifiedInterfaces("l.*"), equalTo(ImmutableSet.of(LOOPBACK)));
-    assertThat(specifiedInterfaces("n.*"), equalTo(ImmutableSet.of(NULL)));
-    assertThat(specifiedInterfaces("p.*"), equalTo(ImmutableSet.of(PHYSICAL)));
-    assertThat(specifiedInterfaces("r.*"), equalTo(ImmutableSet.of(REDUNDANT)));
-    assertThat(specifiedInterfaces("t.*"), equalTo(ImmutableSet.of(TUNNEL)));
-    assertThat(specifiedInterfaces("u.*"), equalTo(ImmutableSet.of(UNKNOWN)));
-    assertThat(specifiedInterfaces("vlan"), equalTo(ImmutableSet.of(VLAN)));
-    assertThat(specifiedInterfaces("vpn"), equalTo(ImmutableSet.of(VPN)));
+    assertThat(
+        specifiedInterfaces("a.*"), equalTo(ImmutableSet.of(new NodeInterfacePair(AGGREGATED))));
+    assertThat(
+        specifiedInterfaces("l.*"), equalTo(ImmutableSet.of(new NodeInterfacePair(LOOPBACK))));
+    assertThat(specifiedInterfaces("n.*"), equalTo(ImmutableSet.of(new NodeInterfacePair(NULL))));
+    assertThat(
+        specifiedInterfaces("p.*"), equalTo(ImmutableSet.of(new NodeInterfacePair(PHYSICAL))));
+    assertThat(
+        specifiedInterfaces("r.*"), equalTo(ImmutableSet.of(new NodeInterfacePair(REDUNDANT))));
+    assertThat(specifiedInterfaces("t.*"), equalTo(ImmutableSet.of(new NodeInterfacePair(TUNNEL))));
+    assertThat(
+        specifiedInterfaces("u.*"), equalTo(ImmutableSet.of(new NodeInterfacePair(UNKNOWN))));
+    assertThat(specifiedInterfaces("vlan"), equalTo(ImmutableSet.of(new NodeInterfacePair(VLAN))));
+    assertThat(specifiedInterfaces("vpn"), equalTo(ImmutableSet.of(new NodeInterfacePair(VPN))));
     assertThat(
         specifiedInterfaces(".*"),
         equalTo(
             ImmutableSet.of(
-                AGGREGATED, LOOPBACK, NULL, PHYSICAL, REDUNDANT, TUNNEL, UNKNOWN, VLAN, VPN)));
+                new NodeInterfacePair(AGGREGATED),
+                new NodeInterfacePair(LOOPBACK),
+                new NodeInterfacePair(NULL),
+                new NodeInterfacePair(PHYSICAL),
+                new NodeInterfacePair(REDUNDANT),
+                new NodeInterfacePair(TUNNEL),
+                new NodeInterfacePair(UNKNOWN),
+                new NodeInterfacePair(VLAN),
+                new NodeInterfacePair(VPN))));
   }
 }
