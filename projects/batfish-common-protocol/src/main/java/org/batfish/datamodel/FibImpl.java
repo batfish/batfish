@@ -9,12 +9,10 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.Stack;
@@ -282,53 +280,13 @@ public final class FibImpl implements Fib {
     return _nextHopInterfaces.get();
   }
 
-  @Override
-  @Deprecated
-  public @Nonnull Set<String> getNextHopInterfaces(Ip ip) {
-    return get(ip).stream().map(FibEntry::getInterfaceName).collect(ImmutableSet.toImmutableSet());
-  }
-
   @Nonnull
   @Override
   public Set<FibEntry> get(Ip ip) {
     return _root.longestPrefixMatch(ip);
   }
 
-  @Override
-  @Deprecated
-  public @Nonnull Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>
-      getNextHopInterfacesByRoute(Ip dstIp) {
-    return get(dstIp).stream()
-        .collect(
-            Collectors.groupingBy(
-                FibEntry::getTopLevelRoute,
-                Collectors.groupingBy(
-                    FibEntry::getInterfaceName,
-                    Collectors.groupingBy(
-                        FibEntry::getArpIP,
-                        Collectors.mapping(FibEntry::getResolvedToRoute, Collectors.toSet())))));
-  }
-
-  @Override
-  public @Nonnull Map<String, Set<AbstractRoute>> getRoutesByNextHopInterface() {
-    Map<String, ImmutableSet.Builder<AbstractRoute>> routesByNextHopInterface = new HashMap<>();
-    getNextHopInterfaces()
-        .forEach(
-            (route, nextHopInterfaceMap) ->
-                nextHopInterfaceMap
-                    .keySet()
-                    .forEach(
-                        nextHopInterface ->
-                            routesByNextHopInterface
-                                .computeIfAbsent(nextHopInterface, n -> ImmutableSet.builder())
-                                .add(route)));
-    return routesByNextHopInterface.entrySet().stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Entry::getKey /* interfaceName */,
-                routesByNextHopInterfaceEntry -> routesByNextHopInterfaceEntry.getValue().build()));
-  }
-
+  @Nonnull
   @Override
   public Map<Prefix, IpSpace> getMatchingIps() {
     ImmutableMap.Builder<Prefix, IpSpace> builder = ImmutableMap.builder();
