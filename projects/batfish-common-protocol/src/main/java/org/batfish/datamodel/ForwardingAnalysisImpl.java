@@ -86,7 +86,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
        * respond.
        */
       {
-        // mapping: node name -> interface name -> dst ips which are routed to the interface
+        // mapping: node name -> vrf name -> interface name -> dst ips which are routed to the
+        // interface
         Map<String, Map<String, Map<String, IpSpace>>> ipsRoutedOutInterfaces =
             computeIpsRoutedOutInterfaces(matchingIps, routesWithNextHop);
         _arpReplies =
@@ -283,6 +284,11 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
         ifaceEntry ->
             computeInterfaceArpReplies(
                 ifaceEntry.getValue(),
+                /* We believe at this time that an interface would send an ARP reply only based
+                 * on the routes in it's own VRF.
+                 * This type of routing separation is the point of VRFs, and cross-VRF introspection
+                 * for the purposes of ARP replies is unlikely to happen by default.
+                 */
                 routableIpsByVrf.get(ifaceEntry.getValue().getVrfName()),
                 ipsRoutedOutInterfaces
                     .get(ifaceEntry.getValue().getVrfName())
