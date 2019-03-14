@@ -1450,7 +1450,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return newIface;
   }
 
-  Transformation buildOutgoingTransformationStaticNat(Interface iface, Transformation orElse) {
+  @Nullable
+  Transformation buildOutgoingTransformationStaticNat(
+      Interface iface, @Nullable Transformation orElse) {
     Nat nat = _masterLogicalSystem.getNatStatic();
     if (nat == null) {
       return orElse;
