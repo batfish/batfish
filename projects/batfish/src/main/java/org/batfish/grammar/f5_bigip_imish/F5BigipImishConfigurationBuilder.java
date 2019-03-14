@@ -19,8 +19,10 @@ import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Ip_specContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Line_actionContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_neighborContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_redistribute_kernelContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_descriptionContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_peer_groupContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_peer_group_assignContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_remote_asContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_route_map_outContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rmm_ip_addressContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rms_communityContext;
@@ -29,9 +31,11 @@ import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.S_route_mapContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.S_router_bgpContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Standard_communityContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.WordContext;
+import org.batfish.representation.f5_bigip.AbstractBgpNeighbor;
 import org.batfish.representation.f5_bigip.AccessList;
 import org.batfish.representation.f5_bigip.AccessListLine;
 import org.batfish.representation.f5_bigip.BgpNeighbor;
+import org.batfish.representation.f5_bigip.BgpPeerGroup;
 import org.batfish.representation.f5_bigip.BgpProcess;
 import org.batfish.representation.f5_bigip.BgpRedistributionPolicy;
 import org.batfish.representation.f5_bigip.F5BigipConfiguration;
@@ -47,8 +51,11 @@ import org.batfish.vendor.StructureType;
 public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseListener {
 
   private final @Nonnull F5BigipConfiguration _c;
+  private @Nullable AbstractBgpNeighbor _currentAbstractNeighbor;
   private @Nullable BgpProcess _currentBgpProcess;
+  private @Nullable BgpNeighbor _currentNeighbor;
   private @Nullable String _currentNeighborName;
+  private @Nullable BgpPeerGroup _currentPeerGroup;
   private @Nullable RouteMapEntry _currentRouteMapEntry;
   private @Nullable Boolean _no;
 
@@ -101,6 +108,9 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   public void enterRb_neighbor(Rb_neighborContext ctx) {
     _no = ctx.NO() != null;
     _currentNeighborName = ctx.name.getText();
+    _currentNeighbor = _currentBgpProcess.getNeighbors().get(_currentNeighborName);
+    _currentPeerGroup = _currentBgpProcess.getPeerGroups().get(_currentNeighborName);
+    _currentAbstractNeighbor = _currentNeighbor != null ? _currentNeighbor : _currentPeerGroup;
   }
 
   @Override
@@ -167,6 +177,9 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   public void exitRb_neighbor(Rb_neighborContext ctx) {
     _no = null;
     _currentNeighborName = null;
+    _currentNeighbor = null;
+    _currentAbstractNeighbor = null;
+    _currentPeerGroup = null;
   }
 
   @Override
@@ -185,6 +198,18 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   }
 
   @Override
+  public void exitRbn_description(Rbn_descriptionContext ctx) {
+    if (_currentAbstractNeighbor == null) {
+      _w.redFlag(
+          String.format(
+              "Cannot add description to non-existent neighbor: '%s' in: '%s'",
+              _currentNeighborName, getFullText(ctx.getParent())));
+      return;
+    }
+    _currentAbstractNeighbor.setDescription(ctx.text.getText());
+  }
+
+  @Override
   public void exitRbn_peer_group(Rbn_peer_groupContext ctx) {
     if (Ip.tryParse(_currentNeighborName).isPresent()) {
       _w.redFlag(
@@ -200,8 +225,8 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
               _currentNeighborName, getFullText(ctx.getParent())));
       return;
     }
-    BgpNeighbor pg =
-        _currentBgpProcess.getNeighbors().computeIfAbsent(_currentNeighborName, BgpNeighbor::new);
+    BgpPeerGroup pg =
+        _currentBgpProcess.getPeerGroups().computeIfAbsent(_currentNeighborName, BgpPeerGroup::new);
     defineStructure(F5BigipStructureType.PEER_GROUP, _currentNeighborName, ctx.parent);
     pg.getIpv4AddressFamily().setActivate(true);
     pg.getIpv6AddressFamily().setActivate(true);
@@ -215,26 +240,58 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
         peerGroupName,
         F5BigipStructureUsage.BGP_NEIGHBOR_PEER_GROUP,
         ctx.name.getStart().getLine());
-    if (!_currentBgpProcess.getNeighbors().containsKey(_currentNeighborName)) {
+    if (_currentNeighbor == null) {
       _w.redFlag(
           String.format(
               "Cannot assign peer-group to non-existent neighbor: '%s' in: '%s'",
               _currentNeighborName, getFullText(ctx.getParent())));
     }
-    if (!_currentBgpProcess.getNeighbors().containsKey(peerGroupName)) {
+    if (!_currentBgpProcess.getPeerGroups().containsKey(peerGroupName)) {
       _w.redFlag(
           String.format(
               "Cannot assign bgp neighbor to non-existent peer-group: '%s' in: '%s'",
               peerGroupName, getFullText(ctx.getParent())));
     }
-    _currentBgpProcess.getNeighbors().get(_currentNeighborName).setPeerGroup(peerGroupName);
+    _currentNeighbor.setPeerGroup(peerGroupName);
+  }
+
+  @Override
+  public void exitRbn_remote_as(Rbn_remote_asContext ctx) {
+    Long remoteAs = toLong(ctx.remoteas);
+    if (remoteAs == null) {
+      _w.redFlag(
+          String.format(
+              "Invalid remote-as: '%s' in: '%s",
+              ctx.remoteas.getText(), getFullText(ctx.getParent())));
+      return;
+    }
+    boolean ipv4 = false;
+    boolean ipv6 = false;
+    if (Ip.tryParse(_currentNeighborName).isPresent()) {
+      ipv4 = true;
+    } else if (Ip6.tryParse(_currentNeighborName).isPresent()) {
+      ipv6 = true;
+    } else if (_currentPeerGroup == null) {
+      _w.redFlag(
+          String.format(
+              "Cannot assign remote-as to non-existent peer-group: '%s' in: '%s'",
+              _currentNeighborName, getFullText(ctx.getParent())));
+      return;
+    }
+    if (_currentAbstractNeighbor == null) {
+      _currentAbstractNeighbor =
+          _currentBgpProcess.getNeighbors().computeIfAbsent(_currentNeighborName, BgpNeighbor::new);
+      defineStructure(F5BigipStructureType.BGP_NEIGHBOR, _currentNeighborName, ctx.parent);
+      _currentAbstractNeighbor.getIpv4AddressFamily().setActivate(ipv4);
+      _currentAbstractNeighbor.getIpv6AddressFamily().setActivate(ipv6);
+    }
+    _currentAbstractNeighbor.setRemoteAs(remoteAs);
   }
 
   @Override
   public void exitRbn_route_map_out(Rbn_route_map_outContext ctx) {
     String routeMapName = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
-    BgpNeighbor neighbor = _currentBgpProcess.getNeighbors().get(_currentNeighborName);
     boolean ipv4;
     boolean ipv6;
     if (Ip.tryParse(_currentNeighborName).isPresent()) {
@@ -262,7 +319,7 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
       ipv4 = true;
       ipv6 = true;
     }
-    if (neighbor == null) {
+    if (_currentAbstractNeighbor == null) {
       _w.redFlag(
           String.format(
               "Cannot assign outbound route-map to non-existent neighbor: '%s' in: '%s'",
@@ -270,10 +327,10 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
       return;
     }
     if (ipv4) {
-      neighbor.getIpv4AddressFamily().setRouteMapOut(routeMapName);
+      _currentAbstractNeighbor.getIpv4AddressFamily().setRouteMapOut(routeMapName);
     }
     if (ipv6) {
-      neighbor.getIpv6AddressFamily().setRouteMapOut(routeMapName);
+      _currentAbstractNeighbor.getIpv6AddressFamily().setRouteMapOut(routeMapName);
     }
   }
 

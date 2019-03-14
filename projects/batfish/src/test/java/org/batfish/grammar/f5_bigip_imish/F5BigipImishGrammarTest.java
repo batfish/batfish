@@ -275,7 +275,7 @@ public final class F5BigipImishGrammarTest {
             hasBgpProcess(hasActiveNeighbor(Prefix.strict("192.0.2.1/32"), hasRemoteAs(456L)))));
 
     //// generated routing policies
-    String bgpProcessName = "65500";
+    String bgpProcessName = "123";
     String commonExportPolicyName =
         F5BigipConfiguration.computeBgpCommonExportPolicyName(bgpProcessName);
     String peerExportPolicyName =

@@ -201,6 +201,13 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   private void addActivePeer(
       BgpNeighbor neighbor, BgpProcess proc, org.batfish.datamodel.BgpProcess newProc) {
+    String peerGroupName = neighbor.getPeerGroup();
+    if (peerGroupName != null) {
+      BgpPeerGroup peerGroup = proc.getPeerGroups().get(peerGroupName);
+      if (peerGroup != null) {
+        neighbor.applyPeerGroup(peerGroup);
+      }
+    }
     Ip updateSource = getUpdateSource(neighbor, neighbor.getUpdateSource());
 
     RoutingPolicy.Builder peerExportPolicy =
@@ -708,15 +715,18 @@ public class F5BigipConfiguration extends VendorConfiguration {
   }
 
   private Ip getUpdateSource(BgpNeighbor neighbor, String updateSourceInterface) {
-    Ip updateSource = null;
+    Ip neighborAddress = neighbor.getAddress();
+    if (neighborAddress == null) {
+      // Only compute for IPv4 neighbors for now
+      return null;
+    }
     if (updateSourceInterface != null) {
       org.batfish.datamodel.Interface sourceInterface =
           _c.getDefaultVrf().getInterfaces().get(updateSourceInterface);
       if (sourceInterface != null) {
         InterfaceAddress address = sourceInterface.getAddress();
         if (address != null) {
-          Ip sourceIp = address.getIp();
-          updateSource = sourceIp;
+          return address.getIp();
         } else {
           _w.redFlag(
               "bgp update source interface: '"
@@ -724,12 +734,17 @@ public class F5BigipConfiguration extends VendorConfiguration {
                   + "' not assigned an ip address");
         }
       }
+    } else {
+      for (org.batfish.datamodel.Interface iface : _c.getDefaultVrf().getInterfaces().values()) {
+        for (InterfaceAddress interfaceAddress : iface.getAllAddresses()) {
+          if (interfaceAddress.getPrefix().containsIp(neighborAddress)) {
+            return interfaceAddress.getIp();
+          }
+        }
+      }
     }
-    if (updateSource == null) {
-      _w.redFlag(
-          "Could not determine update source for BGP neighbor: '" + neighbor.getName() + "'");
-    }
-    return updateSource;
+    _w.redFlag("Could not determine update source for BGP neighbor: '" + neighbor.getName() + "'");
+    return null;
   }
 
   public @Nonnull Map<String, VirtualAddress> getVirtualAddresses() {

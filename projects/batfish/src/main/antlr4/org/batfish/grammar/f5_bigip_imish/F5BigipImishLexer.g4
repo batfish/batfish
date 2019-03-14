@@ -255,6 +255,12 @@ F_NonNewlineChar
 ;
 
 fragment
+F_NonWhitespaceChar
+:
+  ~[\r\n \t\u000C]
+;
+
+fragment
 F_Whitespace
 :
   [ \t\u000C] // tab or space or unicode 0x000C
@@ -272,7 +278,7 @@ mode M_Description;
 
 M_Description_LINE
 :
-  F_NonNewlineChar+ -> type ( LINE ), popMode
+  F_NonWhitespaceChar F_NonNewlineChar* -> type ( LINE ) , popMode
 ;
 
 M_Description_WS
