@@ -17,7 +17,6 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.KernelRouteMatchers.isKernelRouteThat;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
-import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.f5_bigip.F5BigipConfiguration.computeAccessListRouteFilterName;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_PROCESS;
@@ -39,16 +38,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
-import org.antlr.v4.runtime.ParserRuleContext;
-import org.batfish.common.BatfishLogger;
-import org.batfish.common.Warnings;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDPrefix;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BgpRoute;
@@ -71,8 +66,6 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredCombinedParser;
-import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredControlPlaneExtractor;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -86,23 +79,6 @@ public final class F5BigipImishGrammarTest {
   private static final String SNAPSHOTS_PREFIX = "org/batfish/grammar/f5_bigip_imish/snapshots/";
   private static final String TESTCONFIGS_PREFIX =
       "org/batfish/grammar/f5_bigip_imish/testconfigs/";
-
-  private static F5BigipConfiguration parseVendorConfig(String filename) {
-    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + filename);
-    Settings settings = new Settings();
-    configureBatfishTestSettings(settings);
-    F5BigipStructuredCombinedParser parser = new F5BigipStructuredCombinedParser(src, settings);
-    F5BigipStructuredControlPlaneExtractor extractor =
-        new F5BigipStructuredControlPlaneExtractor(
-            src, parser, new Warnings(), filename, null, false);
-    ParserRuleContext tree =
-        Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
-    extractor.processParseTree(tree);
-    F5BigipConfiguration vendorConfiguration =
-        (F5BigipConfiguration) extractor.getVendorConfiguration();
-    vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + filename);
-    return vendorConfiguration;
-  }
 
   private BDDPrefix _bddPrefix;
 
