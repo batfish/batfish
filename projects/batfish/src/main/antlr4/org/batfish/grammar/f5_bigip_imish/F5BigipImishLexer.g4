@@ -185,6 +185,11 @@ ROUTER
   'router'
 ;
 
+ROUTER_ID
+:
+  'router-id'
+;
+
 SERVICE
 :
   'service'

@@ -2,6 +2,7 @@ package org.batfish.grammar.f5_bigip_imish;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -17,6 +18,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.F5_bigip_imish_configurationContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Ip_specContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Line_actionContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_bgp_router_idContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_neighborContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_redistribute_kernelContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_descriptionContext;
@@ -162,15 +164,32 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
 
   @Override
   public void enterS_router_bgp(S_router_bgpContext ctx) {
+    String localAsStr = ctx.localas.getText();
     Long localAs = toLong(ctx.localas);
     if (localAs == null) {
-      _w.redFlag(
-          String.format("Invalid local-as: '%s' in: '%s", ctx.localas.getText(), getFullText(ctx)));
+      _w.redFlag(String.format("Invalid local-as: '%s' in: '%s", localAsStr, getFullText(ctx)));
       return;
     }
     _currentBgpProcess =
         _c.getBgpProcesses().computeIfAbsent(Long.toString(localAs), BgpProcess::new);
     _currentBgpProcess.setLocalAs(localAs);
+    defineStructure(F5BigipStructureType.BGP_PROCESS, localAsStr, ctx);
+    _c.referenceStructure(
+        F5BigipStructureType.BGP_PROCESS,
+        localAsStr,
+        F5BigipStructureUsage.BGP_PROCESS_SELF_REFERENCE,
+        ctx.localas.getStart().getLine());
+  }
+
+  @Override
+  public void exitRb_bgp_router_id(Rb_bgp_router_idContext ctx) {
+    String idStr = ctx.id.getText();
+    Optional<Ip> routerId = Ip.tryParse(idStr);
+    if (!routerId.isPresent()) {
+      _w.redFlag(String.format("Illegal router-id: '%s' in: '%s'", idStr, getFullText(ctx)));
+      return;
+    }
+    _currentBgpProcess.setRouterId(routerId.get());
   }
 
   @Override
@@ -282,6 +301,11 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
       _currentAbstractNeighbor =
           _currentBgpProcess.getNeighbors().computeIfAbsent(_currentNeighborName, BgpNeighbor::new);
       defineStructure(F5BigipStructureType.BGP_NEIGHBOR, _currentNeighborName, ctx.parent);
+      _c.referenceStructure(
+          F5BigipStructureType.BGP_NEIGHBOR,
+          _currentNeighborName,
+          F5BigipStructureUsage.BGP_NEIGHBOR_SELF_REFERENCE,
+          ctx.getStart().getLine());
       _currentAbstractNeighbor.getIpv4AddressFamily().setActivate(ipv4);
       _currentAbstractNeighbor.getIpv6AddressFamily().setActivate(ipv6);
     }

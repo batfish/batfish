@@ -415,7 +415,7 @@ public final class F5BigipImishGrammarTest {
   public void testBgpProcessReferences() throws IOException {
     String hostname = "f5_bigip_imish_bgp_process_references";
     String file = "configs/" + hostname;
-    String used = "/Common/my_bgp_process";
+    String used = "123";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
@@ -429,8 +429,8 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
-  public void testBgpRouteIdAuto() throws IOException {
-    Configuration c = parseConfig("f5_bigip_structured_bgp_router_id_auto");
+  public void testBgpRouterIdAuto() throws IOException {
+    Configuration c = parseConfig("f5_bigip_imish_bgp_router_id_auto");
 
     // BGP Router-ID automatically chosen from highest IP address
     assertThat(c, hasDefaultVrf(hasBgpProcess(hasRouterId(Ip.parse("192.0.2.1")))));
@@ -438,7 +438,7 @@ public final class F5BigipImishGrammarTest {
 
   @Test
   public void testBgpRouterIdManual() throws IOException {
-    Configuration c = parseConfig("f5_bigip_structured_bgp_router_id_manual");
+    Configuration c = parseConfig("f5_bigip_imish_bgp_router_id_manual");
 
     // BGP Router-ID manually set
     assertThat(c, hasDefaultVrf(hasBgpProcess(hasRouterId(Ip.parse("192.0.2.1")))));

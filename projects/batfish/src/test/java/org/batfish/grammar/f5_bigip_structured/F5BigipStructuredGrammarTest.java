@@ -460,7 +460,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testBgpRouteIdAuto() throws IOException {
+  public void testBgpRouterIdAuto() throws IOException {
     Configuration c = parseConfig("f5_bigip_structured_bgp_router_id_auto");
 
     // BGP Router-ID automatically chosen from highest IP address

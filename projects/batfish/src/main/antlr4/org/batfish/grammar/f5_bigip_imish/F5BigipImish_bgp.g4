@@ -6,6 +6,11 @@ options {
   tokenVocab = F5BigipImishLexer;
 }
 
+rb_bgp_router_id
+:
+  BGP ROUTER_ID id = word NEWLINE
+;
+
 rb_neighbor
 :
   NO? NEIGHBOR name = word
@@ -58,7 +63,9 @@ rb_null
 :
   NO?
   (
-    BGP
+    (
+      BGP GRACEFUL_RESTART
+    )
     | MAX_PATHS
   ) null_rest_of_line
 ;
@@ -72,7 +79,8 @@ s_router_bgp
 :
   ROUTER BGP localas = word NEWLINE
   (
-    rb_neighbor
+    rb_bgp_router_id
+    | rb_neighbor
     | rb_redistribute_kernel
     | rb_null
   )*
