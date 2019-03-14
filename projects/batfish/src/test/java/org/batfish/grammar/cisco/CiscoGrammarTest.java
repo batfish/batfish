@@ -279,6 +279,7 @@ import org.batfish.datamodel.EigrpInternalRoute;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowState;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeAuthenticationMethod;
@@ -2009,6 +2010,142 @@ public class CiscoGrammarTest {
                                                                 new SubRange(
                                                                     NamedPort.TFTP
                                                                         .number()))))))))))))))));
+  }
+
+  @Test
+  public void testIosOspfDefaultOriginateAlways() throws IOException {
+    /*   ________      ________      ________
+        |   R1   |    |        |    |   R2   |
+        | Area 0 |----|  ABR   |----| Area 1 |
+        |        |    |        |    |  NSSA  |
+         --------      --------      --------
+      ABR has `default-information originate always` configured at the process level, so R1 should
+      install a default route to the ABR even though the ABR has no default route of its own. R2
+      should not install a default route because it's in an NSSA.
+    */
+
+    String testrigName = "ospf-default-originate";
+    String area0Name = "ios-area-0";
+    String area1NssaName = "ios-area-1-nssa";
+    String originatorName = "originator-always";
+    List<String> configurationNames = ImmutableList.of(area0Name, area1NssaName, originatorName);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Configuration abr = configurations.get(originatorName);
+
+    // Sanity check: ensure the ABR has a generated default route in its OSPF process
+    Set<GeneratedRoute> abrOspfGeneratedRoutes =
+        abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcess().getGeneratedRoutes();
+    assertThat(abrOspfGeneratedRoutes, contains(hasPrefix(Prefix.ZERO)));
+
+    batfish.computeDataPlane();
+    DataPlane dp = batfish.loadDataPlane();
+    Set<AbstractRoute> area0Routes = dp.getRibs().get(area0Name).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> area1NssaRoutes =
+        dp.getRibs().get(area1NssaName).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> abrRoutes =
+        dp.getRibs().get(originatorName).get(DEFAULT_VRF_NAME).getRoutes();
+
+    // R1 should have default route, but the ABR and R2 should not
+    assertThat(
+        area0Routes, hasItem(allOf(hasPrefix(Prefix.ZERO), hasProtocol(RoutingProtocol.OSPF_E2))));
+    assertThat(area1NssaRoutes, not(hasItem(hasPrefix(Prefix.ZERO))));
+    assertThat(abrRoutes, not(hasItem(hasPrefix(Prefix.ZERO))));
+  }
+
+  @Test
+  public void testIosOspfDefaultOriginateNoRoute() throws IOException {
+    /*   ________      ________      ________
+        |   R1   |    |        |    |   R2   |
+        | Area 0 |----|  ABR   |----| Area 1 |
+        |        |    |        |    |  NSSA  |
+         --------      --------      --------
+      ABR has `default-information originate` configured at the process level, but no default route
+      in its RIB, so it should not export a default route.
+    */
+
+    String testrigName = "ospf-default-originate";
+    String area0Name = "ios-area-0";
+    String area1NssaName = "ios-area-1-nssa";
+    String originatorName = "originator-no-route";
+    List<String> configurationNames = ImmutableList.of(area0Name, area1NssaName, originatorName);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Configuration abr = configurations.get(originatorName);
+
+    // Sanity check: ensure the ABR has a generated default route in its OSPF process
+    Set<GeneratedRoute> abrOspfGeneratedRoutes =
+        abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcess().getGeneratedRoutes();
+    assertThat(abrOspfGeneratedRoutes, contains(hasPrefix(Prefix.ZERO)));
+
+    batfish.computeDataPlane();
+    DataPlane dp = batfish.loadDataPlane();
+    Set<AbstractRoute> area0Routes = dp.getRibs().get(area0Name).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> area1NssaRoutes =
+        dp.getRibs().get(area1NssaName).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> abrRoutes =
+        dp.getRibs().get(originatorName).get(DEFAULT_VRF_NAME).getRoutes();
+
+    // None should have default route
+    assertThat(area0Routes, not(hasItem(hasPrefix(Prefix.ZERO))));
+    assertThat(area1NssaRoutes, not(hasItem(hasPrefix(Prefix.ZERO))));
+    assertThat(abrRoutes, not(hasItem(hasPrefix(Prefix.ZERO))));
+  }
+
+  @Test
+  public void testIosOspfDefaultOriginateStaticRoute() throws IOException {
+    /*   ________      ________      ________
+        |   R1   |    |        |    |   R2   |
+        | Area 0 |----|  ABR   |----| Area 1 |
+        |        |    |        |    |  NSSA  |
+         --------      --------      --------
+      ABR has `default-information originate` configured at the process level and a statically
+      configured default route, so it should advertise the default route to R1.
+    */
+
+    String testrigName = "ospf-default-originate";
+    String area0Name = "ios-area-0";
+    String area1NssaName = "ios-area-1-nssa";
+    String originatorName = "originator-static-route";
+    List<String> configurationNames = ImmutableList.of(area0Name, area1NssaName, originatorName);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Configuration abr = configurations.get(originatorName);
+
+    // Sanity check: ensure the ABR has a generated default route in its OSPF process
+    Set<GeneratedRoute> abrOspfGeneratedRoutes =
+        abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcess().getGeneratedRoutes();
+    assertThat(abrOspfGeneratedRoutes, contains(hasPrefix(Prefix.ZERO)));
+
+    batfish.computeDataPlane();
+    DataPlane dp = batfish.loadDataPlane();
+    Set<AbstractRoute> area0Routes = dp.getRibs().get(area0Name).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> area1NssaRoutes =
+        dp.getRibs().get(area1NssaName).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> abrRoutes =
+        dp.getRibs().get(originatorName).get(DEFAULT_VRF_NAME).getRoutes();
+
+    // R1 should have default route, but the ABR and R2 should not
+    assertThat(
+        area0Routes, hasItem(allOf(hasPrefix(Prefix.ZERO), hasProtocol(RoutingProtocol.OSPF_E2))));
+    assertThat(area1NssaRoutes, not(hasItem(hasPrefix(Prefix.ZERO))));
+    assertThat(
+        abrRoutes, hasItem(allOf(hasPrefix(Prefix.ZERO), hasProtocol(RoutingProtocol.STATIC))));
   }
 
   @Test
