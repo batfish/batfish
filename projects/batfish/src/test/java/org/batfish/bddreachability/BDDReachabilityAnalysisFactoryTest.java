@@ -1446,8 +1446,5 @@ public final class BDDReachabilityAnalysisFactoryTest {
         hasEntry(
             equalTo(new PreOutVrf(hostname, "vrf2")),
             hasKey(equalTo(new PreOutEdge(hostname, "i1", neighborHostname, neighborIface)))));
-
-    // End-to-end reachability based on reachable ingress locations
-    Map<IngressLocation, BDD> bdds = analysis.getIngressLocationReachableBDDs();
   }
 }
