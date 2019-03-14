@@ -464,70 +464,70 @@
       },
       {
         "Filename" : "configs/cisco_ospf",
-        "Line" : 51,
+        "Line" : 52,
         "Text" : "distribute-list aclin in",
         "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_ospf",
-        "Line" : 52,
+        "Line" : 53,
         "Text" : "distribute-list aclin in ethernet0/0",
         "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_ospf",
-        "Line" : 53,
+        "Line" : 54,
         "Text" : "distribute-list aclout out",
         "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_ospf",
-        "Line" : 54,
+        "Line" : 55,
         "Text" : "distribute-list prefix plin in",
         "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_ospf",
-        "Line" : 55,
+        "Line" : 56,
         "Text" : "distribute-list prefix plout out",
         "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_ospf",
-        "Line" : 56,
+        "Line" : 57,
         "Text" : "distribute-list route-map rmin in",
         "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_ospf",
-        "Line" : 57,
+        "Line" : 58,
         "Text" : "distribute-list route-map rmout out",
         "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_ospf",
-        "Line" : 64,
+        "Line" : 65,
         "Text" : "maximum-paths 32",
         "Parser_Context" : "[ro_maximum_paths s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_ospf",
-        "Line" : 80,
+        "Line" : 81,
         "Text" : "area 0 filter-list prefix INFILTER in",
         "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_ospf",
-        "Line" : 81,
+        "Line" : 82,
         "Text" : "area 0 filter-list prefix OUTFILTER out",
         "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
