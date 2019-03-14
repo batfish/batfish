@@ -57,7 +57,7 @@ public class BDDIntegerTest {
     BDDFactory factory = BDDUtils.bddFactory(5);
     BDDInteger var = BDDInteger.makeFromIndex(factory, 5, 0, false);
     _exception.expect(IllegalArgumentException.class);
-    var.leq(32);
+    var.geq(32);
   }
 
   @Test
