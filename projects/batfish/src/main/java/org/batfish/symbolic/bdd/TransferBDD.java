@@ -85,9 +85,9 @@ import org.batfish.symbolic.collections.Table2;
 import org.batfish.symbolic.utils.PrefixUtils;
 
 /** @author Ryan Beckett */
-public class TransferBDD {
+class TransferBDD {
 
-  public static BDDFactory factory = BDDRoute.factory;
+  private static BDDFactory factory = BDDRoute.factory;
 
   private static Table2<String, String, TransferResult<TransferReturn, BDD>> CACHE = new Table2<>();
 
@@ -696,7 +696,7 @@ public class TransferBDD {
    * is not modified, and thus will contain only the underlying variables:
    * [var(0), ..., var(n)]
    */
-  public static BDD isRelevantFor(BDDRoute record, PrefixRange range) {
+  static BDD isRelevantFor(BDDRoute record, PrefixRange range) {
     Prefix p = range.getPrefix();
     BDD prefixMatch = firstBitsEqual(record.getPrefix().getBitvec(), p, p.getPrefixLength());
 
