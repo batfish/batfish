@@ -43765,9 +43765,228 @@
             "        BRACE_RIGHT:'}'",
             "        NEWLINE:'\\n\\n')))",
             "  (imish_chunk",
-            "    IMISH_CHUNK:'!\\nend\\n\\n\\n')",
+            "    IMISH_CHUNK:'!\\naccess-list acl1 permit any\\naccess-list acl2 permit 192.0.2.0/24\\n!\\nbfd gtsm enable\\n!\\ninterface lo\\n!\\ninterface tmm\\n!\\ninterface vlan1\\n!\\nrouter bgp 65500\\n bgp graceful-restart restart-time 123\\n bgp router-id 192.0.2.100\\n max-paths ebgp 12\\n neighbor pg1 peer-group\\n no neighbor pg1 capability graceful-restart\\n neighbor pg1 fall-over pfd\\n neighbor pg1 maximum-prefix 12345\\n neighbor 10.0.0.1 remote-as 65501\\n neighbor 10.0.0.1 description desc1\\n neighbor 10.0.0.1 peer-group pg1\\n neighbor 10.0.0.1 update-source us1\\n redistribute kernel route-map rm1\\n!\\nno service password-encryption\\n!\\nroute-map rm1 permit 1\\n match ip address acl1\\n set community 1:2 3:4\\n!\\nroute-map rm1 deny 2\\n!\\nline con 0\\n login\\nline vty 0 39\\n login\\n!\\nend\\n\\n\\n')",
             "  EOF:<EOF>)",
             "(f5_bigip_imish_configuration",
+            "  (statement",
+            "    (s_access_list",
+            "      ACCESS_LIST:'access-list'",
+            "      name = (word",
+            "        WORD:'acl1')",
+            "      action = (line_action",
+            "        PERMIT:'permit')",
+            "      src = (ip_spec",
+            "        ANY:'any')",
+            "      NEWLINE:'\\n'))",
+            "  (statement",
+            "    (s_access_list",
+            "      ACCESS_LIST:'access-list'",
+            "      name = (word",
+            "        WORD:'acl2')",
+            "      action = (line_action",
+            "        PERMIT:'permit')",
+            "      src = (ip_spec",
+            "        prefix = (word",
+            "          WORD:'192.0.2.0/24'))",
+            "      NEWLINE:'\\n'))",
+            "  (statement",
+            "    (s_null",
+            "      BFD:'bfd'",
+            "      (null_rest_of_line",
+            "        WORD:'gtsm'",
+            "        WORD:'enable'",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_null",
+            "      INTERFACE:'interface'",
+            "      (null_rest_of_line",
+            "        WORD:'lo'",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_null",
+            "      INTERFACE:'interface'",
+            "      (null_rest_of_line",
+            "        WORD:'tmm'",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_null",
+            "      INTERFACE:'interface'",
+            "      (null_rest_of_line",
+            "        WORD:'vlan1'",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_router_bgp",
+            "      ROUTER:'router'",
+            "      BGP:'bgp'",
+            "      localas = (word",
+            "        WORD:'65500')",
+            "      NEWLINE:'\\n'",
+            "      (rb_null",
+            "        BGP:'bgp'",
+            "        GRACEFUL_RESTART:'graceful-restart'",
+            "        (null_rest_of_line",
+            "          WORD:'restart-time'",
+            "          WORD:'123'",
+            "          NEWLINE:'\\n'))",
+            "      (rb_bgp_router_id",
+            "        BGP:'bgp'",
+            "        ROUTER_ID:'router-id'",
+            "        id = (word",
+            "          WORD:'192.0.2.100')",
+            "        NEWLINE:'\\n')",
+            "      (rb_null",
+            "        MAX_PATHS:'max-paths'",
+            "        (null_rest_of_line",
+            "          EBGP:'ebgp'",
+            "          WORD:'12'",
+            "          NEWLINE:'\\n'))",
+            "      (rb_neighbor",
+            "        NEIGHBOR:'neighbor'",
+            "        name = (word",
+            "          WORD:'pg1')",
+            "        (rbn_peer_group",
+            "          PEER_GROUP:'peer-group'",
+            "          NEWLINE:'\\n'))",
+            "      (rb_neighbor",
+            "        NO:'no'",
+            "        NEIGHBOR:'neighbor'",
+            "        name = (word",
+            "          WORD:'pg1')",
+            "        (rbn_null",
+            "          CAPABILITY:'capability'",
+            "          (null_rest_of_line",
+            "            GRACEFUL_RESTART:'graceful-restart'",
+            "            NEWLINE:'\\n')))",
+            "      (rb_neighbor",
+            "        NEIGHBOR:'neighbor'",
+            "        name = (word",
+            "          WORD:'pg1')",
+            "        (rbn_null",
+            "          FALL_OVER:'fall-over'",
+            "          (null_rest_of_line",
+            "            WORD:'pfd'",
+            "            NEWLINE:'\\n')))",
+            "      (rb_neighbor",
+            "        NEIGHBOR:'neighbor'",
+            "        name = (word",
+            "          WORD:'pg1')",
+            "        (rbn_null",
+            "          MAXIMUM_PREFIX:'maximum-prefix'",
+            "          (null_rest_of_line",
+            "            WORD:'12345'",
+            "            NEWLINE:'\\n')))",
+            "      (rb_neighbor",
+            "        NEIGHBOR:'neighbor'",
+            "        name = (word",
+            "          WORD:'10.0.0.1')",
+            "        (rbn_remote_as",
+            "          REMOTE_AS:'remote-as'",
+            "          remoteas = (word",
+            "            WORD:'65501')",
+            "          NEWLINE:'\\n'))",
+            "      (rb_neighbor",
+            "        NEIGHBOR:'neighbor'",
+            "        name = (word",
+            "          WORD:'10.0.0.1')",
+            "        (rbn_description",
+            "          DESCRIPTION:'description'",
+            "          text = LINE:'desc1'  <== mode:M_Description",
+            "          NEWLINE:'\\n'))",
+            "      (rb_neighbor",
+            "        NEIGHBOR:'neighbor'",
+            "        name = (word",
+            "          WORD:'10.0.0.1')",
+            "        (rbn_peer_group_assign",
+            "          PEER_GROUP:'peer-group'",
+            "          name = (word",
+            "            WORD:'pg1')",
+            "          NEWLINE:'\\n'))",
+            "      (rb_neighbor",
+            "        NEIGHBOR:'neighbor'",
+            "        name = (word",
+            "          WORD:'10.0.0.1')",
+            "        (rbn_null",
+            "          UPDATE_SOURCE:'update-source'",
+            "          (null_rest_of_line",
+            "            WORD:'us1'",
+            "            NEWLINE:'\\n')))",
+            "      (rb_redistribute_kernel",
+            "        REDISTRIBUTE:'redistribute'",
+            "        KERNEL:'kernel'",
+            "        ROUTE_MAP:'route-map'",
+            "        rm = (word",
+            "          WORD:'rm1')",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_null",
+            "      NO:'no'",
+            "      SERVICE:'service'",
+            "      (null_rest_of_line",
+            "        WORD:'password-encryption'",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_route_map",
+            "      ROUTE_MAP:'route-map'",
+            "      name = (word",
+            "        WORD:'rm1')",
+            "      action = (line_action",
+            "        PERMIT:'permit')",
+            "      num = (word",
+            "        WORD:'1')",
+            "      NEWLINE:'\\n'",
+            "      (rm_match",
+            "        MATCH:'match'",
+            "        (rmm_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          name = (word",
+            "            WORD:'acl1')",
+            "          NEWLINE:'\\n'))",
+            "      (rm_set",
+            "        SET:'set'",
+            "        (rms_community",
+            "          COMMUNITY:'community'",
+            "          (standard_community",
+            "            (word",
+            "              WORD:'1:2'))",
+            "          (standard_community",
+            "            (word",
+            "              WORD:'3:4'))",
+            "          NEWLINE:'\\n'))))",
+            "  (statement",
+            "    (s_route_map",
+            "      ROUTE_MAP:'route-map'",
+            "      name = (word",
+            "        WORD:'rm1')",
+            "      action = (line_action",
+            "        DENY:'deny')",
+            "      num = (word",
+            "        WORD:'2')",
+            "      NEWLINE:'\\n'))",
+            "  (statement",
+            "    (s_line",
+            "      LINE:'line'",
+            "      (l_con",
+            "        CON:'con'",
+            "        num = (word",
+            "          WORD:'0')",
+            "        NEWLINE:'\\n'",
+            "        (l_login",
+            "          LOGIN:'login'",
+            "          NEWLINE:'\\n'))))",
+            "  (statement",
+            "    (s_line",
+            "      LINE:'line'",
+            "      (l_vty",
+            "        VTY:'vty'",
+            "        low = (word",
+            "          WORD:'0')",
+            "        high = (word",
+            "          WORD:'39')",
+            "        NEWLINE:'\\n'",
+            "        (l_login",
+            "          LOGIN:'login'",
+            "          NEWLINE:'\\n'))))",
             "  (statement",
             "    (s_end",
             "      END:'end'",
@@ -70139,6 +70358,14 @@
             }
           ]
         },
+        "configs/f5_bigip_structured_with_imish" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not convert to Prefix: 192.0.2.0/24"
+            }
+          ]
+        },
         "configs/foundry_access_list" : {
           "Parse warnings" : [
             {
@@ -70624,7 +70851,7 @@
         "f5_bigip_structured_net_routing_prefix_list" : "PASSED",
         "f5_bigip_structured_net_routing_route_map" : "PASSED",
         "f5_bigip_structured_sys" : "PASSED",
-        "f5_bigip_structured_with_imish" : "PASSED",
+        "f5_bigip_structured_with_imish" : "WARNINGS",
         "foundry_access_list" : "PASSED",
         "foundry_bgp" : "PASSED",
         "foundry_interface" : "PASSED",
@@ -73928,7 +74155,69 @@
           }
         },
         "configs/f5_bigip_structured_sys" : { },
-        "configs/f5_bigip_structured_with_imish" : { },
+        "configs/f5_bigip_structured_with_imish" : {
+          "access-list" : {
+            "acl1" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 1
+            },
+            "acl2" : {
+              "definitionLines" : [
+                9
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "bgp neighbor" : {
+            "10.0.0.1" : {
+              "definitionLines" : [
+                27
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "bgp process" : {
+            "65500" : {
+              "definitionLines" : [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "peer-group" : {
+            "pg1" : {
+              "definitionLines" : [
+                23
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "route-map" : {
+            "rm1" : {
+              "definitionLines" : [
+                35,
+                36,
+                37,
+                39
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/foundry_access_list" : {
           "extended ipv6 access-list" : {
             "RT404888-Caltech" : {
@@ -78770,6 +79059,43 @@
             }
           }
         },
+        "configs/f5_bigip_structured_with_imish" : {
+          "access-list" : {
+            "acl1" : {
+              "route-map match ip address" : [
+                36
+              ]
+            }
+          },
+          "bgp neighbor" : {
+            "10.0.0.1" : {
+              "bgp neighbor self-reference" : [
+                27
+              ]
+            }
+          },
+          "bgp process" : {
+            "65500" : {
+              "bgp process self-reference" : [
+                19
+              ]
+            }
+          },
+          "peer-group" : {
+            "pg1" : {
+              "neighbor peer-group" : [
+                29
+              ]
+            }
+          },
+          "route-map" : {
+            "rm1" : {
+              "router bgp redistribute kernel route-map" : [
+                31
+              ]
+            }
+          }
+        },
         "configs/foundry_bgp" : {
           "interface" : {
             "Loopback1" : {
@@ -82718,6 +83044,14 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Ignoring reference to missing outbound route-map: /Common/MY_IPV4_OUT"
+            }
+          ]
+        },
+        "f5_bigip_structured_with_imish" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine update source for BGP neighbor: '10.0.0.1'"
             }
           ]
         },
