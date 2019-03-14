@@ -1,5 +1,6 @@
 package org.batfish.representation.juniper;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.transformation.Transformation.when;
 
 import com.google.common.collect.Lists;
@@ -101,6 +102,7 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
       Warnings warnings) {
 
     if (nat.getType() == Type.SOURCE) {
+      checkArgument(matchFromLocationExprs != null, "Source nat must specify source locations");
       AclLineMatchExpr matchFromLocation = matchFromLocationExprs.get(_fromLocation);
 
       if (matchFromLocation == null) {
