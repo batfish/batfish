@@ -23,7 +23,12 @@ rm_set
 
 rms_community
 :
-  COMMUNITY communities += word+ NEWLINE
+  COMMUNITY communities += standard_community+ NEWLINE
+;
+
+standard_community
+:
+  word
 ;
 
 s_route_map

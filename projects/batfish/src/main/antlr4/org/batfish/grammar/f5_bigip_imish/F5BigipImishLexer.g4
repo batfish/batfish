@@ -19,6 +19,10 @@ public void emit(Token token) {
 
 }
 
+tokens {
+  LINE
+}
+
 // Keywords
 
 ACCESS_LIST
@@ -68,7 +72,7 @@ DENY
 
 DESCRIPTION
 :
-  'description'
+  'description' -> pushMode ( M_Description )
 ;
 
 EBGP
@@ -89,6 +93,11 @@ FALL_OVER
 GRACEFUL_RESTART
 :
   'graceful-restart'
+;
+
+IN
+:
+  'in'
 ;
 
 INTERFACE
@@ -139,6 +148,11 @@ NEIGHBOR
 NO
 :
   'no'
+;
+
+OUT
+:
+  'out'
 ;
 
 PEER_GROUP
@@ -252,3 +266,18 @@ F_WordChar
 :
   ~[ \t\n\r{}[\]]
 ;
+
+// Lexer modes
+mode M_Description;
+
+M_Description_LINE
+:
+  F_NonNewlineChar+ -> type ( LINE ), popMode
+;
+
+M_Description_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN ) // parser never sees tokens on hidden channel
+
+;
+

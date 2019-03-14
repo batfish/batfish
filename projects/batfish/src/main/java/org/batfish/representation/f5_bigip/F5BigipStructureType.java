@@ -15,6 +15,7 @@ public enum F5BigipStructureType implements StructureType {
   MONITOR_HTTP("monitor http"),
   MONITOR_HTTPS("monitor https"),
   NODE("node"),
+  PEER_GROUP("peer-group"),
   PERSISTENCE("persistence"),
   PERSISTENCE_SOURCE_ADDR("persistence source-addr"),
   PERSISTENCE_SSL("persistence ssl"),

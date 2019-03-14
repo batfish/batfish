@@ -899,7 +899,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
         F5BigipStructureType.ROUTE_MAP,
         F5BigipStructureUsage.BGP_ADDRESS_FAMILY_REDISTRIBUTE_KERNEL_ROUTE_MAP,
         F5BigipStructureUsage.BGP_NEIGHBOR_IPV4_ROUTE_MAP_OUT,
-        F5BigipStructureUsage.BGP_NEIGHBOR_IPV6_ROUTE_MAP_OUT);
+        F5BigipStructureUsage.BGP_NEIGHBOR_IPV6_ROUTE_MAP_OUT,
+        F5BigipStructureUsage.BGP_PEER_GROUP_ROUTE_MAP_OUT,
+        F5BigipStructureUsage.BGP_REDISTRIBUTE_KERNEL_ROUTE_MAP);
     markConcreteStructure(F5BigipStructureType.RULE, F5BigipStructureUsage.VIRTUAL_RULES_RULE);
     markConcreteStructure(F5BigipStructureType.SELF, F5BigipStructureUsage.SELF_SELF_REFERENCE);
     markConcreteStructure(F5BigipStructureType.SNAT, F5BigipStructureUsage.SNAT_SELF_REFERENCE);

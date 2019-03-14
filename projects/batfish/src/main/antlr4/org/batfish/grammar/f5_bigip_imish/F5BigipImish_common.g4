@@ -10,6 +10,11 @@ line_action
   | PERMIT
 ;
 
+null_rest_of_line
+:
+  ~NEWLINE* NEWLINE
+;
+
 word
 :
   ~NEWLINE

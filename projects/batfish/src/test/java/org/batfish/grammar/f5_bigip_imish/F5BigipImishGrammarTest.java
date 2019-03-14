@@ -447,8 +447,8 @@ public final class F5BigipImishGrammarTest {
   @Test
   public void testRouteMap() throws IOException {
     Configuration c = parseConfig("f5_bigip_imish_route_map");
-    String acceptAllName = "/Common/ACCEPT_ALL";
-    String rm1Name = "/Common/rm1";
+    String acceptAllName = "ACCEPT_ALL";
+    String rm1Name = "rm1";
 
     // ACCEPT_ALL
     assertThat(c.getRoutingPolicies(), hasKey(acceptAllName));
@@ -523,9 +523,9 @@ public final class F5BigipImishGrammarTest {
   public void testRouteMapReferences() throws IOException {
     String hostname = "f5_bigip_imish_route_map_references";
     String file = "configs/" + hostname;
-    String undefined = "/Common/route-map-undefined";
-    String unused = "/Common/route-map-unused";
-    String used = "/Common/route-map-used";
+    String undefined = "route-map-undefined";
+    String unused = "route-map-unused";
+    String used = "route-map-used";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
@@ -537,7 +537,7 @@ public final class F5BigipImishGrammarTest {
     assertThat(ans, hasNumReferrers(file, ROUTE_MAP, unused, 0));
 
     // detect all structure references
-    assertThat(ans, hasNumReferrers(file, ROUTE_MAP, used, 3));
+    assertThat(ans, hasNumReferrers(file, ROUTE_MAP, used, 2));
   }
 
   private @Nonnull IpAccessListToBdd toBDD() {

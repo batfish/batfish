@@ -19,6 +19,7 @@ public final class BgpNeighbor implements Serializable {
   private final @Nonnull BgpNeighborIpv4AddressFamily _ipv4AddressFamily;
   private final @Nonnull BgpNeighborIpv6AddressFamily _ipv6AddressFamily;
   private final @Nonnull String _name;
+  private @Nullable String _peerGroup;
   private @Nullable Long _remoteAs;
   private @Nullable String _updateSource;
 
@@ -54,6 +55,10 @@ public final class BgpNeighbor implements Serializable {
     return _name;
   }
 
+  public @Nullable String getPeerGroup() {
+    return _peerGroup;
+  }
+
   public @Nullable Long getRemoteAs() {
     return _remoteAs;
   }
@@ -72,6 +77,10 @@ public final class BgpNeighbor implements Serializable {
 
   public void setDescription(@Nullable String description) {
     _description = description;
+  }
+
+  public void setPeerGroup(@Nullable String peerGroup) {
+    _peerGroup = peerGroup;
   }
 
   public void setRemoteAs(@Nullable Long remoteAs) {
