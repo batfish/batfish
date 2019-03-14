@@ -73,10 +73,7 @@ public final class HeaderSpaceToBDD {
     }
 
     return _bddOps.or(
-        ipProtocols.stream()
-            .map(IpProtocol::number)
-            .map(_bddPacket.getIpProtocol()::value)
-            .collect(Collectors.toList()));
+        ipProtocols.stream().map(_bddPacket.getIpProtocol()::value).collect(Collectors.toList()));
   }
 
   @VisibleForTesting
@@ -87,6 +84,38 @@ public final class HeaderSpaceToBDD {
     }
     return _bddOps.or(
         ranges.stream().map(range -> toBDD(range, var)).collect(ImmutableList.toImmutableList()));
+  }
+
+  @VisibleForTesting
+  @Nullable
+  BDD toBDD(@Nullable Set<SubRange> ranges, BDDIcmpCode var) {
+    if (ranges == null || ranges.isEmpty()) {
+      return null;
+    }
+    return _bddOps.or(
+        ranges.stream().map(range -> toBDD(range, var)).collect(ImmutableList.toImmutableList()));
+  }
+
+  @VisibleForTesting
+  @Nullable
+  BDD toBDD(@Nullable Set<SubRange> ranges, BDDIcmpType var) {
+    if (ranges == null || ranges.isEmpty()) {
+      return null;
+    }
+    return _bddOps.or(
+        ranges.stream().map(range -> toBDD(range, var)).collect(ImmutableList.toImmutableList()));
+  }
+
+  private BDD toBDD(SubRange range, BDDIcmpCode var) {
+    int start = range.getStart();
+    int end = range.getEnd();
+    return start == end ? var.value(start) : var.geq(start).and(var.leq(end));
+  }
+
+  private BDD toBDD(SubRange range, BDDIcmpType var) {
+    int start = range.getStart();
+    int end = range.getEnd();
+    return start == end ? var.value(start) : var.geq(start).and(var.leq(end));
   }
 
   @VisibleForTesting
