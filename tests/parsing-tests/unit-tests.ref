@@ -70358,14 +70358,6 @@
             }
           ]
         },
-        "configs/f5_bigip_structured_with_imish" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Could not convert to Prefix: 192.0.2.0/24"
-            }
-          ]
-        },
         "configs/foundry_access_list" : {
           "Parse warnings" : [
             {

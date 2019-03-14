@@ -127,24 +127,6 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   }
 
   @Override
-  public void enterS_access_list(S_access_listContext ctx) {
-    String name = ctx.name.getText();
-    Prefix prefix = toPrefix(ctx.ip_spec());
-    if (prefix == null) {
-      _w.redFlag(
-          String.format(
-              "Invalid source IP specifier: '%s' in: '%s'",
-              ctx.ip_spec().getText(), ctx.getText()));
-      return;
-    }
-    defineStructure(F5BigipStructureType.ACCESS_LIST, name, ctx);
-    _c.getAccessLists()
-        .computeIfAbsent(name, AccessList::new)
-        .getLines()
-        .add(new AccessListLine(toLineAction(ctx.action), prefix, getFullText(ctx)));
-  }
-
-  @Override
   public void enterS_route_map(S_route_mapContext ctx) {
     String name = ctx.name.getText();
     Integer num = toInteger(ctx.num);
@@ -369,6 +351,24 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   }
 
   @Override
+  public void exitS_access_list(S_access_listContext ctx) {
+    String name = ctx.name.getText();
+    Prefix prefix = toPrefix(ctx.ip_spec());
+    if (prefix == null) {
+      _w.redFlag(
+          String.format(
+              "Invalid source IP specifier: '%s' in: '%s'",
+              ctx.ip_spec().getText(), ctx.getText()));
+      return;
+    }
+    defineStructure(F5BigipStructureType.ACCESS_LIST, name, ctx);
+    _c.getAccessLists()
+        .computeIfAbsent(name, AccessList::new)
+        .getLines()
+        .add(new AccessListLine(toLineAction(ctx.action), prefix, getFullText(ctx)));
+  }
+
+  @Override
   public void exitS_route_map(S_route_mapContext ctx) {
     _currentRouteMapEntry = null;
   }
@@ -417,7 +417,7 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
     if (ctx.ANY() != null) {
       return Prefix.ZERO;
     } else if (ctx.prefix != null) {
-      return Prefix.tryParse(ctx.getText()).orElse(convProblem(Prefix.class, ctx, null));
+      return Prefix.tryParse(ctx.getText()).orElseGet(() -> convProblem(Prefix.class, ctx, null));
     } else {
       return convProblem(Prefix.class, ctx, null);
     }
