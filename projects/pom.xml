@@ -1023,6 +1023,7 @@
     <module>batfish</module>
     <module>batfish-client</module>
     <module>batfish-common-protocol</module>
+    <module>bdd</module>
     <module>build-tools</module>
     <module>coordinator</module>
     <module>question</module>
