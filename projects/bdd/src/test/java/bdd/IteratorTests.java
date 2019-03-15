@@ -179,6 +179,7 @@ public class IteratorTests extends BDDTestCase {
     /* (non-Javadoc)
      * @see java.util.Iterator#remove()
      */
+    @Override
     public void remove() {
       if (last != null) {
         orig.applyWith(last.id(), BDDFactory.diff);
@@ -191,6 +192,7 @@ public class IteratorTests extends BDDTestCase {
     /* (non-Javadoc)
      * @see java.util.Iterator#hasNext()
      */
+    @Override
     public boolean hasNext() {
       return b != null;
     }
@@ -198,6 +200,7 @@ public class IteratorTests extends BDDTestCase {
     /* (non-Javadoc)
      * @see java.util.Iterator#next()
      */
+    @Override
     public Object next() {
       if (b == null) throw new NoSuchElementException();
       BDD c = b.satOne(myVar, false);

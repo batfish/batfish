@@ -70,6 +70,7 @@ public abstract class BDDTestCase extends TestCase implements Iterator {
     this(1000, 1000);
   }
 
+  @Override
   protected void setUp() {
     // System.out.println("Doing setUp()");
     initFactories();
@@ -82,14 +83,17 @@ public abstract class BDDTestCase extends TestCase implements Iterator {
     return f;
   }
 
+  @Override
   public Object next() {
     return nextFactory();
   }
 
+  @Override
   public boolean hasNext() {
     return i.hasNext();
   }
 
+  @Override
   public void remove() {
     i.remove();
   }
@@ -98,6 +102,7 @@ public abstract class BDDTestCase extends TestCase implements Iterator {
     i = factories.iterator();
   }
 
+  @Override
   protected void tearDown() {
     // System.out.println("Doing tearDown()");
     // destroyFactories();

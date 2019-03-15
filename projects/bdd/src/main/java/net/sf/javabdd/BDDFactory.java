@@ -135,6 +135,7 @@ public abstract class BDDFactory {
       this.name = name;
     }
 
+    @Override
     public String toString() {
       return name;
     }
@@ -747,6 +748,7 @@ public abstract class BDDFactory {
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */
+    @Override
     public String toString() {
       return name;
     }
@@ -1030,6 +1032,7 @@ public abstract class BDDFactory {
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */
+    @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();
       sb.append("Garbage collection #");
@@ -1080,6 +1083,7 @@ public abstract class BDDFactory {
       return (100 * (usednum_before - usednum_after)) / usednum_before;
     }
 
+    @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();
       sb.append("Went from ");
@@ -1137,6 +1141,7 @@ public abstract class BDDFactory {
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */
+    @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();
       String newLine = getProperty("line.separator", "\n");

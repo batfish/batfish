@@ -65,10 +65,12 @@ public class TraceDriver {
   class TracedDebugOperation extends TracedOperation {
     public String text;
 
+    @Override
     public void execute() {
       if (verbose /*|| true*/) out.println(text);
     }
 
+    @Override
     public void show_code() {
       out.println("//" + text);
     }
@@ -77,6 +79,7 @@ public class TraceDriver {
   class TracedSaveOperation extends TracedOperation {
     public TracedVariable v;
 
+    @Override
     public void execute() {
       try {
         bdd.save(v.name + ".buddy", v.bdd);
@@ -86,6 +89,7 @@ public class TraceDriver {
       }
     }
 
+    @Override
     public void show_code() {
       out.println("BDDIO.saveBuDDy(bdd, " + v.bdd + ",\"" + v.name + ".buddy\");");
     }
@@ -95,6 +99,7 @@ public class TraceDriver {
     public TracedVariable v;
     public boolean graph;
 
+    @Override
     public void execute() {
       if (graph) v.bdd.printDot(); // bdd.printDot(v.name, v.bdd);
       else {
@@ -103,6 +108,7 @@ public class TraceDriver {
       }
     }
 
+    @Override
     public void show_code() {
       if (graph) out.println(v.name + ".printDot();");
       else out.println(v.name + ".printSet();");
@@ -112,6 +118,7 @@ public class TraceDriver {
   class TracedCheckOperation extends TracedOperation {
     public TracedVariable t1, t2;
 
+    @Override
     public void execute() throws IOException {
       boolean equal = (t1.bdd.equals(t2.bdd));
       if (size != -1) {
@@ -129,6 +136,7 @@ public class TraceDriver {
       }
     }
 
+    @Override
     public void show() {
       out.print(index + "\t");
       out.print("are_equal(" + t1.name + ", " + t2.name + ");");
@@ -140,10 +148,12 @@ public class TraceDriver {
   class TracedReorderOperation extends TracedOperation {
     public BDDFactory.ReorderMethod method;
 
+    @Override
     public void execute() throws IOException {
       bdd.reorder(method);
     }
 
+    @Override
     public void show() {
       out.print(index + "\t");
       out.print("reorder(" + method + ");");
@@ -157,6 +167,7 @@ public class TraceDriver {
     public TracedVariable ret, op1, op2, op3;
     public Vector operands;
 
+    @Override
     public void show() {
       out.print(index + "\t");
       ret.showName();
@@ -181,6 +192,7 @@ public class TraceDriver {
       out.println();
     }
 
+    @Override
     public void execute() throws IOException {
       // check_all_variables(); // DEBUG
 
@@ -347,6 +359,7 @@ public class TraceDriver {
 
     // -------------------------------------------------------------------------
 
+    @Override
     public void show_code() {
       String code;
       Enumeration e = operands.elements();

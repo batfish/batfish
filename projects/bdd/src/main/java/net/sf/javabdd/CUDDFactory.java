@@ -64,6 +64,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#zero()
    */
+  @Override
   public BDD zero() {
     return new CUDDBDD(zero);
   }
@@ -71,6 +72,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#one()
    */
+  @Override
   public BDD one() {
     return new CUDDBDD(one);
   }
@@ -78,6 +80,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#initialize(int, int)
    */
+  @Override
   protected void initialize(int nodenum, int cachesize) {
     if (INSTANCE != null) {
       throw new InternalError("Error: CUDDFactory already initialized.");
@@ -91,6 +94,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#isInitialized()
    */
+  @Override
   public boolean isInitialized() {
     return isInitialized0();
   }
@@ -100,6 +104,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#done()
    */
+  @Override
   public void done() {
     INSTANCE = null;
     done0();
@@ -110,6 +115,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#setError(int)
    */
+  @Override
   public void setError(int code) {
     // TODO Implement this.
   }
@@ -117,6 +123,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#clearError()
    */
+  @Override
   public void clearError() {
     // TODO Implement this.
   }
@@ -124,6 +131,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#setMaxNodeNum(int)
    */
+  @Override
   public int setMaxNodeNum(int size) {
     // TODO Implement this.
     System.err.println("Warning: setMaxNodeNum() not yet implemented");
@@ -133,6 +141,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#setNodeTableSize(int)
    */
+  @Override
   public int setNodeTableSize(int size) {
     // TODO Implement this.
     System.err.println("Warning: setNodeTableSize() not yet implemented");
@@ -142,6 +151,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#setCacheSize(int)
    */
+  @Override
   public int setCacheSize(int size) {
     // TODO Implement this.
     System.err.println("Warning: setCacheSize() not yet implemented");
@@ -151,6 +161,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#setMinFreeNodes(double)
    */
+  @Override
   public double setMinFreeNodes(double x) {
     // TODO Implement this.
     System.err.println("Warning: setMinFreeNodes() not yet implemented");
@@ -160,6 +171,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#setMaxIncrease(int)
    */
+  @Override
   public int setMaxIncrease(int x) {
     // TODO Implement this.
     System.err.println("Warning: setMaxIncrease() not yet implemented");
@@ -169,6 +181,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#setCacheRatio(double)
    */
+  @Override
   public double setCacheRatio(double x) {
     // TODO Implement this.
     System.err.println("Warning: setCacheRatio() not yet implemented");
@@ -178,6 +191,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#setIncreaseFactor(double)
    */
+  @Override
   public double setIncreaseFactor(double x) {
     // TODO Implement this.
     System.err.println("Warning: setIncreaseFactor() not yet implemented");
@@ -187,6 +201,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#varNum()
    */
+  @Override
   public int varNum() {
     return varNum0();
   }
@@ -196,6 +211,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#setVarNum(int)
    */
+  @Override
   public int setVarNum(int num) {
     return setVarNum0(num);
   }
@@ -205,6 +221,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#duplicateVar(int)
    */
+  @Override
   public int duplicateVar(int var) {
     // TODO Implement this.
     throw new UnsupportedOperationException();
@@ -213,6 +230,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#ithVar(int)
    */
+  @Override
   public BDD ithVar(int var) {
     long id = ithVar0(var);
     return new CUDDBDD(id);
@@ -223,6 +241,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#nithVar(int)
    */
+  @Override
   public BDD nithVar(int var) {
     BDD b = ithVar(var);
     BDD c = b.not();
@@ -233,6 +252,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#swapVar(int, int)
    */
+  @Override
   public void swapVar(int v1, int v2) {
     // TODO Implement this.
     throw new UnsupportedOperationException();
@@ -241,6 +261,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#makePair()
    */
+  @Override
   public BDDPairing makePair() {
     return new CUDDBDDPairing();
   }
@@ -248,6 +269,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#printAll()
    */
+  @Override
   public void printAll() {
     // TODO Implement this.
     throw new UnsupportedOperationException();
@@ -256,6 +278,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#printTable(net.sf.javabdd.BDD)
    */
+  @Override
   public void printTable(BDD b) {
     // TODO Implement this.
     throw new UnsupportedOperationException();
@@ -264,6 +287,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#level2Var(int)
    */
+  @Override
   public int level2Var(int level) {
     return level2Var0(level);
   }
@@ -273,6 +297,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#var2Level(int)
    */
+  @Override
   public int var2Level(int var) {
     return var2Level0(var);
   }
@@ -282,6 +307,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#reorder(net.sf.javabdd.BDDFactory.ReorderMethod)
    */
+  @Override
   public void reorder(ReorderMethod m) {
     // TODO Implement this.
     throw new UnsupportedOperationException();
@@ -290,6 +316,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#autoReorder(net.sf.javabdd.BDDFactory.ReorderMethod)
    */
+  @Override
   public void autoReorder(ReorderMethod method) {
     // TODO Implement this.
     throw new UnsupportedOperationException();
@@ -298,6 +325,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#autoReorder(net.sf.javabdd.BDDFactory.ReorderMethod, int)
    */
+  @Override
   public void autoReorder(ReorderMethod method, int max) {
     // TODO Implement this.
     throw new UnsupportedOperationException();
@@ -306,6 +334,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#getReorderMethod()
    */
+  @Override
   public ReorderMethod getReorderMethod() {
     // TODO Implement this.
     throw new UnsupportedOperationException();
@@ -314,6 +343,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#getReorderTimes()
    */
+  @Override
   public int getReorderTimes() {
     // TODO Implement this.
     throw new UnsupportedOperationException();
@@ -322,6 +352,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#disableReorder()
    */
+  @Override
   public void disableReorder() {
     // TODO Implement this.
     System.err.println("Warning: disableReorder() not yet implemented");
@@ -330,6 +361,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#enableReorder()
    */
+  @Override
   public void enableReorder() {
     // TODO Implement this.
     System.err.println("Warning: enableReorder() not yet implemented");
@@ -338,6 +370,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#reorderVerbose(int)
    */
+  @Override
   public int reorderVerbose(int v) {
     // TODO Implement this.
     throw new UnsupportedOperationException();
@@ -346,6 +379,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#setVarOrder(int[])
    */
+  @Override
   public void setVarOrder(int[] neworder) {
     setVarOrder0(neworder);
   }
@@ -355,6 +389,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#addVarBlock(net.sf.javabdd.BDD, boolean)
    */
+  @Override
   public void addVarBlock(BDD var, boolean fixed) {
     // TODO Implement this.
     throw new UnsupportedOperationException();
@@ -363,6 +398,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#addVarBlock(int, int, boolean)
    */
+  @Override
   public void addVarBlock(int first, int last, boolean fixed) {
     // TODO Implement this.
     throw new UnsupportedOperationException();
@@ -371,6 +407,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#varBlockAll()
    */
+  @Override
   public void varBlockAll() {
     // TODO Implement this.
     throw new UnsupportedOperationException();
@@ -379,6 +416,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#clearVarBlocks()
    */
+  @Override
   public void clearVarBlocks() {
     // TODO Implement this.
     throw new UnsupportedOperationException();
@@ -387,6 +425,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#printOrder()
    */
+  @Override
   public void printOrder() {
     // TODO Implement this.
     throw new UnsupportedOperationException();
@@ -395,6 +434,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#nodeCount(java.util.Collection)
    */
+  @Override
   public int nodeCount(Collection r) {
     // TODO Implement this.
     throw new UnsupportedOperationException();
@@ -403,6 +443,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#getNodeTableSize()
    */
+  @Override
   public int getNodeTableSize() {
     return getAllocNum0();
   }
@@ -412,6 +453,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#getNodeNum()
    */
+  @Override
   public int getNodeNum() {
     return getNodeNum0();
   }
@@ -421,6 +463,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#getCacheSize()
    */
+  @Override
   public int getCacheSize() {
     return getCacheSize0();
   }
@@ -430,6 +473,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#reorderGain()
    */
+  @Override
   public int reorderGain() {
     // TODO Implement this.
     throw new UnsupportedOperationException();
@@ -438,6 +482,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#printStat()
    */
+  @Override
   public void printStat() {
     // TODO Implement this.
     throw new UnsupportedOperationException();
@@ -446,6 +491,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#createDomain(int, BigInteger)
    */
+  @Override
   protected BDDDomain createDomain(int a, BigInteger b) {
     return new CUDDBDDDomain(a, b);
   }
@@ -469,6 +515,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#getFactory()
      */
+    @Override
     public BDDFactory getFactory() {
       return INSTANCE;
     }
@@ -476,6 +523,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#isZero()
      */
+    @Override
     public boolean isZero() {
       return this._ddnode_ptr == zero;
     }
@@ -483,6 +531,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#isOne()
      */
+    @Override
     public boolean isOne() {
       return this._ddnode_ptr == one;
     }
@@ -490,6 +539,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#var()
      */
+    @Override
     public int var() {
       if (isZero() || isOne()) throw new BDDException("cannot get var of terminal");
       return var0(_ddnode_ptr);
@@ -500,6 +550,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#high()
      */
+    @Override
     public BDD high() {
       long b = high0(_ddnode_ptr);
       return new CUDDBDD(b);
@@ -510,6 +561,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#low()
      */
+    @Override
     public BDD low() {
       long b = low0(_ddnode_ptr);
       return new CUDDBDD(b);
@@ -520,6 +572,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#id()
      */
+    @Override
     public BDD id() {
       return new CUDDBDD(_ddnode_ptr);
     }
@@ -527,6 +580,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#not()
      */
+    @Override
     public BDD not() {
       long b = not0(_ddnode_ptr);
       return new CUDDBDD(b);
@@ -537,6 +591,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#ite(net.sf.javabdd.BDD, net.sf.javabdd.BDD)
      */
+    @Override
     public BDD ite(BDD thenBDD, BDD elseBDD) {
       CUDDBDD c = (CUDDBDD) thenBDD;
       CUDDBDD d = (CUDDBDD) elseBDD;
@@ -549,6 +604,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#relprod(net.sf.javabdd.BDD, net.sf.javabdd.BDD)
      */
+    @Override
     public BDD relprod(BDD that, BDD var) {
       CUDDBDD c = (CUDDBDD) that;
       CUDDBDD d = (CUDDBDD) var;
@@ -561,6 +617,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#compose(net.sf.javabdd.BDD, int)
      */
+    @Override
     public BDD compose(BDD that, int var) {
       CUDDBDD c = (CUDDBDD) that;
       long b = compose0(_ddnode_ptr, c._ddnode_ptr, var);
@@ -572,6 +629,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#constrain(net.sf.javabdd.BDD)
      */
+    @Override
     public BDD constrain(BDD that) {
       // TODO Implement this.
       throw new UnsupportedOperationException();
@@ -580,6 +638,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#exist(net.sf.javabdd.BDD)
      */
+    @Override
     public BDD exist(BDD var) {
       CUDDBDD c = (CUDDBDD) var;
       long b = exist0(_ddnode_ptr, c._ddnode_ptr);
@@ -591,6 +650,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#forAll(net.sf.javabdd.BDD)
      */
+    @Override
     public BDD forAll(BDD var) {
       CUDDBDD c = (CUDDBDD) var;
       long b = forAll0(_ddnode_ptr, c._ddnode_ptr);
@@ -602,6 +662,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#unique(net.sf.javabdd.BDD)
      */
+    @Override
     public BDD unique(BDD var) {
       // TODO Implement this.
       throw new UnsupportedOperationException();
@@ -610,6 +671,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#restrict(net.sf.javabdd.BDD)
      */
+    @Override
     public BDD restrict(BDD var) {
       CUDDBDD c = (CUDDBDD) var;
       long b = restrict0(_ddnode_ptr, c._ddnode_ptr);
@@ -621,6 +683,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#restrictWith(net.sf.javabdd.BDD)
      */
+    @Override
     public BDD restrictWith(BDD var) {
       CUDDBDD c = (CUDDBDD) var;
       long b = restrict0(_ddnode_ptr, c._ddnode_ptr);
@@ -637,6 +700,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#simplify(net.sf.javabdd.BDD)
      */
+    @Override
     public BDD simplify(BDD d) {
       // TODO Implement this.
       throw new UnsupportedOperationException();
@@ -645,6 +709,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#support()
      */
+    @Override
     public BDD support() {
       long b = support0(_ddnode_ptr);
       return new CUDDBDD(b);
@@ -655,6 +720,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#apply(net.sf.javabdd.BDD, net.sf.javabdd.BDDFactory.BDDOp)
      */
+    @Override
     public BDD apply(BDD that, BDDFactory.BDDOp opr) {
       CUDDBDD c = (CUDDBDD) that;
       long b = apply0(_ddnode_ptr, c._ddnode_ptr, opr.id);
@@ -666,6 +732,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#applyWith(net.sf.javabdd.BDD, net.sf.javabdd.BDDFactory.BDDOp)
      */
+    @Override
     public BDD applyWith(BDD that, BDDFactory.BDDOp opr) {
       CUDDBDD c = (CUDDBDD) that;
       long b = apply0(_ddnode_ptr, c._ddnode_ptr, opr.id);
@@ -682,6 +749,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#applyAll(net.sf.javabdd.BDD, net.sf.javabdd.BDDFactory.BDDOp, net.sf.javabdd.BDD)
      */
+    @Override
     public BDD applyAll(BDD that, BDDOp opr, BDD var) {
       // TODO Implement this.
       throw new UnsupportedOperationException();
@@ -690,6 +758,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#applyEx(net.sf.javabdd.BDD, net.sf.javabdd.BDDFactory.BDDOp, net.sf.javabdd.BDD)
      */
+    @Override
     public BDD applyEx(BDD that, BDDOp opr, BDD var) {
       // TODO Implement this.
       throw new UnsupportedOperationException();
@@ -698,6 +767,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#applyUni(net.sf.javabdd.BDD, net.sf.javabdd.BDDFactory.BDDOp, net.sf.javabdd.BDD)
      */
+    @Override
     public BDD applyUni(BDD that, BDDOp opr, BDD var) {
       // TODO Implement this.
       throw new UnsupportedOperationException();
@@ -706,6 +776,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#satOne()
      */
+    @Override
     public BDD satOne() {
       long b = satOne0(_ddnode_ptr);
       return new CUDDBDD(b);
@@ -716,6 +787,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#fullSatOne()
      */
+    @Override
     public BDD fullSatOne() {
       // TODO Implement this.
       throw new UnsupportedOperationException();
@@ -724,6 +796,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#satOne(net.sf.javabdd.BDD, boolean)
      */
+    @Override
     public BDD satOne(BDD var, boolean pol) {
       // TODO Implement this.
       throw new UnsupportedOperationException();
@@ -732,6 +805,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#nodeCount()
      */
+    @Override
     public int nodeCount() {
       return nodeCount0(_ddnode_ptr);
     }
@@ -741,6 +815,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#pathCount()
      */
+    @Override
     public double pathCount() {
       return pathCount0(_ddnode_ptr);
     }
@@ -750,6 +825,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#satCount()
      */
+    @Override
     public double satCount() {
       return satCount0(_ddnode_ptr);
     }
@@ -759,6 +835,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#varProfile()
      */
+    @Override
     public int[] varProfile() {
       // TODO Implement this.
       throw new UnsupportedOperationException();
@@ -792,6 +869,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#free()
      */
+    @Override
     public void free() {
       delRef(_ddnode_ptr);
       _ddnode_ptr = INVALID_BDD;
@@ -800,6 +878,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#veccompose(net.sf.javabdd.BDDPairing)
      */
+    @Override
     public BDD veccompose(BDDPairing pair) {
       CUDDBDDPairing p = (CUDDBDDPairing) pair;
       long b = veccompose0(_ddnode_ptr, p._ptr);
@@ -811,6 +890,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#replace(net.sf.javabdd.BDDPairing)
      */
+    @Override
     public BDD replace(BDDPairing pair) {
       CUDDBDDPairing p = (CUDDBDDPairing) pair;
       long b = replace0(_ddnode_ptr, p._ptr);
@@ -822,6 +902,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#replaceWith(net.sf.javabdd.BDDPairing)
      */
+    @Override
     public BDD replaceWith(BDDPairing pair) {
       CUDDBDDPairing p = (CUDDBDDPairing) pair;
       long b = replace0(_ddnode_ptr, p._ptr);
@@ -834,6 +915,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#equals(net.sf.javabdd.BDD)
      */
+    @Override
     public boolean equals(BDD that) {
       return this._ddnode_ptr == ((CUDDBDD) that)._ddnode_ptr;
     }
@@ -841,6 +923,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#hashCode()
      */
+    @Override
     public int hashCode() {
       return (int) this._ddnode_ptr;
     }
@@ -858,6 +941,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDDDomain#getFactory()
      */
+    @Override
     public BDDFactory getFactory() {
       return INSTANCE;
     }
@@ -879,6 +963,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDDPairing#set(int, int)
      */
+    @Override
     public void set(int oldvar, int newvar) {
       set0(_ptr, oldvar, newvar);
     }
@@ -888,6 +973,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDDPairing#set(int, net.sf.javabdd.BDD)
      */
+    @Override
     public void set(int oldvar, BDD newvar) {
       CUDDBDD c = (CUDDBDD) newvar;
       set2(_ptr, oldvar, c._ddnode_ptr);
@@ -898,6 +984,7 @@ public class CUDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDDPairing#reset()
      */
+    @Override
     public void reset() {
       reset0(_ptr);
     }
@@ -911,6 +998,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#createBitVector(int)
    */
+  @Override
   protected BDDBitVector createBitVector(int a) {
     return new CUDDBDDBitVector(a);
   }
@@ -924,6 +1012,7 @@ public class CUDDFactory extends BDDFactory {
       super(a);
     }
 
+    @Override
     public BDDFactory getFactory() {
       return INSTANCE;
     }
@@ -970,6 +1059,7 @@ public class CUDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#getVersion()
    */
+  @Override
   public String getVersion() {
     return "CUDD " + REVISION.substring(11, REVISION.length() - 2);
   }

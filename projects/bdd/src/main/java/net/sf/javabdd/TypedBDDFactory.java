@@ -46,6 +46,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#zero()
    */
+  @Override
   public BDD zero() {
     return new TypedBDD(factory.zero(), makeSet());
   }
@@ -53,6 +54,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#one()
    */
+  @Override
   public BDD one() {
     Set s = makeSet();
     // Set s = allDomains();
@@ -62,6 +64,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#initialize(int, int)
    */
+  @Override
   protected void initialize(int nodenum, int cachesize) {
     factory.initialize(nodenum, cachesize);
   }
@@ -69,6 +72,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#isInitialized()
    */
+  @Override
   public boolean isInitialized() {
     return factory.isInitialized();
   }
@@ -76,6 +80,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#done()
    */
+  @Override
   public void done() {
     factory.done();
   }
@@ -83,6 +88,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#setError(int)
    */
+  @Override
   public void setError(int code) {
     factory.setError(code);
   }
@@ -90,6 +96,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#clearError()
    */
+  @Override
   public void clearError() {
     factory.clearError();
   }
@@ -97,6 +104,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#setMaxNodeNum(int)
    */
+  @Override
   public int setMaxNodeNum(int size) {
     return factory.setMaxNodeNum(size);
   }
@@ -104,6 +112,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#setNodeTableSize(int)
    */
+  @Override
   public int setNodeTableSize(int size) {
     return factory.setNodeTableSize(size);
   }
@@ -111,6 +120,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#setCacheSize(int)
    */
+  @Override
   public int setCacheSize(int size) {
     return factory.setCacheSize(size);
   }
@@ -118,6 +128,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#setMinFreeNodes(double)
    */
+  @Override
   public double setMinFreeNodes(double x) {
     return factory.setMinFreeNodes(x);
   }
@@ -125,6 +136,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#setIncreaseFactor(double)
    */
+  @Override
   public double setIncreaseFactor(double x) {
     return factory.setIncreaseFactor(x);
   }
@@ -132,6 +144,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#setMaxIncrease(int)
    */
+  @Override
   public int setMaxIncrease(int x) {
     return factory.setMaxIncrease(x);
   }
@@ -139,6 +152,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#setCacheRatio(double)
    */
+  @Override
   public double setCacheRatio(double x) {
     return factory.setCacheRatio(x);
   }
@@ -146,6 +160,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#varNum()
    */
+  @Override
   public int varNum() {
     return factory.varNum();
   }
@@ -153,6 +168,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#setVarNum(int)
    */
+  @Override
   public int setVarNum(int num) {
     return factory.setVarNum(num);
   }
@@ -160,6 +176,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#duplicateVar(int)
    */
+  @Override
   public int duplicateVar(int var) {
     return factory.duplicateVar(var);
   }
@@ -177,6 +194,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#ithVar(int)
    */
+  @Override
   public BDD ithVar(int var) {
     Set s = makeSet();
     // BDDDomain d = whichDomain(var);
@@ -187,6 +205,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#nithVar(int)
    */
+  @Override
   public BDD nithVar(int var) {
     Set s = makeSet();
     // BDDDomain d = whichDomain(var);
@@ -197,6 +216,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#printAll()
    */
+  @Override
   public void printAll() {
     factory.printAll();
   }
@@ -204,6 +224,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#printTable(net.sf.javabdd.BDD)
    */
+  @Override
   public void printTable(BDD b) {
     TypedBDD bdd1 = (TypedBDD) b;
     factory.printTable(bdd1.bdd);
@@ -212,6 +233,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#load(java.lang.String)
    */
+  @Override
   public BDD load(String filename) throws IOException {
     // TODO domains?
     Set d = makeSet();
@@ -221,6 +243,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#save(java.lang.String, net.sf.javabdd.BDD)
    */
+  @Override
   public void save(String filename, BDD var) throws IOException {
     TypedBDD bdd1 = (TypedBDD) var;
     factory.save(filename, bdd1.bdd);
@@ -229,6 +252,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#level2Var(int)
    */
+  @Override
   public int level2Var(int level) {
     return factory.level2Var(level);
   }
@@ -236,6 +260,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#var2Level(int)
    */
+  @Override
   public int var2Level(int var) {
     return factory.var2Level(var);
   }
@@ -243,6 +268,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#reorder(net.sf.javabdd.BDDFactory.ReorderMethod)
    */
+  @Override
   public void reorder(ReorderMethod m) {
     factory.reorder(m);
   }
@@ -250,6 +276,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#autoReorder(net.sf.javabdd.BDDFactory.ReorderMethod)
    */
+  @Override
   public void autoReorder(ReorderMethod method) {
     factory.autoReorder(method);
   }
@@ -257,6 +284,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#autoReorder(net.sf.javabdd.BDDFactory.ReorderMethod, int)
    */
+  @Override
   public void autoReorder(ReorderMethod method, int max) {
     factory.autoReorder(method, max);
   }
@@ -264,6 +292,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#getReorderMethod()
    */
+  @Override
   public ReorderMethod getReorderMethod() {
     return factory.getReorderMethod();
   }
@@ -271,6 +300,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#getReorderTimes()
    */
+  @Override
   public int getReorderTimes() {
     return factory.getReorderTimes();
   }
@@ -278,6 +308,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#disableReorder()
    */
+  @Override
   public void disableReorder() {
     factory.disableReorder();
   }
@@ -285,6 +316,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#enableReorder()
    */
+  @Override
   public void enableReorder() {
     factory.enableReorder();
   }
@@ -292,6 +324,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#reorderVerbose(int)
    */
+  @Override
   public int reorderVerbose(int v) {
     return factory.reorderVerbose(v);
   }
@@ -299,6 +332,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#setVarOrder(int[])
    */
+  @Override
   public void setVarOrder(int[] neworder) {
     factory.setVarOrder(neworder);
   }
@@ -306,6 +340,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#addVarBlock(net.sf.javabdd.BDD, boolean)
    */
+  @Override
   public void addVarBlock(BDD var, boolean fixed) {
     TypedBDD bdd1 = (TypedBDD) var;
     factory.addVarBlock(bdd1.bdd, fixed);
@@ -314,6 +349,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#addVarBlock(int, int, boolean)
    */
+  @Override
   public void addVarBlock(int first, int last, boolean fixed) {
     factory.addVarBlock(first, last, fixed);
   }
@@ -321,6 +357,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#varBlockAll()
    */
+  @Override
   public void varBlockAll() {
     factory.varBlockAll();
   }
@@ -328,6 +365,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#clearVarBlocks()
    */
+  @Override
   public void clearVarBlocks() {
     factory.clearVarBlocks();
   }
@@ -335,6 +373,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#printOrder()
    */
+  @Override
   public void printOrder() {
     factory.printOrder();
   }
@@ -342,6 +381,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#nodeCount(java.util.Collection)
    */
+  @Override
   public int nodeCount(Collection r) {
     Collection s = new LinkedList();
     for (Iterator i = r.iterator(); i.hasNext(); ) {
@@ -354,6 +394,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#getAllocNum()
    */
+  @Override
   public int getNodeTableSize() {
     return factory.getNodeTableSize();
   }
@@ -361,6 +402,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#getNodeNum()
    */
+  @Override
   public int getNodeNum() {
     return factory.getNodeNum();
   }
@@ -368,6 +410,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#getCacheSize()
    */
+  @Override
   public int getCacheSize() {
     return factory.getCacheSize();
   }
@@ -375,6 +418,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#reorderGain()
    */
+  @Override
   public int reorderGain() {
     return factory.reorderGain();
   }
@@ -382,6 +426,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#printStat()
    */
+  @Override
   public void printStat() {
     factory.printStat();
   }
@@ -389,6 +434,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#makePair()
    */
+  @Override
   public BDDPairing makePair() {
     return new TypedBDDPairing(factory.makePair());
   }
@@ -396,6 +442,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#swapVar(int, int)
    */
+  @Override
   public void swapVar(int v1, int v2) {
     factory.swapVar(v1, v2);
   }
@@ -403,6 +450,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#createDomain(int, BigInteger)
    */
+  @Override
   protected BDDDomain createDomain(int a, BigInteger b) {
     return new TypedBDDDomain(factory.getDomain(a), a, b);
   }
@@ -410,10 +458,12 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#createBitVector(int)
    */
+  @Override
   protected BDDBitVector createBitVector(int a) {
     return factory.createBitVector(a);
   }
 
+  @Override
   public BDDDomain[] extDomain(long[] domainSizes) {
     factory.extDomain(domainSizes);
     return super.extDomain(domainSizes);
@@ -456,6 +506,7 @@ public class TypedBDDFactory extends BDDFactory {
   public static final Comparator domain_comparator =
       new Comparator() {
 
+        @Override
         public int compare(Object arg0, Object arg1) {
           BDDDomain d1 = (BDDDomain) arg0;
           BDDDomain d2 = (BDDDomain) arg1;
@@ -545,6 +596,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#getFactory()
      */
+    @Override
     public BDDFactory getFactory() {
       return TypedBDDFactory.this;
     }
@@ -552,6 +604,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#isZero()
      */
+    @Override
     public boolean isZero() {
       return bdd.isZero();
     }
@@ -559,6 +612,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#isOne()
      */
+    @Override
     public boolean isOne() {
       return bdd.isOne();
     }
@@ -566,6 +620,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#var()
      */
+    @Override
     public int var() {
       return bdd.var();
     }
@@ -573,6 +628,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#high()
      */
+    @Override
     public BDD high() {
       return new TypedBDD(bdd.high(), makeSet(dom));
     }
@@ -580,6 +636,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#low()
      */
+    @Override
     public BDD low() {
       return new TypedBDD(bdd.low(), makeSet(dom));
     }
@@ -587,6 +644,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#id()
      */
+    @Override
     public BDD id() {
       return new TypedBDD(bdd.id(), makeSet(dom));
     }
@@ -594,6 +652,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#not()
      */
+    @Override
     public BDD not() {
       return new TypedBDD(bdd.not(), makeSet(dom));
     }
@@ -601,6 +660,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#ite(net.sf.javabdd.BDD, net.sf.javabdd.BDD)
      */
+    @Override
     public BDD ite(BDD thenBDD, BDD elseBDD) {
       TypedBDD bdd1 = (TypedBDD) thenBDD;
       TypedBDD bdd2 = (TypedBDD) elseBDD;
@@ -614,6 +674,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#relprod(net.sf.javabdd.BDD, net.sf.javabdd.BDD)
      */
+    @Override
     public BDD relprod(BDD that, BDD var) {
       TypedBDD bdd1 = (TypedBDD) that;
       TypedBDD bdd2 = (TypedBDD) var;
@@ -631,6 +692,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#compose(net.sf.javabdd.BDD, int)
      */
+    @Override
     public BDD compose(BDD g, int var) {
       TypedBDD bdd1 = (TypedBDD) g;
       // TODO How does this change the domains?
@@ -642,6 +704,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#veccompose(net.sf.javabdd.BDDPairing)
      */
+    @Override
     public BDD veccompose(BDDPairing pair) {
       TypedBDDPairing p = (TypedBDDPairing) pair;
       // TODO How does this change the domains?
@@ -653,6 +716,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#constrain(net.sf.javabdd.BDD)
      */
+    @Override
     public BDD constrain(BDD that) {
       TypedBDD bdd1 = (TypedBDD) that;
       // TODO How does this change the domains?
@@ -664,6 +728,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#exist(net.sf.javabdd.BDD)
      */
+    @Override
     public BDD exist(BDD var) {
       TypedBDD bdd1 = (TypedBDD) var;
       Set newDom = makeSet();
@@ -679,6 +744,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#forAll(net.sf.javabdd.BDD)
      */
+    @Override
     public BDD forAll(BDD var) {
       TypedBDD bdd1 = (TypedBDD) var;
       Set newDom = makeSet();
@@ -694,6 +760,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#unique(net.sf.javabdd.BDD)
      */
+    @Override
     public BDD unique(BDD var) {
       TypedBDD bdd1 = (TypedBDD) var;
       Set newDom = makeSet();
@@ -709,6 +776,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#restrict(net.sf.javabdd.BDD)
      */
+    @Override
     public BDD restrict(BDD var) {
       TypedBDD bdd1 = (TypedBDD) var;
       Set newDom = makeSet();
@@ -728,6 +796,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#restrictWith(net.sf.javabdd.BDD)
      */
+    @Override
     public BDD restrictWith(BDD var) {
       TypedBDD bdd1 = (TypedBDD) var;
       if (!dom.containsAll(bdd1.dom)) {
@@ -746,6 +815,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#simplify(net.sf.javabdd.BDD)
      */
+    @Override
     public BDD simplify(BDD d) {
       TypedBDD bdd1 = (TypedBDD) d;
       // TODO How does this change the domains?
@@ -757,6 +827,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#support()
      */
+    @Override
     public BDD support() {
       // TODO How does this change the domains?
       Set newDom = makeSet();
@@ -795,6 +866,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#apply(net.sf.javabdd.BDD, net.sf.javabdd.BDDFactory.BDDOp)
      */
+    @Override
     public BDD apply(BDD that, BDDOp opr) {
       TypedBDD bdd1 = (TypedBDD) that;
       Set newDom = makeSet();
@@ -806,6 +878,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#applyWith(net.sf.javabdd.BDD, net.sf.javabdd.BDDFactory.BDDOp)
      */
+    @Override
     public BDD applyWith(BDD that, BDDOp opr) {
       TypedBDD bdd1 = (TypedBDD) that;
       applyHelper(dom, this, bdd1, opr);
@@ -816,6 +889,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#applyAll(net.sf.javabdd.BDD, net.sf.javabdd.BDDFactory.BDDOp, net.sf.javabdd.BDD)
      */
+    @Override
     public BDD applyAll(BDD that, BDDOp opr, BDD var) {
       TypedBDD bdd1 = (TypedBDD) that;
       Set newDom = makeSet();
@@ -843,6 +917,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#applyEx(net.sf.javabdd.BDD, net.sf.javabdd.BDDFactory.BDDOp, net.sf.javabdd.BDD)
      */
+    @Override
     public BDD applyEx(BDD that, BDDOp opr, BDD var) {
       TypedBDD bdd1 = (TypedBDD) that;
       Set newDom = makeSet();
@@ -870,6 +945,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#applyUni(net.sf.javabdd.BDD, net.sf.javabdd.BDDFactory.BDDOp, net.sf.javabdd.BDD)
      */
+    @Override
     public BDD applyUni(BDD that, BDDOp opr, BDD var) {
       TypedBDD bdd1 = (TypedBDD) that;
       Set newDom = makeSet();
@@ -897,6 +973,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#satOne()
      */
+    @Override
     public BDD satOne() {
       return new TypedBDD(bdd.satOne(), makeSet(dom));
     }
@@ -904,6 +981,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#fullSatOne()
      */
+    @Override
     public BDD fullSatOne() {
       return new TypedBDD(bdd.fullSatOne(), allDomains());
     }
@@ -911,6 +989,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#satOne(net.sf.javabdd.BDD, boolean)
      */
+    @Override
     public BDD satOne(BDD var, boolean pol) {
       TypedBDD bdd1 = (TypedBDD) var;
       Set newDom = makeSet();
@@ -926,6 +1005,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#allsat()
      */
+    @Override
     public AllSatIterator allsat() {
       return bdd.allsat();
     }
@@ -933,6 +1013,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#replace(net.sf.javabdd.BDDPairing)
      */
+    @Override
     public BDD replace(BDDPairing pair) {
       TypedBDDPairing tpair = (TypedBDDPairing) pair;
       Set newDom = makeSet();
@@ -960,6 +1041,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#replaceWith(net.sf.javabdd.BDDPairing)
      */
+    @Override
     public BDD replaceWith(BDDPairing pair) {
       TypedBDDPairing tpair = (TypedBDDPairing) pair;
       for (Iterator i = tpair.domMap.entrySet().iterator(); i.hasNext(); ) {
@@ -984,6 +1066,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#nodeCount()
      */
+    @Override
     public int nodeCount() {
       return bdd.nodeCount();
     }
@@ -991,6 +1074,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#pathCount()
      */
+    @Override
     public double pathCount() {
       return bdd.pathCount();
     }
@@ -998,6 +1082,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#satCount()
      */
+    @Override
     public double satCount() {
       return bdd.satCount();
     }
@@ -1005,6 +1090,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#satCount(net.sf.javabdd.BDD)
      */
+    @Override
     public double satCount(BDD set) {
       TypedBDD bdd1 = (TypedBDD) set;
       if (!bdd.isZero() && !bdd1.dom.equals(dom)) {
@@ -1021,6 +1107,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#varProfile()
      */
+    @Override
     public int[] varProfile() {
       return bdd.varProfile();
     }
@@ -1028,6 +1115,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#equals(net.sf.javabdd.BDD)
      */
+    @Override
     public boolean equals(BDD that) {
       TypedBDD bdd1 = (TypedBDD) that;
       if (!dom.containsAll(bdd1.dom)) {
@@ -1039,10 +1127,12 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#hashCode()
      */
+    @Override
     public int hashCode() {
       return bdd.hashCode();
     }
 
+    @Override
     public BDDIterator iterator(BDD var) {
       TypedBDD bdd1 = (TypedBDD) var;
       if (!dom.equals(bdd1.dom)) {
@@ -1064,6 +1154,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#free()
      */
+    @Override
     public void free() {
       bdd.free();
       dom.clear();
@@ -1086,6 +1177,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDDDomain#getFactory()
      */
+    @Override
     public BDDFactory getFactory() {
       return TypedBDDFactory.this;
     }
@@ -1093,6 +1185,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDDDomain#ithVar(long)
      */
+    @Override
     public BDD ithVar(long val) {
       BDD v = domain.ithVar(val);
       Set s = makeSet();
@@ -1103,6 +1196,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDDDomain#domain()
      */
+    @Override
     public BDD domain() {
       BDD v = domain.domain();
       Set s = makeSet();
@@ -1110,6 +1204,7 @@ public class TypedBDDFactory extends BDDFactory {
       return new TypedBDD(v, s);
     }
 
+    @Override
     public BDD buildAdd(BDDDomain that, int bits, long value) {
       TypedBDDDomain d = (TypedBDDDomain) that;
       BDD v = domain.buildAdd(d.domain, bits, value);
@@ -1119,6 +1214,7 @@ public class TypedBDDFactory extends BDDFactory {
       return new TypedBDD(v, s);
     }
 
+    @Override
     public BDD buildEquals(BDDDomain that) {
       TypedBDDDomain d = (TypedBDDDomain) that;
       BDD v = domain.buildEquals(d.domain);
@@ -1131,6 +1227,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDDDomain#set()
      */
+    @Override
     public BDD set() {
       BDD v = domain.set();
       Set s = makeSet();
@@ -1141,6 +1238,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDDDomain#varRange(long, long)
      */
+    @Override
     public BDD varRange(BigInteger lo, BigInteger hi) {
       BDD v = domain.varRange(lo, hi);
       Set s = makeSet();
@@ -1159,6 +1257,7 @@ public class TypedBDDFactory extends BDDFactory {
       this.pairing = pairing;
     }
 
+    @Override
     public void set(BDDDomain p1, BDDDomain p2) {
       if (domMap.containsValue(p2)) {
         out.println("Warning! Set domain that already exists: " + p2.getName());
@@ -1170,6 +1269,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDDPairing#set(int, int)
      */
+    @Override
     public void set(int oldvar, int newvar) {
       pairing.set(oldvar, newvar);
       // throw new BDDException();
@@ -1178,6 +1278,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDDPairing#set(int, net.sf.javabdd.BDD)
      */
+    @Override
     public void set(int oldvar, BDD newvar) {
       throw new BDDException();
     }
@@ -1185,6 +1286,7 @@ public class TypedBDDFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDDPairing#reset()
      */
+    @Override
     public void reset() {
       domMap.clear();
       pairing.reset();
@@ -1196,6 +1298,7 @@ public class TypedBDDFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#getVersion()
    */
+  @Override
   public String getVersion() {
     return "TypedBDD "
         + REVISION.substring(11, REVISION.length() - 2)

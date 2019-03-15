@@ -96,6 +96,7 @@ public class BuDDyFactory extends BDDFactory {
   private static class BuDDyFactoryWithFinalizer extends BuDDyFactory {
 
     /** @see java.lang.Object#finalize() */
+    @Override
     protected void finalize() throws Throwable {
       super.finalize();
       this.done();
@@ -119,6 +120,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#zero()
    */
+  @Override
   public BDD zero() {
     return makeBDD(0);
   }
@@ -126,6 +128,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#one()
    */
+  @Override
   public BDD one() {
     return makeBDD(1);
   }
@@ -149,6 +152,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#buildCube(int, java.util.List)
    */
+  @Override
   public BDD buildCube(int value, List var) {
     int[] a = toBuDDyArray(var);
     int id = buildCube0(value, a);
@@ -160,6 +164,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#buildCube(int, int[])
    */
+  @Override
   public BDD buildCube(int value, int[] var) {
     int id = buildCube1(value, var);
     return makeBDD(id);
@@ -170,6 +175,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#makeSet(int[])
    */
+  @Override
   public BDD makeSet(int[] v) {
     int id = makeSet0(v);
     return makeBDD(id);
@@ -180,6 +186,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#initialize(int, int)
    */
+  @Override
   protected void initialize(int nodenum, int cachesize) {
     if (INSTANCE != null) throw new InternalError("Error: BDDFactory already initialized.");
     INSTANCE = this;
@@ -191,6 +198,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#isInitialized()
    */
+  @Override
   public boolean isInitialized() {
     return isInitialized0();
   }
@@ -200,6 +208,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#done()
    */
+  @Override
   public void done() {
     if (USE_FINALIZER) {
       System.gc();
@@ -214,6 +223,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#reset()
    */
+  @Override
   public void reset() {
     if (USE_FINALIZER) {
       System.gc();
@@ -225,6 +235,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#setError(int)
    */
+  @Override
   public void setError(int code) {
     setError0(code);
   }
@@ -234,6 +245,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#clearError()
    */
+  @Override
   public void clearError() {
     clearError0();
   }
@@ -243,6 +255,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#setMaxNodeNum(int)
    */
+  @Override
   public int setMaxNodeNum(int size) {
     return setMaxNodeNum0(size);
   }
@@ -252,6 +265,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#setMinFreeNodes(double)
    */
+  @Override
   public double setMinFreeNodes(double x) {
     return setMinFreeNodes0((int) (x * 100.)) / 100.;
   }
@@ -261,6 +275,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#setMaxIncrease(int)
    */
+  @Override
   public int setMaxIncrease(int x) {
     return setMaxIncrease0(x);
   }
@@ -270,6 +285,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#setIncreaseFactor(double)
    */
+  @Override
   public double setIncreaseFactor(double x) {
     return setIncreaseFactor0(x);
   }
@@ -279,6 +295,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#setCacheRatio(int)
    */
+  @Override
   public double setCacheRatio(double x) {
     return setCacheRatio0((int) (x * 100.)) / 100.;
   }
@@ -288,6 +305,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#setNodeTableSize(int)
    */
+  @Override
   public int setNodeTableSize(int x) {
     return setNodeTableSize0(x);
   }
@@ -297,6 +315,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#setCacheSize(int)
    */
+  @Override
   public int setCacheSize(int x) {
     return setCacheSize0(x);
   }
@@ -306,6 +325,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#varNum()
    */
+  @Override
   public int varNum() {
     return varNum0();
   }
@@ -315,6 +335,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#setVarNum(int)
    */
+  @Override
   public int setVarNum(int num) {
     return setVarNum0(num);
   }
@@ -324,6 +345,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#duplicateVar(int)
    */
+  @Override
   public int duplicateVar(int var) {
     return duplicateVar0(var);
   }
@@ -333,6 +355,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#extVarNum(int)
    */
+  @Override
   public int extVarNum(int num) {
     return extVarNum0(num);
   }
@@ -342,6 +365,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#ithVar(int)
    */
+  @Override
   public BDD ithVar(int var) {
     int id = ithVar0(var);
     return makeBDD(id);
@@ -352,6 +376,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#nithVar(int)
    */
+  @Override
   public BDD nithVar(int var) {
     int id = nithVar0(var);
     return makeBDD(id);
@@ -362,6 +387,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#swapVar(int, int)
    */
+  @Override
   public void swapVar(int v1, int v2) {
     swapVar0(v1, v2);
   }
@@ -371,6 +397,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#makePair()
    */
+  @Override
   public BDDPairing makePair() {
     long ptr = makePair0();
     if (USE_FINALIZER) {
@@ -385,6 +412,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#printAll()
    */
+  @Override
   public void printAll() {
     printAll0();
   }
@@ -394,6 +422,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#printTable(net.sf.javabdd.BDD)
    */
+  @Override
   public void printTable(BDD b) {
     BuDDyBDD bb = (BuDDyBDD) b;
     printTable0(bb._id);
@@ -404,6 +433,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#load(java.lang.String)
    */
+  @Override
   public BDD load(String filename) {
     int id = load0(filename);
     return makeBDD(id);
@@ -414,6 +444,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#save(java.lang.String, net.sf.javabdd.BDD)
    */
+  @Override
   public void save(String filename, BDD b) {
     BuDDyBDD bb = (BuDDyBDD) b;
     save0(filename, bb._id);
@@ -424,6 +455,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#level2Var(int)
    */
+  @Override
   public int level2Var(int level) {
     return level2Var0(level);
   }
@@ -433,6 +465,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#var2Level(int)
    */
+  @Override
   public int var2Level(int var) {
     return var2Level0(var);
   }
@@ -442,6 +475,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#reorder(net.sf.javabdd.BDDFactory.ReorderMethod)
    */
+  @Override
   public void reorder(BDDFactory.ReorderMethod method) {
     reorder0(method.id);
   }
@@ -451,6 +485,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#autoReorder(net.sf.javabdd.BDDFactory.ReorderMethod)
    */
+  @Override
   public void autoReorder(BDDFactory.ReorderMethod method) {
     autoReorder0(method.id);
   }
@@ -460,6 +495,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#autoReorder(net.sf.javabdd.BDDFactory.ReorderMethod, int)
    */
+  @Override
   public void autoReorder(BDDFactory.ReorderMethod method, int max) {
     autoReorder1(method.id, max);
   }
@@ -469,6 +505,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#getReorderMethod()
    */
+  @Override
   public BDDFactory.ReorderMethod getReorderMethod() {
     int method = getReorderMethod0();
     switch (method) {
@@ -498,6 +535,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#getReorderTimes()
    */
+  @Override
   public int getReorderTimes() {
     return getReorderTimes0();
   }
@@ -507,6 +545,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#disableReorder()
    */
+  @Override
   public void disableReorder() {
     disableReorder0();
   }
@@ -516,6 +555,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#enableReorder()
    */
+  @Override
   public void enableReorder() {
     enableReorder0();
   }
@@ -525,6 +565,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#reorderVerbose(int)
    */
+  @Override
   public int reorderVerbose(int v) {
     return reorderVerbose0(v);
   }
@@ -534,6 +575,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#setVarOrder(int[])
    */
+  @Override
   public void setVarOrder(int[] neworder) {
     setVarOrder0(neworder);
   }
@@ -543,6 +585,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#addVarBlock(net.sf.javabdd.BDD, boolean)
    */
+  @Override
   public void addVarBlock(BDD var, boolean fixed) {
     BuDDyBDD bb = (BuDDyBDD) var;
     addVarBlock0(bb._id, fixed);
@@ -553,6 +596,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#addVarBlock(int, int, boolean)
    */
+  @Override
   public void addVarBlock(int first, int last, boolean fixed) {
     addVarBlock1(first, last, fixed);
   }
@@ -562,6 +606,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#varBlockAll()
    */
+  @Override
   public void varBlockAll() {
     varBlockAll0();
   }
@@ -571,6 +616,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#clearVarBlocks()
    */
+  @Override
   public void clearVarBlocks() {
     clearVarBlocks0();
   }
@@ -580,6 +626,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#printOrder()
    */
+  @Override
   public void printOrder() {
     printOrder0();
   }
@@ -589,6 +636,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#nodeCount(java.util.Collection)
    */
+  @Override
   public int nodeCount(Collection r) {
     int[] a = toBuDDyArray(r);
     return nodeCount0(a);
@@ -599,6 +647,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#getNodeTableSize()
    */
+  @Override
   public int getNodeTableSize() {
     return getAllocNum0();
   }
@@ -608,6 +657,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#getCacheSize()
    */
+  @Override
   public int getCacheSize() {
     return getCacheSize0();
   }
@@ -617,6 +667,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#getNodeNum()
    */
+  @Override
   public int getNodeNum() {
     return getNodeNum0();
   }
@@ -626,6 +677,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#reorderGain()
    */
+  @Override
   public int reorderGain() {
     return reorderGain0();
   }
@@ -635,6 +687,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#printStat()
    */
+  @Override
   public void printStat() {
     printStat0();
   }
@@ -644,6 +697,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#createDomain(int, java.math.BigInteger)
    */
+  @Override
   protected BDDDomain createDomain(int a, BigInteger b) {
     return new BuDDyBDDDomain(a, b);
   }
@@ -667,6 +721,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#getFactory()
      */
+    @Override
     public BDDFactory getFactory() {
       return INSTANCE;
     }
@@ -674,6 +729,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#isZero()
      */
+    @Override
     public boolean isZero() {
       return _id == 0;
     }
@@ -681,6 +737,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#isOne()
      */
+    @Override
     public boolean isOne() {
       return _id == 1;
     }
@@ -688,6 +745,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#var()
      */
+    @Override
     public int var() {
       return var0(_id);
     }
@@ -697,6 +755,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#high()
      */
+    @Override
     public BDD high() {
       int b = high0(_id);
       return makeBDD(b);
@@ -707,6 +766,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#low()
      */
+    @Override
     public BDD low() {
       int b = low0(_id);
       return makeBDD(b);
@@ -717,6 +777,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#id()
      */
+    @Override
     public BDD id() {
       return makeBDD(_id);
     }
@@ -724,6 +785,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#not()
      */
+    @Override
     public BDD not() {
       int b = not0(_id);
       return makeBDD(b);
@@ -734,6 +796,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#ite(net.sf.javabdd.BDD, net.sf.javabdd.BDD)
      */
+    @Override
     public BDD ite(BDD thenBDD, BDD elseBDD) {
       BuDDyBDD c = (BuDDyBDD) thenBDD;
       BuDDyBDD d = (BuDDyBDD) elseBDD;
@@ -746,6 +809,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#relprod(net.sf.javabdd.BDD, net.sf.javabdd.BDD)
      */
+    @Override
     public BDD relprod(BDD that, BDD var) {
       BuDDyBDD c = (BuDDyBDD) that;
       BuDDyBDD d = (BuDDyBDD) var;
@@ -758,6 +822,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#compose(net.sf.javabdd.BDD, int)
      */
+    @Override
     public BDD compose(BDD that, int var) {
       BuDDyBDD c = (BuDDyBDD) that;
       int b = compose0(_id, c._id, var);
@@ -769,6 +834,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#constrain(net.sf.javabdd.BDD)
      */
+    @Override
     public BDD constrain(BDD that) {
       BuDDyBDD c = (BuDDyBDD) that;
       int b = constrain0(_id, c._id);
@@ -780,6 +846,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#exist(net.sf.javabdd.BDD)
      */
+    @Override
     public BDD exist(BDD var) {
       BuDDyBDD c = (BuDDyBDD) var;
       int b = exist0(_id, c._id);
@@ -791,6 +858,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#forAll(net.sf.javabdd.BDD)
      */
+    @Override
     public BDD forAll(BDD var) {
       BuDDyBDD c = (BuDDyBDD) var;
       int b = forAll0(_id, c._id);
@@ -802,6 +870,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#unique(net.sf.javabdd.BDD)
      */
+    @Override
     public BDD unique(BDD var) {
       BuDDyBDD c = (BuDDyBDD) var;
       int b = unique0(_id, c._id);
@@ -813,6 +882,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#restrict(net.sf.javabdd.BDD)
      */
+    @Override
     public BDD restrict(BDD var) {
       BuDDyBDD c = (BuDDyBDD) var;
       int b = restrict0(_id, c._id);
@@ -824,6 +894,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#restrictWith(net.sf.javabdd.BDD)
      */
+    @Override
     public BDD restrictWith(BDD var) {
       BuDDyBDD c = (BuDDyBDD) var;
       int b = restrict0(_id, c._id);
@@ -840,6 +911,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#simplify(net.sf.javabdd.BDD)
      */
+    @Override
     public BDD simplify(BDD d) {
       BuDDyBDD c = (BuDDyBDD) d;
       int b = simplify0(_id, c._id);
@@ -851,6 +923,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#support()
      */
+    @Override
     public BDD support() {
       int b = support0(_id);
       return makeBDD(b);
@@ -861,6 +934,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#apply(net.sf.javabdd.BDD, net.sf.javabdd.BDDFactory.BDDOp)
      */
+    @Override
     public BDD apply(BDD that, BDDFactory.BDDOp opr) {
       BuDDyBDD c = (BuDDyBDD) that;
       int b = apply0(_id, c._id, opr.id);
@@ -872,6 +946,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#applyWith(net.sf.javabdd.BDD, net.sf.javabdd.BDDFactory.BDDOp)
      */
+    @Override
     public BDD applyWith(BDD that, BDDFactory.BDDOp opr) {
       BuDDyBDD c = (BuDDyBDD) that;
       int b = apply0(_id, c._id, opr.id);
@@ -888,6 +963,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#applyAll(net.sf.javabdd.BDD, net.sf.javabdd.BDDFactory.BDDOp, net.sf.javabdd.BDD)
      */
+    @Override
     public BDD applyAll(BDD that, BDDFactory.BDDOp opr, BDD var) {
       BuDDyBDD c = (BuDDyBDD) that;
       BuDDyBDD d = (BuDDyBDD) var;
@@ -900,6 +976,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#applyEx(net.sf.javabdd.BDD, net.sf.javabdd.BDDFactory.BDDOp, net.sf.javabdd.BDD)
      */
+    @Override
     public BDD applyEx(BDD that, BDDFactory.BDDOp opr, BDD var) {
       BuDDyBDD c = (BuDDyBDD) that;
       BuDDyBDD d = (BuDDyBDD) var;
@@ -912,6 +989,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#applyUni(net.sf.javabdd.BDD, net.sf.javabdd.BDDFactory.BDDOp, net.sf.javabdd.BDD)
      */
+    @Override
     public BDD applyUni(BDD that, BDDFactory.BDDOp opr, BDD var) {
       BuDDyBDD c = (BuDDyBDD) that;
       BuDDyBDD d = (BuDDyBDD) var;
@@ -924,6 +1002,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#satOne()
      */
+    @Override
     public BDD satOne() {
       int b = satOne0(_id);
       return makeBDD(b);
@@ -934,6 +1013,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#fullSatOne()
      */
+    @Override
     public BDD fullSatOne() {
       int b = fullSatOne0(_id);
       return makeBDD(b);
@@ -944,6 +1024,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#satOne(net.sf.javabdd.BDD, boolean)
      */
+    @Override
     public BDD satOne(BDD var, boolean pol) {
       BuDDyBDD c = (BuDDyBDD) var;
       int b = satOne1(_id, c._id, pol ? 1 : 0);
@@ -955,6 +1036,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#printSet()
      */
+    @Override
     public void printSet() {
       printSet0(_id);
     }
@@ -964,6 +1046,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#printDot()
      */
+    @Override
     public void printDot() {
       printDot0(_id);
     }
@@ -973,6 +1056,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#nodeCount()
      */
+    @Override
     public int nodeCount() {
       return nodeCount0(_id);
     }
@@ -982,6 +1066,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#pathCount()
      */
+    @Override
     public double pathCount() {
       return pathCount0(_id);
     }
@@ -991,6 +1076,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#satCount()
      */
+    @Override
     public double satCount() {
       return satCount0(_id);
     }
@@ -1000,6 +1086,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#satCount(net.sf.javabdd.BDD)
      */
+    @Override
     public double satCount(BDD varset) {
       BuDDyBDD c = (BuDDyBDD) varset;
       return satCount1(_id, c._id);
@@ -1010,6 +1097,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#logSatCount()
      */
+    @Override
     public double logSatCount() {
       return logSatCount0(_id);
     }
@@ -1019,6 +1107,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#logSatCount(net.sf.javabdd.BDD)
      */
+    @Override
     public double logSatCount(BDD varset) {
       BuDDyBDD c = (BuDDyBDD) varset;
       return logSatCount1(_id, c._id);
@@ -1029,6 +1118,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#varProfile()
      */
+    @Override
     public int[] varProfile() {
       return varProfile0(_id);
     }
@@ -1042,6 +1132,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#free()
      */
+    @Override
     public void free() {
       if (INSTANCE != null) {
         delRef(_id);
@@ -1052,6 +1143,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#veccompose(net.sf.javabdd.BDDPairing)
      */
+    @Override
     public BDD veccompose(BDDPairing pair) {
       BuDDyBDDPairing p = (BuDDyBDDPairing) pair;
       int b = veccompose0(_id, p._ptr);
@@ -1063,6 +1155,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#replace(net.sf.javabdd.BDDPairing)
      */
+    @Override
     public BDD replace(BDDPairing pair) {
       BuDDyBDDPairing p = (BuDDyBDDPairing) pair;
       int b = replace0(_id, p._ptr);
@@ -1074,6 +1167,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#replaceWith(net.sf.javabdd.BDDPairing)
      */
+    @Override
     public BDD replaceWith(BDDPairing pair) {
       BuDDyBDDPairing p = (BuDDyBDDPairing) pair;
       int b = replace0(_id, p._ptr);
@@ -1086,6 +1180,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#equals(net.sf.javabdd.BDD)
      */
+    @Override
     public boolean equals(BDD that) {
       return this._id == ((BuDDyBDD) that)._id;
     }
@@ -1093,6 +1188,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDD#hashCode()
      */
+    @Override
     public int hashCode() {
       return this._id;
     }
@@ -1111,6 +1207,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see java.lang.Object#finalize()
      */
+    @Override
     protected void finalize() throws Throwable {
       super.finalize();
       if (_id >= 0) {
@@ -1142,6 +1239,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDDDomain#getFactory()
      */
+    @Override
     public BDDFactory getFactory() {
       return INSTANCE;
     }
@@ -1161,6 +1259,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDDPairing#set(int, int)
      */
+    @Override
     public void set(int oldvar, int newvar) {
       set0(_ptr, oldvar, newvar);
     }
@@ -1170,6 +1269,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDDPairing#set(int[], int[])
      */
+    @Override
     public void set(int[] oldvar, int[] newvar) {
       set1(_ptr, oldvar, newvar);
     }
@@ -1179,6 +1279,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDDPairing#set(int, net.sf.javabdd.BDD)
      */
+    @Override
     public void set(int oldvar, BDD newvar) {
       BuDDyBDD c = (BuDDyBDD) newvar;
       set2(_ptr, oldvar, c._id);
@@ -1189,6 +1290,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDDPairing#set(int[], net.sf.javabdd.BDD[])
      */
+    @Override
     public void set(int[] oldvar, BDD[] newvar) {
       int[] a = toBuDDyArray(Arrays.asList(newvar));
       set3(_ptr, oldvar, a);
@@ -1199,6 +1301,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDDPairing#reset()
      */
+    @Override
     public void reset() {
       reset0(_ptr);
     }
@@ -1223,6 +1326,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see java.lang.Object#finalize()
      */
+    @Override
     protected void finalize() throws Throwable {
       super.finalize();
       free();
@@ -1232,6 +1336,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#createBitVector(int)
    */
+  @Override
   protected BDDBitVector createBitVector(int a) {
     return new BuDDyBDDBitVector(a);
   }
@@ -1248,6 +1353,7 @@ public class BuDDyFactory extends BDDFactory {
     /* (non-Javadoc)
      * @see net.sf.javabdd.BDDBitVector#getFactory()
      */
+    @Override
     public BDDFactory getFactory() {
       return INSTANCE;
     }
@@ -1258,6 +1364,7 @@ public class BuDDyFactory extends BDDFactory {
   /* (non-Javadoc)
    * @see net.sf.javabdd.BDDFactory#getVersion()
    */
+  @Override
   public String getVersion() {
     return getVersion0() + " rev" + REVISION.substring(11, REVISION.length() - 2);
   }
