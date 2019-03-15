@@ -338,6 +338,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
             ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getAddress().getIp()));
   }
 
+  public static String computeOspfDefaultRouteGenerationPolicyName(String vrf, String proc) {
+    return String.format("~OSPF_DEFAULT_ROUTE_GENERATION_POLICY:%s:%s~", vrf, proc);
+  }
+
   public static String computeProtocolObjectGroupAclName(String name) {
     return String.format("~PROTOCOL_OBJECT_GROUP~%s~", name);
   }
@@ -2638,46 +2642,49 @@ public final class CiscoConfiguration extends VendorConfiguration {
       If ospfExportDefault = new If();
       ospfExportStatements.add(ospfExportDefault);
       ospfExportDefault.setComment("OSPF export default route");
-      Conjunction ospfExportDefaultConditions = new Conjunction();
       List<Statement> ospfExportDefaultStatements = ospfExportDefault.getTrueStatements();
-      ospfExportDefaultConditions.getConjuncts().add(MATCH_DEFAULT_ROUTE);
       long metric = proc.getDefaultInformationMetric();
       ospfExportDefaultStatements.add(new SetMetric(new LiteralLong(metric)));
       OspfMetricType metricType = proc.getDefaultInformationMetricType();
       ospfExportDefaultStatements.add(new SetOspfMetricType(metricType));
       // add default export map with metric
       String defaultOriginateMapName = proc.getDefaultInformationOriginateMap();
-      boolean useAggregateDefaultOnly;
+      GeneratedRoute.Builder route =
+          GeneratedRoute.builder()
+              .setNetwork(Prefix.ZERO)
+              .setNonRouting(true)
+              .setAdmin(MAX_ADMINISTRATIVE_COST);
       if (defaultOriginateMapName != null) {
-        useAggregateDefaultOnly = true;
         RoutingPolicy ospfDefaultGenerationPolicy =
             c.getRoutingPolicies().get(defaultOriginateMapName);
         if (ospfDefaultGenerationPolicy != null) {
-          GeneratedRoute.Builder route = GeneratedRoute.builder();
-          route.setNetwork(Prefix.ZERO);
-          route.setAdmin(MAX_ADMINISTRATIVE_COST);
+          // TODO This should depend on a default route existing, unless `always` is configured
+          // If `always` is configured, maybe the route-map should be ignored. Needs GNS3 check.
           route.setGenerationPolicy(defaultOriginateMapName);
           newProcess.addGeneratedRoute(route.build());
         }
       } else if (proc.getDefaultInformationOriginateAlways()) {
-        useAggregateDefaultOnly = true;
         // add generated aggregate with no precondition
-        GeneratedRoute.Builder route = GeneratedRoute.builder();
-        route.setNetwork(Prefix.ZERO);
-        route.setAdmin(MAX_ADMINISTRATIVE_COST);
         newProcess.addGeneratedRoute(route.build());
       } else {
-        // do not generate an aggregate default route;
-        // just redistribute any existing default route with the new metric
-        useAggregateDefaultOnly = false;
-      }
-      if (useAggregateDefaultOnly) {
-        ospfExportDefaultConditions
-            .getConjuncts()
-            .add(new MatchProtocol(RoutingProtocol.AGGREGATE));
+        // Use a generated route that will only be generated if a default route exists in RIB
+        String defaultRouteGenerationPolicyName =
+            computeOspfDefaultRouteGenerationPolicyName(vrfName, proc.getName());
+        RoutingPolicy.builder()
+            .setOwner(c)
+            .setName(defaultRouteGenerationPolicyName)
+            .addStatement(
+                new If(
+                    MATCH_DEFAULT_ROUTE,
+                    ImmutableList.of(Statements.ReturnTrue.toStaticStatement())))
+            .build();
+        route.setGenerationPolicy(defaultRouteGenerationPolicyName);
+        newProcess.addGeneratedRoute(route.build());
       }
       ospfExportDefaultStatements.add(Statements.ExitAccept.toStaticStatement());
-      ospfExportDefault.setGuard(ospfExportDefaultConditions);
+      ospfExportDefault.setGuard(
+          new Conjunction(
+              ImmutableList.of(MATCH_DEFAULT_ROUTE, new MatchProtocol(RoutingProtocol.AGGREGATE))));
     }
 
     Ip routerId = proc.getRouterId();

@@ -31447,6 +31447,17 @@
             "          (null_rest_of_line",
             "            VARIABLE:'vrf-lite'",
             "            NEWLINE:'\\n')))",
+            "      (ro_default_information",
+            "        DEFAULT_INFORMATION:'default-information'",
+            "        ORIGINATE:'originate'",
+            "        ALWAYS:'always'",
+            "        METRIC:'metric'",
+            "        metric = DEC:'10'",
+            "        METRIC_TYPE:'metric-type'",
+            "        metric_type = DEC:'1'",
+            "        ROUTE_MAP:'route-map'",
+            "        map = VARIABLE:'DEFAULT_ORIGINATE_OSPF'  <== mode:M_RouteMap",
+            "        NEWLINE:'\\n')",
             "      (ro_default_metric",
             "        DEFAULT_METRIC:'default-metric'",
             "        metric = DEC:'11'",
@@ -69247,61 +69258,61 @@
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 51,
+              "Line" : 52,
               "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
               "Text" : "distribute-list aclin in"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 52,
+              "Line" : 53,
               "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
               "Text" : "distribute-list aclin in ethernet0/0"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 53,
+              "Line" : 54,
               "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
               "Text" : "distribute-list aclout out"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 54,
+              "Line" : 55,
               "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
               "Text" : "distribute-list prefix plin in"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 55,
+              "Line" : 56,
               "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
               "Text" : "distribute-list prefix plout out"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 56,
+              "Line" : 57,
               "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
               "Text" : "distribute-list route-map rmin in"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 57,
+              "Line" : 58,
               "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
               "Text" : "distribute-list route-map rmout out"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 64,
+              "Line" : 65,
               "Parser_Context" : "[ro_maximum_paths s_router_ospf stanza cisco_configuration]",
               "Text" : "maximum-paths 32"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 80,
+              "Line" : 81,
               "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0 filter-list prefix INFILTER in"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 81,
+              "Line" : 82,
               "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0 filter-list prefix OUTFILTER out"
             }
@@ -78601,7 +78612,7 @@
                 12
               ],
               "router ospf distribute-list in" : [
-                52
+                53
               ]
             },
             "Ethernet1/0" : {
@@ -78618,12 +78629,12 @@
           "ipv4 prefix-list" : {
             "INFILTER" : {
               "ospf area filter-list" : [
-                80
+                81
               ]
             },
             "OUTFILTER" : {
               "ospf area filter-list" : [
-                81
+                82
               ]
             },
             "filterName" : {
@@ -78634,47 +78645,52 @@
             },
             "plin" : {
               "router ospf distribute-list prefix in" : [
-                54
+                55
               ]
             },
             "plout" : {
               "router ospf distribute-list prefix out" : [
-                55
+                56
               ]
             }
           },
           "ipv4/6 acl" : {
             "aclin" : {
               "router ospf distribute-list in" : [
-                51,
-                52
+                52,
+                53
               ]
             },
             "aclout" : {
               "router ospf distribute-list out" : [
-                53
+                54
               ]
             }
           },
           "route-map" : {
+            "DEFAULT_ORIGINATE_OSPF" : {
+              "ospf default-originate route-map" : [
+                47
+              ]
+            },
             "DIRECT_OSPF" : {
               "ospf redistribute connected route-map" : [
-                66
+                67
               ]
             },
             "eigrp-ospf-route-map" : {
               "ospf redistribute eigrp route-map" : [
-                67
+                68
               ]
             },
             "rmin" : {
               "router ospf distribute-list route-map in" : [
-                56
+                57
               ]
             },
             "rmout" : {
               "router ospf distribute-list route-map out" : [
-                57
+                58
               ]
             }
           }
@@ -81954,47 +81970,52 @@
           "ipv4 prefix-list" : {
             "plin" : {
               "router ospf distribute-list prefix in" : [
-                54
+                55
               ]
             },
             "plout" : {
               "router ospf distribute-list prefix out" : [
-                55
+                56
               ]
             }
           },
           "ipv4/6 acl" : {
             "aclin" : {
               "router ospf distribute-list in" : [
-                51,
-                52
+                52,
+                53
               ]
             },
             "aclout" : {
               "router ospf distribute-list out" : [
-                53
+                54
               ]
             }
           },
           "route-map" : {
+            "DEFAULT_ORIGINATE_OSPF" : {
+              "ospf default-originate route-map" : [
+                47
+              ]
+            },
             "DIRECT_OSPF" : {
               "ospf redistribute connected route-map" : [
-                66
+                67
               ]
             },
             "eigrp-ospf-route-map" : {
               "ospf redistribute eigrp route-map" : [
-                67
+                68
               ]
             },
             "rmin" : {
               "router ospf distribute-list route-map in" : [
-                56
+                57
               ]
             },
             "rmout" : {
               "router ospf distribute-list route-map out" : [
-                57
+                58
               ]
             }
           }
