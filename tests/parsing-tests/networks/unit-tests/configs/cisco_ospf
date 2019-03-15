@@ -44,7 +44,6 @@ router ospf 1
   capability lls
   capability transit
   capability vrf-lite
-  default-information originate always metric 10 metric-type 1 route-map DEFAULT_ORIGINATE_OSPF
   default-metric 11
   discard-route external
   discard-route internal
