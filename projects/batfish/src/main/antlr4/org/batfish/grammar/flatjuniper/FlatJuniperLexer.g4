@@ -6435,11 +6435,7 @@ F_Digit
 fragment
 F_HexDigit
 :
-  (
-    '0' .. '9'
-    | 'a' .. 'f'
-    | 'A' .. 'F'
-  )
+  [0-9A-Fa-f]
 ;
 
 fragment
@@ -6662,7 +6658,17 @@ F_IpAddress
 fragment
 F_IpPrefix
 :
-  F_IpAddress '/' F_Ipv4PrefixLength
+  F_IpAddress '/' F_IpPrefixLength
+;
+
+fragment
+F_IpPrefixLength
+:
+  (
+    F_Digit
+    | [12] F_Digit
+    | [3] [012]
+  )
 ;
 
 fragment
@@ -6683,16 +6689,6 @@ fragment
 F_Ipv6Prefix
 :
   F_Ipv6Address '/' F_Ipv6PrefixLength
-;
-
-fragment
-F_Ipv4PrefixLength
-:
-  (
-    F_Digit
-    | [12] F_Digit
-    | [3] [012]
-  )
 ;
 
 fragment
