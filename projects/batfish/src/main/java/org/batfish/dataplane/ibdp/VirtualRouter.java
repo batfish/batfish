@@ -218,9 +218,7 @@ public class VirtualRouter implements Serializable {
       _ospfExternalIncomingRoutes;
 
   transient OspfInterAreaRib _ospfInterAreaRib;
-  transient OspfInterAreaRib _ospfInterAreaStagingRib;
   transient OspfIntraAreaRib _ospfIntraAreaRib;
-  transient OspfIntraAreaRib _ospfIntraAreaStagingRib;
   transient OspfRib _ospfRib;
   transient RipInternalRib _ripInternalRib;
   transient RipInternalRib _ripInternalStagingRib;
@@ -642,7 +640,7 @@ public class VirtualRouter implements Serializable {
                     .setArea(areaNum)
                     .setNonRouting(true)
                     .build();
-        if (!_ospfInterAreaStagingRib.mergeRouteGetDelta(summaryRoute).isEmpty()) {
+        if (!_ospfInterAreaRib.mergeRouteGetDelta(summaryRoute).isEmpty()) {
           changed = true;
         }
       }
@@ -1280,9 +1278,7 @@ public class VirtualRouter implements Serializable {
     _ospfExternalType1StagingRib = new OspfExternalType1Rib(getHostname(), null);
     _ospfExternalType2StagingRib = new OspfExternalType2Rib(getHostname(), null);
     _ospfInterAreaRib = new OspfInterAreaRib();
-    _ospfInterAreaStagingRib = new OspfInterAreaRib();
     _ospfIntraAreaRib = new OspfIntraAreaRib();
-    _ospfIntraAreaStagingRib = new OspfIntraAreaRib();
     _ospfRib = new OspfRib();
 
     // RIP
@@ -1706,7 +1702,7 @@ public class VirtualRouter implements Serializable {
                 .setMetric(newCost)
                 .setArea(areaNum)
                 .build();
-    return _ospfInterAreaStagingRib.mergeRoute(newRoute);
+    return _ospfInterAreaRib.mergeRoute(newRoute);
   }
 
   private boolean propagateOspfInterAreaRouteFromIntraAreaRoute(
@@ -1829,7 +1825,7 @@ public class VirtualRouter implements Serializable {
       return false;
     }
     long metric = incrementalCost + area.getMetricOfDefaultRoute();
-    return _ospfInterAreaStagingRib.mergeRoute(
+    return _ospfInterAreaRib.mergeRoute(
         (OspfInterAreaRoute)
             OspfInternalRoute.builder()
                 .setProtocol(RoutingProtocol.OSPF_IA)
@@ -1884,8 +1880,7 @@ public class VirtualRouter implements Serializable {
                 .setMetric(newCost)
                 .setArea(linkAreaNum)
                 .build();
-    return neighborRoute.getArea() == linkAreaNum
-        && (_ospfIntraAreaStagingRib.mergeRoute(newRoute));
+    return neighborRoute.getArea() == linkAreaNum && (_ospfIntraAreaRib.mergeRoute(newRoute));
   }
 
   /**
@@ -2369,12 +2364,6 @@ public class VirtualRouter implements Serializable {
     _mainRibRouteDeltaBuilder.from(
         RibDelta.importRibDelta(_mainRib, ospfDeltaBuilder.build(), _name));
     return !d1.isEmpty() || !d2.isEmpty();
-  }
-
-  /** Merges staged OSPF internal routes into the "real" OSPF-internal RIBs */
-  void unstageOspfInternalRoutes() {
-    importRib(_ospfIntraAreaRib, _ospfIntraAreaStagingRib);
-    importRib(_ospfInterAreaRib, _ospfInterAreaStagingRib);
   }
 
   /** Merges staged RIP routes into the "real" RIP RIB */
