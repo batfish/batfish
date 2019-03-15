@@ -76,6 +76,11 @@ public final class Layer1Edge implements Comparable<Layer1Edge> {
     return Objects.hash(_node1, _node2);
   }
 
+  /** Returns the reverse of this directed {@link Layer1Edge}. */
+  public @Nonnull Layer1Edge reverse() {
+    return new Layer1Edge(_node2, _node1);
+  }
+
   /**
    * Maps a layer-1 physical edge to a layer-1 logical edge by mapping each constituent layer-1
    * physical node to its corresponding logical node, if possible. Returns the new layer-1 logical
