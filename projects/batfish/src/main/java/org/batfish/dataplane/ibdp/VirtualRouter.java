@@ -1207,6 +1207,9 @@ public class VirtualRouter implements Serializable {
       return; // nothing to export
     }
 
+    // Export process-level generated routes.
+    initOspfGeneratedRouteExports(proc, exportPolicy, allNodes);
+
     // For each route in the previous RIB, compute an export route and add it to the appropriate
     // RIB.
     RibDelta.Builder<OspfExternalType1Route> d1 = RibDelta.builder();
@@ -1223,6 +1226,85 @@ public class VirtualRouter implements Serializable {
       }
     }
     queueOutgoingOspfExternalRoutes(allNodes, d1.build(), d2.build());
+  }
+
+  /**
+   * Queues the given {@link OspfProcess}'s generated routes on the neighbors that should receive
+   * them.
+   */
+  private void initOspfGeneratedRouteExports(
+      @Nonnull OspfProcess proc,
+      @Nonnull RoutingPolicy exportPolicy,
+      @Nonnull Map<String, Node> allNodes) {
+    RibDelta.Builder<OspfExternalType1Route> type1RoutesForEveryone = RibDelta.builder();
+    RibDelta.Builder<OspfExternalType2Route> type2RoutesForEveryone = RibDelta.builder();
+    RibDelta.Builder<OspfExternalType1Route> type1RoutesForNormalAreas = RibDelta.builder();
+    RibDelta.Builder<OspfExternalType2Route> type2RoutesForNormalAreas = RibDelta.builder();
+
+    // Run each generated route through its own generation policy if present, then run the resulting
+    // activated routes through the standard OSPF export policy.
+    proc.getGeneratedRoutes().stream()
+        .map(
+            r -> {
+              String generationPolicyName = r.getGenerationPolicy();
+              if (generationPolicyName == null) {
+                // This route should be generated unconditionally
+                return r;
+              }
+              RoutingPolicy generationPolicy = _c.getRoutingPolicies().get(generationPolicyName);
+              if (generationPolicy == null) {
+                // Ignore route; its generation is supposed to depend on some undefined policy
+                return null;
+              }
+              GeneratedRoute.Builder activatedRoute =
+                  GeneratedRouteHelper.activateGeneratedRoute(
+                      r, generationPolicy, _mainRib.getTypedRoutes(), _name);
+              return activatedRoute == null ? null : activatedRoute.build();
+            })
+        .filter(Objects::nonNull)
+        .map(r -> computeOspfExportRoute(annotateRoute(r), exportPolicy, proc))
+        .filter(Objects::nonNull)
+        .forEach(
+            r -> {
+              // Don't propagate default generated routes to stubby or NSSA areas
+              if (r.getOspfMetricType() == OspfMetricType.E1) {
+                if (r.getNetwork().equals(Prefix.ZERO)) {
+                  type1RoutesForNormalAreas.from(
+                      _ospfExternalType1Rib.mergeRouteGetDelta((OspfExternalType1Route) r));
+                } else {
+                  type1RoutesForEveryone.from(
+                      _ospfExternalType1Rib.mergeRouteGetDelta((OspfExternalType1Route) r));
+                }
+              } else { // assuming here that MetricType exists or E2 is the default
+                if (r.getNetwork().equals(Prefix.ZERO)) {
+                  type2RoutesForNormalAreas.from(
+                      _ospfExternalType2Rib.mergeRouteGetDelta((OspfExternalType2Route) r));
+                } else {
+                  type2RoutesForEveryone.from(
+                      _ospfExternalType2Rib.mergeRouteGetDelta((OspfExternalType2Route) r));
+                }
+              }
+            });
+
+    for (EdgeId ospfEdge : _ospfExternalIncomingRoutes.keySet()) {
+      OspfArea localArea =
+          _vrf.getInterfaces().get(ospfEdge.getHead().getInterfaceName()).getOspfArea();
+      assert localArea != null; // otherwise the edge would not be built.
+
+      // Get remote VirtualRouter
+      VirtualRouter remoteVr =
+          allNodes
+              .get(ospfEdge.getTail().getHostname())
+              .getVirtualRouters()
+              .get(ospfEdge.getTail().getVrfName());
+      OspfTopology.EdgeId reversedEdge = ospfEdge.reverse();
+      remoteVr.enqueueOspfExternalRoutes(reversedEdge, type1RoutesForEveryone.build());
+      remoteVr.enqueueOspfExternalRoutes(reversedEdge, type2RoutesForEveryone.build());
+      if (localArea.getStubType() == StubType.NONE) {
+        remoteVr.enqueueOspfExternalRoutes(reversedEdge, type1RoutesForNormalAreas.build());
+        remoteVr.enqueueOspfExternalRoutes(reversedEdge, type2RoutesForNormalAreas.build());
+      }
+    }
   }
 
   /** Initialize all ribs on this router. All RIBs will be empty */
