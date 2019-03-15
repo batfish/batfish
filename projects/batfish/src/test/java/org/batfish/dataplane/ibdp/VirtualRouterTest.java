@@ -402,9 +402,7 @@ public class VirtualRouterTest {
     assertThat(vr._ospfExternalType2Rib.getRoutes(), empty());
     assertThat(vr._ospfExternalType2StagingRib.getRoutes(), empty());
     assertThat(vr._ospfInterAreaRib.getRoutes(), empty());
-    assertThat(vr._ospfInterAreaStagingRib.getRoutes(), empty());
     assertThat(vr._ospfIntraAreaRib.getRoutes(), empty());
-    assertThat(vr._ospfIntraAreaStagingRib.getRoutes(), empty());
     assertThat(vr._ospfRib.getRoutes(), empty());
 
     // BGP ribs
@@ -473,9 +471,6 @@ public class VirtualRouterTest {
         exportingRouter.getConfiguration().getAllInterfaces().get(exportingRouterInterfaceName),
         adminCost);
 
-    assertThat(testRouter._ospfInterAreaStagingRib.getRoutes(), empty());
-    assertThat(testRouter._ospfIntraAreaStagingRib.getRoutes(), empty());
-
     // Flip interfaces on router 2 to be passive now
     testRouter
         .getConfiguration()
@@ -493,9 +488,6 @@ public class VirtualRouterTest {
         testRouter.getConfiguration().getAllInterfaces().firstEntry().getValue(),
         exportingRouter.getConfiguration().getAllInterfaces().get(exportingRouterInterfaceName),
         adminCost);
-
-    assertThat(testRouter._ospfInterAreaStagingRib.getRoutes(), empty());
-    assertThat(testRouter._ospfIntraAreaStagingRib.getRoutes(), empty());
   }
 
   /** Check that initialization of RIP internal routes happens correctly */
@@ -569,7 +561,7 @@ public class VirtualRouterTest {
                 .setMetric(metric + 10)
                 .setArea(area)
                 .build();
-    assertThat(vr._ospfInterAreaStagingRib.getTypedRoutes(), contains(expected));
+    assertThat(vr._ospfInterAreaRib.getTypedRoutes(), contains(expected));
   }
 
   /** Test that the static RIB correctly pulls static routes from the VRF */

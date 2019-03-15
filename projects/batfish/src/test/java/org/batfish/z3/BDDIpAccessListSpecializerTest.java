@@ -16,7 +16,10 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Optional;
 import java.util.Set;
 import net.sf.javabdd.BDD;
+import org.batfish.common.bdd.BDDIcmpCode;
+import org.batfish.common.bdd.BDDIcmpType;
 import org.batfish.common.bdd.BDDInteger;
+import org.batfish.common.bdd.BDDIpProtocol;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
@@ -24,6 +27,7 @@ import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.HeaderSpace.Builder;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
@@ -180,17 +184,15 @@ public class BDDIpAccessListSpecializerTest {
 
   @Test
   public void specializeIpProtocols() {
-    BDDInteger ipProtocol = PKT.getIpProtocol();
-    BDD headerSpaceBDD =
-        ipProtocol.value(IpProtocol.TCP.number()).or(ipProtocol.value(IpProtocol.UDP.number()));
+    BDDIpProtocol ipProtocol = PKT.getIpProtocol();
+    BDD headerSpaceBDD = ipProtocol.value(IpProtocol.TCP).or(ipProtocol.value(IpProtocol.UDP));
     BDDIpAccessListSpecializer specializer =
         new BDDIpAccessListSpecializer(PKT, headerSpaceBDD, ImmutableMap.of());
 
     // Remove any outside the headerspace
     HeaderSpace original =
         HeaderSpace.builder()
-            .setIpProtocols(
-                ImmutableList.of(IpProtocol.TCP, IpProtocol.ICMP, IpProtocol.UDP, IpProtocol.IP))
+            .setIpProtocols(ImmutableList.of(IpProtocol.TCP, IpProtocol.ICMP, IpProtocol.UDP))
             .build();
     HeaderSpace specialized =
         HeaderSpace.builder()
@@ -208,12 +210,62 @@ public class BDDIpAccessListSpecializerTest {
 
   @Test
   public void specializeIcmpCodes() {
-    specializeSubRangeField(PKT.getIcmpCode(), HeaderSpace.Builder::setIcmpCodes);
+    BDDIcmpCode icmpCode = PKT.getIcmpCode();
+    BDD headerSpaceBDD = icmpCode.geq(100).and(icmpCode.leq(200));
+    BDDIpAccessListSpecializer specializer =
+        new BDDIpAccessListSpecializer(PKT, headerSpaceBDD, ImmutableMap.of());
+    Builder builder = HeaderSpace.builder();
+    Iterable<SubRange> icmpCodes =
+        ImmutableList.of(
+            new SubRange(0, 10),
+            new SubRange(50, 100),
+            new SubRange(150, 200),
+            new SubRange(250, 255));
+    HeaderSpace original = builder.setIcmpCodes(icmpCodes).build();
+    Iterable<SubRange> icmpCodes1 = ImmutableList.of(new SubRange(50, 100), new SubRange(150, 200));
+    HeaderSpace specialized = HeaderSpace.builder().setIcmpCodes(icmpCodes1).build();
+    assertThat(specializer.specialize(original), equalTo(specialized));
+
+    Iterable<SubRange> icmpCodes2 = ImmutableList.of(new SubRange(0, 10), new SubRange(250, 255));
+    original = HeaderSpace.builder().setIcmpCodes(icmpCodes2).build();
+    // all subranges removed
+    assertThat(specializer.specialize(original), equalTo(UNCONSTRAINED));
+
+    /*
+     * Since none of the choices from the original headerspace is matchable, the line itself is
+     * unmatchable and can be removed.
+     */
+    assertThat(specializer.specialize(acceptingHeaderSpace(original)), equalTo(Optional.empty()));
   }
 
   @Test
   public void specializeIcmpTypes() {
-    specializeSubRangeField(PKT.getIcmpType(), HeaderSpace.Builder::setIcmpTypes);
+    BDDIcmpType icmpType = PKT.getIcmpType();
+    BDD headerSpaceBDD = icmpType.geq(100).and(icmpType.leq(200));
+    BDDIpAccessListSpecializer specializer =
+        new BDDIpAccessListSpecializer(PKT, headerSpaceBDD, ImmutableMap.of());
+    Builder builder = HeaderSpace.builder();
+    Iterable<SubRange> icmpTypes =
+        ImmutableList.of(
+            new SubRange(0, 10),
+            new SubRange(50, 100),
+            new SubRange(150, 200),
+            new SubRange(250, 255));
+    HeaderSpace original = builder.setIcmpTypes(icmpTypes).build();
+    Iterable<SubRange> icmpTypes1 = ImmutableList.of(new SubRange(50, 100), new SubRange(150, 200));
+    HeaderSpace specialized = HeaderSpace.builder().setIcmpTypes(icmpTypes1).build();
+    assertThat(specializer.specialize(original), equalTo(specialized));
+
+    Iterable<SubRange> icmpTypes2 = ImmutableList.of(new SubRange(0, 10), new SubRange(250, 255));
+    original = HeaderSpace.builder().setIcmpTypes(icmpTypes2).build();
+    // all subranges removed
+    assertThat(specializer.specialize(original), equalTo(UNCONSTRAINED));
+
+    /*
+     * Since none of the choices from the original headerspace is matchable, the line itself is
+     * unmatchable and can be removed.
+     */
+    assertThat(specializer.specialize(acceptingHeaderSpace(original)), equalTo(Optional.empty()));
   }
 
   @Test

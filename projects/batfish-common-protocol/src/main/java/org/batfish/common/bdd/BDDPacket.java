@@ -21,7 +21,6 @@ import org.batfish.common.bdd.BDDFlowConstraintGenerator.FlowPreference;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
 
 /**
@@ -84,11 +83,11 @@ public class BDDPacket {
 
   private BDDInteger _fragmentOffset;
 
-  private BDDInteger _icmpCode;
+  private BDDIcmpCode _icmpCode;
 
-  private BDDInteger _icmpType;
+  private BDDIcmpType _icmpType;
 
-  private BDDInteger _ipProtocol;
+  private BDDIpProtocol _ipProtocol;
 
   private int _nextFreeBDDVarIdx = 0;
 
@@ -165,9 +164,9 @@ public class BDDPacket {
     _srcIp = allocateBDDInteger("srcIp", IP_LENGTH, false);
     _dstPort = allocateBDDInteger("dstPort", PORT_LENGTH, false);
     _srcPort = allocateBDDInteger("srcPort", PORT_LENGTH, false);
-    _ipProtocol = allocateBDDInteger("ipProtocol", IP_PROTOCOL_LENGTH, false);
-    _icmpCode = allocateBDDInteger("icmpCode", ICMP_CODE_LENGTH, false);
-    _icmpType = allocateBDDInteger("icmpType", ICMP_TYPE_LENGTH, false);
+    _ipProtocol = new BDDIpProtocol(allocateBDDInteger("ipProtocol", IP_PROTOCOL_LENGTH, false));
+    _icmpCode = new BDDIcmpCode(allocateBDDInteger("icmpCode", ICMP_CODE_LENGTH, false));
+    _icmpType = new BDDIcmpType(allocateBDDInteger("icmpType", ICMP_TYPE_LENGTH, false));
     _tcpAck = allocateBDDBit("tcpAck");
     _tcpCwr = allocateBDDBit("tcpCwr");
     _tcpEce = allocateBDDBit("tcpEce");
@@ -314,10 +313,9 @@ public class BDDPacket {
     fb.setSrcIp(Ip.create(_srcIp.satAssignmentToLong(satAssignment)));
     fb.setDstPort(_dstPort.satAssignmentToLong(satAssignment).intValue());
     fb.setSrcPort(_srcPort.satAssignmentToLong(satAssignment).intValue());
-    fb.setIpProtocol(
-        IpProtocol.fromNumber(_ipProtocol.satAssignmentToLong(satAssignment).intValue()));
-    fb.setIcmpCode(_icmpCode.satAssignmentToLong(satAssignment).intValue());
-    fb.setIcmpType(_icmpType.satAssignmentToLong(satAssignment).intValue());
+    fb.setIpProtocol(_ipProtocol.satAssignmentToValue(satAssignment));
+    fb.setIcmpCode(_icmpCode.satAssignmentToValue(satAssignment));
+    fb.setIcmpType(_icmpType.satAssignmentToValue(satAssignment));
     fb.setTcpFlagsAck(_tcpAck.and(satAssignment).isZero() ? 0 : 1);
     fb.setTcpFlagsCwr(_tcpCwr.and(satAssignment).isZero() ? 0 : 1);
     fb.setTcpFlagsEce(_tcpEce.and(satAssignment).isZero() ? 0 : 1);
@@ -373,27 +371,27 @@ public class BDDPacket {
     this._fragmentOffset = x;
   }
 
-  public BDDInteger getIcmpCode() {
+  public BDDIcmpCode getIcmpCode() {
     return _icmpCode;
   }
 
-  public void setIcmpCode(BDDInteger x) {
+  public void setIcmpCode(BDDIcmpCode x) {
     this._icmpCode = x;
   }
 
-  public BDDInteger getIcmpType() {
+  public BDDIcmpType getIcmpType() {
     return _icmpType;
   }
 
-  public void setIcmpType(BDDInteger x) {
+  public void setIcmpType(BDDIcmpType x) {
     this._icmpType = x;
   }
 
-  public BDDInteger getIpProtocol() {
+  public BDDIpProtocol getIpProtocol() {
     return _ipProtocol;
   }
 
-  public void setIpProtocol(BDDInteger x) {
+  public void setIpProtocol(BDDIpProtocol x) {
     this._ipProtocol = x;
   }
 

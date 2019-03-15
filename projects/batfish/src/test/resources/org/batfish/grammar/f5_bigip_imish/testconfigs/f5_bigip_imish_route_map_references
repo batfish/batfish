@@ -1,0 +1,18 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+    hostname f5_bigip_imish_route_map_references
+}
+
+!
+!!! imish configuration starts here
+!
+route-map route-map-used permit 1
+route-map route-map-unused permit 1
+
+router bgp 1
+ neighbor PG peer-group
+ neighbor PG route-map route-map-used out
+ redistribute kernel route-map route-map-undefined
+ redistribute kernel route-map route-map-used
+!
