@@ -3991,11 +3991,7 @@ F_Digit
 fragment
 F_HexDigit
 :
-  (
-    '0' .. '9'
-    | 'a' .. 'f'
-    | 'A' .. 'F'
-  )
+  [0-9A-Fa-f]
 ;
 
 fragment
