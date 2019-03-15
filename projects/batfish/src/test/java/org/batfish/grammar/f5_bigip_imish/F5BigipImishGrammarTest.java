@@ -313,6 +313,20 @@ public final class F5BigipImishGrammarTest {
     }
 
     {
+      // With below test, BGP input route acceptable ONLY to common export policy
+      BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+      assertTrue(
+          commonExportPolicy
+              .call(
+                  Environment.builder(c)
+                      .setOriginalRoute(bgpRouteAllowedOnlyByCommonPolicy)
+                      .setOutputRoute(outputBuilder)
+                      .setVrf(Configuration.DEFAULT_VRF_NAME)
+                      .build())
+              .getBooleanValue());
+    }
+
+    {
       // BGP input route unacceptable to peer export policy
       BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
       assertFalse(
