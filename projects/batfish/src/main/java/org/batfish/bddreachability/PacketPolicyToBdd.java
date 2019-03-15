@@ -69,6 +69,7 @@ class PacketPolicyToBdd {
   }
 
   /** Return the set of packets that is dropped by a policy */
+  @Nonnull
   public BDD getToDrop() {
     return _toDrop;
   }
@@ -77,6 +78,7 @@ class PacketPolicyToBdd {
    * Return the sets of packets that must be processed by destination-based forwarding pipeline
    * (expressed as a {@link FibLookup} action).
    */
+  @Nonnull
   public Map<FibLookup, BDD> getFibLookups() {
     return _fibLookups;
   }
@@ -106,7 +108,7 @@ class PacketPolicyToBdd {
       _currentConstraint = _currentConstraint.and(matchConstraint);
       // Process true statements
       ifStmt.getTrueStatements().forEach(this::visit);
-      // If fell trough, constraint packets with complement of match condition and move on
+      // If fell through, constrain packets with complement of match condition and move on
       _currentConstraint = oldConstraint.and(matchConstraint.not());
       return null;
     }

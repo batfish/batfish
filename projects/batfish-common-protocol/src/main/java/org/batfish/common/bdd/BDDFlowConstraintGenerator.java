@@ -47,7 +47,7 @@ public final class BDDFlowConstraintGenerator {
   BDD computeICMPConstraint() {
     return _bddPacket
         .getIpProtocol()
-        .value(IpProtocol.ICMP.number())
+        .value(IpProtocol.ICMP)
         .and(
             _bddPacket
                 .getIcmpType()
@@ -70,7 +70,7 @@ public final class BDDFlowConstraintGenerator {
       result2 = result2.or(_bddPacket.getSrcPort().value(namedPort.number()));
     }
     result2 = _bddPacket.getDstPort().geq(NamedPort.EPHEMERAL_LOWEST.number()).and(result);
-    return _bddPacket.getIpProtocol().value(IpProtocol.TCP.number()).and(result.or(result2));
+    return _bddPacket.getIpProtocol().value(IpProtocol.TCP).and(result.or(result2));
   }
 
   // Get UDP packets for traceroute:
@@ -91,7 +91,7 @@ public final class BDDFlowConstraintGenerator {
             .and(_bddPacket.getSrcPort().leq(33534))
             .and(_bddPacket.getDstPort().geq(NamedPort.EPHEMERAL_LOWEST.number()));
 
-    return _bddPacket.getIpProtocol().value(IpProtocol.UDP.number()).and(bdd1.or(bdd2));
+    return _bddPacket.getIpProtocol().value(IpProtocol.UDP).and(bdd1.or(bdd2));
   }
 
   public List<BDD> generateFlowPreference(FlowPreference preference) {
