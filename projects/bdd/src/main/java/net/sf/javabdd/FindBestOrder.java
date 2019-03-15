@@ -196,7 +196,7 @@ public class FindBestOrder {
                 }
             } catch (IOException x) {
             } finally {
-                if (in != null) try { in.close(); } catch (IOException _) { }
+                if (in != null) try { in.close(); } catch (IOException e) { }
             }
         }
         

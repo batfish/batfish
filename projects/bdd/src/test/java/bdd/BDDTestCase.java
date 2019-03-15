@@ -43,10 +43,10 @@ public abstract class BDDTestCase extends TestCase implements Iterator {
                 BDDFactory b = (BDDFactory) m.invoke(null, new Object[] { new Integer(nodenum), new Integer(cachesize) });
                 f.add(b);
             }
-            catch (Throwable _) {
-                if (_ instanceof InvocationTargetException)
-                    _ = ((InvocationTargetException)_).getTargetException();
-                System.out.println("Failed initializing "+bddpackage+": "+_);
+            catch (Throwable e) {
+                if (e instanceof InvocationTargetException)
+                    e = ((InvocationTargetException)e).getTargetException();
+                System.out.println("Failed initializing "+bddpackage+": "+e);
             }
         }
         factories = f;
