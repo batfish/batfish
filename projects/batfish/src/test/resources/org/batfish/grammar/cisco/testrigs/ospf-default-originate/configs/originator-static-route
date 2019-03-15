@@ -23,5 +23,5 @@ router ospf 1
  area 1 nssa
  default-information originate
 !
-ip route 0.0.0.0 0.0.0.0 3.3.3.3
+ip route 0.0.0.0 0.0.0.0 Null0
 !
