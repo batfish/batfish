@@ -40,7 +40,7 @@ public interface TopologyProvider {
    * Computes the {@link Layer1Topology} with respect to layer-1 physical edges for a given {@link
    * NetworkSnapshot}. The layer-1 physical topology is constructed from the raw layer-1 physical
    * edges input by the user by trimming the edges whose nodes do not correspond to active physical
-   * interfaces.
+   * interfaces, and adding the reverse edge for asymmetric edges.
    *
    * @return computed topology, or {@link Optional#empty()} if raw layer-1 physical topology is
    *     absent.
@@ -80,9 +80,11 @@ public interface TopologyProvider {
   /**
    * Return the raw layer-3 {@link Topology} for a given {@link NetworkSnapshot}. The layer-3
    * topology is constructed by inferring layer-3 adjacencies via the layer-3 information in the
-   * configurations, and pruning edges not in the same broadcast domain according to the layer-2
-   * topology. No pruning of edges in different layer-2 broadcast domains occurs if raw layer-1
-   * topology is not provided in snapshot.
+   * configurations, and pruning edges whose vertices are not in the same broadcast domain according
+   * to the layer-2 topology. Nevertheless, pruning does NOT occur for any inferred layer-3 edge
+   * where either vertex's node (i.e., hostname) does not appear in the tail of any edge of the raw
+   * layer-1 topology. Note that an absent raw layer-1 topology is treated as empty, so no pruning
+   * occurs in that case.
    */
   @Nonnull
   Topology getRawLayer3Topology(NetworkSnapshot networkSnapshot);
