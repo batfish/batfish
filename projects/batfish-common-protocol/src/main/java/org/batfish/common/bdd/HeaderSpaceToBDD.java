@@ -50,9 +50,8 @@ public final class HeaderSpaceToBDD {
     return _srcIpSpaceToBdd;
   }
 
-  @VisibleForTesting
   @Nullable
-  BDD toBDD(Collection<Integer> ints, BDDInteger var) {
+  private BDD toBDD(Collection<Integer> ints, BDDInteger var) {
     if (ints == null || ints.isEmpty()) {
       return null;
     }
@@ -61,13 +60,12 @@ public final class HeaderSpaceToBDD {
 
   @VisibleForTesting
   @Nullable
-  BDD toBDD(@Nullable IpSpace ipSpace, IpSpaceToBDD toBdd) {
+  static BDD toBDD(@Nullable IpSpace ipSpace, IpSpaceToBDD toBdd) {
     return ipSpace == null ? null : toBdd.visit(ipSpace);
   }
 
-  @VisibleForTesting
   @Nullable
-  BDD toBDD(Set<IpProtocol> ipProtocols) {
+  private BDD toBDD(Set<IpProtocol> ipProtocols) {
     if (ipProtocols == null || ipProtocols.isEmpty()) {
       return null;
     }
@@ -76,9 +74,8 @@ public final class HeaderSpaceToBDD {
         ipProtocols.stream().map(_bddPacket.getIpProtocol()::value).collect(Collectors.toList()));
   }
 
-  @VisibleForTesting
   @Nullable
-  BDD toBDD(@Nullable Set<SubRange> ranges, BDDInteger var) {
+  private BDD toBDD(@Nullable Set<SubRange> ranges, BDDInteger var) {
     if (ranges == null || ranges.isEmpty()) {
       return null;
     }
@@ -86,9 +83,8 @@ public final class HeaderSpaceToBDD {
         ranges.stream().map(range -> toBDD(range, var)).collect(ImmutableList.toImmutableList()));
   }
 
-  @VisibleForTesting
   @Nullable
-  BDD toBDD(@Nullable Set<SubRange> ranges, BDDIcmpCode var) {
+  private BDD toBDD(@Nullable Set<SubRange> ranges, BDDIcmpCode var) {
     if (ranges == null || ranges.isEmpty()) {
       return null;
     }
@@ -96,9 +92,8 @@ public final class HeaderSpaceToBDD {
         ranges.stream().map(range -> toBDD(range, var)).collect(ImmutableList.toImmutableList()));
   }
 
-  @VisibleForTesting
   @Nullable
-  BDD toBDD(@Nullable Set<SubRange> ranges, BDDIcmpType var) {
+  private BDD toBDD(@Nullable Set<SubRange> ranges, BDDIcmpType var) {
     if (ranges == null || ranges.isEmpty()) {
       return null;
     }
@@ -106,27 +101,25 @@ public final class HeaderSpaceToBDD {
         ranges.stream().map(range -> toBDD(range, var)).collect(ImmutableList.toImmutableList()));
   }
 
-  private BDD toBDD(SubRange range, BDDIcmpCode var) {
+  private static BDD toBDD(SubRange range, BDDIcmpCode var) {
     int start = range.getStart();
     int end = range.getEnd();
     return start == end ? var.value(start) : var.geq(start).and(var.leq(end));
   }
 
-  private BDD toBDD(SubRange range, BDDIcmpType var) {
+  private static BDD toBDD(SubRange range, BDDIcmpType var) {
     int start = range.getStart();
     int end = range.getEnd();
     return start == end ? var.value(start) : var.geq(start).and(var.leq(end));
   }
 
-  @VisibleForTesting
-  static BDD toBDD(SubRange range, BDDInteger var) {
+  private static BDD toBDD(SubRange range, BDDInteger var) {
     long start = range.getStart();
     long end = range.getEnd();
     return start == end ? var.value(start) : var.geq(start).and(var.leq(end));
   }
 
-  @VisibleForTesting
-  BDD toBDD(List<TcpFlagsMatchConditions> tcpFlags) {
+  private BDD toBDD(List<TcpFlagsMatchConditions> tcpFlags) {
     if (tcpFlags == null || tcpFlags.isEmpty()) {
       return null;
     }
@@ -135,13 +128,11 @@ public final class HeaderSpaceToBDD {
   }
 
   /** For TcpFlagsMatchConditions */
-  @VisibleForTesting
-  static BDD toBDD(boolean useFlag, boolean flagValue, BDD flagBDD) {
+  private static BDD toBDD(boolean useFlag, boolean flagValue, BDD flagBDD) {
     return useFlag ? flagValue ? flagBDD : flagBDD.not() : null;
   }
 
-  @VisibleForTesting
-  BDD toBDD(TcpFlagsMatchConditions tcpFlags) {
+  private BDD toBDD(TcpFlagsMatchConditions tcpFlags) {
     return _bddOps.and(
         toBDD(tcpFlags.getUseUrg(), tcpFlags.getTcpFlags().getUrg(), _bddPacket.getTcpUrg()),
         toBDD(tcpFlags.getUseSyn(), tcpFlags.getTcpFlags().getSyn(), _bddPacket.getTcpSyn()),

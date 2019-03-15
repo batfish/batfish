@@ -42,7 +42,7 @@ public class HeaderSpaceToBDDTest {
   @Test
   public void test_negate() {
     IpSpace ip = Ip.parse("1.2.3.4").toIpSpace();
-    BDD ipBDD = _toBDD.toBDD(ip, _dstIpSpaceToBdd);
+    BDD ipBDD = HeaderSpaceToBDD.toBDD(ip, _dstIpSpaceToBdd);
     assertThat(
         _toBDD.toBDD(HeaderSpace.builder().setDstIps(ip).setNegate(true).build()),
         equalTo(ipBDD.not()));
