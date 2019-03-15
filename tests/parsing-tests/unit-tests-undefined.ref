@@ -2287,6 +2287,30 @@
         }
       },
       {
+        "File_Name" : "configs/f5_bigip_imish_malformed",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "rm1",
+        "Context" : "bgp neighbor address-family ipv6 route-map out",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_imish_malformed",
+          "lines" : [
+            28
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_imish_malformed",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "rm1",
+        "Context" : "neighbor peer-group route-map out",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_imish_malformed",
+          "lines" : [
+            29
+          ]
+        }
+      },
+      {
         "File_Name" : "configs/f5_bigip_structured_ltm",
         "Struct_Type" : "monitor",
         "Ref_Name" : "/Common/SOME_MONITOR",
@@ -4046,10 +4070,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 328 results",
+      "notes" : "Found 330 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 328
+      "numResults" : 330
     }
   }
 ]

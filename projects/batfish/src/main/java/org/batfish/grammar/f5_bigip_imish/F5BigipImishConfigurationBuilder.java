@@ -152,6 +152,8 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
     Long localAs = toLong(ctx.localas);
     if (localAs == null) {
       _w.redFlag(String.format("Invalid local-as: '%s' in: '%s", localAsStr, getFullText(ctx)));
+      // assign transient dummy BGP process to avoid NPEs deeper in the tree
+      _currentBgpProcess = new BgpProcess("dummy");
       return;
     }
     _currentBgpProcess =
@@ -248,12 +250,14 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
           String.format(
               "Cannot assign peer-group to non-existent neighbor: '%s' in: '%s'",
               _currentNeighborName, getFullText(ctx.getParent())));
+      return;
     }
     if (!_currentBgpProcess.getPeerGroups().containsKey(peerGroupName)) {
       _w.redFlag(
           String.format(
               "Cannot assign bgp neighbor to non-existent peer-group: '%s' in: '%s'",
               peerGroupName, getFullText(ctx.getParent())));
+      return;
     }
     _currentNeighbor.setPeerGroup(peerGroupName);
   }
@@ -360,7 +364,7 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
       _w.redFlag(
           String.format(
               "Invalid source IP specifier: '%s' in: '%s'",
-              ctx.ip_spec().getText(), ctx.getText()));
+              ctx.ip_spec().getText(), getFullText(ctx)));
       return;
     }
     defineStructure(F5BigipStructureType.ACCESS_LIST, name, ctx);

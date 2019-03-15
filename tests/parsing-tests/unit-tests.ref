@@ -459,6 +459,9 @@
         "eos_trunk_group" : [
           "configs/eos_trunk_group"
         ],
+        "f5_bigip_imish_malformed" : [
+          "configs/f5_bigip_imish_malformed"
+        ],
         "f5_bigip_structured_ltm" : [
           "configs/f5_bigip_structured_ltm"
         ],
@@ -999,6 +1002,7 @@
         "configs/community_set" : "PASSED",
         "configs/eos_mlag" : "PASSED",
         "configs/eos_trunk_group" : "PASSED",
+        "configs/f5_bigip_imish_malformed" : "PASSED",
         "configs/f5_bigip_structured_ltm" : "PASSED",
         "configs/f5_bigip_structured_net" : "PASSED",
         "configs/f5_bigip_structured_net_routing_bgp" : "PASSED",
@@ -39875,6 +39879,187 @@
             "  EOF:<EOF>)"
           ]
         },
+        "configs/f5_bigip_imish_malformed" : {
+          "sentences" : [
+            "(f5_bigip_structured_configuration",
+            "  (statement",
+            "    (s_sys",
+            "      SYS:'sys'",
+            "      (sys_global_settings",
+            "        GLOBAL_SETTINGS:'global-settings'",
+            "        BRACE_LEFT:'{'",
+            "        NEWLINE:'\\n'",
+            "        (sgs_hostname",
+            "          HOSTNAME:'hostname'",
+            "          hostname = (word",
+            "            WORD:'f5_bigip_imish_malformed')",
+            "          NEWLINE:'\\n')",
+            "        BRACE_RIGHT:'}'",
+            "        NEWLINE:'\\n\\n')))",
+            "  (imish_chunk",
+            "    IMISH_CHUNK:'!\\naccess-list acl1 permit invalid-ip-specifier\\n!\\nroute-map invalid permit invalidnum\\n!\\nrouter bgp invalid-local-as\\n ! don't crash\\n neighbor 1.1.1.1 remote-as 1\\n!\\nrouter bgp 1\\n bgp router-id invalid-router-id\\n neighbor undeclared description hello\\n neighbor 1.1.1.1 peer-group\\n neighbor 1::1 peer-group\\n neighbor pg peer-group\\n neighbor 2.2.2.2 peer-group pg\\n neighbor 3.3.3.3 remote-as 2\\n neighbor 3.3.3.3 peer-group undefined-peer-group\\n neighbor 4.4.4.4 remote-as invalid-remote-as\\n neighbor undeclared-peer-group remote-as 3\\n neighbor 2::2 remote-as 4\\n neighbor 2::2 route-map rm1 out\\n neighbor undeclared-peer-group route-map rm1 out\\n!\\nend\\n\\n\\n')",
+            "  EOF:<EOF>)",
+            "(f5_bigip_imish_configuration",
+            "  (statement",
+            "    (s_access_list",
+            "      ACCESS_LIST:'access-list'",
+            "      name = (word",
+            "        WORD:'acl1')",
+            "      action = (line_action",
+            "        PERMIT:'permit')",
+            "      src = (ip_spec",
+            "        prefix = (word",
+            "          WORD:'invalid-ip-specifier'))",
+            "      NEWLINE:'\\n'))",
+            "  (statement",
+            "    (s_route_map",
+            "      ROUTE_MAP:'route-map'",
+            "      name = (word",
+            "        WORD:'invalid')",
+            "      action = (line_action",
+            "        PERMIT:'permit')",
+            "      num = (word",
+            "        WORD:'invalidnum')",
+            "      NEWLINE:'\\n'))",
+            "  (statement",
+            "    (s_router_bgp",
+            "      ROUTER:'router'",
+            "      BGP:'bgp'",
+            "      localas = (word",
+            "        WORD:'invalid-local-as')",
+            "      NEWLINE:'\\n'",
+            "      (rb_neighbor",
+            "        NEIGHBOR:'neighbor'",
+            "        name = (word",
+            "          WORD:'1.1.1.1')",
+            "        (rbn_remote_as",
+            "          REMOTE_AS:'remote-as'",
+            "          remoteas = (word",
+            "            WORD:'1')",
+            "          NEWLINE:'\\n'))))",
+            "  (statement",
+            "    (s_router_bgp",
+            "      ROUTER:'router'",
+            "      BGP:'bgp'",
+            "      localas = (word",
+            "        WORD:'1')",
+            "      NEWLINE:'\\n'",
+            "      (rb_bgp_router_id",
+            "        BGP:'bgp'",
+            "        ROUTER_ID:'router-id'",
+            "        id = (word",
+            "          WORD:'invalid-router-id')",
+            "        NEWLINE:'\\n')",
+            "      (rb_neighbor",
+            "        NEIGHBOR:'neighbor'",
+            "        name = (word",
+            "          WORD:'undeclared')",
+            "        (rbn_description",
+            "          DESCRIPTION:'description'",
+            "          text = LINE:'hello'  <== mode:M_Description",
+            "          NEWLINE:'\\n'))",
+            "      (rb_neighbor",
+            "        NEIGHBOR:'neighbor'",
+            "        name = (word",
+            "          WORD:'1.1.1.1')",
+            "        (rbn_peer_group",
+            "          PEER_GROUP:'peer-group'",
+            "          NEWLINE:'\\n'))",
+            "      (rb_neighbor",
+            "        NEIGHBOR:'neighbor'",
+            "        name = (word",
+            "          WORD:'1::1')",
+            "        (rbn_peer_group",
+            "          PEER_GROUP:'peer-group'",
+            "          NEWLINE:'\\n'))",
+            "      (rb_neighbor",
+            "        NEIGHBOR:'neighbor'",
+            "        name = (word",
+            "          WORD:'pg')",
+            "        (rbn_peer_group",
+            "          PEER_GROUP:'peer-group'",
+            "          NEWLINE:'\\n'))",
+            "      (rb_neighbor",
+            "        NEIGHBOR:'neighbor'",
+            "        name = (word",
+            "          WORD:'2.2.2.2')",
+            "        (rbn_peer_group_assign",
+            "          PEER_GROUP:'peer-group'",
+            "          name = (word",
+            "            WORD:'pg')",
+            "          NEWLINE:'\\n'))",
+            "      (rb_neighbor",
+            "        NEIGHBOR:'neighbor'",
+            "        name = (word",
+            "          WORD:'3.3.3.3')",
+            "        (rbn_remote_as",
+            "          REMOTE_AS:'remote-as'",
+            "          remoteas = (word",
+            "            WORD:'2')",
+            "          NEWLINE:'\\n'))",
+            "      (rb_neighbor",
+            "        NEIGHBOR:'neighbor'",
+            "        name = (word",
+            "          WORD:'3.3.3.3')",
+            "        (rbn_peer_group_assign",
+            "          PEER_GROUP:'peer-group'",
+            "          name = (word",
+            "            WORD:'undefined-peer-group')",
+            "          NEWLINE:'\\n'))",
+            "      (rb_neighbor",
+            "        NEIGHBOR:'neighbor'",
+            "        name = (word",
+            "          WORD:'4.4.4.4')",
+            "        (rbn_remote_as",
+            "          REMOTE_AS:'remote-as'",
+            "          remoteas = (word",
+            "            WORD:'invalid-remote-as')",
+            "          NEWLINE:'\\n'))",
+            "      (rb_neighbor",
+            "        NEIGHBOR:'neighbor'",
+            "        name = (word",
+            "          WORD:'undeclared-peer-group')",
+            "        (rbn_remote_as",
+            "          REMOTE_AS:'remote-as'",
+            "          remoteas = (word",
+            "            WORD:'3')",
+            "          NEWLINE:'\\n'))",
+            "      (rb_neighbor",
+            "        NEIGHBOR:'neighbor'",
+            "        name = (word",
+            "          WORD:'2::2')",
+            "        (rbn_remote_as",
+            "          REMOTE_AS:'remote-as'",
+            "          remoteas = (word",
+            "            WORD:'4')",
+            "          NEWLINE:'\\n'))",
+            "      (rb_neighbor",
+            "        NEIGHBOR:'neighbor'",
+            "        name = (word",
+            "          WORD:'2::2')",
+            "        (rbn_route_map_out",
+            "          ROUTE_MAP:'route-map'",
+            "          name = (word",
+            "            WORD:'rm1')",
+            "          OUT:'out'",
+            "          NEWLINE:'\\n'))",
+            "      (rb_neighbor",
+            "        NEIGHBOR:'neighbor'",
+            "        name = (word",
+            "          WORD:'undeclared-peer-group')",
+            "        (rbn_route_map_out",
+            "          ROUTE_MAP:'route-map'",
+            "          name = (word",
+            "            WORD:'rm1')",
+            "          OUT:'out'",
+            "          NEWLINE:'\\n'))))",
+            "  (statement",
+            "    (s_end",
+            "      END:'end'",
+            "      NEWLINE:'\\n\\n\\n'))",
+            "  EOF:<EOF>)"
+          ]
+        },
         "configs/f5_bigip_structured_ltm" : {
           "sentences" : [
             "(f5_bigip_structured_configuration",
@@ -69170,6 +69355,74 @@
             }
           ]
         },
+        "configs/f5_bigip_imish_malformed" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not convert to Prefix: invalid-ip-specifier"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid source IP specifier: 'invalid-ip-specifier' in: 'access-list acl1 permit invalid-ip-specifier\n'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not convert to Integer: invalidnum"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid entry number: 'invalidnum' in: 'route-map invalid permit invalidnum\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not convert to Long: invalid-local-as"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid local-as: 'invalid-local-as' in: 'router bgp invalid-local-as\n ! don't crash\n neighbor 1.1.1.1 remote-as 1\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Illegal router-id: 'invalid-router-id' in: 'bgp router-id invalid-router-id\n'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot add description to non-existent neighbor: 'undeclared' in: 'neighbor undeclared description hello\n'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot create peer-group from IPv4 address: '1.1.1.1' in: 'neighbor 1.1.1.1 peer-group\n'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot create peer-group from IPv6 address: '1::1' in: 'neighbor 1::1 peer-group\n'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot assign peer-group to non-existent neighbor: '2.2.2.2' in: 'neighbor 2.2.2.2 peer-group pg\n'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot assign bgp neighbor to non-existent peer-group: 'undefined-peer-group' in: 'neighbor 3.3.3.3 peer-group undefined-peer-group\n'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not convert to Long: invalid-remote-as"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid remote-as: 'invalid-remote-as' in: 'neighbor 4.4.4.4 remote-as invalid-remote-as\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot assign remote-as to non-existent peer-group: 'undeclared-peer-group' in: 'neighbor undeclared-peer-group remote-as 3\n'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot assign outbound route-map to non-existent neighbor: 'undeclared-peer-group' in: 'neighbor undeclared-peer-group route-map rm1 out\n'"
+            }
+          ]
+        },
         "configs/f5_bigip_structured_ltm" : {
           "Parse warnings" : [
             {
@@ -70837,6 +71090,7 @@
         "community_set" : "PASSED",
         "eos_mlag" : "PASSED",
         "eos_trunk_group" : "PASSED",
+        "f5_bigip_imish_malformed" : "WARNINGS",
         "f5_bigip_structured_ltm" : "WARNINGS",
         "f5_bigip_structured_net" : "PASSED",
         "f5_bigip_structured_net_routing_bgp" : "WARNINGS",
@@ -73469,6 +73723,57 @@
                 37
               ],
               "numReferrers" : 1
+            }
+          }
+        },
+        "configs/f5_bigip_imish_malformed" : {
+          "bgp neighbor" : {
+            "1.1.1.1" : {
+              "definitionLines" : [
+                14
+              ],
+              "numReferrers" : 1
+            },
+            "2::2" : {
+              "definitionLines" : [
+                27
+              ],
+              "numReferrers" : 1
+            },
+            "3.3.3.3" : {
+              "definitionLines" : [
+                23
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "bgp process" : {
+            "1" : {
+              "definitionLines" : [
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "peer-group" : {
+            "pg" : {
+              "definitionLines" : [
+                21
+              ],
+              "numReferrers" : 0
             }
           }
         },
@@ -78824,6 +79129,54 @@
             }
           }
         },
+        "configs/f5_bigip_imish_malformed" : {
+          "bgp neighbor" : {
+            "1.1.1.1" : {
+              "bgp neighbor self-reference" : [
+                14
+              ]
+            },
+            "2::2" : {
+              "bgp neighbor self-reference" : [
+                27
+              ]
+            },
+            "3.3.3.3" : {
+              "bgp neighbor self-reference" : [
+                23
+              ]
+            }
+          },
+          "bgp process" : {
+            "1" : {
+              "bgp process self-reference" : [
+                16
+              ]
+            }
+          },
+          "peer-group" : {
+            "pg" : {
+              "neighbor peer-group" : [
+                22
+              ]
+            },
+            "undefined-peer-group" : {
+              "neighbor peer-group" : [
+                24
+              ]
+            }
+          },
+          "route-map" : {
+            "rm1" : {
+              "bgp neighbor address-family ipv6 route-map out" : [
+                28
+              ],
+              "neighbor peer-group route-map out" : [
+                29
+              ]
+            }
+          }
+        },
         "configs/f5_bigip_structured_ltm" : {
           "monitor" : {
             "/Common/SOME_MONITOR" : {
@@ -81922,6 +82275,18 @@
             }
           }
         },
+        "configs/f5_bigip_imish_malformed" : {
+          "route-map" : {
+            "rm1" : {
+              "bgp neighbor address-family ipv6 route-map out" : [
+                28
+              ],
+              "neighbor peer-group route-map out" : [
+                29
+              ]
+            }
+          }
+        },
         "configs/f5_bigip_structured_ltm" : {
           "monitor" : {
             "/Common/SOME_MONITOR" : {
@@ -83015,6 +83380,14 @@
             }
           ]
         },
+        "f5_bigip_imish_malformed" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine update source for BGP neighbor: '3.3.3.3'"
+            }
+          ]
+        },
         "f5_bigip_structured_ltm" : {
           "Red flags" : [
             {
@@ -83466,6 +83839,7 @@
         "configs/community_set" : "PASSED",
         "configs/eos_mlag" : "PASSED",
         "configs/eos_trunk_group" : "PASSED",
+        "configs/f5_bigip_imish_malformed" : "PASSED",
         "configs/f5_bigip_structured_ltm" : "PASSED",
         "configs/f5_bigip_structured_net" : "PASSED",
         "configs/f5_bigip_structured_net_routing_bgp" : "PASSED",
