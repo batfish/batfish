@@ -141,8 +141,13 @@ public final class TopologyProviderImpl implements TopologyProvider {
             .startActive()) {
       assert span != null; // avoid unused warning
       Map<String, Configuration> configurations = _batfish.loadConfigurations(networkSnapshot);
-      return getLayer2Topology(networkSnapshot)
-          .map(layer2Topology -> TopologyUtil.computeLayer3Topology(layer2Topology, configurations))
+      return getRawLayer1PhysicalTopology(networkSnapshot)
+          .map(
+              rawLayer1PhysicalTopology ->
+                  TopologyUtil.computeLayer3Topology(
+                      rawLayer1PhysicalTopology,
+                      computeLayer2Topology(networkSnapshot).get(),
+                      configurations))
           .orElse(TopologyUtil.synthesizeL3Topology(configurations));
     }
   }
