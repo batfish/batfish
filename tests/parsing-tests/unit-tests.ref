@@ -39931,7 +39931,7 @@
             "      (rb_neighbor",
             "        NEIGHBOR:'neighbor'",
             "        name = (word",
-            "          WORD:'1.1.1.1')",
+            "          IP_ADDRESS:'1.1.1.1')",
             "        (rbn_remote_as",
             "          REMOTE_AS:'remote-as'",
             "          remoteas = (word",
@@ -39956,19 +39956,19 @@
             "          WORD:'undeclared')",
             "        (rbn_description",
             "          DESCRIPTION:'description'",
-            "          text = LINE:'hello'  <== mode:M_Description",
+            "          text = DESCRIPTION_LINE:'hello'  <== mode:M_Description",
             "          NEWLINE:'\\n'))",
             "      (rb_neighbor",
             "        NEIGHBOR:'neighbor'",
             "        name = (word",
-            "          WORD:'1.1.1.1')",
+            "          IP_ADDRESS:'1.1.1.1')",
             "        (rbn_peer_group",
             "          PEER_GROUP:'peer-group'",
             "          NEWLINE:'\\n'))",
             "      (rb_neighbor",
             "        NEIGHBOR:'neighbor'",
             "        name = (word",
-            "          WORD:'1::1')",
+            "          IPV6_ADDRESS:'1::1')",
             "        (rbn_peer_group",
             "          PEER_GROUP:'peer-group'",
             "          NEWLINE:'\\n'))",
@@ -39982,7 +39982,7 @@
             "      (rb_neighbor",
             "        NEIGHBOR:'neighbor'",
             "        name = (word",
-            "          WORD:'2.2.2.2')",
+            "          IP_ADDRESS:'2.2.2.2')",
             "        (rbn_peer_group_assign",
             "          PEER_GROUP:'peer-group'",
             "          name = (word",
@@ -39991,7 +39991,7 @@
             "      (rb_neighbor",
             "        NEIGHBOR:'neighbor'",
             "        name = (word",
-            "          WORD:'3.3.3.3')",
+            "          IP_ADDRESS:'3.3.3.3')",
             "        (rbn_remote_as",
             "          REMOTE_AS:'remote-as'",
             "          remoteas = (word",
@@ -40000,7 +40000,7 @@
             "      (rb_neighbor",
             "        NEIGHBOR:'neighbor'",
             "        name = (word",
-            "          WORD:'3.3.3.3')",
+            "          IP_ADDRESS:'3.3.3.3')",
             "        (rbn_peer_group_assign",
             "          PEER_GROUP:'peer-group'",
             "          name = (word",
@@ -40009,7 +40009,7 @@
             "      (rb_neighbor",
             "        NEIGHBOR:'neighbor'",
             "        name = (word",
-            "          WORD:'4.4.4.4')",
+            "          IP_ADDRESS:'4.4.4.4')",
             "        (rbn_remote_as",
             "          REMOTE_AS:'remote-as'",
             "          remoteas = (word",
@@ -40027,7 +40027,7 @@
             "      (rb_neighbor",
             "        NEIGHBOR:'neighbor'",
             "        name = (word",
-            "          WORD:'2::2')",
+            "          IPV6_ADDRESS:'2::2')",
             "        (rbn_remote_as",
             "          REMOTE_AS:'remote-as'",
             "          remoteas = (word",
@@ -40036,7 +40036,7 @@
             "      (rb_neighbor",
             "        NEIGHBOR:'neighbor'",
             "        name = (word",
-            "          WORD:'2::2')",
+            "          IPV6_ADDRESS:'2::2')",
             "        (rbn_route_map_out",
             "          ROUTE_MAP:'route-map'",
             "          name = (word",
@@ -43950,7 +43950,7 @@
             "        BRACE_RIGHT:'}'",
             "        NEWLINE:'\\n\\n')))",
             "  (imish_chunk",
-            "    IMISH_CHUNK:'!\\naccess-list acl1 permit any\\naccess-list acl2 permit 192.0.2.0/24\\n!\\nbfd gtsm enable\\n!\\ninterface lo\\n!\\ninterface tmm\\n!\\ninterface vlan1\\n!\\nrouter bgp 65500\\n bgp graceful-restart restart-time 123\\n bgp router-id 192.0.2.100\\n max-paths ebgp 12\\n neighbor pg1 peer-group\\n no neighbor pg1 capability graceful-restart\\n neighbor pg1 fall-over pfd\\n neighbor pg1 maximum-prefix 12345\\n neighbor 10.0.0.1 remote-as 65501\\n neighbor 10.0.0.1 description desc1\\n neighbor 10.0.0.1 peer-group pg1\\n neighbor 10.0.0.1 update-source us1\\n redistribute kernel route-map rm1\\n!\\nno service password-encryption\\n!\\nroute-map rm1 permit 1\\n match ip address acl1\\n set community 1:2 3:4\\n!\\nroute-map rm1 deny 2\\n!\\nline con 0\\n login\\nline vty 0 39\\n login\\n!\\nend\\n\\n\\n')",
+            "    IMISH_CHUNK:'!\\naccess-list acl1 permit any\\naccess-list acl2 permit 192.0.2.0/24\\n!\\nbfd gtsm enable\\n!\\ninterface lo\\n!\\ninterface tmm\\n!\\ninterface vlan1\\n!\\nrouter bgp 65500\\n bgp graceful-restart restart-time 123\\n bgp router-id 192.0.2.100\\n max-paths ebgp 12\\n neighbor pg1 peer-group\\n no neighbor pg1 capability graceful-restart\\n neighbor pg1 fall-over pfd\\n neighbor pg1 maximum-prefix 12345\\n neighbor 1:2:3:: remote-as 555\\n neighbor 1:2:3::4:5:6 remote-as 555\\n neighbor 1:2:3:4:5:6:7:: remote-as 555\\n neighbor ::1:2:3:4:5:6 remote-as 555\\n neighbor ::1:2:3:4:5:6:7 remote-as 555\\n neighbor 1:2::3:4.5.6.7 remote-as 555\\n neighbor 1:2:3:4:5:6:9.8.7.6 remote-as 555\\n neighbor 10.0.0.1 remote-as 65501\\n neighbor 10.0.0.1 description desc1\\n neighbor 10.0.0.1 peer-group pg1\\n neighbor 10.0.0.1 update-source us1\\n redistribute kernel route-map rm1\\n!\\nno service password-encryption\\n!\\nroute-map rm1 permit 1\\n match ip address acl1\\n set community 1:2 3:4\\n!\\nroute-map rm1 deny 2\\n!\\nline con 0\\n login\\nline vty 0 39\\n login\\n!\\nend\\n\\n\\n')",
             "  EOF:<EOF>)",
             "(f5_bigip_imish_configuration",
             "  (statement",
@@ -44017,7 +44017,7 @@
             "        BGP:'bgp'",
             "        ROUTER_ID:'router-id'",
             "        id = (word",
-            "          WORD:'192.0.2.100')",
+            "          IP_ADDRESS:'192.0.2.100')",
             "        NEWLINE:'\\n')",
             "      (rb_null",
             "        MAX_PATHS:'max-paths'",
@@ -44063,7 +44063,70 @@
             "      (rb_neighbor",
             "        NEIGHBOR:'neighbor'",
             "        name = (word",
-            "          WORD:'10.0.0.1')",
+            "          IPV6_ADDRESS:'1:2:3::')",
+            "        (rbn_remote_as",
+            "          REMOTE_AS:'remote-as'",
+            "          remoteas = (word",
+            "            WORD:'555')",
+            "          NEWLINE:'\\n'))",
+            "      (rb_neighbor",
+            "        NEIGHBOR:'neighbor'",
+            "        name = (word",
+            "          IPV6_ADDRESS:'1:2:3::4:5:6')",
+            "        (rbn_remote_as",
+            "          REMOTE_AS:'remote-as'",
+            "          remoteas = (word",
+            "            WORD:'555')",
+            "          NEWLINE:'\\n'))",
+            "      (rb_neighbor",
+            "        NEIGHBOR:'neighbor'",
+            "        name = (word",
+            "          IPV6_ADDRESS:'1:2:3:4:5:6:7::')",
+            "        (rbn_remote_as",
+            "          REMOTE_AS:'remote-as'",
+            "          remoteas = (word",
+            "            WORD:'555')",
+            "          NEWLINE:'\\n'))",
+            "      (rb_neighbor",
+            "        NEIGHBOR:'neighbor'",
+            "        name = (word",
+            "          IPV6_ADDRESS:'::1:2:3:4:5:6')",
+            "        (rbn_remote_as",
+            "          REMOTE_AS:'remote-as'",
+            "          remoteas = (word",
+            "            WORD:'555')",
+            "          NEWLINE:'\\n'))",
+            "      (rb_neighbor",
+            "        NEIGHBOR:'neighbor'",
+            "        name = (word",
+            "          IPV6_ADDRESS:'::1:2:3:4:5:6:7')",
+            "        (rbn_remote_as",
+            "          REMOTE_AS:'remote-as'",
+            "          remoteas = (word",
+            "            WORD:'555')",
+            "          NEWLINE:'\\n'))",
+            "      (rb_neighbor",
+            "        NEIGHBOR:'neighbor'",
+            "        name = (word",
+            "          IPV6_ADDRESS:'1:2::3:4.5.6.7')",
+            "        (rbn_remote_as",
+            "          REMOTE_AS:'remote-as'",
+            "          remoteas = (word",
+            "            WORD:'555')",
+            "          NEWLINE:'\\n'))",
+            "      (rb_neighbor",
+            "        NEIGHBOR:'neighbor'",
+            "        name = (word",
+            "          IPV6_ADDRESS:'1:2:3:4:5:6:9.8.7.6')",
+            "        (rbn_remote_as",
+            "          REMOTE_AS:'remote-as'",
+            "          remoteas = (word",
+            "            WORD:'555')",
+            "          NEWLINE:'\\n'))",
+            "      (rb_neighbor",
+            "        NEIGHBOR:'neighbor'",
+            "        name = (word",
+            "          IP_ADDRESS:'10.0.0.1')",
             "        (rbn_remote_as",
             "          REMOTE_AS:'remote-as'",
             "          remoteas = (word",
@@ -44072,15 +44135,15 @@
             "      (rb_neighbor",
             "        NEIGHBOR:'neighbor'",
             "        name = (word",
-            "          WORD:'10.0.0.1')",
+            "          IP_ADDRESS:'10.0.0.1')",
             "        (rbn_description",
             "          DESCRIPTION:'description'",
-            "          text = LINE:'desc1'  <== mode:M_Description",
+            "          text = DESCRIPTION_LINE:'desc1'  <== mode:M_Description",
             "          NEWLINE:'\\n'))",
             "      (rb_neighbor",
             "        NEIGHBOR:'neighbor'",
             "        name = (word",
-            "          WORD:'10.0.0.1')",
+            "          IP_ADDRESS:'10.0.0.1')",
             "        (rbn_peer_group_assign",
             "          PEER_GROUP:'peer-group'",
             "          name = (word",
@@ -44089,7 +44152,7 @@
             "      (rb_neighbor",
             "        NEIGHBOR:'neighbor'",
             "        name = (word",
-            "          WORD:'10.0.0.1')",
+            "          IP_ADDRESS:'10.0.0.1')",
             "        (rbn_null",
             "          UPDATE_SOURCE:'update-source'",
             "          (null_rest_of_line",
@@ -74470,7 +74533,49 @@
           "bgp neighbor" : {
             "10.0.0.1" : {
               "definitionLines" : [
+                34
+              ],
+              "numReferrers" : 1
+            },
+            "1:2:3:4:5:6:7::" : {
+              "definitionLines" : [
+                29
+              ],
+              "numReferrers" : 1
+            },
+            "1:2:3:4:5:6:9.8.7.6" : {
+              "definitionLines" : [
+                33
+              ],
+              "numReferrers" : 1
+            },
+            "1:2:3::" : {
+              "definitionLines" : [
                 27
+              ],
+              "numReferrers" : 1
+            },
+            "1:2:3::4:5:6" : {
+              "definitionLines" : [
+                28
+              ],
+              "numReferrers" : 1
+            },
+            "1:2::3:4.5.6.7" : {
+              "definitionLines" : [
+                32
+              ],
+              "numReferrers" : 1
+            },
+            "::1:2:3:4:5:6" : {
+              "definitionLines" : [
+                30
+              ],
+              "numReferrers" : 1
+            },
+            "::1:2:3:4:5:6:7" : {
+              "definitionLines" : [
+                31
               ],
               "numReferrers" : 1
             }
@@ -74490,7 +74595,14 @@
                 28,
                 29,
                 30,
-                31
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38
               ],
               "numReferrers" : 1
             }
@@ -74506,10 +74618,10 @@
           "route-map" : {
             "rm1" : {
               "definitionLines" : [
-                35,
-                36,
-                37,
-                39
+                42,
+                43,
+                44,
+                46
               ],
               "numReferrers" : 1
             }
@@ -79408,14 +79520,49 @@
           "access-list" : {
             "acl1" : {
               "route-map match ip address" : [
-                36
+                43
               ]
             }
           },
           "bgp neighbor" : {
             "10.0.0.1" : {
               "bgp neighbor self-reference" : [
+                34
+              ]
+            },
+            "1:2:3:4:5:6:7::" : {
+              "bgp neighbor self-reference" : [
+                29
+              ]
+            },
+            "1:2:3:4:5:6:9.8.7.6" : {
+              "bgp neighbor self-reference" : [
+                33
+              ]
+            },
+            "1:2:3::" : {
+              "bgp neighbor self-reference" : [
                 27
+              ]
+            },
+            "1:2:3::4:5:6" : {
+              "bgp neighbor self-reference" : [
+                28
+              ]
+            },
+            "1:2::3:4.5.6.7" : {
+              "bgp neighbor self-reference" : [
+                32
+              ]
+            },
+            "::1:2:3:4:5:6" : {
+              "bgp neighbor self-reference" : [
+                30
+              ]
+            },
+            "::1:2:3:4:5:6:7" : {
+              "bgp neighbor self-reference" : [
+                31
               ]
             }
           },
@@ -79429,14 +79576,14 @@
           "peer-group" : {
             "pg1" : {
               "neighbor peer-group" : [
-                29
+                36
               ]
             }
           },
           "route-map" : {
             "rm1" : {
               "router bgp redistribute kernel route-map" : [
-                31
+                38
               ]
             }
           }

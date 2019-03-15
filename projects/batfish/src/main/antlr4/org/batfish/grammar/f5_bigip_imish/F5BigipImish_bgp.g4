@@ -26,7 +26,7 @@ rb_neighbor
 
 rbn_description
 :
-  DESCRIPTION text = LINE NEWLINE
+  DESCRIPTION text = DESCRIPTION_LINE NEWLINE
 ;
 
 rbn_peer_group

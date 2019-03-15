@@ -20,7 +20,7 @@ public void emit(Token token) {
 }
 
 tokens {
-  LINE
+  DESCRIPTION_LINE
 }
 
 // Keywords
@@ -227,6 +227,16 @@ COMMENT_TAIL
   '!' F_NonNewlineChar* -> channel ( HIDDEN )
 ;
 
+IP_ADDRESS
+:
+  F_IpAddress
+;
+
+IPV6_ADDRESS
+:
+  F_Ipv6Address
+;
+
 NEWLINE
 :
   F_Newline+
@@ -260,9 +270,227 @@ F_NonNewlineChar
 ;
 
 fragment
+F_DecByte
+:
+  (
+    F_Digit
+    | F_DecByteTwoDigit
+    | F_DecByteThreeDigit
+  )
+;
+
+fragment
+F_DecByteThreeDigit
+:
+  (
+    (
+      [1] F_Digit F_Digit
+    )
+    |
+    (
+      [2] [0-4] F_Digit
+    )
+    |
+    (
+      [2] [5] [0-5]
+    )
+  )
+;
+
+fragment
+F_DecByteTwoDigit
+:
+  [1-9] F_Digit
+;
+
+fragment
+F_Digit
+:
+  [0-9]
+;
+
+fragment
+F_IpAddress
+:
+  F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
+;
+
+F_Ipv6Address
+:
+  '::' F_HexWordLE7
+  | F_HexWord '::' F_HexWordLE6
+  | F_HexWord2 '::' F_HexWordLE5
+  | F_HexWord3 '::' F_HexWordLE4
+  | F_HexWord4 '::' F_HexWordLE3
+  | F_HexWord5 '::' F_HexWordLE2
+  | F_HexWord6 '::' F_HexWordLE1
+  | F_HexWord7 '::'
+  | F_HexWord8
+;
+
+fragment
+F_HexDigit
+:
+  (
+    '0' .. '9'
+    | 'a' .. 'f'
+    | 'A' .. 'F'
+  )
+;
+
+fragment
+F_HexWord
+:
+  F_HexDigit F_HexDigit? F_HexDigit? F_HexDigit?
+;
+
+fragment
+F_HexWord2
+:
+  F_HexWord ':' F_HexWord
+;
+
+fragment
+F_HexWord3
+:
+  F_HexWord2 ':' F_HexWord
+;
+
+fragment
+F_HexWord4
+:
+  F_HexWord3 ':' F_HexWord
+;
+
+fragment
+F_HexWord5
+:
+  F_HexWord4 ':' F_HexWord
+;
+
+fragment
+F_HexWord6
+:
+  F_HexWord5 ':' F_HexWord
+;
+
+fragment
+F_HexWord7
+:
+  F_HexWord6 ':' F_HexWord
+;
+
+fragment
+F_HexWord8
+:
+  F_HexWord6 ':' F_HexWordFinal2
+;
+
+fragment
+F_HexWordFinal2
+:
+  F_HexWord2
+  | F_IpAddress
+;
+
+fragment
+F_HexWordFinal3
+:
+  F_HexWord ':' F_HexWordFinal2
+;
+
+fragment
+F_HexWordFinal4
+:
+  F_HexWord ':' F_HexWordFinal3
+;
+
+fragment
+F_HexWordFinal5
+:
+  F_HexWord ':' F_HexWordFinal4
+;
+
+fragment
+F_HexWordFinal6
+:
+  F_HexWord ':' F_HexWordFinal5
+;
+
+fragment
+F_HexWordFinal7
+:
+  F_HexWord ':' F_HexWordFinal6
+;
+
+fragment
+F_HexWordLE1
+:
+  F_HexWord?
+;
+
+fragment
+F_HexWordLE2
+:
+  F_HexWordLE1
+  | F_HexWordFinal2
+;
+
+fragment
+F_HexWordLE3
+:
+  F_HexWordLE2
+  | F_HexWordFinal3
+;
+
+fragment
+F_HexWordLE4
+:
+  F_HexWordLE3
+  | F_HexWordFinal4
+;
+
+fragment
+F_HexWordLE5
+:
+  F_HexWordLE4
+  | F_HexWordFinal5
+;
+
+fragment
+F_HexWordLE6
+:
+  F_HexWordLE5
+  | F_HexWordFinal6
+;
+
+fragment
+F_HexWordLE7
+:
+  F_HexWordLE6
+  | F_HexWordFinal7
+;
+
+fragment
 F_NonWhitespaceChar
 :
   ~[\r\n \t\u000C]
+;
+
+fragment
+F_PositiveDigit
+:
+  '1' .. '9'
+;
+
+fragment
+F_PrefixLength
+:
+  (
+    F_Digit
+    | [12] F_Digit
+    | [3] [012]
+  )
 ;
 
 fragment
@@ -283,7 +511,7 @@ mode M_Description;
 
 M_Description_LINE
 :
-  F_NonWhitespaceChar F_NonNewlineChar* -> type ( LINE ) , popMode
+  F_NonWhitespaceChar F_NonNewlineChar* -> type ( DESCRIPTION_LINE ) , popMode
 ;
 
 M_Description_WS
