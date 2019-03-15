@@ -103,7 +103,7 @@ IP_ADDRESS
 
 IP_PREFIX
 :
-   F_IpAddress '/' F_Byte
+   F_IpPrefix
 ;
 
 NEWLINE
@@ -121,12 +121,16 @@ WS
    F_Whitespace+ -> channel ( HIDDEN )
 ;
 
+// Fragments
+
 fragment
-F_Byte
+F_DecByte
 :
-   F_Digit F_Digit F_Digit
-   | F_Digit F_Digit
-   | F_Digit
+  F_Digit
+  | F_PositiveDigit F_Digit
+  | '1' F_Digit F_Digit
+  | '2' [0-4] F_Digit
+  | '25' [0-5]
 ;
 
 fragment
@@ -138,7 +142,21 @@ F_Digit
 fragment
 F_IpAddress
 :
-   F_Byte '.' F_Byte '.' F_Byte '.' F_Byte
+    F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
+;
+
+fragment
+F_IpPrefix
+:
+    F_IpAddress '/' F_IpPrefixLength
+;
+
+fragment
+F_IpPrefixLength
+:
+  F_Digit
+  | [12] F_Digit
+  | [3] [012]
 ;
 
 fragment
@@ -151,6 +169,12 @@ fragment
 F_NonNewline
 :
    ~[\r\n]
+;
+
+fragment
+F_PositiveDigit
+:
+  [1-9]
 ;
 
 fragment
