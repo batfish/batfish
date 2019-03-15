@@ -2649,13 +2649,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
       ospfExportDefaultStatements.add(new SetOspfMetricType(metricType));
       // add default export map with metric
       String defaultOriginateMapName = proc.getDefaultInformationOriginateMap();
+      GeneratedRoute.Builder route =
+          GeneratedRoute.builder()
+              .setNetwork(Prefix.ZERO)
+              .setNonRouting(true)
+              .setAdmin(MAX_ADMINISTRATIVE_COST);
       if (defaultOriginateMapName != null) {
         RoutingPolicy ospfDefaultGenerationPolicy =
             c.getRoutingPolicies().get(defaultOriginateMapName);
         if (ospfDefaultGenerationPolicy != null) {
-          GeneratedRoute.Builder route = GeneratedRoute.builder();
-          route.setNetwork(Prefix.ZERO);
-          route.setAdmin(MAX_ADMINISTRATIVE_COST);
           // TODO This should depend on a default route existing, unless `always` is configured
           // If `always` is configured, maybe the route-map should be ignored. Needs GNS3 check.
           route.setGenerationPolicy(defaultOriginateMapName);
@@ -2663,15 +2665,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
         }
       } else if (proc.getDefaultInformationOriginateAlways()) {
         // add generated aggregate with no precondition
-        GeneratedRoute.Builder route = GeneratedRoute.builder();
-        route.setNetwork(Prefix.ZERO);
-        route.setAdmin(MAX_ADMINISTRATIVE_COST);
         newProcess.addGeneratedRoute(route.build());
       } else {
         // Use a generated route that will only be generated if a default route exists in RIB
-        GeneratedRoute.Builder route = GeneratedRoute.builder();
-        route.setNetwork(Prefix.ZERO);
-        route.setAdmin(MAX_ADMINISTRATIVE_COST);
         String defaultRouteGenerationPolicyName =
             computeOspfDefaultRouteGenerationPolicyName(vrfName, proc.getName());
         RoutingPolicy.builder()

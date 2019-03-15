@@ -2149,6 +2149,48 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosOspfDefaultOriginateLoop() throws IOException {
+    /*
+    Setup: 2-node network in OSPF area 0.
+      - R1 has `default-information originate always` configured at the process level
+      - R2 has `default-information originate` configured at the process level
+    R2 should have a default route to R1; R1 shouldn't have a default route in its main RIB.
+    */
+
+    String testrigName = "ospf-default-originate-loop";
+    String r1Name = "ios-originator-1-always";
+    String r2Name = "ios-originator-2";
+    List<String> configurationNames = ImmutableList.of(r1Name, r2Name);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+
+    // Sanity check: both devices have a generated default route in their OSPF processes
+    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Configuration r1 = configurations.get(r1Name);
+    Configuration r2 = configurations.get(r2Name);
+    Set<GeneratedRoute> r1OspfGeneratedRoutes =
+        r1.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcess().getGeneratedRoutes();
+    Set<GeneratedRoute> r2OspfGeneratedRoutes =
+        r2.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcess().getGeneratedRoutes();
+    assertThat(r1OspfGeneratedRoutes, contains(hasPrefix(Prefix.ZERO)));
+    assertThat(r2OspfGeneratedRoutes, contains(hasPrefix(Prefix.ZERO)));
+
+    batfish.computeDataPlane();
+    DataPlane dp = batfish.loadDataPlane();
+    Set<AbstractRoute> r1Routes = dp.getRibs().get(r1Name).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r2Routes = dp.getRibs().get(r2Name).get(DEFAULT_VRF_NAME).getRoutes();
+
+    // R2 should have default route, R1 should not
+    assertThat(
+        r2Routes, hasItem(allOf(hasPrefix(Prefix.ZERO), hasProtocol(RoutingProtocol.OSPF_E2))));
+    assertThat(r1Routes, not(hasItem(hasPrefix(Prefix.ZERO))));
+  }
+
+  @Test
   public void testIosOspfDistributeList() throws IOException {
     String hostname = "ios-ospf-distribute-list";
     String filename = "configs/" + hostname;

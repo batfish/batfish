@@ -1271,15 +1271,19 @@ public class VirtualRouter implements Serializable {
               // Don't propagate default generated routes to stubby or NSSA areas
               if (r.getOspfMetricType() == OspfMetricType.E1) {
                 if (r.getNetwork().equals(Prefix.ZERO)) {
-                  type1RoutesForNormalAreas.add((OspfExternalType1Route) r);
+                  type1RoutesForNormalAreas.from(
+                      _ospfExternalType1Rib.mergeRouteGetDelta((OspfExternalType1Route) r));
                 } else {
-                  type1RoutesForEveryone.add((OspfExternalType1Route) r);
+                  type1RoutesForEveryone.from(
+                      _ospfExternalType1Rib.mergeRouteGetDelta((OspfExternalType1Route) r));
                 }
               } else { // assuming here that MetricType exists or E2 is the default
                 if (r.getNetwork().equals(Prefix.ZERO)) {
-                  type2RoutesForNormalAreas.add((OspfExternalType2Route) r);
+                  type2RoutesForNormalAreas.from(
+                      _ospfExternalType2Rib.mergeRouteGetDelta((OspfExternalType2Route) r));
                 } else {
-                  type2RoutesForEveryone.add((OspfExternalType2Route) r);
+                  type2RoutesForEveryone.from(
+                      _ospfExternalType2Rib.mergeRouteGetDelta((OspfExternalType2Route) r));
                 }
               }
             });
