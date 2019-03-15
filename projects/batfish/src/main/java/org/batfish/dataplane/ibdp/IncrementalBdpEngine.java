@@ -1034,6 +1034,19 @@ class IncrementalBdpEngine {
                 }
                 ospfInternalCompleted.incrementAndGet();
               });
+      AtomicInteger ospfInternalUnstageCompleted =
+          _newBatch.apply(
+              "Unstage OSPF Internal routes: iteration " + ospfInternalIterations, nodes.size());
+      nodes
+          .values()
+          .parallelStream()
+          .forEach(
+              n -> {
+                for (VirtualRouter vr : n.getVirtualRouters().values()) {
+                  vr.unstageOspfInternalRoutes();
+                }
+                ospfInternalUnstageCompleted.incrementAndGet();
+              });
     }
     AtomicInteger ospfInternalImportCompleted =
         _newBatch.apply("Import OSPF Internal routes", nodes.size());
