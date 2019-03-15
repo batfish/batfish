@@ -803,11 +803,11 @@ public final class TopologyUtilTest {
      * Incorrect/Unusable Layer-1 information
      * Expected L1: N1 <=> N2
      * Provided L1: N1 => N2, N2 => NCorrupt
-     * Use case: L1 input is missing info from N2 due to snapshot preparation problem
+     * Use case: L1 input has corrupt (e.g. truncated) info from N2 due to snapshot preparation problem
      */
     String n1Name = "N1";
     String n2Name = "N2";
-    String nCorruptName = "NCorrupt";
+    String nCorruptName = "N";
     String iName = "i1";
 
     Layer1Node n1 = new Layer1Node(n1Name, iName);
