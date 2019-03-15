@@ -67,7 +67,6 @@
     <hamcrest.version>2.1</hamcrest.version>
     <icu4j.version>63.1</icu4j.version>
     <jackson.version>2.9.8</jackson.version>
-    <javabdd.version>2018-07-26-36d0ed6-batfish-internal</javabdd.version>
     <javax-activation.version>1.1</javax-activation.version>
     <javax-annotation-api.version>1.3.2</javax-annotation-api.version>
     <jaeger.version>0.21.0</jaeger.version>
@@ -446,22 +445,6 @@
               <sources>${basedir}/lib/z3/com.microsoft.z3-${z3.version}-sources.jar</sources>
             </configuration>
           </execution>
-          <!-- JavaBDD Binary Decision Diagram library -->
-          <execution>
-            <phase>initialize</phase>
-            <goals>
-              <goal>install-file</goal>
-            </goals>
-            <id>install-bdd</id>
-            <configuration>
-              <groupId>net.sf.javabdd</groupId>
-              <artifactId>javabdd</artifactId>
-              <version>${javabdd.version}</version>
-              <packaging>jar</packaging>
-              <file>${basedir}/lib/bdd/net.sf.javabdd-${javabdd.version}.jar</file>
-              <sources>${basedir}/lib/bdd/net.sf.javabdd-${javabdd.version}-sources.jar</sources>
-            </configuration>
-          </execution>
           <!-- Batfish includes a custom version of JsonPath with bugfixes to array handling. -->
           <execution>
             <phase>initialize</phase>
@@ -594,6 +577,12 @@
       <dependency>
         <groupId>org.batfish</groupId>
         <artifactId>batfish</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.batfish</groupId>
+        <artifactId>bdd</artifactId>
         <version>${project.version}</version>
       </dependency>
 
@@ -831,12 +820,6 @@
       </dependency>
 
       <dependency>
-        <groupId>net.sf.javabdd</groupId>
-        <artifactId>javabdd</artifactId>
-        <version>${javabdd.version}</version>
-      </dependency>
-
-      <dependency>
         <groupId>org.antlr</groupId>
         <artifactId>antlr4</artifactId>
         <version>${antlr4.version}</version>
@@ -1023,6 +1006,7 @@
     <module>batfish</module>
     <module>batfish-client</module>
     <module>batfish-common-protocol</module>
+    <module>bdd</module>
     <module>build-tools</module>
     <module>coordinator</module>
     <module>question</module>

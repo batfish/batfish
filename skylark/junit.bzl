@@ -26,7 +26,7 @@ import org.junit.runner.RunWith;
 public class %s {}
 """
 
-_PREFIXES = ("org", "com", "edu")
+_PREFIXES = ("org", "com", "edu", "net")
 
 def _SafeIndex(l, val):
     for i, v in enumerate(l):
@@ -44,9 +44,10 @@ def _AsClassName(fname):
             break
     if findex == -1:
         fail(
-            "%s does not contain any of %s",
-            fname,
-            _PREFIXES,
+            "%s does not contain any of %s" % (
+                fname,
+                _PREFIXES,
+            ),
         )
     return ".".join(toks[findex:]) + ".class"
 
