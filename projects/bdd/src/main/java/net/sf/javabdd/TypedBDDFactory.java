@@ -35,11 +35,7 @@ public class TypedBDDFactory extends BDDFactory {
   }
 
   public static BDDFactory init(int nodenum, int cachesize) {
-    BDDFactory a;
-    String factoryName = getProperty("bdd", null);
-    if (factoryName != null && factoryName.equals("typed"))
-      a = BuDDyFactory.init(nodenum, cachesize);
-    else a = BDDFactory.init(nodenum, cachesize);
+    BDDFactory a = BDDFactory.init(nodenum, cachesize);
     return new TypedBDDFactory(a);
   }
 

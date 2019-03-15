@@ -65,9 +65,6 @@ public abstract class BDDFactory {
    */
   public static BDDFactory init(String bddpackage, int nodenum, int cachesize) {
     try {
-      if (bddpackage.equals("buddy")) return BuDDyFactory.init(nodenum, cachesize);
-      if (bddpackage.equals("cudd")) return CUDDFactory.init(nodenum, cachesize);
-      if (bddpackage.equals("cal")) return CALFactory.init(nodenum, cachesize);
       if (bddpackage.equals("j") || bddpackage.equals("java"))
         return JFactory.init(nodenum, cachesize);
       if (bddpackage.equals("u") || bddpackage.equals("micro"))

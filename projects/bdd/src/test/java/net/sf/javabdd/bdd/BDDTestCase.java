@@ -21,10 +21,7 @@ public abstract class BDDTestCase extends TestCase implements Iterator {
 
   public static final String[] factoryNames = {
     "net.sf.javabdd.JFactory",
-    // "net.sf.javabdd.BuDDyFactory",
     // "net.sf.javabdd.MicroFactory",
-    // "net.sf.javabdd.CUDDFactory",
-    // "net.sf.javabdd.CALFactory",
   };
 
   protected static Collection factories;
