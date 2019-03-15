@@ -385,9 +385,6 @@ public abstract class BDDDomain {
     return binsize;
   }
 
-  /* (non-Javadoc)
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return getName();
