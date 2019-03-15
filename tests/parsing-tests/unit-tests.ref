@@ -69391,7 +69391,7 @@
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Cannot add description to non-existent neighbor: 'undeclared' in: 'description hello\n'"
+              "text" : "Cannot add description to non-existent neighbor: 'undeclared' in: 'neighbor undeclared description hello\n'"
             },
             {
               "tag" : "MISCELLANEOUS",
@@ -69407,11 +69407,11 @@
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Cannot assign remote-as to non-existent peer-group: 'undeclared-peer-group' in: 'remote-as 3\n'"
+              "text" : "Cannot assign remote-as to non-existent peer-group: 'undeclared-peer-group' in: 'neighbor undeclared-peer-group remote-as 3\n'"
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Cannot assign outbound route-map to non-existent neighbor: 'undeclared-peer-group' in: 'route-map rm1 out\n'"
+              "text" : "Cannot assign outbound route-map to non-existent neighbor: 'undeclared-peer-group' in: 'neighbor undeclared-peer-group route-map rm1 out\n'"
             }
           ]
         },
