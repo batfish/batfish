@@ -412,7 +412,7 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
 
   private @Nullable Integer toInteger(Uint32Context ctx) {
     try {
-      return Integer.parseInt(ctx.getText());
+      return Integer.parseInt(ctx.getText(), 10);
     } catch (IllegalArgumentException e) {
       return convProblem(Integer.class, ctx, null);
     }
@@ -424,7 +424,7 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
 
   private @Nullable Long toLong(Uint64Context ctx) {
     try {
-      return Long.parseLong(ctx.getText());
+      return Long.parseLong(ctx.getText(), 10);
     } catch (IllegalArgumentException e) {
       return convProblem(Long.class, ctx, null);
     }
