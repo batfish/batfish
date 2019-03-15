@@ -1,33 +1,52 @@
 package org.batfish.representation.f5_bigip;
 
-import java.io.Serializable;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 
-/** Configuration for a BGP neighbor. */
+/** Configuration for a BGP neighbor representing an actual peer. */
 @ParametersAreNonnullByDefault
-public final class BgpNeighbor implements Serializable {
+public final class BgpNeighbor extends AbstractBgpNeighbor {
 
   private static final long serialVersionUID = 1L;
 
   private @Nullable Ip _address;
   private @Nullable Ip6 _address6;
-  private @Nullable String _description;
-  private final @Nonnull BgpNeighborIpv4AddressFamily _ipv4AddressFamily;
-  private final @Nonnull BgpNeighborIpv6AddressFamily _ipv6AddressFamily;
-  private final @Nonnull String _name;
-  private @Nullable Long _remoteAs;
-  private @Nullable String _updateSource;
+  private @Nullable String _peerGroup;
 
   public BgpNeighbor(String name) {
-    _name = name;
-    _ipv4AddressFamily = new BgpNeighborIpv4AddressFamily();
-    _ipv6AddressFamily = new BgpNeighborIpv6AddressFamily();
-    Ip.tryParse(_name).ifPresent(this::setAddress);
-    Ip6.tryParse(_name).ifPresent(this::setAddress6);
+    super(name);
+    Ip.tryParse(name).ifPresent(this::setAddress);
+    Ip6.tryParse(name).ifPresent(this::setAddress6);
+  }
+
+  private void applyIpv4AddressFamily(BgpNeighborIpv4AddressFamily parent) {
+    BgpNeighborIpv4AddressFamily af = getIpv4AddressFamily();
+    if (af.getRouteMapOut() == null) {
+      af.setRouteMapOut(parent.getRouteMapOut());
+    }
+  }
+
+  private void applyIpv6AddressFamily(BgpNeighborIpv6AddressFamily parent) {
+    BgpNeighborIpv6AddressFamily af = getIpv6AddressFamily();
+    if (af.getRouteMapOut() == null) {
+      af.setRouteMapOut(parent.getRouteMapOut());
+    }
+  }
+
+  public void applyPeerGroup(BgpPeerGroup peerGroup) {
+    if (_address != null) {
+      applyIpv4AddressFamily(peerGroup.getIpv4AddressFamily());
+    } else if (_address6 != null) {
+      applyIpv6AddressFamily(peerGroup.getIpv6AddressFamily());
+    }
+    if (getRemoteAs() == null) {
+      setRemoteAs(peerGroup.getRemoteAs());
+    }
+    if (getUpdateSource() == null) {
+      setUpdateSource(peerGroup.getUpdateSource());
+    }
   }
 
   public @Nullable Ip getAddress() {
@@ -38,28 +57,8 @@ public final class BgpNeighbor implements Serializable {
     return _address6;
   }
 
-  public @Nullable String getDescription() {
-    return _description;
-  }
-
-  public @Nonnull BgpNeighborIpv4AddressFamily getIpv4AddressFamily() {
-    return _ipv4AddressFamily;
-  }
-
-  public @Nonnull BgpNeighborIpv6AddressFamily getIpv6AddressFamily() {
-    return _ipv6AddressFamily;
-  }
-
-  public @Nonnull String getName() {
-    return _name;
-  }
-
-  public @Nullable Long getRemoteAs() {
-    return _remoteAs;
-  }
-
-  public @Nullable String getUpdateSource() {
-    return _updateSource;
+  public @Nullable String getPeerGroup() {
+    return _peerGroup;
   }
 
   public void setAddress(@Nullable Ip address) {
@@ -70,15 +69,7 @@ public final class BgpNeighbor implements Serializable {
     _address6 = address6;
   }
 
-  public void setDescription(@Nullable String description) {
-    _description = description;
-  }
-
-  public void setRemoteAs(@Nullable Long remoteAs) {
-    _remoteAs = remoteAs;
-  }
-
-  public void setUpdateSource(@Nullable String updateSource) {
-    _updateSource = updateSource;
+  public void setPeerGroup(@Nullable String peerGroup) {
+    _peerGroup = peerGroup;
   }
 }

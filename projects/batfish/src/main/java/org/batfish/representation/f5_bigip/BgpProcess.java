@@ -19,6 +19,7 @@ public final class BgpProcess implements Serializable {
   private @Nullable Long _localAs;
   private final @Nonnull String _name;
   private final @Nonnull Map<String, BgpNeighbor> _neighbors;
+  private final @Nonnull Map<String, BgpPeerGroup> _peerGroups;
   private @Nullable Ip _routerId;
 
   public BgpProcess(String name) {
@@ -26,6 +27,7 @@ public final class BgpProcess implements Serializable {
     _neighbors = new HashMap<>();
     _ipv4AddressFamily = new BgpIpv4AddressFamily();
     _ipv6AddressFamily = new BgpIpv6AddressFamily();
+    _peerGroups = new HashMap<>();
   }
 
   public @Nonnull BgpIpv4AddressFamily getIpv4AddressFamily() {
@@ -48,15 +50,19 @@ public final class BgpProcess implements Serializable {
     return _neighbors;
   }
 
+  public @Nonnull Map<String, BgpPeerGroup> getPeerGroups() {
+    return _peerGroups;
+  }
+
   public @Nullable Ip getRouterId() {
     return _routerId;
   }
 
-  public void setRouterId(Ip routerId) {
-    _routerId = routerId;
-  }
-
   public void setLocalAs(@Nullable Long localAs) {
     _localAs = localAs;
+  }
+
+  public void setRouterId(Ip routerId) {
+    _routerId = routerId;
   }
 }

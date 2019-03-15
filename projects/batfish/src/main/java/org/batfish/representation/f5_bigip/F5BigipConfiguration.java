@@ -51,6 +51,7 @@ import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route6FilterList;
+import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
@@ -127,10 +128,19 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return we;
   }
 
+  /**
+   * Return name of {@link RouteFilterList} generated from access-list with name {@code aclName}.
+   */
+  public static @Nonnull String computeAccessListRouteFilterName(String aclName) {
+    return String.format("~access-list~%s~", aclName);
+  }
+
+  @VisibleForTesting
   public static @Nonnull String computeBgpCommonExportPolicyName(String bgpProcessName) {
     return String.format("~BGP_COMMON_EXPORT_POLICY:%s~", bgpProcessName);
   }
 
+  @VisibleForTesting
   public static @Nonnull String computeBgpPeerExportPolicyName(
       String bgpProcessName, Ip peerAddress) {
     return String.format("~BGP_PEER_EXPORT_POLICY:%s:%s~", bgpProcessName, peerAddress);
@@ -141,6 +151,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return String.format("~incoming_filter:%s~", vlanName);
   }
 
+  private final Map<String, AccessList> _accessLists;
   private final @Nonnull Map<String, BgpProcess> _bgpProcesses;
   private transient Configuration _c;
   private ConfigurationFormat _format;
@@ -171,6 +182,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, Vlan> _vlans;
 
   public F5BigipConfiguration() {
+    _accessLists = new HashMap<>();
     _bgpProcesses = new HashMap<>();
     _interfaces = new HashMap<>();
     _nodes = new HashMap<>();
@@ -189,6 +201,13 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   private void addActivePeer(
       BgpNeighbor neighbor, BgpProcess proc, org.batfish.datamodel.BgpProcess newProc) {
+    String peerGroupName = neighbor.getPeerGroup();
+    if (peerGroupName != null) {
+      BgpPeerGroup peerGroup = proc.getPeerGroups().get(peerGroupName);
+      if (peerGroup != null) {
+        neighbor.applyPeerGroup(peerGroup);
+      }
+    }
     Ip updateSource = getUpdateSource(neighbor, neighbor.getUpdateSource());
 
     RoutingPolicy.Builder peerExportPolicy =
@@ -238,6 +257,17 @@ public class F5BigipConfiguration extends VendorConfiguration {
     vlanInterface.setIncomingFilter(computeInterfaceIncomingFilter(vlanName));
   }
 
+  private void addIpAccessList(AccessList acl) {
+    IpAccessList.builder()
+        .setOwner(_c)
+        .setLines(
+            acl.getLines().stream()
+                .map(AccessListLine::toIpAccessListLine)
+                .collect(ImmutableList.toImmutableList()))
+        .setName(acl.getName())
+        .build();
+  }
+
   private void addNatRules(org.batfish.datamodel.Interface vlanInterface) {
     String vlanName = vlanInterface.getName();
     vlanInterface.setIncomingTransformation(computeInterfaceIncomingTransformation(vlanName));
@@ -268,23 +298,6 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return AclIpSpace.union(
         Streams.concat(virtualDnatIps, virtualSnatIps, snatIps)
             .collect(ImmutableList.toImmutableList()));
-  }
-
-  private void initInterfaceIncomingFilterLines() {
-    _interfaceIncomingFilterLines = new HashMap<>();
-    _virtualMatchedHeaders.forEach(
-        (virtualName, matchedHeaders) -> {
-          Virtual virtual = _virtuals.get(virtualName);
-          IpAccessListLine line =
-              toIpAccessListLine(virtualName, matchedHeaders, virtual.getReject());
-          _vlans.keySet().stream()
-              .filter(vlanName -> appliesToVlan(virtual, vlanName))
-              .forEach(
-                  vlanName ->
-                      _interfaceIncomingFilterLines
-                          .computeIfAbsent(vlanName, n -> ImmutableList.builder())
-                          .add(line));
-        });
   }
 
   private @Nullable IpAccessList computeInterfaceIncomingFilter(String vlanName) {
@@ -631,6 +644,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
         .collect(ImmutableSet.toImmutableSet());
   }
 
+  public Map<String, AccessList> getAccessLists() {
+    return _accessLists;
+  }
+
   public @Nonnull Map<String, BgpProcess> getBgpProcesses() {
     return _bgpProcesses;
   }
@@ -698,15 +715,18 @@ public class F5BigipConfiguration extends VendorConfiguration {
   }
 
   private Ip getUpdateSource(BgpNeighbor neighbor, String updateSourceInterface) {
-    Ip updateSource = null;
+    Ip neighborAddress = neighbor.getAddress();
+    if (neighborAddress == null) {
+      // Only compute for IPv4 neighbors for now
+      return null;
+    }
     if (updateSourceInterface != null) {
       org.batfish.datamodel.Interface sourceInterface =
           _c.getDefaultVrf().getInterfaces().get(updateSourceInterface);
       if (sourceInterface != null) {
         InterfaceAddress address = sourceInterface.getAddress();
         if (address != null) {
-          Ip sourceIp = address.getIp();
-          updateSource = sourceIp;
+          return address.getIp();
         } else {
           _w.redFlag(
               "bgp update source interface: '"
@@ -714,12 +734,17 @@ public class F5BigipConfiguration extends VendorConfiguration {
                   + "' not assigned an ip address");
         }
       }
+    } else {
+      for (org.batfish.datamodel.Interface iface : _c.getDefaultVrf().getInterfaces().values()) {
+        for (InterfaceAddress interfaceAddress : iface.getAllAddresses()) {
+          if (interfaceAddress.getPrefix().containsIp(neighborAddress)) {
+            return interfaceAddress.getIp();
+          }
+        }
+      }
     }
-    if (updateSource == null) {
-      _w.redFlag(
-          "Could not determine update source for BGP neighbor: '" + neighbor.getName() + "'");
-    }
-    return updateSource;
+    _w.redFlag("Could not determine update source for BGP neighbor: '" + neighbor.getName() + "'");
+    return null;
   }
 
   public @Nonnull Map<String, VirtualAddress> getVirtualAddresses() {
@@ -732,6 +757,23 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   public @Nonnull Map<String, Vlan> getVlans() {
     return _vlans;
+  }
+
+  private void initInterfaceIncomingFilterLines() {
+    _interfaceIncomingFilterLines = new HashMap<>();
+    _virtualMatchedHeaders.forEach(
+        (virtualName, matchedHeaders) -> {
+          Virtual virtual = _virtuals.get(virtualName);
+          IpAccessListLine line =
+              toIpAccessListLine(virtualName, matchedHeaders, virtual.getReject());
+          _vlans.keySet().stream()
+              .filter(vlanName -> appliesToVlan(virtual, vlanName))
+              .forEach(
+                  vlanName ->
+                      _interfaceIncomingFilterLines
+                          .computeIfAbsent(vlanName, n -> ImmutableList.builder())
+                          .add(line));
+        });
   }
 
   private void initSnatTransformations() {
@@ -800,7 +842,18 @@ public class F5BigipConfiguration extends VendorConfiguration {
         toImmutableMap(_virtuals, Entry::getKey, e -> computeVirtualSnatIps(e.getValue()));
   }
 
+  private boolean isReferencedByRouteMap(String aclName) {
+    // Return true iff the named acl is referenced via route-map match ip address
+    return Optional.ofNullable(_structureReferences.get(F5BigipStructureType.ACCESS_LIST))
+        .map(byStructureName -> byStructureName.get(aclName))
+        .map(byUsage -> byUsage.get(F5BigipStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS))
+        .map(lines -> !lines.isEmpty())
+        .orElse(false);
+  }
+
   private void markStructures() {
+    markConcreteStructure(
+        F5BigipStructureType.ACCESS_LIST, F5BigipStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS);
     markConcreteStructure(
         F5BigipStructureType.BGP_NEIGHBOR, F5BigipStructureUsage.BGP_NEIGHBOR_SELF_REFERENCE);
     markConcreteStructure(
@@ -861,7 +914,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
         F5BigipStructureType.ROUTE_MAP,
         F5BigipStructureUsage.BGP_ADDRESS_FAMILY_REDISTRIBUTE_KERNEL_ROUTE_MAP,
         F5BigipStructureUsage.BGP_NEIGHBOR_IPV4_ROUTE_MAP_OUT,
-        F5BigipStructureUsage.BGP_NEIGHBOR_IPV6_ROUTE_MAP_OUT);
+        F5BigipStructureUsage.BGP_NEIGHBOR_IPV6_ROUTE_MAP_OUT,
+        F5BigipStructureUsage.BGP_PEER_GROUP_ROUTE_MAP_OUT,
+        F5BigipStructureUsage.BGP_REDISTRIBUTE_KERNEL_ROUTE_MAP);
     markConcreteStructure(F5BigipStructureType.RULE, F5BigipStructureUsage.VIRTUAL_RULES_RULE);
     markConcreteStructure(F5BigipStructureType.SELF, F5BigipStructureUsage.SELF_SELF_REFERENCE);
     markConcreteStructure(F5BigipStructureType.SNAT, F5BigipStructureUsage.SNAT_SELF_REFERENCE);
@@ -1072,6 +1127,21 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return output;
   }
 
+  private @Nonnull RouteFilterLine toRouteFilterLine(AccessListLine line) {
+    Prefix prefix = line.getPrefix();
+    return new RouteFilterLine(
+        line.getAction(), prefix, new SubRange(prefix.getPrefixLength(), Prefix.MAX_PREFIX_LENGTH));
+  }
+
+  private @Nonnull RouteFilterList toRouteFilterList(AccessList accessList) {
+    String name = accessList.getName();
+    return new RouteFilterList(
+        computeAccessListRouteFilterName(name),
+        accessList.getLines().stream()
+            .map(this::toRouteFilterLine)
+            .collect(ImmutableList.toImmutableList()));
+  }
+
   /**
    * Converts {@code prefixList} to {@link RouteFilterList}. If {@code prefixList} contains IPv6
    * information, returns {@code null}.
@@ -1142,6 +1212,19 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
     // Add default VRF
     _c.getVrfs().computeIfAbsent(DEFAULT_VRF_NAME, Vrf::new);
+
+    // Add access-lists
+    _accessLists.values().forEach(this::addIpAccessList);
+
+    // Convert access-lists referenced by route-maps to RouteFilterLists
+    _accessLists.forEach(
+        (name, acl) -> {
+          if (!isReferencedByRouteMap(name)) {
+            return;
+          }
+          RouteFilterList rfl = toRouteFilterList(acl);
+          _c.getRouteFilterLists().put(rfl.getName(), rfl);
+        });
 
     // Add interfaces
     _interfaces.forEach(

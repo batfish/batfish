@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.datamodel.Ip;
@@ -15,7 +16,6 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
 import org.junit.Before;
 import org.junit.Test;
-import org.parboiled.common.ImmutableList;
 
 /** Test of {@link BDDPrefix} */
 @ParametersAreNonnullByDefault

@@ -15,6 +15,7 @@ public final class RouteMapEntry implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private @Nullable LineAction _action;
+  private @Nullable MatchAccessList _matchAccessList;
   private @Nullable RouteMapMatchPrefixList _matchPrefixList;
   private final int _num;
   private @Nullable RouteMapSetCommunity _setCommunity;
@@ -27,9 +28,13 @@ public final class RouteMapEntry implements Serializable {
     return _action;
   }
 
+  public @Nullable MatchAccessList getMatchAccessList() {
+    return _matchAccessList;
+  }
+
   /** Return stream of match statements for this entry. */
   public @Nonnull Stream<RouteMapMatch> getMatches() {
-    return Stream.<RouteMapMatch>of(_matchPrefixList).filter(Objects::nonNull);
+    return Stream.<RouteMapMatch>of(_matchAccessList, _matchPrefixList).filter(Objects::nonNull);
   }
 
   public @Nullable RouteMapMatchPrefixList getMatchPrefixList() {
@@ -51,6 +56,10 @@ public final class RouteMapEntry implements Serializable {
 
   public void setAction(@Nullable LineAction action) {
     _action = action;
+  }
+
+  public void setMatchAccessList(@Nullable MatchAccessList matchAccessList) {
+    _matchAccessList = matchAccessList;
   }
 
   public void setMatchPrefixList(@Nullable RouteMapMatchPrefixList matchPrefixList) {
