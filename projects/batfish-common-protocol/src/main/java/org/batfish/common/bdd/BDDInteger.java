@@ -226,24 +226,22 @@ public class BDDInteger {
   /*
    * Add two BDDs bitwise to create a new BDD
    */
-  public BDDInteger add(BDDInteger var1) {
-    if (this._bitvec.length != var1._bitvec.length) {
-      throw new BDDException();
-    } else {
-      BDD var3 = _factory.zero();
-      BDDInteger var4 = new BDDInteger(_factory, this._bitvec.length);
-      for (int var5 = var4._bitvec.length - 1; var5 >= 0; --var5) {
-        var4._bitvec[var5] = this._bitvec[var5].xor(var1._bitvec[var5]);
-        var4._bitvec[var5] = var4._bitvec[var5].xor(var3.id());
-        BDD var6 = this._bitvec[var5].or(var1._bitvec[var5]);
-        var6 = var6.and(var3);
-        BDD var7 = this._bitvec[var5].and(var1._bitvec[var5]);
-        var7 = var7.or(var6);
-        var3 = var7;
-      }
-      var3.free();
-      return var4;
+  public BDDInteger add(BDDInteger other) {
+    BDD[] as = this._bitvec;
+    BDD[] bs = other._bitvec;
+
+    checkArgument(as.length > 0, "Cannot add BDDIntegers of length 0");
+    checkArgument(as.length == bs.length, "Cannot add BDDIntegers of different length");
+
+    BDD carry = _factory.zero();
+    BDDInteger sum = new BDDInteger(_factory, as.length);
+    BDD[] cs = sum._bitvec;
+    for (int i = cs.length - 1; i > 0; --i) {
+      cs[i] = as[i].xor(bs[i]).xor(carry);
+      carry = as[i].and(bs[i]).or(carry.and(as[i].or(bs[i])));
     }
+    cs[0] = as[0].xor(bs[0]).xor(carry);
+    return sum;
   }
 
   /*
