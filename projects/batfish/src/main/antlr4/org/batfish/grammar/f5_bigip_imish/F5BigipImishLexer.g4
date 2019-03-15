@@ -306,38 +306,6 @@ F_Digit
 ;
 
 fragment
-F_IpAddress
-:
-  F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
-;
-
-fragment
-F_IpPrefix
-:
-  F_IpAddress '/' F_Ipv4PrefixLength
-;
-
-fragment
-F_Ipv6Address
-:
-  '::' F_HexWordLE7
-  | F_HexWord '::' F_HexWordLE6
-  | F_HexWord2 '::' F_HexWordLE5
-  | F_HexWord3 '::' F_HexWordLE4
-  | F_HexWord4 '::' F_HexWordLE3
-  | F_HexWord5 '::' F_HexWordLE2
-  | F_HexWord6 '::' F_HexWordLE1
-  | F_HexWord7 '::'
-  | F_HexWord8
-;
-
-fragment
-F_Ipv6Prefix
-:
-  F_Ipv6Address '/' F_Ipv6PrefixLength
-;
-
-fragment
 F_HexDigit
 :
   (
@@ -481,13 +449,45 @@ F_HexWordLE7
 ;
 
 fragment
-F_Ipv4PrefixLength
+F_IpAddress
+:
+  F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
+;
+
+fragment
+F_IpPrefix
+:
+  F_IpAddress '/' F_IpPrefixLength
+;
+
+fragment
+F_IpPrefixLength
 :
   (
     F_Digit
     | [12] F_Digit
     | [3] [012]
   )
+;
+
+fragment
+F_Ipv6Address
+:
+  '::' F_HexWordLE7
+  | F_HexWord '::' F_HexWordLE6
+  | F_HexWord2 '::' F_HexWordLE5
+  | F_HexWord3 '::' F_HexWordLE4
+  | F_HexWord4 '::' F_HexWordLE3
+  | F_HexWord5 '::' F_HexWordLE2
+  | F_HexWord6 '::' F_HexWordLE1
+  | F_HexWord7 '::'
+  | F_HexWord8
+;
+
+fragment
+F_Ipv6Prefix
+:
+  F_Ipv6Address '/' F_Ipv6PrefixLength
 ;
 
 fragment
