@@ -10175,6 +10175,49 @@
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "OSPF export default route",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                      "comment" : "match default route",
+                      "prefix" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                      },
+                      "prefixSet" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                        "prefixSpace" : [
+                          "0.0.0.0/0"
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "aggregate"
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
+                    "metric" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
+                      "value" : 10
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetOspfMetricType",
+                    "metricType" : "E1"
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "comment" : "OSPF export routes for connected",
                 "guard" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
@@ -16440,12 +16483,11 @@
           }
         },
         "routingPolicies" : {
-          "~OSPF_EXPORT_POLICY:default~" : {
-            "name" : "~OSPF_EXPORT_POLICY:default~",
+          "~OSPF_DEFAULT_ROUTE_GENERATION_POLICY:default:2~" : {
+            "name" : "~OSPF_DEFAULT_ROUTE_GENERATION_POLICY:default:2~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "comment" : "OSPF export default route",
                 "guard" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                   "comment" : "match default route",
@@ -16458,6 +16500,43 @@
                       "0.0.0.0/0"
                     ]
                   }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              }
+            ]
+          },
+          "~OSPF_EXPORT_POLICY:default~" : {
+            "name" : "~OSPF_EXPORT_POLICY:default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "OSPF export default route",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                      "comment" : "match default route",
+                      "prefix" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                      },
+                      "prefixSet" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                        "prefixSpace" : [
+                          "0.0.0.0/0"
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "aggregate"
+                    }
+                  ]
                 },
                 "trueStatements" : [
                   {
@@ -16518,6 +16597,18 @@
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+              "generatedRoutes" : [
+                {
+                  "class" : "org.batfish.datamodel.GeneratedRoute",
+                  "administrativeCost" : 32767,
+                  "asPath" : [ ],
+                  "discard" : false,
+                  "generationPolicy" : "~OSPF_DEFAULT_ROUTE_GENERATION_POLICY:default:2~",
+                  "metric" : 0,
+                  "network" : "0.0.0.0/0",
+                  "nextHopIp" : "AUTO/NONE(-1l)"
+                }
+              ],
               "processId" : "2",
               "referenceBandwidth" : 1.0E8,
               "routerId" : "169.232.1.4"

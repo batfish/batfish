@@ -1543,7 +1543,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            54
+            55
           ]
         }
       },
@@ -1555,7 +1555,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            55
+            56
           ]
         }
       },
@@ -1567,8 +1567,8 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            51,
-            52
+            52,
+            53
           ]
         }
       },
@@ -1580,7 +1580,19 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            53
+            54
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ospf",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "DEFAULT_ORIGINATE_OSPF",
+        "Context" : "ospf default-originate route-map",
+        "Lines" : {
+          "filename" : "configs/cisco_ospf",
+          "lines" : [
+            47
           ]
         }
       },
@@ -1592,7 +1604,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            66
+            67
           ]
         }
       },
@@ -1604,7 +1616,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            67
+            68
           ]
         }
       },
@@ -1616,7 +1628,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            56
+            57
           ]
         }
       },
@@ -1628,7 +1640,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            57
+            58
           ]
         }
       },
@@ -4070,10 +4082,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 330 results",
+      "notes" : "Found 331 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 330
+      "numResults" : 331
     }
   }
 ]
