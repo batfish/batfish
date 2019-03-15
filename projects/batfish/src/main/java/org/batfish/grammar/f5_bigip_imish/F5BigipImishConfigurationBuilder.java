@@ -233,7 +233,7 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
       _w.redFlag(
           String.format(
               "Cannot add description to non-existent neighbor: '%s' in: '%s'",
-              _currentNeighborName, getFullText(ctx.getParent())));
+              _currentNeighborName, getFullText(ctx.getParent().getParent())));
       return;
     }
     _currentAbstractNeighbor.setDescription(ctx.text.getText());
@@ -293,7 +293,7 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
       _w.redFlag(
           String.format(
               "Cannot assign remote-as to non-existent peer-group: '%s' in: '%s'",
-              _currentNeighborName, getFullText(ctx.getParent())));
+              _currentNeighborName, getFullText(ctx.getParent().getParent())));
       return;
     }
     if (_currentAbstractNeighbor == null) {
@@ -346,7 +346,7 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
       _w.redFlag(
           String.format(
               "Cannot assign outbound route-map to non-existent neighbor: '%s' in: '%s'",
-              _currentNeighborName, getFullText(ctx.getParent())));
+              _currentNeighborName, getFullText(ctx.getParent().getParent())));
       return;
     }
     if (ipv4) {

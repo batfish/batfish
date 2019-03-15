@@ -239,12 +239,12 @@ IP_ADDRESS
 
 IP_PREFIX
 :
-  F_IpAddress
+  F_IpAddress '/' F_Ipv4PrefixLength
 ;
 
 IPV6_ADDRESS
 :
-  F_Ipv6Address '/' F_Ipv4PrefixLength
+  F_Ipv6Address
 ;
 
 IPV6_PREFIX
