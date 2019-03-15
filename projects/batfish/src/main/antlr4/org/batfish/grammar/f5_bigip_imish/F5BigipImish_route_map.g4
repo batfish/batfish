@@ -28,12 +28,12 @@ rms_community
 
 standard_community
 :
-  word
+  STANDARD_COMMUNITY
 ;
 
 s_route_map
 :
-  ROUTE_MAP name = word action = line_action num = word NEWLINE
+  ROUTE_MAP name = word action = line_action num = uint32 NEWLINE
   (
     rm_match
     | rm_set

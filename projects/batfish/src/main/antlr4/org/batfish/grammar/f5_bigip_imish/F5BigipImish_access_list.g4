@@ -9,7 +9,7 @@ options {
 ip_spec
 :
   ANY
-  | prefix = word
+  | prefix = IP_PREFIX
 ;
 
 s_access_list

@@ -8,16 +8,40 @@ options {
 
 rb_bgp_router_id
 :
-  BGP ROUTER_ID id = word NEWLINE
+  BGP ROUTER_ID id = IP_ADDRESS NEWLINE
 ;
 
-rb_neighbor
+rb_neighbor_ipv4
 :
-  NO? NEIGHBOR name = word
+  NO? NEIGHBOR ip = IP_ADDRESS
+  (
+    rbn_common
+    | rbn_peer_group_assign
+  )
+;
+
+rb_neighbor_ipv6
+:
+  NO? NEIGHBOR ip6 = IPV6_ADDRESS
+  (
+    rbn_common
+    | rbn_peer_group_assign
+  )
+;
+
+rb_neighbor_peer_group
+:
+  NO? NEIGHBOR name = peer_group_name
+  (
+    rbn_common
+    | rbn_peer_group
+  )
+;
+
+rbn_common
+:
   (
     rbn_description
-    | rbn_peer_group
-    | rbn_peer_group_assign
     | rbn_null
     | rbn_remote_as
     | rbn_route_map_out
@@ -36,7 +60,7 @@ rbn_peer_group
 
 rbn_peer_group_assign
 :
-  PEER_GROUP name = word NEWLINE
+  PEER_GROUP name = peer_group_name NEWLINE
 ;
 
 rbn_null
@@ -51,7 +75,7 @@ rbn_null
 
 rbn_remote_as
 :
-  REMOTE_AS remoteas = word NEWLINE
+  REMOTE_AS remoteas = uint64 NEWLINE
 ;
 
 rbn_route_map_out
@@ -77,11 +101,18 @@ rb_redistribute_kernel
 
 s_router_bgp
 :
-  ROUTER BGP localas = word NEWLINE
+  ROUTER BGP localas = uint64 NEWLINE
   (
     rb_bgp_router_id
-    | rb_neighbor
+    | rb_neighbor_ipv4
+    | rb_neighbor_ipv6
+    | rb_neighbor_peer_group
     | rb_redistribute_kernel
     | rb_null
   )*
+;
+
+peer_group_name
+:
+  ~( IP_ADDRESS | IPV6_ADDRESS | NEWLINE )
 ;

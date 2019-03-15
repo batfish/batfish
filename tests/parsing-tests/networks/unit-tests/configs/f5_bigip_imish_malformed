@@ -5,24 +5,18 @@ sys global-settings {
 }
 
 !
-access-list acl1 permit invalid-ip-specifier
+route-map invalid permit 1000000000000000000000
 !
-route-map invalid permit invalidnum
-!
-router bgp invalid-local-as
+router bgp 1000000000000000000000
  ! don't crash
  neighbor 1.1.1.1 remote-as 1
 !
 router bgp 1
  bgp router-id invalid-router-id
  neighbor undeclared description hello
- neighbor 1.1.1.1 peer-group
- neighbor 1::1 peer-group
- neighbor pg peer-group
- neighbor 2.2.2.2 peer-group pg
  neighbor 3.3.3.3 remote-as 2
  neighbor 3.3.3.3 peer-group undefined-peer-group
- neighbor 4.4.4.4 remote-as invalid-remote-as
+ neighbor 4.4.4.4 remote-as 1000000000000000000000
  neighbor undeclared-peer-group remote-as 3
  neighbor 2::2 remote-as 4
  neighbor 2::2 route-map rm1 out

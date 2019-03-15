@@ -34,7 +34,7 @@ s_line
 
 l_con
 :
-  CON num = word NEWLINE l_login*
+  CON num = uint32 NEWLINE l_login*
 ;
 
 l_login
@@ -44,7 +44,7 @@ l_login
 
 l_vty
 :
-  VTY low = word high = word NEWLINE l_login*
+  VTY low = uint32 high = uint32 NEWLINE l_login*
 ;
 
 s_null

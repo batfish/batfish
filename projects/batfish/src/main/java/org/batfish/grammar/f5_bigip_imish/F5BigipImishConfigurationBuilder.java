@@ -2,7 +2,6 @@ package org.batfish.grammar.f5_bigip_imish;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Objects;
-import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -19,7 +18,9 @@ import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.F5_bigip_imish_conf
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Ip_specContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Line_actionContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_bgp_router_idContext;
-import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_neighborContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_neighbor_ipv4Context;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_neighbor_ipv6Context;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_neighbor_peer_groupContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_redistribute_kernelContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_descriptionContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_peer_groupContext;
@@ -32,7 +33,8 @@ import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.S_access_listContex
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.S_route_mapContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.S_router_bgpContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Standard_communityContext;
-import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.WordContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Uint32Context;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Uint64Context;
 import org.batfish.representation.f5_bigip.AbstractBgpNeighbor;
 import org.batfish.representation.f5_bigip.AccessList;
 import org.batfish.representation.f5_bigip.AccessListLine;
@@ -109,10 +111,25 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   }
 
   @Override
-  public void enterRb_neighbor(Rb_neighborContext ctx) {
+  public void enterRb_neighbor_ipv4(Rb_neighbor_ipv4Context ctx) {
+    _no = ctx.NO() != null;
+    _currentNeighborName = ctx.ip.getText();
+    _currentNeighbor = _currentBgpProcess.getNeighbors().get(_currentNeighborName);
+    _currentAbstractNeighbor = _currentNeighbor != null ? _currentNeighbor : _currentPeerGroup;
+  }
+
+  @Override
+  public void enterRb_neighbor_ipv6(Rb_neighbor_ipv6Context ctx) {
+    _no = ctx.NO() != null;
+    _currentNeighborName = ctx.ip6.getText();
+    _currentNeighbor = _currentBgpProcess.getNeighbors().get(_currentNeighborName);
+    _currentAbstractNeighbor = _currentNeighbor != null ? _currentNeighbor : _currentPeerGroup;
+  }
+
+  @Override
+  public void enterRb_neighbor_peer_group(Rb_neighbor_peer_groupContext ctx) {
     _no = ctx.NO() != null;
     _currentNeighborName = ctx.name.getText();
-    _currentNeighbor = _currentBgpProcess.getNeighbors().get(_currentNeighborName);
     _currentPeerGroup = _currentBgpProcess.getPeerGroups().get(_currentNeighborName);
     _currentAbstractNeighbor = _currentNeighbor != null ? _currentNeighbor : _currentPeerGroup;
   }
@@ -156,8 +173,7 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
       _currentBgpProcess = new BgpProcess("dummy");
       return;
     }
-    _currentBgpProcess =
-        _c.getBgpProcesses().computeIfAbsent(Long.toString(localAs), BgpProcess::new);
+    _currentBgpProcess = _c.getBgpProcesses().computeIfAbsent(localAsStr, BgpProcess::new);
     _currentBgpProcess.setLocalAs(localAs);
     defineStructure(F5BigipStructureType.BGP_PROCESS, localAsStr, ctx);
     _c.referenceStructure(
@@ -169,20 +185,29 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
 
   @Override
   public void exitRb_bgp_router_id(Rb_bgp_router_idContext ctx) {
-    String idStr = ctx.id.getText();
-    Optional<Ip> routerId = Ip.tryParse(idStr);
-    if (!routerId.isPresent()) {
-      _w.redFlag(String.format("Illegal router-id: '%s' in: '%s'", idStr, getFullText(ctx)));
-      return;
-    }
-    _currentBgpProcess.setRouterId(routerId.get());
+    _currentBgpProcess.setRouterId(Ip.parse(ctx.id.getText()));
   }
 
   @Override
-  public void exitRb_neighbor(Rb_neighborContext ctx) {
+  public void exitRb_neighbor_ipv4(Rb_neighbor_ipv4Context ctx) {
     _no = null;
     _currentNeighborName = null;
     _currentNeighbor = null;
+    _currentAbstractNeighbor = null;
+  }
+
+  @Override
+  public void exitRb_neighbor_ipv6(Rb_neighbor_ipv6Context ctx) {
+    _no = null;
+    _currentNeighborName = null;
+    _currentNeighbor = null;
+    _currentAbstractNeighbor = null;
+  }
+
+  @Override
+  public void exitRb_neighbor_peer_group(Rb_neighbor_peer_groupContext ctx) {
+    _no = null;
+    _currentNeighborName = null;
     _currentAbstractNeighbor = null;
     _currentPeerGroup = null;
   }
@@ -216,20 +241,6 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
 
   @Override
   public void exitRbn_peer_group(Rbn_peer_groupContext ctx) {
-    if (Ip.tryParse(_currentNeighborName).isPresent()) {
-      _w.redFlag(
-          String.format(
-              "Cannot create peer-group from IPv4 address: '%s' in: '%s'",
-              _currentNeighborName, getFullText(ctx.getParent())));
-      return;
-    }
-    if (Ip6.tryParse(_currentNeighborName).isPresent()) {
-      _w.redFlag(
-          String.format(
-              "Cannot create peer-group from IPv6 address: '%s' in: '%s'",
-              _currentNeighborName, getFullText(ctx.getParent())));
-      return;
-    }
     BgpPeerGroup pg =
         _currentBgpProcess.getPeerGroups().computeIfAbsent(_currentNeighborName, BgpPeerGroup::new);
     defineStructure(F5BigipStructureType.PEER_GROUP, _currentNeighborName, ctx.parent);
@@ -360,6 +371,7 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   public void exitS_access_list(S_access_listContext ctx) {
     String name = ctx.name.getText();
     Prefix prefix = toPrefix(ctx.ip_spec());
+    defineStructure(F5BigipStructureType.ACCESS_LIST, name, ctx);
     if (prefix == null) {
       _w.redFlag(
           String.format(
@@ -367,7 +379,6 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
               ctx.ip_spec().getText(), getFullText(ctx)));
       return;
     }
-    defineStructure(F5BigipStructureType.ACCESS_LIST, name, ctx);
     _c.getAccessLists()
         .computeIfAbsent(name, AccessList::new)
         .getLines()
@@ -392,16 +403,16 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   }
 
   private @Nullable Long toCommunity(Standard_communityContext ctx) {
-    if (ctx.word() != null) {
+    if (ctx.STANDARD_COMMUNITY() != null) {
       return CommonUtil.communityStringToLong(ctx.getText());
     } else {
       return convProblem(Long.class, ctx, null);
     }
   }
 
-  private @Nullable Integer toInteger(WordContext ctx) {
+  private @Nullable Integer toInteger(Uint32Context ctx) {
     try {
-      return Integer.parseInt(ctx.getText(), 10);
+      return Integer.parseInt(ctx.getText());
     } catch (IllegalArgumentException e) {
       return convProblem(Integer.class, ctx, null);
     }
@@ -411,9 +422,9 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
     return ctx.PERMIT() != null ? LineAction.PERMIT : LineAction.DENY;
   }
 
-  private @Nullable Long toLong(WordContext ctx) {
+  private @Nullable Long toLong(Uint64Context ctx) {
     try {
-      return Long.parseLong(ctx.getText(), 10);
+      return Long.parseLong(ctx.getText());
     } catch (IllegalArgumentException e) {
       return convProblem(Long.class, ctx, null);
     }
@@ -423,7 +434,7 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
     if (ctx.ANY() != null) {
       return Prefix.ZERO;
     } else if (ctx.prefix != null) {
-      return Prefix.tryParse(ctx.getText()).orElseGet(() -> convProblem(Prefix.class, ctx, null));
+      return Prefix.parse(ctx.getText());
     } else {
       return convProblem(Prefix.class, ctx, null);
     }

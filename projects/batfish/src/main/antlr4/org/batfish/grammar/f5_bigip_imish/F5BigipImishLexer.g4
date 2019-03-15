@@ -227,19 +227,39 @@ COMMENT_TAIL
   '!' F_NonNewlineChar* -> channel ( HIDDEN )
 ;
 
+DEC
+:
+  F_Digit+
+;
+
 IP_ADDRESS
+:
+  F_IpAddress
+;
+
+IP_PREFIX
 :
   F_IpAddress
 ;
 
 IPV6_ADDRESS
 :
-  F_Ipv6Address
+  F_Ipv6Address '/' F_Ipv4PrefixLength
+;
+
+IPV6_PREFIX
+:
+  F_Ipv6Address '/' F_Ipv6PrefixLength
 ;
 
 NEWLINE
 :
   F_Newline+
+;
+
+STANDARD_COMMUNITY
+:
+  F_Short ':' F_Short
 ;
 
 WORD
@@ -472,6 +492,25 @@ F_HexWordLE7
 ;
 
 fragment
+F_Ipv4PrefixLength
+:
+  (
+    F_Digit
+    | [12] F_Digit
+    | [3] [012]
+  )
+;
+
+fragment
+F_Ipv6PrefixLength
+:
+  F_Digit
+  | F_PositiveDigit F_Digit
+  | '1' [01] F_Digit
+  | '12' [0-8]
+;
+
+fragment
 F_NonWhitespaceChar
 :
   ~[\r\n \t\u000C]
@@ -484,13 +523,15 @@ F_PositiveDigit
 ;
 
 fragment
-F_PrefixLength
+F_Short
 :
-  (
-    F_Digit
-    | [12] F_Digit
-    | [3] [012]
-  )
+  F_Digit
+  | F_PositiveDigit F_Digit F_Digit? F_Digit?
+  | [1-5] F_Digit F_Digit F_Digit F_Digit
+  | '6' [0-4] F_Digit F_Digit F_Digit
+  | '65' [0-4] F_Digit F_Digit
+  | '655' [0-2] F_Digit
+  | '6553' [0-5]
 ;
 
 fragment
