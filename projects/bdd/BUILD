@@ -17,7 +17,10 @@ java_library(
         ],
         exclude = ["src/test/java/**/*Test.java"],
     ),
-    deps = [":bdd", "@junit//:compile"],
+    deps = [
+        ":bdd",
+        "@junit//:compile",
+    ],
 )
 
 junit_tests(
@@ -26,5 +29,8 @@ junit_tests(
     srcs = glob([
         "src/test/java/**/*Test.java",
     ]),
-    deps = [":bdd", ":bdd_testlib",],
+    deps = [
+        ":bdd",
+        ":bdd_testlib",
+    ],
 )

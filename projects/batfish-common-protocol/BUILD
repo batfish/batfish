@@ -68,7 +68,7 @@ java_library(
     ],
     deps = [
         ":parser_common",
-        "//projects/lib/bdd",
+        "//projects/bdd",
         "//projects/lib/jsonpath",
         "//projects/lib/z3",
         "@antlr4_runtime//:compile",
@@ -117,7 +117,7 @@ java_library(
     deps = [
         ":common",
         ":recovery_grammar",
-        "//projects/lib/bdd",
+        "//projects/bdd",
         "@antlr4_runtime//:compile",
         "@commons_configuration2//:compile",
         "@commons_lang3//:compile",
@@ -143,7 +143,7 @@ junit_tests(
         ":common",
         ":common_testlib",
         ":recovery_grammar",
-        "//projects/lib/bdd",
+        "//projects/bdd",
         "@antlr4_runtime//:compile",
         "@commons_io//:compile",
         "@commons_lang3//:compile",
