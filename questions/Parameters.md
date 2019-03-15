@@ -151,7 +151,7 @@ interfaceWithNode :=
 interfaceWithoutNode :=
     interfaceWithoutNodeTerm [(<b>&</b>|<b>,</b>|<b>\</b>) interfaceWithoutNodeTerm]
 
-interfaceWithoutNode :=
+interfaceWithoutNodeTerm :=
     &lt;<i>interface-name</i>&gt;
     | <b>/</b>&lt;<i>interface-name-regex</i>&gt;<b>/</b>
     | interfaceFunc
