@@ -262,7 +262,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
         .setOwner(_c)
         .setLines(
             acl.getLines().stream()
-                .map(this::toIpAccessListLine)
+                .map(AccessListLine::toIpAccessListLine)
                 .collect(ImmutableList.toImmutableList()))
         .setName(acl.getName())
         .build();
@@ -1098,16 +1098,6 @@ public class F5BigipConfiguration extends VendorConfiguration {
     newIface.setBandwidth(Interface.DEFAULT_BANDWIDTH);
     newIface.setVrf(_c.getDefaultVrf());
     return newIface;
-  }
-
-  private @Nonnull IpAccessListLine toIpAccessListLine(AccessListLine line) {
-    return IpAccessListLine.builder()
-        .setAction(line.getAction())
-        .setMatchCondition(
-            new MatchHeaderSpace(
-                HeaderSpace.builder().setSrcIps(line.getPrefix().toIpSpace()).build()))
-        .setName(line.getText())
-        .build();
   }
 
   private @Nonnull IpAccessListLine toIpAccessListLine(
