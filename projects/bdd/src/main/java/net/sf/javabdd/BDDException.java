@@ -5,20 +5,19 @@ package net.sf.javabdd;
 
 /**
  * An exception caused by an invalid BDD operation.
- * 
+ *
  * @author John Whaley
  * @version $Id: BDDException.java,v 1.2 2005/04/29 06:43:31 joewhaley Exp $
  */
 public class BDDException extends RuntimeException {
-    /**
-     * Version ID for serialization.
-     */
-    private static final long serialVersionUID = 3761969363112243251L;
-    
-    public BDDException() {
-        super();
-    }
-    public BDDException(String s) {
-        super(s);
-    }
+  /** Version ID for serialization. */
+  private static final long serialVersionUID = 3761969363112243251L;
+
+  public BDDException() {
+    super();
+  }
+
+  public BDDException(String s) {
+    super(s);
+  }
 }
