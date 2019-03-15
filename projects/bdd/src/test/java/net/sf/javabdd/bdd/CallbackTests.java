@@ -1,7 +1,7 @@
 // CallbackTests.java, created Oct 18, 2004 10:42:34 PM by jwhaley
 // Copyright (C) 2004 jwhaley
 // Licensed under the terms of the GNU LGPL; see COPYING for details.
-package bdd;
+package net.sf.javabdd.bdd;
 
 import java.lang.reflect.Method;
 import junit.framework.Assert;

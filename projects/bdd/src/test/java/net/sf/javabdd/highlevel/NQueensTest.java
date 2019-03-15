@@ -1,12 +1,12 @@
 // NQueensTest.java, created Jul 28, 2004 1:44:28 AM by joewhaley
 // Copyright (C) 2004 John Whaley <jwhaley@alum.mit.edu>
 // Licensed under the terms of the GNU LGPL; see COPYING for details.
-package highlevel;
+package net.sf.javabdd.highlevel;
 
-import bdd.BDDTestCase;
 import junit.framework.Assert;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import net.sf.javabdd.bdd.BDDTestCase;
 
 /**
  * NQueensTest

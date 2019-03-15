@@ -127,7 +127,7 @@ public class TryVarOrder {
     }
     Class bddop_class = cl.loadClass("net.sf.javabdd.TryVarOrder$BDDOperation");
     Constructor c = bddop_class.getConstructor(new Class[0]);
-    bddoperation = c.newInstance(null);
+    bddoperation = c.newInstance();
     Method m = bddop_class.getMethod("setOp", new Class[] {int.class});
     m.invoke(bddoperation, new Object[] {new Integer(op.id)});
     m =

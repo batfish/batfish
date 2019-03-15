@@ -1,7 +1,7 @@
 // IteratorTests.java, created Oct 19, 2004 1:16:36 AM by joewhaley
 // Copyright (C) 2004 John Whaley <jwhaley@alum.mit.edu>
 // Licensed under the terms of the GNU LGPL; see COPYING for details.
-package bdd;
+package net.sf.javabdd.bdd;
 
 import java.util.HashSet;
 import java.util.Iterator;

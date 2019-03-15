@@ -1,13 +1,13 @@
 // R1.java, created Jul 28, 2004 2:22:19 AM by joewhaley
 // Copyright (C) 2004 John Whaley <jwhaley@alum.mit.edu>
 // Licensed under the terms of the GNU LGPL; see COPYING for details.
-package regression;
+package net.sf.javabdd.regression;
 
-import bdd.BDDTestCase;
 import junit.framework.Assert;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDDomain;
 import net.sf.javabdd.BDDFactory;
+import net.sf.javabdd.bdd.BDDTestCase;
 
 /**
  * satCount bug

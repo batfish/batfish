@@ -1,7 +1,7 @@
 // TraceDriver.java, created Nov 17, 2004 12:32:38 AM by joewhaley
 // Copyright (C) 2004 John Whaley <jwhaley@alum.mit.edu>
 // Licensed under the terms of the GNU LGPL; see COPYING for details.
-package trace;
+package net.sf.javabdd.trace;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -18,7 +18,7 @@ import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
 
 /**
- * A driver to run BDD trace files in the bwolen BDD trace format. See
+ * A driver to run BDD net.sf.javabdd.trace files in the bwolen BDD net.sf.javabdd.trace format. See
  * http://www-2.cs.cmu.edu/~bwolen/software/.
  *
  * <p>This code is based on the code in JDD.
@@ -616,12 +616,14 @@ public class TraceDriver {
 
   // -----------------------------------------------------
 
+  private static final boolean TRACE_LAST_ASSIGNMENT = false;
+
   private void show_results() {
     time = System.currentTimeMillis() - time;
     out.println("" + op_count + " operations performed, total execution time: " + time + " [ms]");
 
     if (verbose) {
-      if (false && last_assignment != null && last_assignment.hashCode() != -1) {
+      if (TRACE_LAST_ASSIGNMENT && last_assignment != null && last_assignment.hashCode() != -1) {
         int size = node_count(last_assignment);
         out.println("Last assignment: " + last_assignment.name + ", " + size + " nodes.");
         // if(size < 20) bdd.printSet(last_assignment.bdd);
@@ -661,7 +663,7 @@ public class TraceDriver {
     }
   }
 
-  /** BDD trace driver doesn't count nodes the same way as we do ... */
+  /** BDD net.sf.javabdd.trace driver doesn't count nodes the same way as we do ... */
   private int node_count(TracedVariable v) {
     if (v.bdd.hashCode() == -1) throw new InternalError();
     int size = v.bdd.nodeCount();
@@ -1030,7 +1032,10 @@ public class TraceDriver {
     // TraceDriver.verbose = true;
 
     if (args.length == 0) {
-      out.println("Usage:  java " + TraceDriver.class.getName() + " file.trace {file2.trace ...}");
+      out.println(
+          "Usage:  java "
+              + TraceDriver.class.getName()
+              + " file.net.sf.javabdd.trace {file2.net.sf.javabdd.trace ...}");
       return;
     }
     int bddnodes =

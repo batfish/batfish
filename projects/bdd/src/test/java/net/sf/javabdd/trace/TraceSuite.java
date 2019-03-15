@@ -1,7 +1,7 @@
 // TraceSuite.java, created Nov 17, 2004 10:07:46 AM by joewhaley
 // Copyright (C) 2004 John Whaley <jwhaley@alum.mit.edu>
 // Licensed under the terms of the GNU LGPL; see COPYING for details.
-package trace;
+package net.sf.javabdd.trace;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -16,7 +16,7 @@ import java.util.zip.ZipInputStream;
  *
  * <pre>
  * This class opens and runs a suite of BDD traces from a zip file.
- * A trace file is assumed to have the '.trace' suffix. Any file with the 'README' posfix
+ * A net.sf.javabdd.trace file is assumed to have the '.net.sf.javabdd.trace' suffix. Any file with the 'README' posfix
  * is assumed to be an information file and is dumped to stdout.
  * </pre>
  *
@@ -49,7 +49,7 @@ public class TraceSuite {
         try {
           String name = files[i].getName();
           InputStream is = new BufferedInputStream(new FileInputStream(files[i]));
-          if (name.endsWith(".trace")) runTrace(name, is, initial_size);
+          if (name.endsWith(".net.sf.javabdd.trace")) runTrace(name, is, initial_size);
           else if (name.endsWith("README")) showFile(name, is);
         } catch (IOException exx) {
           System.out.println("FAILED: " + exx.getMessage() + "\n");
@@ -73,7 +73,7 @@ public class TraceSuite {
 
         String name = ze.getName();
 
-        if (name.endsWith(".trace")) runTrace(name, zis, initial_size);
+        if (name.endsWith(".net.sf.javabdd.trace")) runTrace(name, zis, initial_size);
         else if (name.endsWith("README")) showFile(name, zis);
 
         zis.closeEntry();
@@ -131,6 +131,8 @@ public class TraceSuite {
     else if (args.length == 2) new TraceSuite(args[0], Integer.parseInt(args[1]));
     else
       System.err.println(
-          "Usage: java " + TraceSuite.class.getName() + " <trace-suite.zip> [initial size _base_]");
+          "Usage: java "
+              + TraceSuite.class.getName()
+              + " <net.sf.javabdd.trace-suite.zip> [initial size _base_]");
   }
 }

@@ -1,12 +1,12 @@
 // R4.java, created Jul 22, 2005 11:36:30 AM by joewhaley
 // Copyright (C) 2005 John Whaley <jwhaley@alum.mit.edu>
 // Licensed under the terms of the GNU LGPL; see COPYING for details.
-package regression;
+package net.sf.javabdd.regression;
 
-import bdd.BDDTestCase;
 import junit.framework.Assert;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import net.sf.javabdd.bdd.BDDTestCase;
 
 /**
  * allsat bug

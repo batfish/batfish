@@ -435,6 +435,8 @@ public class JFactory extends BDDFactory {
     }
   }
 
+  private static final boolean DEBUG_FINALIZER = false;
+
   private class bddWithFinalizer extends bdd {
 
     bddWithFinalizer(int id) {
@@ -446,7 +448,7 @@ public class JFactory extends BDDFactory {
     protected void finalize() throws Throwable {
       super.finalize();
       if (USE_FINALIZER) {
-        if (false && _index >= 0) {
+        if (DEBUG_FINALIZER && _index >= 0) {
           System.out.println("BDD not freed! " + System.identityHashCode(this));
         }
         this.free();
