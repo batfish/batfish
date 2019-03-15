@@ -121,6 +121,48 @@
     "rows" : [
       {
         "Node" : {
+          "id" : "node-as2border1",
+          "name" : "as2border1"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.3.2/32",
+        "Entry_Presence" : "Unchanged",
+        "Snapshot_Next_Hop_IP" : "2.12.11.2",
+        "Snapshot_Protocol" : "ospf",
+        "Reference_Next_Hop_IP" : "2.12.11.2",
+        "Reference_Protocol" : "ospf",
+        "Snapshot_Next_Hop" : "as2core1",
+        "Snapshot_Metric" : 3,
+        "Snapshot_Admin_Distance" : 110,
+        "Snapshot_Tag" : null,
+        "Reference_Next_Hop" : "as2core1",
+        "Reference_Metric" : 3,
+        "Reference_Admin_Distance" : 110,
+        "Reference_Tag" : null
+      },
+      {
+        "Node" : {
+          "id" : "node-as2border1",
+          "name" : "as2border1"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.3.1/32",
+        "Entry_Presence" : "Unchanged",
+        "Snapshot_Next_Hop_IP" : "2.12.11.2",
+        "Snapshot_Protocol" : "ospf",
+        "Reference_Next_Hop_IP" : "2.12.11.2",
+        "Reference_Protocol" : "ospf",
+        "Snapshot_Next_Hop" : "as2core1",
+        "Snapshot_Metric" : 3,
+        "Snapshot_Admin_Distance" : 110,
+        "Snapshot_Tag" : null,
+        "Reference_Next_Hop" : "as2core1",
+        "Reference_Metric" : 3,
+        "Reference_Admin_Distance" : 110,
+        "Reference_Tag" : null
+      },
+      {
+        "Node" : {
           "id" : "node-as1border2",
           "name" : "as1border2"
         },
@@ -132,6 +174,27 @@
         "Snapshot_Next_Hop" : null,
         "Snapshot_Metric" : 20,
         "Snapshot_Admin_Distance" : 20,
+        "Snapshot_Tag" : null,
+        "Reference_Next_Hop" : null,
+        "Reference_Metric" : null,
+        "Reference_Admin_Distance" : null,
+        "Reference_Tag" : null,
+        "Reference_Next_Hop_IP" : null,
+        "Reference_Protocol" : null
+      },
+      {
+        "Node" : {
+          "id" : "node-as2border1",
+          "name" : "as2border1"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.3.2/32",
+        "Entry_Presence" : "Only in Snapshot",
+        "Snapshot_Next_Hop_IP" : "2.12.12.2",
+        "Snapshot_Protocol" : "ospf",
+        "Snapshot_Next_Hop" : "as2core2",
+        "Snapshot_Metric" : 3,
+        "Snapshot_Admin_Distance" : 110,
         "Snapshot_Tag" : null,
         "Reference_Next_Hop" : null,
         "Reference_Metric" : null,
@@ -163,6 +226,27 @@
       },
       {
         "Node" : {
+          "id" : "node-as2border1",
+          "name" : "as2border1"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.3.1/32",
+        "Entry_Presence" : "Only in Snapshot",
+        "Snapshot_Next_Hop_IP" : "2.12.12.2",
+        "Snapshot_Protocol" : "ospf",
+        "Snapshot_Next_Hop" : "as2core2",
+        "Snapshot_Metric" : 3,
+        "Snapshot_Admin_Distance" : 110,
+        "Snapshot_Tag" : null,
+        "Reference_Next_Hop" : null,
+        "Reference_Metric" : null,
+        "Reference_Admin_Distance" : null,
+        "Reference_Tag" : null,
+        "Reference_Next_Hop_IP" : null,
+        "Reference_Protocol" : null
+      },
+      {
+        "Node" : {
           "id" : "node-as1border1",
           "name" : "as1border1"
         },
@@ -184,10 +268,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 3 results",
+      "notes" : "Found 7 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 3
+      "numResults" : 7
     }
   }
 ]
