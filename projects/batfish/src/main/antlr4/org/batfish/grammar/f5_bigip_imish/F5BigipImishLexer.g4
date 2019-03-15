@@ -463,11 +463,9 @@ F_IpPrefix
 fragment
 F_IpPrefixLength
 :
-  (
-    F_Digit
-    | [12] F_Digit
-    | [3] [012]
-  )
+  F_Digit
+  | [12] F_Digit
+  | [3] [012]
 ;
 
 fragment
