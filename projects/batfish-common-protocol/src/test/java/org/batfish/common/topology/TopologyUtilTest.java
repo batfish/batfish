@@ -6,9 +6,16 @@ import static org.batfish.common.topology.TopologyUtil.computeLayer1LogicalTopol
 import static org.batfish.common.topology.TopologyUtil.computeLayer1PhysicalTopology;
 import static org.batfish.common.topology.TopologyUtil.computeLayer2Topology;
 import static org.batfish.common.topology.TopologyUtil.computeLayer3Topology;
+import static org.batfish.datamodel.matchers.EdgeMatchers.hasHead;
+import static org.batfish.datamodel.matchers.EdgeMatchers.hasNode1;
+import static org.batfish.datamodel.matchers.EdgeMatchers.hasNode2;
+import static org.batfish.datamodel.matchers.EdgeMatchers.hasTail;
+import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.in;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -19,6 +26,9 @@ import com.google.common.collect.ImmutableSet;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import org.batfish.common.BatfishLogger;
+import org.batfish.common.util.ModelingUtils;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -36,6 +46,9 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
+import org.batfish.datamodel.isp_configuration.IspConfiguration;
+import org.batfish.datamodel.isp_configuration.IspFilter;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -679,6 +692,151 @@ public final class TopologyUtilTest {
       Topology layer3Topology = computeLayer3Topology(rawL1NonePresent, differentDomains, configs);
       assertThat(layer3Topology.getEdges(), containsInAnyOrder(c1i1c2i1, c2i1c1i1));
     }
+  }
+
+  @Test
+  public void testIncompleteLyaer1TopologyHandlingIsp() {
+    /*
+     * Connectivity between border routers and generated ISP nodes
+     * Expected: H1 <=> B1 <=> INTERNET <=> B2 <=> H2
+     * Provided: H1 <=> B1   B2 <=> H2
+     * Use case: B1 and B2 are declared as border routers; topological connectivity should be
+     *           synthesized via generated ISP nodes
+     */
+    String b1Name = "B1";
+    String b2Name = "B2";
+    String h1Name = "H1";
+    String h2Name = "H2";
+
+    String i1Name = "i1";
+    String i2Name = "i2";
+
+    Layer1Node l1B1 = new Layer1Node(b1Name, i1Name);
+    Layer1Node l1B2 = new Layer1Node(b2Name, i1Name);
+    Layer1Node l1H1 = new Layer1Node(h1Name, i1Name);
+    Layer1Node l1H2 = new Layer1Node(h2Name, i1Name);
+
+    InterfaceAddress b1i2Address = new InterfaceAddress("10.0.0.0/31");
+    Ip internetToB1Address = Ip.parse("10.0.0.1");
+    InterfaceAddress b2i2Address = new InterfaceAddress("10.0.0.2/31");
+    Ip internetToB2Address = Ip.parse("10.0.0.3");
+
+    long asB1 = 1;
+    long asInternetToB1 = 2;
+    long asB2 = 3;
+    long asInternetToB2 = 4;
+
+    Configuration cH1 = _cb.setHostname(h1Name).build();
+    Vrf vH1 = _vb.setOwner(cH1).build();
+    _ib.setOwner(cH1).setVrf(vH1).setName(i1Name).build(); // H1 => B1
+
+    Configuration cH2 = _cb.setHostname(h2Name).build();
+    Vrf vH2 = _vb.setOwner(cH2).build();
+    _ib.setOwner(cH2).setVrf(vH2).setName(i1Name).build(); // H2 => B2
+
+    Configuration cB1 = _cb.setHostname(b1Name).build();
+    Vrf vB1 = _vb.setOwner(cB1).build();
+    _ib.setOwner(cB1).setVrf(vB1).setName(i1Name).build(); // B1 => H1
+    _ib.setName(i2Name).setAddress(b1i2Address).build(); // B1 => INTERNET
+    BgpProcess b1Proc =
+        _nf.bgpProcessBuilder().setRouterId(b1i2Address.getIp()).setVrf(vB1).build();
+    _nf.bgpNeighborBuilder()
+        .setBgpProcess(b1Proc)
+        .setLocalAs(asB1)
+        .setRemoteAs(asInternetToB1)
+        .setLocalIp(b1i2Address.getIp())
+        .setPeerAddress(internetToB1Address)
+        .build();
+
+    Configuration cB2 = _cb.setHostname(b2Name).build();
+    Vrf vB2 = _vb.setOwner(cB2).build();
+    _ib.setOwner(cB2).setVrf(vB2).setName(i1Name).setAddress(null).build(); // B2 => H2
+    _ib.setName(i2Name).setAddress(b2i2Address).build(); // B2 => INTERNET
+    BgpProcess b2Proc =
+        _nf.bgpProcessBuilder().setRouterId(b2i2Address.getIp()).setVrf(vB2).build();
+    _nf.bgpNeighborBuilder()
+        .setBgpProcess(b2Proc)
+        .setLocalAs(asB2)
+        .setRemoteAs(asInternetToB2)
+        .setLocalIp(b2i2Address.getIp())
+        .setPeerAddress(internetToB2Address)
+        .build();
+
+    Layer1Topology rawLayer1Topology =
+        new Layer1Topology(
+            ImmutableList.of(
+                new Layer1Edge(l1B1, l1H1),
+                new Layer1Edge(l1H1, l1B1),
+                new Layer1Edge(l1B2, l1H2),
+                new Layer1Edge(l1H2, l1B2)));
+    Map<String, Configuration> explicitConfigurations =
+        ImmutableMap.of(h1Name, cH1, h2Name, cH2, b1Name, cB1, b2Name, cB2);
+    IspConfiguration ispConfiguration =
+        new IspConfiguration(
+            ImmutableList.of(
+                new BorderInterfaceInfo(new NodeInterfacePair(b1Name, i2Name)),
+                new BorderInterfaceInfo(new NodeInterfacePair(b2Name, i2Name))),
+            new IspFilter(ImmutableList.of(), ImmutableList.of()));
+    Map<String, Configuration> ispConfigurations =
+        ModelingUtils.getInternetAndIspNodes(
+            explicitConfigurations,
+            ispConfiguration,
+            new BatfishLogger(BatfishLogger.LEVELSTR_ERROR, false));
+    Map<String, Configuration> configurations =
+        ImmutableMap.<String, Configuration>builder()
+            .putAll(explicitConfigurations)
+            .putAll(ispConfigurations)
+            .build();
+
+    Layer1Topology layer1PhysicalTopology =
+        computeLayer1PhysicalTopology(rawLayer1Topology, configurations);
+
+    // Layer-1 physical topology should include edges in each direction between each border router
+    // and corresponding host
+    assertThat(
+        layer1PhysicalTopology.getGraph().edges(),
+        containsInAnyOrder(
+            new Layer1Edge(l1B1, l1H1),
+            new Layer1Edge(l1H1, l1B1),
+            new Layer1Edge(l1B2, l1H2),
+            new Layer1Edge(l1H2, l1B2)));
+
+    Topology layer3Topology =
+        computeLayer3Topology(
+            rawLayer1Topology,
+            computeLayer2Topology(
+                computeLayer1LogicalTopology(layer1PhysicalTopology, configurations),
+                configurations),
+            configurations);
+
+    NodeInterfacePair l3B1 = new NodeInterfacePair(b1Name, i2Name);
+    NodeInterfacePair l3B2 = new NodeInterfacePair(b2Name, i2Name);
+
+    Set<String> explicitNodes = explicitConfigurations.keySet();
+    Set<String> ispNodes = ispConfigurations.keySet();
+
+    // Layer-3 topology should include edges in each direction between each border router and
+    // generated ISP node
+    assertThat(
+        layer3Topology.getEdges().stream()
+            .filter(
+                edge ->
+                    explicitNodes.contains(edge.getNode1())
+                        || explicitNodes.contains(edge.getNode2()))
+            .collect(ImmutableSet.toImmutableSet()),
+        containsInAnyOrder(
+            both(hasHead(l3B1)).and(hasNode1(in(ispNodes))), // INTERNET => B1
+            both(hasTail(l3B1)).and(hasNode2(in(ispNodes))), // B1 => INTERNET
+            both(hasHead(l3B2)).and(hasNode1(in(ispNodes))), // INTERNET => B2
+            both(hasTail(l3B2)).and(hasNode2(in(ispNodes))))); // B2 => INTERNET
+
+    // Layer-3 topology should also contain other synthetic edges for the modeled ISPs
+    assertThat(
+        layer3Topology.getEdges().stream()
+            .filter(
+                edge -> ispNodes.contains(edge.getNode1()) && ispNodes.contains(edge.getNode2()))
+            .collect(ImmutableSet.toImmutableSet()),
+        not(empty()));
   }
 
   @Test
