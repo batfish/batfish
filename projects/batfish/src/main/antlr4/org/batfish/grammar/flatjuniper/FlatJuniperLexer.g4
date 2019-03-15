@@ -6328,7 +6328,7 @@ IP_PREFIX
 
 IPV6_ADDRESS
 :
-   F_Ipv6Addres {enableIPV6_ADDRESS}?
+   F_Ipv6Address {enableIPV6_ADDRESS}?
 ;
 
 IPV6_PREFIX
@@ -6414,26 +6414,6 @@ WILDCARD
 WS
 :
    F_WhitespaceChar+ -> channel ( HIDDEN )
-;
-
-fragment
-F_DecByte
-: // TODO: This is a hack.
-
-   (
-      F_PositiveDigit F_Digit F_Digit
-   )
-   |
-   (
-      F_PositiveDigit F_Digit
-   )
-   | F_Digit
-;
-
-fragment
-F_Digit
-:
-   [0-9]
 ;
 
 fragment
