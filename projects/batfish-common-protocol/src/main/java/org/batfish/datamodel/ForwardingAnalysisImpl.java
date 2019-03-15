@@ -58,7 +58,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   // node -> vrf -> interface -> dst ips that end up with insufficient info
   private final Map<String, Map<String, Map<String, IpSpace>>> _insufficientInfo;
 
-  public <T extends AbstractRouteDecorator> ForwardingAnalysisImpl(
+  public ForwardingAnalysisImpl(
       Map<String, Configuration> configurations,
       Map<String, Map<String, Fib>> fibs,
       Topology topology) {
