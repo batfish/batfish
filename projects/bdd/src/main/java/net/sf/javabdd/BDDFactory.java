@@ -106,14 +106,14 @@ public abstract class BDDFactory {
           "Could not load BDD package " + bddpackage + ": " + e.getLocalizedMessage());
     }
     try {
-      Class c = Class.forName(bddpackage);
-      Method m = c.getMethod("init", new Class[] {int.class, int.class});
-      return (BDDFactory)
-          m.invoke(null, new Object[] {new Integer(nodenum), new Integer(cachesize)});
-    } catch (ClassNotFoundException ignored) {
-    } catch (NoSuchMethodException ignored) {
-    } catch (IllegalAccessException ignored) {
-    } catch (InvocationTargetException ignored) {
+      Class<?> c = Class.forName(bddpackage);
+      Method m = c.getMethod("init", int.class, int.class);
+      return (BDDFactory) m.invoke(null, new Object[] {nodenum, cachesize});
+    } catch (ClassNotFoundException
+        | NoSuchMethodException
+        | IllegalAccessException
+        | InvocationTargetException ignored) {
+      // Do nothing.
     }
     // falling back to default java implementation.
     return JFactory.init(nodenum, cachesize);
@@ -1776,12 +1776,6 @@ public abstract class BDDFactory {
       }
       if (!m.getDeclaringClass().isAssignableFrom(o.getClass())) {
         throw new BDDException("Base object for callback method is the wrong type");
-      }
-    }
-    if (false) {
-      Class[] params = m.getParameterTypes();
-      if (params.length != 1 || params[0] != int.class) {
-        throw new BDDException("Wrong signature for callback");
       }
     }
     callbacks.add(new Object[] {o, m});
