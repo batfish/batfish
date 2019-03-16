@@ -4548,19 +4548,6 @@ public class JFactory extends BDDFactory {
     return dis;
   }
 
-  static int siftTestCmp(Object aa, Object bb) {
-    sizePair a = (sizePair) aa;
-    sizePair b = (sizePair) bb;
-
-    if (a.val < b.val) {
-      return -1;
-    }
-    if (a.val > b.val) {
-      return 1;
-    }
-    return 0;
-  }
-
   static class sizePair {
     int val;
     BddTree block;
@@ -4593,17 +4580,7 @@ public class JFactory extends BDDFactory {
     }
 
     /* Sort according to the number of nodes at each level */
-    Arrays.sort(
-        p,
-        0,
-        num,
-        new Comparator() {
-
-          @Override
-          public int compare(Object o1, Object o2) {
-            return siftTestCmp(o1, o2);
-          }
-        });
+    Arrays.sort(p, 0, num, Comparator.comparingInt(o -> o.val));
 
     /* Create sequence */
     for (n = 0; n < num; n++) {
