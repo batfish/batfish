@@ -366,7 +366,7 @@ public class TypedBDDFactory extends BDDFactory {
   }
 
   public static String domainNames(Set<BDDDomain> dom) {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     for (Iterator<BDDDomain> i = dom.iterator(); i.hasNext(); ) {
       BDDDomain d = i.next();
       sb.append(d.getName());

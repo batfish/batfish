@@ -1050,7 +1050,7 @@ public abstract class BDDFactory {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("Garbage collection #");
       sb.append(num);
       sb.append(": ");
@@ -1103,7 +1103,7 @@ public abstract class BDDFactory {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("Went from ");
       sb.append(usednum_before);
       sb.append(" to ");
@@ -1158,7 +1158,7 @@ public abstract class BDDFactory {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       String newLine = getProperty("line.separator", "\n");
       sb.append(newLine);
       sb.append("Cache statistics");
