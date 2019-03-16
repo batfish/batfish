@@ -921,7 +921,7 @@ public class TraceDriver {
 
   private void read_input() throws IOException {
     boolean interleave = false;
-    LinkedList list = new LinkedList();
+    LinkedList<String> list = new LinkedList<>();
 
     need("INPUT");
 

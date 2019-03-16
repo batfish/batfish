@@ -144,19 +144,19 @@ public class IteratorTests extends BDDTestCase {
         if (dual) {
           var.andWith(d2.set());
         }
-        Iterator i1 = b.iterator(var);
-        Iterator i2 = new MyBDDIterator(b, var);
+        Iterator<BDD> i1 = b.iterator(var);
+        Iterator<BDD> i2 = new MyBDDIterator(b, var);
         b.free();
         Set<BDD> s1 = new HashSet<>();
         Set<BDD> s2 = new HashSet<>();
         while (i1.hasNext()) {
-          BDD b1 = (BDD) i1.next();
+          BDD b1 = i1.next();
           double sc = b1.satCount(var);
           assertEquals(1., sc, 0.0000001);
           s1.add(b1);
         }
         while (i2.hasNext()) {
-          BDD b2 = (BDD) i2.next();
+          BDD b2 = i2.next();
           double sc = b2.satCount(var);
           assertEquals(1., sc, 0.0000001);
           s2.add(b2);
