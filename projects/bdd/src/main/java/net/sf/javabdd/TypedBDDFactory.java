@@ -957,10 +957,6 @@ public class TypedBDDFactory extends BDDFactory {
 
     BDDDomain domain;
 
-    /**
-     * @param index
-     * @param range
-     */
     protected TypedBDDDomain(BDDDomain domain, int index, BigInteger range) {
       super(index, range);
       this.domain = domain;
