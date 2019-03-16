@@ -3871,7 +3871,7 @@ public class JFactory extends BDDFactory {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append('{');
       boolean any = false;
       for (int i = 0; i < result.length; ++i) {
@@ -6604,7 +6604,7 @@ public class JFactory extends BDDFactory {
   static String right(String s, int w) {
     int n = s.length();
     // if (w < n) return s.substring(n - w);
-    StringBuffer b = new StringBuffer(w);
+    StringBuilder b = new StringBuilder(w);
     for (int i = n; i < w; ++i) {
       b.append(' ');
     }

@@ -1071,7 +1071,7 @@ public class TraceDriver {
   // -----------------------------------------------------
 
   private String getString() throws IOException {
-    StringBuffer buffer = new StringBuffer();
+    StringBuilder buffer = new StringBuilder();
     int c = 0;
     while (isSpace(c = read())) {}
     if (c != '"') {

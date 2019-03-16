@@ -641,7 +641,7 @@ public class BasicTests extends BDDTestCase {
 
   private static String randomOrder(BDDDomain[] domains) {
     domains = (BDDDomain[]) randomShuffle(domains);
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     for (int i = 0; i < domains.length; ++i) {
       if (i > 0) {
         boolean x = random.nextBoolean();
