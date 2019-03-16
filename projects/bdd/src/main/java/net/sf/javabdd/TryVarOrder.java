@@ -183,7 +183,7 @@ public class TryVarOrder {
     Class bddop_class = bddoperation.getClass();
     Method m = bddop_class.getMethod("doIt", new Class[] {});
     Long result = (Long) m.invoke(bddoperation, new Object[] {});
-    return result.longValue();
+    return result;
   }
 
   void free() throws Exception {

@@ -1245,7 +1245,7 @@ public abstract class BDD {
     if (ri == null) {
       map.put(this.id(), ri = ++current);
     }
-    int r = ri.intValue();
+    int r = ri;
     if (visited[r]) {
       return current;
     }
@@ -1259,12 +1259,12 @@ public abstract class BDD {
     if (li == null) {
       map.put(l.id(), li = ++current);
     }
-    int low = li.intValue();
-    Integer hi = (Integer) map.get(h);
+    int low = li;
+    Integer hi = map.get(h);
     if (hi == null) {
       map.put(h.id(), hi = ++current);
     }
-    int high = hi.intValue();
+    int high = hi;
 
     out.println(r + " -> " + low + " [style=dotted];");
     out.println(r + " -> " + high + " [style=filled];");

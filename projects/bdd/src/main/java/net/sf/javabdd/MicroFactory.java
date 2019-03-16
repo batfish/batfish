@@ -734,7 +734,7 @@ public class MicroFactory extends BDDFactory {
         Object o = i.next();
         if (o instanceof Integer) {
           Integer a = (Integer) o;
-          if (n == a.intValue()) {
+          if (n == a) {
             i.remove();
           }
         } else if (o instanceof PairOfInts) {
