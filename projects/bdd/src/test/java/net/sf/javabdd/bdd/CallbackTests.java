@@ -59,7 +59,7 @@ public class CallbackTests extends BDDTestCase {
     try {
       m =
           CallbackTests.class.getDeclaredMethod(
-              "my_gc_callback", new Class[] {int.class, BDDFactory.GCStats.class});
+              "my_gc_callback", int.class, BDDFactory.GCStats.class);
     } catch (SecurityException | NoSuchMethodException e) {
       fail(e.toString());
       return;
@@ -105,7 +105,7 @@ public class CallbackTests extends BDDTestCase {
     try {
       m =
           CallbackTests.class.getDeclaredMethod(
-              "my_reorder_callback", new Class[] {boolean.class, BDDFactory.ReorderStats.class});
+              "my_reorder_callback", boolean.class, BDDFactory.ReorderStats.class);
     } catch (SecurityException | NoSuchMethodException e) {
       fail(e.toString());
       return;
@@ -141,9 +141,7 @@ public class CallbackTests extends BDDTestCase {
     reset();
     Method m;
     try {
-      m =
-          CallbackTests.class.getDeclaredMethod(
-              "my_resize_callback", new Class[] {int.class, int.class});
+      m = CallbackTests.class.getDeclaredMethod("my_resize_callback", int.class, int.class);
     } catch (SecurityException | NoSuchMethodException e) {
       fail(e.toString());
       return;

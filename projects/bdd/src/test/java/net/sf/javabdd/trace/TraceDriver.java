@@ -592,7 +592,7 @@ public class TraceDriver {
       try {
         java.lang.reflect.Method cb =
             TraceDriver.class.getDeclaredMethod(
-                "reorder_callback", new Class<?>[] {boolean.class, BDDFactory.ReorderStats.class});
+                "reorder_callback", boolean.class, BDDFactory.ReorderStats.class);
         bdd.registerReorderCallback(this, cb);
       } catch (NoSuchMethodException x) {
         System.out.println("Cannot find callback method");
