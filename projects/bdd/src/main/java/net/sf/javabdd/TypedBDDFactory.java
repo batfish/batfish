@@ -36,6 +36,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -154,8 +155,8 @@ public class TypedBDDFactory extends BDDFactory {
   public BDDDomain whichDomain(int var) {
     for (int i = 0; i < numberOfDomains(); ++i) {
       int[] vars = getDomain(i).vars();
-      for (int j = 0; j < vars.length; ++j) {
-        if (var == vars[j]) {
+      for (int var1 : vars) {
+        if (var == var1) {
           return getDomain(i);
         }
       }
@@ -287,8 +288,8 @@ public class TypedBDDFactory extends BDDFactory {
   @Override
   public int nodeCount(Collection r) {
     Collection s = new LinkedList();
-    for (Iterator i = r.iterator(); i.hasNext(); ) {
-      TypedBDD bdd1 = (TypedBDD) i.next();
+    for (Object o : r) {
+      TypedBDD bdd1 = (TypedBDD) o;
       s.add(bdd1.bdd);
     }
     return factory.nodeCount(s);
@@ -468,8 +469,8 @@ public class TypedBDDFactory extends BDDFactory {
     /** Returns the set of domains in BDD format. */
     BDD getDomains() {
       BDD b = factory.one();
-      for (Iterator i = dom.iterator(); i.hasNext(); ) {
-        TypedBDDDomain d = (TypedBDDDomain) i.next();
+      for (Object o : dom) {
+        TypedBDDDomain d = (TypedBDDDomain) o;
         b.andWith(d.domain.set());
       }
       return b;
@@ -836,8 +837,8 @@ public class TypedBDDFactory extends BDDFactory {
       TypedBDDPairing tpair = (TypedBDDPairing) pair;
       Set newDom = makeSet();
       newDom.addAll(dom);
-      for (Iterator i = tpair.domMap.entrySet().iterator(); i.hasNext(); ) {
-        Map.Entry e = (Map.Entry) i.next();
+      for (Object o : tpair.domMap.entrySet()) {
+        Entry e = (Entry) o;
         BDDDomain d_from = (BDDDomain) e.getKey();
         BDDDomain d_to = (BDDDomain) e.getValue();
         // System.out.println("Replace "+domainNames(dom)+" ("+d_from+"->"+d_to+")");
@@ -859,8 +860,8 @@ public class TypedBDDFactory extends BDDFactory {
     @Override
     public BDD replaceWith(BDDPairing pair) {
       TypedBDDPairing tpair = (TypedBDDPairing) pair;
-      for (Iterator i = tpair.domMap.entrySet().iterator(); i.hasNext(); ) {
-        Map.Entry e = (Map.Entry) i.next();
+      for (Object o : tpair.domMap.entrySet()) {
+        Entry e = (Entry) o;
         BDDDomain d_from = (BDDDomain) e.getKey();
         BDDDomain d_to = (BDDDomain) e.getValue();
         if (!dom.contains(d_from)) {

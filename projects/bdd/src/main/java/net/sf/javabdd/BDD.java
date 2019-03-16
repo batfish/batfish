@@ -1121,8 +1121,8 @@ public abstract class BDD {
         return false;
       }
       int[] vars = d.vars();
-      for (int i = 0; i < vars.length; ++i) {
-        if (!isDontCare(vars[i])) {
+      for (int var : vars) {
+        if (!isDontCare(var)) {
           return false;
         }
       }
@@ -1152,8 +1152,8 @@ public abstract class BDD {
      * @param vars set of variable indices
      */
     public void fastForward(int[] vars) {
-      for (int i = 0; i < vars.length; ++i) {
-        fastForward(vars[i]);
+      for (int var : vars) {
+        fastForward(var);
       }
     }
 
@@ -1232,8 +1232,8 @@ public abstract class BDD {
     map.put(getFactory().one(), new Integer(1));
     printdot_rec(out, 1, visited, map);
 
-    for (Iterator i = map.keySet().iterator(); i.hasNext(); ) {
-      BDD b = (BDD) i.next();
+    for (Object o : map.keySet()) {
+      BDD b = (BDD) o;
       b.free();
     }
     out.println("}");

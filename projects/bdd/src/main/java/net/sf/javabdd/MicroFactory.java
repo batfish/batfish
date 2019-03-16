@@ -857,8 +857,8 @@ public class MicroFactory extends BDDFactory {
     }
 
     final void reset() {
-      for (int i = 0; i < table.length; ++i) {
-        table[i].a = -1;
+      for (OpCache1Entry opCache1Entry : table) {
+        opCache1Entry.a = -1;
       }
       if (CACHESTATS > 1) {
         cache.clear();
@@ -866,16 +866,16 @@ public class MicroFactory extends BDDFactory {
     }
 
     final void clean() {
-      for (int i = 0; i < table.length; ++i) {
-        int a = table[i].a;
+      for (OpCache1Entry opCache1Entry : table) {
+        int a = opCache1Entry.a;
         if (a == -1) {
           continue;
         }
-        if (LOW(a & NODE_MASK) == INVALID_BDD || LOW(table[i].res) == INVALID_BDD) {
+        if (LOW(a & NODE_MASK) == INVALID_BDD || LOW(opCache1Entry.res) == INVALID_BDD) {
           if (CACHESTATS > 1) {
-            removeCompulsory(table[i].a);
+            removeCompulsory(opCache1Entry.a);
           }
-          table[i].a = -1;
+          opCache1Entry.a = -1;
         }
       }
     }
@@ -954,8 +954,8 @@ public class MicroFactory extends BDDFactory {
     }
 
     final void reset() {
-      for (int i = 0; i < table.length; ++i) {
-        table[i].a = -1;
+      for (OpCache2Entry opCache2Entry : table) {
+        opCache2Entry.a = -1;
       }
       if (CACHESTATS > 1) {
         cache.clear();
@@ -963,18 +963,18 @@ public class MicroFactory extends BDDFactory {
     }
 
     final void clean() {
-      for (int i = 0; i < table.length; ++i) {
-        int a = table[i].a;
+      for (OpCache2Entry opCache2Entry : table) {
+        int a = opCache2Entry.a;
         if (a == -1) {
           continue;
         }
         if (LOW(a & NODE_MASK) == INVALID_BDD
-            || LOW(table[i].b) == INVALID_BDD
-            || LOW(table[i].res) == INVALID_BDD) {
+            || LOW(opCache2Entry.b) == INVALID_BDD
+            || LOW(opCache2Entry.res) == INVALID_BDD) {
           if (CACHESTATS > 1) {
-            removeCompulsory(table[i].a, table[i].b);
+            removeCompulsory(opCache2Entry.a, opCache2Entry.b);
           }
-          table[i].a = -1;
+          opCache2Entry.a = -1;
         }
       }
     }
@@ -1122,8 +1122,8 @@ public class MicroFactory extends BDDFactory {
     }
 
     final void reset() {
-      for (int i = 0; i < table.length; ++i) {
-        table[i].a = -1;
+      for (OpCache3Entry opCache3Entry : table) {
+        opCache3Entry.a = -1;
       }
       if (CACHESTATS > 1) {
         cache.clear();
@@ -1131,19 +1131,19 @@ public class MicroFactory extends BDDFactory {
     }
 
     final void clean() {
-      for (int i = 0; i < table.length; ++i) {
-        int a = table[i].a;
+      for (OpCache3Entry opCache3Entry : table) {
+        int a = opCache3Entry.a;
         if (a == -1) {
           continue;
         }
         if (LOW(a & NODE_MASK) == INVALID_BDD
-            || LOW(table[i].b) == INVALID_BDD
-            || LOW(table[i].c) == INVALID_BDD
-            || LOW(table[i].res) == INVALID_BDD) {
+            || LOW(opCache3Entry.b) == INVALID_BDD
+            || LOW(opCache3Entry.c) == INVALID_BDD
+            || LOW(opCache3Entry.res) == INVALID_BDD) {
           if (CACHESTATS > 1) {
-            removeCompulsory(table[i].a, table[i].b, table[i].c);
+            removeCompulsory(opCache3Entry.a, opCache3Entry.b, opCache3Entry.c);
           }
-          table[i].a = -1;
+          opCache3Entry.a = -1;
         }
       }
     }
@@ -1217,8 +1217,8 @@ public class MicroFactory extends BDDFactory {
     }
 
     final void reset() {
-      for (int i = 0; i < table.length; ++i) {
-        table[i].a = -1;
+      for (OpCache4Entry opCache4Entry : table) {
+        opCache4Entry.a = -1;
       }
       if (CACHESTATS > 1) {
         cache.clear();
@@ -1226,20 +1226,20 @@ public class MicroFactory extends BDDFactory {
     }
 
     final void clean() {
-      for (int i = 0; i < table.length; ++i) {
-        int a = table[i].a;
+      for (OpCache4Entry opCache4Entry : table) {
+        int a = opCache4Entry.a;
         if (a == -1) {
           continue;
         }
         if (LOW(a & NODE_MASK) == INVALID_BDD
-            || LOW(table[i].b) == INVALID_BDD
-            || LOW(table[i].c) == INVALID_BDD
-            || LOW(table[i].d) == INVALID_BDD
-            || LOW(table[i].res) == INVALID_BDD) {
+            || LOW(opCache4Entry.b) == INVALID_BDD
+            || LOW(opCache4Entry.c) == INVALID_BDD
+            || LOW(opCache4Entry.d) == INVALID_BDD
+            || LOW(opCache4Entry.res) == INVALID_BDD) {
           if (CACHESTATS > 1) {
-            removeCompulsory(table[i].a, table[i].b, table[i].c, table[i].d);
+            removeCompulsory(opCache4Entry.a, opCache4Entry.b, opCache4Entry.c, opCache4Entry.d);
           }
-          table[i].a = -1;
+          opCache4Entry.a = -1;
         }
       }
     }
@@ -1315,8 +1315,8 @@ public class MicroFactory extends BDDFactory {
     }
 
     final void reset() {
-      for (int i = 0; i < table.length; ++i) {
-        table[i].a = -1;
+      for (OpCacheDEntry opCacheDEntry : table) {
+        opCacheDEntry.a = -1;
       }
       if (CACHESTATS > 1) {
         cache.clear();
@@ -1324,16 +1324,16 @@ public class MicroFactory extends BDDFactory {
     }
 
     final void clean() {
-      for (int i = 0; i < table.length; ++i) {
-        int a = table[i].a;
+      for (OpCacheDEntry opCacheDEntry : table) {
+        int a = opCacheDEntry.a;
         if (a == -1) {
           continue;
         }
         if (LOW(a & NODE_MASK) == INVALID_BDD) {
           if (CACHESTATS > 1) {
-            removeCompulsory(table[i].a);
+            removeCompulsory(opCacheDEntry.a);
           }
-          table[i].a = -1;
+          opCacheDEntry.a = -1;
         }
       }
     }
@@ -6697,8 +6697,8 @@ public class MicroFactory extends BDDFactory {
   public int nodeCount(Collection r) {
     int[] a = new int[r.size()];
     int j = 0;
-    for (Iterator i = r.iterator(); i.hasNext(); ) {
-      bdd b = (bdd) i.next();
+    for (Object o : r) {
+      bdd b = (bdd) o;
       a[j++] = b._index;
     }
     return bdd_anodecount(a);
@@ -7021,12 +7021,12 @@ public class MicroFactory extends BDDFactory {
 
     first = last = v[0];
 
-    for (int n = 0; n < v.length; n++) {
-      if (v[n] < first) {
-        first = v[n];
+    for (int i : v) {
+      if (i < first) {
+        first = i;
       }
-      if (v[n] > last) {
-        last = v[n];
+      if (i > last) {
+        last = i;
       }
     }
 

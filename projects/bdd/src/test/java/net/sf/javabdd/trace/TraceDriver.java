@@ -34,7 +34,6 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Vector;
 import java.util.zip.GZIPInputStream;
@@ -950,8 +949,8 @@ public class TraceDriver {
 
     int count = list.size();
     setup_bdd(count);
-    for (Iterator it = list.iterator(); it.hasNext(); ) {
-      String name = (String) it.next();
+    for (Object o : list) {
+      String name = (String) o;
       alloc_var(name);
     }
 
@@ -1174,8 +1173,8 @@ public class TraceDriver {
         Integer.parseInt(System.getProperty("bddnodes", Integer.toString(DEFAULT_NODES)));
     long totalTime = 0;
     try {
-      for (int i = 0; i < args.length; ++i) {
-        TraceDriver td = new TraceDriver(args[i], bddnodes);
+      for (String arg : args) {
+        TraceDriver td = new TraceDriver(arg, bddnodes);
         totalTime += td.time;
       }
       if (args.length > 1) {

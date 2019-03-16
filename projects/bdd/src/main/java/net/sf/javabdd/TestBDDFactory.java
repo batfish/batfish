@@ -31,7 +31,6 @@ package net.sf.javabdd;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedList;
 
 /**
@@ -691,8 +690,8 @@ public class TestBDDFactory extends BDDFactory {
   public int nodeCount(Collection r) {
     LinkedList a1 = new LinkedList();
     LinkedList a2 = new LinkedList();
-    for (Iterator i = r.iterator(); i.hasNext(); ) {
-      TestBDD b = (TestBDD) i.next();
+    for (Object o : r) {
+      TestBDD b = (TestBDD) o;
       a1.add(b.b1);
       a2.add(b.b2);
     }

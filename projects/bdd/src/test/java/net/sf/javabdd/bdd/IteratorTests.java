@@ -101,12 +101,12 @@ public class IteratorTests extends BDDTestCase {
                 + "iterator2() contains these extras: "
                 + s2_minus_s1);
       }
-      for (Iterator k = s1.iterator(); k.hasNext(); ) {
-        BDD q = (BDD) k.next();
+      for (Object o1 : s1) {
+        BDD q = (BDD) o1;
         q.free();
       }
-      for (Iterator k = s2.iterator(); k.hasNext(); ) {
-        BDD q = (BDD) k.next();
+      for (Object o : s2) {
+        BDD q = (BDD) o;
         q.free();
       }
     }
@@ -174,12 +174,12 @@ public class IteratorTests extends BDDTestCase {
                   + "iterator2() contains these extras: "
                   + s2_minus_s1);
         }
-        for (Iterator k = s1.iterator(); k.hasNext(); ) {
-          BDD q = (BDD) k.next();
+        for (Object o1 : s1) {
+          BDD q = (BDD) o1;
           q.free();
         }
-        for (Iterator k = s2.iterator(); k.hasNext(); ) {
-          BDD q = (BDD) k.next();
+        for (Object o : s2) {
+          BDD q = (BDD) o;
           q.free();
         }
       }

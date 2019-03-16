@@ -137,8 +137,7 @@ public abstract class BDDBitVector {
   }
 
   public boolean isConst() {
-    for (int n = 0; n < bitvec.length; n++) {
-      BDD b = bitvec[n];
+    for (BDD b : bitvec) {
       if (!b.isOne() && !b.isZero()) {
         return false;
       }
@@ -163,8 +162,8 @@ public abstract class BDDBitVector {
   }
 
   public void free() {
-    for (int n = 0; n < bitvec.length; n++) {
-      bitvec[n].free();
+    for (BDD bdd : bitvec) {
+      bdd.free();
     }
     bitvec = null;
   }

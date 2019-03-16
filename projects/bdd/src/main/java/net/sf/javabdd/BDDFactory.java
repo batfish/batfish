@@ -1839,8 +1839,8 @@ public abstract class BDDFactory {
 
   protected void doCallbacks(List callbacks, Object arg1, Object arg2) {
     if (callbacks != null) {
-      for (Iterator i = callbacks.iterator(); i.hasNext(); ) {
-        Object[] cb = (Object[]) i.next();
+      for (Object callback : callbacks) {
+        Object[] cb = (Object[]) callback;
         Object o = cb[0];
         Method m = (Method) cb[1];
         try {

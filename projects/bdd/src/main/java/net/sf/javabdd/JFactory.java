@@ -4754,8 +4754,7 @@ public class JFactory extends BDDFactory {
     BddTree[] my_vartree = new BddTree[fdvarnum];
     boolean[] interleaved = new boolean[fdvarnum];
     int k = 0;
-    for (Iterator i = domains.iterator(); i.hasNext(); ) {
-      Object o = i.next();
+    for (Object o : domains) {
       Collection c;
       if (o instanceof BDDDomain) {
         c = Collections.singleton(o);
@@ -6325,8 +6324,8 @@ public class JFactory extends BDDFactory {
   public int nodeCount(Collection r) {
     int[] a = new int[r.size()];
     int j = 0;
-    for (Iterator i = r.iterator(); i.hasNext(); ) {
-      bdd b = (bdd) i.next();
+    for (Object o : r) {
+      bdd b = (bdd) o;
       a[j++] = b._index;
     }
     return bdd_anodecount(a);
@@ -6655,12 +6654,12 @@ public class JFactory extends BDDFactory {
 
     first = last = v[0];
 
-    for (int n = 0; n < v.length; n++) {
-      if (v[n] < first) {
-        first = v[n];
+    for (int i : v) {
+      if (i < first) {
+        first = i;
       }
-      if (v[n] > last) {
-        last = v[n];
+      if (i > last) {
+        last = i;
       }
     }
 
