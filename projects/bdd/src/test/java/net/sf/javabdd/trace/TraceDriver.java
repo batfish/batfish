@@ -198,7 +198,7 @@ public class TraceDriver {
   class TracedBDDOperation extends TracedOperation {
     public int ops;
     public TracedVariable ret, op1, op2, op3;
-    public Vector operands;
+    public Vector<TracedVariable> operands;
 
     @Override
     public void show() {
@@ -212,8 +212,8 @@ public class TraceDriver {
       } else {
         out.print(op + "(");
         boolean first = true;
-        for (Enumeration e = operands.elements(); e.hasMoreElements(); ) {
-          TracedVariable v = (TracedVariable) e.nextElement();
+        for (Enumeration<TracedVariable> e = operands.elements(); e.hasMoreElements(); ) {
+          TracedVariable v = e.nextElement();
           if (first) {
             first = false;
           } else {
@@ -305,16 +305,16 @@ public class TraceDriver {
       if (ops == 2) {
         ret.bdd = op1.bdd.or(op2.bdd);
       } else {
-        for (Enumeration e = operands.elements(); e.hasMoreElements(); ) {
-          if (((TracedVariable) e.nextElement()).bdd.isOne()) {
+        for (Enumeration<TracedVariable> e = operands.elements(); e.hasMoreElements(); ) {
+          if (e.nextElement().bdd.isOne()) {
             ret.bdd = bdd.one();
             return;
           }
         }
 
         BDD tmp = bdd.zero();
-        for (Enumeration e = operands.elements(); e.hasMoreElements(); ) {
-          TracedVariable v = (TracedVariable) e.nextElement();
+        for (Enumeration<TracedVariable> e = operands.elements(); e.hasMoreElements(); ) {
+          TracedVariable v = e.nextElement();
           BDD tmp2 = tmp.or(v.bdd);
           tmp.free();
           tmp = tmp2;
@@ -327,16 +327,16 @@ public class TraceDriver {
       if (ops == 2) {
         ret.bdd = op1.bdd.and(op2.bdd);
       } else {
-        for (Enumeration e = operands.elements(); e.hasMoreElements(); ) {
-          if (((TracedVariable) e.nextElement()).bdd.isZero()) {
+        for (Enumeration<TracedVariable> e = operands.elements(); e.hasMoreElements(); ) {
+          if (e.nextElement().bdd.isZero()) {
             ret.bdd = bdd.zero();
             return;
           }
         }
 
         BDD tmp = bdd.one();
-        for (Enumeration e = operands.elements(); e.hasMoreElements(); ) {
-          TracedVariable v = (TracedVariable) e.nextElement();
+        for (Enumeration<TracedVariable> e = operands.elements(); e.hasMoreElements(); ) {
+          TracedVariable v = e.nextElement();
           BDD tmp2 = tmp.and(v.bdd);
           tmp.free();
           tmp = tmp2;
@@ -422,8 +422,8 @@ public class TraceDriver {
     @Override
     public void show_code() {
       String code;
-      Enumeration e = operands.elements();
-      TracedVariable v = (TracedVariable) e.nextElement();
+      Enumeration<TracedVariable> e = operands.elements();
+      TracedVariable v = e.nextElement();
       if (op.equals("=")) {
         out.println("BDD " + ret.name + " = " + v.name + ";");
       } else {
@@ -432,7 +432,7 @@ public class TraceDriver {
         boolean mode2 = op.equals("ite");
         int i = 0;
         for (i = 0; e.hasMoreElements(); i++) {
-          v = (TracedVariable) e.nextElement();
+          v = e.nextElement();
           if (mode2 && i != 0) {
             out.print(", ");
           }
@@ -469,7 +469,8 @@ public class TraceDriver {
   private HashMap<String, TracedVariable> map;
   private BDDPairing s2sp, sp2s;
   private TracedVariable last_assignment;
-  private Vector operations, variables;
+  private Vector<TracedOperation> operations;
+  private Vector<TracedVariable> variables;
   private int op_count, line_count, var_count;
   private long time;
 
@@ -503,8 +504,8 @@ public class TraceDriver {
     this.cache = Math.max(Math.min(nodes / 10, 5000), 50000);
     this.map = new HashMap<>(1024);
 
-    this.operations = new Vector();
-    this.variables = new Vector();
+    this.operations = new Vector<>();
+    this.variables = new Vector<>();
     this.op_count = 0;
     this.line_count = 1;
     this.var_count = 0;
@@ -556,8 +557,8 @@ public class TraceDriver {
             + ");\nBDD ");
 
     int i = 0;
-    for (Enumeration e = variables.elements(); e.hasMoreElements(); ) {
-      TracedVariable v = (TracedVariable) e.nextElement();
+    for (Enumeration<TracedVariable> e = variables.elements(); e.hasMoreElements(); ) {
+      TracedVariable v = e.nextElement();
       if (v.is_var) {
         if (i != 0) {
           out.print(",");
@@ -568,8 +569,8 @@ public class TraceDriver {
     }
     out.println(";");
 
-    for (Enumeration e = operations.elements(); e.hasMoreElements(); ) {
-      TracedOperation v = (TracedOperation) e.nextElement();
+    for (Enumeration<TracedOperation> e = operations.elements(); e.hasMoreElements(); ) {
+      TracedOperation v = e.nextElement();
       v.show_code();
     }
 
@@ -591,7 +592,7 @@ public class TraceDriver {
       try {
         java.lang.reflect.Method cb =
             TraceDriver.class.getDeclaredMethod(
-                "reorder_callback", new Class[] {boolean.class, BDDFactory.ReorderStats.class});
+                "reorder_callback", new Class<?>[] {boolean.class, BDDFactory.ReorderStats.class});
         bdd.registerReorderCallback(this, cb);
       } catch (NoSuchMethodException x) {
         System.out.println("Cannot find callback method");
@@ -623,8 +624,8 @@ public class TraceDriver {
 
   private void checkVar(TracedBDDOperation tp) {
     checkVar(tp.ret);
-    for (Enumeration e = tp.operands.elements(); e.hasMoreElements(); ) {
-      TracedVariable v = (TracedVariable) e.nextElement();
+    for (Enumeration<TracedVariable> e = tp.operands.elements(); e.hasMoreElements(); ) {
+      TracedVariable v = e.nextElement();
       checkVar(v);
     }
   }
@@ -676,7 +677,7 @@ public class TraceDriver {
     TracedBDDOperation tp = new TracedBDDOperation();
     tp.index = op_count;
     operations.add(tp);
-    tp.operands = new Vector(3);
+    tp.operands = new Vector<>(3);
     return tp;
   }
 
@@ -716,8 +717,8 @@ public class TraceDriver {
 
   /** check if the variables to be used are OK */
   private void check_all_variables() {
-    for (Enumeration e = variables.elements(); e.hasMoreElements(); ) {
-      TracedVariable v = (TracedVariable) e.nextElement();
+    for (Enumeration<TracedVariable> e = variables.elements(); e.hasMoreElements(); ) {
+      TracedVariable v = e.nextElement();
       if (v.last_use >= op_count) {
         // v.showName();out.println();
         // bdd.check_node(v.bdd, v.name); // DEBUG
@@ -728,8 +729,8 @@ public class TraceDriver {
   // -------------------------------------------------------------------------
   private void execute() throws IOException {
     time = System.currentTimeMillis();
-    for (Enumeration e = operations.elements(); e.hasMoreElements(); ) {
-      TracedOperation tp = (TracedOperation) e.nextElement();
+    for (Enumeration<TracedOperation> e = operations.elements(); e.hasMoreElements(); ) {
+      TracedOperation tp = e.nextElement();
       op_count = tp.index;
 
       if (TraceDriver.verbose) {
@@ -849,7 +850,7 @@ public class TraceDriver {
             String c = need();
             need(")");
             need(";");
-            Object operand = map.get(c); // assuming 0 or 1
+            TracedVariable operand = map.get(c); // assuming 0 or 1
             if (operand == null) {
               throw new InternalError();
             }
@@ -871,13 +872,13 @@ public class TraceDriver {
 
         tp.ops = tp.operands.size();
         if (tp.ops > 0) {
-          tp.op1 = (TracedVariable) tp.operands.elementAt(0);
+          tp.op1 = tp.operands.elementAt(0);
         }
         if (tp.ops > 1) {
-          tp.op2 = (TracedVariable) tp.operands.elementAt(1);
+          tp.op2 = tp.operands.elementAt(1);
         }
         if (tp.ops > 2) {
-          tp.op3 = (TracedVariable) tp.operands.elementAt(2);
+          tp.op3 = tp.operands.elementAt(2);
         }
       }
     }
@@ -960,9 +961,9 @@ public class TraceDriver {
     int[] v1 = new int[size / 2];
     int[] v2 = new int[size / 2];
 
-    Enumeration e = variables.elements();
+    Enumeration<TracedVariable> e = variables.elements();
     for (int i = 0; i < (size & ~1); i++) {
-      TracedVariable v = (TracedVariable) e.nextElement();
+      TracedVariable v = e.nextElement();
       if (v.bdd.nodeCount() > 1) {
         throw new InternalError();
       }
@@ -1122,7 +1123,7 @@ public class TraceDriver {
         int old_line = line_count;
         if (c == '%') {
           String count = next();
-          TracedOperation tp = (TracedOperation) operations.lastElement();
+          TracedOperation tp = operations.lastElement();
           if (tp.size == -1) {
             tp.size = Integer.parseInt(count);
           }
