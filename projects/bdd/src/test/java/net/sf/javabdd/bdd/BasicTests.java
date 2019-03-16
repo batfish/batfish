@@ -622,7 +622,7 @@ public class BasicTests extends BDDTestCase {
 
   private static BDD randomBDD(BDDFactory f) {
     Assert.assertTrue(f.numberOfDomains() > 0);
-    List list = new ArrayList(f.numberOfDomains());
+    List<BDDDomain> list = new ArrayList<>(f.numberOfDomains());
     int k = random.nextInt(f.numberOfDomains());
     for (int i = 0; i < f.numberOfDomains(); ++i) {
       list.add(f.getDomain(i));
@@ -661,7 +661,7 @@ public class BasicTests extends BDDTestCase {
 
   private static Object[] randomShuffle(Object[] a) {
     int n = a.length;
-    List list = new ArrayList(Arrays.asList(a));
+    List<Object> list = new ArrayList<>(Arrays.asList(a));
     Object[] result = a.clone();
     for (int i = 0; i < n; ++i) {
       int k = random.nextInt(n - i);
