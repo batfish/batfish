@@ -28,7 +28,6 @@
  */
 package net.sf.javabdd.regression;
 
-import junit.framework.Assert;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDDomain;
 import net.sf.javabdd.BDDFactory;
@@ -46,7 +45,7 @@ public class R1 extends BDDTestCase {
   }
 
   public void testR1() {
-    Assert.assertTrue(hasNext());
+    assertTrue(hasNext());
     while (hasNext()) {
       BDDFactory bdd = next();
       BDDDomain d = bdd.extDomain(new int[] {16})[0];
@@ -57,7 +56,7 @@ public class R1 extends BDDTestCase {
         bdd.setVarNum(20);
       }
       double s2 = x.satCount(set);
-      Assert.assertEquals(bdd.toString(), s1, s2, 0.00001);
+      assertEquals(bdd.toString(), s1, s2, 0.00001);
       x.free();
       set.free();
     }
