@@ -651,11 +651,11 @@ public class MicroFactory extends BDDFactory {
     int cacheHit;
     int cacheMiss;
     int compulsoryMiss;
-    Set cache;
+    Set<Object> cache;
 
     OpCache() {
       if (CACHESTATS > 1) {
-        cache = new HashSet();
+        cache = new HashSet<>();
       }
     }
 
@@ -730,7 +730,7 @@ public class MicroFactory extends BDDFactory {
     }
 
     void removeAll(int n) {
-      for (Iterator i = cache.iterator(); i.hasNext(); ) {
+      for (Iterator<Object> i = cache.iterator(); i.hasNext(); ) {
         Object o = i.next();
         if (o instanceof Integer) {
           Integer a = (Integer) o;
