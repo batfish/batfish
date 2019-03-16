@@ -74,7 +74,6 @@ public class TypedBDDFactory extends BDDFactory {
   @Override
   public BDD one() {
     Set<BDDDomain> s = makeSet();
-    // Set s = allDomains();
     return new TypedBDD(factory.one(), s);
   }
 
@@ -349,7 +348,6 @@ public class TypedBDDFactory extends BDDFactory {
   }
 
   public static Set<BDDDomain> makeSet(Set<BDDDomain> s) {
-    // Set r = SortedArraySet.FACTORY.makeSet(DOMAIN_COMPARATOR);
     Set<BDDDomain> r = new TreeSet<>(DOMAIN_COMPARATOR);
     r.addAll(s);
     return r;

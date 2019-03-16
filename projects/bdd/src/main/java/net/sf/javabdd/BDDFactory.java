@@ -658,14 +658,8 @@ public abstract class BDDFactory {
     }
     out.write("\n");
 
-    // Map visited = new HashMap();
     BitSet visited = new BitSet(getNodeTableSize());
     save_rec(out, visited, r.id());
-
-    // for (Iterator it = visited.keySet().iterator(); it.hasNext(); ) {
-    //    BDD b = (BDD) it.next();
-    //    if (b != r) b.free();
-    // }
   }
 
   /** Helper function for save(). */
