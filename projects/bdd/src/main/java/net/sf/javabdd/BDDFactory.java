@@ -44,7 +44,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.StringTokenizer;
 
 /**
@@ -667,38 +666,6 @@ public abstract class BDDFactory {
     //    BDD b = (BDD) it.next();
     //    if (b != r) b.free();
     // }
-  }
-
-  /** Helper function for save(). */
-  protected int save_rec_original(BufferedWriter out, Map visited, BDD root) throws IOException {
-    if (root.isZero()) {
-      root.free();
-      return 0;
-    }
-    if (root.isOne()) {
-      root.free();
-      return 1;
-    }
-    Integer i = (Integer) visited.get(root);
-    if (i != null) {
-      root.free();
-      return i.intValue();
-    }
-    int v = visited.size() + 2;
-    visited.put(root, new Integer(v));
-
-    BDD l = root.low();
-    int lo = save_rec_original(out, visited, l);
-
-    BDD h = root.high();
-    int hi = save_rec_original(out, visited, h);
-
-    out.write(v + " ");
-    out.write(root.var() + " ");
-    out.write(lo + " ");
-    out.write(hi + "\n");
-
-    return v;
   }
 
   /** Helper function for save(). */
