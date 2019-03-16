@@ -4687,12 +4687,12 @@ public class JFactory extends BDDFactory {
   }
 
   public void setVarOrder(String ordering) {
-    List result = new LinkedList();
+    List<List<BDDDomain>> result = new LinkedList<>();
     int nDomains = numberOfDomains();
     StringTokenizer st = new StringTokenizer(ordering, "x_", true);
     int numberOfDomains = 0, bitIndex = 0;
     boolean[] done = new boolean[nDomains];
-    List last = null;
+    List<BDDDomain> last = null;
     for (int i = 0; ; ++i) {
       String s = st.nextToken();
       BDDDomain d;
@@ -4716,13 +4716,13 @@ public class JFactory extends BDDFactory {
         s = st.nextToken();
         if (s.equals("x")) {
           if (last == null) {
-            last = new LinkedList();
+            last = new LinkedList<>();
             last.add(d);
             result.add(last);
           }
         } else if (s.equals("_")) {
           if (last == null) {
-            result.add(d);
+            result.add(Collections.singletonList(d));
           }
           last = null;
         } else {
@@ -4730,7 +4730,7 @@ public class JFactory extends BDDFactory {
         }
       } else {
         if (last == null) {
-          result.add(d);
+          result.add(Collections.singletonList(d));
         }
         break;
       }
@@ -4750,19 +4750,13 @@ public class JFactory extends BDDFactory {
    *
    * @param domains domain order
    */
-  public void setVarOrder(List domains) {
+  public void setVarOrder(List<List<BDDDomain>> domains) {
     BddTree[] my_vartree = new BddTree[fdvarnum];
     boolean[] interleaved = new boolean[fdvarnum];
     int k = 0;
-    for (Object o : domains) {
-      Collection c;
-      if (o instanceof BDDDomain) {
-        c = Collections.singleton(o);
-      } else {
-        c = (Collection) o;
-      }
-      for (Iterator j = c.iterator(); j.hasNext(); ) {
-        BDDDomain d = (BDDDomain) j.next();
+    for (List<BDDDomain> c : domains) {
+      for (Iterator<BDDDomain> j = c.iterator(); j.hasNext(); ) {
+        BDDDomain d = j.next();
         int low = d.ivar[0];
         int high = d.ivar[d.ivar.length - 1];
         bdd_intaddvarblock(low, high, false);
