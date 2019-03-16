@@ -197,19 +197,15 @@ public abstract class BDDFactory {
    *
    * <p>Compare to bdd_buildcube.
    */
-  public BDD buildCube(int value, List /*<BDD>*/ variables) {
+  public BDD buildCube(int value, List<BDD> variables) {
     BDD result = one();
-    Iterator i = variables.iterator();
-    int z = 0;
-    while (i.hasNext()) {
-      BDD var = (BDD) i.next();
+    for (BDD var : variables) {
       if ((value & 0x1) != 0) {
         var = var.id();
       } else {
         var = var.not();
       }
       result.andWith(var);
-      ++z;
       value >>= 1;
     }
     return result;
