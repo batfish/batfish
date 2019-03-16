@@ -47,12 +47,12 @@ public class R4 extends BDDTestCase {
   public void testR4() {
     Assert.assertTrue(hasNext());
     while (hasNext()) {
-      BDDFactory f = nextFactory();
+      BDDFactory f = next();
       f.setVarNum(2);
       BDD bdd1 = f.ithVar(0);
       BDD.AllSatIterator i = bdd1.allsat();
       Assert.assertTrue(i.hasNext());
-      byte[] b = (byte[]) i.next();
+      byte[] b = i.next();
       Assert.assertTrue(!i.hasNext());
       Assert.assertEquals(b.length, 2);
       Assert.assertEquals(b[0], 1);

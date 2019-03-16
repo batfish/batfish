@@ -52,7 +52,7 @@ public class IteratorTests extends BDDTestCase {
     reset();
     assertTrue(hasNext());
     while (hasNext()) {
-      BDDFactory bdd = nextFactory();
+      BDDFactory bdd = next();
       int domainSize = 1024;
       BDDDomain[] ds = bdd.extDomain(new int[] {domainSize});
       BDDDomain d = ds[0];
@@ -116,7 +116,7 @@ public class IteratorTests extends BDDTestCase {
     reset();
     assertTrue(hasNext());
     while (hasNext()) {
-      BDDFactory bdd = nextFactory();
+      BDDFactory bdd = next();
       bdd.setNodeTableSize(200000);
       int domainSize = 1024;
       BDDDomain[] ds = bdd.extDomain(new int[] {domainSize, domainSize});
