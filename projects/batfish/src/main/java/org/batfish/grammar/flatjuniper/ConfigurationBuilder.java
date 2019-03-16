@@ -1348,7 +1348,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   private static long toCommunityLong(Sc_literalContext ctx) {
-    String text = ctx.COMMUNITY_LITERAL().getText();
+    String text = ctx.STANDARD_COMMUNITY().getText();
     return CommonUtil.communityStringToLong(text);
   }
 
@@ -4972,7 +4972,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitRoa_community(Roa_communityContext ctx) {
-    long community = CommonUtil.communityStringToLong(ctx.COMMUNITY_LITERAL().getText());
+    long community = CommonUtil.communityStringToLong(ctx.STANDARD_COMMUNITY().getText());
     _configuration.getAllStandardCommunities().add(community);
     _currentAggregateRoute.getCommunities().add(community);
   }
