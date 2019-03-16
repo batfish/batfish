@@ -34,12 +34,13 @@ import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 /**
  * This BDD factory keeps track of what domains each BDD uses, and complains if you try to do an
@@ -287,12 +288,8 @@ public class TypedBDDFactory extends BDDFactory {
 
   @Override
   public int nodeCount(Collection<BDD> r) {
-    Collection s = new LinkedList();
-    for (Object o : r) {
-      TypedBDD bdd1 = (TypedBDD) o;
-      s.add(bdd1.bdd);
-    }
-    return factory.nodeCount(s);
+    List<BDD> inner = r.stream().map(t -> ((TypedBDD) t).bdd).collect(Collectors.toList());
+    return factory.nodeCount(inner);
   }
 
   @Override
