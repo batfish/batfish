@@ -48,7 +48,7 @@ public class R3 extends BDDTestCase {
     Assert.assertTrue(hasNext());
     while (hasNext()) {
 
-      BDDFactory bdd = nextFactory();
+      BDDFactory bdd = next();
       BDD x0, x1, y0, y1, z0, z1, t, or, one;
       bdd.setVarNum(5);
       x0 = bdd.ithVar(0);

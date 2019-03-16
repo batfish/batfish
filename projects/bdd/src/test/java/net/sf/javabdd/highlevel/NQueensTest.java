@@ -75,7 +75,7 @@ public class NQueensTest extends BDDTestCase {
     Assert.assertTrue(hasNext());
     int numberOfNodes = (int) (Math.pow(4.42, CHECK - 6)) * 1000;
     while (hasNext()) {
-      NQueens.B = nextFactory();
+      NQueens.B = next();
       NQueens.B.setNodeTableSize(numberOfNodes);
       for (int i = 1; i <= CHECK; ++i) {
         NQueens.N = i;

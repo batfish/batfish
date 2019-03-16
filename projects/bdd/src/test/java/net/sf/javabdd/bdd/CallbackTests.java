@@ -70,7 +70,7 @@ public class CallbackTests extends BDDTestCase {
     }
     Assert.assertTrue(hasNext());
     while (hasNext()) {
-      BDDFactory bdd = nextFactory();
+      BDDFactory bdd = next();
       bdd.registerGCCallback(this, m);
       gc_called = 0;
       final int numBits = 20;
@@ -119,7 +119,7 @@ public class CallbackTests extends BDDTestCase {
     }
     Assert.assertTrue(hasNext());
     while (hasNext()) {
-      BDDFactory bdd = nextFactory();
+      BDDFactory bdd = next();
       bdd.registerReorderCallback(this, m);
       reorder_called = false;
       if (bdd.varNum() < 5) {
@@ -160,7 +160,7 @@ public class CallbackTests extends BDDTestCase {
     }
     Assert.assertTrue(hasNext());
     while (hasNext()) {
-      BDDFactory bdd = nextFactory();
+      BDDFactory bdd = next();
       bdd.registerResizeCallback(this, m);
       resize_called = false;
       int newSize = bdd.getNodeTableSize() * 2;
