@@ -286,7 +286,7 @@ public class TypedBDDFactory extends BDDFactory {
   }
 
   @Override
-  public int nodeCount(Collection r) {
+  public int nodeCount(Collection<BDD> r) {
     Collection s = new LinkedList();
     for (Object o : r) {
       TypedBDD bdd1 = (TypedBDD) o;

@@ -6694,7 +6694,7 @@ public class MicroFactory extends BDDFactory {
   }
 
   @Override
-  public int nodeCount(Collection r) {
+  public int nodeCount(Collection<BDD> r) {
     int[] a = new int[r.size()];
     int j = 0;
     for (Object o : r) {

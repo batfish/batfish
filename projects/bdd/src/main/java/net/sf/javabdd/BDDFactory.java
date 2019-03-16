@@ -999,8 +999,10 @@ public abstract class BDDFactory {
    * used in the BDDs -- if a node is used in more than one BDD then it only counts once.
    *
    * <p>Compare to bdd_anodecount.
+   *
+   * @param r
    */
-  public abstract int nodeCount(Collection /*BDD*/ r);
+  public abstract int nodeCount(Collection<BDD> r);
 
   /**
    * Get the number of allocated nodes. This includes both dead and active nodes.
