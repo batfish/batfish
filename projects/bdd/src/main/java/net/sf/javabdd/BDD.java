@@ -1227,7 +1227,7 @@ public abstract class BDD {
     boolean[] visited = new boolean[nodeCount() + 2];
     visited[0] = true;
     visited[1] = true;
-    HashMap map = new HashMap();
+    HashMap<BDD, Integer> map = new HashMap<>();
     map.put(getFactory().zero(), 0);
     map.put(getFactory().one(), 1);
     printdot_rec(out, 1, visited, map);
@@ -1239,8 +1239,9 @@ public abstract class BDD {
     out.println("}");
   }
 
-  protected int printdot_rec(PrintStream out, int current, boolean[] visited, HashMap map) {
-    Integer ri = ((Integer) map.get(this));
+  protected int printdot_rec(
+      PrintStream out, int current, boolean[] visited, HashMap<BDD, Integer> map) {
+    Integer ri = map.get(this);
     if (ri == null) {
       map.put(this.id(), ri = ++current);
     }
@@ -1254,7 +1255,7 @@ public abstract class BDD {
     out.println(r + " [label=\"" + this.var() + "\"];");
 
     BDD l = this.low(), h = this.high();
-    Integer li = (Integer) map.get(l);
+    Integer li = map.get(l);
     if (li == null) {
       map.put(l.id(), li = ++current);
     }
