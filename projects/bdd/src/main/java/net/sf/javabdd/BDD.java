@@ -910,11 +910,7 @@ public abstract class BDD {
       }
       for (int i = 0; i < v.length; ++i) {
         int vi = v[i];
-        if (a[vi] == 1) {
-          b[i] = true;
-        } else {
-          b[i] = false;
-        }
+        b[i] = a[vi] == 1;
       }
     }
 

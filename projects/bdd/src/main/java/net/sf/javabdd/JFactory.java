@@ -3998,13 +3998,10 @@ public class JFactory extends BDDFactory {
   }
 
   boolean bdd_reorder_ready() {
-    if ((bddreordermethod == BDD_REORDER_NONE)
-        || (vartree == null)
-        || (bddreordertimes == 0)
-        || (reorderdisabled != 0)) {
-      return false;
-    }
-    return true;
+    return (bddreordermethod != BDD_REORDER_NONE)
+        && (vartree != null)
+        && (bddreordertimes != 0)
+        && (reorderdisabled == 0);
   }
 
   void bdd_reorder(int method) {
