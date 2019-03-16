@@ -839,7 +839,7 @@ public class MicroFactory extends BDDFactory {
   }
 
   private class OpCache1 extends OpCache {
-    OpCache1Entry table[];
+    OpCache1Entry[] table;
 
     OpCache1(int size) {
       alloc(size);
@@ -936,7 +936,7 @@ public class MicroFactory extends BDDFactory {
   }
 
   private class OpCache2 extends OpCache {
-    OpCache2Entry table[];
+    OpCache2Entry[] table;
 
     OpCache2(int size) {
       alloc(size);
@@ -1104,7 +1104,7 @@ public class MicroFactory extends BDDFactory {
   }
 
   private class OpCache3 extends OpCache {
-    OpCache3Entry table[];
+    OpCache3Entry[] table;
 
     OpCache3(int size) {
       alloc(size);
@@ -1199,7 +1199,7 @@ public class MicroFactory extends BDDFactory {
   }
 
   private class OpCache4 extends OpCache {
-    OpCache4Entry table[];
+    OpCache4Entry[] table;
 
     OpCache4(int size) {
       alloc(size);
@@ -1297,7 +1297,7 @@ public class MicroFactory extends BDDFactory {
   }
 
   private class OpCacheD extends OpCache {
-    OpCacheDEntry table[];
+    OpCacheDEntry[] table;
 
     OpCacheD(int size) {
       alloc(size);
@@ -1471,7 +1471,7 @@ public class MicroFactory extends BDDFactory {
   static final int BDD_ERRNUM = 24;
 
   /* Strings for all error mesages */
-  static String errorstrings[] = {
+  static String[] errorstrings = {
     "",
     "Out of memory",
     "Unknown variable",
@@ -4317,7 +4317,7 @@ public class MicroFactory extends BDDFactory {
   static final int CACHEID_COMPOSE = 0x7;
 
   /* Operator results - entry = left<<1 | right  (left,right in {0,1}) */
-  static int oprres[][] = {
+  static int[][] oprres = {
     {0, 0, 0, 1}, /* and                       ( & )         */
     {0, 1, 1, 0}, /* xor                       ( ^ )         */
     {0, 1, 1, 1}, /* or                        ( | )         */
@@ -5062,7 +5062,7 @@ public class MicroFactory extends BDDFactory {
     return next;
   }
 
-  BddTree reorder_sift_seq(BddTree t, BddTree seq[], int num) {
+  BddTree reorder_sift_seq(BddTree t, BddTree[] seq, int num) {
     BddTree dis;
     int n;
 
@@ -5240,7 +5240,8 @@ public class MicroFactory extends BDDFactory {
   }
 
   BddTree reorder_sift(BddTree t) {
-    BddTree dis, seq[];
+    BddTree dis;
+    BddTree[] seq;
     sizePair[] p;
     int n, num;
 
@@ -5811,7 +5812,7 @@ public class MicroFactory extends BDDFactory {
   int[] extroots;
   int extrootsize;
 
-  levelData levels[]; /* Indexed by variable! */
+  levelData[] levels; /* Indexed by variable! */
 
   static class levelData {
     int start; /* Start of this sub-table (entry in "bddnodes") */
@@ -5821,7 +5822,7 @@ public class MicroFactory extends BDDFactory {
   }
 
   static class imatrix {
-    byte rows[][];
+    byte[][] rows;
     int size;
   }
 
