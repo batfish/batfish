@@ -69,10 +69,10 @@ public class TryVarOrder {
         cl = makeClassLoader();
       }
       Class c = cl.loadClass("net.sf.javabdd.BDDFactory");
-      Method m = c.getMethod("init", new Class[] {String.class, int.class, int.class});
-      bdd = m.invoke(null, new Object[] {s, nodeTableSize, cacheSize});
-      m = c.getMethod("setMaxIncrease", new Class[] {int.class});
-      m.invoke(bdd, new Object[] {maxIncrease});
+      Method m = c.getMethod("init", String.class, int.class, int.class);
+      bdd = m.invoke(null, s, nodeTableSize, cacheSize);
+      m = c.getMethod("setMaxIncrease", int.class);
+      m.invoke(bdd, maxIncrease);
 
       BufferedReader in = null;
       try {
@@ -108,8 +108,8 @@ public class TryVarOrder {
     if (bdd != null) {
       Class c = bdd.getClass();
       try {
-        Method m = c.getMethod("done", new Class[] {});
-        m.invoke(bdd, new Object[] {});
+        Method m = c.getMethod("done");
+        m.invoke(bdd);
       } catch (Exception x) {
         System.err.println(
             "Exception occurred while destroying BDD factory: " + x.getLocalizedMessage());
@@ -122,8 +122,8 @@ public class TryVarOrder {
   void setBDDError(int code) {
     Class c = bdd.getClass();
     try {
-      Method m = c.getMethod("setError", new Class[] {int.class});
-      m.invoke(bdd, new Object[] {code});
+      Method m = c.getMethod("setError", int.class);
+      m.invoke(bdd, code);
     } catch (Exception x) {
       System.err.println(
           "Exception occurred while setting error for BDD factory: " + x.getLocalizedMessage());
@@ -140,11 +140,11 @@ public class TryVarOrder {
    * @throws Exception
    */
   static void makeDomain(Class c, String name, int bits) throws Exception {
-    Method m = c.getMethod("extDomain", new Class[] {long[].class});
+    Method m = c.getMethod("extDomain", long[].class);
     Object[] ds = (Object[]) m.invoke(null, new Object[] {new long[] {1L << bits}});
     c = c.getClassLoader().loadClass("net.sf.javabdd.BDDDomain");
-    m = c.getMethod("setName", new Class[] {String.class});
-    m.invoke(ds[0], new Object[] {name});
+    m = c.getMethod("setName", String.class);
+    m.invoke(ds[0], name);
   }
 
   Object bddoperation = null;
@@ -157,39 +157,37 @@ public class TryVarOrder {
       cl = makeClassLoader();
     }
     Class bddop_class = cl.loadClass("net.sf.javabdd.TryVarOrder$BDDOperation");
-    Constructor c = bddop_class.getConstructor(new Class[0]);
+    Constructor c = bddop_class.getConstructor();
     bddoperation = c.newInstance();
-    Method m = bddop_class.getMethod("setOp", new Class[] {int.class});
-    m.invoke(bddoperation, new Object[] {op.id});
-    m =
-        bddop_class.getMethod(
-            "setFilenames", new Class[] {String.class, String.class, String.class});
-    m.invoke(bddoperation, new Object[] {filename1, filename2, filename3});
+    Method m = bddop_class.getMethod("setOp", int.class);
+    m.invoke(bddoperation, op.id);
+    m = bddop_class.getMethod("setFilenames", String.class, String.class, String.class);
+    m.invoke(bddoperation, filename1, filename2, filename3);
   }
 
   void setVarOrder(boolean reverse, String varOrderToTry) throws Exception {
     Class bddop_class = bddoperation.getClass();
-    Method m = bddop_class.getMethod("setVarOrder", new Class[] {boolean.class, String.class});
-    m.invoke(bddoperation, new Object[] {reverse, varOrderToTry});
+    Method m = bddop_class.getMethod("setVarOrder", boolean.class, String.class);
+    m.invoke(bddoperation, reverse, varOrderToTry);
   }
 
   void load() throws Exception {
     Class bddop_class = bddoperation.getClass();
-    Method m = bddop_class.getMethod("load", new Class[] {});
-    m.invoke(bddoperation, new Object[] {});
+    Method m = bddop_class.getMethod("load");
+    m.invoke(bddoperation);
   }
 
   long doIt() throws Exception {
     Class bddop_class = bddoperation.getClass();
-    Method m = bddop_class.getMethod("doIt", new Class[] {});
+    Method m = bddop_class.getMethod("doIt");
     Long result = (Long) m.invoke(bddoperation, new Object[] {});
     return result;
   }
 
   void free() throws Exception {
     Class bddop_class = bddoperation.getClass();
-    Method m = bddop_class.getMethod("free", new Class[] {});
-    m.invoke(bddoperation, new Object[] {});
+    Method m = bddop_class.getMethod("free");
+    m.invoke(bddoperation);
   }
 
   public static class BDDOperation {
