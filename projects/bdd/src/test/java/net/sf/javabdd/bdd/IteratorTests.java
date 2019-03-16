@@ -33,7 +33,6 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
-import junit.framework.Assert;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDDomain;
 import net.sf.javabdd.BDDFactory;
@@ -51,7 +50,7 @@ public class IteratorTests extends BDDTestCase {
 
   public void testOneZeroIterator() {
     reset();
-    Assert.assertTrue(hasNext());
+    assertTrue(hasNext());
     while (hasNext()) {
       BDDFactory bdd = nextFactory();
       int domainSize = 1024;
@@ -59,42 +58,43 @@ public class IteratorTests extends BDDTestCase {
       BDDDomain d = ds[0];
       BDD b = bdd.zero();
       BDD var = d.set();
-      Iterator i = b.iterator(var);
+      Iterator<BDD> i = b.iterator(var);
       b.free();
-      Assert.assertEquals(i.hasNext(), false);
+      assertFalse(i.hasNext());
       try {
         i.next();
-        Assert.fail();
-      } catch (NoSuchElementException x) {
+        fail();
+      } catch (NoSuchElementException ignored) {
+        /* Expected. */
       }
 
       b = bdd.one();
-      Iterator i1 = b.iterator(var);
-      Iterator i2 = new MyBDDIterator(b, var);
+      Iterator<BDD> i1 = b.iterator(var);
+      Iterator<BDD> i2 = new MyBDDIterator(b, var);
       b.free();
-      Set s1 = new HashSet();
-      Set s2 = new HashSet();
+      Set<BDD> s1 = new HashSet<>();
+      Set<BDD> s2 = new HashSet<>();
       while (i1.hasNext()) {
-        BDD b1 = (BDD) i1.next();
+        BDD b1 = i1.next();
         double sc = b1.satCount(var);
-        Assert.assertEquals(1., sc, 0.0000001);
+        assertEquals(1., sc, 0.0000001);
         s1.add(b1);
       }
       while (i2.hasNext()) {
-        BDD b2 = (BDD) i2.next();
+        BDD b2 = i2.next();
         double sc = b2.satCount(var);
-        Assert.assertEquals(1., sc, 0.0000001);
+        assertEquals(1., sc, 0.0000001);
         s2.add(b2);
       }
       var.free();
-      Assert.assertEquals(s1.size(), domainSize);
-      Assert.assertEquals(s2.size(), domainSize);
+      assertEquals(s1.size(), domainSize);
+      assertEquals(s2.size(), domainSize);
       if (!s1.equals(s2)) {
-        Set s1_minus_s2 = new HashSet(s1);
+        Set<BDD> s1_minus_s2 = new HashSet<>(s1);
         s1_minus_s2.removeAll(s2);
-        Set s2_minus_s1 = new HashSet(s2);
+        Set<BDD> s2_minus_s1 = new HashSet<>(s2);
         s2_minus_s1.removeAll(s1);
-        Assert.fail(
+        fail(
             "iterator() contains these extras: "
                 + s1_minus_s2
                 + "\n"
@@ -114,7 +114,7 @@ public class IteratorTests extends BDDTestCase {
 
   public void testRandomIterator() {
     reset();
-    Assert.assertTrue(hasNext());
+    assertTrue(hasNext());
     while (hasNext()) {
       BDDFactory bdd = nextFactory();
       bdd.setNodeTableSize(200000);
@@ -147,27 +147,27 @@ public class IteratorTests extends BDDTestCase {
         Iterator i1 = b.iterator(var);
         Iterator i2 = new MyBDDIterator(b, var);
         b.free();
-        Set s1 = new HashSet();
-        Set s2 = new HashSet();
+        Set<BDD> s1 = new HashSet<>();
+        Set<BDD> s2 = new HashSet<>();
         while (i1.hasNext()) {
           BDD b1 = (BDD) i1.next();
           double sc = b1.satCount(var);
-          Assert.assertEquals(1., sc, 0.0000001);
+          assertEquals(1., sc, 0.0000001);
           s1.add(b1);
         }
         while (i2.hasNext()) {
           BDD b2 = (BDD) i2.next();
           double sc = b2.satCount(var);
-          Assert.assertEquals(1., sc, 0.0000001);
+          assertEquals(1., sc, 0.0000001);
           s2.add(b2);
         }
         var.free();
         if (!s1.equals(s2)) {
-          Set s1_minus_s2 = new HashSet(s1);
+          Set<BDD> s1_minus_s2 = new HashSet<>(s1);
           s1_minus_s2.removeAll(s2);
-          Set s2_minus_s1 = new HashSet(s2);
+          Set<BDD> s2_minus_s1 = new HashSet<>(s2);
           s2_minus_s1.removeAll(s1);
-          Assert.fail(
+          fail(
               "iterator() contains these extras: "
                   + s1_minus_s2
                   + "\n"
@@ -190,7 +190,7 @@ public class IteratorTests extends BDDTestCase {
    * This is another version of iterator() that exists for testing purposes. It is much slower than
    * the other one.
    */
-  static class MyBDDIterator implements Iterator {
+  static class MyBDDIterator implements Iterator<BDD> {
 
     BDD orig;
     BDD b = null;
@@ -205,9 +205,6 @@ public class IteratorTests extends BDDTestCase {
       }
     }
 
-    /* (non-Javadoc)
-     * @see java.util.Iterator#remove()
-     */
     @Override
     public void remove() {
       if (last != null) {
@@ -218,19 +215,13 @@ public class IteratorTests extends BDDTestCase {
       }
     }
 
-    /* (non-Javadoc)
-     * @see java.util.Iterator#hasNext()
-     */
     @Override
     public boolean hasNext() {
       return b != null;
     }
 
-    /* (non-Javadoc)
-     * @see java.util.Iterator#next()
-     */
     @Override
-    public Object next() {
+    public BDD next() {
       if (b == null) {
         throw new NoSuchElementException();
       }
