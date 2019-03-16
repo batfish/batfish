@@ -688,9 +688,9 @@ public class TestBDDFactory extends BDDFactory {
 
   @Override
   public int nodeCount(Collection<BDD> r) {
-    LinkedList a1 = new LinkedList();
-    LinkedList a2 = new LinkedList();
-    for (Object o : r) {
+    LinkedList<BDD> a1 = new LinkedList<>();
+    LinkedList<BDD> a2 = new LinkedList<>();
+    for (BDD o : r) {
       TestBDD b = (TestBDD) o;
       a1.add(b.b1);
       a2.add(b.b2);
