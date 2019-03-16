@@ -1808,9 +1808,7 @@ public abstract class BDDFactory {
             default:
               throw new BDDException("Wrong number of arguments for " + m);
           }
-        } catch (IllegalArgumentException e) {
-          e.printStackTrace();
-        } catch (IllegalAccessException e) {
+        } catch (IllegalArgumentException | IllegalAccessException e) {
           e.printStackTrace();
         } catch (InvocationTargetException e) {
           if (e.getTargetException() instanceof RuntimeException) {

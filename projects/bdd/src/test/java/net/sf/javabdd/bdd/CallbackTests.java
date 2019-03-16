@@ -106,10 +106,7 @@ public class CallbackTests extends BDDTestCase {
       m =
           CallbackTests.class.getDeclaredMethod(
               "my_reorder_callback", new Class[] {boolean.class, BDDFactory.ReorderStats.class});
-    } catch (SecurityException e) {
-      fail(e.toString());
-      return;
-    } catch (NoSuchMethodException e) {
+    } catch (SecurityException | NoSuchMethodException e) {
       fail(e.toString());
       return;
     }
@@ -147,10 +144,7 @@ public class CallbackTests extends BDDTestCase {
       m =
           CallbackTests.class.getDeclaredMethod(
               "my_resize_callback", new Class[] {int.class, int.class});
-    } catch (SecurityException e) {
-      fail(e.toString());
-      return;
-    } catch (NoSuchMethodException e) {
+    } catch (SecurityException | NoSuchMethodException e) {
       fail(e.toString());
       return;
     }
