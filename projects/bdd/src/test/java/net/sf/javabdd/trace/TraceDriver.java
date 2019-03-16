@@ -466,7 +466,7 @@ public class TraceDriver {
   private int[] stack;
   private int stack_tos, nodes, cache, vars;
   private static int auto_reorder = Integer.parseInt(System.getProperty("reorder", "0"));
-  private HashMap map;
+  private HashMap<String, TracedVariable> map;
   private BDDPairing s2sp, sp2s;
   private TracedVariable last_assignment;
   private Vector operations, variables;
@@ -501,7 +501,7 @@ public class TraceDriver {
     this.stack = new int[64];
     this.stack_tos = 0;
     this.cache = Math.max(Math.min(nodes / 10, 5000), 50000);
-    this.map = new HashMap(1024);
+    this.map = new HashMap<>(1024);
 
     this.operations = new Vector();
     this.variables = new Vector();
@@ -528,9 +528,9 @@ public class TraceDriver {
     parse();
     // show_code();
 
-    vret = (TracedVariable) map.get("0");
+    vret = map.get("0");
     vret.bdd = bdd.zero();
-    vret = (TracedVariable) map.get("1");
+    vret = map.get("1");
     vret.bdd = bdd.one();
 
     execute();
@@ -821,7 +821,7 @@ public class TraceDriver {
         createReorderOperation(m);
       } else {
 
-        TracedVariable vret = (TracedVariable) map.get(ret);
+        TracedVariable vret = map.get(ret);
         if (vret == null) // just used a new variable
         {
           vret = addTemporaryVariable(ret);
@@ -833,7 +833,7 @@ public class TraceDriver {
         updateUsage(vret);
 
         TracedBDDOperation tp = createBDDOperation();
-        TracedVariable var = (TracedVariable) map.get(op);
+        TracedVariable var = map.get(op);
 
         if (var != null) { // asignment!
           need(";");
@@ -993,7 +993,7 @@ public class TraceDriver {
   }
 
   private TracedVariable needVar(String str) throws IOException {
-    TracedVariable ret = (TracedVariable) map.get(str);
+    TracedVariable ret = map.get(str);
     if (ret == null) {
       throw new IOException("Unknown variable/operand " + str + " at line " + line_count);
     }
