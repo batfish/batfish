@@ -1627,7 +1627,7 @@ public abstract class BDDFactory {
   }
 
   /** ** CALLBACKS *** */
-  protected List gc_callbacks, reorder_callbacks, resize_callbacks;
+  protected List<Object[]> gc_callbacks, reorder_callbacks, resize_callbacks;
 
   /**
    * Register a callback that is called when garbage collection is about to occur.
@@ -1637,7 +1637,7 @@ public abstract class BDDFactory {
    */
   public void registerGCCallback(Object o, Method m) {
     if (gc_callbacks == null) {
-      gc_callbacks = new LinkedList();
+      gc_callbacks = new LinkedList<>();
     }
     registerCallback(gc_callbacks, o, m);
   }
@@ -1665,7 +1665,7 @@ public abstract class BDDFactory {
    */
   public void registerReorderCallback(Object o, Method m) {
     if (reorder_callbacks == null) {
-      reorder_callbacks = new LinkedList();
+      reorder_callbacks = new LinkedList<>();
     }
     registerCallback(reorder_callbacks, o, m);
   }
@@ -1693,7 +1693,7 @@ public abstract class BDDFactory {
    */
   public void registerResizeCallback(Object o, Method m) {
     if (resize_callbacks == null) {
-      resize_callbacks = new LinkedList();
+      resize_callbacks = new LinkedList<>();
     }
     registerCallback(resize_callbacks, o, m);
   }
@@ -1768,7 +1768,7 @@ public abstract class BDDFactory {
     }
   }
 
-  protected void registerCallback(List callbacks, Object o, Method m) {
+  protected void registerCallback(List<Object[]> callbacks, Object o, Method m) {
     if (!Modifier.isPublic(m.getModifiers()) && !m.isAccessible()) {
       throw new BDDException("Callback method not accessible");
     }
@@ -1789,10 +1789,10 @@ public abstract class BDDFactory {
     callbacks.add(new Object[] {o, m});
   }
 
-  protected boolean unregisterCallback(List callbacks, Object o, Method m) {
+  protected boolean unregisterCallback(List<Object[]> callbacks, Object o, Method m) {
     if (callbacks != null) {
-      for (Iterator i = callbacks.iterator(); i.hasNext(); ) {
-        Object[] cb = (Object[]) i.next();
+      for (Iterator<Object[]> i = callbacks.iterator(); i.hasNext(); ) {
+        Object[] cb = i.next();
         if (o == cb[0] && m.equals(cb[1])) {
           i.remove();
           return true;
@@ -1802,7 +1802,7 @@ public abstract class BDDFactory {
     return false;
   }
 
-  protected void doCallbacks(List callbacks, Object arg1, Object arg2) {
+  protected void doCallbacks(List<Object[]> callbacks, Object arg1, Object arg2) {
     if (callbacks != null) {
       for (Object callback : callbacks) {
         Object[] cb = (Object[]) callback;
@@ -1811,13 +1811,13 @@ public abstract class BDDFactory {
         try {
           switch (m.getParameterTypes().length) {
             case 0:
-              m.invoke(o, new Object[] {});
+              m.invoke(o);
               break;
             case 1:
-              m.invoke(o, new Object[] {arg1});
+              m.invoke(o, arg1);
               break;
             case 2:
-              m.invoke(o, new Object[] {arg1, arg2});
+              m.invoke(o, arg1, arg2);
               break;
             default:
               throw new BDDException("Wrong number of arguments for " + m);
