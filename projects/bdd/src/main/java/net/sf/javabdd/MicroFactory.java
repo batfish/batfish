@@ -853,7 +853,7 @@ public class MicroFactory extends BDDFactory {
     }
 
     final OpCache1Entry lookup(int hash) {
-      return (OpCache1Entry) table[Math.abs(hash % table.length)];
+      return table[Math.abs(hash % table.length)];
     }
 
     final void reset() {
@@ -950,7 +950,7 @@ public class MicroFactory extends BDDFactory {
     }
 
     final OpCache2Entry lookup(int hash) {
-      return (OpCache2Entry) table[Math.abs(hash % table.length)];
+      return table[Math.abs(hash % table.length)];
     }
 
     final void reset() {
@@ -1118,7 +1118,7 @@ public class MicroFactory extends BDDFactory {
     }
 
     final OpCache3Entry lookup(int hash) {
-      return (OpCache3Entry) table[Math.abs(hash % table.length)];
+      return table[Math.abs(hash % table.length)];
     }
 
     final void reset() {
@@ -1213,7 +1213,7 @@ public class MicroFactory extends BDDFactory {
     }
 
     final OpCache4Entry lookup(int hash) {
-      return (OpCache4Entry) table[Math.abs(hash % table.length)];
+      return table[Math.abs(hash % table.length)];
     }
 
     final void reset() {
@@ -1311,7 +1311,7 @@ public class MicroFactory extends BDDFactory {
     }
 
     final OpCacheDEntry lookup(int hash) {
-      return (OpCacheDEntry) table[Math.abs(hash % table.length)];
+      return table[Math.abs(hash % table.length)];
     }
 
     final void reset() {

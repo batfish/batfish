@@ -663,7 +663,7 @@ public class BasicTests extends BDDTestCase {
   private static Object[] randomShuffle(Object[] a) {
     int n = a.length;
     List list = new ArrayList(Arrays.asList(a));
-    Object[] result = (Object[]) a.clone();
+    Object[] result = a.clone();
     for (int i = 0; i < n; ++i) {
       int k = random.nextInt(n - i);
       result[i] = list.remove(k);

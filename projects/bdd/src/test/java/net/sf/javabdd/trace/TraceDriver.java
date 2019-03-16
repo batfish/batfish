@@ -485,8 +485,8 @@ public class TraceDriver {
     this(
         file,
         file.endsWith(".gz")
-            ? (InputStream) new GZIPInputStream(new FileInputStream(file))
-            : (InputStream) new FileInputStream(file),
+            ? new GZIPInputStream(new FileInputStream(file))
+            : new FileInputStream(file),
         nodes);
   }
 
