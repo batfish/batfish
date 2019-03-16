@@ -1715,7 +1715,7 @@ public abstract class BDDFactory {
     if (gc_callbacks == null) {
       bdd_default_gbchandler(pre, s);
     } else {
-      doCallbacks(gc_callbacks, new Integer(pre ? 1 : 0), s);
+      doCallbacks(gc_callbacks, pre ? 1 : 0, s);
     }
   }
 
@@ -1736,7 +1736,7 @@ public abstract class BDDFactory {
     if (reorder_callbacks == null) {
       bdd_default_reohandler(b, s);
     } else {
-      doCallbacks(reorder_callbacks, new Boolean(b), s);
+      doCallbacks(reorder_callbacks, b, s);
     }
   }
 
@@ -1755,7 +1755,7 @@ public abstract class BDDFactory {
     if (resize_callbacks == null) {
       bdd_default_reshandler(oldsize, newsize);
     } else {
-      doCallbacks(resize_callbacks, new Integer(oldsize), new Integer(newsize));
+      doCallbacks(resize_callbacks, oldsize, newsize);
     }
   }
 
