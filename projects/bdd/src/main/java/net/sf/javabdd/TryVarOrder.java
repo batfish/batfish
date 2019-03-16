@@ -68,7 +68,7 @@ public class TryVarOrder {
       } else {
         cl = makeClassLoader();
       }
-      Class c = cl.loadClass("net.sf.javabdd.BDDFactory");
+      Class<?> c = cl.loadClass("net.sf.javabdd.BDDFactory");
       Method m = c.getMethod("init", String.class, int.class, int.class);
       bdd = m.invoke(null, s, nodeTableSize, cacheSize);
       m = c.getMethod("setMaxIncrease", int.class);
@@ -106,7 +106,7 @@ public class TryVarOrder {
   /** Destroy the BDD factory. */
   void destroyBDDFactory() {
     if (bdd != null) {
-      Class c = bdd.getClass();
+      Class<?> c = bdd.getClass();
       try {
         Method m = c.getMethod("done");
         m.invoke(bdd);
@@ -120,7 +120,7 @@ public class TryVarOrder {
   }
 
   void setBDDError(int code) {
-    Class c = bdd.getClass();
+    Class<?> c = bdd.getClass();
     try {
       Method m = c.getMethod("setError", int.class);
       m.invoke(bdd, code);
@@ -139,7 +139,7 @@ public class TryVarOrder {
    * @param bits bits in domain
    * @throws Exception
    */
-  static void makeDomain(Class c, String name, int bits) throws Exception {
+  static void makeDomain(Class<?> c, String name, int bits) throws Exception {
     Method m = c.getMethod("extDomain", long[].class);
     Object[] ds = (Object[]) m.invoke(null, new Object[] {new long[] {1L << bits}});
     c = c.getClassLoader().loadClass("net.sf.javabdd.BDDDomain");
@@ -156,8 +156,8 @@ public class TryVarOrder {
     } else {
       cl = makeClassLoader();
     }
-    Class bddop_class = cl.loadClass("net.sf.javabdd.TryVarOrder$BDDOperation");
-    Constructor c = bddop_class.getConstructor();
+    Class<?> bddop_class = cl.loadClass("net.sf.javabdd.TryVarOrder$BDDOperation");
+    Constructor<?> c = bddop_class.getConstructor();
     bddoperation = c.newInstance();
     Method m = bddop_class.getMethod("setOp", int.class);
     m.invoke(bddoperation, op.id);
@@ -166,26 +166,26 @@ public class TryVarOrder {
   }
 
   void setVarOrder(boolean reverse, String varOrderToTry) throws Exception {
-    Class bddop_class = bddoperation.getClass();
+    Class<?> bddop_class = bddoperation.getClass();
     Method m = bddop_class.getMethod("setVarOrder", boolean.class, String.class);
     m.invoke(bddoperation, reverse, varOrderToTry);
   }
 
   void load() throws Exception {
-    Class bddop_class = bddoperation.getClass();
+    Class<?> bddop_class = bddoperation.getClass();
     Method m = bddop_class.getMethod("load");
     m.invoke(bddoperation);
   }
 
   long doIt() throws Exception {
-    Class bddop_class = bddoperation.getClass();
+    Class<?> bddop_class = bddoperation.getClass();
     Method m = bddop_class.getMethod("doIt");
     Long result = (Long) m.invoke(bddoperation, new Object[] {});
     return result;
   }
 
   void free() throws Exception {
-    Class bddop_class = bddoperation.getClass();
+    Class<?> bddop_class = bddoperation.getClass();
     Method m = bddop_class.getMethod("free");
     m.invoke(bddoperation);
   }
