@@ -531,10 +531,10 @@ public abstract class BDD {
    * Iterator that returns all satisfying assignments as byte arrays. In the byte arrays, -1 means
    * dont-care, 0 means 0, and 1 means 1.
    */
-  public static class AllSatIterator implements Iterator {
+  public static class AllSatIterator implements Iterator<byte[]> {
 
     protected final BDDFactory f;
-    protected LinkedList loStack, hiStack;
+    protected LinkedList<BDD> loStack, hiStack;
     protected byte[] allsatProfile;
     protected final boolean useLevel;
 
@@ -564,8 +564,8 @@ public abstract class BDD {
       }
       allsatProfile = new byte[f.varNum()];
       Arrays.fill(allsatProfile, (byte) -1);
-      loStack = new LinkedList();
-      hiStack = new LinkedList();
+      loStack = new LinkedList<>();
+      hiStack = new LinkedList<>();
       if (!r.isOne()) {
         loStack.addLast(r.id());
         if (!gotoNext()) {
@@ -582,9 +582,9 @@ public abstract class BDD {
           if (hiStack.isEmpty()) {
             return false;
           }
-          r = (BDD) hiStack.removeLast();
+          r = hiStack.removeLast();
         } else {
-          r = (BDD) loStack.removeLast();
+          r = loStack.removeLast();
         }
         int LEVEL_r = r.level();
         allsatProfile[useLevel ? LEVEL_r : f.level2Var(LEVEL_r)] = lo_empty ? (byte) 1 : (byte) 0;
@@ -614,12 +614,8 @@ public abstract class BDD {
       return allsatProfile != null;
     }
 
-    /**
-     * Return the next satisfying var setting.
-     *
-     * @return byte[]
-     */
-    public byte[] nextSat() {
+    @Override
+    public byte[] next() {
       if (allsatProfile == null) {
         throw new NoSuchElementException();
       }
@@ -629,11 +625,6 @@ public abstract class BDD {
         allsatProfile = null;
       }
       return b;
-    }
-
-    @Override
-    public Object next() {
-      return nextSat();
     }
 
     @Override
@@ -860,7 +851,7 @@ public abstract class BDD {
    * @author jwhaley
    * @version $Id: BDD.java,v 1.13 2005/06/03 20:20:16 joewhaley Exp $
    */
-  public static class BDDIterator implements Iterator {
+  public static class BDDIterator implements Iterator<BDD> {
     final BDDFactory f;
     final AllSatIterator i;
     // Reference to the initial BDD object, used to support the remove() operation.
@@ -912,7 +903,7 @@ public abstract class BDD {
 
     protected void gotoNext() {
       if (i.hasNext()) {
-        a = (byte[]) i.next();
+        a = i.next();
       } else {
         a = null;
         return;
@@ -948,8 +939,26 @@ public abstract class BDD {
     }
 
     @Override
-    public Object next() {
-      return nextBDD();
+    public BDD next() {
+      if (a == null) {
+        throw new NoSuchElementException();
+      }
+      // if (lastReturned != null) lastReturned.free();
+      lastReturned = f.one();
+      // for (int i = 0; i < v.length; ++i) {
+      for (int i1 = v.length - 1; i1 >= 0; --i1) {
+        int li = v[i1];
+        int vi = f.level2Var(li);
+        if (b[i1] == true) {
+          lastReturned.andWith(f.ithVar(vi));
+        } else {
+          lastReturned.andWith(f.nithVar(vi));
+        }
+      }
+      if (!gotoNextA()) {
+        gotoNext();
+      }
+      return lastReturned;
     }
 
     public BigInteger nextValue(BDDDomain dom) {
@@ -1054,33 +1063,6 @@ public abstract class BDD {
         gotoNext();
       }
       return result;
-    }
-
-    /**
-     * Return the next BDD in the iteration.
-     *
-     * @return the next BDD in the iteration
-     */
-    public BDD nextBDD() {
-      if (a == null) {
-        throw new NoSuchElementException();
-      }
-      // if (lastReturned != null) lastReturned.free();
-      lastReturned = f.one();
-      // for (int i = 0; i < v.length; ++i) {
-      for (int i = v.length - 1; i >= 0; --i) {
-        int li = v[i];
-        int vi = f.level2Var(li);
-        if (b[i] == true) {
-          lastReturned.andWith(f.ithVar(vi));
-        } else {
-          lastReturned.andWith(f.nithVar(vi));
-        }
-      }
-      if (!gotoNextA()) {
-        gotoNext();
-      }
-      return lastReturned;
     }
 
     @Override
