@@ -3426,8 +3426,6 @@ public final class JFactory extends BDDFactory {
     // bdd_resize_hook(NULL);
     bdd_pairs_init();
     bdd_reorder_init();
-
-    return;
   }
 
   /* Hash value modifiers to distinguish between entries in misccache */
@@ -3773,8 +3771,6 @@ public final class JFactory extends BDDFactory {
     if (bddvar2level[oldvar] > pair.last) {
       pair.last = bddvar2level[oldvar];
     }
-
-    return;
   }
 
   private void bdd_setbddpair(bddPair pair, int oldvar, int newvar) {
@@ -3797,8 +3793,6 @@ public final class JFactory extends BDDFactory {
     if (oldlevel > pair.last) {
       pair.last = oldlevel;
     }
-
-    return;
   }
 
   private void bdd_resetpair(bddPair p) {
@@ -6501,7 +6495,6 @@ public final class JFactory extends BDDFactory {
     bdd_unmark(r);
 
     out.flush();
-    return;
   }
 
   private void bdd_save_rec(BufferedWriter out, int root) throws IOException {
@@ -6522,8 +6515,6 @@ public final class JFactory extends BDDFactory {
     out.write(bddlevel2var[LEVEL(root)] + " ");
     out.write(LOW(root) + " ");
     out.write(HIGH(root) + "\n");
-
-    return;
   }
 
   private static String right(int x, int w) {
