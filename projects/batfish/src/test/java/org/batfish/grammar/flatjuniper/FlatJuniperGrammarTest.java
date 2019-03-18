@@ -265,6 +265,7 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.AssignPortFromPool;
+import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.ShiftIpAddressIntoSubnet;
 import org.batfish.datamodel.transformation.Transformation;
@@ -4710,12 +4711,15 @@ public final class FlatJuniperGrammarTest {
     NatRule rule1 = ruleset.getRules().get(0);
     assertThat(rule1.getName(), equalTo("RULE1"));
     assertThat(rule1.getMatches(), contains(new NatRuleMatchDstAddrName("DESTNAME")));
-    assertThat(rule1.getThen(), equalTo(new NatRuleThenPrefixName("PREFIXNAME")));
+    assertThat(
+        rule1.getThen(), equalTo(new NatRuleThenPrefixName("PREFIXNAME", IpField.DESTINATION)));
 
     NatRule rule2 = ruleset.getRules().get(1);
     assertThat(rule2.getName(), equalTo("RULE2"));
     assertThat(rule2.getMatches(), contains(new NatRuleMatchDstAddr(Prefix.parse("2.0.0.0/24"))));
-    assertThat(rule2.getThen(), equalTo(new NatRuleThenPrefix(Prefix.parse("10.10.10.0/24"))));
+    assertThat(
+        rule2.getThen(),
+        equalTo(new NatRuleThenPrefix(Prefix.parse("10.10.10.0/24"), IpField.DESTINATION)));
   }
 
   @Test
@@ -4764,15 +4768,16 @@ public final class FlatJuniperGrammarTest {
             .build();
 
     Transformation rule2OutgoingTransformation =
-        when(match(HeaderSpace.builder().setSrcIps(Prefix.parse("2.0.0.0/24").toIpSpace()).build()))
-            .apply(new ShiftIpAddressIntoSubnet(STATIC_NAT, SOURCE, Prefix.parse("10.10.10.0/24")))
+        when(match(
+                HeaderSpace.builder().setSrcIps(Prefix.parse("10.10.10.0/24").toIpSpace()).build()))
+            .apply(new ShiftIpAddressIntoSubnet(STATIC_NAT, SOURCE, Prefix.parse("2.0.0.0/24")))
             .setOrElse(srcNatTransformation)
             .build();
 
     Transformation expectedOutgoingTransformation =
         when(match(
-                HeaderSpace.builder().setSrcIps(new IpSpaceReference("global~DESTNAME")).build()))
-            .apply(new ShiftIpAddressIntoSubnet(STATIC_NAT, SOURCE, Prefix.parse("10.10.10.0/24")))
+                HeaderSpace.builder().setSrcIps(new IpSpaceReference("global~PREFIXNAME")).build()))
+            .apply(new ShiftIpAddressIntoSubnet(STATIC_NAT, SOURCE, Prefix.parse("1.0.0.0/24")))
             .setOrElse(rule2OutgoingTransformation)
             .build();
 

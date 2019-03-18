@@ -9,9 +9,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Ip;
@@ -58,13 +60,15 @@ public final class NatRuleThenPool implements NatRuleThen, Serializable {
 
   @Override
   public List<TransformationStep> toTransformationSteps(
-      JuniperConfiguration config, Nat nat, Ip interfaceIp, boolean reverse, Warnings warnings) {
+      Nat nat,
+      @Nullable Map<String, AddressBookEntry> addressBookEntryMap,
+      Ip interfaceIp,
+      Warnings warnings) {
     checkArgument(
-        !reverse && (nat.getType() == SOURCE || nat.getType() == DESTINATION),
-        "Interface actions can only be used in source nat and dest nat, and no reverse needed");
+        (nat.getType() == SOURCE || nat.getType() == DESTINATION),
+        "Interface actions can only be used in source nat and dest nat");
 
     TransformationType type = nat.getType().toTransformationType();
-
     IpField ipField = nat.getType() == SOURCE ? IpField.SOURCE : IpField.DESTINATION;
 
     NatPool pool = nat.getPools().get(_poolName);

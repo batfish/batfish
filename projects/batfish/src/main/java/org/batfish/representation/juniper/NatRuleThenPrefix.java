@@ -7,7 +7,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Ip;
@@ -25,8 +27,15 @@ public class NatRuleThenPrefix implements NatRuleThen, Serializable {
 
   private final Prefix _prefix;
 
-  public NatRuleThenPrefix(Prefix prefix) {
+  private final IpField _ipField;
+
+  public NatRuleThenPrefix(Prefix prefix, IpField ipField) {
     _prefix = prefix;
+    _ipField = ipField;
+  }
+
+  public Prefix getPrefix() {
+    return _prefix;
   }
 
   @Override
@@ -38,25 +47,24 @@ public class NatRuleThenPrefix implements NatRuleThen, Serializable {
       return false;
     }
     NatRuleThenPrefix that = (NatRuleThenPrefix) o;
-    return Objects.equals(_prefix, that._prefix);
+    return Objects.equals(_prefix, that._prefix) && _ipField == that._ipField;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_prefix);
+    return Objects.hash(_prefix, _ipField);
   }
 
   @Override
   public List<TransformationStep> toTransformationSteps(
-      JuniperConfiguration config, Nat nat, Ip interfaceIp, boolean reverse, Warnings warnings) {
+      Nat nat,
+      @Nullable Map<String, AddressBookEntry> addressBookEntryMap,
+      Ip interfaceIp,
+      Warnings warnings) {
     checkArgument(nat.getType() == STATIC, "Prefix can only be used in static nat");
 
-    TransformationType type = nat.getType().toTransformationType();
-
-    IpField ipField = reverse ? IpField.SOURCE : IpField.DESTINATION;
-
     ImmutableList.Builder<TransformationStep> builder = new Builder<>();
-    builder.add(new ShiftIpAddressIntoSubnet(type, ipField, _prefix));
+    builder.add(new ShiftIpAddressIntoSubnet(TransformationType.STATIC_NAT, _ipField, _prefix));
 
     return builder.build();
   }

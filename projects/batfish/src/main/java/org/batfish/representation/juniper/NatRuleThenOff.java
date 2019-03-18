@@ -6,6 +6,8 @@ import static org.batfish.representation.juniper.Nat.Type.SOURCE;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import java.util.Map;
+import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
@@ -18,10 +20,13 @@ public enum NatRuleThenOff implements NatRuleThen {
 
   @Override
   public List<TransformationStep> toTransformationSteps(
-      JuniperConfiguration config, Nat nat, Ip interfaceIp, boolean reverse, Warnings warnings) {
+      Nat nat,
+      @Nullable Map<String, AddressBookEntry> addressBookEntryMap,
+      Ip interfaceIp,
+      Warnings warnings) {
     checkArgument(
-        !reverse && (nat.getType() == SOURCE || nat.getType() == DESTINATION),
-        "Interface actions can only be used in source nat and dest nat, and no reverse needed");
+        nat.getType() == SOURCE || nat.getType() == DESTINATION,
+        "Interface actions can only be used in source nat and dest nat");
 
     TransformationType type = nat.getType().toTransformationType();
 

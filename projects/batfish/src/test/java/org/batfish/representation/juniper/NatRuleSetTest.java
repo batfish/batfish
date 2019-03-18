@@ -69,7 +69,7 @@ public class NatRuleSetTest {
     Warnings warnings = new Warnings(true, true, true);
     Optional<Transformation> transformation =
         ruleSet.toOutgoingTransformation(
-            null, nat, interfaceIp, matchFromLocationExprs, andThen, orElse, warnings);
+            nat, null, interfaceIp, matchFromLocationExprs, andThen, orElse, warnings);
     assertTrue(warnings.getPedanticWarnings().isEmpty());
     assertTrue(warnings.getRedFlagWarnings().isEmpty());
     assertTrue(warnings.getUnimplementedWarnings().isEmpty());
@@ -84,7 +84,7 @@ public class NatRuleSetTest {
       @Nullable Transformation orElse) {
     Warnings warnings = new Warnings(true, true, true);
     Optional<Transformation> transformation =
-        ruleSet.toIncomingTransformation(null, nat, interfaceIp, andThen, orElse, warnings);
+        ruleSet.toIncomingTransformation(nat, null, interfaceIp, andThen, orElse, warnings);
     assertTrue(warnings.getPedanticWarnings().isEmpty());
     assertTrue(warnings.getRedFlagWarnings().isEmpty());
     assertTrue(warnings.getUnimplementedWarnings().isEmpty());

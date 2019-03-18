@@ -21,7 +21,7 @@ public final class NatRuleThenInterfaceTest {
   public void testToTransformationStep() {
     Ip ip = Ip.parse("1.1.1.1");
     Nat snat = new Nat(Type.SOURCE);
-    List<TransformationStep> step = INSTANCE.toTransformationSteps(null, snat, ip, false, null);
+    List<TransformationStep> step = INSTANCE.toTransformationSteps(snat, null, ip, null);
     assertThat(
         step,
         contains(
@@ -31,7 +31,7 @@ public final class NatRuleThenInterfaceTest {
 
     snat.setDefaultFromPort(10000);
     snat.setDefaultToPort(20000);
-    step = INSTANCE.toTransformationSteps(null, snat, ip, false, null);
+    step = INSTANCE.toTransformationSteps(snat, null, ip, null);
     assertThat(
         step,
         contains(

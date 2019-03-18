@@ -5,7 +5,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
@@ -25,8 +27,15 @@ public class NatRuleThenPrefixName implements NatRuleThen, Serializable {
 
   private final String _name;
 
-  public NatRuleThenPrefixName(String name) {
+  private final IpField _ipField;
+
+  public NatRuleThenPrefixName(String name, IpField ipField) {
     _name = name;
+    _ipField = ipField;
+  }
+
+  public String getName() {
+    return _name;
   }
 
   @Override
@@ -38,26 +47,24 @@ public class NatRuleThenPrefixName implements NatRuleThen, Serializable {
       return false;
     }
     NatRuleThenPrefixName that = (NatRuleThenPrefixName) o;
-    return _name.equals(that._name);
+    return _name.equals(that._name) && _ipField == that._ipField;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_name);
+    return Objects.hash(_name, _ipField);
   }
 
   @Override
   public List<TransformationStep> toTransformationSteps(
-      JuniperConfiguration config, Nat nat, Ip interfaceIp, boolean reverse, Warnings warnings) {
+      Nat nat,
+      @Nullable Map<String, AddressBookEntry> addressBookEntryMap,
+      Ip interfaceIp,
+      Warnings warnings) {
     checkArgument(nat.getType() == Type.STATIC, "prefix name is only supported in static nat");
+    checkArgument(addressBookEntryMap != null, "address book cannot be null");
 
-    AddressBookEntry addressBookEntry =
-        config
-            .getMasterLogicalSystem()
-            .getAddressBooks()
-            .get(LogicalSystem.GLOBAL_ADDRESS_BOOK_NAME)
-            .getEntries()
-            .get(_name);
+    AddressBookEntry addressBookEntry = addressBookEntryMap.get(_name);
 
     if (!(addressBookEntry instanceof AddressAddressBookEntry)) {
       throw new BatfishException("unknown address book entry");
@@ -66,9 +73,7 @@ public class NatRuleThenPrefixName implements NatRuleThen, Serializable {
     AddressAddressBookEntry addressAddressBookEntry = (AddressAddressBookEntry) addressBookEntry;
     Prefix subnet = addressAddressBookEntry.getIpWildcard().toPrefix();
 
-    IpField ipField = reverse ? IpField.SOURCE : IpField.DESTINATION;
-    TransformationType type = nat.getType().toTransformationType();
-
-    return ImmutableList.of(new ShiftIpAddressIntoSubnet(type, ipField, subnet));
+    return ImmutableList.of(
+        new ShiftIpAddressIntoSubnet(TransformationType.STATIC_NAT, _ipField, subnet));
   }
 }

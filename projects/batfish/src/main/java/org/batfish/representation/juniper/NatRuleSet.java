@@ -1,6 +1,5 @@
 package org.batfish.representation.juniper;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.transformation.Transformation.when;
 
 import com.google.common.collect.Lists;
@@ -93,16 +92,15 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
    * @param orElse The next {@link Transformation} to apply if no {@link NatRule} matches.
    */
   public Optional<Transformation> toOutgoingTransformation(
-      JuniperConfiguration config,
       Nat nat,
+      @Nullable Map<String, AddressBookEntry> addressBookEntryMap,
       Ip interfaceIp,
-      @Nullable Map<NatPacketLocation, AclLineMatchExpr> matchFromLocationExprs,
+      Map<NatPacketLocation, AclLineMatchExpr> matchFromLocationExprs,
       @Nullable Transformation andThen,
       @Nullable Transformation orElse,
       Warnings warnings) {
 
     if (nat.getType() == Type.SOURCE) {
-      checkArgument(matchFromLocationExprs != null, "Source nat must specify source locations");
       AclLineMatchExpr matchFromLocation = matchFromLocationExprs.get(_fromLocation);
 
       if (matchFromLocation == null) {
@@ -110,7 +108,7 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
         return Optional.empty();
       }
 
-      return rulesTransformation(config, nat, interfaceIp, andThen, orElse, false, warnings)
+      return rulesTransformation(nat, addressBookEntryMap, interfaceIp, andThen, orElse, warnings)
           .map(
               rulesTransformation ->
                   when(matchFromLocation)
@@ -120,7 +118,7 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
     }
 
     if (nat.getType() == Type.STATIC) {
-      return rulesTransformation(config, nat, interfaceIp, andThen, orElse, true, warnings);
+      return rulesTransformation(nat, addressBookEntryMap, interfaceIp, andThen, orElse, warnings);
     }
 
     throw new BatfishException(
@@ -133,29 +131,26 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
    * AclLineMatchExpr} to match it.
    */
   public Optional<Transformation> toIncomingTransformation(
-      JuniperConfiguration config,
       Nat nat,
+      @Nullable Map<String, AddressBookEntry> addressBookEntryMap,
       Ip interfaceIp,
       @Nullable Transformation andThen,
       @Nullable Transformation orElse,
       Warnings warnings) {
-    return rulesTransformation(config, nat, interfaceIp, andThen, orElse, false, warnings);
+    return rulesTransformation(nat, addressBookEntryMap, interfaceIp, andThen, orElse, warnings);
   }
 
   private Optional<Transformation> rulesTransformation(
-      JuniperConfiguration config,
       Nat nat,
+      @Nullable Map<String, AddressBookEntry> addressBookEntryMap,
       Ip interfaceIp,
       @Nullable Transformation andThen,
       @Nullable Transformation orElse,
-      boolean reverse,
       Warnings warnings) {
     Transformation transformation = orElse;
     for (NatRule rule : Lists.reverse(_rules)) {
       Optional<Builder> optionalBuilder =
-          reverse
-              ? rule.toTransformationBuilderReverse(config, nat, interfaceIp, warnings)
-              : rule.toTransformationBuilder(config, nat, interfaceIp, warnings);
+          rule.toTransformationBuilder(nat, addressBookEntryMap, interfaceIp, warnings);
       if (optionalBuilder.isPresent()) {
         transformation =
             optionalBuilder.get().setAndThen(andThen).setOrElse(transformation).build();
