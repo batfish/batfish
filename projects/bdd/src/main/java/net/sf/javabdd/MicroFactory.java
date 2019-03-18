@@ -339,25 +339,25 @@ public class MicroFactory extends BDDFactory {
   }
 
   /** Private helper function to create BDD objects. */
-  private bdd makeBDD(int id) {
-    bdd b;
+  private BDDImpl makeBDD(int id) {
+    BDDImpl b;
     if (USE_FINALIZER) {
-      b = new bddWithFinalizer(id);
+      b = new BDDImplWithFinalizer(id);
       if (false) { // can check for specific id's here.
         System.out.println("Created " + System.identityHashCode(b) + " id " + id);
         new Exception().printStackTrace(System.out);
       }
     } else {
-      b = new bdd(id);
+      b = new BDDImpl(id);
     }
     return b;
   }
 
   /** Wrapper for the BDD index number used internally in the representation. */
-  public class bdd extends BDD {
+  private class BDDImpl extends BDD {
     int _index;
 
-    bdd(int index) {
+    BDDImpl(int index) {
       this._index = index;
       bdd_addref(_index);
     }
@@ -405,31 +405,31 @@ public class MicroFactory extends BDDFactory {
     @Override
     public BDD ite(BDD thenBDD, BDD elseBDD) {
       int x = _index;
-      int y = ((bdd) thenBDD)._index;
-      int z = ((bdd) elseBDD)._index;
+      int y = ((BDDImpl) thenBDD)._index;
+      int z = ((BDDImpl) elseBDD)._index;
       return makeBDD(bdd_ite(x, y, z));
     }
 
     @Override
     public BDD relprod(BDD that, BDD var) {
       int x = _index;
-      int y = ((bdd) that)._index;
-      int z = ((bdd) var)._index;
+      int y = ((BDDImpl) that)._index;
+      int z = ((BDDImpl) var)._index;
       return makeBDD(bdd_relprod(x, y, z));
     }
 
     public BDD relprod(BDD t1, BDD t2, BDD var) {
       int x = _index;
-      int y1 = ((bdd) t1)._index;
-      int y2 = ((bdd) t2)._index;
-      int z = ((bdd) var)._index;
+      int y1 = ((BDDImpl) t1)._index;
+      int y2 = ((BDDImpl) t2)._index;
+      int z = ((BDDImpl) var)._index;
       return makeBDD(bdd_relprod3(x, y1, y2, z));
     }
 
     @Override
     public BDD compose(BDD g, int var) {
       int x = _index;
-      int y = ((bdd) g)._index;
+      int y = ((BDDImpl) g)._index;
       return makeBDD(bdd_compose(x, y, var));
     }
 
@@ -442,42 +442,42 @@ public class MicroFactory extends BDDFactory {
     @Override
     public BDD constrain(BDD that) {
       int x = _index;
-      int y = ((bdd) that)._index;
+      int y = ((BDDImpl) that)._index;
       return makeBDD(bdd_constrain(x, y));
     }
 
     @Override
     public BDD exist(BDD var) {
       int x = _index;
-      int y = ((bdd) var)._index;
+      int y = ((BDDImpl) var)._index;
       return makeBDD(bdd_exist(x, y));
     }
 
     @Override
     public BDD forAll(BDD var) {
       int x = _index;
-      int y = ((bdd) var)._index;
+      int y = ((BDDImpl) var)._index;
       return makeBDD(bdd_forall(x, y));
     }
 
     @Override
     public BDD unique(BDD var) {
       int x = _index;
-      int y = ((bdd) var)._index;
+      int y = ((BDDImpl) var)._index;
       return makeBDD(bdd_unique(x, y));
     }
 
     @Override
     public BDD restrict(BDD var) {
       int x = _index;
-      int y = ((bdd) var)._index;
+      int y = ((BDDImpl) var)._index;
       return makeBDD(bdd_restrict(x, y));
     }
 
     @Override
     public BDD restrictWith(BDD that) {
       int x = _index;
-      int y = ((bdd) that)._index;
+      int y = ((BDDImpl) that)._index;
       int a = bdd_restrict(x, y);
       bdd_delref(x);
       if (this != that) {
@@ -491,7 +491,7 @@ public class MicroFactory extends BDDFactory {
     @Override
     public BDD simplify(BDD d) {
       int x = _index;
-      int y = ((bdd) d)._index;
+      int y = ((BDDImpl) d)._index;
       return makeBDD(bdd_simplify(x, y));
     }
 
@@ -504,7 +504,7 @@ public class MicroFactory extends BDDFactory {
     @Override
     public BDD apply(BDD that, BDDOp opr) {
       int x = _index;
-      int y = ((bdd) that)._index;
+      int y = ((BDDImpl) that)._index;
       int z = opr.id;
       return makeBDD(bdd_apply(x, y, z));
     }
@@ -512,7 +512,7 @@ public class MicroFactory extends BDDFactory {
     @Override
     public BDD applyWith(BDD that, BDDOp opr) {
       int x = _index;
-      int y = ((bdd) that)._index;
+      int y = ((BDDImpl) that)._index;
       int z = opr.id;
       int a = bdd_apply(x, y, z);
       bdd_delref(x);
@@ -527,27 +527,27 @@ public class MicroFactory extends BDDFactory {
     @Override
     public BDD applyAll(BDD that, BDDOp opr, BDD var) {
       int x = _index;
-      int y = ((bdd) that)._index;
+      int y = ((BDDImpl) that)._index;
       int z = opr.id;
-      int a = ((bdd) var)._index;
+      int a = ((BDDImpl) var)._index;
       return makeBDD(bdd_appall(x, y, z, a));
     }
 
     @Override
     public BDD applyEx(BDD that, BDDOp opr, BDD var) {
       int x = _index;
-      int y = ((bdd) that)._index;
+      int y = ((BDDImpl) that)._index;
       int z = opr.id;
-      int a = ((bdd) var)._index;
+      int a = ((BDDImpl) var)._index;
       return makeBDD(bdd_appex(x, y, z, a));
     }
 
     @Override
     public BDD applyUni(BDD that, BDDOp opr, BDD var) {
       int x = _index;
-      int y = ((bdd) that)._index;
+      int y = ((BDDImpl) that)._index;
       int z = opr.id;
-      int a = ((bdd) var)._index;
+      int a = ((BDDImpl) var)._index;
       return makeBDD(bdd_appuni(x, y, z, a));
     }
 
@@ -566,7 +566,7 @@ public class MicroFactory extends BDDFactory {
     @Override
     public BDD satOne(BDD var, boolean pol) {
       int x = _index;
-      int y = ((bdd) var)._index;
+      int y = ((BDDImpl) var)._index;
       int z = pol ? 1 : 0;
       return makeBDD(bdd_satoneset(x, y, z));
     }
@@ -610,7 +610,7 @@ public class MicroFactory extends BDDFactory {
 
     @Override
     public boolean equals(BDD that) {
-      boolean b = this._index == ((bdd) that)._index;
+      boolean b = this._index == ((BDDImpl) that)._index;
       return b;
     }
 
@@ -629,9 +629,9 @@ public class MicroFactory extends BDDFactory {
 
   private static final boolean DEBUG_FINALIZER = false;
 
-  private class bddWithFinalizer extends bdd {
+  private class BDDImplWithFinalizer extends BDDImpl {
 
-    bddWithFinalizer(int id) {
+    BDDImplWithFinalizer(int id) {
       super(id);
     }
 
@@ -4566,7 +4566,7 @@ public class MicroFactory extends BDDFactory {
 
     @Override
     public void set(int oldvar, BDD newvar) {
-      bdd_setbddpair(this, oldvar, ((bdd) newvar)._index);
+      bdd_setbddpair(this, oldvar, ((BDDImpl) newvar)._index);
     }
 
     @Override
@@ -5671,7 +5671,7 @@ public class MicroFactory extends BDDFactory {
 
   @Override
   public void printTable(BDD b) {
-    int x = ((bdd) b)._index;
+    int x = ((BDDImpl) b)._index;
     bdd_fprinttable(System.out, x);
   }
 
@@ -5683,7 +5683,7 @@ public class MicroFactory extends BDDFactory {
 
   @Override
   public void save(BufferedWriter out, BDD b) throws IOException {
-    int x = ((bdd) b)._index;
+    int x = ((BDDImpl) b)._index;
     bdd_save(out, x);
   }
 
@@ -6673,7 +6673,7 @@ public class MicroFactory extends BDDFactory {
     int[] a = new int[r.size()];
     int j = 0;
     for (Object o : r) {
-      bdd b = (bdd) o;
+      BDDImpl b = (BDDImpl) o;
       a[j++] = b._index;
     }
     return bdd_anodecount(a);
@@ -7188,7 +7188,7 @@ public class MicroFactory extends BDDFactory {
   }
 
   public void validateBDD(BDD b) {
-    validate(((bdd) b)._index);
+    validate(((BDDImpl) b)._index);
   }
 
   void validate_all() {
@@ -7459,7 +7459,7 @@ public class MicroFactory extends BDDFactory {
    * @return a BDD in the new factory
    */
   public BDD copyNode(BDD that) {
-    bdd b = (bdd) that;
+    BDDImpl b = (BDDImpl) that;
     return makeBDD(b._index);
   }
 
