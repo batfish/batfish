@@ -42,6 +42,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.StringTokenizer;
+import javax.annotation.Nonnull;
 
 /**
  * This is a 100% Java implementation of the BDD factory. It is based on the C source code for
@@ -61,7 +62,9 @@ public class JFactory extends BDDFactory {
     return "JFactory " + REVISION.substring(11, REVISION.length() - 2);
   }
 
-  private JFactory() {}
+  private JFactory() {
+    supportSet = new int[0];
+  }
 
   public static BDDFactory init(int nodenum, int cachesize) {
     BDDFactory f = new JFactory();
@@ -2528,8 +2531,6 @@ public class JFactory extends BDDFactory {
     return res;
   }
 
-  static int supportSize = 0;
-
   int bdd_support(int r) {
     int n;
     int res = 1;
@@ -2541,10 +2542,8 @@ public class JFactory extends BDDFactory {
     }
 
     /* On-demand allocation of support set */
-    if (supportSize < bddvarnum) {
+    if (supportSet.length < bddvarnum) {
       supportSet = new int[bddvarnum];
-      // memset(supportSet, 0, bddvarnum*sizeof(int));
-      supportSize = bddvarnum;
       supportID = 0;
     }
 
@@ -3511,7 +3510,7 @@ public class JFactory extends BDDFactory {
   int supportID; /* Current ID (true value) for support */
   int supportMin; /* Min. used level in support calc. */
   int supportMax; /* Max. used level in support calc. */
-  int[] supportSet; /* The found support set */
+  @Nonnull int[] supportSet; /* The found support set */
   BddCache applycache; /* Cache for apply results */
   BddCache itecache; /* Cache for ITE results */
   BddCache quantcache; /* Cache for exist/forall results */
@@ -3540,8 +3539,7 @@ public class JFactory extends BDDFactory {
     quantvarsetID = 0;
     quantvarset = null;
     cacheratio = 0;
-    supportSet = null;
-    supportSize = 0;
+    supportSet = new int[0];
   }
 
   void bdd_operator_done() {
@@ -3565,10 +3563,9 @@ public class JFactory extends BDDFactory {
     BddCache_done(countcache);
     countcache = null;
 
-    if (supportSet != null) {
+    if (supportSet.length > 0) {
       free(supportSet);
-      supportSet = null;
-      supportSize = 0;
+      supportSet = new int[0];
     }
   }
 
