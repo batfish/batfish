@@ -438,18 +438,9 @@ public abstract class BDDFactory {
    * <p>Compare to bdd_load.
    */
   public BDD load(String filename) throws IOException {
-    BufferedReader r = null;
-    try {
-      r = new BufferedReader(new FileReader(filename));
+    try (BufferedReader r = new BufferedReader(new FileReader(filename))) {
       BDD result = load(r);
       return result;
-    } finally {
-      if (r != null) {
-        try {
-          r.close();
-        } catch (IOException ignored) {
-        }
-      }
     }
   }
   // TODO: error code from bdd_load (?)
