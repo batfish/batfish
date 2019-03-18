@@ -36,6 +36,8 @@ import java.util.Set;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDDomain;
 import net.sf.javabdd.BDDFactory;
+import org.junit.internal.runners.JUnit38ClassRunner;
+import org.junit.runner.RunWith;
 
 /**
  * IteratorTests
@@ -43,6 +45,7 @@ import net.sf.javabdd.BDDFactory;
  * @author jwhaley
  * @version $Id: IteratorTests.java,v 1.6 2005/06/03 20:19:46 joewhaley Exp $
  */
+@RunWith(JUnit38ClassRunner.class)
 public class IteratorTests extends BDDTestCase {
   public static void main(String[] args) {
     junit.textui.TestRunner.run(IteratorTests.class);

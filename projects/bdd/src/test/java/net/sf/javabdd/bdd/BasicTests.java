@@ -44,6 +44,8 @@ import net.sf.javabdd.BDDDomain;
 import net.sf.javabdd.BDDException;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
+import org.junit.internal.runners.JUnit38ClassRunner;
+import org.junit.runner.RunWith;
 
 /**
  * BasicTests
@@ -51,6 +53,7 @@ import net.sf.javabdd.BDDPairing;
  * @author jwhaley
  * @version $Id: BasicTests.java,v 1.6 2005/06/29 08:01:29 joewhaley Exp $
  */
+@RunWith(JUnit38ClassRunner.class)
 public class BasicTests extends BDDTestCase {
 
   public static void main(String[] args) {
