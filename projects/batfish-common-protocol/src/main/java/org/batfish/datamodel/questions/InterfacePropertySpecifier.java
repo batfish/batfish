@@ -101,7 +101,7 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
           // skip incoming filter
           .put(
               INCOMING_FILTER_NAME,
-              new PropertyDescriptor<>(Interface::getIncomingFilter, Schema.STRING))
+              new PropertyDescriptor<>(Interface::getIncomingFilterName, Schema.STRING))
           .put(INTERFACE_TYPE, new PropertyDescriptor<>(Interface::getInterfaceType, Schema.STRING))
           .put(MLAG_ID, new PropertyDescriptor<>(Interface::getMlagId, Schema.INTEGER))
           .put(MTU, new PropertyDescriptor<>(Interface::getMtu, Schema.INTEGER))
