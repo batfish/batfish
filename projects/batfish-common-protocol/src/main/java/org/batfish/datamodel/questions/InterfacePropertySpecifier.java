@@ -98,7 +98,7 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
               HSRP_GROUPS,
               new PropertyDescriptor<>(Interface::getHsrpGroups, Schema.set(Schema.STRING)))
           .put(HSRP_VERSION, new PropertyDescriptor<>(Interface::getHsrpVersion, Schema.STRING))
-          // skip incoming filter
+          // use incomingFilterName instead of incomingFilter
           .put(
               INCOMING_FILTER_NAME,
               new PropertyDescriptor<>(Interface::getIncomingFilterName, Schema.STRING))
