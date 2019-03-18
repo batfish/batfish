@@ -40,6 +40,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
+import javax.annotation.Nonnull;
 
 /**
  * BDD factory where each node only takes 16 bytes. This is accomplished by tightly packing the bits
@@ -4693,29 +4694,29 @@ public class MicroFactory extends BDDFactory {
     bddreordermethod = method;
     bddreordertimes = 1;
 
-    if ((top = bddtree_new(-1)) != null) {
-      if (reorder_init() >= 0) {
+    top = bddtree_new(-1);
+    if (reorder_init() >= 0) {
 
-        usednum_before = bddnodesize - bddfreenum;
+      usednum_before = bddnodesize - bddfreenum;
 
-        top.first = 0;
-        top.last = bdd_varnum() - 1;
-        top.fixed = false;
-        top.next = null;
-        top.nextlevel = vartree;
+      top.first = 0;
+      top.last = bdd_varnum() - 1;
+      top.fixed = false;
+      top.next = null;
+      top.nextlevel = vartree;
 
-        reorder_block(top, method);
-        vartree = top.nextlevel;
+      reorder_block(top, method);
+      vartree = top.nextlevel;
 
-        usednum_after = bddnodesize - bddfreenum;
+      usednum_after = bddnodesize - bddfreenum;
 
-        reorder_done();
-        bddreordermethod = savemethod;
-        bddreordertimes = savetimes;
-      }
+      reorder_done();
+      bddreordermethod = savemethod;
+      bddreordertimes = savetimes;
     }
   }
 
+  @Nonnull
   BddTree bddtree_new(int id) {
     BddTree t = new BddTree();
 
@@ -7035,9 +7036,7 @@ public class MicroFactory extends BDDFactory {
 
     /* Empty tree -> build one */
     if (t == null) {
-      if ((t = bddtree_new(id)) == null) {
-        return null;
-      }
+      t = bddtree_new(id);
       t.first = first;
       t.fixed = fixed;
       t.seq = new int[last - first + 1];
@@ -7055,9 +7054,6 @@ public class MicroFactory extends BDDFactory {
     /* Before this section -> insert */
     if (last < t.first) {
       BddTree tnew = bddtree_new(id);
-      if (tnew == null) {
-        return null;
-      }
       tnew.first = first;
       tnew.last = last;
       tnew.fixed = fixed;
@@ -7094,9 +7090,6 @@ public class MicroFactory extends BDDFactory {
 
         if (dis.next == null || last < dis.next.first) {
           tnew = bddtree_new(id);
-          if (tnew == null) {
-            return null;
-          }
           tnew.first = first;
           tnew.last = last;
           tnew.fixed = fixed;

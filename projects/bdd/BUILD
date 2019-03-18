@@ -7,6 +7,9 @@ java_library(
     srcs = glob([
         "src/main/java/**/*.java",
     ]),
+    deps = [
+        "@jsr305//:compile",
+    ],
 )
 
 java_library(
