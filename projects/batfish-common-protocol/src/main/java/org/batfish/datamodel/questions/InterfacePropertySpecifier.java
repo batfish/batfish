@@ -98,10 +98,10 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
               HSRP_GROUPS,
               new PropertyDescriptor<>(Interface::getHsrpGroups, Schema.set(Schema.STRING)))
           .put(HSRP_VERSION, new PropertyDescriptor<>(Interface::getHsrpVersion, Schema.STRING))
-          // skip incoming filter
+          // use incomingFilterName instead of incomingFilter
           .put(
               INCOMING_FILTER_NAME,
-              new PropertyDescriptor<>(Interface::getIncomingFilter, Schema.STRING))
+              new PropertyDescriptor<>(Interface::getIncomingFilterName, Schema.STRING))
           .put(INTERFACE_TYPE, new PropertyDescriptor<>(Interface::getInterfaceType, Schema.STRING))
           .put(MLAG_ID, new PropertyDescriptor<>(Interface::getMlagId, Schema.INTEGER))
           .put(MTU, new PropertyDescriptor<>(Interface::getMtu, Schema.INTEGER))
