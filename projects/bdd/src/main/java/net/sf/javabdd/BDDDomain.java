@@ -202,7 +202,6 @@ public abstract class BDDDomain {
    *
    * <p>Compare to fdd_equals/fdd_equ.
    *
-   * @param that
    * @return BDD
    */
   public BDD buildEquals(BDDDomain that) {
@@ -265,11 +264,11 @@ public abstract class BDDDomain {
     BDDFactory factory = getFactory();
     BDD v = factory.one();
     int[] ivar = this.vars();
-    for (int n = 0; n < ivar.length; n++) {
+    for (int i : ivar) {
       if (val.testBit(0)) {
-        v.andWith(factory.ithVar(ivar[n]));
+        v.andWith(factory.ithVar(i));
       } else {
-        v.andWith(factory.nithVar(ivar[n]));
+        v.andWith(factory.nithVar(i));
       }
       val = val.shiftRight(1);
     }
@@ -377,17 +376,14 @@ public abstract class BDDDomain {
     // System.out.println("Domain "+this+" old var = "+var);
     this.var.free();
     BDD nvar = factory.one();
-    for (int i = 0; i < ivar.length; ++i) {
-      nvar.andWith(factory.ithVar(ivar[i]));
+    for (int i1 : ivar) {
+      nvar.andWith(factory.ithVar(i1));
     }
     this.var = nvar;
     // System.out.println("Domain "+this+" new var = "+var);
     return binsize;
   }
 
-  /* (non-Javadoc)
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return getName();

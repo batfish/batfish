@@ -69,9 +69,6 @@ public class MicroFactory extends BDDFactory {
 
   private MicroFactory() {}
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#init(int, int)
-   */
   public static BDDFactory init(int nodenum, int cachesize) {
     BDDFactory f = new MicroFactory();
     f.initialize(nodenum, cachesize);
@@ -364,73 +361,46 @@ public class MicroFactory extends BDDFactory {
       bdd_addref(_index);
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#getFactory()
-     */
     @Override
     public BDDFactory getFactory() {
       return MicroFactory.this;
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#isZero()
-     */
     @Override
     public boolean isZero() {
       return _index == bddfalse;
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#isOne()
-     */
     @Override
     public boolean isOne() {
       return _index == bddtrue;
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#var()
-     */
     @Override
     public int var() {
       return bdd_var(_index);
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#high()
-     */
     @Override
     public BDD high() {
       return makeBDD(HIGH(_index));
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#low()
-     */
     @Override
     public BDD low() {
       return makeBDD(LOW(_index));
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#id()
-     */
     @Override
     public BDD id() {
       return makeBDD(_index);
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#not()
-     */
     @Override
     public BDD not() {
       return makeBDD(bdd_not(_index));
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#ite(net.sf.javabdd.BDD, net.sf.javabdd.BDD)
-     */
     @Override
     public BDD ite(BDD thenBDD, BDD elseBDD) {
       int x = _index;
@@ -439,9 +409,6 @@ public class MicroFactory extends BDDFactory {
       return makeBDD(bdd_ite(x, y, z));
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#relprod(net.sf.javabdd.BDD, net.sf.javabdd.BDD)
-     */
     @Override
     public BDD relprod(BDD that, BDD var) {
       int x = _index;
@@ -458,9 +425,6 @@ public class MicroFactory extends BDDFactory {
       return makeBDD(bdd_relprod3(x, y1, y2, z));
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#compose(net.sf.javabdd.BDD, int)
-     */
     @Override
     public BDD compose(BDD g, int var) {
       int x = _index;
@@ -468,18 +432,12 @@ public class MicroFactory extends BDDFactory {
       return makeBDD(bdd_compose(x, y, var));
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#veccompose(net.sf.javabdd.BDDPairing)
-     */
     @Override
     public BDD veccompose(BDDPairing pair) {
       int x = _index;
       return makeBDD(bdd_veccompose(x, ((bddPair) pair)));
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#constrain(net.sf.javabdd.BDD)
-     */
     @Override
     public BDD constrain(BDD that) {
       int x = _index;
@@ -487,9 +445,6 @@ public class MicroFactory extends BDDFactory {
       return makeBDD(bdd_constrain(x, y));
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#exist(net.sf.javabdd.BDD)
-     */
     @Override
     public BDD exist(BDD var) {
       int x = _index;
@@ -497,9 +452,6 @@ public class MicroFactory extends BDDFactory {
       return makeBDD(bdd_exist(x, y));
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#forAll(net.sf.javabdd.BDD)
-     */
     @Override
     public BDD forAll(BDD var) {
       int x = _index;
@@ -507,9 +459,6 @@ public class MicroFactory extends BDDFactory {
       return makeBDD(bdd_forall(x, y));
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#unique(net.sf.javabdd.BDD)
-     */
     @Override
     public BDD unique(BDD var) {
       int x = _index;
@@ -517,9 +466,6 @@ public class MicroFactory extends BDDFactory {
       return makeBDD(bdd_unique(x, y));
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#restrict(net.sf.javabdd.BDD)
-     */
     @Override
     public BDD restrict(BDD var) {
       int x = _index;
@@ -527,9 +473,6 @@ public class MicroFactory extends BDDFactory {
       return makeBDD(bdd_restrict(x, y));
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#restrictWith(net.sf.javabdd.BDD)
-     */
     @Override
     public BDD restrictWith(BDD that) {
       int x = _index;
@@ -544,9 +487,6 @@ public class MicroFactory extends BDDFactory {
       return this;
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#simplify(net.sf.javabdd.BDD)
-     */
     @Override
     public BDD simplify(BDD d) {
       int x = _index;
@@ -554,18 +494,12 @@ public class MicroFactory extends BDDFactory {
       return makeBDD(bdd_simplify(x, y));
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#support()
-     */
     @Override
     public BDD support() {
       int x = _index;
       return makeBDD(bdd_support(x));
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#apply(net.sf.javabdd.BDD, net.sf.javabdd.BDDFactory.BDDOp)
-     */
     @Override
     public BDD apply(BDD that, BDDOp opr) {
       int x = _index;
@@ -574,9 +508,6 @@ public class MicroFactory extends BDDFactory {
       return makeBDD(bdd_apply(x, y, z));
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#applyWith(net.sf.javabdd.BDD, net.sf.javabdd.BDDFactory.BDDOp)
-     */
     @Override
     public BDD applyWith(BDD that, BDDOp opr) {
       int x = _index;
@@ -592,9 +523,6 @@ public class MicroFactory extends BDDFactory {
       return this;
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#applyAll(net.sf.javabdd.BDD, net.sf.javabdd.BDDFactory.BDDOp, net.sf.javabdd.BDD)
-     */
     @Override
     public BDD applyAll(BDD that, BDDOp opr, BDD var) {
       int x = _index;
@@ -604,9 +532,6 @@ public class MicroFactory extends BDDFactory {
       return makeBDD(bdd_appall(x, y, z, a));
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#applyEx(net.sf.javabdd.BDD, net.sf.javabdd.BDDFactory.BDDOp, net.sf.javabdd.BDD)
-     */
     @Override
     public BDD applyEx(BDD that, BDDOp opr, BDD var) {
       int x = _index;
@@ -616,9 +541,6 @@ public class MicroFactory extends BDDFactory {
       return makeBDD(bdd_appex(x, y, z, a));
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#applyUni(net.sf.javabdd.BDD, net.sf.javabdd.BDDFactory.BDDOp, net.sf.javabdd.BDD)
-     */
     @Override
     public BDD applyUni(BDD that, BDDOp opr, BDD var) {
       int x = _index;
@@ -628,27 +550,18 @@ public class MicroFactory extends BDDFactory {
       return makeBDD(bdd_appuni(x, y, z, a));
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#satOne()
-     */
     @Override
     public BDD satOne() {
       int x = _index;
       return makeBDD(bdd_satone(x));
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#fullSatOne()
-     */
     @Override
     public BDD fullSatOne() {
       int x = _index;
       return makeBDD(bdd_fullsatone(x));
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#satOne(net.sf.javabdd.BDD, boolean)
-     */
     @Override
     public BDD satOne(BDD var, boolean pol) {
       int x = _index;
@@ -657,18 +570,12 @@ public class MicroFactory extends BDDFactory {
       return makeBDD(bdd_satoneset(x, y, z));
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#replace(net.sf.javabdd.BDDPairing)
-     */
     @Override
     public BDD replace(BDDPairing pair) {
       int x = _index;
       return makeBDD(bdd_replace(x, ((bddPair) pair)));
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#replaceWith(net.sf.javabdd.BDDPairing)
-     */
     @Override
     public BDD replaceWith(BDDPairing pair) {
       int x = _index;
@@ -679,51 +586,33 @@ public class MicroFactory extends BDDFactory {
       return this;
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#nodeCount()
-     */
     @Override
     public int nodeCount() {
       return bdd_nodecount(_index);
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#pathCount()
-     */
     @Override
     public double pathCount() {
       return bdd_pathcount(_index);
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#satCount()
-     */
     @Override
     public double satCount() {
       return bdd_satcount(_index);
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#varProfile()
-     */
     @Override
     public int[] varProfile() {
       int x = _index;
       return bdd_varprofile(x);
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#equals(net.sf.javabdd.BDD)
-     */
     @Override
     public boolean equals(BDD that) {
       boolean b = this._index == ((bdd) that)._index;
       return b;
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDD#hashCode()
-     */
     @Override
     public int hashCode() {
       return _index;
@@ -762,11 +651,11 @@ public class MicroFactory extends BDDFactory {
     int cacheHit;
     int cacheMiss;
     int compulsoryMiss;
-    Set cache;
+    Set<Object> cache;
 
     OpCache() {
       if (CACHESTATS > 1) {
-        cache = new HashSet();
+        cache = new HashSet<>();
       }
     }
 
@@ -785,7 +674,7 @@ public class MicroFactory extends BDDFactory {
     }
 
     void checkCompulsory(int a) {
-      if (!cache.contains(new Integer(a))) {
+      if (!cache.contains(a)) {
         ++compulsoryMiss;
       }
     }
@@ -809,7 +698,7 @@ public class MicroFactory extends BDDFactory {
     }
 
     void addCompulsory(int a) {
-      cache.add(new Integer(a));
+      cache.add(a);
     }
 
     void addCompulsory(int a, int b) {
@@ -825,7 +714,7 @@ public class MicroFactory extends BDDFactory {
     }
 
     void removeCompulsory(int a) {
-      cache.remove(new Integer(a));
+      cache.remove(a);
     }
 
     void removeCompulsory(int a, int b) {
@@ -841,11 +730,11 @@ public class MicroFactory extends BDDFactory {
     }
 
     void removeAll(int n) {
-      for (Iterator i = cache.iterator(); i.hasNext(); ) {
+      for (Iterator<Object> i = cache.iterator(); i.hasNext(); ) {
         Object o = i.next();
         if (o instanceof Integer) {
           Integer a = (Integer) o;
-          if (n == a.intValue()) {
+          if (n == a) {
             i.remove();
           }
         } else if (o instanceof PairOfInts) {
@@ -950,7 +839,7 @@ public class MicroFactory extends BDDFactory {
   }
 
   private class OpCache1 extends OpCache {
-    OpCache1Entry table[];
+    OpCache1Entry[] table;
 
     OpCache1(int size) {
       alloc(size);
@@ -964,12 +853,12 @@ public class MicroFactory extends BDDFactory {
     }
 
     final OpCache1Entry lookup(int hash) {
-      return (OpCache1Entry) table[Math.abs(hash % table.length)];
+      return table[Math.abs(hash % table.length)];
     }
 
     final void reset() {
-      for (int i = 0; i < table.length; ++i) {
-        table[i].a = -1;
+      for (OpCache1Entry opCache1Entry : table) {
+        opCache1Entry.a = -1;
       }
       if (CACHESTATS > 1) {
         cache.clear();
@@ -977,16 +866,16 @@ public class MicroFactory extends BDDFactory {
     }
 
     final void clean() {
-      for (int i = 0; i < table.length; ++i) {
-        int a = table[i].a;
+      for (OpCache1Entry opCache1Entry : table) {
+        int a = opCache1Entry.a;
         if (a == -1) {
           continue;
         }
-        if (LOW(a & NODE_MASK) == INVALID_BDD || LOW(table[i].res) == INVALID_BDD) {
+        if (LOW(a & NODE_MASK) == INVALID_BDD || LOW(opCache1Entry.res) == INVALID_BDD) {
           if (CACHESTATS > 1) {
-            removeCompulsory(table[i].a);
+            removeCompulsory(opCache1Entry.a);
           }
-          table[i].a = -1;
+          opCache1Entry.a = -1;
         }
       }
     }
@@ -1047,7 +936,7 @@ public class MicroFactory extends BDDFactory {
   }
 
   private class OpCache2 extends OpCache {
-    OpCache2Entry table[];
+    OpCache2Entry[] table;
 
     OpCache2(int size) {
       alloc(size);
@@ -1061,12 +950,12 @@ public class MicroFactory extends BDDFactory {
     }
 
     final OpCache2Entry lookup(int hash) {
-      return (OpCache2Entry) table[Math.abs(hash % table.length)];
+      return table[Math.abs(hash % table.length)];
     }
 
     final void reset() {
-      for (int i = 0; i < table.length; ++i) {
-        table[i].a = -1;
+      for (OpCache2Entry opCache2Entry : table) {
+        opCache2Entry.a = -1;
       }
       if (CACHESTATS > 1) {
         cache.clear();
@@ -1074,18 +963,18 @@ public class MicroFactory extends BDDFactory {
     }
 
     final void clean() {
-      for (int i = 0; i < table.length; ++i) {
-        int a = table[i].a;
+      for (OpCache2Entry opCache2Entry : table) {
+        int a = opCache2Entry.a;
         if (a == -1) {
           continue;
         }
         if (LOW(a & NODE_MASK) == INVALID_BDD
-            || LOW(table[i].b) == INVALID_BDD
-            || LOW(table[i].res) == INVALID_BDD) {
+            || LOW(opCache2Entry.b) == INVALID_BDD
+            || LOW(opCache2Entry.res) == INVALID_BDD) {
           if (CACHESTATS > 1) {
-            removeCompulsory(table[i].a, table[i].b);
+            removeCompulsory(opCache2Entry.a, opCache2Entry.b);
           }
-          table[i].a = -1;
+          opCache2Entry.a = -1;
         }
       }
     }
@@ -1215,7 +1104,7 @@ public class MicroFactory extends BDDFactory {
   }
 
   private class OpCache3 extends OpCache {
-    OpCache3Entry table[];
+    OpCache3Entry[] table;
 
     OpCache3(int size) {
       alloc(size);
@@ -1229,12 +1118,12 @@ public class MicroFactory extends BDDFactory {
     }
 
     final OpCache3Entry lookup(int hash) {
-      return (OpCache3Entry) table[Math.abs(hash % table.length)];
+      return table[Math.abs(hash % table.length)];
     }
 
     final void reset() {
-      for (int i = 0; i < table.length; ++i) {
-        table[i].a = -1;
+      for (OpCache3Entry opCache3Entry : table) {
+        opCache3Entry.a = -1;
       }
       if (CACHESTATS > 1) {
         cache.clear();
@@ -1242,19 +1131,19 @@ public class MicroFactory extends BDDFactory {
     }
 
     final void clean() {
-      for (int i = 0; i < table.length; ++i) {
-        int a = table[i].a;
+      for (OpCache3Entry opCache3Entry : table) {
+        int a = opCache3Entry.a;
         if (a == -1) {
           continue;
         }
         if (LOW(a & NODE_MASK) == INVALID_BDD
-            || LOW(table[i].b) == INVALID_BDD
-            || LOW(table[i].c) == INVALID_BDD
-            || LOW(table[i].res) == INVALID_BDD) {
+            || LOW(opCache3Entry.b) == INVALID_BDD
+            || LOW(opCache3Entry.c) == INVALID_BDD
+            || LOW(opCache3Entry.res) == INVALID_BDD) {
           if (CACHESTATS > 1) {
-            removeCompulsory(table[i].a, table[i].b, table[i].c);
+            removeCompulsory(opCache3Entry.a, opCache3Entry.b, opCache3Entry.c);
           }
-          table[i].a = -1;
+          opCache3Entry.a = -1;
         }
       }
     }
@@ -1310,7 +1199,7 @@ public class MicroFactory extends BDDFactory {
   }
 
   private class OpCache4 extends OpCache {
-    OpCache4Entry table[];
+    OpCache4Entry[] table;
 
     OpCache4(int size) {
       alloc(size);
@@ -1324,12 +1213,12 @@ public class MicroFactory extends BDDFactory {
     }
 
     final OpCache4Entry lookup(int hash) {
-      return (OpCache4Entry) table[Math.abs(hash % table.length)];
+      return table[Math.abs(hash % table.length)];
     }
 
     final void reset() {
-      for (int i = 0; i < table.length; ++i) {
-        table[i].a = -1;
+      for (OpCache4Entry opCache4Entry : table) {
+        opCache4Entry.a = -1;
       }
       if (CACHESTATS > 1) {
         cache.clear();
@@ -1337,20 +1226,20 @@ public class MicroFactory extends BDDFactory {
     }
 
     final void clean() {
-      for (int i = 0; i < table.length; ++i) {
-        int a = table[i].a;
+      for (OpCache4Entry opCache4Entry : table) {
+        int a = opCache4Entry.a;
         if (a == -1) {
           continue;
         }
         if (LOW(a & NODE_MASK) == INVALID_BDD
-            || LOW(table[i].b) == INVALID_BDD
-            || LOW(table[i].c) == INVALID_BDD
-            || LOW(table[i].d) == INVALID_BDD
-            || LOW(table[i].res) == INVALID_BDD) {
+            || LOW(opCache4Entry.b) == INVALID_BDD
+            || LOW(opCache4Entry.c) == INVALID_BDD
+            || LOW(opCache4Entry.d) == INVALID_BDD
+            || LOW(opCache4Entry.res) == INVALID_BDD) {
           if (CACHESTATS > 1) {
-            removeCompulsory(table[i].a, table[i].b, table[i].c, table[i].d);
+            removeCompulsory(opCache4Entry.a, opCache4Entry.b, opCache4Entry.c, opCache4Entry.d);
           }
-          table[i].a = -1;
+          opCache4Entry.a = -1;
         }
       }
     }
@@ -1408,7 +1297,7 @@ public class MicroFactory extends BDDFactory {
   }
 
   private class OpCacheD extends OpCache {
-    OpCacheDEntry table[];
+    OpCacheDEntry[] table;
 
     OpCacheD(int size) {
       alloc(size);
@@ -1422,12 +1311,12 @@ public class MicroFactory extends BDDFactory {
     }
 
     final OpCacheDEntry lookup(int hash) {
-      return (OpCacheDEntry) table[Math.abs(hash % table.length)];
+      return table[Math.abs(hash % table.length)];
     }
 
     final void reset() {
-      for (int i = 0; i < table.length; ++i) {
-        table[i].a = -1;
+      for (OpCacheDEntry opCacheDEntry : table) {
+        opCacheDEntry.a = -1;
       }
       if (CACHESTATS > 1) {
         cache.clear();
@@ -1435,16 +1324,16 @@ public class MicroFactory extends BDDFactory {
     }
 
     final void clean() {
-      for (int i = 0; i < table.length; ++i) {
-        int a = table[i].a;
+      for (OpCacheDEntry opCacheDEntry : table) {
+        int a = opCacheDEntry.a;
         if (a == -1) {
           continue;
         }
         if (LOW(a & NODE_MASK) == INVALID_BDD) {
           if (CACHESTATS > 1) {
-            removeCompulsory(table[i].a);
+            removeCompulsory(opCacheDEntry.a);
           }
-          table[i].a = -1;
+          opCacheDEntry.a = -1;
         }
       }
     }
@@ -1582,7 +1471,7 @@ public class MicroFactory extends BDDFactory {
   static final int BDD_ERRNUM = 24;
 
   /* Strings for all error mesages */
-  static String errorstrings[] = {
+  static String[] errorstrings = {
     "",
     "Out of memory",
     "Unknown variable",
@@ -1626,17 +1515,11 @@ public class MicroFactory extends BDDFactory {
     return Math.abs(TRIPLE(lvl, l, h) % bddnodesize);
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#zero()
-   */
   @Override
   public BDD zero() {
     return makeBDD(bddfalse);
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#one()
-   */
   @Override
   public BDD one() {
     return makeBDD(bddtrue);
@@ -4318,9 +4201,6 @@ public class MicroFactory extends BDDFactory {
     return doResize(doRehash, oldsize, newsize);
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#setNodeTableSize(int)
-   */
   @Override
   public int setNodeTableSize(int size) {
     int old = bddnodesize;
@@ -4371,9 +4251,6 @@ public class MicroFactory extends BDDFactory {
     return 0;
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#initialize(int, int)
-   */
   @Override
   protected void initialize(int initnodesize, int cs) {
     int n;
@@ -4440,7 +4317,7 @@ public class MicroFactory extends BDDFactory {
   static final int CACHEID_COMPOSE = 0x7;
 
   /* Operator results - entry = left<<1 | right  (left,right in {0,1}) */
-  static int oprres[][] = {
+  static int[][] oprres = {
     {0, 0, 0, 1}, /* and                       ( & )         */
     {0, 1, 1, 0}, /* xor                       ( ^ )         */
     {0, 1, 1, 1}, /* or                        ( | )         */
@@ -4681,23 +4558,16 @@ public class MicroFactory extends BDDFactory {
     int id;
     bddPair next;
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDDPairing#set(int, int)
-     */
     @Override
     public void set(int oldvar, int newvar) {
       bdd_setpair(this, oldvar, newvar);
     }
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDDPairing#set(int, net.sf.javabdd.BDD)
-     */
+
     @Override
     public void set(int oldvar, BDD newvar) {
       bdd_setbddpair(this, oldvar, ((bdd) newvar)._index);
     }
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDDPairing#reset()
-     */
+
     @Override
     public void reset() {
       bdd_resetpair(this);
@@ -4809,13 +4679,10 @@ public class MicroFactory extends BDDFactory {
   }
 
   boolean bdd_reorder_ready() {
-    if ((bddreordermethod == BDD_REORDER_NONE)
-        || (vartree == null)
-        || (bddreordertimes == 0)
-        || (reorderdisabled != 0)) {
-      return false;
-    }
-    return true;
+    return (bddreordermethod != BDD_REORDER_NONE)
+        && (vartree != null)
+        && (bddreordertimes != 0)
+        && (reorderdisabled == 0);
   }
 
   void bdd_reorder(int method) {
@@ -5192,7 +5059,7 @@ public class MicroFactory extends BDDFactory {
     return next;
   }
 
-  BddTree reorder_sift_seq(BddTree t, BddTree seq[], int num) {
+  BddTree reorder_sift_seq(BddTree t, BddTree[] seq, int num) {
     BddTree dis;
     int n;
 
@@ -5351,26 +5218,14 @@ public class MicroFactory extends BDDFactory {
     return dis;
   }
 
-  static int siftTestCmp(Object aa, Object bb) {
-    sizePair a = (sizePair) aa;
-    sizePair b = (sizePair) bb;
-
-    if (a.val < b.val) {
-      return -1;
-    }
-    if (a.val > b.val) {
-      return 1;
-    }
-    return 0;
-  }
-
   static class sizePair {
     int val;
     BddTree block;
   }
 
   BddTree reorder_sift(BddTree t) {
-    BddTree dis, seq[];
+    BddTree dis;
+    BddTree[] seq;
     sizePair[] p;
     int n, num;
 
@@ -5394,17 +5249,7 @@ public class MicroFactory extends BDDFactory {
     }
 
     /* Sort according to the number of nodes at each level */
-    Arrays.sort(
-        p,
-        0,
-        num,
-        new Comparator() {
-
-          @Override
-          public int compare(Object o1, Object o2) {
-            return siftTestCmp(o1, o2);
-          }
-        });
+    Arrays.sort(p, 0, num, Comparator.comparingInt(o -> o.val));
 
     /* Create sequence */
     for (n = 0; n < num; n++) {
@@ -5553,17 +5398,11 @@ public class MicroFactory extends BDDFactory {
     return (100 * (usednum_before - usednum_after)) / usednum_before;
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#isInitialized()
-   */
   @Override
   public boolean isInitialized() {
     return this.bddrunning;
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#done()
-   */
   @Override
   public void done() {
     bdd_done();
@@ -5594,25 +5433,16 @@ public class MicroFactory extends BDDFactory {
     // resize_handler = null;
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#setError(int)
-   */
   @Override
   public void setError(int code) {
     bdderrorcond = code;
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#clearError()
-   */
   @Override
   public void clearError() {
     bdderrorcond = 0;
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#setMaxNodeNum(int)
-   */
   @Override
   public int setMaxNodeNum(int size) {
     return bdd_setmaxnodenum(size);
@@ -5628,9 +5458,6 @@ public class MicroFactory extends BDDFactory {
     return bdd_error(BDD_NODES);
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#setMinFreeNodes(double)
-   */
   @Override
   public double setMinFreeNodes(double x) {
     return bdd_setminfreenodes((int) (x * 100.)) / 100.;
@@ -5647,9 +5474,6 @@ public class MicroFactory extends BDDFactory {
     return old;
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#setMaxIncrease(int)
-   */
   @Override
   public int setMaxIncrease(int x) {
     return bdd_setmaxincrease(x);
@@ -5678,9 +5502,6 @@ public class MicroFactory extends BDDFactory {
     return old;
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#setCacheRatio(double)
-   */
   @Override
   public double setCacheRatio(double x) {
     return bdd_setcacheratio((int) (x * 100)) / 100.;
@@ -5701,25 +5522,16 @@ public class MicroFactory extends BDDFactory {
     return old;
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#varNum()
-   */
   @Override
   public int varNum() {
     return bdd_varnum();
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#setVarNum(int)
-   */
   @Override
   public int setVarNum(int num) {
     return bdd_setvarnum(num);
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#duplicateVar(int)
-   */
   @Override
   public int duplicateVar(int var) {
     if (var < 0 || var >= bddvarnum) {
@@ -5841,103 +5653,67 @@ public class MicroFactory extends BDDFactory {
     return 0;
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#ithVar(int)
-   */
   @Override
   public BDD ithVar(int var) {
     return makeBDD(bdd_ithvar(var));
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#nithVar(int)
-   */
   @Override
   public BDD nithVar(int var) {
     return makeBDD(bdd_nithvar(var));
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#printAll()
-   */
   @Override
   public void printAll() {
     bdd_fprintall(System.out);
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#printTable(net.sf.javabdd.BDD)
-   */
   @Override
   public void printTable(BDD b) {
     int x = ((bdd) b)._index;
     bdd_fprinttable(System.out, x);
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#load(java.io.BufferedReader)
-   */
   @Override
   public BDD load(BufferedReader in) throws IOException {
     int result = bdd_load(in);
     return makeBDD(result);
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#save(java.io.BufferedWriter, net.sf.javabdd.BDD)
-   */
   @Override
   public void save(BufferedWriter out, BDD b) throws IOException {
     int x = ((bdd) b)._index;
     bdd_save(out, x);
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#level2Var(int)
-   */
   @Override
   public int level2Var(int level) {
     return bddlevel2var[level];
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#var2Level(int)
-   */
   @Override
   public int var2Level(int var) {
     return bddvar2level[var];
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#reorder(net.sf.javabdd.BDDFactory.ReorderMethod)
-   */
   @Override
   public void reorder(ReorderMethod m) {
     int x = m.id;
     bdd_reorder(x);
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#autoReorder(net.sf.javabdd.BDDFactory.ReorderMethod)
-   */
   @Override
   public void autoReorder(ReorderMethod method) {
     int x = method.id;
     bdd_autoreorder(x);
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#autoReorder(net.sf.javabdd.BDDFactory.ReorderMethod, int)
-   */
   @Override
   public void autoReorder(ReorderMethod method, int max) {
     int x = method.id;
     bdd_autoreorder_times(x, max);
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#getReorderMethod()
-   */
   @Override
   public ReorderMethod getReorderMethod() {
     switch (bddreordermethod) {
@@ -5962,41 +5738,26 @@ public class MicroFactory extends BDDFactory {
     }
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#getReorderTimes()
-   */
   @Override
   public int getReorderTimes() {
     return bddreordertimes;
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#disableReorder()
-   */
   @Override
   public void disableReorder() {
     bdd_disable_reorder();
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#enableReorder()
-   */
   @Override
   public void enableReorder() {
     bdd_enable_reorder();
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#reorderVerbose(int)
-   */
   @Override
   public int reorderVerbose(int v) {
     return bdd_reorder_verbose(v);
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#setVarOrder(int[])
-   */
   @Override
   public void setVarOrder(int[] neworder) {
     bdd_setvarorder(neworder);
@@ -6025,7 +5786,7 @@ public class MicroFactory extends BDDFactory {
   int[] extroots;
   int extrootsize;
 
-  levelData levels[]; /* Indexed by variable! */
+  levelData[] levels; /* Indexed by variable! */
 
   static class levelData {
     int start; /* Start of this sub-table (entry in "bddnodes") */
@@ -6035,7 +5796,7 @@ public class MicroFactory extends BDDFactory {
   }
 
   static class imatrix {
-    byte rows[][];
+    byte[][] rows;
     int size;
   }
 
@@ -6880,64 +6641,43 @@ public class MicroFactory extends BDDFactory {
     mtx.rows = null;
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#addVarBlock(net.sf.javabdd.BDD, boolean)
-   */
   @Override
   public void addVarBlock(BDD var, boolean fixed) {
     int[] set = var.scanSet();
     bdd_addvarblock(set, fixed);
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#addVarBlock(int, int, boolean)
-   */
   @Override
   public void addVarBlock(int first, int last, boolean fixed) {
     bdd_intaddvarblock(first, last, fixed);
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#varBlockAll()
-   */
   @Override
   public void varBlockAll() {
     bdd_varblockall();
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#clearVarBlocks()
-   */
   @Override
   public void clearVarBlocks() {
     bdd_clrvarblocks();
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#printOrder()
-   */
   @Override
   public void printOrder() {
     bdd_fprintorder(System.out);
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#nodeCount(java.util.Collection)
-   */
   @Override
-  public int nodeCount(Collection r) {
+  public int nodeCount(Collection<BDD> r) {
     int[] a = new int[r.size()];
     int j = 0;
-    for (Iterator i = r.iterator(); i.hasNext(); ) {
-      bdd b = (bdd) i.next();
+    for (Object o : r) {
+      bdd b = (bdd) o;
       a[j++] = b._index;
     }
     return bdd_anodecount(a);
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#getNodeTableSize()
-   */
   @Override
   public int getNodeTableSize() {
     return bdd_getallocnum();
@@ -6947,41 +6687,26 @@ public class MicroFactory extends BDDFactory {
     return bddnodesize;
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#getNodeNum()
-   */
   @Override
   public int getNodeNum() {
     return bdd_getnodenum();
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#getCacheSize()
-   */
   @Override
   public int getCacheSize() {
     return cachesize;
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#reorderGain()
-   */
   @Override
   public int reorderGain() {
     return bdd_reorder_gain();
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#printStat()
-   */
   @Override
   public void printStat() {
     bdd_fprintstat(System.out);
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#makePair()
-   */
   @Override
   public BDDPairing makePair() {
     bddPair p = new bddPair();
@@ -6998,9 +6723,6 @@ public class MicroFactory extends BDDFactory {
     return p;
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#swapVar(int, int)
-   */
   @Override
   public void swapVar(int v1, int v2) {
     bdd_swapvar(v1, v2);
@@ -7273,12 +6995,12 @@ public class MicroFactory extends BDDFactory {
 
     first = last = v[0];
 
-    for (int n = 0; n < v.length; n++) {
-      if (v[n] < first) {
-        first = v[n];
+    for (int i : v) {
+      if (i < first) {
+        first = i;
       }
-      if (v[n] > last) {
-        last = v[n];
+      if (i > last) {
+        last = i;
       }
     }
 
@@ -7504,9 +7226,6 @@ public class MicroFactory extends BDDFactory {
     validate(HIGH(k), lev);
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#createDomain(int, java.math.BigInteger)
-   */
   @Override
   protected BDDDomain createDomain(int a, BigInteger b) {
     return new bddDomain(a, b);
@@ -7518,18 +7237,12 @@ public class MicroFactory extends BDDFactory {
       super(a, b);
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDDDomain#getFactory()
-     */
     @Override
     public BDDFactory getFactory() {
       return MicroFactory.this;
     }
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#createBitVector(int)
-   */
   @Override
   protected BDDBitVector createBitVector(int a) {
     return new bvec(a);
@@ -7542,9 +7255,6 @@ public class MicroFactory extends BDDFactory {
       super(bitnum);
     }
 
-    /* (non-Javadoc)
-     * @see net.sf.javabdd.BDDBitVector#getFactory()
-     */
     @Override
     public BDDFactory getFactory() {
       return MicroFactory.this;
@@ -7760,9 +7470,6 @@ public class MicroFactory extends BDDFactory {
     return makeBDD(b._index);
   }
 
-  /* (non-Javadoc)
-   * @see net.sf.javabdd.BDDFactory#getCacheStats()
-   */
   @Override
   public CacheStats getCacheStats() {
     cachestats.opHit = 0;

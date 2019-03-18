@@ -70,13 +70,13 @@ public class TraceSuite {
     if (files == null) {
       return;
     }
-    for (int i = 0; i < files.length; ++i) {
-      if (files[i].isDirectory()) {
-        runDirectory(files[i], initial_size);
+    for (File file : files) {
+      if (file.isDirectory()) {
+        runDirectory(file, initial_size);
       } else {
         try {
-          String name = files[i].getName();
-          InputStream is = new BufferedInputStream(new FileInputStream(files[i]));
+          String name = file.getName();
+          InputStream is = new BufferedInputStream(new FileInputStream(file));
           if (name.endsWith(".net.sf.javabdd.trace")) {
             runTrace(name, is, initial_size);
           } else if (name.endsWith("README")) {
