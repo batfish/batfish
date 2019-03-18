@@ -5616,22 +5616,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.inline_obj != null) {
       String name = ctx.inline_obj.getText();
 
-      // Inline service object for a particular protocol
-      ServiceObject inline = new ServiceObject(name);
-      inline.addProtocol(toIpProtocol(ctx.inline_obj));
-      _configuration.getServiceObjects().putIfAbsent(name, inline);
-
-      return new ServiceObjectServiceSpecifier(name);
+      // ASA inline service object for a particular protocol
+      return SimpleExtendedAccessListServiceSpecifier.builder()
+          .setProtocol(toIpProtocol(ctx.inline_obj))
+          .build();
     } else if (ctx.inline_obj_icmp != null) {
       String name = ctx.inline_obj_icmp.getText();
 
-      // Inline service object for a particular ICMP type
-      ServiceObject inline = new ServiceObject(name);
-      inline.addProtocol(IpProtocol.ICMP);
-      inline.setIcmpType(toIcmpType(ctx.inline_obj_icmp));
-      _configuration.getServiceObjects().putIfAbsent(name, inline);
-
-      return new ServiceObjectServiceSpecifier(name);
+      // ASA inline service object for a particular ICMP type
+      return SimpleExtendedAccessListServiceSpecifier.builder()
+          .setProtocol(IpProtocol.ICMP)
+          .setIcmpType(toIcmpType(ctx.inline_obj_icmp))
+          .build();
     } else {
       return convProblem(
           AccessListServiceSpecifier.class, ctx, UnimplementedAccessListServiceSpecifier.INSTANCE);
@@ -10629,6 +10625,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
+  // Handle ASA style ICMP codes
   private Integer toIcmpType(Icmp_inline_object_typeContext ctx) {
     if (ctx.ICMP_ALTERNATE_ADDRESS() != null) {
       return IcmpType.ALTERNATE_ADDRESS;

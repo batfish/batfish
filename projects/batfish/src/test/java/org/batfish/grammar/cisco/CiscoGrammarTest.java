@@ -950,8 +950,8 @@ public class CiscoGrammarTest {
     String hostname = "asa-service-object-inline";
     Configuration c = parseConfig(hostname);
 
-    String icmpObjectName = computeServiceObjectAclName("icmp-echo");
-    String ospfObjectName = computeServiceObjectAclName("ospf");
+    String icmpAclName = "ACL_ICMP";
+    String ospfAclName = "ACL_OSPF";
 
     Flow flowIcmpPass = createIcmpFlow(IcmpType.ECHO_REQUEST);
     Flow flowIcmpFail = createIcmpFlow(IcmpType.ECHO_REPLY);
@@ -959,10 +959,10 @@ public class CiscoGrammarTest {
     Flow flowOspfFail = createFlow(IpProtocol.UDP, 0, 0);
 
     /* Confirm IpAcls created from inline service objects permit and reject the correct flows */
-    assertThat(c, hasIpAccessList(icmpObjectName, accepts(flowIcmpPass, null, c)));
-    assertThat(c, hasIpAccessList(icmpObjectName, rejects(flowIcmpFail, null, c)));
-    assertThat(c, hasIpAccessList(ospfObjectName, accepts(flowOspfPass, null, c)));
-    assertThat(c, hasIpAccessList(ospfObjectName, rejects(flowOspfFail, null, c)));
+    assertThat(c, hasIpAccessList(icmpAclName, accepts(flowIcmpPass, null, c)));
+    assertThat(c, hasIpAccessList(icmpAclName, rejects(flowIcmpFail, null, c)));
+    assertThat(c, hasIpAccessList(ospfAclName, accepts(flowOspfPass, null, c)));
+    assertThat(c, hasIpAccessList(ospfAclName, rejects(flowOspfFail, null, c)));
   }
 
   @Test
