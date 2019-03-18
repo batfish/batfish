@@ -860,7 +860,6 @@ public final class JFactory extends BDDFactory {
     if (applycache == null) {
       applycache = BddCacheI_init(cachesize);
     }
-    again:
     for (; ; ) {
       try {
         INITREF();
@@ -875,7 +874,7 @@ public final class JFactory extends BDDFactory {
       } catch (ReorderException x) {
         bdd_checkreorder();
         if (firstReorder-- == 1) {
-          continue again;
+          continue;
         }
         res = bddfalse;
         /* avoid warning about res being uninitialized */
@@ -937,7 +936,6 @@ public final class JFactory extends BDDFactory {
       itecache = BddCacheI_init(cachesize);
     }
 
-    again:
     for (; ; ) {
       try {
         INITREF();
@@ -953,7 +951,7 @@ public final class JFactory extends BDDFactory {
         bdd_checkreorder();
 
         if (firstReorder-- == 1) {
-          continue again;
+          continue;
         }
         res = BDDZERO;
         /* avoid warning about res being uninitialized */
@@ -1060,7 +1058,6 @@ public final class JFactory extends BDDFactory {
       replacecache = BddCacheI_init(cachesize);
     }
 
-    again:
     for (; ; ) {
       try {
         INITREF();
@@ -1079,7 +1076,7 @@ public final class JFactory extends BDDFactory {
         bdd_checkreorder();
 
         if (firstReorder-- == 1) {
-          continue again;
+          continue;
         }
         res = BDDZERO;
         /* avoid warning about res being uninitialized */
@@ -1169,7 +1166,6 @@ public final class JFactory extends BDDFactory {
       applycache = BddCacheI_init(cachesize);
     }
 
-    again:
     for (; ; ) {
       try {
         INITREF();
@@ -1196,7 +1192,7 @@ public final class JFactory extends BDDFactory {
         bdd_checkreorder();
 
         if (firstReorder-- == 1) {
-          continue again;
+          continue;
         }
         res = BDDZERO;
         /* avoid warning about res being uninitialized */
@@ -1500,7 +1496,6 @@ public final class JFactory extends BDDFactory {
       quantcache = BddCacheI_init(cachesize);
     }
 
-    again:
     for (; ; ) {
       if (varset2vartable(var) < 0) {
         return bddfalse;
@@ -1524,7 +1519,7 @@ public final class JFactory extends BDDFactory {
         bdd_checkreorder();
 
         if (firstReorder-- == 1) {
-          continue again;
+          continue;
         }
         res = BDDZERO;
         /* avoid warning about res being uninitialized */
@@ -1923,7 +1918,6 @@ public final class JFactory extends BDDFactory {
       misccache = BddCacheI_init(cachesize);
     }
 
-    again:
     for (; ; ) {
       try {
         INITREF();
@@ -1940,7 +1934,7 @@ public final class JFactory extends BDDFactory {
         bdd_checkreorder();
 
         if (firstReorder-- == 1) {
-          continue again;
+          continue;
         }
         res = BDDZERO;
         /* avoid warning about res being uninitialized */
@@ -2035,7 +2029,6 @@ public final class JFactory extends BDDFactory {
       itecache = BddCacheI_init(cachesize);
     }
 
-    again:
     for (; ; ) {
       try {
         INITREF();
@@ -2053,7 +2046,7 @@ public final class JFactory extends BDDFactory {
         bdd_checkreorder();
 
         if (firstReorder-- == 1) {
-          continue again;
+          continue;
         }
         res = BDDZERO;
         /* avoid warning about res being uninitialized */
@@ -2128,7 +2121,6 @@ public final class JFactory extends BDDFactory {
       replacecache = BddCacheI_init(cachesize);
     }
 
-    again:
     for (; ; ) {
       try {
         INITREF();
@@ -2147,7 +2139,7 @@ public final class JFactory extends BDDFactory {
         bdd_checkreorder();
 
         if (firstReorder-- == 1) {
-          continue again;
+          continue;
         }
         res = BDDZERO;
         /* avoid warning about res being uninitialized */
@@ -2208,7 +2200,6 @@ public final class JFactory extends BDDFactory {
       quantcache = BddCacheI_init(cachesize);
     }
 
-    again:
     for (; ; ) {
       if (varset2vartable(var) < 0) {
         return bddfalse;
@@ -2230,7 +2221,7 @@ public final class JFactory extends BDDFactory {
         bdd_checkreorder();
 
         if (firstReorder-- == 1) {
-          continue again;
+          continue;
         }
         res = BDDZERO;
         /* avoid warning about res being uninitialized */
@@ -2260,7 +2251,6 @@ public final class JFactory extends BDDFactory {
       quantcache = BddCacheI_init(cachesize);
     }
 
-    again:
     for (; ; ) {
       if (varset2vartable(var) < 0) {
         return bddfalse;
@@ -2281,7 +2271,7 @@ public final class JFactory extends BDDFactory {
         bdd_checkreorder();
 
         if (firstReorder-- == 1) {
-          continue again;
+          continue;
         }
         res = BDDZERO;
         /* avoid warning about res being uninitialized */
@@ -2311,7 +2301,6 @@ public final class JFactory extends BDDFactory {
       quantcache = BddCacheI_init(cachesize);
     }
 
-    again:
     for (; ; ) {
       try {
         INITREF();
@@ -2329,7 +2318,7 @@ public final class JFactory extends BDDFactory {
         bdd_checkreorder();
 
         if (firstReorder-- == 1) {
-          continue again;
+          continue;
         }
         res = BDDZERO;
         /* avoid warning about res being uninitialized */
@@ -2356,7 +2345,6 @@ public final class JFactory extends BDDFactory {
       misccache = BddCacheI_init(cachesize);
     }
 
-    again:
     for (; ; ) {
       if (varset2svartable(var) < 0) {
         return bddfalse;
@@ -2376,7 +2364,7 @@ public final class JFactory extends BDDFactory {
         bdd_checkreorder();
 
         if (firstReorder-- == 1) {
-          continue again;
+          continue;
         }
         res = BDDZERO;
         /* avoid warning about res being uninitialized */
@@ -2438,7 +2426,6 @@ public final class JFactory extends BDDFactory {
       applycache = BddCacheI_init(cachesize);
     }
 
-    again:
     for (; ; ) {
       try {
         INITREF();
@@ -2455,7 +2442,7 @@ public final class JFactory extends BDDFactory {
         bdd_checkreorder();
 
         if (firstReorder-- == 1) {
-          continue again;
+          continue;
         }
         res = BDDZERO;
         /* avoid warning about res being uninitialized */
@@ -2625,7 +2612,6 @@ public final class JFactory extends BDDFactory {
       quantcache = BddCacheI_init(cachesize);
     }
 
-    again:
     for (; ; ) {
       if (varset2vartable(var) < 0) {
         return bddfalse;
@@ -2648,7 +2634,7 @@ public final class JFactory extends BDDFactory {
         bdd_checkreorder();
 
         if (firstReorder-- == 1) {
-          continue again;
+          continue;
         }
         res = BDDZERO;
         /* avoid warning about res being uninitialized */
@@ -2687,7 +2673,6 @@ public final class JFactory extends BDDFactory {
       quantcache = BddCacheI_init(cachesize);
     }
 
-    again:
     for (; ; ) {
       try {
         INITREF();
@@ -2706,7 +2691,7 @@ public final class JFactory extends BDDFactory {
       } catch (ReorderException x) {
         bdd_checkreorder();
         if (firstReorder-- == 1) {
-          continue again;
+          continue;
         }
         res = BDDZERO;
         /* avoid warning about res being uninitialized */
