@@ -32,6 +32,8 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDDomain;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.bdd.BDDTestCase;
+import org.junit.internal.runners.JUnit38ClassRunner;
+import org.junit.runner.RunWith;
 
 /**
  * satCount bug
@@ -39,6 +41,7 @@ import net.sf.javabdd.bdd.BDDTestCase;
  * @author John Whaley
  * @version $Id: R1.java,v 1.6 2004/10/19 11:46:30 joewhaley Exp $
  */
+@RunWith(JUnit38ClassRunner.class)
 public class R1 extends BDDTestCase {
   public static void main(String[] args) {
     junit.textui.TestRunner.run(R1.class);
