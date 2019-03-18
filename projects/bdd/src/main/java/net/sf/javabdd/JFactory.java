@@ -52,7 +52,7 @@ import javax.annotation.Nonnull;
  * @author John Whaley
  * @version $Id: JFactory.java,v 1.28 2005/09/27 22:56:18 joewhaley Exp $
  */
-public class JFactory extends BDDFactory {
+public final class JFactory extends BDDFactory {
 
   private static final boolean VERIFY_ASSERTIONS = false;
   public static final String REVISION = "$Revision: 1.28 $";
