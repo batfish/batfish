@@ -32,7 +32,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -537,8 +536,8 @@ public class BasicTests extends BDDTestCase {
       BDD v = q.and(t);
       BDD w = u.and(t);
       // BDD x = d[1].set();
-      for (int i = 0; i < d.length; ++i) {
-        d[i].ensureCapacity(BigInteger.valueOf(150));
+      for (BDDDomain bddDomain : d) {
+        bddDomain.ensureCapacity(BigInteger.valueOf(150));
         Assert.assertEquals(BigInteger.valueOf(7), q.scanVar(d[0]));
         Assert.assertEquals(BigInteger.valueOf(9), r.scanVar(d[1]));
         Assert.assertEquals(BigInteger.valueOf(4), s.scanVar(d[2]));
@@ -595,8 +594,8 @@ public class BasicTests extends BDDTestCase {
           bdds.add(b);
         }
         StringBuffer sb = new StringBuffer();
-        for (Iterator j = bdds.iterator(); j.hasNext(); ) {
-          BDD b = (BDD) j.next();
+        for (Object bdd3 : bdds) {
+          BDD b = (BDD) bdd3;
           sb.append(b.toStringWithDomains());
           // bdd.save(new BufferedWriter(new PrintWriter(System.out)), b);
         }
@@ -606,15 +605,15 @@ public class BasicTests extends BDDTestCase {
         // System.out.println(" Ensure capacity "+d[which]+" = "+amount);
         d[which].ensureCapacity(amount);
         sb = new StringBuffer();
-        for (Iterator j = bdds.iterator(); j.hasNext(); ) {
-          BDD b = (BDD) j.next();
+        for (Object bdd2 : bdds) {
+          BDD b = (BDD) bdd2;
           sb.append(b.toStringWithDomains());
           // bdd.save(new BufferedWriter(new PrintWriter(System.out)), b);
         }
         String after = sb.toString();
         Assert.assertEquals(before, after);
-        for (Iterator j = bdds.iterator(); j.hasNext(); ) {
-          BDD b = (BDD) j.next();
+        for (Object bdd1 : bdds) {
+          BDD b = (BDD) bdd1;
           b.free();
         }
       }
@@ -663,7 +662,7 @@ public class BasicTests extends BDDTestCase {
   private static Object[] randomShuffle(Object[] a) {
     int n = a.length;
     List list = new ArrayList(Arrays.asList(a));
-    Object[] result = (Object[]) a.clone();
+    Object[] result = a.clone();
     for (int i = 0; i < n; ++i) {
       int k = random.nextInt(n - i);
       result[i] = list.remove(k);

@@ -44,7 +44,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.StringTokenizer;
 
 /**
@@ -107,14 +106,14 @@ public abstract class BDDFactory {
           "Could not load BDD package " + bddpackage + ": " + e.getLocalizedMessage());
     }
     try {
-      Class c = Class.forName(bddpackage);
-      Method m = c.getMethod("init", new Class[] {int.class, int.class});
-      return (BDDFactory)
-          m.invoke(null, new Object[] {new Integer(nodenum), new Integer(cachesize)});
-    } catch (ClassNotFoundException ignored) {
-    } catch (NoSuchMethodException ignored) {
-    } catch (IllegalAccessException ignored) {
-    } catch (InvocationTargetException ignored) {
+      Class<?> c = Class.forName(bddpackage);
+      Method m = c.getMethod("init", int.class, int.class);
+      return (BDDFactory) m.invoke(null, new Object[] {nodenum, cachesize});
+    } catch (ClassNotFoundException
+        | NoSuchMethodException
+        | IllegalAccessException
+        | InvocationTargetException ignored) {
+      // Do nothing.
     }
     // falling back to default java implementation.
     return JFactory.init(nodenum, cachesize);
@@ -197,19 +196,15 @@ public abstract class BDDFactory {
    *
    * <p>Compare to bdd_buildcube.
    */
-  public BDD buildCube(int value, List /*<BDD>*/ variables) {
+  public BDD buildCube(int value, List<BDD> variables) {
     BDD result = one();
-    Iterator i = variables.iterator();
-    int z = 0;
-    while (i.hasNext()) {
-      BDD var = (BDD) i.next();
+    for (BDD var : variables) {
       if ((value & 0x1) != 0) {
         var = var.id();
       } else {
         var = var.not();
       }
       result.andWith(var);
-      ++z;
       value >>= 1;
     }
     return result;
@@ -674,38 +669,6 @@ public abstract class BDDFactory {
   }
 
   /** Helper function for save(). */
-  protected int save_rec_original(BufferedWriter out, Map visited, BDD root) throws IOException {
-    if (root.isZero()) {
-      root.free();
-      return 0;
-    }
-    if (root.isOne()) {
-      root.free();
-      return 1;
-    }
-    Integer i = (Integer) visited.get(root);
-    if (i != null) {
-      root.free();
-      return i.intValue();
-    }
-    int v = visited.size() + 2;
-    visited.put(root, new Integer(v));
-
-    BDD l = root.low();
-    int lo = save_rec_original(out, visited, l);
-
-    BDD h = root.high();
-    int hi = save_rec_original(out, visited, h);
-
-    out.write(v + " ");
-    out.write(root.var() + " ");
-    out.write(lo + " ");
-    out.write(hi + "\n");
-
-    return v;
-  }
-
-  /** Helper function for save(). */
   protected int save_rec(BufferedWriter out, BitSet visited, BDD root) throws IOException {
     if (root.isZero()) {
       root.free();
@@ -809,9 +772,7 @@ public abstract class BDDFactory {
       this.id = id;
       this.name = name;
     }
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
+
     @Override
     public String toString() {
       return name;
@@ -1039,7 +1000,7 @@ public abstract class BDDFactory {
    *
    * <p>Compare to bdd_anodecount.
    */
-  public abstract int nodeCount(Collection /*BDD*/ r);
+  public abstract int nodeCount(Collection<BDD> r);
 
   /**
    * Get the number of allocated nodes. This includes both dead and active nodes.
@@ -1093,9 +1054,6 @@ public abstract class BDDFactory {
 
     protected GCStats() {}
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();
@@ -1204,9 +1162,6 @@ public abstract class BDDFactory {
       this.swapCount = that.swapCount;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();
@@ -1670,7 +1625,7 @@ public abstract class BDDFactory {
   }
 
   /** ** CALLBACKS *** */
-  protected List gc_callbacks, reorder_callbacks, resize_callbacks;
+  protected List<Object[]> gc_callbacks, reorder_callbacks, resize_callbacks;
 
   /**
    * Register a callback that is called when garbage collection is about to occur.
@@ -1680,7 +1635,7 @@ public abstract class BDDFactory {
    */
   public void registerGCCallback(Object o, Method m) {
     if (gc_callbacks == null) {
-      gc_callbacks = new LinkedList();
+      gc_callbacks = new LinkedList<>();
     }
     registerCallback(gc_callbacks, o, m);
   }
@@ -1708,7 +1663,7 @@ public abstract class BDDFactory {
    */
   public void registerReorderCallback(Object o, Method m) {
     if (reorder_callbacks == null) {
-      reorder_callbacks = new LinkedList();
+      reorder_callbacks = new LinkedList<>();
     }
     registerCallback(reorder_callbacks, o, m);
   }
@@ -1736,7 +1691,7 @@ public abstract class BDDFactory {
    */
   public void registerResizeCallback(Object o, Method m) {
     if (resize_callbacks == null) {
-      resize_callbacks = new LinkedList();
+      resize_callbacks = new LinkedList<>();
     }
     registerCallback(resize_callbacks, o, m);
   }
@@ -1760,7 +1715,7 @@ public abstract class BDDFactory {
     if (gc_callbacks == null) {
       bdd_default_gbchandler(pre, s);
     } else {
-      doCallbacks(gc_callbacks, new Integer(pre ? 1 : 0), s);
+      doCallbacks(gc_callbacks, pre ? 1 : 0, s);
     }
   }
 
@@ -1781,7 +1736,7 @@ public abstract class BDDFactory {
     if (reorder_callbacks == null) {
       bdd_default_reohandler(b, s);
     } else {
-      doCallbacks(reorder_callbacks, new Boolean(b), s);
+      doCallbacks(reorder_callbacks, b, s);
     }
   }
 
@@ -1800,7 +1755,7 @@ public abstract class BDDFactory {
     if (resize_callbacks == null) {
       bdd_default_reshandler(oldsize, newsize);
     } else {
-      doCallbacks(resize_callbacks, new Integer(oldsize), new Integer(newsize));
+      doCallbacks(resize_callbacks, oldsize, newsize);
     }
   }
 
@@ -1811,7 +1766,7 @@ public abstract class BDDFactory {
     }
   }
 
-  protected void registerCallback(List callbacks, Object o, Method m) {
+  protected void registerCallback(List<Object[]> callbacks, Object o, Method m) {
     if (!Modifier.isPublic(m.getModifiers()) && !m.isAccessible()) {
       throw new BDDException("Callback method not accessible");
     }
@@ -1823,19 +1778,13 @@ public abstract class BDDFactory {
         throw new BDDException("Base object for callback method is the wrong type");
       }
     }
-    if (false) {
-      Class[] params = m.getParameterTypes();
-      if (params.length != 1 || params[0] != int.class) {
-        throw new BDDException("Wrong signature for callback");
-      }
-    }
     callbacks.add(new Object[] {o, m});
   }
 
-  protected boolean unregisterCallback(List callbacks, Object o, Method m) {
+  protected boolean unregisterCallback(List<Object[]> callbacks, Object o, Method m) {
     if (callbacks != null) {
-      for (Iterator i = callbacks.iterator(); i.hasNext(); ) {
-        Object[] cb = (Object[]) i.next();
+      for (Iterator<Object[]> i = callbacks.iterator(); i.hasNext(); ) {
+        Object[] cb = i.next();
         if (o == cb[0] && m.equals(cb[1])) {
           i.remove();
           return true;
@@ -1845,22 +1794,22 @@ public abstract class BDDFactory {
     return false;
   }
 
-  protected void doCallbacks(List callbacks, Object arg1, Object arg2) {
+  protected void doCallbacks(List<Object[]> callbacks, Object arg1, Object arg2) {
     if (callbacks != null) {
-      for (Iterator i = callbacks.iterator(); i.hasNext(); ) {
-        Object[] cb = (Object[]) i.next();
+      for (Object callback : callbacks) {
+        Object[] cb = (Object[]) callback;
         Object o = cb[0];
         Method m = (Method) cb[1];
         try {
           switch (m.getParameterTypes().length) {
             case 0:
-              m.invoke(o, new Object[] {});
+              m.invoke(o);
               break;
             case 1:
-              m.invoke(o, new Object[] {arg1});
+              m.invoke(o, arg1);
               break;
             case 2:
-              m.invoke(o, new Object[] {arg1, arg2});
+              m.invoke(o, arg1, arg2);
               break;
             default:
               throw new BDDException("Wrong number of arguments for " + m);

@@ -58,14 +58,11 @@ public abstract class BDDTestCase extends TestCase implements Iterator {
       return;
     }
     Collection f = new LinkedList();
-    for (int k = 0; k < factoryNames.length; ++k) {
-      String bddpackage = factoryNames[k];
+    for (String bddpackage : factoryNames) {
       try {
         Class c = Class.forName(bddpackage);
         Method m = c.getMethod("init", new Class[] {int.class, int.class});
-        BDDFactory b =
-            (BDDFactory)
-                m.invoke(null, new Object[] {new Integer(nodenum), new Integer(cachesize)});
+        BDDFactory b = (BDDFactory) m.invoke(null, new Object[] {nodenum, cachesize});
         f.add(b);
       } catch (Throwable e) {
         if (e instanceof InvocationTargetException) {
@@ -81,8 +78,8 @@ public abstract class BDDTestCase extends TestCase implements Iterator {
     if (factories == null) {
       return;
     }
-    for (Iterator i = factories.iterator(); i.hasNext(); ) {
-      BDDFactory f = (BDDFactory) i.next();
+    for (Object factory : factories) {
+      BDDFactory f = (BDDFactory) factory;
       f.done();
     }
     factories = null;

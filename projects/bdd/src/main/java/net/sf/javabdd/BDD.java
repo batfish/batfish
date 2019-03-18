@@ -531,10 +531,10 @@ public abstract class BDD {
    * Iterator that returns all satisfying assignments as byte arrays. In the byte arrays, -1 means
    * dont-care, 0 means 0, and 1 means 1.
    */
-  public static class AllSatIterator implements Iterator {
+  public static class AllSatIterator implements Iterator<byte[]> {
 
     protected final BDDFactory f;
-    protected LinkedList loStack, hiStack;
+    protected LinkedList<BDD> loStack, hiStack;
     protected byte[] allsatProfile;
     protected final boolean useLevel;
 
@@ -564,8 +564,8 @@ public abstract class BDD {
       }
       allsatProfile = new byte[f.varNum()];
       Arrays.fill(allsatProfile, (byte) -1);
-      loStack = new LinkedList();
-      hiStack = new LinkedList();
+      loStack = new LinkedList<>();
+      hiStack = new LinkedList<>();
       if (!r.isOne()) {
         loStack.addLast(r.id());
         if (!gotoNext()) {
@@ -582,9 +582,9 @@ public abstract class BDD {
           if (hiStack.isEmpty()) {
             return false;
           }
-          r = (BDD) hiStack.removeLast();
+          r = hiStack.removeLast();
         } else {
-          r = (BDD) loStack.removeLast();
+          r = loStack.removeLast();
         }
         int LEVEL_r = r.level();
         allsatProfile[useLevel ? LEVEL_r : f.level2Var(LEVEL_r)] = lo_empty ? (byte) 1 : (byte) 0;
@@ -609,20 +609,13 @@ public abstract class BDD {
       }
     }
 
-    /* (non-Javadoc)
-     * @see java.util.Iterator#hasNext()
-     */
     @Override
     public boolean hasNext() {
       return allsatProfile != null;
     }
 
-    /**
-     * Return the next satisfying var setting.
-     *
-     * @return byte[]
-     */
-    public byte[] nextSat() {
+    @Override
+    public byte[] next() {
       if (allsatProfile == null) {
         throw new NoSuchElementException();
       }
@@ -634,17 +627,6 @@ public abstract class BDD {
       return b;
     }
 
-    /* (non-Javadoc)
-     * @see java.util.Iterator#next()
-     */
-    @Override
-    public Object next() {
-      return nextSat();
-    }
-
-    /* (non-Javadoc)
-     * @see java.util.Iterator#remove()
-     */
     @Override
     public void remove() {
       throw new UnsupportedOperationException();
@@ -869,7 +851,7 @@ public abstract class BDD {
    * @author jwhaley
    * @version $Id: BDD.java,v 1.13 2005/06/03 20:20:16 joewhaley Exp $
    */
-  public static class BDDIterator implements Iterator {
+  public static class BDDIterator implements Iterator<BDD> {
     final BDDFactory f;
     final AllSatIterator i;
     // Reference to the initial BDD object, used to support the remove() operation.
@@ -921,18 +903,14 @@ public abstract class BDD {
 
     protected void gotoNext() {
       if (i.hasNext()) {
-        a = (byte[]) i.next();
+        a = i.next();
       } else {
         a = null;
         return;
       }
       for (int i = 0; i < v.length; ++i) {
         int vi = v[i];
-        if (a[vi] == 1) {
-          b[i] = true;
-        } else {
-          b[i] = false;
-        }
+        b[i] = a[vi] == 1;
       }
     }
 
@@ -951,20 +929,32 @@ public abstract class BDD {
       return false;
     }
 
-    /* (non-Javadoc)
-     * @see java.util.Iterator#hasNext()
-     */
     @Override
     public boolean hasNext() {
       return a != null;
     }
 
-    /* (non-Javadoc)
-     * @see java.util.Iterator#next()
-     */
     @Override
-    public Object next() {
-      return nextBDD();
+    public BDD next() {
+      if (a == null) {
+        throw new NoSuchElementException();
+      }
+      // if (lastReturned != null) lastReturned.free();
+      lastReturned = f.one();
+      // for (int i = 0; i < v.length; ++i) {
+      for (int i1 = v.length - 1; i1 >= 0; --i1) {
+        int li = v[i1];
+        int vi = f.level2Var(li);
+        if (b[i1] == true) {
+          lastReturned.andWith(f.ithVar(vi));
+        } else {
+          lastReturned.andWith(f.nithVar(vi));
+        }
+      }
+      if (!gotoNextA()) {
+        gotoNext();
+      }
+      return lastReturned;
     }
 
     public BigInteger nextValue(BDDDomain dom) {
@@ -1071,36 +1061,6 @@ public abstract class BDD {
       return result;
     }
 
-    /**
-     * Return the next BDD in the iteration.
-     *
-     * @return the next BDD in the iteration
-     */
-    public BDD nextBDD() {
-      if (a == null) {
-        throw new NoSuchElementException();
-      }
-      // if (lastReturned != null) lastReturned.free();
-      lastReturned = f.one();
-      // for (int i = 0; i < v.length; ++i) {
-      for (int i = v.length - 1; i >= 0; --i) {
-        int li = v[i];
-        int vi = f.level2Var(li);
-        if (b[i] == true) {
-          lastReturned.andWith(f.ithVar(vi));
-        } else {
-          lastReturned.andWith(f.nithVar(vi));
-        }
-      }
-      if (!gotoNextA()) {
-        gotoNext();
-      }
-      return lastReturned;
-    }
-
-    /* (non-Javadoc)
-     * @see java.util.Iterator#remove()
-     */
     @Override
     public void remove() {
       if (lastReturned == null) {
@@ -1139,8 +1099,8 @@ public abstract class BDD {
         return false;
       }
       int[] vars = d.vars();
-      for (int i = 0; i < vars.length; ++i) {
-        if (!isDontCare(vars[i])) {
+      for (int var : vars) {
+        if (!isDontCare(var)) {
           return false;
         }
       }
@@ -1170,8 +1130,8 @@ public abstract class BDD {
      * @param vars set of variable indices
      */
     public void fastForward(int[] vars) {
-      for (int i = 0; i < vars.length; ++i) {
-        fastForward(vars[i]);
+      for (int var : vars) {
+        fastForward(var);
       }
     }
 
@@ -1245,24 +1205,25 @@ public abstract class BDD {
     boolean[] visited = new boolean[nodeCount() + 2];
     visited[0] = true;
     visited[1] = true;
-    HashMap map = new HashMap();
-    map.put(getFactory().zero(), new Integer(0));
-    map.put(getFactory().one(), new Integer(1));
+    HashMap<BDD, Integer> map = new HashMap<>();
+    map.put(getFactory().zero(), 0);
+    map.put(getFactory().one(), 1);
     printdot_rec(out, 1, visited, map);
 
-    for (Iterator i = map.keySet().iterator(); i.hasNext(); ) {
-      BDD b = (BDD) i.next();
+    for (Object o : map.keySet()) {
+      BDD b = (BDD) o;
       b.free();
     }
     out.println("}");
   }
 
-  protected int printdot_rec(PrintStream out, int current, boolean[] visited, HashMap map) {
-    Integer ri = ((Integer) map.get(this));
+  protected int printdot_rec(
+      PrintStream out, int current, boolean[] visited, HashMap<BDD, Integer> map) {
+    Integer ri = map.get(this);
     if (ri == null) {
-      map.put(this.id(), ri = new Integer(++current));
+      map.put(this.id(), ri = ++current);
     }
-    int r = ri.intValue();
+    int r = ri;
     if (visited[r]) {
       return current;
     }
@@ -1272,16 +1233,16 @@ public abstract class BDD {
     out.println(r + " [label=\"" + this.var() + "\"];");
 
     BDD l = this.low(), h = this.high();
-    Integer li = (Integer) map.get(l);
+    Integer li = map.get(l);
     if (li == null) {
-      map.put(l.id(), li = new Integer(++current));
+      map.put(l.id(), li = ++current);
     }
-    int low = li.intValue();
-    Integer hi = (Integer) map.get(h);
+    int low = li;
+    Integer hi = map.get(h);
     if (hi == null) {
-      map.put(h.id(), hi = new Integer(++current));
+      map.put(h.id(), hi = ++current);
     }
-    int high = hi.intValue();
+    int high = hi;
 
     out.println(r + " -> " + low + " [style=dotted];");
     out.println(r + " -> " + high + " [style=filled];");
@@ -1391,9 +1352,6 @@ public abstract class BDD {
    */
   public abstract boolean equals(BDD that);
 
-  /* (non-Javadoc)
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
   @Override
   public boolean equals(Object o) {
     if (!(o instanceof BDD)) {
@@ -1402,15 +1360,9 @@ public abstract class BDD {
     return this.equals((BDD) o);
   }
 
-  /* (non-Javadoc)
-   * @see java.lang.Object#hashCode()
-   */
   @Override
   public abstract int hashCode();
 
-  /* (non-Javadoc)
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     BDDFactory f = this.getFactory();
