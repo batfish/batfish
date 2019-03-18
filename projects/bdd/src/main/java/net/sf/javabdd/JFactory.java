@@ -2878,10 +2878,6 @@ public final class JFactory extends BDDFactory {
     }
   }
 
-  private long clock() {
-    return System.currentTimeMillis();
-  }
-
   private void INITREF() {
     bddrefstacktop = 0;
   }
@@ -3054,7 +3050,7 @@ public final class JFactory extends BDDFactory {
   private void bdd_gbc() {
     int r;
     int n;
-    long c2, c1 = clock();
+    long c2, c1 = System.currentTimeMillis();
 
     // if (gbc_handler != NULL)
     {
@@ -3103,7 +3099,7 @@ public final class JFactory extends BDDFactory {
       bdd_operator_clean();
     }
 
-    c2 = clock();
+    c2 = System.currentTimeMillis();
     gbcclock += c2 - c1;
     gbcollectnum++;
 
@@ -3634,7 +3630,7 @@ public final class JFactory extends BDDFactory {
     return cache;
   }
 
-  private void BddCache_done(BddCache cache) {
+  private static void BddCache_done(BddCache cache) {
     if (cache == null) {
       return;
     }
@@ -3674,15 +3670,15 @@ public final class JFactory extends BDDFactory {
     return 0;
   }
 
-  private BddCacheDataI BddCache_lookupI(BddCache cache, int hash) {
+  private static BddCacheDataI BddCache_lookupI(BddCache cache, int hash) {
     return (BddCacheDataI) cache.table[Math.abs(hash % cache.tablesize)];
   }
 
-  private BddCacheDataD BddCache_lookupD(BddCache cache, int hash) {
+  private static BddCacheDataD BddCache_lookupD(BddCache cache, int hash) {
     return (BddCacheDataD) cache.table[Math.abs(hash % cache.tablesize)];
   }
 
-  private void BddCache_reset(BddCache cache) {
+  private static void BddCache_reset(BddCache cache) {
     if (cache == null) {
       return;
     }
@@ -3998,7 +3994,7 @@ public final class JFactory extends BDDFactory {
     }
   }
 
-  private BddTree bddtree_new(int id) {
+  private static BddTree bddtree_new(int id) {
     BddTree t = new BddTree();
 
     t.firstVar = t.lastVar = t.firstLevel = t.lastLevel = -1;
@@ -4354,7 +4350,7 @@ public final class JFactory extends BDDFactory {
     }
 
     for (n = 0; n < num; n++) {
-      long c2, c1 = clock();
+      long c2, c1 = System.currentTimeMillis();
 
       if (verbose > 1) {
         System.out.print("Sift ");
@@ -4372,7 +4368,7 @@ public final class JFactory extends BDDFactory {
         System.out.print("> " + reorder_nodenum() + " nodes");
       }
 
-      c2 = clock();
+      c2 = System.currentTimeMillis();
       if (verbose > 1) {
         System.out.println(" (" + (float) (c2 - c1) / (float) 1000 + " sec)\n");
       }
@@ -4752,7 +4748,7 @@ public final class JFactory extends BDDFactory {
     throw new BDDException("Cannot find tree node " + child);
   }
 
-  protected BddTree getParent(BddTree parent, BddTree child) {
+  protected static BddTree getParent(BddTree parent, BddTree child) {
     if (parent.nextlevel == null) {
       return null;
     }
@@ -4768,7 +4764,7 @@ public final class JFactory extends BDDFactory {
     return null;
   }
 
-  private BddTree getBlock(BddTree t, int low, int high) {
+  private static BddTree getBlock(BddTree t, int low, int high) {
     if (t == null) {
       return null;
     }
@@ -5425,7 +5421,7 @@ public final class JFactory extends BDDFactory {
     vartree = null;
   }
 
-  private void bddtree_del(BddTree t) {
+  private static void bddtree_del(BddTree t) {
     if (t == null) {
       return;
     }
@@ -5521,7 +5517,7 @@ public final class JFactory extends BDDFactory {
     return 0;
   }
 
-  private boolean imatrixDepends(imatrix mtx, int a, int b) {
+  private static boolean imatrixDepends(imatrix mtx, int a, int b) {
     return (mtx.rows[a][b / 8] & (1 << (b % 8))) != 0;
   }
 
@@ -6076,7 +6072,7 @@ public final class JFactory extends BDDFactory {
     return 0;
   }
 
-  private imatrix imatrixNew(int size) {
+  private static imatrix imatrixNew(int size) {
     imatrix mtx = new imatrix();
     int n;
 
@@ -6133,7 +6129,7 @@ public final class JFactory extends BDDFactory {
     }
   }
 
-  private void imatrixSet(imatrix mtx, int a, int b) {
+  private static void imatrixSet(imatrix mtx, int a, int b) {
     mtx.rows[a][b / 8] |= 1 << (b % 8);
   }
 
@@ -6187,7 +6183,7 @@ public final class JFactory extends BDDFactory {
     reorder_handler(false, reorderstats);
   }
 
-  private void imatrixDelete(imatrix mtx) {
+  private static void imatrixDelete(imatrix mtx) {
     int n;
 
     for (n = 0; n < mtx.size; n++) {
@@ -6715,7 +6711,7 @@ public final class JFactory extends BDDFactory {
     }
   }
 
-  private void print_order_rec(PrintStream o, BddTree t, int level) {
+  private static void print_order_rec(PrintStream o, BddTree t, int level) {
     if (t == null) {
       return;
     }
