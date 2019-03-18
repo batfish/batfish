@@ -28,7 +28,6 @@
  */
 package net.sf.javabdd.highlevel;
 
-import junit.framework.Assert;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.bdd.BDDTestCase;
@@ -72,15 +71,15 @@ public class NQueensTest extends BDDTestCase {
   };
 
   public void testNQueens() {
-    Assert.assertTrue(hasNext());
+    assertTrue(hasNext());
     int numberOfNodes = (int) (Math.pow(4.42, CHECK - 6)) * 1000;
     while (hasNext()) {
-      NQueens.B = nextFactory();
+      NQueens.B = next();
       NQueens.B.setNodeTableSize(numberOfNodes);
       for (int i = 1; i <= CHECK; ++i) {
         NQueens.N = i;
         double n = NQueens.runTest();
-        Assert.assertEquals(n, ANSWERS[i - 1], 0.1);
+        assertEquals(n, ANSWERS[i - 1], 0.1);
         NQueens.freeAll();
       }
     }

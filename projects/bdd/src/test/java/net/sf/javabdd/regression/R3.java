@@ -28,7 +28,6 @@
  */
 package net.sf.javabdd.regression;
 
-import junit.framework.Assert;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.bdd.BDDTestCase;
@@ -45,10 +44,10 @@ public class R3 extends BDDTestCase {
   }
 
   public void testR3() {
-    Assert.assertTrue(hasNext());
+    assertTrue(hasNext());
     while (hasNext()) {
 
-      BDDFactory bdd = nextFactory();
+      BDDFactory bdd = next();
       BDD x0, x1, y0, y1, z0, z1, t, or, one;
       bdd.setVarNum(5);
       x0 = bdd.ithVar(0);
@@ -58,26 +57,26 @@ public class R3 extends BDDTestCase {
 
       z0 = or.unique(x0);
       t = x1.not();
-      Assert.assertTrue(z0.toString(), z0.equals(t));
+      assertTrue(z0.toString(), z0.equals(t));
       t.free();
 
       z1 = or.unique(x1);
       t = x0.not();
-      Assert.assertTrue(z1.toString(), z1.equals(t));
+      assertTrue(z1.toString(), z1.equals(t));
       t.free();
 
       t = one.unique(x0);
-      Assert.assertTrue(t.toString(), t.isZero());
+      assertTrue(t.toString(), t.isZero());
       t.free();
 
       y0 = x0.applyUni(x1, BDDFactory.or, x0);
       t = x1.not();
-      Assert.assertTrue(y0.toString(), y0.equals(t));
+      assertTrue(y0.toString(), y0.equals(t));
       t.free();
 
       y1 = x0.applyUni(x1, BDDFactory.or, x1);
       t = x0.not();
-      Assert.assertTrue(y1.toString(), y1.equals(t));
+      assertTrue(y1.toString(), y1.equals(t));
       t.free();
 
       x0.free();
