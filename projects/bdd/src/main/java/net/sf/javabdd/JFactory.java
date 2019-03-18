@@ -54,7 +54,7 @@ import javax.annotation.Nonnull;
  */
 public class JFactory extends BDDFactory {
 
-  static final boolean VERIFY_ASSERTIONS = false;
+  private static final boolean VERIFY_ASSERTIONS = false;
   public static final String REVISION = "$Revision: 1.28 $";
 
   @Override
@@ -72,8 +72,8 @@ public class JFactory extends BDDFactory {
     return f;
   }
 
-  static final boolean USE_FINALIZER = true;
-  public static boolean FLUSH_CACHE_ON_GC = true;
+  private static final boolean USE_FINALIZER = true;
+  private static final boolean FLUSH_CACHE_ON_GC = true;
 
   /** Private helper function to create BDD objects. */
   private BDDImpl makeBDD(int id) {

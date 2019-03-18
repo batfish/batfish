@@ -63,10 +63,10 @@ public class MicroFactory extends BDDFactory {
   // 27(high)+27(low)+9(refcount)+1(mark)+27(hash)+27(next)+10(var) = 128 bits
   //
 
-  static final boolean VERIFY_ASSERTIONS = false;
-  static final boolean USE_FINALIZER = false;
-  static final int CACHESTATS = 0;
-  public static boolean FLUSH_CACHE_ON_GC = true;
+  private static final boolean VERIFY_ASSERTIONS = false;
+  private static final boolean USE_FINALIZER = false;
+  private static final int CACHESTATS = 0;
+  private static final boolean FLUSH_CACHE_ON_GC = true;
 
   private MicroFactory() {}
 
