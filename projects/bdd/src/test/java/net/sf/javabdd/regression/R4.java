@@ -28,7 +28,6 @@
  */
 package net.sf.javabdd.regression;
 
-import junit.framework.Assert;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.bdd.BDDTestCase;
@@ -45,18 +44,18 @@ public class R4 extends BDDTestCase {
   }
 
   public void testR4() {
-    Assert.assertTrue(hasNext());
+    assertTrue(hasNext());
     while (hasNext()) {
-      BDDFactory f = nextFactory();
+      BDDFactory f = next();
       f.setVarNum(2);
       BDD bdd1 = f.ithVar(0);
       BDD.AllSatIterator i = bdd1.allsat();
-      Assert.assertTrue(i.hasNext());
-      byte[] b = (byte[]) i.next();
-      Assert.assertTrue(!i.hasNext());
-      Assert.assertEquals(b.length, 2);
-      Assert.assertEquals(b[0], 1);
-      Assert.assertEquals(b[1], -1);
+      assertTrue(i.hasNext());
+      byte[] b = i.next();
+      assertTrue(!i.hasNext());
+      assertEquals(b.length, 2);
+      assertEquals(b[0], 1);
+      assertEquals(b[1], -1);
       bdd1.free();
     }
   }

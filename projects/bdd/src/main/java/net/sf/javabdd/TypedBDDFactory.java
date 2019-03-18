@@ -34,12 +34,13 @@ import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 /**
  * This BDD factory keeps track of what domains each BDD uses, and complains if you try to do an
@@ -72,8 +73,7 @@ public class TypedBDDFactory extends BDDFactory {
 
   @Override
   public BDD one() {
-    Set s = makeSet();
-    // Set s = allDomains();
+    Set<BDDDomain> s = makeSet();
     return new TypedBDD(factory.one(), s);
   }
 
@@ -166,7 +166,7 @@ public class TypedBDDFactory extends BDDFactory {
 
   @Override
   public BDD ithVar(int var) {
-    Set s = makeSet();
+    Set<BDDDomain> s = makeSet();
     // BDDDomain d = whichDomain(var);
     // if (d != null) s.add(d);
     return new TypedBDD(factory.ithVar(var), s);
@@ -174,7 +174,7 @@ public class TypedBDDFactory extends BDDFactory {
 
   @Override
   public BDD nithVar(int var) {
-    Set s = makeSet();
+    Set<BDDDomain> s = makeSet();
     // BDDDomain d = whichDomain(var);
     // if (d != null) s.add(d);
     return new TypedBDD(factory.nithVar(var), s);
@@ -194,7 +194,7 @@ public class TypedBDDFactory extends BDDFactory {
   @Override
   public BDD load(String filename) throws IOException {
     // TODO domains?
-    Set d = makeSet();
+    Set<BDDDomain> d = makeSet();
     return new TypedBDD(factory.load(filename), d);
   }
 
@@ -287,12 +287,8 @@ public class TypedBDDFactory extends BDDFactory {
 
   @Override
   public int nodeCount(Collection<BDD> r) {
-    Collection s = new LinkedList();
-    for (Object o : r) {
-      TypedBDD bdd1 = (TypedBDD) o;
-      s.add(bdd1.bdd);
-    }
-    return factory.nodeCount(s);
+    List<BDD> inner = r.stream().map(t -> ((TypedBDD) t).bdd).collect(Collectors.toList());
+    return factory.nodeCount(inner);
   }
 
   @Override
@@ -346,34 +342,33 @@ public class TypedBDDFactory extends BDDFactory {
     return super.extDomain(domainSizes);
   }
 
-  public static Set makeSet() {
-    // return SortedArraySet.FACTORY.makeSet(domain_comparator);
-    return new TreeSet(domain_comparator);
+  public static Set<BDDDomain> makeSet() {
+    // return SortedArraySet.FACTORY.makeSet(DOMAIN_COMPARATOR);
+    return new TreeSet<>(DOMAIN_COMPARATOR);
   }
 
-  public static Set makeSet(Set s) {
-    // Set r = SortedArraySet.FACTORY.makeSet(domain_comparator);
-    Set r = new TreeSet(domain_comparator);
+  public static Set<BDDDomain> makeSet(Set<BDDDomain> s) {
+    Set<BDDDomain> r = new TreeSet<>(DOMAIN_COMPARATOR);
     r.addAll(s);
     return r;
   }
 
-  public Set allDomains() {
-    Set r = makeSet();
+  public Set<BDDDomain> allDomains() {
+    Set<BDDDomain> r = makeSet();
     for (int i = 0; i < factory.numberOfDomains(); ++i) {
       r.add(factory.getDomain(i));
     }
     return r;
   }
 
-  public static Map makeMap() {
-    return new TreeMap(domain_comparator);
+  public static Map<BDDDomain, BDDDomain> makeMap() {
+    return new TreeMap<>(DOMAIN_COMPARATOR);
   }
 
-  public static String domainNames(Set dom) {
-    StringBuffer sb = new StringBuffer();
-    for (Iterator i = dom.iterator(); i.hasNext(); ) {
-      BDDDomain d = (BDDDomain) i.next();
+  public static String domainNames(Set<BDDDomain> dom) {
+    StringBuilder sb = new StringBuilder();
+    for (Iterator<BDDDomain> i = dom.iterator(); i.hasNext(); ) {
+      BDDDomain d = i.next();
       sb.append(d.getName());
       if (i.hasNext()) {
         sb.append(',');
@@ -382,22 +377,8 @@ public class TypedBDDFactory extends BDDFactory {
     return sb.toString();
   }
 
-  public static final Comparator domain_comparator =
-      new Comparator() {
-
-        @Override
-        public int compare(Object arg0, Object arg1) {
-          BDDDomain d1 = (BDDDomain) arg0;
-          BDDDomain d2 = (BDDDomain) arg1;
-          if (d1.getIndex() < d2.getIndex()) {
-            return -1;
-          } else if (d1.getIndex() > d2.getIndex()) {
-            return 1;
-          } else {
-            return 0;
-          }
-        }
-      };
+  private static final Comparator<BDDDomain> DOMAIN_COMPARATOR =
+      Comparator.comparingInt(BDDDomain::getIndex);
 
   /**
    * A BDD with types (domains) attached to it.
@@ -408,20 +389,20 @@ public class TypedBDDFactory extends BDDFactory {
   public class TypedBDD extends BDD {
 
     final BDD bdd;
-    final Set dom;
+    final Set<BDDDomain> dom;
 
-    public TypedBDD(BDD bdd, Set dom) {
+    public TypedBDD(BDD bdd, Set<BDDDomain> dom) {
       this.bdd = bdd;
       this.dom = dom;
     }
 
     /** Returns the set of domains that this BDD uses. */
-    public Set getDomainSet() {
+    public Set<BDDDomain> getDomainSet() {
       return dom;
     }
 
     /** Changes this BDD's domains to be the given set. */
-    public void setDomains(Set d) {
+    public void setDomains(Set<BDDDomain> d) {
       dom.clear();
       dom.addAll(d);
     }
@@ -520,7 +501,7 @@ public class TypedBDDFactory extends BDDFactory {
     public BDD ite(BDD thenBDD, BDD elseBDD) {
       TypedBDD bdd1 = (TypedBDD) thenBDD;
       TypedBDD bdd2 = (TypedBDD) elseBDD;
-      Set newDom = makeSet();
+      Set<BDDDomain> newDom = makeSet();
       newDom.addAll(dom);
       newDom.addAll(bdd1.dom);
       newDom.addAll(bdd2.dom);
@@ -531,7 +512,7 @@ public class TypedBDDFactory extends BDDFactory {
     public BDD relprod(BDD that, BDD var) {
       TypedBDD bdd1 = (TypedBDD) that;
       TypedBDD bdd2 = (TypedBDD) var;
-      Set newDom = makeSet();
+      Set<BDDDomain> newDom = makeSet();
       newDom.addAll(dom);
       newDom.addAll(bdd1.dom);
       if (!newDom.containsAll(bdd2.dom)) {
@@ -548,7 +529,7 @@ public class TypedBDDFactory extends BDDFactory {
     public BDD compose(BDD g, int var) {
       TypedBDD bdd1 = (TypedBDD) g;
       // TODO How does this change the domains?
-      Set newDom = makeSet();
+      Set<BDDDomain> newDom = makeSet();
       newDom.addAll(dom);
       return new TypedBDD(bdd.compose(bdd1.bdd, var), newDom);
     }
@@ -557,7 +538,7 @@ public class TypedBDDFactory extends BDDFactory {
     public BDD veccompose(BDDPairing pair) {
       TypedBDDPairing p = (TypedBDDPairing) pair;
       // TODO How does this change the domains?
-      Set newDom = makeSet();
+      Set<BDDDomain> newDom = makeSet();
       newDom.addAll(dom);
       return new TypedBDD(bdd.veccompose(p.pairing), newDom);
     }
@@ -566,7 +547,7 @@ public class TypedBDDFactory extends BDDFactory {
     public BDD constrain(BDD that) {
       TypedBDD bdd1 = (TypedBDD) that;
       // TODO How does this change the domains?
-      Set newDom = makeSet();
+      Set<BDDDomain> newDom = makeSet();
       newDom.addAll(dom);
       return new TypedBDD(bdd.constrain(bdd1.bdd), newDom);
     }
@@ -574,7 +555,7 @@ public class TypedBDDFactory extends BDDFactory {
     @Override
     public BDD exist(BDD var) {
       TypedBDD bdd1 = (TypedBDD) var;
-      Set newDom = makeSet();
+      Set<BDDDomain> newDom = makeSet();
       newDom.addAll(dom);
       if (!newDom.containsAll(bdd1.dom)) {
         out.println("Warning! Quantifying domain that doesn't exist: " + domainNames(bdd1.dom));
@@ -589,7 +570,7 @@ public class TypedBDDFactory extends BDDFactory {
     @Override
     public BDD forAll(BDD var) {
       TypedBDD bdd1 = (TypedBDD) var;
-      Set newDom = makeSet();
+      Set<BDDDomain> newDom = makeSet();
       newDom.addAll(dom);
       if (!newDom.containsAll(bdd1.dom)) {
         out.println("Warning! Quantifying domain that doesn't exist: " + domainNames(bdd1.dom));
@@ -604,7 +585,7 @@ public class TypedBDDFactory extends BDDFactory {
     @Override
     public BDD unique(BDD var) {
       TypedBDD bdd1 = (TypedBDD) var;
-      Set newDom = makeSet();
+      Set<BDDDomain> newDom = makeSet();
       newDom.addAll(dom);
       if (!newDom.containsAll(bdd1.dom)) {
         out.println("Warning! Quantifying domain that doesn't exist: " + domainNames(bdd1.dom));
@@ -619,7 +600,7 @@ public class TypedBDDFactory extends BDDFactory {
     @Override
     public BDD restrict(BDD var) {
       TypedBDD bdd1 = (TypedBDD) var;
-      Set newDom = makeSet();
+      Set<BDDDomain> newDom = makeSet();
       newDom.addAll(dom);
       if (!newDom.containsAll(bdd1.dom)) {
         out.println("Warning! Restricting domain that doesn't exist: " + domainNames(bdd1.dom));
@@ -661,7 +642,7 @@ public class TypedBDDFactory extends BDDFactory {
     public BDD simplify(BDD d) {
       TypedBDD bdd1 = (TypedBDD) d;
       // TODO How does this change the domains?
-      Set newDom = makeSet();
+      Set<BDDDomain> newDom = makeSet();
       newDom.addAll(dom);
       return new TypedBDD(bdd.simplify(bdd1.bdd), newDom);
     }
@@ -669,12 +650,12 @@ public class TypedBDDFactory extends BDDFactory {
     @Override
     public BDD support() {
       // TODO How does this change the domains?
-      Set newDom = makeSet();
+      Set<BDDDomain> newDom = makeSet();
       newDom.addAll(dom);
       return new TypedBDD(bdd.support(), newDom);
     }
 
-    void applyHelper(Set newDom, TypedBDD bdd0, TypedBDD bdd1, BDDOp opr) {
+    void applyHelper(Set<BDDDomain> newDom, TypedBDD bdd0, TypedBDD bdd1, BDDOp opr) {
       switch (opr.id) {
         case 1: // xor
         case 2: // or
@@ -707,7 +688,7 @@ public class TypedBDDFactory extends BDDFactory {
     @Override
     public BDD apply(BDD that, BDDOp opr) {
       TypedBDD bdd1 = (TypedBDD) that;
-      Set newDom = makeSet();
+      Set<BDDDomain> newDom = makeSet();
       newDom.addAll(dom);
       applyHelper(newDom, this, bdd1, opr);
       return new TypedBDD(bdd.apply(bdd1.bdd, opr), newDom);
@@ -724,7 +705,7 @@ public class TypedBDDFactory extends BDDFactory {
     @Override
     public BDD applyAll(BDD that, BDDOp opr, BDD var) {
       TypedBDD bdd1 = (TypedBDD) that;
-      Set newDom = makeSet();
+      Set<BDDDomain> newDom = makeSet();
       newDom.addAll(dom);
       applyHelper(newDom, this, bdd1, opr);
       TypedBDD bdd2 = (TypedBDD) var;
@@ -751,7 +732,7 @@ public class TypedBDDFactory extends BDDFactory {
     @Override
     public BDD applyEx(BDD that, BDDOp opr, BDD var) {
       TypedBDD bdd1 = (TypedBDD) that;
-      Set newDom = makeSet();
+      Set<BDDDomain> newDom = makeSet();
       newDom.addAll(dom);
       applyHelper(newDom, this, bdd1, opr);
       TypedBDD bdd2 = (TypedBDD) var;
@@ -778,7 +759,7 @@ public class TypedBDDFactory extends BDDFactory {
     @Override
     public BDD applyUni(BDD that, BDDOp opr, BDD var) {
       TypedBDD bdd1 = (TypedBDD) that;
-      Set newDom = makeSet();
+      Set<BDDDomain> newDom = makeSet();
       newDom.addAll(dom);
       applyHelper(newDom, this, bdd1, opr);
       TypedBDD bdd2 = (TypedBDD) var;
@@ -815,7 +796,7 @@ public class TypedBDDFactory extends BDDFactory {
     @Override
     public BDD satOne(BDD var, boolean pol) {
       TypedBDD bdd1 = (TypedBDD) var;
-      Set newDom = makeSet();
+      Set<BDDDomain> newDom = makeSet();
       newDom.addAll(dom);
       if (!newDom.containsAll(bdd1.dom)) {
         out.println("Warning! Selecting domain that doesn't exist: " + domainNames(bdd1.dom));
@@ -835,12 +816,11 @@ public class TypedBDDFactory extends BDDFactory {
     @Override
     public BDD replace(BDDPairing pair) {
       TypedBDDPairing tpair = (TypedBDDPairing) pair;
-      Set newDom = makeSet();
+      Set<BDDDomain> newDom = makeSet();
       newDom.addAll(dom);
-      for (Object o : tpair.domMap.entrySet()) {
-        Entry e = (Entry) o;
-        BDDDomain d_from = (BDDDomain) e.getKey();
-        BDDDomain d_to = (BDDDomain) e.getValue();
+      for (Entry<BDDDomain, BDDDomain> e : tpair.domMap.entrySet()) {
+        BDDDomain d_from = e.getKey();
+        BDDDomain d_to = e.getValue();
         // System.out.println("Replace "+domainNames(dom)+" ("+d_from+"->"+d_to+")");
         if (!dom.contains(d_from)) {
           out.println("Warning! Replacing domain that doesn't exist: " + d_from.getName());
@@ -860,10 +840,9 @@ public class TypedBDDFactory extends BDDFactory {
     @Override
     public BDD replaceWith(BDDPairing pair) {
       TypedBDDPairing tpair = (TypedBDDPairing) pair;
-      for (Object o : tpair.domMap.entrySet()) {
-        Entry e = (Entry) o;
-        BDDDomain d_from = (BDDDomain) e.getKey();
-        BDDDomain d_to = (BDDDomain) e.getValue();
+      for (Entry<BDDDomain, BDDDomain> e : tpair.domMap.entrySet()) {
+        BDDDomain d_from = e.getKey();
+        BDDDomain d_to = e.getValue();
         if (!dom.contains(d_from)) {
           out.println("Warning! Replacing domain that doesn't exist: " + d_from.getName());
           new Exception().printStackTrace();
@@ -941,7 +920,7 @@ public class TypedBDDFactory extends BDDFactory {
     }
 
     public BDDIterator iterator() {
-      Set newDom = makeSet();
+      Set<BDDDomain> newDom = makeSet();
       newDom.addAll(dom);
       return super.iterator(new TypedBDD(getDomains(), newDom));
     }
@@ -970,7 +949,7 @@ public class TypedBDDFactory extends BDDFactory {
     @Override
     public BDD ithVar(long val) {
       BDD v = domain.ithVar(val);
-      Set s = makeSet();
+      Set<BDDDomain> s = makeSet();
       s.add(this);
       return new TypedBDD(v, s);
     }
@@ -978,7 +957,7 @@ public class TypedBDDFactory extends BDDFactory {
     @Override
     public BDD domain() {
       BDD v = domain.domain();
-      Set s = makeSet();
+      Set<BDDDomain> s = makeSet();
       s.add(this);
       return new TypedBDD(v, s);
     }
@@ -987,7 +966,7 @@ public class TypedBDDFactory extends BDDFactory {
     public BDD buildAdd(BDDDomain that, int bits, long value) {
       TypedBDDDomain d = (TypedBDDDomain) that;
       BDD v = domain.buildAdd(d.domain, bits, value);
-      Set s = makeSet();
+      Set<BDDDomain> s = makeSet();
       s.add(this);
       s.add(that);
       return new TypedBDD(v, s);
@@ -997,7 +976,7 @@ public class TypedBDDFactory extends BDDFactory {
     public BDD buildEquals(BDDDomain that) {
       TypedBDDDomain d = (TypedBDDDomain) that;
       BDD v = domain.buildEquals(d.domain);
-      Set s = makeSet();
+      Set<BDDDomain> s = makeSet();
       s.add(this);
       s.add(that);
       return new TypedBDD(v, s);
@@ -1006,7 +985,7 @@ public class TypedBDDFactory extends BDDFactory {
     @Override
     public BDD set() {
       BDD v = domain.set();
-      Set s = makeSet();
+      Set<BDDDomain> s = makeSet();
       s.add(this);
       return new TypedBDD(v, s);
     }
@@ -1014,7 +993,7 @@ public class TypedBDDFactory extends BDDFactory {
     @Override
     public BDD varRange(BigInteger lo, BigInteger hi) {
       BDD v = domain.varRange(lo, hi);
-      Set s = makeSet();
+      Set<BDDDomain> s = makeSet();
       s.add(this);
       return new TypedBDD(v, s);
     }
@@ -1022,7 +1001,7 @@ public class TypedBDDFactory extends BDDFactory {
 
   private static class TypedBDDPairing extends BDDPairing {
 
-    final Map domMap;
+    final Map<BDDDomain, BDDDomain> domMap;
     final BDDPairing pairing;
 
     TypedBDDPairing(BDDPairing pairing) {

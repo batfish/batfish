@@ -29,7 +29,6 @@
 package net.sf.javabdd.bdd;
 
 import java.lang.reflect.Method;
-import junit.framework.Assert;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 
@@ -60,17 +59,14 @@ public class CallbackTests extends BDDTestCase {
     try {
       m =
           CallbackTests.class.getDeclaredMethod(
-              "my_gc_callback", new Class[] {int.class, BDDFactory.GCStats.class});
-    } catch (SecurityException e) {
-      Assert.fail(e.toString());
-      return;
-    } catch (NoSuchMethodException e) {
-      Assert.fail(e.toString());
+              "my_gc_callback", int.class, BDDFactory.GCStats.class);
+    } catch (SecurityException | NoSuchMethodException e) {
+      fail(e.toString());
       return;
     }
-    Assert.assertTrue(hasNext());
+    assertTrue(hasNext());
     while (hasNext()) {
-      BDDFactory bdd = nextFactory();
+      BDDFactory bdd = next();
       bdd.registerGCCallback(this, m);
       gc_called = 0;
       final int numBits = 20;
@@ -89,7 +85,7 @@ public class CallbackTests extends BDDTestCase {
         BDD v = bdd.buildCube(i, vars);
         v.free();
       }
-      Assert.assertTrue(gc_called > 0);
+      assertTrue(gc_called > 0);
       bdd.unregisterGCCallback(this, m);
     }
   }
@@ -109,17 +105,14 @@ public class CallbackTests extends BDDTestCase {
     try {
       m =
           CallbackTests.class.getDeclaredMethod(
-              "my_reorder_callback", new Class[] {boolean.class, BDDFactory.ReorderStats.class});
-    } catch (SecurityException e) {
-      Assert.fail(e.toString());
-      return;
-    } catch (NoSuchMethodException e) {
-      Assert.fail(e.toString());
+              "my_reorder_callback", boolean.class, BDDFactory.ReorderStats.class);
+    } catch (SecurityException | NoSuchMethodException e) {
+      fail(e.toString());
       return;
     }
-    Assert.assertTrue(hasNext());
+    assertTrue(hasNext());
     while (hasNext()) {
-      BDDFactory bdd = nextFactory();
+      BDDFactory bdd = next();
       bdd.registerReorderCallback(this, m);
       reorder_called = false;
       if (bdd.varNum() < 5) {
@@ -131,7 +124,7 @@ public class CallbackTests extends BDDTestCase {
       x.andWith(bdd.ithVar(2));
       x.andWith(bdd.ithVar(3));
       bdd.reorder(BDDFactory.REORDER_SIFT);
-      Assert.assertTrue(reorder_called);
+      assertTrue(reorder_called);
       x.free();
       bdd.unregisterReorderCallback(this, m);
     }
@@ -148,24 +141,19 @@ public class CallbackTests extends BDDTestCase {
     reset();
     Method m;
     try {
-      m =
-          CallbackTests.class.getDeclaredMethod(
-              "my_resize_callback", new Class[] {int.class, int.class});
-    } catch (SecurityException e) {
-      Assert.fail(e.toString());
-      return;
-    } catch (NoSuchMethodException e) {
-      Assert.fail(e.toString());
+      m = CallbackTests.class.getDeclaredMethod("my_resize_callback", int.class, int.class);
+    } catch (SecurityException | NoSuchMethodException e) {
+      fail(e.toString());
       return;
     }
-    Assert.assertTrue(hasNext());
+    assertTrue(hasNext());
     while (hasNext()) {
-      BDDFactory bdd = nextFactory();
+      BDDFactory bdd = next();
       bdd.registerResizeCallback(this, m);
       resize_called = false;
       int newSize = bdd.getNodeTableSize() * 2;
       bdd.setNodeTableSize(newSize);
-      Assert.assertTrue(resize_called);
+      assertTrue(resize_called);
       bdd.unregisterResizeCallback(this, m);
     }
   }

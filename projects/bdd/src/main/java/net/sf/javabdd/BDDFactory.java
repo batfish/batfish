@@ -658,14 +658,8 @@ public abstract class BDDFactory {
     }
     out.write("\n");
 
-    // Map visited = new HashMap();
     BitSet visited = new BitSet(getNodeTableSize());
     save_rec(out, visited, r.id());
-
-    // for (Iterator it = visited.keySet().iterator(); it.hasNext(); ) {
-    //    BDD b = (BDD) it.next();
-    //    if (b != r) b.free();
-    // }
   }
 
   /** Helper function for save(). */
@@ -1056,7 +1050,7 @@ public abstract class BDDFactory {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("Garbage collection #");
       sb.append(num);
       sb.append(": ");
@@ -1109,7 +1103,7 @@ public abstract class BDDFactory {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("Went from ");
       sb.append(usednum_before);
       sb.append(" to ");
@@ -1164,7 +1158,7 @@ public abstract class BDDFactory {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       String newLine = getProperty("line.separator", "\n");
       sb.append(newLine);
       sb.append("Cache statistics");
@@ -1814,9 +1808,7 @@ public abstract class BDDFactory {
             default:
               throw new BDDException("Wrong number of arguments for " + m);
           }
-        } catch (IllegalArgumentException e) {
-          e.printStackTrace();
-        } catch (IllegalAccessException e) {
+        } catch (IllegalArgumentException | IllegalAccessException e) {
           e.printStackTrace();
         } catch (InvocationTargetException e) {
           if (e.getTargetException() instanceof RuntimeException) {

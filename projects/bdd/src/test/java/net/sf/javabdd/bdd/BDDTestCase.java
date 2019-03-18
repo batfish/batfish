@@ -42,26 +42,25 @@ import net.sf.javabdd.BDDFactory;
  * @author John Whaley
  * @version $Id: BDDTestCase.java,v 1.8 2005/06/29 08:01:54 joewhaley Exp $
  */
-public abstract class BDDTestCase extends TestCase implements Iterator {
+public abstract class BDDTestCase extends TestCase implements Iterator<BDDFactory> {
 
   public static final String[] factoryNames = {
-    "net.sf.javabdd.JFactory",
-    // "net.sf.javabdd.MicroFactory",
+    "net.sf.javabdd.JFactory", "net.sf.javabdd.MicroFactory",
   };
 
-  protected static Collection factories;
-  protected Iterator i;
-  protected int nodenum, cachesize;
+  private static Collection<BDDFactory> factories;
+  private Iterator<BDDFactory> i;
+  private int nodenum, cachesize;
 
-  protected void initFactories() {
+  private void initFactories() {
     if (factories != null) {
       return;
     }
-    Collection f = new LinkedList();
+    Collection<BDDFactory> f = new LinkedList<>();
     for (String bddpackage : factoryNames) {
       try {
-        Class c = Class.forName(bddpackage);
-        Method m = c.getMethod("init", new Class[] {int.class, int.class});
+        Class<?> c = Class.forName(bddpackage);
+        Method m = c.getMethod("init", int.class, int.class);
         BDDFactory b = (BDDFactory) m.invoke(null, new Object[] {nodenum, cachesize});
         f.add(b);
       } catch (Throwable e) {
@@ -85,7 +84,7 @@ public abstract class BDDTestCase extends TestCase implements Iterator {
     factories = null;
   }
 
-  public BDDTestCase(int nodenum, int cachesize) {
+  protected BDDTestCase(int nodenum, int cachesize) {
     this.nodenum = nodenum;
     this.cachesize = cachesize;
   }
@@ -101,15 +100,11 @@ public abstract class BDDTestCase extends TestCase implements Iterator {
     reset();
   }
 
-  public BDDFactory nextFactory() {
-    BDDFactory f = (BDDFactory) i.next();
+  @Override
+  public BDDFactory next() {
+    BDDFactory f = i.next();
     f.reset();
     return f;
-  }
-
-  @Override
-  public Object next() {
-    return nextFactory();
   }
 
   @Override
@@ -122,7 +117,7 @@ public abstract class BDDTestCase extends TestCase implements Iterator {
     i.remove();
   }
 
-  public void reset() {
+  protected void reset() {
     i = factories.iterator();
   }
 

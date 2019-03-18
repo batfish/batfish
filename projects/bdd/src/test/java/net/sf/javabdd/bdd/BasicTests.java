@@ -35,7 +35,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
-import junit.framework.Assert;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDDomain;
 import net.sf.javabdd.BDDException;
@@ -56,21 +55,21 @@ public class BasicTests extends BDDTestCase {
 
   public void testIsZeroOne() {
     reset();
-    Assert.assertTrue(hasNext());
+    assertTrue(hasNext());
     while (hasNext()) {
-      BDDFactory bdd = nextFactory();
+      BDDFactory bdd = next();
       BDD x = bdd.zero();
       BDD y = bdd.one();
       if (bdd.varNum() < 5) {
         bdd.setVarNum(5);
       }
       BDD z = bdd.ithVar(1);
-      Assert.assertEquals(true, x.isZero());
-      Assert.assertEquals(false, x.isOne());
-      Assert.assertEquals(false, y.isZero());
-      Assert.assertEquals(true, y.isOne());
-      Assert.assertEquals(false, z.isZero());
-      Assert.assertEquals(false, z.isOne());
+      assertEquals(true, x.isZero());
+      assertEquals(false, x.isOne());
+      assertEquals(false, y.isZero());
+      assertEquals(true, y.isOne());
+      assertEquals(false, z.isZero());
+      assertEquals(false, z.isOne());
       x.free();
       y.free();
       z.free();
@@ -79,9 +78,9 @@ public class BasicTests extends BDDTestCase {
 
   public void testVar() {
     reset();
-    Assert.assertTrue(hasNext());
+    assertTrue(hasNext());
     while (hasNext()) {
-      BDDFactory bdd = nextFactory();
+      BDDFactory bdd = next();
       if (bdd.varNum() < 5) {
         bdd.setVarNum(5);
       }
@@ -91,21 +90,21 @@ public class BasicTests extends BDDTestCase {
       BDD c = bdd.ithVar(3);
       BDD d = bdd.one();
       BDD e = bdd.zero();
-      Assert.assertEquals(1, a.var());
-      Assert.assertEquals(2, b.var());
-      Assert.assertEquals(3, c.var());
+      assertEquals(1, a.var());
+      assertEquals(2, b.var());
+      assertEquals(3, c.var());
       try {
         d.var();
-        Assert.fail();
+        fail();
       } catch (BDDException x) {
       }
       try {
         e.var();
-        Assert.fail();
+        fail();
       } catch (BDDException x) {
       }
       BDD f = a.and(b);
-      Assert.assertEquals(1, f.var());
+      assertEquals(1, f.var());
       a.free();
       b.free();
       c.free();
@@ -117,9 +116,9 @@ public class BasicTests extends BDDTestCase {
 
   public void testVarOrder() {
     reset();
-    Assert.assertTrue(hasNext());
+    assertTrue(hasNext());
     while (hasNext()) {
-      BDDFactory bdd = nextFactory();
+      BDDFactory bdd = next();
       if (bdd.varNum() < 5) {
         bdd.setVarNum(5);
       }
@@ -129,22 +128,22 @@ public class BasicTests extends BDDTestCase {
       BDD c = bdd.ithVar(2);
       BDD d = bdd.ithVar(3);
       BDD e = bdd.ithVar(4);
-      Assert.assertEquals(0, a.var());
-      Assert.assertEquals(1, b.var());
-      Assert.assertEquals(2, c.var());
-      Assert.assertEquals(3, d.var());
-      Assert.assertEquals(4, e.var());
+      assertEquals(0, a.var());
+      assertEquals(1, b.var());
+      assertEquals(2, c.var());
+      assertEquals(3, d.var());
+      assertEquals(4, e.var());
       bdd.setVarOrder(new int[] {2, 3, 4, 0, 1});
-      Assert.assertEquals(0, a.var());
-      Assert.assertEquals(1, b.var());
-      Assert.assertEquals(2, c.var());
-      Assert.assertEquals(3, d.var());
-      Assert.assertEquals(4, e.var());
-      Assert.assertEquals(3, a.level());
-      Assert.assertEquals(4, b.level());
-      Assert.assertEquals(0, c.level());
-      Assert.assertEquals(1, d.level());
-      Assert.assertEquals(2, e.level());
+      assertEquals(0, a.var());
+      assertEquals(1, b.var());
+      assertEquals(2, c.var());
+      assertEquals(3, d.var());
+      assertEquals(4, e.var());
+      assertEquals(3, a.level());
+      assertEquals(4, b.level());
+      assertEquals(0, c.level());
+      assertEquals(1, d.level());
+      assertEquals(2, e.level());
       a.free();
       b.free();
       c.free();
@@ -155,9 +154,9 @@ public class BasicTests extends BDDTestCase {
 
   public void testLowHigh() {
     reset();
-    Assert.assertTrue(hasNext());
+    assertTrue(hasNext());
     while (hasNext()) {
-      BDDFactory bdd = nextFactory();
+      BDDFactory bdd = next();
       if (bdd.varNum() < 5) {
         bdd.setVarNum(5);
       }
@@ -166,17 +165,17 @@ public class BasicTests extends BDDTestCase {
       a = bdd.ithVar(0);
       a.andWith(bdd.ithVar(1));
       a.andWith(bdd.nithVar(2));
-      Assert.assertEquals(0, a.var());
+      assertEquals(0, a.var());
       b = a.low();
-      Assert.assertEquals(true, b.isZero());
+      assertEquals(true, b.isZero());
       b.free();
       b = a.high();
-      Assert.assertEquals(1, b.var());
+      assertEquals(1, b.var());
       c = b.high();
       b.free();
-      Assert.assertEquals(2, c.var());
+      assertEquals(2, c.var());
       b = c.low();
-      Assert.assertEquals(true, b.isOne());
+      assertEquals(true, b.isOne());
       a.free();
       b.free();
       c.free();
@@ -185,9 +184,9 @@ public class BasicTests extends BDDTestCase {
 
   public void testNot() {
     reset();
-    Assert.assertTrue(hasNext());
+    assertTrue(hasNext());
     while (hasNext()) {
-      BDDFactory bdd = nextFactory();
+      BDDFactory bdd = next();
       if (bdd.varNum() < 5) {
         bdd.setVarNum(5);
       }
@@ -195,13 +194,13 @@ public class BasicTests extends BDDTestCase {
       a = bdd.ithVar(0);
       b = a.not();
       c = bdd.nithVar(0);
-      Assert.assertEquals(b, c);
+      assertEquals(b, c);
       c.free();
       c = b.high();
-      Assert.assertEquals(true, c.isZero());
+      assertEquals(true, c.isZero());
       c.free();
       c = b.low();
-      Assert.assertEquals(true, c.isOne());
+      assertEquals(true, c.isOne());
       a.free();
       b.free();
       c.free();
@@ -210,9 +209,9 @@ public class BasicTests extends BDDTestCase {
 
   public void testId() {
     reset();
-    Assert.assertTrue(hasNext());
+    assertTrue(hasNext());
     while (hasNext()) {
-      BDDFactory bdd = nextFactory();
+      BDDFactory bdd = next();
       if (bdd.varNum() < 5) {
         bdd.setVarNum(5);
       }
@@ -220,12 +219,12 @@ public class BasicTests extends BDDTestCase {
       a = bdd.ithVar(1);
       b = a.id();
       a.andWith(bdd.ithVar(0));
-      Assert.assertTrue(!a.equals(b));
-      Assert.assertTrue(a.var() == 0);
-      Assert.assertTrue(b.var() == 1);
+      assertTrue(!a.equals(b));
+      assertTrue(a.var() == 0);
+      assertTrue(b.var() == 1);
       b.andWith(bdd.zero());
-      Assert.assertTrue(b.isZero());
-      Assert.assertTrue(!a.isZero());
+      assertTrue(b.isZero());
+      assertTrue(!a.isZero());
       a.free();
       b.free();
     }
@@ -234,13 +233,13 @@ public class BasicTests extends BDDTestCase {
   void testApply(
       BDDFactory bdd, BDDFactory.BDDOp op, boolean b1, boolean b2, boolean b3, boolean b4) {
     BDD a;
-    Assert.assertEquals(b1, (a = bdd.zero().applyWith(bdd.zero(), op)).isOne());
+    assertEquals(b1, (a = bdd.zero().applyWith(bdd.zero(), op)).isOne());
     a.free();
-    Assert.assertEquals(b2, (a = bdd.zero().applyWith(bdd.one(), op)).isOne());
+    assertEquals(b2, (a = bdd.zero().applyWith(bdd.one(), op)).isOne());
     a.free();
-    Assert.assertEquals(b3, (a = bdd.one().applyWith(bdd.zero(), op)).isOne());
+    assertEquals(b3, (a = bdd.one().applyWith(bdd.zero(), op)).isOne());
     a.free();
-    Assert.assertEquals(b4, (a = bdd.one().applyWith(bdd.one(), op)).isOne());
+    assertEquals(b4, (a = bdd.one().applyWith(bdd.one(), op)).isOne());
     a.free();
   }
 
@@ -255,56 +254,56 @@ public class BasicTests extends BDDTestCase {
     b = bdd.zero();
     c = a;
     d = b;
-    Assert.assertTrue(!isFreed(d));
+    assertTrue(!isFreed(d));
     a.applyWith(b, op);
-    Assert.assertEquals(b1, a.isOne());
-    Assert.assertEquals(b1, c.isOne());
-    Assert.assertTrue(isFreed(b));
-    Assert.assertTrue(isFreed(d));
+    assertEquals(b1, a.isOne());
+    assertEquals(b1, c.isOne());
+    assertTrue(isFreed(b));
+    assertTrue(isFreed(d));
     a.free();
 
     a = bdd.zero();
     b = bdd.one();
     c = a;
     d = b;
-    Assert.assertTrue(!isFreed(d));
+    assertTrue(!isFreed(d));
     a.applyWith(b, op);
-    Assert.assertEquals(b2, a.isOne());
-    Assert.assertEquals(b2, c.isOne());
-    Assert.assertTrue(isFreed(b));
-    Assert.assertTrue(isFreed(d));
+    assertEquals(b2, a.isOne());
+    assertEquals(b2, c.isOne());
+    assertTrue(isFreed(b));
+    assertTrue(isFreed(d));
     a.free();
 
     a = bdd.one();
     b = bdd.zero();
     c = a;
     d = b;
-    Assert.assertTrue(!isFreed(d));
+    assertTrue(!isFreed(d));
     a.applyWith(b, op);
-    Assert.assertEquals(b3, a.isOne());
-    Assert.assertEquals(b3, c.isOne());
-    Assert.assertTrue(isFreed(b));
-    Assert.assertTrue(isFreed(d));
+    assertEquals(b3, a.isOne());
+    assertEquals(b3, c.isOne());
+    assertTrue(isFreed(b));
+    assertTrue(isFreed(d));
     a.free();
 
     a = bdd.one();
     b = bdd.one();
     c = a;
     d = b;
-    Assert.assertTrue(!isFreed(d));
+    assertTrue(!isFreed(d));
     a.applyWith(b, op);
-    Assert.assertEquals(b4, a.isOne());
-    Assert.assertEquals(b4, c.isOne());
-    Assert.assertTrue(isFreed(b));
-    Assert.assertTrue(isFreed(d));
+    assertEquals(b4, a.isOne());
+    assertEquals(b4, c.isOne());
+    assertTrue(isFreed(b));
+    assertTrue(isFreed(d));
     a.free();
   }
 
   public void testOr() {
     reset();
-    Assert.assertTrue(hasNext());
+    assertTrue(hasNext());
     while (hasNext()) {
-      BDDFactory bdd = nextFactory();
+      BDDFactory bdd = next();
       if (bdd.varNum() < 5) {
         bdd.setVarNum(5);
       }
@@ -313,12 +312,12 @@ public class BasicTests extends BDDTestCase {
       b = bdd.ithVar(2);
       c = bdd.nithVar(1);
       c.orWith(a);
-      Assert.assertTrue(c.isOne());
+      assertTrue(c.isOne());
       a = bdd.zero();
       a.orWith(bdd.zero());
-      Assert.assertTrue(a.isZero());
+      assertTrue(a.isZero());
       b.orWith(b);
-      Assert.assertEquals(2, b.var());
+      assertEquals(2, b.var());
       a.free();
       b.free();
       c.free();
@@ -328,9 +327,9 @@ public class BasicTests extends BDDTestCase {
 
   public void testXor() {
     reset();
-    Assert.assertTrue(hasNext());
+    assertTrue(hasNext());
     while (hasNext()) {
-      BDDFactory bdd = nextFactory();
+      BDDFactory bdd = next();
       if (bdd.varNum() < 5) {
         bdd.setVarNum(5);
       }
@@ -339,12 +338,12 @@ public class BasicTests extends BDDTestCase {
       b = bdd.ithVar(2);
       c = bdd.nithVar(1);
       c.xorWith(a);
-      Assert.assertTrue(c.isOne());
+      assertTrue(c.isOne());
       a = bdd.zero();
       a.orWith(bdd.zero());
-      Assert.assertTrue(a.isZero());
+      assertTrue(a.isZero());
       b.xorWith(b);
-      Assert.assertTrue(b.isZero());
+      assertTrue(b.isZero());
       a.free();
       b.free();
       c.free();
@@ -354,9 +353,9 @@ public class BasicTests extends BDDTestCase {
 
   public void testImp() {
     reset();
-    Assert.assertTrue(hasNext());
+    assertTrue(hasNext());
     while (hasNext()) {
-      BDDFactory bdd = nextFactory();
+      BDDFactory bdd = next();
       // TODO: more tests
       testApply(bdd, BDDFactory.imp, true, true, false, true);
     }
@@ -364,9 +363,9 @@ public class BasicTests extends BDDTestCase {
 
   public void testBiimp() {
     reset();
-    Assert.assertTrue(hasNext());
+    assertTrue(hasNext());
     while (hasNext()) {
-      BDDFactory bdd = nextFactory();
+      BDDFactory bdd = next();
       // TODO: more tests
       testApply(bdd, BDDFactory.biimp, true, false, false, true);
     }
@@ -374,9 +373,9 @@ public class BasicTests extends BDDTestCase {
 
   public void testDiff() {
     reset();
-    Assert.assertTrue(hasNext());
+    assertTrue(hasNext());
     while (hasNext()) {
-      BDDFactory bdd = nextFactory();
+      BDDFactory bdd = next();
       // TODO: more tests
       testApply(bdd, BDDFactory.diff, false, false, true, false);
     }
@@ -384,9 +383,9 @@ public class BasicTests extends BDDTestCase {
 
   public void testLess() {
     reset();
-    Assert.assertTrue(hasNext());
+    assertTrue(hasNext());
     while (hasNext()) {
-      BDDFactory bdd = nextFactory();
+      BDDFactory bdd = next();
       // TODO: more tests
       testApply(bdd, BDDFactory.less, false, true, false, false);
     }
@@ -394,9 +393,9 @@ public class BasicTests extends BDDTestCase {
 
   public void testInvImp() {
     reset();
-    Assert.assertTrue(hasNext());
+    assertTrue(hasNext());
     while (hasNext()) {
-      BDDFactory bdd = nextFactory();
+      BDDFactory bdd = next();
       // TODO: more tests
       testApply(bdd, BDDFactory.invimp, true, false, true, true);
     }
@@ -404,9 +403,9 @@ public class BasicTests extends BDDTestCase {
 
   public void testNand() {
     reset();
-    Assert.assertTrue(hasNext());
+    assertTrue(hasNext());
     while (hasNext()) {
-      BDDFactory bdd = nextFactory();
+      BDDFactory bdd = next();
       // TODO: more tests
       testApply(bdd, BDDFactory.nand, true, true, true, false);
     }
@@ -414,9 +413,9 @@ public class BasicTests extends BDDTestCase {
 
   public void testNor() {
     reset();
-    Assert.assertTrue(hasNext());
+    assertTrue(hasNext());
     while (hasNext()) {
-      BDDFactory bdd = nextFactory();
+      BDDFactory bdd = next();
       // TODO: more tests
       testApply(bdd, BDDFactory.nor, true, false, false, false);
     }
@@ -424,9 +423,9 @@ public class BasicTests extends BDDTestCase {
 
   public void testApplyWith() {
     reset();
-    Assert.assertTrue(hasNext());
+    assertTrue(hasNext());
     while (hasNext()) {
-      BDDFactory bdd = nextFactory();
+      BDDFactory bdd = next();
       // TODO: more tests
       testApplyWith(bdd, BDDFactory.and, false, false, false, true);
       testApplyWith(bdd, BDDFactory.or, false, true, true, true);
@@ -443,9 +442,9 @@ public class BasicTests extends BDDTestCase {
 
   public void testIte() {
     reset();
-    Assert.assertTrue(hasNext());
+    assertTrue(hasNext());
     while (hasNext()) {
-      BDDFactory bdd = nextFactory();
+      BDDFactory bdd = next();
       if (bdd.varNum() < 5) {
         bdd.setVarNum(5);
       }
@@ -454,16 +453,16 @@ public class BasicTests extends BDDTestCase {
       b = bdd.one();
       c = bdd.zero();
       d = a.ite(b, c);
-      Assert.assertEquals(a, d);
+      assertEquals(a, d);
       d.free();
       d = a.ite(c, b);
       e = d.not();
-      Assert.assertEquals(a, e);
+      assertEquals(a, e);
       d.free();
       e.free();
       e = bdd.ithVar(2);
       d = e.ite(a, a);
-      Assert.assertEquals(a, d);
+      assertEquals(a, d);
       // TODO: more tests.
       a.free();
       b.free();
@@ -475,9 +474,9 @@ public class BasicTests extends BDDTestCase {
 
   public void testReplace() {
     reset();
-    Assert.assertTrue(hasNext());
+    assertTrue(hasNext());
     while (hasNext()) {
-      BDDFactory bdd = nextFactory();
+      BDDFactory bdd = next();
       if (bdd.varNum() < 5) {
         bdd.setVarNum(5);
       }
@@ -493,22 +492,22 @@ public class BasicTests extends BDDTestCase {
       d = bdd.zero();
       e = bdd.one();
       a.replaceWith(p1);
-      Assert.assertEquals(a, b);
+      assertEquals(a, b);
       a.replaceWith(p2);
-      Assert.assertEquals(a, c);
+      assertEquals(a, c);
       if (bdd.varNum() < 25) {
         bdd.setVarNum(25);
       }
       b.andWith(bdd.nithVar(0));
       f = b.replace(p3);
       f.andWith(bdd.ithVar(0));
-      Assert.assertTrue(!f.isZero());
+      assertTrue(!f.isZero());
       f.andWith(bdd.ithVar(1));
-      Assert.assertTrue(f.isZero());
+      assertTrue(f.isZero());
       d.replaceWith(p3);
-      Assert.assertTrue(d.isZero());
+      assertTrue(d.isZero());
       e.replaceWith(p3);
-      Assert.assertTrue(e.isOne());
+      assertTrue(e.isOne());
       a.free();
       b.free();
       c.free();
@@ -523,9 +522,9 @@ public class BasicTests extends BDDTestCase {
 
   void tEnsureCapacity() {
     reset();
-    Assert.assertTrue(hasNext());
+    assertTrue(hasNext());
     while (hasNext()) {
-      BDDFactory bdd = nextFactory();
+      BDDFactory bdd = next();
       long[] domains = new long[] {127, 17, 31, 4};
       BDDDomain[] d = bdd.extDomain(domains);
       BDD q = d[0].ithVar(7);
@@ -538,19 +537,19 @@ public class BasicTests extends BDDTestCase {
       // BDD x = d[1].set();
       for (BDDDomain bddDomain : d) {
         bddDomain.ensureCapacity(BigInteger.valueOf(150));
-        Assert.assertEquals(BigInteger.valueOf(7), q.scanVar(d[0]));
-        Assert.assertEquals(BigInteger.valueOf(9), r.scanVar(d[1]));
-        Assert.assertEquals(BigInteger.valueOf(4), s.scanVar(d[2]));
-        Assert.assertEquals(BigInteger.valueOf(2), t.scanVar(d[3]));
-        Assert.assertEquals(BigInteger.valueOf(9), u.scanVar(d[1]));
-        Assert.assertEquals(BigInteger.valueOf(4), u.scanVar(d[2]));
-        Assert.assertEquals(BigInteger.valueOf(7), v.scanVar(d[0]));
-        Assert.assertEquals(BigInteger.valueOf(2), v.scanVar(d[3]));
-        Assert.assertEquals(BigInteger.valueOf(9), w.scanVar(d[1]));
-        Assert.assertEquals(BigInteger.valueOf(4), w.scanVar(d[2]));
-        Assert.assertEquals(BigInteger.valueOf(2), w.scanVar(d[3]));
+        assertEquals(BigInteger.valueOf(7), q.scanVar(d[0]));
+        assertEquals(BigInteger.valueOf(9), r.scanVar(d[1]));
+        assertEquals(BigInteger.valueOf(4), s.scanVar(d[2]));
+        assertEquals(BigInteger.valueOf(2), t.scanVar(d[3]));
+        assertEquals(BigInteger.valueOf(9), u.scanVar(d[1]));
+        assertEquals(BigInteger.valueOf(4), u.scanVar(d[2]));
+        assertEquals(BigInteger.valueOf(7), v.scanVar(d[0]));
+        assertEquals(BigInteger.valueOf(2), v.scanVar(d[3]));
+        assertEquals(BigInteger.valueOf(9), w.scanVar(d[1]));
+        assertEquals(BigInteger.valueOf(4), w.scanVar(d[2]));
+        assertEquals(BigInteger.valueOf(2), w.scanVar(d[3]));
         // BDD y = d[1].set();
-        // Assert.assertEquals(x, y);
+        // assertEquals(x, y);
         // y.free();
       }
       // x.free();
@@ -566,9 +565,9 @@ public class BasicTests extends BDDTestCase {
 
   void tEnsureCapacity2() throws IOException {
     reset();
-    Assert.assertTrue(hasNext());
+    assertTrue(hasNext());
     while (hasNext()) {
-      BDDFactory bdd = nextFactory();
+      BDDFactory bdd = next();
       System.out.println("Factory " + bdd);
       long[] domainSizes = new long[] {127, 17, 31, 4, 256, 87, 42, 666, 3405, 18};
       while (bdd.numberOfDomains() < domainSizes.length) {
@@ -588,7 +587,7 @@ public class BasicTests extends BDDTestCase {
         String order = randomOrder(d);
         // System.out.println("Random order: "+order);
         bdd.setVarOrder(bdd.makeVarOrdering(false, order));
-        List bdds = new LinkedList();
+        List<BDD> bdds = new LinkedList<>();
         for (int j = 0; j < num; ++j) {
           BDD b = randomBDD(bdd);
           bdds.add(b);
@@ -611,7 +610,7 @@ public class BasicTests extends BDDTestCase {
           // bdd.save(new BufferedWriter(new PrintWriter(System.out)), b);
         }
         String after = sb.toString();
-        Assert.assertEquals(before, after);
+        assertEquals(before, after);
         for (Object bdd1 : bdds) {
           BDD b = (BDD) bdd1;
           b.free();
@@ -621,8 +620,8 @@ public class BasicTests extends BDDTestCase {
   }
 
   private static BDD randomBDD(BDDFactory f) {
-    Assert.assertTrue(f.numberOfDomains() > 0);
-    List list = new ArrayList(f.numberOfDomains());
+    assertTrue(f.numberOfDomains() > 0);
+    List<BDDDomain> list = new ArrayList<>(f.numberOfDomains());
     int k = random.nextInt(f.numberOfDomains());
     for (int i = 0; i < f.numberOfDomains(); ++i) {
       list.add(f.getDomain(i));
@@ -630,7 +629,7 @@ public class BasicTests extends BDDTestCase {
     BDD result = f.one();
     for (int i = 0; i < k; ++i) {
       int x = random.nextInt(f.numberOfDomains() - i);
-      BDDDomain d = (BDDDomain) list.remove(x);
+      BDDDomain d = list.remove(x);
       int y = random.nextInt(d.size().intValue());
       result.andWith(d.ithVar(y));
     }
@@ -642,7 +641,7 @@ public class BasicTests extends BDDTestCase {
 
   private static String randomOrder(BDDDomain[] domains) {
     domains = (BDDDomain[]) randomShuffle(domains);
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     for (int i = 0; i < domains.length; ++i) {
       if (i > 0) {
         boolean x = random.nextBoolean();
@@ -661,13 +660,13 @@ public class BasicTests extends BDDTestCase {
 
   private static Object[] randomShuffle(Object[] a) {
     int n = a.length;
-    List list = new ArrayList(Arrays.asList(a));
+    List<Object> list = new ArrayList<>(Arrays.asList(a));
     Object[] result = a.clone();
     for (int i = 0; i < n; ++i) {
       int k = random.nextInt(n - i);
       result[i] = list.remove(k);
     }
-    Assert.assertTrue(list.isEmpty());
+    assertTrue(list.isEmpty());
     return result;
   }
 }
