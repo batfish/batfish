@@ -2496,6 +2496,8 @@ public class VirtualRouter implements Serializable {
      */
     importRib(_ospfRib, _ospfIntraAreaRib);
     importRib(_ospfRib, _ospfInterAreaRib);
+    importRib(_ospfRib, _ospfExternalType1Rib);
+    importRib(_ospfRib, _ospfExternalType2Rib);
     /*
      * Re-add independent RIP routes to ripRib for tie-breaking
      */

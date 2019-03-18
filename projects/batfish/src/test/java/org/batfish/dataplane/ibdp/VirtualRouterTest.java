@@ -572,6 +572,63 @@ public class VirtualRouterTest {
     assertThat(vr._ospfInterAreaStagingRib.getTypedRoutes(), contains(expected));
   }
 
+  /** Test unstaging external routes when better a route arrives in second IBDP iteration */
+  @Test
+  public void testUnstageOspfExternalRoutes() {
+    NetworkFactory nf = new NetworkFactory();
+    String c1Name = "r1";
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration c1 = cb.setHostname(c1Name).build();
+    nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(c1).build();
+
+    Map<String, Node> nodes = ImmutableMap.of(c1.getHostname(), new Node(c1));
+    VirtualRouter vr = nodes.get(c1Name).getVirtualRouters().get(DEFAULT_VRF_NAME);
+    vr.initRibs();
+
+    int initialCostToAdvertiser = 20;
+    OspfExternalType2Route route =
+        (OspfExternalType2Route)
+            OspfExternalType2Route.builder()
+                .setNetwork(Prefix.ZERO)
+                .setNextHopIp(Ip.parse("1.1.1.1"))
+                .setAdmin(50)
+                .setCostToAdvertiser(initialCostToAdvertiser)
+                .setLsaMetric(1L)
+                .setMetric(100)
+                .setOspfMetricType(OspfMetricType.E2)
+                .setArea(1L)
+                .build();
+
+    RibDelta<OspfExternalType1Route> emptyType1Delta =
+        RibDelta.<OspfExternalType1Route>builder().build();
+    RibDelta<OspfExternalType2Route> firstRibDeltaToUnstage =
+        RibDelta.<OspfExternalType2Route>builder().add(route).build();
+    vr.unstageOspfExternalRoutes(nodes, emptyType1Delta, firstRibDeltaToUnstage);
+
+    // Route should have been unstaged into external type 2 RIB, OSPF RIB, and main RIB
+    assertThat(vr._ospfExternalType2Rib.getTypedRoutes(), contains(route));
+    assertThat(vr._ospfRib.getTypedRoutes(), contains(route));
+    assertThat(
+        vr._mainRib.getTypedRoutes(), contains(new AnnotatedRoute<>(route, DEFAULT_VRF_NAME)));
+
+    // Reinit for a new iteration, then unstage a better route and ensure it replaces the old one
+    vr.reinitForNewIteration();
+    OspfExternalType2Route improvedRoute =
+        (OspfExternalType2Route)
+            route.toBuilder().setCostToAdvertiser(initialCostToAdvertiser - 10).build();
+    RibDelta<OspfExternalType2Route> secondRibDeltaToUnstage =
+        RibDelta.<OspfExternalType2Route>builder().add(improvedRoute).build();
+    vr.unstageOspfExternalRoutes(nodes, emptyType1Delta, secondRibDeltaToUnstage);
+
+    // All RIBs should have improved route and not old route
+    assertThat(vr._ospfExternalType2Rib.getTypedRoutes(), contains(improvedRoute));
+    assertThat(vr._ospfRib.getTypedRoutes(), contains(improvedRoute));
+    assertThat(
+        vr._mainRib.getTypedRoutes(),
+        contains(new AnnotatedRoute<>(improvedRoute, DEFAULT_VRF_NAME)));
+  }
+
   /** Test that the static RIB correctly pulls static routes from the VRF */
   @Test
   public void testStaticRibInit() {
