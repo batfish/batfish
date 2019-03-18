@@ -57,12 +57,12 @@ public class R3 extends BDDTestCase {
 
       z0 = or.unique(x0);
       t = x1.not();
-      assertTrue(z0.toString(), z0.equals(t));
+      assertEquals(z0.toString(), z0, t);
       t.free();
 
       z1 = or.unique(x1);
       t = x0.not();
-      assertTrue(z1.toString(), z1.equals(t));
+      assertEquals(z1.toString(), z1, t);
       t.free();
 
       t = one.unique(x0);
@@ -71,12 +71,12 @@ public class R3 extends BDDTestCase {
 
       y0 = x0.applyUni(x1, BDDFactory.or, x0);
       t = x1.not();
-      assertTrue(y0.toString(), y0.equals(t));
+      assertEquals(y0.toString(), y0, t);
       t.free();
 
       y1 = x0.applyUni(x1, BDDFactory.or, x1);
       t = x0.not();
-      assertTrue(y1.toString(), y1.equals(t));
+      assertEquals(y1.toString(), y1, t);
       t.free();
 
       x0.free();

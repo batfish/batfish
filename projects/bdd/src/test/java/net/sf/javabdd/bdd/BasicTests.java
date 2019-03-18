@@ -28,6 +28,10 @@
  */
 package net.sf.javabdd.bdd;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertThat;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -64,12 +68,12 @@ public class BasicTests extends BDDTestCase {
         bdd.setVarNum(5);
       }
       BDD z = bdd.ithVar(1);
-      assertEquals(true, x.isZero());
-      assertEquals(false, x.isOne());
-      assertEquals(false, y.isZero());
-      assertEquals(true, y.isOne());
-      assertEquals(false, z.isZero());
-      assertEquals(false, z.isOne());
+      assertTrue(x.isZero());
+      assertFalse(x.isOne());
+      assertFalse(y.isZero());
+      assertTrue(y.isOne());
+      assertFalse(z.isZero());
+      assertFalse(z.isOne());
       x.free();
       y.free();
       z.free();
@@ -167,7 +171,7 @@ public class BasicTests extends BDDTestCase {
       a.andWith(bdd.nithVar(2));
       assertEquals(0, a.var());
       b = a.low();
-      assertEquals(true, b.isZero());
+      assertTrue(b.isZero());
       b.free();
       b = a.high();
       assertEquals(1, b.var());
@@ -175,7 +179,7 @@ public class BasicTests extends BDDTestCase {
       b.free();
       assertEquals(2, c.var());
       b = c.low();
-      assertEquals(true, b.isOne());
+      assertTrue(b.isOne());
       a.free();
       b.free();
       c.free();
@@ -197,10 +201,10 @@ public class BasicTests extends BDDTestCase {
       assertEquals(b, c);
       c.free();
       c = b.high();
-      assertEquals(true, c.isZero());
+      assertTrue(c.isZero());
       c.free();
       c = b.low();
-      assertEquals(true, c.isOne());
+      assertTrue(c.isOne());
       a.free();
       b.free();
       c.free();
@@ -219,9 +223,9 @@ public class BasicTests extends BDDTestCase {
       a = bdd.ithVar(1);
       b = a.id();
       a.andWith(bdd.ithVar(0));
-      assertTrue(!a.equals(b));
-      assertTrue(a.var() == 0);
-      assertTrue(b.var() == 1);
+      assertThat(a, not(equalTo(b)));
+      assertEquals(0, a.var());
+      assertEquals(1, b.var());
       b.andWith(bdd.zero());
       assertTrue(b.isZero());
       assertTrue(!a.isZero());
