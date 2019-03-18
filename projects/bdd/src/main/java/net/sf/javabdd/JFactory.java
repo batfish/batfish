@@ -342,7 +342,6 @@ public final class JFactory extends BDDFactory {
       return _index;
     }
 
-    /** @see net.sf.javabdd.BDD#free() */
     @Override
     public void free() {
       bdd_delref(_index);
@@ -358,7 +357,6 @@ public final class JFactory extends BDDFactory {
       super(id);
     }
 
-    /** @see java.lang.Object#finalize() */
     @Override
     protected void finalize() throws Throwable {
       super.finalize();
