@@ -3538,7 +3538,6 @@ public final class JFactory extends BDDFactory {
 
   private void bdd_operator_done() {
     if (quantvarset != null) {
-      free(quantvarset);
       quantvarset = null;
     }
 
@@ -3558,7 +3557,6 @@ public final class JFactory extends BDDFactory {
     countcache = null;
 
     if (supportSet.length > 0) {
-      free(supportSet);
       supportSet = new int[0];
     }
   }
@@ -3584,10 +3582,6 @@ public final class JFactory extends BDDFactory {
   }
 
   private void bdd_operator_varresize() {
-    if (quantvarset != null) {
-      free(quantvarset);
-    }
-
     quantvarset = new int[bddvarnum];
 
     // memset(quantvarset, 0, sizeof(int)*bddvarnum);
@@ -3662,7 +3656,6 @@ public final class JFactory extends BDDFactory {
       return;
     }
 
-    free(cache.table);
     cache.table = null;
     cache.tablesize = 0;
   }
@@ -3675,7 +3668,6 @@ public final class JFactory extends BDDFactory {
 
     boolean is_d = cache.table instanceof BddCacheDataD[];
 
-    free(cache.table);
     cache.table = null;
 
     newsize = bdd_prime_gte(newsize);
@@ -3886,8 +3878,6 @@ public final class JFactory extends BDDFactory {
   private bddPair pairs; /* List of all replacement pairs in use */
   private int pairsid; /* Pair identifier */
 
-  static final void free(Object o) {}
-
   /**
    * ***********************************************************************
    * ***********************************************************************
@@ -3907,8 +3897,6 @@ public final class JFactory extends BDDFactory {
         bdd_delref(p.result[n]);
       }
       p.result = null;
-      free(p.result);
-      free(p);
       p = next;
     }
   }
@@ -4017,7 +4005,6 @@ public final class JFactory extends BDDFactory {
 
         reorder_block(top, method);
         vartree = top.nextlevel;
-        free(top);
 
         usednum_after = bddnodesize - bddfreenum;
 
@@ -4528,8 +4515,6 @@ public final class JFactory extends BDDFactory {
     /* Find first block */
     for (dis = t; dis.prev != null; dis = dis.prev) /* nil */ {}
 
-    free(seq);
-
     if (verbose != 0) {
       System.out.println("Random order: " + reorder_nodenum() + " nodes");
     }
@@ -4577,9 +4562,6 @@ public final class JFactory extends BDDFactory {
 
     /* Do the sifting on this sequence */
     t = reorder_sift_seq(t, seq, num);
-
-    free(seq);
-    free(p);
 
     return t;
   }
@@ -5000,12 +4982,6 @@ public final class JFactory extends BDDFactory {
     // bdd_reorder_done();
     bdd_pairs_done();
 
-    free(bddnodes);
-    free(bddrefstack);
-    free(bddvarset);
-    free(bddvar2level);
-    free(bddlevel2var);
-
     bddnodes = null;
     bddrefstack = null;
     bddvarset = null;
@@ -5214,9 +5190,6 @@ public final class JFactory extends BDDFactory {
       bddvar2level = bddvar2level2;
     }
 
-    if (bddrefstack != null) {
-      free(bddrefstack);
-    }
     bddrefstack = new int[num * 2 + 1];
     bddrefstacktop = 0;
 
@@ -5476,11 +5449,7 @@ public final class JFactory extends BDDFactory {
 
     bddtree_del(t.nextlevel);
     bddtree_del(t.next);
-    if (t.seq != null) {
-      free(t.seq);
-    }
     t.seq = null;
-    free(t);
   }
 
   private void bdd_clrvarblocks() {
@@ -6121,7 +6090,6 @@ public final class JFactory extends BDDFactory {
     SETHASH(0, 0);
     SETHASH(1, 0);
 
-    free(dep);
     return 0;
   }
 
@@ -6230,8 +6198,6 @@ public final class JFactory extends BDDFactory {
       SETLEVELANDMARK(n, bddvar2level[LEVELANDMARK(n)]);
     }
 
-    free(extroots);
-    free(levels);
     imatrixDelete(iactmtx);
     bdd_gbc();
 
@@ -6242,12 +6208,9 @@ public final class JFactory extends BDDFactory {
     int n;
 
     for (n = 0; n < mtx.size; n++) {
-      free(mtx.rows[n]);
       mtx.rows[n] = null;
     }
-    free(mtx.rows);
     mtx.rows = null;
-    free(mtx);
   }
 
   @Override
@@ -6468,9 +6431,7 @@ public final class JFactory extends BDDFactory {
       bdd_delref(lh_table[n].data);
     }
 
-    free(lh_table);
     lh_table = null;
-    free(loadvar2level);
     loadvar2level = null;
 
     root = tmproot;
