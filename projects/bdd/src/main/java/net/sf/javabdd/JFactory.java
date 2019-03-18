@@ -860,7 +860,7 @@ public final class JFactory extends BDDFactory {
     if (applycache == null) {
       applycache = BddCacheI_init(cachesize);
     }
-    for (; ; ) {
+    while (true) {
       try {
         INITREF();
 
@@ -936,7 +936,7 @@ public final class JFactory extends BDDFactory {
       itecache = BddCacheI_init(cachesize);
     }
 
-    for (; ; ) {
+    while (true) {
       try {
         INITREF();
 
@@ -1058,7 +1058,7 @@ public final class JFactory extends BDDFactory {
       replacecache = BddCacheI_init(cachesize);
     }
 
-    for (; ; ) {
+    while (true) {
       try {
         INITREF();
         replacepair = pair.result;
@@ -1166,7 +1166,7 @@ public final class JFactory extends BDDFactory {
       applycache = BddCacheI_init(cachesize);
     }
 
-    for (; ; ) {
+    while (true) {
       try {
         INITREF();
         applyop = op;
@@ -1496,7 +1496,7 @@ public final class JFactory extends BDDFactory {
       quantcache = BddCacheI_init(cachesize);
     }
 
-    for (; ; ) {
+    while (true) {
       if (varset2vartable(var) < 0) {
         return bddfalse;
       }
@@ -1918,7 +1918,7 @@ public final class JFactory extends BDDFactory {
       misccache = BddCacheI_init(cachesize);
     }
 
-    for (; ; ) {
+    while (true) {
       try {
         INITREF();
         miscid = CACHEID_CONSTRAIN;
@@ -2029,7 +2029,7 @@ public final class JFactory extends BDDFactory {
       itecache = BddCacheI_init(cachesize);
     }
 
-    for (; ; ) {
+    while (true) {
       try {
         INITREF();
         composelevel = bddvar2level[var];
@@ -2121,7 +2121,7 @@ public final class JFactory extends BDDFactory {
       replacecache = BddCacheI_init(cachesize);
     }
 
-    for (; ; ) {
+    while (true) {
       try {
         INITREF();
         replacepair = pair.result;
@@ -2200,7 +2200,7 @@ public final class JFactory extends BDDFactory {
       quantcache = BddCacheI_init(cachesize);
     }
 
-    for (; ; ) {
+    while (true) {
       if (varset2vartable(var) < 0) {
         return bddfalse;
       }
@@ -2251,7 +2251,7 @@ public final class JFactory extends BDDFactory {
       quantcache = BddCacheI_init(cachesize);
     }
 
-    for (; ; ) {
+    while (true) {
       if (varset2vartable(var) < 0) {
         return bddfalse;
       }
@@ -2301,7 +2301,7 @@ public final class JFactory extends BDDFactory {
       quantcache = BddCacheI_init(cachesize);
     }
 
-    for (; ; ) {
+    while (true) {
       try {
         INITREF();
         quantid = (var << 3) | CACHEID_UNIQUE;
@@ -2345,7 +2345,7 @@ public final class JFactory extends BDDFactory {
       misccache = BddCacheI_init(cachesize);
     }
 
-    for (; ; ) {
+    while (true) {
       if (varset2svartable(var) < 0) {
         return bddfalse;
       }
@@ -2426,7 +2426,7 @@ public final class JFactory extends BDDFactory {
       applycache = BddCacheI_init(cachesize);
     }
 
-    for (; ; ) {
+    while (true) {
       try {
         INITREF();
         applyop = bddop_or;
@@ -2612,7 +2612,7 @@ public final class JFactory extends BDDFactory {
       quantcache = BddCacheI_init(cachesize);
     }
 
-    for (; ; ) {
+    while (true) {
       if (varset2vartable(var) < 0) {
         return bddfalse;
       }
@@ -2673,7 +2673,7 @@ public final class JFactory extends BDDFactory {
       quantcache = BddCacheI_init(cachesize);
     }
 
-    for (; ; ) {
+    while (true) {
       try {
         INITREF();
         applyop = bddop_xor;
@@ -4610,10 +4610,9 @@ public final class JFactory extends BDDFactory {
     List<List<BDDDomain>> result = new LinkedList<>();
     int nDomains = numberOfDomains();
     StringTokenizer st = new StringTokenizer(ordering, "x_", true);
-    int numberOfDomains = 0, bitIndex = 0;
     boolean[] done = new boolean[nDomains];
     List<BDDDomain> last = null;
-    for (int i = 0; ; ++i) {
+    while (true) {
       String s = st.nextToken();
       BDDDomain d;
       for (int j = 0; ; ++j) {
@@ -4791,7 +4790,7 @@ public final class JFactory extends BDDFactory {
     }
     outer:
     for (; n <= rightsize; ++n) {
-      for (; ; ) {
+      while (true) {
         BddTree t = left.prev;
         if (t == null || !t.interleaved) {
           break outer;
