@@ -100,12 +100,12 @@ public final class JFactory extends BDDFactory {
 
     @Override
     public boolean isZero() {
-      return _index == bddfalse;
+      return _index == BDDZERO;
     }
 
     @Override
     public boolean isOne() {
-      return _index == bddtrue;
+      return _index == BDDONE;
     }
 
     @Override
@@ -564,9 +564,6 @@ public final class JFactory extends BDDFactory {
     private static final long serialVersionUID = 3256727264505772345L;
   }
 
-  private static final int bddtrue = 1;
-  private static final int bddfalse = 0;
-
   private static final int BDDONE = 1;
   private static final int BDDZERO = 0;
 
@@ -680,18 +677,18 @@ public final class JFactory extends BDDFactory {
 
   @Override
   public BDD zero() {
-    return makeBDD(bddfalse);
+    return makeBDD(BDDZERO);
   }
 
   @Override
   public BDD one() {
-    return makeBDD(bddtrue);
+    return makeBDD(BDDONE);
   }
 
   private int bdd_ithvar(int var) {
     if (var < 0 || var >= bddvarnum) {
       bdd_error(BDD_VAR);
-      return bddfalse;
+      return BDDZERO;
     }
 
     return bddvarset[var * 2];
@@ -700,7 +697,7 @@ public final class JFactory extends BDDFactory {
   private int bdd_nithvar(int var) {
     if (var < 0 || var >= bddvarnum) {
       bdd_error(BDD_VAR);
-      return bddfalse;
+      return BDDZERO;
     }
 
     return bddvarset[var * 2 + 1];
@@ -715,15 +712,15 @@ public final class JFactory extends BDDFactory {
   }
 
   private static boolean ISZERO(int r) {
-    return r == bddfalse;
+    return r == BDDZERO;
   }
 
   private static boolean ISONE(int r) {
-    return r == bddtrue;
+    return r == BDDONE;
   }
 
   private static boolean ISCONST(int r) {
-    // return r == bddfalse || r == bddtrue;
+    // return r == BDDZERO || r == BDDONE;
     return r < 2;
   }
 
@@ -855,7 +852,7 @@ public final class JFactory extends BDDFactory {
   private int bdd_not(int r) {
     int res;
     firstReorder = 1;
-    CHECKa(r, bddfalse);
+    CHECKa(r, BDDZERO);
 
     if (applycache == null) {
       applycache = BddCacheI_init(cachesize);
@@ -876,7 +873,7 @@ public final class JFactory extends BDDFactory {
         if (firstReorder-- == 1) {
           continue;
         }
-        res = bddfalse;
+        res = BDDZERO;
         /* avoid warning about res being uninitialized */
       }
       break;
@@ -891,10 +888,10 @@ public final class JFactory extends BDDFactory {
     int res;
 
     if (ISZERO(r)) {
-      return bddtrue;
+      return BDDONE;
     }
     if (ISONE(r)) {
-      return bddfalse;
+      return BDDZERO;
     }
 
     entry = BddCache_lookupI(applycache, NOTHASH(r));
@@ -925,9 +922,9 @@ public final class JFactory extends BDDFactory {
     int res;
     firstReorder = 1;
 
-    CHECKa(f, bddfalse);
-    CHECKa(g, bddfalse);
-    CHECKa(h, bddfalse);
+    CHECKa(f, BDDZERO);
+    CHECKa(g, BDDZERO);
+    CHECKa(h, BDDZERO);
 
     if (applycache == null) {
       applycache = BddCacheI_init(cachesize);
@@ -1052,7 +1049,7 @@ public final class JFactory extends BDDFactory {
     int res;
     firstReorder = 1;
 
-    CHECKa(r, bddfalse);
+    CHECKa(r, BDDZERO);
 
     if (replacecache == null) {
       replacecache = BddCacheI_init(cachesize);
@@ -1154,12 +1151,12 @@ public final class JFactory extends BDDFactory {
     int res;
     firstReorder = 1;
 
-    CHECKa(l, bddfalse);
-    CHECKa(r, bddfalse);
+    CHECKa(l, BDDZERO);
+    CHECKa(r, BDDZERO);
 
     if (op < 0 || op > bddop_invimp) {
       bdd_error(BDD_OP);
-      return bddfalse;
+      return BDDZERO;
     }
 
     if (applycache == null) {
@@ -1473,13 +1470,13 @@ public final class JFactory extends BDDFactory {
     int res;
     firstReorder = 1;
 
-    CHECKa(l, bddfalse);
-    CHECKa(r, bddfalse);
-    CHECKa(var, bddfalse);
+    CHECKa(l, BDDZERO);
+    CHECKa(r, BDDZERO);
+    CHECKa(var, BDDZERO);
 
     if (opr < 0 || opr > bddop_invimp) {
       bdd_error(BDD_OP);
-      return bddfalse;
+      return BDDZERO;
     }
 
     if (var < 2) /* Empty set */ {
@@ -1498,7 +1495,7 @@ public final class JFactory extends BDDFactory {
 
     while (true) {
       if (varset2vartable(var) < 0) {
-        return bddfalse;
+        return BDDZERO;
       }
       try {
         INITREF();
@@ -1911,8 +1908,8 @@ public final class JFactory extends BDDFactory {
     int res;
     firstReorder = 1;
 
-    CHECKa(f, bddfalse);
-    CHECKa(c, bddfalse);
+    CHECKa(f, BDDZERO);
+    CHECKa(c, BDDZERO);
 
     if (misccache == null) {
       misccache = BddCacheI_init(cachesize);
@@ -2015,11 +2012,11 @@ public final class JFactory extends BDDFactory {
     int res;
     firstReorder = 1;
 
-    CHECKa(f, bddfalse);
-    CHECKa(g, bddfalse);
+    CHECKa(f, BDDZERO);
+    CHECKa(g, BDDZERO);
     if (var < 0 || var >= bddvarnum) {
       bdd_error(BDD_VAR);
-      return bddfalse;
+      return BDDZERO;
     }
 
     if (applycache == null) {
@@ -2109,7 +2106,7 @@ public final class JFactory extends BDDFactory {
     int res;
     firstReorder = 1;
 
-    CHECKa(f, bddfalse);
+    CHECKa(f, BDDZERO);
 
     if (applycache == null) {
       applycache = BddCacheI_init(cachesize);
@@ -2186,8 +2183,8 @@ public final class JFactory extends BDDFactory {
     int res;
     firstReorder = 1;
 
-    CHECKa(r, bddfalse);
-    CHECKa(var, bddfalse);
+    CHECKa(r, BDDZERO);
+    CHECKa(var, BDDZERO);
 
     if (var < 2) /* Empty set */ {
       return r;
@@ -2202,7 +2199,7 @@ public final class JFactory extends BDDFactory {
 
     while (true) {
       if (varset2vartable(var) < 0) {
-        return bddfalse;
+        return BDDZERO;
       }
       try {
         INITREF();
@@ -2237,8 +2234,8 @@ public final class JFactory extends BDDFactory {
     int res;
     firstReorder = 1;
 
-    CHECKa(r, bddfalse);
-    CHECKa(var, bddfalse);
+    CHECKa(r, BDDZERO);
+    CHECKa(var, BDDZERO);
 
     if (var < 2) /* Empty set */ {
       return r;
@@ -2253,7 +2250,7 @@ public final class JFactory extends BDDFactory {
 
     while (true) {
       if (varset2vartable(var) < 0) {
-        return bddfalse;
+        return BDDZERO;
       }
       try {
         INITREF();
@@ -2287,8 +2284,8 @@ public final class JFactory extends BDDFactory {
     int res;
     firstReorder = 1;
 
-    CHECKa(r, bddfalse);
-    CHECKa(var, bddfalse);
+    CHECKa(r, BDDZERO);
+    CHECKa(var, BDDZERO);
 
     if (var < 2) /* Empty set */ {
       return r;
@@ -2334,8 +2331,8 @@ public final class JFactory extends BDDFactory {
     int res;
     firstReorder = 1;
 
-    CHECKa(r, bddfalse);
-    CHECKa(var, bddfalse);
+    CHECKa(r, BDDZERO);
+    CHECKa(var, BDDZERO);
 
     if (var < 2) /* Empty set */ {
       return r;
@@ -2347,7 +2344,7 @@ public final class JFactory extends BDDFactory {
 
     while (true) {
       if (varset2svartable(var) < 0) {
-        return bddfalse;
+        return BDDZERO;
       }
       try {
         INITREF();
@@ -2419,8 +2416,8 @@ public final class JFactory extends BDDFactory {
     int res;
     firstReorder = 1;
 
-    CHECKa(f, bddfalse);
-    CHECKa(d, bddfalse);
+    CHECKa(f, BDDZERO);
+    CHECKa(d, BDDZERO);
 
     if (applycache == null) {
       applycache = BddCacheI_init(cachesize);
@@ -2514,10 +2511,10 @@ public final class JFactory extends BDDFactory {
     int n;
     int res = 1;
 
-    CHECKa(r, bddfalse);
+    CHECKa(r, BDDZERO);
 
     if (r < 2) {
-      return bddtrue;
+      return BDDONE;
     }
 
     /* On-demand allocation of support set */
@@ -2589,13 +2586,13 @@ public final class JFactory extends BDDFactory {
     int res;
     firstReorder = 1;
 
-    CHECKa(l, bddfalse);
-    CHECKa(r, bddfalse);
-    CHECKa(var, bddfalse);
+    CHECKa(l, BDDZERO);
+    CHECKa(r, BDDZERO);
+    CHECKa(var, BDDZERO);
 
     if (opr < 0 || opr > bddop_invimp) {
       bdd_error(BDD_OP);
-      return bddfalse;
+      return BDDZERO;
     }
 
     if (var < 2) /* Empty set */ {
@@ -2614,7 +2611,7 @@ public final class JFactory extends BDDFactory {
 
     while (true) {
       if (varset2vartable(var) < 0) {
-        return bddfalse;
+        return BDDZERO;
       }
       try {
         INITREF();
@@ -2650,13 +2647,13 @@ public final class JFactory extends BDDFactory {
     int res;
     firstReorder = 1;
 
-    CHECKa(l, bddfalse);
-    CHECKa(r, bddfalse);
-    CHECKa(var, bddfalse);
+    CHECKa(l, BDDZERO);
+    CHECKa(r, BDDZERO);
+    CHECKa(var, BDDZERO);
 
     if (opr < 0 || opr > bddop_invimp) {
       bdd_error(BDD_OP);
-      return bddfalse;
+      return BDDZERO;
     }
 
     if (var < 2) /* Empty set */ {
@@ -2706,7 +2703,7 @@ public final class JFactory extends BDDFactory {
   private int bdd_satone(int r) {
     int res;
 
-    CHECKa(r, bddfalse);
+    CHECKa(r, BDDZERO);
     if (r < 2) {
       return r;
     }
@@ -2743,13 +2740,13 @@ public final class JFactory extends BDDFactory {
   private int bdd_satoneset(int r, int var, int pol) {
     int res;
 
-    CHECKa(r, bddfalse);
+    CHECKa(r, BDDZERO);
     if (ISZERO(r)) {
       return r;
     }
     if (!ISCONST(pol)) {
       bdd_error(BDD_ILLBDD);
-      return bddfalse;
+      return BDDZERO;
     }
 
     bdd_disable_reorder();
@@ -2811,7 +2808,7 @@ public final class JFactory extends BDDFactory {
     int res;
     int v;
 
-    CHECKa(r, bddfalse);
+    CHECKa(r, BDDZERO);
     if (r == 0) {
       return 0;
     }
@@ -3000,7 +2997,7 @@ public final class JFactory extends BDDFactory {
     return size * satcount_rec(r);
   }
 
-  double bdd_satcountset(int r, int varset) {
+  private double bdd_satcountset(int r, int varset) {
     double unused = bddvarnum;
     int n;
 
@@ -5070,7 +5067,7 @@ public final class JFactory extends BDDFactory {
   public int duplicateVar(int var) {
     if (var < 0 || var >= bddvarnum) {
       bdd_error(BDD_VAR);
-      return bddfalse;
+      return BDDZERO;
     }
 
     bdd_disable_reorder();
@@ -5128,7 +5125,7 @@ public final class JFactory extends BDDFactory {
 
     if (num < 1 || num > MAXVAR) {
       bdd_error(BDD_RANGE);
-      return bddfalse;
+      return BDDZERO;
     }
 
     if (num < bddvarnum) {
