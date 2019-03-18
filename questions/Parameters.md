@@ -124,6 +124,8 @@ A specification for interfaces in the network.
 
 * Interface name or a regex over the names indicate interfaces on all nodes in the network with that name or matching regex. For example, `Ethernet0/1` includes all interfaces with that name and `/Ethernet0/` includes all interfaces whose names contain 'Ethernet0'.
 
+* `nodeTerm[interfaceWithoutNode]` indicates interfaces that match the `interfaceWithoutNode` specification on nodes that match the `nodeTerm` specification. A simple example is `as1border1[Ethernet0/1]` which refers to the interface `Ethernet0/1` on `as1border1`.
+
 * `@connectedTo(ipSpec)` indicates all interfaces with configured IPv4 networks that overlap with specified IPs (see [`ipSpec`](#ip-specifier))
 
 * `@interfaceGroup(group, book)` looks in the configured reference library for an interface group with name 'group' and book with name 'book'.
@@ -139,10 +141,21 @@ interfaceSpec :=
     interfaceTerm [(<b>&</b>|<b>,</b>|<b>\</b>) interfaceTerm]
 
 interfaceTerm :=
+    interfaceWithNode
+    | interfaceWithoutNode 
+    | <b>(</b>interfaceSpec<b>)</b>
+
+interfaceWithNode := 
+    nodeTerm<b>[</b>interfaceWithoutNode<b>]</b>
+
+interfaceWithoutNode :=
+    interfaceWithoutNodeTerm [(<b>&</b>|<b>,</b>|<b>\</b>) interfaceWithoutNodeTerm]
+
+interfaceWithoutNodeTerm :=
     &lt;<i>interface-name</i>&gt;
     | <b>/</b>&lt;<i>interface-name-regex</i>&gt;<b>/</b>
     | interfaceFunc
-    | <b>(</b>interfaceSpec<b>)</b>
+    | <b>(</b>interfaceWithoutNode<b>)</b>
 
 interfaceFunc :=
     <b>@connectedTo(</b>ipSpec<b>)</b>
@@ -188,7 +201,7 @@ Some examples:
 
 * `as1border1` specifies the `InterfaceLocation` for *all* interfaces on node `as1border1`. Any `nodeTerm` (see [node specifier grammar](#node-specifier-grammar)) can be used as a location specifier.
 
-* `as1border1[Ethernet0/0]` specifies the `InterfaceLocation` for `Ethernet0/0` on node `as1border1`. A `nodeTerm` and an `interfaceSpec` can be combined this way as a location specifier.  
+* `as1border1[Ethernet0/0]` specifies the `InterfaceLocation` for `Ethernet0/0` on node `as1border1`. Any valid `interfaceWithNode` expression can be used as a location specifier.
 
 * `@vrf(vrf1)` specifies the `InterfaceLocation` for any interface in `vrf1` on *all* nodes. Any `interfaceFunc` can be used as a location specifier.
 
@@ -208,7 +221,7 @@ locationTerm :=
 locationInterface :=
     nodeTerm
     | interfaceFunc
-    | nodeTerm<b>[</b>interfaceSpec<b>]</b>
+    | interfaceWithNode
 </pre>
 
 ## Node Specifier
