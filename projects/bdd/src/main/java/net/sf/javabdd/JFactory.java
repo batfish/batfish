@@ -3131,9 +3131,6 @@ public final class JFactory extends BDDFactory {
     }
 
     INCREF(root);
-    if (false) {
-      System.out.println("INCREF(" + root + ") = " + GETREF(root));
-    }
     return root;
   }
 
@@ -3157,9 +3154,6 @@ public final class JFactory extends BDDFactory {
     }
 
     DECREF(root);
-    if (false) {
-      System.out.println("DECREF(" + root + ") = " + GETREF(root));
-    }
     return root;
   }
 
@@ -4125,7 +4119,7 @@ public final class JFactory extends BDDFactory {
     BddTree dis = t, first = t;
 
     if (t == null) {
-      return t;
+      return null;
     }
 
     if (verbose > 1) {
@@ -4163,7 +4157,7 @@ public final class JFactory extends BDDFactory {
     BddTree dis = t, first = t;
 
     if (t == null) {
-      return t;
+      return null;
     }
 
     if (verbose > 1) {
@@ -4197,7 +4191,7 @@ public final class JFactory extends BDDFactory {
     int lastsize;
 
     if (t == null) {
-      return t;
+      return null;
     }
 
     if (verbose > 1) {
@@ -4340,7 +4334,7 @@ public final class JFactory extends BDDFactory {
     int n;
 
     if (t == null) {
-      return t;
+      return null;
     }
 
     for (n = 0; n < num; n++) {
@@ -4467,7 +4461,7 @@ public final class JFactory extends BDDFactory {
     int n, num = 0;
 
     if (t == null) {
-      return t;
+      return null;
     }
 
     for (dis = t; dis != null; dis = dis.next) {
@@ -4545,7 +4539,7 @@ public final class JFactory extends BDDFactory {
     int c = 1;
 
     if (t == null) {
-      return t;
+      return null;
     }
 
     do {
@@ -4884,7 +4878,7 @@ public final class JFactory extends BDDFactory {
     int c = 1;
 
     if (t == null) {
-      return t;
+      return null;
     }
 
     if (verbose > 1) {
