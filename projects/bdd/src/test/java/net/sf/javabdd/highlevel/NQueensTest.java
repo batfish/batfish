@@ -31,6 +31,8 @@ package net.sf.javabdd.highlevel;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.bdd.BDDTestCase;
+import org.junit.internal.runners.JUnit38ClassRunner;
+import org.junit.runner.RunWith;
 
 /**
  * NQueensTest
@@ -38,6 +40,7 @@ import net.sf.javabdd.bdd.BDDTestCase;
  * @author John Whaley
  * @version $Id: NQueensTest.java,v 1.1 2004/10/19 11:46:29 joewhaley Exp $
  */
+@RunWith(JUnit38ClassRunner.class)
 public class NQueensTest extends BDDTestCase {
   public static void main(String[] args) {
     junit.textui.TestRunner.run(NQueensTest.class);

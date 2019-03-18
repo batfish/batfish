@@ -31,6 +31,8 @@ package net.sf.javabdd.regression;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.bdd.BDDTestCase;
+import org.junit.internal.runners.JUnit38ClassRunner;
+import org.junit.runner.RunWith;
 
 /**
  * allsat bug
@@ -38,6 +40,7 @@ import net.sf.javabdd.bdd.BDDTestCase;
  * @author John Whaley
  * @version $Id: R4.java,v 1.1 2005/07/22 19:37:11 joewhaley Exp $
  */
+@RunWith(JUnit38ClassRunner.class)
 public class R4 extends BDDTestCase {
   public static void main(String[] args) {
     junit.textui.TestRunner.run(R4.class);

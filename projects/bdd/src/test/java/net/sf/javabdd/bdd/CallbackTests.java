@@ -31,6 +31,8 @@ package net.sf.javabdd.bdd;
 import java.lang.reflect.Method;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import org.junit.internal.runners.JUnit38ClassRunner;
+import org.junit.runner.RunWith;
 
 /**
  * CallbackTests
@@ -38,6 +40,7 @@ import net.sf.javabdd.BDDFactory;
  * @author jwhaley
  * @version $Id: CallbackTests.java,v 1.3 2005/05/09 09:58:02 joewhaley Exp $
  */
+@RunWith(JUnit38ClassRunner.class)
 public class CallbackTests extends BDDTestCase {
 
   public static void main(String[] args) {
