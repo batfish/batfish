@@ -2,6 +2,7 @@ package org.batfish.bddreachability.transition;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.Objects;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDSourceManager;
 
@@ -10,7 +11,7 @@ import org.batfish.common.bdd.BDDSourceManager;
  * variable is constrained to be a valid value while within the node, and erases the constrain when
  * exiting.
  */
-public final class RemoveSourceConstraint implements Transition {
+final class RemoveSourceConstraint implements Transition {
   private final BDDSourceManager _mgr;
 
   RemoveSourceConstraint(BDDSourceManager mgr) {
@@ -18,6 +19,24 @@ public final class RemoveSourceConstraint implements Transition {
         !mgr.isTrivial(),
         "RemoveSourceConstraint for a Trivial BDDSourceManager. Use Identity instead");
     _mgr = mgr;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof RemoveSourceConstraint)) {
+      return false;
+    }
+    RemoveSourceConstraint that = (RemoveSourceConstraint) o;
+    return Objects.equals(_mgr, that._mgr);
+  }
+
+  @Override
+  public int hashCode() {
+
+    return Objects.hash(_mgr);
   }
 
   @Override

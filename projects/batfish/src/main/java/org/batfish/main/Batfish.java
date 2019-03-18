@@ -82,6 +82,7 @@ import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.bddreachability.BDDReachabilityAnalysis;
 import org.batfish.bddreachability.BDDReachabilityAnalysisFactory;
+import org.batfish.bddreachability.BidirectionalReachabilityAnalysis;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishException.BatfishStackTrace;
@@ -92,7 +93,6 @@ import org.batfish.common.CompletionMetadata;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
 import org.batfish.common.ErrorDetails;
-import org.batfish.common.ErrorDetails.ParseExceptionContext;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Pair;
 import org.batfish.common.Version;
@@ -210,6 +210,7 @@ import org.batfish.job.ParseVendorConfigurationResult;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.ResolvedReachabilityParameters;
 import org.batfish.question.SrcNattedConstraint;
+import org.batfish.question.bidirectionalreachability.BidirectionalReachabilityResult;
 import org.batfish.question.differentialreachability.DifferentialReachabilityParameters;
 import org.batfish.question.differentialreachability.DifferentialReachabilityResult;
 import org.batfish.question.multipath.MultipathConsistencyParameters;
@@ -312,14 +313,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
           JuniperCombinedParser parser = new JuniperCombinedParser(input, settings);
           ParserRuleContext tree = parse(parser, logger, settings);
           JuniperFlattener flattener = new JuniperFlattener(header);
-          ParseTreeWalker walker = new BatfishParseTreeWalker();
+          ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
           try {
             walker.walk(flattener, tree);
           } catch (BatfishParseException e) {
-            warnings.setErrorDetails(
-                new ErrorDetails(
-                    Throwables.getStackTraceAsString(e),
-                    new ParseExceptionContext(e.getContext(), parser, input)));
+            warnings.setErrorDetails(e.getErrorDetails());
             throw new BatfishException(
                 String.format("Error flattening %s config", format.getVendorString()), e);
           }
@@ -331,14 +329,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
           VyosCombinedParser parser = new VyosCombinedParser(input, settings);
           ParserRuleContext tree = parse(parser, logger, settings);
           VyosFlattener flattener = new VyosFlattener(header);
-          ParseTreeWalker walker = new BatfishParseTreeWalker();
+          ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
           try {
             walker.walk(flattener, tree);
           } catch (BatfishParseException e) {
-            warnings.setErrorDetails(
-                new ErrorDetails(
-                    Throwables.getStackTraceAsString(e),
-                    new ParseExceptionContext(e.getContext(), parser, input)));
+            warnings.setErrorDetails(e.getErrorDetails());
             throw new BatfishException(
                 String.format("Error flattening %s config", format.getVendorString()), e);
           }
@@ -435,10 +430,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (numErrors > 0) {
       logger.error(numErrors + " ERROR(S)\n");
       for (int i = 0; i < numErrors; i++) {
-        String prefix = "ERROR " + (i + 1) + ": ";
         String msg = errors.get(i);
-        String prefixedMsg = CommonUtil.applyPrefix(prefix, msg);
-        logger.error(prefixedMsg + "\n");
+        String[] lines = msg.split("\n", -1);
+        StringBuilder sb = new StringBuilder();
+        for (String line : lines) {
+          sb.append("ERROR ").append(i + 1).append(": ").append(line).append("\n");
+        }
+        logger.error(sb.append('\n').toString());
       }
       throw new ParserBatfishException("Parser error(s)");
     } else if (!settings.getPrintParseTree()) {
@@ -1337,13 +1335,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
    */
   @Override
   public Optional<NodeRoleDimension> getNodeRoleDimension(@Nullable String dimension) {
-    try {
-      NodeRolesData nodeRolesData = getNodeRolesData();
-      return nodeRolesData.getNodeRoleDimension(dimension);
-    } catch (IOException e) {
-      _logger.errorf("Could not read roles data: %s", e);
-      return Optional.empty();
-    }
+    NodeRolesData nodeRolesData = getNodeRolesData();
+    return nodeRolesData.getNodeRoleDimension(dimension);
   }
 
   /**
@@ -3410,6 +3403,29 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
+  public BidirectionalReachabilityResult bidirectionalReachability(
+      BDDPacket bddPacket, ReachabilityParameters parameters) {
+    ResolvedReachabilityParameters params;
+    try {
+      params = resolveReachabilityParameters(this, parameters, getNetworkSnapshot());
+    } catch (InvalidReachabilityParametersException e) {
+      throw new BatfishException("Error resolving reachability parameters", e);
+    }
+
+    return new BidirectionalReachabilityAnalysis(
+            bddPacket,
+            loadConfigurations(),
+            loadDataPlane().getForwardingAnalysis(),
+            params.getSourceIpAssignment(),
+            params.getHeaderSpace(),
+            params.getForbiddenTransitNodes(),
+            params.getRequiredTransitNodes(),
+            params.getFinalNodes(),
+            params.getActions())
+        .getResult();
+  }
+
+  @Override
   public AnswerElement standard(ReachabilityParameters reachabilityParameters) {
     if (debugFlagEnabled("useNodReachability")) {
       return singleReachability(
@@ -3575,7 +3591,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private BDDReachabilityAnalysisFactory getBddReachabilityAnalysisFactory(
       BDDPacket pkt, boolean ignoreFilters) {
     return new BDDReachabilityAnalysisFactory(
-        pkt, loadConfigurations(), loadDataPlane().getForwardingAnalysis(), ignoreFilters);
+        pkt, loadConfigurations(), loadDataPlane().getForwardingAnalysis(), ignoreFilters, false);
   }
 
   /**

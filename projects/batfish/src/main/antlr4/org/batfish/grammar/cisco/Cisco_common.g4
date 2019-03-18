@@ -314,7 +314,10 @@ port_specifier
    )
    |
    (
-      NEQ arg = port
+      NEQ
+      (
+         args += port
+      )+
    )
    |
    (

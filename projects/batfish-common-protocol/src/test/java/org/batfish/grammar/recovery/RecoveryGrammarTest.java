@@ -22,7 +22,7 @@ public class RecoveryGrammarTest {
     RecoveryCombinedParser cp = new RecoveryCombinedParser(recoveryText, settings);
     RecoveryContext ctx = cp.parse();
     RecoveryExtractor extractor = new RecoveryExtractor();
-    ParseTreeWalker walker = new BatfishParseTreeWalker();
+    ParseTreeWalker walker = new BatfishParseTreeWalker(cp);
     walker.walk(extractor, ctx);
 
     assertThat(extractor.getFirstErrorLine(), equalTo(2));
@@ -54,7 +54,7 @@ public class RecoveryGrammarTest {
     RecoveryCombinedParser cp = new RecoveryCombinedParser(recoveryText, settings);
     RecoveryContext ctx = cp.parse();
     RecoveryExtractor extractor = new RecoveryExtractor();
-    ParseTreeWalker walker = new BatfishParseTreeWalker();
+    ParseTreeWalker walker = new BatfishParseTreeWalker(cp);
     walker.walk(extractor, ctx);
 
     assertThat(extractor.getFirstErrorLine(), equalTo(4));

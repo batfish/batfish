@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.SortedSet;
-import org.batfish.common.util.CommonUtil;
 
 public class NamedStructureEquivalenceSet<T>
     implements Comparable<NamedStructureEquivalenceSet<T>> {
@@ -26,19 +25,6 @@ public class NamedStructureEquivalenceSet<T>
   public NamedStructureEquivalenceSet(String node, T namedStructure) {
     _namedStructure = namedStructure;
     _nodes = ImmutableSortedSet.of(node);
-  }
-
-  public NamedStructureEquivalenceSet(Iterable<String> nodes, T namedStructure) {
-    _namedStructure = namedStructure;
-    _nodes = ImmutableSortedSet.copyOf(nodes);
-  }
-
-  public boolean compareStructure(T s) {
-    if (_namedStructure == null) {
-      return s == null;
-    } else {
-      return (s != null) && CommonUtil.checkJsonEqual(_namedStructure, s);
-    }
   }
 
   @Override
@@ -64,10 +50,6 @@ public class NamedStructureEquivalenceSet<T>
 
   public String prettyPrint(String indent) {
     return String.format("%s%s\n", indent, String.join(" ", _nodes));
-  }
-
-  public void setNamedStructure(T namedStructure) {
-    _namedStructure = namedStructure;
   }
 
   @JsonProperty(PROP_NODES)

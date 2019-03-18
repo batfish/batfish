@@ -27,6 +27,9 @@
         "structDefinition" : {
           "name" : "Ethernet0/0",
           "active" : false,
+          "additionalArpIps" : {
+            "class" : "org.batfish.datamodel.EmptyIpSpace"
+          },
           "allowedVlans" : "",
           "autostate" : true,
           "bandwidth" : 1.0E7,
@@ -77,6 +80,9 @@
         "structDefinition" : {
           "name" : "GigabitEthernet0/0",
           "active" : true,
+          "additionalArpIps" : {
+            "class" : "org.batfish.datamodel.EmptyIpSpace"
+          },
           "allPrefixes" : [
             "1.0.1.1/24"
           ],
@@ -133,6 +139,9 @@
         "structDefinition" : {
           "name" : "GigabitEthernet1/0",
           "active" : true,
+          "additionalArpIps" : {
+            "class" : "org.batfish.datamodel.EmptyIpSpace"
+          },
           "allPrefixes" : [
             "10.12.11.1/24"
           ],
@@ -187,6 +196,9 @@
         "structDefinition" : {
           "name" : "Loopback0",
           "active" : true,
+          "additionalArpIps" : {
+            "class" : "org.batfish.datamodel.EmptyIpSpace"
+          },
           "allPrefixes" : [
             "1.1.1.1/32"
           ],

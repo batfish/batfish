@@ -7,7 +7,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSortedSet;
-import java.io.IOException;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.Optional;
@@ -16,6 +15,8 @@ import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.Names;
+import org.batfish.datamodel.Names.Type;
 
 /** Class that captures the node roles */
 @ParametersAreNonnullByDefault
@@ -58,6 +59,9 @@ public class NodeRolesData {
   private NodeRolesData(
       @Nullable String defaultDimension, SortedSet<NodeRoleDimension> roleDimensions) {
     checkNotNull(roleDimensions);
+    if (defaultDimension != null) {
+      Names.checkName(defaultDimension, "role dimension", Type.REFERENCE_OBJECT);
+    }
     _defaultDimension = defaultDimension;
     _roleDimensions = roleDimensions;
   }
@@ -93,12 +97,9 @@ public class NodeRolesData {
    * returns {@link #getNodeRoleDimension()}.
    *
    * @param dimension The name of the dimension to fetch
-   * @return The {@link NodeRoleDimension} object if one exists or throws {@link
-   *     java.util.NoSuchElementException} if {@code dimension} is non-null and not found.
-   * @throws IOException If the contents of the file could not be cast to {@link NodeRolesData}
+   * @return An {@link Optional} with {@link NodeRoleDimension} object if one exists or empty.
    */
-  public @Nonnull Optional<NodeRoleDimension> getNodeRoleDimension(@Nullable String dimension)
-      throws IOException {
+  public @Nonnull Optional<NodeRoleDimension> getNodeRoleDimension(@Nullable String dimension) {
     if (dimension == null) {
       return getNodeRoleDimension();
     }
@@ -111,11 +112,9 @@ public class NodeRolesData {
    * Get some "reasonable" {@link NodeRoleDimension} object for analysis. Preference order: the
    * default dimension if set and exists, the auto-inferred primary dimension if it exists, the
    * dimension that is lexicographically first, and null if no dimensions exist.
-   *
-   * @throws IOException If the contents of the file could not be cast to {@link NodeRolesData}
    */
   @Nonnull
-  private Optional<NodeRoleDimension> getNodeRoleDimension() throws IOException {
+  private Optional<NodeRoleDimension> getNodeRoleDimension() {
     // check default
     if (getDefaultDimension() != null) {
       Optional<NodeRoleDimension> opt = getNodeRoleDimension(getDefaultDimension());

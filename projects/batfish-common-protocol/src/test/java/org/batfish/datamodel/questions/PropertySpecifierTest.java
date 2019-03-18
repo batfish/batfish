@@ -152,4 +152,21 @@ public class PropertySpecifierTest {
     // the row should be filled out with null and the schemas shouldn't be
     assertThat(row.build(), equalTo(Row.builder().put(property, null).build()));
   }
+
+  @Test
+  public void testFillPropertyMapForAllInterfaceProperties() {
+    // all interface properties should be process correctly without throwing exceptions
+    Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
+    Interface i1 = new Interface("i1");
+    configuration.setInterfaces(ImmutableSortedMap.of("i1", i1));
+    InterfacePropertySpecifier.JAVA_MAP
+        .entrySet()
+        .forEach(
+            entry -> {
+              String property = entry.getKey();
+              PropertyDescriptor<Interface> propertyDescriptor = entry.getValue();
+              RowBuilder row = Row.builder();
+              PropertySpecifier.fillProperty(propertyDescriptor, i1, property, row);
+            });
+  }
 }

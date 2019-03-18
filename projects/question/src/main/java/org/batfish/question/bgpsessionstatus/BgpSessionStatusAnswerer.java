@@ -70,8 +70,9 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
   public List<Row> getRows(BgpSessionQuestion question) {
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
     Map<String, ColumnMetadata> metadataMap = createMetadata(question).toColumnMap();
-    Set<String> nodes = question.getNodes().getMatchingNodes(_batfish);
-    Set<String> remoteNodes = question.getRemoteNodes().getMatchingNodes(_batfish);
+    Set<String> nodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
+    Set<String> remoteNodes =
+        question.getRemoteNodeSpecifier().resolve(_batfish.specifierContext());
     Map<Ip, Set<String>> ipOwners = TopologyUtil.computeIpNodeOwners(configurations, true);
     Set<Ip> allInterfaceIps = ipOwners.keySet();
 

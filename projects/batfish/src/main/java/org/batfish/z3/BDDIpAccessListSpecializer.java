@@ -12,6 +12,8 @@ import java.util.SortedSet;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
+import org.batfish.common.bdd.BDDIcmpCode;
+import org.batfish.common.bdd.BDDIcmpType;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDIpSpaceSpecializer;
 import org.batfish.common.bdd.BDDOps;
@@ -202,9 +204,7 @@ public final class BDDIpAccessListSpecializer extends IpAccessListSpecializer {
     return ipProtocols == null
         ? null
         : ipProtocols.stream()
-            .filter(
-                ipProtocol ->
-                    !_flowBDD.and(_pkt.getIpProtocol().value(ipProtocol.number())).isZero())
+            .filter(ipProtocol -> !_flowBDD.and(_pkt.getIpProtocol().value(ipProtocol)).isZero())
             .collect(ImmutableSortedSet.toImmutableSortedSet(ipProtocols.comparator()));
   }
 
@@ -220,6 +220,34 @@ public final class BDDIpAccessListSpecializer extends IpAccessListSpecializer {
                      * If none of the vars can match this subRange, remove it.
                      */
                     varList.stream().anyMatch(var -> !_flowBDD.and(toBDD(subRange, var)).isZero()))
+            .collect(ImmutableSortedSet.toImmutableSortedSet(subRanges.comparator()));
+  }
+
+  private @Nullable SortedSet<SubRange> specializeSubRange(
+      @Nullable SortedSet<SubRange> subRanges, BDDIcmpCode var) {
+    return subRanges == null
+        ? null
+        : subRanges.stream()
+            .filter(
+                subRange ->
+                    /*
+                     * If none of the vars can match this subRange, remove it.
+                     */
+                    !_flowBDD.and(toBDD(subRange, var)).isZero())
+            .collect(ImmutableSortedSet.toImmutableSortedSet(subRanges.comparator()));
+  }
+
+  private @Nullable SortedSet<SubRange> specializeSubRange(
+      @Nullable SortedSet<SubRange> subRanges, BDDIcmpType var) {
+    return subRanges == null
+        ? null
+        : subRanges.stream()
+            .filter(
+                subRange ->
+                    /*
+                     * If none of the vars can match this subRange, remove it.
+                     */
+                    !_flowBDD.and(toBDD(subRange, var)).isZero())
             .collect(ImmutableSortedSet.toImmutableSortedSet(subRanges.comparator()));
   }
 
@@ -264,5 +292,17 @@ public final class BDDIpAccessListSpecializer extends IpAccessListSpecializer {
 
   private static BDD toBDD(SubRange subRange, BDDInteger var) {
     return var.geq(subRange.getStart()).and(var.leq(subRange.getEnd()));
+  }
+
+  private static BDD toBDD(SubRange subRange, BDDIcmpCode var) {
+    int start = subRange.getStart();
+    int end = subRange.getEnd();
+    return start == end ? var.value(start) : var.geq(start).and(var.leq(end));
+  }
+
+  private static BDD toBDD(SubRange subRange, BDDIcmpType var) {
+    int start = subRange.getStart();
+    int end = subRange.getEnd();
+    return start == end ? var.value(start) : var.geq(start).and(var.leq(end));
   }
 }

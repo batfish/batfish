@@ -22,7 +22,6 @@ java_library(
     ],
     deps = [
         "//projects/batfish-common-protocol:common",
-        "//projects/lib/jackson-jsonschema:jackson_jsonschema",
         "@commons_io//:compile",
         "@commons_lang3//:compile",
         "@diffutils//:compile",
@@ -35,6 +34,7 @@ java_library(
         "@jersey_media_multipart//:compile",
         "@jettison//:compile",
         "@jline3//:compile",
+        "@jsonassert//:compile",
         "@jsr305//:compile",
         "@opentracing_api//:compile",
         "@opentracing_util//:compile",

@@ -104,16 +104,21 @@ public final class TopologyUtil {
   public static @Nonnull Layer1Topology computeLayer1PhysicalTopology(
       @Nonnull Layer1Topology rawLayer1Topology,
       @Nonnull Map<String, Configuration> configurations) {
+    ImmutableSet.Builder<Layer1Edge> edges = ImmutableSet.builder();
+    rawLayer1Topology.getGraph().edges().stream()
+        .filter(
+            edge -> {
+              Interface i1 = getInterface(edge.getNode1(), configurations);
+              Interface i2 = getInterface(edge.getNode2(), configurations);
+              return i1 != null && i2 != null && i1.getActive() && i2.getActive();
+            })
+        .forEach(
+            edge -> {
+              edges.add(edge);
+              edges.add(edge.reverse());
+            });
     /* Filter out inactive interfaces */
-    return new Layer1Topology(
-        rawLayer1Topology.getGraph().edges().stream()
-            .filter(
-                edge -> {
-                  Interface i1 = getInterface(edge.getNode1(), configurations);
-                  Interface i2 = getInterface(edge.getNode2(), configurations);
-                  return i1 != null && i2 != null && i1.getActive() && i2.getActive();
-                })
-            .collect(ImmutableSet.toImmutableSet()));
+    return new Layer1Topology(edges.build());
   }
 
   private static void computeLayer2EdgesForLayer1Edge(
@@ -215,7 +220,7 @@ public final class TopologyUtil {
               });
         });
     vrf.getInterfaces().values().stream()
-        .filter(i -> i.getInterfaceType() == InterfaceType.VLAN)
+        .filter(i -> i.getInterfaceType() == InterfaceType.VLAN && i.getVlan() != null)
         .forEach(
             irbInterface -> {
               String irbName = irbInterface.getName();
@@ -299,10 +304,22 @@ public final class TopologyUtil {
    * configurations.
    */
   public static @Nonnull Topology computeLayer3Topology(
-      @Nonnull Layer2Topology layer2Topology, @Nonnull Map<String, Configuration> configurations) {
+      @Nonnull Layer1Topology rawLayer1Topology,
+      @Nonnull Layer2Topology layer2Topology,
+      @Nonnull Map<String, Configuration> configurations) {
+    Set<String> rawLayer1TailNodes =
+        rawLayer1Topology.getGraph().edges().stream()
+            .map(l1Edge -> l1Edge.getNode1().getHostname())
+            .collect(ImmutableSet.toImmutableSet());
     return new Topology(
         synthesizeL3Topology(configurations).getEdges().stream()
-            .filter(edge -> layer2Topology.inSameBroadcastDomain(edge.getHead(), edge.getTail()))
+            // keep if either node is in tail of edge in raw layer-1, or if vertices are in same
+            // broadcast domain
+            .filter(
+                edge ->
+                    !rawLayer1TailNodes.contains(edge.getNode1())
+                        || !rawLayer1TailNodes.contains(edge.getNode2())
+                        || layer2Topology.inSameBroadcastDomain(edge.getHead(), edge.getTail()))
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
   }
 

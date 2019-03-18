@@ -1,12 +1,9 @@
 package org.batfish.specifier;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
+import com.google.common.collect.ImmutableSet;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.referencelibrary.FilterGroup;
 
@@ -43,11 +40,6 @@ public final class ReferenceFilterGroupFilterSpecifier implements FilterSpecifie
 
   @Override
   public Set<IpAccessList> resolve(String node, SpecifierContext ctxt) {
-    checkArgument(
-        ctxt.getConfigs().containsKey(node),
-        "SpecifierContext does not have configs for node " + node);
-    Configuration config = ctxt.getConfigs().get(node);
-
     FilterGroup filterGroup =
         ctxt.getReferenceBook(_bookName)
             .orElseThrow(
@@ -62,11 +54,11 @@ public final class ReferenceFilterGroupFilterSpecifier implements FilterSpecifie
                             + _bookName
                             + "'"));
 
-    return config.getIpAccessLists().values().stream()
-        .filter(
-            filter ->
-                filterGroup.getFilters().stream()
-                    .anyMatch(specifier -> specifier.matches(filter, config)))
-        .collect(Collectors.toSet());
+    return filterGroup.getFilters().stream()
+        .flatMap(
+            f ->
+                SpecifierFactories.getFilterSpecifierOrDefault(f, NoFiltersFilterSpecifier.INSTANCE)
+                    .resolve(node, ctxt).stream())
+        .collect(ImmutableSet.toImmutableSet());
   }
 }

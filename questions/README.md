@@ -12,7 +12,11 @@ This directory contains the templates for two categories of questions:
 1. Stable: These questions are permanent and the current plan is to support them in the future.
 2. Experimental: These questions are supported currently but in the future they may be replaced/deprecated or moved to the stable directory.
 
+Many Batfish questions use rich parameter types, the grammar for which is [here](Parameters.md). 
+
 ## How to run questions in Batfish Java client
+
+*Note*: We recommend using [Pybatfish](https://github.com/batfish/pybatfish/), a powerful Python client for Batfish. The builtin Java client will deprecated soon. [Pybatfish documentation](https://pybatfish.readthedocs.io/en/latest/) has instructions and examples for loading and running questions. 
 
 ### Loading questions
 

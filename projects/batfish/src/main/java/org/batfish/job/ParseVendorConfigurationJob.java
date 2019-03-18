@@ -1,7 +1,6 @@
 package org.batfish.job;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import io.opentracing.ActiveSpan;
@@ -16,8 +15,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishException;
-import org.batfish.common.ErrorDetails;
-import org.batfish.common.ErrorDetails.ParseExceptionContext;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warnings;
 import org.batfish.config.Settings;
@@ -203,7 +200,14 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           F5BigipStructuredCombinedParser parser =
               new F5BigipStructuredCombinedParser(_fileText, _settings);
           combinedParser = parser;
-          extractor = new F5BigipStructuredControlPlaneExtractor(_fileText, parser, _warnings);
+          extractor =
+              new F5BigipStructuredControlPlaneExtractor(
+                  _fileText,
+                  parser,
+                  _warnings,
+                  _filename,
+                  _settings.getPrintParseTree() ? () -> _ptSentences : null,
+                  _settings.getPrintParseTreeLineNums());
           break;
 
         case HOST:
@@ -332,10 +336,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       try {
         extractor.processParseTree(tree);
       } catch (BatfishParseException e) {
-        _warnings.setErrorDetails(
-            new ErrorDetails(
-                Throwables.getStackTraceAsString(e),
-                new ParseExceptionContext(e.getContext(), combinedParser, _fileText)));
+        _warnings.setErrorDetails(e.getErrorDetails());
         throw new BatfishException("Error processing parse tree", e);
       }
 

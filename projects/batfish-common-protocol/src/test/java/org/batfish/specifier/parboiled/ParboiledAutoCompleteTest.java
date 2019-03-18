@@ -81,7 +81,7 @@ public class ParboiledAutoCompleteTest {
         equalTo(
             ImmutableSet.of(
                 new AutocompleteSuggestion(
-                    ".1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 5),
+                    "1.1.1.1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
                 new AutocompleteSuggestion(".", true, null, RANK_STRING_LITERAL, 5))));
   }
 
@@ -101,10 +101,67 @@ public class ParboiledAutoCompleteTest {
         ImmutableSet.copyOf(getTestPAC(query, completionMetadata).run()),
         equalTo(
             ImmutableSet.of(
-                new AutocompleteSuggestion("", true, null, AutocompleteSuggestion.DEFAULT_RANK, 7),
-                new AutocompleteSuggestion("0", true, null, AutocompleteSuggestion.DEFAULT_RANK, 7),
+                new AutocompleteSuggestion(
+                    "1.1.1.1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
+                new AutocompleteSuggestion(
+                    "1.1.1.10", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
                 new AutocompleteSuggestion("-", true, null, RANK_STRING_LITERAL, 7),
                 new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, 7))));
+  }
+
+  /** Test that we produce auto complete snapshot-based names. */
+  @Test
+  public void testRunDynamicValueName() {
+    String query = "node1";
+
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder().setNodes(ImmutableSet.of("node1", "node10")).build();
+
+    // this should auto complete to 1.1.1.10, '-' (range), and ',' (list)
+    assertThat(
+        ImmutableSet.copyOf(getTestPAC(query, completionMetadata).run()),
+        equalTo(
+            ImmutableSet.of(
+                new AutocompleteSuggestion(
+                    "node1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
+                new AutocompleteSuggestion(
+                    "node10", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
+                new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()))));
+  }
+
+  /** Test that we produce auto complete snapshot-based names even when we begin with a quote. */
+  @Test
+  public void testRunDynamicValueNameOpenQuote() {
+    String query = "\"node1";
+
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder().setNodes(ImmutableSet.of("node1", "node10")).build();
+
+    // this should auto complete to 1.1.1.10, '-' (range), and ',' (list)
+    assertThat(
+        ImmutableSet.copyOf(getTestPAC(query, completionMetadata).run()),
+        equalTo(
+            ImmutableSet.of(
+                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, 6),
+                new AutocompleteSuggestion("\"node1\"", true, null, RANK_STRING_LITERAL, 0),
+                new AutocompleteSuggestion(
+                    "\"node10\"", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0))));
+  }
+
+  /** Test that we produce auto complete snapshot-based names even when we begin with a quote. */
+  @Test
+  public void testRunDynamicValueNameDoubleQuoted() {
+    String query = "\"node1\"";
+
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder().setNodes(ImmutableSet.of("node1", "node10")).build();
+
+    // this should auto complete to 1.1.1.10, '-' (range), and ',' (list)
+    assertThat(
+        ImmutableSet.copyOf(getTestPAC(query, completionMetadata).run()),
+        equalTo(
+            ImmutableSet.of(
+                new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()))));
   }
 
   /** Test that we produce auto complete snapshot-based dynamic values like IP addresses */
@@ -138,7 +195,7 @@ public class ParboiledAutoCompleteTest {
         equalTo(
             ImmutableSet.of(
                 new AutocompleteSuggestion(
-                    "b1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 14))));
+                    "g1,b1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 11))));
   }
 
   /** Test that String literals are inserted before dynamic values */
@@ -152,20 +209,21 @@ public class ParboiledAutoCompleteTest {
     List<AutocompleteSuggestion> suggestions = getTestPAC(query, completionMetadata).run();
 
     /**
-     * The first three elements should should string literals and the last one should be dynamic. We
-     * do a 3-step dance to assert this because the ordering of first three completions is
-     * non-deterministic.
+     * The first 5 elements should be string literals and the last one should be dynamic. We do a
+     * 3-step dance because the ordering of string completions is non-deterministic.
      */
-    assertThat(suggestions.size(), equalTo(4));
+    assertThat(suggestions.size(), equalTo(6));
     assertThat(
-        ImmutableSet.copyOf(suggestions.subList(0, 3)),
+        ImmutableSet.copyOf(suggestions.subList(0, 5)),
         equalTo(
             ImmutableSet.of(
                 new AutocompleteSuggestion("!", true, null, RANK_STRING_LITERAL, 0),
+                new AutocompleteSuggestion("/", true, null, RANK_STRING_LITERAL, 0),
                 new AutocompleteSuggestion("(", true, null, RANK_STRING_LITERAL, 0),
+                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, 0),
                 new AutocompleteSuggestion("@specifier", true, null, RANK_STRING_LITERAL, 0))));
     assertThat(
-        suggestions.get(3),
+        suggestions.get(5),
         equalTo(
             new AutocompleteSuggestion(
                 "1.1.1.1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0)));
@@ -191,15 +249,15 @@ public class ParboiledAutoCompleteTest {
 
   @Test
   public void testAutoCompletePotentialMatchStringLiteral() {
-    PotentialMatch pm = new PotentialMatch(Type.STRING_LITERAL, "pfx", "comp");
+    PotentialMatch pm = new PotentialMatch(Type.STRING_LITERAL, "pfx", "comp", 0);
     assertThat(
-        getTestPAC(null).autoCompletePotentialMatch(pm, 2),
-        equalTo(ImmutableList.of(new AutocompleteSuggestion("comp", true, null, -1, 2))));
+        getTestPAC(null).autoCompletePotentialMatch(pm),
+        equalTo(ImmutableList.of(new AutocompleteSuggestion("pfxcomp", true, null, -1, 0))));
   }
 
   @Test
   public void testAutoCompletePotentialMatchSkipLabel() {
-    PotentialMatch pm = new PotentialMatch(Type.IP_ADDRESS_MASK, "pfx", "comp");
-    assertThat(getTestPAC(null).autoCompletePotentialMatch(pm, 2), equalTo(ImmutableList.of()));
+    PotentialMatch pm = new PotentialMatch(Type.IP_ADDRESS_MASK, "pfx", "comp", 0);
+    assertThat(getTestPAC(null).autoCompletePotentialMatch(pm), equalTo(ImmutableList.of()));
   }
 }

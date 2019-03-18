@@ -91,6 +91,19 @@
             </configuration>
           </execution>
           <execution>
+            <id>antlr4-f5-bigip-imish</id>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
+            <configuration>
+              <includes>**/F5BigipImishLexer.g4,**/F5BigipImishParser.g4</includes>
+              <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/f5_bigip_imish
+              </libDirectory>
+              <statusDirectory>${project.build.directory}/maven-status/antlr4-f5-bigip-imish
+              </statusDirectory>
+            </configuration>
+          </execution>
+          <execution>
             <id>antlr4-f5-bigip-structured</id>
             <goals>
               <goal>antlr4</goal>
@@ -150,7 +163,7 @@
             <configuration>
               <includes>**/*.g4</includes>
               <excludes>
-                **/cisco/*.g4,**/flatjuniper/*.g4,**/f5_bigip_structured/*.g4,**/flatvyos/*.g4,**/mrv/*.g4,**/palo_alto/*.g4
+                **/cisco/*.g4,**/flatjuniper/*.g4,**/f5_bigip_imish/*.g4,**/f5_bigip_structured/*.g4,**/flatvyos/*.g4,**/mrv/*.g4,**/palo_alto/*.g4
               </excludes>
             </configuration>
           </execution>
@@ -163,6 +176,11 @@
     <dependency>
       <groupId>org.batfish</groupId>
       <artifactId>batfish-common-protocol</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.batfish</groupId>
+      <artifactId>bdd</artifactId>
     </dependency>
 
     <dependency>
@@ -227,11 +245,6 @@
     </dependency>
 
     <dependency>
-      <groupId>net.sf.javabdd</groupId>
-      <artifactId>javabdd</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>org.antlr</groupId>
       <artifactId>antlr4-runtime</artifactId>
     </dependency>
@@ -281,6 +294,16 @@
       <artifactId>jgrapht-core</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>org.parboiled</groupId>
+      <artifactId>parboiled-core</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.parboiled</groupId>
+      <artifactId>parboiled-java</artifactId>
+    </dependency>
+
     <!-- Runtime dependencies to add logging. -->
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -324,7 +347,7 @@
 
     <dependency>
       <groupId>org.hamcrest</groupId>
-      <artifactId>java-hamcrest</artifactId>
+      <artifactId>hamcrest</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

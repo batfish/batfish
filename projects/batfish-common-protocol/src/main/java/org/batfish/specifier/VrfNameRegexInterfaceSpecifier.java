@@ -5,14 +5,14 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
-import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /**
  * An {@link InterfaceSpecifier} specifying interfaces that belong to VRFs with names matching the
  * input regex.
  */
 public final class VrfNameRegexInterfaceSpecifier implements InterfaceSpecifier {
-  Pattern _pattern;
+  private final Pattern _pattern;
 
   public VrfNameRegexInterfaceSpecifier(Pattern pattern) {
     _pattern = pattern;
@@ -36,7 +36,7 @@ public final class VrfNameRegexInterfaceSpecifier implements InterfaceSpecifier 
   }
 
   @Override
-  public Set<Interface> resolve(Set<String> nodes, SpecifierContext ctxt) {
+  public Set<NodeInterfacePair> resolve(Set<String> nodes, SpecifierContext ctxt) {
     return nodes.stream()
         .map(n -> ctxt.getConfigs().get(n).getVrfs().values())
         .flatMap(Collection::stream)
@@ -44,6 +44,7 @@ public final class VrfNameRegexInterfaceSpecifier implements InterfaceSpecifier 
         .filter(v -> _pattern.matcher(v.getName()).matches())
         .map(v -> v.getInterfaces().values())
         .flatMap(Collection::stream)
+        .map(NodeInterfacePair::new)
         .collect(ImmutableSet.toImmutableSet());
   }
 }

@@ -2,7 +2,6 @@ package org.batfish.datamodel;
 
 import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.nullsFirst;
-import static org.batfish.common.util.CommonUtil.nullIfEmpty;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -10,6 +9,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -20,6 +20,10 @@ import javax.annotation.Nullable;
 import org.batfish.common.util.CommonUtil;
 
 public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
+
+  private static <C extends Collection<?>> C nullIfEmpty(C collection) {
+    return collection == null ? null : collection.isEmpty() ? null : collection;
+  }
 
   public static class Builder {
     private SortedSet<Integer> _dscps;
@@ -916,6 +920,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       return false;
     }
     if (!_icmpCodes.isEmpty()
+        && flow.getIcmpCode() != null
         && _icmpCodes.stream().noneMatch(sr -> sr.includes(flow.getIcmpCode()))) {
       return false;
     }
@@ -923,6 +928,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       return false;
     }
     if (!_icmpTypes.isEmpty()
+        && flow.getIcmpType() != null
         && _icmpTypes.stream().noneMatch(sr -> sr.includes(flow.getIcmpType()))) {
       return false;
     }

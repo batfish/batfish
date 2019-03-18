@@ -22,7 +22,7 @@ public class ParserIpSpaceTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static AbstractParseRunner<AstNode> getRunner() {
-    return new ReportingParseRunner<>(Parser.INSTANCE.input(Parser.INSTANCE.IpSpaceExpression()));
+    return new ReportingParseRunner<>(Parser.INSTANCE.input(Parser.INSTANCE.IpSpaceSpec()));
   }
 
   /** This tests if we have proper completion annotations on the rules */
@@ -50,7 +50,7 @@ public class ParserIpSpaceTest {
     ParboiledAutoComplete pac =
         new ParboiledAutoComplete(
             Parser.INSTANCE,
-            Parser.INSTANCE.input(Parser.INSTANCE.IpSpaceExpression()),
+            Parser.INSTANCE.input(Parser.INSTANCE.IpSpaceSpec()),
             Parser.ANCHORS,
             "network",
             "snapshot",
@@ -64,12 +64,14 @@ public class ParserIpSpaceTest {
         ImmutableSet.copyOf(pac.run()),
         equalTo(
             ImmutableSet.of(
-                new AutocompleteSuggestion("", true, null, AutocompleteSuggestion.DEFAULT_RANK, 7),
-                new AutocompleteSuggestion("0", true, null, AutocompleteSuggestion.DEFAULT_RANK, 7),
+                new AutocompleteSuggestion(
+                    "1.1.1.1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
+                new AutocompleteSuggestion(
+                    "1.1.1.10", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
                 new AutocompleteSuggestion("-", true, null, RANK_STRING_LITERAL, 7),
                 new AutocompleteSuggestion(":", true, null, RANK_STRING_LITERAL, 7),
                 new AutocompleteSuggestion("/", true, null, RANK_STRING_LITERAL, 7),
-                new AutocompleteSuggestion("/22", true, null, RANK_STRING_LITERAL, 7),
+                new AutocompleteSuggestion("1.1.1.1/22", true, null, RANK_STRING_LITERAL, 0),
                 new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, 7))));
   }
 

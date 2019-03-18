@@ -12,7 +12,6 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
-import org.batfish.datamodel.questions.FiltersSpecifier;
 import org.batfish.referencelibrary.FilterGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.junit.Rule;
@@ -28,9 +27,9 @@ public class ReferenceFilterGroupFilterSpecifierTest {
   private static final String _nodeName = "node0";
   private static final MockSpecifierContext _ctxt;
 
-  private static final IpAccessList _filter1 = new IpAccessList("filter1");
-  private static final IpAccessList _filter2 = new IpAccessList("filter2");
-  private static final IpAccessList _filter3 = new IpAccessList("filter3");
+  private static final IpAccessList _filter1 = IpAccessList.builder().setName("filter1").build();
+  private static final IpAccessList _filter2 = IpAccessList.builder().setName("filter2").build();
+  private static final IpAccessList _filter3 = IpAccessList.builder().setName("filter3").build();
 
   static {
     NetworkFactory nf = new NetworkFactory();
@@ -64,9 +63,9 @@ public class ReferenceFilterGroupFilterSpecifierTest {
                 ImmutableList.of(
                     new FilterGroup(
                         ImmutableList.of(
-                            new FiltersSpecifier(_filter1.getName()),
-                            new FiltersSpecifier(
-                                "outputfilteron:" + _interfaceName)), // should match _filter3
+                            _filter1.getName(),
+                            "outFilterOf(" + _interfaceName + ")", // should match _filter3
+                            ""), // should match nothing; shouldn't accidentally match everything
                         _filterGroupName)))
             .build();
 
@@ -83,12 +82,5 @@ public class ReferenceFilterGroupFilterSpecifierTest {
         new ReferenceFilterGroupFilterSpecifier(_filterGroupName, _refBookName)
             .resolve(_nodeName, _ctxt),
         equalTo(ImmutableSet.of(_filter1, _filter3)));
-  }
-
-  @Test
-  public void resolveMissingNode() {
-    exception.expect(IllegalArgumentException.class);
-    new ReferenceFilterGroupFilterSpecifier(_filterGroupName, _refBookName)
-        .resolve("NonExistentNode", _ctxt);
   }
 }

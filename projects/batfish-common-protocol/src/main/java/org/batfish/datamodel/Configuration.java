@@ -10,7 +10,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Comparator;
@@ -29,13 +28,15 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 import org.batfish.datamodel.ospf.OspfProcess;
+import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.vendor_family.VendorFamily;
 
-@JsonSchemaDescription(
-    "A Configuration represents an autonomous network device, such as a router, host, switch, or "
-        + "firewall.")
+/**
+ * A Configuration represents an autonomous network device, such as a router, host, switch, or
+ * firewall.
+ */
 public final class Configuration implements Serializable {
 
   public static class Builder extends NetworkFactoryBuilder<Configuration> {
@@ -150,6 +151,8 @@ public final class Configuration implements Serializable {
 
   private static final String PROP_NTP_SOURCE_INTERFACE = "ntpSourceInterface";
 
+  private static final String PROP_PACKET_POLICIES = "packetPolicies";
+
   private static final String PROP_ROUTE6_FILTER_LISTS = "route6FilterLists";
 
   private static final String PROP_ROUTE_FILTER_LISTS = "routeFilterLists";
@@ -237,6 +240,8 @@ public final class Configuration implements Serializable {
 
   private String _ntpSourceInterface;
 
+  private NavigableMap<String, PacketPolicy> _packetPolicies;
+
   private NavigableMap<String, Route6FilterList> _route6FilterLists;
 
   private NavigableMap<String, RouteFilterList> _routeFilterLists;
@@ -292,6 +297,7 @@ public final class Configuration implements Serializable {
     _mlags = ImmutableSortedMap.of();
     _normalVlanRange = new SubRange(VLAN_NORMAL_MIN_DEFAULT, VLAN_NORMAL_MAX_DEFAULT);
     _ntpServers = new TreeSet<>();
+    _packetPolicies = new TreeMap<>();
     _routeFilterLists = new TreeMap<>();
     _route6FilterLists = new TreeMap<>();
     _routingPolicies = new TreeMap<>();
@@ -536,6 +542,12 @@ public final class Configuration implements Serializable {
     return _ntpSourceInterface;
   }
 
+  /** Return the defined policies that can be used for policy-based routing */
+  @JsonProperty(PROP_PACKET_POLICIES)
+  public Map<String, PacketPolicy> getPacketPolicies() {
+    return _packetPolicies;
+  }
+
   @JsonPropertyDescription("Dictionary of all IPV6 route filter lists for this node.")
   @JsonProperty(PROP_ROUTE6_FILTER_LISTS)
   public NavigableMap<String, Route6FilterList> getRoute6FilterLists() {
@@ -767,6 +779,11 @@ public final class Configuration implements Serializable {
   @JsonProperty(PROP_ROUTING_POLICIES)
   public void setRoutingPolicies(NavigableMap<String, RoutingPolicy> routingPolicies) {
     _routingPolicies = routingPolicies;
+  }
+
+  @JsonProperty(PROP_PACKET_POLICIES)
+  public void setPacketPolicies(NavigableMap<String, PacketPolicy> packetPolicies) {
+    _packetPolicies = packetPolicies;
   }
 
   @JsonProperty(PROP_SNMP_SOURCE_INTERFACE)

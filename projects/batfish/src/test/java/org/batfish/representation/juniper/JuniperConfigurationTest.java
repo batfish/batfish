@@ -77,9 +77,9 @@ public class JuniperConfigurationTest {
 
     Zone zone = new Zone("zone", new AddressBook("global", null));
     String interface1Name = "interface1";
-    zone.getInterfaces().add(new Interface(interface1Name));
+    zone.getInterfaces().add(interface1Name);
     String interface2Name = "interface2";
-    zone.getInterfaces().add(new Interface(interface2Name));
+    zone.getInterfaces().add(interface2Name);
     config.getMasterLogicalSystem().getZones().put("zone", zone);
     filter.setFromZone("zone");
     IpAccessList headerSpaceAndSrcInterfaceAcl = config.toIpAccessList(filter);
@@ -275,9 +275,9 @@ public class JuniperConfigurationTest {
 
     Zone zone = new Zone("zone", new AddressBook("global", null));
     String zoneInterface1Name = "zoneInterface1";
-    zone.getInterfaces().add(new Interface(zoneInterface1Name));
+    zone.getInterfaces().add(zoneInterface1Name);
     String zoneInterface2Name = "zoneInterface2";
-    zone.getInterfaces().add(new Interface(zoneInterface2Name));
+    zone.getInterfaces().add(zoneInterface2Name);
     config.getMasterLogicalSystem().getZones().put(zone.getName(), zone);
 
     RoutingInstance routingInstance = config.getMasterLogicalSystem().getDefaultRoutingInstance();

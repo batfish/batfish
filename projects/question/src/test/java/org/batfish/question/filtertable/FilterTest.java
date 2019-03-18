@@ -64,7 +64,7 @@ public class FilterTest {
 
     // one negative example of malformed column spec
     _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Illegal operand");
+    _thrown.expectMessage("Invalid table column");
     new Filter("42 == a[b]]");
   }
 

@@ -35,6 +35,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.DirectoryIteratorException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -177,6 +180,40 @@ public class WorkMgr extends AbstractCoordinator {
                               Comparator.<Step<?>, String>comparing(
                                       step -> step.getDetail().toString())
                                   .thenComparing(Step::getAction)))));
+  private static final int STREAMED_FILE_BUFFER_SIZE = 1024;
+
+  private static Path getCanonicalPath(Path path) {
+    try {
+      return Paths.get(path.toFile().getCanonicalPath());
+    } catch (IOException e) {
+      throw new BatfishException("Could not get canonical path from: '" + path + "'", e);
+    }
+  }
+
+  private static SortedSet<Path> getEntries(Path directory) {
+    SortedSet<Path> entries = new TreeSet<>();
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
+      for (Path entry : stream) {
+        entries.add(entry);
+      }
+    } catch (IOException | DirectoryIteratorException e) {
+      throw new BatfishException("Error listing directory '" + directory + "'", e);
+    }
+    return entries;
+  }
+
+  private static void writeStreamToFile(InputStream inputStream, Path outputFile) {
+    try (OutputStream fileOutputStream = new FileOutputStream(outputFile.toFile())) {
+      int read = 0;
+      final byte[] bytes = new byte[STREAMED_FILE_BUFFER_SIZE];
+      while ((read = inputStream.read(bytes)) != -1) {
+        fileOutputStream.write(bytes, 0, read);
+      }
+    } catch (IOException e) {
+      throw new BatfishException(
+          "Failed to write input stream to output file: '" + outputFile + "'", e);
+    }
+  }
 
   static final class AssignWorkTask implements Runnable {
     @Override
@@ -1374,15 +1411,14 @@ public class WorkMgr extends AbstractCoordinator {
       return "Missing folder '" + BfConsts.RELPATH_INPUT + "' for snapshot '" + testrigName + "'\n";
     }
     StringBuilder retStringBuilder = new StringBuilder();
-    SortedSet<Path> entries = CommonUtil.getEntries(submittedTestrigDir);
+    SortedSet<Path> entries = getEntries(submittedTestrigDir);
     for (Path entry : entries) {
       retStringBuilder.append(entry.getFileName());
       if (Files.isDirectory(entry)) {
         String[] subdirEntryNames =
-            CommonUtil.getEntries(entry).stream()
+            getEntries(entry).stream()
                 .map(subdirEntry -> subdirEntry.getFileName().toString())
-                .collect(Collectors.toList())
-                .toArray(new String[] {});
+                .toArray(String[]::new);
         retStringBuilder.append("/\n");
         // now append a maximum of MAX_SHOWN_SNAPSHOT_INFO_SUBDIR_ENTRIES
         for (int index = 0;
@@ -1412,7 +1448,7 @@ public class WorkMgr extends AbstractCoordinator {
      * Check if we got an object name outside of the testrig folder, perhaps because of ".." in the
      * name; disallow it
      */
-    if (!CommonUtil.getCanonicalPath(file).startsWith(CommonUtil.getCanonicalPath(testrigDir))) {
+    if (!getCanonicalPath(file).startsWith(getCanonicalPath(testrigDir))) {
       throw new BatfishException("Illegal object name: '" + objectName + "'");
     }
 
@@ -1524,7 +1560,7 @@ public class WorkMgr extends AbstractCoordinator {
     Path subDir = getSnapshotSubdir(srcDir);
     validateSnapshotDir(subDir);
 
-    SortedSet<Path> subFileList = CommonUtil.getEntries(subDir);
+    SortedSet<Path> subFileList = getEntries(subDir);
 
     NetworkId networkId = _idManager.getNetworkId(networkName);
     SnapshotId snapshotId = _idManager.generateSnapshotId();
@@ -1583,7 +1619,16 @@ public class WorkMgr extends AbstractCoordinator {
         }
       }
       // Copy everything over
-      CommonUtil.copy(subFile, srcTestrigDir.resolve(subFile.getFileName()));
+      Path dstPath = srcTestrigDir.resolve(subFile.getFileName());
+      try {
+        if (Files.isDirectory(subFile)) {
+          FileUtils.copyDirectory(subFile.toFile(), dstPath.toFile());
+        } else {
+          FileUtils.copyFile(subFile.toFile(), dstPath.toFile());
+        }
+      } catch (IOException e) {
+        throw new BatfishException("Failed to copy: '" + subFile + "' to: '" + dstPath + "'", e);
+      }
     }
     _logger.infof(
         "Environment data for snapshot:%s; bgpTables:%s, routingTables:%s, nodeRoles:%s referenceBooks:%s\n",
@@ -1630,7 +1675,7 @@ public class WorkMgr extends AbstractCoordinator {
   @VisibleForTesting
   static Path getSnapshotSubdir(Path srcDir) {
     SortedSet<Path> srcDirEntries =
-        CommonUtil.getEntries(srcDir).stream()
+        getEntries(srcDir).stream()
             .filter(path -> !IGNORED_PATHS.contains(path.getFileName().toString()))
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
     /*
@@ -1696,7 +1741,7 @@ public class WorkMgr extends AbstractCoordinator {
       throw new BatfishException("Failed to create directory: '" + newSnapshotInputsDir + "'");
     }
     if (baseSnapshotInputsDir.toFile().exists()) {
-      CommonUtil.copyDirectory(baseSnapshotInputsDir, newSnapshotInputsDir);
+      FileUtils.copyDirectory(baseSnapshotInputsDir.toFile(), newSnapshotInputsDir.toFile());
       _logger.infof(
           "Copied snapshot from: %s to new snapshot: %s in network: %s\n",
           baseSnapshotInputsDir, newSnapshotInputsDir, networkName);
@@ -2068,7 +2113,7 @@ public class WorkMgr extends AbstractCoordinator {
     Path file = snapshotDir.resolve(objectName);
     // check if we got an object name outside of the testrig folder,
     // perhaps because of ".." in the name; disallow it
-    if (!CommonUtil.getCanonicalPath(file).startsWith(CommonUtil.getCanonicalPath(snapshotDir))) {
+    if (!getCanonicalPath(file).startsWith(getCanonicalPath(snapshotDir))) {
       throw new BatfishException("Illegal object name: '" + objectName + "'");
     }
     Path parentFolder = file.getParent();
@@ -2081,7 +2126,7 @@ public class WorkMgr extends AbstractCoordinator {
         throw new BatfishException(parentFolder + " already exists but is not a folder");
       }
     }
-    CommonUtil.writeStreamToFile(fileStream, file);
+    writeStreamToFile(fileStream, file);
   }
 
   public boolean queueWork(WorkItem workItem) {
@@ -2230,7 +2275,7 @@ public class WorkMgr extends AbstractCoordinator {
       throw new BatfishException("Failed to create directory: '" + originalDir + "'");
     }
     Path snapshotZipFile = originalDir.resolve(BfConsts.RELPATH_SNAPSHOT_ZIP_FILE);
-    CommonUtil.writeStreamToFile(fileStream, snapshotZipFile);
+    writeStreamToFile(fileStream, snapshotZipFile);
     Path unzipDir = CommonUtil.createTempDirectory("tr");
     UnzipUtility.unzip(snapshotZipFile, unzipDir);
 

@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -12,6 +13,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
@@ -105,12 +108,14 @@ public class Row implements Comparable<Row>, Serializable {
     }
   }
 
-  public static class TypedRowBuilder extends RowBuilder {
+  public static final class TypedRowBuilder extends RowBuilder {
 
-    Map<String, ColumnMetadata> _columns;
+    private final Map<String, ColumnMetadata> _columns;
+    private final Set<String> _columnNames;
 
     private TypedRowBuilder(Map<String, ColumnMetadata> columns) {
-      _columns = columns;
+      _columns = ImmutableMap.copyOf(columns);
+      _columnNames = ImmutableSortedSet.copyOf(columns.keySet());
     }
 
     /**
@@ -120,12 +125,17 @@ public class Row implements Comparable<Row>, Serializable {
     @Override
     public TypedRowBuilder put(String column, @Nullable Object object) {
       checkArgument(
-          _columns.containsKey(column), Row.missingColumnErrorMessage(column, _columns.keySet()));
+          _columnNames.contains(column),
+          "Column '%s' is not present. Valid columns are: %s",
+          column,
+          _columnNames);
       Schema expectedSchema = _columns.get(column).getSchema();
       checkArgument(
           SchemaUtils.isValidObject(object, expectedSchema),
-          String.format(
-              "Cannot convert '%s' to Schema '%s' of column '%s'", object, expectedSchema, column));
+          "Cannot convert '%s' to Schema '%s' of column '%s'",
+          object,
+          expectedSchema,
+          column);
       super.put(column, object);
       return this;
     }
@@ -133,7 +143,7 @@ public class Row implements Comparable<Row>, Serializable {
     @Override
     public Row build() {
       // Fill in missing columns with null entries
-      _columns.keySet().stream().filter(c -> !_data.has(c)).forEach(c -> super.put(c, null));
+      _columnNames.stream().filter(c -> !_data.has(c)).forEach(c -> super.put(c, null));
       return super.build();
     }
   }
@@ -191,8 +201,8 @@ public class Row implements Comparable<Row>, Serializable {
   @Override
   public int compareTo(Row o) {
     try {
-      String myStr = BatfishObjectMapper.mapper().writeValueAsString(_data);
-      String oStr = BatfishObjectMapper.mapper().writeValueAsString(o._data);
+      String myStr = getAsString();
+      String oStr = o.getAsString();
       return myStr.compareTo(oStr);
     } catch (JsonProcessingException e) {
       throw new BatfishException("Exception in row comparison", e);
@@ -404,5 +414,17 @@ public class Row implements Comparable<Row>, Serializable {
 
   public boolean hasNonNull(String column) {
     return _data.hasNonNull(column);
+  }
+
+  private volatile String _asString;
+
+  @JsonIgnore
+  private String getAsString() throws JsonProcessingException {
+    String asString = _asString;
+    if (asString == null) {
+      asString = BatfishObjectMapper.writeString(_data);
+      _asString = asString;
+    }
+    return asString;
   }
 }

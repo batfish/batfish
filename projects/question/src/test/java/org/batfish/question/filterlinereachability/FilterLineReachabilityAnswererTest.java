@@ -189,12 +189,12 @@ public class FilterLineReachabilityAnswererTest {
 
     // we should get an empty set when we are ignoring generated filters
     assertThat(
-        getSpecifiedFilters(new FilterLineReachabilityQuestion(null, null, true), ctxt),
+        getSpecifiedFilters(new FilterLineReachabilityQuestion((String) null, null, true), ctxt),
         equalTo(ImmutableMap.of("c1", ImmutableSet.of())));
 
     // we should get the one acl we put in otherwise
     assertThat(
-        getSpecifiedFilters(new FilterLineReachabilityQuestion(null, null, false), ctxt),
+        getSpecifiedFilters(new FilterLineReachabilityQuestion((String) null, null, false), ctxt),
         equalTo(ImmutableMap.of("c1", ImmutableSet.of(aclGenerated))));
   }
 
@@ -623,7 +623,7 @@ public class FilterLineReachabilityAnswererTest {
     BDD ddos2 = p.getSrcIp().value(Ip.parse("1.2.3.2").asLong());
     BDD ddos3 = p.getSrcIp().value(Ip.parse("1.2.3.3").asLong());
     // permit tcp any any eq ssh
-    BDD tcp = p.getIpProtocol().value(IpProtocol.TCP.number());
+    BDD tcp = p.getIpProtocol().value(IpProtocol.TCP);
     BDD ssh = tcp.and(p.getDstPort().value(22));
     // permit tcp any DST_IP eq ssh
     BDD selectiveSSH = ssh.and(p.getDstIp().value(Ip.parse("2.3.4.5").asLong()));
@@ -693,7 +693,7 @@ public class FilterLineReachabilityAnswererTest {
   public void testDifferentActionPreservation() {
     BDDPacket p = new BDDPacket();
     BDD slash32 = p.getDstIp().value(Ip.parse("1.2.3.4").asLong());
-    BDD tcp = p.getIpProtocol().value(IpProtocol.TCP.number());
+    BDD tcp = p.getIpProtocol().value(IpProtocol.TCP);
     BDD not80 = tcp.and(p.getDstPort().value(80).not());
 
     /*
@@ -722,7 +722,7 @@ public class FilterLineReachabilityAnswererTest {
   @Test
   public void testSameActionNotReported() {
     BDDPacket p = new BDDPacket();
-    BDD tcp = p.getIpProtocol().value(IpProtocol.TCP.number());
+    BDD tcp = p.getIpProtocol().value(IpProtocol.TCP);
     BDD tcpEstablished = p.getTcpAck().or(p.getTcpRst());
     BDD slash32 = p.getDstIp().value(Ip.parse("1.2.3.4").asLong());
     BDD port80 = p.getDstPort().value(80);

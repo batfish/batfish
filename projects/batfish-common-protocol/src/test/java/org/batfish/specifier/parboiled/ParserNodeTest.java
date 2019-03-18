@@ -22,7 +22,7 @@ public class ParserNodeTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static AbstractParseRunner<AstNode> getRunner() {
-    return new ReportingParseRunner<>(Parser.INSTANCE.input(Parser.INSTANCE.NodeExpression()));
+    return new ReportingParseRunner<>(Parser.INSTANCE.input(Parser.INSTANCE.NodeSpec()));
   }
 
   /** This testParses if we have proper completion annotations on the rules */
@@ -45,7 +45,7 @@ public class ParserNodeTest {
     ParboiledAutoComplete pac =
         new ParboiledAutoComplete(
             Parser.INSTANCE,
-            Parser.INSTANCE.input(Parser.INSTANCE.NodeExpression()),
+            Parser.INSTANCE.input(Parser.INSTANCE.NodeSpec()),
             Parser.ANCHORS,
             "network",
             "snapshot",
@@ -63,12 +63,11 @@ public class ParserNodeTest {
                     "node1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
                 new AutocompleteSuggestion("(", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("/", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
                     "@role", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
-                    "ref.nodeRole", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(
-                    "@device", true, null, RANK_STRING_LITERAL, query.length()))));
+                    "@deviceType", true, null, RANK_STRING_LITERAL, query.length()))));
   }
 
   @Test
@@ -81,7 +80,7 @@ public class ParserNodeTest {
     ParboiledAutoComplete pac =
         new ParboiledAutoComplete(
             Parser.INSTANCE,
-            Parser.INSTANCE.input(Parser.INSTANCE.NodeExpression()),
+            Parser.INSTANCE.input(Parser.INSTANCE.NodeSpec()),
             Parser.ANCHORS,
             "network",
             "snapshot",
@@ -96,9 +95,9 @@ public class ParserNodeTest {
         equalTo(
             ImmutableSet.of(
                 new AutocompleteSuggestion(
-                    "", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
+                    "node1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
                 new AutocompleteSuggestion(
-                    "1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
+                    "node11", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
                 new AutocompleteSuggestion("\\", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("&", true, null, RANK_STRING_LITERAL, query.length()))));
@@ -138,6 +137,15 @@ public class ParserNodeTest {
   }
 
   @Test
+  public void testParseNodeNameRegexDeprecated() {
+    String regex = "node.*";
+    NameRegexNodeAstNode expectedAst = new NameRegexNodeAstNode(regex);
+
+    assertThat(ParserUtils.getAst(getRunner().run(regex)), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run(" " + regex + " ")), equalTo(expectedAst));
+  }
+
+  @Test
   public void testParseNodeParens() {
     String ifaceName = "node-lhr";
     NameNodeAstNode expectedAst = new NameNodeAstNode(ifaceName);
@@ -152,9 +160,10 @@ public class ParserNodeTest {
     TypeNodeAstNode expectedAst =
         new TypeNodeAstNode(new StringAstNode(DeviceType.ROUTER.toString()));
 
-    assertThat(ParserUtils.getAst(getRunner().run("@device(router)")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" @device ( router ) ")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run("@DeviCE(RouTer)")), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run("@deviceType(router)")), equalTo(expectedAst));
+    assertThat(
+        ParserUtils.getAst(getRunner().run(" @deviceType ( router ) ")), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run("@DeviCEtype(RouTer)")), equalTo(expectedAst));
   }
 
   @Test

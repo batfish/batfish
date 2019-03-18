@@ -24,7 +24,7 @@ public class ParserLocationTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static AbstractParseRunner<AstNode> getRunner() {
-    return new ReportingParseRunner<>(Parser.INSTANCE.input(Parser.INSTANCE.LocationExpression()));
+    return new ReportingParseRunner<>(Parser.INSTANCE.input(Parser.INSTANCE.LocationSpec()));
   }
 
   /** This testParses if we have proper completion annotations on the rules */
@@ -47,7 +47,7 @@ public class ParserLocationTest {
     ParboiledAutoComplete pac =
         new ParboiledAutoComplete(
             Parser.INSTANCE,
-            Parser.INSTANCE.input(Parser.INSTANCE.LocationExpression()),
+            Parser.INSTANCE.input(Parser.INSTANCE.LocationSpec()),
             Parser.ANCHORS,
             "network",
             "snapshot",
@@ -66,21 +66,15 @@ public class ParserLocationTest {
                 ImmutableList.of(
                         "(",
                         "/",
+                        "\"",
                         "@connectedTo",
-                        "connectedTo",
-                        "@device",
+                        "@deviceType",
                         "@enter",
-                        "enter",
                         "@interfaceGroup",
-                        "ref.interfaceGroup",
-                        "@link",
-                        "type",
+                        "@interfaceType",
                         "@role",
-                        "ref.nodeRole",
                         "@vrf",
-                        "vrf",
-                        "@zone",
-                        "zone")
+                        "@zone")
                     .stream()
                     .map(
                         s ->
@@ -102,7 +96,7 @@ public class ParserLocationTest {
     ParboiledAutoComplete pac =
         new ParboiledAutoComplete(
             Parser.INSTANCE,
-            Parser.INSTANCE.input(Parser.INSTANCE.LocationExpression()),
+            Parser.INSTANCE.input(Parser.INSTANCE.LocationSpec()),
             Parser.ANCHORS,
             "network",
             "snapshot",
@@ -117,9 +111,9 @@ public class ParserLocationTest {
         equalTo(
             ImmutableSet.of(
                 new AutocompleteSuggestion(
-                    "", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
+                    "node1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
                 new AutocompleteSuggestion(
-                    "1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
+                    "node11", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
                 new AutocompleteSuggestion("\\", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("&", true, null, RANK_STRING_LITERAL, query.length()),
@@ -134,7 +128,7 @@ public class ParserLocationTest {
         equalTo(
             new UnionLocationAstNode(
                 InterfaceLocationAstNode.createFromNode("n1"),
-                InterfaceLocationAstNode.createFromNodeInterface(
+                InterfaceLocationAstNode.createFromInterfaceWithNode(
                     new NameNodeAstNode("n2"), new NameInterfaceAstNode("e2")))));
 
     // this should parse well too
@@ -142,16 +136,16 @@ public class ParserLocationTest {
         ParserUtils.getAst(getRunner().run("n1[e1] , n2[e2]")),
         equalTo(
             new UnionLocationAstNode(
-                InterfaceLocationAstNode.createFromNodeInterface(
+                InterfaceLocationAstNode.createFromInterfaceWithNode(
                     new NameNodeAstNode("n1"), new NameInterfaceAstNode("e1")),
-                InterfaceLocationAstNode.createFromNodeInterface(
+                InterfaceLocationAstNode.createFromInterfaceWithNode(
                     new NameNodeAstNode("n2"), new NameInterfaceAstNode("e2")))));
 
     // brackets after a complex node expression
     assertThat(
         ParserUtils.getAst(getRunner().run("(n1 , n2)[e1/0]")),
         equalTo(
-            InterfaceLocationAstNode.createFromNodeInterface(
+            InterfaceLocationAstNode.createFromInterfaceWithNode(
                 new UnionNodeAstNode(new NameNodeAstNode("n1"), new NameNodeAstNode("n2")),
                 new NameInterfaceAstNode("e1/0"))));
 
@@ -159,7 +153,7 @@ public class ParserLocationTest {
     assertThat(
         ParserUtils.getAst(getRunner().run("(n1 , n2)[e1 , e2]")),
         equalTo(
-            InterfaceLocationAstNode.createFromNodeInterface(
+            InterfaceLocationAstNode.createFromInterfaceWithNode(
                 new UnionNodeAstNode(new NameNodeAstNode("n1"), new NameNodeAstNode("n2")),
                 new UnionInterfaceAstNode(
                     new NameInterfaceAstNode("e1"), new NameInterfaceAstNode("e2")))));
@@ -195,9 +189,9 @@ public class ParserLocationTest {
 
   @Test
   public void testParseLocationNodeInterface() {
-    String input = "node[@link(physical)]";
+    String input = "node[@interfaceType(physical)]";
     InterfaceLocationAstNode expectedAst =
-        InterfaceLocationAstNode.createFromNodeInterface(
+        InterfaceLocationAstNode.createFromInterfaceWithNode(
             new NameNodeAstNode("node"),
             new TypeInterfaceAstNode(InterfaceType.PHYSICAL.toString()));
 
@@ -206,8 +200,42 @@ public class ParserLocationTest {
   }
 
   @Test
+  public void testParseLocationInterfaceDeprecated() {
+    String input = "[eth0/1]";
+    InterfaceLocationAstNode expectedAst =
+        InterfaceLocationAstNode.createFromInterface(new NameInterfaceAstNode("eth0/1"));
+
+    assertThat(ParserUtils.getAst(getRunner().run(input)), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run(" " + input + " ")), equalTo(expectedAst));
+  }
+
+  @Test
+  public void testParseLocationInterfaceDeprecatedInsideFunc() {
+    String input = "enter([ref.interfacegroup(sea, host-iface)])";
+    LocationAstNode expectedAst =
+        new EnterLocationAstNode(
+            InterfaceLocationAstNode.createFromInterface(
+                new InterfaceGroupInterfaceAstNode("sea", "host-iface")));
+
+    assertThat(ParserUtils.getAst(getRunner().run(input)), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run(" " + input + " ")), equalTo(expectedAst));
+  }
+
+  @Test
+  public void testParseLocationInterfaceDeprecatedOvereating() {
+    // the whole expression should not be eaten by the deprecated regex parser
+    String input = "tor-001a.sea3[/.*/]";
+    LocationAstNode expectedAst =
+        InterfaceLocationAstNode.createFromInterfaceWithNode(
+            new NameNodeAstNode("tor-001a.sea3"), new NameRegexInterfaceAstNode(".*"));
+
+    assertThat(ParserUtils.getAst(getRunner().run(input)), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run(" " + input + " ")), equalTo(expectedAst));
+  }
+
+  @Test
   public void testParseLocationInterfaceSpecifier() {
-    String input = "@link(physical)";
+    String input = "@interfaceType(physical)";
     InterfaceLocationAstNode expectedAst =
         InterfaceLocationAstNode.createFromInterface(
             new TypeInterfaceAstNode(InterfaceType.PHYSICAL.toString()));
@@ -256,7 +284,7 @@ public class ParserLocationTest {
         equalTo(
             new IntersectionLocationAstNode(
                 InterfaceLocationAstNode.createFromNode("node1"),
-                InterfaceLocationAstNode.createFromNodeInterface(
+                InterfaceLocationAstNode.createFromInterfaceWithNode(
                     new NameNodeAstNode("node2"), new NameInterfaceAstNode("e1")))));
   }
 

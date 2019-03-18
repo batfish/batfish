@@ -635,6 +635,54 @@
                   "headerSpace" : {
                     "dstIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "102.66.49.0/24"
+                    },
+                    "dstPorts" : [
+                      "0-79",
+                      "81-442",
+                      "444-65535"
+                    ],
+                    "ipProtocols" : [
+                      "TCP"
+                    ],
+                    "negate" : false,
+                    "srcIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    },
+                    "tcpFlagsMatchConditions" : [
+                      {
+                        "tcpFlags" : {
+                          "ack" : false,
+                          "cwr" : false,
+                          "ece" : false,
+                          "fin" : false,
+                          "psh" : false,
+                          "rst" : false,
+                          "syn" : true,
+                          "urg" : false
+                        },
+                        "useAck" : false,
+                        "useCwr" : false,
+                        "useEce" : false,
+                        "useFin" : false,
+                        "usePsh" : false,
+                        "useRst" : false,
+                        "useSyn" : true,
+                        "useUrg" : false
+                      }
+                    ]
+                  }
+                },
+                "name" : "10 deny tcp any 102.66.49.113/24 neq www https syn"
+              },
+              {
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "negate" : false,
@@ -741,6 +789,9 @@
           "Ethernet0" : {
             "name" : "Ethernet0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
@@ -771,6 +822,9 @@
           "Ethernet1" : {
             "name" : "Ethernet1",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
@@ -823,6 +877,9 @@
           "Vlan1" : {
             "name" : "Vlan1",
             "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "1.2.3.4/23",
               "2.3.4.5/24"
@@ -1001,6 +1058,9 @@
           "Ethernet1" : {
             "name" : "Ethernet1",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "1.1.1.1/32"
             ],
@@ -1322,6 +1382,9 @@
           "GigabitEthernet0/0/0" : {
             "name" : "GigabitEthernet0/0/0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "1.2.3.4/5"
             ],
@@ -1771,6 +1834,9 @@
           "ifname" : {
             "name" : "ifname",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
@@ -1921,6 +1987,9 @@
           "blah" : {
             "name" : "blah",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "192.168.1.0/24"
             ],
@@ -3757,6 +3826,9 @@
           "Ethernet6/0.0" : {
             "name" : "Ethernet6/0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "11.22.33.44/30"
             ],
@@ -3788,6 +3860,9 @@
           "Ethernet6/0.48" : {
             "name" : "Ethernet6/0.48",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "22.33.44.55/30"
             ],
@@ -3818,6 +3893,9 @@
           "Ethernet6/1" : {
             "name" : "Ethernet6/1",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
@@ -3844,6 +3922,9 @@
           "cable-downstream1/2" : {
             "name" : "cable-downstream1/2",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -3869,6 +3950,9 @@
           "cable-downstream1/2/3" : {
             "name" : "cable-downstream1/2/3",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -3895,6 +3979,9 @@
           "cable-downstream5/0/0" : {
             "name" : "cable-downstream5/0/0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -3920,6 +4007,9 @@
           "cable-mac1" : {
             "name" : "cable-mac1",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -3946,6 +4036,9 @@
           "cable-mac1.1" : {
             "name" : "cable-mac1.1",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "1.2.3.0/30"
             ],
@@ -3976,6 +4069,9 @@
           "cable-mac1.2" : {
             "name" : "cable-mac1.2",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "2.2.2.0/25",
               "3.3.3.0/26",
@@ -4009,6 +4105,9 @@
           "cable-mac2" : {
             "name" : "cable-mac2",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -4034,6 +4133,9 @@
           "cable-mac3" : {
             "name" : "cable-mac3",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -4059,6 +4161,9 @@
           "cable-upstream1/0/0" : {
             "name" : "cable-upstream1/0/0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -4085,6 +4190,9 @@
           "cable-upstream1/0/0.0" : {
             "name" : "cable-upstream1/0/0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -4111,6 +4219,9 @@
           "cable-upstream1/0/10" : {
             "name" : "cable-upstream1/0/10",
             "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -4136,6 +4247,9 @@
           "mgmt6/0" : {
             "name" : "mgmt6/0",
             "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -4809,8 +4923,7 @@
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "dstPorts" : [
-                      "67-67",
-                      "68-68",
+                      "67-68",
                       "123-123"
                     ],
                     "ipProtocols" : [
@@ -6182,6 +6295,9 @@
           "Cable1/2/3" : {
             "name" : "Cable1/2/3",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -6581,6 +6697,9 @@
           "Ethernet0" : {
             "name" : "Ethernet0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
@@ -7010,6 +7129,9 @@
           "GigabitEthernet0/1" : {
             "name" : "GigabitEthernet0/1",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
@@ -7081,6 +7203,9 @@
           "TenGigabitEthernet0/0/2/2" : {
             "name" : "TenGigabitEthernet0/0/2/2",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
@@ -7132,6 +7257,9 @@
           "Async1" : {
             "name" : "Async1",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -7157,6 +7285,9 @@
           "Cable1/2/3:4" : {
             "name" : "Cable1/2/3:4",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -7182,6 +7313,9 @@
           "Crypto-Engine1/2/3" : {
             "name" : "Crypto-Engine1/2/3",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -7207,6 +7341,9 @@
           "Dot11Radio0" : {
             "name" : "Dot11Radio0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -7232,6 +7369,9 @@
           "Ethernet0" : {
             "name" : "Ethernet0",
             "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "1.2.3.4/30"
             ],
@@ -7293,6 +7433,9 @@
           "Ethernet1/11" : {
             "name" : "Ethernet1/11",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
@@ -7320,6 +7463,9 @@
             "name" : "Ethernet1/12",
             "accessVlan" : 3,
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
@@ -7346,6 +7492,9 @@
           "Loopback0" : {
             "name" : "Loopback0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 8.0E9,
@@ -7371,6 +7520,9 @@
           "Modular-Cable1/2/3:4" : {
             "name" : "Modular-Cable1/2/3:4",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -7396,6 +7548,9 @@
           "Null0" : {
             "name" : "Null0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -7421,6 +7576,9 @@
           "Tunnel0" : {
             "name" : "Tunnel0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 100000.0,
@@ -7446,6 +7604,9 @@
           "Vlan1" : {
             "name" : "Vlan1",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -7472,6 +7633,9 @@
           "Vlan1005" : {
             "name" : "Vlan1005",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -7498,6 +7662,9 @@
           "Vlan1006" : {
             "name" : "Vlan1006",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -7524,6 +7691,9 @@
           "Vlan111" : {
             "name" : "Vlan111",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -7550,6 +7720,9 @@
           "Vlan1234" : {
             "name" : "Vlan1234",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -7576,6 +7749,9 @@
           "Vlan2" : {
             "name" : "Vlan2",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -7602,6 +7778,9 @@
           "Vlan3" : {
             "name" : "Vlan3",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -7628,6 +7807,9 @@
           "Vlan4094" : {
             "name" : "Vlan4094",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -7654,6 +7836,9 @@
           "Wideband-Cable1/2/3:4" : {
             "name" : "Wideband-Cable1/2/3:4",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -7679,6 +7864,9 @@
           "inside" : {
             "name" : "inside",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "192.168.0.1/24"
             ],
@@ -7711,6 +7899,9 @@
           "tunnel-ip6" : {
             "name" : "tunnel-ip6",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -8474,6 +8665,9 @@
           "GigabitEthernet0/0" : {
             "name" : "GigabitEthernet0/0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
@@ -8509,6 +8703,9 @@
           "GigabitEthernet0/0/1" : {
             "name" : "GigabitEthernet0/0/1",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "137.164.25.57/30"
             ],
@@ -8550,6 +8747,9 @@
           "GigabitEthernet0/1" : {
             "name" : "GigabitEthernet0/1",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
@@ -8585,6 +8785,9 @@
           "HundredGigabitEthernet0/0/0/0.2302" : {
             "name" : "HundredGigabitEthernet0/0/0/0.2302",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -8619,6 +8822,9 @@
           "Loopback0" : {
             "name" : "Loopback0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 8.0E9,
@@ -8653,6 +8859,9 @@
           "Serial4/0" : {
             "name" : "Serial4/0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -9549,6 +9758,9 @@
           "Ethernet2/1" : {
             "name" : "Ethernet2/1",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
@@ -9829,6 +10041,9 @@
           "Ethernet0/0" : {
             "name" : "Ethernet0/0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "3.3.3.0/24"
             ],
@@ -9859,6 +10074,9 @@
           "Ethernet1/0" : {
             "name" : "Ethernet1/0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "4.4.4.0/24"
             ],
@@ -9869,10 +10087,8 @@
               "ethernet1/0"
             ],
             "mtu" : 1500,
-            "ospfArea" : 0,
-            "ospfCost" : 4000,
             "ospfDeadInterval" : 0,
-            "ospfEnabled" : true,
+            "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
@@ -9891,6 +10107,9 @@
           "Loopback0" : {
             "name" : "Loopback0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "1.1.1.1/32"
             ],
@@ -9954,6 +10173,49 @@
           "~OSPF_EXPORT_POLICY:default~" : {
             "name" : "~OSPF_EXPORT_POLICY:default~",
             "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "OSPF export default route",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                      "comment" : "match default route",
+                      "prefix" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                      },
+                      "prefixSet" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                        "prefixSpace" : [
+                          "0.0.0.0/0"
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "aggregate"
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
+                    "metric" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
+                      "value" : 10
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetOspfMetricType",
+                    "metricType" : "E1"
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "comment" : "OSPF export routes for connected",
@@ -10084,14 +10346,271 @@
               "areas" : {
                 "0" : {
                   "injectDefaultRoute" : true,
+                  "metricOfDefaultRoute" : 0,
+                  "name" : 0,
+                  "stubType" : "NONE",
+                  "summaries" : {
+                    "1.2.3.0/24" : {
+                      "advertise" : true,
+                      "metric" : 17
+                    }
+                  },
+                  "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:0~"
+                },
+                "16909056" : {
+                  "injectDefaultRoute" : true,
+                  "metricOfDefaultRoute" : 0,
+                  "name" : 16909056,
+                  "stubType" : "NONE",
+                  "summaries" : {
+                    "1.2.3.0/24" : {
+                      "advertise" : false
+                    }
+                  },
+                  "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:16909056~"
+                }
+              },
+              "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+              "processId" : "1",
+              "referenceBandwidth" : 4.0E10,
+              "routerId" : "1.2.3.4"
+            }
+          }
+        }
+      },
+      "cisco_ospf_ipv6" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "cisco_ospf_ipv6",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "interfaces" : {
+          "Ethernet0/0" : {
+            "name" : "Ethernet0/0",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allPrefixes" : [
+              "2.2.2.0/24"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E7,
+            "declaredNames" : [
+              "ethernet0/0"
+            ],
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "2.2.2.0/24",
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          }
+        },
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "cisco_ospf_ipv6",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "Ethernet0/0"
+            ]
+          }
+        }
+      },
+      "cisco_ospf_multi_process" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "cisco_ospf_multi_process",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "ROUTER",
+        "interfaces" : {
+          "Ethernet0/0" : {
+            "name" : "Ethernet0/0",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allPrefixes" : [
+              "2.2.2.0/24"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E7,
+            "declaredNames" : [
+              "ethernet0/0"
+            ],
+            "mtu" : 1500,
+            "ospfArea" : 0,
+            "ospfCost" : 10,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : true,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "2.2.2.0/24",
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "Ethernet1/0" : {
+            "name" : "Ethernet1/0",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allPrefixes" : [
+              "3.3.3.0/24"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E7,
+            "declaredNames" : [
+              "ethernet1/0"
+            ],
+            "mtu" : 1500,
+            "ospfArea" : 0,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "3.3.3.0/24",
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "Loopback0" : {
+            "name" : "Loopback0",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allPrefixes" : [
+              "1.1.1.1/32"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 8.0E9,
+            "declaredNames" : [
+              "loopback0"
+            ],
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "1.1.1.1/32",
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOOPBACK",
+            "vrf" : "default"
+          }
+        },
+        "routeFilterLists" : {
+          "~OSPF_SUMMARY_FILTER:default:0~" : {
+            "lines" : [
+              {
+                "action" : "DENY",
+                "ipWildcard" : "1.2.3.0/24",
+                "lengthRange" : "25-32"
+              },
+              {
+                "action" : "PERMIT",
+                "ipWildcard" : "0.0.0.0/0",
+                "lengthRange" : "0-32"
+              }
+            ],
+            "name" : "~OSPF_SUMMARY_FILTER:default:0~"
+          },
+          "~OSPF_SUMMARY_FILTER:default:16909056~" : {
+            "lines" : [
+              {
+                "action" : "DENY",
+                "ipWildcard" : "1.2.3.0/24",
+                "lengthRange" : "24-32"
+              },
+              {
+                "action" : "PERMIT",
+                "ipWildcard" : "0.0.0.0/0",
+                "lengthRange" : "0-32"
+              }
+            ],
+            "name" : "~OSPF_SUMMARY_FILTER:default:16909056~"
+          }
+        },
+        "routingPolicies" : {
+          "~OSPF_EXPORT_POLICY:default~" : {
+            "name" : "~OSPF_EXPORT_POLICY:default~"
+          }
+        },
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "cisco_ospf_multi_process",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "Ethernet0/0",
+              "Ethernet1/0",
+              "Loopback0"
+            ],
+            "ospfProcess" : {
+              "areas" : {
+                "0" : {
+                  "injectDefaultRoute" : true,
                   "interfaces" : [
-                    "Ethernet1/0"
+                    "Ethernet0/0"
                   ],
                   "metricOfDefaultRoute" : 0,
                   "name" : 0,
                   "nssa" : {
                     "defaultOriginateType" : "INTER_AREA",
-                    "suppressType3" : true
+                    "suppressType3" : true,
+                    "suppressType7" : true
                   },
                   "stubType" : "NSSA",
                   "summaries" : {
@@ -10117,18 +10636,76 @@
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
               "neighbors" : {
-                "Ethernet1/0" : {
+                "Ethernet0/0" : {
                   "area" : 0,
-                  "hostname" : "cisco_ospf",
-                  "interface" : "Ethernet1/0",
+                  "hostname" : "cisco_ospf_multi_process",
+                  "interface" : "Ethernet0/0",
                   "passive" : false,
                   "vrf" : "default"
                 }
               },
               "processId" : "1",
-              "referenceBandwidth" : 4.0E10,
-              "routerId" : "1.2.3.4"
+              "referenceBandwidth" : 1.0E8,
+              "routerId" : "1.1.1.1"
             }
+          }
+        }
+      },
+      "cisco_ospfv3" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "cisco_ospfv3",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "interfaces" : {
+          "Ethernet0/0" : {
+            "name" : "Ethernet0/0",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allPrefixes" : [
+              "2.2.2.0/24"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E7,
+            "declaredNames" : [
+              "ethernet0/0"
+            ],
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "2.2.2.0/24",
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          }
+        },
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "cisco_ospfv3",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "Ethernet0/0"
+            ]
           }
         }
       },
@@ -10261,8 +10838,7 @@
             ]
           },
           "obj_any" : {
-            "class" : "org.batfish.datamodel.PrefixIpSpace",
-            "prefix" : "0.0.0.0/0"
+            "class" : "org.batfish.datamodel.UniverseIpSpace"
           }
         },
         "vendorFamily" : {
@@ -11245,6 +11821,9 @@
           "Ethernet0" : {
             "name" : "Ethernet0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "1.0.0.0/24"
             ],
@@ -11961,6 +12540,9 @@
           "Port-Channel1" : {
             "name" : "Port-Channel1",
             "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "1-4094",
             "autostate" : true,
             "bandwidth" : 0.0,
@@ -11988,6 +12570,9 @@
           "Port-Channel2" : {
             "name" : "Port-Channel2",
             "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "2.2.2.2/32"
             ],
@@ -12049,6 +12634,9 @@
           "Port-Channel1" : {
             "name" : "Port-Channel1",
             "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "1-4,7-9,11",
             "autostate" : true,
             "bandwidth" : 0.0,
@@ -12087,16 +12675,184 @@
           }
         }
       },
+      "f5_bigip_imish_malformed" : {
+        "configurationFormat" : "F5_BIGIP_STRUCTURED",
+        "name" : "f5_bigip_imish_malformed",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "ROUTER",
+        "routingPolicies" : {
+          "~BGP_COMMON_EXPORT_POLICY:1~" : {
+            "name" : "~BGP_COMMON_EXPORT_POLICY:1~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "bgp"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "ibgp"
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ReturnFalse"
+              }
+            ]
+          },
+          "~BGP_PEER_EXPORT_POLICY:1:3.3.3.3~" : {
+            "name" : "~BGP_PEER_EXPORT_POLICY:1:3.3.3.3~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "peer-export policy main conditional: exitAccept if true / exitReject if false",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                      "disjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                          "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:1~"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "vendorFamily" : {
+          "f5Bigip" : { }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "bgpProcess" : {
+              "multipathEbgp" : false,
+              "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
+              "multipathIbgp" : false,
+              "neighbors" : {
+                "3.3.3.3/32" : {
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+                  "additionalPathsReceive" : false,
+                  "additionalPathsSelectAll" : false,
+                  "additionalPathsSend" : false,
+                  "advertiseExternal" : false,
+                  "advertiseInactive" : false,
+                  "allowLocalAsIn" : false,
+                  "allowRemoteAsOut" : false,
+                  "defaultMetric" : 0,
+                  "ebgpMultihop" : false,
+                  "enforceFirstAs" : false,
+                  "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:1:3.3.3.3~",
+                  "localAs" : 1,
+                  "peerAddress" : "3.3.3.3",
+                  "remoteAs" : 2,
+                  "routeReflectorClient" : false,
+                  "sendCommunity" : false
+                }
+              },
+              "routerId" : "0.0.0.0",
+              "tieBreaker" : "ARRIVAL_ORDER"
+            }
+          }
+        }
+      },
       "f5_bigip_structured_ltm" : {
         "configurationFormat" : "F5_BIGIP_STRUCTURED",
         "name" : "f5_bigip_structured_ltm",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : { },
+        "vendorFamily" : {
+          "f5Bigip" : {
+            "pools" : {
+              "/Common/SOME_LTM_POOL" : {
+                "members" : {
+                  "/Common/bar:80" : {
+                    "name" : "/Common/bar:80",
+                    "node" : "/Common/bar",
+                    "port" : 80,
+                    "address" : "192.0.2.3"
+                  },
+                  "/Common/foo:80" : {
+                    "name" : "/Common/foo:80",
+                    "node" : "/Common/foo",
+                    "port" : 80,
+                    "address" : "192.0.2.2"
+                  }
+                },
+                "name" : "/Common/SOME_LTM_POOL",
+                "monitor" : "/Common/SOME_MONITOR"
+              }
+            },
+            "virtualAddresses" : {
+              "/Common/192.0.2.8" : {
+                "name" : "/Common/192.0.2.8",
+                "address" : "192.0.2.9",
+                "mask" : "255.255.255.255",
+                "routeAdvertisementMode" : "SELECTIVE"
+              }
+            },
+            "virtuals" : {
+              "/Common/SOME_VIRTUAL" : {
+                "name" : "/Common/SOME_VIRTUAL",
+                "vlans" : [
+                  "/Common/MY_VLAN"
+                ],
+                "destination" : "/Common/192.0.2.7",
+                "destinationPort" : 80,
+                "ipForward" : true,
+                "ipProtocol" : "TCP",
+                "mask" : "255.255.255.255",
+                "reject" : false,
+                "source" : "0.0.0.0/0",
+                "sourceAddressTranslationPool" : "/Common/SOME_SNATPOOL",
+                "translateAddress" : false,
+                "translatePort" : false,
+                "vlansEnabled" : true
+              }
+            }
+          }
+        },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "kernelRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.KernelRoute",
+                "administrativeCost" : 0,
+                "network" : "192.0.2.9/32"
+              }
+            ]
           }
         }
       },
@@ -12110,12 +12866,16 @@
           "/Common/MYVLAN" : {
             "name" : "/Common/MYVLAN",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "10.0.0.1/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
+            "incomingFilter" : "~incoming_filter:/Common/MYVLAN~",
             "mtu" : 1500,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
@@ -12137,6 +12897,9 @@
           "1.0" : {
             "name" : "1.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "123",
             "autostate" : true,
             "bandwidth" : 4.0E10,
@@ -12156,15 +12919,57 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"
+          },
+          "trunk1" : {
+            "name" : "trunk1",
+            "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 0.0,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "AGGREGATED",
+            "vrf" : "default"
           }
         },
-        "vendorFamily" : { },
+        "ipAccessLists" : {
+          "~incoming_filter:/Common/MYVLAN~" : {
+            "name" : "~incoming_filter:/Common/MYVLAN~",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                },
+                "name" : "ACCEPT_ALL"
+              }
+            ]
+          }
+        },
+        "vendorFamily" : {
+          "f5Bigip" : { }
+        },
         "vrfs" : {
           "default" : {
             "name" : "default",
             "interfaces" : [
               "/Common/MYVLAN",
-              "1.0"
+              "1.0",
+              "trunk1"
             ]
           }
         }
@@ -12174,11 +12979,152 @@
         "name" : "f5_bigip_structured_net_routing_bgp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
-        "deviceType" : "SWITCH",
-        "vendorFamily" : { },
+        "deviceType" : "ROUTER",
+        "routingPolicies" : {
+          "~BGP_COMMON_EXPORT_POLICY:/Common/my_bgp~" : {
+            "name" : "~BGP_COMMON_EXPORT_POLICY:/Common/my_bgp~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                      "comment" : "Redistribute kernel routes into BGP",
+                      "conjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                          "protocol" : "kernel"
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                            "type" : "True"
+                          },
+                          "postStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "UnsetWriteIntermediateBgpAttributes"
+                            }
+                          ],
+                          "postTrueStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetReadIntermediateBgpAttributes"
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                              "originType" : {
+                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                                "originType" : "incomplete"
+                              }
+                            }
+                          ],
+                          "preStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetWriteIntermediateBgpAttributes"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "bgp"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "ibgp"
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ReturnFalse"
+              }
+            ]
+          },
+          "~BGP_PEER_EXPORT_POLICY:/Common/my_bgp:192.0.2.1~" : {
+            "name" : "~BGP_PEER_EXPORT_POLICY:/Common/my_bgp:192.0.2.1~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "peer-export policy main conditional: exitAccept if true / exitReject if false",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                      "disjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                          "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:/Common/my_bgp~"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "vendorFamily" : {
+          "f5Bigip" : { }
+        },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "bgpProcess" : {
+              "multipathEbgp" : false,
+              "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
+              "multipathIbgp" : false,
+              "neighbors" : {
+                "192.0.2.1/32" : {
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+                  "additionalPathsReceive" : false,
+                  "additionalPathsSelectAll" : false,
+                  "additionalPathsSend" : false,
+                  "advertiseExternal" : false,
+                  "advertiseInactive" : false,
+                  "allowLocalAsIn" : false,
+                  "allowRemoteAsOut" : false,
+                  "defaultMetric" : 0,
+                  "description" : "Cool IPv4 BGP neighbor description",
+                  "ebgpMultihop" : false,
+                  "enforceFirstAs" : false,
+                  "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:/Common/my_bgp:192.0.2.1~",
+                  "localAs" : 123,
+                  "peerAddress" : "192.0.2.1",
+                  "remoteAs" : 456,
+                  "routeReflectorClient" : false,
+                  "sendCommunity" : false
+                }
+              },
+              "routerId" : "192.0.2.1",
+              "tieBreaker" : "ARRIVAL_ORDER"
+            }
           }
         }
       },
@@ -12222,7 +13168,9 @@
             "name" : "/Common/MY_IPV4_PREFIX_LIST"
           }
         },
-        "vendorFamily" : { },
+        "vendorFamily" : {
+          "f5Bigip" : { }
+        },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -12313,7 +13261,9 @@
             ]
           }
         },
-        "vendorFamily" : { },
+        "vendorFamily" : {
+          "f5Bigip" : { }
+        },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -12326,10 +13276,272 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : { },
+        "vendorFamily" : {
+          "f5Bigip" : { }
+        },
         "vrfs" : {
           "default" : {
             "name" : "default"
+          }
+        }
+      },
+      "f5_bigip_structured_with_imish" : {
+        "configurationFormat" : "F5_BIGIP_STRUCTURED",
+        "name" : "f5_bigip_structured_with_imish",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "ROUTER",
+        "ipAccessLists" : {
+          "acl1" : {
+            "name" : "acl1",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "negate" : false,
+                    "srcIps" : {
+                      "class" : "org.batfish.datamodel.UniverseIpSpace"
+                    }
+                  }
+                },
+                "name" : "access-list acl1 permit any\n"
+              }
+            ]
+          },
+          "acl2" : {
+            "name" : "acl2",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "negate" : false,
+                    "srcIps" : {
+                      "class" : "org.batfish.datamodel.PrefixIpSpace",
+                      "prefix" : "192.0.2.0/24"
+                    }
+                  }
+                },
+                "name" : "access-list acl2 permit 192.0.2.0/24\n"
+              }
+            ]
+          }
+        },
+        "routeFilterLists" : {
+          "~access-list~acl1~" : {
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "ipWildcard" : "0.0.0.0/0",
+                "lengthRange" : "0-32"
+              }
+            ],
+            "name" : "~access-list~acl1~"
+          }
+        },
+        "routingPolicies" : {
+          "rm1" : {
+            "name" : "rm1",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                      "prefix" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                      },
+                      "prefixSet" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                        "name" : "~access-list~acl1~"
+                      }
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetCommunity",
+                    "expr" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet",
+                      "communities" : [
+                        65538,
+                        196612
+                      ]
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ReturnFalse"
+              }
+            ]
+          },
+          "~BGP_COMMON_EXPORT_POLICY:65500~" : {
+            "name" : "~BGP_COMMON_EXPORT_POLICY:65500~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                      "comment" : "Redistribute kernel routes into BGP",
+                      "conjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                          "protocol" : "kernel"
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                            "calledPolicyName" : "rm1"
+                          },
+                          "postStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "UnsetWriteIntermediateBgpAttributes"
+                            }
+                          ],
+                          "postTrueStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetReadIntermediateBgpAttributes"
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                              "originType" : {
+                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                                "originType" : "incomplete"
+                              }
+                            }
+                          ],
+                          "preStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetWriteIntermediateBgpAttributes"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "bgp"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "ibgp"
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ReturnFalse"
+              }
+            ]
+          },
+          "~BGP_PEER_EXPORT_POLICY:65500:10.0.0.1~" : {
+            "name" : "~BGP_PEER_EXPORT_POLICY:65500:10.0.0.1~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "peer-export policy main conditional: exitAccept if true / exitReject if false",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                      "disjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                          "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:65500~"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "vendorFamily" : {
+          "f5Bigip" : { }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "bgpProcess" : {
+              "multipathEbgp" : false,
+              "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
+              "multipathIbgp" : false,
+              "neighbors" : {
+                "10.0.0.1/32" : {
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+                  "additionalPathsReceive" : false,
+                  "additionalPathsSelectAll" : false,
+                  "additionalPathsSend" : false,
+                  "advertiseExternal" : false,
+                  "advertiseInactive" : false,
+                  "allowLocalAsIn" : false,
+                  "allowRemoteAsOut" : false,
+                  "defaultMetric" : 0,
+                  "description" : "desc1",
+                  "ebgpMultihop" : false,
+                  "enforceFirstAs" : false,
+                  "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:65500:10.0.0.1~",
+                  "localAs" : 65500,
+                  "peerAddress" : "10.0.0.1",
+                  "remoteAs" : 65501,
+                  "routeReflectorClient" : false,
+                  "sendCommunity" : false
+                }
+              },
+              "routerId" : "192.0.2.100",
+              "tieBreaker" : "ARRIVAL_ORDER"
+            }
           }
         }
       },
@@ -12550,6 +13762,9 @@
           "Ethernet1/15" : {
             "name" : "Ethernet1/15",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
@@ -12649,6 +13864,9 @@
           "eth0" : {
             "name" : "eth0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "2.128.0.101/24"
             ],
@@ -12931,6 +14149,9 @@
           "Ethernet0" : {
             "name" : "Ethernet0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "2.130.0.1/24"
             ],
@@ -12964,6 +14185,9 @@
           "Ethernet1" : {
             "name" : "Ethernet1",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "2.131.0.1/24"
             ],
@@ -13393,6 +14617,9 @@
           "ge-0/0/0" : {
             "name" : "ge-0/0/0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
@@ -13419,6 +14646,9 @@
           "ge-0/0/0.0" : {
             "name" : "ge-0/0/0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "1.0.0.0/31"
             ],
@@ -13448,6 +14678,9 @@
           "ge-0/0/1" : {
             "name" : "ge-0/0/1",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
@@ -13474,6 +14707,9 @@
           "ge-0/0/1.0" : {
             "name" : "ge-0/0/1.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "1.0.0.1/31"
             ],
@@ -13503,6 +14739,9 @@
           "reth0" : {
             "name" : "reth0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -13532,6 +14771,9 @@
           "reth0.3" : {
             "name" : "reth0.3",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "3.3.3.3/31"
             ],
@@ -13616,6 +14858,9 @@
           "Vlan303" : {
             "name" : "Vlan303",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "10.22.33.10/29"
             ],
@@ -13646,6 +14891,9 @@
           "Vlan803" : {
             "name" : "Vlan803",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "10.12.12.1/23"
             ],
@@ -13706,6 +14954,9 @@
           "FastEthernet12/13" : {
             "name" : "FastEthernet12/13",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E8,
@@ -13732,6 +14983,9 @@
           "HundredGigabitEthernet0/6/0/8" : {
             "name" : "HundredGigabitEthernet0/6/0/8",
             "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -13757,6 +15011,9 @@
           "Port-Channel1" : {
             "name" : "Port-Channel1",
             "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 0.0,
@@ -13782,6 +15039,9 @@
           "Vlan100" : {
             "name" : "Vlan100",
             "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -13833,6 +15093,9 @@
           "Loopback0" : {
             "name" : "Loopback0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "137.164.16.80/32"
             ],
@@ -13888,6 +15151,9 @@
           "xe-0/0/0" : {
             "name" : "xe-0/0/0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
@@ -13913,6 +15179,9 @@
           "xe-0/0/0:0" : {
             "name" : "xe-0/0/0:0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
@@ -13938,6 +15207,9 @@
           "xe-0/0/0:0.0" : {
             "name" : "xe-0/0/0:0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "10.1.2.3/31"
             ],
@@ -14181,6 +15453,9 @@
           "GigabitEthernet1/0/1" : {
             "name" : "GigabitEthernet1/0/1",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
@@ -14232,6 +15507,9 @@
           "Vlan1000" : {
             "name" : "Vlan1000",
             "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -14783,6 +16061,9 @@
           "GigabitEthernet0/2/1/6" : {
             "name" : "GigabitEthernet0/2/1/6",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
@@ -14930,6 +16211,9 @@
           "Bundle-Ethernet101" : {
             "name" : "Bundle-Ethernet101",
             "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 0.0,
@@ -14955,6 +16239,9 @@
           "Bundle-Ethernet103" : {
             "name" : "Bundle-Ethernet103",
             "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 0.0,
@@ -14980,6 +16267,9 @@
           "Bundle-Ethernet201" : {
             "name" : "Bundle-Ethernet201",
             "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 0.0,
@@ -15006,6 +16296,9 @@
           "HundredGigabitEthernet0/2/0/0.292" : {
             "name" : "HundredGigabitEthernet0/2/0/0.292",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -15031,6 +16324,9 @@
           "HundredGigabitEthernet0/2/0/3" : {
             "name" : "HundredGigabitEthernet0/2/0/3",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -15056,6 +16352,9 @@
           "Loopback0" : {
             "name" : "Loopback0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 8.0E9,
@@ -15081,6 +16380,9 @@
           "TenGigabitEthernet0/0/0/2" : {
             "name" : "TenGigabitEthernet0/0/0/2",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
@@ -15107,6 +16409,9 @@
           "TenGigabitEthernet0/0/0/4" : {
             "name" : "TenGigabitEthernet0/0/0/4",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
@@ -15133,6 +16438,9 @@
           "TenGigabitEthernet0/0/0/5" : {
             "name" : "TenGigabitEthernet0/0/0/5",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
@@ -15175,12 +16483,11 @@
           }
         },
         "routingPolicies" : {
-          "~OSPF_EXPORT_POLICY:default~" : {
-            "name" : "~OSPF_EXPORT_POLICY:default~",
+          "~OSPF_DEFAULT_ROUTE_GENERATION_POLICY:default:2~" : {
+            "name" : "~OSPF_DEFAULT_ROUTE_GENERATION_POLICY:default:2~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "comment" : "OSPF export default route",
                 "guard" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                   "comment" : "match default route",
@@ -15193,6 +16500,43 @@
                       "0.0.0.0/0"
                     ]
                   }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              }
+            ]
+          },
+          "~OSPF_EXPORT_POLICY:default~" : {
+            "name" : "~OSPF_EXPORT_POLICY:default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "OSPF export default route",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                      "comment" : "match default route",
+                      "prefix" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                      },
+                      "prefixSet" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                        "prefixSpace" : [
+                          "0.0.0.0/0"
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "aggregate"
+                    }
+                  ]
                 },
                 "trueStatements" : [
                   {
@@ -15253,6 +16597,18 @@
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+              "generatedRoutes" : [
+                {
+                  "class" : "org.batfish.datamodel.GeneratedRoute",
+                  "administrativeCost" : 32767,
+                  "asPath" : [ ],
+                  "discard" : false,
+                  "generationPolicy" : "~OSPF_DEFAULT_ROUTE_GENERATION_POLICY:default:2~",
+                  "metric" : 0,
+                  "network" : "0.0.0.0/0",
+                  "nextHopIp" : "AUTO/NONE(-1l)"
+                }
+              ],
               "processId" : "2",
               "referenceBandwidth" : 1.0E8,
               "routerId" : "169.232.1.4"
@@ -15511,6 +16867,9 @@
           "ae16" : {
             "name" : "ae16",
             "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 0.0,
@@ -15536,6 +16895,9 @@
           "ae16.0" : {
             "name" : "ae16.0",
             "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 0.0,
@@ -15561,6 +16923,9 @@
           "xe-0/0/1" : {
             "name" : "xe-0/0/1",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
@@ -15586,6 +16951,9 @@
           "xe-0/0/1.0" : {
             "name" : "xe-0/0/1.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
@@ -15611,6 +16979,9 @@
           "xe-0/0/20:0" : {
             "name" : "xe-0/0/20:0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
@@ -15636,6 +17007,9 @@
           "xe-0/0/20:0.0" : {
             "name" : "xe-0/0/20:0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
@@ -15661,6 +17035,9 @@
           "xe-0/0/21:0" : {
             "name" : "xe-0/0/21:0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
@@ -15686,6 +17063,9 @@
           "xe-0/0/21:0.0" : {
             "name" : "xe-0/0/21:0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
@@ -15874,7 +17254,8 @@
                   "name" : 66051,
                   "nssa" : {
                     "defaultOriginateType" : "INTER_AREA",
-                    "suppressType3" : true
+                    "suppressType3" : true,
+                    "suppressType7" : false
                   },
                   "stubType" : "NSSA",
                   "summaries" : {
@@ -17312,6 +18693,132 @@
             "sourceType" : "firewall filter"
           }
         },
+        "packetPolicies" : {
+          "blah" : {
+            "defaultAction" : {
+              "class" : "org.batfish.datamodel.packet_policy.Return",
+              "action" : {
+                "class" : "org.batfish.datamodel.packet_policy.Drop"
+              }
+            },
+            "name" : "blah",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.packet_policy.If",
+                "trueStatements" : {
+                  "class" : "org.batfish.datamodel.packet_policy.PacketMatchExpr",
+                  "expression" : {
+                    "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                    "description" : "Firewall filter term blorp",
+                    "headerSpace" : {
+                      "dstIps" : {
+                        "class" : "org.batfish.datamodel.AclIpSpace",
+                        "lines" : [
+                          {
+                            "action" : "PERMIT",
+                            "ipSpace" : {
+                              "class" : "org.batfish.datamodel.AclIpSpace",
+                              "lines" : [
+                                {
+                                  "action" : "PERMIT",
+                                  "ipSpace" : {
+                                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                                    "ipWildcard" : "1.2.3.4"
+                                  }
+                                },
+                                {
+                                  "action" : "PERMIT",
+                                  "ipSpace" : {
+                                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                                    "ipWildcard" : "1.2.3.5"
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "action" : "PERMIT",
+                            "ipSpace" : {
+                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                              "ipWildcard" : "1.2.3.8/30"
+                            }
+                          }
+                        ]
+                      },
+                      "icmpCodes" : [
+                        "2-2"
+                      ],
+                      "icmpTypes" : [
+                        "0-0",
+                        "1-1",
+                        "3-3",
+                        "4-4",
+                        "5-5",
+                        "8-8",
+                        "9-9",
+                        "10-10",
+                        "11-11",
+                        "12-12",
+                        "13-13",
+                        "14-14",
+                        "15-15",
+                        "16-16"
+                      ],
+                      "ipProtocols" : [
+                        "PIM"
+                      ],
+                      "negate" : false,
+                      "packetLengths" : [
+                        "70-12000"
+                      ],
+                      "srcIps" : {
+                        "class" : "org.batfish.datamodel.AclIpSpace",
+                        "lines" : [
+                          {
+                            "action" : "PERMIT",
+                            "ipSpace" : {
+                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                              "ipWildcard" : "2.4.6.8/30"
+                            }
+                          },
+                          {
+                            "action" : "PERMIT",
+                            "ipSpace" : {
+                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                              "ipWildcard" : "2.4.6.9"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.packet_policy.If",
+                "actions" : [
+                  {
+                    "class" : "org.batfish.datamodel.packet_policy.Return",
+                    "action" : {
+                      "class" : "org.batfish.datamodel.packet_policy.FibLookup",
+                      "vrfName" : "OTHER_INSTANCE"
+                    }
+                  }
+                ],
+                "trueStatements" : {
+                  "class" : "org.batfish.datamodel.packet_policy.PacketMatchExpr",
+                  "expression" : {
+                    "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                    "description" : "Firewall filter term t2",
+                    "headerSpace" : {
+                      "negate" : false
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
         "vendorFamily" : {
           "juniper" : {
             "lines" : {
@@ -17357,161 +18864,6 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "interfaces" : {
-          "et-0/0/10" : {
-            "name" : "et-0/0/10",
-            "active" : true,
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E11,
-            "declaredNames" : [
-              "et-0/0/10"
-            ],
-            "mtu" : 1500,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "et-0/0/10.0" : {
-            "name" : "et-0/0/10.0",
-            "active" : true,
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E11,
-            "declaredNames" : [
-              "et-0/0/10.0"
-            ],
-            "mtu" : 1500,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "LOGICAL",
-            "vrf" : "default"
-          },
-          "ge-0/2/5" : {
-            "name" : "ge-0/2/5",
-            "active" : true,
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E9,
-            "declaredNames" : [
-              "ge-0/2/5"
-            ],
-            "mtu" : 1500,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "ge-0/2/5.0" : {
-            "name" : "ge-0/2/5.0",
-            "active" : true,
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E9,
-            "declaredNames" : [
-              "ge-0/2/5.0"
-            ],
-            "dhcpRelayAddresses" : [
-              "3.4.5.6"
-            ],
-            "mtu" : 1500,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "LOGICAL",
-            "vrf" : "default"
-          },
-          "xe-1/0/0" : {
-            "name" : "xe-1/0/0",
-            "active" : true,
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E10,
-            "declaredNames" : [
-              "xe-1/0/0"
-            ],
-            "mtu" : 1500,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "xe-1/0/0.0" : {
-            "name" : "xe-1/0/0.0",
-            "active" : true,
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E10,
-            "declaredNames" : [
-              "xe-1/0/0.0"
-            ],
-            "mtu" : 1500,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "LOGICAL",
-            "vrf" : "default"
-          }
-        },
         "vendorFamily" : {
           "juniper" : {
             "lines" : {
@@ -17547,15 +18899,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "et-0/0/10",
-              "et-0/0/10.0",
-              "ge-0/2/5",
-              "ge-0/2/5.0",
-              "xe-1/0/0",
-              "xe-1/0/0.0"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -17569,6 +18913,9 @@
           "ae0" : {
             "name" : "ae0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
@@ -17597,6 +18944,9 @@
           "ae0.0" : {
             "name" : "ae0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
@@ -17622,6 +18972,9 @@
           "fab0" : {
             "name" : "fab0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -17648,6 +19001,9 @@
           "ge-0/0/0" : {
             "name" : "ge-0/0/0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
@@ -17673,6 +19029,9 @@
           "ge-0/0/1" : {
             "name" : "ge-0/0/1",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
@@ -17698,6 +19057,9 @@
           "ge-1/0/0" : {
             "name" : "ge-1/0/0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
@@ -17724,6 +19086,9 @@
           "ge-2/0/0" : {
             "name" : "ge-2/0/0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
@@ -17749,6 +19114,9 @@
           "ge-2/0/0.0" : {
             "name" : "ge-2/0/0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 5.0,
@@ -17774,6 +19142,9 @@
           "ge-2/0/0.1" : {
             "name" : "ge-2/0/0.1",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1920.0,
@@ -17799,6 +19170,9 @@
           "ge-3/0/0" : {
             "name" : "ge-3/0/0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
@@ -17824,6 +19198,9 @@
           "ge-3/0/0.0" : {
             "name" : "ge-3/0/0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 5000.0,
@@ -17849,6 +19226,9 @@
           "ge-4/0/0" : {
             "name" : "ge-4/0/0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
@@ -17874,6 +19254,9 @@
           "ge-4/0/0.0" : {
             "name" : "ge-4/0/0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 5000000.0,
@@ -17899,6 +19282,9 @@
           "ge-5/0/0" : {
             "name" : "ge-5/0/0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
@@ -17924,6 +19310,9 @@
           "ge-5/0/0.0" : {
             "name" : "ge-5/0/0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 5.0E9,
@@ -17949,6 +19338,9 @@
           "irb.5" : {
             "name" : "irb.5",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "1.2.3.0/24",
               "1.2.3.1/24"
@@ -17986,6 +19378,9 @@
           "vme" : {
             "name" : "vme",
             "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -18011,6 +19406,9 @@
           "vme.0" : {
             "name" : "vme.0",
             "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "100.100.100.100/32"
             ],
@@ -18040,6 +19438,9 @@
           "xe-0/0/0:0" : {
             "name" : "xe-0/0/0:0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
@@ -18065,6 +19466,9 @@
           "xe-0/0/0:0.0" : {
             "name" : "xe-0/0/0:0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
@@ -18090,6 +19494,9 @@
           "xe-0/0/5:0" : {
             "name" : "xe-0/0/5:0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
@@ -18115,6 +19522,9 @@
           "xe-0/0/5:0.0" : {
             "name" : "xe-0/0/5:0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
@@ -18216,6 +19626,9 @@
           "ge-0/0/0" : {
             "name" : "ge-0/0/0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
@@ -18241,6 +19654,9 @@
           "ge-0/0/0.0" : {
             "name" : "ge-0/0/0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
@@ -18359,58 +19775,6 @@
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "domainName" : "my.domain.name",
-        "interfaces" : {
-          "lo0" : {
-            "name" : "lo0",
-            "active" : true,
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "declaredNames" : [
-              "lo0"
-            ],
-            "mtu" : 1500,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "LOOPBACK",
-            "vrf" : "default"
-          },
-          "lo0.0" : {
-            "name" : "lo0.0",
-            "active" : true,
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "declaredNames" : [
-              "lo0.0"
-            ],
-            "mtu" : 1500,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "LOOPBACK",
-            "vrf" : "default"
-          }
-        },
         "vendorFamily" : {
           "juniper" : {
             "lines" : {
@@ -18449,11 +19813,7 @@
             "name" : "ROUTING_INSTANCE"
           },
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "lo0",
-              "lo0.0"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -18467,6 +19827,9 @@
           "ge-0/0/0" : {
             "name" : "ge-0/0/0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
@@ -18492,6 +19855,9 @@
           "ge-0/0/0.0" : {
             "name" : "ge-0/0/0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "1.0.0.1/24"
             ],
@@ -19129,6 +20495,43 @@
               },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "AS_PATH",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchAsPath",
+                  "expr" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAsPathSet",
+                    "elems" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.RegexAsPathSetElem",
+                        "regex" : "^( \\d+)* 65535$"
+                      }
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ExitAccept"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallExprContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnTrue"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "comment" : "__POLICY-NAME__DEFAULT_TERM__",
                 "guard" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
@@ -19196,64 +20599,6 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "interfaces" : {
-          "irb.10" : {
-            "name" : "irb.10",
-            "active" : true,
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E9,
-            "declaredNames" : [
-              "irb.10"
-            ],
-            "dhcpRelayAddresses" : [
-              "1.2.3.4"
-            ],
-            "mtu" : 1500,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "VLAN",
-            "vrf" : "default"
-          },
-          "irb.20" : {
-            "name" : "irb.20",
-            "active" : true,
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E9,
-            "declaredNames" : [
-              "irb.20"
-            ],
-            "dhcpRelayAddresses" : [
-              "1.2.3.4"
-            ],
-            "mtu" : 1500,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "VLAN",
-            "vrf" : "default"
-          }
-        },
         "vendorFamily" : {
           "juniper" : {
             "lines" : {
@@ -19289,11 +20634,7 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default",
-            "interfaces" : [
-              "irb.10",
-              "irb.20"
-            ]
+            "name" : "default"
           }
         }
       },
@@ -20709,6 +22050,9 @@
           "ge-0/0/0" : {
             "name" : "ge-0/0/0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
@@ -20734,6 +22078,9 @@
           "ge-0/0/0.0" : {
             "name" : "ge-0/0/0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "1.1.1.1/24",
               "2.2.2.2/24"
@@ -20751,31 +22098,6 @@
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
             "prefix" : "1.1.1.1/24",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "LOGICAL",
-            "vrf" : "default"
-          },
-          "ge-0/0/0.99" : {
-            "name" : "ge-0/0/0.99",
-            "active" : true,
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E9,
-            "declaredNames" : [
-              "ge-0/0/0.99"
-            ],
-            "mtu" : 1500,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -20809,8 +22131,8 @@
                       "prefixSet" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
                         "prefixSpace" : [
-                          "2.2.2.0/24",
-                          "1.1.1.0/24"
+                          "1.1.1.0/24",
+                          "2.2.2.0/24"
                         ]
                       }
                     }
@@ -20842,23 +22164,8 @@
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "comment" : "TERM2",
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                  "conjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "connected"
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                      "prefix" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                      },
-                      "prefixSet" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
-                        "prefixSpace" : [ ]
-                      }
-                    }
-                  ]
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "False"
                 },
                 "trueStatements" : [
                   {
@@ -20936,8 +22243,7 @@
             "name" : "default",
             "interfaces" : [
               "ge-0/0/0",
-              "ge-0/0/0.0",
-              "ge-0/0/0.99"
+              "ge-0/0/0.0"
             ]
           }
         }
@@ -21948,6 +23254,9 @@
           "xe-0/0/0" : {
             "name" : "xe-0/0/0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
@@ -21973,6 +23282,9 @@
           "xe-0/0/0.0" : {
             "name" : "xe-0/0/0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "30,40,50",
             "autostate" : true,
             "bandwidth" : 1.0E10,
@@ -22170,6 +23482,9 @@
           "Ethernet1" : {
             "name" : "Ethernet1",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E7,
@@ -22196,6 +23511,9 @@
           "Ethernet2" : {
             "name" : "Ethernet2",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E8,
@@ -22222,6 +23540,9 @@
           "Management1" : {
             "name" : "Management1",
             "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -22247,6 +23568,9 @@
           "ap1" : {
             "name" : "ap1",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -23212,6 +24536,9 @@
           "GigabitEthernet1" : {
             "name" : "GigabitEthernet1",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "10.10.10.1/24"
             ],
@@ -23581,6 +24908,9 @@
           "Ethernet0/0" : {
             "name" : "Ethernet0/0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
@@ -23607,6 +24937,9 @@
           "nve1" : {
             "name" : "nve1",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -23674,6 +25007,43 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
+        "interfaces" : {
+          "Ethernet0/0" : {
+            "name" : "Ethernet0/0",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allPrefixes" : [
+              "1.1.1.2/31"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "ethernet0/0"
+            ],
+            "mtu" : 1500,
+            "ospfArea" : 1,
+            "ospfCost" : 40,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : true,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "1.1.1.2/31",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          }
+        },
         "routingPolicies" : {
           "~OSPF_EXPORT_POLICY:OTHER~" : {
             "name" : "~OSPF_EXPORT_POLICY:OTHER~",
@@ -23796,8 +25166,34 @@
           },
           "default" : {
             "name" : "default",
+            "interfaces" : [
+              "Ethernet0/0"
+            ],
             "ospfProcess" : {
+              "areas" : {
+                "1" : {
+                  "injectDefaultRoute" : true,
+                  "interfaces" : [
+                    "Ethernet0/0"
+                  ],
+                  "metricOfDefaultRoute" : 0,
+                  "name" : 1,
+                  "stub" : {
+                    "suppressType3" : false
+                  },
+                  "stubType" : "STUB"
+                }
+              },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+              "neighbors" : {
+                "Ethernet0/0" : {
+                  "area" : 1,
+                  "hostname" : "nxos_ospf",
+                  "interface" : "Ethernet0/0",
+                  "passive" : false,
+                  "vrf" : "default"
+                }
+              },
               "processId" : "1",
               "referenceBandwidth" : 4.0E10,
               "routerId" : "1.2.3.4"
@@ -25454,6 +26850,9 @@
           "Loopback1" : {
             "name" : "Loopback1",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "137.164.17.8/32"
             ],
@@ -28947,6 +30346,9 @@
           "FastEthernet0/1" : {
             "name" : "FastEthernet0/1",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "12,34,56-78,99",
             "autostate" : true,
             "bandwidth" : 1.0E8,
@@ -29494,6 +30896,9 @@
           "FastEthernet0/0" : {
             "name" : "FastEthernet0/0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E8,
@@ -29545,6 +30950,9 @@
           "FastEthernet0/0" : {
             "name" : "FastEthernet0/0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E8,
@@ -29762,6 +31170,9 @@
           "fxp0" : {
             "name" : "fxp0",
             "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -29787,6 +31198,9 @@
           "fxp0.0" : {
             "name" : "fxp0.0",
             "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "10.10.20.4/24"
             ],
@@ -29816,6 +31230,9 @@
           "irb.100" : {
             "name" : "irb.100",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "10.200.100.254/24"
             ],
@@ -29845,6 +31262,9 @@
           "lo0" : {
             "name" : "lo0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -29870,6 +31290,9 @@
           "lo0.0" : {
             "name" : "lo0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "192.168.1.2/32"
             ],
@@ -29899,6 +31322,9 @@
           "lo0.1" : {
             "name" : "lo0.1",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "192.168.100.200/32"
             ],
@@ -29928,6 +31354,9 @@
           "xe-0/0/2" : {
             "name" : "xe-0/0/2",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
@@ -29953,6 +31382,9 @@
           "xe-0/0/2.0" : {
             "name" : "xe-0/0/2.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "172.16.7.1/30"
             ],
@@ -29982,6 +31414,9 @@
           "xe-0/0/3" : {
             "name" : "xe-0/0/3",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
@@ -30007,6 +31442,9 @@
           "xe-0/0/3.0" : {
             "name" : "xe-0/0/3.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "172.16.5.1/30"
             ],
@@ -30036,6 +31474,9 @@
           "xe-0/0/4" : {
             "name" : "xe-0/0/4",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
@@ -30061,6 +31502,9 @@
           "xe-0/0/4.0" : {
             "name" : "xe-0/0/4.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
             "allPrefixes" : [
               "172.16.3.1/30"
             ],

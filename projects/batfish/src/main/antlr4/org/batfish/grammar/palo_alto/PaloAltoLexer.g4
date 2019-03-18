@@ -730,7 +730,7 @@ IP_ADDRESS
 
 IP_PREFIX
 :
-    F_IpAddress '/' F_PrefixLength
+    F_IpPrefix
 ;
 
 IP_RANGE
@@ -772,27 +772,11 @@ WS
 fragment
 F_DecByte
 :
-    (
-        F_Digit
-        | F_DecByteTwoDigit
-        | F_DecByteThreeDigit
-    )
-;
-
-fragment
-F_DecByteThreeDigit
-:
-    (
-        ([1] F_Digit F_Digit)
-        | ([2] [0-4] F_Digit)
-        | ([2] [5] [0-5])
-    )
-;
-
-fragment
-F_DecByteTwoDigit
-:
-    [1-9] F_Digit
+  F_Digit
+  | F_PositiveDigit F_Digit
+  | '1' F_Digit F_Digit
+  | '2' [0-4] F_Digit
+  | '25' [0-5]
 ;
 
 fragment
@@ -808,19 +792,29 @@ F_IpAddress
 ;
 
 fragment
+F_IpPrefix
+:
+    F_IpAddress '/' F_IpPrefixLength
+;
+
+fragment
+F_IpPrefixLength
+:
+  F_Digit
+  | [12] F_Digit
+  | [3] [012]
+;
+
+fragment
 F_Newline
 :
     [\r\n] // carriage return or line feed
 ;
 
 fragment
-F_PrefixLength
+F_PositiveDigit
 :
-    (
-        F_Digit
-        | [12] F_Digit
-        | [3] [012]
-    )
+  [1-9]
 ;
 
 fragment

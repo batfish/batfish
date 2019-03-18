@@ -42,7 +42,7 @@ public class HeaderSpaceToBDDTest {
   @Test
   public void test_negate() {
     IpSpace ip = Ip.parse("1.2.3.4").toIpSpace();
-    BDD ipBDD = _toBDD.toBDD(ip, _dstIpSpaceToBdd);
+    BDD ipBDD = HeaderSpaceToBDD.toBDD(ip, _dstIpSpaceToBdd);
     assertThat(
         _toBDD.toBDD(HeaderSpace.builder().setDstIps(ip).setNegate(true).build()),
         equalTo(ipBDD.not()));
@@ -153,8 +153,7 @@ public class HeaderSpaceToBDDTest {
     HeaderSpace headerSpace =
         HeaderSpace.builder().setIpProtocols(ImmutableList.of(proto1, proto2)).build();
     BDD bdd = _toBDD.toBDD(headerSpace);
-    BDD protoBDD =
-        _pkt.getIpProtocol().value(proto1.number()).or(_pkt.getIpProtocol().value(proto2.number()));
+    BDD protoBDD = _pkt.getIpProtocol().value(proto1).or(_pkt.getIpProtocol().value(proto2));
     assertThat(bdd, equalTo(protoBDD));
   }
 

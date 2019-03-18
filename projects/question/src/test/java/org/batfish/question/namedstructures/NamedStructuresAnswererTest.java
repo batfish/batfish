@@ -16,12 +16,13 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.NamedStructureSpecifier;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.table.Row;
 import org.junit.Test;
 
 public class NamedStructuresAnswererTest {
+
+  private static final String ALL_NODES = ".*";
 
   @Test
   public void testGetAllStructureNamesOfType() {
@@ -62,7 +63,7 @@ public class NamedStructuresAnswererTest {
     // only get routing policies
     NamedStructuresQuestion question =
         new NamedStructuresQuestion(
-            NodesSpecifier.ALL,
+            ALL_NODES,
             new NamedStructureSpecifier(NamedStructureSpecifier.ROUTING_POLICY),
             null,
             null,
@@ -114,8 +115,7 @@ public class NamedStructuresAnswererTest {
     Map<String, Configuration> configurations = ImmutableMap.of("node1", c);
 
     NamedStructuresQuestion question =
-        new NamedStructuresQuestion(
-            NodesSpecifier.ALL, NamedStructureSpecifier.ALL, null, true, null);
+        new NamedStructuresQuestion(ALL_NODES, NamedStructureSpecifier.ALL, null, true, null);
 
     Multiset<Row> rows =
         NamedStructuresAnswerer.rawAnswer(
@@ -155,8 +155,7 @@ public class NamedStructuresAnswererTest {
     Map<String, Configuration> configurations = ImmutableMap.of("node1", c1, "node2", c2);
 
     NamedStructuresQuestion question =
-        new NamedStructuresQuestion(
-            NodesSpecifier.ALL, NamedStructureSpecifier.ALL, null, null, true);
+        new NamedStructuresQuestion(ALL_NODES, NamedStructureSpecifier.ALL, null, null, true);
 
     Multiset<Row> rows =
         NamedStructuresAnswerer.rawAnswer(
@@ -201,7 +200,7 @@ public class NamedStructuresAnswererTest {
 
     NamedStructuresQuestion question =
         new NamedStructuresQuestion(
-            NodesSpecifier.ALL, NamedStructureSpecifier.ALL, "selected.*", false, null);
+            ALL_NODES, NamedStructureSpecifier.ALL, "selected.*", false, null);
 
     Multiset<Row> rows =
         NamedStructuresAnswerer.rawAnswer(

@@ -23,6 +23,7 @@ import static org.batfish.datamodel.matchers.AaaAuthenticationLoginMatchers.hasL
 import static org.batfish.datamodel.matchers.AaaAuthenticationMatchers.hasLogin;
 import static org.batfish.datamodel.matchers.AaaMatchers.hasAuthentication;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasAllowRemoteAsOut;
@@ -122,6 +123,7 @@ import static org.batfish.datamodel.matchers.MlagMatchers.hasPeerAddress;
 import static org.batfish.datamodel.matchers.MlagMatchers.hasPeerInterface;
 import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasDefaultOriginateType;
 import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasSuppressType3;
+import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasSuppressType7;
 import static org.batfish.datamodel.matchers.OrMatchExprMatchers.hasDisjuncts;
 import static org.batfish.datamodel.matchers.OrMatchExprMatchers.isOrMatchExprThat;
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasNssa;
@@ -157,6 +159,8 @@ import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasL
 import static org.batfish.datamodel.vendor_family.cisco.LoggingMatchers.isOn;
 import static org.batfish.grammar.cisco.CiscoControlPlaneExtractor.SERIAL_LINE;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerExportPolicyName;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerImportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeCombinedOutgoingAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeIcmpObjectGroupAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeInspectClassMapAclName;
@@ -184,6 +188,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.KEYRING;
 import static org.batfish.representation.cisco.CiscoStructureType.MAC_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.NETWORK_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureType.NETWORK_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureType.PREFIX6_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.PREFIX_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.PREFIX_SET;
 import static org.batfish.representation.cisco.CiscoStructureType.PROTOCOL_OBJECT_GROUP;
@@ -274,6 +279,7 @@ import org.batfish.datamodel.EigrpInternalRoute;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowState;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeAuthenticationMethod;
@@ -298,6 +304,7 @@ import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineType;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NamedPort;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfInternalRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
@@ -403,6 +410,7 @@ public class CiscoGrammarTest {
         .setTag("")
         .setIpProtocol(IpProtocol.ICMP)
         .setIcmpType(icmpType)
+        .setIcmpCode(0)
         .build();
   }
 
@@ -1285,6 +1293,20 @@ public class CiscoGrammarTest {
             filename, BFD_TEMPLATE, "bfd-template-undefined", INTERFACE_BFD_TEMPLATE));
   }
 
+  @Test
+  public void testIosBgpPrefixListReferences() throws IOException {
+    String hostname = "ios_bgp_prefix_list_references";
+    String filename = String.format("configs/%s", hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "pl4in", 1));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "pl4out", 1));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX6_LIST, "pl6in", 1));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX6_LIST, "pl6out", 1));
+  }
+
   /**
    * Test EIGRP address family configured within another process EIGRP configuration can declare a
    * process that is nested in the configuration of another process. The processes are not connected
@@ -1817,7 +1839,13 @@ public class CiscoGrammarTest {
     String ogpAclEmptyName = computeProtocolObjectGroupAclName(ogpEmptyName);
     String ogpAclDuplicateName = computeProtocolObjectGroupAclName(ogpDuplicateName);
     Flow icmpFlow =
-        Flow.builder().setTag("").setIngressNode("").setIpProtocol(IpProtocol.ICMP).build();
+        Flow.builder()
+            .setTag("")
+            .setIngressNode("")
+            .setIpProtocol(IpProtocol.ICMP)
+            .setIcmpCode(0)
+            .setIcmpType(0)
+            .build();
     Flow tcpFlow =
         Flow.builder().setTag("").setIngressNode("").setIpProtocol(IpProtocol.TCP).build();
 
@@ -2005,6 +2033,184 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosOspfDefaultOriginateAlways() throws IOException {
+    /*   ________      ________      ________
+        |   R1   |    |        |    |   R2   |
+        | Area 0 |----|  ABR   |----| Area 1 |
+        |        |    |        |    |  NSSA  |
+         --------      --------      --------
+      ABR has `default-information originate always` configured at the process level, so R1 should
+      install a default route to the ABR even though the ABR has no default route of its own. R2
+      should not install a default route because it's in an NSSA.
+    */
+
+    String testrigName = "ospf-default-originate";
+    String area0Name = "ios-area-0";
+    String area1NssaName = "ios-area-1-nssa";
+    String originatorName = "originator-always";
+    List<String> configurationNames = ImmutableList.of(area0Name, area1NssaName, originatorName);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Configuration abr = configurations.get(originatorName);
+
+    // Sanity check: ensure the ABR has a generated default route in its OSPF process
+    Set<GeneratedRoute> abrOspfGeneratedRoutes =
+        abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcess().getGeneratedRoutes();
+    assertThat(abrOspfGeneratedRoutes, contains(hasPrefix(Prefix.ZERO)));
+
+    batfish.computeDataPlane();
+    DataPlane dp = batfish.loadDataPlane();
+    Set<AbstractRoute> area0Routes = dp.getRibs().get(area0Name).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> area1NssaRoutes =
+        dp.getRibs().get(area1NssaName).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> abrRoutes =
+        dp.getRibs().get(originatorName).get(DEFAULT_VRF_NAME).getRoutes();
+
+    // R1 should have default route, but the ABR and R2 should not
+    assertThat(
+        area0Routes, hasItem(allOf(hasPrefix(Prefix.ZERO), hasProtocol(RoutingProtocol.OSPF_E2))));
+    assertThat(area1NssaRoutes, not(hasItem(hasPrefix(Prefix.ZERO))));
+    assertThat(abrRoutes, not(hasItem(hasPrefix(Prefix.ZERO))));
+  }
+
+  @Test
+  public void testIosOspfDefaultOriginateNoRoute() throws IOException {
+    /*   ________      ________      ________
+        |   R1   |    |        |    |   R2   |
+        | Area 0 |----|  ABR   |----| Area 1 |
+        |        |    |        |    |  NSSA  |
+         --------      --------      --------
+      ABR has `default-information originate` configured at the process level, but no default route
+      in its RIB, so it should not export a default route.
+    */
+
+    String testrigName = "ospf-default-originate";
+    String area0Name = "ios-area-0";
+    String area1NssaName = "ios-area-1-nssa";
+    String originatorName = "originator-no-route";
+    List<String> configurationNames = ImmutableList.of(area0Name, area1NssaName, originatorName);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Configuration abr = configurations.get(originatorName);
+
+    // Sanity check: ensure the ABR has a generated default route in its OSPF process
+    Set<GeneratedRoute> abrOspfGeneratedRoutes =
+        abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcess().getGeneratedRoutes();
+    assertThat(abrOspfGeneratedRoutes, contains(hasPrefix(Prefix.ZERO)));
+
+    batfish.computeDataPlane();
+    DataPlane dp = batfish.loadDataPlane();
+    Set<AbstractRoute> area0Routes = dp.getRibs().get(area0Name).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> area1NssaRoutes =
+        dp.getRibs().get(area1NssaName).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> abrRoutes =
+        dp.getRibs().get(originatorName).get(DEFAULT_VRF_NAME).getRoutes();
+
+    // None should have default route
+    assertThat(area0Routes, not(hasItem(hasPrefix(Prefix.ZERO))));
+    assertThat(area1NssaRoutes, not(hasItem(hasPrefix(Prefix.ZERO))));
+    assertThat(abrRoutes, not(hasItem(hasPrefix(Prefix.ZERO))));
+  }
+
+  @Test
+  public void testIosOspfDefaultOriginateStaticRoute() throws IOException {
+    /*   ________      ________      ________
+        |   R1   |    |        |    |   R2   |
+        | Area 0 |----|  ABR   |----| Area 1 |
+        |        |    |        |    |  NSSA  |
+         --------      --------      --------
+      ABR has `default-information originate` configured at the process level and a statically
+      configured default route, so it should advertise the default route to R1.
+    */
+
+    String testrigName = "ospf-default-originate";
+    String area0Name = "ios-area-0";
+    String area1NssaName = "ios-area-1-nssa";
+    String originatorName = "originator-static-route";
+    List<String> configurationNames = ImmutableList.of(area0Name, area1NssaName, originatorName);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Configuration abr = configurations.get(originatorName);
+
+    // Sanity check: ensure the ABR has a generated default route in its OSPF process
+    Set<GeneratedRoute> abrOspfGeneratedRoutes =
+        abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcess().getGeneratedRoutes();
+    assertThat(abrOspfGeneratedRoutes, contains(hasPrefix(Prefix.ZERO)));
+
+    batfish.computeDataPlane();
+    DataPlane dp = batfish.loadDataPlane();
+    Set<AbstractRoute> area0Routes = dp.getRibs().get(area0Name).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> area1NssaRoutes =
+        dp.getRibs().get(area1NssaName).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> abrRoutes =
+        dp.getRibs().get(originatorName).get(DEFAULT_VRF_NAME).getRoutes();
+
+    // R1 should have default route, but the ABR and R2 should not
+    assertThat(
+        area0Routes, hasItem(allOf(hasPrefix(Prefix.ZERO), hasProtocol(RoutingProtocol.OSPF_E2))));
+    assertThat(area1NssaRoutes, not(hasItem(hasPrefix(Prefix.ZERO))));
+    assertThat(
+        abrRoutes, hasItem(allOf(hasPrefix(Prefix.ZERO), hasProtocol(RoutingProtocol.STATIC))));
+  }
+
+  @Test
+  public void testIosOspfDefaultOriginateLoop() throws IOException {
+    /*
+    Setup: 2-node network in OSPF area 0.
+      - R1 has `default-information originate always` configured at the process level
+      - R2 has `default-information originate` configured at the process level
+    R2 should have a default route to R1; R1 shouldn't have a default route in its main RIB.
+    */
+
+    String testrigName = "ospf-default-originate-loop";
+    String r1Name = "ios-originator-1-always";
+    String r2Name = "ios-originator-2";
+    List<String> configurationNames = ImmutableList.of(r1Name, r2Name);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+
+    // Sanity check: both devices have a generated default route in their OSPF processes
+    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Configuration r1 = configurations.get(r1Name);
+    Configuration r2 = configurations.get(r2Name);
+    Set<GeneratedRoute> r1OspfGeneratedRoutes =
+        r1.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcess().getGeneratedRoutes();
+    Set<GeneratedRoute> r2OspfGeneratedRoutes =
+        r2.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcess().getGeneratedRoutes();
+    assertThat(r1OspfGeneratedRoutes, contains(hasPrefix(Prefix.ZERO)));
+    assertThat(r2OspfGeneratedRoutes, contains(hasPrefix(Prefix.ZERO)));
+
+    batfish.computeDataPlane();
+    DataPlane dp = batfish.loadDataPlane();
+    Set<AbstractRoute> r1Routes = dp.getRibs().get(r1Name).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r2Routes = dp.getRibs().get(r2Name).get(DEFAULT_VRF_NAME).getRoutes();
+
+    // R2 should have default route, R1 should not
+    assertThat(
+        r2Routes, hasItem(allOf(hasPrefix(Prefix.ZERO), hasProtocol(RoutingProtocol.OSPF_E2))));
+    assertThat(r1Routes, not(hasItem(hasPrefix(Prefix.ZERO))));
+  }
+
+  @Test
   public void testIosOspfDistributeList() throws IOException {
     String hostname = "ios-ospf-distribute-list";
     String filename = "configs/" + hostname;
@@ -2093,7 +2299,7 @@ public class CiscoGrammarTest {
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     /* Confirm prefix list uses are counted correctly */
-    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "pre_list", 2));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "pre_list", 3));
     assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "pre_list_unused", 0));
 
     /* Confirm undefined prefix lists are detected in different contexts */
@@ -2101,6 +2307,62 @@ public class CiscoGrammarTest {
     assertThat(ccae, hasUndefinedReference(filename, PREFIX_LIST, "pre_list_undef1"));
     /* Route-map match context */
     assertThat(ccae, hasUndefinedReference(filename, PREFIX_LIST, "pre_list_undef2"));
+
+    /*
+     Neighbor 1.2.3.4 uses pre_list to filter both inbound and outbound routes. Test that both
+     generated policies permit 10.1.1.0/24 and not other routes.
+    */
+    Ip peerAddress = Ip.parse("1.2.3.4");
+    Configuration c = batfish.loadConfigurations().get(hostname);
+    String generatedImportPolicyName =
+        computeBgpPeerImportPolicyName(DEFAULT_VRF_NAME, peerAddress.toString());
+    String generatedExportPolicyName =
+        computeBgpPeerExportPolicyName(DEFAULT_VRF_NAME, peerAddress.toString());
+    RoutingPolicy importPolicy = c.getRoutingPolicies().get(generatedImportPolicyName);
+    RoutingPolicy exportPolicy = c.getRoutingPolicies().get(generatedExportPolicyName);
+    assertThat(importPolicy, notNullValue());
+    assertThat(exportPolicy, notNullValue());
+
+    Prefix permittedPrefix = Prefix.parse("10.1.1.0/24");
+    BgpRoute.Builder r =
+        BgpRoute.builder()
+            .setOriginatorIp(peerAddress)
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.IBGP);
+    BgpRoute permittedRoute = r.setNetwork(permittedPrefix).build();
+    BgpRoute unmatchedRoute = r.setNetwork(Prefix.parse("10.1.0.0/16")).build();
+    assertThat(
+        importPolicy.process(
+            permittedRoute,
+            permittedRoute.toBuilder(),
+            peerAddress,
+            DEFAULT_VRF_NAME,
+            Direction.IN),
+        equalTo(true));
+    assertThat(
+        exportPolicy.process(
+            permittedRoute,
+            permittedRoute.toBuilder(),
+            peerAddress,
+            DEFAULT_VRF_NAME,
+            Direction.OUT),
+        equalTo(true));
+    assertThat(
+        importPolicy.process(
+            unmatchedRoute,
+            unmatchedRoute.toBuilder(),
+            peerAddress,
+            DEFAULT_VRF_NAME,
+            Direction.IN),
+        equalTo(false));
+    assertThat(
+        exportPolicy.process(
+            unmatchedRoute,
+            unmatchedRoute.toBuilder(),
+            peerAddress,
+            DEFAULT_VRF_NAME,
+            Direction.OUT),
+        equalTo(false));
   }
 
   @Test
@@ -2392,6 +2654,8 @@ public class CiscoGrammarTest {
             .setIngressNode(c.getHostname())
             .setTag("")
             .setIpProtocol(IpProtocol.ICMP)
+            .setIcmpType(0)
+            .setIcmpCode(0)
             .build();
 
     assertThat(c, hasIpAccessList(policyMapAclName, accepts(flowPass, null, c)));
@@ -3497,6 +3761,86 @@ public class CiscoGrammarTest {
     assertThat(procOnStartup.getMaxMetricStubNetworks(), is(nullValue()));
     assertThat(procOnStartup.getMaxMetricExternalNetworks(), is(nullValue()));
     assertThat(procOnStartup.getMaxMetricSummaryNetworks(), is(nullValue()));
+  }
+
+  @Test
+  public void testOspfNoRedistribution() throws IOException {
+    /*   ________      ________      ________
+        |   R1   |    |        |    |   R2   |
+        | Area 0 |----|  ABR   |----| Area 1 |
+        |        |    |        |    |  NSSA  |
+         --------      --------      --------
+      Will run this setup with two versions of the ABR, one where it has no-redistribution
+      configured for area 1 and one where it doesn't. In both cases, the ABR is configured to
+      redistribute connected subnets, so we should always see its loopback prefix on R1 and should
+      also see it on R2 when no-redistribution is not configured.
+    */
+
+    // First snapshot: no-redistribution is not configured
+    String testrigName = "ospf-no-redistribution";
+    String area0Name = "ios-area-0";
+    String area1NssaName = "ios-area-1-nssa";
+    String abrName = "ios-abr";
+    Prefix abrLoopbackPrefix = Prefix.parse("10.10.10.10/32");
+    List<String> configurationNames = ImmutableList.of(area0Name, area1NssaName, abrName);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Configuration abr = configurations.get(abrName);
+
+    // Sanity check: ensure the ABR does not have suppressType7 set for area 1
+    OspfArea abrToArea1 =
+        abr.getVrfs().get(DEFAULT_VRF_NAME).getInterfaces().get("Ethernet1").getOspfArea();
+    assertThat(abrToArea1.getNssa(), hasSuppressType7(false));
+
+    batfish.computeDataPlane();
+    DataPlane dp = batfish.loadDataPlane();
+    Set<AbstractRoute> area0Routes = dp.getRibs().get(area0Name).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> area1NssaRoutes =
+        dp.getRibs().get(area1NssaName).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> abrRoutes = dp.getRibs().get(abrName).get(DEFAULT_VRF_NAME).getRoutes();
+
+    // All the devices should have a route to the ABR's loopback
+    assertThat(
+        area0Routes,
+        hasItem(allOf(hasPrefix(abrLoopbackPrefix), hasProtocol(RoutingProtocol.OSPF_E2))));
+    assertThat(
+        area1NssaRoutes,
+        hasItem(allOf(hasPrefix(abrLoopbackPrefix), hasProtocol(RoutingProtocol.OSPF_E2))));
+    assertThat(abrRoutes, hasItem(hasPrefix(abrLoopbackPrefix)));
+
+    // Second snapshot: run the same song and dance with no-redistribution configured on the ABR
+    abrName = "ios-abr-no-redistribution";
+    configurationNames = ImmutableList.of(area0Name, area1NssaName, abrName);
+    batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    configurations = batfish.loadConfigurations();
+    abr = configurations.get(abrName);
+
+    // This time the ABR should have suppressType7 set for area 1
+    abrToArea1 = abr.getVrfs().get(DEFAULT_VRF_NAME).getInterfaces().get("Ethernet1").getOspfArea();
+    assertThat(abrToArea1.getNssa(), hasSuppressType7(true));
+
+    batfish.computeDataPlane();
+    dp = batfish.loadDataPlane();
+    area0Routes = dp.getRibs().get(area0Name).get(DEFAULT_VRF_NAME).getRoutes();
+    area1NssaRoutes = dp.getRibs().get(area1NssaName).get(DEFAULT_VRF_NAME).getRoutes();
+    abrRoutes = dp.getRibs().get(abrName).get(DEFAULT_VRF_NAME).getRoutes();
+
+    // Now the device in area 1 should not have a route to the ABR's loopback
+    assertThat(
+        area0Routes,
+        hasItem(allOf(hasPrefix(abrLoopbackPrefix), hasProtocol(RoutingProtocol.OSPF_E2))));
+    assertThat(area1NssaRoutes, not(hasItem(hasPrefix(abrLoopbackPrefix))));
+    assertThat(abrRoutes, hasItem(hasPrefix(abrLoopbackPrefix)));
   }
 
   @Test

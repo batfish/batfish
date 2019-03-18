@@ -10,7 +10,6 @@ import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.graph.Traverser;
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -96,28 +95,32 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
         && Ip.getBitAtPosition(childPrefix.getStartIp(), parentPrefix.getPrefixLength());
   }
 
+  /**
+   * Interface of fold operations. A fold applies the same operation at each node of the trie,
+   * bottom-up. The operation's inputs are the return values of the recursive calls on the subtries,
+   * plus the prefix and values at that node.
+   */
+  public interface FoldOperator<T, R> {
+    @Nonnull
+    R fold(Prefix prefix, Set<T> elems, @Nullable R leftResult, @Nullable R rightResult);
+  }
+
   private static final class Node<T> implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Nonnull private final Prefix _prefix;
-    @Nonnull private final Set<T> _elements;
+    @Nonnull private Set<T> _elements;
 
     @Nullable private Node<T> _left;
     @Nullable private Node<T> _right;
 
     Node(Prefix prefix) {
-      _prefix = prefix;
-      _elements = new HashSet<>();
-    }
-
-    Node(Prefix prefix, T elem) {
-      this(prefix);
-      _elements.add(elem);
+      this(prefix, ImmutableSet.of());
     }
 
     Node(Prefix prefix, Collection<T> elements) {
-      this(prefix);
-      _elements.addAll(elements);
+      _prefix = prefix;
+      _elements = ImmutableSet.copyOf(elements);
     }
 
     private @Nonnull Node<T> createChild(Prefix prefix) {
@@ -156,6 +159,13 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
 
       Node<T> node = findLongestPrefixMatchNode(prefix);
       return node._prefix.equals(prefix) ? node : node.createChild(prefix);
+    }
+
+    @Nonnull
+    <R> R fold(FoldOperator<T, R> operator) {
+      R leftResult = _left == null ? null : _left.fold(operator);
+      R rightResult = _right == null ? null : _right.fold(operator);
+      return operator.fold(_prefix, _elements, leftResult, rightResult);
     }
 
     /** Returns the list of non-null children for this node */
@@ -249,6 +259,18 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
    */
   public void traverseEntries(BiConsumer<Prefix, Set<T>> consumer) {
     traverseNodes(node -> consumer.accept(node._prefix, ImmutableSet.copyOf(node._elements)));
+  }
+
+  /**
+   * Perform a fold over the trie. The fold applies the same operation at each node of the trie,
+   * bottom-up. The operation's inputs are the return values of the recursive calls on the subtries,
+   * plus the prefix and values at that node.
+   */
+  public <R> R fold(FoldOperator<T, R> operator) {
+    if (_root == null) {
+      return null;
+    }
+    return _root.fold(operator);
   }
 
   private void traverseNodes(Consumer<Node<T>> consumer) {
@@ -349,7 +371,11 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
       return true;
     }
     Node<T> node = _root.findOrCreateNode(p);
-    return node._elements.addAll(elements);
+    if (node._elements.containsAll(elements)) {
+      return false;
+    }
+    node._elements = ImmutableSet.<T>builder().addAll(node._elements).addAll(elements).build();
+    return true;
   }
 
   /**
@@ -359,7 +385,18 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
    */
   public boolean remove(Prefix p, T e) {
     Node<T> node = exactMatchNode(p);
-    return node != null && node._elements.remove(e);
+    if (node == null || !node._elements.contains(e)) {
+      return false;
+    }
+    if (node._elements.size() == 1) {
+      node._elements = ImmutableSet.of();
+    } else {
+      node._elements =
+          node._elements.stream()
+              .filter(el -> !el.equals(e))
+              .collect(ImmutableSet.toImmutableSet());
+    }
+    return true;
   }
 
   /**
@@ -372,21 +409,15 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
     if (node == null) {
       return put(p, e);
     }
-    Set<T> elems = node._elements;
-    if (elems.size() == 1 && elems.contains(e)) {
+    if (node._elements.size() == 1 && node._elements.contains(e)) {
       return false;
     }
-    elems.clear();
-    elems.add(e);
+    node._elements = ImmutableSet.of(e);
     return true;
   }
 
   /** Remove all elements from the multimap. */
   public void clear() {
-    if (_root != null) {
-      _root._elements.clear();
-      _root.setLeft(null);
-      _root.setRight(null);
-    }
+    _root = null;
   }
 }

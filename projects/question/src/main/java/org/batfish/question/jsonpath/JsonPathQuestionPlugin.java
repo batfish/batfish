@@ -35,7 +35,6 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerSummary;
 import org.batfish.datamodel.questions.Question;
@@ -317,8 +316,9 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
             sb.append(
                 String.format(
                     "  [%d]: %d added and %d removed \n", index, added.size(), removed.size()));
-            SortedSet<String> allKeys =
-                CommonUtil.union(added.keySet(), removed.keySet(), TreeSet::new);
+            SortedSet<String> allKeys = new TreeSet<>();
+            allKeys.addAll(added.keySet());
+            allKeys.addAll(removed.keySet());
             for (String key : allKeys) {
               if (removed.containsKey(key)) {
                 JsonNode removedNode = removed.get(key).getSuffix();
@@ -371,28 +371,12 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
     }
   }
 
-  // <question_page_comment>
-  /*
-   * Runs JsonPath <a href=https://github.com/jayway/JsonPath></a> queries on the JSON data model
+  /**
+   * Runs <a href="https://github.com/jayway/JsonPath">JsonPath </a> queries on the JSON data model
    * that is the output of the 'Nodes' question.
    *
    * <p>This query can be used to perform server-side queries for the presence or absence of
    * specified patterns in the data model induced by the configurations supplied in the test-rig.
-   *
-   * @type JsonPath onefile
-   * @param paths A JSON list of path queries, each of which is a JSON object containing the
-   *     remaining documented fields (path, suffix, summary). For each specified path query, the
-   *     question returns a list of paths in the data model matching the criteria of the query.
-   * @hparam path (Property of each element of 'paths') The JsonPath query to execute.
-   * @hparam suffix (Property of each element of 'paths') Defaults to false. If true, then each path
-   *     in the returned list will map to the remaining content of the datamodel at the end of that
-   *     path. This can be useful for debugging, but can also be very verbose. If false, then each
-   *     path will map to a null value.
-   * @hparam summary (Property of each element of 'paths') Defaults to false. If true, then instead
-   *     of outputting each matching path, only the count of matching paths will be output.
-   * @example bf_answer("NodesPath",
-   *     paths=[{"path":"$.nodes[*].interfaces[*][?(@.mtu!=1500)].mtu"}]) Return all interfaces with
-   *     MTUs not equal to 1500
    */
   public static class JsonPathQuestion extends Question {
 

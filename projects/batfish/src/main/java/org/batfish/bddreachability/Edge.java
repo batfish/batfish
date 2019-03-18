@@ -2,6 +2,7 @@ package org.batfish.bddreachability;
 
 import static org.batfish.bddreachability.transition.Transitions.constraint;
 
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
@@ -32,6 +33,26 @@ final class Edge {
     _preState = preState;
     _postState = postState;
     _transition = transition;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof Edge)) {
+      return false;
+    }
+    Edge edge = (Edge) o;
+    return Objects.equals(_postState, edge._postState)
+        && Objects.equals(_preState, edge._preState)
+        && Objects.equals(_transition, edge._transition);
+  }
+
+  @Override
+  public int hashCode() {
+
+    return Objects.hash(_postState, _preState, _transition);
   }
 
   @Nonnull

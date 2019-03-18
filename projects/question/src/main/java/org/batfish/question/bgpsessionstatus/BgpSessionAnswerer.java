@@ -4,12 +4,12 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.graph.ValueGraph;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
@@ -23,9 +23,9 @@ import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.ConfiguredSessionStatus;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.Row;
+import org.batfish.specifier.AllNodesNodeSpecifier;
 
 /** Captures the configuration state of a BGP session. */
 public abstract class BgpSessionAnswerer extends Answerer {
@@ -51,7 +51,13 @@ public abstract class BgpSessionAnswerer extends Answerer {
   }
 
   static @Nullable NodeInterfacePair getInterface(Configuration config, Ip localIp) {
-    return CommonUtil.getActiveInterfaceWithIp(localIp, config)
+    return config.getAllInterfaces().values().stream()
+        .filter(
+            iface1 ->
+                iface1.getActive()
+                    && iface1.getAllAddresses().stream()
+                        .anyMatch(ifAddr -> Objects.equals(ifAddr.getIp(), localIp)))
+        .findAny()
         .map(iface -> new NodeInterfacePair(config.getHostname(), iface.getName()))
         .orElse(null);
   }
@@ -119,13 +125,13 @@ public abstract class BgpSessionAnswerer extends Answerer {
    */
   protected static boolean matchesNodesAndType(
       Row row, Set<String> nodes, Set<String> remoteNodes, BgpSessionQuestion question) {
-    if (!question.getNodes().equals(NodesSpecifier.ALL)) {
+    if (!question.getNodeSpecifier().equals(AllNodesNodeSpecifier.INSTANCE)) {
       Node node = (Node) row.get(COL_NODE, Schema.NODE);
       if (node == null || !nodes.contains(node.getName())) {
         return false;
       }
     }
-    if (!question.getRemoteNodes().equals(NodesSpecifier.ALL)) {
+    if (!question.getRemoteNodeSpecifier().equals(AllNodesNodeSpecifier.INSTANCE)) {
       Node remoteNode = (Node) row.get(COL_REMOTE_NODE, Schema.NODE);
       if (remoteNode == null || !remoteNodes.contains(remoteNode.getName())) {
         return false;

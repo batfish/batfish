@@ -40,7 +40,6 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.matchers.PermittedByIpAccessListLineMatchers;
 import org.batfish.datamodel.pojo.Node;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
@@ -257,8 +256,7 @@ public class TestFiltersAnswererTest {
         new MockBatfish(ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2));
 
     // Test that filtering by node gives only that node's ACLs
-    TestFiltersQuestion question =
-        new TestFiltersQuestion(new NodesSpecifier(c1.getHostname()), null, null, null);
+    TestFiltersQuestion question = new TestFiltersQuestion(c1.getHostname(), null, null, null);
     TestFiltersAnswerer answerer = new TestFiltersAnswerer(question, batfish);
     Rows rows = answerer.answer().getRows();
 
@@ -278,7 +276,7 @@ public class TestFiltersAnswererTest {
     }
 
     // Test that filtering by both gives only the one matching ACL
-    question = new TestFiltersQuestion(new NodesSpecifier(c1.getHostname()), "acl1", null, null);
+    question = new TestFiltersQuestion(c1.getHostname(), "acl1", null, null);
     answerer = new TestFiltersAnswerer(question, batfish);
     rows = answerer.answer().getRows();
 
@@ -293,8 +291,7 @@ public class TestFiltersAnswererTest {
         new MockBatfish(configs, MockSpecifierContext.builder().setConfigs(configs).build());
 
     // Test that exception is thrown if no nodes match
-    TestFiltersQuestion question =
-        new TestFiltersQuestion(new NodesSpecifier("fake_node"), null, null, null);
+    TestFiltersQuestion question = new TestFiltersQuestion("fake_node", null, null, null);
     TestFiltersAnswerer answerer = new TestFiltersAnswerer(question, batfish);
 
     _thrown.expect(BatfishException.class);
@@ -311,7 +308,7 @@ public class TestFiltersAnswererTest {
 
     // Test that exception is thrown if node is found, but no filters match
     TestFiltersQuestion question =
-        new TestFiltersQuestion(new NodesSpecifier(c1.getHostname()), "fake_filter", null, null);
+        new TestFiltersQuestion(c1.getHostname(), "fake_filter", null, null);
     TestFiltersAnswerer answerer = new TestFiltersAnswerer(question, batfish);
 
     _thrown.expect(BatfishException.class);

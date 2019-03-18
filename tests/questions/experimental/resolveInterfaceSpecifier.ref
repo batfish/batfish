@@ -1,8 +1,8 @@
 {
   "class" : "org.batfish.question.specifiers.SpecifiersQuestion",
   "queryType" : "INTERFACE",
+  "specifierFactoryVersion" : "V2",
   "differential" : false,
-  "filterSpecifierFactory" : "FlexibleFilterSpecifierFactory",
   "includeOneTableKeys" : true,
   "instance" : {
     "description" : "Show the resolved values for interface specifier",
@@ -11,11 +11,18 @@
       "specifiers"
     ],
     "variables" : {
+      "grammarVersion" : {
+        "description" : "Version of grammar to use for resolution",
+        "displayName" : "Grammar version",
+        "optional" : true,
+        "type" : "string",
+        "value" : "v2"
+      },
       "interfaces" : {
         "description" : "Input to the interfaceSpecifier",
         "displayName" : "Interfaces",
         "optional" : true,
-        "type" : "string",
+        "type" : "interfacesSpec",
         "value" : "input"
       },
       "nodes" : {
@@ -27,10 +34,6 @@
       }
     }
   },
-  "interfaceSpecifierFactory" : "FlexibleInterfaceSpecifierFactory",
   "interfaceSpecifierInput" : "input",
-  "ipSpaceSpecifierFactory" : "FlexibleIpSpaceSpecifierFactory",
-  "locationSpecifierFactory" : "FlexibleLocationSpecifierFactory",
-  "nodeSpecifierFactory" : "FlexibleNodeSpecifierFactory",
   "nodeSpecifierInput" : "input"
 }

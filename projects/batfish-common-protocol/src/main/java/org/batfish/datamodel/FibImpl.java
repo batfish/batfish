@@ -7,14 +7,14 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.Stack;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -22,6 +22,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.PrefixTrieMultiMap.FoldOperator;
 
 @ParametersAreNonnullByDefault
 public final class FibImpl implements Fib {
@@ -80,7 +81,7 @@ public final class FibImpl implements Fib {
   /** This trie is the source of truth for all resolved FIB routes */
   @Nonnull private final PrefixTrieMultiMap<FibEntry> _root;
 
-  private transient Supplier<Map<AbstractRoute, Set<FibEntry>>> _entries;
+  private transient Supplier<Set<FibEntry>> _entries;
   private transient Supplier<Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>>
       _nextHopInterfaces;
 
@@ -112,13 +113,13 @@ public final class FibImpl implements Fib {
                         Collectors.mapping(FibEntry::getResolvedToRoute, Collectors.toSet())))));
   }
 
-  private Map<AbstractRoute, Set<FibEntry>> computeEntries() {
-    return _root.getAllElements().stream()
-        .collect(Collectors.groupingBy(FibEntry::getTopLevelRoute, Collectors.toSet()));
+  private Set<FibEntry> computeEntries() {
+    return _root.getAllElements();
   }
 
   @Nonnull
-  public Map<AbstractRoute, Set<FibEntry>> getEntries() {
+  @Override
+  public Set<FibEntry> allEntries() {
     return _entries.get();
   }
 
@@ -279,49 +280,70 @@ public final class FibImpl implements Fib {
     return _nextHopInterfaces.get();
   }
 
-  @Override
-  public @Nonnull Set<String> getNextHopInterfaces(Ip ip) {
-    return get(ip).stream().map(FibEntry::getInterfaceName).collect(ImmutableSet.toImmutableSet());
-  }
-
   @Nonnull
   @Override
   public Set<FibEntry> get(Ip ip) {
     return _root.longestPrefixMatch(ip);
   }
 
+  @Nonnull
   @Override
-  public @Nonnull Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>
-      getNextHopInterfacesByRoute(Ip dstIp) {
-    return get(dstIp).stream()
-        .collect(
-            Collectors.groupingBy(
-                FibEntry::getTopLevelRoute,
-                Collectors.groupingBy(
-                    FibEntry::getInterfaceName,
-                    Collectors.groupingBy(
-                        FibEntry::getArpIP,
-                        Collectors.mapping(FibEntry::getResolvedToRoute, Collectors.toSet())))));
-  }
+  public Map<Prefix, IpSpace> getMatchingIps() {
+    ImmutableMap.Builder<Prefix, IpSpace> builder = ImmutableMap.builder();
 
-  @Override
-  public @Nonnull Map<String, Set<AbstractRoute>> getRoutesByNextHopInterface() {
-    Map<String, ImmutableSet.Builder<AbstractRoute>> routesByNextHopInterface = new HashMap<>();
-    getNextHopInterfaces()
-        .forEach(
-            (route, nextHopInterfaceMap) ->
-                nextHopInterfaceMap
-                    .keySet()
-                    .forEach(
-                        nextHopInterface ->
-                            routesByNextHopInterface
-                                .computeIfAbsent(nextHopInterface, n -> ImmutableSet.builder())
-                                .add(route)));
-    return routesByNextHopInterface.entrySet().stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Entry::getKey /* interfaceName */,
-                routesByNextHopInterfaceEntry -> routesByNextHopInterfaceEntry.getValue().build()));
+    /* Do a fold over the trie. At each node, create the matching Ips for that prefix (adding it
+     * to the builder) and return an IpSpace of IPs matched by any prefix in that subtrie. To create
+     * the matching Ips of the prefix, whitelist the prefix and blacklist the IPs matched by
+     * subtrie prefixes (i.e. longer prefixes).
+     *
+     * We build ImmutableSortedSets because IpWildcardSetIpSpace uses them internally, and this
+     * avoids making an extra copy.
+     */
+    _root.fold(
+        new FoldOperator<FibEntry, SortedSet<IpWildcard>>() {
+          @Nonnull
+          @Override
+          public SortedSet<IpWildcard> fold(
+              Prefix prefix,
+              Set<FibEntry> elems,
+              @Nullable SortedSet<IpWildcard> leftPrefixes,
+              @Nullable SortedSet<IpWildcard> rightPrefixes) {
+            SortedSet<IpWildcard> subTriePrefixes;
+            boolean leftEmpty = leftPrefixes == null || leftPrefixes.isEmpty();
+            boolean rightEmpty = rightPrefixes == null || rightPrefixes.isEmpty();
+            if (leftEmpty && rightEmpty) {
+              subTriePrefixes = ImmutableSortedSet.of();
+            } else if (leftEmpty) {
+              subTriePrefixes = rightPrefixes;
+            } else if (rightEmpty) {
+              subTriePrefixes = leftPrefixes;
+            } else {
+              subTriePrefixes =
+                  ImmutableSortedSet.<IpWildcard>naturalOrder()
+                      .addAll(leftPrefixes)
+                      .addAll(rightPrefixes)
+                      .build();
+            }
+
+            if (elems.isEmpty()) {
+              return subTriePrefixes;
+            }
+
+            IpWildcard wc = new IpWildcard(prefix);
+
+            if (subTriePrefixes.isEmpty()) {
+              builder.put(prefix, prefix.toIpSpace());
+            } else {
+              // Ips matching prefix are those in prefix and not in any subtrie prefixes.
+              builder.put(
+                  prefix, new IpWildcardSetIpSpace(subTriePrefixes, ImmutableSortedSet.of(wc)));
+            }
+
+            return ImmutableSortedSet.of(wc);
+          }
+        });
+
+    return builder.build();
   }
 
   private void readObject(java.io.ObjectInputStream stream)

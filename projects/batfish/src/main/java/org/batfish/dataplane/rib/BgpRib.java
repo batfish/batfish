@@ -73,7 +73,7 @@ public class BgpRib extends AbstractRib<BgpRoute> {
         Integer.valueOf(1).equals(maxPaths) || multipathEquivalentAsPathMatchMode != null,
         "Multipath AS-Path-Match-mode must be specified for a multipath BGP RIB");
     _multipathEquivalentAsPathMatchMode = multipathEquivalentAsPathMatchMode;
-    _bestPaths = new HashMap<>();
+    _bestPaths = new HashMap<>(0);
   }
 
   /*

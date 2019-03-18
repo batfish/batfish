@@ -35,11 +35,9 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multiset;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteDecorator;
@@ -50,7 +48,6 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.MockDataPlane;
 import org.batfish.datamodel.NetworkConfigurations;
@@ -482,21 +479,6 @@ public class RoutesAnswererTest {
     @Override
     public int comparePreference(R lhs, R rhs) {
       return 0;
-    }
-
-    @Override
-    public Map<Prefix, IpSpace> getMatchingIps() {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public SortedSet<Prefix> getPrefixes() {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public IpSpace getRoutableIps() {
-      throw new UnsupportedOperationException();
     }
 
     @Override

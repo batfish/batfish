@@ -31,16 +31,10 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
-import org.batfish.datamodel.questions.FiltersSpecifier;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
-import org.batfish.specifier.AllNodesNodeSpecifier;
-import org.batfish.specifier.FilterSpecifier;
-import org.batfish.specifier.NodeSpecifier;
-import org.batfish.specifier.ShorthandFilterSpecifier;
-import org.batfish.specifier.SpecifierFactories;
 
 /** An answerer for {@link CompareFiltersQuestion}. */
 public class CompareFiltersAnswerer extends Answerer {
@@ -69,25 +63,24 @@ public class CompareFiltersAnswerer extends Answerer {
 
   @Override
   public AnswerElement answerDiff() {
-    NodeSpecifier nodeSpecifier =
-        SpecifierFactories.getNodeSpecifierOrDefault(
-            _question.getNodes(), AllNodesNodeSpecifier.INSTANCE);
-    FilterSpecifier filterSpecifier =
-        SpecifierFactories.getFilterSpecifierOrDefault(
-            _question.getFilters(), new ShorthandFilterSpecifier(FiltersSpecifier.ALL));
-
     _batfish.pushBaseSnapshot();
     SortedMap<String, Configuration> currentConfigs = _batfish.loadConfigurations();
     Multimap<String, String> currentFilters =
         getSpecifiedFilters(
-            currentConfigs, nodeSpecifier, filterSpecifier, _batfish.specifierContext());
+            currentConfigs,
+            _question.getNodeSpecifier(),
+            _question.getFilterSpecifier(),
+            _batfish.specifierContext());
     _batfish.popSnapshot();
 
     _batfish.pushDeltaSnapshot();
     SortedMap<String, Configuration> referenceConfigs = _batfish.loadConfigurations();
     Multimap<String, String> referenceFilters =
         getSpecifiedFilters(
-            currentConfigs, nodeSpecifier, filterSpecifier, _batfish.specifierContext());
+            currentConfigs,
+            _question.getNodeSpecifier(),
+            _question.getFilterSpecifier(),
+            _batfish.specifierContext());
     _batfish.popSnapshot();
 
     Multimap<String, String> commonFilters =

@@ -23,7 +23,7 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.Location;
-import org.batfish.specifier.LocationSpecifiers;
+import org.batfish.specifier.LocationSpecifier;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -90,12 +90,12 @@ public class BDDReachabilityAnalysisDetectLoopsTest {
     BDDPacket pkt = new BDDPacket();
 
     Set<Location> allLocations =
-        LocationSpecifiers.ALL_LOCATIONS.resolve(batfish.specifierContext());
+        LocationSpecifier.ALL_LOCATIONS.resolve(batfish.specifierContext());
     IpSpaceAssignment srcIpSpaceAssignment =
         IpSpaceAssignment.builder().assign(allLocations, UniverseIpSpace.INSTANCE).build();
     BDDReachabilityAnalysis analysis =
         new BDDReachabilityAnalysisFactory(
-                pkt, configs, batfish.loadDataPlane().getForwardingAnalysis())
+                pkt, configs, batfish.loadDataPlane().getForwardingAnalysis(), false, false)
             .bddReachabilityAnalysis(srcIpSpaceAssignment);
     analysis.detectLoops();
   }

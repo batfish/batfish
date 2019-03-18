@@ -1,10 +1,14 @@
 package org.batfish.bddreachability.transition;
 
 import com.google.common.collect.ImmutableList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
+import org.batfish.bddreachability.LastHopOutgoingInterfaceManager;
 import org.batfish.common.BatfishException;
+import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDSourceManager;
 
 /** Smart constructors of {@link Transition}. */
@@ -42,6 +46,13 @@ public final class Transitions {
     return value.isOne() ? IDENTITY : new EraseAndSet(var, value);
   }
 
+  public static Transition eraseAndSet(BDDInteger var, BDD value) {
+    return value.isOne()
+        ? IDENTITY
+        : new EraseAndSet(
+            Arrays.stream(var.getBitvec()).reduce(var.getFactory().one(), BDD::and), value);
+  }
+
   public static Transition or() {
     throw new BatfishException("Don't call or() with no Transitions -- just use Zero instead.");
   }
@@ -60,12 +71,37 @@ public final class Transitions {
     return new Or(nonZeroTransitions);
   }
 
-  public static Transition addSourceInterfaceConstraint(BDDSourceManager mgr, String iface) {
-    return mgr.isTrivial() ? IDENTITY : new AddSourceConstraint(mgr, iface);
+  public static Transition addLastHopConstraint(
+      @Nullable LastHopOutgoingInterfaceManager mgr,
+      String sendingNode,
+      String sendingIface,
+      String recvNode,
+      String recvIface) {
+    return mgr == null || !mgr.isTrackedReceivingNode(recvNode)
+        ? IDENTITY
+        : new AddLastHopConstraint(mgr, sendingNode, sendingIface, recvNode, recvIface);
+  }
+
+  public static Transition addNoLastHopConstraint(
+      @Nullable LastHopOutgoingInterfaceManager mgr, String recvNode, String recvIface) {
+    return mgr == null || !mgr.isTrackedReceivingNode(recvNode)
+        ? IDENTITY
+        : new AddNoLastHopConstraint(mgr, recvNode, recvIface);
   }
 
   public static Transition addOriginatingFromDeviceConstraint(BDDSourceManager mgr) {
     return mgr.isTrivial() ? IDENTITY : new AddSourceConstraint(mgr);
+  }
+
+  public static Transition addSourceInterfaceConstraint(BDDSourceManager mgr, String iface) {
+    return mgr.isTrivial() ? IDENTITY : new AddSourceConstraint(mgr, iface);
+  }
+
+  public static Transition removeLastHopConstraint(
+      @Nullable LastHopOutgoingInterfaceManager mgr, String node) {
+    return mgr == null || !mgr.isTrackedReceivingNode(node)
+        ? IDENTITY
+        : new RemoveLastHopConstraint(mgr, node);
   }
 
   public static Transition removeSourceConstraint(BDDSourceManager mgr) {

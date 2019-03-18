@@ -5,13 +5,11 @@ import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
-import org.batfish.common.util.CommonUtil;
 
 public class Settings extends BaseSettings {
 
   public enum RunMode {
     batch,
-    gendatamodel,
     genquestions,
     interactive
   }
@@ -71,7 +69,7 @@ public class Settings extends BaseSettings {
 
   public Settings(String[] args) {
     super(
-        CommonUtil.getConfig(
+        getConfig(
             BfConsts.PROP_CLIENT_PROPERTIES_PATH,
             BfConsts.ABSPATH_CONFIG_FILE_NAME_CLIENT,
             ConfigurationLocator.class));

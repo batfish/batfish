@@ -1,7 +1,6 @@
 package org.batfish.question.bgpsessionstatus;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 import java.util.regex.Pattern;
@@ -12,6 +11,9 @@ import org.batfish.datamodel.questions.ConfiguredSessionStatus;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.SessionStatus;
+import org.batfish.specifier.AllNodesNodeSpecifier;
+import org.batfish.specifier.NodeSpecifier;
+import org.batfish.specifier.SpecifierFactories;
 
 /** Based on node configurations, determines the status of IBGP and EBGP sessions. */
 public abstract class BgpSessionQuestion extends Question {
@@ -26,13 +28,13 @@ public abstract class BgpSessionQuestion extends Question {
 
   public static final String PROP_TYPE = "type";
 
-  @Nonnull protected NodesSpecifier _nodes;
+  @Nullable protected final String _nodes;
 
-  @Nonnull protected NodesSpecifier _remoteNodes;
+  @Nullable protected final String _remoteNodes;
 
-  @Nonnull protected Pattern _status;
+  @Nonnull protected final Pattern _status;
 
-  @Nonnull protected Pattern _type;
+  @Nonnull protected final Pattern _type;
 
   /**
    * Create a new BGP session question.
@@ -45,12 +47,12 @@ public abstract class BgpSessionQuestion extends Question {
    * @param type Regular expression to match session type (see {@link SessionType})
    */
   public BgpSessionQuestion(
-      @Nullable NodesSpecifier nodes,
-      @Nullable NodesSpecifier remoteNodes,
+      @Nullable String nodes,
+      @Nullable String remoteNodes,
       @Nullable String status,
       @Nullable String type) {
-    _nodes = firstNonNull(nodes, NodesSpecifier.ALL);
-    _remoteNodes = firstNonNull(remoteNodes, NodesSpecifier.ALL);
+    _nodes = nodes;
+    _remoteNodes = remoteNodes;
     _status =
         Strings.isNullOrEmpty(status)
             ? Pattern.compile(MATCH_ALL)
@@ -82,14 +84,27 @@ public abstract class BgpSessionQuestion extends Question {
     return type != null && _type.matcher(type.toString()).matches();
   }
 
+  @Nullable
   @JsonProperty(PROP_NODES)
-  public NodesSpecifier getNodes() {
+  public String getNodes() {
     return _nodes;
   }
 
+  @JsonIgnore
+  public NodeSpecifier getNodeSpecifier() {
+    return SpecifierFactories.getNodeSpecifierOrDefault(_nodes, AllNodesNodeSpecifier.INSTANCE);
+  }
+
+  @Nullable
   @JsonProperty(PROP_REMOTE_NODES)
-  public NodesSpecifier getRemoteNodes() {
+  public String getRemoteNodes() {
     return _remoteNodes;
+  }
+
+  @JsonIgnore
+  public NodeSpecifier getRemoteNodeSpecifier() {
+    return SpecifierFactories.getNodeSpecifierOrDefault(
+        _remoteNodes, AllNodesNodeSpecifier.INSTANCE);
   }
 
   @JsonProperty(PROP_STATUS)

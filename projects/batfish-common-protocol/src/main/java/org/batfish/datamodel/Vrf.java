@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -27,7 +26,7 @@ import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.ospf.OspfProcess;
 
-@JsonSchemaDescription("A virtual routing and forwarding (VRF) instance on a node.")
+/** A virtual routing and forwarding (VRF) instance on a node. */
 public class Vrf extends ComparableStructure<String> {
 
   public static class Builder extends NetworkFactoryBuilder<Vrf> {
@@ -69,6 +68,7 @@ public class Vrf extends ComparableStructure<String> {
   private static final String PROP_INTERFACES = "interfaces";
   private static final String PROP_ISIS_PROCESS = "isisProcess";
   private static final String PROP_EIGRP_PROCESSES = "eigrpProcesses";
+  private static final String PROP_KERNEL_ROUTES = "kernelRoutes";
   private static final String PROP_OSPF_PROCESS = "ospfProcess";
   private static final String PROP_RIP_PROCESS = "ripProcess";
   private static final String PROP_STATIC_ROUTES = "staticRoutes";
@@ -88,6 +88,7 @@ public class Vrf extends ComparableStructure<String> {
   private transient SortedSet<String> _interfaceNames;
   private NavigableMap<String, Interface> _interfaces;
   private IsisProcess _isisProcess;
+  private SortedSet<KernelRoute> _kernelRoutes;
   private transient NavigableSet<BgpAdvertisement> _originatedAdvertisements;
   private transient NavigableSet<BgpAdvertisement> _originatedEbgpAdvertisements;
   private transient NavigableSet<BgpAdvertisement> _originatedIbgpAdvertisements;
@@ -112,6 +113,7 @@ public class Vrf extends ComparableStructure<String> {
     _generatedRoutes = new TreeSet<>();
     _generatedIpv6Routes = new TreeSet<>();
     _interfaces = new TreeMap<>();
+    _kernelRoutes = ImmutableSortedSet.of();
     _staticRoutes = new TreeSet<>();
     _vniSettings = new TreeMap<>();
   }
@@ -188,6 +190,11 @@ public class Vrf extends ComparableStructure<String> {
   @JsonPropertyDescription("IS-IS routing process for this VRF")
   public IsisProcess getIsisProcess() {
     return _isisProcess;
+  }
+
+  @JsonProperty(PROP_KERNEL_ROUTES)
+  public @Nonnull SortedSet<KernelRoute> getKernelRoutes() {
+    return _kernelRoutes;
   }
 
   @JsonIgnore
@@ -342,6 +349,11 @@ public class Vrf extends ComparableStructure<String> {
   @JsonProperty(PROP_ISIS_PROCESS)
   public void setIsisProcess(IsisProcess process) {
     _isisProcess = process;
+  }
+
+  @JsonProperty(PROP_KERNEL_ROUTES)
+  public void setKernelRoutes(@Nonnull SortedSet<KernelRoute> kernelRoutes) {
+    _kernelRoutes = kernelRoutes;
   }
 
   @JsonProperty(PROP_OSPF_PROCESS)

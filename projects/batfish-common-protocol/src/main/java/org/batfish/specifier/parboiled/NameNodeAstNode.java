@@ -6,6 +6,10 @@ import java.util.Objects;
 final class NameNodeAstNode implements NodeAstNode {
   private final String _name;
 
+  NameNodeAstNode(AstNode nameAst) {
+    this(((StringAstNode) nameAst).getStr());
+  }
+
   NameNodeAstNode(String name) {
     _name = name;
   }

@@ -16,97 +16,145 @@ import org.batfish.specifier.parboiled.ParboiledNodeSpecifierFactory;
 @ParametersAreNonnullByDefault
 public final class SpecifierFactories {
 
-  public enum FactoryGroup {
+  public enum Version {
     V1, // original, regex-based parsing of "flexible" specifiers
     V2 // newer parboiled-based implementation
   }
 
   private SpecifierFactories() {}
 
-  public static final FactoryGroup ACTIVE_GROUP = FactoryGroup.V1;
+  /** Which grammar version is currently in use */
+  public static final Version ACTIVE_VERSION = Version.V2;
 
-  public static final String Filter =
-      ACTIVE_GROUP == FactoryGroup.V1
-          ? FlexibleFilterSpecifierFactory.NAME
-          : ParboiledFilterSpecifierFactory.NAME;
+  public static FilterSpecifierFactory getFilterFactory(Version version) {
+    switch (version) {
+      case V1:
+        return new FlexibleFilterSpecifierFactory();
+      case V2:
+        return new ParboiledFilterSpecifierFactory();
+      default:
+        throw new IllegalStateException("Unhandled grammar version " + version);
+    }
+  }
 
-  public static final String Interface =
-      ACTIVE_GROUP == FactoryGroup.V1
-          ? FlexibleInterfaceSpecifierFactory.NAME
-          : ParboiledInterfaceSpecifierFactory.NAME;
+  public static InterfaceSpecifierFactory getInterfaceFactory(Version version) {
+    switch (version) {
+      case V1:
+        return new FlexibleInterfaceSpecifierFactory();
+      case V2:
+        return new ParboiledInterfaceSpecifierFactory();
+      default:
+        throw new IllegalStateException("Unhandled grammar version " + version);
+    }
+  }
 
-  public static final String IpSpace =
-      ACTIVE_GROUP == FactoryGroup.V1
-          ? FlexibleIpSpaceSpecifierFactory.NAME
-          : ParboiledIpSpaceSpecifierFactory.NAME;
+  public static IpSpaceSpecifierFactory getIpSpaceFactory(Version version) {
+    switch (version) {
+      case V1:
+        return new FlexibleIpSpaceSpecifierFactory();
+      case V2:
+        return new ParboiledIpSpaceSpecifierFactory();
+      default:
+        throw new IllegalStateException("Unhandled grammar version " + version);
+    }
+  }
 
-  public static final String Location =
-      ACTIVE_GROUP == FactoryGroup.V1
-          ? FlexibleLocationSpecifierFactory.NAME
-          : ParboiledLocationSpecifierFactory.NAME;
+  public static LocationSpecifierFactory getLocationFactory(Version version) {
+    switch (version) {
+      case V1:
+        return new FlexibleLocationSpecifierFactory();
+      case V2:
+        return new ParboiledLocationSpecifierFactory();
+      default:
+        throw new IllegalStateException("Unhandled grammar version " + version);
+    }
+  }
 
-  public static final String Node =
-      ACTIVE_GROUP == FactoryGroup.V1
-          ? FlexibleNodeSpecifierFactory.NAME
-          : ParboiledNodeSpecifierFactory.NAME;
+  public static NodeSpecifierFactory getNodeFactory(Version version) {
+    switch (version) {
+      case V1:
+        return new FlexibleNodeSpecifierFactory();
+      case V2:
+        return new ParboiledNodeSpecifierFactory();
+      default:
+        throw new IllegalStateException("Unhandled grammar version " + version);
+    }
+  }
+
+  /** Define these constants, so we don't have to keep computing them */
+  private static final FilterSpecifierFactory ActiveFilterFactory =
+      getFilterFactory(ACTIVE_VERSION);
+
+  private static final InterfaceSpecifierFactory ActiveInterfaceFactory =
+      getInterfaceFactory(ACTIVE_VERSION);
+
+  private static final IpSpaceSpecifierFactory ActiveIpSpaceFactory =
+      getIpSpaceFactory(ACTIVE_VERSION);
+
+  private static final LocationSpecifierFactory ActiveLocationFactory =
+      getLocationFactory(ACTIVE_VERSION);
+
+  private static final NodeSpecifierFactory ActiveNodeFactory = getNodeFactory(ACTIVE_VERSION);
 
   public static FilterSpecifier getFilterSpecifierOrDefault(
       @Nullable String input, FilterSpecifier defaultSpecifier) {
-    return getFilterSpecifierOrDefault(input, defaultSpecifier, Filter);
+    return getFilterSpecifierOrDefault(input, defaultSpecifier, ActiveFilterFactory);
   }
 
   public static InterfaceSpecifier getInterfaceSpecifierOrDefault(
       @Nullable String input, InterfaceSpecifier defaultSpecifier) {
-    return getInterfaceSpecifierOrDefault(input, defaultSpecifier, Interface);
+    return getInterfaceSpecifierOrDefault(input, defaultSpecifier, ActiveInterfaceFactory);
   }
 
   public static IpSpaceSpecifier getIpSpaceSpecifierOrDefault(
       @Nullable String input, IpSpaceSpecifier defaultSpecifier) {
-    return getIpSpaceSpecifierOrDefault(input, defaultSpecifier, IpSpace);
+    return getIpSpaceSpecifierOrDefault(input, defaultSpecifier, ActiveIpSpaceFactory);
   }
 
   public static LocationSpecifier getLocationSpecifierOrDefault(
       @Nullable String input, LocationSpecifier defaultSpecifier) {
-    return getLocationSpecifierOrDefault(input, defaultSpecifier, Location);
+    return getLocationSpecifierOrDefault(input, defaultSpecifier, ActiveLocationFactory);
   }
 
   public static NodeSpecifier getNodeSpecifierOrDefault(
       @Nullable String input, NodeSpecifier defaultSpecifier) {
-    return getNodeSpecifierOrDefault(input, defaultSpecifier, Node);
+    return getNodeSpecifierOrDefault(input, defaultSpecifier, ActiveNodeFactory);
   }
 
   public static FilterSpecifier getFilterSpecifierOrDefault(
-      @Nullable String input, FilterSpecifier defaultSpecifier, String factory) {
+      @Nullable String input, FilterSpecifier defaultSpecifier, FilterSpecifierFactory factory) {
     return input == null || input.isEmpty()
         ? defaultSpecifier
-        : FilterSpecifierFactory.load(factory).buildFilterSpecifier(input);
+        : factory.buildFilterSpecifier(input);
   }
 
   public static InterfaceSpecifier getInterfaceSpecifierOrDefault(
-      @Nullable String input, InterfaceSpecifier defaultSpecifier, String factory) {
+      @Nullable String input,
+      InterfaceSpecifier defaultSpecifier,
+      InterfaceSpecifierFactory factory) {
     return input == null || input.isEmpty()
         ? defaultSpecifier
-        : InterfaceSpecifierFactory.load(factory).buildInterfaceSpecifier(input);
+        : factory.buildInterfaceSpecifier(input);
   }
 
   public static IpSpaceSpecifier getIpSpaceSpecifierOrDefault(
-      @Nullable String input, IpSpaceSpecifier defaultSpecifier, String factory) {
+      @Nullable String input, IpSpaceSpecifier defaultSpecifier, IpSpaceSpecifierFactory factory) {
     return input == null || input.isEmpty()
         ? defaultSpecifier
-        : IpSpaceSpecifierFactory.load(factory).buildIpSpaceSpecifier(input);
+        : factory.buildIpSpaceSpecifier(input);
   }
 
   public static LocationSpecifier getLocationSpecifierOrDefault(
-      @Nullable String input, LocationSpecifier defaultSpecifier, String factory) {
+      @Nullable String input,
+      LocationSpecifier defaultSpecifier,
+      LocationSpecifierFactory factory) {
     return input == null || input.isEmpty()
         ? defaultSpecifier
-        : LocationSpecifierFactory.load(factory).buildLocationSpecifier(input);
+        : factory.buildLocationSpecifier(input);
   }
 
   public static NodeSpecifier getNodeSpecifierOrDefault(
-      @Nullable String input, NodeSpecifier defaultSpecifier, String factory) {
-    return input == null || input.isEmpty()
-        ? defaultSpecifier
-        : NodeSpecifierFactory.load(factory).buildNodeSpecifier(input);
+      @Nullable String input, NodeSpecifier defaultSpecifier, NodeSpecifierFactory factory) {
+    return input == null || input.isEmpty() ? defaultSpecifier : factory.buildNodeSpecifier(input);
   }
 }

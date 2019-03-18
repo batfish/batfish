@@ -7,6 +7,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.ADDRESS_BO
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_OR_APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_SET;
+import static org.batfish.representation.juniper.JuniperStructureType.AS_PATH;
 import static org.batfish.representation.juniper.JuniperStructureType.AS_PATH_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.AS_PATH_GROUP_AS_PATH;
 import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICATION_KEY_CHAIN;
@@ -64,6 +65,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_VPN
 import static org.batfish.representation.juniper.JuniperStructureUsage.ISIS_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_AREA_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_EXPORT_POLICY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_AS_PATH;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_AS_PATH_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_INTERFACE;
@@ -308,6 +310,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Nat_pool_default_port_r
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Nat_rule_setContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Natp_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Natp_portContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Natp_routing_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_areaContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_reference_bandwidthContext;
@@ -324,6 +327,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oas_default_metricConte
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oas_no_summariesContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ospf_interface_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.P_bgpContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_as_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_as_path_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_policy_statementContext;
@@ -505,6 +509,18 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxpm_source_address
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxpm_source_identityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxpt_denyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxpt_permitContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sesoi_fragmentContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sesoi_largeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sesoi_ping_deathContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sesop_block_fragContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sesop_spoofingContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sesop_unknown_protocolContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sesot_fin_no_ackContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sesot_landContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sesot_syn_finContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sesot_syn_fragContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sesot_tcp_no_flagContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sesot_winnukeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sez_security_zoneContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezs_address_bookContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezs_host_inbound_trafficContext;
@@ -1971,7 +1987,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private FirewallFilter _currentZoneInboundFilter;
 
-  private Interface _currentZoneInterface;
+  private String _currentZoneInterface;
 
   private LineAction _defaultCrossZoneAction;
 
@@ -2551,6 +2567,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void exitPo_as_path(Po_as_pathContext ctx) {
+    String name = unquote(ctx.name.getText());
+    defineStructure(AS_PATH, name, ctx);
+    _currentLogicalSystem
+        .getAsPaths()
+        .put(name, new org.batfish.representation.juniper.AsPath(unquote(ctx.regex.getText())));
+  }
+
+  @Override
   public void enterPo_as_path_group(Po_as_path_groupContext ctx) {
     String name = unquote(ctx.name.getText());
     defineStructure(AS_PATH_GROUP, name, ctx);
@@ -2956,39 +2981,70 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
-  public void exitSeso_icmp(FlatJuniperParser.Seso_icmpContext ctx) {
-    if (!ctx.LARGE().isEmpty()) {
-      _currentScreen.getScreenOptions().add(IcmpLarge.INSTANCE);
-    } else {
-      todo(ctx);
-    }
+  public void exitSesoi_fragment(Sesoi_fragmentContext ctx) {
+    // Batfish does not currently model the IP fragmentation bits.
+    todo(ctx, "Unsupported netscreen ICMP option");
   }
 
   @Override
-  public void exitSeso_ip(FlatJuniperParser.Seso_ipContext ctx) {
-    if (!ctx.UNKNOWN_PROTOCOL().isEmpty()) {
-      _currentScreen.getScreenOptions().add(IpUnknownProtocol.INSTANCE);
-    } else {
-      todo(ctx);
-    }
+  public void exitSesoi_large(Sesoi_largeContext ctx) {
+    _currentScreen.getScreenOptions().add(IcmpLarge.INSTANCE);
   }
 
   @Override
-  public void exitSeso_tcp(FlatJuniperParser.Seso_tcpContext ctx) {
-    if (!ctx.TCP_NO_FLAG().isEmpty()) {
-      _currentScreen.getScreenOptions().add(TcpNoFlag.INSTANCE);
-    } else if (!ctx.SYN_FIN().isEmpty()) {
-      _currentScreen.getScreenOptions().add(TcpSynFin.INSTANCE);
-    } else if (!ctx.FIN_NO_ACK().isEmpty()) {
-      _currentScreen.getScreenOptions().add(TcpFinNoAck.INSTANCE);
-    } else {
-      todo(ctx);
-    }
+  public void exitSesoi_ping_death(Sesoi_ping_deathContext ctx) {
+    // Batfish does not currently model the IP fragmentation bits needed for this.
+    todo(ctx, "Unsupported netscreen ICMP option");
   }
 
   @Override
-  public void exitSeso_udp(FlatJuniperParser.Seso_udpContext ctx) {
-    todo(ctx);
+  public void exitSesop_block_frag(Sesop_block_fragContext ctx) {
+    // Batfish does not currently model the IP fragmentation bits.
+    todo(ctx, "Unsupported netscreen IP option");
+  }
+
+  @Override
+  public void exitSesop_spoofing(Sesop_spoofingContext ctx) {
+    // Need to plumb into reachability and dataplane to support.
+    todo(ctx, "Unsupported netscreen IP option");
+  }
+
+  @Override
+  public void exitSesop_unknown_protocol(Sesop_unknown_protocolContext ctx) {
+    _currentScreen.getScreenOptions().add(IpUnknownProtocol.INSTANCE);
+  }
+
+  @Override
+  public void exitSesot_fin_no_ack(Sesot_fin_no_ackContext ctx) {
+    _currentScreen.getScreenOptions().add(TcpFinNoAck.INSTANCE);
+  }
+
+  @Override
+  public void exitSesot_land(Sesot_landContext ctx) {
+    // Batfish has no way to express SourceIp == DestIp.
+    todo(ctx, "Unsupported netscreen TCP option");
+  }
+
+  @Override
+  public void exitSesot_syn_fin(Sesot_syn_finContext ctx) {
+    _currentScreen.getScreenOptions().add(TcpSynFin.INSTANCE);
+  }
+
+  @Override
+  public void exitSesot_syn_frag(Sesot_syn_fragContext ctx) {
+    // Batfish does not currently model the IP fragmentation bits.
+    todo(ctx, "Unsupported netscreen TCP option");
+  }
+
+  @Override
+  public void exitSesot_tcp_no_flag(Sesot_tcp_no_flagContext ctx) {
+    _currentScreen.getScreenOptions().add(TcpNoFlag.INSTANCE);
+  }
+
+  @Override
+  public void exitSesot_winnuke(Sesot_winnukeContext ctx) {
+    // Batfish does not currently support transformation in filters.
+    todo(ctx, "Unsupported netscreen TCP option");
   }
 
   @Override
@@ -3294,30 +3350,30 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterSezs_host_inbound_traffic(Sezs_host_inbound_trafficContext ctx) {
     if (_currentZoneInterface != null) {
       _currentZoneInboundFilter =
-          _currentZone.getInboundInterfaceFilters().get(_currentZoneInterface.getName());
+          _currentZone.getInboundInterfaceFilters().get(_currentZoneInterface);
       if (_currentZoneInboundFilter == null) {
         String name =
             "~ZONE_INTERFACE_FILTER~"
                 + _currentZone.getName()
                 + "~INTERFACE~"
-                + _currentZoneInterface.getName();
+                + _currentZoneInterface;
         _currentZoneInboundFilter = new FirewallFilter(name, Family.INET);
         _currentLogicalSystem.getFirewallFilters().put(name, _currentZoneInboundFilter);
         _currentZone
             .getInboundInterfaceFilters()
-            .put(_currentZoneInterface.getName(), _currentZoneInboundFilter);
+            .put(_currentZoneInterface, _currentZoneInboundFilter);
       }
     }
   }
 
   @Override
   public void enterSezs_interfaces(Sezs_interfacesContext ctx) {
-    _currentZoneInterface = initInterface(ctx.interface_id());
+    _currentZoneInterface = getInterfaceFullName(ctx.interface_id());
     _currentZone.getInterfaces().add(_currentZoneInterface);
-    _currentLogicalSystem.getInterfaceZones().put(_currentZoneInterface.getName(), _currentZone);
+    _currentLogicalSystem.getInterfaceZones().put(_currentZoneInterface, _currentZone);
     _configuration.referenceStructure(
         INTERFACE,
-        _currentZoneInterface.getName(),
+        _currentZoneInterface,
         SECURITY_ZONES_SECURITY_ZONES_INTERFACE,
         getLine(ctx.interface_id().getStop()));
   }
@@ -3929,7 +3985,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     FwThenNextIp then = new FwThenNextIp(nextPrefix);
     _currentFwTerm.getThens().add(then);
     _currentFwTerm.getThens().add(FwThenAccept.INSTANCE);
-    _currentFilter.setRoutingPolicy(true);
+    _currentFilter.setUsedForFBF(true);
   }
 
   @Override
@@ -3951,6 +4007,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitFftt_routing_instance(Fftt_routing_instanceContext ctx) {
     String name = unquote(ctx.name.getText());
     _currentFwTerm.getThens().add(new FwThenRoutingInstance(name));
+    _currentFilter.setUsedForFBF(true);
     _configuration.referenceStructure(
         ROUTING_INSTANCE, name, FIREWALL_FILTER_THEN_ROUTING_INSTANCE, ctx.getStart().getLine());
   }
@@ -3994,8 +4051,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     if (ctx.ALL() != null) {
       _currentDhcpRelayGroup.setAllInterfaces(true);
     } else {
-      Interface iface = initInterface(ctx.interface_id());
-      String interfaceName = iface.getName();
+      String interfaceName = getInterfaceFullName(ctx.interface_id());
       _currentDhcpRelayGroup.getInterfaces().add(interfaceName);
       _configuration.referenceStructure(
           INTERFACE,
@@ -4399,6 +4455,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void exitNatp_routing_instance(Natp_routing_instanceContext ctx) {
+    String ri = ctx.name.getText();
+    _currentNatPool.setOwner(ri);
+  }
+
+  @Override
   public void exitNat_pool_default_port_range(Nat_pool_default_port_rangeContext ctx) {
     _currentNat.setDefaultFromPort(Integer.parseInt(ctx.low.getText()));
     if (ctx.TO() != null) {
@@ -4555,6 +4617,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitPopsf_as_path(Popsf_as_pathContext ctx) {
     String name = ctx.name.getText();
     _currentPsTerm.getFroms().addFromAsPath(new PsFromAsPath(name));
+    _configuration.referenceStructure(
+        AS_PATH, name, POLICY_STATEMENT_FROM_AS_PATH, getLine(ctx.name.getStart()));
   }
 
   @Override
@@ -4606,10 +4670,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitPopsf_interface(Popsf_interfaceContext ctx) {
-    Interface iface = initInterface(ctx.id);
-    _currentPsTerm.getFroms().addFromInterface(new PsFromInterface(iface.getName()));
+    String ifaceName = getInterfaceFullName(ctx.id);
+    _currentPsTerm.getFroms().addFromInterface(new PsFromInterface(ifaceName));
     _configuration.referenceStructure(
-        INTERFACE, iface.getName(), POLICY_STATEMENT_FROM_INTERFACE, getLine(ctx.id.getStop()));
+        INTERFACE, ifaceName, POLICY_STATEMENT_FROM_INTERFACE, getLine(ctx.id.getStop()));
   }
 
   @Override
@@ -4853,9 +4917,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitRi_vtep_source_interface(Ri_vtep_source_interfaceContext ctx) {
-    Interface iface = initInterface(ctx.iface);
+    String ifaceName = getInterfaceFullName(ctx.iface);
     _configuration.referenceStructure(
-        INTERFACE, iface.getName(), VTEP_SOURCE_INTERFACE, getLine(ctx.iface.getStart()));
+        INTERFACE, ifaceName, VTEP_SOURCE_INTERFACE, getLine(ctx.iface.getStart()));
   }
 
   @Override
@@ -5033,11 +5097,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       Ip nextHopIp = Ip.parse(ctx.IP_ADDRESS().getText());
       _currentStaticRoute.setNextHopIp(nextHopIp);
     } else if (ctx.interface_id() != null) {
-      Interface iface = initInterface(ctx.interface_id());
-      _currentStaticRoute.setNextHopInterface(iface.getName());
+      String ifaceName = getInterfaceFullName(ctx.interface_id());
+      _currentStaticRoute.setNextHopInterface(ifaceName);
       _configuration.referenceStructure(
           INTERFACE,
-          iface.getName(),
+          ifaceName,
           STATIC_ROUTE_NEXT_HOP_INTERFACE,
           getLine(ctx.interface_id().getStop()));
     }
@@ -5220,12 +5284,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitSeikg_external_interface(Seikg_external_interfaceContext ctx) {
-    Interface_idContext interfaceId = ctx.interface_id();
-    Interface iface = initInterface(interfaceId);
-    _currentIkeGateway.setExternalInterface(iface);
+    String ifaceName = getInterfaceFullName(ctx.interface_id());
+    _currentIkeGateway.setExternalInterface(ifaceName);
     _configuration.referenceStructure(
         INTERFACE,
-        iface.getName(),
+        ifaceName,
         IKE_GATEWAY_EXTERNAL_INTERFACE,
         getLine(ctx.interface_id().getStart()));
   }
@@ -5370,13 +5433,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitSeipv_bind_interface(Seipv_bind_interfaceContext ctx) {
-    Interface iface = initInterface(ctx.interface_id());
+    String iface = getInterfaceFullName(ctx.interface_id());
     _currentIpsecVpn.setBindInterface(iface);
     _configuration.referenceStructure(
-        INTERFACE,
-        iface.getName(),
-        IPSEC_VPN_BIND_INTERFACE,
-        getLine(ctx.interface_id().getStart()));
+        INTERFACE, iface, IPSEC_VPN_BIND_INTERFACE, getLine(ctx.interface_id().getStart()));
   }
 
   @Override
@@ -5791,12 +5851,17 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     return text;
   }
 
-  private String getInterfaceName(Interface_idContext ctx) {
+  private static String getInterfaceName(Interface_idContext ctx) {
     String name = ctx.name.getText();
     if (ctx.chnl != null) {
       name += ":" + ctx.chnl.getText();
     }
     return name;
+  }
+
+  private static String getInterfaceFullName(Interface_idContext id) {
+    String name = getInterfaceName(id);
+    return id.unit == null ? name : name + "." + id.unit.getText();
   }
 
   private String initIkeProposal(IkeProposal proposal) {
@@ -6097,6 +6162,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private void todo(ParserRuleContext ctx) {
     _w.todo(ctx, getFullText(ctx), _parser);
+  }
+
+  private void todo(ParserRuleContext ctx, String message) {
+    _w.addWarning(ctx, getFullText(ctx), _parser, message);
   }
 
   private Family toFamily(F_familyContext ctx) {

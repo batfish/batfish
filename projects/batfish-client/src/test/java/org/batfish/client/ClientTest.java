@@ -66,6 +66,7 @@ import static org.batfish.datamodel.questions.Variable.Type.COMPARATOR;
 import static org.batfish.datamodel.questions.Variable.Type.DISPOSITION_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.DOUBLE;
 import static org.batfish.datamodel.questions.Variable.Type.FILTER;
+import static org.batfish.datamodel.questions.Variable.Type.FILTER_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.FLOAT;
 import static org.batfish.datamodel.questions.Variable.Type.FLOW_STATE;
 import static org.batfish.datamodel.questions.Variable.Type.INTEGER;
@@ -82,6 +83,7 @@ import static org.batfish.datamodel.questions.Variable.Type.IP_WILDCARD;
 import static org.batfish.datamodel.questions.Variable.Type.JAVA_REGEX;
 import static org.batfish.datamodel.questions.Variable.Type.JSON_PATH;
 import static org.batfish.datamodel.questions.Variable.Type.JSON_PATH_REGEX;
+import static org.batfish.datamodel.questions.Variable.Type.LOCATION_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.LONG;
 import static org.batfish.datamodel.questions.Variable.Type.NODE_ROLE_DIMENSION;
 import static org.batfish.datamodel.questions.Variable.Type.PREFIX;
@@ -150,7 +152,7 @@ public final class ClientTest {
 
   private void checkProcessCommandErrorMessage(
       Command command, String[] parameters, String expected) throws Exception {
-    Client client = new Client(new String[] {"-runmode", "gendatamodel"});
+    Client client = new Client(new String[] {"-runmode", "interactive"});
     File tempFile = _folder.newFile("writer");
     FileWriter writer = new FileWriter(tempFile);
     client._logger = new BatfishLogger("output", false);
@@ -237,7 +239,7 @@ public final class ClientTest {
 
   @Test
   public void testDefaultCase() throws Exception {
-    Client client = new Client(new String[] {"-runmode", "gendatamodel"});
+    Client client = new Client(new String[] {"-runmode", "interactive"});
     File tempFile = _folder.newFile("writer");
     FileWriter writer = new FileWriter(tempFile);
     client._logger = new BatfishLogger("output", false);
@@ -623,6 +625,15 @@ public final class ClientTest {
   }
 
   @Test
+  public void testInvalidFilterSpecValue() throws IOException {
+    String input = "5";
+    Type expectedType = FILTER_SPEC;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
   public void testInvalidFloatValue() throws IOException {
     String input = "\"string\"";
     Type expectedType = FLOAT;
@@ -802,6 +813,15 @@ public final class ClientTest {
     String input = "{\"variable\" : \"I am variable\"}";
     Type expectedType = JSON_PATH;
     String expectedMessage = String.format("Missing 'path' element of %s", JSON_PATH.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
+  public void testInvalidLocationSpec() throws IOException {
+    String input = "5";
+    Type expectedType = LOCATION_SPEC;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
     validateTypeWithInvalidInput(input, expectedMessage, expectedType);
   }
 
@@ -1017,8 +1037,7 @@ public final class ClientTest {
 
   @Test
   public void testLoadQuestionsNames() throws Exception {
-    Client client =
-        new Client(new String[] {"-runmode", "gendatamodel", "-prettyanswers", "false"});
+    Client client = new Client(new String[] {"-runmode", "interactive", "-prettyanswers", "false"});
     JSONObject testQuestion = new JSONObject();
     testQuestion.put(
         "instance",
@@ -1271,7 +1290,7 @@ public final class ClientTest {
 
   private void testProcessCommandWithValidInput(
       Command command, String[] parameters, String expected) throws Exception {
-    Client client = new Client(new String[] {"-runmode", "gendatamodel"});
+    Client client = new Client(new String[] {"-runmode", "interactive"});
     File tempFile = _folder.newFile("writer");
     FileWriter writer = new FileWriter(tempFile);
     String[] args = ArrayUtils.addAll(new String[] {command.commandName()}, parameters);
@@ -1285,11 +1304,6 @@ public final class ClientTest {
   public void testPromptInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     testInvalidInput(PROMPT, new String[] {}, parameters);
-  }
-
-  @Test
-  public void testPromptValidParas() throws Exception {
-    testProcessCommandWithValidInput(PROMPT, new String[] {}, "");
   }
 
   @Test
@@ -1746,6 +1760,14 @@ public final class ClientTest {
   }
 
   @Test
+  public void testValidFilterSpecValue() throws IOException {
+    JsonNode filterNode = _mapper.readTree("\"@in(eth0)\"");
+    Variable variable = new Variable();
+    variable.setType(FILTER_SPEC);
+    Client.validateType(filterNode, variable);
+  }
+
+  @Test
   public void testValidFloatValue() {
     Float floatValue = 15.0f;
     JsonNode floatNode = _mapper.valueToTree(floatValue);
@@ -1878,6 +1900,14 @@ public final class ClientTest {
     Variable variable = new Variable();
     variable.setType(JSON_PATH);
     Client.validateType(jsonPathNode, variable);
+  }
+
+  @Test
+  public void testValidLocationSpecValue() throws IOException {
+    JsonNode location = _mapper.readTree("\"as1border1\"");
+    Variable variable = new Variable();
+    variable.setType(LOCATION_SPEC);
+    Client.validateType(location, variable);
   }
 
   @Test

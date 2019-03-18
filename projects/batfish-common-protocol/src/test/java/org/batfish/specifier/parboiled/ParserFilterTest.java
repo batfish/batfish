@@ -21,7 +21,7 @@ public class ParserFilterTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static AbstractParseRunner<AstNode> getRunner() {
-    return new ReportingParseRunner<>(Parser.INSTANCE.input(Parser.INSTANCE.FilterExpression()));
+    return new ReportingParseRunner<>(Parser.INSTANCE.input(Parser.INSTANCE.FilterSpec()));
   }
 
   /** This testParses if we have proper completion annotations on the rules */
@@ -44,7 +44,7 @@ public class ParserFilterTest {
     ParboiledAutoComplete pac =
         new ParboiledAutoComplete(
             Parser.INSTANCE,
-            Parser.INSTANCE.input(Parser.INSTANCE.FilterExpression()),
+            Parser.INSTANCE.input(Parser.INSTANCE.FilterSpec()),
             Parser.ANCHORS,
             "network",
             "snapshot",
@@ -62,12 +62,10 @@ public class ParserFilterTest {
                     "filter1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
                 new AutocompleteSuggestion("(", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("/", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("@in", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
-                    "inFilterOf", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("@out", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(
-                    "outFilterOf", true, null, RANK_STRING_LITERAL, query.length()))));
+                    "@out", true, null, RANK_STRING_LITERAL, query.length()))));
   }
 
   @Test
@@ -80,7 +78,7 @@ public class ParserFilterTest {
     ParboiledAutoComplete pac =
         new ParboiledAutoComplete(
             Parser.INSTANCE,
-            Parser.INSTANCE.input(Parser.INSTANCE.FilterExpression()),
+            Parser.INSTANCE.input(Parser.INSTANCE.FilterSpec()),
             Parser.ANCHORS,
             "network",
             "snapshot",
@@ -95,9 +93,9 @@ public class ParserFilterTest {
         equalTo(
             ImmutableSet.of(
                 new AutocompleteSuggestion(
-                    "", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
+                    "filter1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
                 new AutocompleteSuggestion(
-                    "1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
+                    "filter11", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
                 new AutocompleteSuggestion("\\", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("&", true, null, RANK_STRING_LITERAL, query.length()))));
@@ -147,6 +145,15 @@ public class ParserFilterTest {
     assertThat(ParserUtils.getAst(getRunner().run(regexWithSlashes)), equalTo(expectedAst));
     assertThat(
         ParserUtils.getAst(getRunner().run(" " + regexWithSlashes + " ")), equalTo(expectedAst));
+  }
+
+  @Test
+  public void testParseFilterNameRegexDeprecated() {
+    String regex = "filter.*";
+    NameRegexFilterAstNode expectedAst = new NameRegexFilterAstNode(regex);
+
+    assertThat(ParserUtils.getAst(getRunner().run(regex)), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run(" " + regex + " ")), equalTo(expectedAst));
   }
 
   @Test

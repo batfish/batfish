@@ -3,6 +3,7 @@
     "interfaceSpecifierInput": "${interfaces}",
     "nodeSpecifierInput": "${nodes}",
     "queryType": "interface",
+    "specifierFactoryVersion": "${grammarVersion}", 
     "instance": {
         "description": "Show the resolved values for interface specifier",
         "instanceName": "resolveInterfaceSpecifier",
@@ -10,10 +11,16 @@
             "specifiers"
         ],
         "variables": {
+            "grammarVersion": {
+                "description": "Version of grammar to use for resolution",
+                "optional": true,
+                "type": "string",
+                "displayName": "Grammar version"               
+            },
             "interfaces": {
                 "description": "Input to the interfaceSpecifier",
                 "optional": true,
-                "type": "string",
+                "type": "interfacesSpec",
                 "displayName": "Interfaces"
             },
             "nodes": {

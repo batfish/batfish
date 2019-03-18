@@ -204,6 +204,8 @@ public class Interface implements Serializable {
 
   private boolean _ospfPointToPoint;
 
+  @Nullable private String _ospfProcess;
+
   private boolean _ospfShutdown;
 
   private String _outgoingFilter;
@@ -468,6 +470,10 @@ public class Interface implements Serializable {
     return _ospfPassive;
   }
 
+  public String getOspfProcess() {
+    return _ospfProcess;
+  }
+
   public boolean getOspfPointToPoint() {
     return _ospfPointToPoint;
   }
@@ -644,6 +650,10 @@ public class Interface implements Serializable {
 
   public void setOspfPassive(@Nullable Boolean ospfPassive) {
     _ospfPassive = ospfPassive;
+  }
+
+  public void setOspfProcess(@Nullable String processName) {
+    _ospfProcess = processName;
   }
 
   public void setOspfPointToPoint(boolean ospfPointToPoint) {

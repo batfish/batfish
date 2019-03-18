@@ -96,6 +96,11 @@
 
   <dependencies>
     <dependency>
+      <groupId>org.batfish</groupId>
+      <artifactId>bdd</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
     </dependency>
@@ -161,11 +166,6 @@
     </dependency>
 
     <dependency>
-      <groupId>com.kjetland</groupId>
-      <artifactId>mbknor-jackson-jsonschema_2.12</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>com.thoughtworks.xstream</groupId>
       <artifactId>xstream</artifactId>
     </dependency>
@@ -209,11 +209,6 @@
     <dependency>
       <groupId>io.opentracing.contrib</groupId>
       <artifactId>opentracing-jaxrs2</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>net.sf.javabdd</groupId>
-      <artifactId>javabdd</artifactId>
     </dependency>
 
     <dependency>
@@ -319,7 +314,7 @@
 
     <dependency>
       <groupId>org.hamcrest</groupId>
-      <artifactId>java-hamcrest</artifactId>
+      <artifactId>hamcrest</artifactId>
       <scope>test</scope>
     </dependency>
 

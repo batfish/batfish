@@ -37,18 +37,18 @@
                 "type": "headerConstraint",
                 "displayName": "Headers",
                 "fields": {
-                    "applications": { "optional": true },
+                    "applications": { "optional": true, "type": "protocol" },
                     "dscps": { "optional": true },
-                    "dstIps": { "optional": true },
+                    "dstIps": { "optional": true, "type": "ipSpaceSpec" },
                     "dstPorts": { "optional": true },
                     "ecns": { "optional": true },
                     "flowStates": { "optional": true },
                     "fragmentOffsets": { "optional": true },
                     "icmpCodes": { "optional": true },
                     "icmpTypes": { "optional": true },
-                    "ipProtocols": { "optional": true },
+                    "ipProtocols": { "optional": true, "type": "ipProtocolSpec" },
                     "packetLengths": { "optional": true },
-                    "srcIps": { "optional": true },
+                    "srcIps": { "optional": true, "type": "ipSpaceSpec" },
                     "srcPorts": { "optional": true },
                     "tcpFlags": { "optional": true }
                 }
@@ -77,10 +77,10 @@
                 "type": "pathConstraint",
                 "displayName": "Path Constraints",
                 "fields": {
-                    "startLocation": { "optional": true },
-                    "endLocation": { "optional": true },
-                    "transitLocations": { "optional": true },
-                    "forbiddenLocations": { "optional": true }
+                    "startLocation": { "optional": true, "type": "locationSpec" },
+                    "endLocation": { "optional": true, "type": "nodeSpec" },
+                    "transitLocations": { "optional": true, "type": "nodeSpec" },
+                    "forbiddenLocations": { "optional": true, "type": "nodeSpec" }
                 }
             }
         }

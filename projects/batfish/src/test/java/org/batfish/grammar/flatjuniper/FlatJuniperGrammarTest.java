@@ -330,12 +330,13 @@ public final class FlatJuniperGrammarTest {
   }
 
   private static Flow createFlow(IpProtocol protocol, int port) {
-    Flow.Builder fb = new Flow.Builder();
-    fb.setIngressNode("node");
-    fb.setIpProtocol(protocol);
-    fb.setDstPort(port);
-    fb.setSrcPort(port);
-    fb.setTag("test");
+    Flow.Builder fb =
+        new Flow.Builder()
+            .setIngressNode("node")
+            .setIpProtocol(protocol)
+            .setDstPort(port)
+            .setSrcPort(port)
+            .setTag("test");
     return fb.build();
   }
 
@@ -2134,7 +2135,7 @@ public final class FlatJuniperGrammarTest {
     Configuration c = parseConfig("interface-arp");
 
     /* The additional ARP IP set for irb.0 should appear in the data model */
-    assertThat(c, hasInterface("irb.0", hasAdditionalArpIps(hasItem(Ip.parse("1.0.0.2")))));
+    assertThat(c, hasInterface("irb.0", hasAdditionalArpIps(containsIp(Ip.parse("1.0.0.2")))));
   }
 
   @Test
@@ -2283,7 +2284,14 @@ public final class FlatJuniperGrammarTest {
     Configuration c = parseConfig(hostname);
 
     Flow tcpFlow = createFlow(IpProtocol.TCP, 0);
-    Flow icmpFlow = createFlow(IpProtocol.ICMP, 0);
+    Flow icmpFlow =
+        Flow.builder()
+            .setIngressNode("node")
+            .setIpProtocol(IpProtocol.ICMP)
+            .setIcmpType(0)
+            .setIcmpCode(0)
+            .setTag("tag")
+            .build();
 
     // Tcp flow should be accepted by the filter and others should be rejected
     assertThat(c, hasIpAccessList("FILTER", accepts(tcpFlow, null, c)));
@@ -3839,7 +3847,7 @@ public final class FlatJuniperGrammarTest {
     FlatJuniperCombinedParser cp = new FlatJuniperCombinedParser(recoveryText, settings);
     Flat_juniper_configurationContext ctx = cp.parse();
     FlatJuniperRecoveryExtractor extractor = new FlatJuniperRecoveryExtractor();
-    ParseTreeWalker walker = new BatfishParseTreeWalker();
+    ParseTreeWalker walker = new BatfishParseTreeWalker(cp);
     walker.walk(extractor, ctx);
 
     assertThat(extractor.getNumSets(), equalTo(9));
@@ -4357,7 +4365,7 @@ public final class FlatJuniperGrammarTest {
         ifaceScreenAcl,
         equalTo(
             IpAccessList.builder()
-                .setName("~SCREEN~ge-0/0/0.0")
+                .setName("~SCREEN_INTERFACE~ge-0/0/0.0")
                 .setLines(
                     ImmutableList.of(
                         IpAccessListLine.accepting(
@@ -4668,5 +4676,15 @@ public final class FlatJuniperGrammarTest {
     // pool5 should not have pat specified
     assertNotNull(pool5);
     assertNull(pool5.getPortAddressTranslation());
+  }
+
+  @Test
+  public void testVrfSpecificPoolPortAddressTranslation() {
+    JuniperConfiguration juniperConfiguration = parseJuniperConfig("juniper-nat-vrf");
+    Nat sourceNat = juniperConfiguration.getMasterLogicalSystem().getNatSource();
+    NatPool pool0 = sourceNat.getPools().get("POOL0");
+    NatPool pool1 = sourceNat.getPools().get("POOL1");
+    assertThat(pool0.getOwner(), equalTo("R1"));
+    assertNull(pool1.getOwner());
   }
 }

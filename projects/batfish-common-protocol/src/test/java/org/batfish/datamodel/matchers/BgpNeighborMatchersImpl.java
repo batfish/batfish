@@ -5,6 +5,7 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
+import org.batfish.datamodel.Ip;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
@@ -42,6 +43,28 @@ final class BgpNeighborMatchersImpl {
     }
   }
 
+  static final class HasDescription extends FeatureMatcher<BgpPeerConfig, String> {
+    HasDescription(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "A BgpPeerConfig with description:", "description");
+    }
+
+    @Override
+    protected String featureValueOf(BgpPeerConfig actual) {
+      return actual.getDescription();
+    }
+  }
+
+  static final class HasExportPolicy extends FeatureMatcher<BgpPeerConfig, String> {
+    HasExportPolicy(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "A BgpPeerConfig with exportPolicy:", "exportPolicy");
+    }
+
+    @Override
+    protected String featureValueOf(BgpPeerConfig actual) {
+      return actual.getExportPolicy();
+    }
+  }
+
   static final class HasLocalAs extends FeatureMatcher<BgpPeerConfig, Long> {
     HasLocalAs(@Nonnull Matcher<? super Long> subMatcher) {
       super(subMatcher, "A BgpPeerConfig with localAs:", "localAs");
@@ -50,6 +73,17 @@ final class BgpNeighborMatchersImpl {
     @Override
     protected Long featureValueOf(BgpPeerConfig actual) {
       return actual.getLocalAs();
+    }
+  }
+
+  static final class HasLocalIp extends FeatureMatcher<BgpPeerConfig, Ip> {
+    HasLocalIp(@Nonnull Matcher<? super Ip> subMatcher) {
+      super(subMatcher, "A BgpPeerConfig with localIp:", "localIp");
+    }
+
+    @Override
+    protected Ip featureValueOf(BgpPeerConfig actual) {
+      return actual.getLocalIp();
     }
   }
 

@@ -1,22 +1,21 @@
 package org.batfish.question.edges;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.EdgeType;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.specifier.AllNodesNodeSpecifier;
+import org.batfish.specifier.NodeSpecifier;
+import org.batfish.specifier.SpecifierFactories;
 
-// <question_page_comment>
-/*
- * Lists neighbor relationships in the network as edges.
- *
- * @param edgeType The type(s) of edges to focus. Default is Layer 3.
- * @param nodes Regular expression to match the nodes names for one end of pair. Default is '.*'
- *     (all nodes).
- * @param remoteNodes Regular expression to match the nodes names for the other end of the pair.
- *     Default is '.*' (all nodes).
- */
+/** Lists neighbor relationships in the network as edges. */
+@ParametersAreNonnullByDefault
 public class EdgesQuestion extends Question {
 
   private static final String PROP_EDGE_TYPE = "edgeType";
@@ -27,18 +26,22 @@ public class EdgesQuestion extends Question {
 
   @Nonnull private final EdgeType _edgeType;
 
-  @Nonnull private final NodesSpecifier _nodes;
+  @Nullable private final String _nodes;
 
-  @Nonnull private final NodesSpecifier _remoteNodes;
+  @Nullable private final String _remoteNodes;
 
   @JsonCreator
-  public EdgesQuestion(
-      @JsonProperty(PROP_NODES) NodesSpecifier nodes,
-      @JsonProperty(PROP_REMOTE_NODES) NodesSpecifier remoteNodes,
-      @JsonProperty(PROP_EDGE_TYPE) EdgeType edgeType) {
-    _nodes = nodes == null ? NodesSpecifier.ALL : nodes;
-    _remoteNodes = remoteNodes == null ? NodesSpecifier.ALL : remoteNodes;
-    _edgeType = edgeType == null ? EdgeType.LAYER3 : edgeType;
+  private static EdgesQuestion create(
+      @Nullable @JsonProperty(PROP_NODES) String nodes,
+      @Nullable @JsonProperty(PROP_REMOTE_NODES) String remoteNodes,
+      @Nullable @JsonProperty(PROP_EDGE_TYPE) EdgeType edgeType) {
+    return new EdgesQuestion(nodes, remoteNodes, firstNonNull(edgeType, EdgeType.LAYER3));
+  }
+
+  public EdgesQuestion(@Nullable String nodes, @Nullable String remoteNodes, EdgeType edgeType) {
+    _nodes = nodes;
+    _remoteNodes = remoteNodes;
+    _edgeType = edgeType;
   }
 
   @Override
@@ -51,18 +54,34 @@ public class EdgesQuestion extends Question {
     return "edges";
   }
 
+  @Nonnull
   @JsonProperty(PROP_EDGE_TYPE)
   public EdgeType getEdgeType() {
     return _edgeType;
   }
 
+  @Nullable
   @JsonProperty(PROP_NODES)
-  public NodesSpecifier getNodes() {
+  public String getNodes() {
     return _nodes;
   }
 
+  @Nonnull
+  @JsonIgnore
+  public NodeSpecifier getNodeSpecifier() {
+    return SpecifierFactories.getNodeSpecifierOrDefault(_nodes, AllNodesNodeSpecifier.INSTANCE);
+  }
+
+  @Nullable
   @JsonProperty(PROP_REMOTE_NODES)
-  public NodesSpecifier getRemoteNodes() {
+  public String getRemoteNodes() {
     return _remoteNodes;
+  }
+
+  @Nonnull
+  @JsonIgnore
+  public NodeSpecifier getRemoteNodeSpecifier() {
+    return SpecifierFactories.getNodeSpecifierOrDefault(
+        _remoteNodes, AllNodesNodeSpecifier.INSTANCE);
   }
 }

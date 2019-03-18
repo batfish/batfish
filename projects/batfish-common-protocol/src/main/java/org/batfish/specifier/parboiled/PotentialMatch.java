@@ -15,10 +15,15 @@ class PotentialMatch {
   /** What matched thus far when trying to match the current rule */
   private final String _matchPrefix;
 
-  PotentialMatch(Anchor.Type anchorType, String matchPrefix, String matchCompletion) {
+  /** Where in the input this match started */
+  private final int _matchStartIndex;
+
+  PotentialMatch(
+      Anchor.Type anchorType, String matchPrefix, String matchCompletion, int matchStartIndex) {
     _anchorType = anchorType;
     _matchPrefix = matchPrefix;
     _matchCompletion = matchCompletion;
+    _matchStartIndex = matchStartIndex;
   }
 
   @Override
@@ -28,7 +33,8 @@ class PotentialMatch {
     }
     return Objects.equals(_anchorType, ((PotentialMatch) o)._anchorType)
         && Objects.equals(_matchCompletion, ((PotentialMatch) o)._matchCompletion)
-        && Objects.equals(_matchPrefix, ((PotentialMatch) o)._matchPrefix);
+        && Objects.equals(_matchPrefix, ((PotentialMatch) o)._matchPrefix)
+        && Objects.equals(_matchStartIndex, ((PotentialMatch) o)._matchStartIndex);
   }
 
   Anchor.Type getAnchorType() {
@@ -43,9 +49,13 @@ class PotentialMatch {
     return _matchPrefix;
   }
 
+  int getMatchStartIndex() {
+    return _matchStartIndex;
+  }
+
   @Override
   public int hashCode() {
-    return Objects.hash(_anchorType, _matchCompletion, _matchPrefix);
+    return Objects.hash(_anchorType, _matchCompletion, _matchPrefix, _matchStartIndex);
   }
 
   @Override
@@ -54,6 +64,7 @@ class PotentialMatch {
         .add("anchorType", _anchorType)
         .add("matchingPrefix", _matchPrefix)
         .add("matchingCompletion", _matchCompletion)
+        .add("matchStartIndex", _matchStartIndex)
         .toString();
   }
 }

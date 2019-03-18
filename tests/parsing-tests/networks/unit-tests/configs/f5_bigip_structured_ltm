@@ -65,9 +65,11 @@ ltm snat /Common/SOME_SNAT {
         0.0.0.0/0 { }
     }
     snatpool /Common/SOME_SNATPOOL
+    vlans { }
     vlans {
         /Common/SOME_VLAN
     }
+    vlans-disabled
     vlans-enabled
 }
 ltm snat-translation /Common/192.0.2.4 {
@@ -82,6 +84,7 @@ ltm snatpool /Common/SOME_SNATPOOL {
 }
 ltm virtual /Common/SOME_VIRTUAL {
     destination /Common/192.0.2.7:80
+    ip-forward
     ip-protocol tcp
     mask 255.255.255.255
     persist {
@@ -95,6 +98,7 @@ ltm virtual /Common/SOME_VIRTUAL {
         /Common/P2 { }
         /Common/P3 { }
     }
+    reject
     rules {
         /Common/SOME_RULE1
     }
@@ -105,6 +109,12 @@ ltm virtual /Common/SOME_VIRTUAL {
     }
     translate-address enabled
     translate-port enabled
+    vlans { }
+    vlans {
+        /Common/MY_VLAN
+    }
+    vlans-disabled
+    vlans-enabled
 }
 ltm virtual-address /Common/192.0.2.8 {
     address 192.0.2.9

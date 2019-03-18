@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -32,7 +34,6 @@ import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfProcess;
-import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.transformation.Transformation;
 
 public final class Interface extends ComparableStructure<String> {
@@ -93,7 +94,7 @@ public final class Interface extends ComparableStructure<String> {
 
     private Set<InterfaceAddress> _secondaryAddresses;
 
-    private SortedSet<Ip> _additionalArpIps;
+    private @Nonnull IpSpace _additionalArpIps;
 
     private InterfaceType _type;
 
@@ -104,7 +105,7 @@ public final class Interface extends ComparableStructure<String> {
     Builder(NetworkFactory networkFactory) {
       super(networkFactory, Interface.class);
       _active = true;
-      _additionalArpIps = ImmutableSortedSet.of();
+      _additionalArpIps = EmptyIpSpace.INSTANCE;
       _declaredNames = ImmutableSortedSet.of();
       _hsrpGroups = ImmutableMap.of();
       _secondaryAddresses = ImmutableSet.of();
@@ -173,8 +174,8 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
-    public Builder setAdditionalArpIps(Iterable<Ip> additionalArpIps) {
-      _additionalArpIps = ImmutableSortedSet.copyOf(additionalArpIps);
+    public Builder setAdditionalArpIps(IpSpace additionalArpIps) {
+      _additionalArpIps = additionalArpIps;
       return this;
     }
 
@@ -742,7 +743,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private boolean _active;
 
-  private SortedSet<Ip> _additionalArpIps;
+  private @Nonnull IpSpace _additionalArpIps;
 
   private IntegerSpace _allowedVlans;
 
@@ -835,9 +836,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private boolean _ripPassive;
 
-  private RoutingPolicy _routingPolicy;
-
-  private transient String _routingPolicyName;
+  private String _routingPolicyName;
 
   private boolean _spanningTreePortfast;
 
@@ -884,6 +883,7 @@ public final class Interface extends ComparableStructure<String> {
   public Interface(String name, Configuration owner, @Nonnull InterfaceType interfaceType) {
     super(name);
     _active = true;
+    _additionalArpIps = EmptyIpSpace.INSTANCE;
     _autoState = true;
     _allowedVlans = IntegerSpace.EMPTY;
     _allAddresses = ImmutableSortedSet.of();
@@ -976,7 +976,7 @@ public final class Interface extends ComparableStructure<String> {
     if (!_proxyArp == other._proxyArp) {
       return false;
     }
-    if (!Objects.equals(this._routingPolicy, other._routingPolicy)) {
+    if (!Objects.equals(_routingPolicyName, other._routingPolicyName)) {
       return false;
     }
     if (!Objects.equals(_speed, other._speed)) {
@@ -1014,7 +1014,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_ADDITIONAL_ARP_IPS)
-  public SortedSet<Ip> getAdditionalArpIps() {
+  public IpSpace getAdditionalArpIps() {
     return _additionalArpIps;
   }
 
@@ -1348,21 +1348,13 @@ public final class Interface extends ComparableStructure<String> {
     return _ripPassive;
   }
 
-  @JsonIgnore
-  public RoutingPolicy getRoutingPolicy() {
-    return _routingPolicy;
-  }
-
+  /**
+   * The name of the policy used on this interface for policy routing (as opposed to
+   * destination-based routing).
+   */
   @JsonProperty(PROP_ROUTING_POLICY)
-  @JsonPropertyDescription(
-      "The routing policy used on this interface for policy-routing (as opposed to destination-"
-          + "routing). Stored as @id")
   public String getRoutingPolicyName() {
-    if (_routingPolicy != null) {
-      return _routingPolicy.getName();
-    } else {
-      return _routingPolicyName;
-    }
+    return _routingPolicyName;
   }
 
   @JsonProperty(PROP_SPANNING_TREE_PORTFAST)
@@ -1450,8 +1442,8 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_ADDITIONAL_ARP_IPS)
-  public void setAdditionalArpIps(Iterable<Ip> additionalArpIps) {
-    _additionalArpIps = ImmutableSortedSet.copyOf(additionalArpIps);
+  public void setAdditionalArpIps(IpSpace additionalArpIps) {
+    _additionalArpIps = firstNonNull(additionalArpIps, EmptyIpSpace.INSTANCE);
   }
 
   @JsonProperty(PROP_ALLOWED_VLANS)
@@ -1717,11 +1709,6 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_RIP_PASSIVE)
   public void setRipPassive(boolean ripPassive) {
     _ripPassive = ripPassive;
-  }
-
-  @JsonIgnore
-  public void setRoutingPolicy(RoutingPolicy routingPolicy) {
-    _routingPolicy = routingPolicy;
   }
 
   @JsonProperty(PROP_ROUTING_POLICY)

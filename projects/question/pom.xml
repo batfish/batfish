@@ -65,6 +65,11 @@
     </dependency>
 
     <dependency>
+      <groupId>org.batfish</groupId>
+      <artifactId>bdd</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
     </dependency>
@@ -98,11 +103,6 @@
     <dependency>
       <groupId>com.jayway.jsonpath</groupId>
       <artifactId>json-path</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>net.sf.javabdd</groupId>
-      <artifactId>javabdd</artifactId>
     </dependency>
 
     <dependency>
@@ -140,7 +140,7 @@
 
     <dependency>
       <groupId>org.hamcrest</groupId>
-      <artifactId>java-hamcrest</artifactId>
+      <artifactId>hamcrest</artifactId>
       <scope>test</scope>
     </dependency>
 

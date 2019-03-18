@@ -2,22 +2,16 @@ package org.batfish.dataplane.rib;
 
 import static org.batfish.dataplane.rib.RouteAdvertisement.Reason.REPLACE;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
-import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRouteDecorator;
-import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixTrieMultiMap;
 import org.batfish.dataplane.rib.RibDelta.Builder;
@@ -177,40 +171,5 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
   @Override
   public boolean equals(@Nullable Object obj) {
     return (obj == this) || (obj instanceof RibTree && this._root.equals(((RibTree<?>) obj)._root));
-  }
-
-  /** See {@link GenericRib#getMatchingIps()} */
-  Map<Prefix, IpSpace> getMatchingIps() {
-    ImmutableMap.Builder<Prefix, IpSpace> builder = ImmutableMap.builder();
-
-    /* We traverse the tree in post-order, so when we visit each intermediate node the blacklist
-     * will contain all prefixes from each of its children. However, when we are visiting the right
-     * subtree of a node, the blacklist will already contain all the prefixes of the left subtree.
-     * This is wasteful, as the blacklist can include potentially many redundant prefixes. Consider
-     * rewriting to avoid this (e.g. use a fold).
-     */
-    ImmutableSortedSet.Builder<IpWildcard> blacklist = ImmutableSortedSet.naturalOrder();
-    _root.traverseEntries(
-        (prefix, elems) -> {
-          if (hasForwardingRoute(elems)) {
-            IpWildcard wc = new IpWildcard(prefix);
-            builder.put(
-                prefix, new IpWildcardSetIpSpace(blacklist.build(), ImmutableSortedSet.of(wc)));
-            blacklist.add(wc);
-          }
-        });
-    return builder.build();
-  }
-
-  /** See {@link GenericRib#getRoutableIps()} */
-  IpSpace getRoutableIps() {
-    IpWildcardSetIpSpace.Builder builder = IpWildcardSetIpSpace.builder();
-    _root.traverseEntries(
-        (prefix, elems) -> {
-          if (hasForwardingRoute(elems)) {
-            builder.including(new IpWildcard(prefix));
-          }
-        });
-    return builder.build();
   }
 }

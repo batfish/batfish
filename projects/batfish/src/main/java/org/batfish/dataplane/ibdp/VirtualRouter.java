@@ -116,6 +116,7 @@ import org.batfish.dataplane.rib.BgpRib;
 import org.batfish.dataplane.rib.ConnectedRib;
 import org.batfish.dataplane.rib.IsisLevelRib;
 import org.batfish.dataplane.rib.IsisRib;
+import org.batfish.dataplane.rib.KernelRib;
 import org.batfish.dataplane.rib.LocalRib;
 import org.batfish.dataplane.rib.OspfExternalType1Rib;
 import org.batfish.dataplane.rib.OspfExternalType2Rib;
@@ -189,36 +190,27 @@ public class VirtualRouter implements Serializable {
   transient SortedMap<IsisEdge, Queue<RouteAdvertisement<IsisRoute>>> _isisIncomingRoutes;
 
   transient IsisLevelRib _isisL1Rib;
-
   transient IsisLevelRib _isisL2Rib;
-
   private transient IsisLevelRib _isisL1StagingRib;
-
   private transient IsisLevelRib _isisL2StagingRib;
-
   private transient IsisRib _isisRib;
-
+  transient KernelRib _kernelRib;
   transient LocalRib _localRib;
 
   /** The finalized RIB, a combination different protocol RIBs */
-  Rib _mainRib;
+  final Rib _mainRib;
 
-  private Map<String, Rib> _mainRibs;
+  private final Map<String, Rib> _mainRibs;
 
   /** Keeps track of changes to the main RIB */
   @VisibleForTesting
   transient RibDelta.Builder<AnnotatedRoute<AbstractRoute>> _mainRibRouteDeltaBuilder;
 
-  @Nonnull private final Node _node;
-
   @Nonnull final String _name;
-
+  @Nonnull private final Node _node;
   transient OspfExternalType1Rib _ospfExternalType1Rib;
-
   transient OspfExternalType1Rib _ospfExternalType1StagingRib;
-
   transient OspfExternalType2Rib _ospfExternalType2Rib;
-
   transient OspfExternalType2Rib _ospfExternalType2StagingRib;
 
   @VisibleForTesting
@@ -226,23 +218,14 @@ public class VirtualRouter implements Serializable {
       _ospfExternalIncomingRoutes;
 
   transient OspfInterAreaRib _ospfInterAreaRib;
-
   transient OspfInterAreaRib _ospfInterAreaStagingRib;
-
   transient OspfIntraAreaRib _ospfIntraAreaRib;
-
   transient OspfIntraAreaRib _ospfIntraAreaStagingRib;
-
   transient OspfRib _ospfRib;
-
   transient RipInternalRib _ripInternalRib;
-
   transient RipInternalRib _ripInternalStagingRib;
-
   transient RipRib _ripRib;
-
   transient StaticRib _staticInterfaceRib;
-
   transient StaticRib _staticNextHopRib;
 
   /** FIB (forwarding information base) built from the main RIB */
@@ -267,6 +250,11 @@ public class VirtualRouter implements Serializable {
     _c = node.getConfiguration();
     _name = name;
     _vrf = _c.getVrfs().get(name);
+    // Main RIB + delta builder
+    _mainRib = new Rib();
+    _mainRibs = ImmutableMap.of(RibId.DEFAULT_RIB_NAME, _mainRib);
+    _mainRibRouteDeltaBuilder = RibDelta.builder();
+    // Init rest of the RIBs
     initRibs();
     _bgpIncomingRoutes = new TreeMap<>();
     _prefixTracer = new PrefixTracer();
@@ -318,10 +306,12 @@ public class VirtualRouter implements Serializable {
   @VisibleForTesting
   void initForIgpComputation() {
     initConnectedRib();
+    initKernelRib();
     initLocalRib();
     initStaticRibs();
     // Always import local and connected routes into your own rib
     importRib(_independentRib, _connectedRib);
+    importRib(_independentRib, _kernelRib);
     importRib(_independentRib, _localRib);
     importRib(_independentRib, _staticInterfaceRib, _name);
     importRib(_mainRib, _independentRib);
@@ -524,7 +514,7 @@ public class VirtualRouter implements Serializable {
     for (GeneratedRoute gr : _vrf.getGeneratedRoutes()) {
       String policyName = gr.getGenerationPolicy();
       RoutingPolicy generationPolicy =
-          policyName != null ? _c.getRoutingPolicies().get(gr.getGenerationPolicy()) : null;
+          policyName != null ? _c.getRoutingPolicies().get(policyName) : null;
       GeneratedRoute.Builder grb =
           GeneratedRouteHelper.activateGeneratedRoute(
               gr, generationPolicy, _mainRib.getTypedRoutes(), _vrf.getName());
@@ -1026,6 +1016,15 @@ public class VirtualRouter implements Serializable {
   }
 
   /**
+   * Initialize the kernel RIB -- a RIB containing non-forwarding routes installed unconditionally
+   * for the purpose of redistribution
+   */
+  @VisibleForTesting
+  void initKernelRib() {
+    _vrf.getKernelRoutes().stream().map(this::annotateRoute).forEach(_kernelRib::mergeRoute);
+  }
+
+  /**
    * Initialize the local RIB -- a RIB containing non-forwarding /32 routes for exact addresses of
    * interfaces
    */
@@ -1210,6 +1209,9 @@ public class VirtualRouter implements Serializable {
       return; // nothing to export
     }
 
+    // Export process-level generated routes.
+    initOspfGeneratedRouteExports(proc, exportPolicy, allNodes);
+
     // For each route in the previous RIB, compute an export route and add it to the appropriate
     // RIB.
     RibDelta.Builder<OspfExternalType1Route> d1 = RibDelta.builder();
@@ -1228,19 +1230,94 @@ public class VirtualRouter implements Serializable {
     queueOutgoingOspfExternalRoutes(allNodes, d1.build(), d2.build());
   }
 
+  /**
+   * Queues the given {@link OspfProcess}'s generated routes on the neighbors that should receive
+   * them.
+   */
+  private void initOspfGeneratedRouteExports(
+      @Nonnull OspfProcess proc,
+      @Nonnull RoutingPolicy exportPolicy,
+      @Nonnull Map<String, Node> allNodes) {
+    RibDelta.Builder<OspfExternalType1Route> type1RoutesForEveryone = RibDelta.builder();
+    RibDelta.Builder<OspfExternalType2Route> type2RoutesForEveryone = RibDelta.builder();
+    RibDelta.Builder<OspfExternalType1Route> type1RoutesForNormalAreas = RibDelta.builder();
+    RibDelta.Builder<OspfExternalType2Route> type2RoutesForNormalAreas = RibDelta.builder();
+
+    // Run each generated route through its own generation policy if present, then run the resulting
+    // activated routes through the standard OSPF export policy.
+    proc.getGeneratedRoutes().stream()
+        .map(
+            r -> {
+              String generationPolicyName = r.getGenerationPolicy();
+              if (generationPolicyName == null) {
+                // This route should be generated unconditionally
+                return r;
+              }
+              RoutingPolicy generationPolicy = _c.getRoutingPolicies().get(generationPolicyName);
+              if (generationPolicy == null) {
+                // Ignore route; its generation is supposed to depend on some undefined policy
+                return null;
+              }
+              GeneratedRoute.Builder activatedRoute =
+                  GeneratedRouteHelper.activateGeneratedRoute(
+                      r, generationPolicy, _mainRib.getTypedRoutes(), _name);
+              return activatedRoute == null ? null : activatedRoute.build();
+            })
+        .filter(Objects::nonNull)
+        .map(r -> computeOspfExportRoute(annotateRoute(r), exportPolicy, proc))
+        .filter(Objects::nonNull)
+        .forEach(
+            r -> {
+              // Don't propagate default generated routes to stubby or NSSA areas
+              if (r.getOspfMetricType() == OspfMetricType.E1) {
+                if (r.getNetwork().equals(Prefix.ZERO)) {
+                  type1RoutesForNormalAreas.from(
+                      _ospfExternalType1Rib.mergeRouteGetDelta((OspfExternalType1Route) r));
+                } else {
+                  type1RoutesForEveryone.from(
+                      _ospfExternalType1Rib.mergeRouteGetDelta((OspfExternalType1Route) r));
+                }
+              } else { // assuming here that MetricType exists or E2 is the default
+                if (r.getNetwork().equals(Prefix.ZERO)) {
+                  type2RoutesForNormalAreas.from(
+                      _ospfExternalType2Rib.mergeRouteGetDelta((OspfExternalType2Route) r));
+                } else {
+                  type2RoutesForEveryone.from(
+                      _ospfExternalType2Rib.mergeRouteGetDelta((OspfExternalType2Route) r));
+                }
+              }
+            });
+
+    for (EdgeId ospfEdge : _ospfExternalIncomingRoutes.keySet()) {
+      OspfArea localArea =
+          _vrf.getInterfaces().get(ospfEdge.getHead().getInterfaceName()).getOspfArea();
+      assert localArea != null; // otherwise the edge would not be built.
+
+      // Get remote VirtualRouter
+      VirtualRouter remoteVr =
+          allNodes
+              .get(ospfEdge.getTail().getHostname())
+              .getVirtualRouters()
+              .get(ospfEdge.getTail().getVrfName());
+      OspfTopology.EdgeId reversedEdge = ospfEdge.reverse();
+      remoteVr.enqueueOspfExternalRoutes(reversedEdge, type1RoutesForEveryone.build());
+      remoteVr.enqueueOspfExternalRoutes(reversedEdge, type2RoutesForEveryone.build());
+      if (localArea.getStubType() == StubType.NONE) {
+        remoteVr.enqueueOspfExternalRoutes(reversedEdge, type1RoutesForNormalAreas.build());
+        remoteVr.enqueueOspfExternalRoutes(reversedEdge, type2RoutesForNormalAreas.build());
+      }
+    }
+  }
+
   /** Initialize all ribs on this router. All RIBs will be empty */
   @VisibleForTesting
   final void initRibs() {
     // Non-learned-protocol RIBs
     _connectedRib = new ConnectedRib();
+    _kernelRib = new KernelRib();
     _localRib = new LocalRib();
     _generatedRib = new Rib();
     _independentRib = new Rib();
-
-    // Main RIB + delta builder
-    _mainRibs = ImmutableMap.of(RibId.DEFAULT_RIB_NAME, new Rib());
-    _mainRib = _mainRibs.get(RibId.DEFAULT_RIB_NAME);
-    _mainRibRouteDeltaBuilder = RibDelta.builder();
 
     // BGP
     BgpProcess proc = _vrf.getBgpProcess();
@@ -2100,7 +2177,8 @@ public class VirtualRouter implements Serializable {
          */
         for (Prefix p : mainDelta.getPrefixes()) {
           preExportPolicyDeltaBuilder.add(
-              _bgpRib.getTypedRoutes(p).stream()
+              _bgpRib.getTypedRoutes().stream()
+                  .filter(r -> r.getNetwork().equals(p))
                   .map(r -> new AnnotatedRoute<AbstractRoute>(r, _name))
                   .collect(ImmutableSet.toImmutableSet()));
         }
@@ -2261,6 +2339,14 @@ public class VirtualRouter implements Serializable {
 
       // No external routes can propagate out of stub area
       if (localArea.getStubType() == StubType.STUB) {
+        continue;
+      }
+
+      // If we're in an ABR that suppresses type 7 LSAs, do not propagate external routes to NSSAs
+      if (_vrf.getOspfProcess().isAreaBorderRouter()
+          && localArea.getNssa() != null
+          && localArea.getNssa().getSuppressType7()
+          && localArea.getStubType() == StubType.NSSA) {
         continue;
       }
 
@@ -2513,7 +2599,7 @@ public class VirtualRouter implements Serializable {
     }
 
     // Note prefixes we tried to originate
-    _mainRib.getRoutes().forEach(r -> _prefixTracer.originated(r.getNetwork()));
+    _mainRib.getTypedRoutes().forEach(r -> _prefixTracer.originated(r.getNetwork()));
 
     /*
      * Export route advertisements by looking at main RIB

@@ -7,6 +7,7 @@ public enum JuniperStructureType implements StructureType {
   APPLICATION("application"),
   APPLICATION_OR_APPLICATION_SET("application or application-set"),
   APPLICATION_SET("application-set"),
+  AS_PATH("as-path"),
   AS_PATH_GROUP("as-path-group"),
   AS_PATH_GROUP_AS_PATH("as-path-group as-path"),
   AUTHENTICATION_KEY_CHAIN("authentication-key-chain"),

@@ -285,6 +285,7 @@ l_snat
       ls_origins
       | ls_snatpool
       | ls_vlans
+      | ls_vlans_disabled
       | ls_vlans_enabled
     )*
   )? BRACE_RIGHT NEWLINE
@@ -316,12 +317,17 @@ ls_vlans
   VLANS BRACE_LEFT
   (
     NEWLINE lsv_vlan*
-  ) BRACE_RIGHT NEWLINE
+  )? BRACE_RIGHT NEWLINE
 ;
 
 lsv_vlan
 :
   name = word NEWLINE
+;
+
+ls_vlans_disabled
+:
+  VLANS_DISABLED NEWLINE
 ;
 
 ls_vlans_enabled
@@ -384,16 +390,21 @@ l_virtual
     NEWLINE
     (
       lv_destination
+      | lv_ip_forward
       | lv_ip_protocol
       | lv_mask
       | lv_persist
       | lv_pool
       | lv_profiles
+      | lv_reject
       | lv_rules
       | lv_source
       | lv_source_address_translation
       | lv_translate_address
       | lv_translate_port
+      | lv_vlans
+      | lv_vlans_disabled
+      | lv_vlans_enabled
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
@@ -402,6 +413,11 @@ l_virtual
 lv_destination
 :
   DESTINATION name = word NEWLINE
+;
+
+lv_ip_forward
+:
+  IP_FORWARD NEWLINE
 ;
 
 lv_ip_protocol
@@ -492,14 +508,50 @@ lvsat_type
   TYPE source_address_translation_type NEWLINE
 ;
 
+lv_reject
+:
+  REJECT NEWLINE
+;
+
 lv_translate_address
 :
-  TRANSLATE_ADDRESS ENABLED NEWLINE
+  TRANSLATE_ADDRESS
+  (
+    DISABLED
+    | ENABLED
+  ) NEWLINE
 ;
 
 lv_translate_port
 :
-  TRANSLATE_PORT ENABLED NEWLINE
+  TRANSLATE_PORT
+  (
+    DISABLED
+    | ENABLED
+  ) NEWLINE
+;
+
+lv_vlans
+:
+  VLANS BRACE_LEFT
+  (
+    NEWLINE lvv_vlan*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lvv_vlan
+:
+  name = word NEWLINE
+;
+
+lv_vlans_disabled
+:
+  VLANS_DISABLED NEWLINE
+;
+
+lv_vlans_enabled
+:
+  VLANS_ENABLED NEWLINE
 ;
 
 l_virtual_address

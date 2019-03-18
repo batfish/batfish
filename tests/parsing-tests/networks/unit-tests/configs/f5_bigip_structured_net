@@ -28,6 +28,10 @@ net self /Common/MYSELF {
     traffic-group /Common/traffic-group-local-only
     vlan /Common/MYVLAN
 }
+net self /Common/MYSELF6 {
+    address 1::1/64
+    vlan /Common/MYVLAN
+}
 net self-allow {
     defaults {
         igmp:0
@@ -50,6 +54,13 @@ net stp /Common/MYSTP {
 }
 net stp-globals {
     config-name 00-11-22-33-44-55
+}
+net trunk trunk1 {
+    interfaces {
+        2.0
+        3.0
+    }
+    lacp enabled
 }
 net tunnels tunnel /Common/MYTUNNEL {
     description "my tunnel"

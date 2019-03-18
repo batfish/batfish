@@ -24,6 +24,7 @@ java_library(
     deps = [
         "//projects/batfish-common-protocol:common",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/cisco",
+        "//projects/batfish/src/main/antlr4/org/batfish/grammar/f5_bigip_imish",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/f5_bigip_structured",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/flatjuniper",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/flatvyos",
@@ -35,7 +36,7 @@ java_library(
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/routing_table/ios",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/routing_table/nxos",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/vyos",
-        "//projects/lib/bdd",
+        "//projects/bdd",
         "//projects/lib/z3",
         "@antlr4_runtime//:compile",
         "@auto_service//:compile",
@@ -60,6 +61,7 @@ java_library(
         "@opentracing_api//:compile",
         "@opentracing_contrib_jaxrs//:compile",
         "@opentracing_util//:compile",
+        "@parboiled//:compile",
     ],
 )
 
@@ -77,7 +79,7 @@ java_library(
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol:common_testlib",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/flatjuniper",
-        "//projects/lib/bdd",
+        "//projects/bdd",
         "//projects/lib/z3",
         "@antlr4_runtime//:compile",
         "@commons_collections4//:compile",
@@ -103,7 +105,7 @@ junit_tests(
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol:common_testlib",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/flatjuniper",
-        "//projects/lib/bdd",
+        "//projects/bdd",
         "//projects/lib/z3",
         "@antlr4_runtime//:compile",
         "@guava//:compile",

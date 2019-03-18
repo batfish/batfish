@@ -21,7 +21,6 @@ import static org.batfish.question.searchfilters.SearchFiltersAnswerer.toDenyAcl
 import static org.batfish.question.searchfilters.SearchFiltersAnswerer.toMatchLineAcl;
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_ACTION;
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_FILTER_NAME;
-import static org.batfish.specifier.LocationSpecifiers.ALL_LOCATIONS;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -61,6 +60,7 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.question.SearchFiltersParameters;
 import org.batfish.question.testfilters.TestFiltersAnswerer;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
+import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.NameRegexInterfaceLinkLocationSpecifier;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -192,7 +192,7 @@ public final class SearchFiltersTest {
         new SearchFiltersQuestion()
             .toSearchFiltersParameters()
             .toBuilder()
-            .setStartLocationSpecifier(ALL_LOCATIONS)
+            .setStartLocationSpecifier(LocationSpecifier.ALL_LOCATIONS)
             .setGenerateExplanations(false)
             .build();
   }
@@ -228,7 +228,7 @@ public final class SearchFiltersTest {
     assertThat(queryConfig, equalTo(_config.getHostname()));
     assertThat(queryAclName, equalTo(ACL.getName()));
     assertThat(queryAcl.getName(), equalTo(NEGATED_RENAMER.apply(ACL.getName())));
-    assertThat(queryAcl, is(DENY_ACL));
+    assertThat(queryAcl.getLines(), equalTo(DENY_ACL.getLines()));
   }
 
   @Test
@@ -247,7 +247,7 @@ public final class SearchFiltersTest {
     assertThat(queryConfig, equalTo(_config.getHostname()));
     assertThat(queryAclName, equalTo(ACL.getName()));
     assertThat(queryAcl.getName(), equalTo(MATCH_LINE_RENAMER.apply(2, ACL.getName())));
-    assertThat(queryAcl, is(MATCH_LINE2_ACL));
+    assertThat(queryAcl.getLines(), equalTo(MATCH_LINE2_ACL.getLines()));
   }
 
   @Test

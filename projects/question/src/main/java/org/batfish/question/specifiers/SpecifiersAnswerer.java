@@ -8,11 +8,9 @@ import java.util.Objects;
 import java.util.Set;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -105,10 +103,9 @@ public final class SpecifiersAnswerer extends Answerer {
     InterfaceSpecifier interfaceSpecifier = question.getInterfaceSpecifier();
     Set<String> nodes = question.getNodeSpecifier().resolve(context);
 
-    Set<Interface> interfaces = interfaceSpecifier.resolve(nodes, context);
-    for (Interface iface : interfaces) {
-      table.addRow(Row.of(columnMap, COL_INTERFACE, new NodeInterfacePair(iface)));
-    }
+    interfaceSpecifier
+        .resolve(nodes, context)
+        .forEach(iface -> table.addRow(Row.of(columnMap, COL_INTERFACE, iface)));
 
     return table;
   }

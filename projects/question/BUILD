@@ -15,7 +15,7 @@ java_library(
     ],
     deps = [
         "//projects/batfish-common-protocol:common",
-        "//projects/lib/bdd",
+        "//projects/bdd",
         "//projects/lib/jsonpath",
         "@auto_service//:compile",
         "@commons_lang3//:compile",
@@ -65,7 +65,7 @@ junit_tests(
         ":question_testlib",
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol:common_testlib",
-        "//projects/lib/bdd",
+        "//projects/bdd",
         "//projects/lib/jsonpath",
         "@auto_service//:compile",
         "@commons_lang3//:compile",

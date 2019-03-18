@@ -1,25 +1,26 @@
 package org.batfish.dataplane;
 
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.FibEntryMatchers.hasInterface;
 import static org.batfish.dataplane.ibdp.TestUtils.annotateRoute;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
-import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Fib;
+import org.batfish.datamodel.FibEntry;
 import org.batfish.datamodel.FibImpl;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
@@ -64,6 +65,13 @@ public class FibImplTest {
     _ib.setOwner(_config).setVrf(_vrf);
   }
 
+  private static Set<AbstractRoute> getTopLevelRoutesByInterface(Fib fib, String ifaceName) {
+    return fib.allEntries().stream()
+        .filter(e -> e.getInterfaceName().equals(ifaceName))
+        .map(FibEntry::getTopLevelRoute)
+        .collect(ImmutableSet.toImmutableSet());
+  }
+
   @Test
   public void testGetNextHopInterfacesByRoute() throws IOException {
     String iface1 = "iface1";
@@ -87,24 +95,14 @@ public class FibImplTest {
 
     // Should have one LocalRoute per interface (also one ConnectedRoute, but LocalRoute will have
     // longer prefix match). Should see only iface1 in interfaces to ip1.
-    Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopIfacesByRouteToIp1 =
-        fib.getNextHopInterfacesByRoute(ip1);
-    assertThat(nextHopIfacesByRouteToIp1, aMapWithSize(1));
-    Set<String> nextHopIfacesToIp1 =
-        nextHopIfacesByRouteToIp1.values().stream()
-            .flatMap(ifaceMap -> ifaceMap.keySet().stream())
-            .collect(Collectors.toSet());
-    assertThat(nextHopIfacesToIp1, contains(iface1));
+    Set<FibEntry> nextHopsToIp1 = fib.get(ip1);
+    assertThat(nextHopsToIp1, contains(hasInterface(iface1)));
 
     // Should see interfaces iface2 and iface3 in interfaces to ip2.
-    Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopIfacesByRouteToIp2 =
-        fib.getNextHopInterfacesByRoute(ip2);
-    assertThat(nextHopIfacesByRouteToIp2, aMapWithSize(2));
-    Set<String> nextHopIfacesToIp2 =
-        nextHopIfacesByRouteToIp2.values().stream()
-            .flatMap(ifaceMap -> ifaceMap.keySet().stream())
-            .collect(Collectors.toSet());
-    assertThat(nextHopIfacesToIp2, containsInAnyOrder(iface2, iface3));
+    Set<FibEntry> nextHopsIp2 = fib.get(ip2);
+    assertThat(
+        nextHopsIp2,
+        containsInAnyOrder(ImmutableList.of(hasInterface(iface2), hasInterface(iface3))));
   }
 
   @Test
@@ -134,7 +132,7 @@ public class FibImplTest {
             .get(_config.getHostname())
             .get(Configuration.DEFAULT_VRF_NAME);
 
-    assertThat(fib.getNextHopInterfaces(DST_IP), contains(FAST_ETHERNET_0));
+    assertThat(fib.get(DST_IP), contains(hasInterface(FAST_ETHERNET_0)));
   }
 
   @Test
@@ -162,7 +160,7 @@ public class FibImplTest {
             .get(_config.getHostname())
             .get(Configuration.DEFAULT_VRF_NAME);
 
-    assertThat(fib.getNextHopInterfaces(DST_IP), contains(FAST_ETHERNET_0));
+    assertThat(fib.get(DST_IP), contains(hasInterface(FAST_ETHERNET_0)));
   }
 
   @Test
@@ -188,7 +186,7 @@ public class FibImplTest {
     rib.mergeRoute(annotateRoute(forwardingRoute));
 
     Fib fib = new FibImpl(rib);
-    Set<AbstractRoute> fibRoutes = fib.getRoutesByNextHopInterface().get("Eth1");
+    Set<AbstractRoute> fibRoutes = getTopLevelRoutesByInterface(fib, "Eth1");
 
     assertThat(fibRoutes, not(hasItem(hasPrefix(Prefix.parse("1.1.1.0/24")))));
     assertThat(fibRoutes, hasItem(hasPrefix(Prefix.parse("2.2.2.0/24"))));
@@ -227,14 +225,14 @@ public class FibImplTest {
     rib.mergeRoute(annotateRoute(testRoute));
 
     Fib fib = new FibImpl(rib);
-    Set<AbstractRoute> fibRoutesEth1 = fib.getRoutesByNextHopInterface().get("Eth1");
+    Set<AbstractRoute> fibRoutesEth1 = getTopLevelRoutesByInterface(fib, "Eth1");
 
     /* 2.2.2.0/24 should resolve to the "forwardingLessSpecificRoute" and thus eth1 */
     assertThat(fibRoutesEth1, hasItem(hasPrefix(Prefix.parse("2.2.2.0/24"))));
 
     /* Nothing can resolve to "eth2" */
-    Set<AbstractRoute> fibRoutesEth2 = fib.getRoutesByNextHopInterface().get("Eth2");
-    assertThat(fibRoutesEth2, nullValue());
+    Set<AbstractRoute> fibRoutesEth2 = getTopLevelRoutesByInterface(fib, "Eth2");
+    assertThat(fibRoutesEth2, empty());
   }
 
   @Test
@@ -290,16 +288,16 @@ public class FibImplTest {
     Fib fib = new FibImpl(rib);
 
     /* 2.2.2.0/24 should resolve to eth3 and eth4*/
-    assertThat(fib.getRoutesByNextHopInterface().get("Eth3"), hasItem(hasPrefix(TEST_PREFIX)));
-    assertThat(fib.getRoutesByNextHopInterface().get("Eth4"), hasItem(hasPrefix(TEST_PREFIX)));
+    assertThat(getTopLevelRoutesByInterface(fib, "Eth3"), hasItem(hasPrefix(TEST_PREFIX)));
+    assertThat(getTopLevelRoutesByInterface(fib, "Eth4"), hasItem(hasPrefix(TEST_PREFIX)));
 
     /* 2.2.2.0/24 should NOT resolve to "forwardingLessSpecificRoute" (and thus Eth1)
-     * because more specific eth3/4
+     * because more specific route exists to eth3/4
      */
-    assertThat(fib.getRoutesByNextHopInterface().get("Eth1"), not(hasItem(hasPrefix(TEST_PREFIX))));
+    assertThat(getTopLevelRoutesByInterface(fib, "Eth1"), not(hasItem(hasPrefix(TEST_PREFIX))));
 
     /* Nothing can resolve to eth2 */
-    Set<AbstractRoute> fibRoutesEth2 = fib.getRoutesByNextHopInterface().get("Eth2");
-    assertThat(fibRoutesEth2, nullValue());
+    Set<AbstractRoute> fibRoutesEth2 = getTopLevelRoutesByInterface(fib, "Eth2");
+    assertThat(fibRoutesEth2, empty());
   }
 }

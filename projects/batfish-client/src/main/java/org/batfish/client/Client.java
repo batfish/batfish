@@ -17,7 +17,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.io.Closer;
-import com.kjetland.jackson.jsonSchema.JsonSchemaGenerator;
 import com.uber.jaeger.Configuration.ReporterConfiguration;
 import com.uber.jaeger.Configuration.SamplerConfiguration;
 import com.uber.jaeger.samplers.ConstSampler;
@@ -54,6 +53,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.annotation.Nonnull;
@@ -85,7 +85,6 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.WorkItemBuilder;
 import org.batfish.common.util.ZipUtility;
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceType;
@@ -105,16 +104,15 @@ import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
 import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
 import org.batfish.datamodel.questions.InstanceData;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
-import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.batfish.datamodel.questions.NamedStructureSpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.OspfPropertySpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Variable;
 import org.batfish.datamodel.questions.VxlanVniPropertySpecifier;
+import org.batfish.specifier.AllInterfacesInterfaceSpecifier;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.RoutingProtocolSpecifier;
-import org.batfish.specifier.ShorthandInterfaceSpecifier;
 import org.batfish.specifier.SpecifierFactories;
 import org.batfish.specifier.parboiled.ParboiledIpSpaceSpecifierFactory;
 import org.codehaus.jettison.json.JSONArray;
@@ -131,6 +129,7 @@ import org.jline.reader.impl.completer.NullCompleter;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.jline.utils.InfoCmp.Capability;
+import org.skyscreamer.jsonassert.JSONAssert;
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
 
@@ -402,6 +401,12 @@ public class Client extends AbstractClient implements IClient {
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
         break;
+      case FILTER_SPEC:
+        if (!value.isTextual()) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        break;
       case FLOAT:
         if (!value.isFloat()) {
           throw new BatfishException(
@@ -474,7 +479,7 @@ public class Client extends AbstractClient implements IClient {
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
         SpecifierFactories.getInterfaceSpecifierOrDefault(
-            value.textValue(), new ShorthandInterfaceSpecifier(InterfacesSpecifier.ALL));
+            value.textValue(), AllInterfacesInterfaceSpecifier.INSTANCE);
         break;
       case IP:
         // TODO: Need to double check isInetAddress()
@@ -534,6 +539,12 @@ public class Client extends AbstractClient implements IClient {
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
         validateJsonPathRegex(value.textValue());
+        break;
+      case LOCATION_SPEC:
+        if (!value.isTextual()) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
         break;
       case LONG:
         if (!value.isLong()) {
@@ -705,10 +716,6 @@ public class Client extends AbstractClient implements IClient {
         _logger =
             new BatfishLogger(_settings.getLogLevel(), false, _settings.getLogFile(), false, false);
         break;
-      case gendatamodel:
-        _logger =
-            new BatfishLogger(_settings.getLogLevel(), false, _settings.getLogFile(), false, false);
-        break;
       case genquestions:
         if (_settings.getQuestionsDir() == null) {
           System.err.println(
@@ -742,7 +749,6 @@ public class Client extends AbstractClient implements IClient {
         } catch (Exception e) {
           System.err.printf("Could not initialize client: %s\n", e.getMessage());
           e.printStackTrace();
-          System.exit(1);
         }
         break;
       default:
@@ -753,6 +759,18 @@ public class Client extends AbstractClient implements IClient {
 
   public Client(String[] args) {
     this(new Settings(args));
+  }
+
+  private static void outputFileLines(Path downloadedFile, Consumer<String> outputFunction) {
+    try (BufferedReader br = Files.newBufferedReader(downloadedFile, UTF_8)) {
+      String line = null;
+      while ((line = br.readLine()) != null) {
+        outputFunction.accept(line + "\n");
+      }
+    } catch (IOException e) {
+      throw new BatfishException(
+          "Failed to read and output lines of file: '" + downloadedFile + "'", e);
+    }
   }
 
   private boolean addBatfishOption(String[] words, List<String> options, List<String> parameters) {
@@ -1221,59 +1239,6 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private void generateDatamodel() {
-    try {
-      JsonSchemaGenerator schemaGenNew = new JsonSchemaGenerator(BatfishObjectMapper.mapper());
-      JsonNode schemaNew = schemaGenNew.generateJsonSchema(Configuration.class);
-      _logger.output(BatfishObjectMapper.writePrettyString(schemaNew));
-
-      // Reflections reflections = new Reflections("org.batfish.datamodel");
-      // Set<Class<? extends AnswerElement>> classes =
-      // reflections.getSubTypesOf(AnswerElement.class);
-      // _logger.outputf("Found %d classes that inherit %s\n",
-      // classes.toArray().length, "AnswerElement");
-      //
-      // File dmDir = Paths.get(_settings.getDatamodelDir()).toFile();
-      // if (!dmDir.exists()) {
-      // if (!dmDir.mkdirs()) {
-      // throw new BatfishException("Could not create directory: " +
-      // dmDir.getAbsolutePath());
-      // }
-      // }
-      //
-      // for (Class c : classes) {
-      // String className = c.getCanonicalName()
-      // .replaceAll("org\\.batfish\\.datamodel\\.", "")
-      // .replaceAll("\\.", "-")
-      // + ".json";
-      // _logger.outputf("%s --> %s\n", c, className);
-      // Path file = Paths.get(dmDir.getAbsolutePath(), className);
-      // try (PrintWriter out = new
-      // PrintWriter(file.toAbsolutePath().toString())) {
-      // ObjectMapper mapper = new BatfishObjectMapper();
-      // JsonSchemaGenerator schemaGen = new JsonSchemaGenerator(mapper);
-      // JsonNode schema = schemaGen.generateJsonSchema(c);
-      // String schemaString = mapper.writeValueAsString(schema);
-      // out.println(schemaString);
-      // }
-      // }
-
-      // JsonSchemaGenerator schemaGenNew = new JsonSchemaGenerator(mapper,
-      // true, JsonSchemaConfig.vanillaJsonSchemaDraft4());
-      // JsonNode schemaNew =
-      // schemaGenNew.generateJsonSchema(Configuration.class);
-      // _logger.output(mapper.writeValueAsString(schemaNew));
-
-      // _logger.output("\n");
-      // JsonNode schemaNew2 =
-      // schemaGenNew.generateJsonSchema(SchemaTest.Parent.class);
-      // _logger.output(mapper.writeValueAsString(schemaNew2));
-    } catch (Exception e) {
-      _logger.errorf("Could not generate data model: %s", e.getMessage());
-      e.printStackTrace();
-    }
-  }
-
   private boolean generateDataplane(
       @Nullable FileWriter outWriter, List<String> options, List<String> parameters) {
     if (!isValidArgument(options, parameters, 0, 0, 0, Command.GEN_DP)) {
@@ -1677,7 +1642,6 @@ public class Client extends AbstractClient implements IClient {
       case interactive:
         break;
 
-      case gendatamodel:
       case genquestions:
       default:
         return;
@@ -2327,6 +2291,19 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
+  private static boolean checkJsonEqual(Object a, Object b) {
+    try {
+      String aString = BatfishObjectMapper.writeString(a);
+      String bString = BatfishObjectMapper.writeString(b);
+      JSONAssert.assertEquals(aString, bString, false);
+      return true;
+    } catch (Exception e) {
+      throw new BatfishException("JSON equality check failed", e);
+    } catch (AssertionError err) {
+      return false;
+    }
+  }
+
   private boolean pollWorkAndGetAnswer(WorkItem wItem, @Nullable FileWriter outWriter) {
 
     boolean pollResult = pollWork(wItem.getId());
@@ -2368,8 +2345,7 @@ public class Client extends AbstractClient implements IClient {
           String newAnswerString = BatfishObjectMapper.writeString(answer);
           JsonNode tree = reader.readTree(answerString);
           JsonNode newTree = reader.readTree(newAnswerString);
-          if (!CommonUtil.checkJsonEqual(tree, newTree)) {
-            // if (!tree.equals(newTree)) {
+          if (!checkJsonEqual(tree, newTree)) {
             _logger.errorf(
                 "Original and recovered Json are different. Recovered = %s\n", newAnswerString);
           }
@@ -2390,7 +2366,7 @@ public class Client extends AbstractClient implements IClient {
         return false;
       } else {
         Path downloadedFile = Paths.get(downloadedFileStr);
-        CommonUtil.outputFileLines(downloadedFile, _logger::output);
+        outputFileLines(downloadedFile, _logger::output);
       }
     }
     return true;
@@ -2849,10 +2825,6 @@ public class Client extends AbstractClient implements IClient {
           runBatchFile();
           break;
         }
-
-      case gendatamodel:
-        generateDatamodel();
-        break;
 
       case genquestions:
         generateQuestions();

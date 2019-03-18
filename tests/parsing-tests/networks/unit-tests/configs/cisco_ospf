@@ -19,8 +19,6 @@ interface ethernet1/0
  ip ospf abcdefg area 0
  no ip ospf passive-interface
 !
-router ospf abcdefg
-!
 router ospf 1
   address-family ipv4
   area 0.0.0.0 authentication message-digest
@@ -46,6 +44,7 @@ router ospf 1
   capability lls
   capability transit
   capability vrf-lite
+  default-information originate always metric 10 metric-type 1 route-map DEFAULT_ORIGINATE_OSPF
   default-metric 11
   discard-route external
   discard-route internal
@@ -83,42 +82,3 @@ router ospf 1
   area 0 filter-list prefix OUTFILTER out
 !
 ospf name-lookup
-ospfv3 name-lookup
-router ospfv3 1
-  address-family ipv6 unicast
-    redistribute direct route-map DIRECT_OSPF
-    timers throttle spf 200 1000 5000
-    distance 110
-    maximum-paths 8
-  address-family ipv6
-  exit-address-family
-  auto-cost reference-bandwidth 40 Gbps
-  discard-route external
-  discard-route internal
-  graceful-restart
-  graceful-restart grace-period 180
-  log-adjacency-changes detail
-  max-metric router-lsa on-startup 600
-  maximum-paths 16
-  ospfv3 event-history hello size small
-  ospfv3 event-history redistribution size small
-  ospfv3 event-history spf size small
-  ospfv3 event-history lsa size small
-  ospfv3 event-history flooding size small
-  ospfv3 event-history ha size small
-  ospfv3 event-history event size small
-  ospfv3 event-history adjacency size small
-  ospfv3 event-history cli size medium
-  router-id 2.3.4.5
-  timers lsa-arrival 1000
-  timers throttle lsa 0 50 5000
-!
-ipv6 router ospf 1
- router-id 1.2.3.4
- log-adjacency-changes
- log-adjacency-changes detail
- distribute-list prefix-list SWITCHLAN in
- passive-interface default
- timers throttle lsa 0 50 5000
- timers throttle spf 50 50 5000
-!

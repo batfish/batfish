@@ -18,6 +18,7 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /** An {@link InterfaceSpecifier} that resolves interfaces connected to a given {@link IpSpace}. */
 public final class InterfaceWithConnectedIpsSpecifier implements InterfaceSpecifier {
@@ -59,11 +60,12 @@ public final class InterfaceWithConnectedIpsSpecifier implements InterfaceSpecif
   }
 
   @Override
-  public Set<Interface> resolve(Set<String> nodes, SpecifierContext ctxt) {
+  public Set<NodeInterfacePair> resolve(Set<String> nodes, SpecifierContext ctxt) {
     return ctxt.getConfigs().values().stream()
         .filter(c -> nodes.contains(c.getHostname()))
         .flatMap(c -> c.getAllInterfaces().values().stream().filter(Interface::getActive))
         .filter(i -> i.getAllAddresses().stream().anyMatch(this::interfaceAddressMatchesIpSpace))
+        .map(NodeInterfacePair::new)
         .collect(ImmutableSet.toImmutableSet());
   }
 

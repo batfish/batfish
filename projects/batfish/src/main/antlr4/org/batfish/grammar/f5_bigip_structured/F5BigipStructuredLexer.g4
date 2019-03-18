@@ -166,6 +166,11 @@ INTERFACES
   'interfaces'
 ;
 
+IP_FORWARD
+:
+  'ip-forward'
+;
+
 IP_PROTOCOL
 :
   'ip-protocol'
@@ -184,6 +189,11 @@ IPV6
 KERNEL
 :
   'kernel'
+;
+
+LACP
+:
+  'lacp'
 ;
 
 LOCAL_AS
@@ -306,6 +316,11 @@ REDISTRIBUTE
   'redistribute'
 ;
 
+REJECT
+:
+  'reject'
+;
+
 REMOTE_AS
 :
   'remote-as'
@@ -324,6 +339,11 @@ ROUTE_DOMAIN
 ROUTE_MAP
 :
   'route-map'
+;
+
+ROUTER_ID
+:
+  'router-id'
 ;
 
 ROUTING
@@ -431,6 +451,11 @@ TRANSLATE_PORT
   'translate-port'
 ;
 
+TRUNK
+:
+  'trunk'
+;
+
 TYPE
 :
   'type'
@@ -469,6 +494,11 @@ VLAN
 VLANS
 :
   'vlans'
+;
+
+VLANS_DISABLED
+:
+  'vlans-disabled'
 ;
 
 VLANS_ENABLED
@@ -518,6 +548,14 @@ DOUBLE_QUOTED_STRING
   '"' ~'"'* '"'
 ;
 
+IMISH_CHUNK
+:
+  '!'
+  {lastTokenType == NEWLINE}?
+
+  F_NonNewlineChar* F_Newline+ F_Anything*
+;
+
 NEWLINE
 :
   F_Newline+
@@ -540,6 +578,12 @@ WS
 ;
 
 // Fragments
+
+fragment
+F_Anything
+:
+  .
+;
 
 fragment
 F_Newline
