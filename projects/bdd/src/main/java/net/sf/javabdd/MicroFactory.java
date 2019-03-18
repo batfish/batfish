@@ -340,17 +340,11 @@ public class MicroFactory extends BDDFactory {
 
   /** Private helper function to create BDD objects. */
   private BDDImpl makeBDD(int id) {
-    BDDImpl b;
     if (USE_FINALIZER) {
-      b = new BDDImplWithFinalizer(id);
-      if (false) { // can check for specific id's here.
-        System.out.println("Created " + System.identityHashCode(b) + " id " + id);
-        new Exception().printStackTrace(System.out);
-      }
+      return new BDDImplWithFinalizer(id);
     } else {
-      b = new BDDImpl(id);
+      return new BDDImpl(id);
     }
-    return b;
   }
 
   /** Wrapper for the BDD index number used internally in the representation. */
