@@ -24,6 +24,24 @@ public class ReverseStaticNatTest {
     assertThat(ReverseStaticNat.thenToMatch(then), equalTo(new NatRuleMatchSrcAddrName("prefix")));
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void testNotSupportedThenToMatch1() {
+    NatRuleThen then = new NatRuleThenPool("pool");
+    ReverseStaticNat.thenToMatch(then);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testNotSupportedThenToMatch2() {
+    NatRuleThen then = NatRuleThenOff.INSTANCE;
+    ReverseStaticNat.thenToMatch(then);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testNotSupportedThenToMatch3() {
+    NatRuleThen then = NatRuleThenInterface.INSTANCE;
+    ReverseStaticNat.thenToMatch(then);
+  }
+
   @Test
   public void testSrcMatchToDstMatch() {
     Prefix p1 = Prefix.parse("1.1.1.1/24");

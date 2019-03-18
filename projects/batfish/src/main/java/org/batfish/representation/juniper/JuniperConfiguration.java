@@ -1450,6 +1450,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return newIface;
   }
 
+  @Nullable
   Transformation buildOutgoingTransformation(
       Interface iface,
       Nat nat,
@@ -3027,51 +3028,53 @@ public final class JuniperConfiguration extends VendorConfiguration {
     Nat snat = _masterLogicalSystem.getNatSource();
     Nat staticNat = _masterLogicalSystem.getNatStatic();
 
-    if (snat != null || staticNat != null) {
-      List<NatRuleSet> sourceNatRuleSetList =
-          snat == null
-              ? null
-              : snat.getRuleSets().values().stream()
-                  .sorted()
-                  .collect(ImmutableList.toImmutableList());
-
-      Nat reversedStaticNat = staticNat == null ? null : ReverseStaticNat.reverseNat(staticNat);
-      List<NatRuleSet> reversedStaticNatRuleSetList =
-          reversedStaticNat == null
-              ? null
-              : reversedStaticNat.getRuleSets().values().stream()
-                  .sorted()
-                  .collect(ImmutableList.toImmutableList());
-
-      Map<NatPacketLocation, AclLineMatchExpr> matchFromLocationExprs =
-          fromNatPacketLocationMatchExprs();
-
-      Stream.concat(
-              _masterLogicalSystem.getInterfaces().values().stream(),
-              _nodeDevices.values().stream()
-                  .flatMap(nodeDevice -> nodeDevice.getInterfaces().values().stream()))
-          .forEach(
-              iface ->
-                  iface
-                      .getUnits()
-                      .values()
-                      .forEach(
-                          unit -> {
-                            org.batfish.datamodel.Interface newUnitInterface =
-                                _c.getAllInterfaces().get(unit.getName());
-                            Transformation srcTransformation =
-                                buildOutgoingTransformation(
-                                    unit, snat, sourceNatRuleSetList, matchFromLocationExprs, null);
-                            Transformation staticTransformation =
-                                buildOutgoingTransformation(
-                                    unit,
-                                    reversedStaticNat,
-                                    reversedStaticNatRuleSetList,
-                                    matchFromLocationExprs,
-                                    srcTransformation);
-                            newUnitInterface.setOutgoingTransformation(staticTransformation);
-                          }));
+    if (snat == null && staticNat == null) {
+      return;
     }
+
+    List<NatRuleSet> sourceNatRuleSetList =
+        snat == null
+            ? null
+            : snat.getRuleSets().values().stream()
+                .sorted()
+                .collect(ImmutableList.toImmutableList());
+
+    Nat reversedStaticNat = staticNat == null ? null : ReverseStaticNat.reverseNat(staticNat);
+    List<NatRuleSet> reversedStaticNatRuleSetList =
+        reversedStaticNat == null
+            ? null
+            : reversedStaticNat.getRuleSets().values().stream()
+                .sorted()
+                .collect(ImmutableList.toImmutableList());
+
+    Map<NatPacketLocation, AclLineMatchExpr> matchFromLocationExprs =
+        fromNatPacketLocationMatchExprs();
+
+    Stream.concat(
+            _masterLogicalSystem.getInterfaces().values().stream(),
+            _nodeDevices.values().stream()
+                .flatMap(nodeDevice -> nodeDevice.getInterfaces().values().stream()))
+        .forEach(
+            iface ->
+                iface
+                    .getUnits()
+                    .values()
+                    .forEach(
+                        unit -> {
+                          org.batfish.datamodel.Interface newUnitInterface =
+                              _c.getAllInterfaces().get(unit.getName());
+                          Transformation srcTransformation =
+                              buildOutgoingTransformation(
+                                  unit, snat, sourceNatRuleSetList, matchFromLocationExprs, null);
+                          Transformation staticTransformation =
+                              buildOutgoingTransformation(
+                                  unit,
+                                  reversedStaticNat,
+                                  reversedStaticNatRuleSetList,
+                                  matchFromLocationExprs,
+                                  srcTransformation);
+                          newUnitInterface.setOutgoingTransformation(staticTransformation);
+                        }));
   }
 
   /** Ensure that the interface is placed in VI {@link Configuration} and {@link Vrf} */
