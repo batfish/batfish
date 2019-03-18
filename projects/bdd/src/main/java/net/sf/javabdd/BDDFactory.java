@@ -168,15 +168,6 @@ public abstract class BDDFactory {
     }
   }
 
-  /** Construct a new BDDFactory. */
-  protected BDDFactory() {
-    String s = this.getClass().toString();
-    if (false) {
-      s = s.substring(s.lastIndexOf('.') + 1);
-      System.out.println("Using BDD package: " + s);
-    }
-  }
-
   /**
    * Get the constant false BDD.
    *
