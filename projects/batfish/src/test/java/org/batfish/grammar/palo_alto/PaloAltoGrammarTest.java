@@ -138,7 +138,7 @@ public class PaloAltoGrammarTest {
   }
 
   private static Flow createFlow(IpProtocol protocol, int sourcePort, int destinationPort) {
-    Flow.Builder fb = new Flow.Builder();
+    Flow.Builder fb = Flow.builder();
     fb.setIngressNode("node");
     fb.setIpProtocol(protocol);
     fb.setDstPort(destinationPort);
@@ -157,7 +157,7 @@ public class PaloAltoGrammarTest {
       IpProtocol protocol,
       int sourcePort,
       int destinationPort) {
-    Flow.Builder fb = new Flow.Builder();
+    Flow.Builder fb = Flow.builder();
     fb.setIngressNode("node");
     fb.setSrcIp(Ip.parse(sourceAddress));
     fb.setDstIp(Ip.parse(destinationAddress));

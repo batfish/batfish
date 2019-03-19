@@ -12,7 +12,6 @@ import java.util.LinkedList;
 import java.util.List;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.Flow.Builder;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -51,7 +50,7 @@ public class SecurityGroupsTest {
                 .setTcpFlags(ImmutableSet.of(TcpFlagsMatchConditions.ACK_TCP_FLAG))
                 .build());
     _region = new Region("test");
-    _flowBuilder = new Builder();
+    _flowBuilder = Flow.builder();
     _flowBuilder.setIngressNode("foo");
     _flowBuilder.setTag("TEST");
     _flowBuilder.setIpProtocol(IpProtocol.TCP);

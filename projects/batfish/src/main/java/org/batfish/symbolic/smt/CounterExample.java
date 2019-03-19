@@ -95,7 +95,7 @@ class CounterExample {
     Integer tcpFlagsSyn = isTrue(pkt.getTcpSyn()) ? 0 : 1;
     Integer tcpFlagsFin = isTrue(pkt.getTcpFin()) ? 0 : 1;
 
-    Flow.Builder b = new Flow.Builder();
+    Flow.Builder b = Flow.builder();
     b.setIngressNode(routerName);
     b.setSrcIp(srcIp);
     b.setDstIp(dstIp);

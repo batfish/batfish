@@ -118,7 +118,7 @@ public class TracerouteEngineImplTest {
   @Rule public TemporaryFolder _tempFolder = new TemporaryFolder();
 
   private static Flow makeFlow() {
-    Flow.Builder builder = new Flow.Builder();
+    Flow.Builder builder = Flow.builder();
     builder.setSrcIp(Ip.parse("1.2.3.4"));
     builder.setIngressNode("foo");
     builder.setTag("TEST");

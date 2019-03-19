@@ -260,7 +260,7 @@ public final class BgpTopologyUtils {
     /*
      * Ensure that the session can be established by running traceroute in both directions
      */
-    Flow.Builder fb = new Flow.Builder();
+    Flow.Builder fb = Flow.builder();
     fb.setIpProtocol(IpProtocol.TCP);
     fb.setTag("neighbor-resolution");
 

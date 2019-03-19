@@ -11,7 +11,7 @@ import org.junit.Test;
 
 public class MatchSrcInterfaceTest {
   private static Flow createFlow() {
-    Flow.Builder b = new Flow.Builder();
+    Flow.Builder b = Flow.builder();
     b.setIngressNode("ingressNode");
     b.setTag("empty");
     return b.build();
