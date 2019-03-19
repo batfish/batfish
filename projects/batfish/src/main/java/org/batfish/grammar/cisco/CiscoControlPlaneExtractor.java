@@ -5614,15 +5614,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           SERVICE_OBJECT, name, EXTENDED_ACCESS_LIST_SERVICE_OBJECT, line);
       return new ServiceObjectServiceSpecifier(name);
     } else if (ctx.inline_obj != null) {
-      String name = ctx.inline_obj.getText();
-
       // ASA inline service object for a particular protocol
       return SimpleExtendedAccessListServiceSpecifier.builder()
           .setProtocol(toIpProtocol(ctx.inline_obj))
           .build();
     } else if (ctx.inline_obj_icmp != null) {
-      String name = ctx.inline_obj_icmp.getText();
-
       // ASA inline service object for a particular ICMP type
       return SimpleExtendedAccessListServiceSpecifier.builder()
           .setProtocol(IpProtocol.ICMP)
