@@ -2057,8 +2057,7 @@ public final class FlatJuniperGrammarTest {
             .setAdministrativeCost(1)
             .build();
 
-    Environment.Builder eb = Environment.builder(c).setDirection(Direction.IN);
-    eb.setVrf("vrf1");
+    Environment.Builder eb = Environment.builder(c, "vrf1").setDirection(Direction.IN);
     policyPreference.call(
         eb.setOriginalRoute(staticRoute).setOutputRoute(OspfExternalType2Route.builder()).build());
 
@@ -2070,8 +2069,7 @@ public final class FlatJuniperGrammarTest {
   public void testPsPreferenceStructure() throws IOException {
     Configuration c = parseConfig("policy-statement-preference");
 
-    Environment.Builder eb = Environment.builder(c).setDirection(Direction.IN);
-    eb.setVrf("vrf1");
+    Environment.Builder eb = Environment.builder(c, "vrf1").setDirection(Direction.IN);
 
     RoutingPolicy policyPreference = c.getRoutingPolicies().get("preference");
 
@@ -2864,8 +2862,7 @@ public final class FlatJuniperGrammarTest {
           c.getRoutingPolicies()
               .get("POLICY-NAME")
               .call(
-                  Environment.builder(c)
-                      .setVrf(DEFAULT_VRF_NAME)
+                  Environment.builder(c, DEFAULT_VRF_NAME)
                       .setOriginalRoute(new ConnectedRoute(p, "nextHop"))
                       .build());
       assertThat(result.getBooleanValue(), equalTo(true));
@@ -2876,8 +2873,7 @@ public final class FlatJuniperGrammarTest {
         c.getRoutingPolicies()
             .get("POLICY-NAME")
             .call(
-                Environment.builder(c)
-                    .setVrf(DEFAULT_VRF_NAME)
+                Environment.builder(c, DEFAULT_VRF_NAME)
                     .setOriginalRoute(
                         StaticRoute.builder()
                             .setAdministrativeCost(0)
@@ -2891,8 +2887,7 @@ public final class FlatJuniperGrammarTest {
         c.getRoutingPolicies()
             .get("POLICY-NAME")
             .call(
-                Environment.builder(c)
-                    .setVrf(DEFAULT_VRF_NAME)
+                Environment.builder(c, DEFAULT_VRF_NAME)
                     .setOriginalRoute(new ConnectedRoute(Prefix.parse("3.3.3.0/24"), "nextHop"))
                     .build());
     assertThat(result.getBooleanValue(), equalTo(false));
@@ -2936,8 +2931,7 @@ public final class FlatJuniperGrammarTest {
     assertThat(result.getBooleanValue(), equalTo(false));
     result =
         familyPolicy.call(
-            Environment.builder(c)
-                .setVrf(DEFAULT_VRF_NAME)
+            Environment.builder(c, DEFAULT_VRF_NAME)
                 .setOriginalRoute6(new GeneratedRoute6(Prefix6.ZERO))
                 .build());
     assertThat(result.getBooleanValue(), equalTo(true));
@@ -3060,20 +3054,20 @@ public final class FlatJuniperGrammarTest {
     srb = StaticRoute.builder().setAdministrativeCost(100).setNetwork(testPrefix);
     result =
         tagPolicy.call(
-            Environment.builder(c).setVrf(DEFAULT_VRF_NAME).setOutputRoute(srb.setTag(1)).build());
+            Environment.builder(c, DEFAULT_VRF_NAME).setOutputRoute(srb.setTag(1)).build());
     assertThat(result.getBooleanValue(), equalTo(true));
     result =
         tagPolicy.call(
-            Environment.builder(c).setVrf(DEFAULT_VRF_NAME).setOutputRoute(srb.setTag(2)).build());
+            Environment.builder(c, DEFAULT_VRF_NAME).setOutputRoute(srb.setTag(2)).build());
     assertThat(result.getBooleanValue(), equalTo(true));
     result =
         tagPolicy.call(
-            Environment.builder(c).setVrf(DEFAULT_VRF_NAME).setOutputRoute(srb.setTag(3)).build());
+            Environment.builder(c, DEFAULT_VRF_NAME).setOutputRoute(srb.setTag(3)).build());
     assertThat(result.getBooleanValue(), equalTo(false));
   }
 
   private static Environment envWithRoute(Configuration c, AbstractRoute route) {
-    return Environment.builder(c).setVrf(DEFAULT_VRF_NAME).setOriginalRoute(route).build();
+    return Environment.builder(c, DEFAULT_VRF_NAME).setOriginalRoute(route).build();
   }
 
   @Test
@@ -3269,7 +3263,6 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testLocalRouteExportBgp() throws IOException {
     Configuration c = parseConfig("local-route-export-bgp");
-    Environment.Builder eb = Environment.builder(c).setDirection(Direction.OUT);
 
     String peer1Vrf = "peer1Vrf";
     RoutingPolicy peer1RejectAllLocal =
@@ -3291,7 +3284,7 @@ public final class FlatJuniperGrammarTest {
     LocalRoute localRouteLan = new LocalRoute(new InterfaceAddress("10.0.1.0/30"), "ge-0/0/1.0");
 
     // Peer policies should reject local routes not exported by their VRFs
-    eb.setVrf(peer1Vrf);
+    Environment.Builder eb = Environment.builder(c, peer1Vrf).setDirection(Direction.OUT);
     assertThat(
         peer1RejectAllLocal
             .call(eb.setOriginalRoute(localRoutePtp).setOutputRoute(new BgpRoute.Builder()).build())
@@ -3303,7 +3296,7 @@ public final class FlatJuniperGrammarTest {
             .getBooleanValue(),
         equalTo(false));
 
-    eb.setVrf(peer2Vrf);
+    eb = Environment.builder(c, peer2Vrf).setDirection(Direction.OUT);
     assertThat(
         peer2RejectPtpLocal
             .call(eb.setOriginalRoute(localRoutePtp).setOutputRoute(new BgpRoute.Builder()).build())
@@ -3315,7 +3308,7 @@ public final class FlatJuniperGrammarTest {
             .getBooleanValue(),
         equalTo(true));
 
-    eb.setVrf(peer3Vrf);
+    eb = Environment.builder(c, peer3Vrf).setDirection(Direction.OUT);
     assertThat(
         peer3RejectLanLocal
             .call(eb.setOriginalRoute(localRoutePtp).setOutputRoute(new BgpRoute.Builder()).build())
@@ -3327,7 +3320,7 @@ public final class FlatJuniperGrammarTest {
             .getBooleanValue(),
         equalTo(false));
 
-    eb.setVrf(peer4Vrf);
+    eb = Environment.builder(c, peer4Vrf).setDirection(Direction.OUT);
     assertThat(
         peer4AllowAllLocal
             .call(eb.setOriginalRoute(localRoutePtp).setOutputRoute(new BgpRoute.Builder()).build())
@@ -3343,7 +3336,6 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testLocalRouteExportOspf() throws IOException {
     Configuration c = parseConfig("local-route-export-ospf");
-    Environment.Builder eb = Environment.builder(c).setDirection(Direction.OUT);
 
     String vrf1 = "vrf1";
     RoutingPolicy vrf1RejectAllLocal =
@@ -3364,7 +3356,7 @@ public final class FlatJuniperGrammarTest {
     LocalRoute localRouteLan = new LocalRoute(new InterfaceAddress("10.0.1.0/30"), "ge-0/0/1.0");
 
     // Peer policies should reject local routes not exported by their VRFs
-    eb.setVrf(vrf1);
+    Environment.Builder eb = Environment.builder(c, vrf1).setDirection(Direction.OUT);
     assertThat(
         vrf1RejectAllLocal
             .call(
@@ -3382,7 +3374,7 @@ public final class FlatJuniperGrammarTest {
             .getBooleanValue(),
         equalTo(false));
 
-    eb.setVrf(vrf2);
+    eb = Environment.builder(c, vrf2).setDirection(Direction.OUT);
     assertThat(
         vrf2RejectPtpLocal
             .call(
@@ -3400,7 +3392,7 @@ public final class FlatJuniperGrammarTest {
             .getBooleanValue(),
         equalTo(true));
 
-    eb.setVrf(vrf3);
+    eb = Environment.builder(c, vrf3).setDirection(Direction.OUT);
     assertThat(
         vrf3RejectLanLocal
             .call(
@@ -3418,7 +3410,7 @@ public final class FlatJuniperGrammarTest {
             .getBooleanValue(),
         equalTo(false));
 
-    eb.setVrf(vrf4);
+    eb = Environment.builder(c, vrf4).setDirection(Direction.OUT);
     assertThat(
         vrf4AllowAllLocal
             .call(
@@ -3980,7 +3972,6 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testRoutingPolicy() throws IOException {
     Configuration c = parseConfig("routing-policy");
-    Environment.Builder eb = Environment.builder(c).setDirection(Direction.IN);
 
     RoutingPolicy policyExact = c.getRoutingPolicies().get("route-filter-exact");
     RoutingPolicy policyLonger = c.getRoutingPolicies().get("route-filter-longer");
@@ -4006,7 +3997,7 @@ public final class FlatJuniperGrammarTest {
     ConnectedRoute connectedRouteMaskInvalidLength =
         new ConnectedRoute(Prefix.parse("1.9.3.9/17"), "nhinttest");
 
-    eb.setVrf("vrf1");
+    Environment.Builder eb = Environment.builder(c, "vrf1").setDirection(Direction.IN);
 
     assertThat(
         policyExact.call(eb.setOriginalRoute(connectedRouteExact).build()).getBooleanValue(),
@@ -4202,8 +4193,7 @@ public final class FlatJuniperGrammarTest {
               .getRoutingPolicies()
               .get("POLICY-NAME")
               .call(
-                  Environment.builder(config)
-                      .setVrf(DEFAULT_VRF_NAME)
+                  Environment.builder(config, DEFAULT_VRF_NAME)
                       .setOriginalRoute(new ConnectedRoute(p, "iface"))
                       .build());
       assertThat(result.getBooleanValue(), equalTo(true));
@@ -4215,8 +4205,7 @@ public final class FlatJuniperGrammarTest {
             .getRoutingPolicies()
             .get("POLICY-NAME")
             .call(
-                Environment.builder(config)
-                    .setVrf(DEFAULT_VRF_NAME)
+                Environment.builder(config, DEFAULT_VRF_NAME)
                     .setOriginalRoute(new ConnectedRoute(Prefix.parse("3.3.3.3/24"), "iface"))
                     .build());
     assertThat(result.getBooleanValue(), equalTo(false));
@@ -4227,8 +4216,7 @@ public final class FlatJuniperGrammarTest {
             .getRoutingPolicies()
             .get("POLICY-NAME")
             .call(
-                Environment.builder(config)
-                    .setVrf(DEFAULT_VRF_NAME)
+                Environment.builder(config, DEFAULT_VRF_NAME)
                     .setOriginalRoute(
                         StaticRoute.builder()
                             .setNextHopInterface("iface")
