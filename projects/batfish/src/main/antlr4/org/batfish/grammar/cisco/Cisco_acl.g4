@@ -369,7 +369,12 @@ extended_access_list_tail
       )
       |
       (
-         OBJECT obj = variable
+         OBJECT
+         (
+            inline_obj = protocol
+            | inline_obj_icmp = icmp_inline_object_type
+            | obj = variable
+         )
       )
    ) srcipr = access_list_ip_range
    (

@@ -5647,9 +5647,24 @@ ICMP
    'icmp'
 ;
 
+ICMP_ALTERNATE_ADDRESS
+:
+   'icmp-alternate-address'
+;
+
+ICMP_CONVERSION_ERROR
+:
+   'icmp-conversion-error'
+;
+
 ICMP_ECHO
 :
    'icmp-echo'
+;
+
+ICMP_ECHO_REPLY
+:
+   'icmp-echo-reply'
 ;
 
 ICMP_ERROR
@@ -5662,14 +5677,89 @@ ICMP_ERRORS
    'icmp-errors'
 ;
 
+ICMP_INFORMATION_REPLY
+:
+   'icmp-information-reply'
+;
+
+ICMP_INFORMATION_REQUEST
+:
+   'icmp-information-request'
+;
+
+ICMP_MASK_REPLY
+:
+   'icmp-mask-reply'
+;
+
+ICMP_MASK_REQUEST
+:
+   'icmp-mask-request'
+;
+
+ICMP_MOBILE_REDIRECT
+:
+   'icmp-mobile-redirect'
+;
+
 ICMP_OBJECT
 :
    'icmp-object'
 ;
 
+ICMP_PARAMETER_PROBLEM
+:
+   'icmp-parameter-problem'
+;
+
+ICMP_REDIRECT
+:
+   'icmp-redirect'
+;
+
+ICMP_ROUTER_ADVERTISEMENT
+:
+   'icmp-router-advertisement'
+;
+
+ICMP_ROUTER_SOLICITATION
+:
+   'icmp-router-solicitation'
+;
+
+ICMP_SOURCE_QUENCH
+:
+   'icmp-source-quench'
+;
+
+ICMP_TIME_EXCEEDED
+:
+   'icmp-time-exceeded'
+;
+
+ICMP_TIMESTAMP_REPLY
+:
+   'icmp-timestamp-reply'
+;
+
+ICMP_TIMESTAMP_REQUEST
+:
+   'icmp-timestamp-request'
+;
+
+ICMP_TRACEROUTE
+:
+   'icmp-traceroute'
+;
+
 ICMP_TYPE
 :
    'icmp-type'
+;
+
+ICMP_UNREACHABLE
+:
+   'icmp-unreachable'
 ;
 
 ICMP6

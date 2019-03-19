@@ -1,0 +1,6 @@
+!
+hostname asa-service-object-inline
+!
+access-list ACL_ICMP extended permit object icmp-echo any any
+access-list ACL_OSPF extended permit object ospf any any
+!
