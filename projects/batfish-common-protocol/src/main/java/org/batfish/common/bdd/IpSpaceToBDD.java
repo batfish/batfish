@@ -138,9 +138,12 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
   public BDD visitAclIpSpace(AclIpSpace aclIpSpace) {
     BDD bdd = _zero;
     for (AclIpSpaceLine aclIpSpaceLine : Lists.reverse(aclIpSpace.getLines())) {
-      bdd =
-          visit(aclIpSpaceLine.getIpSpace())
-              .ite(aclIpSpaceLine.getAction() == LineAction.PERMIT ? _one : _zero, bdd);
+      BDD line = visit(aclIpSpaceLine.getIpSpace());
+      if (aclIpSpaceLine.getAction() == LineAction.PERMIT) {
+        bdd = line.or(bdd);
+      } else {
+        bdd = line.not().and(bdd);
+      }
     }
     return bdd;
   }

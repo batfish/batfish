@@ -1,6 +1,7 @@
 package org.batfish.z3.expr.visitors;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -8,8 +9,10 @@ import com.google.common.collect.ImmutableMap;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.z3.Field;
 import org.batfish.z3.expr.AndExpr;
@@ -37,11 +40,11 @@ public class IpSpaceBooleanExprTransformerTest {
 
   @Test
   public void testVisitAclIpSpace() {
-    AclIpSpace ipSpace =
-        AclIpSpace.builder()
-            .thenPermitting(EmptyIpSpace.INSTANCE)
-            .thenRejecting(UniverseIpSpace.INSTANCE)
-            .build();
+    IpSpace accepted = Prefix.parse("1.2.3.4/30").toIpSpace();
+    IpSpace accepted2 = Prefix.parse("1.2.3.4/31").toIpSpace();
+    IpSpace ipSpace =
+        AclIpSpace.builder().thenPermitting(accepted).thenPermitting(accepted2).build();
+    assertThat(ipSpace, instanceOf(AclIpSpace.class));
 
     BooleanExpr expr = ipSpace.accept(SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
 
@@ -51,15 +54,15 @@ public class IpSpaceBooleanExprTransformerTest {
             new OrExpr(
                 ImmutableList.of(
                     new IfThenElse(
-                        // Matches EmptyIpSpace
-                        FalseExpr.INSTANCE,
+                        // Matches accepted
+                        accepted.accept(SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER),
                         // Accept
                         TrueExpr.INSTANCE,
                         new IfThenElse(
-                            // Matches UniverseIpSpace
-                            TrueExpr.INSTANCE,
+                            // Matches accepted2
+                            accepted2.accept(SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER),
                             // Reject
-                            FalseExpr.INSTANCE,
+                            TrueExpr.INSTANCE,
                             // Matches nothing so reject
                             FalseExpr.INSTANCE))))));
   }
