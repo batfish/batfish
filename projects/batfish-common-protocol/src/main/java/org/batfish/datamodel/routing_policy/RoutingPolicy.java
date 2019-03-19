@@ -200,7 +200,7 @@ public class RoutingPolicy implements Serializable {
   }
 
   /**
-   * Must provide one of peerAddress or peerPrefix, but not both.
+   * Must provide one of peerAddress or peerPrefix.
    *
    * @param peerAddress The address of a known peer.
    * @param peerPrefix The address of an unknown peer. Used for dynamic BGP.
@@ -213,8 +213,7 @@ public class RoutingPolicy implements Serializable {
       String vrf,
       Direction direction) {
     checkArgument(
-        peerAddress == null ^ peerPrefix == null,
-        "Must provide one of peerAddress or peerPrefix, but not both.");
+        peerAddress != null || peerPrefix != null, "Need either peerAddress or peerPrefix.");
     checkState(_owner != null, "Cannot evaluate routing policy without a Configuration");
     Environment environment =
         Environment.builder(_owner, vrf)
