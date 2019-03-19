@@ -65,7 +65,7 @@ public class Parser extends CommonParser {
    * <pre>
    *   applicationSpec := applicationTerm [, applicationTerm]*
    *
-   *   applicationTerm := [0-9]+ // just the number
+   *   applicationTerm := NAME  // one of {@link Protocol} enums values
    *
    * </pre>
    */
