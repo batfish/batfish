@@ -176,6 +176,7 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbafcr_k
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbafcrk_route_mapContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbn_nameContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbnn_descriptionContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbnn_ebgp_multihopContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbnn_remote_asContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbnn_update_sourceContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbnnaf_ipv4Context;
@@ -1195,6 +1196,11 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void exitNrbnn_description(Nrbnn_descriptionContext ctx) {
     _currentBgpNeighbor.setDescription(unquote(ctx.description.getText()));
+  }
+
+  @Override
+  public void exitNrbnn_ebgp_multihop(Nrbnn_ebgp_multihopContext ctx) {
+    _currentBgpNeighbor.setEbgpMultihop(toInteger(ctx.count));
   }
 
   @Override

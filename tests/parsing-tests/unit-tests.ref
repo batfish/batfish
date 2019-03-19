@@ -43252,6 +43252,11 @@
             "                description = (word",
             "                  DOUBLE_QUOTED_STRING:'\"Cool IPv4 BGP neighbor description\"')",
             "                NEWLINE:'\\n')",
+            "              (nrbnn_ebgp_multihop",
+            "                EBGP_MULTIHOP:'ebgp-multihop'",
+            "                count = (word",
+            "                  WORD:'3')",
+            "                NEWLINE:'\\n')",
             "              (unrecognized",
             "                (u_word",
             "                  (word",
@@ -71040,25 +71045,25 @@
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 60,
+              "Line" : 61,
               "Parser_Context" : "[unrecognized nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
               "Text" : "fall-over"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 65,
+              "Line" : 66,
               "Parser_Context" : "[unrecognized nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
               "Text" : "profile"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 66,
+              "Line" : 67,
               "Parser_Context" : "[unrecognized nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
               "Text" : "route-domain"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 68,
+              "Line" : 69,
               "Parser_Context" : "[nrb_router_id nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
               "Text" : "router-id dead:beef::1234"
             }
@@ -74877,7 +74882,8 @@
                 60,
                 61,
                 62,
-                63
+                63,
+                64
               ],
               "numReferrers" : 1
             },
@@ -74975,7 +74981,8 @@
                 67,
                 68,
                 69,
-                70
+                70,
+                71
               ],
               "numReferrers" : 1
             }
@@ -80055,7 +80062,7 @@
             "SOME_VLAN" : {
               "bgp neighbor update-source" : [
                 40,
-                62
+                63
               ]
             }
           }
@@ -83109,7 +83116,7 @@
             "SOME_VLAN" : {
               "bgp neighbor update-source" : [
                 40,
-                62
+                63
               ]
             }
           }
