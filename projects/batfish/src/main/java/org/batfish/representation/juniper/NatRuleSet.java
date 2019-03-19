@@ -93,7 +93,7 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
    */
   public Optional<Transformation> toOutgoingTransformation(
       Nat nat,
-      @Nullable Map<String, AddressBookEntry> addressBookEntryMap,
+      Map<String, AddressBookEntry> addressBookEntryMap,
       Ip interfaceIp,
       Map<NatPacketLocation, AclLineMatchExpr> matchFromLocationExprs,
       @Nullable Transformation andThen,
