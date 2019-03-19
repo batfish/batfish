@@ -78,4 +78,8 @@ interface AstNodeVisitor<T> {
 
   T visitInterfaceWithNodeInterfaceAstNode(
       InterfaceWithNodeInterfaceAstNode interfaceWithNodeInterfaceAstNode);
+
+  T visitUnionApplicationAstNode(UnionApplicationAstNode unionApplicationAstNode);
+
+  T visitNameApplicationAstNode(NameApplicationAstNode nameApplicationAstNode);
 }
