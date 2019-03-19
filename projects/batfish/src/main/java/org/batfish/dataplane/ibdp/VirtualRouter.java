@@ -890,9 +890,9 @@ public class VirtualRouter implements Serializable {
       return; // nothing to do
     }
     /*
-     * init intra-area routes from connected routes
-     * For each interface within an OSPF area and each interface prefix,
-     * construct a new OSPF-IA route. Put it in the IA RIB.
+     * Initialize intra-area routes from connected routes.
+     * For each interface in an OSPF area and each interface prefix,
+     * construct a new OSPF intra-area route. Put it in the intra-area rib.
      */
     proc.getAreas()
         .forEach(
@@ -1811,28 +1811,30 @@ public class VirtualRouter implements Serializable {
   }
 
   /**
-   * Propagate OSPF Internal routes from a single neighbor.
+   * Propagate OSPF Internal routes from a single neighbor (i.e., sender) by reaching into its
+   * inter- and intra-area RIBs, taking their routes, and putting them into the receiver's
+   * respective RIBs.
    *
-   * @param proc The receiving OSPF process
-   * @param neighbor the neighbor
-   * @param connectingInterface interface on which we are connected to the neighbor
-   * @param neighborInterface interface that the neighbor uses to connect to us
-   * @param adminCost route administrative distance
-   * @return true if new routes have been added to our staging RIB
+   * @param receiverProc The OSPF process that will be receiving the routes
+   * @param sender the sender node
+   * @param receiverInterface interface on which the receiver is connected to the sender
+   * @param senderInterface interface that the sender uses to connect to the receiver
+   * @param adminCost the admin cost the receiver will assign to the routes that it gets.
+   * @return true if new routes have been added to our RIB
    */
   boolean propagateOspfInternalRoutesFromNeighbor(
-      OspfProcess proc,
-      Node neighbor,
-      Interface connectingInterface,
-      Interface neighborInterface,
+      OspfProcess receiverProc,
+      Node sender,
+      Interface receiverInterface,
+      Interface senderInterface,
       int adminCost) {
-    OspfArea area = connectingInterface.getOspfArea();
-    OspfArea neighborArea = neighborInterface.getOspfArea();
+    OspfArea area = receiverInterface.getOspfArea();
+    OspfArea neighborArea = senderInterface.getOspfArea();
     // Ensure that the link (i.e., both interfaces) has OSPF enabled and OSPF areas are set
-    if (!connectingInterface.getOspfEnabled()
-        || connectingInterface.getOspfPassive()
-        || !neighborInterface.getOspfEnabled()
-        || neighborInterface.getOspfPassive()
+    if (!receiverInterface.getOspfEnabled()
+        || receiverInterface.getOspfPassive()
+        || !senderInterface.getOspfEnabled()
+        || senderInterface.getOspfPassive()
         || area == null
         || neighborArea == null
         || area.getAreaNumber() != neighborArea.getAreaNumber()) {
@@ -1844,49 +1846,46 @@ public class VirtualRouter implements Serializable {
      * incremental cost associated with our settings and the connecting interface, and use the
      * neighborInterface's address as the next hop ip.
      */
-    int connectingInterfaceCost = connectingInterface.getOspfCost();
+    int connectingInterfaceCost = receiverInterface.getOspfCost();
     long incrementalCost =
-        proc.getMaxMetricTransitLinks() != null
-            ? proc.getMaxMetricTransitLinks()
+        receiverProc.getMaxMetricTransitLinks() != null
+            ? receiverProc.getMaxMetricTransitLinks()
             : connectingInterfaceCost;
     long linkAreaNum = area.getAreaNumber();
-    Configuration neighborConfiguration = neighbor.getConfiguration();
-    String neighborVrfName = neighborInterface.getVrfName();
-    OspfProcess neighborProc =
-        neighborConfiguration.getVrfs().get(neighborVrfName).getOspfProcess();
-    VirtualRouter neighborVirtualRouter = neighbor.getVirtualRouters().get(neighborVrfName);
+    Configuration senderConfiguration = sender.getConfiguration();
+    String senderVrfName = senderInterface.getVrfName();
+    OspfProcess senderProc = senderConfiguration.getVrfs().get(senderVrfName).getOspfProcess();
+    VirtualRouter senderVirtualRouter = sender.getVirtualRouters().get(senderVrfName);
     boolean changed = false;
-    for (OspfIntraAreaRoute neighborRoute :
-        neighborVirtualRouter._ospfIntraAreaRib.getTypedRoutes()) {
+    for (OspfIntraAreaRoute route : senderVirtualRouter._ospfIntraAreaRib.getTypedRoutes()) {
       changed |=
           propagateOspfIntraAreaRoute(
-              neighborRoute, incrementalCost, neighborInterface, adminCost, linkAreaNum);
+              route, incrementalCost, senderInterface, adminCost, linkAreaNum);
       changed |=
           propagateOspfInterAreaRouteFromIntraAreaRoute(
-              neighborConfiguration,
-              neighborProc,
-              neighborRoute,
+              senderConfiguration,
+              senderProc,
+              route,
               incrementalCost,
-              neighborInterface,
+              senderInterface,
               adminCost,
               linkAreaNum);
     }
-    for (OspfInterAreaRoute neighborRoute :
-        neighborVirtualRouter._ospfInterAreaRib.getTypedRoutes()) {
+    for (OspfInterAreaRoute route : senderVirtualRouter._ospfInterAreaRib.getTypedRoutes()) {
       changed |=
           propagateOspfInterAreaRouteFromInterAreaRoute(
-              proc,
-              neighborConfiguration,
-              neighborProc,
-              neighborRoute,
+              receiverProc,
+              senderConfiguration,
+              senderProc,
+              route,
               incrementalCost,
-              neighborInterface,
+              senderInterface,
               adminCost,
               linkAreaNum);
     }
     changed |=
         originateOspfStubAreaDefaultRoute(
-            neighborProc, incrementalCost, neighborInterface, adminCost, area);
+            senderProc, incrementalCost, senderInterface, adminCost, area);
     return changed;
   }
 
