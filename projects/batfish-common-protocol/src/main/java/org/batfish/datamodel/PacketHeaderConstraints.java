@@ -163,6 +163,10 @@ public class PacketHeaderConstraints {
     validate(this);
   }
 
+  /**
+   * Applications can be specified either as 1) a string like "ssh, telnet"; or 2) a (Json) list of
+   * strings like ["ssh", "telnet"]
+   */
   @VisibleForTesting
   static Set<Protocol> parseApplications(JsonNode applications) {
     String input = "";
