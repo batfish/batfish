@@ -181,9 +181,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private transient SortedMap<String, SimpleTransformation> _virtualIncomingTransformations;
   private transient Map<String, HeaderSpace> _virtualMatchedHeaders;
   private transient SortedMap<String, SimpleTransformation> _virtualOutgoingTransformations;
-
   private final @Nonnull Map<String, Virtual> _virtuals;
-
   private final @Nonnull Map<String, Vlan> _vlans;
 
   public F5BigipConfiguration() {
