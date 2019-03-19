@@ -1714,8 +1714,8 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidDispositionSpecifierValue() throws IOException {
-    JsonNode specNode = _mapper.readTree("\"success\"");
+  public void testValidApplicationSpecifierValue() throws IOException {
+    JsonNode specNode = _mapper.readTree("\"ssh\"");
     Variable variable = new Variable();
     variable.setType(APPLICATION_SPEC);
     Client.validateType(specNode, variable);
@@ -1754,7 +1754,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidApplicationSpecifierValue() throws IOException {
+  public void testValidDispositionSpecifierValue() throws IOException {
     JsonNode dispositionSpecNode = _mapper.readTree("\"success\"");
     Variable variable = new Variable();
     variable.setType(DISPOSITION_SPEC);
