@@ -13,6 +13,7 @@ public final class BgpNeighbor extends AbstractBgpNeighbor {
 
   private @Nullable Ip _address;
   private @Nullable Ip6 _address6;
+  private @Nullable Integer _ebgpMultihop;
   private @Nullable String _peerGroup;
 
   public BgpNeighbor(String name) {
@@ -57,6 +58,10 @@ public final class BgpNeighbor extends AbstractBgpNeighbor {
     return _address6;
   }
 
+  public @Nullable Integer getEbgpMultihop() {
+    return _ebgpMultihop;
+  }
+
   public @Nullable String getPeerGroup() {
     return _peerGroup;
   }
@@ -67,6 +72,10 @@ public final class BgpNeighbor extends AbstractBgpNeighbor {
 
   public void setAddress6(@Nullable Ip6 address6) {
     _address6 = address6;
+  }
+
+  public void setEbgpMultihop(@Nullable Integer ebgpMultihop) {
+    _ebgpMultihop = ebgpMultihop;
   }
 
   public void setPeerGroup(@Nullable String peerGroup) {

@@ -57,6 +57,7 @@ net routing bgp /Common/my_bgp {
                 }
             }
             description "Cool IPv4 BGP neighbor description"
+            ebgp-multihop 3
             fall-over bfd
             remote-as 456
             update-source SOME_VLAN

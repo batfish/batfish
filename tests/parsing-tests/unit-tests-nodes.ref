@@ -13596,7 +13596,7 @@
                   "allowRemoteAsOut" : false,
                   "defaultMetric" : 0,
                   "description" : "Cool IPv4 BGP neighbor description",
-                  "ebgpMultihop" : false,
+                  "ebgpMultihop" : true,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:/Common/my_bgp:192.0.2.1~",
                   "localAs" : 123,
