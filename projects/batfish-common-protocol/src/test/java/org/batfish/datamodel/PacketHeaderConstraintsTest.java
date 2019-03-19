@@ -6,20 +6,24 @@ import static org.batfish.datamodel.PacketHeaderConstraints.areProtocolsAndPorts
 import static org.batfish.datamodel.PacketHeaderConstraints.isValidDscp;
 import static org.batfish.datamodel.PacketHeaderConstraints.isValidEcn;
 import static org.batfish.datamodel.PacketHeaderConstraints.isValidIcmpTypeOrCode;
+import static org.batfish.datamodel.PacketHeaderConstraints.parseApplications;
 import static org.batfish.datamodel.PacketHeaderConstraints.resolveIpProtocols;
 import static org.batfish.datamodel.PacketHeaderConstraints.resolvePorts;
 import static org.batfish.datamodel.Protocol.DNS;
 import static org.batfish.datamodel.Protocol.HTTP;
 import static org.batfish.datamodel.Protocol.SSH;
+import static org.batfish.datamodel.Protocol.TELNET;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Set;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Rule;
 import org.junit.Test;
@@ -371,6 +375,28 @@ public class PacketHeaderConstraintsTest {
                 .excluding(Range.singleton(22))
                 .excluding(Range.closed(40, 50))
                 .build()));
+  }
+
+  @Test
+  public void testParseApplications() throws IOException {
+    Set<Protocol> expected = ImmutableSet.of(SSH, TELNET);
+    // this is what we expect via pybatfish
+    assertThat(
+        parseApplications(
+            BatfishObjectMapper.mapper().readValue("[\"SSH\", \"TELNET\"]", JsonNode.class)),
+        equalTo(expected));
+    // some lazy clients may send a string like this
+    assertThat(
+        parseApplications(
+            BatfishObjectMapper.mapper().readValue("\"SSH, TELNET\"", JsonNode.class)),
+        equalTo(expected));
+  }
+
+  @Test
+  public void testParseApplicationsQuotesInString() throws IOException {
+    thrown.expect(IllegalArgumentException.class);
+    // quoted values in a non-json list
+    parseApplications(BatfishObjectMapper.mapper().readValue("\"\\\"SSH\\\"\"", JsonNode.class));
   }
 
   @Test

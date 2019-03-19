@@ -9,9 +9,11 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Streams;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.specifier.IpProtocolSpecifier;
@@ -109,7 +111,7 @@ public class PacketHeaderConstraints {
       @Nullable @JsonProperty(PROP_ICMP_TYPES) IntegerSpace.Builder icmpTypes,
       @Nullable @JsonProperty(PROP_SRC_PORTS) IntegerSpace.Builder srcPorts,
       @Nullable @JsonProperty(PROP_DST_PORTS) IntegerSpace.Builder dstPorts,
-      @Nullable @JsonProperty(PROP_APPLICATIONS) String applications,
+      @Nullable @JsonProperty(PROP_APPLICATIONS) JsonNode applications,
       @Nullable @JsonProperty(PROP_TCP_FLAGS) Set<TcpFlagsMatchConditions> tcpFlags)
       throws IllegalArgumentException {
     return new PacketHeaderConstraints(
@@ -125,11 +127,7 @@ public class PacketHeaderConstraints {
         processBuilder(icmpTypes, VALID_ICMP_CODE_TYPE),
         processBuilder(srcPorts, IntegerSpace.PORTS),
         processBuilder(dstPorts, IntegerSpace.PORTS),
-        applications == null || applications.isEmpty()
-            ? null
-            : SpecifierFactories.getApplicationSpecifierOrDefault(
-                    applications, NoApplicationsApplicationSpecifier.INSTANCE)
-                .resolve(),
+        parseApplications(applications),
         tcpFlags);
   }
 
@@ -163,6 +161,30 @@ public class PacketHeaderConstraints {
     _applications = applications;
     _tcpFlags = tcpFlags;
     validate(this);
+  }
+
+  @VisibleForTesting
+  static Set<Protocol> parseApplications(JsonNode applications) {
+    String input = "";
+    if (applications == null || applications.isNull()) {
+      return null;
+    } else if (applications.isTextual()) {
+      input = applications.asText();
+    } else if (applications.isArray()) {
+      input =
+          Streams.stream(applications.elements())
+              .map(JsonNode::textValue)
+              .collect(Collectors.joining(","));
+    } else {
+      throw new IllegalArgumentException(
+          String.format(
+              "Applicaiton specifier should be a string or a list of strings. Got : ",
+              applications));
+    }
+
+    return SpecifierFactories.getApplicationSpecifierOrDefault(
+            input, NoApplicationsApplicationSpecifier.INSTANCE)
+        .resolve();
   }
 
   @Nullable
