@@ -928,6 +928,7 @@ import org.batfish.grammar.cisco.CiscoParser.Reaf_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Reaf_interface_defaultContext;
 import org.batfish.grammar.cisco.CiscoParser.Reafi_passive_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Rec_address_familyContext;
+import org.batfish.grammar.cisco.CiscoParser.Rec_metric_weightsContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_aggregate_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_connected_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_connected_is_stanzaContext;
@@ -939,6 +940,7 @@ import org.batfish.grammar.cisco.CiscoParser.Redistribute_static_is_stanzaContex
 import org.batfish.grammar.cisco.CiscoParser.Remote_as_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Remove_private_as_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Ren_address_familyContext;
+import org.batfish.grammar.cisco.CiscoParser.Ren_metric_weightsContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro6_distribute_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_areaContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_area_filterlistContext;
@@ -7858,8 +7860,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitRec_metric_weights(Rec_metric_weightsContext ctx) {
+    // See https://github.com/batfish/batfish/issues/1946
+    todo(ctx);
+  }
+
+  @Override
   public void exitRen_address_family(Ren_address_familyContext ctx) {
     exitEigrpProcess(ctx);
+  }
+
+  @Override
+  public void exitRen_metric_weights(Ren_metric_weightsContext ctx) {
+    // See https://github.com/batfish/batfish/issues/1946
+    todo(ctx);
   }
 
   @Override
@@ -10256,6 +10270,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     return new ExplicitAsPathSet(elems);
   }
 
+  @Nullable
+  @SuppressWarnings("unused")
   private EigrpMetric toEigrpMetric(
       ParserRuleContext ctx,
       Token ctxBw,
@@ -10267,23 +10283,28 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return null;
     }
     EigrpMetric.Builder builder = EigrpMetric.builder();
-    double bandwidth = toLong(ctxBw) * 1000.0D;
-    builder.setBandwidth(bandwidth);
-    double delay = toLong(ctxDelay) * 1E7;
-    builder.setDelay(delay);
-    int reliability = toInteger(ctxReliability);
-    if (reliability != 0) {
-      todo(ctx);
-    }
-    int effBw = toInteger(ctxEffBw);
-    if (effBw != 0) {
-      todo(ctx);
-    }
-    int mtu = toInteger(ctxMtu);
-    if (mtu != 0) {
-      todo(ctx);
-    }
 
+    long bandwidthLong = toLong(ctxBw);
+    if (bandwidthLong < 1 || bandwidthLong >= (1L << 32)) {
+      _w.redFlag("EIGRP metric has invalid bandwidth");
+      return null;
+    }
+    double bandwidth = bandwidthLong * 1000.0D;
+    builder.setBandwidth(bandwidth);
+
+    long delayLong = toLong(ctxDelay);
+    if (delayLong < 1 || delayLong >= (1L << 32)) {
+      _w.redFlag("EIGRP metric has invalid delay");
+      return null;
+    }
+    double delay = delayLong * 1E7;
+    builder.setDelay(delay);
+
+    /*
+     * The other three metrics (reliability, load, and MTU) may be non-zero but are only used if
+     * the K constants are configured.
+     * See https://github.com/batfish/batfish/issues/1946
+     */
     builder.setMode(_currentEigrpProcess.getMode());
     return builder.build();
   }

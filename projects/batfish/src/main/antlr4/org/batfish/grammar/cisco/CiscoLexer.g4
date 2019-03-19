@@ -7519,6 +7519,11 @@ MAXIMUM_ACCEPTED_ROUTES
    'maximum-accepted-routes'
 ;
 
+MAXIMUM_HOPS
+:
+   'maximum-hops'
+;
+
 MAXIMUM_PATHS
 :
    'maximum-paths'
@@ -10779,6 +10784,11 @@ RIB_METRIC_AS_EXTERNAL
 RIB_METRIC_AS_INTERNAL
 :
    'rib-metric-as-internal'
+;
+
+RIB_SCALE
+:
+   'rib-scale'
 ;
 
 RING
@@ -14098,6 +14108,11 @@ WEIGHT
 WEIGHTING
 :
    'weighting'
+;
+
+WEIGHTS
+:
+   'weights'
 ;
 
 WELCOME_PAGE

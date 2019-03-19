@@ -10,6 +10,8 @@ object-group ip address _anonymized2_
 router eigrp 5
  address-family ipv4 unicast vrf default autonomous-system 55
   autonomous-system 65500
+  metric weights 0 1 2 3 4 5
+  metric maximum-hops 11
   network 1.1.2.1
  exit-address-family
  default-metric 1 2 3 4 5
@@ -17,6 +19,8 @@ router eigrp 5
  eigrp log-neighbor-changes
  eigrp log-neighbor-warnings 300
  eigrp router-id 100.1.1.1
+ metric maximum-hops 12
+ metric weights 0 1 2 3 4 5
  network 1.1.1.1 255.255.255.255
  network 5.5.5.5
  no auto-summary
@@ -125,9 +129,12 @@ router eigrp virtual
    passive-interface
   exit-af-interface
   eigrp default-route-tag 2
+  metric rib-scale 100
+  metric weights 0 1 2 3 4 5 6
   network 1.1.1.100
   remote-neighbors source GigabitEthernet0/0/1 unicast-listen lisp-encap 2
   topology base
+   metric maximum-hops 10
    offset-list 21 out 10
    summary-metric 192.168.0.0/16 10000 10 255 1 1500 distance 20
    traffic-share balanced
@@ -140,6 +147,8 @@ router eigrp virtual
   no passive-interface FastEthernet0/1
  exit-address-family
  service-family ipv4 vrf service-family autonomous-system 3
+  eigrp log-neighbor-changes
+  metric weights 0 1 2 3 4 5 6
   sf-interface Ethernet0
    bandwidth-percent 75
    dampening-change 75
@@ -150,6 +159,7 @@ router eigrp virtual
    no split-horizon
   exit-sf-interface
   topology base
+   metric maximum-hops 20
  exit-service-family
 !
 interface Ethernet0

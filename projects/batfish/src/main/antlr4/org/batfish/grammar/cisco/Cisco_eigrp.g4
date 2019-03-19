@@ -17,6 +17,7 @@ re_classic_tail
    re_eigrp_null
    | re_eigrp_router_id
    | rec_address_family
+   | rec_metric_weights
    | rec_null
    | re_default_metric
    | re_network
@@ -242,7 +243,7 @@ reaf_topology_null
       | DISTRIBUTE_LIST
       | FAST_REROUTE
       | MAXIMUM_PATHS
-      | METRIC
+      | (METRIC MAXIMUM_HOPS)
       | OFFSET_LIST
       | SNMP
       | SUMMARY_METRIC
@@ -282,7 +283,7 @@ rec_address_family_null
       | DISTRIBUTE_LIST
       | MAXIMUM_PATHS
       | MAXIMUM_PREFIX
-      | METRIC
+      | (METRIC MAXIMUM_HOPS)
       | NEIGHBOR
       | NSF
       | OFFSET_LIST
@@ -300,6 +301,12 @@ rec_address_family_tail
    | re_passive_interface
    | re_redistribute
    | rec_address_family_null
+   | rec_metric_weights
+;
+
+rec_metric_weights
+:
+   METRIC WEIGHTS tos = DEC k1 = DEC k2 = DEC k3 = DEC k4 = DEC k5 = DEC NEWLINE
 ;
 
 rec_null
@@ -313,7 +320,7 @@ rec_null
       | DISTRIBUTE_LIST
       | HELLO_INTERVAL
       | MAXIMUM_PATHS
-      | METRIC
+      | (METRIC MAXIMUM_HOPS)
       | NEIGHBOR
       | NSF
       | OFFSET_LIST
@@ -348,7 +355,7 @@ ren_address_family_null
    NO?
    (
       MAXIMUM_PREFIX
-      | METRIC
+      | (METRIC RIB_SCALE)
       | NEIGHBOR
       | NSF
       | REMOTE_NEIGHBORS
@@ -368,6 +375,15 @@ ren_address_family_tail
    | reaf_interface
    | reaf_topology
    | ren_address_family_null
+   | ren_metric_weights
+;
+
+ren_metric_weights
+:
+   METRIC WEIGHTS
+   // Looks so far like weights are non-optional
+   // https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/iproute_eigrp/configuration/xe-3s/ire-xe-3s-book/ire-wid-met.pdf
+   tos = DEC k1 = DEC k2 = DEC k3 = DEC k4 = DEC k5 = DEC k6 = DEC NEWLINE
 ;
 
 ren_null
@@ -398,9 +414,11 @@ ren_service_family_tail
 :
    re_eigrp_null
    | re_eigrp_router_id
+   | ren_metric_weights
    | ren_service_family_null
    | resf_interface_default
    | resf_interface
+   | resf_null
    | resf_topology
 ;
 
@@ -447,7 +465,6 @@ resf_null
    NO?
    (
       EIGRP
-      | METRIC
       | NEIGHBOR
       | REMOTE_NEIGHBORS
       | SHUTDOWN
@@ -465,7 +482,7 @@ resf_topology_null
 :
    NO?
    (
-      METRIC
+      (METRIC MAXIMUM_HOPS)
       | TIMERS
    ) null_rest_of_line
 ;

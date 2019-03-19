@@ -20634,6 +20634,24 @@
             "                asnum = DEC:'65500'",
             "                NEWLINE:'\\n'))",
             "            (rec_address_family_tail",
+            "              (rec_metric_weights",
+            "                METRIC:'metric'",
+            "                WEIGHTS:'weights'",
+            "                tos = DEC:'0'",
+            "                k1 = DEC:'1'",
+            "                k2 = DEC:'2'",
+            "                k3 = DEC:'3'",
+            "                k4 = DEC:'4'",
+            "                k5 = DEC:'5'",
+            "                NEWLINE:'\\n'))",
+            "            (rec_address_family_tail",
+            "              (rec_address_family_null",
+            "                METRIC:'metric'",
+            "                MAXIMUM_HOPS:'maximum-hops'",
+            "                (null_rest_of_line",
+            "                  DEC:'11'",
+            "                  NEWLINE:'\\n')))",
+            "            (rec_address_family_tail",
             "              (re_network",
             "                NETWORK:'network'",
             "                address = IP_ADDRESS:'1.1.2.1'",
@@ -20675,6 +20693,24 @@
             "            EIGRP:'eigrp'",
             "            ROUTER_ID:'router-id'",
             "            id = IP_ADDRESS:'100.1.1.1'",
+            "            NEWLINE:'\\n'))",
+            "        (re_classic_tail",
+            "          (rec_null",
+            "            METRIC:'metric'",
+            "            MAXIMUM_HOPS:'maximum-hops'",
+            "            (null_rest_of_line",
+            "              DEC:'12'",
+            "              NEWLINE:'\\n')))",
+            "        (re_classic_tail",
+            "          (rec_metric_weights",
+            "            METRIC:'metric'",
+            "            WEIGHTS:'weights'",
+            "            tos = DEC:'0'",
+            "            k1 = DEC:'1'",
+            "            k2 = DEC:'2'",
+            "            k3 = DEC:'3'",
+            "            k4 = DEC:'4'",
+            "            k5 = DEC:'5'",
             "            NEWLINE:'\\n'))",
             "        (re_classic_tail",
             "          (re_network",
@@ -21550,6 +21586,25 @@
             "                  DEC:'2'",
             "                  NEWLINE:'\\n')))",
             "            (ren_address_family_tail",
+            "              (ren_address_family_null",
+            "                METRIC:'metric'",
+            "                RIB_SCALE:'rib-scale'",
+            "                (null_rest_of_line",
+            "                  DEC:'100'",
+            "                  NEWLINE:'\\n')))",
+            "            (ren_address_family_tail",
+            "              (ren_metric_weights",
+            "                METRIC:'metric'",
+            "                WEIGHTS:'weights'",
+            "                tos = DEC:'0'",
+            "                k1 = DEC:'1'",
+            "                k2 = DEC:'2'",
+            "                k3 = DEC:'3'",
+            "                k4 = DEC:'4'",
+            "                k5 = DEC:'5'",
+            "                k6 = DEC:'6'",
+            "                NEWLINE:'\\n'))",
+            "            (ren_address_family_tail",
             "              (re_network",
             "                NETWORK:'network'",
             "                address = IP_ADDRESS:'1.1.1.100'",
@@ -21570,6 +21625,13 @@
             "                  TOPOLOGY:'topology'",
             "                  BASE:'base'",
             "                  NEWLINE:'\\n')",
+            "                (reaf_topology_tail",
+            "                  (reaf_topology_null",
+            "                    METRIC:'metric'",
+            "                    MAXIMUM_HOPS:'maximum-hops'",
+            "                    (null_rest_of_line",
+            "                      DEC:'10'",
+            "                      NEWLINE:'\\n')))",
             "                (reaf_topology_tail",
             "                  (reaf_topology_null",
             "                    OFFSET_LIST:'offset-list'",
@@ -21653,6 +21715,24 @@
             "            asnum = DEC:'3'",
             "            NEWLINE:'\\n'",
             "            (ren_service_family_tail",
+            "              (re_eigrp_null",
+            "                EIGRP:'eigrp'",
+            "                LOG_NEIGHBOR_CHANGES:'log-neighbor-changes'",
+            "                (null_rest_of_line",
+            "                  NEWLINE:'\\n')))",
+            "            (ren_service_family_tail",
+            "              (ren_metric_weights",
+            "                METRIC:'metric'",
+            "                WEIGHTS:'weights'",
+            "                tos = DEC:'0'",
+            "                k1 = DEC:'1'",
+            "                k2 = DEC:'2'",
+            "                k3 = DEC:'3'",
+            "                k4 = DEC:'4'",
+            "                k5 = DEC:'5'",
+            "                k6 = DEC:'6'",
+            "                NEWLINE:'\\n'))",
+            "            (ren_service_family_tail",
             "              (resf_interface",
             "                SF_INTERFACE:'sf-interface'",
             "                iname = (interface_name",
@@ -21705,7 +21785,14 @@
             "                (re_topology_base",
             "                  TOPOLOGY:'topology'",
             "                  BASE:'base'",
-            "                  NEWLINE:'\\n')))",
+            "                  NEWLINE:'\\n')",
+            "                (resf_topology_tail",
+            "                  (resf_topology_null",
+            "                    METRIC:'metric'",
+            "                    MAXIMUM_HOPS:'maximum-hops'",
+            "                    (null_rest_of_line",
+            "                      DEC:'20'",
+            "                      NEWLINE:'\\n')))))",
             "            (resf_footer",
             "              EXIT_SERVICE_FAMILY:'exit-service-family'",
             "              NEWLINE:'\\n'))))))",
@@ -69605,63 +69692,51 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 15,
-              "Parser_Context" : "[re_default_metric re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
-              "Text" : "default-metric 1 2 3 4 5"
+              "Line" : 13,
+              "Parser_Context" : "[rec_metric_weights rec_address_family_tail rec_address_family re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
+              "Text" : "metric weights 0 1 2 3 4 5"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 15,
-              "Parser_Context" : "[re_default_metric re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
-              "Text" : "default-metric 1 2 3 4 5"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 15,
-              "Parser_Context" : "[re_default_metric re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
-              "Text" : "default-metric 1 2 3 4 5"
+              "Line" : 23,
+              "Parser_Context" : "[rec_metric_weights re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
+              "Text" : "metric weights 0 1 2 3 4 5"
             },
             {
               "Comment" : "ISIS redistribution in EIGRP is not implemented",
-              "Line" : 34,
+              "Line" : 38,
               "Parser_Context" : "[re_redistribute_isis re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
               "Text" : "redistribute isis route-map ISIS_TO_EIGRP"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 35,
+              "Line" : 39,
               "Parser_Context" : "[re_redistribute_ospf re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
               "Text" : "redistribute ospf 4 route-map OSPF_TO_EIGRP"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 37,
-              "Parser_Context" : "[re_redistribute_static re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
-              "Text" : "redistribute static metric 10000 10 255 1 1500 route-map STATIC_TO_EIGRP"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 37,
-              "Parser_Context" : "[re_redistribute_static re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
-              "Text" : "redistribute static metric 10000 10 255 1 1500 route-map STATIC_TO_EIGRP"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 37,
-              "Parser_Context" : "[re_redistribute_static re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
-              "Text" : "redistribute static metric 10000 10 255 1 1500 route-map STATIC_TO_EIGRP"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 115,
+              "Line" : 119,
               "Parser_Context" : "[access_list_ip_range extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
               "Text" : "addrgroup bleep_blorp"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 118,
+              "Line" : 122,
               "Parser_Context" : "[ren_address_family re_named_tail re_named s_router_eigrp stanza cisco_configuration]",
-              "Text" : "address-family ipv4 multicast vrf autonomous-system autonomous-system 4\n  af-interface Ethernet0\n   add-paths 4\n   bandwidth-percent 75\n   dampening-change 75\n   dampening-interval 45\n   hold-time 40\n   passive-interface\n  exit-af-interface\n  eigrp default-route-tag 2\n  network 1.1.1.100\n  remote-neighbors source GigabitEthernet0/0/1 unicast-listen lisp-encap 2\n  topology base\n   offset-list 21 out 10\n   summary-metric 192.168.0.0/16 10000 10 255 1 1500 distance 20\n   traffic-share balanced\n   variance 4\n  exit-af-topology\n  topology VOICE tid 1000\n   no auto-summary\n  exit-af-topology\n  passive-interface default\n  no passive-interface FastEthernet0/1\n exit-address-family"
+              "Text" : "address-family ipv4 multicast vrf autonomous-system autonomous-system 4\n  af-interface Ethernet0\n   add-paths 4\n   bandwidth-percent 75\n   dampening-change 75\n   dampening-interval 45\n   hold-time 40\n   passive-interface\n  exit-af-interface\n  eigrp default-route-tag 2\n  metric rib-scale 100\n  metric weights 0 1 2 3 4 5 6\n  network 1.1.1.100\n  remote-neighbors source GigabitEthernet0/0/1 unicast-listen lisp-encap 2\n  topology base\n   metric maximum-hops 10\n   offset-list 21 out 10\n   summary-metric 192.168.0.0/16 10000 10 255 1 1500 distance 20\n   traffic-share balanced\n   variance 4\n  exit-af-topology\n  topology VOICE tid 1000\n   no auto-summary\n  exit-af-topology\n  passive-interface default\n  no passive-interface FastEthernet0/1\n exit-address-family"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 133,
+              "Parser_Context" : "[ren_metric_weights ren_address_family_tail ren_address_family re_named_tail re_named s_router_eigrp stanza cisco_configuration]",
+              "Text" : "metric weights 0 1 2 3 4 5 6"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 151,
+              "Parser_Context" : "[ren_metric_weights ren_service_family_tail ren_service_family re_named_tail re_named s_router_eigrp stanza cisco_configuration]",
+              "Text" : "metric weights 0 1 2 3 4 5 6"
             }
           ]
         },
@@ -72905,20 +72980,20 @@
           "extended ipv4 access-list" : {
             "bippety" : {
               "definitionLines" : [
-                45,
-                46,
-                47,
-                48,
                 49,
                 50,
-                51
+                51,
+                52,
+                53,
+                54,
+                55
               ],
               "numReferrers" : 0
             },
             "bloop_blop" : {
               "definitionLines" : [
-                114,
-                115
+                118,
+                119
               ],
               "numReferrers" : 0
             }
@@ -72926,7 +73001,7 @@
           "interface" : {
             "Ethernet0" : {
               "definitionLines" : [
-                155
+                165
               ],
               "numReferrers" : 2
             }
@@ -78631,72 +78706,72 @@
           "interface" : {
             "Ethernet0" : {
               "eigrp address-family af-interface" : [
-                119
+                123
               ],
               "interface" : [
-                155
+                165
               ]
             },
             "FastEthernet0/1" : {
               "eigrp passive-interface" : [
-                140
+                147
               ]
             },
             "GigabitEthernet1/5/3" : {
               "eigrp passive-interface" : [
-                23
+                27
               ]
             },
             "GigabitEthernet2/5/3" : {
               "eigrp passive-interface" : [
-                24
+                28
               ]
             },
             "Port-Channel34" : {
               "eigrp passive-interface" : [
-                25
+                29
               ]
             },
             "Port-Channel35" : {
               "eigrp passive-interface" : [
-                26
+                30
               ]
             }
           },
           "route-map" : {
             "BGP_TO_EIGRP" : {
               "eigrp redistribute bgp route-map" : [
-                31
+                35
               ]
             },
             "CONNECTED_TO_EIGRP" : {
               "eigrp redistribute connected route-map" : [
-                32
+                36
               ]
             },
             "EIGRP_TO_EIGRP" : {
               "eigrp redistribute eigrp route-map" : [
-                33
+                37
               ]
             },
             "ISIS_TO_EIGRP" : {
               "eigrp redistribute isis route-map" : [
-                34
+                38
               ]
             },
             "OSPF_TO_EIGRP" : {
               "eigrp redistribute ospf route-map" : [
-                35
+                39
               ]
             },
             "RIP_TO_EIGRP" : {
               "eigrp redistribute rip route-map" : [
-                36
+                40
               ]
             },
             "STATIC_TO_EIGRP" : {
               "eigrp redistribute static route-map" : [
-                37
+                41
               ]
             }
           }
@@ -82245,64 +82320,64 @@
           "interface" : {
             "FastEthernet0/1" : {
               "eigrp passive-interface" : [
-                140
+                147
               ]
             },
             "GigabitEthernet1/5/3" : {
               "eigrp passive-interface" : [
-                23
+                27
               ]
             },
             "GigabitEthernet2/5/3" : {
               "eigrp passive-interface" : [
-                24
+                28
               ]
             },
             "Port-Channel34" : {
               "eigrp passive-interface" : [
-                25
+                29
               ]
             },
             "Port-Channel35" : {
               "eigrp passive-interface" : [
-                26
+                30
               ]
             }
           },
           "route-map" : {
             "BGP_TO_EIGRP" : {
               "eigrp redistribute bgp route-map" : [
-                31
+                35
               ]
             },
             "CONNECTED_TO_EIGRP" : {
               "eigrp redistribute connected route-map" : [
-                32
+                36
               ]
             },
             "EIGRP_TO_EIGRP" : {
               "eigrp redistribute eigrp route-map" : [
-                33
+                37
               ]
             },
             "ISIS_TO_EIGRP" : {
               "eigrp redistribute isis route-map" : [
-                34
+                38
               ]
             },
             "OSPF_TO_EIGRP" : {
               "eigrp redistribute ospf route-map" : [
-                35
+                39
               ]
             },
             "RIP_TO_EIGRP" : {
               "eigrp redistribute rip route-map" : [
-                36
+                40
               ]
             },
             "STATIC_TO_EIGRP" : {
               "eigrp redistribute static route-map" : [
-                37
+                41
               ]
             }
           }
