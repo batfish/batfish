@@ -718,7 +718,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return _trunks;
   }
 
-  private Ip getUpdateSource(BgpProcess proc, BgpNeighbor neighbor) {
+  private @Nullable Ip getUpdateSource(BgpProcess proc, BgpNeighbor neighbor) {
     Ip neighborAddress = neighbor.getAddress();
     if (neighborAddress == null || proc.getLocalAs() == null || neighbor.getRemoteAs() == null) {
       // Only compute for IPv4 neighbors for now.
