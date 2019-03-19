@@ -946,6 +946,26 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testAsaServiceObjectInline() throws IOException {
+    String hostname = "asa-service-object-inline";
+    Configuration c = parseConfig(hostname);
+
+    String icmpAclName = "ACL_ICMP";
+    String ospfAclName = "ACL_OSPF";
+
+    Flow flowIcmpPass = createIcmpFlow(IcmpType.ECHO_REQUEST);
+    Flow flowIcmpFail = createIcmpFlow(IcmpType.ECHO_REPLY);
+    Flow flowOspfPass = createFlow(IpProtocol.OSPF, 0, 0);
+    Flow flowOspfFail = createFlow(IpProtocol.UDP, 0, 0);
+
+    /* Confirm IpAcls created from inline service objects permit and reject the correct flows */
+    assertThat(c, hasIpAccessList(icmpAclName, accepts(flowIcmpPass, null, c)));
+    assertThat(c, hasIpAccessList(icmpAclName, rejects(flowIcmpFail, null, c)));
+    assertThat(c, hasIpAccessList(ospfAclName, accepts(flowOspfPass, null, c)));
+    assertThat(c, hasIpAccessList(ospfAclName, rejects(flowOspfFail, null, c)));
+  }
+
+  @Test
   public void testAsaNestedIcmpTypeObjectGroup() throws IOException {
     String hostname = "asa-nested-icmp-type-object-group";
     String filename = "configs/" + hostname;
