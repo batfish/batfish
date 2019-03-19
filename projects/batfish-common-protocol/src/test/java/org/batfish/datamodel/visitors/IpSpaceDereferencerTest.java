@@ -30,14 +30,15 @@ public class IpSpaceDereferencerTest {
   public void testAclIpSpace() {
     IpSpaceDereferencer dereferencer = new IpSpaceDereferencer(NAMED_IP_SPACES);
     AclIpSpace input =
-        AclIpSpace.builder()
-            .thenPermitting(new IpSpaceReference("empty"))
-            .thenRejecting(new IpSpaceReference("prefix"))
-            .thenPermitting(new IpSpaceReference("namedIp"))
-            .thenRejecting(UniverseIpSpace.INSTANCE)
-            .build();
+        (AclIpSpace)
+            AclIpSpace.builder()
+                .thenPermitting(new IpSpaceReference("empty"))
+                .thenRejecting(new IpSpaceReference("prefix"))
+                .thenPermitting(new IpSpaceReference("namedIp"))
+                .thenRejecting(UniverseIpSpace.INSTANCE)
+                .build();
 
-    AclIpSpace expected =
+    IpSpace expected =
         AclIpSpace.builder()
             .thenPermitting(NAMED_IP_SPACES.get("empty"))
             .thenRejecting(NAMED_IP_SPACES.get("prefix"))

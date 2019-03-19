@@ -38,12 +38,27 @@ public class AclIpSpace extends IpSpace {
       _lines = ImmutableList.builder();
     }
 
-    public AclIpSpace build() {
-      return new AclIpSpace(_lines.build());
+    public IpSpace build() {
+      List<AclIpSpaceLine> lines = _lines.build();
+      while (!lines.isEmpty() && lines.get(lines.size() - 1).getAction() == LineAction.DENY) {
+        lines = lines.subList(0, lines.size() - 1);
+      }
+      if (lines.isEmpty()) {
+        return EmptyIpSpace.INSTANCE;
+      } else if (lines.size() == 1) {
+        AclIpSpaceLine line = lines.get(0);
+        if (line.getAction() == LineAction.PERMIT) {
+          return line.getIpSpace();
+        }
+        return EmptyIpSpace.INSTANCE;
+      }
+      return new AclIpSpace(lines);
     }
 
     public Builder then(AclIpSpaceLine line) {
       if (_full) {
+        return this;
+      } else if (line.getIpSpace() instanceof EmptyIpSpace) {
         return this;
       }
       _full = line.getIpSpace() instanceof UniverseIpSpace;
@@ -88,10 +103,6 @@ public class AclIpSpace extends IpSpace {
     }
   }
 
-  public static final AclIpSpace DENY_ALL = AclIpSpace.builder().build();
-
-  public static final AclIpSpace PERMIT_ALL = AclIpSpace.of(AclIpSpaceLine.PERMIT_ALL);
-
   private static final String PROP_LINES = "lines";
 
   /** */
@@ -101,13 +112,13 @@ public class AclIpSpace extends IpSpace {
     return new Builder();
   }
 
-  public static AclIpSpace of(Iterable<AclIpSpaceLine> lines) {
+  public static IpSpace of(Iterable<AclIpSpaceLine> lines) {
     Builder builder = builder();
     lines.forEach(builder::then);
     return builder.build();
   }
 
-  public static AclIpSpace of(AclIpSpaceLine... lines) {
+  public static IpSpace of(AclIpSpaceLine... lines) {
     return of(Arrays.asList(lines));
   }
 
@@ -277,11 +288,18 @@ public class AclIpSpace extends IpSpace {
 
   @Override
   public int hashCode() {
-    return _lines.hashCode();
+    int hash = _hashCode;
+    if (hash == 0) {
+      hash = _lines.hashCode();
+      _hashCode = hash;
+    }
+    return hash;
   }
 
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(getClass()).add(PROP_LINES, _lines).toString();
   }
+
+  private volatile int _hashCode = 0;
 }

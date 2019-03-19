@@ -53,7 +53,7 @@ public class IpSpaceRenamerTest {
 
   @Test
   public void testAclIpSpace() {
-    AclIpSpace input =
+    IpSpace input =
         AclIpSpace.builder()
             .thenPermitting(IP_IP_SPACE)
             .thenRejecting(PREFIX_IP_SPACE)
@@ -61,7 +61,7 @@ public class IpSpaceRenamerTest {
             .thenRejecting(IP_WILDCARD_IP_SPACE)
             .thenPermitting(IP_WILDCARD_SET_IP_SPACE)
             .build();
-    AclIpSpace output =
+    IpSpace output =
         AclIpSpace.builder()
             .thenPermitting(IP_IP_SPACE)
             .thenRejecting(PREFIX_IP_SPACE)
