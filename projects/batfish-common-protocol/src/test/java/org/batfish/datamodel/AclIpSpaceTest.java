@@ -14,7 +14,7 @@ public class AclIpSpaceTest {
   /*
    * Permit everything in 1.1.0.0/16 except for 1.1.1.0/24.
    */
-  private static final AclIpSpace _aclIpSpace =
+  private static final IpSpace _aclIpSpace =
       AclIpSpace.builder()
           .thenRejecting(Prefix.parse("1.1.1.0/24").toIpSpace())
           .thenPermitting(Prefix.parse("1.1.0.0/16").toIpSpace())
@@ -55,14 +55,14 @@ public class AclIpSpaceTest {
 
   @Test
   public void testStopWhenEmpty() {
-    AclIpSpace space =
+    IpSpace space =
         AclIpSpace.builder()
             .thenPermitting(Prefix.parse("1.2.3.4/32").toIpSpace())
             .thenRejecting(UniverseIpSpace.INSTANCE)
             .thenPermitting(Prefix.parse("2.0.0.0/8").toIpSpace())
             .build();
 
-    AclIpSpace expected =
+    IpSpace expected =
         AclIpSpace.builder()
             .thenPermitting(Prefix.parse("1.2.3.4/32").toIpSpace())
             .thenRejecting(UniverseIpSpace.INSTANCE)

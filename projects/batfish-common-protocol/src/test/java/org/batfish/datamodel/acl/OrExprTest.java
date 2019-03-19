@@ -11,7 +11,7 @@ import org.junit.Test;
 
 public class OrExprTest {
   private Flow createFlow() {
-    Flow.Builder b = new Flow.Builder();
+    Flow.Builder b = Flow.builder();
     b.setIngressNode("ingressNode");
     b.setTag("empty");
     return b.build();

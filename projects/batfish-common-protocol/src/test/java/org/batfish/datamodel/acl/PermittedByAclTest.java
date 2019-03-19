@@ -23,7 +23,7 @@ public class PermittedByAclTest {
   private NetworkFactory _nf;
 
   private static Flow createFlow(String ipAddrStr) {
-    Flow.Builder b = new Flow.Builder();
+    Flow.Builder b = Flow.builder();
     b.setIngressNode("ingressNode");
     b.setSrcIp(Ip.parse(ipAddrStr));
     b.setTag("test");

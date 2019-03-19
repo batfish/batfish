@@ -8,13 +8,13 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByIpAc
 import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByNamedIpSpace;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import org.batfish.datamodel.AclIpSpace;
-import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
@@ -24,6 +24,7 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.IpSpaceReference;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.matchers.DeniedByIpAccessListLineMatchers;
 import org.batfish.datamodel.matchers.PermittedByAclIpSpaceLineMatchers;
@@ -59,7 +60,11 @@ public class AclTracerTest {
 
   @Test
   public void testDefaultDeniedByNamedAclIpSpace() {
-    AclIpSpace aclIpSpace = AclIpSpace.DENY_ALL;
+    IpSpace aclIpSpace =
+        AclIpSpace.permitting(Ip.parse("255.255.255.255").toIpSpace())
+            .thenPermitting(Ip.parse("255.255.255.254").toIpSpace())
+            .build();
+    assertThat(aclIpSpace, instanceOf(AclIpSpace.class));
     IpAccessList acl =
         IpAccessList.builder()
             .setName(ACL_NAME)
@@ -148,7 +153,12 @@ public class AclTracerTest {
 
   @Test
   public void testDeniedByNamedAclIpSpaceLine() {
-    AclIpSpace aclIpSpace = AclIpSpace.of(AclIpSpaceLine.DENY_ALL);
+    IpSpace aclIpSpace =
+        AclIpSpace.permitting(Ip.parse("255.255.255.255").toIpSpace())
+            .thenPermitting(Ip.parse("255.255.255.254").toIpSpace())
+            .build();
+    assertThat(aclIpSpace, instanceOf(AclIpSpace.class));
+
     IpAccessList acl =
         IpAccessList.builder()
             .setName(ACL_NAME)
@@ -200,7 +210,12 @@ public class AclTracerTest {
 
   @Test
   public void testDeniedByUnnamedAclIpSpace() {
-    AclIpSpace aclIpSpace = AclIpSpace.DENY_ALL;
+    IpSpace aclIpSpace =
+        AclIpSpace.permitting(Ip.parse("255.255.255.255").toIpSpace())
+            .thenPermitting(Ip.parse("255.255.255.254").toIpSpace())
+            .build();
+    assertThat(aclIpSpace, instanceOf(AclIpSpace.class));
+
     IpAccessList acl =
         IpAccessList.builder()
             .setName(ACL_NAME)
@@ -266,7 +281,12 @@ public class AclTracerTest {
 
   @Test
   public void testPermittedByNamedAclIpSpaceLine() {
-    AclIpSpace aclIpSpace = AclIpSpace.PERMIT_ALL;
+    IpSpace aclIpSpace =
+        AclIpSpace.permitting(Prefix.parse("1.0.0.0/1").toIpSpace())
+            .thenPermitting(Prefix.parse("0.0.0.0/1").toIpSpace())
+            .build();
+    assertThat(aclIpSpace, instanceOf(AclIpSpace.class));
+
     IpAccessList acl =
         IpAccessList.builder()
             .setName(ACL_NAME)
@@ -335,7 +355,12 @@ public class AclTracerTest {
 
   @Test
   public void testPermittedByUnnamedAclIpSpace() {
-    AclIpSpace aclIpSpace = AclIpSpace.PERMIT_ALL;
+    IpSpace aclIpSpace =
+        AclIpSpace.permitting(Prefix.parse("0.0.0.0/1").toIpSpace())
+            .thenPermitting(Prefix.parse("1.0.0.0/1").toIpSpace())
+            .build();
+    assertThat(aclIpSpace, instanceOf(AclIpSpace.class));
+
     IpAccessList acl =
         IpAccessList.builder()
             .setName(ACL_NAME)
