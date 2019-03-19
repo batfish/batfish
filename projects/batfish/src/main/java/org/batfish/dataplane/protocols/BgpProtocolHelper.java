@@ -3,10 +3,10 @@ package org.batfish.dataplane.protocols;
 import static java.util.Objects.requireNonNull;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Set;
 import java.util.SortedSet;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.WellKnownCommunity;
 import org.batfish.datamodel.AbstractRoute;
@@ -32,10 +32,10 @@ public class BgpProtocolHelper {
 
   /**
    * Perform BGP export transformations on a given route when sending an advertisement from {@code
-   * fromNeighbor} to {@code toNeighbor}
+   * fromNeighbor} to {@code toNeighbor} before export policy as applied.
    */
   @Nullable
-  public static BgpRoute.Builder transformBgpRouteOnExport(
+  public static BgpRoute.Builder transformBgpRoutePreExport(
       BgpPeerConfig fromNeighbor,
       BgpPeerConfig toNeighbor,
       BgpSessionProperties sessionProperties,
@@ -92,12 +92,7 @@ public class BgpProtocolHelper {
       return null;
     }
     // Set transformed route's AS path and communities
-    ImmutableList.Builder<AsSet> transformedAsSets = new Builder<>();
-    if (sessionProperties.isEbgp()) {
-      transformedAsSets.add(AsSet.of(fromNeighbor.getLocalAs()));
-    }
-    transformedAsSets.addAll(originalAsPath.getAsSets());
-    transformedOutgoingRouteBuilder.setAsPath(AsPath.of(transformedAsSets.build()));
+    transformedOutgoingRouteBuilder.setAsPath(originalAsPath);
     if (fromNeighbor.getSendCommunity()) {
       transformedOutgoingRouteBuilder.addCommunities(originalCommunities);
     }
@@ -272,5 +267,25 @@ public class BgpProtocolHelper {
     b.setReceivedFromIp(Ip.ZERO);
     b.setNonRouting(nonRouting);
     return b.build();
+  }
+
+  /**
+   * Perform BGP export transformations on a given route when sending an advertisement from {@code
+   * fromNeighbor} to {@code toNeighbor} after export policy as applied and route is accepted, but
+   * before route is sent onto the wire.
+   */
+  public static void transformBgpRoutePostExport(
+      @Nonnull BgpRoute.Builder routeBuilder,
+      @Nonnull BgpPeerConfig fromNeighbor,
+      @Nonnull BgpSessionProperties sessionProperties) {
+    if (sessionProperties.isEbgp()) {
+      // if eBGP, prepend as-path sender's as-path number
+      routeBuilder.setAsPath(
+          AsPath.of(
+              ImmutableList.<AsSet>builder()
+                  .add(AsSet.of(fromNeighbor.getLocalAs()))
+                  .addAll(routeBuilder.getAsPath().getAsSets())
+                  .build()));
+    }
   }
 }
