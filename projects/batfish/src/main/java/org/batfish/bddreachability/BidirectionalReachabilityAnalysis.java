@@ -15,6 +15,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import io.opentracing.ActiveSpan;
+import io.opentracing.util.GlobalTracer;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -76,70 +78,76 @@ public final class BidirectionalReachabilityAnalysis {
       Set<String> requiredTransitNodes,
       Set<String> forwardPassFinalNodes,
       Set<FlowDisposition> forwardPassActions) {
-    _bddPacket = bddPacket;
-    _configs = configs;
-    _factory =
-        new BDDReachabilityAnalysisFactory(bddPacket, configs, forwardingAnalysis, false, true);
-    _forbiddenTransitNodes = ImmutableSet.copyOf(forbiddenTransitNodes);
-    _requiredTransitNodes = ImmutableSet.copyOf(requiredTransitNodes);
+    try (ActiveSpan span =
+        GlobalTracer.get()
+            .buildSpan("Constructs BidirectionalReachabilityAnalysis")
+            .startActive()) {
+      assert span != null; // avoid unused warning
+      _bddPacket = bddPacket;
+      _configs = configs;
+      _factory =
+          new BDDReachabilityAnalysisFactory(bddPacket, configs, forwardingAnalysis, false, true);
+      _forbiddenTransitNodes = ImmutableSet.copyOf(forbiddenTransitNodes);
+      _requiredTransitNodes = ImmutableSet.copyOf(requiredTransitNodes);
 
-    _zero = bddPacket.getFactory().zero();
+      _zero = bddPacket.getFactory().zero();
 
-    // Compute _forwardPassOriginationConstraints
-    {
-      IpAccessListToBdd ipAccessListToBdd =
-          new IpAccessListToBddImpl(
-              _bddPacket,
-              BDDSourceManager.forInterfaces(_bddPacket, ImmutableSet.of()),
-              ImmutableMap.of(),
-              ImmutableMap.of());
-      BDD initialForwardHeaderSpaceBdd = ipAccessListToBdd.toBdd(initialForwardHeaderSpace);
-      _forwardPassOriginationConstraints =
-          _factory.rootConstraints(srcIpSpaceAssignment, initialForwardHeaderSpaceBdd);
+      // Compute _forwardPassOriginationConstraints
+      {
+        IpAccessListToBdd ipAccessListToBdd =
+            new IpAccessListToBddImpl(
+                _bddPacket,
+                BDDSourceManager.forInterfaces(_bddPacket, ImmutableSet.of()),
+                ImmutableMap.of(),
+                ImmutableMap.of());
+        BDD initialForwardHeaderSpaceBdd = ipAccessListToBdd.toBdd(initialForwardHeaderSpace);
+        _forwardPassOriginationConstraints =
+            _factory.rootConstraints(srcIpSpaceAssignment, initialForwardHeaderSpaceBdd);
+      }
+
+      // Compute _originateStateToLocation
+      {
+        LocationVisitor<Optional<StateExpr>> locationToStateExpr =
+            new LocationToOriginationStateExpr(_configs);
+        ImmutableMultimap.Builder<StateExpr, Location> builder = ImmutableMultimap.builder();
+        srcIpSpaceAssignment.getEntries().stream()
+            .flatMap(entry -> entry.getLocations().stream())
+            .map(
+                loc ->
+                    loc.accept(locationToStateExpr)
+                        .map(stateExpr -> Maps.immutableEntry(stateExpr, loc))
+                        .orElse(null))
+            .filter(Objects::nonNull)
+            .forEach(builder::put);
+        _originateStateToLocation = builder.build();
+      }
+
+      _forwardPassAnalysis =
+          Suppliers.memoize(
+              () ->
+                  _factory.bddReachabilityAnalysis(
+                      srcIpSpaceAssignment,
+                      initialForwardHeaderSpace,
+                      forbiddenTransitNodes,
+                      requiredTransitNodes,
+                      forwardPassFinalNodes,
+                      forwardPassActions));
+      _forwardPassForwardReachableBdds =
+          Suppliers.memoize(() -> _forwardPassAnalysis.get().computeForwardReachableStates());
+      _forwardPassTerminationStateToReturnPassOriginationState =
+          Suppliers.memoize(this::computeForwardPassTerminationStateToReturnPassOriginationState);
+      _returnPassOrigBdds = Suppliers.memoize(this::computeReturnPassOrigBdds);
+      _returnPassQueryConstraints = Suppliers.memoize(this::computeReturnPassQueryConstraints);
+      _reverseTransformationRanges = Suppliers.memoize(this::computeReverseTransformationRanges);
+      _returnPassForwardReachableBdds =
+          Suppliers.memoize(this::computeReturnPassForwardReachableBdds);
+      _initializedSessions = Suppliers.memoize(this::computeInitializedSessions);
+      _returnPassAnalysis = Suppliers.memoize(this::computeReturnPassAnalysis);
+      _forwardPassStartLocationToReturnPassFailureBdds =
+          Suppliers.memoize(this::computeForwardPassStartLocationToReturnPassFailureBdds);
+      _forwardPassStartLocationToReturnPassSuccessBdds =
+          Suppliers.memoize(this::computeForwardPassStartLocationToReturnPassSuccessBdds);
     }
-
-    // Compute _originateStateToLocation
-    {
-      LocationVisitor<Optional<StateExpr>> locationToStateExpr =
-          new LocationToOriginationStateExpr(_configs);
-      ImmutableMultimap.Builder<StateExpr, Location> builder = ImmutableMultimap.builder();
-      srcIpSpaceAssignment.getEntries().stream()
-          .flatMap(entry -> entry.getLocations().stream())
-          .map(
-              loc ->
-                  loc.accept(locationToStateExpr)
-                      .map(stateExpr -> Maps.immutableEntry(stateExpr, loc))
-                      .orElse(null))
-          .filter(Objects::nonNull)
-          .forEach(builder::put);
-      _originateStateToLocation = builder.build();
-    }
-
-    _forwardPassAnalysis =
-        Suppliers.memoize(
-            () ->
-                _factory.bddReachabilityAnalysis(
-                    srcIpSpaceAssignment,
-                    initialForwardHeaderSpace,
-                    forbiddenTransitNodes,
-                    requiredTransitNodes,
-                    forwardPassFinalNodes,
-                    forwardPassActions));
-    _forwardPassForwardReachableBdds =
-        Suppliers.memoize(() -> _forwardPassAnalysis.get().computeForwardReachableStates());
-    _forwardPassTerminationStateToReturnPassOriginationState =
-        Suppliers.memoize(this::computeForwardPassTerminationStateToReturnPassOriginationState);
-    _returnPassOrigBdds = Suppliers.memoize(this::computeReturnPassOrigBdds);
-    _returnPassQueryConstraints = Suppliers.memoize(this::computeReturnPassQueryConstraints);
-    _reverseTransformationRanges = Suppliers.memoize(this::computeReverseTransformationRanges);
-    _returnPassForwardReachableBdds =
-        Suppliers.memoize(this::computeReturnPassForwardReachableBdds);
-    _initializedSessions = Suppliers.memoize(this::computeInitializedSessions);
-    _returnPassAnalysis = Suppliers.memoize(this::computeReturnPassAnalysis);
-    _forwardPassStartLocationToReturnPassFailureBdds =
-        Suppliers.memoize(this::computeForwardPassStartLocationToReturnPassFailureBdds);
-    _forwardPassStartLocationToReturnPassSuccessBdds =
-        Suppliers.memoize(this::computeForwardPassStartLocationToReturnPassSuccessBdds);
   }
 
   private Map<StateExpr, BDD> computeReturnPassQueryConstraints() {
