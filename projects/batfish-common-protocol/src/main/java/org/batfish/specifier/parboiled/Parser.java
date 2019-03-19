@@ -23,6 +23,7 @@ import static org.batfish.specifier.parboiled.Anchor.Type.ZONE_NAME;
 import java.util.Map;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.Protocol;
 import org.parboiled.Parboiled;
 import org.parboiled.Rule;
 import org.parboiled.support.Var;
@@ -52,9 +53,38 @@ public class Parser extends CommonParser {
    * An array of Rules for matching enum values. They should have been private and static but
    * parboiled does not like those things in this context.
    */
+  final Rule[] _applicationNameRules = initEnumRules(Protocol.values());
+
   final Rule[] _interfaceTypeRules = initEnumRules(InterfaceType.values());
 
   final Rule[] _deviceTypeRules = initEnumRules(DeviceType.values());
+
+  /**
+   * Application grammar
+   *
+   * <pre>
+   *   applicationSpec := applicationTerm [, applicationTerm]*
+   *
+   *   applicationTerm := NAME  // one of {@link Protocol} enums values
+   *
+   * </pre>
+   */
+
+  /* A Filter expression is one or more intersection terms separated by , or \ */
+  public Rule ApplicationSpec() {
+    return Sequence(
+        ApplicationTerm(),
+        WhiteSpace(),
+        ZeroOrMore(
+            ", ",
+            ApplicationTerm(),
+            push(new UnionApplicationAstNode(pop(1), pop())),
+            WhiteSpace()));
+  }
+
+  public Rule ApplicationTerm() {
+    return Sequence(FirstOf(_applicationNameRules), push(new NameApplicationAstNode(match())));
+  }
 
   /**
    * Filter grammar

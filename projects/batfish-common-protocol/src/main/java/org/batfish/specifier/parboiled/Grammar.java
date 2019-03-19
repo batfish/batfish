@@ -4,6 +4,8 @@ import org.parboiled.Rule;
 
 /** Contains information on various expressions supported by this package */
 public enum Grammar {
+  APPLICATION_SPECIFIER(
+      "applicationSpecifier", Parser.INSTANCE.ApplicationSpec(), "application-specifier"),
   FILTER_SPECIFIER("filterSpecifier", Parser.INSTANCE.FilterSpec(), "filter-specifier"),
   INTERFACE_SPECIFIER("interfaceSpecifier", Parser.INSTANCE.InterfaceSpec(), "interface-specifier"),
   IP_SPACE_SPECIFIER("ipSpecifier", Parser.INSTANCE.IpSpaceSpec(), "ip-specifier"),
@@ -19,7 +21,7 @@ public enum Grammar {
   /** What we call the grammar in user-facing documentation */
   private final String _friendlyName;
 
-  /** Where the grammar is documented related to {@link Grammar#_BASE_URL} */
+  /** Where the grammar is documented related to {@link Grammar#BASE_URL} */
   private final String _urlTail;
 
   Grammar(String friendlyName, Rule expression, String urlTail) {

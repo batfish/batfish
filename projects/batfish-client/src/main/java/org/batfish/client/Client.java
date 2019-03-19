@@ -343,6 +343,12 @@ public class Client extends AbstractClient implements IClient {
               String.format("Could not cast value to AnswerElement: %s", value), e);
         }
         break;
+      case APPLICATION_SPEC:
+        if (!value.isTextual()) {
+          throw new BatfishException(
+              String.format("It is not a valid JSON %s value", expectedType.getName()));
+        }
+        break;
       case BGP_PEER_PROPERTY_SPEC:
         if (!(value.isTextual())) {
           throw new BatfishException(
