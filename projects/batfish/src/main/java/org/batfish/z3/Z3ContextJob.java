@@ -107,7 +107,7 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
 
   protected static Flow createFlow(
       IngressLocation ingressLocation, Map<String, Long> constraints, String tag) {
-    Flow.Builder flowBuilder = new Flow.Builder();
+    Flow.Builder flowBuilder = Flow.builder();
     switch (ingressLocation.getType()) {
       case INTERFACE_LINK:
         flowBuilder
@@ -133,7 +133,7 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
     return flowBuilder.build();
   }
 
-  private static final String getFpModuleName() {
+  private static String getFpModuleName() {
     int major = Version.getMajor();
     int minor = Version.getMinor();
     if (major > 4 || (major == 4 && minor >= 8)) {
