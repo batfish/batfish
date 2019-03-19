@@ -86,7 +86,8 @@ class ReverseStaticNat {
     checkArgument(nat.getType() == STATIC, "Cannot reverse nat with type " + nat.getType());
     checkArgument(nat.getPools().isEmpty(), "Static nat should not have pools");
     Nat reversedNat = new Nat(STATIC);
-    // keep the port range the same
+    // from port and to port denote the range of ports, meaning the interval [from_port, to_port],
+    // not the direction of traffic. so should keep them the same in reversed nat
     reversedNat.setDefaultFromPort(nat.getDefaultFromPort());
     reversedNat.setDefaultToPort(nat.getDefaultToPort());
     reversedNat
@@ -134,6 +135,7 @@ class ReverseStaticNat {
           }
           if (reversedThen != null) {
             // only one dst-match is allowed, so just set the then
+            assert reversedRule.getThen() == null;
             reversedRule.setThen(reversedThen);
           }
         });

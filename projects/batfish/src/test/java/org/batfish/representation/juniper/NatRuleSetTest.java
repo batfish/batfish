@@ -69,7 +69,7 @@ public class NatRuleSetTest {
     Warnings warnings = new Warnings(true, true, true);
     Optional<Transformation> transformation =
         ruleSet.toOutgoingTransformation(
-            nat, null, interfaceIp, matchFromLocationExprs, andThen, orElse, warnings);
+            nat, ImmutableMap.of(), interfaceIp, matchFromLocationExprs, andThen, orElse, warnings);
     assertTrue(warnings.getPedanticWarnings().isEmpty());
     assertTrue(warnings.getRedFlagWarnings().isEmpty());
     assertTrue(warnings.getUnimplementedWarnings().isEmpty());
