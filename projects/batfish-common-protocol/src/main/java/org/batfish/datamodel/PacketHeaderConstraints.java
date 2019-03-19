@@ -182,7 +182,7 @@ public class PacketHeaderConstraints {
     } else {
       throw new IllegalArgumentException(
           String.format(
-              "Applicaiton specifier should be a string or a list of strings. Got : ",
+              "Applicaiton specifier should be a string or a list of strings. Got : %s",
               applications));
     }
 
