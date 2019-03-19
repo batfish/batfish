@@ -1,6 +1,7 @@
 package org.batfish.datamodel.routing_policy;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 
@@ -192,12 +193,18 @@ public class RoutingPolicy implements Serializable {
   public boolean process(
       AbstractRouteDecorator inputRoute,
       AbstractRouteBuilder<?, ?> outputRoute,
-      @Nullable Ip peerAddress,
+      Ip peerAddress,
       String vrf,
       Direction direction) {
     return process(inputRoute, outputRoute, peerAddress, null, vrf, direction);
   }
 
+  /**
+   * Must provide one of peerAddress or peerPrefix, but not both.
+   *
+   * @param peerAddress The address of a known peer.
+   * @param peerPrefix The address of an unknown peer. Used for dynamic BGP.
+   */
   public boolean process(
       AbstractRouteDecorator inputRoute,
       AbstractRouteBuilder<?, ?> outputRoute,
@@ -205,10 +212,12 @@ public class RoutingPolicy implements Serializable {
       @Nullable Prefix peerPrefix,
       String vrf,
       Direction direction) {
+    checkArgument(
+        peerAddress == null ^ peerPrefix == null,
+        "Must provide one of peerAddress or peerPrefix, but not both.");
     checkState(_owner != null, "Cannot evaluate routing policy without a Configuration");
     Environment environment =
-        Environment.builder(_owner)
-            .setVrf(vrf)
+        Environment.builder(_owner, vrf)
             .setOriginalRoute(inputRoute)
             .setOutputRoute(outputRoute)
             .setPeerAddress(peerAddress)

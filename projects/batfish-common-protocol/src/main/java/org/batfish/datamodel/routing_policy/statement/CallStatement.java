@@ -70,8 +70,7 @@ public class CallStatement extends Statement {
 
   @Override
   public Result execute(Environment environment) {
-    RoutingPolicy policy =
-        environment.getConfiguration().getRoutingPolicies().get(_calledPolicyName);
+    RoutingPolicy policy = environment.getRoutingPolicies().get(_calledPolicyName);
     if (policy == null) {
       environment.setError(true);
       return Result.builder().setBooleanValue(false).build();

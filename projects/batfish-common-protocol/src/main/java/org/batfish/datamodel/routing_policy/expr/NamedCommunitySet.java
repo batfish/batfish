@@ -81,11 +81,7 @@ public class NamedCommunitySet extends CommunitySetExpr {
 
   @Override
   public boolean matchCommunity(Environment environment, long community) {
-    return environment
-        .getConfiguration()
-        .getCommunityLists()
-        .get(_name)
-        .matchCommunity(environment, community);
+    return environment.getCommunityLists().get(_name).matchCommunity(environment, community);
   }
 
   @Override
@@ -100,6 +96,6 @@ public class NamedCommunitySet extends CommunitySetExpr {
   }
 
   private @Nonnull CommunitySetExpr resolve(@Nonnull Environment environment) {
-    return requireNonNull(environment.getConfiguration().getCommunityLists().get(_name));
+    return requireNonNull(environment.getCommunityLists().get(_name));
   }
 }

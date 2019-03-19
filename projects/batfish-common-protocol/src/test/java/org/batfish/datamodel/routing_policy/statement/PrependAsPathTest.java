@@ -22,7 +22,7 @@ public class PrependAsPathTest {
 
   private static Environment newTestEnvironment(BgpRoute.Builder outputRoute) {
     Configuration c = new Configuration("host", ConfigurationFormat.CISCO_IOS);
-    return Environment.builder(c).setVrf("vrf").setOutputRoute(outputRoute).build();
+    return Environment.builder(c, "vrf").setOutputRoute(outputRoute).build();
   }
 
   @Test

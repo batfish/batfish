@@ -86,7 +86,7 @@ public class ConjunctionChainTest {
     c.setVrfs(
         ImmutableMap.of(Configuration.DEFAULT_VRF_NAME, new Vrf(Configuration.DEFAULT_VRF_NAME)));
     c.setRoutingPolicies(policies);
-    return Environment.builder(c)
+    return Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
         .setDefaultPolicy(defaultPolicy)
         .setOriginalRoute(route)
         .setOutputRoute(route.toBuilder())
@@ -124,8 +124,9 @@ public class ConjunctionChainTest {
         new ConjunctionChain(ImmutableList.of(BooleanExprs.TRUE, BooleanExprs.FALSE));
     Result result =
         cc.evaluate(
-            Environment.builder(new Configuration("host", ConfigurationFormat.JUNIPER))
-                .setVrf(Configuration.DEFAULT_VRF_NAME)
+            Environment.builder(
+                    new Configuration("host", ConfigurationFormat.JUNIPER),
+                    Configuration.DEFAULT_VRF_NAME)
                 .build());
     assertThat(result, equalTo(new Result(false, false, false, false)));
 
@@ -134,8 +135,9 @@ public class ConjunctionChainTest {
     cc = new ConjunctionChain(ImmutableList.of(BooleanExprs.TRUE, BooleanExprs.TRUE));
     result =
         cc.evaluate(
-            Environment.builder(new Configuration("host", ConfigurationFormat.JUNIPER))
-                .setVrf(Configuration.DEFAULT_VRF_NAME)
+            Environment.builder(
+                    new Configuration("host", ConfigurationFormat.JUNIPER),
+                    Configuration.DEFAULT_VRF_NAME)
                 .build());
     assertThat(result, equalTo(new Result(true, false, false, false)));
   }
