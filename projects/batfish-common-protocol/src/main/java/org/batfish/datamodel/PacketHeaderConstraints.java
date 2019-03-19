@@ -92,9 +92,9 @@ public class PacketHeaderConstraints {
   private static final IntegerSpace VALID_FRAGMENT_OFFSET =
       IntegerSpace.builder().including(Range.closed(0, 8191)).build(); // 13 bits
 
+  @Deprecated
   @JsonCreator
-  @VisibleForTesting
-  static PacketHeaderConstraints create(
+  private static PacketHeaderConstraints create(
       @Nullable @JsonProperty(PROP_DSCPS) IntegerSpace.Builder dscps,
       @Nullable @JsonProperty(PROP_ECNS) IntegerSpace.Builder ecns,
       @Nullable @JsonProperty(PROP_PACKET_LENGTHS) IntegerSpace.Builder packetLengths,
