@@ -490,6 +490,66 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
+  public void testBgpUpdateSource() throws IOException {
+    Configuration c = parseConfig("f5_bigip_structured_bgp_neighbor_update_source");
+
+    // eBGP single-hop should use interface IP and ignore update-source
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasBgpProcess(
+                hasActiveNeighbor(
+                    Prefix.strict("10.0.0.2/32"), hasLocalIp(Ip.parse("10.0.0.1"))))));
+
+    // eBGP multihop should use update-source
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasBgpProcess(
+                hasActiveNeighbor(
+                    Prefix.strict("10.0.1.2/32"), hasLocalIp(Ip.parse("10.0.0.1"))))));
+
+    // iBGP should use update-source
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasBgpProcess(
+                hasActiveNeighbor(
+                    Prefix.strict("10.0.2.2/32"), hasLocalIp(Ip.parse("10.0.0.1"))))));
+
+    // iBGP should use interface IP when update-source is not declared
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasBgpProcess(
+                hasActiveNeighbor(
+                    Prefix.strict("10.0.0.3/32"), hasLocalIp(Ip.parse("10.0.0.1"))))));
+
+    // iBGP should use interface IP when update-source is undefined
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasBgpProcess(
+                hasActiveNeighbor(
+                    Prefix.strict("10.0.0.4/32"), hasLocalIp(Ip.parse("10.0.0.1"))))));
+
+    // iBGP should use interface IP when update-source has no IP
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasBgpProcess(
+                hasActiveNeighbor(
+                    Prefix.strict("10.0.0.5/32"), hasLocalIp(Ip.parse("10.0.0.1"))))));
+
+    // iBGP should use null when no usable IP
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasBgpProcess(
+                hasActiveNeighbor(Prefix.strict("10.0.3.2/32"), hasLocalIp(nullValue())))));
+  }
+
+  @Test
   public void testDnat() throws IOException {
     String snapshotName = "dnat";
     String natHostname = "f5_bigip_structured_dnat";

@@ -116,6 +116,11 @@ DISABLED
   'disabled'
 ;
 
+EBGP_MULTIHOP
+:
+  'ebgp-multihop'
+;
+
 ENABLED
 :
   'enabled'

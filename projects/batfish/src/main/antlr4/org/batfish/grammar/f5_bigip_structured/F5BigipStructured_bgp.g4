@@ -113,6 +113,7 @@ nrbn_name
     (
       nrbnn_address_family
       | nrbnn_description
+      | nrbnn_ebgp_multihop
       | nrbnn_remote_as
       | nrbnn_update_source
       | unrecognized
@@ -187,6 +188,11 @@ nrbnnafcr_out
 nrbnn_description
 :
   DESCRIPTION description = word NEWLINE
+;
+
+nrbnn_ebgp_multihop
+:
+  EBGP_MULTIHOP count = word NEWLINE
 ;
 
 nrbnn_remote_as

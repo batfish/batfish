@@ -151,6 +151,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return String.format("~incoming_filter:%s~", vlanName);
   }
 
+  private static boolean isEbgpSingleHop(BgpProcess proc, BgpNeighbor neighbor) {
+    return !proc.getLocalAs().equals(neighbor.getRemoteAs()) && neighbor.getEbgpMultihop() == null;
+  }
+
   private final Map<String, AccessList> _accessLists;
   private final @Nonnull Map<String, BgpProcess> _bgpProcesses;
   private transient Configuration _c;
@@ -177,6 +181,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private transient SortedMap<String, SimpleTransformation> _virtualIncomingTransformations;
   private transient Map<String, HeaderSpace> _virtualMatchedHeaders;
   private transient SortedMap<String, SimpleTransformation> _virtualOutgoingTransformations;
+
   private final @Nonnull Map<String, Virtual> _virtuals;
 
   private final @Nonnull Map<String, Vlan> _vlans;
@@ -208,7 +213,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
         neighbor.applyPeerGroup(peerGroup);
       }
     }
-    Ip updateSource = getUpdateSource(neighbor, neighbor.getUpdateSource());
+    Ip updateSource = getUpdateSource(proc, neighbor);
 
     RoutingPolicy.Builder peerExportPolicy =
         RoutingPolicy.builder()
@@ -244,6 +249,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
         BgpActivePeerConfig.builder()
             .setBgpProcess(newProc)
             .setDescription(neighbor.getDescription())
+            .setEbgpMultihop(neighbor.getEbgpMultihop() != null)
             .setExportPolicy(peerExportPolicy.build().getName())
             .setLocalAs(proc.getLocalAs())
             .setLocalIp(updateSource)
@@ -714,13 +720,15 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return _trunks;
   }
 
-  private Ip getUpdateSource(BgpNeighbor neighbor, String updateSourceInterface) {
+  private Ip getUpdateSource(BgpProcess proc, BgpNeighbor neighbor) {
     Ip neighborAddress = neighbor.getAddress();
-    if (neighborAddress == null) {
-      // Only compute for IPv4 neighbors for now
+    if (neighborAddress == null || proc.getLocalAs() == null || neighbor.getRemoteAs() == null) {
+      // Only compute for IPv4 neighbors for now.
+      // Also skip if we are missing AS information.
       return null;
     }
-    if (updateSourceInterface != null) {
+    String updateSourceInterface = neighbor.getUpdateSource();
+    if (!isEbgpSingleHop(proc, neighbor) && updateSourceInterface != null) {
       org.batfish.datamodel.Interface sourceInterface =
           _c.getDefaultVrf().getInterfaces().get(updateSourceInterface);
       if (sourceInterface != null) {
@@ -729,20 +737,23 @@ public class F5BigipConfiguration extends VendorConfiguration {
           return address.getIp();
         } else {
           _w.redFlag(
-              "bgp update source interface: '"
-                  + updateSourceInterface
-                  + "' not assigned an ip address");
-        }
-      }
-    } else {
-      for (org.batfish.datamodel.Interface iface : _c.getDefaultVrf().getInterfaces().values()) {
-        for (InterfaceAddress interfaceAddress : iface.getAllAddresses()) {
-          if (interfaceAddress.getPrefix().containsIp(neighborAddress)) {
-            return interfaceAddress.getIp();
-          }
+              String.format(
+                  "BGP neighbor: '%s' update-source interface: '%s' not assigned an ip address",
+                  neighbor.getName(), updateSourceInterface));
         }
       }
     }
+    // Either the neighbor is eBGP single-hop, or no update-source was specified, or we failed to
+    // get IP from update-source.
+    // So try to get IP of an interface in same network as neighbor address.
+    for (org.batfish.datamodel.Interface iface : _c.getDefaultVrf().getInterfaces().values()) {
+      for (InterfaceAddress interfaceAddress : iface.getAllAddresses()) {
+        if (interfaceAddress.getPrefix().containsIp(neighborAddress)) {
+          return interfaceAddress.getIp();
+        }
+      }
+    }
+
     _w.redFlag("Could not determine update source for BGP neighbor: '" + neighbor.getName() + "'");
     return null;
   }

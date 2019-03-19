@@ -62,6 +62,14 @@ public class BgpNeighborMatchers {
   }
 
   /**
+   * Provides a matcher that matches if the {@link BgpPeerConfig}'s localIp is matched by the
+   * provided {@code subMatcher}.
+   */
+  public static @Nonnull Matcher<BgpPeerConfig> hasLocalIp(Matcher<? super Ip> subMatcher) {
+    return new HasLocalIp(subMatcher);
+  }
+
+  /**
    * Provides a matcher that matches if the {@link BgpPeerConfig} has the specified {@code
    * expectedLocalIp}.
    */
