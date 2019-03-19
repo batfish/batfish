@@ -1812,7 +1812,7 @@ public class VirtualRouter implements Serializable {
 
   /**
    * Propagate OSPF Internal routes from a single neighbor (i.e., sender) by reaching into their
-   * inter- and intra-area RIBs, taking their routes, and putting it into the receiver's respective
+   * inter- and intra-area RIBs, taking its routes, and putting them into the receiver's respective
    * RIBs.
    *
    * @param receiverProc The OSPF process that will be receiving the routes
