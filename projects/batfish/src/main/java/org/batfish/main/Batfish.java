@@ -3435,145 +3435,155 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   public AnswerElement bddSingleReachability(ReachabilityParameters parameters) {
-    ResolvedReachabilityParameters params;
-    try {
-      params = resolveReachabilityParameters(this, parameters, getNetworkSnapshot());
-    } catch (InvalidReachabilityParametersException e) {
-      return e.getInvalidParametersAnswer();
+    try (ActiveSpan span = GlobalTracer.get().buildSpan("bddSingleReachability").startActive()) {
+      assert span != null; // avoid not used warning
+      ResolvedReachabilityParameters params;
+      try {
+        params = resolveReachabilityParameters(this, parameters, getNetworkSnapshot());
+      } catch (InvalidReachabilityParametersException e) {
+        return e.getInvalidParametersAnswer();
+      }
+
+      checkArgument(
+          params.getSrcNatted() == SrcNattedConstraint.UNCONSTRAINED,
+          "Requiring or forbidding Source NAT is currently unsupported");
+
+      BDDPacket pkt = new BDDPacket();
+      boolean ignoreFilters = params.getIgnoreFilters();
+      BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
+          getBddReachabilityAnalysisFactory(pkt, ignoreFilters);
+
+      Map<IngressLocation, BDD> reachableBDDs =
+          bddReachabilityAnalysisFactory.getAllBDDs(
+              params.getSourceIpAssignment(),
+              params.getHeaderSpace(),
+              params.getForbiddenTransitNodes(),
+              params.getRequiredTransitNodes(),
+              params.getFinalNodes(),
+              params.getActions());
+
+      String flowTag = getFlowTag();
+      Set<Flow> flows =
+          reachableBDDs.entrySet().stream()
+              .flatMap(
+                  entry -> {
+                    IngressLocation loc = entry.getKey();
+                    BDD headerSpace = entry.getValue();
+                    Optional<Flow.Builder> optionalFlow = pkt.getFlow(headerSpace);
+                    if (!optionalFlow.isPresent()) {
+                      return Stream.of();
+                    }
+                    Flow.Builder flow = optionalFlow.get();
+                    flow.setIngressNode(loc.getNode());
+                    flow.setTag(flowTag);
+                    switch (loc.getType()) {
+                      case INTERFACE_LINK:
+                        flow.setIngressInterface(loc.getInterface());
+                        break;
+                      case VRF:
+                        flow.setIngressVrf(loc.getVrf());
+                        break;
+                      default:
+                        throw new BatfishException(
+                            "Unexpected IngressLocation Type: " + loc.getType().name());
+                    }
+                    return Stream.of(flow.build());
+                  })
+              .collect(ImmutableSet.toImmutableSet());
+
+      return new TraceWrapperAsAnswerElement(buildFlows(flows, ignoreFilters));
     }
-
-    checkArgument(
-        params.getSrcNatted() == SrcNattedConstraint.UNCONSTRAINED,
-        "Requiring or forbidding Source NAT is currently unsupported");
-
-    BDDPacket pkt = new BDDPacket();
-    boolean ignoreFilters = params.getIgnoreFilters();
-    BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
-        getBddReachabilityAnalysisFactory(pkt, ignoreFilters);
-
-    Map<IngressLocation, BDD> reachableBDDs =
-        bddReachabilityAnalysisFactory.getAllBDDs(
-            params.getSourceIpAssignment(),
-            params.getHeaderSpace(),
-            params.getForbiddenTransitNodes(),
-            params.getRequiredTransitNodes(),
-            params.getFinalNodes(),
-            params.getActions());
-
-    String flowTag = getFlowTag();
-    Set<Flow> flows =
-        reachableBDDs.entrySet().stream()
-            .flatMap(
-                entry -> {
-                  IngressLocation loc = entry.getKey();
-                  BDD headerSpace = entry.getValue();
-                  Optional<Flow.Builder> optionalFlow = pkt.getFlow(headerSpace);
-                  if (!optionalFlow.isPresent()) {
-                    return Stream.of();
-                  }
-                  Flow.Builder flow = optionalFlow.get();
-                  flow.setIngressNode(loc.getNode());
-                  flow.setTag(flowTag);
-                  switch (loc.getType()) {
-                    case INTERFACE_LINK:
-                      flow.setIngressInterface(loc.getInterface());
-                      break;
-                    case VRF:
-                      flow.setIngressVrf(loc.getVrf());
-                      break;
-                    default:
-                      throw new BatfishException(
-                          "Unexpected IngressLocation Type: " + loc.getType().name());
-                  }
-                  return Stream.of(flow.build());
-                })
-            .collect(ImmutableSet.toImmutableSet());
-
-    return new TraceWrapperAsAnswerElement(buildFlows(flows, ignoreFilters));
   }
 
   @Override
   public Set<Flow> bddLoopDetection() {
-    BDDPacket pkt = new BDDPacket();
-    // TODO add ignoreFilters parameter
-    boolean ignoreFilters = false;
-    BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
-        getBddReachabilityAnalysisFactory(pkt, ignoreFilters);
-    BDDReachabilityAnalysis analysis =
-        bddReachabilityAnalysisFactory.bddReachabilityAnalysis(
-            getAllSourcesInferFromLocationIpSpaceAssignment());
-    Map<IngressLocation, BDD> loopBDDs = analysis.detectLoops();
+    try (ActiveSpan span = GlobalTracer.get().buildSpan("bddLoopDetection").startActive()) {
+      assert span != null; // avoid unused warning
+      BDDPacket pkt = new BDDPacket();
+      // TODO add ignoreFilters parameter
+      boolean ignoreFilters = false;
+      BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
+          getBddReachabilityAnalysisFactory(pkt, ignoreFilters);
+      BDDReachabilityAnalysis analysis =
+          bddReachabilityAnalysisFactory.bddReachabilityAnalysis(
+              getAllSourcesInferFromLocationIpSpaceAssignment());
+      Map<IngressLocation, BDD> loopBDDs = analysis.detectLoops();
 
-    String flowTag = getFlowTag();
-    return loopBDDs.entrySet().stream()
-        .map(
-            entry ->
-                pkt.getFlow(entry.getValue())
-                    .map(
-                        fb -> {
-                          IngressLocation loc = entry.getKey();
-                          fb.setTag(flowTag);
-                          fb.setIngressNode(loc.getNode());
-                          switch (loc.getType()) {
-                            case INTERFACE_LINK:
-                              fb.setIngressInterface(loc.getInterface());
-                              break;
-                            case VRF:
-                              fb.setIngressVrf(loc.getVrf());
-                              break;
-                            default:
-                              throw new BatfishException("Unknown Location Type: " + loc.getType());
-                          }
-                          return fb.build();
-                        }))
-        .flatMap(optional -> optional.map(Stream::of).orElse(Stream.empty()))
-        .collect(ImmutableSet.toImmutableSet());
+      String flowTag = getFlowTag();
+      return loopBDDs.entrySet().stream()
+          .map(
+              entry ->
+                  pkt.getFlow(entry.getValue())
+                      .map(
+                          fb -> {
+                            IngressLocation loc = entry.getKey();
+                            fb.setTag(flowTag);
+                            fb.setIngressNode(loc.getNode());
+                            switch (loc.getType()) {
+                              case INTERFACE_LINK:
+                                fb.setIngressInterface(loc.getInterface());
+                                break;
+                              case VRF:
+                                fb.setIngressVrf(loc.getVrf());
+                                break;
+                              default:
+                                throw new BatfishException(
+                                    "Unknown Location Type: " + loc.getType());
+                            }
+                            return fb.build();
+                          }))
+          .flatMap(optional -> optional.map(Stream::of).orElse(Stream.empty()))
+          .collect(ImmutableSet.toImmutableSet());
+    }
   }
 
   @Override
   public Set<Flow> bddMultipathConsistency(MultipathConsistencyParameters parameters) {
-    BDDPacket pkt = new BDDPacket();
-    // TODO add ignoreFilters parameter
-    boolean ignoreFilters = false;
-    BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
-        getBddReachabilityAnalysisFactory(pkt, ignoreFilters);
-    IpSpaceAssignment srcIpSpaceAssignment = parameters.getSrcIpSpaceAssignment();
-    Set<String> finalNodes = parameters.getFinalNodes();
-    Set<FlowDisposition> failureDispositions =
-        ImmutableSet.of(
-            FlowDisposition.DENIED_IN,
-            FlowDisposition.DENIED_OUT,
-            FlowDisposition.LOOP,
-            FlowDisposition.INSUFFICIENT_INFO,
-            FlowDisposition.NEIGHBOR_UNREACHABLE,
-            FlowDisposition.NO_ROUTE,
-            FlowDisposition.NULL_ROUTED);
-    Set<FlowDisposition> successDispositions =
-        ImmutableSet.of(
-            FlowDisposition.ACCEPTED,
-            FlowDisposition.DELIVERED_TO_SUBNET,
-            FlowDisposition.EXITS_NETWORK);
-    Set<String> forbiddenTransitNodes = parameters.getForbiddenTransitNodes();
-    Set<String> requiredTransitNodes = parameters.getRequiredTransitNodes();
-    Map<IngressLocation, BDD> successBdds =
-        bddReachabilityAnalysisFactory.getAllBDDs(
-            srcIpSpaceAssignment,
-            parameters.getHeaderSpace(),
-            forbiddenTransitNodes,
-            requiredTransitNodes,
-            finalNodes,
-            successDispositions);
-    Map<IngressLocation, BDD> failureBdds =
-        bddReachabilityAnalysisFactory.getAllBDDs(
-            srcIpSpaceAssignment,
-            parameters.getHeaderSpace(),
-            forbiddenTransitNodes,
-            requiredTransitNodes,
-            finalNodes,
-            failureDispositions);
+    try (ActiveSpan span = GlobalTracer.get().buildSpan("bddMultipathConsistency").startActive()) {
+      assert span != null; // avoid unused warning
+      BDDPacket pkt = new BDDPacket();
+      // TODO add ignoreFilters parameter
+      boolean ignoreFilters = false;
+      BDDReachabilityAnalysisFactory bddReachabilityAnalysisFactory =
+          getBddReachabilityAnalysisFactory(pkt, ignoreFilters);
+      IpSpaceAssignment srcIpSpaceAssignment = parameters.getSrcIpSpaceAssignment();
+      Set<String> finalNodes = parameters.getFinalNodes();
+      Set<FlowDisposition> failureDispositions =
+          ImmutableSet.of(
+              FlowDisposition.DENIED_IN,
+              FlowDisposition.DENIED_OUT,
+              FlowDisposition.LOOP,
+              FlowDisposition.INSUFFICIENT_INFO,
+              FlowDisposition.NEIGHBOR_UNREACHABLE,
+              FlowDisposition.NO_ROUTE,
+              FlowDisposition.NULL_ROUTED);
+      Set<FlowDisposition> successDispositions =
+          ImmutableSet.of(
+              FlowDisposition.ACCEPTED,
+              FlowDisposition.DELIVERED_TO_SUBNET,
+              FlowDisposition.EXITS_NETWORK);
+      Set<String> forbiddenTransitNodes = parameters.getForbiddenTransitNodes();
+      Set<String> requiredTransitNodes = parameters.getRequiredTransitNodes();
+      Map<IngressLocation, BDD> successBdds =
+          bddReachabilityAnalysisFactory.getAllBDDs(
+              srcIpSpaceAssignment,
+              parameters.getHeaderSpace(),
+              forbiddenTransitNodes,
+              requiredTransitNodes,
+              finalNodes,
+              successDispositions);
+      Map<IngressLocation, BDD> failureBdds =
+          bddReachabilityAnalysisFactory.getAllBDDs(
+              srcIpSpaceAssignment,
+              parameters.getHeaderSpace(),
+              forbiddenTransitNodes,
+              requiredTransitNodes,
+              finalNodes,
+              failureDispositions);
 
-    return ImmutableSet.copyOf(
-        computeMultipathInconsistencies(pkt, getFlowTag(), successBdds, failureBdds));
+      return ImmutableSet.copyOf(
+          computeMultipathInconsistencies(pkt, getFlowTag(), successBdds, failureBdds));
+    }
   }
 
   @Nonnull
@@ -3601,54 +3611,58 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public DifferentialReachabilityResult bddDifferentialReachability(
       DifferentialReachabilityParameters parameters) {
-    checkArgument(
-        !parameters.getFlowDispositions().isEmpty(), "Must specify at least one FlowDisposition");
-    BDDPacket pkt = new BDDPacket();
+    try (ActiveSpan span =
+        GlobalTracer.get().buildSpan("bddDifferentialReachability").startActive()) {
+      assert span != null; // avoid unused warning
+      checkArgument(
+          !parameters.getFlowDispositions().isEmpty(), "Must specify at least one FlowDisposition");
+      BDDPacket pkt = new BDDPacket();
 
-    AclLineMatchExpr headerSpace =
-        parameters.getInvertSearch()
-            ? not(parameters.getHeaderSpace())
-            : parameters.getHeaderSpace();
+      AclLineMatchExpr headerSpace =
+          parameters.getInvertSearch()
+              ? not(parameters.getHeaderSpace())
+              : parameters.getHeaderSpace();
 
-    /*
-     * TODO should we have separate parameters for base and delta?
-     * E.g. suppose we add a host subnet in the delta network. This would be a source of
-     * differential reachability, but we currently won't find it because it won't be in the
-     * IpSpaceAssignment.
-     */
-    pushBaseSnapshot();
-    Map<IngressLocation, BDD> baseAcceptBDDs =
-        getBddReachabilityAnalysisFactory(pkt, parameters.getIgnoreFilters())
-            .getAllBDDs(
-                parameters.getIpSpaceAssignment(),
-                headerSpace,
-                parameters.getForbiddenTransitNodes(),
-                parameters.getRequiredTransitNodes(),
-                parameters.getFinalNodes(),
-                parameters.getFlowDispositions());
-    popSnapshot();
+      /*
+       * TODO should we have separate parameters for base and delta?
+       * E.g. suppose we add a host subnet in the delta network. This would be a source of
+       * differential reachability, but we currently won't find it because it won't be in the
+       * IpSpaceAssignment.
+       */
+      pushBaseSnapshot();
+      Map<IngressLocation, BDD> baseAcceptBDDs =
+          getBddReachabilityAnalysisFactory(pkt, parameters.getIgnoreFilters())
+              .getAllBDDs(
+                  parameters.getIpSpaceAssignment(),
+                  headerSpace,
+                  parameters.getForbiddenTransitNodes(),
+                  parameters.getRequiredTransitNodes(),
+                  parameters.getFinalNodes(),
+                  parameters.getFlowDispositions());
+      popSnapshot();
 
-    pushDeltaSnapshot();
-    Map<IngressLocation, BDD> deltaAcceptBDDs =
-        getBddReachabilityAnalysisFactory(pkt, parameters.getIgnoreFilters())
-            .getAllBDDs(
-                parameters.getIpSpaceAssignment(),
-                headerSpace,
-                parameters.getForbiddenTransitNodes(),
-                parameters.getRequiredTransitNodes(),
-                parameters.getFinalNodes(),
-                parameters.getFlowDispositions());
-    popSnapshot();
+      pushDeltaSnapshot();
+      Map<IngressLocation, BDD> deltaAcceptBDDs =
+          getBddReachabilityAnalysisFactory(pkt, parameters.getIgnoreFilters())
+              .getAllBDDs(
+                  parameters.getIpSpaceAssignment(),
+                  headerSpace,
+                  parameters.getForbiddenTransitNodes(),
+                  parameters.getRequiredTransitNodes(),
+                  parameters.getFinalNodes(),
+                  parameters.getFlowDispositions());
+      popSnapshot();
 
-    Set<IngressLocation> commonSources =
-        Sets.intersection(baseAcceptBDDs.keySet(), deltaAcceptBDDs.keySet());
-    String flowTag = getDifferentialFlowTag();
+      Set<IngressLocation> commonSources =
+          Sets.intersection(baseAcceptBDDs.keySet(), deltaAcceptBDDs.keySet());
+      String flowTag = getDifferentialFlowTag();
 
-    Set<Flow> decreasedFlows =
-        getDifferentialFlows(pkt, commonSources, baseAcceptBDDs, deltaAcceptBDDs, flowTag);
-    Set<Flow> increasedFlows =
-        getDifferentialFlows(pkt, commonSources, deltaAcceptBDDs, baseAcceptBDDs, flowTag);
-    return new DifferentialReachabilityResult(increasedFlows, decreasedFlows);
+      Set<Flow> decreasedFlows =
+          getDifferentialFlows(pkt, commonSources, baseAcceptBDDs, deltaAcceptBDDs, flowTag);
+      Set<Flow> increasedFlows =
+          getDifferentialFlows(pkt, commonSources, deltaAcceptBDDs, baseAcceptBDDs, flowTag);
+      return new DifferentialReachabilityResult(increasedFlows, decreasedFlows);
+    }
   }
 
   private static Set<Flow> getDifferentialFlows(

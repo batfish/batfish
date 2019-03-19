@@ -25,6 +25,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Streams;
+import io.opentracing.ActiveSpan;
+import io.opentracing.util.GlobalTracer;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -224,55 +226,59 @@ public final class BDDReachabilityAnalysisFactory {
       ForwardingAnalysis forwardingAnalysis,
       boolean ignoreFilters,
       boolean initializeSessions) {
-    _bddPacket = packet;
-    _one = packet.getFactory().one();
-    _zero = packet.getFactory().zero();
-    _ignoreFilters = ignoreFilters;
-    _topologyEdges =
-        forwardingAnalysis.getArpTrueEdge().values().stream()
-            .flatMap(m -> m.values().stream())
-            .flatMap(m -> m.keySet().stream())
-            .collect(ImmutableSet.toImmutableSet());
-    _lastHopMgr =
-        initializeSessions
-            ? new LastHopOutgoingInterfaceManager(packet, configs, _topologyEdges)
-            : null;
-    _requiredTransitNodeBDD = _bddPacket.allocateBDDBit("requiredTransitNodes");
-    _bddSourceManagers = BDDSourceManager.forNetwork(_bddPacket, configs, initializeSessions);
-    _configs = configs;
-    _forwardingAnalysis = forwardingAnalysis;
-    _dstIpSpaceToBDD = new MemoizedIpSpaceToBDD(_bddPacket.getDstIp(), ImmutableMap.of());
-    _srcIpSpaceToBDD = new MemoizedIpSpaceToBDD(_bddPacket.getSrcIp(), ImmutableMap.of());
+    try (ActiveSpan span =
+        GlobalTracer.get().buildSpan("Construct BDDReachabilityAnalysisFactory").startActive()) {
+      assert span != null; // avoid unused warning
+      _bddPacket = packet;
+      _one = packet.getFactory().one();
+      _zero = packet.getFactory().zero();
+      _ignoreFilters = ignoreFilters;
+      _topologyEdges =
+          forwardingAnalysis.getArpTrueEdge().values().stream()
+              .flatMap(m -> m.values().stream())
+              .flatMap(m -> m.keySet().stream())
+              .collect(ImmutableSet.toImmutableSet());
+      _lastHopMgr =
+          initializeSessions
+              ? new LastHopOutgoingInterfaceManager(packet, configs, _topologyEdges)
+              : null;
+      _requiredTransitNodeBDD = _bddPacket.allocateBDDBit("requiredTransitNodes");
+      _bddSourceManagers = BDDSourceManager.forNetwork(_bddPacket, configs, initializeSessions);
+      _configs = configs;
+      _forwardingAnalysis = forwardingAnalysis;
+      _dstIpSpaceToBDD = new MemoizedIpSpaceToBDD(_bddPacket.getDstIp(), ImmutableMap.of());
+      _srcIpSpaceToBDD = new MemoizedIpSpaceToBDD(_bddPacket.getSrcIp(), ImmutableMap.of());
 
-    _aclPermitBDDs = computeAclBDDs(_bddPacket, _bddSourceManagers, configs);
-    _aclDenyBDDs = computeAclDenyBDDs(_aclPermitBDDs);
+      _aclPermitBDDs = computeAclBDDs(_bddPacket, _bddSourceManagers, configs);
+      _aclDenyBDDs = computeAclDenyBDDs(_aclPermitBDDs);
 
-    _bddIncomingTransformations = computeBDDIncomingTransformations();
-    _bddOutgoingTransformations = computeBDDOutgoingTransformations();
+      _bddIncomingTransformations = computeBDDIncomingTransformations();
+      _bddOutgoingTransformations = computeBDDOutgoingTransformations();
 
-    _arpTrueEdgeBDDs = computeArpTrueEdgeBDDs(forwardingAnalysis, _dstIpSpaceToBDD);
-    _neighborUnreachableBDDs =
-        computeDispositionBDDs(forwardingAnalysis.getNeighborUnreachable(), _dstIpSpaceToBDD);
-    _deliveredToSubnetBDDs =
-        computeDispositionBDDs(forwardingAnalysis.getDeliveredToSubnet(), _dstIpSpaceToBDD);
-    _exitsNetworkBDDs =
-        computeDispositionBDDs(forwardingAnalysis.getExitsNetwork(), _dstIpSpaceToBDD);
-    _insufficientInfoBDDs =
-        computeDispositionBDDs(forwardingAnalysis.getInsufficientInfo(), _dstIpSpaceToBDD);
-    _routableBDDs = computeRoutableBDDs(forwardingAnalysis, _dstIpSpaceToBDD);
-    _vrfAcceptBDDs = computeVrfAcceptBDDs(configs, _dstIpSpaceToBDD);
-    _vrfNotAcceptBDDs = computeVrfNotAcceptBDDs(_vrfAcceptBDDs);
+      _arpTrueEdgeBDDs = computeArpTrueEdgeBDDs(forwardingAnalysis, _dstIpSpaceToBDD);
+      _neighborUnreachableBDDs =
+          computeDispositionBDDs(forwardingAnalysis.getNeighborUnreachable(), _dstIpSpaceToBDD);
+      _deliveredToSubnetBDDs =
+          computeDispositionBDDs(forwardingAnalysis.getDeliveredToSubnet(), _dstIpSpaceToBDD);
+      _exitsNetworkBDDs =
+          computeDispositionBDDs(forwardingAnalysis.getExitsNetwork(), _dstIpSpaceToBDD);
+      _insufficientInfoBDDs =
+          computeDispositionBDDs(forwardingAnalysis.getInsufficientInfo(), _dstIpSpaceToBDD);
+      _routableBDDs = computeRoutableBDDs(forwardingAnalysis, _dstIpSpaceToBDD);
+      _vrfAcceptBDDs = computeVrfAcceptBDDs(configs, _dstIpSpaceToBDD);
+      _vrfNotAcceptBDDs = computeVrfNotAcceptBDDs(_vrfAcceptBDDs);
 
-    _convertedPacketPolicies = convertPacketPolicies(configs);
+      _convertedPacketPolicies = convertPacketPolicies(configs);
 
-    _dstIpVars = Arrays.stream(_bddPacket.getDstIp().getBitvec()).reduce(_one, BDD::and);
-    _sourceIpVars = Arrays.stream(_bddPacket.getSrcIp().getBitvec()).reduce(_one, BDD::and);
-    _dstPortVars = Arrays.stream(_bddPacket.getDstPort().getBitvec()).reduce(_one, BDD::and);
-    _sourcePortVars = Arrays.stream(_bddPacket.getSrcPort().getBitvec()).reduce(_one, BDD::and);
+      _dstIpVars = Arrays.stream(_bddPacket.getDstIp().getBitvec()).reduce(_one, BDD::and);
+      _sourceIpVars = Arrays.stream(_bddPacket.getSrcIp().getBitvec()).reduce(_one, BDD::and);
+      _dstPortVars = Arrays.stream(_bddPacket.getDstPort().getBitvec()).reduce(_one, BDD::and);
+      _sourcePortVars = Arrays.stream(_bddPacket.getSrcPort().getBitvec()).reduce(_one, BDD::and);
 
-    RangeComputer rangeComputer = computeTransformationRanges();
-    _transformationPortRanges = rangeComputer.getPortRanges();
-    _transformationIpRanges = rangeComputer.getIpRanges();
+      RangeComputer rangeComputer = computeTransformationRanges();
+      _transformationPortRanges = rangeComputer.getPortRanges();
+      _transformationIpRanges = rangeComputer.getIpRanges();
+    }
   }
 
   /**
@@ -284,18 +290,24 @@ public final class BDDReachabilityAnalysisFactory {
       BDDPacket bddPacket,
       Map<String, BDDSourceManager> bddSourceManagers,
       Map<String, Configuration> configs) {
-    return toImmutableMap(
-        configs,
-        Entry::getKey,
-        nodeEntry -> {
-          Configuration config = nodeEntry.getValue();
-          IpAccessListToBdd aclToBdd =
-              ipAccessListToBdd(bddPacket, bddSourceManagers.get(config.getHostname()), config);
-          return toImmutableMap(
-              config.getIpAccessLists(),
-              Entry::getKey,
-              aclEntry -> Suppliers.memoize(() -> aclToBdd.toBdd(aclEntry.getValue())));
-        });
+    try (ActiveSpan span =
+        GlobalTracer.get()
+            .buildSpan("BDDReachabilityAnalysisFactory.computeAclBDDs")
+            .startActive()) {
+      assert span != null; // avoid unused warning
+      return toImmutableMap(
+          configs,
+          Entry::getKey,
+          nodeEntry -> {
+            Configuration config = nodeEntry.getValue();
+            IpAccessListToBdd aclToBdd =
+                ipAccessListToBdd(bddPacket, bddSourceManagers.get(config.getHostname()), config);
+            return toImmutableMap(
+                config.getIpAccessLists(),
+                Entry::getKey,
+                aclEntry -> Suppliers.memoize(() -> aclToBdd.toBdd(aclEntry.getValue())));
+          });
+    }
   }
 
   Map<String, Map<String, Supplier<BDD>>> getAclPermitBdds() {
@@ -314,14 +326,20 @@ public final class BDDReachabilityAnalysisFactory {
 
   private static Map<String, Map<String, Supplier<BDD>>> computeAclDenyBDDs(
       Map<String, Map<String, Supplier<BDD>>> aclBDDs) {
-    return toImmutableMap(
-        aclBDDs,
-        Entry::getKey,
-        nodeEntry ->
-            toImmutableMap(
-                nodeEntry.getValue(),
-                Entry::getKey,
-                aclEntry -> Suppliers.memoize(() -> aclEntry.getValue().get().not())));
+    try (ActiveSpan span =
+        GlobalTracer.get()
+            .buildSpan("BDDReachabilityAnalysisFactory.computeAclDenyBDDs")
+            .startActive()) {
+      assert span != null; // avoid unused warning
+      return toImmutableMap(
+          aclBDDs,
+          Entry::getKey,
+          nodeEntry ->
+              toImmutableMap(
+                  nodeEntry.getValue(),
+                  Entry::getKey,
+                  aclEntry -> Suppliers.memoize(() -> aclEntry.getValue().get().not())));
+    }
   }
 
   private TransformationToTransition initTransformationToTransformation(Configuration node) {
@@ -339,77 +357,107 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private Map<String, Map<String, Transition>> computeBDDIncomingTransformations() {
-    return toImmutableMap(
-        _configs,
-        Entry::getKey, /* node */
-        nodeEntry -> {
-          Configuration node = nodeEntry.getValue();
-          TransformationToTransition toTransition = initTransformationToTransformation(node);
-          return toImmutableMap(
-              node.getAllInterfaces(),
-              Entry::getKey, /* iface */
-              ifaceEntry ->
-                  toTransition.toTransition(ifaceEntry.getValue().getIncomingTransformation()));
-        });
+    try (ActiveSpan span =
+        GlobalTracer.get()
+            .buildSpan("BDDReachabilityAnalysisFactory.computeBDDIncomingTransformations")
+            .startActive()) {
+      assert span != null; // avoid unused warning
+      return toImmutableMap(
+          _configs,
+          Entry::getKey, /* node */
+          nodeEntry -> {
+            Configuration node = nodeEntry.getValue();
+            TransformationToTransition toTransition = initTransformationToTransformation(node);
+            return toImmutableMap(
+                node.getAllInterfaces(),
+                Entry::getKey, /* iface */
+                ifaceEntry ->
+                    toTransition.toTransition(ifaceEntry.getValue().getIncomingTransformation()));
+          });
+    }
   }
 
   private Map<String, Map<String, Transition>> computeBDDOutgoingTransformations() {
-    return toImmutableMap(
-        _configs,
-        Entry::getKey, /* node */
-        nodeEntry -> {
-          Configuration node = nodeEntry.getValue();
-          TransformationToTransition toTransition = initTransformationToTransformation(node);
-          return toImmutableMap(
-              nodeEntry.getValue().getAllInterfaces(),
-              Entry::getKey, /* iface */
-              ifaceEntry ->
-                  toTransition.toTransition(ifaceEntry.getValue().getOutgoingTransformation()));
-        });
+    try (ActiveSpan span =
+        GlobalTracer.get()
+            .buildSpan("BDDReachabilityAnalysisFactory.computeBDDOutgoingTransformations")
+            .startActive()) {
+      assert span != null; // avoid unused warning
+      return toImmutableMap(
+          _configs,
+          Entry::getKey, /* node */
+          nodeEntry -> {
+            Configuration node = nodeEntry.getValue();
+            TransformationToTransition toTransition = initTransformationToTransformation(node);
+            return toImmutableMap(
+                nodeEntry.getValue().getAllInterfaces(),
+                Entry::getKey, /* iface */
+                ifaceEntry ->
+                    toTransition.toTransition(ifaceEntry.getValue().getOutgoingTransformation()));
+          });
+    }
   }
 
   private static Map<String, Map<String, BDD>> computeRoutableBDDs(
       ForwardingAnalysis forwardingAnalysis, IpSpaceToBDD ipSpaceToBDD) {
-    return toImmutableMap(
-        forwardingAnalysis.getRoutableIps(),
-        Entry::getKey,
-        nodeEntry ->
-            toImmutableMap(
-                nodeEntry.getValue(),
-                Entry::getKey,
-                vrfEntry -> vrfEntry.getValue().accept(ipSpaceToBDD)));
+    try (ActiveSpan span =
+        GlobalTracer.get()
+            .buildSpan("BDDReachabilityAnalysisFactory.computeRoutableBDDs")
+            .startActive()) {
+      assert span != null; // avoid unused warning
+      return toImmutableMap(
+          forwardingAnalysis.getRoutableIps(),
+          Entry::getKey,
+          nodeEntry ->
+              toImmutableMap(
+                  nodeEntry.getValue(),
+                  Entry::getKey,
+                  vrfEntry -> vrfEntry.getValue().accept(ipSpaceToBDD)));
+    }
   }
 
   private static Map<String, Map<String, BDD>> computeVrfNotAcceptBDDs(
       Map<String, Map<String, BDD>> vrfAcceptBDDs) {
-    return toImmutableMap(
-        vrfAcceptBDDs,
-        Entry::getKey,
-        nodeEntry ->
-            toImmutableMap(
-                nodeEntry.getValue(), Entry::getKey, vrfEntry -> vrfEntry.getValue().not()));
+    try (ActiveSpan span =
+        GlobalTracer.get()
+            .buildSpan("BDDReachabilityAnalysisFactory.computeVrfNotAcceptBDDs")
+            .startActive()) {
+      assert span != null; // avoid unused warning
+      return toImmutableMap(
+          vrfAcceptBDDs,
+          Entry::getKey,
+          nodeEntry ->
+              toImmutableMap(
+                  nodeEntry.getValue(), Entry::getKey, vrfEntry -> vrfEntry.getValue().not()));
+    }
   }
 
   /** For all configs/interfaces that have PBR policy defined, convert the packet policy to BDDs */
   private Map<String, Map<String, PacketPolicyToBdd>> convertPacketPolicies(
       Map<String, Configuration> configs) {
-    return toImmutableMap(
-        configs,
-        Entry::getKey,
-        configEntry ->
-            configEntry.getValue().getAllInterfaces().values().stream()
-                .filter(iface -> iface.getRoutingPolicyName() != null)
-                .collect(
-                    ImmutableMap.toImmutableMap(
-                        Interface::getName,
-                        iface ->
-                            PacketPolicyToBdd.evaluate(
-                                configEntry
-                                    .getValue()
-                                    .getPacketPolicies()
-                                    .get(iface.getRoutingPolicyName()),
-                                _bddPacket,
-                                ipAccessListToBdd(configEntry.getValue())))));
+    try (ActiveSpan span =
+        GlobalTracer.get()
+            .buildSpan("BDDReachabilityAnalysisFactory.convertPacketPolicies")
+            .startActive()) {
+      assert span != null; // avoid unused warning
+      return toImmutableMap(
+          configs,
+          Entry::getKey,
+          configEntry ->
+              configEntry.getValue().getAllInterfaces().values().stream()
+                  .filter(iface -> iface.getRoutingPolicyName() != null)
+                  .collect(
+                      ImmutableMap.toImmutableMap(
+                          Interface::getName,
+                          iface ->
+                              PacketPolicyToBdd.evaluate(
+                                  configEntry
+                                      .getValue()
+                                      .getPacketPolicies()
+                                      .get(iface.getRoutingPolicyName()),
+                                  _bddPacket,
+                                  ipAccessListToBdd(configEntry.getValue())))));
+    }
   }
 
   IpSpaceToBDD getIpSpaceToBDD() {
@@ -426,18 +474,24 @@ public final class BDDReachabilityAnalysisFactory {
 
   private static Map<String, Map<String, Map<org.batfish.datamodel.Edge, BDD>>>
       computeArpTrueEdgeBDDs(ForwardingAnalysis forwardingAnalysis, IpSpaceToBDD ipSpaceToBDD) {
-    return toImmutableMap(
-        forwardingAnalysis.getArpTrueEdge(),
-        Entry::getKey, // node
-        nodeEntry ->
-            toImmutableMap(
-                nodeEntry.getValue(),
-                Entry::getKey, // vrf
-                vrfEntry ->
-                    toImmutableMap(
-                        vrfEntry.getValue(),
-                        Entry::getKey,
-                        edgeEntry -> edgeEntry.getValue().accept(ipSpaceToBDD))));
+    try (ActiveSpan span =
+        GlobalTracer.get()
+            .buildSpan("BDDReachabilityAnalysisFactory.computeArpTrueEdgeBDDs")
+            .startActive()) {
+      assert span != null; // avoid unused warning
+      return toImmutableMap(
+          forwardingAnalysis.getArpTrueEdge(),
+          Entry::getKey, // node
+          nodeEntry ->
+              toImmutableMap(
+                  nodeEntry.getValue(),
+                  Entry::getKey, // vrf
+                  vrfEntry ->
+                      toImmutableMap(
+                          vrfEntry.getValue(),
+                          Entry::getKey,
+                          edgeEntry -> edgeEntry.getValue().accept(ipSpaceToBDD))));
+    }
   }
 
   private static Map<String, Map<String, Map<String, BDD>>> computeDispositionBDDs(
@@ -1195,32 +1249,37 @@ public final class BDDReachabilityAnalysisFactory {
       Set<String> requiredTransitNodes,
       Set<String> finalNodes,
       Set<FlowDisposition> actions) {
-    Set<FlowDisposition> actionsCopy = new HashSet<>(actions);
+    try (ActiveSpan span =
+        GlobalTracer.get().buildSpan("BDDReachabilityAnalysisFactory.getAllBDDs").startActive()) {
+      assert span != null; // avoid unused warning
+      Set<FlowDisposition> actionsCopy = new HashSet<>(actions);
 
-    boolean loopIncluded = actionsCopy.remove(LOOP);
+      boolean loopIncluded = actionsCopy.remove(LOOP);
 
-    // detecting Loops can work with any disposition, using ACCEPTED arbitrarily here
-    BDDReachabilityAnalysis analysis =
-        bddReachabilityAnalysis(
-            srcIpSpaceAssignment,
-            initialHeaderSpace,
-            forbiddenTransitNodes,
-            requiredTransitNodes,
-            finalNodes,
-            actionsCopy.isEmpty() ? ImmutableSet.of(FlowDisposition.ACCEPTED) : actionsCopy);
+      // detecting Loops can work with any disposition, using ACCEPTED arbitrarily here
+      BDDReachabilityAnalysis analysis =
+          bddReachabilityAnalysis(
+              srcIpSpaceAssignment,
+              initialHeaderSpace,
+              forbiddenTransitNodes,
+              requiredTransitNodes,
+              finalNodes,
+              actionsCopy.isEmpty() ? ImmutableSet.of(FlowDisposition.ACCEPTED) : actionsCopy);
 
-    Map<IngressLocation, BDD> bddsNoLoop =
-        actionsCopy.isEmpty() ? Maps.newHashMap() : analysis.getIngressLocationReachableBDDs();
+      Map<IngressLocation, BDD> bddsNoLoop =
+          actionsCopy.isEmpty() ? Maps.newHashMap() : analysis.getIngressLocationReachableBDDs();
 
-    if (!loopIncluded) {
-      return bddsNoLoop;
-    } else {
-      Map<IngressLocation, BDD> bddsLoop = analysis.detectLoops();
+      if (!loopIncluded) {
+        return bddsNoLoop;
+      } else {
+        Map<IngressLocation, BDD> bddsLoop = analysis.detectLoops();
 
-      // merging the two BDDs
-      Map<IngressLocation, BDD> mergedBDDs = new HashMap<>(bddsNoLoop);
-      bddsLoop.forEach(((ingressLocation, bdd) -> mergedBDDs.merge(ingressLocation, bdd, BDD::or)));
-      return mergedBDDs;
+        // merging the two BDDs
+        Map<IngressLocation, BDD> mergedBDDs = new HashMap<>(bddsNoLoop);
+        bddsLoop.forEach(
+            ((ingressLocation, bdd) -> mergedBDDs.merge(ingressLocation, bdd, BDD::or)));
+        return mergedBDDs;
+      }
     }
   }
 
@@ -1243,27 +1302,33 @@ public final class BDDReachabilityAnalysisFactory {
       Set<String> requiredTransitNodes,
       Set<String> finalNodes,
       Set<FlowDisposition> actions) {
-    IpAccessListToBdd ipAccessListToBdd =
-        new MemoizedIpAccessListToBdd(
-            _bddPacket,
-            BDDSourceManager.forInterfaces(_bddPacket, ImmutableSet.of()),
-            ImmutableMap.of(),
-            ImmutableMap.of());
-    BDD initialHeaderSpaceBdd = ipAccessListToBdd.toBdd(initialHeaderSpace);
-    BDD finalHeaderSpaceBdd = computeFinalHeaderSpaceBdd(initialHeaderSpaceBdd);
+    try (ActiveSpan span =
+        GlobalTracer.get()
+            .buildSpan("BDDReachabilityAnalysisFactory.bddReachabilityAnalysis")
+            .startActive()) {
+      assert span != null; // avoid unused warning
+      IpAccessListToBdd ipAccessListToBdd =
+          new MemoizedIpAccessListToBdd(
+              _bddPacket,
+              BDDSourceManager.forInterfaces(_bddPacket, ImmutableSet.of()),
+              ImmutableMap.of(),
+              ImmutableMap.of());
+      BDD initialHeaderSpaceBdd = ipAccessListToBdd.toBdd(initialHeaderSpace);
+      BDD finalHeaderSpaceBdd = computeFinalHeaderSpaceBdd(initialHeaderSpaceBdd);
 
-    Map<StateExpr, BDD> roots = rootConstraints(srcIpSpaceAssignment, initialHeaderSpaceBdd);
+      Map<StateExpr, BDD> roots = rootConstraints(srcIpSpaceAssignment, initialHeaderSpaceBdd);
 
-    Stream<Edge> edgeStream =
-        Streams.concat(
-            generateEdges(finalNodes), generateRootEdges(roots), generateQueryEdges(actions));
+      Stream<Edge> edgeStream =
+          Streams.concat(
+              generateEdges(finalNodes), generateRootEdges(roots), generateQueryEdges(actions));
 
-    edgeStream = instrumentForbiddenTransitNodes(forbiddenTransitNodes, edgeStream);
-    edgeStream = instrumentRequiredTransitNodes(requiredTransitNodes, edgeStream);
+      edgeStream = instrumentForbiddenTransitNodes(forbiddenTransitNodes, edgeStream);
+      edgeStream = instrumentRequiredTransitNodes(requiredTransitNodes, edgeStream);
 
-    List<Edge> edges = edgeStream.collect(ImmutableList.toImmutableList());
+      List<Edge> edges = edgeStream.collect(ImmutableList.toImmutableList());
 
-    return new BDDReachabilityAnalysis(_bddPacket, roots.keySet(), edges, finalHeaderSpaceBdd);
+      return new BDDReachabilityAnalysis(_bddPacket, roots.keySet(), edges, finalHeaderSpaceBdd);
+    }
   }
 
   /**
@@ -1272,49 +1337,55 @@ public final class BDDReachabilityAnalysisFactory {
    */
   @VisibleForTesting
   BDD computeFinalHeaderSpaceBdd(BDD initialHeaderSpaceBdd) {
-    BDD finalHeaderSpace = initialHeaderSpaceBdd;
+    try (ActiveSpan span =
+        GlobalTracer.get()
+            .buildSpan("BDDReachabilityAnalysisFactory.computeFinalHeaderSpaceBdd")
+            .startActive()) {
+      assert span != null; // avoid unused warning
+      BDD finalHeaderSpace = initialHeaderSpaceBdd;
 
-    BDD noDstIp = finalHeaderSpace.exist(_dstIpVars);
-    if (!noDstIp.equals(finalHeaderSpace)) {
-      // there's a constraint on dst Ip, so include nat pool Ips
-      BDD dstTransformationRange = _transformationIpRanges.get(IpField.DESTINATION);
-      if (dstTransformationRange != null) {
-        // dst IP is either the initial one, or one of that NAT pool IPs.
-        finalHeaderSpace = finalHeaderSpace.or(noDstIp.and(dstTransformationRange));
+      BDD noDstIp = finalHeaderSpace.exist(_dstIpVars);
+      if (!noDstIp.equals(finalHeaderSpace)) {
+        // there's a constraint on dst Ip, so include nat pool Ips
+        BDD dstTransformationRange = _transformationIpRanges.get(IpField.DESTINATION);
+        if (dstTransformationRange != null) {
+          // dst IP is either the initial one, or one of that NAT pool IPs.
+          finalHeaderSpace = finalHeaderSpace.or(noDstIp.and(dstTransformationRange));
+        }
       }
-    }
 
-    BDD noSrcIp = finalHeaderSpace.exist(_sourceIpVars);
-    if (!noSrcIp.equals(finalHeaderSpace)) {
-      // there's a constraint on source Ip, so include nat pool Ips
-      BDD srcNatPoolIps = _transformationIpRanges.getOrDefault(IpField.SOURCE, _zero);
-      if (!srcNatPoolIps.isZero()) {
-        /*
-         * In this case, since source IPs usually don't play a huge role in routing, we could just
-         * existentially quantify away the constraint. There's a performance trade-off: tighter
-         * constraints prune more paths, but are more expensive to operate on.
-         */
-        finalHeaderSpace = finalHeaderSpace.or(noSrcIp.and(srcNatPoolIps));
+      BDD noSrcIp = finalHeaderSpace.exist(_sourceIpVars);
+      if (!noSrcIp.equals(finalHeaderSpace)) {
+        // there's a constraint on source Ip, so include nat pool Ips
+        BDD srcNatPoolIps = _transformationIpRanges.getOrDefault(IpField.SOURCE, _zero);
+        if (!srcNatPoolIps.isZero()) {
+          /*
+           * In this case, since source IPs usually don't play a huge role in routing, we could just
+           * existentially quantify away the constraint. There's a performance trade-off: tighter
+           * constraints prune more paths, but are more expensive to operate on.
+           */
+          finalHeaderSpace = finalHeaderSpace.or(noSrcIp.and(srcNatPoolIps));
+        }
       }
-    }
 
-    BDD noDstPort = finalHeaderSpace.exist(_dstPortVars);
-    if (!noDstPort.equals(finalHeaderSpace)) {
-      BDD dstTransformationRange = _transformationPortRanges.get(PortField.DESTINATION);
-      if (dstTransformationRange != null) {
-        finalHeaderSpace = finalHeaderSpace.or(noDstPort.and(dstTransformationRange));
+      BDD noDstPort = finalHeaderSpace.exist(_dstPortVars);
+      if (!noDstPort.equals(finalHeaderSpace)) {
+        BDD dstTransformationRange = _transformationPortRanges.get(PortField.DESTINATION);
+        if (dstTransformationRange != null) {
+          finalHeaderSpace = finalHeaderSpace.or(noDstPort.and(dstTransformationRange));
+        }
       }
-    }
 
-    BDD noSrcPort = finalHeaderSpace.exist(_sourcePortVars);
-    if (!noSrcPort.equals(finalHeaderSpace)) {
-      BDD srcNatPool = _transformationPortRanges.getOrDefault(PortField.SOURCE, _zero);
-      if (!srcNatPool.isZero()) {
-        finalHeaderSpace = finalHeaderSpace.or(noSrcPort.and(srcNatPool));
+      BDD noSrcPort = finalHeaderSpace.exist(_sourcePortVars);
+      if (!noSrcPort.equals(finalHeaderSpace)) {
+        BDD srcNatPool = _transformationPortRanges.getOrDefault(PortField.SOURCE, _zero);
+        if (!srcNatPool.isZero()) {
+          finalHeaderSpace = finalHeaderSpace.or(noSrcPort.and(srcNatPool));
+        }
       }
-    }
 
-    return finalHeaderSpace;
+      return finalHeaderSpace;
+    }
   }
 
   /**
@@ -1334,39 +1405,45 @@ public final class BDDReachabilityAnalysisFactory {
       Set<String> forbiddenTransitNodes,
       Set<String> requiredTransitNodes,
       Set<FlowDisposition> dispositions) {
-    /* We will use the return pass reachability graph a bit differently than usual: to find flows
-     * that successfully return to the origination point of the forward flow, we'll look at states
-     * like NodeInterfaceDeliveredToSubnet, rather than adding edges all the way to Query. Also,
-     * to find return flows that fail, we add the usual query edges for failure dispositions, and
-     * then search backward from Query to the origination points, which are the termination points
-     * of the forward pass, and then in the forward reachability graph we'll propagate failing flows
-     * from the termination points back to the forward pass origination points.
-     *
-     * This backward search would work for successful flows as well, but requires an additional
-     * graph traversal (two backward searches instead of one forward search). The advantage is that
-     * it would work in cases where the forward and return flow don't match (if that's possible).
-     */
-    Stream<Edge> returnPassEdges =
-        Streams.concat(
-            instrumentReturnPassEdges(
-                returnPassSuccessBdds,
-                sessionInstrumentation(
-                    _bddPacket,
-                    _configs,
-                    _bddSourceManagers,
-                    _lastHopMgr,
-                    _aclPermitBDDs,
-                    generateEdges(_configs.keySet()),
-                    initializedSessions)),
-            generateRootEdges(returnPassOrigBdds),
-            generateQueryEdges(dispositions));
+    try (ActiveSpan span =
+        GlobalTracer.get()
+            .buildSpan("BDDReachabilityAnalysisFactory.bddReachabilityAnalysis")
+            .startActive()) {
+      assert span != null; // avoid unused warning
+      /* We will use the return pass reachability graph a bit differently than usual: to find flows
+       * that successfully return to the origination point of the forward flow, we'll look at states
+       * like NodeInterfaceDeliveredToSubnet, rather than adding edges all the way to Query. Also,
+       * to find return flows that fail, we add the usual query edges for failure dispositions, and
+       * then search backward from Query to the origination points, which are the termination points
+       * of the forward pass, and then in the forward reachability graph we'll propagate failing flows
+       * from the termination points back to the forward pass origination points.
+       *
+       * This backward search would work for successful flows as well, but requires an additional
+       * graph traversal (two backward searches instead of one forward search). The advantage is that
+       * it would work in cases where the forward and return flow don't match (if that's possible).
+       */
+      Stream<Edge> returnPassEdges =
+          Streams.concat(
+              instrumentReturnPassEdges(
+                  returnPassSuccessBdds,
+                  sessionInstrumentation(
+                      _bddPacket,
+                      _configs,
+                      _bddSourceManagers,
+                      _lastHopMgr,
+                      _aclPermitBDDs,
+                      generateEdges(_configs.keySet()),
+                      initializedSessions)),
+              generateRootEdges(returnPassOrigBdds),
+              generateQueryEdges(dispositions));
 
-    returnPassEdges = instrumentForbiddenTransitNodes(forbiddenTransitNodes, returnPassEdges);
-    returnPassEdges = instrumentRequiredTransitNodes(requiredTransitNodes, returnPassEdges);
+      returnPassEdges = instrumentForbiddenTransitNodes(forbiddenTransitNodes, returnPassEdges);
+      returnPassEdges = instrumentRequiredTransitNodes(requiredTransitNodes, returnPassEdges);
 
-    List<Edge> edges = returnPassEdges.collect(ImmutableList.toImmutableList());
+      List<Edge> edges = returnPassEdges.collect(ImmutableList.toImmutableList());
 
-    return new BDDReachabilityAnalysis(_bddPacket, returnPassOrigBdds.keySet(), edges, _one);
+      return new BDDReachabilityAnalysis(_bddPacket, returnPassOrigBdds.keySet(), edges, _one);
+    }
   }
 
   class RangeComputer implements TransformationStepVisitor<Void> {
@@ -1460,84 +1537,102 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private RangeComputer computeTransformationRanges() {
-    RangeComputer rangeComputer = new RangeComputer();
-    _configs
-        .values()
-        .forEach(
-            configuration ->
-                configuration
-                    .getAllInterfaces()
-                    .values()
-                    .forEach(
-                        iface -> {
-                          visitTransformationSteps(
-                              iface.getIncomingTransformation(), rangeComputer);
-                          visitTransformationSteps(
-                              iface.getOutgoingTransformation(), rangeComputer);
-                        }));
-    return rangeComputer;
+    try (ActiveSpan span =
+        GlobalTracer.get()
+            .buildSpan("BDDReachabilityAnalysisFactory.computeTransformationRanges")
+            .startActive()) {
+      assert span != null; // avoid unused warning
+      RangeComputer rangeComputer = new RangeComputer();
+      _configs
+          .values()
+          .forEach(
+              configuration ->
+                  configuration
+                      .getAllInterfaces()
+                      .values()
+                      .forEach(
+                          iface -> {
+                            visitTransformationSteps(
+                                iface.getIncomingTransformation(), rangeComputer);
+                            visitTransformationSteps(
+                                iface.getOutgoingTransformation(), rangeComputer);
+                          }));
+      return rangeComputer;
+    }
   }
 
   Map<StateExpr, BDD> rootConstraints(
       IpSpaceAssignment srcIpSpaceAssignment, BDD initialHeaderSpaceBdd) {
-    LocationVisitor<Optional<StateExpr>> locationToStateExpr =
-        new LocationToOriginationStateExpr(_configs);
-    IpSpaceToBDD srcIpSpaceToBDD =
-        new MemoizedIpSpaceToBDD(_bddPacket.getSrcIp(), ImmutableMap.of());
+    try (ActiveSpan span =
+        GlobalTracer.get()
+            .buildSpan("BDDReachabilityAnalysisFactory.rootConstraints")
+            .startActive()) {
+      assert span != null; // avoid unused warning
+      LocationVisitor<Optional<StateExpr>> locationToStateExpr =
+          new LocationToOriginationStateExpr(_configs);
+      IpSpaceToBDD srcIpSpaceToBDD =
+          new MemoizedIpSpaceToBDD(_bddPacket.getSrcIp(), ImmutableMap.of());
 
-    // convert Locations to StateExprs, and merge srcIp constraints
-    Map<StateExpr, BDD> rootConstraints = new HashMap<>();
-    for (IpSpaceAssignment.Entry entry : srcIpSpaceAssignment.getEntries()) {
-      BDD srcIpSpaceBDD = entry.getIpSpace().accept(srcIpSpaceToBDD);
-      entry.getLocations().stream()
-          .map(locationToStateExpr::visit)
-          .filter(Optional::isPresent)
-          .map(Optional::get)
-          .forEach(root -> rootConstraints.merge(root, srcIpSpaceBDD, BDD::or));
+      // convert Locations to StateExprs, and merge srcIp constraints
+      Map<StateExpr, BDD> rootConstraints = new HashMap<>();
+      for (IpSpaceAssignment.Entry entry : srcIpSpaceAssignment.getEntries()) {
+        BDD srcIpSpaceBDD = entry.getIpSpace().accept(srcIpSpaceToBDD);
+        entry.getLocations().stream()
+            .map(locationToStateExpr::visit)
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .forEach(root -> rootConstraints.merge(root, srcIpSpaceBDD, BDD::or));
+      }
+
+      // add the global initial HeaderSpace and remove unsat entries
+      Map<StateExpr, BDD> finalRootConstraints =
+          rootConstraints.entrySet().stream()
+              .map(
+                  entry ->
+                      Maps.immutableEntry(
+                          entry.getKey(), entry.getValue().and(initialHeaderSpaceBdd)))
+              .filter(entry -> !entry.getValue().isZero())
+              .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+
+      // make sure there is at least one possible source
+      checkArgument(
+          !finalRootConstraints.isEmpty(),
+          "No sources are compatible with the headerspace constraint");
+
+      return finalRootConstraints;
     }
-
-    // add the global initial HeaderSpace and remove unsat entries
-    Map<StateExpr, BDD> finalRootConstraints =
-        rootConstraints.entrySet().stream()
-            .map(
-                entry ->
-                    Maps.immutableEntry(
-                        entry.getKey(), entry.getValue().and(initialHeaderSpaceBdd)))
-            .filter(entry -> !entry.getValue().isZero())
-            .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
-
-    // make sure there is at least one possible source
-    checkArgument(
-        !finalRootConstraints.isEmpty(),
-        "No sources are compatible with the headerspace constraint");
-
-    return finalRootConstraints;
   }
 
   private static Map<String, Map<String, BDD>> computeVrfAcceptBDDs(
       Map<String, Configuration> configs, IpSpaceToBDD ipSpaceToBDD) {
-    /*
-     * excludeInactive: true
-     * The VRF should not own (i.e. cannot accept packets destined to) the dest IP inactive interfaces. Forwarding
-     * analysis will consider these IPs to be internal to (or owned by) the network, but not owned by any particular
-     * device or link.
-     */
-    Map<String, Map<String, IpSpace>> vrfOwnedIpSpaces =
-        TopologyUtil.computeVrfOwnedIpSpaces(
-            TopologyUtil.computeIpVrfOwners(true, TopologyUtil.computeNodeInterfaces(configs)));
+    try (ActiveSpan span =
+        GlobalTracer.get()
+            .buildSpan("BDDReachabilityAnalysisFactory.computeVrfAcceptBDDs")
+            .startActive()) {
+      assert span != null; // avoid unused warning
+      /*
+       * excludeInactive: true
+       * The VRF should not own (i.e. cannot accept packets destined to) the dest IP inactive interfaces. Forwarding
+       * analysis will consider these IPs to be internal to (or owned by) the network, but not owned by any particular
+       * device or link.
+       */
+      Map<String, Map<String, IpSpace>> vrfOwnedIpSpaces =
+          TopologyUtil.computeVrfOwnedIpSpaces(
+              TopologyUtil.computeIpVrfOwners(true, TopologyUtil.computeNodeInterfaces(configs)));
 
-    return toImmutableMap(
-        configs,
-        Entry::getKey,
-        nodeEntry ->
-            toImmutableMap(
-                nodeEntry.getValue().getVrfs(),
-                Entry::getKey,
-                vrfEntry ->
-                    vrfOwnedIpSpaces
-                        .getOrDefault(nodeEntry.getKey(), ImmutableMap.of())
-                        .getOrDefault(vrfEntry.getKey(), EmptyIpSpace.INSTANCE)
-                        .accept(ipSpaceToBDD)));
+      return toImmutableMap(
+          configs,
+          Entry::getKey,
+          nodeEntry ->
+              toImmutableMap(
+                  nodeEntry.getValue().getVrfs(),
+                  Entry::getKey,
+                  vrfEntry ->
+                      vrfOwnedIpSpaces
+                          .getOrDefault(nodeEntry.getKey(), ImmutableMap.of())
+                          .getOrDefault(vrfEntry.getKey(), EmptyIpSpace.INSTANCE)
+                          .accept(ipSpaceToBDD)));
+    }
   }
 
   /**
@@ -1573,17 +1668,23 @@ public final class BDDReachabilityAnalysisFactory {
    */
   private Stream<Edge> instrumentForbiddenTransitNodes(
       Set<String> forbiddenTransitNodes, Stream<Edge> edgeStream) {
-    if (forbiddenTransitNodes.isEmpty()) {
-      return edgeStream;
-    }
+    try (ActiveSpan span =
+        GlobalTracer.get()
+            .buildSpan("BDDReachabilityAnalysisFactory.instrumentForbiddenTransitNodes")
+            .startActive()) {
+      assert span != null; // avoid unused warning
+      if (forbiddenTransitNodes.isEmpty()) {
+        return edgeStream;
+      }
 
-    // remove any edges at which a forbidden node becomes transited.
-    return edgeStream.filter(
-        edge ->
-            !(edge.getPreState() instanceof PreOutEdgePostNat
-                && edge.getPostState() instanceof PreInInterface
-                && forbiddenTransitNodes.contains(
-                    ((PreOutEdgePostNat) edge.getPreState()).getSrcNode())));
+      // remove any edges at which a forbidden node becomes transited.
+      return edgeStream.filter(
+          edge ->
+              !(edge.getPreState() instanceof PreOutEdgePostNat
+                  && edge.getPostState() instanceof PreInInterface
+                  && forbiddenTransitNodes.contains(
+                      ((PreOutEdgePostNat) edge.getPreState()).getSrcNode())));
+    }
   }
 
   /**
@@ -1595,28 +1696,36 @@ public final class BDDReachabilityAnalysisFactory {
    */
   private Stream<Edge> instrumentRequiredTransitNodes(
       Set<String> requiredTransitNodes, Stream<Edge> edgeStream) {
-    if (requiredTransitNodes.isEmpty()) {
-      return edgeStream;
+    try (ActiveSpan span =
+        GlobalTracer.get()
+            .buildSpan("BDDReachabilityAnalysisFactory.instrumentRequiredTransitNodes")
+            .startActive()) {
+      assert span != null; // avoid unused warning
+      if (requiredTransitNodes.isEmpty()) {
+        return edgeStream;
+      }
+
+      BDD transited = _requiredTransitNodeBDD;
+      BDD notTransited = _requiredTransitNodeBDD.not();
+
+      return edgeStream.map(
+          edge -> {
+            if (edge.getPreState() instanceof PreOutEdgePostNat
+                && edge.getPostState() instanceof PreInInterface) {
+              String hostname = ((PreOutEdgePostNat) edge.getPreState()).getSrcNode();
+              return requiredTransitNodes.contains(hostname)
+                  ? adaptEdgeSetTransitedBit(edge)
+                  : edge;
+            } else if (edge.getPreState() instanceof OriginateVrf
+                || edge.getPreState() instanceof OriginateInterfaceLink) {
+              return andThen(edge, notTransited);
+            } else if (edge.getPostState() instanceof Query) {
+              return andThen(edge, transited);
+            } else {
+              return edge;
+            }
+          });
     }
-
-    BDD transited = _requiredTransitNodeBDD;
-    BDD notTransited = _requiredTransitNodeBDD.not();
-
-    return edgeStream.map(
-        edge -> {
-          if (edge.getPreState() instanceof PreOutEdgePostNat
-              && edge.getPostState() instanceof PreInInterface) {
-            String hostname = ((PreOutEdgePostNat) edge.getPreState()).getSrcNode();
-            return requiredTransitNodes.contains(hostname) ? adaptEdgeSetTransitedBit(edge) : edge;
-          } else if (edge.getPreState() instanceof OriginateVrf
-              || edge.getPreState() instanceof OriginateInterfaceLink) {
-            return andThen(edge, notTransited);
-          } else if (edge.getPostState() instanceof Query) {
-            return andThen(edge, transited);
-          } else {
-            return edge;
-          }
-        });
   }
 
   public Map<String, BDDSourceManager> getBDDSourceManagers() {
