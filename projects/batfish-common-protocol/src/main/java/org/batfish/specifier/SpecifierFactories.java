@@ -2,6 +2,7 @@ package org.batfish.specifier;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.specifier.parboiled.ParboiledApplicationSpecifierFactory;
 import org.batfish.specifier.parboiled.ParboiledFilterSpecifierFactory;
 import org.batfish.specifier.parboiled.ParboiledInterfaceSpecifierFactory;
 import org.batfish.specifier.parboiled.ParboiledIpSpaceSpecifierFactory;
@@ -25,6 +26,16 @@ public final class SpecifierFactories {
 
   /** Which grammar version is currently in use */
   public static final Version ACTIVE_VERSION = Version.V2;
+
+  public static ApplicationSpecifierFactory getApplicationFactory(Version version) {
+    switch (version) {
+      case V1:
+      case V2:
+        return new ParboiledApplicationSpecifierFactory();
+      default:
+        throw new IllegalStateException("Unhandled grammar version " + version);
+    }
+  }
 
   public static FilterSpecifierFactory getFilterFactory(Version version) {
     switch (version) {
@@ -82,6 +93,9 @@ public final class SpecifierFactories {
   }
 
   /** Define these constants, so we don't have to keep computing them */
+  private static final ApplicationSpecifierFactory ActiveApplicationFactory =
+      getApplicationFactory(ACTIVE_VERSION);
+
   private static final FilterSpecifierFactory ActiveFilterFactory =
       getFilterFactory(ACTIVE_VERSION);
 
@@ -95,6 +109,11 @@ public final class SpecifierFactories {
       getLocationFactory(ACTIVE_VERSION);
 
   private static final NodeSpecifierFactory ActiveNodeFactory = getNodeFactory(ACTIVE_VERSION);
+
+  public static ApplicationSpecifier getApplicationSpecifierOrDefault(
+      @Nullable String input, ApplicationSpecifier defaultSpecifier) {
+    return getApplicationSpecifierOrDefault(input, defaultSpecifier, ActiveApplicationFactory);
+  }
 
   public static FilterSpecifier getFilterSpecifierOrDefault(
       @Nullable String input, FilterSpecifier defaultSpecifier) {
@@ -119,6 +138,15 @@ public final class SpecifierFactories {
   public static NodeSpecifier getNodeSpecifierOrDefault(
       @Nullable String input, NodeSpecifier defaultSpecifier) {
     return getNodeSpecifierOrDefault(input, defaultSpecifier, ActiveNodeFactory);
+  }
+
+  public static ApplicationSpecifier getApplicationSpecifierOrDefault(
+      @Nullable String input,
+      ApplicationSpecifier defaultSpecifier,
+      ApplicationSpecifierFactory factory) {
+    return input == null || input.isEmpty()
+        ? defaultSpecifier
+        : factory.buildApplicationSpecifier(input);
   }
 
   public static FilterSpecifier getFilterSpecifierOrDefault(

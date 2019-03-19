@@ -59,6 +59,7 @@ import static org.batfish.client.Command.TEST;
 import static org.batfish.client.Command.UPLOAD_CUSTOM_OBJECT;
 import static org.batfish.common.CoordConsts.DEFAULT_API_KEY;
 import static org.batfish.datamodel.questions.Variable.Type.ADDRESS_GROUP_AND_BOOK;
+import static org.batfish.datamodel.questions.Variable.Type.APPLICATION_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.BGP_SESSION_STATUS;
 import static org.batfish.datamodel.questions.Variable.Type.BGP_SESSION_TYPE;
 import static org.batfish.datamodel.questions.Variable.Type.BOOLEAN;
@@ -560,6 +561,15 @@ public final class ClientTest {
         String.format(
             "A Batfish %s must be a JSON string with two comma-separated values",
             expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
+  public void testInvalidApplicationSpecifierValue() throws IOException {
+    String input = "5";
+    Type expectedType = APPLICATION_SPEC;
+    String expectedMessage =
+        String.format("It is not a valid JSON %s value", APPLICATION_SPEC.getName());
     validateTypeWithInvalidInput(input, expectedMessage, expectedType);
   }
 
@@ -1704,6 +1714,14 @@ public final class ClientTest {
   }
 
   @Test
+  public void testValidDispositionSpecifierValue() throws IOException {
+    JsonNode specNode = _mapper.readTree("\"success\"");
+    Variable variable = new Variable();
+    variable.setType(APPLICATION_SPEC);
+    Client.validateType(specNode, variable);
+  }
+
+  @Test
   public void testValidBooleanValue() throws IOException {
     JsonNode booleanNode = _mapper.readTree("true");
     Variable variable = new Variable();
@@ -1736,7 +1754,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidDispositionSpecifierValue() throws IOException {
+  public void testValidApplicationSpecifierValue() throws IOException {
     JsonNode dispositionSpecNode = _mapper.readTree("\"success\"");
     Variable variable = new Variable();
     variable.setType(DISPOSITION_SPEC);

@@ -15,6 +15,8 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.specifier.IpProtocolSpecifier;
+import org.batfish.specifier.NoApplicationsApplicationSpecifier;
+import org.batfish.specifier.SpecifierFactories;
 
 /**
  * A set of constraints on an IPv4 packet header, where each field (i.e., constraint) is a {@link
@@ -107,7 +109,7 @@ public class PacketHeaderConstraints {
       @Nullable @JsonProperty(PROP_ICMP_TYPES) IntegerSpace.Builder icmpTypes,
       @Nullable @JsonProperty(PROP_SRC_PORTS) IntegerSpace.Builder srcPorts,
       @Nullable @JsonProperty(PROP_DST_PORTS) IntegerSpace.Builder dstPorts,
-      @Nullable @JsonProperty(PROP_APPLICATIONS) Set<Protocol> applications,
+      @Nullable @JsonProperty(PROP_APPLICATIONS) String applications,
       @Nullable @JsonProperty(PROP_TCP_FLAGS) Set<TcpFlagsMatchConditions> tcpFlags)
       throws IllegalArgumentException {
     return new PacketHeaderConstraints(
@@ -123,7 +125,11 @@ public class PacketHeaderConstraints {
         processBuilder(icmpTypes, VALID_ICMP_CODE_TYPE),
         processBuilder(srcPorts, IntegerSpace.PORTS),
         processBuilder(dstPorts, IntegerSpace.PORTS),
-        applications,
+        applications == null || applications.isEmpty()
+            ? null
+            : SpecifierFactories.getApplicationSpecifierOrDefault(
+                    applications, NoApplicationsApplicationSpecifier.INSTANCE)
+                .resolve(),
         tcpFlags);
   }
 
