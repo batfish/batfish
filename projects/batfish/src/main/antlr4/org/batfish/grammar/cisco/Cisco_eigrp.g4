@@ -381,7 +381,9 @@ ren_address_family_tail
 ren_metric_weights
 :
    METRIC WEIGHTS
-   tos = DEC (k1 = DEC)? (k2 = DEC)? (k3 = DEC)? (k4 = DEC)? (k5 = DEC)? (k6 = DEC)? NEWLINE
+   // Looks so far like weights are non-optional
+   // https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/iproute_eigrp/configuration/xe-3s/ire-xe-3s-book/ire-wid-met.pdf
+   tos = DEC k1 = DEC k2 = DEC k3 = DEC k4 = DEC k5 = DEC k6 = DEC NEWLINE
 ;
 
 ren_null

@@ -21260,6 +21260,9 @@
             "                k1 = DEC:'1'",
             "                k2 = DEC:'2'",
             "                k3 = DEC:'3'",
+            "                k4 = DEC:'4'",
+            "                k5 = DEC:'5'",
+            "                k6 = DEC:'6'",
             "                NEWLINE:'\\n'))",
             "            (ren_address_family_tail",
             "              (re_network",
@@ -69381,13 +69384,13 @@
               "Comment" : "This feature is not currently supported",
               "Line" : 122,
               "Parser_Context" : "[ren_address_family re_named_tail re_named s_router_eigrp stanza cisco_configuration]",
-              "Text" : "address-family ipv4 multicast vrf autonomous-system autonomous-system 4\n  af-interface Ethernet0\n   add-paths 4\n   bandwidth-percent 75\n   dampening-change 75\n   dampening-interval 45\n   hold-time 40\n   passive-interface\n  exit-af-interface\n  eigrp default-route-tag 2\n  metric rib-scale 100\n  metric weights 0 1 2 3\n  network 1.1.1.100\n  remote-neighbors source GigabitEthernet0/0/1 unicast-listen lisp-encap 2\n  topology base\n   metric maximum-hops 10\n   offset-list 21 out 10\n   summary-metric 192.168.0.0/16 10000 10 255 1 1500 distance 20\n   traffic-share balanced\n   variance 4\n  exit-af-topology\n  topology VOICE tid 1000\n   no auto-summary\n  exit-af-topology\n  passive-interface default\n  no passive-interface FastEthernet0/1\n exit-address-family"
+              "Text" : "address-family ipv4 multicast vrf autonomous-system autonomous-system 4\n  af-interface Ethernet0\n   add-paths 4\n   bandwidth-percent 75\n   dampening-change 75\n   dampening-interval 45\n   hold-time 40\n   passive-interface\n  exit-af-interface\n  eigrp default-route-tag 2\n  metric rib-scale 100\n  metric weights 0 1 2 3 4 5 6\n  network 1.1.1.100\n  remote-neighbors source GigabitEthernet0/0/1 unicast-listen lisp-encap 2\n  topology base\n   metric maximum-hops 10\n   offset-list 21 out 10\n   summary-metric 192.168.0.0/16 10000 10 255 1 1500 distance 20\n   traffic-share balanced\n   variance 4\n  exit-af-topology\n  topology VOICE tid 1000\n   no auto-summary\n  exit-af-topology\n  passive-interface default\n  no passive-interface FastEthernet0/1\n exit-address-family"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 133,
               "Parser_Context" : "[ren_metric_weights ren_address_family_tail ren_address_family re_named_tail re_named s_router_eigrp stanza cisco_configuration]",
-              "Text" : "metric weights 0 1 2 3"
+              "Text" : "metric weights 0 1 2 3 4 5 6"
             },
             {
               "Comment" : "This feature is not currently supported",

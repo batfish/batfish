@@ -130,7 +130,7 @@ router eigrp virtual
   exit-af-interface
   eigrp default-route-tag 2
   metric rib-scale 100
-  metric weights 0 1 2 3
+  metric weights 0 1 2 3 4 5 6
   network 1.1.1.100
   remote-neighbors source GigabitEthernet0/0/1 unicast-listen lisp-encap 2
   topology base
