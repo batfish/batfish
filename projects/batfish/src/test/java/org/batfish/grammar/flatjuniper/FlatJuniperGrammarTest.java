@@ -320,7 +320,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   private static Flow createFlow(String sourceAddress, String destinationAddress, FlowState state) {
-    Flow.Builder fb = new Flow.Builder();
+    Flow.Builder fb = Flow.builder();
     fb.setIngressNode("node");
     fb.setSrcIp(Ip.parse(sourceAddress));
     fb.setDstIp(Ip.parse(destinationAddress));
@@ -331,7 +331,7 @@ public final class FlatJuniperGrammarTest {
 
   private static Flow createFlow(IpProtocol protocol, int port) {
     Flow.Builder fb =
-        new Flow.Builder()
+        Flow.builder()
             .setIngressNode("node")
             .setIpProtocol(protocol)
             .setDstPort(port)

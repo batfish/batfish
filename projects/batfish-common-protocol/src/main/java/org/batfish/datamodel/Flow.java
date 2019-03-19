@@ -42,7 +42,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
     private int _tcpFlagsSyn;
     private int _tcpFlagsUrg;
 
-    public Builder() {
+    private Builder() {
       _dscp = 0;
       _dstIp = Ip.ZERO;
       _dstPort = 0;
@@ -64,7 +64,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
       _tcpFlagsFin = 0;
     }
 
-    public Builder(Flow flow) {
+    private Builder(Flow flow) {
       _ingressNode = flow._ingressNode;
       _ingressInterface = flow._ingressInterface;
       _ingressVrf = flow._ingressVrf;
