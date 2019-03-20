@@ -473,7 +473,7 @@ public class Parser extends CommonParser {
    *   ipProtocolTerm := ipProtocol
    *                     | ! ipProtocol
    *
-   *   ipProtocolTerm := Name      // e.g., TCP
+   *   ipProtocol :=     Name      // e.g., TCP
    *                     | Number  // e.g., 51
    * </pre>
    */
