@@ -91,12 +91,12 @@ public final class TestPoliciesQuestion extends Question {
   }
 
   @JsonProperty(PROP_NODES)
-  public String getNode() {
+  public String getNodes() {
     return _nodes;
   }
 
   @JsonProperty(PROP_POLICIES)
-  public String getPolicy() {
+  public String getPolicies() {
     return _policies;
   }
 }

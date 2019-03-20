@@ -1,5 +1,6 @@
 package org.batfish.question.testpolicies;
 
+import static org.batfish.datamodel.LineAction.DENY;
 import static org.batfish.datamodel.LineAction.PERMIT;
 
 import com.google.common.collect.ImmutableList;
@@ -40,8 +41,8 @@ public final class TestPoliciesAnswerer extends Answerer {
     super(question, batfish);
     _direction = question.getDirection();
     _inputRoute = question.getInputRoute();
-    _node = question.getNode();
-    _policy = question.getPolicy();
+    _node = question.getNodes();
+    _policy = question.getPolicies();
   }
 
   @Override
@@ -57,8 +58,7 @@ public final class TestPoliciesAnswerer extends Answerer {
         policy.process(
             inputRoute, outputRoute, null, null, Configuration.DEFAULT_VRF_NAME, _direction);
 
-    Row row =
-        row(_node, _policy, inputRoute, permit ? PERMIT : LineAction.DENY, outputRoute.build());
+    Row row = row(_node, _policy, inputRoute, permit ? PERMIT : DENY, outputRoute.build());
     Multiset<Row> rows = ImmutableMultiset.of(row);
 
     TableAnswerElement answerElement = new TableAnswerElement(metadata());
