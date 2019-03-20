@@ -5,6 +5,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.specifier.parboiled.ParboiledApplicationSpecifierFactory;
 import org.batfish.specifier.parboiled.ParboiledFilterSpecifierFactory;
 import org.batfish.specifier.parboiled.ParboiledInterfaceSpecifierFactory;
+import org.batfish.specifier.parboiled.ParboiledIpProtocolSpecifierFactory;
 import org.batfish.specifier.parboiled.ParboiledIpSpaceSpecifierFactory;
 import org.batfish.specifier.parboiled.ParboiledLocationSpecifierFactory;
 import org.batfish.specifier.parboiled.ParboiledNodeSpecifierFactory;
@@ -59,6 +60,16 @@ public final class SpecifierFactories {
     }
   }
 
+  public static IpProtocolSpecifierFactory getIpProtocolFactory(Version version) {
+    switch (version) {
+      case V1:
+      case V2:
+        return new ParboiledIpProtocolSpecifierFactory();
+      default:
+        throw new IllegalStateException("Unhandled grammar version " + version);
+    }
+  }
+
   public static IpSpaceSpecifierFactory getIpSpaceFactory(Version version) {
     switch (version) {
       case V1:
@@ -102,6 +113,9 @@ public final class SpecifierFactories {
   private static final InterfaceSpecifierFactory ActiveInterfaceFactory =
       getInterfaceFactory(ACTIVE_VERSION);
 
+  private static final IpProtocolSpecifierFactory ActiveIpProtocolFactory =
+      getIpProtocolFactory(ACTIVE_VERSION);
+
   private static final IpSpaceSpecifierFactory ActiveIpSpaceFactory =
       getIpSpaceFactory(ACTIVE_VERSION);
 
@@ -123,6 +137,11 @@ public final class SpecifierFactories {
   public static InterfaceSpecifier getInterfaceSpecifierOrDefault(
       @Nullable String input, InterfaceSpecifier defaultSpecifier) {
     return getInterfaceSpecifierOrDefault(input, defaultSpecifier, ActiveInterfaceFactory);
+  }
+
+  public static IpProtocolSpecifier getIpProtocolSpecifierOrDefault(
+      @Nullable String input, IpProtocolSpecifier defaultSpecifier) {
+    return getIpProtocolSpecifierOrDefault(input, defaultSpecifier, ActiveIpProtocolFactory);
   }
 
   public static IpSpaceSpecifier getIpSpaceSpecifierOrDefault(
@@ -163,6 +182,15 @@ public final class SpecifierFactories {
     return input == null || input.isEmpty()
         ? defaultSpecifier
         : factory.buildInterfaceSpecifier(input);
+  }
+
+  public static IpProtocolSpecifier getIpProtocolSpecifierOrDefault(
+      @Nullable String input,
+      IpProtocolSpecifier defaultSpecifier,
+      IpProtocolSpecifierFactory factory) {
+    return input == null || input.isEmpty()
+        ? defaultSpecifier
+        : factory.buildIpProtocolSpecifier(input);
   }
 
   public static IpSpaceSpecifier getIpSpaceSpecifierOrDefault(

@@ -16,8 +16,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.specifier.IpProtocolSpecifier;
 import org.batfish.specifier.NoApplicationsApplicationSpecifier;
+import org.batfish.specifier.NoIpProtocolsIpProtocolSpecifier;
 import org.batfish.specifier.SpecifierFactories;
 
 /**
@@ -120,7 +120,7 @@ public class PacketHeaderConstraints {
         processBuilder(packetLengths, VALID_PACKET_LENGTH),
         flowStates,
         processBuilder(fragmentOffsets, VALID_FRAGMENT_OFFSET),
-        new IpProtocolSpecifier(ipProtocols).getProtocols(),
+        parseIpProtocols(ipProtocols),
         srcIps,
         dstIps,
         processBuilder(icmpCodes, VALID_ICMP_CODE_TYPE),
@@ -188,6 +188,34 @@ public class PacketHeaderConstraints {
 
     return SpecifierFactories.getApplicationSpecifierOrDefault(
             input, NoApplicationsApplicationSpecifier.INSTANCE)
+        .resolve();
+  }
+
+  /**
+   * IpProtocols can be specified either as 1) a string like "tcp, udp"; or 2) a (Json) list of
+   * strings like ["tcp", "udp"]. Negation (e.g., "!tcp" is allowed too.
+   */
+  @VisibleForTesting
+  static Set<IpProtocol> parseIpProtocols(JsonNode ipProtocols) {
+    String input = "";
+    if (ipProtocols == null || ipProtocols.isNull()) {
+      return null;
+    } else if (ipProtocols.isTextual()) {
+      input = ipProtocols.asText();
+    } else if (ipProtocols.isArray()) {
+      input =
+          Streams.stream(ipProtocols.elements())
+              .map(JsonNode::textValue)
+              .collect(Collectors.joining(","));
+    } else {
+      throw new IllegalArgumentException(
+          String.format(
+              "IP protocol specifier should be a string or a list of strings. Got: %s",
+              ipProtocols));
+    }
+
+    return SpecifierFactories.getIpProtocolSpecifierOrDefault(
+            input, NoIpProtocolsIpProtocolSpecifier.INSTANCE)
         .resolve();
   }
 
