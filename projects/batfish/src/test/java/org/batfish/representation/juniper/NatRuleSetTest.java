@@ -4,9 +4,10 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
 import static org.batfish.datamodel.transformation.IpField.SOURCE;
-import static org.batfish.datamodel.transformation.Noop.NOOP_DEST_NAT;
+import static org.batfish.datamodel.transformation.Noop.NOOP_SOURCE_NAT;
 import static org.batfish.datamodel.transformation.Transformation.when;
-import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
+import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
+import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
 import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
@@ -68,7 +69,7 @@ public class NatRuleSetTest {
     Warnings warnings = new Warnings(true, true, true);
     Optional<Transformation> transformation =
         ruleSet.toOutgoingTransformation(
-            nat, interfaceIp, matchFromLocationExprs, andThen, orElse, warnings);
+            nat, ImmutableMap.of(), interfaceIp, matchFromLocationExprs, andThen, orElse, warnings);
     assertTrue(warnings.getPedanticWarnings().isEmpty());
     assertTrue(warnings.getRedFlagWarnings().isEmpty());
     assertTrue(warnings.getUnimplementedWarnings().isEmpty());
@@ -83,7 +84,7 @@ public class NatRuleSetTest {
       @Nullable Transformation orElse) {
     Warnings warnings = new Warnings(true, true, true);
     Optional<Transformation> transformation =
-        ruleSet.toIncomingTransformation(nat, interfaceIp, andThen, orElse, warnings);
+        ruleSet.toIncomingTransformation(nat, null, interfaceIp, andThen, orElse, warnings);
     assertTrue(warnings.getPedanticWarnings().isEmpty());
     assertTrue(warnings.getRedFlagWarnings().isEmpty());
     assertTrue(warnings.getUnimplementedWarnings().isEmpty());
@@ -147,25 +148,27 @@ public class NatRuleSetTest {
     Transformation rulesTransformation =
         // first apply natRule1
         when(matchDst(prefix1))
-            .apply(NOOP_DEST_NAT)
+            .apply(NOOP_SOURCE_NAT)
             .setAndThen(andThen)
             .setOrElse(
                 // only apply natRule2 if natRule1 doesn't match
                 when(matchDst(prefix2))
-                    .apply(assignDestinationIp(poolStart, poolEnd))
+                    .apply(
+                        assignSourceIp(poolStart, poolEnd),
+                        assignSourcePort(Nat.DEFAULT_FROM_PORT, Nat.DEFAULT_TO_PORT))
                     .setAndThen(andThen)
                     .setOrElse(orElse)
                     .build())
             .build();
 
-    Nat dnat = new Nat(Type.DESTINATION);
-    dnat.getPools().put("POOL", pool);
+    Nat snat = new Nat(Type.SOURCE);
+    snat.getPools().put("POOL", pool);
 
     Ip interfaceIp = Ip.ZERO;
     assertThat(
         toOutgoingTransformation(
                 ruleSet,
-                dnat,
+                snat,
                 interfaceIp,
                 ImmutableMap.of(interfaceLocation(fromIface), matchFromIface),
                 andThen,
@@ -176,7 +179,7 @@ public class NatRuleSetTest {
             when(matchFromIface).setAndThen(rulesTransformation).setOrElse(orElse).build()));
 
     assertThat(
-        toIncomingTransformation(ruleSet, dnat, interfaceIp, andThen, orElse).get(),
+        toIncomingTransformation(ruleSet, snat, interfaceIp, andThen, orElse).get(),
         equalTo(rulesTransformation));
   }
 

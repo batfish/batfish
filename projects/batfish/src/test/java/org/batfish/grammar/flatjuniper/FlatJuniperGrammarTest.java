@@ -9,6 +9,9 @@ import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
+import static org.batfish.datamodel.flow.TransformationStep.TransformationType.DEST_NAT;
+import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
+import static org.batfish.datamodel.flow.TransformationStep.TransformationType.STATIC_NAT;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.hasMethods;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AnnotatedRouteMatchers.hasSourceVrf;
@@ -99,6 +102,8 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasGeneratedRoutes;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
+import static org.batfish.datamodel.transformation.IpField.DESTINATION;
+import static org.batfish.datamodel.transformation.IpField.SOURCE;
 import static org.batfish.datamodel.transformation.Noop.NOOP_DEST_NAT;
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
@@ -225,6 +230,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -259,6 +265,9 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.AssignPortFromPool;
+import org.batfish.datamodel.transformation.IpField;
+import org.batfish.datamodel.transformation.Noop;
+import org.batfish.datamodel.transformation.ShiftIpAddressIntoSubnet;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.VendorConfigurationFormatDetector;
@@ -289,6 +298,8 @@ import org.batfish.representation.juniper.NatRuleSet;
 import org.batfish.representation.juniper.NatRuleThenInterface;
 import org.batfish.representation.juniper.NatRuleThenOff;
 import org.batfish.representation.juniper.NatRuleThenPool;
+import org.batfish.representation.juniper.NatRuleThenPrefix;
+import org.batfish.representation.juniper.NatRuleThenPrefixName;
 import org.batfish.representation.juniper.NoPortTranslation;
 import org.batfish.representation.juniper.PatPool;
 import org.batfish.representation.juniper.Screen;
@@ -4672,5 +4683,93 @@ public final class FlatJuniperGrammarTest {
     NatPool pool1 = sourceNat.getPools().get("POOL1");
     assertThat(pool0.getOwner(), equalTo("R1"));
     assertNull(pool1.getOwner());
+  }
+
+  @Test
+  public void testStaticNat() {
+    JuniperConfiguration juniperConfiguration = parseJuniperConfig("juniper-nat-static");
+    Nat nat = juniperConfiguration.getMasterLogicalSystem().getNatStatic();
+    assertThat(nat.getRuleSets().keySet(), contains("RULESET1"));
+
+    NatRuleSet ruleset = nat.getRuleSets().get("RULESET1");
+    assertThat(ruleset.getRules(), hasSize(2));
+
+    NatRule rule1 = ruleset.getRules().get(0);
+    assertThat(rule1.getName(), equalTo("RULE1"));
+    assertThat(rule1.getMatches(), contains(new NatRuleMatchDstAddrName("DESTNAME")));
+    assertThat(
+        rule1.getThen(), equalTo(new NatRuleThenPrefixName("PREFIXNAME", IpField.DESTINATION)));
+
+    NatRule rule2 = ruleset.getRules().get(1);
+    assertThat(rule2.getName(), equalTo("RULE2"));
+    assertThat(rule2.getMatches(), contains(new NatRuleMatchDstAddr(Prefix.parse("2.0.0.0/24"))));
+    assertThat(
+        rule2.getThen(),
+        equalTo(new NatRuleThenPrefix(Prefix.parse("10.10.10.0/24"), IpField.DESTINATION)));
+  }
+
+  @Test
+  public void testStaticNatViModel() throws IOException {
+    Configuration config = parseConfig("juniper-nat-static");
+
+    // incoming transformation
+    Transformation destNatTransformation =
+        when(match(HeaderSpace.builder().setSrcIps(Prefix.parse("3.3.3.3/24").toIpSpace()).build()))
+            .apply(new Noop(DEST_NAT))
+            .build();
+
+    Transformation rule2IncomingTransformation =
+        when(match(HeaderSpace.builder().setDstIps(Prefix.parse("2.0.0.0/24").toIpSpace()).build()))
+            .apply(
+                new ShiftIpAddressIntoSubnet(
+                    STATIC_NAT, DESTINATION, Prefix.parse("10.10.10.0/24")))
+            .setOrElse(destNatTransformation)
+            .build();
+
+    Transformation expectedIncomingTransformation =
+        when(match(
+                HeaderSpace.builder().setDstIps(new IpSpaceReference("global~DESTNAME")).build()))
+            .apply(
+                new ShiftIpAddressIntoSubnet(
+                    STATIC_NAT, DESTINATION, Prefix.parse("10.10.10.0/24")))
+            .setOrElse(rule2IncomingTransformation)
+            .build();
+
+    Transformation incomingTransformation =
+        config.getAllInterfaces().get("ge-0/0/0.0").getIncomingTransformation();
+
+    assertThat(incomingTransformation, equalTo(expectedIncomingTransformation));
+
+    // outgoing transformation
+    AclLineMatchExpr matchFromLocation = AclLineMatchExprs.matchSrcInterface("ge-0/0/1.0");
+    Transformation srcNatTransformation =
+        when(matchFromLocation)
+            .setAndThen(
+                when(match(
+                        HeaderSpace.builder()
+                            .setSrcIps(Prefix.parse("3.3.3.3/24").toIpSpace())
+                            .build()))
+                    .apply(new Noop(SOURCE_NAT))
+                    .build())
+            .build();
+
+    Transformation rule2OutgoingTransformation =
+        when(match(
+                HeaderSpace.builder().setSrcIps(Prefix.parse("10.10.10.0/24").toIpSpace()).build()))
+            .apply(new ShiftIpAddressIntoSubnet(STATIC_NAT, SOURCE, Prefix.parse("2.0.0.0/24")))
+            .setOrElse(srcNatTransformation)
+            .build();
+
+    Transformation expectedOutgoingTransformation =
+        when(match(
+                HeaderSpace.builder().setSrcIps(new IpSpaceReference("global~PREFIXNAME")).build()))
+            .apply(new ShiftIpAddressIntoSubnet(STATIC_NAT, SOURCE, Prefix.parse("1.0.0.0/24")))
+            .setOrElse(rule2OutgoingTransformation)
+            .build();
+
+    Transformation outgoingTransformation =
+        config.getAllInterfaces().get("ge-0/0/0.0").getOutgoingTransformation();
+
+    assertThat(outgoingTransformation, equalTo(expectedOutgoingTransformation));
   }
 }

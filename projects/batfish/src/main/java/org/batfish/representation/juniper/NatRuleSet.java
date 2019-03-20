@@ -12,11 +12,13 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.Transformation.Builder;
+import org.batfish.representation.juniper.Nat.Type;
 
 /** Represents a Juniper nat rule set */
 @ParametersAreNonnullByDefault
@@ -91,23 +93,36 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
    */
   public Optional<Transformation> toOutgoingTransformation(
       Nat nat,
+      Map<String, AddressBookEntry> addressBookEntryMap,
       Ip interfaceIp,
       Map<NatPacketLocation, AclLineMatchExpr> matchFromLocationExprs,
       @Nullable Transformation andThen,
       @Nullable Transformation orElse,
       Warnings warnings) {
 
-    AclLineMatchExpr matchFromLocation = matchFromLocationExprs.get(_fromLocation);
+    if (nat.getType() == Type.SOURCE) {
+      AclLineMatchExpr matchFromLocation = matchFromLocationExprs.get(_fromLocation);
 
-    if (matchFromLocation == null) {
-      // non-existent NatPacketLocation
-      return Optional.empty();
+      if (matchFromLocation == null) {
+        // non-existent NatPacketLocation
+        return Optional.empty();
+      }
+
+      return rulesTransformation(nat, addressBookEntryMap, interfaceIp, andThen, orElse, warnings)
+          .map(
+              rulesTransformation ->
+                  when(matchFromLocation)
+                      .setAndThen(rulesTransformation)
+                      .setOrElse(orElse)
+                      .build());
     }
 
-    return rulesTransformation(nat, interfaceIp, andThen, orElse, warnings)
-        .map(
-            rulesTransformation ->
-                when(matchFromLocation).setAndThen(rulesTransformation).setOrElse(orElse).build());
+    if (nat.getType() == Type.STATIC) {
+      return rulesTransformation(nat, addressBookEntryMap, interfaceIp, andThen, orElse, warnings);
+    }
+
+    throw new BatfishException(
+        "Not supported nat types for outgoing transformation: " + nat.getType());
   }
 
   /**
@@ -117,22 +132,25 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
    */
   public Optional<Transformation> toIncomingTransformation(
       Nat nat,
+      @Nullable Map<String, AddressBookEntry> addressBookEntryMap,
       Ip interfaceIp,
       @Nullable Transformation andThen,
       @Nullable Transformation orElse,
       Warnings warnings) {
-    return rulesTransformation(nat, interfaceIp, andThen, orElse, warnings);
+    return rulesTransformation(nat, addressBookEntryMap, interfaceIp, andThen, orElse, warnings);
   }
 
   private Optional<Transformation> rulesTransformation(
       Nat nat,
+      @Nullable Map<String, AddressBookEntry> addressBookEntryMap,
       Ip interfaceIp,
       @Nullable Transformation andThen,
       @Nullable Transformation orElse,
       Warnings warnings) {
     Transformation transformation = orElse;
     for (NatRule rule : Lists.reverse(_rules)) {
-      Optional<Builder> optionalBuilder = rule.toTransformationBuilder(nat, interfaceIp, warnings);
+      Optional<Builder> optionalBuilder =
+          rule.toTransformationBuilder(nat, addressBookEntryMap, interfaceIp, warnings);
       if (optionalBuilder.isPresent()) {
         transformation =
             optionalBuilder.get().setAndThen(andThen).setOrElse(transformation).build();

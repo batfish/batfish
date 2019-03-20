@@ -366,6 +366,7 @@ rsrt_static_nat
    STATIC_NAT
    (
       rsrtst_prefix
+      | rsrtst_prefix_name
    )
 ;
 
@@ -409,6 +410,16 @@ rsrtst_prefix
    )
 ;
 
+rsrtst_prefix_name
+:
+   PREFIX_NAME
+   (
+      rsrtstp_prefix_name
+      | rsrtstp_routing_instance
+   )
+;
+
+
 rsrtstp_mapped_port
 :
    MAPPED_PORT low = DEC
@@ -420,6 +431,16 @@ rsrtstp_mapped_port
 rsrtstp_prefix
 :
    IP_PREFIX
+;
+
+rsrtstp_prefix_name
+:
+   name = variable
+;
+
+rsrtstp_routing_instance
+:
+   ROUTING_INSTANCE name = variable
 ;
 
 s_security
