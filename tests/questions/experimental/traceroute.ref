@@ -30,7 +30,7 @@
         "fields" : {
           "applications" : {
             "optional" : true,
-            "type" : "protocol"
+            "type" : "applicationSpec"
           },
           "dscps" : {
             "optional" : true
