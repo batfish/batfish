@@ -278,10 +278,10 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testIpProtocolSpecAutocomplete() throws IOException {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.IP_PROTOCOL_SPEC, "89 (O", 5).stream()
+        AutoCompleteUtils.autoComplete(Type.IP_PROTOCOL_SPEC, "OSP", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
-        equalTo(ImmutableSet.of("89 (OSPF)")));
+        equalTo(ImmutableSet.of("OSPF")));
   }
 
   @Test
