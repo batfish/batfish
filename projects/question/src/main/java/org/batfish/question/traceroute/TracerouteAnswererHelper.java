@@ -156,6 +156,9 @@ public final class TracerouteAnswererHelper {
     if (builder.getIpProtocol() == null || builder.getIpProtocol() == IpProtocol.IP) {
       builder.setIpProtocol(IpProtocol.UDP);
     }
+    if (builder.getIpProtocol() == IpProtocol.TCP) {
+      builder.setTcpFlagsSyn(1);
+    }
     if (builder.getDstPort() == null) {
       builder.setDstPort(TRACEROUTE_PORT);
     }

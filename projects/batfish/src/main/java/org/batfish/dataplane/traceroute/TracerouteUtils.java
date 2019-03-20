@@ -30,6 +30,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.EnterInputIfaceStep;
 import org.batfish.datamodel.flow.EnterInputIfaceStep.EnterInputIfaceStepDetail;
@@ -177,6 +178,20 @@ public final class TracerouteUtils {
         .setIngressNode(returnIngressNode)
         .setIngressVrf(returnIngressVrf)
         .setIngressInterface(returnIngressIface)
+        .setTcpFlags(getTcpFlagsForReverse(forwardFlow.getTcpFlags()))
+        .build();
+  }
+
+  private static TcpFlags getTcpFlagsForReverse(TcpFlags tcpFlags) {
+    return TcpFlags.builder()
+        .setAck(tcpFlags.getSyn() || tcpFlags.getAck())
+        .setSyn(tcpFlags.getSyn())
+        .setRst(tcpFlags.getRst())
+        .setFin(tcpFlags.getFin())
+        .setUrg(tcpFlags.getUrg())
+        .setEce(tcpFlags.getEce())
+        .setPsh(tcpFlags.getPsh())
+        .setCwr(tcpFlags.getCwr())
         .build();
   }
 
