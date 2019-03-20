@@ -71,6 +71,8 @@ public class Variable {
     PREFIX_RANGE("prefixRange", true),
     PROTOCOL("protocol", true),
     QUESTION("question", true),
+    ROUTE_SPEC("routeSpec", false),
+    ROUTING_POLICY_SPEC("routingPolicySpec", true),
     ROUTING_PROTOCOL_SPEC("routingProtocolSpec", true),
     STRING("string", true),
     STRUCTURE_NAME("structureName", true),

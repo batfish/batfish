@@ -1,0 +1,53 @@
+{
+    "class": "org.batfish.question.testpolicies.TestPoliciesQuestion",
+    "differential": false,
+    "nodes": "${nodes}",
+    "policies": "${policies}",
+    "inputRoute": "${inputRoute}",
+    "direction": "${direction}",
+    "instance": {
+        "description": "Evaluate the processing of a route by a given policy",
+        "instanceName": "testPolicies",
+        "longDescription": "Find how the specified route is processed through the specified policies.",
+        "orderedVariableNames": [
+            "nodes", 
+            "policies",
+            "inputRoute",
+            "direction"
+        ],
+        "tags": [
+            "policies",
+            "trace"
+        ],
+        "variables": {
+            "nodes": {
+                "description": "Only examine filters on nodes matching this specifier",
+                "type": "nodeSpec",
+                "value": ".*",
+                "displayName": "Nodes"
+            },
+            "direction": {
+                "description": "The direction of the route, with respect to the node (IN/OUT)",
+                "type": "string",
+                "displayName": "Direction"
+            },
+            "policies": {
+                "description": "Only consider policies that match this specifier",
+                "type": "routingPolicySpec",
+                "value": ".*",
+                "displayName": "Policies"
+            },
+            "inputRoute": {
+                "description": "The BGP route announcement to test the policy on",
+                "type": "routeSpec",
+                "displayName": "Input Route",
+                "fields": {
+                    "network": { "type" : "prefix"},
+                    "originatorIp": { "type": "ip"},
+                    "originType": {},
+                    "protocol": { "type": "routingProtocolSpec"}
+                }
+            }
+        }
+    }
+}
