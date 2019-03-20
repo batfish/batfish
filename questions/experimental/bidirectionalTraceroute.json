@@ -33,7 +33,7 @@
                 "type": "headerConstraint",
                 "displayName": "Headers",
                 "fields": {
-                    "applications": { "optional": true, "type": "protocol"},
+                    "applications": { "optional": true, "type": "applicationSpec"},
                     "dscps": { "optional": true },
                     "dstIps": { "optional": false, "type": "ipSpaceSpec"},
                     "dstPorts": { "optional": true },
