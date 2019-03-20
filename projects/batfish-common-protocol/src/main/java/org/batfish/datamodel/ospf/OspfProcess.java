@@ -42,7 +42,6 @@ public final class OspfProcess implements Serializable {
     @Nullable private Long _maxMetricStubNetworks;
     @Nullable private Long _maxMetricSummaryNetworks;
     @Nullable private Long _maxMetricTransitLinks;
-    @Nullable private String _name;
     @Nullable private Map<String, OspfNeighborConfig> _neighbors;
     @Nullable private String _processId;
     @Nullable private Double _referenceBandwidth;
@@ -69,7 +68,6 @@ public final class OspfProcess implements Serializable {
               _maxMetricStubNetworks,
               _maxMetricSummaryNetworks,
               _maxMetricTransitLinks,
-              _name != null ? _name : generateName(),
               _neighbors,
               _processId,
               _referenceBandwidth,
@@ -103,11 +101,6 @@ public final class OspfProcess implements Serializable {
 
     public Builder setMaxMetricTransitLinks(Long maxMetricTransitLinks) {
       _maxMetricTransitLinks = maxMetricTransitLinks;
-      return this;
-    }
-
-    public Builder setName(@Nonnull String name) {
-      _name = name;
       return this;
     }
 
@@ -172,7 +165,6 @@ public final class OspfProcess implements Serializable {
   private static final String PROP_MAX_METRIC_STUB_NETWORKS = "maxMetricStubNetworks";
   private static final String PROP_MAX_METRIC_SUMMARY_NETWORKS = "maxMetricSummaryNetworks";
   private static final String PROP_MAX_METRIC_TRANSIT_LINKS = "maxMetricTransitLinks";
-  private static final String PROP_NAME = "name";
   private static final String PROP_NEIGHBORS = "neighbors";
   private static final String PROP_PROCESS_ID = "processId";
   private static final String PROP_REFERENCE_BANDWIDTH = "referenceBandwidth";
@@ -206,8 +198,6 @@ public final class OspfProcess implements Serializable {
 
   @Nullable private Long _maxMetricTransitLinks;
 
-  @Nonnull private String _name;
-
   private transient Map<IpLink, OspfNeighbor> _ospfNeighbors;
 
   /** Mapping from interface name to an OSPF config */
@@ -231,13 +221,11 @@ public final class OspfProcess implements Serializable {
       @Nullable @JsonProperty(PROP_MAX_METRIC_STUB_NETWORKS) Long maxMetricStubNetworks,
       @Nullable @JsonProperty(PROP_MAX_METRIC_SUMMARY_NETWORKS) Long maxMetricSummaryNetworks,
       @Nullable @JsonProperty(PROP_MAX_METRIC_TRANSIT_LINKS) Long maxMetricTransitLinks,
-      @Nullable @JsonProperty(PROP_NAME) String name,
       @Nullable @JsonProperty(PROP_NEIGHBORS) Map<String, OspfNeighborConfig> neighbors,
       @Nullable @JsonProperty(PROP_PROCESS_ID) String processId,
       @Nullable @JsonProperty(PROP_REFERENCE_BANDWIDTH) Double referenceBandwidth,
       @Nullable @JsonProperty(PROP_RFC1583) Boolean rfc1583Compatible,
       @Nullable @JsonProperty(PROP_ROUTER_ID) Ip routerId) {
-    checkArgument(name != null, "Missing %s", PROP_NAME);
     checkArgument(referenceBandwidth != null, "Missing %s", PROP_REFERENCE_BANDWIDTH);
     _areas = firstNonNull(areas, ImmutableSortedMap.of());
     _exportPolicy = exportPolicy;
@@ -247,7 +235,6 @@ public final class OspfProcess implements Serializable {
     _maxMetricStubNetworks = maxMetricStubNetworks;
     _maxMetricSummaryNetworks = maxMetricSummaryNetworks;
     _maxMetricTransitLinks = maxMetricTransitLinks;
-    _name = name;
     _ospfNeighbors = new TreeMap<>();
     _ospfNeighborConfigs =
         ImmutableSortedMap.copyOf(firstNonNull(neighbors, ImmutableSortedMap.of()));
@@ -343,12 +330,6 @@ public final class OspfProcess implements Serializable {
   @JsonProperty(PROP_MAX_METRIC_TRANSIT_LINKS)
   public Long getMaxMetricTransitLinks() {
     return _maxMetricTransitLinks;
-  }
-
-  @Nonnull
-  @JsonProperty(PROP_NAME)
-  public String getName() {
-    return _name;
   }
 
   @JsonIgnore

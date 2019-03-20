@@ -2471,7 +2471,6 @@
               }
             },
             "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
-            "name" : "1",
             "neighbors" : {
               "GigabitEthernet0/0" : {
                 "area" : 1,

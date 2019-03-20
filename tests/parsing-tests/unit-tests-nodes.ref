@@ -2592,7 +2592,6 @@
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
-              "name" : "1",
               "neighbors" : {
                 "blah" : {
                   "area" : 0,
@@ -10856,7 +10855,6 @@
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
-              "name" : "1",
               "processId" : "1",
               "referenceBandwidth" : 4.0E10,
               "routerId" : "1.2.3.4"
@@ -11121,7 +11119,6 @@
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
-              "name" : "1",
               "neighbors" : {
                 "Ethernet0/0" : {
                   "area" : 0,
@@ -14800,7 +14797,6 @@
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
-              "name" : "1",
               "neighbors" : {
                 "Ethernet0" : {
                   "area" : 0,
@@ -15836,7 +15832,6 @@
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
-              "name" : "default",
               "neighbors" : {
                 "xe-0/0/0:0.0" : {
                   "area" : 0,
@@ -17098,7 +17093,6 @@
                   "nextHopIp" : "AUTO/NONE(-1l)"
                 }
               ],
-              "name" : "2",
               "processId" : "2",
               "referenceBandwidth" : 1.0E8,
               "routerId" : "169.232.1.4"
@@ -17758,7 +17752,6 @@
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
-              "name" : "default",
               "referenceBandwidth" : 1.0E9
             }
           }
@@ -20790,7 +20783,6 @@
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
-              "name" : "default",
               "referenceBandwidth" : 1.0E9
             }
           }
@@ -25651,7 +25643,6 @@
             "name" : "OTHER",
             "ospfProcess" : {
               "exportPolicy" : "~OSPF_EXPORT_POLICY:OTHER~",
-              "name" : "1",
               "processId" : "1",
               "referenceBandwidth" : 4.0E10,
               "routerId" : "1.2.3.4"
@@ -25678,7 +25669,6 @@
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
-              "name" : "1",
               "neighbors" : {
                 "Ethernet0/0" : {
                   "area" : 1,
