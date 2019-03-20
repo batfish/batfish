@@ -1,0 +1,108 @@
+{
+  "class" : "org.batfish.question.testpolicies.TestPoliciesQuestion",
+  "direction" : "IN",
+  "inputRoute" : {
+    "class" : "org.batfish.datamodel.BgpRoute",
+    "administrativeCost" : 0,
+    "asPath" : [ ],
+    "discard" : false,
+    "localPreference" : 0,
+    "metric" : 0,
+    "network" : "0.0.0.0/0",
+    "nextHopIp" : "AUTO/NONE(-1l)",
+    "originType" : "igp",
+    "originatorIp" : "1.1.1.1",
+    "protocol" : "bgp",
+    "receivedFromRouteReflectorClient" : false,
+    "weight" : 0
+  },
+  "nodes" : "nodes",
+  "policies" : "policies",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Evaluate the processing of a route by a given policy",
+    "instanceName" : "qname",
+    "longDescription" : "Find how the specified route is processed through the specified policies.",
+    "orderedVariableNames" : [
+      "nodes",
+      "policies",
+      "inputRoute",
+      "direction"
+    ],
+    "tags" : [
+      "control plane",
+      "policies",
+      "routing",
+      "trace"
+    ],
+    "variables" : {
+      "direction" : {
+        "allowedValues" : [
+          "in",
+          "out"
+        ],
+        "description" : "The direction of the route, with respect to the device (IN/OUT)",
+        "displayName" : "Direction",
+        "optional" : false,
+        "type" : "string",
+        "value" : "in",
+        "values" : [
+          {
+            "description" : "The route is inbound to the device",
+            "name" : "in"
+          },
+          {
+            "description" : "The route is outbound from the device",
+            "name" : "out"
+          }
+        ]
+      },
+      "inputRoute" : {
+        "description" : "The BGP route announcement to test the policy on",
+        "displayName" : "Input Route",
+        "fields" : {
+          "network" : {
+            "optional" : false,
+            "type" : "prefix"
+          },
+          "originatorIp" : {
+            "optional" : false,
+            "type" : "ip"
+          },
+          "originType" : {
+            "optional" : false,
+            "type" : "string"
+          },
+          "protocol" : {
+            "optional" : false,
+            "type" : "routingProtocolSpec"
+          }
+        },
+        "optional" : false,
+        "type" : "bgpRouteSpec",
+        "value" : {
+          "class" : "org.batfish.datamodel.BgpRoute",
+          "network" : "0.0.0.0/0",
+          "originatorIp" : "1.1.1.1",
+          "originType" : "IGP",
+          "protocol" : "BGP"
+        }
+      },
+      "nodes" : {
+        "description" : "Only examine filters on nodes matching this specifier",
+        "displayName" : "Nodes",
+        "optional" : false,
+        "type" : "nodeSpec",
+        "value" : "nodes"
+      },
+      "policies" : {
+        "description" : "Only consider policies that match this specifier",
+        "displayName" : "Policies",
+        "optional" : false,
+        "type" : "string",
+        "value" : "policies"
+      }
+    }
+  }
+}
