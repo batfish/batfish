@@ -27,6 +27,7 @@ import java.lang.annotation.Target;
     IP_ADDRESS,
     IP_ADDRESS_MASK,
     IP_PREFIX,
+    IP_PROTOCOL_NUMBER,
     IP_RANGE,
     IP_WILDCARD,
     NODE_NAME,

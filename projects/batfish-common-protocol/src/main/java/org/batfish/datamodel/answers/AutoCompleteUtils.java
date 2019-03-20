@@ -35,7 +35,6 @@ import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.DispositionSpecifier;
-import org.batfish.specifier.IpProtocolSpecifier;
 import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.batfish.specifier.parboiled.Grammar;
 import org.batfish.specifier.parboiled.ParboiledAutoComplete;
@@ -243,7 +242,16 @@ public final class AutoCompleteUtils {
         }
       case IP_PROTOCOL_SPEC:
         {
-          suggestions = IpProtocolSpecifier.autoComplete(query);
+          suggestions =
+              ParboiledAutoComplete.autoComplete(
+                  Grammar.IP_PROTOCOL_SPECIFIER,
+                  network,
+                  snapshot,
+                  query,
+                  maxSuggestions,
+                  completionMetadata,
+                  nodeRolesData,
+                  referenceLibrary);
           break;
         }
       case IP_SPACE_SPEC:

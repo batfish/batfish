@@ -8,6 +8,8 @@ public enum Grammar {
       "applicationSpecifier", Parser.INSTANCE.ApplicationSpec(), "application-specifier"),
   FILTER_SPECIFIER("filterSpecifier", Parser.INSTANCE.FilterSpec(), "filter-specifier"),
   INTERFACE_SPECIFIER("interfaceSpecifier", Parser.INSTANCE.InterfaceSpec(), "interface-specifier"),
+  IP_PROTOCOL_SPECIFIER(
+      "ipProtocolSpecifier", Parser.INSTANCE.IpProtocolSpec(), "ip-protocol-specifier"),
   IP_SPACE_SPECIFIER("ipSpecifier", Parser.INSTANCE.IpSpaceSpec(), "ip-specifier"),
   LOCATION_SPECIFIER("locationSpecifier", Parser.INSTANCE.LocationSpec(), "location-specifier"),
   NODE_SPECIFIER("nodeSpecifier", Parser.INSTANCE.NodeSpec(), "node-specifier");

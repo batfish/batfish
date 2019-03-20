@@ -11,6 +11,7 @@ import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_TYPE;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_ADDRESS;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_ADDRESS_MASK;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_PREFIX;
+import static org.batfish.specifier.parboiled.Anchor.Type.IP_PROTOCOL_NUMBER;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_RANGE;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_WILDCARD;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME;
@@ -56,6 +57,8 @@ public class Parser extends CommonParser {
   final Rule[] _applicationNameRules = initEnumRules(Protocol.values());
 
   final Rule[] _interfaceTypeRules = initEnumRules(InterfaceType.values());
+
+  final Rule[] _ipProtocolNameRules = initIpProtocolNameRules();
 
   final Rule[] _deviceTypeRules = initEnumRules(DeviceType.values());
 
@@ -459,6 +462,47 @@ public class Parser extends CommonParser {
   public Rule InterfaceWithoutNodeParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
     return Sequence("( ", InterfaceWithoutNode(), WhiteSpace(), ") ");
+  }
+
+  /**
+   * IpProtocol grammar
+   *
+   * <pre>
+   *   ipProtocolSpec := ipProtocolTerm [, ipProtocolTerm]*
+   *
+   *   ipProtocolTerm := ipProtocol
+   *                     | ! ipProtocol
+   *
+   *   ipProtocol :=     Name      // e.g., TCP
+   *                     | Number  // e.g., 51
+   * </pre>
+   */
+
+  /* A Filter expression is one or more intersection terms separated by , or \ */
+  public Rule IpProtocolSpec() {
+    return Sequence(
+        IpProtocolTerm(),
+        WhiteSpace(),
+        ZeroOrMore(
+            ", ", IpProtocolTerm(), push(new UnionIpProtocolAstNode(pop(1), pop())), WhiteSpace()));
+  }
+
+  public Rule IpProtocolTerm() {
+    return FirstOf(
+        IpProtocol(), Sequence("! ", IpProtocol(), push(new NotIpProtocolAstNode(pop()))));
+  }
+
+  public Rule IpProtocol() {
+    return FirstOf(IpProtocolName(), IpProtocolNumber());
+  }
+
+  public Rule IpProtocolName() {
+    return Sequence(FirstOf(_ipProtocolNameRules), push(new IpProtocolIpProtocolAstNode(match())));
+  }
+
+  @Anchor(IP_PROTOCOL_NUMBER)
+  public Rule IpProtocolNumber() {
+    return Sequence(Number(), push(new IpProtocolIpProtocolAstNode(match())));
   }
 
   /**
