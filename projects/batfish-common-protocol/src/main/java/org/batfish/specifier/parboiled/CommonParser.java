@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.specifier.parboiled.Anchor.Type;
 import org.parboiled.BaseParser;
 import org.parboiled.Parboiled;
@@ -56,6 +57,15 @@ public class CommonParser extends BaseParser<AstNode> {
    */
   Rule[] initEnumRules(Object[] values) {
     return Arrays.stream(values).map(Object::toString).map(this::IgnoreCase).toArray(Rule[]::new);
+  }
+
+  /** Initialize an array of rules that match known IpProtocol names */
+  Rule[] initIpProtocolNameRules() {
+    return Arrays.stream(IpProtocol.values())
+        .map(Object::toString)
+        .filter(p -> !p.startsWith("UNNAMED"))
+        .map(this::IgnoreCase)
+        .toArray(Rule[]::new);
   }
 
   /**

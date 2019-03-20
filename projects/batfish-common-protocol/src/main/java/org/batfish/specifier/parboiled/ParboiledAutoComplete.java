@@ -161,6 +161,9 @@ public final class ParboiledAutoComplete {
       case IP_ADDRESS_MASK:
         // can't help with masks
         return ImmutableList.of();
+      case IP_PROTOCOL_NUMBER:
+        // don't help with numbers
+        return ImmutableList.of();
       case IP_PREFIX:
         return autoCompletePotentialMatch(pm, DEFAULT_RANK, false);
       case IP_RANGE:

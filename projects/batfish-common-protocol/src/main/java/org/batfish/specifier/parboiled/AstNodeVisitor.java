@@ -82,4 +82,10 @@ interface AstNodeVisitor<T> {
   T visitUnionApplicationAstNode(UnionApplicationAstNode unionApplicationAstNode);
 
   T visitNameApplicationAstNode(NameApplicationAstNode nameApplicationAstNode);
+
+  T visitIpProtocolIpProtocolAstNode(IpProtocolIpProtocolAstNode ipProtocolIpProtocolAstNode);
+
+  T visitUnionIpProtocolAstNode(UnionIpProtocolAstNode unionIpProtocolAstNode);
+
+  T visitNotIpProtocolAstNode(NotIpProtocolAstNode notIpProtocolAstNode);
 }
