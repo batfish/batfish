@@ -99,6 +99,7 @@ public class CiscoConversionsBgpPoliciesTest {
                 ImmutableList.of(Statements.ReturnFalse.toStaticStatement())))
         .addStatement(Statements.ReturnFalse.toStaticStatement())
         .build();
+    nf.vrfBuilder().setOwner(_c).setName(Configuration.DEFAULT_VRF_NAME).build();
   }
 
   /**

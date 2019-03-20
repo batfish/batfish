@@ -105,19 +105,13 @@ public class FirstMatchChainTest {
         new FirstMatchChain(ImmutableList.of(BooleanExprs.FALSE, BooleanExprs.TRUE));
     Result result =
         fmc.evaluate(
-            Environment.builder(
-                    new Configuration("host", ConfigurationFormat.JUNIPER),
-                    Configuration.DEFAULT_VRF_NAME)
-                .build());
+            Environment.builder(new Configuration("host", ConfigurationFormat.JUNIPER)).build());
     assertThat(result, equalTo(new Result(false, false, false, false)));
 
     fmc = new FirstMatchChain(ImmutableList.of(BooleanExprs.TRUE, BooleanExprs.FALSE));
     result =
         fmc.evaluate(
-            Environment.builder(
-                    new Configuration("host", ConfigurationFormat.JUNIPER),
-                    Configuration.DEFAULT_VRF_NAME)
-                .build());
+            Environment.builder(new Configuration("host", ConfigurationFormat.JUNIPER)).build());
     assertThat(result, equalTo(new Result(true, false, false, false)));
   }
 

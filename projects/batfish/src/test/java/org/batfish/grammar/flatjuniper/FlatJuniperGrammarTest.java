@@ -2057,7 +2057,7 @@ public final class FlatJuniperGrammarTest {
             .setAdministrativeCost(1)
             .build();
 
-    Environment.Builder eb = Environment.builder(c, "vrf1").setDirection(Direction.IN);
+    Environment.Builder eb = Environment.builder(c).setDirection(Direction.IN);
     policyPreference.call(
         eb.setOriginalRoute(staticRoute).setOutputRoute(OspfExternalType2Route.builder()).build());
 
@@ -2068,8 +2068,6 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testPsPreferenceStructure() throws IOException {
     Configuration c = parseConfig("policy-statement-preference");
-
-    Environment.Builder eb = Environment.builder(c, "vrf1").setDirection(Direction.IN);
 
     RoutingPolicy policyPreference = c.getRoutingPolicies().get("preference");
 

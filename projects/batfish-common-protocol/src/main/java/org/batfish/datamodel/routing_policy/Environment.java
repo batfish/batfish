@@ -25,12 +25,14 @@ import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 
 public class Environment {
-
-  public static Builder builder(@Nonnull Configuration c, String vrf) {
+  /**
+   * Initalizes an {@link Environment} builder using a {@link Configuration} as the source of
+   * several fields.
+   */
+  public static Builder builder(@Nonnull Configuration c) {
     ConfigurationFormat format = c.getConfigurationFormat();
     return new Builder()
         .setAsPathAccessLists(c.getAsPathAccessLists())
-        .setBgpProcess(c.getVrfs().get(vrf).getBgpProcess())
         .setCommunityLists(c.getCommunityLists())
         .setIpAccessLists(c.getIpAccessLists())
         .setIp6AccessLists(c.getIp6AccessLists())
@@ -41,6 +43,15 @@ public class Environment {
             format == ConfigurationFormat.JUNIPER
                 || format == ConfigurationFormat.JUNIPER_SWITCH
                 || format == ConfigurationFormat.FLAT_JUNIPER);
+  }
+
+  /**
+   * Initalizes an {@link Environment} builder using a {@link Configuration} and a {@link
+   * org.batfish.datamodel.Vrf} as the source of several fields. The vrf determines which {@link
+   * BgpProcess} to put into the environment.
+   */
+  public static Builder builder(@Nonnull Configuration c, String vrf) {
+    return builder(c).setBgpProcess(c.getVrfs().get(vrf).getBgpProcess());
   }
 
   public enum Direction {
