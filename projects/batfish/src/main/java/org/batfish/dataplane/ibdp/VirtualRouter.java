@@ -2755,7 +2755,7 @@ public class VirtualRouter implements Serializable {
     BgpRoute.Builder transformedOutgoingRouteBuilder;
     try {
       transformedOutgoingRouteBuilder =
-          BgpProtocolHelper.transformBgpRouteOnExport(
+          BgpProtocolHelper.transformBgpRoutePreExport(
               ourConfig,
               remoteConfig,
               sessionProperties,
@@ -2793,6 +2793,10 @@ public class VirtualRouter implements Serializable {
           Direction.OUT);
       return null;
     }
+
+    // Apply final post-policy transformations before sending advertisement to neighbor
+    BgpProtocolHelper.transformBgpRoutePostExport(
+        transformedOutgoingRouteBuilder, ourConfig, sessionProperties);
 
     // Successfully exported route
     BgpRoute transformedOutgoingRoute = transformedOutgoingRouteBuilder.build();
