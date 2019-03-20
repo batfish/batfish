@@ -777,6 +777,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
             // Use routing instance name since OSPF processes are not named
             .setProcessId(routingInstance.getName())
             .setReferenceBandwidth(routingInstance.getOspfReferenceBandwidth())
+            .setAdminCosts(
+                org.batfish.datamodel.ospf.OspfProcess.computeDefaultAdminCosts(
+                    _c.getConfigurationFormat()))
             .build();
     String vrfName = routingInstance.getName();
     // export policies

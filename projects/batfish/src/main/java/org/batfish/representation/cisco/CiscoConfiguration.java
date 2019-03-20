@@ -2486,6 +2486,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
         org.batfish.datamodel.ospf.OspfProcess.builder()
             .setProcessId(proc.getName())
             .setReferenceBandwidth(proc.getReferenceBandwidth())
+            .setAdminCosts(
+                org.batfish.datamodel.ospf.OspfProcess.computeDefaultAdminCosts(
+                    c.getConfigurationFormat()))
             .build();
     org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
 
