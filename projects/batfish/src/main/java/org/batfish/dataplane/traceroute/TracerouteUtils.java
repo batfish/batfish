@@ -182,10 +182,15 @@ public final class TracerouteUtils {
         .build();
   }
 
-  private static TcpFlags getTcpFlagsForReverse(TcpFlags tcpFlags) {
+  /**
+   * Find the TCP flags for the reverse flow. Inferring only the SYN and ACK flags for the reverse
+   * flow from the forward TCP flags and copying rest of the flags unmodified.
+   */
+  @VisibleForTesting
+  static TcpFlags getTcpFlagsForReverse(TcpFlags tcpFlags) {
     return TcpFlags.builder()
         .setAck(tcpFlags.getSyn() || tcpFlags.getAck())
-        .setSyn(tcpFlags.getSyn())
+        .setSyn(false)
         .setRst(tcpFlags.getRst())
         .setFin(tcpFlags.getFin())
         .setUrg(tcpFlags.getUrg())
