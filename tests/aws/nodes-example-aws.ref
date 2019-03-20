@@ -1918,7 +1918,6 @@
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
-              "name" : "1",
               "neighbors" : {
                 "Ethernet1/0" : {
                   "area" : 0,

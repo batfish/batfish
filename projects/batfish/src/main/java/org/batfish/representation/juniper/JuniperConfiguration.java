@@ -771,8 +771,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     OspfProcess newProc =
         OspfProcess.builder()
             .setReferenceBandwidth(routingInstance.getOspfReferenceBandwidth())
-            // Use the routing instance name since OSPF processes aren't named
-            .setName(routingInstance.getName())
             .build();
     String vrfName = routingInstance.getName();
     // export policies
