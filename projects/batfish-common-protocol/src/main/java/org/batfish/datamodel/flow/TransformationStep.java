@@ -23,7 +23,9 @@ public final class TransformationStep extends Step<TransformationStepDetail> {
     /** Destination nat */
     DEST_NAT,
     /** Source nat */
-    SOURCE_NAT
+    SOURCE_NAT,
+    /** Static nat */
+    STATIC_NAT
   }
 
   /** Step detail for {@link TransformationStep} */

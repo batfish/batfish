@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 
 /** Represents a Juniper Nat */
 @ParametersAreNonnullByDefault
@@ -13,7 +14,20 @@ public final class Nat implements Serializable {
   public enum Type {
     DESTINATION,
     SOURCE,
-    STATIC
+    STATIC;
+
+    public TransformationType toTransformationType() {
+      switch (this) {
+        case SOURCE:
+          return TransformationType.SOURCE_NAT;
+        case DESTINATION:
+          return TransformationType.DEST_NAT;
+        case STATIC:
+          return TransformationType.STATIC_NAT;
+        default:
+          throw new IllegalArgumentException("Unknown nat type " + this);
+      }
+    }
   }
 
   private static final long serialVersionUID = 1L;

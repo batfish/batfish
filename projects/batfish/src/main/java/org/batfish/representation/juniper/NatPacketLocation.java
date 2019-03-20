@@ -25,6 +25,11 @@ public final class NatPacketLocation implements Serializable, Comparable<NatPack
     return loc;
   }
 
+  public void set(Type type, String name) {
+    _type = type;
+    _name = name;
+  }
+
   // The types are defined in a prioritized order
   enum Type {
     InterfaceType,
@@ -76,7 +81,7 @@ public final class NatPacketLocation implements Serializable, Comparable<NatPack
     _type = Type.ZoneType;
   }
 
-  private Type getType() {
+  public Type getType() {
     return _type;
   }
 

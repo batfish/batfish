@@ -155,6 +155,7 @@ import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.StubType;
+import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.vendor_family.juniper.TacplusServer;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.A_applicationContext;
@@ -445,6 +446,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_source_portContext
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrt_nat_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrt_nat_offContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrt_nat_poolContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrtstp_prefixContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrtstp_prefix_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_firewallContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_logical_systemsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_routing_optionsContext;
@@ -663,6 +666,8 @@ import org.batfish.representation.juniper.NatRuleSet;
 import org.batfish.representation.juniper.NatRuleThenInterface;
 import org.batfish.representation.juniper.NatRuleThenOff;
 import org.batfish.representation.juniper.NatRuleThenPool;
+import org.batfish.representation.juniper.NatRuleThenPrefix;
+import org.batfish.representation.juniper.NatRuleThenPrefixName;
 import org.batfish.representation.juniper.NoPortTranslation;
 import org.batfish.representation.juniper.NodeDevice;
 import org.batfish.representation.juniper.NssaSettings;
@@ -5205,6 +5210,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitRsrt_nat_interface(Rsrt_nat_interfaceContext ctx) {
     _currentNatRule.setThen(NatRuleThenInterface.INSTANCE);
+  }
+
+  @Override
+  public void exitRsrtstp_prefix(Rsrtstp_prefixContext ctx) {
+    Prefix prefix = Prefix.parse(ctx.getText());
+    _currentNatRule.setThen(new NatRuleThenPrefix(prefix, IpField.DESTINATION));
+  }
+
+  @Override
+  public void exitRsrtstp_prefix_name(Rsrtstp_prefix_nameContext ctx) {
+    String prefixName = ctx.name.getText();
+    _currentNatRule.setThen(new NatRuleThenPrefixName(prefixName, IpField.DESTINATION));
   }
 
   @Override

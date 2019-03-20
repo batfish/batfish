@@ -2,15 +2,21 @@ package org.batfish.representation.juniper;
 
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.DEST_NAT;
+import static org.batfish.datamodel.flow.TransformationStep.TransformationType.STATIC_NAT;
+import static org.batfish.datamodel.transformation.IpField.DESTINATION;
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableMap;
+import java.util.Map;
 import java.util.Optional;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.transformation.Noop;
+import org.batfish.datamodel.transformation.ShiftIpAddressIntoSubnet;
 import org.batfish.datamodel.transformation.Transformation.Builder;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.representation.juniper.Nat.Type;
@@ -22,6 +28,7 @@ public class NatRuleTest {
   public void testToLocation() {
     Nat snat = new Nat(Type.SOURCE);
     Nat dnat = new Nat(Type.DESTINATION);
+    Nat staticNat = new Nat(Type.STATIC);
     NatRule rule = new NatRule("RS");
     Prefix pfx = Prefix.parse("1.1.1.1/32");
     HeaderSpace hs = HeaderSpace.builder().setDstIps(pfx.toIpSpace()).build();
@@ -30,14 +37,14 @@ public class NatRuleTest {
 
     Ip interfaceIp = Ip.ZERO;
     assertThat(
-        rule.toTransformationBuilder(dnat, interfaceIp, null).map(Builder::build),
+        rule.toTransformationBuilder(dnat, null, interfaceIp, null).map(Builder::build),
         equalTo(Optional.of(when(match(hs)).apply(new Noop(DEST_NAT)).build())));
 
     rule.setThen(new NatRuleThenPool("pool"));
 
     // pool is undefined
     assertThat(
-        rule.toTransformationBuilder(dnat, interfaceIp, null).map(Builder::build),
+        rule.toTransformationBuilder(dnat, null, interfaceIp, null).map(Builder::build),
         equalTo(Optional.empty()));
 
     // pool is defined
@@ -50,7 +57,7 @@ public class NatRuleTest {
 
     // destination NAT
     assertThat(
-        rule.toTransformationBuilder(dnat, interfaceIp, null).map(Builder::build),
+        rule.toTransformationBuilder(dnat, null, interfaceIp, null).map(Builder::build),
         equalTo(
             Optional.of(
                 when(match(hs))
@@ -60,7 +67,7 @@ public class NatRuleTest {
     snat.getPools().put("pool", pool);
     // source NAT
     assertThat(
-        rule.toTransformationBuilder(snat, interfaceIp, null).map(Builder::build),
+        rule.toTransformationBuilder(snat, null, interfaceIp, null).map(Builder::build),
         equalTo(
             Optional.of(
                 when(match(hs))
@@ -68,6 +75,29 @@ public class NatRuleTest {
                         TransformationStep.assignSourceIp(startIp, endIp),
                         TransformationStep.assignSourcePort(
                             Nat.DEFAULT_FROM_PORT, Nat.DEFAULT_TO_PORT))
+                    .build())));
+
+    Prefix prefix = Prefix.parse("1.1.1.1/24");
+    rule.setThen(new NatRuleThenPrefix(prefix, DESTINATION));
+
+    assertThat(
+        rule.toTransformationBuilder(staticNat, null, interfaceIp, null).map(Builder::build),
+        equalTo(
+            Optional.of(
+                when(match(hs))
+                    .apply(new ShiftIpAddressIntoSubnet(STATIC_NAT, DESTINATION, prefix))
+                    .build())));
+
+    rule.setThen(new NatRuleThenPrefixName("prefix", DESTINATION));
+    Map<String, AddressBookEntry> entryMap =
+        ImmutableMap.of("prefix", new AddressAddressBookEntry("prefix", new IpWildcard(prefix)));
+
+    assertThat(
+        rule.toTransformationBuilder(staticNat, entryMap, interfaceIp, null).map(Builder::build),
+        equalTo(
+            Optional.of(
+                when(match(hs))
+                    .apply(new ShiftIpAddressIntoSubnet(STATIC_NAT, DESTINATION, prefix))
                     .build())));
   }
 }

@@ -1,19 +1,20 @@
 package org.batfish.representation.juniper;
 
-import static org.batfish.datamodel.flow.TransformationStep.TransformationType.DEST_NAT;
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
+import static org.batfish.representation.juniper.Nat.Type.DESTINATION;
 import static org.batfish.representation.juniper.Nat.Type.SOURCE;
-import static org.batfish.representation.juniper.Nat.Type.STATIC;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
@@ -59,12 +60,15 @@ public final class NatRuleThenPool implements NatRuleThen, Serializable {
 
   @Override
   public List<TransformationStep> toTransformationSteps(
-      Nat nat, Ip interfaceIp, Warnings warnings) {
-    if (nat.getType() == STATIC) {
-      throw new BatfishException("Juniper static nat is not supported");
-    }
+      Nat nat,
+      @Nullable Map<String, AddressBookEntry> addressBookEntryMap,
+      Ip interfaceIp,
+      Warnings warnings) {
+    checkArgument(
+        (nat.getType() == SOURCE || nat.getType() == DESTINATION),
+        "Interface actions can only be used in source nat and dest nat");
 
-    TransformationType type = nat.getType() == SOURCE ? SOURCE_NAT : DEST_NAT;
+    TransformationType type = nat.getType().toTransformationType();
     IpField ipField = nat.getType() == SOURCE ? IpField.SOURCE : IpField.DESTINATION;
 
     NatPool pool = nat.getPools().get(_poolName);

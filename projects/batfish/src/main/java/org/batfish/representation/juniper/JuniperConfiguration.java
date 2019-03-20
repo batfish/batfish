@@ -1450,17 +1450,23 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return newIface;
   }
 
+  @Nullable
   Transformation buildOutgoingTransformation(
       Interface iface,
+      Nat nat,
       List<NatRuleSet> orderedRuleSetList,
-      Map<NatPacketLocation, AclLineMatchExpr> matchFromLocationExprs) {
+      Map<NatPacketLocation, AclLineMatchExpr> matchFromLocationExprs,
+      @Nullable Transformation orElse) {
+    if (orderedRuleSetList == null) {
+      return orElse;
+    }
+
     String name = iface.getName();
     String zone =
         Optional.ofNullable(_masterLogicalSystem.getInterfaceZones().get(name))
             .map(Zone::getName)
             .orElse(null);
     String routingInstance = iface.getRoutingInstance();
-    Nat snat = _masterLogicalSystem.getNatSource();
 
     List<NatRuleSet> ruleSets =
         orderedRuleSetList.stream()
@@ -1474,22 +1480,31 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .collect(Collectors.toList());
 
     if (ruleSets.isEmpty()) {
-      return null;
+      return orElse;
     }
 
     if (iface.getPrimaryAddress() == null) {
       _w.redFlag(
           "Cannot build incoming transformation without an interface IP. Interface name = " + name);
-      return null;
+      return orElse;
     }
     Ip interfaceIp = iface.getPrimaryAddress().getIp();
 
-    Transformation transformation = null;
+    Transformation transformation = orElse;
     for (NatRuleSet ruleSet : Lists.reverse(ruleSets)) {
       transformation =
           ruleSet
               .toOutgoingTransformation(
-                  snat, interfaceIp, matchFromLocationExprs, null, transformation, _w)
+                  nat,
+                  _masterLogicalSystem
+                      .getAddressBooks()
+                      .get(LogicalSystem.GLOBAL_ADDRESS_BOOK_NAME)
+                      .getEntries(),
+                  interfaceIp,
+                  matchFromLocationExprs,
+                  null,
+                  transformation,
+                  _w)
               .orElse(transformation);
     }
     return transformation;
@@ -1636,10 +1651,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return combinedAcl;
   }
 
-  private Transformation buildIncomingTransformation(Interface iface) {
-    Nat dnat = _masterLogicalSystem.getNatDestination();
-    if (dnat == null) {
-      return null;
+  @Nullable
+  private Transformation buildIncomingTransformation(
+      Nat nat, Interface iface, Transformation orElse) {
+    if (nat == null) {
+      return orElse;
     }
 
     String ifaceName = iface.getName();
@@ -1655,7 +1671,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     NatRuleSet ifaceLocationRuleSet = null;
     NatRuleSet zoneLocationRuleSet = null;
     NatRuleSet routingInstanceRuleSet = null;
-    for (Entry<String, NatRuleSet> entry : dnat.getRuleSets().entrySet()) {
+    for (Entry<String, NatRuleSet> entry : nat.getRuleSets().entrySet()) {
       NatRuleSet ruleSet = entry.getValue();
       NatPacketLocation fromLocation = ruleSet.getFromLocation();
       if (ifaceName.equals(fromLocation.getInterface())) {
@@ -1667,13 +1683,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
     }
 
+    Transformation transformation = orElse;
     List<NatRuleSet> ruleSets =
         Stream.of(routingInstanceRuleSet, zoneLocationRuleSet, ifaceLocationRuleSet)
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
 
     if (ruleSets.isEmpty()) {
-      return null;
+      return transformation;
     }
 
     if (iface.getPrimaryAddress() == null) {
@@ -1684,14 +1701,30 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     Ip interfaceIp = iface.getPrimaryAddress().getIp();
 
-    Transformation transformation = null;
     for (NatRuleSet ruleSet : ruleSets) {
       transformation =
           ruleSet
-              .toIncomingTransformation(dnat, interfaceIp, null, transformation, _w)
+              .toIncomingTransformation(
+                  nat,
+                  _masterLogicalSystem
+                      .getAddressBooks()
+                      .get(LogicalSystem.GLOBAL_ADDRESS_BOOK_NAME)
+                      .getEntries(),
+                  interfaceIp,
+                  null,
+                  transformation,
+                  _w)
               .orElse(transformation);
     }
     return transformation;
+  }
+
+  @Nullable
+  private Transformation buildIncomingTransformation(Interface iface) {
+    Nat dnat = _masterLogicalSystem.getNatDestination();
+    Transformation dstTransformation = buildIncomingTransformation(dnat, iface, null);
+    Nat staticNat = _masterLogicalSystem.getNatStatic();
+    return buildIncomingTransformation(staticNat, iface, dstTransformation);
   }
 
   /** Generate IpAccessList from the specified to-zone's security policies. */
@@ -2993,32 +3026,55 @@ public final class JuniperConfiguration extends VendorConfiguration {
             });
 
     Nat snat = _masterLogicalSystem.getNatSource();
-    if (snat != null) {
-      // sort ruleSets in source nat
-      List<NatRuleSet> sourceNatRuleSetList =
-          snat.getRuleSets().values().stream().sorted().collect(ImmutableList.toImmutableList());
+    Nat staticNat = _masterLogicalSystem.getNatStatic();
 
-      Map<NatPacketLocation, AclLineMatchExpr> matchFromLocationExprs =
-          fromNatPacketLocationMatchExprs();
-
-      Stream.concat(
-              _masterLogicalSystem.getInterfaces().values().stream(),
-              _nodeDevices.values().stream()
-                  .flatMap(nodeDevice -> nodeDevice.getInterfaces().values().stream()))
-          .forEach(
-              iface ->
-                  iface
-                      .getUnits()
-                      .values()
-                      .forEach(
-                          unit -> {
-                            org.batfish.datamodel.Interface newUnitInterface =
-                                _c.getAllInterfaces().get(unit.getName());
-                            newUnitInterface.setOutgoingTransformation(
-                                buildOutgoingTransformation(
-                                    unit, sourceNatRuleSetList, matchFromLocationExprs));
-                          }));
+    if (snat == null && staticNat == null) {
+      return;
     }
+
+    List<NatRuleSet> sourceNatRuleSetList =
+        snat == null
+            ? null
+            : snat.getRuleSets().values().stream()
+                .sorted()
+                .collect(ImmutableList.toImmutableList());
+
+    Nat reversedStaticNat = staticNat == null ? null : ReverseStaticNat.reverseNat(staticNat);
+    List<NatRuleSet> reversedStaticNatRuleSetList =
+        reversedStaticNat == null
+            ? null
+            : reversedStaticNat.getRuleSets().values().stream()
+                .sorted()
+                .collect(ImmutableList.toImmutableList());
+
+    Map<NatPacketLocation, AclLineMatchExpr> matchFromLocationExprs =
+        fromNatPacketLocationMatchExprs();
+
+    Stream.concat(
+            _masterLogicalSystem.getInterfaces().values().stream(),
+            _nodeDevices.values().stream()
+                .flatMap(nodeDevice -> nodeDevice.getInterfaces().values().stream()))
+        .forEach(
+            iface ->
+                iface
+                    .getUnits()
+                    .values()
+                    .forEach(
+                        unit -> {
+                          org.batfish.datamodel.Interface newUnitInterface =
+                              _c.getAllInterfaces().get(unit.getName());
+                          Transformation srcTransformation =
+                              buildOutgoingTransformation(
+                                  unit, snat, sourceNatRuleSetList, matchFromLocationExprs, null);
+                          Transformation staticTransformation =
+                              buildOutgoingTransformation(
+                                  unit,
+                                  reversedStaticNat,
+                                  reversedStaticNatRuleSetList,
+                                  matchFromLocationExprs,
+                                  srcTransformation);
+                          newUnitInterface.setOutgoingTransformation(staticTransformation);
+                        }));
   }
 
   /** Ensure that the interface is placed in VI {@link Configuration} and {@link Vrf} */
