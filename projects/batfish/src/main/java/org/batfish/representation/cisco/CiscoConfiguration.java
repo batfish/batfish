@@ -2068,6 +2068,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         newIface.setOspfCost(iface.getOspfCost());
         newIface.setOspfDeadInterval(iface.getOspfDeadInterval());
         newIface.setOspfHelloMultiplier(iface.getOspfHelloMultiplier());
+        newIface.setOspfProcess(proc.getName());
       } else if (iface.getOspfArea() != null
           || iface.getOspfCost() != null
           || iface.getOspfPassive() != null) {

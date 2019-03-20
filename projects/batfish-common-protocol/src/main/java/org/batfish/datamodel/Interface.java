@@ -80,6 +80,8 @@ public final class Interface extends ComparableStructure<String> {
 
     private boolean _ospfPointToPoint;
 
+    private String _ospfProcess;
+
     private IpAccessList _outgoingFilter;
 
     private Transformation _outgoingTransformation;
@@ -145,6 +147,7 @@ public final class Interface extends ComparableStructure<String> {
       iface.setOspfEnabled(_ospfEnabled);
       iface.setOspfPassive(_ospfPassive);
       iface.setOspfPointToPoint(_ospfPointToPoint);
+      iface.setOspfProcess(_ospfProcess);
       iface.setOutgoingFilter(_outgoingFilter);
       iface.setOutgoingTransformation(_outgoingTransformation);
       iface.setOwner(_owner);
@@ -314,6 +317,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setOspfPointToPoint(boolean ospfPointToPoint) {
       _ospfPointToPoint = ospfPointToPoint;
+      return this;
+    }
+
+    public Builder setOspfProcess(String process) {
+      _ospfProcess = process;
       return this;
     }
 
@@ -512,6 +520,8 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_OSPF_PASSIVE = "ospfPassive";
 
   private static final String PROP_OSPF_POINT_TO_POINT = "ospfPointToPoint";
+
+  private static final String PROP_OSPF_PROCESS = "ospfProcess";
 
   private static final String PROP_OUTGOING_FILTER = "outgoingFilter";
 
@@ -811,6 +821,8 @@ public final class Interface extends ComparableStructure<String> {
   private boolean _ospfPassive;
 
   private boolean _ospfPointToPoint;
+
+  @Nullable private String _ospfProcess;
 
   private IpAccessList _outgoingFilter;
 
@@ -1263,6 +1275,12 @@ public final class Interface extends ComparableStructure<String> {
     return _ospfPointToPoint;
   }
 
+  @JsonProperty(PROP_OSPF_PROCESS)
+  @Nullable
+  public String getOspfProcess() {
+    return _ospfProcess;
+  }
+
   @JsonIgnore
   public IpAccessList getOutgoingFilter() {
     return _outgoingFilter;
@@ -1649,6 +1667,10 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_OSPF_POINT_TO_POINT)
   public void setOspfPointToPoint(boolean ospfPointToPoint) {
     _ospfPointToPoint = ospfPointToPoint;
+  }
+
+  public void setOspfProcess(@Nullable String ospfProcess) {
+    _ospfProcess = ospfProcess;
   }
 
   @JsonIgnore
