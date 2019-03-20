@@ -29,7 +29,7 @@ public final class MatchIp6AccessList extends BooleanExpr {
 
   @Override
   public Result evaluate(Environment environment) {
-    Ip6AccessList list = environment.getConfiguration().getIp6AccessLists().get(_list);
+    Ip6AccessList list = environment.getIp6AccessLists().get(_list);
     if (list != null) {
       // TODO
     } else {

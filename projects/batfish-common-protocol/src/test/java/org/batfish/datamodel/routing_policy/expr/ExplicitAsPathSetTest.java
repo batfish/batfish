@@ -27,7 +27,7 @@ public class ExplicitAsPathSetTest {
     Configuration c = cb.build();
     c.setVrfs(
         ImmutableMap.of(Configuration.DEFAULT_VRF_NAME, new Vrf(Configuration.DEFAULT_VRF_NAME)));
-    return Environment.builder(c)
+    return Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
         .setOriginalRoute(
             BgpRoute.builder()
                 .setOriginatorIp(Ip.ZERO)

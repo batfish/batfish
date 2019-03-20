@@ -21,7 +21,7 @@ public class RouteIsClassfulTest {
   private static boolean evaluateIsClassful(Prefix network) {
     Configuration c = new Configuration("host", ConfigurationFormat.CISCO_IOS);
     ConnectedRoute route = new ConnectedRoute(network, "Ethernet0");
-    Environment env = Environment.builder(c).setVrf("vrf").setOriginalRoute(route).build();
+    Environment env = Environment.builder(c).setOriginalRoute(route).build();
     Result res = RouteIsClassful.instance().evaluate(env);
     return res.getBooleanValue();
   }

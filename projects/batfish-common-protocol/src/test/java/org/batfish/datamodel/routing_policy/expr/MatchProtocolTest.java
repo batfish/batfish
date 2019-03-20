@@ -63,7 +63,7 @@ public class MatchProtocolTest {
             .setSystemId("invalidSystemId");
 
     MatchProtocol mp = new MatchProtocol(RoutingProtocol.ISIS_ANY);
-    Environment.Builder eb = Environment.builder(c).setVrf(Configuration.DEFAULT_VRF_NAME);
+    Environment.Builder eb = Environment.builder(c, Configuration.DEFAULT_VRF_NAME);
 
     assertTrue(
         "Matches ISIS_L1",

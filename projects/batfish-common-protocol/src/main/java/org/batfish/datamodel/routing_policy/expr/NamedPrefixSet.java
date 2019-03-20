@@ -55,7 +55,7 @@ public final class NamedPrefixSet extends PrefixSetExpr {
 
   @Override
   public boolean matches(Prefix prefix, Environment environment) {
-    RouteFilterList list = environment.getConfiguration().getRouteFilterLists().get(_name);
+    RouteFilterList list = environment.getRouteFilterLists().get(_name);
     if (list != null) {
       return list.permits(prefix);
     } else {

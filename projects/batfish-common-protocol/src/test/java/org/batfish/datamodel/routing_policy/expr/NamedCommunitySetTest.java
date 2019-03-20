@@ -44,7 +44,7 @@ public final class NamedCommunitySetTest {
             false);
     c.getCommunityLists().put(COMMUNITY_LIST_NAME, referent);
     nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME).setOwner(c).build();
-    _env = Environment.builder(c).setVrf(Configuration.DEFAULT_VRF_NAME).build();
+    _env = Environment.builder(c, Configuration.DEFAULT_VRF_NAME).build();
   }
 
   @Test

@@ -15,6 +15,7 @@ import org.batfish.datamodel.GeneratedRoute.Builder;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.junit.Before;
@@ -80,6 +81,7 @@ public class GeneratedRouteHelperTest {
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .setHostname("n1")
             .build();
+    Vrf vrf = nf.vrfBuilder().setOwner(c).build();
 
     RoutingPolicy policy =
         nf.routingPolicyBuilder()
@@ -102,7 +104,7 @@ public class GeneratedRouteHelperTest {
                         .setMetric(0L)
                         .setTag(1)
                         .build())),
-            "vrf");
+            vrf.getName());
 
     assertThat(newRoute, notNullValue());
   }

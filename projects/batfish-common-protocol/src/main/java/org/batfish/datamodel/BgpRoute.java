@@ -337,6 +337,11 @@ public final class BgpRoute extends AbstractRoute {
       boolean nonForwarding,
       boolean nonRouting) {
     super(network, admin, nonRouting, nonForwarding);
+    checkArgument(
+        protocol == RoutingProtocol.BGP
+            || protocol == RoutingProtocol.IBGP
+            || protocol == RoutingProtocol.AGGREGATE,
+        "Invalid BgpRoute protocol");
     _asPath = firstNonNull(asPath, AsPath.empty());
     _clusterList =
         clusterList == null ? ImmutableSortedSet.of() : ImmutableSortedSet.copyOf(clusterList);

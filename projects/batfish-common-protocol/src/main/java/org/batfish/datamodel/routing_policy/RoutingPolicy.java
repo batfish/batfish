@@ -192,12 +192,17 @@ public class RoutingPolicy implements Serializable {
   public boolean process(
       AbstractRouteDecorator inputRoute,
       AbstractRouteBuilder<?, ?> outputRoute,
-      @Nullable Ip peerAddress,
+      Ip peerAddress,
       String vrf,
       Direction direction) {
     return process(inputRoute, outputRoute, peerAddress, null, vrf, direction);
   }
 
+  /**
+   * @param peerAddress The address of a known peer.
+   * @param peerPrefix The address of an unknown peer. Used for dynamic BGP.
+   * @return True if the policy accepts the route.
+   */
   public boolean process(
       AbstractRouteDecorator inputRoute,
       AbstractRouteBuilder<?, ?> outputRoute,
@@ -207,8 +212,7 @@ public class RoutingPolicy implements Serializable {
       Direction direction) {
     checkState(_owner != null, "Cannot evaluate routing policy without a Configuration");
     Environment environment =
-        Environment.builder(_owner)
-            .setVrf(vrf)
+        Environment.builder(_owner, vrf)
             .setOriginalRoute(inputRoute)
             .setOutputRoute(outputRoute)
             .setPeerAddress(peerAddress)
