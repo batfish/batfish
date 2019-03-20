@@ -528,10 +528,7 @@ class AbstractionBuilder {
       OspfProcess ospf = vrf.getOspfProcess();
       if (ospf != null) {
         OspfProcess abstractOspf =
-            OspfProcess.builder()
-                .setReferenceBandwidth(ospf.getReferenceBandwidth())
-                .setName(ospf.getName())
-                .build();
+            OspfProcess.builder().setReferenceBandwidth(ospf.getReferenceBandwidth()).build();
         abstractOspf.setAreas(ospf.getAreas());
         abstractOspf.setExportPolicy(ospf.getExportPolicy());
         abstractOspf.setRouterId(ospf.getRouterId());
