@@ -547,7 +547,7 @@ routing_protocol
 
 sc_literal
 :
-  COMMUNITY_LITERAL
+  STANDARD_COMMUNITY
 ;
 
 sc_named

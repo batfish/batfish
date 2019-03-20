@@ -259,7 +259,7 @@ NEWLINE
 
 STANDARD_COMMUNITY
 :
-  F_Short ':' F_Short
+  F_StandardCommunity
 ;
 
 WORD
@@ -506,7 +506,13 @@ F_PositiveDigit
 ;
 
 fragment
-F_Short
+F_StandardCommunity
+:
+  F_Uint16 ':' F_Uint16
+;
+
+fragment
+F_Uint16
 :
   F_Digit
   | F_PositiveDigit F_Digit F_Digit? F_Digit?
