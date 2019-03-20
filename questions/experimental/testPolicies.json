@@ -10,7 +10,7 @@
         "instanceName": "testPolicies",
         "longDescription": "Find how the specified route is processed through the specified policies.",
         "orderedVariableNames": [
-            "nodes", 
+            "nodes",
             "policies",
             "inputRoute",
             "direction"
@@ -36,7 +36,7 @@
             },
             "policies": {
                 "description": "Only consider policies that match this specifier",
-                "type": "routingPolicySpec",
+                "type": "string",
                 "value": ".*",
                 "displayName": "Policies"
             },
