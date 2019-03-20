@@ -32,7 +32,7 @@ public class BgpProtocolHelper {
 
   /**
    * Perform BGP export transformations on a given route when sending an advertisement from {@code
-   * fromNeighbor} to {@code toNeighbor} before export policy as applied.
+   * fromNeighbor} to {@code toNeighbor} before export policy is applied.
    */
   @Nullable
   public static BgpRoute.Builder transformBgpRoutePreExport(
