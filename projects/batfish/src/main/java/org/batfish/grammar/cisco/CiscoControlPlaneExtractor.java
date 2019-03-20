@@ -1,6 +1,7 @@
 package org.batfish.grammar.cisco;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toCollection;
 import static org.batfish.datamodel.ConfigurationFormat.ARISTA;
@@ -307,6 +308,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
@@ -1119,6 +1121,7 @@ import org.batfish.grammar.cisco.CiscoParser.Track_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Ts_hostContext;
 import org.batfish.grammar.cisco.CiscoParser.U_passwordContext;
 import org.batfish.grammar.cisco.CiscoParser.U_roleContext;
+import org.batfish.grammar.cisco.CiscoParser.Uint32Context;
 import org.batfish.grammar.cisco.CiscoParser.Unsuppress_map_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Update_source_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Use_af_group_bgp_tailContext;
@@ -2161,6 +2164,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                     n,
                     ctx.community_set_elem_list().elems.stream()
                         .map(this::toCommunitySetElemExpr)
+                        .filter(Objects::nonNull)
                         .collect(ImmutableList.toImmutableList())));
   }
 
@@ -6787,7 +6791,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     LineAction action = toLineAction(ctx.ala);
     List<Long> communities = new ArrayList<>();
     for (CommunityContext communityCtx : ctx.communities) {
-      long community = toLong(communityCtx);
+      Long community = toLong(communityCtx);
+      if (community == null) {
+        _w.redFlag(
+            String.format(
+                "Invalid standard community: '%s' in: '%s'",
+                communityCtx.getText(), getFullText(ctx)));
+        return;
+      }
       communities.add(community);
     }
     StandardCommunityListLine line = new StandardCommunityListLine(action, communities);
@@ -9551,7 +9562,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitSet_community_additive_rm_stanza(Set_community_additive_rm_stanzaContext ctx) {
     List<Long> commList = new ArrayList<>();
     for (CommunityContext c : ctx.communities) {
-      long community = toLong(c);
+      Long community = toLong(c);
+      if (community == null) {
+        _w.redFlag(
+            String.format(
+                "Invalid standard community: '%s' in: '%s'", c.getText(), getFullText(ctx)));
+        return;
+      }
       commList.add(community);
     }
     RouteMapSetAdditiveCommunityLine line = new RouteMapSetAdditiveCommunityLine(commList);
@@ -9602,7 +9619,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitSet_community_rm_stanza(Set_community_rm_stanzaContext ctx) {
     List<Long> commList = new ArrayList<>();
     for (CommunityContext c : ctx.communities) {
-      long community = toLong(c);
+      Long community = toLong(c);
+      if (community == null) {
+        _w.redFlag(
+            String.format(
+                "Invalid standard community: '%s' in: '%s'", c.getText(), getFullText(ctx)));
+        return;
+      }
       commList.add(community);
     }
     RouteMapSetCommunityLine line = new RouteMapSetCommunityLine(commList);
@@ -10354,18 +10377,25 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  private CommunitySetElem toCommunitySetElemExpr(Community_set_elemContext ctx) {
+  private @Nullable CommunitySetElem toCommunitySetElemExpr(Community_set_elemContext ctx) {
     if (ctx.prefix != null) {
       CommunitySetElemHalfExpr prefix = toCommunitySetElemHalfExpr(ctx.prefix);
       CommunitySetElemHalfExpr suffix = toCommunitySetElemHalfExpr(ctx.suffix);
       return new CommunitySetElemHalves(prefix, suffix);
     } else if (ctx.community() != null) {
-      long value = toLong(ctx.community());
+      Long value = toLong(ctx.community());
+      if (value == null) {
+        _w.redFlag(
+            String.format(
+                "Invalid standard community: '%s' in: '%s'",
+                ctx.community().getText(), getFullText(ctx)));
+        return convProblem(CommunitySetElem.class, ctx, null);
+      }
       return new CommunitySetElemHalves(value);
     } else if (ctx.IOS_REGEX() != null) {
       return new CommunitySetElemIosRegex(unquote(ctx.COMMUNITY_SET_REGEX().getText()));
     } else {
-      throw convError(CommunitySetElem.class, ctx);
+      return convProblem(CommunitySetElem.class, ctx, null);
     }
   }
 
@@ -10885,19 +10915,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  public long toLong(CommunityContext ctx) {
+  public @Nullable Long toLong(CommunityContext ctx) {
     if (ctx.ACCEPT_OWN() != null) {
       return WellKnownCommunity.ACCEPT_OWN;
-    } else if (ctx.COMMUNITY_NUMBER() != null) {
-      String numberText = ctx.com.getText();
-      String[] parts = numberText.split(":");
-      String leftStr = parts[0];
-      String rightStr = parts[1];
-      long left = Long.parseLong(leftStr);
-      long right = Long.parseLong(rightStr);
-      return (left << 16) | right;
-    } else if (ctx.DEC() != null) {
-      return toLong(ctx.com);
+    } else if (ctx.STANDARD_COMMUNITY() != null) {
+      return CommonUtil.communityStringToLong(ctx.getText());
+    } else if (ctx.uint32() != null) {
+      return toLong(ctx.uint32());
     } else if (ctx.INTERNET() != null) {
       return WellKnownCommunity.INTERNET;
     } else if (ctx.GSHUT() != null) {
@@ -10910,7 +10934,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.NO_EXPORT() != null) {
       return WellKnownCommunity.NO_EXPORT;
     } else {
-      throw convError(Long.class, ctx);
+      return convProblem(Long.class, ctx, null);
+    }
+  }
+
+  private @Nullable Long toLong(Uint32Context ctx) {
+    try {
+      long val = Long.parseLong(ctx.getText(), 10);
+      checkArgument(0 <= val && val <= 0xFFFFFFFFL);
+      return val;
+    } catch (IllegalArgumentException e) {
+      return convProblem(Long.class, ctx, null);
     }
   }
 
@@ -11654,7 +11688,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       // inline
       return new RoutePolicyCommunitySetInline(
-          ctx.elems.stream().map(this::toCommunitySetElemExpr).collect(Collectors.toList()));
+          ctx.elems.stream()
+              .map(this::toCommunitySetElemExpr)
+              .filter(Objects::nonNull)
+              .collect(Collectors.toList()));
     }
   }
 
