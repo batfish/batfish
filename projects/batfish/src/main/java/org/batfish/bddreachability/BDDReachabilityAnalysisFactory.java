@@ -1252,11 +1252,10 @@ public final class BDDReachabilityAnalysisFactory {
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("BDDReachabilityAnalysisFactory.getAllBDDs").startActive()) {
       assert span != null; // avoid unused warning
-      Set<FlowDisposition> actionsCopy = new HashSet<>(actions);
 
-      boolean loopIncluded = actionsCopy.remove(LOOP);
+      Set<FlowDisposition> nonLoopActions = new HashSet<>(actions);
+      boolean loopIncluded = nonLoopActions.remove(LOOP);
 
-      // detecting Loops can work with any disposition, using ACCEPTED arbitrarily here
       BDDReachabilityAnalysis analysis =
           bddReachabilityAnalysis(
               srcIpSpaceAssignment,
@@ -1264,10 +1263,11 @@ public final class BDDReachabilityAnalysisFactory {
               forbiddenTransitNodes,
               requiredTransitNodes,
               finalNodes,
-              actionsCopy.isEmpty() ? ImmutableSet.of(FlowDisposition.ACCEPTED) : actionsCopy);
+              nonLoopActions);
 
+      // If we're not querying any actions, don't bother computing the reachable BDDs.
       Map<IngressLocation, BDD> bddsNoLoop =
-          actionsCopy.isEmpty() ? Maps.newHashMap() : analysis.getIngressLocationReachableBDDs();
+          nonLoopActions.isEmpty() ? Maps.newHashMap() : analysis.getIngressLocationReachableBDDs();
 
       if (!loopIncluded) {
         return bddsNoLoop;
