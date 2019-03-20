@@ -53,8 +53,7 @@ public final class CallExpr extends BooleanExpr {
 
   @Override
   public Result evaluate(Environment environment) {
-    RoutingPolicy policy =
-        environment.getConfiguration().getRoutingPolicies().get(_calledPolicyName);
+    RoutingPolicy policy = environment.getRoutingPolicies().get(_calledPolicyName);
     if (policy == null) {
       environment.setError(true);
       return new Result(false);

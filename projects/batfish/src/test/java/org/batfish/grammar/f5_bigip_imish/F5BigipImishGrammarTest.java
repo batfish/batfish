@@ -286,10 +286,9 @@ public final class F5BigipImishGrammarTest {
       assertTrue(
           commonExportPolicy
               .call(
-                  Environment.builder(c)
+                  Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
                       .setOriginalRoute(bgpRouteAllowedByPeerPolicy)
                       .setOutputRoute(outputBuilder)
-                      .setVrf(Configuration.DEFAULT_VRF_NAME)
                       .build())
               .getBooleanValue());
       BgpRoute outputRoute = outputBuilder.build();
@@ -302,10 +301,9 @@ public final class F5BigipImishGrammarTest {
       assertTrue(
           peerExportPolicy
               .call(
-                  Environment.builder(c)
+                  Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
                       .setOriginalRoute(bgpRouteAllowedByPeerPolicy)
                       .setOutputRoute(outputBuilder)
-                      .setVrf(Configuration.DEFAULT_VRF_NAME)
                       .build())
               .getBooleanValue());
       BgpRoute outputRoute = outputBuilder.build();
@@ -318,10 +316,9 @@ public final class F5BigipImishGrammarTest {
       assertTrue(
           commonExportPolicy
               .call(
-                  Environment.builder(c)
+                  Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
                       .setOriginalRoute(bgpRouteAllowedOnlyByCommonPolicy)
                       .setOutputRoute(outputBuilder)
-                      .setVrf(Configuration.DEFAULT_VRF_NAME)
                       .build())
               .getBooleanValue());
     }
@@ -332,10 +329,9 @@ public final class F5BigipImishGrammarTest {
       assertFalse(
           peerExportPolicy
               .call(
-                  Environment.builder(c)
+                  Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
                       .setOriginalRoute(bgpRouteAllowedOnlyByCommonPolicy)
                       .setOutputRoute(outputBuilder)
-                      .setVrf(Configuration.DEFAULT_VRF_NAME)
                       .build())
               .getBooleanValue());
     }
@@ -346,10 +342,9 @@ public final class F5BigipImishGrammarTest {
       assertFalse(
           commonExportPolicy
               .call(
-                  Environment.builder(c)
+                  Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
                       .setOriginalRoute(connectedRoute)
                       .setOutputRoute(outputBuilder)
-                      .setVrf(Configuration.DEFAULT_VRF_NAME)
                       .build())
               .getBooleanValue());
     }
@@ -360,10 +355,9 @@ public final class F5BigipImishGrammarTest {
       assertFalse(
           peerExportPolicy
               .call(
-                  Environment.builder(c)
+                  Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
                       .setOriginalRoute(connectedRoute)
                       .setOutputRoute(outputBuilder)
-                      .setVrf(Configuration.DEFAULT_VRF_NAME)
                       .build())
               .getBooleanValue());
     }
@@ -374,10 +368,9 @@ public final class F5BigipImishGrammarTest {
       assertTrue(
           commonExportPolicy
               .call(
-                  Environment.builder(c)
+                  Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
                       .setOriginalRoute(kernelRoute)
                       .setOutputRoute(outputBuilder)
-                      .setVrf(Configuration.DEFAULT_VRF_NAME)
                       .build())
               .getBooleanValue());
       BgpRoute outputRoute = outputBuilder.build();
@@ -390,10 +383,9 @@ public final class F5BigipImishGrammarTest {
       assertTrue(
           peerExportPolicy
               .call(
-                  Environment.builder(c)
+                  Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
                       .setOriginalRoute(kernelRoute)
                       .setOutputRoute(outputBuilder)
-                      .setVrf(Configuration.DEFAULT_VRF_NAME)
                       .build())
               .getBooleanValue());
       BgpRoute outputRoute = outputBuilder.build();
@@ -444,9 +436,8 @@ public final class F5BigipImishGrammarTest {
         c.getRoutingPolicies()
             .get(acceptAllName)
             .call(
-                Environment.builder(c)
+                Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
                     .setDirection(Direction.OUT)
-                    .setVrf(Configuration.DEFAULT_VRF_NAME)
                     .setOriginalRoute(
                         new ConnectedRoute(Prefix.strict("10.0.0.0/24"), "/Common/outint"))
                     .build())
@@ -460,9 +451,8 @@ public final class F5BigipImishGrammarTest {
     assertTrue(
         "rm1 denies prefix 10.0.0.0/24 (via 10)",
         !rm1.call(
-                Environment.builder(c)
+                Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
                     .setDirection(Direction.OUT)
-                    .setVrf(Configuration.DEFAULT_VRF_NAME)
                     .setOriginalRoute(
                         new ConnectedRoute(Prefix.strict("10.0.0.0/24"), "/Common/outint"))
                     .build())
@@ -477,10 +467,9 @@ public final class F5BigipImishGrammarTest {
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP);
     Environment acceptedPrefixEnvironment =
-        Environment.builder(c)
+        Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
             .setDirection(Direction.OUT)
             .setOutputRoute(outputRoute)
-            .setVrf(Configuration.DEFAULT_VRF_NAME)
             .setOriginalRoute(acceptedRoute)
             .build();
     Result acceptedBy20 = rm1.call(acceptedPrefixEnvironment);
@@ -497,9 +486,8 @@ public final class F5BigipImishGrammarTest {
     assertTrue(
         "rm1 rejects prefix 10.0.2.0/24 (no matching entry)",
         !rm1.call(
-                Environment.builder(c)
+                Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
                     .setDirection(Direction.OUT)
-                    .setVrf(Configuration.DEFAULT_VRF_NAME)
                     .setOriginalRoute(
                         new ConnectedRoute(Prefix.strict("10.0.2.0/24"), "/Common/outint"))
                     .build())
