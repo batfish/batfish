@@ -14,7 +14,6 @@ final class NameRegexFilterAstNode implements FilterAstNode {
 
   NameRegexFilterAstNode(String regex) {
     _regex = regex;
-    // treat the provided pattern as a case-insensitive substring match
     _pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
   }
 
