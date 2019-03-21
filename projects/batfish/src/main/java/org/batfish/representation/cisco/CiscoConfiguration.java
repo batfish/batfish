@@ -311,8 +311,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return String.format("~BGP_COMMON_EXPORT_POLICY:%s~", vrf);
   }
 
-  public static String computeBgpDefaultRouteExportPolicyName(String vrf, String peer) {
-    return String.format("~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:%s:%s~", vrf, peer);
+  public static String computeBgpDefaultRouteExportPolicyName(boolean ipv4) {
+    return String.format("~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv%s~", ipv4 ? "4" : "6");
   }
 
   public static String computeBgpPeerImportPolicyName(String vrf, String peer) {
