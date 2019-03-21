@@ -1,5 +1,6 @@
 package org.batfish.question.testpolicies;
 
+import static org.batfish.datamodel.AbstractRoute.PROP_METRIC;
 import static org.batfish.datamodel.BgpRoute.PROP_AS_PATH;
 import static org.batfish.datamodel.BgpRoute.PROP_COMMUNITIES;
 import static org.batfish.datamodel.BgpRoute.PROP_LOCAL_PREFERENCE;
@@ -63,24 +64,32 @@ public class BgpRouteDiffTest {
     assertThat(
         routeDiffs(route1, route2), contains(new BgpRouteDiff(PROP_LOCAL_PREFERENCE, "1", "2")));
 
+    // change metric
+    route1 = builder().setMetric(1).build();
+    route2 = builder().setMetric(2).build();
+    assertThat(routeDiffs(route1, route2), contains(new BgpRouteDiff(PROP_METRIC, "1", "2")));
+
     // change all three
     route1 =
         builder()
             .setAsPath(AsPath.ofSingletonAsSets(1L, 2L))
             .setCommunities(ImmutableSet.of(1L, 2L))
             .setLocalPreference(1)
+            .setMetric(1)
             .build();
     route2 =
         builder()
             .setAsPath(AsPath.ofSingletonAsSets(2L, 3L))
             .setCommunities(ImmutableSet.of(2L, 3L))
             .setLocalPreference(2)
+            .setMetric(2)
             .build();
     assertThat(
         routeDiffs(route1, route2),
         containsInAnyOrder(
             new BgpRouteDiff(PROP_AS_PATH, "[1, 2]", "[2, 3]"),
             new BgpRouteDiff(PROP_COMMUNITIES, "[1, 2]", "[2, 3]"),
-            new BgpRouteDiff(PROP_LOCAL_PREFERENCE, "1", "2")));
+            new BgpRouteDiff(PROP_LOCAL_PREFERENCE, "1", "2"),
+            new BgpRouteDiff(PROP_METRIC, "1", "2")));
   }
 }
