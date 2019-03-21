@@ -48,7 +48,7 @@ public final class NamedAsPathSet extends AsPathSetExpr {
 
   @Override
   public boolean matches(Environment environment) {
-    AsPathAccessList list = environment.getConfiguration().getAsPathAccessLists().get(_name);
+    AsPathAccessList list = environment.getAsPathAccessLists().get(_name);
     if (list != null) {
       boolean match = false;
       AsPath inputAsPath = null;

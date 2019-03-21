@@ -4588,6 +4588,11 @@ PREFIX
    'prefix'
 ;
 
+PREFIX_NAME
+:
+   'prefix-name'
+;
+
 PREFIX_EXPORT_LIMIT
 :
    'prefix-export-limit'
@@ -6174,12 +6179,9 @@ ZONES
 
 // End of Juniper keywords
 
-COMMUNITY_LITERAL
+STANDARD_COMMUNITY
 :
-   F_Digit
-   {!enableIPV6_ADDRESS}?
-
-   F_Digit* ':' F_Digit+
+  F_StandardCommunity {!enableIPV6_ADDRESS}?
 ;
 
 VARIABLE
@@ -6747,6 +6749,12 @@ F_Hostname_TrailingChar
 ;
 
 fragment
+F_StandardCommunity
+:
+  F_Uint16 ':' F_Uint16
+;
+
+fragment
 F_Variable_RequiredVarChar_Ipv6
 :
    ~[ 0-9\t\n\r/.,\-:;{}<>[\]&|()"']
@@ -6768,6 +6776,18 @@ fragment
 F_Variable_LeadingVarChar_Ipv6
 :
    ~[ \t\n\r:;{}<>[\]&|()"']
+;
+
+fragment
+F_Uint16
+:
+  F_Digit
+  | F_PositiveDigit F_Digit F_Digit? F_Digit?
+  | [1-5] F_Digit F_Digit F_Digit F_Digit
+  | '6' [0-4] F_Digit F_Digit F_Digit
+  | '65' [0-4] F_Digit F_Digit
+  | '655' [0-2] F_Digit
+  | '6553' [0-5]
 ;
 
 fragment

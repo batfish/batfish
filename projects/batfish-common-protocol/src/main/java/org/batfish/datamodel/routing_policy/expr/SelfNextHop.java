@@ -31,10 +31,9 @@ public class SelfNextHop extends NextHopExpr {
     if (peerPrefix == null) {
       return null;
     }
-    BgpPeerConfig neighbor =
-        environment.getVrf().getBgpProcess().getActiveNeighbors().get(peerPrefix);
+    BgpPeerConfig neighbor = environment.getBgpProcess().getActiveNeighbors().get(peerPrefix);
     if (neighbor == null) {
-      neighbor = environment.getVrf().getBgpProcess().getPassiveNeighbors().get(peerPrefix);
+      neighbor = environment.getBgpProcess().getPassiveNeighbors().get(peerPrefix);
     }
     if (neighbor == null) {
       return null;

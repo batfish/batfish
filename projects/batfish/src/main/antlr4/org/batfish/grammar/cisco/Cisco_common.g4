@@ -66,14 +66,14 @@ bgp_asn
 
 community
 :
-   com = ACCEPT_OWN
-   | com = COMMUNITY_NUMBER
-   | com = DEC
-   | com = GSHUT
-   | com = INTERNET
-   | com = LOCAL_AS
-   | com = NO_ADVERTISE
-   | com = NO_EXPORT
+   ACCEPT_OWN
+   | GSHUT
+   | INTERNET
+   | LOCAL_AS
+   | NO_ADVERTISE
+   | NO_EXPORT
+   | STANDARD_COMMUNITY
+   | uint32
 ;
 
 description_line
@@ -692,6 +692,11 @@ switchport_trunk_encapsulation
    DOT1Q
    | ISL
    | NEGOTIATE
+;
+
+uint32
+:
+  DEC
 ;
 
 variable

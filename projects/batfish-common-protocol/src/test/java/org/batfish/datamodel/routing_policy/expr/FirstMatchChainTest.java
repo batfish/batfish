@@ -68,7 +68,7 @@ public class FirstMatchChainTest {
     c.setVrfs(
         ImmutableMap.of(Configuration.DEFAULT_VRF_NAME, new Vrf(Configuration.DEFAULT_VRF_NAME)));
     c.setRoutingPolicies(policies);
-    return Environment.builder(c)
+    return Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
         .setDefaultPolicy(defaultPolicy)
         .setOutputRoute(route.toBuilder())
         .build();
@@ -105,17 +105,13 @@ public class FirstMatchChainTest {
         new FirstMatchChain(ImmutableList.of(BooleanExprs.FALSE, BooleanExprs.TRUE));
     Result result =
         fmc.evaluate(
-            Environment.builder(new Configuration("host", ConfigurationFormat.JUNIPER))
-                .setVrf(Configuration.DEFAULT_VRF_NAME)
-                .build());
+            Environment.builder(new Configuration("host", ConfigurationFormat.JUNIPER)).build());
     assertThat(result, equalTo(new Result(false, false, false, false)));
 
     fmc = new FirstMatchChain(ImmutableList.of(BooleanExprs.TRUE, BooleanExprs.FALSE));
     result =
         fmc.evaluate(
-            Environment.builder(new Configuration("host", ConfigurationFormat.JUNIPER))
-                .setVrf(Configuration.DEFAULT_VRF_NAME)
-                .build());
+            Environment.builder(new Configuration("host", ConfigurationFormat.JUNIPER)).build());
     assertThat(result, equalTo(new Result(true, false, false, false)));
   }
 

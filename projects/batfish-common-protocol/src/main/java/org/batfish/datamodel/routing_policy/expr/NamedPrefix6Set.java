@@ -57,7 +57,7 @@ public final class NamedPrefix6Set extends Prefix6SetExpr {
 
   @Override
   public boolean matches(Prefix6 prefix, Environment environment) {
-    Route6FilterList list = environment.getConfiguration().getRoute6FilterLists().get(_name);
+    Route6FilterList list = environment.getRoute6FilterLists().get(_name);
     if (list != null) {
       return list.permits(prefix);
     } else {

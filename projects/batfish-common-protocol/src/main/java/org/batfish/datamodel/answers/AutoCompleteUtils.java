@@ -88,6 +88,20 @@ public final class AutoCompleteUtils {
           suggestions = stringPairAutoComplete(query, pairs);
           break;
         }
+      case APPLICATION_SPEC:
+        {
+          suggestions =
+              ParboiledAutoComplete.autoComplete(
+                  Grammar.APPLICATION_SPECIFIER,
+                  network,
+                  snapshot,
+                  query,
+                  maxSuggestions,
+                  completionMetadata,
+                  nodeRolesData,
+                  referenceLibrary);
+          break;
+        }
       case BGP_PEER_PROPERTY_SPEC:
         {
           suggestions = baseAutoComplete(query, BgpPeerPropertySpecifier.JAVA_MAP.keySet());

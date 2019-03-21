@@ -276,7 +276,7 @@ null_filler
 
 sc_literal
 :
-   COMMUNITY_LITERAL
+   STANDARD_COMMUNITY
 ;
 
 sc_named

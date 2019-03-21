@@ -1,11 +1,11 @@
 package org.batfish.representation.juniper;
 
 import static org.batfish.datamodel.transformation.Transformation.when;
-import static org.batfish.representation.juniper.NatRuleMatchToHeaderSpace.toHeaderSpace;
 
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -55,14 +55,22 @@ public final class NatRule implements Serializable {
 
   /** Convert to vendor-independent {@link Transformation}. */
   public Optional<Transformation.Builder> toTransformationBuilder(
-      Nat nat, Ip interfaceIp, Warnings warnings) {
+      Nat nat,
+      @Nullable Map<String, AddressBookEntry> addressEntryMap,
+      Ip interfaceIp,
+      Warnings warnings) {
 
     List<TransformationStep> steps =
-        _then == null ? null : _then.toTransformationSteps(nat, interfaceIp, warnings);
+        _then == null
+            ? null
+            : _then.toTransformationSteps(nat, addressEntryMap, interfaceIp, warnings);
+
+    MatchHeaderSpace match =
+        new MatchHeaderSpace(NatRuleMatchToHeaderSpace.toHeaderSpace(_matches));
 
     // steps can be empty when the pool used by the rule is not found
     return (_then == null || steps.isEmpty())
         ? Optional.empty()
-        : Optional.of(when(new MatchHeaderSpace(toHeaderSpace(_matches))).apply(steps));
+        : Optional.of(when(match).apply(steps));
   }
 }

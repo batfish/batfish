@@ -3749,12 +3749,9 @@ ZONES
 
 // Complex tokens
 
-COMMUNITY_LITERAL
+STANDARD_COMMUNITY
 :
-   F_Digit
-   {!enableIPV6_ADDRESS}?
-
-   F_Digit* ':' F_Digit+
+   F_StandardCommunity {!enableIPV6_ADDRESS}?
 ;
 
 VARIABLE
@@ -4204,6 +4201,24 @@ fragment
 F_PositiveDigit
 :
    [1-9]
+;
+
+fragment
+F_StandardCommunity
+:
+  F_Uint16 ':' F_Uint16
+;
+
+fragment
+F_Uint16
+:
+  F_Digit
+  | F_PositiveDigit F_Digit F_Digit? F_Digit?
+  | [1-5] F_Digit F_Digit F_Digit F_Digit
+  | '6' [0-4] F_Digit F_Digit F_Digit
+  | '65' [0-4] F_Digit F_Digit
+  | '655' [0-2] F_Digit
+  | '6553' [0-5]
 ;
 
 fragment

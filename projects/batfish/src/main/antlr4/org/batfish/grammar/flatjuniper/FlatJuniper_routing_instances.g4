@@ -310,7 +310,7 @@ roa_common
 
 roa_community
 :
-   COMMUNITY community = COMMUNITY_LITERAL
+   COMMUNITY community = STANDARD_COMMUNITY
 ;
 
 roa_defaults
