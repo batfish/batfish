@@ -22,10 +22,10 @@ public class OspfPropertiesAnswererTest {
 
   @Test
   public void getProperties() {
-    OspfProcess ospf1 = OspfProcess.builder().setReferenceBandwidth(1e8).build();
+    OspfProcess ospf1 =
+        OspfProcess.builder().setProcessId("uber-proc").setReferenceBandwidth(1e8).build();
     ospf1.setExportPolicy("my-policy");
     ospf1.setReferenceBandwidth(42.0);
-    ospf1.setProcessId("uber-proc");
 
     Vrf vrf1 = new Vrf("vrf1");
     vrf1.setOspfProcess(ospf1);

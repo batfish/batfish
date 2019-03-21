@@ -69,7 +69,7 @@ public final class OspfProcess implements Serializable {
               _maxMetricSummaryNetworks,
               _maxMetricTransitLinks,
               _neighbors,
-              _processId,
+              _processId != null ? _processId : generateName(),
               _referenceBandwidth,
               _rfc1583Compatible,
               _routerId);
@@ -109,7 +109,7 @@ public final class OspfProcess implements Serializable {
       return this;
     }
 
-    public Builder setProcessId(@Nullable String processId) {
+    public Builder setProcessId(@Nonnull String processId) {
       _processId = processId;
       return this;
     }
@@ -183,32 +183,20 @@ public final class OspfProcess implements Serializable {
   }
 
   @Nonnull private SortedMap<Long, OspfArea> _areas;
-
   @Nullable private String _exportPolicy;
-
   @Nonnull private SortedSet<String> _exportPolicySources;
-
   @Nonnull private SortedSet<GeneratedRoute> _generatedRoutes;
-
   @Nullable private Long _maxMetricExternalNetworks;
-
   @Nullable private Long _maxMetricStubNetworks;
-
   @Nullable private Long _maxMetricSummaryNetworks;
-
   @Nullable private Long _maxMetricTransitLinks;
-
   private transient Map<IpLink, OspfNeighbor> _ospfNeighbors;
-
   /** Mapping from interface name to an OSPF config */
   @Nonnull private SortedMap<String, OspfNeighborConfig> _ospfNeighborConfigs;
 
-  @Nullable private String _processId;
-
+  @Nonnull private String _processId;
   @Nonnull private Double _referenceBandwidth;
-
   @Nullable private Boolean _rfc1583Compatible;
-
   @Nullable private Ip _routerId;
 
   @JsonCreator
@@ -226,6 +214,7 @@ public final class OspfProcess implements Serializable {
       @Nullable @JsonProperty(PROP_REFERENCE_BANDWIDTH) Double referenceBandwidth,
       @Nullable @JsonProperty(PROP_RFC1583) Boolean rfc1583Compatible,
       @Nullable @JsonProperty(PROP_ROUTER_ID) Ip routerId) {
+    checkArgument(processId != null, "Missing %s", PROP_PROCESS_ID);
     checkArgument(referenceBandwidth != null, "Missing %s", PROP_REFERENCE_BANDWIDTH);
     _areas = firstNonNull(areas, ImmutableSortedMap.of());
     _exportPolicy = exportPolicy;
@@ -342,7 +331,7 @@ public final class OspfProcess implements Serializable {
     return _ospfNeighborConfigs;
   }
 
-  @Nullable
+  @Nonnull
   @JsonProperty(PROP_PROCESS_ID)
   public String getProcessId() {
     return _processId;
@@ -447,14 +436,8 @@ public final class OspfProcess implements Serializable {
     _ospfNeighbors = ospfNeighbors;
   }
 
-  @JsonProperty(PROP_NEIGHBORS)
   void setOspfNeighborConfigs(Map<String, OspfNeighborConfig> ospfNeighborConfigs) {
     _ospfNeighborConfigs = ImmutableSortedMap.copyOf(ospfNeighborConfigs);
-  }
-
-  @JsonProperty(PROP_PROCESS_ID)
-  public void setProcessId(@Nullable String id) {
-    _processId = id;
   }
 
   public void setReferenceBandwidth(Double referenceBandwidth) {

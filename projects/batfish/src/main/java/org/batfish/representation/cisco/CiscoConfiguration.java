@@ -2477,6 +2477,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       OspfProcess proc, String vrfName, Configuration c, CiscoConfiguration oldConfig) {
     org.batfish.datamodel.ospf.OspfProcess newProcess =
         org.batfish.datamodel.ospf.OspfProcess.builder()
+            .setProcessId(proc.getName())
             .setReferenceBandwidth(proc.getReferenceBandwidth())
             .build();
     org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
@@ -2489,8 +2490,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newProcess.setMaxMetricExternalNetworks(proc.getMaxMetricExternalLsa());
       newProcess.setMaxMetricSummaryNetworks(proc.getMaxMetricSummaryLsa());
     }
-
-    newProcess.setProcessId(proc.getName());
 
     // establish areas and associated interfaces
     Map<Long, OspfArea.Builder> areas = new HashMap<>();
