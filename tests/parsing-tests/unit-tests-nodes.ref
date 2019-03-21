@@ -15899,6 +15899,7 @@
                   "vrf" : "default"
                 }
               },
+              "processId" : "default",
               "referenceBandwidth" : 1.0E9,
               "routerId" : "10.1.2.3"
             }
@@ -17810,6 +17811,7 @@
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+              "processId" : "default",
               "referenceBandwidth" : 1.0E9
             }
           }
@@ -20841,6 +20843,7 @@
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+              "processId" : "default",
               "referenceBandwidth" : 1.0E9
             }
           }
