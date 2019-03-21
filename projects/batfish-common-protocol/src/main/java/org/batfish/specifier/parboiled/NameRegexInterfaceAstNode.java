@@ -14,8 +14,7 @@ final class NameRegexInterfaceAstNode implements InterfaceAstNode {
 
   NameRegexInterfaceAstNode(String regex) {
     _regex = regex;
-    // treat the provided pattern as a case-insensitive substring match
-    _pattern = Pattern.compile(String.format(".*%s.*", regex), Pattern.CASE_INSENSITIVE);
+    _pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
   }
 
   @Override
