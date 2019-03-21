@@ -444,7 +444,7 @@ public final class AutoCompleteUtils {
    * Returns a list of suggestions based on query over pairs of names (strings).
    *
    * <p>The pairs are converted to "a,b" lowercase strings and the query is considered to be a
-   * prefix over those strings. We assume that neither "a" not "b" contain whitespace, consistent
+   * substring over those strings. We assume that neither "a" not "b" contain whitespace, consistent
    * with valid names per {@link org.batfish.datamodel.Names.Type#REFERENCE_OBJECT}.
    */
   @Nonnull
