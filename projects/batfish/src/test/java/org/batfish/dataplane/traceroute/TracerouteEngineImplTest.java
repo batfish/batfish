@@ -42,7 +42,6 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignDest
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.getFinalActionForDisposition;
-import static org.batfish.dataplane.traceroute.TracerouteUtils.getTcpFlagsForReverse;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
@@ -52,7 +51,6 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -84,7 +82,6 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
-import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
@@ -1420,70 +1417,6 @@ public class TracerouteEngineImplTest {
 
     // reverse trace should be permitted back in as reverse flow has ACK set
     assertThat(reverseTrace.getDisposition(), equalTo(ACCEPTED));
-  }
-
-  @Test
-  public void testGetTcpFlagsForReverseNoSynNoAck() {
-    // !SYN, !ACK -> !SYN, !ACK
-    TcpFlags reverseTcpFlags = getTcpFlagsForReverse(TcpFlags.builder().build());
-    assertFalse(reverseTcpFlags.getSyn());
-    assertFalse(reverseTcpFlags.getAck());
-  }
-
-  @Test
-  public void testGetTcpFlagsForReverseOnlySyn() {
-    // SYN, !ACK -> SYN, ACK
-    TcpFlags reverseTcpFlags = getTcpFlagsForReverse(TcpFlags.builder().setSyn(true).build());
-    assertTrue(reverseTcpFlags.getSyn());
-    assertTrue(reverseTcpFlags.getAck());
-  }
-
-  @Test
-  public void testGetTcpFlagsForReverseSynAck() {
-    // SYN, ACK -> !SYN, ACK
-    TcpFlags reverseTcpFlags =
-        getTcpFlagsForReverse(TcpFlags.builder().setSyn(true).setAck(true).build());
-    assertFalse(reverseTcpFlags.getSyn());
-    assertTrue(reverseTcpFlags.getAck());
-  }
-
-  @Test
-  public void testGetTcpFlagsForReverseOnlyAck() {
-    // !SYN, ACK -> !SYN, ACK
-    TcpFlags reverseTcpFlags = getTcpFlagsForReverse(TcpFlags.builder().setAck(true).build());
-    assertFalse(reverseTcpFlags.getSyn());
-    assertTrue(reverseTcpFlags.getAck());
-  }
-
-  @Test
-  public void testGetTcpFlagsForReverseAllTrue() {
-    TcpFlags reverseTcpFlags =
-        getTcpFlagsForReverse(
-            TcpFlags.builder()
-                .setRst(true)
-                .setFin(true)
-                .setUrg(true)
-                .setEce(true)
-                .setPsh(true)
-                .setCwr(true)
-                .build());
-
-    assertTrue(reverseTcpFlags.getFin());
-    assertTrue(reverseTcpFlags.getUrg());
-    assertTrue(reverseTcpFlags.getEce());
-    assertTrue(reverseTcpFlags.getPsh());
-    assertTrue(reverseTcpFlags.getCwr());
-  }
-
-  @Test
-  public void testGetTcpFlagsForReverseAllFalse() {
-    TcpFlags reverseTcpFlags = getTcpFlagsForReverse(TcpFlags.builder().build());
-
-    assertFalse(reverseTcpFlags.getFin());
-    assertFalse(reverseTcpFlags.getUrg());
-    assertFalse(reverseTcpFlags.getEce());
-    assertFalse(reverseTcpFlags.getPsh());
-    assertFalse(reverseTcpFlags.getCwr());
   }
 
   @Test
