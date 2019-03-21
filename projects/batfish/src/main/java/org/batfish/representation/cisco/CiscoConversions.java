@@ -359,6 +359,12 @@ class CiscoConversions {
         .build();
   }
 
+  /**
+   * Initializes export policy for IPv4 or IPv6 default routes if it doesn't already exist. This
+   * policy is the same across BGP processes, so only one is created for each configuration.
+   *
+   * @param ipv4 Whether to initialize the IPv4 or IPv6 default route export policy
+   */
   static void initBgpDefaultRouteExportPolicy(boolean ipv4, Configuration c) {
     String defaultRouteExportPolicyName = computeBgpDefaultRouteExportPolicyName(ipv4);
     if (!c.getRoutingPolicies().containsKey(defaultRouteExportPolicyName)) {
