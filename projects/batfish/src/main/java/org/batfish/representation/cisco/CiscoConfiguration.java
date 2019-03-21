@@ -311,8 +311,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return String.format("~BGP_COMMON_EXPORT_POLICY:%s~", vrf);
   }
 
-  public static String computeBgpDefaultRouteExportPolicyName(String vrf, String peer) {
-    return String.format("~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:%s:%s~", vrf, peer);
+  public static String computeBgpDefaultRouteExportPolicyName(boolean ipv4) {
+    return String.format("~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv%s~", ipv4 ? "4" : "6");
   }
 
   public static String computeBgpPeerImportPolicyName(String vrf, String peer) {
@@ -2477,6 +2477,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       OspfProcess proc, String vrfName, Configuration c, CiscoConfiguration oldConfig) {
     org.batfish.datamodel.ospf.OspfProcess newProcess =
         org.batfish.datamodel.ospf.OspfProcess.builder()
+            .setProcessId(proc.getName())
             .setReferenceBandwidth(proc.getReferenceBandwidth())
             .build();
     org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
@@ -2489,8 +2490,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newProcess.setMaxMetricExternalNetworks(proc.getMaxMetricExternalLsa());
       newProcess.setMaxMetricSummaryNetworks(proc.getMaxMetricSummaryLsa());
     }
-
-    newProcess.setProcessId(proc.getName());
 
     // establish areas and associated interfaces
     Map<Long, OspfArea.Builder> areas = new HashMap<>();

@@ -344,23 +344,8 @@ final class CiscoNxConversions {
     // If `default-originate [route-map NAME]` is configured for this neighbor, generate the
     // default route and inject it.
     if (naf4 != null && firstNonNull(naf4.getDefaultOriginate(), Boolean.FALSE)) {
-
-      String defaultRouteExportPolicyName;
-      defaultRouteExportPolicyName =
-          computeBgpDefaultRouteExportPolicyName(
-              vrf.getName(), dynamic ? prefix.toString() : prefix.getStartIp().toString());
-      RoutingPolicy defaultRouteExportPolicy = new RoutingPolicy(defaultRouteExportPolicyName, c);
-      c.getRoutingPolicies().put(defaultRouteExportPolicyName, defaultRouteExportPolicy);
-      defaultRouteExportPolicy
-          .getStatements()
-          .add(
-              new If(
-                  MATCH_DEFAULT_ROUTE,
-                  ImmutableList.of(
-                      new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
-                      Statements.ReturnTrue.toStaticStatement())));
-      defaultRouteExportPolicy.getStatements().add(Statements.ReturnFalse.toStaticStatement());
-      localOrCommonOrigination.add(new CallExpr(defaultRouteExportPolicy.getName()));
+      initBgpDefaultRouteExportPolicy(c);
+      localOrCommonOrigination.add(new CallExpr(computeBgpDefaultRouteExportPolicyName(true)));
 
       GeneratedRoute defaultRoute =
           GeneratedRoute.builder()
@@ -389,6 +374,27 @@ final class CiscoNxConversions {
     newNeighborBuilder.setExportPolicy(exportPolicy.getName());
 
     return newNeighborBuilder.build();
+  }
+
+  /**
+   * Initializes export policy for default routes if it doesn't already exist. This policy is the
+   * same across BGP processes, so only one is created for each configuration.
+   */
+  static void initBgpDefaultRouteExportPolicy(Configuration c) {
+    String defaultRouteExportPolicyName = computeBgpDefaultRouteExportPolicyName(true);
+    if (!c.getRoutingPolicies().containsKey(defaultRouteExportPolicyName)) {
+      RoutingPolicy.builder()
+          .setOwner(c)
+          .setName(defaultRouteExportPolicyName)
+          .addStatement(
+              new If(
+                  MATCH_DEFAULT_ROUTE,
+                  ImmutableList.of(
+                      new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
+                      Statements.ReturnTrue.toStaticStatement())))
+          .addStatement(Statements.ReturnFalse.toStaticStatement())
+          .build();
+    }
   }
 
   private static String getTextDesc(Ip ip, Vrf v) {
