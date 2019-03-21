@@ -39,7 +39,7 @@ public abstract class InterfaceNameRegexLocationSpecifier implements LocationSpe
   public Set<Location> resolve(SpecifierContext ctxt) {
     return ctxt.getConfigs().values().stream()
         .flatMap(node -> node.getAllInterfaces().values().stream())
-        .filter(iface -> _pattern.matcher(iface.getName()).matches())
+        .filter(iface -> _pattern.matcher(iface.getName()).find())
         .map(this::getLocation)
         .collect(ImmutableSet.toImmutableSet());
   }

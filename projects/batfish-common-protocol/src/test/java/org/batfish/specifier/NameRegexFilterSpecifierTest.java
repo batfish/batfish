@@ -38,6 +38,10 @@ public class NameRegexFilterSpecifierTest {
         new NameRegexFilterSpecifier(Pattern.compile("filter1")).resolve("node1", ctxt),
         equalTo(ImmutableSet.of(filter1node1)));
 
+    assertThat(
+        new NameRegexFilterSpecifier(Pattern.compile("filter")).resolve("node1", ctxt),
+        equalTo(ImmutableSet.of(filter1node1, filter2node1)));
+
     // bad node name
     assertThat(
         new NameRegexFilterSpecifier(Pattern.compile("filter1")).resolve("node", ctxt),
@@ -45,7 +49,7 @@ public class NameRegexFilterSpecifierTest {
 
     // non-matching pattern
     assertThat(
-        new NameRegexFilterSpecifier(Pattern.compile("filter")).resolve("node1", ctxt),
+        new NameRegexFilterSpecifier(Pattern.compile("filter3")).resolve("node1", ctxt),
         equalTo(ImmutableSet.of()));
   }
 }

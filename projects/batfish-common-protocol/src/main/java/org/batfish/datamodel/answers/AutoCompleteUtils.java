@@ -3,6 +3,7 @@ package org.batfish.datamodel.answers;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
@@ -42,11 +43,12 @@ import org.batfish.specifier.parboiled.ParboiledAutoComplete;
 @ParametersAreNonnullByDefault
 public final class AutoCompleteUtils {
 
-  private static class StringPair {
+  @VisibleForTesting
+  static class StringPair {
     public final String s1;
     public final String s2;
 
-    public StringPair(String s1, String s2) {
+    StringPair(String s1, String s2) {
       this.s1 = s1;
       this.s2 = s2;
     }
@@ -410,17 +412,16 @@ public final class AutoCompleteUtils {
   /**
    * Returns a list of suggestions based on query strings.
    *
-   * <p>The search is case-insensitive
+   * <p>The search is case-insensitive and looks for a substring match.
    */
   @Nonnull
-  public static List<AutocompleteSuggestion> stringAutoComplete(
+  static List<AutocompleteSuggestion> stringAutoComplete(
       @Nullable String query, Set<String> strings) {
 
-    // remove whitespace from the query
     String testQuery = query == null ? "" : query.toLowerCase();
 
     return strings.stream()
-        .filter(s -> s.toLowerCase().startsWith(testQuery))
+        .filter(s -> s.toLowerCase().contains(testQuery))
         .map(s -> new AutocompleteSuggestion(s, false))
         .collect(ImmutableList.toImmutableList());
   }
@@ -430,10 +431,10 @@ public final class AutoCompleteUtils {
    *
    * <p>The pairs are converted to "a,b" lowercase strings and the query is considered to be a
    * prefix over those strings. We assume that neither "a" not "b" contain whitespace, consistent
-   * with valid names per {@link ReferenceLibrary#NAME_PATTERN}.
+   * with valid names per {@link org.batfish.datamodel.Names.Type#REFERENCE_OBJECT}.
    */
   @Nonnull
-  private static List<AutocompleteSuggestion> stringPairAutoComplete(
+  static List<AutocompleteSuggestion> stringPairAutoComplete(
       @Nullable String query, Set<StringPair> pairs) {
 
     // remove whitespace from the query
@@ -441,7 +442,7 @@ public final class AutoCompleteUtils {
 
     return pairs.stream()
         .map(p -> String.join(",", p.s1, p.s2).toLowerCase())
-        .filter(p -> p.startsWith(testQuery))
+        .filter(p -> p.contains(testQuery))
         .map(p -> new AutocompleteSuggestion(p, false))
         .collect(ImmutableList.toImmutableList());
   }

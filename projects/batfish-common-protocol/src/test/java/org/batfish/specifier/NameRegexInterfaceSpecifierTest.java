@@ -49,7 +49,7 @@ public class NameRegexInterfaceSpecifierTest {
 
     // bad regex
     assertThat(
-        new NameRegexInterfaceSpecifier(Pattern.compile("iface"))
+        new NameRegexInterfaceSpecifier(Pattern.compile("iface3"))
             .resolve(ImmutableSet.of("node1"), ctxt),
         empty());
   }

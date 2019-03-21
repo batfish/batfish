@@ -13,6 +13,8 @@ import static org.batfish.datamodel.FlowState.RELATED;
 import static org.batfish.datamodel.Protocol.HTTP;
 import static org.batfish.datamodel.Protocol.HTTPS;
 import static org.batfish.datamodel.Protocol.SSH;
+import static org.batfish.datamodel.answers.AutoCompleteUtils.stringAutoComplete;
+import static org.batfish.datamodel.answers.AutoCompleteUtils.stringPairAutoComplete;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.IS_PASSIVE;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.LOCAL_AS;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.REMOTE_AS;
@@ -46,9 +48,11 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.common.CompletionMetadata;
+import org.batfish.datamodel.answers.AutoCompleteUtils.StringPair;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.Variable.Type;
@@ -64,6 +68,12 @@ import org.junit.rules.ExpectedException;
 public class AutoCompleteUtilsTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
+
+  private static Set<String> getSuggestionsTextSet(List<AutocompleteSuggestion> suggestions) {
+    return suggestions.stream()
+        .map(AutocompleteSuggestion::getText)
+        .collect(ImmutableSet.toImmutableSet());
+  }
 
   @Test
   public void testBaseAutoComplete() {
@@ -398,6 +408,34 @@ public class AutoCompleteUtilsTest {
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of("bgp", "ibgp", "ebgp")));
+  }
+
+  @Test
+  public void testStringAutocomplete() {
+    Set<String> strings = ImmutableSet.of("abcd", "degf");
+    assertThat(getSuggestionsTextSet(stringAutoComplete("d", strings)), equalTo(strings));
+    assertThat(
+        getSuggestionsTextSet(stringAutoComplete("b", strings)), equalTo(ImmutableSet.of("abcd")));
+    // full match and case-insensitive
+    assertThat(
+        getSuggestionsTextSet(stringAutoComplete("aBCd", strings)),
+        equalTo(ImmutableSet.of("abcd")));
+  }
+
+  @Test
+  public void testStringPairAutocomplete() {
+    Set<StringPair> stringPairs =
+        ImmutableSet.of(new StringPair("ab", "cd"), new StringPair("de", "fg"));
+    assertThat(
+        getSuggestionsTextSet(stringPairAutoComplete("d", stringPairs)),
+        equalTo(ImmutableSet.of("ab,cd", "de,fg")));
+    assertThat(
+        getSuggestionsTextSet(stringPairAutoComplete("b, c", stringPairs)),
+        equalTo(ImmutableSet.of("ab,cd")));
+    // full match and case-insensitive
+    assertThat(
+        getSuggestionsTextSet(stringPairAutoComplete("ab,    CD", stringPairs)),
+        equalTo(ImmutableSet.of("ab,cd")));
   }
 
   @Test
