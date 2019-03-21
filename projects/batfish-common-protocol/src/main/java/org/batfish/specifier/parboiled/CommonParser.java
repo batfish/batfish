@@ -6,6 +6,8 @@ import com.google.common.collect.ImmutableMap;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.specifier.parboiled.Anchor.Type;
 import org.parboiled.BaseParser;
@@ -25,7 +27,11 @@ import org.parboiled.Rule;
   "checkstyle:methodname", // this class uses idiomatic names
   "WeakerAccess", // access of Rule methods is needed for parser auto-generation.
 })
+@ParametersAreNonnullByDefault
 public class CommonParser extends BaseParser<AstNode> {
+
+  /** We use double quotes to escape complex names */
+  public static final String ESCAPE_CHAR = "\"";
 
   /**
    * Characters that we deem special in our grammar and cannot appear in unquoted names. We are
@@ -35,6 +41,8 @@ public class CommonParser extends BaseParser<AstNode> {
    * list.
    */
   private static final String SPECIAL_CHARS = " \t,\\&()[]@" + "!#$%^;?<>={}";
+
+  private static final char[] SPECIAL_CHARS_ARRAY = SPECIAL_CHARS.toCharArray();
 
   public static final CommonParser INSTANCE = Parboiled.createParser(CommonParser.class);
 
@@ -49,6 +57,61 @@ public class CommonParser extends BaseParser<AstNode> {
       }
     }
     return completionTypes.build();
+  }
+
+  /**
+   * Whether this anchor type supports escaped names, via {@link CommonParser#NameLiteral()}. This
+   * information is used later--auto complete suggestions are escaped if needed.
+   */
+  static boolean isEscapableNameAnchor(Anchor.Type anchorType) {
+    switch (anchorType) {
+      case FILTER_NAME:
+      case INTERFACE_NAME:
+      case NODE_NAME:
+      case VRF_NAME:
+      case ZONE_NAME:
+        return true;
+      case ADDRESS_GROUP_AND_BOOK:
+      case CHAR_LITERAL:
+      case EOI:
+      case FILTER_NAME_REGEX:
+      case IGNORE:
+      case INTERFACE_GROUP_AND_BOOK:
+      case INTERFACE_NAME_REGEX:
+      case INTERFACE_TYPE:
+      case IP_ADDRESS:
+      case IP_ADDRESS_MASK:
+      case IP_PREFIX:
+      case IP_PROTOCOL_NUMBER:
+      case IP_RANGE:
+      case IP_WILDCARD:
+      case NODE_NAME_REGEX:
+      case NODE_ROLE_NAME_AND_DIMENSION:
+      case NODE_TYPE:
+      case STRING_LITERAL:
+      case WHITESPACE:
+        return false;
+      default:
+        throw new IllegalArgumentException("Unhandled anchor type " + anchorType);
+    }
+  }
+
+  static boolean nameNeedsEscaping(@Nullable String name) {
+    return name != null
+        && !name.isEmpty()
+        && (name.startsWith(ESCAPE_CHAR)
+            || Character.isDigit(name.charAt(0))
+            || name.startsWith("/")
+            || containsSpecialChar(name));
+  }
+
+  private static boolean containsSpecialChar(String name) {
+    for (char c : CommonParser.SPECIAL_CHARS_ARRAY) {
+      if (name.indexOf(c) >= 0) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -175,13 +238,6 @@ public class CommonParser extends BaseParser<AstNode> {
         OneOrMore(FirstOf(EscapedSlash(), AsciiButNot("/"))),
         push(new StringAstNode(match())),
         '/');
-  }
-
-  public Rule ContainsChar(char character) {
-    return Sequence(
-        ZeroOrMore(AsciiButNot(Character.toString(character))),
-        character,
-        ZeroOrMore(AsciiButNot(Character.toString(character))));
   }
 
   /**
