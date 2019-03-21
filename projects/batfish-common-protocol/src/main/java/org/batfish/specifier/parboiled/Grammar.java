@@ -12,7 +12,9 @@ public enum Grammar {
       "ipProtocolSpecifier", Parser.INSTANCE.IpProtocolSpec(), "ip-protocol-specifier"),
   IP_SPACE_SPECIFIER("ipSpecifier", Parser.INSTANCE.IpSpaceSpec(), "ip-specifier"),
   LOCATION_SPECIFIER("locationSpecifier", Parser.INSTANCE.LocationSpec(), "location-specifier"),
-  NODE_SPECIFIER("nodeSpecifier", Parser.INSTANCE.NodeSpec(), "node-specifier");
+  NODE_SPECIFIER("nodeSpecifier", Parser.INSTANCE.NodeSpec(), "node-specifier"),
+  ROUTING_POLICY_SPECIFIER(
+      "routingPolicySpecifier", Parser.INSTANCE.RoutingPolicySpec(), "routing-policy-specifier");
 
   static final String BASE_URL =
       "https://github.com/batfish/batfish/blob/master/questions/Parameters.md#";

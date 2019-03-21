@@ -13,6 +13,7 @@ import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
 import static org.batfish.common.util.CompletionMetadataUtils.getIps;
 import static org.batfish.common.util.CompletionMetadataUtils.getNodes;
 import static org.batfish.common.util.CompletionMetadataUtils.getPrefixes;
+import static org.batfish.common.util.CompletionMetadataUtils.getRoutingPolicyNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getStructureNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getVrfs;
 import static org.batfish.common.util.CompletionMetadataUtils.getZones;
@@ -2598,6 +2599,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         getIps(configurations),
         getNodes(configurations),
         getPrefixes(configurations),
+        getRoutingPolicyNames(configurations),
         getStructureNames(configurations),
         getVrfs(configurations),
         getZones(configurations));

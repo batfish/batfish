@@ -173,6 +173,23 @@ public final class CompletionMetadataUtilsTest {
   }
 
   @Test
+  public void testGetRoutingPolicyNames() {
+    String policy1 = "policy1";
+    String policy2 = "policy2";
+
+    RoutingPolicy routingPolicy1 = RoutingPolicy.builder().setName(policy1).build();
+    RoutingPolicy routingPolicy2 = RoutingPolicy.builder().setName(policy2).build();
+
+    Map<String, Configuration> configs = new HashMap<>();
+    Configuration config = createTestConfiguration("config1", ConfigurationFormat.HOST);
+    config.setRoutingPolicies(
+        ImmutableSortedMap.of(policy1, routingPolicy1, policy2, routingPolicy2));
+    configs.put("config1", config);
+
+    assertThat(getFilterNames(configs), equalTo(ImmutableSet.of(policy1, policy2)));
+  }
+
+  @Test
   public void testGetStructureNames() {
     String nodeName = "nodeName";
 

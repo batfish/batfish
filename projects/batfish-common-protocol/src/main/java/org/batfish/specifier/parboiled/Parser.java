@@ -18,6 +18,8 @@ import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_NAME_AND_DIMENSION;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_TYPE;
+import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_NAME_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.VRF_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.ZONE_NAME;
 
@@ -99,7 +101,7 @@ public class Parser extends CommonParser {
    *               | @out(interfaceSpec) // outFilterOf is also supported
    *               | filterName
    *               | filterNameRegex
-   *               | ( filterTerm )
+   *               | ( filterSpec )
    * </pre>
    */
 
@@ -860,5 +862,71 @@ public class Parser extends CommonParser {
   public Rule NodeParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
     return Sequence("( ", NodeSpec(), WhiteSpace(), ") ");
+  }
+
+  /**
+   * Routing policy grammar
+   *
+   * <pre>
+   *   routingPolicySpec := routingPolicyTerm [{@literal &} | , | \ routingPolicyTerm]*
+   *
+   *   routingPolicyTerm :=
+   *               | routingPolicyName
+   *               | routingPolicyNameRegex
+   *               | ( routingPolicySpec )
+   * </pre>
+   */
+
+  /* A Filter expression is one or more intersection terms separated by , or \ */
+  public Rule RoutingPolicySpec() {
+    Var<Character> op = new Var<>();
+    return Sequence(
+        RoutingPolicyIntersection(),
+        WhiteSpace(),
+        ZeroOrMore(
+            FirstOf(", ", "\\ "),
+            op.set(matchedChar()),
+            RoutingPolicyIntersection(),
+            push(SetOpRoutingPolicyAstNode.create(op.get(), pop(1), pop())),
+            WhiteSpace()));
+  }
+
+  public Rule RoutingPolicyIntersection() {
+    return Sequence(
+        RoutingPolicyTerm(),
+        WhiteSpace(),
+        ZeroOrMore(
+            "& ",
+            RoutingPolicyTerm(),
+            push(new IntersectionRoutingPolicyAstNode(pop(1), pop())),
+            WhiteSpace()));
+  }
+
+  public Rule RoutingPolicyTerm() {
+    return FirstOf(
+        RoutingPolicyNameRegexDeprecated(),
+        RoutingPolicyNameRegex(),
+        RoutingPolicyName(),
+        RoutingPolicyParens());
+  }
+
+  @Anchor(ROUTING_POLICY_NAME)
+  public Rule RoutingPolicyName() {
+    return Sequence(NameLiteral(), push(new NameRoutingPolicyAstNode(pop())));
+  }
+
+  @Anchor(ROUTING_POLICY_NAME_REGEX)
+  public Rule RoutingPolicyNameRegex() {
+    return Sequence(Regex(), push(new NameRegexRoutingPolicyAstNode(pop())));
+  }
+
+  @Anchor(IGNORE)
+  public Rule RoutingPolicyNameRegexDeprecated() {
+    return Sequence(RegexDeprecated(), push(new NameRegexRoutingPolicyAstNode(pop())));
+  }
+
+  public Rule RoutingPolicyParens() {
+    // Leave the stack as is -- no need to remember that this was a parenthetical term
+    return Sequence("( ", RoutingPolicySpec(), WhiteSpace(), ") ");
   }
 }

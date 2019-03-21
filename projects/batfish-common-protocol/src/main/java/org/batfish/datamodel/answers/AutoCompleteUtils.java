@@ -365,6 +365,26 @@ public final class AutoCompleteUtils {
                   Stream.of(Protocol.values()).map(Protocol::name).collect(Collectors.toSet()));
           break;
         }
+      case ROUTING_POLICY_NAME:
+        {
+          checkCompletionMetadata(completionMetadata, network, snapshot);
+          suggestions = stringAutoComplete(query, completionMetadata.getRoutingPolicyNames());
+          break;
+        }
+      case ROUTING_POLICY_SPEC:
+        {
+          suggestions =
+              ParboiledAutoComplete.autoComplete(
+                  Grammar.ROUTING_POLICY_SPECIFIER,
+                  network,
+                  snapshot,
+                  query,
+                  maxSuggestions,
+                  completionMetadata,
+                  nodeRolesData,
+                  referenceLibrary);
+          break;
+        }
       case ROUTING_PROTOCOL_SPEC:
         {
           suggestions = RoutingProtocolSpecifier.autoComplete(query);

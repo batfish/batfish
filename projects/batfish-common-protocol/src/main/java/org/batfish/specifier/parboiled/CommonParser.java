@@ -68,6 +68,7 @@ public class CommonParser extends BaseParser<AstNode> {
       case FILTER_NAME:
       case INTERFACE_NAME:
       case NODE_NAME:
+      case ROUTING_POLICY_NAME:
       case VRF_NAME:
       case ZONE_NAME:
         return true;
@@ -88,6 +89,7 @@ public class CommonParser extends BaseParser<AstNode> {
       case NODE_NAME_REGEX:
       case NODE_ROLE_NAME_AND_DIMENSION:
       case NODE_TYPE:
+      case ROUTING_POLICY_NAME_REGEX:
       case STRING_LITERAL:
       case WHITESPACE:
         return false;

@@ -471,6 +471,7 @@ public final class FileBasedStorageTest {
             ImmutableSet.of("1.1.1.1"),
             ImmutableSet.of("node"),
             ImmutableSet.of("1.1.1.1/30"),
+            ImmutableSet.of("routing1"),
             ImmutableSet.of("structure1"),
             ImmutableSet.of("vrf1"),
             ImmutableSet.of("zone1"));
