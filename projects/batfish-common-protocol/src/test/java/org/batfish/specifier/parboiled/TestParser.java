@@ -23,16 +23,16 @@ class TestParser extends CommonParser {
    * Test grammar
    *
    * <pre>
-   * testExpr := testTerm [, testTerm]*
+   * testSpec := testTerm [, testTerm]*
    *
-   * testTerm := @specifier(specifierInput)
-   *               | (testTerm)
+   * testTerm := @specifier(address-group, reference-book)
+   *               | (testSpec)
    *               | ! testTerm
-   *               | testBase
-   *
-   * specifierInput := REFERENCE_OBJECT_NAME_LITERAL
-   *
-   * testBase := IP_ADDRESS
+   *               | ip range
+   *               | ip address
+   *               | node name
+   *               | node name regex
+   *               | node name regex deprecated
    * </pre>
    */
 
