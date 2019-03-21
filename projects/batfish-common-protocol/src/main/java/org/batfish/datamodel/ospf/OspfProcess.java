@@ -194,7 +194,7 @@ public final class OspfProcess implements Serializable {
   /** Mapping from interface name to an OSPF config */
   @Nonnull private SortedMap<String, OspfNeighborConfig> _ospfNeighborConfigs;
 
-  @Nonnull private String _processId;
+  @Nonnull private final String _processId;
   @Nonnull private Double _referenceBandwidth;
   @Nullable private Boolean _rfc1583Compatible;
   @Nullable private Ip _routerId;
