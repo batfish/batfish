@@ -31,8 +31,7 @@ public class ParserUtilsTest {
   @org.junit.Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static AbstractParseRunner<AstNode> getRunner() {
-    return new ReportingParseRunner<>(
-        TestParser.INSTANCE.input(TestParser.INSTANCE.TestExpression()));
+    return new ReportingParseRunner<>(TestParser.INSTANCE.input(TestParser.INSTANCE.TestSpec()));
   }
 
   /** These represent all the ways valid input can start */
@@ -209,6 +208,7 @@ public class ParserUtilsTest {
         equalTo(
             ImmutableSet.of(
                 new PotentialMatch(CHAR_LITERAL, "", ")", 8),
+                new PotentialMatch(CHAR_LITERAL, "", ",", 8),
                 new PotentialMatch(IP_ADDRESS, "1.1.1.1", null, 1),
                 new PotentialMatch(CHAR_LITERAL, "", "-", 8))));
   }

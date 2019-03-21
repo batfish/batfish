@@ -24,7 +24,7 @@ public class ParboiledAutoCompleteTest {
   private static ParboiledAutoComplete getTestPAC(String query) {
     return new ParboiledAutoComplete(
         TestParser.INSTANCE,
-        TestParser.INSTANCE.input(TestParser.INSTANCE.TestExpression()),
+        TestParser.INSTANCE.input(TestParser.INSTANCE.TestSpec()),
         TestParser.ANCHORS,
         "network",
         "snapshot",
@@ -39,7 +39,7 @@ public class ParboiledAutoCompleteTest {
       String query, CompletionMetadata completionMetadata) {
     return new ParboiledAutoComplete(
         TestParser.INSTANCE,
-        TestParser.INSTANCE.input(TestParser.INSTANCE.TestExpression()),
+        TestParser.INSTANCE.input(TestParser.INSTANCE.TestSpec()),
         TestParser.ANCHORS,
         "network",
         "snapshot",
@@ -53,7 +53,7 @@ public class ParboiledAutoCompleteTest {
   private static ParboiledAutoComplete getTestPAC(String query, ReferenceLibrary referenceLibrary) {
     return new ParboiledAutoComplete(
         TestParser.INSTANCE,
-        TestParser.INSTANCE.input(TestParser.INSTANCE.TestExpression()),
+        TestParser.INSTANCE.input(TestParser.INSTANCE.TestSpec()),
         TestParser.ANCHORS,
         "network",
         "snapshot",
@@ -255,7 +255,7 @@ public class ParboiledAutoCompleteTest {
 
     // first ensure that the query is valid input
     ParsingResult<?> result =
-        new ReportingParseRunner<>(TestParser.INSTANCE.input(TestParser.INSTANCE.TestExpression()))
+        new ReportingParseRunner<>(TestParser.INSTANCE.input(TestParser.INSTANCE.TestSpec()))
             .run(query);
     assertTrue(result.parseErrors.isEmpty());
 

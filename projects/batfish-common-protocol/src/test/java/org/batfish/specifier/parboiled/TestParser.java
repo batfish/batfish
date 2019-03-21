@@ -37,7 +37,7 @@ class TestParser extends CommonParser {
    */
 
   /* An Test expression is a comma-separated list of TestTerms */
-  public Rule TestExpression() {
+  public Rule TestSpec() {
     return Sequence(TestTerm(), WhiteSpace(), ZeroOrMore(", ", TestTerm(), WhiteSpace()));
   }
 
@@ -45,7 +45,7 @@ class TestParser extends CommonParser {
   public Rule TestTerm() {
     return FirstOf(
         TestParens(),
-        TestSpecifier(),
+        TestFunc(),
         TestNotOp(),
         TestIpRange(),
         TestIpAddress(),
@@ -55,10 +55,10 @@ class TestParser extends CommonParser {
   }
 
   public Rule TestParens() {
-    return Sequence("( ", TestTerm(), ") ");
+    return Sequence("( ", TestSpec(), ") ");
   }
 
-  public Rule TestSpecifier() {
+  public Rule TestFunc() {
     return Sequence("@specifier ", "( ", TestSpecifierInput(), ") ");
   }
 
