@@ -15316,6 +15316,10 @@
             "              ROUTE_MAP:'route-map'",
             "              map = (variable",
             "                VARIABLE:'CONNECTED-TO-BGP'  <== mode:M_RouteMap)",
+            "              NEWLINE:'\\n'))",
+            "          (bgp_tail",
+            "            (default_originate_bgp_tail",
+            "              DEFAULT_ORIGINATE:'default-originate'",
             "              NEWLINE:'\\n'))))))",
             "  (stanza",
             "    (route_map_stanza",
@@ -72689,25 +72693,25 @@
           "route-map" : {
             "AGGREGATE-MAP" : {
               "definitionLines" : [
-                53
+                54
               ],
               "numReferrers" : 1
             },
             "CONNECTED-TO-BGP" : {
               "definitionLines" : [
-                51
+                52
               ],
               "numReferrers" : 1
             },
             "UNSUPP-MAP" : {
               "definitionLines" : [
-                55
+                56
               ],
               "numReferrers" : 1
             },
             "ospfv3_map" : {
               "definitionLines" : [
-                49
+                50
               ],
               "numReferrers" : 1
             }
