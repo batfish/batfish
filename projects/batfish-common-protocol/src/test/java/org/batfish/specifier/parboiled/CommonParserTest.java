@@ -4,6 +4,7 @@ import static org.batfish.datamodel.NamesTest.NODE_ROLE_INVALID_NAMES;
 import static org.batfish.datamodel.NamesTest.NODE_ROLE_VALID_NAMES;
 import static org.batfish.datamodel.NamesTest.REFERENCE_OBJECT_INVALID_NAMES;
 import static org.batfish.datamodel.NamesTest.REFERENCE_OBJECT_VALID_NAMES;
+import static org.batfish.specifier.parboiled.CommonParser.nameNeedsEscaping;
 import static org.batfish.specifier.parboiled.Parser.initAnchors;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
@@ -23,13 +24,15 @@ public class CommonParserTest {
   }
 
   @Test
-  public void testContainsChar() {
-    assertTrue(matches("a", Parser.INSTANCE.ContainsChar('a')));
-    assertTrue(matches("a1", Parser.INSTANCE.ContainsChar('a')));
-    assertTrue(matches("1a", Parser.INSTANCE.ContainsChar('a')));
-    assertTrue(matches("1a1", Parser.INSTANCE.ContainsChar('a')));
+  public void testNameNeedsEscaping() {
+    assertFalse("null", nameNeedsEscaping(null));
+    assertFalse("empty", nameNeedsEscaping(""));
+    assertFalse("normal", nameNeedsEscaping("abc"));
 
-    assertFalse(matches("b", Parser.INSTANCE.ContainsChar('a')));
+    assertTrue("digit start", nameNeedsEscaping("1abc"));
+    assertTrue("quote start", nameNeedsEscaping("\"abc"));
+    assertTrue("slash start", nameNeedsEscaping("/abc"));
+    assertTrue("special char", nameNeedsEscaping("a bc"));
   }
 
   @Test

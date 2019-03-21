@@ -156,12 +156,31 @@ public class ParboiledAutoCompleteTest {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setNodes(ImmutableSet.of("node1", "node10")).build();
 
-    // this should auto complete to 1.1.1.10, '-' (range), and ',' (list)
     assertThat(
         ImmutableSet.copyOf(getTestPAC(query, completionMetadata).run()),
         equalTo(
             ImmutableSet.of(
                 new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()))));
+  }
+
+  /** Test that we properly quote a name complex names when we offer them as suggestions. */
+  @Test
+  public void testRunDynamicValueNameEscaping() {
+    String query = "node";
+
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder().setNodes(ImmutableSet.of("node 1", "node10")).build();
+
+    // node10 should not be quoted and node 1 should be quoted
+    assertThat(
+        ImmutableSet.copyOf(getTestPAC(query, completionMetadata).run()),
+        equalTo(
+            ImmutableSet.of(
+                new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion(
+                    "node10", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
+                new AutocompleteSuggestion(
+                    "\"node 1\"", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0))));
   }
 
   /** Test that we produce auto complete snapshot-based dynamic values like IP addresses */
