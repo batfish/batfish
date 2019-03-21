@@ -9,8 +9,11 @@ import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
@@ -20,11 +23,14 @@ import org.batfish.datamodel.PacketHeaderConstraintsUtil;
 import org.batfish.datamodel.visitors.IpSpaceRepresentative;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
+import org.batfish.specifier.InterfaceLinkLocation;
+import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationSpecifier;
+import org.batfish.specifier.LocationVisitor;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierFactories;
 
@@ -38,6 +44,27 @@ public final class TracerouteAnswererHelper {
   private final String _sourceLocationStr;
   private final IpSpaceAssignment _sourceIpAssignment;
   private final SpecifierContext _specifierContext;
+  private final LocationVisitor<Boolean> _isActiveLocation =
+      new LocationVisitor<Boolean>() {
+        private boolean isActiveInterface(String hostname, String ifaceName) {
+          Configuration config = _specifierContext.getConfigs().get(hostname);
+          if (config == null) {
+            return false;
+          }
+          Interface iface = config.getAllInterfaces().get(ifaceName);
+          return iface != null && iface.getActive();
+        }
+
+        @Override
+        public Boolean visitInterfaceLinkLocation(InterfaceLinkLocation loc) {
+          return isActiveInterface(loc.getNodeName(), loc.getInterfaceName());
+        }
+
+        @Override
+        public Boolean visitInterfaceLocation(InterfaceLocation loc) {
+          return isActiveInterface(loc.getNodeName(), loc.getInterfaceName());
+        }
+      };
 
   public TracerouteAnswererHelper(
       PacketHeaderConstraints packetHeaderConstraints,
@@ -175,7 +202,12 @@ public final class TracerouteAnswererHelper {
     Set<Location> srcLocations =
         SpecifierFactories.getLocationSpecifierOrDefault(
                 _sourceLocationStr, AllInterfacesLocationSpecifier.INSTANCE)
-            .resolve(_specifierContext);
+            .resolve(_specifierContext).stream()
+            .filter(_isActiveLocation::visit)
+            .collect(Collectors.toSet());
+
+    checkArgument(
+        !srcLocations.isEmpty(), "Found no active locations matching %s", _sourceLocationStr);
 
     ImmutableSet.Builder<Flow> setBuilder = ImmutableSet.builder();
     ImmutableSet.Builder<String> allProblems = ImmutableSet.builder();
