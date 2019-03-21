@@ -190,7 +190,7 @@ public final class TracerouteUtils {
   static TcpFlags getTcpFlagsForReverse(TcpFlags tcpFlags) {
     return TcpFlags.builder()
         .setAck(tcpFlags.getSyn() || tcpFlags.getAck())
-        .setSyn(false)
+        .setSyn(tcpFlags.getSyn() && !tcpFlags.getAck())
         .setRst(tcpFlags.getRst())
         .setFin(tcpFlags.getFin())
         .setUrg(tcpFlags.getUrg())
