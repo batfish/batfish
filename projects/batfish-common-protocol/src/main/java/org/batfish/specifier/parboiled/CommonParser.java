@@ -105,9 +105,9 @@ public class CommonParser extends BaseParser<AstNode> {
             || containsSpecialChar(name));
   }
 
-  private static boolean containsSpecialChar(String suggestion) {
+  private static boolean containsSpecialChar(String name) {
     for (char c : CommonParser.SPECIAL_CHARS_ARRAY) {
-      if (suggestion.indexOf(c) >= 0) {
+      if (name.indexOf(c) >= 0) {
         return true;
       }
     }
