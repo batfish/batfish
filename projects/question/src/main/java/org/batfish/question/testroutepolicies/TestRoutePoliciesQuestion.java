@@ -1,4 +1,4 @@
-package org.batfish.question.testpolicies;
+package org.batfish.question.testroutepolicies;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -17,7 +17,7 @@ import org.batfish.datamodel.routing_policy.Environment.Direction;
 
 /** A question for testing routing policies. */
 @ParametersAreNonnullByDefault
-public final class TestPoliciesQuestion extends Question {
+public final class TestRoutePoliciesQuestion extends Question {
   private static final String PROP_DIRECTION = "direction";
   private static final String PROP_INPUT_ROUTE = "inputRoute";
   private static final String PROP_NODES = "nodes";
@@ -40,11 +40,11 @@ public final class TestPoliciesQuestion extends Question {
   private final String _policies;
   private final BgpRoute _inputRoute;
 
-  public TestPoliciesQuestion() {
+  public TestRoutePoliciesQuestion() {
     this(DEFAULT_DIRECTION, DEFAULT_INPUT_ROUTE, DEFAULT_NODE, DEFAULT_POLICY);
   }
 
-  public TestPoliciesQuestion(
+  public TestRoutePoliciesQuestion(
       @JsonProperty(PROP_DIRECTION) Direction direction,
       @JsonProperty(PROP_INPUT_ROUTE) BgpRoute inputRoute,
       @JsonProperty(PROP_NODES) String nodes,
@@ -56,7 +56,7 @@ public final class TestPoliciesQuestion extends Question {
   }
 
   @JsonCreator
-  private static TestPoliciesQuestion jsonCreator(
+  private static TestRoutePoliciesQuestion jsonCreator(
       @Nullable @JsonProperty(PROP_DIRECTION) Direction direction,
       @Nullable @JsonProperty(PROP_INPUT_ROUTE) BgpRoute inputRoute,
       @Nullable @JsonProperty(PROP_NODES) String nodes,
@@ -65,7 +65,7 @@ public final class TestPoliciesQuestion extends Question {
     checkNotNull(inputRoute, "%s must not be null", PROP_INPUT_ROUTE);
     checkNotNull(nodes, "%s must not be null", PROP_NODES);
     checkNotNull(policies, "%s must not be null", PROP_POLICIES);
-    return new TestPoliciesQuestion(direction, inputRoute, nodes, policies);
+    return new TestRoutePoliciesQuestion(direction, inputRoute, nodes, policies);
   }
 
   @JsonIgnore
@@ -87,7 +87,7 @@ public final class TestPoliciesQuestion extends Question {
   @JsonIgnore
   @Override
   public String getName() {
-    return "testPolicies";
+    return "testRoutePolicies";
   }
 
   @JsonProperty(PROP_NODES)

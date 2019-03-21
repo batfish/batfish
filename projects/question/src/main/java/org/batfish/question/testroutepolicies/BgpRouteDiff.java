@@ -1,4 +1,4 @@
-package org.batfish.question.testpolicies;
+package org.batfish.question.testroutepolicies;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;

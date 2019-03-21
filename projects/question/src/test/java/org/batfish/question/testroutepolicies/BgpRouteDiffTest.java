@@ -1,10 +1,10 @@
-package org.batfish.question.testpolicies;
+package org.batfish.question.testroutepolicies;
 
 import static org.batfish.datamodel.AbstractRoute.PROP_METRIC;
 import static org.batfish.datamodel.BgpRoute.PROP_AS_PATH;
 import static org.batfish.datamodel.BgpRoute.PROP_COMMUNITIES;
 import static org.batfish.datamodel.BgpRoute.PROP_LOCAL_PREFERENCE;
-import static org.batfish.question.testpolicies.BgpRouteDiff.routeDiffs;
+import static org.batfish.question.testroutepolicies.BgpRouteDiff.routeDiffs;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
