@@ -268,7 +268,16 @@ public class ParboiledAutoCompleteTest {
 
   @Test
   public void testAutoCompletePotentialMatchStringLiteral() {
-    PotentialMatch pm = new PotentialMatch(Type.STRING_LITERAL, "pfx", "comp", 0);
+    PotentialMatch pm = new PotentialMatch(Type.STRING_LITERAL, "pfx", "pfxcomp", 0);
+    assertThat(
+        getTestPAC(null).autoCompletePotentialMatch(pm),
+        equalTo(ImmutableList.of(new AutocompleteSuggestion("pfxcomp", true, null, -1, 0))));
+  }
+
+  /** The suggestion should have the case in the grammar token independent of user input */
+  @Test
+  public void testAutoCompletePotentialMatchStringLiteralCasePreserve() {
+    PotentialMatch pm = new PotentialMatch(Type.STRING_LITERAL, "PfX", "pfxcomp", 0);
     assertThat(
         getTestPAC(null).autoCompletePotentialMatch(pm),
         equalTo(ImmutableList.of(new AutocompleteSuggestion("pfxcomp", true, null, -1, 0))));

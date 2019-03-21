@@ -249,7 +249,7 @@ public class ParserUtilsTest {
     assertThat(
         getPotentialMatches(
             (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false),
-        equalTo(ImmutableSet.of(new PotentialMatch(STRING_LITERAL, "@specifi", "er", 0))));
+        equalTo(ImmutableSet.of(new PotentialMatch(STRING_LITERAL, "@specifi", "@specifier", 0))));
   }
 
   @Test
@@ -258,6 +258,15 @@ public class ParserUtilsTest {
     assertThat(
         getPotentialMatches(
             (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false),
-        equalTo(ImmutableSet.of(new PotentialMatch(STRING_LITERAL, "@", "specifier", 0))));
+        equalTo(ImmutableSet.of(new PotentialMatch(STRING_LITERAL, "@", "@specifier", 0))));
+  }
+
+  @Test
+  public void testGetPartialMatchesStringLiteralCasePreserve() {
+    ParsingResult<?> result = getRunner().run("@SPeciFi");
+    assertThat(
+        getPotentialMatches(
+            (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false),
+        equalTo(ImmutableSet.of(new PotentialMatch(STRING_LITERAL, "@SPeciFi", "@specifier", 0))));
   }
 }

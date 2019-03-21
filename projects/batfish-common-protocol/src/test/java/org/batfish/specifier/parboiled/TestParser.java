@@ -59,7 +59,7 @@ class TestParser extends CommonParser {
   }
 
   public Rule TestFunc() {
-    return Sequence("@specifier ", "( ", TestSpecifierInput(), ") ");
+    return Sequence(IgnoreCase("@specifier"), WhiteSpace(), "( ", TestSpecifierInput(), ") ");
   }
 
   public Rule TestNotOp() {

@@ -9,20 +9,19 @@ class PotentialMatch {
   /** The type of completion this match indicates */
   private final Anchor.Type _anchorType;
 
-  /** The current rule would have matched if the input was followed by this */
-  private final String _matchCompletion;
+  /** The current rule would have matched if the input was this */
+  private final String _match;
 
-  /** What matched thus far when trying to match the current rule */
+  /** What the user entered */
   private final String _matchPrefix;
 
   /** Where in the input this match started */
   private final int _matchStartIndex;
 
-  PotentialMatch(
-      Anchor.Type anchorType, String matchPrefix, String matchCompletion, int matchStartIndex) {
+  PotentialMatch(Anchor.Type anchorType, String matchPrefix, String match, int matchStartIndex) {
     _anchorType = anchorType;
     _matchPrefix = matchPrefix;
-    _matchCompletion = matchCompletion;
+    _match = match;
     _matchStartIndex = matchStartIndex;
   }
 
@@ -32,7 +31,7 @@ class PotentialMatch {
       return false;
     }
     return Objects.equals(_anchorType, ((PotentialMatch) o)._anchorType)
-        && Objects.equals(_matchCompletion, ((PotentialMatch) o)._matchCompletion)
+        && Objects.equals(_match, ((PotentialMatch) o)._match)
         && Objects.equals(_matchPrefix, ((PotentialMatch) o)._matchPrefix)
         && Objects.equals(_matchStartIndex, ((PotentialMatch) o)._matchStartIndex);
   }
@@ -41,8 +40,8 @@ class PotentialMatch {
     return _anchorType;
   }
 
-  String getMatchCompletion() {
-    return _matchCompletion;
+  String getMatch() {
+    return _match;
   }
 
   String getMatchPrefix() {
@@ -55,7 +54,7 @@ class PotentialMatch {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_anchorType, _matchCompletion, _matchPrefix, _matchStartIndex);
+    return Objects.hash(_anchorType, _match, _matchPrefix, _matchStartIndex);
   }
 
   @Override
@@ -63,7 +62,7 @@ class PotentialMatch {
     return MoreObjects.toStringHelper(this.getClass())
         .add("anchorType", _anchorType)
         .add("matchingPrefix", _matchPrefix)
-        .add("matchingCompletion", _matchCompletion)
+        .add("matchingCompletion", _match)
         .add("matchStartIndex", _matchStartIndex)
         .toString();
   }
