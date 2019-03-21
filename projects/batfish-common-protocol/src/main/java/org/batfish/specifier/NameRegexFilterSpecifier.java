@@ -42,7 +42,7 @@ public final class NameRegexFilterSpecifier implements FilterSpecifier {
         .filter(c -> c.getHostname().equalsIgnoreCase(node))
         .map(c -> c.getIpAccessLists().values())
         .flatMap(Collection::stream)
-        .filter(f -> _pattern.matcher(f.getName()).matches())
+        .filter(f -> _pattern.matcher(f.getName()).find())
         .collect(ImmutableSet.toImmutableSet());
   }
 }

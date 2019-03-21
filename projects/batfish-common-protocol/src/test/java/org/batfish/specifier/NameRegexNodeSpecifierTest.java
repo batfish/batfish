@@ -29,6 +29,9 @@ public class NameRegexNodeSpecifierTest {
         equalTo(ImmutableSet.of("node1")));
     assertThat(
         new NameRegexNodeSpecifier(Pattern.compile("node")).resolve(ctxt),
+        equalTo(ImmutableSet.of("node1", "node2")));
+    assertThat(
+        new NameRegexNodeSpecifier(Pattern.compile("node3")).resolve(ctxt),
         equalTo(ImmutableSet.of()));
   }
 }
