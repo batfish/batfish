@@ -109,12 +109,12 @@ public class ParserRoutingPolicyTest {
 
   @Test
   public void testParseRoutingPolicyName() {
-    String RoutingPolicyName = "route-er";
-    NameRoutingPolicyAstNode expectedAst = new NameRoutingPolicyAstNode(RoutingPolicyName);
+    String routingPolicyName = "route-er";
+    NameRoutingPolicyAstNode expectedAst = new NameRoutingPolicyAstNode(routingPolicyName);
 
-    assertThat(ParserUtils.getAst(getRunner().run(RoutingPolicyName)), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run(routingPolicyName)), equalTo(expectedAst));
     assertThat(
-        ParserUtils.getAst(getRunner().run(" " + RoutingPolicyName + " ")), equalTo(expectedAst));
+        ParserUtils.getAst(getRunner().run(" " + routingPolicyName + " ")), equalTo(expectedAst));
   }
 
   @Test
