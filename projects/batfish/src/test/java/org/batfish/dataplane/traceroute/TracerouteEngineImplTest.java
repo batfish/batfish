@@ -12,6 +12,7 @@ import static org.batfish.datamodel.FlowDisposition.LOOP;
 import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
 import static org.batfish.datamodel.IpAccessListLine.ACCEPT_ALL;
+import static org.batfish.datamodel.IpAccessListLine.REJECT_ALL;
 import static org.batfish.datamodel.IpAccessListLine.accepting;
 import static org.batfish.datamodel.IpAccessListLine.rejecting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
@@ -48,6 +49,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -68,6 +70,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -79,6 +82,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.MatchSrcInterface;
@@ -1289,6 +1293,130 @@ public class TracerouteEngineImplTest {
         hasEntry(
             equalTo(noRouteFlow),
             contains(allOf(hasTrace(hasDisposition(NO_ROUTE)), hasReverseFlow(nullValue())))));
+  }
+
+  @Test
+  public void testEstablishedFlowDisposition() throws IOException {
+    // Construct network
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+
+    Configuration c1 = cb.build();
+    Configuration c2 = cb.build();
+
+    Vrf vrf1 = nf.vrfBuilder().setOwner(c1).build();
+    Vrf vrf2 = nf.vrfBuilder().setOwner(c2).build();
+
+    IpAccessList permitOutGoing =
+        nf.aclBuilder().setOwner(c1).setLines(ImmutableList.of(ACCEPT_ALL)).build();
+
+    IpAccessList onlyPermitEstablishedIncoming =
+        nf.aclBuilder()
+            .setOwner(c1)
+            .setLines(
+                ImmutableList.of(
+                    IpAccessListLine.acceptingHeaderSpace(
+                        HeaderSpace.builder()
+                            .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
+                            .setDstIps(Ip.parse("1.0.1.2").toIpSpace())
+                            .setTcpFlags(ImmutableSet.of(TcpFlagsMatchConditions.ACK_TCP_FLAG))
+                            .build()),
+                    REJECT_ALL))
+            .build();
+
+    nf.interfaceBuilder()
+        .setOwner(c1)
+        .setVrf(vrf1)
+        .setAddress(new InterfaceAddress(Ip.parse("1.0.1.2"), 31))
+        .setOutgoingFilter(permitOutGoing)
+        .setIncomingFilter(onlyPermitEstablishedIncoming)
+        .build();
+
+    nf.interfaceBuilder()
+        .setOwner(c2)
+        .setVrf(vrf2)
+        .setAddress(new InterfaceAddress(Ip.parse("1.0.1.3"), 31))
+        .build();
+
+    // Compute data plane
+    SortedMap<String, Configuration> configs =
+        ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
+    batfish.computeDataPlane();
+
+    // Flow going out
+    Flow flowOut =
+        Flow.builder()
+            .setDstIp(Ip.parse("1.0.1.3"))
+            .setSrcIp(Ip.parse("1.0.1.2"))
+            .setIngressNode(c1.getHostname())
+            .setIngressVrf(vrf1.getName())
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcPort(80)
+            .setDstPort(80)
+            .setTcpFlagsSyn(1)
+            .setTag("TAG")
+            .build();
+
+    // Flow going in
+    Flow flowIn =
+        Flow.builder()
+            .setDstIp(Ip.parse("1.0.1.2"))
+            .setSrcIp(Ip.parse("1.0.1.3"))
+            .setIngressNode(c2.getHostname())
+            .setIngressVrf(vrf2.getName())
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcPort(80)
+            .setDstPort(80)
+            .setTcpFlagsSyn(1)
+            .setTag("TAG")
+            .build();
+
+    TraceAndReverseFlow traceAndReverseFlowOut =
+        batfish
+            .getTracerouteEngine()
+            .computeTracesAndReverseFlows(ImmutableSet.of(flowOut), false)
+            .values()
+            .iterator()
+            .next()
+            .iterator()
+            .next();
+
+    Trace traceToIn =
+        batfish
+            .getTracerouteEngine()
+            .computeTracesAndReverseFlows(ImmutableSet.of(flowIn), false)
+            .values()
+            .iterator()
+            .next()
+            .iterator()
+            .next()
+            .getTrace();
+
+    // uni directional traceroute should be permitted out and denied in
+    assertThat(traceAndReverseFlowOut.getTrace().getDisposition(), equalTo(ACCEPTED));
+    assertThat(traceToIn.getDisposition(), equalTo(DENIED_IN));
+
+    assertThat(traceAndReverseFlowOut.getReverseFlow(), notNullValue());
+
+    // getting reverse trace
+    Trace reverseTrace =
+        batfish
+            .getTracerouteEngine()
+            .computeTracesAndReverseFlows(
+                ImmutableSet.of(traceAndReverseFlowOut.getReverseFlow()),
+                traceAndReverseFlowOut.getNewFirewallSessions(),
+                false)
+            .values()
+            .iterator()
+            .next()
+            .iterator()
+            .next()
+            .getTrace();
+
+    // reverse trace should be permitted back in as reverse flow has ACK set
+    assertThat(reverseTrace.getDisposition(), equalTo(ACCEPTED));
   }
 
   @Test
