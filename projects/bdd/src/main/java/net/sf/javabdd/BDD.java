@@ -191,6 +191,31 @@ public abstract class BDD {
   }
 
   /**
+   * Returns the logical 'nor' of two BDDs. This is a shortcut for calling "apply" with the "nor"
+   * operator.
+   *
+   * <p>Compare to bdd_nor.
+   *
+   * @param that the BDD to 'nor' with
+   * @return the logical 'nor' of two BDDs
+   */
+  public BDD nor(BDD that) {
+    return this.apply(that, BDDFactory.nor);
+  }
+
+  /**
+   * Makes this BDD be the logical 'nor' of two BDDs. The "that" BDD is consumed, and can no longer
+   * be used. This is a shortcut for calling "applyWith" with the "nor" operator.
+   *
+   * <p>Compare to bdd_nor and bdd_delref.
+   *
+   * @param that the BDD to 'nor' with
+   */
+  public BDD norWith(BDD that) {
+    return this.applyWith(that, BDDFactory.nor);
+  }
+
+  /**
    * Returns the logical 'xor' of two BDDs. This is a shortcut for calling "apply" with the "xor"
    * operator.
    *
