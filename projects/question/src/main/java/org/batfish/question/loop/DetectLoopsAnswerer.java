@@ -1,6 +1,6 @@
 package org.batfish.question.loop;
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import java.util.List;
 import java.util.Optional;
@@ -36,7 +36,7 @@ public final class DetectLoopsAnswerer extends Answerer {
             .values()
             .stream()
             .map(Optional::get) // safe: the min here cannot be empty by construction.
-            .collect(ImmutableSet.toImmutableSet());
+            .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
 
     SortedMap<Flow, List<Trace>> flowTraces = _batfish.buildFlows(flows, false);
     TableAnswerElement tableAnswer = new TableAnswerElement(TracerouteAnswerer.metadata(false));
