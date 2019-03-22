@@ -439,7 +439,28 @@ public class BasicTests extends BDDTestCase {
     assertTrue(hasNext());
     while (hasNext()) {
       BDDFactory bdd = next();
-      // TODO: more tests
+      if (bdd.varNum() < 5) {
+        bdd.setVarNum(5);
+      }
+      BDD a = bdd.ithVar(1);
+      BDD b = bdd.ithVar(2);
+      BDD nota = bdd.nithVar(1);
+      BDD notb = bdd.nithVar(2);
+      BDD nand = a.nand(nota);
+      assertTrue(nand.isOne());
+      nand.free();
+      nand = a.nand(a);
+      assertThat(nand, equalTo(nota));
+      nand.free();
+      nand = a.nand(b);
+      BDD nandLongForm = nota.or(notb);
+      assertThat(nand, equalTo(nandLongForm));
+      a.free();
+      b.free();
+      nota.free();
+      notb.free();
+      nand.free();
+      nandLongForm.free();
       testApply(bdd, BDDFactory.nand, true, true, true, false);
     }
   }

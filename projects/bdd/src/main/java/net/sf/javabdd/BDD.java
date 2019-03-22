@@ -166,6 +166,31 @@ public abstract class BDD {
   }
 
   /**
+   * Returns the logical 'nand' of two BDDs. This is a shortcut for calling "apply" with the "nand"
+   * operator.
+   *
+   * <p>Compare to bdd_nand.
+   *
+   * @param that BDD to 'nand' with
+   * @return the logical 'nand' of two BDDs
+   */
+  public BDD nand(BDD that) {
+    return this.apply(that, BDDFactory.nand);
+  }
+
+  /**
+   * Makes this BDD be the logical 'nand' of two BDDs. The "that" BDD is consumed, and can no longer
+   * be used. This is a shortcut for calling "applyWith" with the "nand" operator.
+   *
+   * <p>Compare to bdd_nand and bdd_delref.
+   *
+   * @param that the BDD to 'nand' with
+   */
+  public BDD nandWith(BDD that) {
+    return this.applyWith(that, BDDFactory.nand);
+  }
+
+  /**
    * Returns the logical 'or' of two BDDs. This is a shortcut for calling "apply" with the "or"
    * operator.
    *
