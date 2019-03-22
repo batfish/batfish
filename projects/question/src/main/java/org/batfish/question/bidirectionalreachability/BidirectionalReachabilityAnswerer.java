@@ -119,7 +119,7 @@ public final class BidirectionalReachabilityAnswerer extends Answerer {
                   Location loc = entry.getKey();
                   BDD success = entry.getValue();
                   BDD fail = failureBdds.get(loc);
-                  BDD successOnly = fail == null ? success : success.and(fail.not());
+                  BDD successOnly = fail == null ? success : success.diff(fail);
                   return Maps.immutableEntry(loc, successOnly.isZero() ? success : successOnly);
                 })
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
@@ -131,7 +131,7 @@ public final class BidirectionalReachabilityAnswerer extends Answerer {
                   Location loc = entry.getKey();
                   BDD fail = entry.getValue();
                   BDD success = successBdds.get(loc);
-                  BDD failOnly = success == null ? fail : fail.and(success.not());
+                  BDD failOnly = success == null ? fail : fail.diff(success);
                   return Maps.immutableEntry(loc, failOnly.isZero() ? fail : failOnly);
                 })
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));

@@ -62,8 +62,7 @@ public final class BDDIpSpaceSpecializer extends IpSpaceSpecializer {
 
   @Override
   protected Optional<IpSpaceSpecializer> restrictSpecializerToBlacklist(Set<IpWildcard> blacklist) {
-    BDD refinedBDD =
-        blacklist.stream().map(_ipSpaceToBDD::toBDD).map(BDD::not).reduce(_bdd, BDD::and);
+    BDD refinedBDD = blacklist.stream().map(_ipSpaceToBDD::toBDD).reduce(_bdd, BDD::diff);
     return refinedBDD.isZero()
         ? Optional.empty()
         : Optional.of(new BDDIpSpaceSpecializer(refinedBDD, _namedIpSpaces, _ipSpaceToBDD));
@@ -92,7 +91,7 @@ public final class BDDIpSpaceSpecializer extends IpSpaceSpecializer {
       return EmptyIpSpace.INSTANCE;
     }
 
-    if (_simplifyToUniverse && ipSpaceBDD.not().and(_bdd).isZero()) {
+    if (_simplifyToUniverse && _bdd.diff(ipSpaceBDD).isZero()) {
       // _bdd's ip space is a subset of ipSpace.
       return UniverseIpSpace.INSTANCE;
     }

@@ -128,7 +128,7 @@ class TransferBDD {
       if (res) {
         acc = acc.and(bits[i]);
       } else {
-        acc = acc.and(bits[i].not());
+        acc = acc.diff(bits[i]);
       }
     }
     return acc;
@@ -539,7 +539,7 @@ class TransferBDD {
         LongExpr ie = sm.getMetric();
         BDD isBGP = curP.getData().getProtocolHistory().value(Protocol.BGP);
         BDD updateMed = isBGP.and(result.getReturnAssignedValue());
-        BDD updateMet = isBGP.not().and(result.getReturnAssignedValue());
+        BDD updateMet = isBGP.less(result.getReturnAssignedValue());
         BDDInteger newValue =
             applyLongExprModification(curP.indent(), curP.getData().getMetric(), ie);
         BDDInteger med = ite(updateMed, curP.getData().getMed(), newValue);

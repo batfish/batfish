@@ -464,10 +464,10 @@ public final class SearchFiltersAnswerer extends Answerer {
     String hostname = baseConfig.getHostname();
     String flowTag = batfish.getFlowTag();
 
-    BDD increasedBDD = baseAclBDD.not().and(deltaAclBDD);
+    BDD increasedBDD = deltaAclBDD.diff(baseAclBDD);
     Optional<Flow> increasedFlow = getFlow(bddPacket, mgr, hostname, increasedBDD, flowTag);
 
-    BDD decreasedBDD = baseAclBDD.and(deltaAclBDD.not());
+    BDD decreasedBDD = baseAclBDD.diff(deltaAclBDD);
     Optional<Flow> decreasedFlow = getFlow(bddPacket, mgr, hostname, decreasedBDD, flowTag);
 
     boolean explain = searchFiltersParameters.getGenerateExplanations();
