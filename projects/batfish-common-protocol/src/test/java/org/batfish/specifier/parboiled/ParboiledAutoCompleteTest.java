@@ -24,7 +24,7 @@ public class ParboiledAutoCompleteTest {
   private static ParboiledAutoComplete getTestPAC(String query) {
     return new ParboiledAutoComplete(
         TestParser.INSTANCE,
-        TestParser.INSTANCE.input(TestParser.INSTANCE.TestExpression()),
+        TestParser.INSTANCE.input(TestParser.INSTANCE.TestSpec()),
         TestParser.ANCHORS,
         "network",
         "snapshot",
@@ -39,7 +39,7 @@ public class ParboiledAutoCompleteTest {
       String query, CompletionMetadata completionMetadata) {
     return new ParboiledAutoComplete(
         TestParser.INSTANCE,
-        TestParser.INSTANCE.input(TestParser.INSTANCE.TestExpression()),
+        TestParser.INSTANCE.input(TestParser.INSTANCE.TestSpec()),
         TestParser.ANCHORS,
         "network",
         "snapshot",
@@ -53,7 +53,7 @@ public class ParboiledAutoCompleteTest {
   private static ParboiledAutoComplete getTestPAC(String query, ReferenceLibrary referenceLibrary) {
     return new ParboiledAutoComplete(
         TestParser.INSTANCE,
-        TestParser.INSTANCE.input(TestParser.INSTANCE.TestExpression()),
+        TestParser.INSTANCE.input(TestParser.INSTANCE.TestSpec()),
         TestParser.ANCHORS,
         "network",
         "snapshot",
@@ -255,7 +255,7 @@ public class ParboiledAutoCompleteTest {
 
     // first ensure that the query is valid input
     ParsingResult<?> result =
-        new ReportingParseRunner<>(TestParser.INSTANCE.input(TestParser.INSTANCE.TestExpression()))
+        new ReportingParseRunner<>(TestParser.INSTANCE.input(TestParser.INSTANCE.TestSpec()))
             .run(query);
     assertTrue(result.parseErrors.isEmpty());
 
@@ -268,7 +268,16 @@ public class ParboiledAutoCompleteTest {
 
   @Test
   public void testAutoCompletePotentialMatchStringLiteral() {
-    PotentialMatch pm = new PotentialMatch(Type.STRING_LITERAL, "pfx", "comp", 0);
+    PotentialMatch pm = new PotentialMatch(Type.STRING_LITERAL, "pfx", "pfxcomp", 0);
+    assertThat(
+        getTestPAC(null).autoCompletePotentialMatch(pm),
+        equalTo(ImmutableList.of(new AutocompleteSuggestion("pfxcomp", true, null, -1, 0))));
+  }
+
+  /** The suggestion should have the case in the grammar token independent of user input */
+  @Test
+  public void testAutoCompletePotentialMatchStringLiteralCasePreserve() {
+    PotentialMatch pm = new PotentialMatch(Type.STRING_LITERAL, "PfX", "pfxcomp", 0);
     assertThat(
         getTestPAC(null).autoCompletePotentialMatch(pm),
         equalTo(ImmutableList.of(new AutocompleteSuggestion("pfxcomp", true, null, -1, 0))));

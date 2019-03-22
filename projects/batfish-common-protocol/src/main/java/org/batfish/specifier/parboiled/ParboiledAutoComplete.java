@@ -137,11 +137,7 @@ public final class ParboiledAutoComplete {
         */
         return ImmutableList.of(
             new AutocompleteSuggestion(
-                pm.getMatchPrefix() + pm.getMatchCompletion(),
-                true,
-                null,
-                RANK_STRING_LITERAL,
-                pm.getMatchStartIndex()));
+                pm.getMatch(), true, null, RANK_STRING_LITERAL, pm.getMatchStartIndex()));
       case EOI:
         return ImmutableList.of();
       case FILTER_NAME:
@@ -192,11 +188,7 @@ public final class ParboiledAutoComplete {
         */
         return ImmutableList.of(
             new AutocompleteSuggestion(
-                pm.getMatchPrefix() + pm.getMatchCompletion(),
-                true,
-                null,
-                RANK_STRING_LITERAL,
-                pm.getMatchStartIndex()));
+                pm.getMatch(), true, null, RANK_STRING_LITERAL, pm.getMatchStartIndex()));
       case VRF_NAME:
         return autoCompletePotentialMatch(pm, DEFAULT_RANK);
       case WHITESPACE:

@@ -23,21 +23,21 @@ class TestParser extends CommonParser {
    * Test grammar
    *
    * <pre>
-   * testExpr := testTerm [, testTerm]*
+   * testSpec := testTerm [, testTerm]*
    *
-   * testTerm := @specifier(specifierInput)
-   *               | (testTerm)
+   * testTerm := @specifier(address-group, reference-book)
+   *               | (testSpec)
    *               | ! testTerm
-   *               | testBase
-   *
-   * specifierInput := REFERENCE_OBJECT_NAME_LITERAL
-   *
-   * testBase := IP_ADDRESS
+   *               | ip range
+   *               | ip address
+   *               | node name
+   *               | node name regex
+   *               | node name regex deprecated
    * </pre>
    */
 
   /* An Test expression is a comma-separated list of TestTerms */
-  public Rule TestExpression() {
+  public Rule TestSpec() {
     return Sequence(TestTerm(), WhiteSpace(), ZeroOrMore(", ", TestTerm(), WhiteSpace()));
   }
 
@@ -45,7 +45,7 @@ class TestParser extends CommonParser {
   public Rule TestTerm() {
     return FirstOf(
         TestParens(),
-        TestSpecifier(),
+        TestFunc(),
         TestNotOp(),
         TestIpRange(),
         TestIpAddress(),
@@ -55,11 +55,11 @@ class TestParser extends CommonParser {
   }
 
   public Rule TestParens() {
-    return Sequence("( ", TestTerm(), ") ");
+    return Sequence("( ", TestSpec(), ") ");
   }
 
-  public Rule TestSpecifier() {
-    return Sequence("@specifier ", "( ", TestSpecifierInput(), ") ");
+  public Rule TestFunc() {
+    return Sequence(IgnoreCase("@specifier"), WhiteSpace(), "( ", TestSpecifierInput(), ") ");
   }
 
   public Rule TestNotOp() {
