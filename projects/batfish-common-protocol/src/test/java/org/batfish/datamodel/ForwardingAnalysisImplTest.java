@@ -47,6 +47,7 @@ import org.batfish.common.topology.TopologyUtil;
 import org.junit.Before;
 import org.junit.Test;
 
+/** Tests of {@link ForwardingAnalysisImpl}. */
 public class ForwardingAnalysisImplTest {
 
   private static final String CONFIG1 = "config1";
@@ -1195,7 +1196,7 @@ public class ForwardingAnalysisImplTest {
             .setAddress(new InterfaceAddress(P1.getStartIp(), P1.getPrefixLength()))
             .build();
     Map<String, Map<String, Map<String, IpSpace>>> interfaceHostSubnetIps =
-        computeInterfaceHostSubnetIps(configs);
+        computeInterfaceHostSubnetIps(configs, false);
 
     assertThat(
         interfaceHostSubnetIps,
@@ -1232,7 +1233,7 @@ public class ForwardingAnalysisImplTest {
             .setAddress(new InterfaceAddress(prefix.getStartIp(), prefix.getPrefixLength()))
             .build();
     Map<String, Map<String, Map<String, IpSpace>>> interfaceHostSubnetIps =
-        computeInterfaceHostSubnetIps(configs);
+        computeInterfaceHostSubnetIps(configs, false);
 
     assertThat(
         interfaceHostSubnetIps,
