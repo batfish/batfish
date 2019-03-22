@@ -63,7 +63,7 @@ final class BidirectionalReachabilityReturnPassInstrumentation {
       return edge;
     }
 
-    /* Forward pass did originate at this node/interface. Prevent the bidirectional success
+    /* Forward pass did origiante at this node/interface. Prevent the bidirectional success
      * flows from also being considered failures.
      */
     return new Edge(
