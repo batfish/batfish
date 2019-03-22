@@ -402,6 +402,35 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
+  public void testRoutingPolicyNameAutocomplete() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+
+    String suggestion = "somePol";
+    String notSuggestion = "blah";
+
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder()
+            .setRoutingPolicyNames(ImmutableSet.of(suggestion, notSuggestion))
+            .build();
+
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                network,
+                snapshot,
+                Type.ROUTING_POLICY_NAME,
+                "som",
+                5,
+                completionMetadata,
+                null,
+                null)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(suggestion)));
+  }
+
+  @Test
   public void testRoutingProtocolSpecAutocomplete() throws IOException {
     assertThat(
         AutoCompleteUtils.autoComplete(Type.ROUTING_PROTOCOL_SPEC, "bgp", 5).stream()
