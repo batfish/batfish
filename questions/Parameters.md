@@ -1,15 +1,5 @@
 Batfish questions have the following parameter types that support rich specifications whose grammar is described below. Before reading those grammars, we recommend reading the general notes. 
 
-<!--
-[comment]: # (* `bgpPropertySpec`)
-[comment]: # (* `boolean`)
-[comment]: # (* `comparator`)
-[comment]: # (* `double`)
-[comment]: # (* `float`)
-[comment]: # (* `headerConstraint`)
-[comment]: # (* `integer`)
-[comment]: # (* `interfacePropertySpec`)
--->
 * [`applicationSpec`](#application-specifier)
 
 * [`flowDispositionSpec`](#flow-disposition-specifier)
@@ -24,25 +14,9 @@ Batfish questions have the following parameter types that support rich specifica
 
 * [`locationSpec`](#location-specifier)
 
-<!--
-[comment]: # (* `long`)
-[comment]: # (* `namedStructureSpec`)
-[comment]: # (* `nodePropertySpec`)
--->
-
 * [`nodeSpec`](#node-specifier)
 
 * [`routingPolicySpec`](#routing-policy-specifier)
-
-<!--
-[comment]: # (* `ospfPropertySpec`)
-[comment]: # (* `prefix`)
-[comment]: # (* `prefixRange`)
-[comment]: # (* `protocol`)
-[comment]: # (* `question`)
-[comment]: # (* `string`)
-[comment]: # (* `subrange`)
--->
 
 ## General notes on the grammar 
 
@@ -61,6 +35,26 @@ Batfish questions have the following parameter types that support rich specifica
   * `/ab[c-d]/` and `/ab(c|d)/` match strings 'abc' and 'abd'.
 
 * **Case-insensitive names:** All names and regexes use case-insensitive matching. Thus, `AS1BORDER1` is same as `as1border1` and `Ethernet0/0` is same as `ethernet0/0`.
+
+## Application Specifier
+
+A combined specification for an IP protocol (e.g., TCP) and *destination* port to denote packets for common applications.
+
+* Application names from the list below may be used.
+
+#### Application Specifier Grammar
+
+<pre>
+applicationSpec :=
+    applicationTerm [<b>,</b> applicationTerm]
+
+applicationTerm :=
+    &lt;<i>application-name</i>&gt;
+</pre>
+
+#### Application Names
+
+Batfish understands the following applications names, with the corresponding IP protocol and destination port in parenthesis: DNS(UDP, 53), HTTP(TCP, 80), HTTPS(TCP, 443), SNMP(UDP, 161), SSH(TCP, 22), TELNET(TCP, 23).
 
 ## Flow Disposition Specifier
 
@@ -83,26 +77,6 @@ The following fine-grained disposition values are also supported:
     * `Neighbor_unreachable`: a flow was dropped because it could not reach the next hop (e.g., an ARP failure)
     * `Loop`: the flow encountered a forwarding loop
     * `Insufficient_info`: Batfish does not have enough information to make a determination with certainty (e.g., some device configs are missing)
-
-## Application Specifier
-
-A combined specification for an IP protocol (e.g., TCP) and *destination* port to denote packets for common applications.
-
-* Application names from the list below may be used.
-
-#### Application Specifier Grammar
-
-<pre>
-applicationSpec :=
-    applicationTerm [<b>,</b> applicationTerm]
-
-applicationTerm :=
-    &lt;<i>application-name</i>&gt;
-</pre>
-
-#### Application Names
-
-Batfish understands the following applications names, with the corresponding IP protocol and destination port in parenthesis: DNS(UDP, 53), HTTP(TCP, 80), HTTPS(TCP, 443), SNMP(UDP, 161), SSH(TCP, 22), TELNET(TCP, 23).
 
 ## Filter Specifier
 
