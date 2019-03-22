@@ -1,5 +1,5 @@
 {
-    "class": "org.batfish.question.testpolicies.TestPoliciesQuestion",
+    "class": "org.batfish.question.testroutepolicies.TestRoutePoliciesQuestion",
     "differential": false,
     "nodes": "${nodes}",
     "policies": "${policies}",
@@ -7,7 +7,7 @@
     "direction": "${direction}",
     "instance": {
         "description": "Evaluate the processing of a route by a given policy",
-        "instanceName": "testPolicies",
+        "instanceName": "testRoutePolicies",
         "longDescription": "Find how the specified route is processed through the specified policies.",
         "orderedVariableNames": [
             "nodes",
