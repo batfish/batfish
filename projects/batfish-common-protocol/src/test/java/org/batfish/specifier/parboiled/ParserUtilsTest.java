@@ -31,8 +31,7 @@ public class ParserUtilsTest {
   @org.junit.Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static AbstractParseRunner<AstNode> getRunner() {
-    return new ReportingParseRunner<>(
-        TestParser.INSTANCE.input(TestParser.INSTANCE.TestExpression()));
+    return new ReportingParseRunner<>(TestParser.INSTANCE.input(TestParser.INSTANCE.TestSpec()));
   }
 
   /** These represent all the ways valid input can start */
@@ -209,6 +208,7 @@ public class ParserUtilsTest {
         equalTo(
             ImmutableSet.of(
                 new PotentialMatch(CHAR_LITERAL, "", ")", 8),
+                new PotentialMatch(CHAR_LITERAL, "", ",", 8),
                 new PotentialMatch(IP_ADDRESS, "1.1.1.1", null, 1),
                 new PotentialMatch(CHAR_LITERAL, "", "-", 8))));
   }
@@ -249,7 +249,7 @@ public class ParserUtilsTest {
     assertThat(
         getPotentialMatches(
             (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false),
-        equalTo(ImmutableSet.of(new PotentialMatch(STRING_LITERAL, "@specifi", "er", 0))));
+        equalTo(ImmutableSet.of(new PotentialMatch(STRING_LITERAL, "@specifi", "@specifier", 0))));
   }
 
   @Test
@@ -258,6 +258,15 @@ public class ParserUtilsTest {
     assertThat(
         getPotentialMatches(
             (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false),
-        equalTo(ImmutableSet.of(new PotentialMatch(STRING_LITERAL, "@", "specifier", 0))));
+        equalTo(ImmutableSet.of(new PotentialMatch(STRING_LITERAL, "@", "@specifier", 0))));
+  }
+
+  @Test
+  public void testGetPartialMatchesStringLiteralCasePreserve() {
+    ParsingResult<?> result = getRunner().run("@SPeciFi");
+    assertThat(
+        getPotentialMatches(
+            (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false),
+        equalTo(ImmutableSet.of(new PotentialMatch(STRING_LITERAL, "@SPeciFi", "@specifier", 0))));
   }
 }

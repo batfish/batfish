@@ -123,7 +123,7 @@ final class ParserUtils {
   @VisibleForTesting
   static String getErrorString(PotentialMatch pm) {
     if (pm.getAnchorType().equals(Anchor.Type.STRING_LITERAL)) {
-      return String.format("'%s'", pm.getMatchCompletion());
+      return String.format("'%s'", pm.getMatch());
     }
     return String.format("%s", pm.getAnchorType());
   }
@@ -194,7 +194,7 @@ final class ParserUtils {
             new PotentialMatch(
                 pathAnchor.getAnchorType(),
                 matchPrefix,
-                fullToken.substring(matchPrefix.length()),
+                fullToken,
                 path.getElementAtLevel(pathAnchor.getLevel()).startIndex));
       } else {
         potentialMatches.add(
