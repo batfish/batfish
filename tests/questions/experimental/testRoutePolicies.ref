@@ -1,5 +1,5 @@
 {
-  "class" : "org.batfish.question.testpolicies.TestPoliciesQuestion",
+  "class" : "org.batfish.question.testroutepolicies.TestRoutePoliciesQuestion",
   "direction" : "IN",
   "inputRoute" : {
     "class" : "org.batfish.datamodel.BgpRoute",
