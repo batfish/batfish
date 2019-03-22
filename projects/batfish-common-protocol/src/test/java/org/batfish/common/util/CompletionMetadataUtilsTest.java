@@ -5,6 +5,7 @@ import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
 import static org.batfish.common.util.CompletionMetadataUtils.getIps;
 import static org.batfish.common.util.CompletionMetadataUtils.getNodes;
 import static org.batfish.common.util.CompletionMetadataUtils.getPrefixes;
+import static org.batfish.common.util.CompletionMetadataUtils.getRoutingPolicyNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getStructureNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getVrfs;
 import static org.batfish.common.util.CompletionMetadataUtils.getZones;
@@ -170,6 +171,23 @@ public final class CompletionMetadataUtilsTest {
                 interfaceAddress1.getPrefix().toString(),
                 interfaceAddress2.getPrefix().toString(),
                 interfaceAddress3.getPrefix().toString())));
+  }
+
+  @Test
+  public void testGetRoutingPolicyNames() {
+    String policy1 = "policy1";
+    String policy2 = "policy2";
+
+    RoutingPolicy routingPolicy1 = RoutingPolicy.builder().setName(policy1).build();
+    RoutingPolicy routingPolicy2 = RoutingPolicy.builder().setName(policy2).build();
+
+    Map<String, Configuration> configs = new HashMap<>();
+    Configuration config = createTestConfiguration("config1", ConfigurationFormat.HOST);
+    config.setRoutingPolicies(
+        ImmutableSortedMap.of(policy1, routingPolicy1, policy2, routingPolicy2));
+    configs.put("config1", config);
+
+    assertThat(getRoutingPolicyNames(configs), equalTo(ImmutableSet.of(policy1, policy2)));
   }
 
   @Test

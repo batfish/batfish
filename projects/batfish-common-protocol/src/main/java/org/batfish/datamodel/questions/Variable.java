@@ -72,6 +72,7 @@ public class Variable {
     PREFIX_RANGE("prefixRange", true),
     PROTOCOL("protocol", true),
     QUESTION("question", true),
+    ROUTING_POLICY_NAME("routingPolicyName", true),
     ROUTING_POLICY_SPEC("routingPolicySpec", true),
     ROUTING_PROTOCOL_SPEC("routingProtocolSpec", true),
     STRING("string", true),
