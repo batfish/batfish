@@ -29,9 +29,6 @@ public class ParboiledRoutingPolicySpecifierTest {
 
     Configuration n1 = cb.build();
 
-    // second interface with no routingPolicys.
-    nf.interfaceBuilder().setOwner(n1).setName("eth1").build();
-
     n1.getRoutingPolicies()
         .putAll(
             ImmutableMap.of(
