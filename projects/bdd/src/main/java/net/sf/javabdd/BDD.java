@@ -279,7 +279,7 @@ public abstract class BDD {
   /**
    * Makes this BDD be the logical 'difference' of two BDDs, equivalent to {@code
    * this.and(that.not())}. The "that" BDD is consumed, and can no longer be used. This is a
-   * shortcut for calling "applyWith" with the "less" operator.
+   * shortcut for calling "applyWith" with the "diff" operator.
    *
    * @param that the BDD to 'subtract' from this BDD
    * @return the logical 'difference' of two BDDs
