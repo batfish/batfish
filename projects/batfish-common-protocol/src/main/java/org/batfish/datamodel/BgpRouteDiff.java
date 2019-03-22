@@ -1,4 +1,4 @@
-package org.batfish.question.testroutepolicies;
+package org.batfish.datamodel;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -11,6 +11,7 @@ import static org.batfish.datamodel.BgpRoute.PROP_LOCAL_PREFERENCE;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Objects;
@@ -21,9 +22,9 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.BgpRoute;
 
 /** A representation of one difference between two routes. */
+@JsonTypeName("BgpRouteDiff")
 @ParametersAreNonnullByDefault
 public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
   private static final String PROP_FIELD_NAME = "fieldName";
