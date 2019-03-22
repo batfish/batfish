@@ -68,13 +68,15 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
       // TODO accept IpSpaceToBDD as parameter
       IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(new BDDPacket().getDstIp());
+
+      // IPs belonging to any interface in the network, even inactive interfaces
       Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
-          TopologyUtil.computeInterfaceOwnedIps(configurations, false);
-      // ips belonging to any interface in the network
+          TopologyUtil.computeInterfaceOwnedIps(configurations, /*excludeInactive=*/ false);
       IpSpace ownedIps = computeOwnedIps(interfaceOwnedIps);
       BDD unownedIpsBDD = ipSpaceToBDD.visit(ownedIps).not();
 
-      // IpSpaces matched by each prefix.
+      // IpSpaces matched by each prefix
+      // -- only will have entries for active interfaces if FIB is correct
       Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps = computeMatchingIps(fibs);
       // Set of routes that forward out each interface
       Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHop =
@@ -87,7 +89,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
        */
       {
         // mapping: node name -> vrf name -> interface name -> dst ips which are routed to the
-        // interface
+        // interface. Should only include active interfaces.
         Map<String, Map<String, Map<String, IpSpace>>> ipsRoutedOutInterfaces =
             computeIpsRoutedOutInterfaces(matchingIps, routesWithNextHop);
         _arpReplies =
@@ -197,17 +199,13 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
             computeDstIpsWithOwnedNextHopIpArpFalse(matchingIps, routesWithOwnedNextHopIpArpFalse);
       }
 
-      // mapping: hostname -> vrf name -> interface -> ips belonging to a subnet of interface
+      // mapping: hostname -> vrf name -> interface -> ips belonging to a subnet of interface.
+      // active interfaces only.
       Map<String, Map<String, Map<String, IpSpace>>> interfaceHostSubnetIps =
-          computeInterfaceHostSubnetIps(configurations);
+          computeInterfaceHostSubnetIps(configurations, /*excludeInactive=*/ true);
 
       _deliveredToSubnet =
           computeDeliveredToSubnet(arpFalseDestIp, interfaceHostSubnetIps, ownedIps);
-
-      // ips belonging to any subnet in the network
-      IpSpace internalIps = computeInternalIps(interfaceHostSubnetIps);
-      // ips not belonging to any subnet in the network
-      IpSpace externalIps = internalIps.complement();
 
       Map<String, Map<String, BDD>> interfaceHostSubnetIpBDDs =
           computeInterfaceHostSubnetIpBDDs(interfaceHostSubnetIps, ipSpaceToBDD);
@@ -215,12 +213,19 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       Map<String, Set<String>> interfacesWithMissingDevices =
           computeInterfacesWithMissingDevices(interfaceHostSubnetIpBDDs, unownedIpsBDD);
 
-      _exitsNetwork =
-          computeExitsNetwork(
+      _neighborUnreachable =
+          computeNeighborUnreachable(
+              _arpFalse,
               interfacesWithMissingDevices,
-              dstIpsWithUnownedNextHopIpArpFalse,
               arpFalseDestIp,
-              externalIps);
+              interfaceHostSubnetIps,
+              ownedIps);
+
+      // ips belonging to any subnet in the network, including inactive interfaces.
+      IpSpace internalIps =
+          computeInternalIps(
+              computeInterfaceHostSubnetIps(configurations, /*excludeInactive=*/ false));
+
       _insufficientInfo =
           computeInsufficientInfo(
               interfaceHostSubnetIps,
@@ -229,13 +234,16 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
               dstIpsWithUnownedNextHopIpArpFalse,
               dstIpsWithOwnedNextHopIpArpFalse,
               internalIps);
-      _neighborUnreachable =
-          computeNeighborUnreachable(
-              _arpFalse,
+
+      // ips not belonging to any subnet in the network, including inactive interfaces.
+      IpSpace externalIps = internalIps.complement();
+
+      _exitsNetwork =
+          computeExitsNetwork(
               interfacesWithMissingDevices,
+              dstIpsWithUnownedNextHopIpArpFalse,
               arpFalseDestIp,
-              interfaceHostSubnetIps,
-              ownedIps);
+              externalIps);
     }
   }
 
@@ -262,9 +270,13 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
           configurations,
           Entry::getKey,
           nodeEntry -> {
+            Map<String, Interface> activeInterfaces =
+                nodeEntry.getValue().getAllInterfaces().entrySet().stream()
+                    .filter(e -> e.getValue().getActive())
+                    .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
             String hostname = nodeEntry.getKey();
             return computeArpRepliesByInterface(
-                nodeEntry.getValue().getAllInterfaces(),
+                activeInterfaces,
                 routableIps.get(hostname),
                 ipsRoutedOutInterfaces.get(hostname),
                 interfaceOwnedIps);
@@ -401,7 +413,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       Map<String, Map<String, Set<Ip>>> interfaceOwnedIps) {
     IpSpace ipsAssignedToThisInterface =
         computeIpsAssignedToThisInterface(iface, interfaceOwnedIps);
-    if (ipsAssignedToThisInterface == EmptyIpSpace.INSTANCE) {
+    if (ipsAssignedToThisInterface == EmptyIpSpace.INSTANCE || !iface.getActive()) {
       // if no IPs are assigned to this interface, it replies to no ARP requests.
       return EmptyIpSpace.INSTANCE;
     }
@@ -1042,7 +1054,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   @VisibleForTesting
   static Map<String, Map<String, Map<String, IpSpace>>> computeInterfaceHostSubnetIps(
-      Map<String, Configuration> configs) {
+      Map<String, Configuration> configs, boolean excludeInactive) {
     try (ActiveSpan span =
         GlobalTracer.get()
             .buildSpan("ForwardingAnalysisImpl.computeInterfaceHostSubnetIps")
@@ -1055,18 +1067,28 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
               toImmutableMap(
                   nodeEntry.getValue().getVrfs(),
                   Entry::getKey, /* vrf */
-                  vrfEntry ->
-                      toImmutableMap(
-                          vrfEntry.getValue().getInterfaces(),
-                          Entry::getKey, /* interface */
-                          ifaceEntry ->
-                              firstNonNull(
-                                  AclIpSpace.union(
-                                      ifaceEntry.getValue().getAllAddresses().stream()
-                                          .map(InterfaceAddress::getPrefix)
-                                          .map(Prefix::toHostIpSpace)
-                                          .collect(ImmutableList.toImmutableList())),
-                                  EmptyIpSpace.INSTANCE))));
+                  vrfEntry -> {
+                    Map<String, Interface> interfaces;
+                    if (excludeInactive) {
+                      interfaces =
+                          vrfEntry.getValue().getInterfaces().entrySet().stream()
+                              .filter(e -> e.getValue().getActive())
+                              .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+                    } else {
+                      interfaces = vrfEntry.getValue().getInterfaces();
+                    }
+                    return toImmutableMap(
+                        interfaces,
+                        Entry::getKey, /* interface */
+                        ifaceEntry ->
+                            firstNonNull(
+                                AclIpSpace.union(
+                                    ifaceEntry.getValue().getAllAddresses().stream()
+                                        .map(InterfaceAddress::getPrefix)
+                                        .map(Prefix::toHostIpSpace)
+                                        .collect(ImmutableList.toImmutableList())),
+                                EmptyIpSpace.INSTANCE));
+                  }));
     }
   }
 
