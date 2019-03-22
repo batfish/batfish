@@ -249,7 +249,7 @@ public class BfCoordWorkHelper {
               .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
               .delete();
 
-      if (response.getStatus() != Status.NO_CONTENT.getStatusCode()) {
+      if (response.getStatus() != Status.OK.getStatusCode()) {
         _logger.errorf("delNetwork: Did not get OK response. Got: %s\n", response.getStatus());
         _logger.error(response.readEntity(String.class) + "\n");
         return false;
