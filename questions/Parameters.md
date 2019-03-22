@@ -152,9 +152,9 @@ interfaceFunc :=
 
 A specification for a set of IP protocols.
 
-* IP protocol names from the list below may be used.
+* IP protocol names from the list below, such as `TCP`,  may be used.
 
-* IP protocol numbers may be used. 
+* IP protocol numbers between 0 and 255 (inclusive), such as `6` to denote TCP, may be used. 
 
 * A negation operator `!` may be used to denote all IP protocols other than the one specified. The semantics of negation is:
 
