@@ -383,7 +383,20 @@ public class BasicTests extends BDDTestCase {
     assertTrue(hasNext());
     while (hasNext()) {
       BDDFactory bdd = next();
-      // TODO: more tests
+      if (bdd.varNum() < 5) {
+        bdd.setVarNum(5);
+      }
+      BDD a = bdd.ithVar(1);
+      BDD b = bdd.ithVar(2);
+      BDD notb = bdd.nithVar(2);
+      BDD diff = a.diff(b);
+      BDD diffLongForm = a.and(notb);
+      assertThat(diff, equalTo(diffLongForm));
+      a.free();
+      b.free();
+      notb.free();
+      diff.free();
+      diffLongForm.free();
       testApply(bdd, BDDFactory.diff, false, false, true, false);
     }
   }
@@ -393,7 +406,20 @@ public class BasicTests extends BDDTestCase {
     assertTrue(hasNext());
     while (hasNext()) {
       BDDFactory bdd = next();
-      // TODO: more tests
+      if (bdd.varNum() < 5) {
+        bdd.setVarNum(5);
+      }
+      BDD a = bdd.ithVar(1);
+      BDD b = bdd.ithVar(2);
+      BDD nota = bdd.nithVar(1);
+      BDD less = a.less(b);
+      BDD lessLongForm = nota.and(b);
+      assertThat(less, equalTo(lessLongForm));
+      a.free();
+      b.free();
+      nota.free();
+      less.free();
+      lessLongForm.free();
       testApply(bdd, BDDFactory.less, false, true, false, false);
     }
   }
@@ -413,7 +439,28 @@ public class BasicTests extends BDDTestCase {
     assertTrue(hasNext());
     while (hasNext()) {
       BDDFactory bdd = next();
-      // TODO: more tests
+      if (bdd.varNum() < 5) {
+        bdd.setVarNum(5);
+      }
+      BDD a = bdd.ithVar(1);
+      BDD b = bdd.ithVar(2);
+      BDD nota = bdd.nithVar(1);
+      BDD notb = bdd.nithVar(2);
+      BDD nand = a.nand(nota);
+      assertTrue(nand.isOne());
+      nand.free();
+      nand = a.nand(a);
+      assertThat(nand, equalTo(nota));
+      nand.free();
+      nand = a.nand(b);
+      BDD nandLongForm = nota.or(notb);
+      assertThat(nand, equalTo(nandLongForm));
+      a.free();
+      b.free();
+      nota.free();
+      notb.free();
+      nand.free();
+      nandLongForm.free();
       testApply(bdd, BDDFactory.nand, true, true, true, false);
     }
   }
@@ -423,7 +470,25 @@ public class BasicTests extends BDDTestCase {
     assertTrue(hasNext());
     while (hasNext()) {
       BDDFactory bdd = next();
-      // TODO: more tests
+      if (bdd.varNum() < 5) {
+        bdd.setVarNum(5);
+      }
+      BDD a = bdd.ithVar(1);
+      BDD b = bdd.ithVar(2);
+      BDD nota = bdd.nithVar(1);
+      BDD notb = bdd.nithVar(2);
+      BDD nor = a.nor(nota);
+      assertTrue(nor.isZero());
+      nor.free();
+      nor = b.nor(a);
+      BDD norLongForm = notb.and(nota);
+      assertThat(nor, equalTo(norLongForm));
+      a.free();
+      b.free();
+      nota.free();
+      notb.free();
+      nor.free();
+      norLongForm.free();
       testApply(bdd, BDDFactory.nor, true, false, false, false);
     }
   }
