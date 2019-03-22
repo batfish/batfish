@@ -1,4 +1,4 @@
-package org.batfish.question.testpolicies;
+package org.batfish.question.testroutepolicies;
 
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -30,8 +30,8 @@ import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
-/** Tests for {@link TestPoliciesAnswerer}. */
-public class TestPoliciesAnswererTest {
+/** Tests for {@link TestRoutePoliciesAnswerer}. */
+public class TestPoliciesAnswererTestRouting {
   private Configuration _c;
   private RoutingPolicy.Builder _policyBuilder;
   private IBatfish _batfish;
@@ -58,9 +58,9 @@ public class TestPoliciesAnswererTest {
             .setProtocol(RoutingProtocol.BGP)
             .build();
 
-    TestPoliciesQuestion question =
-        new TestPoliciesQuestion(Direction.IN, inputRoute, _c.getHostname(), policy.getName());
-    TestPoliciesAnswerer answerer = new TestPoliciesAnswerer(question, _batfish);
+    TestRoutePoliciesQuestion question =
+        new TestRoutePoliciesQuestion(Direction.IN, inputRoute, _c.getHostname(), policy.getName());
+    TestRoutePoliciesAnswerer answerer = new TestRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer();
 
@@ -72,19 +72,24 @@ public class TestPoliciesAnswererTest {
         Matchers.contains(
             allOf(
                 hasColumn(
-                    TestPoliciesAnswerer.COL_NODE,
+                    TestRoutePoliciesAnswerer.COL_NODE,
                     equalTo(new Node(_c.getHostname())),
                     Schema.NODE),
                 hasColumn(
-                    TestPoliciesAnswerer.COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
-                hasColumn(TestPoliciesAnswerer.COL_INPUT_ROUTE, equalTo(routeJson), Schema.OBJECT),
+                    TestRoutePoliciesAnswerer.COL_POLICY_NAME,
+                    equalTo(policy.getName()),
+                    Schema.STRING),
                 hasColumn(
-                    TestPoliciesAnswerer.COL_ACTION,
+                    TestRoutePoliciesAnswerer.COL_INPUT_ROUTE, equalTo(routeJson), Schema.OBJECT),
+                hasColumn(
+                    TestRoutePoliciesAnswerer.COL_ACTION,
                     equalTo(LineAction.PERMIT.toString()),
                     Schema.STRING),
                 // outputRoute == inputRoute
                 hasColumn(
-                    TestPoliciesAnswerer.COL_OUTPUT_ROUTE, equalTo(routeJson), Schema.OBJECT))));
+                    TestRoutePoliciesAnswerer.COL_OUTPUT_ROUTE,
+                    equalTo(routeJson),
+                    Schema.OBJECT))));
   }
 
   @Test
@@ -100,9 +105,9 @@ public class TestPoliciesAnswererTest {
             .setProtocol(RoutingProtocol.BGP)
             .build();
 
-    TestPoliciesQuestion question =
-        new TestPoliciesQuestion(Direction.IN, inputRoute, _c.getHostname(), policy.getName());
-    TestPoliciesAnswerer answerer = new TestPoliciesAnswerer(question, _batfish);
+    TestRoutePoliciesQuestion question =
+        new TestRoutePoliciesQuestion(Direction.IN, inputRoute, _c.getHostname(), policy.getName());
+    TestRoutePoliciesAnswerer answerer = new TestRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer();
 
@@ -114,17 +119,21 @@ public class TestPoliciesAnswererTest {
         Matchers.contains(
             allOf(
                 hasColumn(
-                    TestPoliciesAnswerer.COL_NODE,
+                    TestRoutePoliciesAnswerer.COL_NODE,
                     equalTo(new Node(_c.getHostname())),
                     Schema.NODE),
                 hasColumn(
-                    TestPoliciesAnswerer.COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
-                hasColumn(TestPoliciesAnswerer.COL_INPUT_ROUTE, equalTo(routeJson), Schema.OBJECT),
+                    TestRoutePoliciesAnswerer.COL_POLICY_NAME,
+                    equalTo(policy.getName()),
+                    Schema.STRING),
                 hasColumn(
-                    TestPoliciesAnswerer.COL_ACTION,
+                    TestRoutePoliciesAnswerer.COL_INPUT_ROUTE, equalTo(routeJson), Schema.OBJECT),
+                hasColumn(
+                    TestRoutePoliciesAnswerer.COL_ACTION,
                     equalTo(LineAction.DENY.toString()),
                     Schema.STRING),
                 // outputRoute == inputRoute
-                hasColumn(TestPoliciesAnswerer.COL_OUTPUT_ROUTE, nullValue(), Schema.OBJECT))));
+                hasColumn(
+                    TestRoutePoliciesAnswerer.COL_OUTPUT_ROUTE, nullValue(), Schema.OBJECT))));
   }
 }

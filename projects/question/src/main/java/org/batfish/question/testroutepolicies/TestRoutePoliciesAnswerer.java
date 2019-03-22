@@ -1,4 +1,4 @@
-package org.batfish.question.testpolicies;
+package org.batfish.question.testroutepolicies;
 
 import static org.batfish.datamodel.LineAction.DENY;
 import static org.batfish.datamodel.LineAction.PERMIT;
@@ -23,8 +23,8 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 
-/** An answerer for {@link TestPoliciesQuestion}. */
-public final class TestPoliciesAnswerer extends Answerer {
+/** An answerer for {@link TestRoutePoliciesQuestion}. */
+public final class TestRoutePoliciesAnswerer extends Answerer {
   public static final String COL_NODE = "Node";
   public static final String COL_POLICY_NAME = "Policy_Name";
   public static final String COL_INPUT_ROUTE = "Input_Route";
@@ -37,7 +37,7 @@ public final class TestPoliciesAnswerer extends Answerer {
   private final String _node;
   private final String _policy;
 
-  public TestPoliciesAnswerer(TestPoliciesQuestion question, IBatfish batfish) {
+  public TestRoutePoliciesAnswerer(TestRoutePoliciesQuestion question, IBatfish batfish) {
     super(question, batfish);
     _direction = question.getDirection();
     _inputRoute = question.getInputRoute();
