@@ -161,6 +161,7 @@ import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.answers.PreprocessJuniperAnswerElement;
 import org.batfish.datamodel.answers.RunAnalysisAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -207,6 +208,7 @@ import org.batfish.job.ParseEnvironmentRoutingTableJob;
 import org.batfish.job.ParseResult;
 import org.batfish.job.ParseVendorConfigurationJob;
 import org.batfish.job.ParseVendorConfigurationResult;
+import org.batfish.job.PreprocessJuniperJob;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.ResolvedReachabilityParameters;
 import org.batfish.question.SrcNattedConstraint;
@@ -1129,6 +1131,46 @@ public class Batfish extends PluginConsumer implements IBatfish {
       String outputFileAsString = outputFile.toString();
       _logger.debugf("Writing config to \"%s\"...", outputFileAsString);
       CommonUtil.writeFile(outputFile, flatConfigText);
+      _logger.debug("OK\n");
+    }
+  }
+
+  public void preprocessJuniper(@Nonnull Path inputPath, @Nonnull Path outputPath) {
+    _logger.info("\n*** READING INPUT FILES ***\n");
+    Map<Path, String> configurationData =
+        readAllFiles(inputPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR), _logger);
+
+    Map<Path, String> outputConfigurationData = new TreeMap<>();
+    Path outputConfigDir = outputPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
+    createDirectories(outputConfigDir);
+    _logger.info("\n*** COMPUTING OUTPUT FILES ***\n");
+    _logger.resetTimer();
+    List<PreprocessJuniperJob> jobs = new ArrayList<>();
+    for (Entry<Path, String> configFile : configurationData.entrySet()) {
+      Path inputFile = configFile.getKey();
+      String fileText = configFile.getValue();
+      Warnings warnings = buildWarnings(_settings);
+      String name = inputFile.getFileName().toString();
+      Path outputFile = outputConfigDir.resolve(name);
+      PreprocessJuniperJob job =
+          new PreprocessJuniperJob(_settings, fileText, inputFile, outputFile, warnings);
+      jobs.add(job);
+    }
+    BatfishJobExecutor.runJobsInExecutor(
+        _settings,
+        _logger,
+        jobs,
+        outputConfigurationData,
+        new PreprocessJuniperAnswerElement(),
+        _settings.getFlatten() || _settings.getHaltOnParseError(),
+        "Preprocesss Juniper configurations");
+    _logger.printElapsedTime();
+    for (Entry<Path, String> e : outputConfigurationData.entrySet()) {
+      Path outputFile = e.getKey();
+      String preprocessedConfigText = e.getValue();
+      String outputFileAsString = outputFile.toString();
+      _logger.debugf("Writing config to \"%s\"...", outputFileAsString);
+      CommonUtil.writeFile(outputFile, preprocessedConfigText);
       _logger.debug("OK\n");
     }
   }

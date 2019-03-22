@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.Token;
@@ -141,6 +142,19 @@ public final class Hierarchy {
 
       protected Set<String> _blacklistedGroups;
       private Map<String, HierarchyChildNode> _children;
+
+      protected final void dump(@Nonnull StringBuilder prefix, @Nonnull StringBuilder output) {
+        String prefixString = prefix.toString();
+        _children.forEach(
+            (childText, child) -> {
+              if (child.getChildren().isEmpty()) {
+                output.append(String.format("%s %s\n", prefixString, childText));
+              } else {
+                child.dump(
+                    new StringBuilder(String.format("%s %s", prefixString, childText)), output);
+              }
+            });
+      }
 
       public HierarchyNode() {
         _children = new LinkedHashMap<>();
@@ -676,6 +690,12 @@ public final class Hierarchy {
       HierarchyChildNode node = findExactPathMatchNode(path);
       node.addBlacklistedGroup(groupName);
     }
+
+    private @Nonnull String dump(@Nonnull String header) {
+      StringBuilder output = new StringBuilder(header);
+      _root.dump(new StringBuilder("set"), output);
+      return output.toString();
+    }
   }
 
   private HierarchyTree _deactivateTree;
@@ -755,5 +775,9 @@ public final class Hierarchy {
 
   public Map<Token, String> getTokenInputs() {
     return _tokenInputs;
+  }
+
+  public @Nonnull String dump(@Nonnull String header) {
+    return _masterTree.dump(header);
   }
 }
