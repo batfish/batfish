@@ -78,6 +78,19 @@
             </configuration>
           </execution>
           <execution>
+            <id>antlr4-cumulus-nclu</id>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
+            <configuration>
+              <includes>**/CumulusNcluLexer.g4,**/CumulusNcluParser.g4</includes>
+              <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/cumulus_nclu
+              </libDirectory>
+              <statusDirectory>${project.build.directory}/maven-status/antlr4-cumulus-nclu
+              </statusDirectory>
+            </configuration>
+          </execution>
+          <execution>
             <id>antlr4-flatjuniper</id>
             <goals>
               <goal>antlr4</goal>
@@ -163,7 +176,7 @@
             <configuration>
               <includes>**/*.g4</includes>
               <excludes>
-                **/cisco/*.g4,**/flatjuniper/*.g4,**/f5_bigip_imish/*.g4,**/f5_bigip_structured/*.g4,**/flatvyos/*.g4,**/mrv/*.g4,**/palo_alto/*.g4
+                **/cisco/*.g4,**/cumulus_nclu/*.g4,**/flatjuniper/*.g4,**/f5_bigip_imish/*.g4,**/f5_bigip_structured/*.g4,**/flatvyos/*.g4,**/mrv/*.g4,**/palo_alto/*.g4
               </excludes>
             </configuration>
           </execution>

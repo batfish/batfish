@@ -27,6 +27,8 @@ import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.VendorConfigurationFormatDetector;
 import org.batfish.grammar.cisco.CiscoCombinedParser;
 import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluCombinedParser;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluControlPlaneExtractor;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredCombinedParser;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredControlPlaneExtractor;
 import org.batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
@@ -195,6 +197,14 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           combinedParser = ciscoParser;
           extractor = new CiscoControlPlaneExtractor(newFileText, ciscoParser, format, _warnings);
           break;
+
+        case CUMULUS_NCLU:
+          {
+            CumulusNcluCombinedParser parser = new CumulusNcluCombinedParser(_fileText, _settings);
+            combinedParser = parser;
+            extractor = new CumulusNcluControlPlaneExtractor(_fileText, parser, _warnings);
+            break;
+          }
 
         case F5_BIGIP_STRUCTURED:
           F5BigipStructuredCombinedParser parser =
