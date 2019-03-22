@@ -79,6 +79,17 @@ public final class CompletionMetadataUtils {
   }
 
   @VisibleForTesting
+  public static Set<String> getRoutingPolicyNames(Map<String, Configuration> configurations) {
+    ImmutableSet.Builder<String> routingPolicyNames = ImmutableSet.builder();
+    configurations
+        .values()
+        .forEach(
+            configuration ->
+                routingPolicyNames.addAll(configuration.getRoutingPolicies().keySet()));
+    return routingPolicyNames.build();
+  }
+
+  @VisibleForTesting
   public static Set<String> getStructureNames(Map<String, Configuration> configurations) {
     ImmutableSet.Builder<String> structureNames = ImmutableSet.builder();
     configurations

@@ -181,6 +181,11 @@ public final class ParboiledAutoComplete {
       case NODE_TYPE:
         // Relies on STRING_LITERAL completion as it appears later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
+      case ROUTING_POLICY_NAME:
+        return autoCompletePotentialMatch(pm, DEFAULT_RANK);
+      case ROUTING_POLICY_NAME_REGEX:
+        // can't help with regexes
+        return ImmutableList.of();
       case STRING_LITERAL:
         /*
          Char and String literals get a lower rank so that the possibly many suggestions for dynamic values
@@ -259,6 +264,8 @@ public final class ParboiledAutoComplete {
         return Variable.Type.NODE_NAME;
       case NODE_ROLE_NAME_AND_DIMENSION:
         return Variable.Type.NODE_ROLE_AND_DIMENSION;
+      case ROUTING_POLICY_NAME:
+        return Variable.Type.ROUTING_POLICY_NAME;
       case VRF_NAME:
         return Variable.Type.VRF;
       case ZONE_NAME:

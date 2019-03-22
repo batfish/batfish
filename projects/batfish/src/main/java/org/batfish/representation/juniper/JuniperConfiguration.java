@@ -828,7 +828,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 ImmutableSortedMap.toImmutableSortedMap(
                     Comparator.naturalOrder(), Entry::getKey, entry -> entry.getValue().build())));
 
-    // set pointers from interfaces to their parent areas
+    // set pointers from interfaces to their parent areas (and process)
     newProc
         .getAreas()
         .values()
@@ -836,12 +836,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
             area ->
                 area.getInterfaces()
                     .forEach(
-                        ifaceName ->
-                            _c.getVrfs()
-                                .get(vrfName)
-                                .getInterfaces()
-                                .get(ifaceName)
-                                .setOspfArea(area)));
+                        ifaceName -> {
+                          org.batfish.datamodel.Interface iface =
+                              _c.getVrfs().get(vrfName).getInterfaces().get(ifaceName);
+                          iface.setOspfArea(area);
+                          iface.setOspfProcess(newProc.getProcessId());
+                        }));
 
     newProc.setRouterId(getOspfRouterId(routingInstance));
     return newProc;

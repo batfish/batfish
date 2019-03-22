@@ -166,6 +166,31 @@ public abstract class BDD {
   }
 
   /**
+   * Returns the logical 'nand' of two BDDs. This is a shortcut for calling "apply" with the "nand"
+   * operator.
+   *
+   * <p>Compare to bdd_nand.
+   *
+   * @param that BDD to 'nand' with
+   * @return the logical 'nand' of two BDDs
+   */
+  public BDD nand(BDD that) {
+    return this.apply(that, BDDFactory.nand);
+  }
+
+  /**
+   * Makes this BDD be the logical 'nand' of two BDDs. The "that" BDD is consumed, and can no longer
+   * be used. This is a shortcut for calling "applyWith" with the "nand" operator.
+   *
+   * <p>Compare to bdd_nand and bdd_delref.
+   *
+   * @param that the BDD to 'nand' with
+   */
+  public BDD nandWith(BDD that) {
+    return this.applyWith(that, BDDFactory.nand);
+  }
+
+  /**
    * Returns the logical 'or' of two BDDs. This is a shortcut for calling "apply" with the "or"
    * operator.
    *
@@ -188,6 +213,31 @@ public abstract class BDD {
    */
   public BDD orWith(BDD that) {
     return this.applyWith(that, BDDFactory.or);
+  }
+
+  /**
+   * Returns the logical 'nor' of two BDDs. This is a shortcut for calling "apply" with the "nor"
+   * operator.
+   *
+   * <p>Compare to bdd_nor.
+   *
+   * @param that the BDD to 'nor' with
+   * @return the logical 'nor' of two BDDs
+   */
+  public BDD nor(BDD that) {
+    return this.apply(that, BDDFactory.nor);
+  }
+
+  /**
+   * Makes this BDD be the logical 'nor' of two BDDs. The "that" BDD is consumed, and can no longer
+   * be used. This is a shortcut for calling "applyWith" with the "nor" operator.
+   *
+   * <p>Compare to bdd_nor and bdd_delref.
+   *
+   * @param that the BDD to 'nor' with
+   */
+  public BDD norWith(BDD that) {
+    return this.applyWith(that, BDDFactory.nor);
   }
 
   /**
@@ -266,6 +316,29 @@ public abstract class BDD {
   }
 
   /**
+   * Returns the logical 'difference' of two BDDs, equivalent to {@code this.and(that.not())}. This
+   * is a shortcut for calling "apply" with the "diff" operator.
+   *
+   * @param that the BDD to 'subtract' from this BDD
+   * @return the logical 'difference' of two BDDs
+   */
+  public BDD diff(BDD that) {
+    return this.apply(that, BDDFactory.diff);
+  }
+
+  /**
+   * Makes this BDD be the logical 'difference' of two BDDs, equivalent to {@code
+   * this.and(that.not())}. The "that" BDD is consumed, and can no longer be used. This is a
+   * shortcut for calling "applyWith" with the "diff" operator.
+   *
+   * @param that the BDD to 'subtract' from this BDD
+   * @return the logical 'difference' of two BDDs
+   */
+  public BDD diffWith(BDD that) {
+    return this.applyWith(that, BDDFactory.diff);
+  }
+
+  /**
    * if-then-else operator.
    *
    * <p>Compare to bdd_ite.
@@ -275,6 +348,29 @@ public abstract class BDD {
    * @return the result of the if-then-else operator on the three BDDs
    */
   public abstract BDD ite(BDD thenBDD, BDD elseBDD);
+
+  /**
+   * Returns the logical 'less-than' of two BDDs, equivalent to {@code this.not().and(that)}. This
+   * is a shortcut for calling "apply" with the "less" operator.
+   *
+   * @param that the BDD from which this BDD will be subtracted
+   * @return the logical 'less-than' of two BDDs
+   */
+  public BDD less(BDD that) {
+    return this.apply(that, BDDFactory.less);
+  }
+
+  /**
+   * Makes this BDD be the logical 'less-than' of two BDDs, equivalent to {@code
+   * this.not().and(that)}. The "that" BDD is consumed, and can no longer be used. This is a
+   * shortcut for calling "applyWith" with the "less" operator.
+   *
+   * @param that the BDD from which this BDD will be subtracted
+   * @return the logical 'less-than' of two BDDs
+   */
+  public BDD lessWith(BDD that) {
+    return this.applyWith(that, BDDFactory.less);
+  }
 
   /**
    * Relational product. Calculates the relational product of the two BDDs as this AND that with the
