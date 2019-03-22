@@ -1,58 +1,22 @@
 Batfish questions have the following parameter types that support rich specifications whose grammar is described below. Before reading those grammars, we recommend reading the general notes. 
 
-<!--
-[comment]: # (* `bgpPropertySpec`)
-[comment]: # (* `boolean`)
-[comment]: # (* `comparator`)
-[comment]: # (* `double`)
-[comment]: # (* `float`)
-[comment]: # (* `headerConstraint`)
-[comment]: # (* `integer`)
-[comment]: # (* `interfacePropertySpec`)
--->
+* [`applicationSpec`](#application-specifier)
+
 * [`flowDispositionSpec`](#flow-disposition-specifier)
 
 * [`filterSpec`](#filter-specifier)
 
 * [`interfaceSpec`](#interface-specifier)
 
-<!--
-[comment]: # (* `ip`)
-[comment]: # (* `ipProtocol`)
--->
-
 * [`ipSpec`](#ip-specifier)
 
-<!--
-[comment]: # (* `ipWildcard`)
--->
-
-* [`javaRegex`](#java-regular-expression)
-
-<!--
-[comment]: # (* `jsonPath`)
-[comment]: # (* `jsonPathRegex`)
--->
+* [`ipProtocolSpec`](#ip-protocol-specifier)
 
 * [`locationSpec`](#location-specifier)
 
-<!--
-[comment]: # (* `long`)
-[comment]: # (* `namedStructureSpec`)
-[comment]: # (* `nodePropertySpec`)
--->
-
 * [`nodeSpec`](#node-specifier)
 
-<!--
-[comment]: # (* `ospfPropertySpec`)
-[comment]: # (* `prefix`)
-[comment]: # (* `prefixRange`)
-[comment]: # (* `protocol`)
-[comment]: # (* `question`)
-[comment]: # (* `string`)
-[comment]: # (* `subrange`)
--->
+* [`routingPolicySpec`](#routing-policy-specifier)
 
 ## General notes on the grammar 
 
@@ -71,6 +35,26 @@ Batfish questions have the following parameter types that support rich specifica
   * `/ab[c-d]/` and `/ab(c|d)/` match strings 'abc' and 'abd'.
 
 * **Case-insensitive names:** All names and regexes use case-insensitive matching. Thus, `AS1BORDER1` is same as `as1border1` and `Ethernet0/0` is same as `ethernet0/0`.
+
+## Application Specifier
+
+A combined specification for an IP protocol (e.g., TCP) and *destination* port to denote packets for common applications.
+
+* Application names from the list below may be used.
+
+#### Application Specifier Grammar
+
+<pre>
+applicationSpec :=
+    applicationTerm [<b>,</b> applicationTerm]
+
+applicationTerm :=
+    &lt;<i>application-name</i>&gt;
+</pre>
+
+#### Application Names
+
+Batfish understands the following applications names, with the corresponding IP protocol and destination port in parenthesis: DNS(UDP, 53), HTTP(TCP, 80), HTTPS(TCP, 443), SNMP(UDP, 161), SSH(TCP, 22), TELNET(TCP, 23).
 
 ## Flow Disposition Specifier
 
@@ -163,6 +147,42 @@ interfaceFunc :=
     | <b>@vrf(</b>&lt;<i>vrf-name</i>&gt;<b>)</b>
     | <b>@zone(</b>&lt;<i>zone-name</i>&gt;<b>)</b>
 </pre>
+
+## IP Protocol Specifier
+
+A specification for a set of IP protocols.
+
+* IP protocol names from the list below, such as `TCP`,  may be used.
+
+* IP protocol numbers between 0 and 255 (inclusive), such as `6` to denote TCP, may be used. 
+
+* A negation operator `!` may be used to denote all IP protocols other than the one specified. The semantics of negation is:
+
+   * `!TCP` refers to all IP protocols other than TCP
+   * `!TCP, !UDP` refers to all IP protocols other than TCP and UDP
+   * `TCP, !UDP` refers to TCP 
+ 
+#### IP Protocol Specifier Grammar
+
+<pre>
+ipProtocolSpec :=
+    ipProtocolTerm [<b>,</b> ipProtocolTerm]
+
+ipProtocolTerm :=
+    ipProtocol
+    | <b>!</b>ipProtocol
+
+ipProtocol := 
+    &lt;<i>ip-protocol-name</i>&gt;
+    | &lt;<i>ip-protocol-number</i>&gt;
+</pre>
+
+#### IP Protocol Names
+
+Batfish understands the following protocol names: AHP(51), AN(107), ANY_0_HOP_PROTOCOL(114), ANY_DISTRIBUTED_FILE_SYSTEM(68), ANY_HOST_INTERNAL_PROTOCOL(61), ANY_LOCAL_NETWORK(63), ANY_PRIVATE_ENCRYPTION_SCHEME(99), ARGUS(13), ARIS(104), AX25(93), BBN_RCC_MON(10), BNA(49), BR_SAT_MON(76), CBT(7), CFTP(62), CHAOS(16), COMPAQ_PEER(110), CPHB(73), CPNX(72), CRTP(126), CRUDP(127), DCCP(33), DCN_MEAS(19), DDP(37), DDX(116), DGP(86), EGP(8), EIGRP(88), EMCON(14), ENCAP(98), ESP(50), ETHERIP(97), FC(133), FIRE(125), GGP(3), GMTP(100), GRE(47), HIP(139), HMP(20), HOPOPT(0), I_NLSP(52), IATP(117),IPV6_ROUTE(43),IPX_IN_IP(111),IRTP(28), ISIS(124), ISO_IP(80), ISO_TP4(29), KRYPTOLAN(65), L2TP(115), LARP(91), LEAF1(25), LEAF2(26), MANAET(138), MERIT_INP(32), MFE_NSP(31), MHRP(48), MICP(95), MOBILE(55), MOBILITY(135), MPLS_IN_IP(137), MTP(92), MUX(18), NARP(54), NETBLT(30), NSFNET_IGP(85), NVPII(11), OSPF(89), PGM(113), PIM(103), PIPE(131), PNNI(102), PRM(21), PTP(123), PUP(12), PVP(75), QNX(106), RDP(27), ROHC(142), RSVP(46), RSVP_E2E_IGNORE(134), RVD(66), SAT_EXPAK(64), SAT_MON(69), SCC_SP(96), SCPS(105), SCTP(132), SDRP(42), SECURE_VMTP(82), SHIM6(140), SKIP(57), SM(122), SMP(121), SNP(109), SPRITE_RPC(90), SPS(130), SRP(119), SSCOPMCE(128), ST(5), STP(118), SUN_ND(77), SWIPE(53), TCF(87), TCP(6), THREE_PC(34), TLSP(56), TPPLUSPLUS(39), TRUNK1(23), TRUNK2(24), TTP(84), UDP(17), UDP_LITE(136), UTI(120), VINES(83), VISA(70), VMTP(81), VRRP(112), WB_EXPAK(79), WB_MON(78), WESP(141), WSN(74), XNET(15), XNS_IDP(22), XTP(36).
+
+In addition, a special name `IP` may be used to denote all IP protocols. 
+
 
 ## IP Specifier
 
@@ -260,3 +280,21 @@ Batfish has the following device types.
 * `ISP`: A logical devie that represents a neighboring ISP. It is present when external connectivity is modeled.
 * `Router`: A device that does L3 routing and forwarding.
 * `Switch`: A device that only does L2 forwarding.
+
+## Routing Policy Specifier
+
+A specification for routing policies in the network.
+
+* Routing policy name or a regex over the names indicate routing policies on all nodes in the network with that name or matching regex. For example, `routingPolicy1` includes all routing policies with that name and `/rtpol/` includes all routing policies whose names contain 'rtpol'.
+
+#### Routing Policy Grammar
+
+<pre>
+routingPolicySpec :=
+    routingPolicyTerm [(<b>&</b>|<b>,</b>|<b>\</b>) routingPolicyTerm]
+
+routingPolicyTerm :=
+    &lt;<i>routing-policy-name</i>&gt;
+    | <b>/</b>&lt;<i>routing-policy-name-regex</i>&gt;<b>/</b>
+    | <b>(</b>routingPolicySpec<b>)</b>
+</pre>
