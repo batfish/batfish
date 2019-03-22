@@ -1,17 +1,15 @@
 package org.batfish.question.loop;
 
-import com.google.common.base.Functions;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Ordering;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.questions.Question;
@@ -32,15 +30,13 @@ public final class DetectLoopsAnswerer extends Answerer {
     /*
      * There can be many flows exercising the same loop, so let's pick one per dstIp.
      */
-    Multimap<Ip, Flow> flowsPerDst =
-        flows.stream()
-            .collect(
-                Multimaps.toMultimap(Flow::getDstIp, Functions.identity(), HashMultimap::create));
-
     flows =
-        flowsPerDst.asMap().values().stream()
-            .flatMap(flowsWithSameDst -> flowsWithSameDst.stream().limit(1))
-            .collect(Collectors.toSet());
+        flows.stream()
+            .collect(Collectors.groupingBy(Flow::getDstIp, Collectors.minBy(Ordering.natural())))
+            .values()
+            .stream()
+            .map(Optional::get) // safe: the min here cannot be empty by construction.
+            .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
 
     SortedMap<Flow, List<Trace>> flowTraces = _batfish.buildFlows(flows, false);
     TableAnswerElement tableAnswer = new TableAnswerElement(TracerouteAnswerer.metadata(false));
