@@ -204,7 +204,8 @@ public final class OspfTopologyUtils {
           }
 
           graph.addNode(
-              new OspfNeighborConfigId(config.getHostname(), vrf.getName(), iface.get().getName()));
+              new OspfNeighborConfigId(
+                  config.getHostname(), vrf.getName(), proc.getProcessId(), iface.get().getName()));
         }
       }
     }
@@ -225,7 +226,9 @@ public final class OspfTopologyUtils {
                 .getInterface(remoteNodeInterface.getHostname(), remoteNodeInterface.getInterface())
                 .orElse(null);
 
-        if (remoteInterface == null || !remoteInterface.getActive()) {
+        if (remoteInterface == null
+            || !remoteInterface.getActive()
+            || remoteInterface.getOspfProcess() == null) {
           continue;
         }
 
@@ -233,6 +236,7 @@ public final class OspfTopologyUtils {
             new OspfNeighborConfigId(
                 remoteNodeInterface.getHostname(),
                 remoteInterface.getVrfName(),
+                remoteInterface.getOspfProcess(),
                 remoteNodeInterface.getInterface());
         getSessionIfCompatible(configId, remoteConfigId, networkConfigurations)
             .ifPresent(s -> graph.putEdgeValue(configId, remoteConfigId, s));

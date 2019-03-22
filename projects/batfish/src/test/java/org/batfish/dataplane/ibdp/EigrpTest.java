@@ -250,9 +250,10 @@ public class EigrpTest {
 
     Interface.Builder nib = nf.interfaceBuilder().setOspfCost(1);
 
-    OspfProcess.Builder opb = nf.ospfProcessBuilder();
+    OspfProcess.Builder opb = nf.ospfProcessBuilder().setProcessId("1");
     OspfArea.Builder oab = nf.ospfAreaBuilder().setNumber(area);
-    Interface.Builder oib = nf.interfaceBuilder().setOspfCost(1).setOspfEnabled(true);
+    Interface.Builder oib =
+        nf.interfaceBuilder().setOspfCost(1).setOspfProcess("1").setOspfEnabled(true);
 
     /* Configuration 1 */
     Configuration c1 = buildConfiguration(R1, eib, epb, oib, opb, nib);
