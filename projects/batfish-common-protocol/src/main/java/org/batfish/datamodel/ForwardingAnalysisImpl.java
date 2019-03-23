@@ -26,6 +26,7 @@ import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.common.bdd.MemoizedIpSpaceToBDD;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
@@ -35,15 +36,17 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   // node -> interface -> ips that the interface would reply arp request
   private final Map<String, Map<String, IpSpace>> _arpReplies;
 
-  /* node -> vrf -> edge -> dest IPs for which the vrf will forward out the source of the edge,
-   * ARPing for some ARP IP and receiving a reply from thhe target of the edge.
-   */
+  // node -> vrf -> edge -> dest IPs for which the vrf will forward out the source of the edge,
+  // ARPing for some ARP IP and receiving a reply from the target of the edge.
   private final Map<String, Map<String, Map<Edge, IpSpace>>> _arpTrueEdge;
 
+  // node -> vrf -> interface -> destination IPs for which arp will fail */
   private final Map<String, Map<String, Map<String, IpSpace>>> _arpFalse;
 
+  // node -> vrf -> destination IPs that will be null routes */
   private final Map<String, Map<String, IpSpace>> _nullRoutedIps;
 
+  // node -> vrf -> destination IPs that can be routed
   private final Map<String, Map<String, IpSpace>> _routableIps;
 
   // node -> vrf -> interface -> dst ips that end up with neighbor unreachable
@@ -67,7 +70,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       assert span != null; // avoid unused warning
 
       // TODO accept IpSpaceToBDD as parameter
-      IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(new BDDPacket().getDstIp());
+      IpSpaceToBDD ipSpaceToBDD =
+          new MemoizedIpSpaceToBDD(new BDDPacket().getDstIp(), ImmutableMap.of());
 
       // IPs belonging to any interface in the network, even inactive interfaces
       Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
@@ -244,6 +248,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
               dstIpsWithUnownedNextHopIpArpFalse,
               arpFalseDestIp,
               externalIps);
+
+      assert sanityCheck(ipSpaceToBDD, configurations);
     }
   }
 
@@ -1430,5 +1436,107 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                   .collect(Collectors.toList()))
           .build();
     }
+  }
+
+  /**
+   * Run sanity checks over the computed variables. Can be slow so only run in debug/assertion mode.
+   */
+  private boolean sanityCheck(
+      IpSpaceToBDD ipSpaceToBDD, Map<String, Configuration> configurations) {
+    // Sanity check internal properties.
+    assertAllInterfacesActiveNodeInterface(_arpReplies, configurations);
+    assertAllInterfacesActiveNodeVrfInterface(_arpFalse, configurations);
+    assertAllInterfacesActiveNodeVrfInterface(_deliveredToSubnet, configurations);
+    assertAllInterfacesActiveNodeVrfInterface(_exitsNetwork, configurations);
+    assertAllInterfacesActiveNodeVrfInterface(_insufficientInfo, configurations);
+    assertAllInterfacesActiveNodeVrfInterface(_neighborUnreachable, configurations);
+
+    // Sanity check public APIs.
+    assertAllInterfacesActiveNodeInterface(getArpReplies(), configurations);
+    assertAllInterfacesActiveNodeVrfInterface(getDeliveredToSubnet(), configurations);
+    assertAllInterfacesActiveNodeVrfInterface(getExitsNetwork(), configurations);
+    assertAllInterfacesActiveNodeVrfInterface(getInsufficientInfo(), configurations);
+    assertAllInterfacesActiveNodeVrfInterface(getNeighborUnreachable(), configurations);
+    assertAllInterfacesActiveNodeVrfInterface(
+        getNeighborUnreachableOrExitsNetwork(), configurations);
+
+    // Sanity check traceroute-reachability different variables.
+    Map<String, Map<String, Map<String, IpSpace>>> unionOthers =
+        union(
+            getNeighborUnreachable(),
+            union(getInsufficientInfo(), union(getDeliveredToSubnet(), getExitsNetwork())));
+
+    assert toBDD(getNeighborUnreachableOrExitsNetwork(), ipSpaceToBDD)
+        .equals(toBDD(unionOthers, ipSpaceToBDD));
+    return true;
+  }
+
+  /**
+   * Converts the given Map to a Map of the same shape with the {@link IpSpace IpSpaces} converted
+   * to {@link BDD BDDs}.
+   */
+  private static Map<String, Map<String, Map<String, BDD>>> toBDD(
+      Map<String, Map<String, Map<String, IpSpace>>> nodeVrfInterfaceIpSpaces,
+      IpSpaceToBDD ipSpaceToBDD) {
+    return toImmutableMap(
+        nodeVrfInterfaceIpSpaces,
+        Entry::getKey, /* hostname */
+        nodeEntry ->
+            toImmutableMap(
+                nodeEntry.getValue(),
+                Entry::getKey, /* vrf */
+                vrfEntry ->
+                    toImmutableMap(
+                        vrfEntry.getValue(),
+                        Entry::getKey, /* interface */
+                        ifaceEntry -> ipSpaceToBDD.visit(ifaceEntry.getValue()))));
+  }
+
+  /**
+   * Asserts that all interfaces in the given nested map are inactive in the given configurations.
+   */
+  private static void assertAllInterfacesActiveNodeVrfInterface(
+      Map<String, Map<String, Map<String, IpSpace>>> nodeVrfInterfaceMap,
+      Map<String, Configuration> configurations) {
+    nodeVrfInterfaceMap.forEach(
+        (node, vrfInterfaceMap) ->
+            vrfInterfaceMap.forEach(
+                (vrf, ifaceMap) ->
+                    ifaceMap
+                        .keySet()
+                        .forEach(
+                            i -> {
+                              if (i.equals(Interface.NULL_INTERFACE_NAME)) {
+                                return;
+                              }
+                              Configuration c = configurations.get(node);
+                              assert node != null : node + " is null";
+                              Interface iface = c.getAllInterfaces().get(i);
+                              assert iface != null : node + "[" + iface + "] is null";
+                              assert iface.getActive() : node + "[" + iface + "] is not active";
+                            })));
+  }
+
+  /**
+   * Asserts that all interfaces in the given nested map are inactive in the given configurations.
+   */
+  private static void assertAllInterfacesActiveNodeInterface(
+      Map<String, Map<String, IpSpace>> nodeInterfaceMap,
+      Map<String, Configuration> configurations) {
+    nodeInterfaceMap.forEach(
+        (node, ifaceMap) ->
+            ifaceMap
+                .keySet()
+                .forEach(
+                    i -> {
+                      if (i.equals(Interface.NULL_INTERFACE_NAME)) {
+                        return;
+                      }
+                      Configuration c = configurations.get(node);
+                      assert node != null : node + " is null";
+                      Interface iface = c.getAllInterfaces().get(i);
+                      assert iface != null : node + "[" + iface + "] is null";
+                      assert iface.getActive() : node + "[" + iface + "] is not active";
+                    }));
   }
 }
