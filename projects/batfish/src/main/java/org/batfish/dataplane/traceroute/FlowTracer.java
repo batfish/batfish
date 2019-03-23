@@ -272,7 +272,7 @@ class FlowTracer {
   private boolean processArpFailure(String outgoingInterfaceName, Ip arpIp) {
     String currentNodeName = _currentNode.getName();
     // halt processing and add neighbor-unreachable trace if no one would respond
-    if (_tracerouteContext.receivesArpReply(
+    if (_tracerouteContext.willNotReceiveArpReply(
         currentNodeName, _vrfName, outgoingInterfaceName, arpIp)) {
       FlowDisposition disposition =
           _tracerouteContext.computeDisposition(
