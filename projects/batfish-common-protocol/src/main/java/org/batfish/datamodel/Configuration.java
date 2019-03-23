@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -463,6 +464,13 @@ public final class Configuration implements Serializable {
   @JsonProperty(PROP_INTERFACES)
   public NavigableMap<String, Interface> getAllInterfaces() {
     return _interfaces;
+  }
+
+  @JsonIgnore
+  public Map<String, Interface> getActiveInterfaces() {
+    return _interfaces.entrySet().stream()
+        .filter(e -> e.getValue().getActive())
+        .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
   }
 
   @JsonIgnore

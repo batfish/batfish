@@ -276,13 +276,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
           configurations,
           Entry::getKey,
           nodeEntry -> {
-            Map<String, Interface> activeInterfaces =
-                nodeEntry.getValue().getAllInterfaces().entrySet().stream()
-                    .filter(e -> e.getValue().getActive())
-                    .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
             String hostname = nodeEntry.getKey();
             return computeArpRepliesByInterface(
-                activeInterfaces,
+                nodeEntry.getValue().getActiveInterfaces(),
                 routableIps.get(hostname),
                 ipsRoutedOutInterfaces.get(hostname),
                 interfaceOwnedIps);
@@ -1074,17 +1070,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                   nodeEntry.getValue().getVrfs(),
                   Entry::getKey, /* vrf */
                   vrfEntry -> {
-                    Map<String, Interface> interfaces;
-                    if (excludeInactive) {
-                      interfaces =
-                          vrfEntry.getValue().getInterfaces().entrySet().stream()
-                              .filter(e -> e.getValue().getActive())
-                              .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
-                    } else {
-                      interfaces = vrfEntry.getValue().getInterfaces();
-                    }
+                    Vrf v = vrfEntry.getValue();
                     return toImmutableMap(
-                        interfaces,
+                        excludeInactive ? v.getActiveInterfaces() : v.getInterfaces(),
                         Entry::getKey, /* interface */
                         ifaceEntry ->
                             firstNonNull(
