@@ -1,4 +1,8 @@
-Batfish questions have the following parameter types that support rich specifications whose grammar is described below. Before reading those grammars, we recommend reading the general notes. 
+## Grammar for rich parameter types   
+
+Batfish questions support parameters with rich specifications for nodes, interfaces etc. The grammar for parameter types is described below. Before reading those grammars, we recommend reading the general notes. 
+
+For many parameters types, there is a "resolver" question that may be used to learn what a given specification expands to. For instance, the resolver for the node specifier `resolveNodeSpecifier`, and `bfq.resolveNodeSpecifier(nodes=/bor/)` (Pybatfish syntax) will return the set of nodes represented by `/bor/`. 
 
 * [`applicationSpec`](#application-specifier)
 
@@ -102,6 +106,10 @@ filterTerm :=
     | <b>(</b>filterSpec<b>)</b>
 </pre>
 
+#### Filter Specifier Resolver
+
+* `resolveFilterSpecifier` shows the set of filters represented by the given input.
+
 ## Interface Specifier
 
 A specification for interfaces in the network.
@@ -147,6 +155,10 @@ interfaceFunc :=
     | <b>@vrf(</b>&lt;<i>vrf-name</i>&gt;<b>)</b>
     | <b>@zone(</b>&lt;<i>zone-name</i>&gt;<b>)</b>
 </pre>
+
+#### Interface Specifier Resolver
+
+* `resolveInterfaceSpecifier` shows the set of interfaces represented by the given input.
 
 ## IP Protocol Specifier
 
@@ -209,6 +221,10 @@ ipTerm :=
     | locationSpec
 </pre>
 
+#### IP Specifier Resolver
+
+* `resolveIpSpecifier` shows the set of IP addresses represented by the given input.
+
 ## Location Specifier
 
 A specification for locations of packets, including where they start or terminate.
@@ -216,6 +232,8 @@ A specification for locations of packets, including where they start or terminat
 There are two types of locations:
 * `InterfaceLocation`: at the interface, used to model packets that originate or terminate at the interface
 * `InterfaceLinkLocation`: on the link connected to the interface, used to model packets before they enter the interface or after they exit
+
+Unless expilcitly specified, questions like `traceroute` and `reachability` will automatically assign IP addresses to packets based on their location. For `InterfaceLocation`, the set of assigned addresses is the interface address(es). For `InterfaceLinkLocation`, the set of assigned addresses is all addresses in the interface's subnet except for the address(es) of the interface itself. This set is empty for interfaces with `/32` subnets (e.g., loopback interfaces). **TODO: Explain what happens then -- the location is ignored or is assigned ANY address** 
 
 Some examples:
 
@@ -244,6 +262,12 @@ locationInterface :=
     | interfaceWithNode
 </pre>
 
+#### Location Specifier Resolver
+
+* `resolveLocationSpecifier` shows the set of locations represented by the given input.
+* `resolveIpsOfLocationSpecifier` shows the mapping from locations to IPs that will be used in `traceroute` and   `reachability` questions when IPs are not explicitly specified. 
+
+
 ## Node Specifier
 
 A specification for nodes in the network.
@@ -270,6 +294,10 @@ nodeFunc :=
     <b>@deviceType(</b><i>device-type</i><b>)</b>
     | <b>@role(</b>&lt;<i>role-name</i>&gt;<b>,</b> &lt;<i>dimension-name</i>&gt;<b>)</b>
 </pre>
+
+#### Node Specifier Resolver
+
+* `resolveNodeSpecifier` shows the set of nodes represented by the given input.
 
 #### Device Types
 
