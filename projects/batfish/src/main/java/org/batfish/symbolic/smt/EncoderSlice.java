@@ -714,7 +714,7 @@ class EncoderSlice {
           }
         }
 
-        if (proto.isOspf() && r.size() > 1 && exportGraphEdgeMap.size() > 0) {
+        if (proto.isOspf() && r.size() > 1 && !exportGraphEdgeMap.isEmpty()) {
           // Add the ospf redistributed record if needed
           String rname =
               String.format(
