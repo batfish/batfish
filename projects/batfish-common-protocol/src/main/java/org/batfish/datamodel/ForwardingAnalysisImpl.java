@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Ordering.natural;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 
@@ -249,7 +250,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
               arpFalseDestIp,
               externalIps);
 
-      assert sanityCheck(ipSpaceToBDD, configurations);
+      //      assert sanityCheck(ipSpaceToBDD, configurations);
     }
   }
 
@@ -1031,6 +1032,11 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       Map<String, Map<String, Map<String, IpSpace>>> ipSpaces1,
       Map<String, Map<String, Map<String, IpSpace>>> ipSpaces2,
       BiFunction<IpSpace, IpSpace, IpSpace> op) {
+    checkArgument(
+        ipSpaces1.keySet().equals(ipSpaces2.keySet()),
+        "Can't merge with different nodes: %s and %s",
+        ipSpaces1.keySet(),
+        ipSpaces2.keySet());
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.merge").startActive()) {
       assert span != null; // avoid unused warning
@@ -1039,11 +1045,24 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
           Entry::getKey, /* hostname */
           nodeEntry -> {
             Map<String, Map<String, IpSpace>> nodeIpSpace2 = ipSpaces2.get(nodeEntry.getKey());
+            checkArgument(
+                nodeIpSpace2.keySet().equals(nodeEntry.getValue().keySet()),
+                "Can't merge with different VRFs in node %s: %s and %s",
+                nodeEntry.getKey(),
+                nodeEntry.getValue().keySet(),
+                nodeIpSpace2.keySet());
             return toImmutableMap(
                 nodeEntry.getValue(),
                 Entry::getKey, /* vrf */
                 vrfEntry -> {
                   Map<String, IpSpace> vrfIpSpaces2 = nodeIpSpace2.get(vrfEntry.getKey());
+                  checkArgument(
+                      vrfIpSpaces2.keySet().equals(vrfEntry.getValue().keySet()),
+                      "Can't merge with different interfaces in node %s VRF %s: %s and %s",
+                      nodeEntry.getKey(),
+                      vrfEntry.getKey(),
+                      vrfEntry.getValue().keySet(),
+                      vrfIpSpaces2.keySet());
                   return toImmutableMap(
                       vrfEntry.getValue(),
                       Entry::getKey, /* interface */
@@ -1453,31 +1472,20 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
         union(
             getNeighborUnreachable(),
             union(getInsufficientInfo(), union(getDeliveredToSubnet(), getExitsNetwork())));
+    assertDeepIpSpaceEquality(
+        union(getNeighborUnreachable(), getInsufficientInfo()),
+        union(getInsufficientInfo(), getNeighborUnreachable()),
+        ipSpaceToBDD);
 
-    assert toBDD(getNeighborUnreachableOrExitsNetwork(), ipSpaceToBDD)
-        .equals(toBDD(unionOthers, ipSpaceToBDD));
+    Map<String, Map<String, Map<String, IpSpace>>> union1 =
+        union(getNeighborUnreachable(), getInsufficientInfo());
+    Map<String, Map<String, Map<String, IpSpace>>> union2 = union(union1, getDeliveredToSubnet());
+    Map<String, Map<String, Map<String, IpSpace>>> union3 = union(union2, getExitsNetwork());
+    assertDeepIpSpaceEquality(unionOthers, union3, ipSpaceToBDD);
+    System.err.println(unionOthers);
+    assertDeepIpSpaceEquality(getNeighborUnreachableOrExitsNetwork(), unionOthers, ipSpaceToBDD);
+
     return true;
-  }
-
-  /**
-   * Converts the given Map to a Map of the same shape with the {@link IpSpace IpSpaces} converted
-   * to {@link BDD BDDs}.
-   */
-  private static Map<String, Map<String, Map<String, BDD>>> toBDD(
-      Map<String, Map<String, Map<String, IpSpace>>> nodeVrfInterfaceIpSpaces,
-      IpSpaceToBDD ipSpaceToBDD) {
-    return toImmutableMap(
-        nodeVrfInterfaceIpSpaces,
-        Entry::getKey, /* hostname */
-        nodeEntry ->
-            toImmutableMap(
-                nodeEntry.getValue(),
-                Entry::getKey, /* vrf */
-                vrfEntry ->
-                    toImmutableMap(
-                        vrfEntry.getValue(),
-                        Entry::getKey, /* interface */
-                        ifaceEntry -> ipSpaceToBDD.visit(ifaceEntry.getValue()))));
   }
 
   /**
@@ -1526,5 +1534,49 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                       assert iface != null : node + "[" + iface + "] is null";
                       assert iface.getActive() : node + "[" + iface + "] is not active";
                     }));
+  }
+
+  /**
+   * Asserts that all interfaces in the given nested map are inactive in the given configurations.
+   */
+  private static void assertDeepIpSpaceEquality(
+      Map<String, Map<String, Map<String, IpSpace>>> left,
+      Map<String, Map<String, Map<String, IpSpace>>> right,
+      IpSpaceToBDD toBDD) {
+    System.err.println("old method" + left);
+    System.err.println("new method" + right);
+    assert left.keySet().equals(right.keySet());
+    left.forEach(
+        (node, vrfIfaceMap) -> {
+          Map<String, Map<String, IpSpace>> rightVrfIfaceMap = right.get(node);
+          assert vrfIfaceMap.keySet().equals(rightVrfIfaceMap.keySet())
+              : "Different VRFs for node " + node;
+          vrfIfaceMap.forEach(
+              (vrf, ifaceMap) -> {
+                Map<String, IpSpace> rightIfaceMap = rightVrfIfaceMap.get(vrf);
+                assert vrfIfaceMap.keySet().equals(rightVrfIfaceMap.keySet())
+                    : "Different interfaces node " + node + " VRF " + vrf;
+                ifaceMap.forEach(
+                    (iface, ipSpace) -> {
+                      IpSpace rightIpSpace = rightIfaceMap.get(iface);
+                      BDD bdd = toBDD.visit(ipSpace);
+                      BDD rightBDD = toBDD.visit(rightIpSpace);
+                      assert bdd.diff(rightBDD).isZero()
+                          : "Left BDDs larger for node "
+                              + node
+                              + " VRF "
+                              + vrf
+                              + " interface "
+                              + iface;
+                      assert rightBDD.diff(bdd).isZero()
+                          : "Right BDDs larger for node "
+                              + node
+                              + " VRF "
+                              + vrf
+                              + " interface "
+                              + iface;
+                    });
+              });
+        });
   }
 }
