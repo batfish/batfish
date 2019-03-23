@@ -249,7 +249,7 @@ public class BfCoordWorkHelper {
               .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
               .delete();
 
-      if (response.getStatus() != Status.NO_CONTENT.getStatusCode()) {
+      if (response.getStatusInfo().getFamily() != Status.Family.SUCCESSFUL) {
         _logger.errorf("delNetwork: Did not get OK response. Got: %s\n", response.getStatus());
         _logger.error(response.readEntity(String.class) + "\n");
         return false;
@@ -465,7 +465,7 @@ public class BfCoordWorkHelper {
 
       _logger.debugf("%s %s %s\n", response.getStatus(), response.getStatusInfo(), response);
 
-      if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+      if (response.getStatusInfo().getFamily() != Status.Family.SUCCESSFUL) {
         _logger.error("GetConfiguration: Did not get an OK response\n");
         _logger.error(response.readEntity(String.class) + "\n");
         return null;
@@ -501,7 +501,7 @@ public class BfCoordWorkHelper {
 
       _logger.debug(response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
 
-      if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+      if (response.getStatusInfo().getFamily() != Status.Family.SUCCESSFUL) {
         _logger.errorf("getNetwork: Did not get OK response. Got: %s\n", response.getStatus());
         _logger.error(response.readEntity(String.class) + "\n");
         return null;
@@ -525,7 +525,7 @@ public class BfCoordWorkHelper {
 
       _logger.debugf(response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
 
-      if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+      if (response.getStatusInfo().getFamily() != Status.Family.SUCCESSFUL) {
         System.err.print("GET did not get an OK response\n");
         return null;
       }
@@ -579,7 +579,7 @@ public class BfCoordWorkHelper {
 
       _logger.debug(response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
 
-      if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+      if (response.getStatusInfo().getFamily() != Status.Family.SUCCESSFUL) {
         _logger.debugf(
             "GetObject: Did not get an OK response for %s -> %s->%s\n",
             networkName, snapshotName, objectName);
@@ -754,7 +754,7 @@ public class BfCoordWorkHelper {
 
       _logger.info(response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
 
-      if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+      if (response.getStatusInfo().getFamily() != Status.Family.SUCCESSFUL) {
         _logger.errorf("GetObject: Did not get an OK response\n");
         return false;
       }
@@ -989,7 +989,7 @@ public class BfCoordWorkHelper {
 
       _logger.debugf(response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
 
-      if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+      if (response.getStatusInfo().getFamily() != Status.Family.SUCCESSFUL) {
         System.err.print("PostData: Did not get an OK response\n");
         return null;
       }
