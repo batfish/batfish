@@ -249,7 +249,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
               arpFalseDestIp,
               externalIps);
 
-      //      assert sanityCheck(ipSpaceToBDD, configurations);
+      assert sanityCheck(ipSpaceToBDD, configurations);
     }
   }
 
@@ -1570,9 +1570,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       Map<String, Map<String, Map<String, IpSpace>>> left,
       Map<String, Map<String, Map<String, IpSpace>>> right,
       IpSpaceToBDD toBDD) {
-    System.err.println("old method" + left);
-    System.err.println("new method" + right);
-    assert left.keySet().equals(right.keySet());
+    //    System.err.println("old method" + left);
+    //    System.err.println("new method" + right);
+    assert left.keySet().equals(right.keySet())
+        : "Different node sets " + left.keySet() + " " + right.keySet();
     left.forEach(
         (node, vrfIfaceMap) -> {
           Map<String, Map<String, IpSpace>> rightVrfIfaceMap = right.get(node);
