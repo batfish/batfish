@@ -178,10 +178,10 @@ public class TracerouteEngineImplContext {
   }
 
   /**
-   * @return true if the an ARP request for {@param arpIp} sent out {@param outIface} will receive a
-   *     reply.
+   * @return true if the an ARP request for {@param arpIp} sent out {@param outIface} will not
+   *     receive a reply.
    */
-  boolean receivesArpReply(String node, String vrf, String outIface, Ip arpIp) {
+  boolean willNotReceiveArpReply(String node, String vrf, String outIface, Ip arpIp) {
     return _forwardingAnalysis
         .getNeighborUnreachableOrExitsNetwork()
         .get(node)

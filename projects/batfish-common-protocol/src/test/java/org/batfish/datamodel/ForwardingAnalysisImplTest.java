@@ -25,6 +25,7 @@ import static org.batfish.datamodel.ForwardingAnalysisImpl.union;
 import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.hasLines;
 import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.isAclIpSpaceThat;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -47,6 +48,7 @@ import org.batfish.common.topology.TopologyUtil;
 import org.junit.Before;
 import org.junit.Test;
 
+/** Tests of {@link ForwardingAnalysisImpl}. */
 public class ForwardingAnalysisImplTest {
 
   private static final String CONFIG1 = "config1";
@@ -1194,30 +1196,48 @@ public class ForwardingAnalysisImplTest {
             .setVrf(vrf1)
             .setAddress(new InterfaceAddress(P1.getStartIp(), P1.getPrefixLength()))
             .build();
-    Map<String, Map<String, Map<String, IpSpace>>> interfaceHostSubnetIps =
-        computeInterfaceHostSubnetIps(configs);
+    Interface i2 =
+        _ib.setOwner(c1)
+            .setVrf(vrf1)
+            .setAddress(new InterfaceAddress(P2.getStartIp(), P2.getPrefixLength()))
+            .setActive(false)
+            .build();
 
+    // Test with only active IPs.
     assertThat(
-        interfaceHostSubnetIps,
+        computeInterfaceHostSubnetIps(configs, true),
         hasEntry(
             equalTo(c1.getHostname()),
-            hasEntry(
-                equalTo(vrf1.getName()),
-                hasEntry(equalTo(i1.getName()), (containsIp(Ip.parse("1.0.0.2")))))));
+            allOf(
+                hasEntry(
+                    equalTo(i1.getName()),
+                    allOf(
+                        not(containsIp(P1.getStartIp())),
+                        containsIp(Ip.create(P1.getStartIp().asLong() + 1)),
+                        containsIp(Ip.create(P1.getEndIp().asLong() - 1)),
+                        not(containsIp(P1.getEndIp())))),
+                not(hasKey(i2.getName())))));
+
+    // Test including inactive IPs.
     assertThat(
-        interfaceHostSubnetIps,
+        computeInterfaceHostSubnetIps(configs, false),
         hasEntry(
             equalTo(c1.getHostname()),
-            hasEntry(
-                equalTo(vrf1.getName()),
-                hasEntry(equalTo(i1.getName()), not(containsIp(P1.getStartIp()))))));
-    assertThat(
-        interfaceHostSubnetIps,
-        hasEntry(
-            equalTo(c1.getHostname()),
-            hasEntry(
-                equalTo(vrf1.getName()),
-                hasEntry(equalTo(i1.getName()), not(containsIp(P1.getEndIp()))))));
+            allOf(
+                hasEntry(
+                    equalTo(i1.getName()),
+                    allOf(
+                        not(containsIp(P1.getStartIp())),
+                        containsIp(Ip.create(P1.getStartIp().asLong() + 1)),
+                        containsIp(Ip.create(P1.getEndIp().asLong() - 1)),
+                        not(containsIp(P1.getEndIp())))),
+                hasEntry(
+                    equalTo(i2.getName()),
+                    allOf(
+                        not(containsIp(P2.getStartIp())),
+                        containsIp(Ip.create(P2.getStartIp().asLong() + 1)),
+                        containsIp(Ip.create(P2.getEndIp().asLong() - 1)),
+                        not(containsIp(P2.getEndIp())))))));
   }
 
   @Test
@@ -1231,23 +1251,16 @@ public class ForwardingAnalysisImplTest {
             .setVrf(vrf1)
             .setAddress(new InterfaceAddress(prefix.getStartIp(), prefix.getPrefixLength()))
             .build();
-    Map<String, Map<String, Map<String, IpSpace>>> interfaceHostSubnetIps =
-        computeInterfaceHostSubnetIps(configs);
+    Map<String, Map<String, IpSpace>> interfaceHostSubnetIps =
+        computeInterfaceHostSubnetIps(configs, false);
 
     assertThat(
         interfaceHostSubnetIps,
         hasEntry(
             equalTo(c1.getHostname()),
             hasEntry(
-                equalTo(vrf1.getName()),
-                hasEntry(equalTo(i1.getName()), containsIp(prefix.getStartIp())))));
-    assertThat(
-        interfaceHostSubnetIps,
-        hasEntry(
-            equalTo(c1.getHostname()),
-            hasEntry(
-                equalTo(vrf1.getName()),
-                hasEntry(equalTo(i1.getName()), containsIp(prefix.getEndIp())))));
+                equalTo(i1.getName()),
+                allOf(containsIp(prefix.getStartIp()), containsIp(prefix.getEndIp())))));
   }
 
   @Test
@@ -1259,8 +1272,8 @@ public class ForwardingAnalysisImplTest {
 
     Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIp =
         ImmutableMap.of(c1, ImmutableMap.of(vrf1, ImmutableMap.of(i1, EmptyIpSpace.INSTANCE)));
-    Map<String, Map<String, Map<String, IpSpace>>> interfaceHostSubnetIps =
-        ImmutableMap.of(c1, ImmutableMap.of(vrf1, ImmutableMap.of(i1, ip.toIpSpace())));
+    Map<String, Map<String, IpSpace>> interfaceHostSubnetIps =
+        ImmutableMap.of(c1, ImmutableMap.of(i1, ip.toIpSpace()));
     IpSpace ownedIps = EmptyIpSpace.INSTANCE;
 
     Map<String, Map<String, Map<String, IpSpace>>> result =
@@ -1280,8 +1293,8 @@ public class ForwardingAnalysisImplTest {
 
     Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIp =
         ImmutableMap.of(c1, ImmutableMap.of(vrf1, ImmutableMap.of(i1, ip.toIpSpace())));
-    Map<String, Map<String, Map<String, IpSpace>>> interfaceHostSubnetIps =
-        ImmutableMap.of(c1, ImmutableMap.of(vrf1, ImmutableMap.of(i1, EmptyIpSpace.INSTANCE)));
+    Map<String, Map<String, IpSpace>> interfaceHostSubnetIps =
+        ImmutableMap.of(c1, ImmutableMap.of(i1, EmptyIpSpace.INSTANCE));
     IpSpace ownedIps = EmptyIpSpace.INSTANCE;
 
     Map<String, Map<String, Map<String, IpSpace>>> result =
@@ -1301,8 +1314,8 @@ public class ForwardingAnalysisImplTest {
 
     Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIp =
         ImmutableMap.of(c1, ImmutableMap.of(vrf1, ImmutableMap.of(i1, ip.toIpSpace())));
-    Map<String, Map<String, Map<String, IpSpace>>> interfaceHostSubnetIps =
-        ImmutableMap.of(c1, ImmutableMap.of(vrf1, ImmutableMap.of(i1, ip.toIpSpace())));
+    Map<String, Map<String, IpSpace>> interfaceHostSubnetIps =
+        ImmutableMap.of(c1, ImmutableMap.of(i1, ip.toIpSpace()));
     IpSpace ownedIps = EmptyIpSpace.INSTANCE;
 
     Map<String, Map<String, Map<String, IpSpace>>> result =
@@ -1381,15 +1394,13 @@ public class ForwardingAnalysisImplTest {
     IpSpace internalIps = internalIpsBuilder.build();
     IpSpace externalIps = internalIps.complement();
 
-    Map<String, Map<String, Map<String, IpSpace>>> interfaceHostSubnetIps;
+    Map<String, Map<String, IpSpace>> interfaceHostSubnetIps;
     if (isDstIpInSubnet) {
       interfaceHostSubnetIps =
-          ImmutableMap.of(
-              CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, dstPrefix.toIpSpace())));
+          ImmutableMap.of(CONFIG1, ImmutableMap.of(INTERFACE1, dstPrefix.toIpSpace()));
     } else {
       interfaceHostSubnetIps =
-          ImmutableMap.of(
-              CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, EmptyIpSpace.INSTANCE)));
+          ImmutableMap.of(CONFIG1, ImmutableMap.of(INTERFACE1, EmptyIpSpace.INSTANCE));
     }
 
     Map<String, Map<String, Map<String, IpSpace>>> arpFalse =

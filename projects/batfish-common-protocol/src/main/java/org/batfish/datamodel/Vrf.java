@@ -7,10 +7,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
 import java.util.SortedMap;
@@ -184,6 +186,13 @@ public class Vrf extends ComparableStructure<String> {
   @JsonIgnore
   public Map<String, Interface> getInterfaces() {
     return _interfaces;
+  }
+
+  @JsonIgnore
+  public Map<String, Interface> getActiveInterfaces() {
+    return _interfaces.entrySet().stream()
+        .filter(e -> e.getValue().getActive())
+        .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
   }
 
   @JsonProperty(PROP_ISIS_PROCESS)

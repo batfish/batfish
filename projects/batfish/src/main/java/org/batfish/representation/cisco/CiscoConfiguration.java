@@ -10,9 +10,9 @@ import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.representation.cisco.CiscoConversions.convertCryptoMapSet;
-import static org.batfish.representation.cisco.CiscoConversions.generateAggregateRoutePolicy;
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpExportPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpImportPolicy;
+import static org.batfish.representation.cisco.CiscoConversions.generateGenerationPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveKeyringIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveTunnelIfaceNames;
@@ -306,6 +306,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private static final int VLAN_NORMAL_MAX_CISCO = 1005;
 
   private static final int VLAN_NORMAL_MIN_CISCO = 2;
+
+  public static String computeBgpGenerationPolicyName(boolean ipv4, String vrfName, String prefix) {
+    return String.format("~AGGREGATE_ROUTE%s_GEN:%s:%s~", ipv4 ? "" : "6", vrfName, prefix);
+  }
 
   public static String computeBgpCommonExportPolicyName(String vrf) {
     return String.format("~BGP_COMMON_EXPORT_POLICY:%s~", vrf);
@@ -1369,22 +1373,23 @@ public final class CiscoConfiguration extends VendorConfiguration {
           ipv4af.getAggregateNetworks().entrySet()) {
         Prefix prefix = e.getKey();
         CiscoNxBgpVrfAddressFamilyAggregateNetworkConfiguration agg = e.getValue();
-        RoutingPolicy generatedPolicy = generateAggregateRoutePolicy(c, vrfName, prefix);
+        generateGenerationPolicy(c, vrfName, prefix);
 
         GeneratedRoute.Builder gr =
             GeneratedRoute.builder()
                 .setNetwork(prefix)
                 .setAdmin(CISCO_AGGREGATE_ROUTE_ADMIN_COST)
-                .setGenerationPolicy(generatedPolicy.getName())
+                .setGenerationPolicy(
+                    computeBgpGenerationPolicyName(true, vrfName, prefix.toString()))
                 .setDiscard(true);
 
         // Conditions to generate this route
-        List<BooleanExpr> generateAggregateConditions = new ArrayList<>();
-        generateAggregateConditions.add(
+        List<BooleanExpr> exportAggregateConditions = new ArrayList<>();
+        exportAggregateConditions.add(
             new MatchPrefixSet(
                 DestinationNetwork.instance(),
                 new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix)))));
-        generateAggregateConditions.add(new MatchProtocol(RoutingProtocol.AGGREGATE));
+        exportAggregateConditions.add(new MatchProtocol(RoutingProtocol.AGGREGATE));
 
         // If defined, set attribute map for aggregate network
         BooleanExpr weInterior = BooleanExprs.TRUE;
@@ -1397,12 +1402,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
             gr.setAttributePolicy(attributeMapName);
           }
         }
-        generateAggregateConditions.add(
+        exportAggregateConditions.add(
             bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.IGP));
 
         v.getGeneratedRoutes().add(gr.build());
         // Do export a generated aggregate.
-        exportConditions.add(new Conjunction(generateAggregateConditions));
+        exportConditions.add(new Conjunction(exportAggregateConditions));
       }
     }
 
@@ -1633,22 +1638,22 @@ public final class CiscoConfiguration extends VendorConfiguration {
       BgpAggregateIpv4Network aggNet = e.getValue();
 
       // Generate a policy that matches routes to be aggregated.
-      RoutingPolicy generatedPolicy = generateAggregateRoutePolicy(c, vrfName, prefix);
+      generateGenerationPolicy(c, vrfName, prefix);
 
       GeneratedRoute.Builder gr =
           GeneratedRoute.builder()
               .setNetwork(prefix)
               .setAdmin(CISCO_AGGREGATE_ROUTE_ADMIN_COST)
-              .setGenerationPolicy(generatedPolicy.getName())
+              .setGenerationPolicy(computeBgpGenerationPolicyName(true, vrfName, prefix.toString()))
               .setDiscard(true);
 
       // Conditions to generate this route
-      List<BooleanExpr> generateAggregateConditions = new ArrayList<>();
-      generateAggregateConditions.add(
+      List<BooleanExpr> exportAggregateConditions = new ArrayList<>();
+      exportAggregateConditions.add(
           new MatchPrefixSet(
               DestinationNetwork.instance(),
               new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix)))));
-      generateAggregateConditions.add(new MatchProtocol(RoutingProtocol.AGGREGATE));
+      exportAggregateConditions.add(new MatchProtocol(RoutingProtocol.AGGREGATE));
 
       // If defined, set attribute map for aggregate network
       BooleanExpr weInterior = BooleanExprs.TRUE;
@@ -1661,12 +1666,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
           gr.setAttributePolicy(attributeMapName);
         }
       }
-      generateAggregateConditions.add(
-          bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.IGP));
+      exportAggregateConditions.add(bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.IGP));
 
       v.getGeneratedRoutes().add(gr.build());
       // Do export a generated aggregate.
-      exportConditions.add(new Conjunction(generateAggregateConditions));
+      exportConditions.add(new Conjunction(exportAggregateConditions));
     }
 
     // add generated routes for aggregate ipv6 addresses
@@ -1678,18 +1682,20 @@ public final class CiscoConfiguration extends VendorConfiguration {
       SubRange prefixRange = new SubRange(prefixLength + 1, Prefix6.MAX_PREFIX_LENGTH);
 
       // create generation policy for aggregate network
-      String generationPolicyName = "~AGGREGATE_ROUTE6_GEN:" + vrfName + ":" + prefix6 + "~";
-      RoutingPolicy currentGeneratedRoutePolicy = new RoutingPolicy(generationPolicyName, c);
-      If currentGeneratedRouteConditional =
-          new If(
-              new MatchPrefix6Set(
-                  new DestinationNetwork6(),
-                  new ExplicitPrefix6Set(
-                      new Prefix6Space(
-                          Collections.singleton(new Prefix6Range(prefix6, prefixRange))))),
-              ImmutableList.of(Statements.ReturnTrue.toStaticStatement()));
-      currentGeneratedRoutePolicy.getStatements().add(currentGeneratedRouteConditional);
-      c.getRoutingPolicies().put(generationPolicyName, currentGeneratedRoutePolicy);
+      String generationPolicyName =
+          computeBgpGenerationPolicyName(false, vrfName, prefix6.toString());
+      RoutingPolicy.builder()
+          .setOwner(c)
+          .setName(generationPolicyName)
+          .addStatement(
+              new If(
+                  new MatchPrefix6Set(
+                      new DestinationNetwork6(),
+                      new ExplicitPrefix6Set(
+                          new Prefix6Space(
+                              Collections.singleton(new Prefix6Range(prefix6, prefixRange))))),
+                  ImmutableList.of(Statements.ReturnTrue.toStaticStatement())))
+          .build();
       GeneratedRoute6 gr = new GeneratedRoute6(prefix6, CISCO_AGGREGATE_ROUTE_ADMIN_COST);
       gr.setGenerationPolicy(generationPolicyName);
       gr.setDiscard(true);

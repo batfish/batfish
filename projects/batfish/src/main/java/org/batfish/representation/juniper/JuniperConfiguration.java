@@ -1313,7 +1313,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
       newIface.setChannelGroup(iface.getRedundantParentInterface());
     }
 
+    newIface.setActive(iface.getActive());
     newIface.setBandwidth(iface.getBandwidth());
+    if (iface.getMtu() != null) {
+      newIface.setMtu(iface.getMtu());
+    }
+    newIface.setNativeVlan(iface.getNativeVlan());
     newIface.setVrf(_c.getVrfs().get(iface.getRoutingInstance()));
     return newIface;
   }

@@ -249,24 +249,24 @@ public class BgpProtocolHelper {
    */
   public static BgpRoute convertGeneratedRouteToBgp(
       GeneratedRoute generatedRoute, Ip routerId, boolean nonRouting) {
-    BgpRoute.Builder b = new BgpRoute.Builder();
-    b.setAdmin(generatedRoute.getAdministrativeCost());
-    b.setAsPath(generatedRoute.getAsPath());
-    b.setCommunities(generatedRoute.getCommunities());
-    b.setMetric(generatedRoute.getMetric());
-    b.setSrcProtocol(RoutingProtocol.AGGREGATE);
-    b.setProtocol(RoutingProtocol.AGGREGATE);
-    b.setNetwork(generatedRoute.getNetwork());
-    b.setLocalPreference(BgpRoute.DEFAULT_LOCAL_PREFERENCE);
-    /*
-     * Note: Origin type and originator IP should get overwritten by export policy,
-     * but are needed initially
-     */
-    b.setOriginatorIp(routerId);
-    b.setOriginType(OriginType.INCOMPLETE);
-    b.setReceivedFromIp(Ip.ZERO);
-    b.setNonRouting(nonRouting);
-    return b.build();
+    return BgpRoute.builder()
+        .setAdmin(generatedRoute.getAdministrativeCost())
+        .setAsPath(generatedRoute.getAsPath())
+        .setCommunities(generatedRoute.getCommunities())
+        .setMetric(generatedRoute.getMetric())
+        .setSrcProtocol(RoutingProtocol.AGGREGATE)
+        .setProtocol(RoutingProtocol.AGGREGATE)
+        .setNetwork(generatedRoute.getNetwork())
+        .setLocalPreference(BgpRoute.DEFAULT_LOCAL_PREFERENCE)
+        /*
+         * Note: Origin type and originator IP should get overwritten by export policy,
+         * but are needed initially
+         */
+        .setOriginatorIp(routerId)
+        .setOriginType(OriginType.INCOMPLETE)
+        .setReceivedFromIp(Ip.ZERO)
+        .setNonRouting(nonRouting)
+        .build();
   }
 
   /**

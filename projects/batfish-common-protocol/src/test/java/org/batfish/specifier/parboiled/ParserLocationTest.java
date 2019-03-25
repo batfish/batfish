@@ -188,6 +188,27 @@ public class ParserLocationTest {
   }
 
   @Test
+  public void testParseLocationEnterDeprecatedNodeInterface() {
+    assertThat(
+        ParserUtils.getAst(getRunner().run("enter(firewall[GigabitEthernet0/0/2])")),
+        equalTo(
+            new EnterLocationAstNode(
+                InterfaceLocationAstNode.createFromInterfaceWithNode(
+                    new InterfaceWithNodeInterfaceAstNode(
+                        new NameNodeAstNode("firewall"),
+                        new NameInterfaceAstNode("GigabitEthernet0/0/2"))))));
+
+    assertThat(
+        ParserUtils.getAst(getRunner().run("enter(firewall.*[GigabitEthernet0/0/2])")),
+        equalTo(
+            new EnterLocationAstNode(
+                InterfaceLocationAstNode.createFromInterfaceWithNode(
+                    new InterfaceWithNodeInterfaceAstNode(
+                        new NameRegexNodeAstNode("firewall.*"),
+                        new NameInterfaceAstNode("GigabitEthernet0/0/2"))))));
+  }
+
+  @Test
   public void testParseLocationNodeInterface() {
     String input = "node[@interfaceType(physical)]";
     InterfaceLocationAstNode expectedAst =
@@ -263,6 +284,15 @@ public class ParserLocationTest {
 
     assertThat(ParserUtils.getAst(getRunner().run(input)), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run(" " + input + " ")), equalTo(expectedAst));
+  }
+
+  @Test
+  public void testParseLocationNodeDeprecated() {
+    String input = "node.*";
+    InterfaceLocationAstNode expectedAst =
+        InterfaceLocationAstNode.createFromNode(new NameRegexNodeAstNode(input));
+
+    assertThat(ParserUtils.getAst(getRunner().run(input)), equalTo(expectedAst));
   }
 
   @Test
