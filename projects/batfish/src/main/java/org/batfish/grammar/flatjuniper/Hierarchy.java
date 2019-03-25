@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.Token;
@@ -141,6 +142,23 @@ public final class Hierarchy {
 
       protected Set<String> _blacklistedGroups;
       private Map<String, HierarchyChildNode> _children;
+
+      /**
+       * Add a set line to {@code output} prefixed by {@code prefix} for each path from this node to
+       * a leaf.
+       */
+      protected final void appendSetLines(@Nonnull String prefix, @Nonnull StringBuilder output) {
+        String prefixString = prefix.toString();
+        if (_children.isEmpty()) {
+          // leaf, so append set line
+          output.append(prefix).append("\n");
+        }
+        _children.forEach(
+            (childText, child) -> {
+              // append set lines for every path from child to leaf
+              child.appendSetLines(String.format("%s %s", prefixString, childText), output);
+            });
+      }
 
       public HierarchyNode() {
         _children = new LinkedHashMap<>();
@@ -676,6 +694,16 @@ public final class Hierarchy {
       HierarchyChildNode node = findExactPathMatchNode(path);
       node.addBlacklistedGroup(groupName);
     }
+
+    /**
+     * Returns a string consisting of newline-separated set lines corresponding to this tree. One
+     * set line is produced for each path from the root to a leaf.
+     */
+    private @Nonnull String toSetLines(@Nonnull String header) {
+      StringBuilder output = new StringBuilder(header);
+      _root.appendSetLines("set", output);
+      return output.toString();
+    }
   }
 
   private HierarchyTree _deactivateTree;
@@ -755,5 +783,14 @@ public final class Hierarchy {
 
   public Map<Token, String> getTokenInputs() {
     return _tokenInputs;
+  }
+
+  /**
+   * Returns a string consisting of newline-separated flat Juniper set lines corresponding to the
+   * master tree, i.e. all the set lines in the configuration from which this {@link Hierarchy} was
+   * produced.
+   */
+  public @Nonnull String toSetLines(@Nonnull String header) {
+    return _masterTree.toSetLines(header);
   }
 }
