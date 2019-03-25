@@ -147,16 +147,16 @@ public final class Hierarchy {
        * Add a set line to {@code output} prefixed by {@code prefix} for each path from this node to
        * a leaf.
        */
-      protected final void dump(@Nonnull StringBuilder prefix, @Nonnull StringBuilder output) {
+      protected final void appendSetLines(@Nonnull String prefix, @Nonnull StringBuilder output) {
         String prefixString = prefix.toString();
+        if (_children.isEmpty()) {
+          // leaf, so append set line
+          output.append(prefix).append("\n");
+        }
         _children.forEach(
             (childText, child) -> {
-              if (child.getChildren().isEmpty()) {
-                output.append(String.format("%s %s\n", prefixString, childText));
-              } else {
-                child.dump(
-                    new StringBuilder(String.format("%s %s", prefixString, childText)), output);
-              }
+              // append set lines for every path from child to leaf
+              child.appendSetLines(String.format("%s %s", prefixString, childText), output);
             });
       }
 
@@ -696,12 +696,12 @@ public final class Hierarchy {
     }
 
     /**
-     * Dump string composed of set lines corresponding to this tree. One set line is produced for
-     * each path from the root to a leaf.
+     * Returns a string consisting of newline-separated set lines corresponding to this tree. One
+     * set line is produced for each path from the root to a leaf.
      */
-    private @Nonnull String dump(@Nonnull String header) {
+    private @Nonnull String toSetLines(@Nonnull String header) {
       StringBuilder output = new StringBuilder(header);
-      _root.dump(new StringBuilder("set"), output);
+      _root.appendSetLines("set", output);
       return output.toString();
     }
   }
@@ -786,10 +786,11 @@ public final class Hierarchy {
   }
 
   /**
-   * Dump flat Juniper set lines corresponding to the master tree, i.e. all the set lines in the
-   * configuration from which this {@link Hierarchy} was produced.
+   * Returns a string consisting of newline-separated flat Juniper set lines corresponding to the
+   * master tree, i.e. all the set lines in the configuration from which this {@link Hierarchy} was
+   * produced.
    */
-  public @Nonnull String dump(@Nonnull String header) {
-    return _masterTree.dump(header);
+  public @Nonnull String toSetLines(@Nonnull String header) {
+    return _masterTree.toSetLines(header);
   }
 }

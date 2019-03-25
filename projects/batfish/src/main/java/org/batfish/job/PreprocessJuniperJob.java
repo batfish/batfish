@@ -18,8 +18,9 @@ import org.batfish.main.Batfish;
 import org.batfish.main.ParserBatfishException;
 
 /**
- * Job that performs Juniper pre-processing on a configuration file, and returns the output. If the
- * input is a non-Juniper configuration, its text is returned unmodified.
+ * {@link BatfishJob} that performs Juniper pre-processing on a configuration file and returns the
+ * output in a {@link PreprocessJuniperResult}. If the input text is not recognized as a Juniper
+ * configuration, it is returned unmodified.
  */
 @ParametersAreNonnullByDefault
 public final class PreprocessJuniperJob extends BatfishJob<PreprocessJuniperResult> {

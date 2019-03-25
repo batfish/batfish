@@ -22,29 +22,35 @@ public final class PreprocessJuniperExtractor {
    * Pre-process a flat Juniper parse tree by generating and pruning parse tree nodes corresponding
    * to various lines in the input configuration.
    *
-   * <p>Pre-processing consists of:
-   * <li>Pruning lines deactivated by 'deactivate' lines
-   * <li>Pruning 'deactivate' lines
-   * <li>Generating lines corresponding to 'apply-groups' lines, while respecting
-   *     'apply-groups-except' lines;
-   * <li>Pruning 'groups' lines; and 'apply-groups' and 'apply-groups-except' lines
-   * <li>Pruning wildcard lines
-   * <li>Generating lines corresponding to 'apply-path' lines
-   * <li>Pruning 'apply-path' lines
+   * <p>Mutations are made directly to the input parse {@code tree} and serve as the output of this
+   * function.
    *
+   * <p>Pre-processing consists of:
+   *
+   * <ol>
+   *   <li>Pruning lines deactivated by 'deactivate' lines
+   *   <li>Pruning 'deactivate' lines
+   *   <li>Generating lines corresponding to 'apply-groups' lines, while respecting
+   *       'apply-groups-except' lines;
+   *   <li>Pruning 'groups' lines; and 'apply-groups' and 'apply-groups-except' lines
+   *   <li>Pruning wildcard lines
+   *   <li>Generating lines corresponding to 'apply-path' lines
+   *   <li>Pruning 'apply-path' lines
+   * </ol>
+   *
+   * @param tree The flat-Juniper parse tree to be pre-processed in-place.
    * @param hierarchy An empty {@link Hierarchy} that will be populated with trees for regular
    *     configuration lines, groups lines, and deactivate lines
    * @param fileText The original text of the configuration
    * @param parser The parser that produced the parse {@code tree}.
    * @param w The store for warnings produced during pre-processing
-   * @param tree The initial flat-Juniper parse tree
    */
   static void preprocess(
+      ParserRuleContext tree,
       Hierarchy hierarchy,
       String fileText,
       FlatJuniperCombinedParser parser,
-      Warnings w,
-      ParserRuleContext tree) {
+      Warnings w) {
     ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("FlatJuniper::DeactivateTreeBuilder").startActive()) {
@@ -136,7 +142,7 @@ public final class PreprocessJuniperExtractor {
    * will be available via {@link #getPreprocessedConfigurationText}.
    */
   public void processParseTree(ParserRuleContext tree) {
-    preprocess(new Hierarchy(), _text, _parser, _w, tree);
+    preprocess(tree, new Hierarchy(), _text, _parser, _w);
     Hierarchy finalHierarchy = new Hierarchy();
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("FlatJuniper::InitialTreeBuilder").startActive()) {
@@ -144,6 +150,6 @@ public final class PreprocessJuniperExtractor {
       InitialTreeBuilder tb = new InitialTreeBuilder(finalHierarchy);
       new BatfishParseTreeWalker(_parser).walk(tb, tree);
     }
-    _preprocessedConfigurationText = finalHierarchy.dump(HEADER);
+    _preprocessedConfigurationText = finalHierarchy.toSetLines(HEADER);
   }
 }

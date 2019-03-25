@@ -32,7 +32,7 @@ public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
   public void processParseTree(ParserRuleContext tree) {
     Hierarchy hierarchy = new Hierarchy();
     // Pre-process parse tree
-    PreprocessJuniperExtractor.preprocess(hierarchy, _text, _parser, _w, tree);
+    PreprocessJuniperExtractor.preprocess(tree, hierarchy, _text, _parser, _w);
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("FlatJuniper::ConfigurationBuilder").startActive()) {
       assert span != null; // avoid unused warning
