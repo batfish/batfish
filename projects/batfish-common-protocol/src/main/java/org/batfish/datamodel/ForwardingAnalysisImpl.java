@@ -205,6 +205,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       }
 
       // mapping: hostname -> interface -> ips belonging to a subnet of interface
+      // active interfaces only.
       Map<String, Map<String, IpSpace>> interfaceHostSubnetIps =
           computeInterfaceHostSubnetIps(configurations, /*excludeInactive=*/ true);
 
