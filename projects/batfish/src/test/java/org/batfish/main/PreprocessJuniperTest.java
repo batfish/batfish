@@ -24,8 +24,8 @@ public final class PreprocessJuniperTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   /**
-   * Equivalent to calling {@link PreprocessJuniperTest#assertValidPair(String,String)} with {@code
-   * prefix} set to {@code JUNIPER_TESTCONFIGS_PREFIX}.
+   * Equivalent to calling {@link PreprocessJuniperTest#assertValidPair(String,String,String)} with
+   * {@code prefix} set to {@code JUNIPER_TESTCONFIGS_PREFIX}.
    */
   private void assertValidPair(String before, String after) {
     assertValidPair(JUNIPER_TESTCONFIGS_PREFIX, before, after);
