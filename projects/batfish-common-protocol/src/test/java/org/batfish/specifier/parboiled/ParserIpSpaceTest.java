@@ -169,6 +169,15 @@ public class ParserIpSpaceTest {
   }
 
   @Test
+  public void testIpSpaceLocationNodeDeprecated() {
+    IpSpaceAstNode expectedNode =
+        new LocationIpSpaceAstNode(
+            InterfaceLocationAstNode.createFromNode(new NameRegexNodeAstNode("node.*")));
+
+    assertThat(ParserUtils.getAst(getRunner().run("node.*")), equalTo(expectedNode));
+  }
+
+  @Test
   public void testIpSpacePrefix() {
     assertThat(
         ParserUtils.getAst(getRunner().run("1.1.1.1/1")), equalTo(new PrefixAstNode("1.1.1.1/1")));
