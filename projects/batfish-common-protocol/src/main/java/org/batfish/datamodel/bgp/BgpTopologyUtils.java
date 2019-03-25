@@ -38,7 +38,8 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
+import org.batfish.datamodel.flow.Hop;
+import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
 
 /** Utility functions for computing BGP topology */
@@ -260,27 +261,21 @@ public final class BgpTopologyUtils {
     // we do a bidirectional traceroute only from the initiator to the listener since the other
     // direction will be checked once we pick up the listener as the source. This is consistent with
     // the directional nature of BGP graph
-    return canTracerouteTo(
+    return canInitiateBgpConnection(
         initiator.getHostname(),
         initiator.getVrfName(),
         srcAddress,
-        NamedPort.EPHEMERAL_LOWEST.number(),
         dstAddress,
-        NamedPort.BGP.number(),
         listener.getHostname(),
         SessionType.isEbgp(BgpSessionProperties.getSessionType(src)) && !src.getEbgpMultihop(),
         tracerouteEngine);
   }
 
-  private BgpTopologyUtils() {}
-
-  private static boolean canTracerouteTo(
+  private static boolean canInitiateBgpConnection(
       @Nonnull String ingressNode,
       @Nonnull String ingressVrf,
       @Nonnull Ip srcIp,
-      int srcPort,
       @Nonnull Ip dstIp,
-      int dstPort,
       @Nonnull String finalNode,
       boolean singleHop,
       @Nonnull TracerouteEngine tracerouteEngine) {
@@ -294,8 +289,8 @@ public final class BgpTopologyUtils {
             .setIngressVrf(ingressVrf)
             .setSrcIp(srcIp)
             .setDstIp(dstIp)
-            .setSrcPort(srcPort)
-            .setDstPort(dstPort)
+            .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
+            .setDstPort(NamedPort.BGP.number())
             .build();
 
     List<TraceAndReverseFlow> forwardTracesAndReverseFlows =
@@ -303,60 +298,38 @@ public final class BgpTopologyUtils {
             .computeTracesAndReverseFlows(ImmutableSet.of(flowFromSrc), false)
             .get(flowFromSrc);
 
-    List<FlowAndSessions> reverseFlowAndSessions =
+    List<TraceAndReverseFlow> reverseTraces =
         forwardTracesAndReverseFlows.stream()
             .filter(
-                traceAndReverseFlow ->
-                    (!singleHop || traceAndReverseFlow.getTrace().getHops().size() <= 2))
+                traceAndReverseFlow -> {
+                  Trace forwardTrace = traceAndReverseFlow.getTrace();
+                  return forwardTrace.getDisposition() == FlowDisposition.ACCEPTED
+                      && (!singleHop || forwardTrace.getHops().size() <= 2);
+                })
             .filter(
-                traceAndReverseFlows ->
-                    traceAndReverseFlows.getReverseFlow() != null
-                        && traceAndReverseFlows.getReverseFlow().getIngressNode().equals(finalNode))
-            .map(
                 traceAndReverseFlow ->
-                    new FlowAndSessions(
-                        traceAndReverseFlow.getReverseFlow(),
-                        traceAndReverseFlow.getNewFirewallSessions()))
+                    traceAndReverseFlow.getReverseFlow() != null
+                        && traceAndReverseFlow.getReverseFlow().getIngressNode().equals(finalNode))
+            .flatMap(
+                traceAndReverseFlow ->
+                    tracerouteEngine
+                        .computeTracesAndReverseFlows(
+                            ImmutableSet.of(traceAndReverseFlow.getReverseFlow()),
+                            traceAndReverseFlow.getNewFirewallSessions(),
+                            false)
+                        .get(traceAndReverseFlow.getReverseFlow()).stream())
             .collect(ImmutableList.toImmutableList());
 
-    for (FlowAndSessions flowAndSessions : reverseFlowAndSessions) {
-      if (tracerouteEngine
-          .computeTracesAndReverseFlows(
-              ImmutableSet.of(flowAndSessions._flow), flowAndSessions._sessions, false)
-          .get(flowAndSessions._flow).stream()
-          .anyMatch(
-              traceAndReverseFlow ->
-                  traceAndReverseFlow.getTrace().getDisposition() == FlowDisposition.ACCEPTED)) {
-        return true;
-      }
-    }
-    return false;
+    return reverseTraces.stream()
+        .anyMatch(
+            traceAndReverseFlow -> {
+              Trace reverseTrace = traceAndReverseFlow.getTrace();
+              List<Hop> hops = reverseTrace.getHops();
+              return !hops.isEmpty()
+                  && hops.get(hops.size() - 1).getNode().getName().equals(ingressNode)
+                  && reverseTrace.getDisposition() == FlowDisposition.ACCEPTED;
+            });
   }
 
-  private static final class FlowAndSessions {
-    final Flow _flow;
-    final Set<FirewallSessionTraceInfo> _sessions;
-
-    FlowAndSessions(Flow flow, Set<FirewallSessionTraceInfo> sessions) {
-      _flow = flow;
-      _sessions = sessions;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (!(o instanceof FlowAndSessions)) {
-        return false;
-      }
-      FlowAndSessions that = (FlowAndSessions) o;
-      return Objects.equals(_flow, that._flow) && Objects.equals(_sessions, that._sessions);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(_flow, _sessions);
-    }
-  }
+  private BgpTopologyUtils() {}
 }
