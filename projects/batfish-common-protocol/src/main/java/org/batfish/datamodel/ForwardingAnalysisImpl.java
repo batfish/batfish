@@ -74,6 +74,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
           new MemoizedIpSpaceToBDD(new BDDPacket().getDstIp(), ImmutableMap.of());
 
       // IPs belonging to any interface in the network, even inactive interfaces
+      // node -> interface -> IPs owned by that interface
       Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
           TopologyUtil.computeInterfaceOwnedIps(configurations, /*excludeInactive=*/ false);
       IpSpace ownedIps = computeOwnedIps(interfaceOwnedIps);
