@@ -35,12 +35,10 @@ public final class PreprocessJuniper {
         .preprocessJuniper(inputPath, outputPath);
   }
 
-  private final @Nonnull Batfish _batfish;
   private final @Nonnull BatfishLogger _logger;
   private final @Nonnull Settings _settings;
 
   private PreprocessJuniper(Batfish batfish) {
-    _batfish = batfish;
     _logger = batfish.getSettings().getLogger();
     _settings = batfish.getSettings();
   }
