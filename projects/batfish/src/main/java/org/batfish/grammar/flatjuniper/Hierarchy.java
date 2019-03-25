@@ -143,6 +143,10 @@ public final class Hierarchy {
       protected Set<String> _blacklistedGroups;
       private Map<String, HierarchyChildNode> _children;
 
+      /**
+       * Add a set line to {@code output} prefixed by {@code prefix} for each path from this node to
+       * a leaf.
+       */
       protected final void dump(@Nonnull StringBuilder prefix, @Nonnull StringBuilder output) {
         String prefixString = prefix.toString();
         _children.forEach(
@@ -691,6 +695,10 @@ public final class Hierarchy {
       node.addBlacklistedGroup(groupName);
     }
 
+    /**
+     * Dump string composed of set lines corresponding to this tree. One set line is produced for
+     * each path from the root to a leaf.
+     */
     private @Nonnull String dump(@Nonnull String header) {
       StringBuilder output = new StringBuilder(header);
       _root.dump(new StringBuilder("set"), output);
@@ -777,6 +785,10 @@ public final class Hierarchy {
     return _tokenInputs;
   }
 
+  /**
+   * Dump flat Juniper set lines corresponding to the master tree, i.e. all the set lines in the
+   * configuration from which this {@link Hierarchy} was produced.
+   */
   public @Nonnull String dump(@Nonnull String header) {
     return _masterTree.dump(header);
   }
