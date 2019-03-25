@@ -8,6 +8,7 @@ import static org.batfish.representation.cisco.CiscoConfiguration.MATCH_DEFAULT_
 import static org.batfish.representation.cisco.CiscoConfiguration.MATCH_DEFAULT_ROUTE6;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpCommonExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpDefaultRouteExportPolicyName;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpGenerationPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerImportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeProtocolObjectGroupAclName;
@@ -233,26 +234,25 @@ class CiscoConversions {
   }
 
   /**
-   * Generates and returns a {@link RoutingPolicy} that matches routes that should be aggregated for
-   * aggregate network indicated by the given {@link Prefix}.
+   * Creates a generation policy for the aggregate network with the given {@link Prefix}. The
+   * generation policy matches any route with a destination more specific than {@code prefix}.
    *
-   * <p>Does the bookkeeping in the provided {@link Configuration} to ensure the generated policy is
-   * available and tracked.
+   * @param c {@link Configuration} in which to create the generation policy
+   * @param vrfName Name of VRF in which the aggregate network exists
+   * @param prefix The aggregate network prefix
    */
-  static RoutingPolicy generateAggregateRoutePolicy(
-      Configuration c, String vrfName, Prefix prefix) {
-    BooleanExpr matchLongerNetworks =
-        new MatchPrefixSet(
-            DestinationNetwork.instance(),
-            new ExplicitPrefixSet(new PrefixSpace(PrefixRange.moreSpecificThan(prefix))));
-    If currentGeneratedRouteConditional =
-        new If(matchLongerNetworks, singletonList(Statements.ReturnTrue.toStaticStatement()));
-
-    RoutingPolicy policy =
-        new RoutingPolicy("~AGGREGATE_ROUTE_GEN:" + vrfName + ":" + prefix + "~", c);
-    policy.setStatements(ImmutableList.of(currentGeneratedRouteConditional));
-    c.getRoutingPolicies().put(policy.getName(), policy);
-    return policy;
+  static void generateGenerationPolicy(Configuration c, String vrfName, Prefix prefix) {
+    RoutingPolicy.builder()
+        .setOwner(c)
+        .setName(computeBgpGenerationPolicyName(true, vrfName, prefix.toString()))
+        .addStatement(
+            new If(
+                // Match routes with destination networks more specific than prefix.
+                new MatchPrefixSet(
+                    DestinationNetwork.instance(),
+                    new ExplicitPrefixSet(new PrefixSpace(PrefixRange.moreSpecificThan(prefix)))),
+                singletonList(Statements.ReturnTrue.toStaticStatement())))
+        .build();
   }
 
   /**
