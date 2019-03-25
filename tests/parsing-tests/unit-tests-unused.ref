@@ -2675,7 +2675,7 @@
         "Source_Lines" : {
           "filename" : "configs/juniper_interfaces",
           "lines" : [
-            23
+            24
           ]
         }
       },
@@ -2685,8 +2685,8 @@
         "Source_Lines" : {
           "filename" : "configs/juniper_interfaces",
           "lines" : [
-            25,
-            26
+            26,
+            27
           ]
         }
       },
