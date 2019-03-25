@@ -1,7 +1,6 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Ordering.natural;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 
@@ -1032,44 +1031,72 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       Map<String, Map<String, Map<String, IpSpace>>> ipSpaces1,
       Map<String, Map<String, Map<String, IpSpace>>> ipSpaces2,
       BiFunction<IpSpace, IpSpace, IpSpace> op) {
-    checkArgument(
-        ipSpaces1.keySet().equals(ipSpaces2.keySet()),
-        "Can't merge with different nodes: %s and %s",
-        ipSpaces1.keySet(),
-        ipSpaces2.keySet());
+
+    ImmutableMap.Builder<String, Map<String, Map<String, IpSpace>>> nodeRetMap =
+        ImmutableMap.builder();
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.merge").startActive()) {
       assert span != null; // avoid unused warning
-      return toImmutableMap(
-          ipSpaces1,
-          Entry::getKey, /* hostname */
-          nodeEntry -> {
-            Map<String, Map<String, IpSpace>> nodeIpSpace2 = ipSpaces2.get(nodeEntry.getKey());
-            checkArgument(
-                nodeIpSpace2.keySet().equals(nodeEntry.getValue().keySet()),
-                "Can't merge with different VRFs in node %s: %s and %s",
-                nodeEntry.getKey(),
-                nodeEntry.getValue().keySet(),
-                nodeIpSpace2.keySet());
-            return toImmutableMap(
-                nodeEntry.getValue(),
-                Entry::getKey, /* vrf */
-                vrfEntry -> {
-                  Map<String, IpSpace> vrfIpSpaces2 = nodeIpSpace2.get(vrfEntry.getKey());
-                  checkArgument(
-                      vrfIpSpaces2.keySet().equals(vrfEntry.getValue().keySet()),
-                      "Can't merge with different interfaces in node %s VRF %s: %s and %s",
-                      nodeEntry.getKey(),
-                      vrfEntry.getKey(),
-                      vrfEntry.getValue().keySet(),
-                      vrfIpSpaces2.keySet());
-                  return toImmutableMap(
-                      vrfEntry.getValue(),
-                      Entry::getKey, /* interface */
-                      ifaceEntry ->
-                          op.apply(ifaceEntry.getValue(), vrfIpSpaces2.get(ifaceEntry.getKey())));
-                });
-          });
+      for (String node : Sets.union(ipSpaces1.keySet(), ipSpaces2.keySet())) {
+        ImmutableMap.Builder<String, Map<String, IpSpace>> vrfRetMap = ImmutableMap.builder();
+        Map<String, Map<String, IpSpace>> vrfIpSpaceMap1 =
+            ipSpaces1.getOrDefault(node, ImmutableMap.of());
+        Map<String, Map<String, IpSpace>> vrfIpSpaceMap2 =
+            ipSpaces2.getOrDefault(node, ImmutableMap.of());
+        for (String vrf : Sets.union(vrfIpSpaceMap1.keySet(), vrfIpSpaceMap2.keySet())) {
+          ImmutableMap.Builder<String, IpSpace> ifaceRetMap = ImmutableMap.builder();
+          Map<String, IpSpace> ifaceIpSpaceMap1 =
+              vrfIpSpaceMap1.getOrDefault(vrf, ImmutableMap.of());
+          Map<String, IpSpace> ifaceIpSpaceMap2 =
+              vrfIpSpaceMap2.getOrDefault(vrf, ImmutableMap.of());
+          for (String iface : Sets.union(ifaceIpSpaceMap1.keySet(), ifaceIpSpaceMap2.keySet())) {
+            IpSpace ipspace1 = ifaceIpSpaceMap1.getOrDefault(iface, EmptyIpSpace.INSTANCE);
+            IpSpace ipspace2 = ifaceIpSpaceMap2.getOrDefault(iface, EmptyIpSpace.INSTANCE);
+            ifaceRetMap.put(iface, op.apply(ipspace1, ipspace2));
+          }
+          vrfRetMap.put(vrf, ifaceRetMap.build());
+        }
+        nodeRetMap.put(node, vrfRetMap.build());
+      }
+      return nodeRetMap.build();
+      //      checkArgument(
+      //          ipSpaces1.keySet().equals(ipSpaces2.keySet()),
+      //          "Can't merge with different nodes: %s and %s",
+      //          ipSpaces1.keySet(),
+      //          ipSpaces2.keySet());
+      //
+      //      return toImmutableMap(
+      //          ipSpaces1,
+      //          Entry::getKey, /* hostname */
+      //          nodeEntry -> {
+      //            Map<String, Map<String, IpSpace>> nodeIpSpace2 =
+      // ipSpaces2.get(nodeEntry.getKey());
+      //            checkArgument(
+      //                nodeIpSpace2.keySet().equals(nodeEntry.getValue().keySet()),
+      //                "Can't merge with different VRFs in node %s: %s and %s",
+      //                nodeEntry.getKey(),
+      //                nodeEntry.getValue().keySet(),
+      //                nodeIpSpace2.keySet());
+      //            return toImmutableMap(
+      //                nodeEntry.getValue(),
+      //                Entry::getKey, /* vrf */
+      //                vrfEntry -> {
+      //                  Map<String, IpSpace> vrfIpSpaces2 = nodeIpSpace2.get(vrfEntry.getKey());
+      //                  checkArgument(
+      //                      vrfIpSpaces2.keySet().equals(vrfEntry.getValue().keySet()),
+      //                      "Can't merge with different interfaces in node %s VRF %s: %s and %s",
+      //                      nodeEntry.getKey(),
+      //                      vrfEntry.getKey(),
+      //                      vrfEntry.getValue().keySet(),
+      //                      vrfIpSpaces2.keySet());
+      //                  return toImmutableMap(
+      //                      vrfEntry.getValue(),
+      //                      Entry::getKey, /* interface */
+      //                      ifaceEntry ->
+      //                          op.apply(ifaceEntry.getValue(),
+      // vrfIpSpaces2.get(ifaceEntry.getKey())));
+      //                });
+      //          });
     }
   }
 
