@@ -1,6 +1,7 @@
 package org.batfish.datamodel.bgp;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.graph.ImmutableValueGraph;
@@ -10,6 +11,7 @@ import com.google.common.graph.ValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -18,7 +20,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
@@ -39,7 +40,8 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.flow.Trace;
+import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
+import org.batfish.datamodel.flow.TraceAndReverseFlow;
 
 /** Utility functions for computing BGP topology */
 public final class BgpTopologyUtils {
@@ -243,9 +245,9 @@ public final class BgpTopologyUtils {
    */
   @VisibleForTesting
   public static boolean isReachableBgpNeighbor(
-      BgpPeerConfigId initiator,
-      BgpPeerConfigId listener,
-      BgpActivePeerConfig src,
+      @Nonnull BgpPeerConfigId initiator,
+      @Nonnull BgpPeerConfigId listener,
+      @Nonnull BgpActivePeerConfig src,
       @Nullable TracerouteEngine tracerouteEngine) {
     Ip srcAddress = src.getLocalIp();
     Ip dstAddress = src.getPeerAddress();
@@ -257,71 +259,108 @@ public final class BgpTopologyUtils {
           "Cannot compute neighbor reachability without a traceroute engine");
     }
 
-    /*
-     * Ensure that the session can be established by running traceroute in both directions
-     */
-    Flow.Builder fb = Flow.builder();
-    fb.setIpProtocol(IpProtocol.TCP);
-    fb.setTag("neighbor-resolution");
-
-    fb.setIngressNode(initiator.getHostname());
-    fb.setIngressVrf(initiator.getVrfName());
-    fb.setSrcIp(srcAddress);
-    fb.setDstIp(dstAddress);
-    fb.setSrcPort(NamedPort.EPHEMERAL_LOWEST.number());
-    fb.setDstPort(NamedPort.BGP.number());
-    Flow forwardFlow = fb.build();
-
-    // Execute the "initiate connection" traceroute
-    SortedMap<Flow, List<Trace>> traces =
-        tracerouteEngine.computeTraces(ImmutableSet.of(forwardFlow), false);
-
-    boolean isEbgpSingleHop =
-        SessionType.isEbgp(BgpSessionProperties.getSessionType(src)) && !src.getEbgpMultihop();
-
-    List<Trace> acceptedFlows =
-        traces.get(forwardFlow).stream()
-            .filter(trace -> !isEbgpSingleHop || trace.getHops().size() <= 2)
-            .filter(
-                trace ->
-                    trace.getDisposition() == FlowDisposition.ACCEPTED
-                        && trace.getHops().size() > 0
-                        && trace
-                            .getHops()
-                            .get(trace.getHops().size() - 1)
-                            .getNode()
-                            .getName()
-                            .equals(listener.getHostname()))
-            .collect(Collectors.toList());
-
-    if (acceptedFlows.isEmpty()) {
-      return false;
-    }
-
-    String acceptedHostname = listener.getHostname();
-    // The reply traceroute
-    fb.setIngressNode(acceptedHostname);
-    fb.setIngressVrf(listener.getVrfName());
-    fb.setSrcIp(forwardFlow.getDstIp());
-    fb.setDstIp(forwardFlow.getSrcIp());
-    fb.setSrcPort(forwardFlow.getDstPort());
-    fb.setDstPort(forwardFlow.getSrcPort());
-    Flow backwardFlow = fb.build();
-    traces = tracerouteEngine.computeTraces(ImmutableSet.of(backwardFlow), false);
-
-    // Consider neighbor reachable if any backward flow is accepted.
-    return traces.get(backwardFlow).stream()
-        .anyMatch(
-            trace ->
-                trace.getDisposition() == FlowDisposition.ACCEPTED
-                    && trace.getHops().size() > 0
-                    && trace
-                        .getHops()
-                        .get(trace.getHops().size() - 1)
-                        .getNode()
-                        .getName()
-                        .equals(initiator.getHostname()));
+    // we do a bidirectional traceroute only from the initiator to the listener since the other
+    // direction will be checked once we pick up the listener as the source. This is consistent with
+    // the directional nature of BGP graph
+    return canTracerouteTo(
+        initiator.getHostname(),
+        initiator.getVrfName(),
+        srcAddress,
+        NamedPort.EPHEMERAL_LOWEST.number(),
+        dstAddress,
+        NamedPort.BGP.number(),
+        listener.getHostname(),
+        SessionType.isEbgp(BgpSessionProperties.getSessionType(src)) && !src.getEbgpMultihop(),
+        tracerouteEngine);
   }
 
   private BgpTopologyUtils() {}
+
+  private static boolean canTracerouteTo(
+      @Nonnull String ingressNode,
+      @Nonnull String ingressVrf,
+      @Nonnull Ip srcIp,
+      int srcPort,
+      @Nonnull Ip dstIp,
+      int dstPort,
+      @Nonnull String finalNode,
+      boolean singleHop,
+      @Nonnull TracerouteEngine tracerouteEngine) {
+
+    Flow flowFromSrc =
+        Flow.builder()
+            .setIpProtocol(IpProtocol.TCP)
+            .setTcpFlagsSyn(1)
+            .setTag("neighbor-resolution")
+            .setIngressNode(ingressNode)
+            .setIngressVrf(ingressVrf)
+            .setSrcIp(srcIp)
+            .setDstIp(dstIp)
+            .setSrcPort(srcPort)
+            .setDstPort(dstPort)
+            .build();
+
+    SortedMap<Flow, List<TraceAndReverseFlow>> forwardTraces =
+        tracerouteEngine.computeTracesAndReverseFlows(ImmutableSet.of(flowFromSrc), false);
+
+    List<FlowAndSessions> reverseFlowAndSessions =
+        forwardTraces.values().stream()
+            .flatMap(Collection::stream)
+            .filter(
+                traceAndReverseFlow ->
+                    (!singleHop || traceAndReverseFlow.getTrace().getHops().size() <= 2))
+            .filter(
+                traceAndReverseFlows ->
+                    traceAndReverseFlows.getReverseFlow() != null
+                        && traceAndReverseFlows.getReverseFlow().getIngressNode().equals(finalNode))
+            .map(
+                traceAndReverseFlow ->
+                    new FlowAndSessions(
+                        traceAndReverseFlow.getReverseFlow(),
+                        traceAndReverseFlow.getNewFirewallSessions()))
+            .collect(ImmutableList.toImmutableList());
+
+    for (FlowAndSessions flowAndSessions : reverseFlowAndSessions) {
+      Map<Flow, List<TraceAndReverseFlow>> reverseFlowAndTraces =
+          tracerouteEngine.computeTracesAndReverseFlows(
+              ImmutableSet.of(flowAndSessions._flow), flowAndSessions._sessions, false);
+      List<TraceAndReverseFlow> reverseTraces = reverseFlowAndTraces.get(flowAndSessions._flow);
+      if (reverseTraces != null
+          && reverseTraces.stream()
+              .anyMatch(
+                  traceAndReverseFlow ->
+                      traceAndReverseFlow.getTrace().getDisposition()
+                          == FlowDisposition.ACCEPTED)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static final class FlowAndSessions {
+    final Flow _flow;
+    final Set<FirewallSessionTraceInfo> _sessions;
+
+    FlowAndSessions(Flow flow, Set<FirewallSessionTraceInfo> sessions) {
+      _flow = flow;
+      _sessions = sessions;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof FlowAndSessions)) {
+        return false;
+      }
+      FlowAndSessions that = (FlowAndSessions) o;
+      return Objects.equals(_flow, that._flow) && Objects.equals(_sessions, that._sessions);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(_flow, _sessions);
+    }
+  }
 }
