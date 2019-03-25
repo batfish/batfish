@@ -40,10 +40,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   // ARPing for some ARP IP and receiving a reply from the target of the edge.
   private final Map<String, Map<String, Map<Edge, IpSpace>>> _arpTrueEdge;
 
-  // node -> vrf -> interface -> destination IPs for which arp will fail */
+  // node -> vrf -> interface -> destination IPs for which arp will fail
   private final Map<String, Map<String, Map<String, IpSpace>>> _arpFalse;
 
-  // node -> vrf -> destination IPs that will be null routes */
+  // node -> vrf -> destination IPs that will be null routes
   private final Map<String, Map<String, IpSpace>> _nullRoutedIps;
 
   // node -> vrf -> destination IPs that can be routed
