@@ -264,6 +264,7 @@ import org.batfish.common.util.IpsecUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
@@ -1751,23 +1752,74 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosNeighborDefaultOriginate() throws IOException {
+  public void testIosNeighborDefaultOriginateRouteMapsAsGenerationPolicies() throws IOException {
+    /*
+                              Listener 2
+                                  |
+                               (Peer 2)
+       Listener 1 -- (Peer 1) Originator (Peer 3) -- Listener 3
+
+     All listeners have EBGP sessions established with the originator, and the originator has
+     default-originate configured for all three peers. Some peers also have a route-map configured
+     with default-originate, which will act as a generation policy for the default route.
+
+      - Peer 1: default-originate has no route-map attached, but there is a route-map configured as
+        an export policy that denies the default route. However, the default-originate route doesn't
+        go through configured export policies, so should reach listener 1.
+
+      - Peer 2: default-originate has a route-map attached that permits routes to 1.2.3.4; the
+      originator has a static route to 1.2.3.4, so default route should still be generated.
+
+      - Peer 3: default-originate has a route-map attached that permits routes to 5.6.7.8; the
+      originator has no route to 5.6.7.8, so no default route should appear on listener 3.
+    */
     String testrigName = "ios-default-originate";
+    String originatorName = "originator";
+    String l1Name = "listener1";
+    String l2Name = "listener2";
+    String l3Name = "listener3";
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
                 .setConfigurationText(
-                    TESTRIGS_PREFIX + testrigName, ImmutableList.of("originator", "listener"))
+                    TESTRIGS_PREFIX + testrigName,
+                    ImmutableList.of(originatorName, l1Name, l2Name, l3Name))
                 .build(),
             _folder);
 
     batfish.computeDataPlane();
     DataPlane dp = batfish.loadDataPlane();
-    Set<AbstractRoute> routesOnListener =
-        dp.getRibs().get("listener").get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> l1Routes = dp.getRibs().get(l1Name).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> l2Routes = dp.getRibs().get(l2Name).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> l3Routes = dp.getRibs().get(l3Name).get(DEFAULT_VRF_NAME).getRoutes();
 
-    // Ensure that default route is advertised to and installed on listener
-    assertThat(routesOnListener, hasItem(hasPrefix(Prefix.ZERO)));
+    // Listener 1
+    Ip originatorId = Ip.parse("1.1.1.1");
+    Ip originatorIp = Ip.parse("10.1.1.1");
+    Long originatorAs = 1L;
+    BgpRoute expected =
+        BgpRoute.builder()
+            .setNetwork(Prefix.ZERO)
+            .setNextHopIp(originatorIp)
+            .setAdmin(20)
+            .setAsPath(AsPath.of(AsSet.of(originatorAs)))
+            .setLocalPreference(100)
+            .setOriginatorIp(originatorId)
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setSrcProtocol(RoutingProtocol.BGP)
+            .setReceivedFromIp(originatorIp)
+            .build();
+    assertThat(l1Routes, hasItem(expected));
+
+    // Listener 2
+    originatorIp = Ip.parse("10.2.2.1");
+    expected =
+        expected.toBuilder().setNextHopIp(originatorIp).setReceivedFromIp(originatorIp).build();
+    assertThat(l2Routes, hasItem(expected));
+
+    // Listener 3
+    assertThat(l3Routes, not(hasItem(hasPrefix(Prefix.ZERO))));
   }
 
   @Test
