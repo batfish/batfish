@@ -376,7 +376,10 @@ class CiscoConversions {
           .setName(defaultRouteExportPolicyName)
           .addStatement(
               new If(
-                  ipv4 ? MATCH_DEFAULT_ROUTE : MATCH_DEFAULT_ROUTE6,
+                  new Conjunction(
+                      ImmutableList.of(
+                          ipv4 ? MATCH_DEFAULT_ROUTE : MATCH_DEFAULT_ROUTE6,
+                          new MatchProtocol(RoutingProtocol.AGGREGATE))),
                   ImmutableList.of(
                       new SetOrigin(
                           new LiteralOrigin(

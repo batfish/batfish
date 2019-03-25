@@ -35,12 +35,14 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
@@ -393,7 +395,9 @@ final class CiscoNxConversions {
           .setName(defaultRouteExportPolicyName)
           .addStatement(
               new If(
-                  MATCH_DEFAULT_ROUTE,
+                  new Conjunction(
+                      ImmutableList.of(
+                          MATCH_DEFAULT_ROUTE, new MatchProtocol(RoutingProtocol.AGGREGATE))),
                   ImmutableList.of(
                       new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
                       Statements.ReturnTrue.toStaticStatement())))
