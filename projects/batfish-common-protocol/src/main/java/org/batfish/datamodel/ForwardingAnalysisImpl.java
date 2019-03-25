@@ -1044,7 +1044,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                   Map<String, IpSpace> vrfIpSpaces2 = nodeIpSpace2.get(vrfEntry.getKey());
                   checkArgument(
                       vrfIpSpaces2.keySet().equals(vrfEntry.getValue().keySet()),
-                      "Can't merge with different interfaces in node %s VRF %s: %s and %s",
+                      "Can't union with different interfaces in node %s VRF %s: %s and %s",
                       nodeEntry.getKey(),
                       vrfEntry.getKey(),
                       vrfEntry.getValue().keySet(),
