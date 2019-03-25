@@ -7,12 +7,12 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
-import org.batfish.datamodel.answers.PreprocessJuniperAnswerElement;
+import org.batfish.datamodel.answers.AnswerElement;
 
 /** Result storing output of {@link PreprocessJuniperJob}. */
 @ParametersAreNonnullByDefault
 public final class PreprocessJuniperResult
-    extends BatfishJobResult<Map<Path, String>, PreprocessJuniperAnswerElement> {
+    extends BatfishJobResult<Map<Path, String>, AnswerElement> {
 
   private final @Nonnull Path _outputFile;
   private final @Nullable String _outputText;
@@ -46,7 +46,7 @@ public final class PreprocessJuniperResult
   public void applyTo(
       Map<Path, String> outputConfigurationData,
       BatfishLogger logger,
-      PreprocessJuniperAnswerElement answerElement) {
+      AnswerElement answerElement) {
     appendHistory(logger);
     outputConfigurationData.put(_outputFile, _outputText);
   }
