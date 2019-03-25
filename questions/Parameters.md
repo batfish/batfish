@@ -233,7 +233,9 @@ There are two types of locations:
 * `InterfaceLocation`: at the interface, used to model packets that originate or terminate at the interface
 * `InterfaceLinkLocation`: on the link connected to the interface, used to model packets before they enter the interface or after they exit
 
-Unless expilcitly specified, questions like `traceroute` and `reachability` will automatically assign IP addresses to packets based on their location. For `InterfaceLocation`, the set of assigned addresses is the interface address(es). For `InterfaceLinkLocation`, the set of assigned addresses is all addresses in the interface's subnet except for the address(es) of the interface itself. This set is empty for interfaces with `/32` subnets (e.g., loopback interfaces). **TODO: Explain what happens then -- the location is ignored or is assigned ANY address** 
+Unless expilcitly specified, questions like `traceroute` and `reachability` will automatically assign IP addresses to packets based on their location. For `InterfaceLocation`, the set of assigned addresses is the interface address(es). This set is empty for interfaces that do not have an assigned address. For `InterfaceLinkLocation`, the set of assigned addresses corresponds to what (hypothetical) hosts attached to that interface can have, which includes all addresses in the subnet except for the address of the interface and the first and last addresses of the subnet. This set is empty for interface subnets that are `/30` or longer (e.g., loopback interfaces). 
+
+Locations for which Batfish cannot automatically assign a viable IP are ignored. To force their consideration, explicit source IPs must be specified.
 
 Some examples:
 
