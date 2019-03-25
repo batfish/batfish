@@ -11,7 +11,6 @@ import com.google.common.graph.ValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -19,7 +18,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
@@ -300,12 +298,13 @@ public final class BgpTopologyUtils {
             .setDstPort(dstPort)
             .build();
 
-    SortedMap<Flow, List<TraceAndReverseFlow>> forwardTraces =
-        tracerouteEngine.computeTracesAndReverseFlows(ImmutableSet.of(flowFromSrc), false);
+    List<TraceAndReverseFlow> forwardTracesAndReverseFlows =
+        tracerouteEngine
+            .computeTracesAndReverseFlows(ImmutableSet.of(flowFromSrc), false)
+            .get(flowFromSrc);
 
     List<FlowAndSessions> reverseFlowAndSessions =
-        forwardTraces.values().stream()
-            .flatMap(Collection::stream)
+        forwardTracesAndReverseFlows.stream()
             .filter(
                 traceAndReverseFlow ->
                     (!singleHop || traceAndReverseFlow.getTrace().getHops().size() <= 2))
@@ -321,16 +320,13 @@ public final class BgpTopologyUtils {
             .collect(ImmutableList.toImmutableList());
 
     for (FlowAndSessions flowAndSessions : reverseFlowAndSessions) {
-      Map<Flow, List<TraceAndReverseFlow>> reverseFlowAndTraces =
-          tracerouteEngine.computeTracesAndReverseFlows(
-              ImmutableSet.of(flowAndSessions._flow), flowAndSessions._sessions, false);
-      List<TraceAndReverseFlow> reverseTraces = reverseFlowAndTraces.get(flowAndSessions._flow);
-      if (reverseTraces != null
-          && reverseTraces.stream()
-              .anyMatch(
-                  traceAndReverseFlow ->
-                      traceAndReverseFlow.getTrace().getDisposition()
-                          == FlowDisposition.ACCEPTED)) {
+      if (tracerouteEngine
+          .computeTracesAndReverseFlows(
+              ImmutableSet.of(flowAndSessions._flow), flowAndSessions._sessions, false)
+          .get(flowAndSessions._flow).stream()
+          .anyMatch(
+              traceAndReverseFlow ->
+                  traceAndReverseFlow.getTrace().getDisposition() == FlowDisposition.ACCEPTED)) {
         return true;
       }
     }
