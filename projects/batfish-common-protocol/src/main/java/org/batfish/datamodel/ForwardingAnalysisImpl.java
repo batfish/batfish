@@ -1031,7 +1031,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       Map<String, Map<String, Map<String, IpSpace>>> ipSpaces1,
       Map<String, Map<String, Map<String, IpSpace>>> ipSpaces2,
       BiFunction<IpSpace, IpSpace, IpSpace> op) {
-
     ImmutableMap.Builder<String, Map<String, Map<String, IpSpace>>> nodeRetMap =
         ImmutableMap.builder();
     try (ActiveSpan span =
@@ -1059,6 +1058,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
         nodeRetMap.put(node, vrfRetMap.build());
       }
       return nodeRetMap.build();
+      // TODO: decide if this new impl is right or if we believe that merge should only ever be
+      // called with maps where both sides have identical (recursive) key structures.
+      //
       //      checkArgument(
       //          ipSpaces1.keySet().equals(ipSpaces2.keySet()),
       //          "Can't merge with different nodes: %s and %s",
