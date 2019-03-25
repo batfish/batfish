@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkState;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Cumulus_nclu_configurationContext;
@@ -14,7 +13,6 @@ import org.batfish.representation.cumulus.CumulusNcluConfiguration;
  * A listener that builds a {@link CumulusNcluConfiguration} while walking a parse tree produced by
  * {@link CumulusNcluCombinedParser#parse}.
  */
-@ParametersAreNonnullByDefault
 public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListener {
 
   private @Nullable CumulusNcluConfiguration _c;

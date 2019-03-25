@@ -3,7 +3,6 @@ package org.batfish.representation.cumulus;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -12,7 +11,6 @@ import org.batfish.vendor.VendorConfiguration;
 import org.parboiled.common.ImmutableList;
 
 /** A {@link VendorConfiguration} for the Cumulus NCLU configuration language. */
-@ParametersAreNonnullByDefault
 public class CumulusNcluConfiguration extends VendorConfiguration {
 
   private static final long serialVersionUID = 1L;
