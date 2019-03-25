@@ -1509,7 +1509,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     Map<String, Map<String, Map<String, IpSpace>>> union2 = union(union1, getDeliveredToSubnet());
     Map<String, Map<String, Map<String, IpSpace>>> union3 = union(union2, getExitsNetwork());
     assertDeepIpSpaceEquality(unionOthers, union3, ipSpaceToBDD);
-    System.err.println(unionOthers);
     assertDeepIpSpaceEquality(getNeighborUnreachableOrExitsNetwork(), unionOthers, ipSpaceToBDD);
 
     return true;
@@ -1570,8 +1569,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       Map<String, Map<String, Map<String, IpSpace>>> left,
       Map<String, Map<String, Map<String, IpSpace>>> right,
       IpSpaceToBDD toBDD) {
-    //    System.err.println("old method" + left);
-    //    System.err.println("new method" + right);
     assert left.keySet().equals(right.keySet())
         : "Different node sets " + left.keySet() + " " + right.keySet();
     left.forEach(
