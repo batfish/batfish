@@ -3,7 +3,6 @@ package org.batfish.grammar.flatjuniper;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
@@ -32,15 +31,15 @@ public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
   @Override
   public void processParseTree(ParserRuleContext tree) {
     Hierarchy hierarchy = new Hierarchy();
-    ParseTreeWalker walker = new BatfishParseTreeWalker(_parser);
-
-    PreprocessJuniperExtractor.preprocess(hierarchy, _text, _parser, _w, walker, tree);
+    // Pre-process parse tree
+    PreprocessJuniperExtractor.preprocess(hierarchy, _text, _parser, _w, tree);
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("FlatJuniper::ConfigurationBuilder").startActive()) {
       assert span != null; // avoid unused warning
+      // Build configuration from pre-processed parse tree
       ConfigurationBuilder cb =
           new ConfigurationBuilder(_parser, _text, _w, hierarchy.getTokenInputs());
-      walker.walk(cb, tree);
+      new BatfishParseTreeWalker(_parser).walk(cb, tree);
       _configuration = cb.getConfiguration();
     }
   }

@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
+/** Test of {@link PreprocessJuniper}. */
 @ParametersAreNonnullByDefault
 public final class PreprocessJuniperTest {
 

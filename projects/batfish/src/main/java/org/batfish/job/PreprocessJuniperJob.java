@@ -17,6 +17,10 @@ import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
 import org.batfish.main.ParserBatfishException;
 
+/**
+ * Job that performs Juniper pre-processing on a configuration file, and returns the output. If the
+ * input is a non-Juniper configuration, its text is returned unmodified.
+ */
 @ParametersAreNonnullByDefault
 public final class PreprocessJuniperJob extends BatfishJob<PreprocessJuniperResult> {
 
@@ -41,6 +45,8 @@ public final class PreprocessJuniperJob extends BatfishJob<PreprocessJuniperResu
     String inputFileAsString = _inputFile.toAbsolutePath().toString();
     String flatConfigText;
     FlattenerLineMap lineMap;
+    // If flat Juniper, proceed with original input text. If hierarchical Juniper, flatten first. If
+    // non-Juniper, just return the original text.
     switch (VendorConfigurationFormatDetector.identifyConfigurationFormat(_fileText)) {
       case FLAT_JUNIPER:
         flatConfigText = _fileText;
@@ -85,12 +91,14 @@ public final class PreprocessJuniperJob extends BatfishJob<PreprocessJuniperResu
         return new PreprocessJuniperResult(
             elapsedTime, _logger.getHistory(), _outputFile, _fileText);
     }
+
     _logger.debugf("Preprocessing Juniper config: \"%s\"...", _inputFile);
     FlatJuniperCombinedParser parser =
         new FlatJuniperCombinedParser(flatConfigText, _settings, lineMap);
     PreprocessJuniperExtractor extractor =
         new PreprocessJuniperExtractor(flatConfigText, parser, _warnings);
     _logger.info("\tParsing...");
+    // Parse the flat Juniper text
     ParserRuleContext tree = Batfish.parse(parser, _logger, _settings);
 
     if (!parser.getErrors().isEmpty()) {
@@ -104,6 +112,7 @@ public final class PreprocessJuniperJob extends BatfishJob<PreprocessJuniperResu
       _logger.info("\tPost-processing...");
 
       try {
+        // Pre-process the initial flat Juniper parse tree
         extractor.processParseTree(tree);
       } catch (BatfishParseException e) {
         _warnings.setErrorDetails(e.getErrorDetails());
@@ -116,6 +125,7 @@ public final class PreprocessJuniperJob extends BatfishJob<PreprocessJuniperResu
     }
 
     elapsedTime = System.currentTimeMillis() - startTime;
+    // Return configuration text corresponding to the pre-processed parse tree.
     return new PreprocessJuniperResult(
         elapsedTime,
         _logger.getHistory(),

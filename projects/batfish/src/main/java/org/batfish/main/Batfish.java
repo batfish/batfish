@@ -1135,6 +1135,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
+  /**
+   * Pre-process Juniper configs in snapshot stored at {@code inputPath}, and dump to {@code
+   * outputPath}. Non-Juniper configs are copied unprocessed.
+   */
   public void preprocessJuniper(@Nonnull Path inputPath, @Nonnull Path outputPath) {
     _logger.info("\n*** READING INPUT FILES ***\n");
     Map<Path, String> configurationData =

@@ -9,6 +9,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
 import org.batfish.datamodel.answers.PreprocessJuniperAnswerElement;
 
+/** Result storing output of {@link PreprocessJuniperJob}. */
 @ParametersAreNonnullByDefault
 public final class PreprocessJuniperResult
     extends BatfishJobResult<Map<Path, String>, PreprocessJuniperAnswerElement> {
