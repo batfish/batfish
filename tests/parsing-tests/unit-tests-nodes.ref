@@ -15709,7 +15709,7 @@
             "declaredNames" : [
               "xe-0/0/0"
             ],
-            "mtu" : 1500,
+            "mtu" : 9300,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -15737,7 +15737,7 @@
             "declaredNames" : [
               "xe-0/0/0:0"
             ],
-            "mtu" : 1500,
+            "mtu" : 9300,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -20107,6 +20107,35 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
             "vrf" : "default"
+          },
+          "xe-0/0/6" : {
+            "name" : "xe-0/0/6",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E10,
+            "declaredNames" : [
+              "xe-0/0/6"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 11,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
           }
         },
         "vendorFamily" : {
@@ -20172,7 +20201,8 @@
               "xe-0/0/0:0",
               "xe-0/0/0:0.0",
               "xe-0/0/5:0",
-              "xe-0/0/5:0.0"
+              "xe-0/0/5:0.0",
+              "xe-0/0/6"
             ]
           }
         }
@@ -32036,7 +32066,7 @@
           },
           "xe-0/0/4" : {
             "name" : "xe-0/0/4",
-            "active" : true,
+            "active" : false,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
@@ -32064,7 +32094,7 @@
           },
           "xe-0/0/4.0" : {
             "name" : "xe-0/0/4.0",
-            "active" : true,
+            "active" : false,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },

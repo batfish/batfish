@@ -197,6 +197,7 @@ public class Interface implements Serializable {
     return _isoAddress;
   }
 
+  @Nullable
   public Integer getMtu() {
     return _mtu;
   }
@@ -419,5 +420,10 @@ public class Interface implements Serializable {
 
   public @Nullable Integer getTcpMss() {
     return _tcpMss;
+  }
+
+  @Override
+  public String toString() {
+    return _name + " parent=" + _parent;
   }
 }

@@ -18,6 +18,7 @@ set interfaces irb unit 5 family inet address 1.2.3.0/24 vrrp-group 5 authentica
 set interfaces irb unit 5 family inet address 1.2.3.0/24 vrrp-group 5 authentication-key "$9$dLV2aZGi.fzDiORSeXxDikqmT"
 set interfaces irb unit 5 family inet tcp-mss 1400
 set interfaces xe-0/0/5:0 unit 0 family ethernet-switching vlan members bippetyboppety
+set interfaces xe-0/0/6 native-vlan-id 11
 set interfaces vme unit 0 family inet address 100.100.100.100/32
 #
 set routing-instances SOME_INSTANCE interface ge-0/0/1
