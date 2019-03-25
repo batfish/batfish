@@ -1,5 +1,6 @@
 package org.batfish.grammar.cumulus_nclu;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.Warnings;
@@ -8,12 +9,17 @@ import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
+/**
+ * A {@link ControlPlaneExtractor} that produces a {@link CumulusNcluConfiguration} from a parse
+ * tree returned by {@link CumulusNcluCombinedParser#parse}.
+ */
+@ParametersAreNonnullByDefault
 public class CumulusNcluControlPlaneExtractor implements ControlPlaneExtractor {
 
+  private CumulusNcluConfiguration _configuration;
   private final CumulusNcluCombinedParser _parser;
   private final String _text;
   private final Warnings _w;
-  private CumulusNcluConfiguration _configuration;
 
   public CumulusNcluControlPlaneExtractor(
       String fileText, CumulusNcluCombinedParser combinedParser, Warnings warnings) {

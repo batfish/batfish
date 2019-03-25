@@ -1,5 +1,7 @@
 package org.batfish.grammar.cumulus_nclu;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -8,6 +10,10 @@ import org.batfish.common.Warnings;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Cumulus_nclu_configurationContext;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 
+/**
+ * A listener that builds a {@link CumulusNcluConfiguration} while walking a parse tree produced by
+ * {@link CumulusNcluCombinedParser#parse}.
+ */
 @ParametersAreNonnullByDefault
 public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListener {
 
@@ -36,7 +42,16 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     _c = new CumulusNcluConfiguration();
   }
 
-  public @Nullable CumulusNcluConfiguration getConfiguration() {
+  /**
+   * Returns built {@link CumulusNcluConfiguration}.
+   *
+   * @throws IllegalStateException if called before walking parse tree produced by {@link
+   *     CumulusNcluCombinedParser#parse}
+   */
+  public @Nonnull CumulusNcluConfiguration getConfiguration() {
+    checkState(
+        _c != null,
+        "Cannot return vendor configuration before walking valid Cumulus NCLU parse tree");
     return _c;
   }
 

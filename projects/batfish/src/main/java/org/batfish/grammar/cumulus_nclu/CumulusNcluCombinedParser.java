@@ -4,7 +4,8 @@ import org.batfish.config.Settings;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Cumulus_nclu_configurationContext;
 
-public class CumulusNcluCombinedParser
+/** A {@link BatfishCombinedParser} for Cumulus NCLU configuration files. */
+public final class CumulusNcluCombinedParser
     extends BatfishCombinedParser<CumulusNcluParser, CumulusNcluLexer> {
 
   public CumulusNcluCombinedParser(String input, Settings settings) {
