@@ -25,7 +25,7 @@ public final class PreprocessJuniperTest {
 
   /**
    * Equivalent to calling {@link PreprocessJuniperTest#assertValidPair(String,String)} with {@code
-   * prefix} set to {@code TESTCONFIGS_PREFIX}.
+   * prefix} set to {@code JUNIPER_TESTCONFIGS_PREFIX}.
    */
   private void assertValidPair(String before, String after) {
     assertValidPair(JUNIPER_TESTCONFIGS_PREFIX, before, after);
