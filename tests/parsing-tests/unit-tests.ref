@@ -57814,6 +57814,20 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
+            "                name = INTERFACE_NAME:'xe-0/0/6'  <== mode:M_Interface)",
+            "              (i_native_vlan_id",
+            "                NATIVE_VLAN_ID:'native-vlan-id'",
+            "                id = DEC:'11'))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
             "                name = INTERFACE_NAME:'vme'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
@@ -76639,13 +76653,13 @@
             },
             "vme" : {
               "definitionLines" : [
-                21
+                22
               ],
               "numReferrers" : 1
             },
             "vme.0" : {
               "definitionLines" : [
-                21
+                22
               ],
               "numReferrers" : 1
             },
@@ -76673,12 +76687,18 @@
                 20
               ],
               "numReferrers" : 1
+            },
+            "xe-0/0/6" : {
+              "definitionLines" : [
+                21
+              ],
+              "numReferrers" : 1
             }
           },
           "routing-instance" : {
             "SOME_INSTANCE" : {
               "definitionLines" : [
-                23
+                24
               ],
               "numReferrers" : 0
             }
@@ -76686,8 +76706,8 @@
           "vlan" : {
             "unused-vlan" : {
               "definitionLines" : [
-                25,
-                26
+                26,
+                27
               ],
               "numReferrers" : 0
             }
@@ -80999,7 +81019,7 @@
             },
             "ge-0/0/1" : {
               "routing-instance interface" : [
-                23
+                24
               ]
             },
             "ge-1/0/0" : {
@@ -81071,12 +81091,12 @@
             },
             "vme" : {
               "interface" : [
-                21
+                22
               ]
             },
             "vme.0" : {
               "interface" : [
-                21
+                22
               ]
             },
             "xe-0/0/0:0" : {
@@ -81098,6 +81118,11 @@
             "xe-0/0/5:0.0" : {
               "interface" : [
                 20
+              ]
+            },
+            "xe-0/0/6" : {
+              "interface" : [
+                21
               ]
             }
           },
@@ -83622,7 +83647,7 @@
           "interface" : {
             "ge-0/0/1" : {
               "routing-instance interface" : [
-                23
+                24
               ]
             }
           },
