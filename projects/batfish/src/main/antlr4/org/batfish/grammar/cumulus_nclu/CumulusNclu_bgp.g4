@@ -35,6 +35,7 @@ b_ipv4_unicast
   (
     bi4_network
     | bi4_redistribute_connected
+    | bi4_redistribute_static
   )
 ;
 
