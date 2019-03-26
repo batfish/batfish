@@ -4,6 +4,11 @@ options {
   superClass = 'org.batfish.grammar.BatfishLexer';
 }
 
+tokens {
+  EXTRA_CONFIGURATION,
+  EXTRA_CONFIGURATION_FOOTER
+}
+
 @members {
 // Java code to end up in F5BigipImishLexer.java goes here
 
@@ -21,9 +26,244 @@ public void emit(Token token) {
 
 // Keywords
 
+ACCESS
+:
+  'access'
+;
+
+ACTIVATE
+:
+  'activate'
+;
+
 ADD
 :
   'add'
+;
+
+ADDRESS
+:
+  'address'
+;
+
+ADDRESS_VIRTUAL
+:
+  'address-virtual'
+;
+
+ADVERTISE
+:
+  'advertise'
+;
+
+ADVERTISE_ALL_VNI
+:
+  'advertise-all-vni'
+;
+
+ADVERTISE_DEFAULT_GW
+:
+  'advertise-default-gw'
+;
+
+ALERTS
+:
+  'alerts'
+;
+
+ARP_ND_SUPPRESS
+:
+  'arp-nd-suppress'
+;
+
+AUTO
+:
+  'auto'
+;
+
+AUTONOMOUS_SYSTEM
+:
+  'autonomous-system'
+;
+
+BACKUP_IP
+:
+  'backup-ip'
+;
+
+BGP
+:
+  'bgp'
+;
+
+BOND
+:
+  'bond'
+;
+
+BPDUGUARD
+:
+  'bpduguard'
+;
+
+BRIDGE
+:
+  'bridge'
+;
+
+CLAG
+:
+  'clag'
+;
+
+CONNECTED
+:
+  'connected'
+;
+
+CRITICAL
+:
+  'critical'
+;
+
+DATACENTER
+:
+  'datacenter'
+;
+
+DEBUGGING
+:
+  'debugging'
+;
+
+DEFAULTS
+:
+  'defaults'
+;
+
+DENY
+:
+  'deny'
+;
+
+DNS
+:
+  'dns'
+;
+
+EMERGENCIES
+:
+  'emergencies'
+;
+
+ERRORS
+:
+  'errors'
+;
+
+EVPN
+:
+  'evpn'
+;
+
+EXTERNAL
+:
+  'external'
+;
+
+ID
+:
+  'id'
+;
+
+INFORMATIONAL
+:
+  'informational'
+;
+
+INTEGRATED_VTYSH_CONFIG
+:
+  'integrated-vtysh-config'
+;
+
+INTERFACE
+:
+  'interface'
+;
+
+IP
+:
+  'ip'
+;
+
+IPV4
+:
+  'ipv4'
+;
+
+IPV6
+:
+  'ipv6'
+;
+
+L2VPN
+:
+  'l2vpn'
+;
+
+LEARNING
+:
+  'learning'
+;
+
+LO
+:
+  'lo'
+;
+
+LOCAL_TUNNELIP
+:
+  'local-tunnelip'
+;
+
+LOG
+:
+  'LOG'
+;
+
+LOOPBACK
+:
+  'loopback'
+;
+
+MATCH
+:
+  'match'
+;
+
+NAMESERVER
+:
+  'nameserver'
+;
+
+NEIGHBOR
+:
+  'neighbor'
+;
+
+NETWORK
+:
+  'network'
+;
+
+NOTIFICATIONS
+:
+  'notifications'
+;
+
+SLAVES
+:
+  'slaves'
 ;
 
 COMMIT
@@ -36,17 +276,202 @@ DEL
   'del'
 ;
 
+HOSTNAME
+:
+  'hostname'
+;
+
 NET
 :
   'net'
 ;
 
-SUDO
+NTP
 :
-  'sudo'
+  'ntp'
+;
+
+OFF
+:
+  'off'
+;
+
+ON
+:
+  'on'
+;
+
+PEER_IP
+:
+  'peer-ip'
+;
+
+PERMIT
+:
+  'permit'
+;
+
+PORTBPDUFILTER
+:
+  'portbpdufilter'
+;
+
+PORTS
+:
+  'ports'
+;
+
+PRIORITY
+:
+  'priority'
+;
+
+REDISTRIBUTE
+:
+  'redistribute'
+;
+
+REMOTE_AS
+:
+  'remote-as'
+;
+
+ROUTE
+:
+  'route'
+;
+
+ROUTE_MAP
+:
+  'route-map'
+;
+
+ROUTER_ID
+:
+  'router-id'
+;
+
+ROUTING
+:
+  'routing'
+;
+
+SERVER
+:
+  'server'
+;
+
+SERVICE
+:
+  'service'
+;
+
+SOURCE
+:
+  'source'
+;
+
+STATIC
+:
+  'static'
+;
+
+STP
+:
+  'stp'
+;
+
+SYS_MAC
+:
+  'sys-mac'
+;
+
+SYSLOG
+:
+  'syslog'
+;
+
+TIME
+:
+  'time'
+;
+
+UNICAST
+:
+  'unicast'
+;
+
+VIDS
+:
+  'vids'
+;
+
+VLAN
+:
+  'vlan'
+;
+
+VLAN_AWARE
+:
+  'vlan-aware'
+;
+
+VLAN_ID
+:
+  'vlan-id'
+;
+
+VLAN_RAW_DEVICE
+:
+  'vlan-raw-device'
+;
+
+VNI
+:
+  'vni'
+;
+
+VRF
+:
+  'vrf'
+;
+
+VRF_TABLE
+:
+  'vrf-table'
+;
+
+VXLAN
+:
+  'vxlan'
+;
+
+VXLAN_ANYCAST_IP
+:
+  'vxlan-anycast-ip'
+;
+
+WARNINGS
+:
+  'warnings'
+;
+
+ZONE
+:
+  'zone'
 ;
 
 // Complex tokens
+
+EXTRA_CONFIGURATION_HEADER
+:
+  'sudo sh -c "printf \'' -> pushMode ( M_Printf )
+;
+
+COMMA
+:
+  ','
+;
 
 COMMENT_LINE
 :
@@ -61,6 +486,11 @@ COMMENT_LINE
 COMMENT_TAIL
 :
   '#' F_NonNewlineChar* -> channel ( HIDDEN )
+;
+
+DASH
+:
+  '-'
 ;
 
 DEC
@@ -88,14 +518,24 @@ IPV6_PREFIX
   F_Ipv6Prefix
 ;
 
+MAC_ADDRESS
+:
+  F_MacAddress
+;
+
 NEWLINE
 :
   F_Newline+
 ;
 
+NUMBERED_WORD
+:
+  F_NumberedWord
+;
+
 WORD
 :
-  F_WordChar+
+  F_Word
 ;
 
 WS
@@ -107,17 +547,9 @@ WS
 // Fragments
 
 fragment
-F_Newline
+F_Alpha
 :
-  [\r\n] // carriage return or line feed
-
-;
-
-fragment
-F_NonNewlineChar
-:
-  ~[\r\n] // carriage return or line feed
-
+  [A-Za-z]
 ;
 
 fragment
@@ -325,9 +757,36 @@ F_Ipv6PrefixLength
 ;
 
 fragment
+F_MacAddress
+:
+  F_HexDigit F_HexDigit ':' F_HexDigit F_HexDigit ':' F_HexDigit F_HexDigit ':'
+  F_HexDigit F_HexDigit ':' F_HexDigit F_HexDigit ':' F_HexDigit F_HexDigit
+;
+
+fragment
+F_Newline
+:
+  [\r\n] // carriage return or line feed
+
+;
+
+fragment
+F_NonNewlineChar
+:
+  ~[\r\n] // carriage return or line feed
+
+;
+
+fragment
 F_NonWhitespaceChar
 :
   ~[\r\n \t\u000C]
+;
+
+fragment
+F_NumberedWord
+:
+  F_Word F_Digit+
 ;
 
 fragment
@@ -362,10 +821,36 @@ F_Whitespace
 ;
 
 fragment
-F_WordChar
+F_Word
 :
-  ~[ \t\n\r{}[\]]
+  F_WordSegment
+  (
+    '-' F_WordSegment
+  )*
 ;
 
-// Lexer modes
+fragment
+F_WordChar
+:
+  ~( [ \t\n\r{}[\],] | '-' )
+;
 
+fragment
+F_WordSegment
+:
+  F_Alpha F_WordChar*
+  | F_Digit F_WordChar* F_Alpha F_WordChar*
+;
+
+// Lexer Modes
+mode M_Printf;
+
+M_Printf_EXTRA_CONFIGURATION
+:
+  ~'\''+ -> type ( EXTRA_CONFIGURATION )
+;
+
+M_Printf_EXTRA_CONFIGURATION_FOOTER
+:
+  '\' >> /etc/frr/frr.conf"' -> type ( EXTRA_CONFIGURATION_FOOTER ) , popMode
+;
