@@ -43,11 +43,10 @@ public final class SetWeight extends Statement {
 
   @Override
   public Result execute(Environment environment) {
-    Result result = new Result();
     int weight = _weight.evaluate(environment);
     BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment.getOutputRoute();
     bgpRouteBuilder.setWeight(weight);
-    return result;
+    return new Result();
   }
 
   @JsonProperty(PROP_WEIGHT)
