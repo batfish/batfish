@@ -17,6 +17,8 @@ router bgp 1
  bgp router-id 1.1.1.1
  redistribute static route-map SET_TAG_50
  !
+ ! Neither peer will generate default route because PERMIT_1234 will prevent generation.
+ !
  ! Listener 1: no export policy; should redistribute static default route
  neighbor 10.1.1.2 remote-as 2
  neighbor 10.1.1.2 default-originate route-map PERMIT_1234
