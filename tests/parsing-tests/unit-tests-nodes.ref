@@ -13077,6 +13077,14 @@
           }
         }
       },
+      "cumulus_nclu" : {
+        "configurationFormat" : "CUMULUS_NCLU",
+        "name" : "cumulus_nclu",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : { }
+      },
       "eos_mlag" : {
         "configurationFormat" : "ARISTA",
         "name" : "eos_mlag",
