@@ -117,6 +117,9 @@ public class BDDPacket {
 
   private final BDDPairing _swapSourceAndDestinationPairing;
 
+  // Picking representative flows
+  private final BDDRepresentativePicker _picker;
+
   /*
    * Creates a collection of BDD variables representing the
    * various attributes of a control plane advertisement.
@@ -183,6 +186,10 @@ public class BDDPacket {
         swapPairing(
             getDstIp(), getSrcIp(), //
             getDstPort(), getSrcPort());
+
+    _picker =
+        new BDDRepresentativePicker(
+            new BDDFlowConstraintGenerator(this).generateFlowPreference(FlowPreference.DEBUGGING));
   }
 
   /*
@@ -294,11 +301,7 @@ public class BDDPacket {
    * @return A Flow.Builder for a representative of the set, if it's non-empty
    */
   public Optional<Flow.Builder> getFlow(BDD bdd) {
-    BDDFlowConstraintGenerator bddFlowConstraint = new BDDFlowConstraintGenerator(this);
-    BDDRepresentativePicker picker =
-        new BDDRepresentativePicker(
-            bddFlowConstraint.generateFlowPreference(FlowPreference.DEBUGGING));
-    BDD representativeBDD = picker.pickRepresentative(bdd);
+    BDD representativeBDD = _picker.pickRepresentative(bdd);
     if (representativeBDD.isZero()) {
       return Optional.empty();
     }
