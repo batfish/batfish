@@ -52,7 +52,7 @@ s_net_add
   )
 ;
 
-a_bga_bond
+a_bond
 :
   BOND name = word
   (
