@@ -2,6 +2,10 @@ package org.batfish.question.testroutepolicies;
 
 import static org.batfish.datamodel.LineAction.DENY;
 import static org.batfish.datamodel.LineAction.PERMIT;
+import static org.batfish.datamodel.answers.Schema.BGP_ROUTE;
+import static org.batfish.datamodel.answers.Schema.BGP_ROUTE_DIFFS;
+import static org.batfish.datamodel.answers.Schema.NODE;
+import static org.batfish.datamodel.answers.Schema.STRING;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultiset;
@@ -11,10 +15,11 @@ import java.util.Map;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.BgpRouteDiff;
+import org.batfish.datamodel.BgpRouteDiffs;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.answers.AnswerElement;
-import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -69,21 +74,16 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
   public static TableMetadata metadata() {
     List<ColumnMetadata> columnMetadata =
         ImmutableList.of(
-            new ColumnMetadata(COL_NODE, Schema.NODE, "The node that has the policy", true, false),
+            new ColumnMetadata(COL_NODE, NODE, "The node that has the policy", true, false),
+            new ColumnMetadata(COL_POLICY_NAME, STRING, "The name of this policy", true, false),
+            new ColumnMetadata(COL_INPUT_ROUTE, BGP_ROUTE, "The input route", true, false),
             new ColumnMetadata(
-                COL_POLICY_NAME, Schema.STRING, "The name of this policy", true, false),
-            new ColumnMetadata(COL_INPUT_ROUTE, Schema.OBJECT, "The input route", true, false),
+                COL_ACTION, STRING, "The action of the policy on the input route", false, true),
             new ColumnMetadata(
-                COL_ACTION,
-                Schema.STRING,
-                "The action of the policy on the input route",
-                false,
-                true),
-            new ColumnMetadata(
-                COL_OUTPUT_ROUTE, Schema.OBJECT, "The output route, if any", false, true),
+                COL_OUTPUT_ROUTE, BGP_ROUTE, "The output route, if any", false, true),
             new ColumnMetadata(
                 COL_DIFF,
-                Schema.list(Schema.OBJECT),
+                BGP_ROUTE_DIFFS,
                 "The difference between the input and output routes, if any",
                 false,
                 true));
@@ -100,7 +100,9 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .put(COL_INPUT_ROUTE, inputRoute)
         .put(COL_ACTION, action)
         .put(COL_OUTPUT_ROUTE, permit ? outputRoute : null)
-        .put(COL_DIFF, permit ? BgpRouteDiff.routeDiffs(inputRoute, outputRoute) : null)
+        .put(
+            COL_DIFF,
+            permit ? new BgpRouteDiffs(BgpRouteDiff.routeDiffs(inputRoute, outputRoute)) : null)
         .build();
   }
 }

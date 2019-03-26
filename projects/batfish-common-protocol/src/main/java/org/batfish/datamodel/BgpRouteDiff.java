@@ -1,4 +1,4 @@
-package org.batfish.question.testroutepolicies;
+package org.batfish.datamodel;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -21,7 +21,6 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.BgpRoute;
 
 /** A representation of one difference between two routes. */
 @ParametersAreNonnullByDefault
