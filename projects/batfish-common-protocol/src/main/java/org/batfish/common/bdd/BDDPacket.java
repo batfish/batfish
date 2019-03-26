@@ -5,8 +5,6 @@ import static org.batfish.common.bdd.BDDInteger.makeFromIndex;
 import static org.batfish.common.bdd.BDDUtils.isAssignment;
 import static org.batfish.common.bdd.BDDUtils.swapPairing;
 
-import io.opentracing.ActiveSpan;
-import io.opentracing.util.GlobalTracer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -119,9 +117,7 @@ public class BDDPacket {
 
   private final BDDPairing _swapSourceAndDestinationPairing;
 
-  // Constraint generator for picking representative flows
-  private final BDDFlowConstraintGenerator _bddFlowConstraint;
-
+  // Picking representative flows
   private final BDDRepresentativePicker _picker;
 
   /*
@@ -191,10 +187,9 @@ public class BDDPacket {
             getDstIp(), getSrcIp(), //
             getDstPort(), getSrcPort());
 
-    _bddFlowConstraint = new BDDFlowConstraintGenerator(this);
     _picker =
         new BDDRepresentativePicker(
-            _bddFlowConstraint.generateFlowPreference(FlowPreference.DEBUGGING));
+            new BDDFlowConstraintGenerator(this).generateFlowPreference(FlowPreference.DEBUGGING));
   }
 
   /*
@@ -306,14 +301,11 @@ public class BDDPacket {
    * @return A Flow.Builder for a representative of the set, if it's non-empty
    */
   public Optional<Flow.Builder> getFlow(BDD bdd) {
-    try (ActiveSpan span = GlobalTracer.get().buildSpan("BDDPacket.getFlow").startActive()) {
-      assert span != null; // avoid unused warning
-      BDD representativeBDD = _picker.pickRepresentative(bdd);
-      if (representativeBDD.isZero()) {
-        return Optional.empty();
-      }
-      return Optional.of(getFlowFromAssignment(representativeBDD));
+    BDD representativeBDD = _picker.pickRepresentative(bdd);
+    if (representativeBDD.isZero()) {
+      return Optional.empty();
     }
+    return Optional.of(getFlowFromAssignment(representativeBDD));
   }
 
   public Flow.Builder getFlowFromAssignment(BDD satAssignment) {

@@ -13,21 +13,17 @@ public class BDDRepresentativePicker {
   }
 
   public BDD pickRepresentative(BDD bdd) {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("BDDRepresentativePicker.pickRepresentative").startActive()) {
-      assert span != null; // avoid unused warning
-      if (bdd.isZero()) {
-        return bdd;
-      }
-
-      for (BDD preferedBDD : _preference) {
-        BDD newBDD = preferedBDD.and(bdd);
-        if (!newBDD.isZero()) {
-          return newBDD.fullSatOne();
-        }
-      }
-
-      return bdd.fullSatOne();
+    if (bdd.isZero()) {
+      return bdd;
     }
+
+    for (BDD preferedBDD : _preference) {
+      BDD newBDD = preferedBDD.and(bdd);
+      if (!newBDD.isZero()) {
+        return newBDD.fullSatOne();
+      }
+    }
+
+    return bdd.fullSatOne();
   }
 }
