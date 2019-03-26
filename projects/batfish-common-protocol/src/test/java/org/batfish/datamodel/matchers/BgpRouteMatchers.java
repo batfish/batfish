@@ -17,7 +17,7 @@ public final class BgpRouteMatchers {
 
   /**
    * Provides a matcher that matches when the supplied {@code subMatcher} matches the {@link
-   * org.batfish.datamodel.BgpRoute}'s communities.
+   * BgpRoute}'s communities.
    */
   public static @Nonnull Matcher<BgpRoute> hasCommunities(Matcher<? super Set<Long>> subMatcher) {
     return new HasCommunities(subMatcher);
@@ -25,7 +25,7 @@ public final class BgpRouteMatchers {
 
   /**
    * Provides a matcher that matches when the supplied {@code expectedWeight} is equal to the {@link
-   * org.batfish.datamodel.BgpRoute}'s weight.
+   * BgpRoute}'s weight.
    */
   public static @Nonnull Matcher<BgpRoute> hasWeight(int expectedWeight) {
     return new HasWeight(equalTo(expectedWeight));
@@ -33,7 +33,7 @@ public final class BgpRouteMatchers {
 
   /**
    * Provides a matcher that matches when the {@link AbstractRoute} is a {@link BgpRoute} matched by
-   * the provided {@link subMatcher}.
+   * the provided {@code subMatcher}.
    */
   public static @Nonnull Matcher<AbstractRoute> isBgpRouteThat(
       Matcher<? super BgpRoute> subMatcher) {
