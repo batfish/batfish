@@ -598,9 +598,9 @@
       {
         "Filename" : "configs/cumulus_nclu",
         "Line" : 16,
-        "Text" : "bgp vrf vrf1 ipv4 unicast redistribute static",
-        "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
-        "Comment" : "This feature is not currently supported"
+        "Text" : "net add bgp vrf vrf1 ipv4 unicast redistribute static\n",
+        "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
+        "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "configs/cumulus_nclu",
