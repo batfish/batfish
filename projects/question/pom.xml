@@ -130,7 +130,6 @@
       <scope>test</scope>
     </dependency>
 
-
     <dependency>
       <groupId>org.batfish</groupId>
       <artifactId>batfish-common-protocol</artifactId>
@@ -149,16 +148,5 @@
       <artifactId>slf4j-jdk14</artifactId>
       <scope>runtime</scope>
     </dependency>
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava-testlib</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava-testlib</artifactId>
-      <scope>test</scope>
-    </dependency>
-
   </dependencies>
 </project>
