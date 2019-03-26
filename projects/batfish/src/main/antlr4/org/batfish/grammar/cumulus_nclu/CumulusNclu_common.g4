@@ -6,13 +6,13 @@ options {
 
 glob
 :
-  glob_range
+  glob_range_set
   (
-    COMMA glob_range
+    COMMA glob_range_set
   )*
 ;
 
-glob_range
+glob_range_set
 :
   glob_word
   |
@@ -22,7 +22,7 @@ glob_range
       DASH first_interval_end = DEC
     )?
     (
-      COMMA range
+      COMMA range_set
     )?
   )
 ;
@@ -50,18 +50,18 @@ numbered_word
 
 range
 :
-  subrange
-  (
-    COMMA subrange
-  )*
-;
-
-subrange
-:
   low = DEC
   (
     DASH high = DEC
   )?
+;
+
+range_set
+:
+  range
+  (
+    COMMA range
+  )*
 ;
 
 uint16

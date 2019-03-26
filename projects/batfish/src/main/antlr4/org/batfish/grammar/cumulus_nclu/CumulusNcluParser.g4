@@ -114,7 +114,7 @@ brbr_ports
 
 brbr_vids
 :
-  VIDS ids = range NEWLINE
+  VIDS ids = range_set NEWLINE
 ;
 
 brbr_vlan_aware

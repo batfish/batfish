@@ -470,7 +470,7 @@ EXTRA_CONFIGURATION_HEADER
 
 COMMA
 :
-  ',' /*->  pushMode ( M_Glob )*/
+  ','
 ;
 
 COMMENT_LINE
@@ -490,7 +490,7 @@ COMMENT_TAIL
 
 DASH
 :
-  '-' /*-> pushMode ( M_Glob )*/
+  '-'
 ;
 
 DEC
