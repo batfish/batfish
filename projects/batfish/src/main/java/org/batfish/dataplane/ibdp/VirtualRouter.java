@@ -45,6 +45,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteBuilder;
+import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpAdvertisement;
@@ -2630,12 +2631,29 @@ public class VirtualRouter implements Serializable {
      */
     Set<RouteAdvertisement<BgpRoute>> exportedNeighborSpecificRoutes =
         localConfig.getGeneratedRoutes().stream()
-            .map(this::processNeighborSpecificGeneratedRoute)
+            .map(
+                r -> {
+                  // Activate route and convert to BGP if activated
+                  BgpRoute bgpRoute = processNeighborSpecificGeneratedRoute(r);
+                  if (bgpRoute == null) {
+                    // Route was not activated
+                    return null;
+                  }
+                  // Run pre-export transform, export policy, & post-export transform
+                  return exportBgpRoute(
+                      bgpRoute,
+                      localConfigId,
+                      remoteConfigId,
+                      localConfig,
+                      remoteConfig,
+                      allNodes,
+                      sessionProperties);
+                })
             .filter(Objects::nonNull)
             .map(RouteAdvertisement::new)
             .collect(ImmutableSet.toImmutableSet());
 
-    // Call this on the neighbor's VR, and reverse the egde!
+    // Call this on the neighbor's VR, and reverse the edge!
     remoteVr.enqueueBgpMessages(edge.reverse(), exportedNeighborSpecificRoutes);
   }
 
@@ -2743,7 +2761,7 @@ public class VirtualRouter implements Serializable {
    */
   @Nullable
   private BgpRoute exportBgpRoute(
-      @Nonnull AnnotatedRoute<AbstractRoute> exportCandidate,
+      @Nonnull AbstractRouteDecorator exportCandidate,
       @Nonnull BgpPeerConfigId ourConfigId,
       @Nonnull BgpPeerConfigId remoteConfigId,
       @Nonnull BgpPeerConfig ourConfig,
@@ -2761,7 +2779,7 @@ public class VirtualRouter implements Serializable {
               sessionProperties,
               _vrf,
               requireNonNull(getRemoteBgpNeighborVR(remoteConfigId, allNodes))._vrf,
-              exportCandidate.getRoute());
+              exportCandidate.getAbstractRoute());
     } catch (BgpRoutePropagationException e) {
       // TODO: Log a warning
       return null;
