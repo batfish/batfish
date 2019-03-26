@@ -752,7 +752,7 @@ set_traffic_index_rm_stanza_null
 
 set_weight_rm_stanza
 :
-   SET WEIGHT weight = DEC NEWLINE
+   SET WEIGHT weight = int_expr NEWLINE
 ;
 
 set_weight_rp_stanza

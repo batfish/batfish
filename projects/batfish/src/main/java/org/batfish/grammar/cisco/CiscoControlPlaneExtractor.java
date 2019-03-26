@@ -1078,6 +1078,7 @@ import org.batfish.grammar.cisco.CiscoParser.Set_origin_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_origin_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_tag_rp_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Set_weight_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_weight_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Shutdown_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Sntp_serverContext;
@@ -1253,6 +1254,7 @@ import org.batfish.representation.cisco.RouteMapSetMetricLine;
 import org.batfish.representation.cisco.RouteMapSetNextHopLine;
 import org.batfish.representation.cisco.RouteMapSetNextHopPeerAddress;
 import org.batfish.representation.cisco.RouteMapSetOriginTypeLine;
+import org.batfish.representation.cisco.RouteMapSetWeightLine;
 import org.batfish.representation.cisco.RoutePolicy;
 import org.batfish.representation.cisco.RoutePolicyApplyStatement;
 import org.batfish.representation.cisco.RoutePolicyBoolean;
@@ -9672,6 +9674,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitSet_origin_rm_stanza(Set_origin_rm_stanzaContext ctx) {
     OriginExpr originExpr = toOriginExpr(ctx.origin_expr_literal());
     RouteMapSetLine line = new RouteMapSetOriginTypeLine(originExpr);
+    _currentRouteMapClause.addSetLine(line);
+  }
+
+  @Override
+  public void exitSet_weight_rm_stanza(Set_weight_rm_stanzaContext ctx) {
+    IntExpr weightExpr = toCommonIntExpr(ctx.weight);
+    RouteMapSetWeightLine line = new RouteMapSetWeightLine(weightExpr);
     _currentRouteMapClause.addSetLine(line);
   }
 

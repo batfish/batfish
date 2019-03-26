@@ -12,5 +12,6 @@ public enum RouteMapSetType {
   METRIC,
   NEXT_HOP,
   NEXT_HOP_PEER_ADDRESS,
-  ORIGIN_TYPE
+  ORIGIN_TYPE,
+  WEIGHT
 }
