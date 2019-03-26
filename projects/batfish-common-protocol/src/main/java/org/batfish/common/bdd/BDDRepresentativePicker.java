@@ -1,7 +1,5 @@
 package org.batfish.common.bdd;
 
-import io.opentracing.ActiveSpan;
-import io.opentracing.util.GlobalTracer;
 import java.util.List;
 import net.sf.javabdd.BDD;
 
