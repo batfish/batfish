@@ -9,9 +9,12 @@ import static org.batfish.datamodel.answers.Schema.STRING;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultiset;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multiset;
+import com.google.common.collect.Ordering;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.BgpRoute;
@@ -27,6 +30,11 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.specifier.NodeSpecifier;
+import org.batfish.specifier.RoutingPolicySpecifier;
+import org.batfish.specifier.SpecifierContext;
+import org.batfish.specifier.parboiled.ParboiledNodeSpecifierFactory;
+import org.batfish.specifier.parboiled.ParboiledRoutingPolicySpecifierFactory;
 
 /** An answerer for {@link TestRoutePoliciesQuestion}. */
 public final class TestRoutePoliciesAnswerer extends Answerer {
@@ -39,23 +47,33 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
 
   private final Direction _direction;
   private final BgpRoute _inputRoute;
-  private final String _node;
-  private final String _policy;
+  private final String _nodes;
+  private final String _policies;
 
   public TestRoutePoliciesAnswerer(TestRoutePoliciesQuestion question, IBatfish batfish) {
     super(question, batfish);
     _direction = question.getDirection();
     _inputRoute = question.getInputRoute();
-    _node = question.getNodes();
-    _policy = question.getPolicies();
+    _nodes = question.getNodes();
+    _policies = question.getPolicies();
   }
 
-  @Override
-  public AnswerElement answer() {
-    Map<String, Configuration> configs = _batfish.loadConfigurations();
+  private SortedSet<RoutingPolicyId> resolvePolicies() {
+    SpecifierContext ctxt = _batfish.specifierContext();
+    NodeSpecifier nodeSpec = new ParboiledNodeSpecifierFactory().buildNodeSpecifier(_nodes);
 
-    RoutingPolicy policy = configs.get(_node).getRoutingPolicies().get(_policy);
+    RoutingPolicySpecifier policySpec =
+        new ParboiledRoutingPolicySpecifierFactory().buildRoutingPolicySpecifier(_policies);
 
+    return nodeSpec.resolve(ctxt).stream()
+        .flatMap(
+            node ->
+                policySpec.resolve(node, ctxt).stream()
+                    .map(policy -> new RoutingPolicyId(node, policy.getName())))
+        .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
+  }
+
+  private Row testPolicy(RoutingPolicy policy) {
     BgpRoute inputRoute = _inputRoute;
     BgpRoute.Builder outputRoute = inputRoute.toBuilder();
 
@@ -63,8 +81,26 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         policy.process(
             inputRoute, outputRoute, null, null, Configuration.DEFAULT_VRF_NAME, _direction);
 
-    Row row = row(_node, _policy, inputRoute, permit ? PERMIT : DENY, outputRoute.build());
-    Multiset<Row> rows = ImmutableMultiset.of(row);
+    return row(
+        policy.getOwner().getHostname(),
+        policy.getName(),
+        inputRoute,
+        permit ? PERMIT : DENY,
+        outputRoute.build());
+  }
+
+  @Override
+  public AnswerElement answer() {
+    Map<String, Configuration> configs = _batfish.loadConfigurations();
+
+    SortedSet<RoutingPolicyId> policies = resolvePolicies();
+    Multiset<Row> rows =
+        policies.stream()
+            .map(
+                policyId ->
+                    configs.get(policyId.getNode()).getRoutingPolicies().get(policyId.getPolicy()))
+            .map(this::testPolicy)
+            .collect(ImmutableMultiset.toImmutableMultiset());
 
     TableAnswerElement answerElement = new TableAnswerElement(metadata());
     answerElement.postProcessAnswer(_question, rows);
