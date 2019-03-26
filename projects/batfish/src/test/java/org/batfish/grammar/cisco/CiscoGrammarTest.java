@@ -1823,6 +1823,73 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosRedistributeStaticDefaultWithDefaultOriginatePolicy() throws IOException {
+    /*
+       Listener 1 -- (Peer 1) Originator (Peer 2) -- Listener 2
+
+     Both listeners have EBGP sessions established with the originator. The originator has
+     default-originate configured on both peers, but with a generation policy that only matches
+     routes to 1.2.3.4, so default routes won't be generated. This way both peers' BGP export
+     policies include the default route export policy, but we don't have to worry about the
+     default-originate route overwriting other default routes in neighbors' RIBs.
+
+     The originator has a static default route and redistributes it to BGP on both peers with a
+     route-map that sets tag to 25, so we can be certain of the route's origin in neighbors.
+
+     Peer 1 has no outbound route-map, so the static route should be redistributed to listener 1.
+
+     Peer 2 has an outbound route-map that denies 0.0.0.0/0, so no default route on listener 2.
+    */
+    String testrigName = "ios-default-originate";
+    String originatorName = "originator-static-route";
+    String l1Name = "listener1";
+    String l2Name = "listener2";
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(
+                    TESTRIGS_PREFIX + testrigName, ImmutableList.of(originatorName, l1Name, l2Name))
+                .build(),
+            _folder);
+
+    batfish.computeDataPlane();
+    DataPlane dp = batfish.loadDataPlane();
+    Set<AbstractRoute> l1Routes = dp.getRibs().get(l1Name).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> l2Routes = dp.getRibs().get(l2Name).get(DEFAULT_VRF_NAME).getRoutes();
+
+    Ip originatorId = Ip.parse("1.1.1.1");
+    Ip originatorIp = Ip.parse("10.1.1.1");
+    Long originatorAs = 1L;
+    BgpRoute redistributedStaticRoute =
+        BgpRoute.builder()
+            .setTag(25)
+            .setNetwork(Prefix.ZERO)
+            .setNextHopIp(originatorIp)
+            .setAdmin(20)
+            .setAsPath(AsPath.of(AsSet.of(originatorAs)))
+            .setLocalPreference(100)
+            .setOriginatorIp(originatorId)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setSrcProtocol(RoutingProtocol.BGP)
+            .setReceivedFromIp(originatorIp)
+            .build();
+
+    // Listener 1 should have received the static route
+    assertThat(l1Routes, hasItem(redistributedStaticRoute));
+
+    // Listener 2 should not have received the static route since export policy prevents it
+    originatorIp = Ip.parse("10.2.2.1");
+    redistributedStaticRoute =
+        redistributedStaticRoute
+            .toBuilder()
+            .setNextHopIp(originatorIp)
+            .setReceivedFromIp(originatorIp)
+            .build();
+    assertThat(l2Routes, not(hasItem(redistributedStaticRoute)));
+  }
+
+  @Test
   public void testIosObjectGroupNetwork() throws IOException {
     String hostname = "ios-object-group-network";
     String filename = "configs/" + hostname;
