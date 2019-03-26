@@ -597,7 +597,8 @@ public final class BDDReachabilityAnalysisFactory {
    * These edges do not depend on the query. Compute them separately so that we can later cache them
    * across queries if we want to.
    */
-  private Stream<Edge> generateEdges(Set<String> finalNodes) {
+  private Stream<Edge> generateEdges(
+      Set<String> finalNodes, Map<String, Map<String, BDD>> extraAcceptConstraints) {
     return Streams.concat(
         generateRules_NodeAccept_Accept(finalNodes),
         generateRules_NodeDropAclIn_DropAclIn(finalNodes),
@@ -614,7 +615,7 @@ public final class BDDReachabilityAnalysisFactory {
         generateRules_PreInInterface_PostInVrf_PBR(),
         generateRules_PostInInterface_NodeDropAclIn(),
         generateRules_PostInInterface_PostInVrf(),
-        generateRules_PostInVrf_NodeAccept(),
+        generateRules_PostInVrf_NodeAccept(extraAcceptConstraints),
         generateRules_PostInVrf_NodeDropNoRoute(),
         generateRules_PostInVrf_PreOutVrf(),
         generateRules_PreOutEdge_NodeDropAclOut(),
@@ -740,7 +741,8 @@ public final class BDDReachabilityAnalysisFactory {
             });
   }
 
-  private Stream<Edge> generateRules_PostInVrf_NodeAccept() {
+  private Stream<Edge> generateRules_PostInVrf_NodeAccept(
+      Map<String, Map<String, BDD>> extraAcceptConstraints) {
     return _vrfAcceptBDDs.entrySet().stream()
         .flatMap(
             nodeEntry ->
@@ -750,11 +752,15 @@ public final class BDDReachabilityAnalysisFactory {
                           String node = nodeEntry.getKey();
                           String vrf = vrfEntry.getKey();
                           BDD acceptBDD = vrfEntry.getValue();
+                          BDD extraConstraint =
+                              extraAcceptConstraints
+                                  .getOrDefault(node, ImmutableMap.of())
+                                  .getOrDefault(vrf, _one);
                           return new Edge(
                               new PostInVrf(node, vrf),
                               new NodeAccept(node),
                               compose(
-                                  constraint(acceptBDD),
+                                  constraint(acceptBDD.and(extraConstraint)),
                                   removeSourceConstraint(_bddSourceManagers.get(node))));
                         }));
   }
@@ -1240,6 +1246,8 @@ public final class BDDReachabilityAnalysisFactory {
    * @param requiredTransitNodes A set of hostnames of which one must be transited.
    * @param finalNodes Find flows that stop at one of these nodes.
    * @param actions Find flows for which at least one trace has one of these actions.
+   * @param extraAcceptConstraints Node -> Vrf -> An extra constraint on Dst IP that must be true to
+   *     ACCEPT at that VRF. Missing entries are interpreted as no extra constraint.
    * @return {@link Map} of {@link IngressLocation}s to {@link BDD}s
    */
   public Map<IngressLocation, BDD> getAllBDDs(
@@ -1248,7 +1256,8 @@ public final class BDDReachabilityAnalysisFactory {
       Set<String> forbiddenTransitNodes,
       Set<String> requiredTransitNodes,
       Set<String> finalNodes,
-      Set<FlowDisposition> actions) {
+      Set<FlowDisposition> actions,
+      Map<String, Map<String, IpSpace>> extraAcceptConstraints) {
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("BDDReachabilityAnalysisFactory.getAllBDDs").startActive()) {
       assert span != null; // avoid unused warning
@@ -1263,7 +1272,8 @@ public final class BDDReachabilityAnalysisFactory {
               forbiddenTransitNodes,
               requiredTransitNodes,
               finalNodes,
-              nonLoopActions);
+              nonLoopActions,
+              extraAcceptConstraints);
 
       // If we're not querying any actions, don't bother computing the reachable BDDs.
       Map<IngressLocation, BDD> bddsNoLoop =
@@ -1302,6 +1312,36 @@ public final class BDDReachabilityAnalysisFactory {
       Set<String> requiredTransitNodes,
       Set<String> finalNodes,
       Set<FlowDisposition> actions) {
+    return bddReachabilityAnalysis(
+        srcIpSpaceAssignment,
+        initialHeaderSpace,
+        forbiddenTransitNodes,
+        requiredTransitNodes,
+        finalNodes,
+        actions,
+        ImmutableMap.of());
+  }
+
+  /**
+   * Create a {@link BDDReachabilityAnalysis} with the specified parameters.
+   *
+   * @param srcIpSpaceAssignment An assignment of active source locations to the corresponding
+   *     source {@link IpSpace}.
+   * @param initialHeaderSpace The initial headerspace (i.e. before any packet transformations).
+   * @param forbiddenTransitNodes A set of hostnames that must not be transited.
+   * @param requiredTransitNodes A set of hostnames of which one must be transited.
+   * @param finalNodes Find flows that stop at one of these nodes.
+   * @param actions Find flows for which at least one trace has one of these actions.
+   */
+  @VisibleForTesting
+  BDDReachabilityAnalysis bddReachabilityAnalysis(
+      IpSpaceAssignment srcIpSpaceAssignment,
+      AclLineMatchExpr initialHeaderSpace,
+      Set<String> forbiddenTransitNodes,
+      Set<String> requiredTransitNodes,
+      Set<String> finalNodes,
+      Set<FlowDisposition> actions,
+      Map<String, Map<String, IpSpace>> extraAcceptConstraints) {
     try (ActiveSpan span =
         GlobalTracer.get()
             .buildSpan("BDDReachabilityAnalysisFactory.bddReachabilityAnalysis")
@@ -1317,10 +1357,21 @@ public final class BDDReachabilityAnalysisFactory {
       BDD finalHeaderSpaceBdd = computeFinalHeaderSpaceBdd(initialHeaderSpaceBdd);
 
       Map<StateExpr, BDD> roots = rootConstraints(srcIpSpaceAssignment, initialHeaderSpaceBdd);
+      Map<String, Map<String, BDD>> bddExtraAcceptConstraints =
+          toImmutableMap(
+              extraAcceptConstraints,
+              Entry::getKey,
+              nodeEntry ->
+                  toImmutableMap(
+                      nodeEntry.getValue(),
+                      Entry::getKey,
+                      vrfEntry -> _dstIpSpaceToBDD.visit(vrfEntry.getValue())));
 
       Stream<Edge> edgeStream =
           Streams.concat(
-              generateEdges(finalNodes), generateRootEdges(roots), generateQueryEdges(actions));
+              generateEdges(finalNodes, bddExtraAcceptConstraints),
+              generateRootEdges(roots),
+              generateQueryEdges(actions));
 
       edgeStream = instrumentForbiddenTransitNodes(forbiddenTransitNodes, edgeStream);
       edgeStream = instrumentRequiredTransitNodes(requiredTransitNodes, edgeStream);
@@ -1432,7 +1483,7 @@ public final class BDDReachabilityAnalysisFactory {
                       _bddSourceManagers,
                       _lastHopMgr,
                       _aclPermitBDDs,
-                      generateEdges(_configs.keySet()),
+                      generateEdges(_configs.keySet(), ImmutableMap.of()),
                       initializedSessions)),
               generateRootEdges(returnPassOrigBdds),
               generateQueryEdges(dispositions));

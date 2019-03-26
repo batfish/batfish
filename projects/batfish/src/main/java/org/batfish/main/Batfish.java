@@ -7,6 +7,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
+import static org.batfish.bddreachability.BDDReachabilityUtils.computeIpsNotOwnedByInactiveInterfaces;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
@@ -3462,7 +3463,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
               params.getForbiddenTransitNodes(),
               params.getRequiredTransitNodes(),
               params.getFinalNodes(),
-              params.getActions());
+              params.getActions(),
+              ImmutableMap.of());
 
       String flowTag = getFlowTag();
       Set<Flow> flows =
@@ -3573,7 +3575,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
               forbiddenTransitNodes,
               requiredTransitNodes,
               finalNodes,
-              successDispositions);
+              successDispositions,
+              ImmutableMap.of());
       Map<IngressLocation, BDD> failureBdds =
           bddReachabilityAnalysisFactory.getAllBDDs(
               srcIpSpaceAssignment,
@@ -3581,7 +3584,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
               forbiddenTransitNodes,
               requiredTransitNodes,
               finalNodes,
-              failureDispositions);
+              failureDispositions,
+              ImmutableMap.of());
 
       return ImmutableSet.copyOf(
           computeMultipathInconsistencies(pkt, getFlowTag(), successBdds, failureBdds));
@@ -3625,6 +3629,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
               ? not(parameters.getHeaderSpace())
               : parameters.getHeaderSpace();
 
+      // In delta snapshot, don't accept for IPs owned by interfaces inactive in the base snapshot.
+      pushBaseSnapshot();
+      Map<String, Map<String, IpSpace>> deltaExtraAcceptConstraints =
+          computeIpsNotOwnedByInactiveInterfaces(loadConfigurations());
+      popSnapshot();
+
+      // In base snapshot, don't accept for IPs owned by interfaces inactive in the delta snapshot.
+      pushDeltaSnapshot();
+      Map<String, Map<String, IpSpace>> baseExtraAcceptConstraints =
+          computeIpsNotOwnedByInactiveInterfaces(loadConfigurations());
+      popSnapshot();
+
       /*
        * TODO should we have separate parameters for base and delta?
        * E.g. suppose we add a host subnet in the delta network. This would be a source of
@@ -3640,7 +3656,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   parameters.getForbiddenTransitNodes(),
                   parameters.getRequiredTransitNodes(),
                   parameters.getFinalNodes(),
-                  parameters.getFlowDispositions());
+                  parameters.getFlowDispositions(),
+                  baseExtraAcceptConstraints);
       popSnapshot();
 
       pushDeltaSnapshot();
@@ -3652,7 +3669,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   parameters.getForbiddenTransitNodes(),
                   parameters.getRequiredTransitNodes(),
                   parameters.getFinalNodes(),
-                  parameters.getFlowDispositions());
+                  parameters.getFlowDispositions(),
+                  deltaExtraAcceptConstraints);
       popSnapshot();
 
       Set<IngressLocation> commonSources =
