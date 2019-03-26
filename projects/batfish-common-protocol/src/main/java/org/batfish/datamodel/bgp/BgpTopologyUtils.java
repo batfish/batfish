@@ -272,12 +272,12 @@ public final class BgpTopologyUtils {
   }
 
   private static boolean canInitiateBgpSession(
-      @Nonnull String ingressNode,
-      @Nonnull String ingressVrf,
-      @Nonnull Ip srcIp,
-      @Nonnull Ip dstIp,
-      @Nonnull String finalNode,
-      boolean singleHop,
+      @Nonnull String initiatorNode,
+      @Nonnull String initiatorVrf,
+      @Nonnull Ip initiatorIp,
+      @Nonnull Ip listenerIp,
+      @Nonnull String listenerNode,
+      boolean bgpSingleHop,
       @Nonnull TracerouteEngine tracerouteEngine) {
 
     Flow flowFromSrc =
@@ -285,10 +285,10 @@ public final class BgpTopologyUtils {
             .setIpProtocol(IpProtocol.TCP)
             .setTcpFlagsSyn(1)
             .setTag("neighbor-resolution")
-            .setIngressNode(ingressNode)
-            .setIngressVrf(ingressVrf)
-            .setSrcIp(srcIp)
-            .setDstIp(dstIp)
+            .setIngressNode(initiatorNode)
+            .setIngressVrf(initiatorVrf)
+            .setSrcIp(initiatorIp)
+            .setDstIp(listenerIp)
             .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
             .setDstPort(NamedPort.BGP.number())
             .build();
@@ -304,12 +304,15 @@ public final class BgpTopologyUtils {
                 traceAndReverseFlow -> {
                   Trace forwardTrace = traceAndReverseFlow.getTrace();
                   return forwardTrace.getDisposition() == FlowDisposition.ACCEPTED
-                      && (!singleHop || forwardTrace.getHops().size() <= 2);
+                      && (!bgpSingleHop || forwardTrace.getHops().size() <= 2);
                 })
             .filter(
                 traceAndReverseFlow ->
                     traceAndReverseFlow.getReverseFlow() != null
-                        && traceAndReverseFlow.getReverseFlow().getIngressNode().equals(finalNode))
+                        && traceAndReverseFlow
+                            .getReverseFlow()
+                            .getIngressNode()
+                            .equals(listenerNode))
             .flatMap(
                 traceAndReverseFlow ->
                     tracerouteEngine
@@ -326,7 +329,7 @@ public final class BgpTopologyUtils {
               Trace reverseTrace = traceAndReverseFlow.getTrace();
               List<Hop> hops = reverseTrace.getHops();
               return !hops.isEmpty()
-                  && hops.get(hops.size() - 1).getNode().getName().equals(ingressNode)
+                  && hops.get(hops.size() - 1).getNode().getName().equals(initiatorNode)
                   && reverseTrace.getDisposition() == FlowDisposition.ACCEPTED;
             });
   }
