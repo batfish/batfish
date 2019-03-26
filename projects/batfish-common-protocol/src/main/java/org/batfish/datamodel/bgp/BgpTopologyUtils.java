@@ -261,7 +261,7 @@ public final class BgpTopologyUtils {
     // we do a bidirectional traceroute only from the initiator to the listener since the other
     // direction will be checked once we pick up the listener as the source. This is consistent with
     // the directional nature of BGP graph
-    return canInitiateBgpConnection(
+    return canInitiateBgpSession(
         initiator.getHostname(),
         initiator.getVrfName(),
         srcAddress,
@@ -271,7 +271,7 @@ public final class BgpTopologyUtils {
         tracerouteEngine);
   }
 
-  private static boolean canInitiateBgpConnection(
+  private static boolean canInitiateBgpSession(
       @Nonnull String ingressNode,
       @Nonnull String ingressVrf,
       @Nonnull Ip srcIp,
