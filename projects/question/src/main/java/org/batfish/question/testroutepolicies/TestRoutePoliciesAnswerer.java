@@ -6,6 +6,7 @@ import static org.batfish.datamodel.answers.Schema.BGP_ROUTE;
 import static org.batfish.datamodel.answers.Schema.BGP_ROUTE_DIFFS;
 import static org.batfish.datamodel.answers.Schema.NODE;
 import static org.batfish.datamodel.answers.Schema.STRING;
+import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultiset;
@@ -30,11 +31,11 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.RoutingPolicySpecifier;
 import org.batfish.specifier.SpecifierContext;
-import org.batfish.specifier.parboiled.ParboiledNodeSpecifierFactory;
-import org.batfish.specifier.parboiled.ParboiledRoutingPolicySpecifierFactory;
+import org.batfish.specifier.SpecifierFactories;
 
 /** An answerer for {@link TestRoutePoliciesQuestion}. */
 public final class TestRoutePoliciesAnswerer extends Answerer {
@@ -60,10 +61,11 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
 
   private SortedSet<RoutingPolicyId> resolvePolicies() {
     SpecifierContext ctxt = _batfish.specifierContext();
-    NodeSpecifier nodeSpec = new ParboiledNodeSpecifierFactory().buildNodeSpecifier(_nodes);
+    NodeSpecifier nodeSpec =
+        SpecifierFactories.getNodeSpecifierOrDefault(_nodes, AllNodesNodeSpecifier.INSTANCE);
 
     RoutingPolicySpecifier policySpec =
-        new ParboiledRoutingPolicySpecifierFactory().buildRoutingPolicySpecifier(_policies);
+        SpecifierFactories.getRoutingPolicySpecifierOrDefault(_policies, ALL_ROUTING_POLICIES);
 
     return nodeSpec.resolve(ctxt).stream()
         .flatMap(

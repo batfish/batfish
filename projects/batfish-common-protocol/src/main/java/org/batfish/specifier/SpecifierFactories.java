@@ -9,6 +9,7 @@ import org.batfish.specifier.parboiled.ParboiledIpProtocolSpecifierFactory;
 import org.batfish.specifier.parboiled.ParboiledIpSpaceSpecifierFactory;
 import org.batfish.specifier.parboiled.ParboiledLocationSpecifierFactory;
 import org.batfish.specifier.parboiled.ParboiledNodeSpecifierFactory;
+import org.batfish.specifier.parboiled.ParboiledRoutingPolicySpecifierFactory;
 
 /**
  * This class enables a global choice of the grammar that is used by different question parameters.
@@ -103,6 +104,16 @@ public final class SpecifierFactories {
     }
   }
 
+  public static RoutingPolicySpecifierFactory getRoutingPolicyFactory(Version version) {
+    switch(version) {
+    case V1:
+    case V2:
+      return new ParboiledRoutingPolicySpecifierFactory();
+    default:
+      throw new IllegalStateException("Unhandled grammar version " + version);
+    }
+  }
+
   /** Define these constants, so we don't have to keep computing them */
   private static final ApplicationSpecifierFactory ActiveApplicationFactory =
       getApplicationFactory(ACTIVE_VERSION);
@@ -123,6 +134,8 @@ public final class SpecifierFactories {
       getLocationFactory(ACTIVE_VERSION);
 
   private static final NodeSpecifierFactory ActiveNodeFactory = getNodeFactory(ACTIVE_VERSION);
+
+  private static final RoutingPolicySpecifierFactory ActiveRoutingPolicySpecifier = getRoutingPolicyFactory(ACTIVE_VERSION);
 
   public static ApplicationSpecifier getApplicationSpecifierOrDefault(
       @Nullable String input, ApplicationSpecifier defaultSpecifier) {
@@ -212,5 +225,20 @@ public final class SpecifierFactories {
   public static NodeSpecifier getNodeSpecifierOrDefault(
       @Nullable String input, NodeSpecifier defaultSpecifier, NodeSpecifierFactory factory) {
     return input == null || input.isEmpty() ? defaultSpecifier : factory.buildNodeSpecifier(input);
+  }
+
+  public static RoutingPolicySpecifier getRoutingPolicySpecifierOrDefault(
+      @Nullable String input, RoutingPolicySpecifier defaultSpecifier) {
+    return getRoutingPolicySpecifierOrDefault(
+        input, defaultSpecifier, ActiveRoutingPolicySpecifier);
+  }
+
+  public static RoutingPolicySpecifier getRoutingPolicySpecifierOrDefault(
+      @Nullable String input,
+      RoutingPolicySpecifier defaultSpecifier,
+      RoutingPolicySpecifierFactory factory) {
+    return input == null || input.isEmpty()
+        ? defaultSpecifier
+        : factory.buildRoutingPolicySpecifier(input);
   }
 }
