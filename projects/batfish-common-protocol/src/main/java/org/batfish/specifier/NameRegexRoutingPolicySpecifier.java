@@ -13,6 +13,9 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 /** A {@link RoutingPolicySpecifier} that matches routing policy names based on a regex pattern. */
 @ParametersAreNonnullByDefault
 public final class NameRegexRoutingPolicySpecifier implements RoutingPolicySpecifier {
+  public static final NameRegexRoutingPolicySpecifier ALL_ROUTING_POLICIES =
+      new NameRegexRoutingPolicySpecifier(Pattern.compile(".*"));
+
   @Nonnull private final Pattern _pattern;
 
   public NameRegexRoutingPolicySpecifier(Pattern pattern) {
