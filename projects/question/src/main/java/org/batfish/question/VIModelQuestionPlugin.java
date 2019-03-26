@@ -31,23 +31,19 @@ import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.RipNeighbor;
 import org.batfish.datamodel.RipProcess;
 import org.batfish.datamodel.Topology;
-import org.batfish.datamodel.VerboseEdge;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.collections.IpEdge;
 import org.batfish.datamodel.collections.VerboseBgpEdge;
-import org.batfish.datamodel.collections.VerboseEigrpEdge;
 import org.batfish.datamodel.collections.VerboseOspfEdge;
 import org.batfish.datamodel.collections.VerboseRipEdge;
 import org.batfish.datamodel.eigrp.EigrpEdge;
-import org.batfish.datamodel.eigrp.EigrpInterface;
 import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.isis.IsisEdge;
 import org.batfish.datamodel.isis.IsisNode;
@@ -88,7 +84,7 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
 
       private SortedSet<VerboseBgpEdge> _bgpEdges;
 
-      private SortedSet<VerboseEigrpEdge> _eigrpEdges;
+      private SortedSet<EigrpEdge> _eigrpEdges;
 
       private SortedSet<IsisEdge> _isisEdges;
 
@@ -96,7 +92,7 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
 
       private Layer2Topology _layer2Edges;
 
-      private SortedSet<VerboseEdge> _layer3Edges;
+      private SortedSet<Edge> _layer3Edges;
 
       private SortedSet<VerboseOspfEdge> _ospfEdges;
 
@@ -109,11 +105,11 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
       @JsonCreator
       private Edges(
           @JsonProperty(PROP_BGP) Set<VerboseBgpEdge> bgpEdges,
-          @JsonProperty(PROP_EIGRP) SortedSet<VerboseEigrpEdge> eigrpEdges,
+          @JsonProperty(PROP_EIGRP) SortedSet<EigrpEdge> eigrpEdges,
           @JsonProperty(PROP_ISIS) SortedSet<IsisEdge> isisEdges,
           @JsonProperty(PROP_LAYER1) Layer1Topology layer1Edges,
           @JsonProperty(PROP_LAYER2) Layer2Topology layer2Edges,
-          @JsonProperty(PROP_LAYER3) SortedSet<VerboseEdge> layer3Edges,
+          @JsonProperty(PROP_LAYER3) SortedSet<Edge> layer3Edges,
           @JsonProperty(PROP_OSPF) SortedSet<VerboseOspfEdge> ospfEdges,
           @JsonProperty(PROP_RIP) SortedSet<VerboseRipEdge> ripEdges) {
         _bgpEdges = new TreeSet<>(VERBOSE_BGP_EDGE_COMPARATOR);
@@ -133,7 +129,7 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
       }
 
       @JsonProperty(PROP_EIGRP)
-      public @Nonnull SortedSet<VerboseEigrpEdge> getEigrpEdges() {
+      public @Nonnull SortedSet<EigrpEdge> getEigrpEdges() {
         return _eigrpEdges;
       }
 
@@ -153,7 +149,7 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
       }
 
       @JsonProperty(PROP_LAYER3)
-      public @Nonnull SortedSet<VerboseEdge> getLayer3Edges() {
+      public @Nonnull SortedSet<Edge> getLayer3Edges() {
         return _layer3Edges;
       }
 
@@ -187,11 +183,11 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
     public VIModelAnswerElement(
         @Nonnull SortedMap<String, Configuration> nodes,
         Set<VerboseBgpEdge> bgp,
-        SortedSet<VerboseEigrpEdge> eigrp,
+        SortedSet<EigrpEdge> eigrp,
         SortedSet<IsisEdge> isis,
         Layer1Topology layer1,
         Layer2Topology layer2,
-        SortedSet<VerboseEdge> layer3,
+        SortedSet<Edge> layer3,
         SortedSet<VerboseOspfEdge> ospf,
         SortedSet<VerboseRipEdge> rip) {
       this._nodes = nodes;
@@ -226,11 +222,11 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
       return new VIModelAnswerElement(
           configs,
           getBgpEdges(configs, ipOwners),
-          getEigrpEdges(configs, topology),
+          new TreeSet<>(EigrpTopology.initEigrpTopology(configs, topology).edges()),
           getIsisEdges(configs, topology),
           _batfish.getLayer1Topology(),
           _batfish.getLayer2Topology(),
-          getLayer3Edges(configs, topology),
+          topology.getEdges(),
           getOspfEdges(configs),
           getRipEdges(configs));
     }
@@ -265,46 +261,12 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
       return bgpEdges;
     }
 
-    private static SortedSet<VerboseEigrpEdge> getEigrpEdges(
-        Map<String, Configuration> configs, Topology topology) {
-      Network<EigrpInterface, EigrpEdge> eigrpTopology =
-          EigrpTopology.initEigrpTopology(configs, topology);
-      NetworkConfigurations nc = NetworkConfigurations.of(configs);
-      SortedSet<VerboseEigrpEdge> eigrpEdges = new TreeSet<>();
-      for (Configuration c : configs.values()) {
-        String hostname = c.getHostname();
-        for (Vrf vrf : c.getVrfs().values()) {
-          eigrpEdges.addAll(
-              vrf.getInterfaceNames().stream()
-                  .map(ifaceName -> new EigrpInterface(hostname, ifaceName, vrf.getName()))
-                  .filter(eigrpTopology.nodes()::contains)
-                  .flatMap(n -> eigrpTopology.inEdges(n).stream())
-                  .map(edge -> new VerboseEigrpEdge(edge, edge.toIpEdge(nc)))
-                  .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
-        }
-      }
-      return eigrpEdges;
-    }
-
     private static SortedSet<IsisEdge> getIsisEdges(
         Map<String, Configuration> configs, Topology topology) {
       Network<IsisNode, IsisEdge> isisTopology = IsisTopology.initIsisTopology(configs, topology);
       return isisTopology.edges().stream()
           .filter(Objects::nonNull)
           .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
-    }
-
-    private static SortedSet<VerboseEdge> getLayer3Edges(
-        Map<String, Configuration> configs, Topology topology) {
-      SortedSet<VerboseEdge> layer3Edges = new TreeSet<>();
-      for (Edge edge : topology.getEdges()) {
-        Configuration n1 = configs.get(edge.getNode1());
-        Interface i1 = n1.getAllInterfaces().get(edge.getInt1());
-        Configuration n2 = configs.get(edge.getNode2());
-        Interface i2 = n2.getAllInterfaces().get(edge.getInt2());
-        layer3Edges.add(new VerboseEdge(i1, i2, edge));
-      }
-      return layer3Edges;
     }
 
     private static SortedSet<VerboseOspfEdge> getOspfEdges(Map<String, Configuration> configs) {
