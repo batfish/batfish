@@ -55820,6 +55820,26 @@
             "            PROTOCOLS:'protocols'",
             "            (p_bgp",
             "              BGP:'bgp'",
+            "              (b_group",
+            "                GROUP:'group'",
+            "                name = (variable",
+            "                  text = VARIABLE:'GROUP'  <== mode:M_VarOrWildcard)",
+            "                (b_common",
+            "                  (b_peer_as",
+            "                    PEER_AS:'peer-as'",
+            "                    (bpa_as",
+            "                      asn = (bgp_asn",
+            "                        asn = DEC:'1'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'",
+            "            (p_bgp",
+            "              BGP:'bgp'",
             "              (b_disable",
             "                DISABLE:'disable'))))))",
             "    NEWLINE:'\\n')",
@@ -77977,7 +77997,16 @@
             }
           }
         },
-        "configs/juniper_bgp_disable" : { },
+        "configs/juniper_bgp_disable" : {
+          "bgp group" : {
+            "GROUP" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "configs/juniper_bgp_enforce_fist_as" : {
           "bgp group" : {
             "MYGROUP" : {

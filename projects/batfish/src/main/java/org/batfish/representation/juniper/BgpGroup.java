@@ -24,7 +24,7 @@ public class BgpGroup implements Serializable {
   private String _authenticationKeyChainName;
   private Ip _clusterId;
   private String _description;
-  private Boolean _disable;
+  @Nullable private Boolean _disable;
   private boolean _dynamic;
   private Boolean _ebgpMultihop;
   private Boolean _enforceFirstAs;
@@ -157,6 +157,7 @@ public class BgpGroup implements Serializable {
     return _description;
   }
 
+  @Nullable
   public Boolean getDisable() {
     return _disable;
   }
