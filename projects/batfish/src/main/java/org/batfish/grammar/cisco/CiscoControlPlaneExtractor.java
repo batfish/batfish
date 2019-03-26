@@ -9679,8 +9679,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitSet_weight_rm_stanza(Set_weight_rm_stanzaContext ctx) {
-    IntExpr weightExpr = toCommonIntExpr(ctx.weight);
-    RouteMapSetWeightLine line = new RouteMapSetWeightLine(weightExpr);
+    RouteMapSetWeightLine line = new RouteMapSetWeightLine(toInteger(ctx.DEC()));
     _currentRouteMapClause.addSetLine(line);
   }
 
