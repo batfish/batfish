@@ -1879,14 +1879,7 @@ public class CiscoGrammarTest {
     assertThat(l1Routes, hasItem(redistributedStaticRoute));
 
     // Listener 2 should not have received the static route since export policy prevents it
-    originatorIp = Ip.parse("10.2.2.1");
-    redistributedStaticRoute =
-        redistributedStaticRoute
-            .toBuilder()
-            .setNextHopIp(originatorIp)
-            .setReceivedFromIp(originatorIp)
-            .build();
-    assertThat(l2Routes, not(hasItem(redistributedStaticRoute)));
+    assertThat(l2Routes, not(hasItem(hasPrefix(Prefix.ZERO))));
   }
 
   @Test
