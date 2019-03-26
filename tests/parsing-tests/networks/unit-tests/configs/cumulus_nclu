@@ -1,4 +1,7 @@
 net del all
+#
+net add hostname cumulus_nclu
+#
 net add bgp autonomous-system 65500
 net add bgp ipv4 unicast network 192.0.2.1/32 
 net add bgp ipv4 unicast redistribute connected route-map rm1
@@ -13,7 +16,7 @@ net add bgp vrf vrf1 ipv4 unicast redistribute connected
 net add bgp vrf vrf1 ipv4 unicast redistribute static
 net add bgp vrf vrf1 l2vpn evpn  advertise ipv4 unicast
 net add bgp vrf vrf1 router-id 192.0.2.3
-net add bond bond1 bond slaves swp1,swp2
+net add bond bond1 bond slaves swp1,swp2-4,5,swp6,7-8,swp1a-b2-3
 net add bond bond1 bridge access 2
 net add bond bond1 clag id 1
 net add bridge bridge ports bond1,swp1,vni10001
@@ -64,9 +67,9 @@ net add vrf vrf1,mgmt vrf-table auto
 net add vxlan vni10001 bridge access 5
 net add vxlan vni10001 vxlan id 100001
 net add vxlan vni10001,10002-10003 bridge arp-nd-suppress on
-net add vxlan vni10001-10002-10003 bridge learning off
-net add vxlan vni10001-10002-10003 stp bpduguard
-net add vxlan vni10001-10002-10003 stp portbpdufilter
+net add vxlan vni10001,10002-10003 bridge learning off
+net add vxlan vni10001,10002-10003 stp bpduguard
+net add vxlan vni10001,10002-10003 stp portbpdufilter
 net add vxlan vni10001,10002-10003 vxlan local-tunnelip 192.0.2.10
 net commit
 
