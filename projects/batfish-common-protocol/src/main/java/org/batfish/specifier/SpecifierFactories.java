@@ -105,12 +105,12 @@ public final class SpecifierFactories {
   }
 
   public static RoutingPolicySpecifierFactory getRoutingPolicyFactory(Version version) {
-    switch(version) {
-    case V1:
-    case V2:
-      return new ParboiledRoutingPolicySpecifierFactory();
-    default:
-      throw new IllegalStateException("Unhandled grammar version " + version);
+    switch (version) {
+      case V1:
+      case V2:
+        return new ParboiledRoutingPolicySpecifierFactory();
+      default:
+        throw new IllegalStateException("Unhandled grammar version " + version);
     }
   }
 
@@ -135,7 +135,8 @@ public final class SpecifierFactories {
 
   private static final NodeSpecifierFactory ActiveNodeFactory = getNodeFactory(ACTIVE_VERSION);
 
-  private static final RoutingPolicySpecifierFactory ActiveRoutingPolicySpecifier = getRoutingPolicyFactory(ACTIVE_VERSION);
+  private static final RoutingPolicySpecifierFactory ActiveRoutingPolicySpecifier =
+      getRoutingPolicyFactory(ACTIVE_VERSION);
 
   public static ApplicationSpecifier getApplicationSpecifierOrDefault(
       @Nullable String input, ApplicationSpecifier defaultSpecifier) {
