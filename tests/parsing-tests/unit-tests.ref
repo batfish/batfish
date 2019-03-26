@@ -141,6 +141,9 @@
         "bgp-allow" : [
           "configs/juniper_bgp_allow"
         ],
+        "bgp-disable" : [
+          "configs/juniper_bgp_disable"
+        ],
         "bgp-enforce-first-as" : [
           "configs/juniper_bgp_enforce_fist_as"
         ],
@@ -1062,6 +1065,7 @@
         "configs/juniper_bgp" : "PASSED",
         "configs/juniper_bgp_allow" : "PASSED",
         "configs/juniper_bgp_authentication" : "PASSED",
+        "configs/juniper_bgp_disable" : "PASSED",
         "configs/juniper_bgp_enforce_fist_as" : "PASSED",
         "configs/juniper_bgp_remove_private_as" : "PASSED",
         "configs/juniper_extended_community" : "PASSED",
@@ -55792,6 +55796,36 @@
             "  EOF:<EOF>)"
           ]
         },
+        "configs/juniper_bgp_disable" : {
+          "sentences" : [
+            "(flat_juniper_configuration",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_system",
+            "            SYSTEM:'system'",
+            "            (sy_host_name",
+            "              HOST_NAME:'host-name'",
+            "              (variable",
+            "                text = VARIABLE:'bgp-disable'))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'",
+            "            (p_bgp",
+            "              BGP:'bgp'",
+            "              (b_disable",
+            "                DISABLE:'disable'))))))",
+            "    NEWLINE:'\\n')",
+            "  EOF:<EOF>)"
+          ]
+        },
         "configs/juniper_bgp_enforce_fist_as" : {
           "sentences" : [
             "(flat_juniper_configuration",
@@ -73119,6 +73153,7 @@
         "banner" : "PASSED",
         "banner_dos" : "PASSED",
         "bgp-allow" : "PASSED",
+        "bgp-disable" : "PASSED",
         "bgp-enforce-first-as" : "WARNINGS",
         "bgp_address_family" : "WARNINGS",
         "bgp_default_originate_policy" : "PASSED",
@@ -77942,6 +77977,7 @@
             }
           }
         },
+        "configs/juniper_bgp_disable" : { },
         "configs/juniper_bgp_enforce_fist_as" : {
           "bgp group" : {
             "MYGROUP" : {
@@ -86148,6 +86184,7 @@
         "configs/juniper_bgp" : "PASSED",
         "configs/juniper_bgp_allow" : "PASSED",
         "configs/juniper_bgp_authentication" : "PASSED",
+        "configs/juniper_bgp_disable" : "PASSED",
         "configs/juniper_bgp_enforce_fist_as" : "PASSED",
         "configs/juniper_bgp_remove_private_as" : "PASSED",
         "configs/juniper_extended_community" : "PASSED",

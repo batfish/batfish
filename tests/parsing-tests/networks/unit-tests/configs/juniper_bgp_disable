@@ -1,0 +1,4 @@
+#
+set system host-name bgp-disable
+#
+set protocols bgp disable

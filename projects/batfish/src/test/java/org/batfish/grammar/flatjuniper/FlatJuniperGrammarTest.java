@@ -955,6 +955,14 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testBgpDisable() throws IOException {
+    // Config has "set protocols bgp disable"; no VI BGP process should be created
+    String hostname = "bgp_disable";
+    Configuration c = getBatfishForConfigurationNames(hostname).loadConfigurations().get(hostname);
+    assertThat(c.getVrfs().get(DEFAULT_VRF_NAME).getBgpProcess(), nullValue());
+  }
+
+  @Test
   public void testDefaultApplications() throws IOException {
     String hostname = "default-applications";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
