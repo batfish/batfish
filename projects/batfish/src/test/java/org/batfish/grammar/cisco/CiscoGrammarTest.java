@@ -33,6 +33,7 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbo
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEquivalentAsPathMatchMode;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasWeight;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkePhase1Policy;
@@ -2390,6 +2391,29 @@ public class CiscoGrammarTest {
 
     /* Confirm undefined route-map is detected */
     assertThat(ccae, hasUndefinedReference(filename, ROUTE_MAP, "rm_undef"));
+  }
+
+  @Test
+  public void testIosRouteMapSetWeight() throws IOException {
+    // Config contains a route-map SET_WEIGHT with one line, "set weight 20"
+    String hostname = "ios-route-map-set-weight";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    RoutingPolicy setWeightPolicy =
+        batfish.loadConfigurations().get(hostname).getRoutingPolicies().get("SET_WEIGHT");
+    BgpRoute r =
+        BgpRoute.builder()
+            .setWeight(1)
+            .setNetwork(Prefix.ZERO)
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .build();
+    BgpRoute.Builder transformedRoute = r.toBuilder();
+
+    assertThat(
+        setWeightPolicy.process(r, transformedRoute, Ip.ZERO, DEFAULT_VRF_NAME, Direction.IN),
+        equalTo(true));
+    assertThat(transformedRoute.build(), hasWeight(20));
   }
 
   @Test
