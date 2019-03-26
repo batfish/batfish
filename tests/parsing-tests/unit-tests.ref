@@ -34591,6 +34591,14 @@
             "            DEFAULT:'default'",
             "            NEXT_HOP:'next-hop'",
             "            nhip = IP_ADDRESS:'10.0.0.1'",
+            "            NEWLINE:'\\n')))",
+            "      (rm_stanza",
+            "        (set_rm_stanza",
+            "          (set_weight_rm_stanza",
+            "            SET:'set'",
+            "            WEIGHT:'weight'",
+            "            weight = (int_expr",
+            "              DEC:'20')",
             "            NEWLINE:'\\n')))))",
             "  (stanza",
             "    (route_map_stanza",
@@ -74833,17 +74841,17 @@
           "route-map" : {
             "MAP_NAME1" : {
               "definitionLines" : [
-                49,
-                50
+                50,
+                51
               ],
               "numReferrers" : 0
             },
             "MAP_NAME2" : {
               "definitionLines" : [
-                52,
                 53,
-                55,
-                56
+                54,
+                56,
+                57
               ],
               "numReferrers" : 0
             },
@@ -74865,7 +74873,8 @@
                 41,
                 42,
                 43,
-                44
+                44,
+                45
               ],
               "numReferrers" : 0
             },
@@ -74897,8 +74906,8 @@
             },
             "multicaststuff" : {
               "definitionLines" : [
-                46,
-                47
+                47,
+                48
               ],
               "numReferrers" : 0
             },
@@ -80347,17 +80356,17 @@
           "as-path access-list" : {
             "AS_PATH_ACL1" : {
               "route-map match as-path access-list" : [
-                50
+                51
               ]
             },
             "AS_PATH_ACL2" : {
               "route-map match as-path access-list" : [
-                53
+                54
               ]
             },
             "AS_PATH_UNDEF" : {
               "route-map match as-path access-list" : [
-                56
+                57
               ]
             }
           },
@@ -83640,7 +83649,7 @@
           "as-path access-list" : {
             "AS_PATH_UNDEF" : {
               "route-map match as-path access-list" : [
-                56
+                57
               ]
             }
           },

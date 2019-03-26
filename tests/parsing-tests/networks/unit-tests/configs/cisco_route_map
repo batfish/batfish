@@ -42,6 +42,7 @@ route-map beeble permit 10
  set metric 0
  set local-preference 100
  set ip default next-hop 10.0.0.1
+ set weight 20
 !
 route-map multicaststuff permit 10
  match ip multicast group 239.128.128.0/20
