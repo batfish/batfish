@@ -7,7 +7,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
-import static org.batfish.bddreachability.BDDReachabilityUtils.computeIpsNotOwnedByInactiveInterfaces;
+import static org.batfish.common.topology.TopologyUtil.computeIpsNotOwnedByInactiveInterfaces;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;

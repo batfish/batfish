@@ -1,5 +1,8 @@
 package org.batfish.common.topology;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.common.util.CommonUtil.toImmutableMap;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -30,6 +33,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceAddress;
@@ -678,5 +682,28 @@ public final class TopologyUtil {
             .map(pEdge -> pEdge.toLogicalEdge(NetworkConfigurations.of(configurations)))
             .filter(Objects::nonNull)
             .collect(ImmutableSet.toImmutableSet()));
+  }
+
+  public static Map<String, Map<String, IpSpace>> computeIpsNotOwnedByInactiveInterfaces(
+      Map<String, Configuration> configs) {
+    return toImmutableMap(
+        configs,
+        Entry::getKey,
+        nodeEntry ->
+            toImmutableMap(
+                nodeEntry.getValue().getVrfs(),
+                Entry::getKey,
+                vrfEntry ->
+                    firstNonNull(
+                            AclIpSpace.union(
+                                vrfEntry.getValue().getInterfaces().values().stream()
+                                    .filter(i -> !i.getActive())
+                                    .map(Interface::getAllAddresses)
+                                    .flatMap(Set::stream)
+                                    .map(InterfaceAddress::getIp)
+                                    .map(Ip::toIpSpace)
+                                    .collect(Collectors.toList())),
+                            EmptyIpSpace.INSTANCE)
+                        .complement()));
   }
 }

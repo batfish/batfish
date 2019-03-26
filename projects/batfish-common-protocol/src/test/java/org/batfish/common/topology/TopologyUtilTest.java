@@ -2,6 +2,7 @@ package org.batfish.common.topology;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.topology.TopologyUtil.computeIpInterfaceOwners;
+import static org.batfish.common.topology.TopologyUtil.computeIpsNotOwnedByInactiveInterfaces;
 import static org.batfish.common.topology.TopologyUtil.computeLayer1LogicalTopology;
 import static org.batfish.common.topology.TopologyUtil.computeLayer1PhysicalTopology;
 import static org.batfish.common.topology.TopologyUtil.computeLayer2Topology;
@@ -16,6 +17,7 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -40,6 +42,7 @@ import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
@@ -1089,5 +1092,27 @@ public final class TopologyUtilTest {
         TopologyUtil.synthesizeL3Topology(
             ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2));
     assertThat(t.getEdges(), empty());
+  }
+
+  @Test
+  public void testComputeIpsNotOwnedByInactiveInterfaces() {
+    NetworkFactory nf = new NetworkFactory();
+
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+
+    Configuration node = cb.build();
+    Vrf vrf = nf.vrfBuilder().setOwner(node).build();
+    Interface.Builder ib = nf.interfaceBuilder().setOwner(node).setVrf(vrf);
+    ib.setName("lo0").setAddress(new InterfaceAddress("1.1.1.1/24")).build();
+    ib.setName("lo1").setAddress(new InterfaceAddress("2.2.2.2/24")).setActive(false).build();
+
+    Map<String, Configuration> configs = ImmutableMap.of(node.getHostname(), node);
+    Map<String, Map<String, IpSpace>> result = computeIpsNotOwnedByInactiveInterfaces(configs);
+    assertEquals(
+        result,
+        ImmutableMap.of(
+            node.getHostname(),
+            ImmutableMap.of(vrf.getName(), Ip.parse("2.2.2.2").toIpSpace().complement())));
   }
 }
