@@ -52,12 +52,7 @@ s_net_add
   )
 ;
 
-a_bgp
-:
-  BGP null_rest_of_line
-;
-
-a_bond
+a_bga_bond
 :
   BOND name = word
   (
@@ -79,12 +74,22 @@ bobo_slaves
 
 bond_bridge
 :
-  BRIDGE null_rest_of_line
+  BRIDGE bob_access
+;
+
+bob_access
+:
+  ACCESS vlan = vlan_id NEWLINE
 ;
 
 bond_clag
 :
-  CLAG null_rest_of_line
+  CLAG boc_id
+;
+
+boc_id
+:
+  ID id = uint16 NEWLINE
 ;
 
 a_bridge
