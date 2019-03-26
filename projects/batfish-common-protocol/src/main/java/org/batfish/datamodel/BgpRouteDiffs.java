@@ -4,7 +4,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Objects;
 import java.util.Set;
@@ -13,7 +12,6 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /** A list of {@link BgpRouteDiff}. */
-@JsonTypeName("BgpRouteDiffs")
 @ParametersAreNonnullByDefault
 public final class BgpRouteDiffs {
   private static final String PROP_DIFFS = "diffs";
