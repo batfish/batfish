@@ -1,6 +1,7 @@
 package org.batfish.datamodel.bgp;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.graph.ImmutableValueGraph;
@@ -17,8 +18,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
@@ -39,7 +38,9 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Trace;
+import org.batfish.datamodel.flow.TraceAndReverseFlow;
 
 /** Utility functions for computing BGP topology */
 public final class BgpTopologyUtils {
@@ -243,9 +244,9 @@ public final class BgpTopologyUtils {
    */
   @VisibleForTesting
   public static boolean isReachableBgpNeighbor(
-      BgpPeerConfigId initiator,
-      BgpPeerConfigId listener,
-      BgpActivePeerConfig src,
+      @Nonnull BgpPeerConfigId initiator,
+      @Nonnull BgpPeerConfigId listener,
+      @Nonnull BgpActivePeerConfig src,
       @Nullable TracerouteEngine tracerouteEngine) {
     Ip srcAddress = src.getLocalIp();
     Ip dstAddress = src.getPeerAddress();
@@ -257,70 +258,80 @@ public final class BgpTopologyUtils {
           "Cannot compute neighbor reachability without a traceroute engine");
     }
 
-    /*
-     * Ensure that the session can be established by running traceroute in both directions
-     */
-    Flow.Builder fb = Flow.builder();
-    fb.setIpProtocol(IpProtocol.TCP);
-    fb.setTag("neighbor-resolution");
+    // we do a bidirectional traceroute only from the initiator to the listener since the other
+    // direction will be checked once we pick up the listener as the source. This is consistent with
+    // the directional nature of BGP graph
+    return canInitiateBgpSession(
+        initiator.getHostname(),
+        initiator.getVrfName(),
+        srcAddress,
+        dstAddress,
+        listener.getHostname(),
+        SessionType.isEbgp(BgpSessionProperties.getSessionType(src)) && !src.getEbgpMultihop(),
+        tracerouteEngine);
+  }
 
-    fb.setIngressNode(initiator.getHostname());
-    fb.setIngressVrf(initiator.getVrfName());
-    fb.setSrcIp(srcAddress);
-    fb.setDstIp(dstAddress);
-    fb.setSrcPort(NamedPort.EPHEMERAL_LOWEST.number());
-    fb.setDstPort(NamedPort.BGP.number());
-    Flow forwardFlow = fb.build();
+  private static boolean canInitiateBgpSession(
+      @Nonnull String initiatorNode,
+      @Nonnull String initiatorVrf,
+      @Nonnull Ip initiatorIp,
+      @Nonnull Ip listenerIp,
+      @Nonnull String listenerNode,
+      boolean bgpSingleHop,
+      @Nonnull TracerouteEngine tracerouteEngine) {
 
-    // Execute the "initiate connection" traceroute
-    SortedMap<Flow, List<Trace>> traces =
-        tracerouteEngine.computeTraces(ImmutableSet.of(forwardFlow), false);
+    Flow flowFromSrc =
+        Flow.builder()
+            .setIpProtocol(IpProtocol.TCP)
+            .setTcpFlagsSyn(1)
+            .setTag("neighbor-resolution")
+            .setIngressNode(initiatorNode)
+            .setIngressVrf(initiatorVrf)
+            .setSrcIp(initiatorIp)
+            .setDstIp(listenerIp)
+            .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
+            .setDstPort(NamedPort.BGP.number())
+            .build();
 
-    boolean isEbgpSingleHop =
-        SessionType.isEbgp(BgpSessionProperties.getSessionType(src)) && !src.getEbgpMultihop();
+    List<TraceAndReverseFlow> forwardTracesAndReverseFlows =
+        tracerouteEngine
+            .computeTracesAndReverseFlows(ImmutableSet.of(flowFromSrc), false)
+            .get(flowFromSrc);
 
-    List<Trace> acceptedFlows =
-        traces.get(forwardFlow).stream()
-            .filter(trace -> !isEbgpSingleHop || trace.getHops().size() <= 2)
+    List<TraceAndReverseFlow> reverseTraces =
+        forwardTracesAndReverseFlows.stream()
             .filter(
-                trace ->
-                    trace.getDisposition() == FlowDisposition.ACCEPTED
-                        && trace.getHops().size() > 0
-                        && trace
-                            .getHops()
-                            .get(trace.getHops().size() - 1)
-                            .getNode()
-                            .getName()
-                            .equals(listener.getHostname()))
-            .collect(Collectors.toList());
+                traceAndReverseFlow -> {
+                  Trace forwardTrace = traceAndReverseFlow.getTrace();
+                  return forwardTrace.getDisposition() == FlowDisposition.ACCEPTED
+                      && (!bgpSingleHop || forwardTrace.getHops().size() <= 2);
+                })
+            .filter(
+                traceAndReverseFlow ->
+                    traceAndReverseFlow.getReverseFlow() != null
+                        && traceAndReverseFlow
+                            .getReverseFlow()
+                            .getIngressNode()
+                            .equals(listenerNode))
+            .flatMap(
+                traceAndReverseFlow ->
+                    tracerouteEngine
+                        .computeTracesAndReverseFlows(
+                            ImmutableSet.of(traceAndReverseFlow.getReverseFlow()),
+                            traceAndReverseFlow.getNewFirewallSessions(),
+                            false)
+                        .get(traceAndReverseFlow.getReverseFlow()).stream())
+            .collect(ImmutableList.toImmutableList());
 
-    if (acceptedFlows.isEmpty()) {
-      return false;
-    }
-
-    String acceptedHostname = listener.getHostname();
-    // The reply traceroute
-    fb.setIngressNode(acceptedHostname);
-    fb.setIngressVrf(listener.getVrfName());
-    fb.setSrcIp(forwardFlow.getDstIp());
-    fb.setDstIp(forwardFlow.getSrcIp());
-    fb.setSrcPort(forwardFlow.getDstPort());
-    fb.setDstPort(forwardFlow.getSrcPort());
-    Flow backwardFlow = fb.build();
-    traces = tracerouteEngine.computeTraces(ImmutableSet.of(backwardFlow), false);
-
-    // Consider neighbor reachable if any backward flow is accepted.
-    return traces.get(backwardFlow).stream()
+    return reverseTraces.stream()
         .anyMatch(
-            trace ->
-                trace.getDisposition() == FlowDisposition.ACCEPTED
-                    && trace.getHops().size() > 0
-                    && trace
-                        .getHops()
-                        .get(trace.getHops().size() - 1)
-                        .getNode()
-                        .getName()
-                        .equals(initiator.getHostname()));
+            traceAndReverseFlow -> {
+              Trace reverseTrace = traceAndReverseFlow.getTrace();
+              List<Hop> hops = reverseTrace.getHops();
+              return !hops.isEmpty()
+                  && hops.get(hops.size() - 1).getNode().getName().equals(initiatorNode)
+                  && reverseTrace.getDisposition() == FlowDisposition.ACCEPTED;
+            });
   }
 
   private BgpTopologyUtils() {}
