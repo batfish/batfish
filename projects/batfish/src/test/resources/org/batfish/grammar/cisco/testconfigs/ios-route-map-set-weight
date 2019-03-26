@@ -1,0 +1,6 @@
+!
+hostname ios-route-map-set-weight
+!
+route-map SET_WEIGHT permit 10
+  set weight 20
+!

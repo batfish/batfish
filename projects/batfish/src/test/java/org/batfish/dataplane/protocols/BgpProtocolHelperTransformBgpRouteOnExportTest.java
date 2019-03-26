@@ -279,4 +279,20 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
     BgpRoute.Builder transformedBgpRoute = runTransformBgpRoutePreExport(bgpRoute);
     assertThat(transformedBgpRoute.getMetric(), equalTo(1000L));
   }
+
+  /** Test that weight is cleared before exporting for both IBGP and EBGP. */
+  @Test
+  public void testWeightIsClearedBeforeExport() throws BgpRoutePropagationException {
+    BgpRoute bgpRoute = _baseBgpRouteBuilder.setWeight(19).build();
+
+    // IBGP
+    setUpPeers(true);
+    BgpRoute.Builder transformedBgpRoute = runTransformBgpRoutePreExport(bgpRoute);
+    assertThat(transformedBgpRoute.getWeight(), equalTo(0));
+
+    // EBGP
+    setUpPeers(false);
+    transformedBgpRoute = runTransformBgpRoutePreExport(bgpRoute);
+    assertThat(transformedBgpRoute.getWeight(), equalTo(0));
+  }
 }

@@ -21,6 +21,17 @@ final class BgpRouteMatchersImpl {
     }
   }
 
+  static final class HasWeight extends FeatureMatcher<BgpRoute, Integer> {
+    HasWeight(@Nonnull Matcher<? super Integer> subMatcher) {
+      super(subMatcher, "A BgpRoute with weight:", "weight");
+    }
+
+    @Override
+    protected Integer featureValueOf(BgpRoute actual) {
+      return actual.getWeight();
+    }
+  }
+
   static final class IsBgpRouteThat extends IsInstanceThat<AbstractRoute, BgpRoute> {
     IsBgpRouteThat(Matcher<? super BgpRoute> subMatcher) {
       super(BgpRoute.class, subMatcher);

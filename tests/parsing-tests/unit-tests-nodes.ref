@@ -11683,6 +11683,13 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.routing_policy.statement.SetWeight",
+                "weight" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                  "value" : 20
+                }
+              },
+              {
                 "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
                 "type" : "ExitAccept"
               }
