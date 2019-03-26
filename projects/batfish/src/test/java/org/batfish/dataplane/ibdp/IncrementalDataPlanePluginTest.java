@@ -1,6 +1,7 @@
 package org.batfish.dataplane.ibdp;
 
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.IpAccessListLine.REJECT_ALL;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -42,16 +43,19 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute.Builder;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
@@ -453,7 +457,7 @@ public class IncrementalDataPlanePluginTest {
 
   @Test
   public void testEbgpSinglehopSuccess() throws IOException {
-    SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(false);
+    SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(false, false);
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
     batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
@@ -482,7 +486,7 @@ public class IncrementalDataPlanePluginTest {
 
   @Test
   public void testEbgpSinglehopFailure() throws IOException {
-    SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(false);
+    SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(false, false);
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
     batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
@@ -511,7 +515,7 @@ public class IncrementalDataPlanePluginTest {
 
   @Test
   public void testEbgpMultihopSuccess() throws IOException {
-    SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(false);
+    SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(false, false);
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
     batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
@@ -541,7 +545,7 @@ public class IncrementalDataPlanePluginTest {
   @Test
   public void testEbgpMultihopFailureWithAcl() throws IOException {
     // use a network with a deny all ACL on node 3
-    SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(true);
+    SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(true, false);
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
     batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
@@ -569,11 +573,44 @@ public class IncrementalDataPlanePluginTest {
             initiator, listener, source, new TracerouteEngineImpl(dp)));
   }
 
+  @Test
+  public void testEbgpWithAclPermitEstablished() throws IOException {
+    // use a network with an allow established connection ACL on node1
+    SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(false, true);
+
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
+    batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
+    DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
+    DataPlane dp = dataPlanePlugin.computeDataPlane()._dataPlane;
+
+    BgpPeerConfigId initiator =
+        new BgpPeerConfigId("node1", "~Vrf_0~", Prefix.parse("1.0.0.0/32"), false);
+    BgpPeerConfigId listener =
+        new BgpPeerConfigId("node3", "~Vrf_2~", Prefix.parse("1.0.0.3/32"), false);
+
+    BgpActivePeerConfig source =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(Ip.parse("1.0.0.0"))
+            .setPeerAddress(Ip.parse("1.0.0.3"))
+            .setEbgpMultihop(true)
+            .setLocalAs(1L)
+            .setRemoteAs(2L)
+            .build();
+
+    // neighbor should be reachable because ACL allows established connection back into node1 and
+    // allows everything out
+    assertTrue(
+        BgpTopologyUtils.isReachableBgpNeighbor(
+            initiator, listener, source, new TracerouteEngineImpl(dp)));
+  }
+
   /**
    * Generates configurations for a three node network with connectivity as shown in the diagram
    * below. Also adds static routes from node 1 to node 3 and back from node 3 to node 1
    *
    * @param denyIntoHop3 If true, add an incoming ACL on node3 that blocks all traffic
+   * @param allowOnlyEstablishedIntoHop1 If true, add an ACL on node1 which permits only established
+   *     TCP connections back into node1
    * @return {@link SortedMap} of generated configuration names and corresponding {@link
    *     Configuration}s
    */
@@ -588,7 +625,7 @@ public class IncrementalDataPlanePluginTest {
 
   */
   private static SortedMap<String, Configuration> generateNetworkWithThreeHops(
-      boolean denyIntoHop3) {
+      boolean denyIntoHop3, boolean allowOnlyEstablishedIntoHop1) {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -642,6 +679,25 @@ public class IncrementalDataPlanePluginTest {
                   ImmutableList.of(
                       IpAccessListLine.rejecting(
                           AclLineMatchExprs.matchSrc(UniverseIpSpace.INSTANCE))))
+              .build());
+    }
+    if (allowOnlyEstablishedIntoHop1) {
+      i11.setOutgoingFilter(
+          nf.aclBuilder()
+              .setOwner(c1)
+              .setLines(ImmutableList.of(IpAccessListLine.ACCEPT_ALL))
+              .build());
+      i11.setIncomingFilter(
+          nf.aclBuilder()
+              .setOwner(c1)
+              .setLines(
+                  ImmutableList.of(
+                      IpAccessListLine.acceptingHeaderSpace(
+                          HeaderSpace.builder()
+                              .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
+                              .setTcpFlags(ImmutableSet.of(TcpFlagsMatchConditions.ACK_TCP_FLAG))
+                              .build()),
+                      REJECT_ALL))
               .build());
     }
 
