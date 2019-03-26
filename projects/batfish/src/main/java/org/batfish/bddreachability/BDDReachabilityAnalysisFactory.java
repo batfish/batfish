@@ -1246,8 +1246,8 @@ public final class BDDReachabilityAnalysisFactory {
    * @param requiredTransitNodes A set of hostnames of which one must be transited.
    * @param finalNodes Find flows that stop at one of these nodes.
    * @param actions Find flows for which at least one trace has one of these actions.
-   * @param extraAcceptConstraints Node -> Vrf -> An extra constraint on Dst IP that must be true to
-   *     ACCEPT at that VRF. Missing entries are interpreted as no extra constraint.
+   * @param extraAcceptConstraints Node -&gt; Vrf -&gt; An extra constraint on Dst IP that must be
+   *     true to ACCEPT at that VRF. Missing entries are interpreted as no extra constraint.
    * @return {@link Map} of {@link IngressLocation}s to {@link BDD}s
    */
   public Map<IngressLocation, BDD> getAllBDDs(
