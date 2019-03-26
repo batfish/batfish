@@ -5,6 +5,8 @@ import static org.batfish.common.bdd.BDDInteger.makeFromIndex;
 import static org.batfish.common.bdd.BDDUtils.isAssignment;
 import static org.batfish.common.bdd.BDDUtils.swapPairing;
 
+import io.opentracing.ActiveSpan;
+import io.opentracing.util.GlobalTracer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -117,6 +119,11 @@ public class BDDPacket {
 
   private final BDDPairing _swapSourceAndDestinationPairing;
 
+  // Constraint generator for picking representative flows
+  private final BDDFlowConstraintGenerator _bddFlowConstraint;
+
+  private final BDDRepresentativePicker _picker;
+
   /*
    * Creates a collection of BDD variables representing the
    * various attributes of a control plane advertisement.
@@ -183,6 +190,11 @@ public class BDDPacket {
         swapPairing(
             getDstIp(), getSrcIp(), //
             getDstPort(), getSrcPort());
+
+    _bddFlowConstraint = new BDDFlowConstraintGenerator(this);
+    _picker =
+        new BDDRepresentativePicker(
+            _bddFlowConstraint.generateFlowPreference(FlowPreference.DEBUGGING));
   }
 
   /*
@@ -294,15 +306,14 @@ public class BDDPacket {
    * @return A Flow.Builder for a representative of the set, if it's non-empty
    */
   public Optional<Flow.Builder> getFlow(BDD bdd) {
-    BDDFlowConstraintGenerator bddFlowConstraint = new BDDFlowConstraintGenerator(this);
-    BDDRepresentativePicker picker =
-        new BDDRepresentativePicker(
-            bddFlowConstraint.generateFlowPreference(FlowPreference.DEBUGGING));
-    BDD representativeBDD = picker.pickRepresentative(bdd);
-    if (representativeBDD.isZero()) {
-      return Optional.empty();
+    try (ActiveSpan span = GlobalTracer.get().buildSpan("BDDPacket.getFlow").startActive()) {
+      assert span != null; // avoid unused warning
+      BDD representativeBDD = _picker.pickRepresentative(bdd);
+      if (representativeBDD.isZero()) {
+        return Optional.empty();
+      }
+      return Optional.of(getFlowFromAssignment(representativeBDD));
     }
-    return Optional.of(getFlowFromAssignment(representativeBDD));
   }
 
   public Flow.Builder getFlowFromAssignment(BDD satAssignment) {

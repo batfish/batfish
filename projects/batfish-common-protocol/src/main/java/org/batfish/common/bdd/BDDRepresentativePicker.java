@@ -1,5 +1,7 @@
 package org.batfish.common.bdd;
 
+import io.opentracing.ActiveSpan;
+import io.opentracing.util.GlobalTracer;
 import java.util.List;
 import net.sf.javabdd.BDD;
 
@@ -11,17 +13,21 @@ public class BDDRepresentativePicker {
   }
 
   public BDD pickRepresentative(BDD bdd) {
-    if (bdd.isZero()) {
-      return bdd;
-    }
-
-    for (BDD preferedBDD : _preference) {
-      BDD newBDD = preferedBDD.and(bdd);
-      if (!newBDD.isZero()) {
-        return newBDD.fullSatOne();
+    try (ActiveSpan span =
+        GlobalTracer.get().buildSpan("BDDRepresentativePicker.pickRepresentative").startActive()) {
+      assert span != null; // avoid unused warning
+      if (bdd.isZero()) {
+        return bdd;
       }
-    }
 
-    return bdd.fullSatOne();
+      for (BDD preferedBDD : _preference) {
+        BDD newBDD = preferedBDD.and(bdd);
+        if (!newBDD.isZero()) {
+          return newBDD.fullSatOne();
+        }
+      }
+
+      return bdd.fullSatOne();
+    }
   }
 }
