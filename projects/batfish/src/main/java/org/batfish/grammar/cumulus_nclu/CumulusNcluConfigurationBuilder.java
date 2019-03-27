@@ -17,10 +17,10 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.Ip;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_bgpContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_bondContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_bridgeContext;
-import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_dnsContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_hostnameContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_interfaceContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_loopbackContext;
@@ -34,8 +34,10 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bob_vidsContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bobo_slavesContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bond_clag_idContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Cumulus_nclu_configurationContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Dn4Context;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.GlobContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Glob_range_setContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ip_addressContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.RangeContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Range_setContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.S_extra_configurationContext;
@@ -58,10 +60,87 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   private static final Pattern NUMBERED_WORD_PATTERN = Pattern.compile("^(.*[^0-9])([0-9]+)$");
 
+  private static int toInteger(Uint16Context ctx) {
+    return Integer.parseInt(ctx.getText(), 10);
+  }
+
+  private static int toInteger(Vlan_idContext ctx) {
+    return Integer.parseInt(ctx.getText(), 10);
+  }
+
+  private static @Nonnull Ip toIp(Ip_addressContext ctx) {
+    return Ip.parse(ctx.getText());
+  }
+
+  private static @Nonnull Range<Integer> toRange(RangeContext ctx) {
+    int low = toInteger(ctx.low);
+    int high = ctx.high != null ? toInteger(ctx.high) : low;
+    return Range.closed(low, high);
+  }
+
+  private static @Nonnull Range<Integer> toRange(Vlan_rangeContext ctx) {
+    int low = toInteger(ctx.low);
+    int high = ctx.high != null ? toInteger(ctx.high) : low;
+    return Range.closed(low, high);
+  }
+
+  private static @Nonnull RangeSet<Integer> toRangeSet(Range_setContext ctx) {
+    return ctx.range().stream()
+        .map(CumulusNcluConfigurationBuilder::toRange)
+        .collect(ImmutableRangeSet.toImmutableRangeSet());
+  }
+
+  private static @Nonnull RangeSet<Integer> toRangeSet(Vlan_range_setContext ctx) {
+    return ctx.vlan_range().stream()
+        .map(CumulusNcluConfigurationBuilder::toRange)
+        .collect(ImmutableRangeSet.toImmutableRangeSet());
+  }
+
+  private static @Nonnull Set<String> toStrings(Glob_range_setContext ctx) {
+    if (ctx.unnumbered != null) {
+      return ImmutableSet.of(ctx.unnumbered.getText());
+    }
+    String baseWord = ctx.base_word.getText();
+    if (ctx.first_interval_end == null && ctx.other_numeric_ranges == null) {
+      return ImmutableSet.of(baseWord);
+    }
+    Matcher matcher = NUMBERED_WORD_PATTERN.matcher(baseWord);
+    boolean matches = matcher.matches();
+    assert matches; // parser+lexer should ensure this
+    String prefix = matcher.group(1);
+    int firstIntervalStart = Integer.parseInt(matcher.group(2), 10);
+    int firstIntervalEnd =
+        ctx.first_interval_end != null
+            ? Integer.parseInt(ctx.first_interval_end.getText(), 10)
+            : firstIntervalStart;
+    // add first interval
+    ImmutableRangeSet.Builder<Integer> builder =
+        ImmutableRangeSet.<Integer>builder()
+            .add(Range.closed(firstIntervalStart, firstIntervalEnd));
+    if (ctx.other_numeric_ranges != null) {
+      // add other intervals
+      builder.addAll(toRangeSet(ctx.other_numeric_ranges));
+    }
+    return builder.build().asRanges().stream()
+        .flatMapToInt(r -> IntStream.rangeClosed(r.lowerEndpoint(), r.upperEndpoint()))
+        .mapToObj(i -> String.format("%s%d", prefix, i))
+        .collect(ImmutableSet.toImmutableSet());
+  }
+
+  private static @Nonnull Set<String> toStrings(GlobContext ctx) {
+    return ctx.glob_range_set().stream()
+        .flatMap(grs -> toStrings(grs).stream())
+        .collect(ImmutableSet.toImmutableSet());
+  }
+
   private @Nullable CumulusNcluConfiguration _c;
+
   private @Nullable Bond _currentBond;
+
   private final @Nonnull CumulusNcluCombinedParser _parser;
+
   private final @Nonnull String _text;
+
   private final @Nonnull Warnings _w;
 
   public CumulusNcluConfigurationBuilder(
@@ -103,11 +182,6 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   @Override
   public void exitA_bridge(A_bridgeContext ctx) {
-    todo(ctx);
-  }
-
-  @Override
-  public void exitA_dns(A_dnsContext ctx) {
     todo(ctx);
   }
 
@@ -182,6 +256,11 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   }
 
   @Override
+  public void exitDn4(Dn4Context ctx) {
+    _c.getIpv4Nameservers().add(toIp(ctx.address));
+  }
+
+  @Override
   public void exitS_extra_configuration(S_extra_configurationContext ctx) {
     unrecognized(ctx);
   }
@@ -222,73 +301,6 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   @SuppressWarnings("unused")
   private void todo(ParserRuleContext ctx) {
     _w.todo(ctx, getFullText(ctx), _parser);
-  }
-
-  private int toInteger(Uint16Context ctx) {
-    return Integer.parseInt(ctx.getText(), 10);
-  }
-
-  private int toInteger(Vlan_idContext ctx) {
-    return Integer.parseInt(ctx.getText(), 10);
-  }
-
-  private @Nonnull Range<Integer> toRange(RangeContext ctx) {
-    int low = toInteger(ctx.low);
-    int high = ctx.high != null ? toInteger(ctx.high) : low;
-    return Range.closed(low, high);
-  }
-
-  private @Nonnull Range<Integer> toRange(Vlan_rangeContext ctx) {
-    int low = toInteger(ctx.low);
-    int high = ctx.high != null ? toInteger(ctx.high) : low;
-    return Range.closed(low, high);
-  }
-
-  private @Nonnull RangeSet<Integer> toRangeSet(Range_setContext ctx) {
-    return ctx.range().stream().map(this::toRange).collect(ImmutableRangeSet.toImmutableRangeSet());
-  }
-
-  private @Nonnull RangeSet<Integer> toRangeSet(Vlan_range_setContext ctx) {
-    return ctx.vlan_range().stream()
-        .map(this::toRange)
-        .collect(ImmutableRangeSet.toImmutableRangeSet());
-  }
-
-  private @Nonnull Set<String> toStrings(Glob_range_setContext ctx) {
-    if (ctx.unnumbered != null) {
-      return ImmutableSet.of(ctx.unnumbered.getText());
-    }
-    String baseWord = ctx.base_word.getText();
-    if (ctx.first_interval_end == null && ctx.other_numeric_ranges == null) {
-      return ImmutableSet.of(baseWord);
-    }
-    Matcher matcher = NUMBERED_WORD_PATTERN.matcher(baseWord);
-    boolean matches = matcher.matches();
-    assert matches; // parser+lexer should ensure this
-    String prefix = matcher.group(1);
-    int firstIntervalStart = Integer.parseInt(matcher.group(2), 10);
-    int firstIntervalEnd =
-        ctx.first_interval_end != null
-            ? Integer.parseInt(ctx.first_interval_end.getText(), 10)
-            : firstIntervalStart;
-    // add first interval
-    ImmutableRangeSet.Builder<Integer> builder =
-        ImmutableRangeSet.<Integer>builder()
-            .add(Range.closed(firstIntervalStart, firstIntervalEnd));
-    if (ctx.other_numeric_ranges != null) {
-      // add other intervals
-      builder.addAll(toRangeSet(ctx.other_numeric_ranges));
-    }
-    return builder.build().asRanges().stream()
-        .flatMapToInt(r -> IntStream.rangeClosed(r.lowerEndpoint(), r.upperEndpoint()))
-        .mapToObj(i -> String.format("%s%d", prefix, i))
-        .collect(ImmutableSet.toImmutableSet());
-  }
-
-  private @Nonnull Set<String> toStrings(GlobContext ctx) {
-    return ctx.glob_range_set().stream()
-        .flatMap(grs -> toStrings(grs).stream())
-        .collect(ImmutableSet.toImmutableSet());
   }
 
   private void unrecognized(ParserRuleContext ctx) {

@@ -1,6 +1,7 @@
 package org.batfish.grammar.cumulus_nclu;
 
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
@@ -19,6 +20,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.Ip;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cumulus.Bond;
@@ -105,6 +107,13 @@ public final class CumulusNcluGrammarTest {
         "Ensure trunk VLAN IDs were set",
         bond2.getBridge().getVids(),
         equalTo(IntegerSpace.of(Range.closed(3, 5))));
+  }
+
+  @Test
+  public void testDnsExtraction() throws IOException {
+    CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_dns");
+
+    assertThat(vc.getIpv4Nameservers(), contains(Ip.parse("192.0.2.3"), Ip.parse("192.0.2.4")));
   }
 
   @Test
