@@ -215,7 +215,7 @@ public class SessionInstrumentation {
                       removeLastHopConstraint(_lastHopMgr, hostname),
                       addSourceIfaceConstraint,
                       addLastHop);
-              if (transition instanceof Zero) {
+              if (transition == Zero.INSTANCE) {
                 return null;
               }
               return new Edge(preState, postState, transition);
@@ -256,7 +256,7 @@ public class SessionInstrumentation {
                       denyOutAcl,
                       removeSourceConstraint(srcMgr),
                       removeLastHopConstraint(_lastHopMgr, hostname));
-              if (transition instanceof Zero) {
+              if (transition == Zero.INSTANCE) {
                 return null;
               }
               return new Edge(preState, postState, transition);
@@ -288,7 +288,7 @@ public class SessionInstrumentation {
                       constraint(sessionFlows.and(inAclBdd)),
                       sessionInfo.getTransformation(),
                       outAcl);
-              if (transition instanceof Zero) {
+              if (transition == Zero.INSTANCE) {
                 return null;
               }
               return new Edge(preState, postState, transition);
@@ -317,7 +317,7 @@ public class SessionInstrumentation {
                       sessionInfo.getTransformation(),
                       removeSourceConstraint(srcMgr),
                       removeLastHopConstraint(_lastHopMgr, hostname));
-              if (transition instanceof Zero) {
+              if (transition == Zero.INSTANCE) {
                 return null;
               }
               return new Edge(preState, postState, transition);
@@ -348,7 +348,7 @@ public class SessionInstrumentation {
                       constraint(sessionFlows.and(inAclDenyBdd)),
                       removeSourceConstraint(srcMgr),
                       removeLastHopConstraint(_lastHopMgr, hostname));
-              if (transition instanceof Zero) {
+              if (transition == Zero.INSTANCE) {
                 return null;
               }
               return new Edge(preState, postState, transition);
