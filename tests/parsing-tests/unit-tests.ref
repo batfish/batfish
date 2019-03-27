@@ -40543,7 +40543,21 @@
             "          NAMESERVER:'nameserver'",
             "          (dn4",
             "            IPV4:'ipv4'",
-            "            address = IP_ADDRESS:'192.0.2.3'",
+            "            address = (ip_address",
+            "              IP_ADDRESS:'192.0.2.3')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_dns",
+            "        DNS:'dns'",
+            "        (dns_nameserver",
+            "          NAMESERVER:'nameserver'",
+            "          (dn6",
+            "            IPV6:'ipv6'",
+            "            address6 = (ipv6_address",
+            "              IPV6_ADDRESS:'dead:beef::1')",
             "            NEWLINE:'\\n')))))",
             "  (statement",
             "    (s_net_add_unrecognized",
@@ -71286,308 +71300,302 @@
               "Text" : "bridge bridge vlan-aware"
             },
             {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 26,
-              "Parser_Context" : "[a_dns s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "dns nameserver ipv4 192.0.2.3"
-            },
-            {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 27,
+              "Line" : 28,
               "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
               "Text" : "net add dot1x eap-reauth-period 0\n"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 28,
+              "Line" : 29,
               "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
               "Text" : "net add dot1x mab-activation-delay 30\n"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 29,
+              "Line" : 30,
               "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
               "Text" : "net add dot1x radius accounting-port 1234\n"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 30,
+              "Line" : 31,
               "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
               "Text" : "net add dot1x radius authentication-port 2345\n"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 31,
+              "Line" : 32,
               "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
               "Text" : "interface bond1.4094 clag backup-ip 192.0.2.4 vrf mgmt"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 32,
+              "Line" : 33,
               "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
               "Text" : "interface bond1.4094 clag peer-ip 192.0.2.5"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 33,
+              "Line" : 34,
               "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
               "Text" : "interface bond1.4094 clag priority 1000"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 34,
+              "Line" : 35,
               "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
               "Text" : "interface bond1.4094 clag sys-mac 00:11:22:33:44:55"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 35,
+              "Line" : 36,
               "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
               "Text" : "interface bond1.4094 ip address 192.0.2.6/24"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 36,
+              "Line" : 37,
               "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
               "Text" : "interface eth0 vrf mgmt"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 37,
+              "Line" : 38,
               "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
               "Text" : "interface swp1 bridge access 3"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 38,
+              "Line" : 39,
               "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
               "Text" : "interface swp1,2-3"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 39,
+              "Line" : 40,
               "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
               "Text" : "net add loopback lo\n"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 40,
+              "Line" : 41,
               "Parser_Context" : "[a_loopback s_net_add statement cumulus_nclu_configuration]",
               "Text" : "loopback lo clag vxlan-anycast-ip 192.0.2.7"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 41,
+              "Line" : 42,
               "Parser_Context" : "[a_loopback s_net_add statement cumulus_nclu_configuration]",
               "Text" : "loopback lo ip address 192.0.2.8/32"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 42,
+              "Line" : 43,
               "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
               "Text" : "net add ptp global domain-number 0\n"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 43,
+              "Line" : 44,
               "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
               "Text" : "net add ptp global logging-level 5\n"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 44,
+              "Line" : 45,
               "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
               "Text" : "net add ptp global path-trace-enabled no\n"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 45,
+              "Line" : 46,
               "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
               "Text" : "net add ptp global priority1 255\n"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 46,
+              "Line" : 47,
               "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
               "Text" : "net add ptp global slave-only no\n"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 47,
+              "Line" : 48,
               "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
               "Text" : "net add ptp global summary-interval 0\n"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 48,
+              "Line" : 49,
               "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
               "Text" : "net add ptp global time-stamping\n"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 49,
+              "Line" : 50,
               "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
               "Text" : "net add ptp global use-syslog yes\n"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 50,
+              "Line" : 51,
               "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
               "Text" : "net add ptp global verbose no\n"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 51,
+              "Line" : 52,
               "Parser_Context" : "[a_routing s_net_add statement cumulus_nclu_configuration]",
               "Text" : "routing defaults datacenter"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 52,
+              "Line" : 53,
               "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
               "Text" : "net add routing log syslog informational\n"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 53,
+              "Line" : 54,
               "Parser_Context" : "[a_routing s_net_add statement cumulus_nclu_configuration]",
               "Text" : "routing route 192.0.2.0/24 10.0.0.1"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 54,
+              "Line" : 55,
               "Parser_Context" : "[a_routing s_net_add statement cumulus_nclu_configuration]",
               "Text" : "routing route-map rm1 permit 1 match interface lo"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 55,
+              "Line" : 56,
               "Parser_Context" : "[a_routing s_net_add statement cumulus_nclu_configuration]",
               "Text" : "routing service integrated-vtysh-config"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 56,
+              "Line" : 57,
               "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
               "Text" : "net add snmp-server listening-address localhost\n"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 57,
+              "Line" : 58,
               "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
               "Text" : "net add time ntp server 0.pool.ntp.example.com iburst\n"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 58,
+              "Line" : 59,
               "Parser_Context" : "[a_time s_net_add statement cumulus_nclu_configuration]",
               "Text" : "time ntp source eth0"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 59,
+              "Line" : 60,
               "Parser_Context" : "[a_time s_net_add statement cumulus_nclu_configuration]",
               "Text" : "time zone Etc/UTC"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 60,
+              "Line" : 61,
               "Parser_Context" : "[a_vlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "vlan 4 ip address 192.0.2.9/24"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 61,
+              "Line" : 62,
               "Parser_Context" : "[a_vlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "vlan 4 ip address-virtual 01:23:45:67:89:ab 192.168.0.1/24"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 62,
+              "Line" : 63,
               "Parser_Context" : "[a_vlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "vlan 4 vlan-id 4"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 63,
+              "Line" : 64,
               "Parser_Context" : "[a_vlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "vlan 4 vlan-raw-device bridge"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 64,
+              "Line" : 65,
               "Parser_Context" : "[a_vlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "vlan 4 vrf vrf1"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 65,
+              "Line" : 66,
               "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
               "Text" : "net add vrf mgmt ip address 10.0.0.2/8\n"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 66,
+              "Line" : 67,
               "Parser_Context" : "[a_vrf s_net_add statement cumulus_nclu_configuration]",
               "Text" : "vrf vrf1 vni 10001"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 67,
+              "Line" : 68,
               "Parser_Context" : "[a_vrf s_net_add statement cumulus_nclu_configuration]",
               "Text" : "vrf vrf1,mgmt vrf-table auto"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 68,
+              "Line" : 69,
               "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "vxlan vni10001 bridge access 5"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 69,
+              "Line" : 70,
               "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "vxlan vni10001 vxlan id 100001"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 70,
+              "Line" : 71,
               "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "vxlan vni10001,10002-10003 bridge arp-nd-suppress on"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 71,
+              "Line" : 72,
               "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "vxlan vni10001,10002-10003 bridge learning off"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 72,
+              "Line" : 73,
               "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "vxlan vni10001,10002-10003 stp bpduguard"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 73,
+              "Line" : 74,
               "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "vxlan vni10001,10002-10003 stp portbpdufilter"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 74,
+              "Line" : 75,
               "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "vxlan vni10001,10002-10003 vxlan local-tunnelip 192.0.2.10"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 80,
+              "Line" : 81,
               "Parser_Context" : "[s_extra_configuration statement cumulus_nclu_configuration]",
               "Text" : "sudo sh -c \"printf 'username cumulus nopassword\\n' >> /etc/frr/frr.conf\"\n"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 81,
+              "Line" : 82,
               "Parser_Context" : "[s_extra_configuration statement cumulus_nclu_configuration]",
               "Text" : "sudo sh -c \"printf 'vrf vrf1\\n  ip route 0.0.0.0/0 192.0.2.1\\n' >> /etc/frr/frr.conf\"\n\n"
             }

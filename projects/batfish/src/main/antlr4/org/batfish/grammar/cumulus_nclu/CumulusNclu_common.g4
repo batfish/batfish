@@ -32,6 +32,16 @@ glob_word
   ~( NEWLINE | NUMBERED_WORD | DEC )
 ;
 
+ip_address
+:
+  IP_ADDRESS
+;
+
+ipv6_address
+:
+  IPV6_ADDRESS
+;
+
 line_action
 :
   DENY

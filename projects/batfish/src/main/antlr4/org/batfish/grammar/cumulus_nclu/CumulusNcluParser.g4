@@ -142,12 +142,12 @@ dns_nameserver
 
 dn4
 :
-  IPV4 address = IP_ADDRESS NEWLINE
+  IPV4 address = ip_address NEWLINE
 ;
 
 dn6
 :
-  IPV6 address6 = IPV6_ADDRESS NEWLINE
+  IPV6 address6 = ipv6_address NEWLINE
 ;
 
 a_hostname
