@@ -17,10 +17,11 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Ip6;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_bgpContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_bondContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_bridgeContext;
-import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_dnsContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_hostnameContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_interfaceContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_loopbackContext;
@@ -34,8 +35,12 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bob_vidsContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bobo_slavesContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bond_clag_idContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Cumulus_nclu_configurationContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Dn4Context;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Dn6Context;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.GlobContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Glob_range_setContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ip_addressContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ipv6_addressContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.RangeContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Range_setContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.S_extra_configurationContext;
@@ -64,6 +69,14 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   private static int toInteger(Vlan_idContext ctx) {
     return Integer.parseInt(ctx.getText(), 10);
+  }
+
+  private static @Nonnull Ip toIp(Ip_addressContext ctx) {
+    return Ip.parse(ctx.getText());
+  }
+
+  private static @Nonnull Ip6 toIp6(Ipv6_addressContext ctx) {
+    return Ip6.parse(ctx.getText());
   }
 
   private static @Nonnull Range<Integer> toRange(RangeContext ctx) {
@@ -178,11 +191,6 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   }
 
   @Override
-  public void exitA_dns(A_dnsContext ctx) {
-    todo(ctx);
-  }
-
-  @Override
   public void exitA_hostname(A_hostnameContext ctx) {
     _c.setHostname(ctx.hostname.getText());
   }
@@ -247,6 +255,16 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   @Override
   public void exitBond_clag_id(Bond_clag_idContext ctx) {
     _currentBond.setClagId(toInteger(ctx.id));
+  }
+
+  @Override
+  public void exitDn4(Dn4Context ctx) {
+    _c.getIpv4Nameservers().add(toIp(ctx.address));
+  }
+
+  @Override
+  public void exitDn6(Dn6Context ctx) {
+    _c.getIpv6Nameservers().add(toIp6(ctx.address6));
   }
 
   @Override

@@ -24,6 +24,7 @@ net add bridge bridge ports bond1,swp1,vni10001
 net add bridge bridge vids 1,2-3
 net add bridge bridge vlan-aware
 net add dns nameserver ipv4 192.0.2.3
+net add dns nameserver ipv6 dead:beef::1
 net add dot1x eap-reauth-period 0
 net add dot1x mab-activation-delay 30
 net add dot1x radius accounting-port 1234
