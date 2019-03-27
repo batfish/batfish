@@ -77,21 +77,22 @@ public final class CumulusNcluGrammarTest {
     String bond1Name = "bond1";
     String bond2Name = "bond2";
 
+    String[] expectedSlaves =
+        new String[] {
+          "swp1", //
+          "swp2", //
+          "swp3", //
+          "swp4", //
+          "swp5", //
+          "swp6", //
+          "swp7", //
+          "swp8", //
+          "swp1a-b2", //
+          "swp1a-b3" //
+        };
+
     // referenced interfaces should have been created
-    assertThat(
-        vc.getInterfaces().keySet(),
-        containsInAnyOrder(
-            "swp1", //
-            "swp2", //
-            "swp3", //
-            "swp4", //
-            "swp5", //
-            "swp6", //
-            "swp7", //
-            "swp8", //
-            "swp1a-b2", //
-            "swp1a-b3" //
-            ));
+    assertThat(vc.getInterfaces().keySet(), containsInAnyOrder(expectedSlaves));
 
     assertThat(
         "Ensure bonds were extracted",
@@ -103,6 +104,7 @@ public final class CumulusNcluGrammarTest {
 
     assertThat("Ensure access VLAN ID was set", bond1.getBridge().getAccess(), equalTo(2));
     assertThat("Ensure CLAG ID was set", bond1.getClagId(), equalTo(1));
+    assertThat("Ensure slaves were set", bond1.getSlaves(), containsInAnyOrder(expectedSlaves));
 
     assertThat(
         "Ensure trunk VLAN IDs were set",
