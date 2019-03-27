@@ -5,12 +5,12 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Splitter;
 import java.io.Serializable;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.apache.commons.lang3.StringUtils;
 
 /** A 48-bit MAC address */
 @ParametersAreNonnullByDefault
@@ -23,14 +23,7 @@ public class MacAddress implements Comparable<MacAddress>, Serializable {
 
   @VisibleForTesting
   static @Nonnull String asMacAddressString(long longVal) {
-    long remainder = longVal;
-    String[] pieces = new String[6];
-    for (int i = 0; i < 6; i++) {
-      long currentByte = remainder & 0xFFL;
-      pieces[5 - i] = String.format("%02x", currentByte);
-      remainder >>= 8;
-    }
-    return StringUtils.join(pieces, ":");
+    return String.join(":", Splitter.fixedLength(2).split(String.format("%012x", longVal)));
   }
 
   @JsonCreator

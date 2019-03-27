@@ -82,7 +82,7 @@ public final class MacAddressTest {
   @Test
   public void testParseInvalidBadChar() {
     _thrown.expect(IllegalArgumentException.class);
-    parse("00:11:22:33:44:55:GG");
+    parse("00:11:22:33:44:GG");
   }
 
   @Test
