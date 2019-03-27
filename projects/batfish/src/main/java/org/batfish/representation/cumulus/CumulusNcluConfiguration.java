@@ -1,6 +1,8 @@
 package org.batfish.representation.cumulus;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
@@ -15,11 +17,32 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   private static final long serialVersionUID = 1L;
 
+  private final @Nonnull Map<String, Bond> _bonds;
+  private transient Configuration _c;
   private @Nullable String _hostname;
+  private final @Nonnull Map<String, Interface> _interfaces;
+
+  public CumulusNcluConfiguration() {
+    _bonds = new HashMap<>();
+    _interfaces = new HashMap<>();
+  }
+
+  public @Nonnull Map<String, Bond> getBonds() {
+    return _bonds;
+  }
 
   @Override
   public @Nullable String getHostname() {
     return _hostname;
+  }
+
+  public @Nonnull Map<String, Interface> getInterfaces() {
+    return _interfaces;
+  }
+
+  private void markStructures() {
+    markConcreteStructure(CumulusStructureType.BOND, CumulusStructureUsage.BOND_SELF_REFERENCE);
+    markConcreteStructure(CumulusStructureType.INTERFACE, CumulusStructureUsage.BOND_SLAVE);
   }
 
   @Override
@@ -31,10 +54,11 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   public void setVendor(ConfigurationFormat format) {}
 
   private @Nonnull Configuration toVendorIndependentConfiguration() {
-    Configuration c = new Configuration(getHostname(), ConfigurationFormat.CUMULUS_NCLU);
-    c.setDefaultCrossZoneAction(LineAction.PERMIT);
-    c.setDefaultInboundAction(LineAction.PERMIT);
-    return c;
+    _c = new Configuration(getHostname(), ConfigurationFormat.CUMULUS_NCLU);
+    _c.setDefaultCrossZoneAction(LineAction.PERMIT);
+    _c.setDefaultInboundAction(LineAction.PERMIT);
+    markStructures();
+    return _c;
   }
 
   @Override

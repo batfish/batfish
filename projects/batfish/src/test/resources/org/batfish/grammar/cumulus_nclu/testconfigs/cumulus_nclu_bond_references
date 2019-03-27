@@ -1,0 +1,7 @@
+net del all
+#
+net add hostname cumulus_nclu_bond_references
+#
+net add bond bond1 bridge access 1
+#
+net commit

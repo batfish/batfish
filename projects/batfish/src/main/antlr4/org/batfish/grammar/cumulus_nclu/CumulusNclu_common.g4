@@ -14,15 +14,15 @@ glob
 
 glob_range_set
 :
-  glob_word
+  unnumbered = glob_word
   |
   (
     base_word = numbered_word
     (
-      DASH first_interval_end = DEC
+      DASH first_interval_end = uint16
     )?
     (
-      COMMA range_set
+      COMMA other_numeric_ranges = range_set
     )?
   )
 ;
@@ -50,9 +50,9 @@ numbered_word
 
 range
 :
-  low = DEC
+  low = uint16
   (
-    DASH high = DEC
+    DASH high = uint16
   )?
 ;
 
@@ -83,6 +83,22 @@ vlan_id
   v = DEC
   {isVlanId($v)}?
 
+;
+
+vlan_range
+:
+  low = vlan_id
+  (
+    DASH high = vlan_id
+  )?
+;
+
+vlan_range_set
+:
+  vlan_range
+  (
+    COMMA vlan_range
+  )*
 ;
 
 vni_number
