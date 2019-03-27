@@ -75943,13 +75943,13 @@
                 20,
                 22
               ],
-              "numReferrers" : 0
+              "numReferrers" : 3
             },
             "bond2" : {
               "definitionLines" : [
                 21
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           },
           "interface" : {
@@ -81480,6 +81480,20 @@
           }
         },
         "configs/cumulus_nclu" : {
+          "bond" : {
+            "bond1" : {
+              "bond self-reference" : [
+                19,
+                20,
+                22
+              ]
+            },
+            "bond2" : {
+              "bond self-reference" : [
+                21
+              ]
+            }
+          },
           "interface" : {
             "swp1" : {
               "bond slave" : [
