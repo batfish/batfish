@@ -40393,27 +40393,32 @@
             "                base_word = (numbered_word",
             "                  NUMBERED_WORD:'swp2')",
             "                DASH:'-'",
-            "                first_interval_end = DEC:'4'",
+            "                first_interval_end = (uint16",
+            "                  d = DEC:'4')",
             "                COMMA:','",
-            "                (range_set",
+            "                other_numeric_ranges = (range_set",
             "                  (range",
-            "                    low = DEC:'5')))",
+            "                    low = (uint16",
+            "                      d = DEC:'5'))))",
             "              COMMA:','",
             "              (glob_range_set",
             "                base_word = (numbered_word",
             "                  NUMBERED_WORD:'swp6')",
             "                COMMA:','",
-            "                (range_set",
+            "                other_numeric_ranges = (range_set",
             "                  (range",
-            "                    low = DEC:'7'",
+            "                    low = (uint16",
+            "                      d = DEC:'7')",
             "                    DASH:'-'",
-            "                    high = DEC:'8')))",
+            "                    high = (uint16",
+            "                      d = DEC:'8'))))",
             "              COMMA:','",
             "              (glob_range_set",
             "                base_word = (numbered_word",
             "                  NUMBERED_WORD:'swp1a-b2')",
             "                DASH:'-'",
-            "                first_interval_end = DEC:'3'))",
+            "                first_interval_end = (uint16",
+            "                  d = DEC:'3')))",
             "            NEWLINE:'\\n')))))",
             "  (statement",
             "    (s_net_add",
@@ -40438,13 +40443,12 @@
             "        BOND:'bond'",
             "        name = (word",
             "          NUMBERED_WORD:'bond1')",
-            "        (bond_clag",
+            "        (bond_clag_id",
             "          CLAG:'clag'",
-            "          (boc_id",
-            "            ID:'id'",
-            "            id = (uint16",
-            "              d = DEC:'1')",
-            "            NEWLINE:'\\n')))))",
+            "          ID:'id'",
+            "          id = (uint16",
+            "            d = DEC:'1')",
+            "          NEWLINE:'\\n'))))",
             "  (statement",
             "    (s_net_add",
             "      NET:'net'",
@@ -40480,12 +40484,15 @@
             "            VIDS:'vids'",
             "            ids = (range_set",
             "              (range",
-            "                low = DEC:'1')",
+            "                low = (uint16",
+            "                  d = DEC:'1'))",
             "              COMMA:','",
             "              (range",
-            "                low = DEC:'2'",
+            "                low = (uint16",
+            "                  d = DEC:'2')",
             "                DASH:'-'",
-            "                high = DEC:'3'))",
+            "                high = (uint16",
+            "                  d = DEC:'3')))",
             "            NEWLINE:'\\n')))))",
             "  (statement",
             "    (s_net_add",
@@ -40678,11 +40685,13 @@
             "            base_word = (numbered_word",
             "              NUMBERED_WORD:'swp1')",
             "            COMMA:','",
-            "            (range_set",
+            "            other_numeric_ranges = (range_set",
             "              (range",
-            "                low = DEC:'2'",
+            "                low = (uint16",
+            "                  d = DEC:'2')",
             "                DASH:'-'",
-            "                high = DEC:'3'))))",
+            "                high = (uint16",
+            "                  d = DEC:'3')))))",
             "        NEWLINE:'\\n')))",
             "  (statement",
             "    (s_net_add_unrecognized",
@@ -40868,7 +40877,7 @@
             "              INTERFACE:'interface'",
             "              interfaces = (glob",
             "                (glob_range_set",
-            "                  (glob_word",
+            "                  unnumbered = (glob_word",
             "                    LO:'lo')))",
             "              NEWLINE:'\\n'))))))",
             "  (statement",
@@ -41031,7 +41040,7 @@
             "              NUMBERED_WORD:'vrf1'))",
             "          COMMA:','",
             "          (glob_range_set",
-            "            (glob_word",
+            "            unnumbered = (glob_word",
             "              WORD:'mgmt')))",
             "        (vrf_vrf_table",
             "          VRF_TABLE:'vrf-table'",
@@ -41082,11 +41091,13 @@
             "            base_word = (numbered_word",
             "              NUMBERED_WORD:'vni10001')",
             "            COMMA:','",
-            "            (range_set",
+            "            other_numeric_ranges = (range_set",
             "              (range",
-            "                low = DEC:'10002'",
+            "                low = (uint16",
+            "                  d = DEC:'10002')",
             "                DASH:'-'",
-            "                high = DEC:'10003'))))",
+            "                high = (uint16",
+            "                  d = DEC:'10003')))))",
             "        (vx_bridge",
             "          BRIDGE:'bridge'",
             "          (vxb_arp_nd_suppress",
@@ -41104,11 +41115,13 @@
             "            base_word = (numbered_word",
             "              NUMBERED_WORD:'vni10001')",
             "            COMMA:','",
-            "            (range_set",
+            "            other_numeric_ranges = (range_set",
             "              (range",
-            "                low = DEC:'10002'",
+            "                low = (uint16",
+            "                  d = DEC:'10002')",
             "                DASH:'-'",
-            "                high = DEC:'10003'))))",
+            "                high = (uint16",
+            "                  d = DEC:'10003')))))",
             "        (vx_bridge",
             "          BRIDGE:'bridge'",
             "          (vxb_learning",
@@ -41126,11 +41139,13 @@
             "            base_word = (numbered_word",
             "              NUMBERED_WORD:'vni10001')",
             "            COMMA:','",
-            "            (range_set",
+            "            other_numeric_ranges = (range_set",
             "              (range",
-            "                low = DEC:'10002'",
+            "                low = (uint16",
+            "                  d = DEC:'10002')",
             "                DASH:'-'",
-            "                high = DEC:'10003'))))",
+            "                high = (uint16",
+            "                  d = DEC:'10003')))))",
             "        (vx_stp",
             "          STP:'stp'",
             "          (vxs_bpduguard",
@@ -41147,11 +41162,13 @@
             "            base_word = (numbered_word",
             "              NUMBERED_WORD:'vni10001')",
             "            COMMA:','",
-            "            (range_set",
+            "            other_numeric_ranges = (range_set",
             "              (range",
-            "                low = DEC:'10002'",
+            "                low = (uint16",
+            "                  d = DEC:'10002')",
             "                DASH:'-'",
-            "                high = DEC:'10003'))))",
+            "                high = (uint16",
+            "                  d = DEC:'10003')))))",
             "        (vx_stp",
             "          STP:'stp'",
             "          (vxs_portbpdufilter",
@@ -41168,11 +41185,13 @@
             "            base_word = (numbered_word",
             "              NUMBERED_WORD:'vni10001')",
             "            COMMA:','",
-            "            (range_set",
+            "            other_numeric_ranges = (range_set",
             "              (range",
-            "                low = DEC:'10002'",
+            "                low = (uint16",
+            "                  d = DEC:'10002')",
             "                DASH:'-'",
-            "                high = DEC:'10003'))))",
+            "                high = (uint16",
+            "                  d = DEC:'10003')))))",
             "        (vx_vxlan",
             "          VXLAN:'vxlan'",
             "          (vxv_local_tunnelip",
@@ -71172,24 +71191,6 @@
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 19,
-              "Parser_Context" : "[a_bond s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bond bond1 bond slaves swp1,swp2-4,5,swp6,7-8,swp1a-b2-3"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 20,
-              "Parser_Context" : "[a_bond s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bond bond1 bridge access 2"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 21,
-              "Parser_Context" : "[a_bond s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bond bond1 clag id 1"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
               "Line" : 22,
               "Parser_Context" : "[a_bridge s_net_add statement cumulus_nclu_configuration]",
               "Text" : "bridge bridge ports bond1,swp1,vni10001"
@@ -75855,7 +75856,80 @@
             }
           }
         },
-        "configs/cumulus_nclu" : { },
+        "configs/cumulus_nclu" : {
+          "bond" : {
+            "bond1" : {
+              "definitionLines" : [
+                19,
+                20,
+                21
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "interface" : {
+            "swp1" : {
+              "definitionLines" : [
+                19
+              ],
+              "numReferrers" : 1
+            },
+            "swp1a-b2" : {
+              "definitionLines" : [
+                19
+              ],
+              "numReferrers" : 1
+            },
+            "swp1a-b3" : {
+              "definitionLines" : [
+                19
+              ],
+              "numReferrers" : 1
+            },
+            "swp2" : {
+              "definitionLines" : [
+                19
+              ],
+              "numReferrers" : 1
+            },
+            "swp3" : {
+              "definitionLines" : [
+                19
+              ],
+              "numReferrers" : 1
+            },
+            "swp4" : {
+              "definitionLines" : [
+                19
+              ],
+              "numReferrers" : 1
+            },
+            "swp5" : {
+              "definitionLines" : [
+                19
+              ],
+              "numReferrers" : 1
+            },
+            "swp6" : {
+              "definitionLines" : [
+                19
+              ],
+              "numReferrers" : 1
+            },
+            "swp7" : {
+              "definitionLines" : [
+                19
+              ],
+              "numReferrers" : 1
+            },
+            "swp8" : {
+              "definitionLines" : [
+                19
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/eos_mlag" : {
           "interface" : {
             "Port-Channel1" : {
@@ -81306,6 +81380,60 @@
             "9999-RRR" : {
               "route-map match community-list" : [
                 7
+              ]
+            }
+          }
+        },
+        "configs/cumulus_nclu" : {
+          "interface" : {
+            "swp1" : {
+              "bond slave" : [
+                19
+              ]
+            },
+            "swp1a-b2" : {
+              "bond slave" : [
+                19
+              ]
+            },
+            "swp1a-b3" : {
+              "bond slave" : [
+                19
+              ]
+            },
+            "swp2" : {
+              "bond slave" : [
+                19
+              ]
+            },
+            "swp3" : {
+              "bond slave" : [
+                19
+              ]
+            },
+            "swp4" : {
+              "bond slave" : [
+                19
+              ]
+            },
+            "swp5" : {
+              "bond slave" : [
+                19
+              ]
+            },
+            "swp6" : {
+              "bond slave" : [
+                19
+              ]
+            },
+            "swp7" : {
+              "bond slave" : [
+                19
+              ]
+            },
+            "swp8" : {
+              "bond slave" : [
+                19
               ]
             }
           }

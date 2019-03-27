@@ -18,6 +18,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private static final long serialVersionUID = 1L;
 
   private final @Nonnull Map<String, Bond> _bonds;
+  private transient Configuration _c;
   private @Nullable String _hostname;
   private final @Nonnull Map<String, Interface> _interfaces;
 
@@ -39,6 +40,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     return _interfaces;
   }
 
+  private void markStructures() {
+    markConcreteStructure(CumulusNcluStructureType.INTERFACE, CumulusNcluStructureUsage.BOND_SLAVE);
+  }
+
   @Override
   public void setHostname(@Nullable String hostname) {
     _hostname = hostname;
@@ -48,10 +53,11 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   public void setVendor(ConfigurationFormat format) {}
 
   private @Nonnull Configuration toVendorIndependentConfiguration() {
-    Configuration c = new Configuration(getHostname(), ConfigurationFormat.CUMULUS_NCLU);
-    c.setDefaultCrossZoneAction(LineAction.PERMIT);
-    c.setDefaultInboundAction(LineAction.PERMIT);
-    return c;
+    _c = new Configuration(getHostname(), ConfigurationFormat.CUMULUS_NCLU);
+    _c.setDefaultCrossZoneAction(LineAction.PERMIT);
+    _c.setDefaultInboundAction(LineAction.PERMIT);
+    markStructures();
+    return _c;
   }
 
   @Override
