@@ -58,7 +58,7 @@ a_bond
   (
     bond_bond
     | bond_bridge
-    | bond_clag
+    | bond_clag_id
   )
 ;
 
@@ -82,14 +82,9 @@ bob_access
   ACCESS vlan = vlan_id NEWLINE
 ;
 
-bond_clag
+bond_clag_id
 :
-  CLAG boc_id
-;
-
-boc_id
-:
-  ID id = uint16 NEWLINE
+  CLAG ID id = uint16 NEWLINE
 ;
 
 a_bridge
