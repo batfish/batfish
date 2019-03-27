@@ -6,8 +6,10 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Ordering;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.Set;
@@ -15,7 +17,6 @@ import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.util.CommonUtil;
 
 /** A generated/aggregate IPV4 route. */
 @ParametersAreNonnullByDefault
@@ -303,7 +304,8 @@ public final class GeneratedRoute extends AbstractRoute {
     GeneratedRoute castRhs = (GeneratedRoute) rhs;
     return Comparator.comparing(GeneratedRoute::getAsPath)
         .thenComparing(GeneratedRoute::getAttributePolicy, Comparator.nullsLast(String::compareTo))
-        .thenComparing(GeneratedRoute::getCommunities, CommonUtil::compareCollection)
+        .thenComparing(
+            GeneratedRoute::getCommunities, Comparators.lexicographical(Ordering.natural()))
         .thenComparing(GeneratedRoute::getDiscard)
         .thenComparing(GeneratedRoute::getGenerationPolicy, Comparator.nullsLast(String::compareTo))
         .compare(this, castRhs);
