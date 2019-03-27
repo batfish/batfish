@@ -5,6 +5,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -25,6 +26,7 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
+import org.batfish.common.topology.Layer3Edge;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
@@ -37,11 +39,11 @@ import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.RipNeighbor;
 import org.batfish.datamodel.RipProcess;
 import org.batfish.datamodel.Topology;
-import org.batfish.datamodel.VerboseEdge;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.collections.IpEdge;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.VerboseBgpEdge;
 import org.batfish.datamodel.collections.VerboseEigrpEdge;
 import org.batfish.datamodel.collections.VerboseOspfEdge;
@@ -96,7 +98,7 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
 
       private Layer2Topology _layer2Edges;
 
-      private SortedSet<VerboseEdge> _layer3Edges;
+      private SortedSet<Layer3Edge> _layer3Edges;
 
       private SortedSet<VerboseOspfEdge> _ospfEdges;
 
@@ -113,7 +115,7 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
           @JsonProperty(PROP_ISIS) SortedSet<IsisEdge> isisEdges,
           @JsonProperty(PROP_LAYER1) Layer1Topology layer1Edges,
           @JsonProperty(PROP_LAYER2) Layer2Topology layer2Edges,
-          @JsonProperty(PROP_LAYER3) SortedSet<VerboseEdge> layer3Edges,
+          @JsonProperty(PROP_LAYER3) SortedSet<Layer3Edge> layer3Edges,
           @JsonProperty(PROP_OSPF) SortedSet<VerboseOspfEdge> ospfEdges,
           @JsonProperty(PROP_RIP) SortedSet<VerboseRipEdge> ripEdges) {
         _bgpEdges = new TreeSet<>(VERBOSE_BGP_EDGE_COMPARATOR);
@@ -153,7 +155,7 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
       }
 
       @JsonProperty(PROP_LAYER3)
-      public @Nonnull SortedSet<VerboseEdge> getLayer3Edges() {
+      public @Nonnull SortedSet<Layer3Edge> getLayer3Edges() {
         return _layer3Edges;
       }
 
@@ -191,7 +193,7 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
         SortedSet<IsisEdge> isis,
         Layer1Topology layer1,
         Layer2Topology layer2,
-        SortedSet<VerboseEdge> layer3,
+        SortedSet<Layer3Edge> layer3,
         SortedSet<VerboseOspfEdge> ospf,
         SortedSet<VerboseRipEdge> rip) {
       this._nodes = nodes;
@@ -294,15 +296,18 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
           .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
     }
 
-    private static SortedSet<VerboseEdge> getLayer3Edges(
+    private static SortedSet<Layer3Edge> getLayer3Edges(
         Map<String, Configuration> configs, Topology topology) {
-      SortedSet<VerboseEdge> layer3Edges = new TreeSet<>();
+      SortedSet<Layer3Edge> layer3Edges = new TreeSet<>();
       for (Edge edge : topology.getEdges()) {
-        Configuration n1 = configs.get(edge.getNode1());
-        Interface i1 = n1.getAllInterfaces().get(edge.getInt1());
-        Configuration n2 = configs.get(edge.getNode2());
-        Interface i2 = n2.getAllInterfaces().get(edge.getInt2());
-        layer3Edges.add(new VerboseEdge(i1, i2, edge));
+        Interface i1 = configs.get(edge.getNode1()).getAllInterfaces().get(edge.getInt1());
+        Interface i2 = configs.get(edge.getNode2()).getAllInterfaces().get(edge.getInt2());
+        layer3Edges.add(
+            new Layer3Edge(
+                new NodeInterfacePair(edge.getNode1(), edge.getInt1()),
+                new NodeInterfacePair(edge.getNode2(), edge.getInt2()),
+                ImmutableList.copyOf(i1.getAllAddresses()),
+                ImmutableList.copyOf(i2.getAllAddresses())));
       }
       return layer3Edges;
     }
