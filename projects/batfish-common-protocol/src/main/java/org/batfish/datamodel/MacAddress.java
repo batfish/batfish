@@ -26,7 +26,7 @@ public class MacAddress implements Comparable<MacAddress>, Serializable {
     long remainder = longVal;
     String[] pieces = new String[6];
     for (int i = 0; i < 6; i++) {
-      long currentByte = (long) remainder & 0xFFL;
+      long currentByte = remainder & 0xFFL;
       pieces[5 - i] = String.format("%02x", currentByte);
       remainder >>= 8;
     }
