@@ -1,0 +1,15 @@
+net del all
+#
+net add hostname cumulus_nclu_invalid_interfaces
+#
+# one valid, one invalid
+net add bond bond1 bond slaves swp1,unknown_interface
+# unknown
+net add interface unknown_interface ip address 10.0.0.1/24
+# illegal subinterface
+net add interface mgmt.1 ip address 10.0.1.1/24
+# invalid vlan number
+net add interface swp1.5000 ip address 10.0.2.1/24
+#
+net commit
+

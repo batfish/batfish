@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.Range;
@@ -21,12 +22,15 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
+import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cumulus.Bond;
+import org.batfish.representation.cumulus.CumulusInterfaceType;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.junit.Rule;
@@ -82,16 +86,7 @@ public final class CumulusNcluGrammarTest {
 
     String[] expectedSlaves =
         new String[] {
-          "swp1", //
-          "swp2", //
-          "swp3", //
-          "swp4", //
-          "swp5", //
-          "swp6", //
-          "swp7", //
-          "swp8", //
-          "swp1a-b2", //
-          "swp1a-b3" //
+          "swp1", "swp2", "swp3", "swp4", "swp5", "swp6", "swp7", "swp8",
         };
 
     // referenced interfaces should have been created
@@ -116,14 +111,6 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testDnsExtraction() throws IOException {
-    CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_dns");
-
-    assertThat(vc.getIpv4Nameservers(), contains(Ip.parse("192.0.2.3"), Ip.parse("192.0.2.4")));
-    assertThat(vc.getIpv6Nameservers(), contains(Ip6.parse("1::1"), Ip6.parse("1::2")));
-  }
-
-  @Test
   public void testBondReferences() throws IOException {
     String hostname = "cumulus_nclu_bond_references";
     String filename = String.format("configs/%s", hostname);
@@ -134,11 +121,125 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
+  public void testDnsExtraction() throws IOException {
+    CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_dns");
+
+    assertThat(vc.getIpv4Nameservers(), contains(Ip.parse("192.0.2.3"), Ip.parse("192.0.2.4")));
+    assertThat(vc.getIpv6Nameservers(), contains(Ip6.parse("1::1"), Ip6.parse("1::2")));
+  }
+
+  @Test
   public void testHostname() throws IOException {
     String filename = "cumulus_nclu_hostname";
     String hostname = "custom_hostname";
     Batfish batfish = getBatfishForConfigurationNames(filename);
     assertThat(batfish.loadConfigurations(), hasEntry(equalTo(hostname), hasHostname(hostname)));
+  }
+
+  @Test
+  public void testInterfaceExtraction() throws IOException {
+    CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_interface");
+
+    assertThat(
+        "Ensure interfaces are created",
+        vc.getInterfaces().keySet(),
+        containsInAnyOrder(
+            "bond1",
+            "bond2.4094",
+            "bond3.4094",
+            "eth0",
+            "mgmt",
+            "swp1",
+            "swp2",
+            "swp3",
+            "swp4",
+            "swp5.1"));
+
+    // ip address
+    assertThat(
+        "Ensure ip addresses are extracted",
+        vc.getInterfaces().get("bond2.4094").getIpAddresses(),
+        contains(new InterfaceAddress("10.0.1.1/24"), new InterfaceAddress("172.16.0.1/24")));
+
+    // clag backup-ip
+    assertThat(
+        "Ensure clag backup-ip extracted",
+        vc.getInterfaces().get("bond2.4094").getClagBackupIp(),
+        equalTo(Ip.parse("192.0.2.1")));
+    assertThat(
+        "Ensure clag backup-ip is extracted",
+        vc.getInterfaces().get("bond3.4094").getClagBackupIp(),
+        equalTo(Ip.parse("192.168.0.1")));
+
+    // clag backup-ip vrf
+    assertThat(
+        "Ensure clag backup-ip vrf is extracted",
+        vc.getInterfaces().get("bond2.4094").getClagBackupIpVrf(),
+        equalTo("mgmt"));
+    assertThat(
+        "Ensure clag backup-ip vrf is extracted",
+        vc.getInterfaces().get("bond3.4094").getClagBackupIpVrf(),
+        nullValue());
+
+    // clag peer-ip
+    assertThat(
+        "Ensure clag peer-ip is extracted",
+        vc.getInterfaces().get("bond2.4094").getClagPeerIp(),
+        equalTo(Ip.parse("10.0.0.2")));
+
+    // clag priority
+    assertThat(
+        "Ensure clag priority is extracted",
+        vc.getInterfaces().get("bond2.4094").getClagPriority(),
+        equalTo(1000));
+
+    // clag sys-mac
+    assertThat(
+        "Ensure clag sys-mac is extracted",
+        vc.getInterfaces().get("bond2.4094").getClagSysMac(),
+        equalTo(MacAddress.parse("00:11:22:33:44:55")));
+
+    // interface type (computed)
+    assertThat(
+        "Ensure type is correctly calculated",
+        vc.getInterfaces().get("bond1").getType(),
+        equalTo(CumulusInterfaceType.BOND));
+    assertThat(
+        "Ensure type is correctly calculated",
+        vc.getInterfaces().get("bond2.4094").getType(),
+        equalTo(CumulusInterfaceType.SUBINTERFACE));
+    assertThat(
+        "Ensure type is correctly calculated",
+        vc.getInterfaces().get("bond3.4094").getType(),
+        equalTo(CumulusInterfaceType.SUBINTERFACE));
+    assertThat(
+        "Ensure type is correctly calculated",
+        vc.getInterfaces().get("eth0").getType(),
+        equalTo(CumulusInterfaceType.PHYSICAL));
+    assertThat(
+        "Ensure type is correctly calculated",
+        vc.getInterfaces().get("mgmt").getType(),
+        equalTo(CumulusInterfaceType.MGMT));
+    assertThat(
+        "Ensure type is correctly calculated",
+        vc.getInterfaces().get("swp1").getType(),
+        equalTo(CumulusInterfaceType.PHYSICAL));
+    assertThat(
+        "Ensure type is correctly calculated",
+        vc.getInterfaces().get("swp2").getType(),
+        equalTo(CumulusInterfaceType.PHYSICAL));
+    assertThat(
+        "Ensure type is correctly calculated",
+        vc.getInterfaces().get("swp3").getType(),
+        equalTo(CumulusInterfaceType.PHYSICAL));
+    assertThat(
+        "Ensure type is correctly calculated",
+        vc.getInterfaces().get("swp4").getType(),
+        equalTo(CumulusInterfaceType.PHYSICAL));
+    assertThat(
+        "Ensure type is correctly calculated",
+        vc.getInterfaces().get("swp5.1").getType(),
+        equalTo(CumulusInterfaceType.SUBINTERFACE));
   }
 
   @Test

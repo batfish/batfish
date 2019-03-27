@@ -13151,6 +13151,14 @@
         "deviceType" : "SWITCH",
         "vendorFamily" : { }
       },
+      "cumulus_nclu_invalid_interfaces" : {
+        "configurationFormat" : "CUMULUS_NCLU",
+        "name" : "cumulus_nclu_invalid_interfaces",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : { }
+      },
       "eos_mlag" : {
         "configurationFormat" : "ARISTA",
         "name" : "eos_mlag",

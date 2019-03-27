@@ -4,7 +4,8 @@ import org.batfish.vendor.StructureUsage;
 
 public enum CumulusStructureUsage implements StructureUsage {
   BOND_SELF_REFERENCE("bond self-reference"),
-  BOND_SLAVE("bond slave");
+  BOND_SLAVE("bond slave"),
+  INTERFACE_SELF_REFERENCE("interface self-reference");
 
   private final String _description;
 

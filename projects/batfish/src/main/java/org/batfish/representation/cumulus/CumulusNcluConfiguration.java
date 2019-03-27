@@ -57,7 +57,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   private void markStructures() {
     markConcreteStructure(CumulusStructureType.BOND, CumulusStructureUsage.BOND_SELF_REFERENCE);
-    markConcreteStructure(CumulusStructureType.INTERFACE, CumulusStructureUsage.BOND_SLAVE);
+    markConcreteStructure(
+        CumulusStructureType.INTERFACE,
+        CumulusStructureUsage.BOND_SLAVE,
+        CumulusStructureUsage.INTERFACE_SELF_REFERENCE);
   }
 
   @Override

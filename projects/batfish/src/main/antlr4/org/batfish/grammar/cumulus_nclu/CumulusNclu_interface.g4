@@ -41,7 +41,7 @@ i_clag
 
 ic_backup_ip
 :
-  BACKUP_IP ip = IP_ADDRESS
+  BACKUP_IP backup_ip = ip_address
   (
     VRF vrf = word
   )? NEWLINE
@@ -49,7 +49,7 @@ ic_backup_ip
 
 ic_peer_ip
 :
-  PEER_IP ip = IP_ADDRESS NEWLINE
+  PEER_IP peer_ip = ip_address NEWLINE
 ;
 
 ic_priority
@@ -59,12 +59,12 @@ ic_priority
 
 ic_sys_mac
 :
-  SYS_MAC mac = MAC_ADDRESS NEWLINE
+  SYS_MAC mac = mac_address NEWLINE
 ;
 
 i_ip_address
 :
-  IP ADDRESS address = IP_PREFIX NEWLINE
+  IP ADDRESS address = interface_address NEWLINE
 ;
 
 i_vrf

@@ -32,6 +32,11 @@ glob_word
   ~( NEWLINE | NUMBERED_WORD | DEC )
 ;
 
+interface_address
+:
+  IP_PREFIX
+;
+
 ip_address
 :
   IP_ADDRESS
@@ -46,6 +51,11 @@ line_action
 :
   DENY
   | PERMIT
+;
+
+mac_address
+:
+  MAC_ADDRESS
 ;
 
 null_rest_of_line

@@ -667,62 +667,6 @@
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 32,
-        "Text" : "interface bond1.4094 clag backup-ip 192.0.2.4 vrf mgmt",
-        "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "configs/cumulus_nclu",
-        "Line" : 33,
-        "Text" : "interface bond1.4094 clag peer-ip 192.0.2.5",
-        "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "configs/cumulus_nclu",
-        "Line" : 34,
-        "Text" : "interface bond1.4094 clag priority 1000",
-        "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "configs/cumulus_nclu",
-        "Line" : 35,
-        "Text" : "interface bond1.4094 clag sys-mac 00:11:22:33:44:55",
-        "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "configs/cumulus_nclu",
-        "Line" : 36,
-        "Text" : "interface bond1.4094 ip address 192.0.2.6/24",
-        "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "configs/cumulus_nclu",
-        "Line" : 37,
-        "Text" : "interface eth0 vrf mgmt",
-        "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "configs/cumulus_nclu",
-        "Line" : 38,
-        "Text" : "interface swp1 bridge access 3",
-        "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "configs/cumulus_nclu",
-        "Line" : 39,
-        "Text" : "interface swp1,2-3",
-        "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "configs/cumulus_nclu",
         "Line" : 40,
         "Text" : "net add loopback lo\n",
         "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
@@ -2529,10 +2473,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 355 results",
+      "notes" : "Found 347 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 355
+      "numResults" : 347
     }
   }
 ]
