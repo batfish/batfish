@@ -533,6 +533,8 @@ NUMBERED_WORD
   F_NumberedWord
 ;
 
+// Do NOT move above NUMBERED_WORD
+
 WORD
 :
   F_Word
@@ -786,7 +788,7 @@ F_NonWhitespaceChar
 fragment
 F_NumberedWord
 :
-  F_Word F_Digit+
+  F_Word F_Uint16
 ;
 
 fragment
@@ -825,8 +827,11 @@ F_Word
 :
   F_WordSegment
   (
-    '-' F_WordSegment
-  )*
+    (
+      '-' F_WordSegment
+    )*
+    | F_Digit+
+  )
 ;
 
 fragment
