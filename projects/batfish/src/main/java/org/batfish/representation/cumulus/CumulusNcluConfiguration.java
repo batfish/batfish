@@ -10,6 +10,7 @@ import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.LineAction;
 import org.batfish.vendor.VendorConfiguration;
 import org.parboiled.common.ImmutableList;
@@ -24,11 +25,13 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private @Nullable String _hostname;
   private final @Nonnull Map<String, Interface> _interfaces;
   private final @Nonnull List<Ip> _ipv4Nameservers;
+  private final @Nonnull List<Ip6> _ipv6Nameservers;
 
   public CumulusNcluConfiguration() {
     _bonds = new HashMap<>();
     _interfaces = new HashMap<>();
     _ipv4Nameservers = new LinkedList<>();
+    _ipv6Nameservers = new LinkedList<>();
   }
 
   public @Nonnull Map<String, Bond> getBonds() {
@@ -44,8 +47,12 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     return _interfaces;
   }
 
-  public List<Ip> getIpv4Nameservers() {
+  public @Nonnull List<Ip> getIpv4Nameservers() {
     return _ipv4Nameservers;
+  }
+
+  public @Nonnull List<Ip6> getIpv6Nameservers() {
+    return _ipv6Nameservers;
   }
 
   private void markStructures() {
