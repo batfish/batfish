@@ -194,6 +194,11 @@ public final class IntegerSpace implements Serializable {
     return builder().including(range).build();
   }
 
+  /** Create a new integer space from a {@link RangeSet} */
+  public static IntegerSpace of(RangeSet<Integer> rangeSet) {
+    return builder().includingAll(rangeSet).build();
+  }
+
   /** Create a new singleton integer space from an integer value */
   public static IntegerSpace of(int value) {
     return builder().including(Range.singleton(value)).build();
@@ -230,6 +235,12 @@ public final class IntegerSpace implements Serializable {
     /** Include all given {@link SubRange} */
     public Builder includingAll(Iterable<SubRange> ranges) {
       ranges.forEach(this::including);
+      return this;
+    }
+
+    /** Include given {@link RangeSet}. */
+    public Builder includingAll(RangeSet<Integer> rangeSet) {
+      rangeSet.asRanges().forEach(this::including);
       return this;
     }
 

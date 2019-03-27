@@ -16,6 +16,7 @@ import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_bgpContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_bondContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_bridgeContext;
@@ -29,6 +30,7 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_vlanContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_vrfContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_vxlanContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bob_accessContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bob_vidsContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bobo_slavesContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bond_clag_idContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Cumulus_nclu_configurationContext;
@@ -39,6 +41,9 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Range_setContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.S_extra_configurationContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.S_net_add_unrecognizedContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Uint16Context;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vlan_idContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vlan_rangeContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vlan_range_setContext;
 import org.batfish.representation.cumulus.Bond;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusNcluStructureType;
@@ -148,7 +153,12 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   @Override
   public void exitBob_access(Bob_accessContext ctx) {
-    _currentBond.getBridge().setAccess(2);
+    _currentBond.getBridge().setAccess(toInteger(ctx.vlan));
+  }
+
+  @Override
+  public void exitBob_vids(Bob_vidsContext ctx) {
+    _currentBond.getBridge().setVids(IntegerSpace.of(toRangeSet(ctx.vlans)));
   }
 
   @Override
@@ -218,7 +228,17 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     return Integer.parseInt(ctx.getText(), 10);
   }
 
+  private int toInteger(Vlan_idContext ctx) {
+    return Integer.parseInt(ctx.getText(), 10);
+  }
+
   private @Nonnull Range<Integer> toRange(RangeContext ctx) {
+    int low = toInteger(ctx.low);
+    int high = ctx.high != null ? toInteger(ctx.high) : low;
+    return Range.closed(low, high);
+  }
+
+  private @Nonnull Range<Integer> toRange(Vlan_rangeContext ctx) {
     int low = toInteger(ctx.low);
     int high = ctx.high != null ? toInteger(ctx.high) : low;
     return Range.closed(low, high);
@@ -226,6 +246,12 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   private @Nonnull RangeSet<Integer> toRangeSet(Range_setContext ctx) {
     return ctx.range().stream().map(this::toRange).collect(ImmutableRangeSet.toImmutableRangeSet());
+  }
+
+  private @Nonnull RangeSet<Integer> toRangeSet(Vlan_range_setContext ctx) {
+    return ctx.vlan_range().stream()
+        .map(this::toRange)
+        .collect(ImmutableRangeSet.toImmutableRangeSet());
   }
 
   private @Nonnull Set<String> toStrings(Glob_range_setContext ctx) {

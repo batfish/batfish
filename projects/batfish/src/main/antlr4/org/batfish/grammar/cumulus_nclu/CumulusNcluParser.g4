@@ -74,12 +74,21 @@ bobo_slaves
 
 bond_bridge
 :
-  BRIDGE bob_access
+  BRIDGE
+  (
+    bob_access
+    | bob_vids
+  )
 ;
 
 bob_access
 :
   ACCESS vlan = vlan_id NEWLINE
+;
+
+bob_vids
+:
+  VIDS vlans = vlan_range_set NEWLINE
 ;
 
 bond_clag_id

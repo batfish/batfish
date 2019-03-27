@@ -2,11 +2,11 @@ package org.batfish.representation.cumulus;
 
 import static com.google.common.base.Preconditions.checkState;
 
-import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.RangeSet;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.IntegerSpace;
 
 /** Bridge settings for various interface types. */
 public class InterfaceBridgeSettings implements Serializable {
@@ -14,10 +14,10 @@ public class InterfaceBridgeSettings implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private @Nullable Integer _access;
-  private @Nonnull RangeSet<Integer> _vids;
+  private @Nonnull IntegerSpace _vids;
 
   public InterfaceBridgeSettings() {
-    _vids = ImmutableRangeSet.of();
+    _vids = IntegerSpace.EMPTY;
   }
 
   /** Returns access (untagged) VLAN ID if interface is in access mode, or else {@code null}. */
@@ -29,7 +29,7 @@ public class InterfaceBridgeSettings implements Serializable {
    * Returns trunk (tagged) VLAN IDs if interface is in trunk mode, or else an empty {@link
    * RangeSet}.
    */
-  public @Nonnull RangeSet<Integer> getVids() {
+  public @Nonnull IntegerSpace getVids() {
     return _vids;
   }
 
@@ -48,8 +48,8 @@ public class InterfaceBridgeSettings implements Serializable {
    *
    * @throws IllegalStateException if access VLAN ID already set.
    */
-  public void setVids(RangeSet<Integer> vids) {
+  public void setVids(IntegerSpace vids) {
     checkState(_access == null, "Cannot set trunk VLAN IDs when access VLAN ID already set.");
-    _vids = ImmutableRangeSet.copyOf(vids);
+    _vids = vids;
   }
 }

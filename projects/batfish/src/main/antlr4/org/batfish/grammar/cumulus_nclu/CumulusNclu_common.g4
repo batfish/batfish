@@ -85,6 +85,22 @@ vlan_id
 
 ;
 
+vlan_range
+:
+  low = vlan_id
+  (
+    DASH high = vlan_id
+  )?
+;
+
+vlan_range_set
+:
+  vlan_range
+  (
+    COMMA vlan_range
+  )*
+;
+
 vni_number
 :
   v = DEC

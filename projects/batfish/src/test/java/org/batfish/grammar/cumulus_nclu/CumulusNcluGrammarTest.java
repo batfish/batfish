@@ -4,10 +4,10 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.Range;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
@@ -18,6 +18,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cumulus.Bond;
@@ -70,7 +71,8 @@ public final class CumulusNcluGrammarTest {
   @Test
   public void testBondExtraction() throws IOException {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_bond");
-    String bondName = "bond1";
+    String bond1Name = "bond1";
+    String bond2Name = "bond2";
 
     // referenced interfaces should have been created
     assertThat(
@@ -88,12 +90,21 @@ public final class CumulusNcluGrammarTest {
             "swp1a-b3" //
             ));
 
-    assertThat("Ensure bond was extracted", vc.getBonds(), hasKey(bondName));
+    assertThat(
+        "Ensure bonds were extracted",
+        vc.getBonds().keySet(),
+        containsInAnyOrder(bond1Name, bond2Name));
 
-    Bond bond = vc.getBonds().get(bondName);
+    Bond bond1 = vc.getBonds().get(bond1Name);
+    Bond bond2 = vc.getBonds().get(bond2Name);
 
-    assertThat("Ensure access VLAN ID was set", bond.getBridge().getAccess(), equalTo(2));
-    assertThat("Ensure CLAG ID was set", bond.getClagId(), equalTo(1));
+    assertThat("Ensure access VLAN ID was set", bond1.getBridge().getAccess(), equalTo(2));
+    assertThat("Ensure CLAG ID was set", bond1.getClagId(), equalTo(1));
+
+    assertThat(
+        "Ensure trunk VLAN IDs were set",
+        bond2.getBridge().getVids(),
+        equalTo(IntegerSpace.of(Range.closed(3, 5))));
   }
 
   @Test
