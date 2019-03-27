@@ -315,19 +315,22 @@ class CiscoConversions {
       exportPolicyStatements.add(Statements.RemovePrivateAs.toStaticStatement());
     }
 
-    List<BooleanExpr> localOrCommonOriginationDisjuncts = new ArrayList<>();
-    localOrCommonOriginationDisjuncts.add(new CallExpr(computeBgpCommonExportPolicyName(vrfName)));
-
-    // If defaultOriginate is set, generate a default route export policy.
-    // When exporting default route, can match this policy instead of the common export policy.
+    // If defaultOriginate is set, generate a default route export policy. Default route will match
+    // this policy and get exported without going through the rest of the export policy.
+    // TODO Verify that nextHopSelf and removePrivateAs settings apply to default-originate route.
     if (lpg.getDefaultOriginate()) {
       initBgpDefaultRouteExportPolicy(ipv4, c);
-      localOrCommonOriginationDisjuncts.add(
-          new CallExpr(computeBgpDefaultRouteExportPolicyName(ipv4)));
+      exportPolicyStatements.add(
+          new If(
+              "Export default route from peer with default-originate configured",
+              new CallExpr(computeBgpDefaultRouteExportPolicyName(ipv4)),
+              singletonList(Statements.ReturnTrue.toStaticStatement()),
+              ImmutableList.of()));
     }
 
+    // Conditions for exporting regular routes (not spawned by default-originate)
     List<BooleanExpr> peerExportConjuncts = new ArrayList<>();
-    peerExportConjuncts.add(new Disjunction(localOrCommonOriginationDisjuncts));
+    peerExportConjuncts.add(new CallExpr(computeBgpCommonExportPolicyName(vrfName)));
 
     // Add constraints on export routes from configured route-map or prefix-list. If both are
     // configured, use route-map and warn. TODO support configuring route-map + prefix-list here.
@@ -373,7 +376,10 @@ class CiscoConversions {
           .setName(defaultRouteExportPolicyName)
           .addStatement(
               new If(
-                  ipv4 ? MATCH_DEFAULT_ROUTE : MATCH_DEFAULT_ROUTE6,
+                  new Conjunction(
+                      ImmutableList.of(
+                          ipv4 ? MATCH_DEFAULT_ROUTE : MATCH_DEFAULT_ROUTE6,
+                          new MatchProtocol(RoutingProtocol.AGGREGATE))),
                   ImmutableList.of(
                       new SetOrigin(
                           new LiteralOrigin(
