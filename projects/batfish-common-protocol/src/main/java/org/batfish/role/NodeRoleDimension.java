@@ -8,8 +8,10 @@ import static java.util.Comparator.nullsFirst;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Ordering;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -21,7 +23,6 @@ import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Names;
 
 @ParametersAreNonnullByDefault
@@ -138,10 +139,13 @@ public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
 
   private static final Comparator<NodeRoleDimension> COMPARATOR =
       comparing(NodeRoleDimension::getName)
-          .thenComparing(NodeRoleDimension::getRoles, nullsFirst(CommonUtil::compareCollection))
+          .thenComparing(
+              NodeRoleDimension::getRoles,
+              nullsFirst(Comparators.lexicographical(Ordering.natural())))
           .thenComparing(NodeRoleDimension::getType)
           .thenComparing(
-              NodeRoleDimension::getRoleRegexes, nullsFirst(CommonUtil::compareCollection));
+              NodeRoleDimension::getRoleRegexes,
+              nullsFirst(Comparators.lexicographical(Ordering.natural())));
 
   @Override
   public int compareTo(NodeRoleDimension o) {

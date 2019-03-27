@@ -75935,6 +75935,7 @@
             }
           }
         },
+<<<<<<< HEAD
         "configs/cumulus_nclu" : {
           "bond" : {
             "bond1" : {
@@ -76015,6 +76016,90 @@
             }
           }
         },
+||||||| merged common ancestors
+        "configs/cumulus_nclu" : { },
+=======
+        "configs/cumulus_nclu" : {
+          "bond" : {
+            "bond1" : {
+              "definitionLines" : [
+                19,
+                20,
+                22
+              ],
+              "numReferrers" : 3
+            },
+            "bond2" : {
+              "definitionLines" : [
+                21
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "interface" : {
+            "swp1" : {
+              "definitionLines" : [
+                19
+              ],
+              "numReferrers" : 1
+            },
+            "swp1a-b2" : {
+              "definitionLines" : [
+                19
+              ],
+              "numReferrers" : 1
+            },
+            "swp1a-b3" : {
+              "definitionLines" : [
+                19
+              ],
+              "numReferrers" : 1
+            },
+            "swp2" : {
+              "definitionLines" : [
+                19
+              ],
+              "numReferrers" : 1
+            },
+            "swp3" : {
+              "definitionLines" : [
+                19
+              ],
+              "numReferrers" : 1
+            },
+            "swp4" : {
+              "definitionLines" : [
+                19
+              ],
+              "numReferrers" : 1
+            },
+            "swp5" : {
+              "definitionLines" : [
+                19
+              ],
+              "numReferrers" : 1
+            },
+            "swp6" : {
+              "definitionLines" : [
+                19
+              ],
+              "numReferrers" : 1
+            },
+            "swp7" : {
+              "definitionLines" : [
+                19
+              ],
+              "numReferrers" : 1
+            },
+            "swp8" : {
+              "definitionLines" : [
+                19
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+>>>>>>> master
         "configs/eos_mlag" : {
           "interface" : {
             "Port-Channel1" : {
@@ -81479,6 +81564,7 @@
             }
           }
         },
+<<<<<<< HEAD
         "configs/cumulus_nclu" : {
           "interface" : {
             "swp1" : {
@@ -81533,6 +81619,77 @@
             }
           }
         },
+||||||| merged common ancestors
+=======
+        "configs/cumulus_nclu" : {
+          "bond" : {
+            "bond1" : {
+              "bond self-reference" : [
+                19,
+                20,
+                22
+              ]
+            },
+            "bond2" : {
+              "bond self-reference" : [
+                21
+              ]
+            }
+          },
+          "interface" : {
+            "swp1" : {
+              "bond slave" : [
+                19
+              ]
+            },
+            "swp1a-b2" : {
+              "bond slave" : [
+                19
+              ]
+            },
+            "swp1a-b3" : {
+              "bond slave" : [
+                19
+              ]
+            },
+            "swp2" : {
+              "bond slave" : [
+                19
+              ]
+            },
+            "swp3" : {
+              "bond slave" : [
+                19
+              ]
+            },
+            "swp4" : {
+              "bond slave" : [
+                19
+              ]
+            },
+            "swp5" : {
+              "bond slave" : [
+                19
+              ]
+            },
+            "swp6" : {
+              "bond slave" : [
+                19
+              ]
+            },
+            "swp7" : {
+              "bond slave" : [
+                19
+              ]
+            },
+            "swp8" : {
+              "bond slave" : [
+                19
+              ]
+            }
+          }
+        },
+>>>>>>> master
         "configs/eos_mlag" : {
           "interface" : {
             "Port-Channel1" : {

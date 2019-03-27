@@ -2,7 +2,6 @@ package org.batfish.representation.cumulus;
 
 import static com.google.common.base.Preconditions.checkState;
 
-import com.google.common.collect.RangeSet;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -27,7 +26,7 @@ public class InterfaceBridgeSettings implements Serializable {
 
   /**
    * Returns trunk (tagged) VLAN IDs if interface is in trunk mode, or else an empty {@link
-   * RangeSet}.
+   * IntegerSpace}.
    */
   public @Nonnull IntegerSpace getVids() {
     return _vids;

@@ -105,8 +105,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
       return ImmutableSet.of(baseWord);
     }
     Matcher matcher = NUMBERED_WORD_PATTERN.matcher(baseWord);
-    boolean matches = matcher.matches();
-    assert matches; // parser+lexer should ensure this
+    matcher.matches(); // parser+lexer guarantee match
     String prefix = matcher.group(1);
     int firstIntervalStart = Integer.parseInt(matcher.group(2), 10);
     int firstIntervalEnd =

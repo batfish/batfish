@@ -5,7 +5,9 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Ordering;
 import com.google.common.collect.Streams;
 import java.util.Arrays;
 import java.util.List;
@@ -16,7 +18,6 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
 /**
@@ -268,7 +269,8 @@ public class AclIpSpace extends IpSpace {
 
   @Override
   protected int compareSameClass(IpSpace o) {
-    return CommonUtil.compareIterable(_lines, ((AclIpSpace) o)._lines);
+    return Comparators.lexicographical(Ordering.<AclIpSpaceLine>natural())
+        .compare(_lines, ((AclIpSpace) o)._lines);
   }
 
   @Override

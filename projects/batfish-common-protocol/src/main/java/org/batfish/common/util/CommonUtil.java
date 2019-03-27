@@ -1,10 +1,8 @@
 package org.batfish.common.util;
 
-import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Ordering;
 import com.google.common.hash.Hashing;
 import com.ibm.icu.text.CharsetDetector;
 import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
@@ -28,7 +26,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
@@ -171,32 +168,6 @@ public class CommonUtil {
     long low = Long.parseLong(parts[1]);
     //    checkLongWithin16Bit(low);
     return low + (high << 16);
-  }
-
-  public static <C extends Comparable<? super C>> int compareIterable(
-      Iterable<C> lhs, Iterable<C> rhs) {
-    return Comparators.lexicographical(Ordering.<C>natural()).compare(lhs, rhs);
-  }
-
-  public static <T extends Comparable<T>> int compareCollection(
-      Collection<T> lhs, Collection<T> rhs) {
-    Iterator<T> l = lhs.iterator();
-    Iterator<T> r = rhs.iterator();
-    while (l.hasNext()) {
-      if (!r.hasNext()) {
-        return 1;
-      }
-      T lVal = l.next();
-      T rVal = r.next();
-      int ret = lVal.compareTo(rVal);
-      if (ret != 0) {
-        return ret;
-      }
-    }
-    if (r.hasNext()) {
-      return -1;
-    }
-    return 0;
   }
 
   /**

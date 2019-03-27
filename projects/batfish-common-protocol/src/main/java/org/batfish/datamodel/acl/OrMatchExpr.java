@@ -3,11 +3,12 @@ package org.batfish.datamodel.acl;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Ordering;
 import java.util.Objects;
 import java.util.SortedSet;
 import javax.annotation.Nullable;
-import org.batfish.common.util.CommonUtil;
 
 public class OrMatchExpr extends AclLineMatchExpr {
   private static final String PROP_DISJUNCTS = "disjuncts";
@@ -34,7 +35,8 @@ public class OrMatchExpr extends AclLineMatchExpr {
 
   @Override
   protected int compareSameClass(AclLineMatchExpr o) {
-    return CommonUtil.compareIterable(_disjuncts, ((OrMatchExpr) o)._disjuncts);
+    return Comparators.lexicographical(Ordering.<AclLineMatchExpr>natural())
+        .compare(_disjuncts, ((OrMatchExpr) o)._disjuncts);
   }
 
   @Override
