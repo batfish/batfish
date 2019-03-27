@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.commons.lang3.StringUtils;
 
-/** A 24-bit MAC address */
+/** A 48-bit MAC address */
 @ParametersAreNonnullByDefault
 public class MacAddress implements Comparable<MacAddress>, Serializable {
 
