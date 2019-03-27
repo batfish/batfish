@@ -1,6 +1,7 @@
 package org.batfish.grammar.cumulus_nclu;
 
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -21,10 +22,12 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cumulus.Bond;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
+import org.batfish.representation.cumulus.CumulusStructureType;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -76,21 +79,22 @@ public final class CumulusNcluGrammarTest {
     String bond1Name = "bond1";
     String bond2Name = "bond2";
 
+    String[] expectedSlaves =
+        new String[] {
+          "swp1", //
+          "swp2", //
+          "swp3", //
+          "swp4", //
+          "swp5", //
+          "swp6", //
+          "swp7", //
+          "swp8", //
+          "swp1a-b2", //
+          "swp1a-b3" //
+        };
+
     // referenced interfaces should have been created
-    assertThat(
-        vc.getInterfaces().keySet(),
-        containsInAnyOrder(
-            "swp1", //
-            "swp2", //
-            "swp3", //
-            "swp4", //
-            "swp5", //
-            "swp6", //
-            "swp7", //
-            "swp8", //
-            "swp1a-b2", //
-            "swp1a-b3" //
-            ));
+    assertThat(vc.getInterfaces().keySet(), containsInAnyOrder(expectedSlaves));
 
     assertThat(
         "Ensure bonds were extracted",
@@ -102,6 +106,7 @@ public final class CumulusNcluGrammarTest {
 
     assertThat("Ensure access VLAN ID was set", bond1.getBridge().getAccess(), equalTo(2));
     assertThat("Ensure CLAG ID was set", bond1.getClagId(), equalTo(1));
+    assertThat("Ensure slaves were set", bond1.getSlaves(), containsInAnyOrder(expectedSlaves));
 
     assertThat(
         "Ensure trunk VLAN IDs were set",
@@ -117,10 +122,30 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
+  public void testBondReferences() throws IOException {
+    String hostname = "cumulus_nclu_bond_references";
+    String filename = String.format("configs/%s", hostname);
+    ConvertConfigurationAnswerElement ans =
+        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.BOND, "bond1", 1));
+  }
+
+  @Test
   public void testHostname() throws IOException {
     String filename = "cumulus_nclu_hostname";
     String hostname = "custom_hostname";
     Batfish batfish = getBatfishForConfigurationNames(filename);
     assertThat(batfish.loadConfigurations(), hasEntry(equalTo(hostname), hasHostname(hostname)));
+  }
+
+  @Test
+  public void testInterfaceReferences() throws IOException {
+    String hostname = "cumulus_nclu_interface_references";
+    String filename = String.format("configs/%s", hostname);
+    ConvertConfigurationAnswerElement ans =
+        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "swp1", 1));
   }
 }

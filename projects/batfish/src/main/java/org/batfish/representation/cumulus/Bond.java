@@ -34,6 +34,10 @@ public class Bond implements Serializable {
     return _name;
   }
 
+  public @Nonnull Set<String> getSlaves() {
+    return _slaves;
+  }
+
   public void setClagId(@Nullable Integer clagId) {
     _clagId = clagId;
   }
