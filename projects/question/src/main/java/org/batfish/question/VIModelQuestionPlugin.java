@@ -5,7 +5,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -306,8 +305,8 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
             new Layer3Edge(
                 new NodeInterfacePair(edge.getNode1(), edge.getInt1()),
                 new NodeInterfacePair(edge.getNode2(), edge.getInt2()),
-                ImmutableList.copyOf(i1.getAllAddresses()),
-                ImmutableList.copyOf(i2.getAllAddresses())));
+                ImmutableSortedSet.copyOf(i1.getAllAddresses()),
+                ImmutableSortedSet.copyOf(i2.getAllAddresses())));
       }
       return layer3Edges;
     }
