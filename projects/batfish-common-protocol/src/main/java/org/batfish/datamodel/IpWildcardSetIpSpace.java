@@ -129,7 +129,12 @@ public final class IpWildcardSetIpSpace extends IpSpace {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_blacklist, _whitelist);
+    int hash = _hashCode;
+    if (hash == 0) {
+      hash = Objects.hash(_blacklist, _whitelist);
+      _hashCode = hash;
+    }
+    return hash;
   }
 
   @Override
@@ -139,4 +144,6 @@ public final class IpWildcardSetIpSpace extends IpSpace {
         .add(PROP_WHITELIST, _whitelist)
         .toString();
   }
+
+  private transient volatile int _hashCode = 0;
 }
