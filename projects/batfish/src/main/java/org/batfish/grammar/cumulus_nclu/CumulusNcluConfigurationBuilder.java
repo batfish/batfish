@@ -153,7 +153,8 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     String name = ctx.name.getText();
     int line = ctx.getStart().getLine();
     _c.defineStructure(CumulusStructureType.BOND, name, line);
-    _c.referenceStructure(CumulusStructureType.BOND, name, CumulusStructureUsage.BOND_SLAVE, line);
+    _c.referenceStructure(
+        CumulusStructureType.BOND, name, CumulusStructureUsage.BOND_SELF_REFERENCE, line);
     _currentBond = _c.getBonds().computeIfAbsent(name, Bond::new);
   }
 

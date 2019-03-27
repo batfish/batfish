@@ -1,6 +1,7 @@
 package org.batfish.grammar.cumulus_nclu;
 
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
@@ -19,10 +20,12 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cumulus.Bond;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
+import org.batfish.representation.cumulus.CumulusStructureType;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -108,10 +111,30 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
+  public void testBondReferences() throws IOException {
+    String hostname = "cumulus_nclu_bond_references";
+    String filename = String.format("configs/%s", hostname);
+    ConvertConfigurationAnswerElement ans =
+        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.BOND, "bond1", 1));
+  }
+
+  @Test
   public void testHostname() throws IOException {
     String filename = "cumulus_nclu_hostname";
     String hostname = "custom_hostname";
     Batfish batfish = getBatfishForConfigurationNames(filename);
     assertThat(batfish.loadConfigurations(), hasEntry(equalTo(hostname), hasHostname(hostname)));
+  }
+
+  @Test
+  public void testInterfaceReferences() throws IOException {
+    String hostname = "cumulus_nclu_interface_references";
+    String filename = String.format("configs/%s", hostname);
+    ConvertConfigurationAnswerElement ans =
+        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "swp1", 1));
   }
 }

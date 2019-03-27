@@ -1,0 +1,7 @@
+net del all
+#
+net add hostname cumulus_nclu_interface_references
+#
+net add bond bond1 bond slaves swp1
+#
+net commit
