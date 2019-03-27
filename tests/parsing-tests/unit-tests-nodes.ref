@@ -2964,6 +2964,51 @@
           }
         }
       },
+      "bgp-disable" : {
+        "configurationFormat" : "FLAT_JUNIPER",
+        "name" : "bgp-disable",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
       "bgp-enforce-first-as" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "bgp-enforce-first-as",
@@ -6617,17 +6662,26 @@
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                  "comment" : "match default route",
-                  "prefix" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                  },
-                  "prefixSet" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
-                    "prefixSpace" : [
-                      "0.0.0.0/0"
-                    ]
-                  }
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                      "comment" : "match default route",
+                      "prefix" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                      },
+                      "prefixSet" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                        "prefixSpace" : [
+                          "0.0.0.0/0"
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "aggregate"
+                    }
+                  ]
                 },
                 "trueStatements" : [
                   {
@@ -6654,6 +6708,20 @@
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "Export default route from peer with default-originate configured",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                  "calledPolicyName" : "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv4~"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "comment" : "peer-export policy main conditional: exitAccept if true / exitReject if false",
                 "falseStatements" : [
                   {
@@ -6662,17 +6730,8 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
-                  "disjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
-                      "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:aVrfWithInnerStatements~"
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
-                      "calledPolicyName" : "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv4~"
-                    }
-                  ]
+                  "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                  "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:aVrfWithInnerStatements~"
                 },
                 "trueStatements" : [
                   {

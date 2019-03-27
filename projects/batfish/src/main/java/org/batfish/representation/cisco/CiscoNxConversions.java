@@ -1,6 +1,7 @@
 package org.batfish.representation.cisco;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static java.util.Collections.singletonList;
 import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
 import static org.batfish.representation.cisco.CiscoConfiguration.MATCH_DEFAULT_ROUTE;
 import static org.batfish.representation.cisco.CiscoConfiguration.MAX_ADMINISTRATIVE_COST;
@@ -34,13 +35,14 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
-import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
@@ -329,23 +331,18 @@ final class CiscoNxConversions {
       // TODO(handle different types of RemovePrivateAs)
       exportStatements.add(RemovePrivateAs.toStaticStatement());
     }
-    // Peer-specific export policy.
-    Conjunction peerExportGuard = new Conjunction();
-    List<BooleanExpr> peerExportConditions = peerExportGuard.getConjuncts();
-    exportStatements.add(
-        new If(
-            "peer-export policy main conditional: exitAccept if true / exitReject if false",
-            peerExportGuard,
-            ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
-            ImmutableList.of(Statements.ExitReject.toStaticStatement())));
-    List<BooleanExpr> localOrCommonOrigination = new LinkedList<>();
-    localOrCommonOrigination.add(new CallExpr(computeBgpCommonExportPolicyName(vrf.getName())));
 
-    // If `default-originate [route-map NAME]` is configured for this neighbor, generate the
-    // default route and inject it.
+    // If defaultOriginate is set, generate route and default route export policy. Default route
+    // will match this policy and get exported without going through the rest of the export policy.
+    // TODO Verify that nextHopSelf and removePrivateAs settings apply to default-originate route.
     if (naf4 != null && firstNonNull(naf4.getDefaultOriginate(), Boolean.FALSE)) {
       initBgpDefaultRouteExportPolicy(c);
-      localOrCommonOrigination.add(new CallExpr(computeBgpDefaultRouteExportPolicyName(true)));
+      exportStatements.add(
+          new If(
+              "Export default route from peer with default-originate configured",
+              new CallExpr(computeBgpDefaultRouteExportPolicyName(true)),
+              singletonList(Statements.ReturnTrue.toStaticStatement()),
+              ImmutableList.of()));
 
       GeneratedRoute defaultRoute =
           GeneratedRoute.builder()
@@ -355,7 +352,17 @@ final class CiscoNxConversions {
               .build();
       newNeighborBuilder.setGeneratedRoutes(ImmutableSet.of(defaultRoute));
     }
-    peerExportConditions.add(new Disjunction(localOrCommonOrigination));
+
+    // Peer-specific export policy, after matching default-originate route.
+    Conjunction peerExportGuard = new Conjunction();
+    List<BooleanExpr> peerExportConditions = peerExportGuard.getConjuncts();
+    exportStatements.add(
+        new If(
+            "peer-export policy main conditional: exitAccept if true / exitReject if false",
+            peerExportGuard,
+            ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+            ImmutableList.of(Statements.ExitReject.toStaticStatement())));
+    peerExportConditions.add(new CallExpr(computeBgpCommonExportPolicyName(vrf.getName())));
 
     if (naf4 != null) {
       String outboundMap = naf4.getOutboundRouteMap();
@@ -388,7 +395,9 @@ final class CiscoNxConversions {
           .setName(defaultRouteExportPolicyName)
           .addStatement(
               new If(
-                  MATCH_DEFAULT_ROUTE,
+                  new Conjunction(
+                      ImmutableList.of(
+                          MATCH_DEFAULT_ROUTE, new MatchProtocol(RoutingProtocol.AGGREGATE))),
                   ImmutableList.of(
                       new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
                       Statements.ReturnTrue.toStaticStatement())))
