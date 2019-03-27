@@ -3,6 +3,7 @@ package org.batfish.bddreachability;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 
+import com.google.common.base.MoreObjects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -70,5 +71,18 @@ final class BDDFirewallSessionTraceInfo {
   @Nonnull
   public Transition getTransformation() {
     return _transformation;
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(BDDFirewallSessionTraceInfo.class)
+        .omitNullValues()
+        .add("hostname", _hostname)
+        .add("incomingInterfaces", _incomingInterfaces)
+        .add("nextHop", _nextHop)
+        .add("outgoingInterface", _outgoingInterface)
+        // sessionFlows deliberately omitted since it's not readable
+        .add("transformation", _transformation)
+        .toString();
   }
 }
