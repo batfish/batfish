@@ -48,8 +48,8 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vlan_rangeContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vlan_range_setContext;
 import org.batfish.representation.cumulus.Bond;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
-import org.batfish.representation.cumulus.CumulusNcluStructureType;
-import org.batfish.representation.cumulus.CumulusNcluStructureUsage;
+import org.batfish.representation.cumulus.CumulusStructureType;
+import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.Interface;
 
 /**
@@ -134,13 +134,9 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   }
 
   private @Nullable CumulusNcluConfiguration _c;
-
   private @Nullable Bond _currentBond;
-
   private final @Nonnull CumulusNcluCombinedParser _parser;
-
   private final @Nonnull String _text;
-
   private final @Nonnull Warnings _w;
 
   public CumulusNcluConfigurationBuilder(
@@ -161,7 +157,9 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   @Override
   public void enterA_bond(A_bondContext ctx) {
     String name = ctx.name.getText();
-    _c.defineStructure(CumulusNcluStructureType.BOND, name, ctx.getStart().getLine());
+    int line = ctx.getStart().getLine();
+    _c.defineStructure(CumulusStructureType.BOND, name, line);
+    _c.referenceStructure(CumulusStructureType.BOND, name, CumulusStructureUsage.BOND_SLAVE, line);
     _currentBond = _c.getBonds().computeIfAbsent(name, Bond::new);
   }
 
@@ -243,10 +241,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     slaves.forEach(
         slave ->
             _c.referenceStructure(
-                CumulusNcluStructureType.INTERFACE,
-                slave,
-                CumulusNcluStructureUsage.BOND_SLAVE,
-                line));
+                CumulusStructureType.INTERFACE, slave, CumulusStructureUsage.BOND_SLAVE, line));
     _currentBond.setSlaves(slaves);
   }
 
@@ -295,7 +290,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
       return;
     }
     _c.getInterfaces().computeIfAbsent(name, Interface::new);
-    _c.defineStructure(CumulusNcluStructureType.INTERFACE, name, line);
+    _c.defineStructure(CumulusStructureType.INTERFACE, name, line);
   }
 
   @SuppressWarnings("unused")

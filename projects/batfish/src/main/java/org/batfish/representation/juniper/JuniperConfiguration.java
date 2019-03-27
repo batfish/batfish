@@ -270,7 +270,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return authenticationKeyChains;
   }
 
+  @Nullable
   private BgpProcess createBgpProcess(RoutingInstance routingInstance) {
+    BgpGroup mg = routingInstance.getMasterBgpGroup();
+    if (firstNonNull(mg.getDisable(), Boolean.FALSE)) {
+      return null;
+    }
     initDefaultBgpExportPolicy();
     initDefaultBgpImportPolicy();
     String vrfName = routingInstance.getName();
@@ -284,7 +289,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
     }
     proc.setRouterId(routerId);
-    BgpGroup mg = routingInstance.getMasterBgpGroup();
     boolean multipathEbgp = false;
     boolean multipathIbgp = false;
     boolean multipathMultipleAs = false;
