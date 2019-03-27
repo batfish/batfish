@@ -2,13 +2,13 @@ package org.batfish.representation.cumulus;
 
 import org.batfish.vendor.StructureType;
 
-public enum CumulusNcluStructureType implements StructureType {
+public enum CumulusStructureType implements StructureType {
   BOND("bond"),
   INTERFACE("interface");
 
   private final String _description;
 
-  private CumulusNcluStructureType(String description) {
+  private CumulusStructureType(String description) {
     _description = description;
   }
 

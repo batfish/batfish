@@ -2,12 +2,12 @@ package org.batfish.representation.cumulus;
 
 import org.batfish.vendor.StructureUsage;
 
-public enum CumulusNcluStructureUsage implements StructureUsage {
+public enum CumulusStructureUsage implements StructureUsage {
   BOND_SLAVE("bond slave");
 
   private final String _description;
 
-  private CumulusNcluStructureUsage(String description) {
+  private CumulusStructureUsage(String description) {
     _description = description;
   }
 
