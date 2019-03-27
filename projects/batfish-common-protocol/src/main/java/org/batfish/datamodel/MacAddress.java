@@ -39,7 +39,11 @@ public class MacAddress implements Comparable<MacAddress>, Serializable {
     return parse(macAddressStr);
   }
 
-  /** Creates a MAC address from a 48-bit number represented as a long */
+  /**
+   * Creates a MAC address from a 48-bit number represented as a long.
+   *
+   * @throws IllegalArgumentException if {@code longVal} does not represent a valid MAC address
+   */
   public static @Nonnull MacAddress of(long longVal) {
     checkArgument(
         longVal == (longVal & 0xFFFFFFFFFFFFL),
