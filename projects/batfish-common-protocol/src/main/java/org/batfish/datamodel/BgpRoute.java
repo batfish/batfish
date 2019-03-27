@@ -6,6 +6,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import java.util.Comparator;
@@ -16,7 +17,6 @@ import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.util.CommonUtil;
 
 /**
  * A BGP Route. Captures attributes of both iBGP and eBGP routes.
@@ -243,8 +243,8 @@ public final class BgpRoute extends AbstractRoute {
 
   private static final Comparator<BgpRoute> COMPARATOR =
       Comparator.comparing(BgpRoute::getAsPath)
-          .thenComparing(BgpRoute::getClusterList, CommonUtil::compareCollection)
-          .thenComparing(BgpRoute::getCommunities, CommonUtil::compareCollection)
+          .thenComparing(BgpRoute::getClusterList, Comparators.lexicographical(Ordering.natural()))
+          .thenComparing(BgpRoute::getCommunities, Comparators.lexicographical(Ordering.natural()))
           .thenComparing(BgpRoute::getDiscard)
           .thenComparing(BgpRoute::getLocalPreference)
           .thenComparing(BgpRoute::getOriginType)
