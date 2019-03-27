@@ -6,7 +6,7 @@ import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.or;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
 import org.batfish.common.bdd.BDDPacket;
@@ -24,18 +24,18 @@ public class TransitionsTest {
   // Any composition containing ZERO is zero
   @Test
   public void composeWithZero() {
-    assertThat(compose(ZERO), is(ZERO));
-    assertThat(compose(IDENTITY, ZERO, IDENTITY), is(ZERO));
-    assertThat(compose(ZERO, ZERO), is(ZERO));
-    assertThat(compose(ZERO, setSrcIp(Ip.parse("1.2.3.4"))), is(ZERO));
-    assertThat(compose(setSrcIp(Ip.parse("1.2.3.4")), ZERO), is(ZERO));
+    assertThat(compose(ZERO), sameInstance(ZERO));
+    assertThat(compose(IDENTITY, ZERO, IDENTITY), sameInstance(ZERO));
+    assertThat(compose(ZERO, ZERO), sameInstance(ZERO));
+    assertThat(compose(ZERO, setSrcIp(Ip.parse("1.2.3.4"))), sameInstance(ZERO));
+    assertThat(compose(setSrcIp(Ip.parse("1.2.3.4")), ZERO), sameInstance(ZERO));
   }
 
   // Composing with IDENTITY is a no-op.
   @Test
   public void composeWithIdentity() {
-    assertThat(compose(IDENTITY), is(IDENTITY));
-    assertThat(compose(IDENTITY, IDENTITY), is(IDENTITY));
+    assertThat(compose(IDENTITY), sameInstance(IDENTITY));
+    assertThat(compose(IDENTITY, IDENTITY), sameInstance(IDENTITY));
     assertThat(
         compose(IDENTITY, setSrcIp(Ip.parse("1.2.3.4"))), equalTo(setSrcIp(Ip.parse("1.2.3.4"))));
     assertThat(
@@ -55,17 +55,17 @@ public class TransitionsTest {
     assertThat(c1, instanceOf(Composite.class));
     assertThat(c2, instanceOf(Composite.class));
 
-    assertThat(compose(c1, c2), is(compose(t1, t2, t3, t4)));
+    assertThat(compose(c1, c2), equalTo(compose(t1, t2, t3, t4)));
   }
 
   // Or with ZERO is a no-op
   @Test
   public void orWithZero() {
-    assertThat(or(ZERO), is(ZERO));
-    assertThat(or(IDENTITY, ZERO), is(IDENTITY));
-    assertThat(or(ZERO, ZERO), is(ZERO));
-    assertThat(or(ZERO, setSrcIp(Ip.parse("1.2.3.4"))), is(setSrcIp(Ip.parse("1.2.3.4"))));
-    assertThat(or(setSrcIp(Ip.parse("1.2.3.4")), ZERO), is(setSrcIp(Ip.parse("1.2.3.4"))));
+    assertThat(or(ZERO), sameInstance(ZERO));
+    assertThat(or(IDENTITY, ZERO), sameInstance(IDENTITY));
+    assertThat(or(ZERO, ZERO), sameInstance(ZERO));
+    assertThat(or(ZERO, setSrcIp(Ip.parse("1.2.3.4"))), equalTo(setSrcIp(Ip.parse("1.2.3.4"))));
+    assertThat(or(setSrcIp(Ip.parse("1.2.3.4")), ZERO), equalTo(setSrcIp(Ip.parse("1.2.3.4"))));
   }
 
   // Or with Or flattens and uniquifies
@@ -79,6 +79,6 @@ public class TransitionsTest {
     assertThat(o1, instanceOf(Or.class));
     assertThat(o2, instanceOf(Or.class));
 
-    assertThat(or(o1, o2), is(or(t1, IDENTITY, t2)));
+    assertThat(or(o1, o2), equalTo(or(t1, IDENTITY, t2)));
   }
 }
