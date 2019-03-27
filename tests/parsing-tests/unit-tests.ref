@@ -40543,7 +40543,8 @@
             "          NAMESERVER:'nameserver'",
             "          (dn4",
             "            IPV4:'ipv4'",
-            "            address = IP_ADDRESS:'192.0.2.3'",
+            "            address = (ip_address",
+            "              IP_ADDRESS:'192.0.2.3')",
             "            NEWLINE:'\\n')))))",
             "  (statement",
             "    (s_net_add_unrecognized",
@@ -71286,12 +71287,6 @@
               "Text" : "bridge bridge vlan-aware"
             },
             {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 26,
-              "Parser_Context" : "[a_dns s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "dns nameserver ipv4 192.0.2.3"
-            },
-            {
               "Comment" : "This syntax is unrecognized",
               "Line" : 27,
               "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
@@ -75935,90 +75930,6 @@
             }
           }
         },
-<<<<<<< HEAD
-        "configs/cumulus_nclu" : {
-          "bond" : {
-            "bond1" : {
-              "definitionLines" : [
-                19,
-                20,
-                22
-              ],
-              "numReferrers" : 0
-            },
-            "bond2" : {
-              "definitionLines" : [
-                21
-              ],
-              "numReferrers" : 0
-            }
-          },
-          "interface" : {
-            "swp1" : {
-              "definitionLines" : [
-                19
-              ],
-              "numReferrers" : 1
-            },
-            "swp1a-b2" : {
-              "definitionLines" : [
-                19
-              ],
-              "numReferrers" : 1
-            },
-            "swp1a-b3" : {
-              "definitionLines" : [
-                19
-              ],
-              "numReferrers" : 1
-            },
-            "swp2" : {
-              "definitionLines" : [
-                19
-              ],
-              "numReferrers" : 1
-            },
-            "swp3" : {
-              "definitionLines" : [
-                19
-              ],
-              "numReferrers" : 1
-            },
-            "swp4" : {
-              "definitionLines" : [
-                19
-              ],
-              "numReferrers" : 1
-            },
-            "swp5" : {
-              "definitionLines" : [
-                19
-              ],
-              "numReferrers" : 1
-            },
-            "swp6" : {
-              "definitionLines" : [
-                19
-              ],
-              "numReferrers" : 1
-            },
-            "swp7" : {
-              "definitionLines" : [
-                19
-              ],
-              "numReferrers" : 1
-            },
-            "swp8" : {
-              "definitionLines" : [
-                19
-              ],
-              "numReferrers" : 1
-            }
-          }
-        },
-||||||| merged common ancestors
-        "configs/cumulus_nclu" : { },
-=======
         "configs/cumulus_nclu" : {
           "bond" : {
             "bond1" : {
@@ -76099,7 +76010,6 @@
             }
           }
         },
->>>>>>> master
         "configs/eos_mlag" : {
           "interface" : {
             "Port-Channel1" : {
@@ -81564,63 +81474,6 @@
             }
           }
         },
-<<<<<<< HEAD
-        "configs/cumulus_nclu" : {
-          "interface" : {
-            "swp1" : {
-              "bond slave" : [
-                19
-              ]
-            },
-            "swp1a-b2" : {
-              "bond slave" : [
-                19
-              ]
-            },
-            "swp1a-b3" : {
-              "bond slave" : [
-                19
-              ]
-            },
-            "swp2" : {
-              "bond slave" : [
-                19
-              ]
-            },
-            "swp3" : {
-              "bond slave" : [
-                19
-              ]
-            },
-            "swp4" : {
-              "bond slave" : [
-                19
-              ]
-            },
-            "swp5" : {
-              "bond slave" : [
-                19
-              ]
-            },
-            "swp6" : {
-              "bond slave" : [
-                19
-              ]
-            },
-            "swp7" : {
-              "bond slave" : [
-                19
-              ]
-            },
-            "swp8" : {
-              "bond slave" : [
-                19
-              ]
-            }
-          }
-        },
-||||||| merged common ancestors
-=======
         "configs/cumulus_nclu" : {
           "bond" : {
             "bond1" : {
@@ -81689,7 +81542,6 @@
             }
           }
         },
->>>>>>> master
         "configs/eos_mlag" : {
           "interface" : {
             "Port-Channel1" : {

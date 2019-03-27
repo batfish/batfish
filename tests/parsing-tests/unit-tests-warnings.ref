@@ -639,13 +639,6 @@
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 26,
-        "Text" : "dns nameserver ipv4 192.0.2.3",
-        "Parser_Context" : "[a_dns s_net_add statement cumulus_nclu_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "configs/cumulus_nclu",
         "Line" : 27,
         "Text" : "net add dot1x eap-reauth-period 0\n",
         "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
@@ -2536,10 +2529,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 356 results",
+      "notes" : "Found 355 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 356
+      "numResults" : 355
     }
   }
 ]
