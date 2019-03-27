@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -23,6 +24,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.transition.Transition;
+import org.batfish.bddreachability.transition.Zero;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.datamodel.Configuration;
@@ -213,8 +215,12 @@ public class SessionInstrumentation {
                       removeLastHopConstraint(_lastHopMgr, hostname),
                       addSourceIfaceConstraint,
                       addLastHop);
+              if (transition == Zero.INSTANCE) {
+                return null;
+              }
               return new Edge(preState, postState, transition);
-            });
+            })
+        .filter(Objects::nonNull);
   }
 
   @VisibleForTesting
@@ -250,8 +256,12 @@ public class SessionInstrumentation {
                       denyOutAcl,
                       removeSourceConstraint(srcMgr),
                       removeLastHopConstraint(_lastHopMgr, hostname));
+              if (transition == Zero.INSTANCE) {
+                return null;
+              }
               return new Edge(preState, postState, transition);
-            });
+            })
+        .filter(Objects::nonNull);
   }
 
   @VisibleForTesting
@@ -278,8 +288,12 @@ public class SessionInstrumentation {
                       constraint(sessionFlows.and(inAclBdd)),
                       sessionInfo.getTransformation(),
                       outAcl);
+              if (transition == Zero.INSTANCE) {
+                return null;
+              }
               return new Edge(preState, postState, transition);
-            });
+            })
+        .filter(Objects::nonNull);
   }
 
   @VisibleForTesting
@@ -303,8 +317,12 @@ public class SessionInstrumentation {
                       sessionInfo.getTransformation(),
                       removeSourceConstraint(srcMgr),
                       removeLastHopConstraint(_lastHopMgr, hostname));
+              if (transition == Zero.INSTANCE) {
+                return null;
+              }
               return new Edge(preState, postState, transition);
-            });
+            })
+        .filter(Objects::nonNull);
   }
 
   @VisibleForTesting
@@ -330,8 +348,12 @@ public class SessionInstrumentation {
                       constraint(sessionFlows.and(inAclDenyBdd)),
                       removeSourceConstraint(srcMgr),
                       removeLastHopConstraint(_lastHopMgr, hostname));
+              if (transition == Zero.INSTANCE) {
+                return null;
+              }
               return new Edge(preState, postState, transition);
-            });
+            })
+        .filter(Objects::nonNull);
   }
 
   private BDD getIncomingingSessionFilterBdd(String hostname, String inIface) {

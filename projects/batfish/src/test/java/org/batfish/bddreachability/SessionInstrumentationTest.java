@@ -10,6 +10,7 @@ import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -451,13 +452,7 @@ public final class SessionInstrumentationTest {
             FW, ImmutableSet.of(FW_I1), null, null, sessionHeaders, IDENTITY);
 
     // No ACLs
-    assertThat(
-        nodeDropAclInEdges(sessionInfo),
-        contains(
-            allOf(
-                hasPreState(new PreInInterface(FW, FW_I1)),
-                hasPostState(new NodeDropAclIn(FW)),
-                hasTransition(allOf(mapsForward(srcFwI1, ZERO), mapsBackward(ONE, ZERO))))));
+    assertThat(nodeDropAclInEdges(sessionInfo), empty());
 
     // FW_I1 has an incoming session ACL
     _fwI1.setFirewallSessionInterfaceInfo(
@@ -487,13 +482,7 @@ public final class SessionInstrumentationTest {
             FW, ImmutableSet.of(FW_I1), null, FW_I1, sessionHeaders, IDENTITY);
 
     // No ACLs
-    assertThat(
-        nodeDropAclOutEdges(sessionInfo),
-        contains(
-            allOf(
-                hasPreState(new PreInInterface(FW, FW_I1)),
-                hasPostState(new NodeDropAclOut(FW)),
-                hasTransition(allOf(mapsForward(srcFwI1, ZERO), mapsBackward(ONE, ZERO))))));
+    assertThat(nodeDropAclOutEdges(sessionInfo), empty());
 
     // FW_I1 has an outgoing session ACL
     _fwI1.setFirewallSessionInterfaceInfo(
