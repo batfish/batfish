@@ -1,10 +1,8 @@
 package org.batfish.common.util;
 
-import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Ordering;
 import com.google.common.hash.Hashing;
 import com.ibm.icu.text.CharsetDetector;
 import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
@@ -170,11 +168,6 @@ public class CommonUtil {
     long low = Long.parseLong(parts[1]);
     //    checkLongWithin16Bit(low);
     return low + (high << 16);
-  }
-
-  public static <C extends Comparable<? super C>> int compareIterable(
-      Iterable<C> lhs, Iterable<C> rhs) {
-    return Comparators.lexicographical(Ordering.<C>natural()).compare(lhs, rhs);
   }
 
   /**
