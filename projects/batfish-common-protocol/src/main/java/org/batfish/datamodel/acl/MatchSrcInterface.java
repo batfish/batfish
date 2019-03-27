@@ -5,11 +5,12 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Ordering;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nullable;
-import org.batfish.common.util.CommonUtil;
 
 public class MatchSrcInterface extends AclLineMatchExpr {
   private static final String PROP_SRC_INTERFACES = "srcInterfaces";
@@ -36,7 +37,8 @@ public class MatchSrcInterface extends AclLineMatchExpr {
 
   @Override
   protected int compareSameClass(AclLineMatchExpr o) {
-    return CommonUtil.compareCollection(_srcInterfaces, ((MatchSrcInterface) o)._srcInterfaces);
+    return Comparators.lexicographical(Ordering.<String>natural())
+        .compare(_srcInterfaces, ((MatchSrcInterface) o)._srcInterfaces);
   }
 
   @Override

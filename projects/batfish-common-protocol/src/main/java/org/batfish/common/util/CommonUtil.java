@@ -28,7 +28,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
@@ -176,27 +175,6 @@ public class CommonUtil {
   public static <C extends Comparable<? super C>> int compareIterable(
       Iterable<C> lhs, Iterable<C> rhs) {
     return Comparators.lexicographical(Ordering.<C>natural()).compare(lhs, rhs);
-  }
-
-  public static <T extends Comparable<T>> int compareCollection(
-      Collection<T> lhs, Collection<T> rhs) {
-    Iterator<T> l = lhs.iterator();
-    Iterator<T> r = rhs.iterator();
-    while (l.hasNext()) {
-      if (!r.hasNext()) {
-        return 1;
-      }
-      T lVal = l.next();
-      T rVal = r.next();
-      int ret = lVal.compareTo(rVal);
-      if (ret != 0) {
-        return ret;
-      }
-    }
-    if (r.hasNext()) {
-      return -1;
-    }
-    return 0;
   }
 
   /**
