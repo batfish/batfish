@@ -1282,6 +1282,16 @@
           "lines" : [
             19,
             20,
+            22
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "bond",
+        "Structure_Name" : "bond2",
+        "Source_Lines" : {
+          "filename" : "configs/cumulus_nclu",
+          "lines" : [
             21
           ]
         }
@@ -3461,10 +3471,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 231 results",
+      "notes" : "Found 232 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 231
+      "numResults" : 232
     }
   }
 ]
