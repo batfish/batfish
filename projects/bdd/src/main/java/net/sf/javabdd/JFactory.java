@@ -911,6 +911,9 @@ public final class JFactory extends BDDFactory {
     res = bdd_makenode(LEVEL(r), READREF(2), READREF(1));
     POPREF(2);
 
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
     entry.a = r;
     entry.c = bddop_not;
     entry.res = res;
@@ -1037,6 +1040,9 @@ public final class JFactory extends BDDFactory {
 
     POPREF(2);
 
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
     entry.a = f;
     entry.b = g;
     entry.c = h;
@@ -1110,6 +1116,9 @@ public final class JFactory extends BDDFactory {
     res = bdd_correctify(LEVEL(replacepair[LEVEL(r)]), READREF(2), READREF(1));
     POPREF(2);
 
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
     entry.a = r;
     entry.c = replaceid;
     entry.res = res;
@@ -1277,6 +1286,9 @@ public final class JFactory extends BDDFactory {
 
       POPREF(2);
 
+      if (CACHESTATS && entry.a != -1) {
+        cachestats.opOverwrite++;
+      }
       entry.a = l;
       entry.b = r;
       entry.c = applyop;
@@ -1330,6 +1342,9 @@ public final class JFactory extends BDDFactory {
 
     POPREF(2);
 
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
     entry.a = l;
     entry.b = r;
     entry.c = bddop_and;
@@ -1382,6 +1397,9 @@ public final class JFactory extends BDDFactory {
 
     POPREF(2);
 
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
     entry.a = l;
     entry.b = r;
     entry.c = bddop_or;
@@ -1453,6 +1471,9 @@ public final class JFactory extends BDDFactory {
 
       POPREF(2);
 
+      if (CACHESTATS && entry.a != -1) {
+        cachestats.opOverwrite++;
+      }
       entry.a = l;
       entry.b = r;
       entry.c = appexid;
@@ -1700,6 +1721,9 @@ public final class JFactory extends BDDFactory {
 
       POPREF(2);
 
+      if (CACHESTATS && entry.a != -1) {
+        cachestats.opOverwrite++;
+      }
       entry.a = l;
       entry.b = r;
       entry.c = appexid;
@@ -1801,6 +1825,9 @@ public final class JFactory extends BDDFactory {
 
       POPREF(2);
 
+      if (CACHESTATS && entry.a != -1) {
+        cachestats.opOverwrite++;
+      }
       entry.a = l;
       entry.b = r;
       entry.c = appexid;
@@ -1849,6 +1876,9 @@ public final class JFactory extends BDDFactory {
 
     POPREF(2);
 
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
     entry.a = r;
     entry.c = quantid;
     entry.res = res;
@@ -1897,6 +1927,9 @@ public final class JFactory extends BDDFactory {
 
     POPREF(2);
 
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
     entry.a = r;
     entry.c = quantid;
     entry.res = res;
@@ -2000,6 +2033,9 @@ public final class JFactory extends BDDFactory {
       }
     }
 
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
     entry.a = f;
     entry.b = c;
     entry.c = miscid;
@@ -2094,6 +2130,9 @@ public final class JFactory extends BDDFactory {
       res = ite_rec(g, HIGH(f), LOW(f));
     }
 
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
     entry.a = f;
     entry.b = g;
     entry.c = replaceid;
@@ -2172,6 +2211,9 @@ public final class JFactory extends BDDFactory {
     res = ite_rec(replacepair[LEVEL(f)], READREF(1), READREF(2));
     POPREF(2);
 
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
     entry.a = f;
     entry.c = replaceid;
     entry.res = res;
@@ -2405,6 +2447,9 @@ public final class JFactory extends BDDFactory {
       POPREF(2);
     }
 
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
     entry.a = r;
     entry.c = miscid;
     entry.res = res;
@@ -2499,6 +2544,9 @@ public final class JFactory extends BDDFactory {
       POPREF(1);
     }
 
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
     entry.a = f;
     entry.b = d;
     entry.c = bddop_simplify;
@@ -2970,11 +3018,20 @@ public final class JFactory extends BDDFactory {
 
     entry = BddCache_lookupD(countcache, PATHCOUHASH(r));
     if (entry.a == r && entry.c == miscid) {
+      if (CACHESTATS) {
+        cachestats.opHit++;
+      }
       return entry.dres;
     }
 
+    if (CACHESTATS) {
+      cachestats.opMiss++;
+    }
     size = bdd_pathcount_rec(LOW(r)) + bdd_pathcount_rec(HIGH(r));
 
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
     entry.a = r;
     entry.c = miscid;
     entry.dres = size;
@@ -3024,9 +3081,15 @@ public final class JFactory extends BDDFactory {
 
     entry = BddCache_lookupD(countcache, SATCOUHASH(root));
     if (entry.a == root && entry.c == miscid) {
+      if (CACHESTATS) {
+        cachestats.opHit++;
+      }
       return entry.dres;
     }
 
+    if (CACHESTATS) {
+      cachestats.opMiss++;
+    }
     size = 0;
     s = 1;
 
@@ -3037,6 +3100,9 @@ public final class JFactory extends BDDFactory {
     s *= Math.pow(2.0, (float) (LEVEL(HIGH(root)) - LEVEL(root) - 1));
     size += s * satcount_rec(HIGH(root));
 
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
     entry.a = root;
     entry.c = miscid;
     entry.dres = size;
@@ -3205,21 +3271,21 @@ public final class JFactory extends BDDFactory {
   private static final boolean CACHESTATS = false;
 
   private int bdd_makenode(int level, int low, int high) {
-    int hash2;
-    int res;
+    /* check whether childs are equal */
+    if (low == high) {
+      if (CACHESTATS) {
+        cachestats.uniqueTrivial++;
+      }
+      return low;
+    }
 
     if (CACHESTATS) {
       cachestats.uniqueAccess++;
     }
 
-    /* check whether childs are equal */
-    if (low == high) {
-      return low;
-    }
-
     /* Try to find an existing node of this kind */
-    hash2 = NODEHASH(level, low, high);
-    res = HASH(hash2);
+    int hash2 = NODEHASH(level, low, high);
+    int res = HASH(hash2);
 
     while (res != 0) {
       if (LEVEL(res) == level && LOW(res) == low && HIGH(res) == high) {
@@ -5034,8 +5100,8 @@ public final class JFactory extends BDDFactory {
   }
 
   @Override
-  public double setCacheRatio(double x) {
-    return bdd_setcacheratio((int) (x * 100)) / 100.;
+  public int setCacheRatio(int r) {
+    return bdd_setcacheratio(r);
   }
 
   private int bdd_setcacheratio(int r) {
@@ -5790,25 +5856,24 @@ public final class JFactory extends BDDFactory {
   private boolean resizedInMakenode;
 
   private int reorder_makenode(int var, int low, int high) {
-    int hash;
-    int res;
+    /* check whether childs are equal */
+    if (low == high) {
+      /* Note: We know that low,high has a refcou greater than zero, so
+      there is no need to add reference *recursively* */
+      INCREF(low);
+      if (CACHESTATS) {
+        cachestats.uniqueTrivial++;
+      }
+      return low;
+    }
 
     if (CACHESTATS) {
       cachestats.uniqueAccess++;
     }
 
-    /* Note: We know that low,high has a refcou greater than zero, so
-    there is no need to add reference *recursively* */
-
-    /* check whether childs are equal */
-    if (low == high) {
-      INCREF(low);
-      return low;
-    }
-
     /* Try to find an existing node of this kind */
-    hash = NODEHASH2(var, low, high);
-    res = HASH(hash);
+    int hash = NODEHASH2(var, low, high);
+    int res = HASH(hash);
 
     while (res != 0) {
       if (LOW(res) == low && HIGH(res) == high) {

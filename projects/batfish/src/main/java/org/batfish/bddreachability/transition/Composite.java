@@ -22,6 +22,10 @@ public final class Composite implements Transition {
     _transitions = ImmutableList.copyOf(transitions);
   }
 
+  public List<Transition> getTransitions() {
+    return _transitions;
+  }
+
   @Override
   public BDD transitForward(BDD bdd) {
     BDD result = bdd;

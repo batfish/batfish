@@ -26,6 +26,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, Interface> _interfaces;
   private final @Nonnull List<Ip> _ipv4Nameservers;
   private final @Nonnull List<Ip6> _ipv6Nameservers;
+  private final @Nonnull Loopback _loopback;
   private final @Nonnull Map<String, Vrf> _vrfs;
 
   public CumulusNcluConfiguration() {
@@ -33,6 +34,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     _interfaces = new HashMap<>();
     _ipv4Nameservers = new LinkedList<>();
     _ipv6Nameservers = new LinkedList<>();
+    _loopback = new Loopback();
     _vrfs = new HashMap<>();
   }
 
@@ -55,6 +57,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   public @Nonnull List<Ip6> getIpv6Nameservers() {
     return _ipv6Nameservers;
+  }
+
+  public @Nonnull Loopback getLoopback() {
+    return _loopback;
   }
 
   public @Nonnull Map<String, Vrf> getVrfs() {

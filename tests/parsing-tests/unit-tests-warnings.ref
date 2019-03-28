@@ -674,20 +674,6 @@
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 41,
-        "Text" : "loopback lo clag vxlan-anycast-ip 192.0.2.7",
-        "Parser_Context" : "[a_loopback s_net_add statement cumulus_nclu_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "configs/cumulus_nclu",
-        "Line" : 42,
-        "Text" : "loopback lo ip address 192.0.2.8/32",
-        "Parser_Context" : "[a_loopback s_net_add statement cumulus_nclu_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "configs/cumulus_nclu",
         "Line" : 43,
         "Text" : "net add ptp global domain-number 0\n",
         "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
@@ -2452,10 +2438,22 @@
       }
     ],
     "summary" : {
+<<<<<<< HEAD
       "notes" : "Found 344 results",
+||||||| merged common ancestors
+      "notes" : "Found 355 results",
+=======
+      "notes" : "Found 345 results",
+>>>>>>> master
       "numFailed" : 0,
       "numPassed" : 0,
+<<<<<<< HEAD
       "numResults" : 344
+||||||| merged common ancestors
+      "numResults" : 355
+=======
+      "numResults" : 345
+>>>>>>> master
     }
   }
 ]

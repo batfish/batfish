@@ -251,6 +251,17 @@ final class InterfaceMatchersImpl {
     }
   }
 
+  static final class HasOspfEnabled extends FeatureMatcher<Interface, Boolean> {
+    HasOspfEnabled(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "an Interface with ospfEnabled:", "ospfEnabled");
+    }
+
+    @Override
+    protected Boolean featureValueOf(Interface actual) {
+      return actual.getOspfEnabled();
+    }
+  }
+
   static final class HasOspfPointToPoint extends FeatureMatcher<Interface, Boolean> {
     HasOspfPointToPoint(@Nonnull Matcher<? super Boolean> subMatcher) {
       super(subMatcher, "an Interface with ospfPointToPoint:", "ospfPointToPoint");
