@@ -38,16 +38,17 @@ public class BDDPacket {
   private static final int JFACTORY_INITIAL_NODE_TABLE_SIZE = 10000;
 
   /*
-   * Initial size of the BDD factory node cache. Automatically resized when the node table is,
-   * to preserve the cache ratio.
-   */
-  private static final int JFACTORY_INITIAL_NODE_CACHE_SIZE = 1000;
-
-  /*
    * The ratio of node table size to node cache size to preserve when resizing. The default
    * value is 0, which means never resize the cache.
    */
   private static final int JFACTORY_CACHE_RATIO = 64;
+
+  /*
+   * Initial size of the BDD factory node cache. Automatically resized when the node table is,
+   * to preserve the cache ratio.
+   */
+  private static final int JFACTORY_INITIAL_NODE_CACHE_SIZE =
+      (JFACTORY_INITIAL_NODE_TABLE_SIZE + JFACTORY_CACHE_RATIO - 1) / JFACTORY_CACHE_RATIO;
 
   private static final int DSCP_LENGTH = 6;
 
