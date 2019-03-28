@@ -363,7 +363,7 @@ public class Client extends AbstractClient implements IClient {
         }
         new BgpProcessPropertySpecifier(value.textValue());
         break;
-      case BGP_ROUTE_SPEC:
+      case BGP_ROUTE:
         if (!(value.isObject())) {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON object", expectedType.getName()));
