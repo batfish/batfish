@@ -3,8 +3,10 @@ package org.batfish.common.bdd;
 import static com.google.common.base.MoreObjects.firstNonNull;
 
 import java.util.Arrays;
+import java.util.Collection;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import net.sf.javabdd.JFactory;
 
 public final class BDDOps {
   private final BDDFactory _factory;
@@ -34,6 +36,14 @@ public final class BDDOps {
       }
     }
     return result;
+  }
+
+  public BDD multiOr(Collection<BDD> bdds) {
+    return ((JFactory) _factory).multiOr(bdds);
+  }
+
+  public BDD multiOr(BDD... bdds) {
+    return ((JFactory) _factory).multiOr(bdds);
   }
 
   /** Returns bdd.not() or {@code null} if given {@link BDD} is null. */

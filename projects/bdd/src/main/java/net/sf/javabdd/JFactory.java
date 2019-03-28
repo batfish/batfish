@@ -530,17 +530,35 @@ public final class JFactory extends BDDFactory {
     }
   }
 
+  // a = operator, b = result, c = unused
+  private static class MultiOpBddCacheData extends BddCacheData {
+    int[] operands;
+
+    @Override
+    BddCacheData copy() {
+      MultiOpBddCacheData that = new MultiOpBddCacheData();
+      that.a = a;
+      that.b = b;
+      that.c = c;
+      that.operands = Arrays.copyOf(operands, operands.length);
+      return that;
+    }
+  }
+
   private static class BddCache {
     BddCacheData[] table;
     int tablesize;
 
     BddCache copy() {
       BddCache that = new BddCache();
-      boolean is_d = this.table instanceof BddCacheDataD[];
-      if (is_d) {
+      if (this.table instanceof BddCacheDataD[]) {
         that.table = new BddCacheDataD[this.table.length];
-      } else {
+      } else if (this.table instanceof BddCacheDataI[]) {
         that.table = new BddCacheDataI[this.table.length];
+      } else if (this.table instanceof MultiOpBddCacheData[]) {
+        that.table = new MultiOpBddCacheData[this.table.length];
+      } else {
+        throw new IllegalStateException("Unexpected BddCache type");
       }
       that.tablesize = this.tablesize;
       for (int i = 0; i < table.length; ++i) {
@@ -780,6 +798,14 @@ public final class JFactory extends BDDFactory {
     return TRIPLE(l, r, op);
   }
 
+  private static int MULTIOPHASH(int[] operands, int op) {
+    int result = op;
+    for (int operand : operands) {
+      result = PAIR(result, operand);
+    }
+    return result;
+  }
+
   private static int ITEHASH(int f, int g, int h) {
     return TRIPLE(f, g, h);
   }
@@ -848,6 +874,54 @@ public final class JFactory extends BDDFactory {
   /* Should *not* be used in bdd_apply calls !!! */
   private static final int bddop_not = 10;
   private static final int bddop_simplify = 11;
+
+  public BDD multiOr(BDD... bddOperands) {
+    int[] operands = new int[bddOperands.length];
+    for (int i = 0; i < operands.length; i++) {
+      operands[i] = ((BDDImpl) bddOperands[i])._index;
+    }
+    return makeBDD(bdd_multiOr(operands));
+  }
+
+  public BDD multiOr(Collection<BDD> bddOperands) {
+    int[] operands = bddOperands.stream().mapToInt(bdd -> ((BDDImpl) bdd)._index).toArray();
+    return makeBDD(bdd_multiOr(operands));
+  }
+
+  private int bdd_multiOr(int[] operands) {
+    if (multiopcache == null) {
+      multiopcache = BddCacheMultiOp_init(cachesize);
+    }
+
+    int res;
+    while (true) {
+      try {
+        INITREF();
+
+        if (firstReorder == 0) {
+          bdd_disable_reorder();
+        }
+        res = multiOr_rec(operands);
+        if (firstReorder == 0) {
+          bdd_enable_reorder();
+        }
+      } catch (ReorderException x) {
+        bdd_checkreorder();
+
+        if (firstReorder-- == 1) {
+          continue;
+        }
+        res = BDDZERO;
+        /* avoid warning about res being uninitialized */
+      }
+      break;
+    }
+
+    // validate(res);
+
+    checkresize();
+    return res;
+  }
 
   private int bdd_not(int r) {
     int res;
@@ -1335,6 +1409,125 @@ public final class JFactory extends BDDFactory {
     entry.c = bddop_and;
     entry.res = res;
 
+    return res;
+  }
+
+  private int multiOr_rec(int[] operands) {
+    if (operands.length == 0) {
+      return BDDZERO;
+    }
+    if (operands.length == 1) {
+      return operands[0];
+    }
+    if (operands.length == 2) {
+      return or_rec(operands[0], operands[1]);
+    }
+
+    MultiOpBddCacheData entry =
+        BddCache_lookupMultiOp(multiopcache, MULTIOPHASH(operands, bddop_or));
+    if (entry.a == bddop_or && entry.operands.length == operands.length) {
+      int i = 0;
+      for (; i < operands.length; i++) {
+        if (operands[i] != entry.operands[i]) {
+          break;
+        }
+      }
+      if (i == operands.length) {
+        if (CACHESTATS) {
+          cachestats.opHit++;
+        }
+        return entry.b;
+      }
+    }
+    if (CACHESTATS) {
+      cachestats.opMiss++;
+    }
+
+    int minLevel = LEVEL(operands[0]);
+    int nodesWithMinLevel = 0;
+    int nodesWithMinLevelLowNonZero = 0;
+    int nodesWithMinLevelHighNonZero = 0;
+    boolean nodeWithMinLevelHasLowOne = false;
+    boolean nodeWithMinLevelHasHighOne = false;
+    for (int n : operands) {
+      int level = LEVEL(n);
+      if (level < minLevel) {
+        minLevel = level;
+        nodesWithMinLevel = 0;
+        nodesWithMinLevelHighNonZero = 0;
+        nodesWithMinLevelLowNonZero = 0;
+        nodeWithMinLevelHasHighOne = false;
+        nodeWithMinLevelHasLowOne = false;
+      } else if (level > minLevel) {
+        continue;
+      }
+
+      // level == minLevel
+      nodesWithMinLevel++;
+
+      int high = HIGH(n);
+      nodeWithMinLevelHasHighOne |= ISONE(high);
+      nodesWithMinLevelHighNonZero += ISZERO(high) ? 0 : 1;
+
+      int low = LOW(n);
+      nodeWithMinLevelHasLowOne |= ISONE(low);
+      nodesWithMinLevelLowNonZero += ISZERO(low) ? 0 : 1;
+    }
+
+    int nodesWithoutMinLevel = operands.length - nodesWithMinLevel;
+
+    if (!nodeWithMinLevelHasLowOne) {
+      // recursive call
+      int[] lowOperands = new int[nodesWithMinLevelLowNonZero + nodesWithoutMinLevel];
+      int i = 0;
+      for (int operand : operands) {
+        if (LEVEL(operand) == minLevel) {
+          int l = LOW(operand);
+          if (!ISZERO(l)) {
+            lowOperands[i++] = l;
+          }
+        } else {
+          lowOperands[i++] = operand;
+        }
+      }
+      assert i == lowOperands.length;
+      PUSHREF(multiOr_rec(lowOperands));
+    }
+
+    if (!nodeWithMinLevelHasHighOne) {
+      // recursive call
+      int[] highOperands = new int[nodesWithMinLevelHighNonZero + nodesWithoutMinLevel];
+      int i = 0;
+      for (int operand : operands) {
+        if (LEVEL(operand) == minLevel) {
+          int h = HIGH(operand);
+          if (!ISZERO(h)) {
+            highOperands[i++] = h;
+          }
+        } else {
+          highOperands[i++] = operand;
+        }
+      }
+      assert i == highOperands.length;
+      PUSHREF(multiOr_rec(highOperands));
+    }
+
+    int low =
+        nodeWithMinLevelHasLowOne ? BDDONE : nodeWithMinLevelHasHighOne ? READREF(1) : READREF(2);
+    int high = nodeWithMinLevelHasHighOne ? BDDONE : READREF(1);
+
+    int res = bdd_makenode(minLevel, low, high);
+
+    if (!nodeWithMinLevelHasHighOne) {
+      POPREF(1);
+    }
+    if (!nodeWithMinLevelHasLowOne) {
+      POPREF(1);
+    }
+
+    entry.a = bddop_or;
+    entry.b = res;
+    entry.operands = operands;
     return res;
   }
 
@@ -3479,6 +3672,7 @@ public final class JFactory extends BDDFactory {
   private BddCache appexcache; /* Cache for appex/appall results */
   private BddCache replacecache; /* Cache for replace results */
   private BddCache misccache; /* Cache for other results */
+  private BddCache multiopcache; /* Cache for varargs operators */
   private BddCache countcache; /* Cache for count results */
   private int cacheratio;
   private int satPolarity;
@@ -3536,6 +3730,7 @@ public final class JFactory extends BDDFactory {
     BddCache_reset(appexcache);
     BddCache_reset(replacecache);
     BddCache_reset(misccache);
+    BddCache_reset(multiopcache);
     BddCache_reset(countcache);
   }
 
@@ -3567,6 +3762,7 @@ public final class JFactory extends BDDFactory {
     BddCache_resize(appexcache, newcachesize);
     BddCache_resize(replacecache, newcachesize);
     BddCache_resize(misccache, newcachesize);
+    BddCache_resize(multiopcache, newcachesize);
     BddCache_resize(countcache, newcachesize);
     return old;
   }
@@ -3595,6 +3791,23 @@ public final class JFactory extends BDDFactory {
 
     for (n = 0; n < size; n++) {
       cache.table[n] = new BddCacheDataI();
+      cache.table[n].a = -1;
+    }
+    cache.tablesize = size;
+
+    return cache;
+  }
+
+  private BddCache BddCacheMultiOp_init(int size) {
+    int n;
+
+    size = bdd_prime_gte(size);
+
+    BddCache cache = new BddCache();
+    cache.table = new MultiOpBddCacheData[size];
+
+    for (n = 0; n < size; n++) {
+      cache.table[n] = new MultiOpBddCacheData();
       cache.table[n].a = -1;
     }
     cache.tablesize = size;
@@ -3634,23 +3847,27 @@ public final class JFactory extends BDDFactory {
     }
     int n;
 
-    boolean is_d = cache.table instanceof BddCacheDataD[];
-
-    cache.table = null;
-
     newsize = bdd_prime_gte(newsize);
 
-    if (is_d) {
+    if (cache.table instanceof BddCacheDataD[]) {
       cache.table = new BddCacheDataD[newsize];
-    } else {
+    } else if (cache.table instanceof BddCacheDataI[]) {
       cache.table = new BddCacheDataI[newsize];
+    } else if (cache.table instanceof MultiOpBddCacheData[]) {
+      cache.table = new MultiOpBddCacheData[newsize];
+    } else {
+      throw new IllegalStateException("unknown cache table type");
     }
 
     for (n = 0; n < newsize; n++) {
-      if (is_d) {
+      if (cache.table instanceof BddCacheDataD[]) {
         cache.table[n] = new BddCacheDataD();
-      } else {
+      } else if (cache.table instanceof BddCacheDataI[]) {
         cache.table[n] = new BddCacheDataI();
+      } else if (cache.table instanceof MultiOpBddCacheData[]) {
+        cache.table[n] = new MultiOpBddCacheData();
+      } else {
+        throw new IllegalStateException("unknown cache table type");
       }
       cache.table[n].a = -1;
     }
@@ -3665,6 +3882,10 @@ public final class JFactory extends BDDFactory {
 
   private static BddCacheDataD BddCache_lookupD(BddCache cache, int hash) {
     return (BddCacheDataD) cache.table[Math.abs(hash % cache.tablesize)];
+  }
+
+  private static MultiOpBddCacheData BddCache_lookupMultiOp(BddCache cache, int hash) {
+    return (MultiOpBddCacheData) cache.table[Math.abs(hash % cache.tablesize)];
   }
 
   private static void BddCache_reset(BddCache cache) {
@@ -6960,6 +7181,9 @@ public final class JFactory extends BDDFactory {
     }
     if (misccache != null) {
       INSTANCE.misccache = this.misccache.copy();
+    }
+    if (multiopcache != null) {
+      INSTANCE.multiopcache = this.multiopcache.copy();
     }
     if (countcache != null) {
       INSTANCE.countcache = this.countcache.copy();

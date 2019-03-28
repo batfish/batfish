@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -108,11 +109,30 @@ public abstract class IpAccessListToBdd {
   public final BDD toBdd(IpAccessList acl) {
     BDDFactory bddFactory = _pkt.getFactory();
     BDD result = bddFactory.zero();
+    LineAction currentAction = LineAction.PERMIT;
+    List<BDD> lineBddsWithCurrentAction = new ArrayList<>();
     for (IpAccessListLine line : Lists.reverse(acl.getLines())) {
-      BDD lineBDD = toBdd(line.getMatchCondition());
-      BDD actionBDD = line.getAction() == LineAction.PERMIT ? bddFactory.one() : bddFactory.zero();
-      result = lineBDD.ite(actionBDD, result);
+      LineAction lineAction = line.getAction();
+      if (lineAction != currentAction) {
+        if (currentAction == LineAction.PERMIT) {
+          lineBddsWithCurrentAction.add(result);
+          result = _bddOps.multiOr(lineBddsWithCurrentAction);
+        } else {
+          result = result.diff(_bddOps.multiOr(lineBddsWithCurrentAction));
+        }
+        currentAction = lineAction;
+        lineBddsWithCurrentAction.clear();
+      }
+      lineBddsWithCurrentAction.add(toBdd(line.getMatchCondition()));
     }
+
+    if (currentAction == LineAction.PERMIT) {
+      lineBddsWithCurrentAction.add(result);
+      result = _bddOps.multiOr(lineBddsWithCurrentAction);
+    } else {
+      result = result.diff(_bddOps.multiOr(lineBddsWithCurrentAction));
+    }
+
     return result;
   }
 
@@ -175,10 +195,10 @@ public abstract class IpAccessListToBdd {
 
     @Override
     public final BDD visitOrMatchExpr(OrMatchExpr orMatchExpr) {
-      return _bddOps.or(
+      return _bddOps.multiOr(
           orMatchExpr.getDisjuncts().stream()
               .map(IpAccessListToBdd.this::toBdd)
-              .collect(ImmutableList.toImmutableList()));
+              .toArray(BDD[]::new));
     }
 
     @Override

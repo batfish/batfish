@@ -6,6 +6,8 @@ import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Supplier;
@@ -137,13 +139,28 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
   @Override
   public BDD visitAclIpSpace(AclIpSpace aclIpSpace) {
     BDD bdd = _zero;
+    LineAction currentAction = LineAction.PERMIT;
+    List<BDD> lineBddsWithCurrentAction = new ArrayList<>();
     for (AclIpSpaceLine aclIpSpaceLine : Lists.reverse(aclIpSpace.getLines())) {
-      BDD line = visit(aclIpSpaceLine.getIpSpace());
-      if (aclIpSpaceLine.getAction() == LineAction.PERMIT) {
-        bdd = line.or(bdd);
-      } else {
-        bdd = bdd.diff(line);
+      LineAction lineAction = aclIpSpaceLine.getAction();
+      if (lineAction != currentAction) {
+        if (currentAction == LineAction.PERMIT) {
+          lineBddsWithCurrentAction.add(bdd);
+          bdd = _bddOps.multiOr(lineBddsWithCurrentAction);
+        } else {
+          bdd = bdd.diff(_bddOps.multiOr(lineBddsWithCurrentAction));
+        }
+        currentAction = lineAction;
+        lineBddsWithCurrentAction.clear();
       }
+      lineBddsWithCurrentAction.add(visit(aclIpSpaceLine.getIpSpace()));
+    }
+
+    if (currentAction == LineAction.PERMIT) {
+      lineBddsWithCurrentAction.add(bdd);
+      bdd = _bddOps.multiOr(lineBddsWithCurrentAction);
+    } else {
+      bdd = bdd.diff(_bddOps.multiOr(lineBddsWithCurrentAction));
     }
     return bdd;
   }
@@ -177,13 +194,13 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
   @Override
   public BDD visitIpWildcardSetIpSpace(IpWildcardSetIpSpace ipWildcardSetIpSpace) {
     BDD whitelist =
-        _bddOps.or(
+        _bddOps.multiOr(
             ipWildcardSetIpSpace.getWhitelist().stream()
                 .map((IpWildcard wc) -> this.visit(wc.toIpSpace()))
                 .collect(Collectors.toList()));
 
     BDD blacklist =
-        _bddOps.or(
+        _bddOps.multiOr(
             ipWildcardSetIpSpace.getBlacklist().stream()
                 .map((IpWildcard wc) -> this.visit(wc.toIpSpace()))
                 .collect(Collectors.toList()));
