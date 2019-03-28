@@ -133,8 +133,8 @@ public class TypedBDDFactory extends BDDFactory {
   }
 
   @Override
-  public double setCacheRatio(double x) {
-    return factory.setCacheRatio(x);
+  public int setCacheRatio(int r) {
+    return factory.setCacheRatio(r);
   }
 
   @Override
