@@ -2019,15 +2019,35 @@ public final class FlatJuniperGrammarTest {
     // Interface ge-0/0/2.0 has disable set in OSPF config.
     Configuration config = parseConfig("ospf-interface-disable");
     assertThat(config.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcess(), notNullValue());
-    assertThat(config.getActiveInterfaces().get("ge-0/0/1.0"), hasOspfEnabled(true));
-    assertThat(config.getActiveInterfaces().get("ge-0/0/2.0"), hasOspfEnabled(false));
+    assertThat(config.getActiveInterfaces().get("ge-0/0/1.0"), hasOspfEnabled());
+    assertThat(config.getActiveInterfaces().get("ge-0/0/2.0"), not(hasOspfEnabled()));
   }
 
   @Test
   public void testOspfDisable() throws IOException {
-    // Config has "set protocols ospf disable"; no VI OSPF process should be created
+    /*
+    - Default VRF has OSPF process disabled, with interface ge-0/0/0.0
+    - VRF INSTANCE_1 has OSPF process disabled, with interface ge-0/0/1.0
+    - VRF INSTANCE_2 has OSPF process disabled, then enabled, with interface ge-0/0/2.0
+    - VRF INSTANCE_3 has OSPF process enabled, then disabled, with interface ge-0/0/3.0
+     */
     Configuration config = parseConfig("ospf-disable");
+
+    // Default VRF: OSPF process should not be created
     assertThat(config.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcess(), nullValue());
+    assertThat(config.getActiveInterfaces().get("ge-0/0/0.0"), not(hasOspfEnabled()));
+
+    // INSTANCE_1: OSPF process should not be created
+    assertThat(config.getVrfs().get("INSTANCE_1").getOspfProcess(), nullValue());
+    assertThat(config.getActiveInterfaces().get("ge-0/0/1.0"), not(hasOspfEnabled()));
+
+    // INSTANCE_2: OSPF process should be created and its interface enabled
+    assertThat(config.getVrfs().get("INSTANCE_2").getOspfProcess(), notNullValue());
+    assertThat(config.getActiveInterfaces().get("ge-0/0/2.0"), hasOspfEnabled());
+
+    // INSTANCE_3: OSPF process should not be created
+    assertThat(config.getVrfs().get("INSTANCE_3").getOspfProcess(), nullValue());
+    assertThat(config.getActiveInterfaces().get("ge-0/0/3.0"), not(hasOspfEnabled()));
   }
 
   @Test

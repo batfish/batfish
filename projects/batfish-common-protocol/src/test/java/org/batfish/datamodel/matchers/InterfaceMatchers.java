@@ -292,12 +292,9 @@ public final class InterfaceMatchers {
     return new HasOspfCost(subMatcher);
   }
 
-  /**
-   * Provides a matcher that matches if the provided {@code expectedEnabledStatus} is the same as
-   * the interface's OSPF enabled status.
-   */
-  public static HasOspfEnabled hasOspfEnabled(boolean expectedEnabledStatus) {
-    return new HasOspfEnabled(equalTo(expectedEnabledStatus));
+  /** Provides an {@link Interface} matcher that matches if the interface has OSPF enabled. */
+  public static HasOspfEnabled hasOspfEnabled() {
+    return new HasOspfEnabled(equalTo(true));
   }
 
   /**
