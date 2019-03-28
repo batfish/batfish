@@ -1,0 +1,7 @@
+net del all
+#
+net add hostname cumulus_nclu_vrf_references
+#
+net add vrf vrf1
+#
+net commit

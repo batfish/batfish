@@ -26,12 +26,14 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, Interface> _interfaces;
   private final @Nonnull List<Ip> _ipv4Nameservers;
   private final @Nonnull List<Ip6> _ipv6Nameservers;
+  private final @Nonnull Map<String, Vrf> _vrfs;
 
   public CumulusNcluConfiguration() {
     _bonds = new HashMap<>();
     _interfaces = new HashMap<>();
     _ipv4Nameservers = new LinkedList<>();
     _ipv6Nameservers = new LinkedList<>();
+    _vrfs = new HashMap<>();
   }
 
   public @Nonnull Map<String, Bond> getBonds() {
@@ -55,12 +57,17 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     return _ipv6Nameservers;
   }
 
+  public @Nonnull Map<String, Vrf> getVrfs() {
+    return _vrfs;
+  }
+
   private void markStructures() {
     markConcreteStructure(CumulusStructureType.BOND, CumulusStructureUsage.BOND_SELF_REFERENCE);
     markConcreteStructure(
         CumulusStructureType.INTERFACE,
         CumulusStructureUsage.BOND_SLAVE,
         CumulusStructureUsage.INTERFACE_SELF_REFERENCE);
+    markConcreteStructure(CumulusStructureType.VRF, CumulusStructureUsage.VRF_SELF_REFERENCE);
   }
 
   @Override

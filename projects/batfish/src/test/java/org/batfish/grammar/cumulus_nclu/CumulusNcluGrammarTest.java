@@ -4,6 +4,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.notNullValue;
@@ -237,5 +238,40 @@ public final class CumulusNcluGrammarTest {
         getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
 
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "swp1", 1));
+  }
+
+  @Test
+  public void testVrfExtraction() throws IOException {
+    CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_vrf");
+
+    // vrfs
+    assertThat(
+        "Ensure vrfs are created", vc.getVrfs().keySet(), containsInAnyOrder("vrf1", "vrf2"));
+
+    // name
+    assertThat("Ensure name is extracted", vc.getVrfs().get("vrf1").getName(), equalTo("vrf1"));
+    assertThat("Ensure name is extracted", vc.getVrfs().get("vrf2").getName(), equalTo("vrf2"));
+
+    // ip address
+    assertThat(
+        "Ensure ip addresses are extracted",
+        vc.getVrfs().get("vrf1").getAddresses(),
+        contains(new InterfaceAddress("10.0.0.1/24"), new InterfaceAddress("10.0.1.1/24")));
+    assertThat(
+        "Ensure ip addresses are extracted", vc.getVrfs().get("vrf2").getAddresses(), empty());
+
+    // vni
+    assertThat("Ensure vni is extracted", vc.getVrfs().get("vrf1").getVni(), equalTo(10001));
+    assertThat("Ensure vni is extracted", vc.getVrfs().get("vrf2").getVni(), nullValue());
+  }
+
+  @Test
+  public void testVrfReferences() throws IOException {
+    String hostname = "cumulus_nclu_vrf_references";
+    String filename = String.format("configs/%s", hostname);
+    ConvertConfigurationAnswerElement ans =
+        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VRF, "vrf1", 1));
   }
 }

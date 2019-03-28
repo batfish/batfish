@@ -459,8 +459,14 @@
         "cumulus_nclu" : [
           "configs/cumulus_nclu"
         ],
+        "cumulus_nclu_invalid_bonds" : [
+          "configs/cumulus_nclu_invalid_bonds"
+        ],
         "cumulus_nclu_invalid_interfaces" : [
           "configs/cumulus_nclu_invalid_interfaces"
+        ],
+        "cumulus_nclu_invalid_vrfs" : [
+          "configs/cumulus_nclu_invalid_vrfs"
         ],
         "eos_mlag" : [
           "configs/eos_mlag"
@@ -1010,7 +1016,9 @@
         "configs/community_name_numbers_dos" : "PASSED",
         "configs/community_set" : "PASSED",
         "configs/cumulus_nclu" : "PARTIALLY_UNRECOGNIZED",
+        "configs/cumulus_nclu_invalid_bonds" : "PASSED",
         "configs/cumulus_nclu_invalid_interfaces" : "PASSED",
+        "configs/cumulus_nclu_invalid_vrfs" : "PASSED",
         "configs/eos_mlag" : "PASSED",
         "configs/eos_trunk_group" : "PASSED",
         "configs/f5_bigip_imish_malformed" : "PASSED",
@@ -41045,16 +41053,15 @@
             "            NUMBERED_WORD:'vrf1')",
             "          NEWLINE:'\\n'))))",
             "  (statement",
-            "    (s_net_add_unrecognized",
+            "    (s_net_add",
             "      NET:'net'",
             "      ADD:'add'",
-            "      (word",
-            "        VRF:'vrf')",
-            "      (null_rest_of_line",
-            "        WORD:'mgmt'",
-            "        IP:'ip'",
-            "        ADDRESS:'address'",
-            "        IP_PREFIX:'10.0.0.2/8'",
+            "      (a_vrf",
+            "        VRF:'vrf'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            unnumbered = (glob_word",
+            "              WORD:'mgmt')))",
             "        NEWLINE:'\\n')))",
             "  (statement",
             "    (s_net_add",
@@ -41062,7 +41069,23 @@
             "      ADD:'add'",
             "      (a_vrf",
             "        VRF:'vrf'",
-            "        name = (glob",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            unnumbered = (glob_word",
+            "              WORD:'mgmt')))",
+            "        (vrf_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          address = (interface_address",
+            "            IP_PREFIX:'10.0.0.2/8')",
+            "          NEWLINE:'\\n'))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vrf",
+            "        VRF:'vrf'",
+            "        names = (glob",
             "          (glob_range_set",
             "            base_word = (numbered_word",
             "              NUMBERED_WORD:'vrf1')))",
@@ -41077,7 +41100,7 @@
             "      ADD:'add'",
             "      (a_vrf",
             "        VRF:'vrf'",
-            "        name = (glob",
+            "        names = (glob",
             "          (glob_range_set",
             "            base_word = (numbered_word",
             "              NUMBERED_WORD:'vrf1'))",
@@ -41262,6 +41285,130 @@
             "  EOF:<EOF>)"
           ]
         },
+        "configs/cumulus_nclu_invalid_bonds" : {
+          "sentences" : [
+            "(cumulus_nclu_configuration",
+            "  (statement",
+            "    (s_null",
+            "      NET:'net'",
+            "      (null_rest_of_line",
+            "        DEL:'del'",
+            "        WORD:'all'",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_hostname",
+            "        HOSTNAME:'hostname'",
+            "        hostname = (word",
+            "          WORD:'cumulus_nclu_invalid_bonds')",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        name = (word",
+            "          LO:'lo')",
+            "        (bond_bond",
+            "          BOND:'bond'",
+            "          (bobo_slaves",
+            "            SLAVES:'slaves'",
+            "            slaves = (glob",
+            "              (glob_range_set",
+            "                base_word = (numbered_word",
+            "                  NUMBERED_WORD:'swp1')))",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vrf",
+            "        VRF:'vrf'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'vrf1')))",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        name = (word",
+            "          NUMBERED_WORD:'vrf1')",
+            "        (bond_bond",
+            "          BOND:'bond'",
+            "          (bobo_slaves",
+            "            SLAVES:'slaves'",
+            "            slaves = (glob",
+            "              (glob_range_set",
+            "                base_word = (numbered_word",
+            "                  NUMBERED_WORD:'swp2')))",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        name = (word",
+            "          NUMBERED_WORD:'eth0')",
+            "        (bond_bond",
+            "          BOND:'bond'",
+            "          (bobo_slaves",
+            "            SLAVES:'slaves'",
+            "            slaves = (glob",
+            "              (glob_range_set",
+            "                base_word = (numbered_word",
+            "                  NUMBERED_WORD:'swp3')))",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        name = (word",
+            "          NUMBERED_WORD:'swp4')",
+            "        (bond_bond",
+            "          BOND:'bond'",
+            "          (bobo_slaves",
+            "            SLAVES:'slaves'",
+            "            slaves = (glob",
+            "              (glob_range_set",
+            "                base_word = (numbered_word",
+            "                  NUMBERED_WORD:'swp5')))",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        name = (word",
+            "          NUMBERED_WORD:'bond1.1000')",
+            "        (bond_bond",
+            "          BOND:'bond'",
+            "          (bobo_slaves",
+            "            SLAVES:'slaves'",
+            "            slaves = (glob",
+            "              (glob_range_set",
+            "                base_word = (numbered_word",
+            "                  NUMBERED_WORD:'swp6')))",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_null",
+            "      NET:'net'",
+            "      (null_rest_of_line",
+            "        COMMIT:'commit'",
+            "        NEWLINE:'\\n\\n\\n')))",
+            "  EOF:<EOF>)"
+          ]
+        },
         "configs/cumulus_nclu_invalid_interfaces" : {
           "sentences" : [
             "(cumulus_nclu_configuration",
@@ -41366,6 +41513,110 @@
             "          address = (interface_address",
             "            IP_PREFIX:'10.0.4.1/24')",
             "          NEWLINE:'\\n'))))",
+            "  (statement",
+            "    (s_null",
+            "      NET:'net'",
+            "      (null_rest_of_line",
+            "        COMMIT:'commit'",
+            "        NEWLINE:'\\n\\n\\n')))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "configs/cumulus_nclu_invalid_vrfs" : {
+          "sentences" : [
+            "(cumulus_nclu_configuration",
+            "  (statement",
+            "    (s_null",
+            "      NET:'net'",
+            "      (null_rest_of_line",
+            "        DEL:'del'",
+            "        WORD:'all'",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_hostname",
+            "        HOSTNAME:'hostname'",
+            "        hostname = (word",
+            "          WORD:'cumulus_nclu_invalid_vrfs')",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vrf",
+            "        VRF:'vrf'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            unnumbered = (glob_word",
+            "              LO:'lo'))",
+            "          COMMA:','",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'vrf1')))",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        name = (word",
+            "          NUMBERED_WORD:'bond1')",
+            "        (bond_bond",
+            "          BOND:'bond'",
+            "          (bobo_slaves",
+            "            SLAVES:'slaves'",
+            "            slaves = (glob",
+            "              (glob_range_set",
+            "                base_word = (numbered_word",
+            "                  NUMBERED_WORD:'swp1')))",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vrf",
+            "        VRF:'vrf'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'bond1')))",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vrf",
+            "        VRF:'vrf'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'eth0')))",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vrf",
+            "        VRF:'vrf'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp2')))",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vrf",
+            "        VRF:'vrf'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'vrf1.1000')))",
+            "        NEWLINE:'\\n')))",
             "  (statement",
             "    (s_null",
             "      NET:'net'",
@@ -71594,76 +71845,82 @@
               "Text" : "vlan 4 vrf vrf1"
             },
             {
-              "Comment" : "This syntax is unrecognized",
-              "Line" : 66,
-              "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
-              "Text" : "net add vrf mgmt ip address 10.0.0.2/8\n"
-            },
-            {
               "Comment" : "This feature is not currently supported",
-              "Line" : 67,
-              "Parser_Context" : "[a_vrf s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vrf vrf1 vni 10001"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 68,
-              "Parser_Context" : "[a_vrf s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vrf vrf1,mgmt vrf-table auto"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 69,
+              "Line" : 70,
               "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "vxlan vni10001 bridge access 5"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 70,
+              "Line" : 71,
               "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "vxlan vni10001 vxlan id 100001"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 71,
+              "Line" : 72,
               "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "vxlan vni10001,10002-10003 bridge arp-nd-suppress on"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 72,
+              "Line" : 73,
               "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "vxlan vni10001,10002-10003 bridge learning off"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 73,
+              "Line" : 74,
               "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "vxlan vni10001,10002-10003 stp bpduguard"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 74,
+              "Line" : 75,
               "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "vxlan vni10001,10002-10003 stp portbpdufilter"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 75,
+              "Line" : 76,
               "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "vxlan vni10001,10002-10003 vxlan local-tunnelip 192.0.2.10"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 81,
+              "Line" : 82,
               "Parser_Context" : "[s_extra_configuration statement cumulus_nclu_configuration]",
               "Text" : "sudo sh -c \"printf 'username cumulus nopassword\\n' >> /etc/frr/frr.conf\"\n"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 82,
+              "Line" : 83,
               "Parser_Context" : "[s_extra_configuration statement cumulus_nclu_configuration]",
               "Text" : "sudo sh -c \"printf 'vrf vrf1\\n  ip route 0.0.0.0/0 192.0.2.1\\n' >> /etc/frr/frr.conf\"\n\n"
+            }
+          ]
+        },
+        "configs/cumulus_nclu_invalid_bonds" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'lo' for bond in: bond lo bond slaves swp1\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'vrf1' for bond clashes with existing vrf in: bond vrf1 bond slaves swp2\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'eth0' for bond in: bond eth0 bond slaves swp3\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'swp4' for bond in: bond swp4 bond slaves swp5\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'bond1.1000' for bond in: bond bond1.1000 bond slaves swp6\n"
             }
           ]
         },
@@ -71688,6 +71945,30 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Subinterface name 'swp1.5000' is invalid since '5000' is not a valid VLAN number in: interface swp1.5000 ip address 10.0.4.1/24\n"
+            }
+          ]
+        },
+        "configs/cumulus_nclu_invalid_vrfs" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'lo' for vrf in: vrf lo,vrf1\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'bond1' for vrf clashes with existing bond interface in: vrf bond1\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'eth0' for vrf in: vrf eth0\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'swp2' for vrf in: vrf swp2\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'vrf1.1000' for vrf in: vrf vrf1.1000\n"
             }
           ]
         },
@@ -73402,7 +73683,9 @@
         "community_list_named" : "PASSED",
         "community_set" : "PASSED",
         "cumulus_nclu" : "PASSED",
+        "cumulus_nclu_invalid_bonds" : "PASSED",
         "cumulus_nclu_invalid_interfaces" : "PASSED",
+        "cumulus_nclu_invalid_vrfs" : "PASSED",
         "eos_mlag" : "PASSED",
         "eos_trunk_group" : "PASSED",
         "f5_bigip_imish_malformed" : "WARNINGS",
@@ -76038,11 +76321,9 @@
           "bond" : {
             "bond1" : {
               "definitionLines" : [
-                19,
-                20,
-                22
+                19
               ],
-              "numReferrers" : 3
+              "numReferrers" : 1
             },
             "bond2" : {
               "definitionLines" : [
@@ -76112,6 +76393,62 @@
               ],
               "numReferrers" : 1
             }
+          },
+          "vrf" : {
+            "mgmt" : {
+              "definitionLines" : [
+                66
+              ],
+              "numReferrers" : 3
+            },
+            "vrf1" : {
+              "definitionLines" : [
+                68
+              ],
+              "numReferrers" : 2
+            }
+          }
+        },
+        "configs/cumulus_nclu_invalid_bonds" : {
+          "interface" : {
+            "swp1" : {
+              "definitionLines" : [
+                6
+              ],
+              "numReferrers" : 1
+            },
+            "swp2" : {
+              "definitionLines" : [
+                9
+              ],
+              "numReferrers" : 1
+            },
+            "swp3" : {
+              "definitionLines" : [
+                11
+              ],
+              "numReferrers" : 1
+            },
+            "swp5" : {
+              "definitionLines" : [
+                12
+              ],
+              "numReferrers" : 1
+            },
+            "swp6" : {
+              "definitionLines" : [
+                14
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "vrf" : {
+            "vrf1" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 1
+            }
           }
         },
         "configs/cumulus_nclu_invalid_interfaces" : {
@@ -76119,6 +76456,24 @@
             "bond1" : {
               "definitionLines" : [
                 6
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "configs/cumulus_nclu_invalid_vrfs" : {
+          "bond" : {
+            "bond1" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "interface" : {
+            "swp1" : {
+              "definitionLines" : [
+                8
               ],
               "numReferrers" : 1
             }
@@ -81592,9 +81947,7 @@
           "bond" : {
             "bond1" : {
               "bond self-reference" : [
-                19,
-                20,
-                22
+                19
               ]
             },
             "bond2" : {
@@ -81668,6 +82021,57 @@
                 19
               ]
             }
+          },
+          "vrf" : {
+            "mgmt" : {
+              "vrf self-reference" : [
+                66,
+                67,
+                69
+              ]
+            },
+            "vrf1" : {
+              "vrf self-reference" : [
+                68,
+                69
+              ]
+            }
+          }
+        },
+        "configs/cumulus_nclu_invalid_bonds" : {
+          "interface" : {
+            "swp1" : {
+              "bond slave" : [
+                6
+              ]
+            },
+            "swp2" : {
+              "bond slave" : [
+                9
+              ]
+            },
+            "swp3" : {
+              "bond slave" : [
+                11
+              ]
+            },
+            "swp5" : {
+              "bond slave" : [
+                12
+              ]
+            },
+            "swp6" : {
+              "bond slave" : [
+                14
+              ]
+            }
+          },
+          "vrf" : {
+            "vrf1" : {
+              "vrf self-reference" : [
+                8
+              ]
+            }
           }
         },
         "configs/cumulus_nclu_invalid_interfaces" : {
@@ -81675,6 +82079,22 @@
             "bond1" : {
               "bond self-reference" : [
                 6
+              ]
+            }
+          }
+        },
+        "configs/cumulus_nclu_invalid_vrfs" : {
+          "bond" : {
+            "bond1" : {
+              "bond self-reference" : [
+                8
+              ]
+            }
+          },
+          "interface" : {
+            "swp1" : {
+              "bond slave" : [
+                8
               ]
             }
           }
@@ -86459,7 +86879,9 @@
         "configs/community_name_numbers_dos" : "PASSED",
         "configs/community_set" : "PASSED",
         "configs/cumulus_nclu" : "PARTIALLY_UNRECOGNIZED",
+        "configs/cumulus_nclu_invalid_bonds" : "PASSED",
         "configs/cumulus_nclu_invalid_interfaces" : "PASSED",
+        "configs/cumulus_nclu_invalid_vrfs" : "PASSED",
         "configs/eos_mlag" : "PASSED",
         "configs/eos_trunk_group" : "PASSED",
         "configs/f5_bigip_imish_malformed" : "PASSED",

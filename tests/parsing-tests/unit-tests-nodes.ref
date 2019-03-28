@@ -13151,9 +13151,25 @@
         "deviceType" : "SWITCH",
         "vendorFamily" : { }
       },
+      "cumulus_nclu_invalid_bonds" : {
+        "configurationFormat" : "CUMULUS_NCLU",
+        "name" : "cumulus_nclu_invalid_bonds",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : { }
+      },
       "cumulus_nclu_invalid_interfaces" : {
         "configurationFormat" : "CUMULUS_NCLU",
         "name" : "cumulus_nclu_invalid_interfaces",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : { }
+      },
+      "cumulus_nclu_invalid_vrfs" : {
+        "configurationFormat" : "CUMULUS_NCLU",
+        "name" : "cumulus_nclu_invalid_vrfs",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",

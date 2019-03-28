@@ -251,11 +251,18 @@ v_vrf
 
 a_vrf
 :
-  VRF name = glob
+  VRF names = glob
   (
-    vrf_vni
+    vrf_ip_address
+    | vrf_vni
     | vrf_vrf_table
+    | NEWLINE
   )
+;
+
+vrf_ip_address
+:
+  IP ADDRESS address = interface_address NEWLINE
 ;
 
 vrf_vni
