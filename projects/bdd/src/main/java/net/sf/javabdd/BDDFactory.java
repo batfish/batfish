@@ -337,8 +337,9 @@ public abstract class BDDFactory {
    * <p>Compare to bdd_setcacheratio.
    *
    * @param x cache ratio
+   * @return the previous cache ratio
    */
-  public abstract double setCacheRatio(double x);
+  public abstract int setCacheRatio(int x);
 
   /**
    * Sets the node table size.

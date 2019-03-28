@@ -232,6 +232,99 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
+  public void testInterfaceExtraction() throws IOException {
+    CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_interface");
+
+    assertThat(
+        "Ensure interfaces are created",
+        vc.getInterfaces().keySet(),
+        containsInAnyOrder(
+            "bond1", "bond2.4094", "bond3.4094", "eth0", "swp1", "swp2", "swp3", "swp4", "swp5.1"));
+
+    // ip address
+    assertThat(
+        "Ensure ip addresses are extracted",
+        vc.getInterfaces().get("bond2.4094").getIpAddresses(),
+        contains(new InterfaceAddress("10.0.1.1/24"), new InterfaceAddress("172.16.0.1/24")));
+
+    // clag backup-ip
+    assertThat(
+        "Ensure clag backup-ip extracted",
+        vc.getInterfaces().get("bond2.4094").getClagBackupIp(),
+        equalTo(Ip.parse("192.0.2.1")));
+    assertThat(
+        "Ensure clag backup-ip is extracted",
+        vc.getInterfaces().get("bond3.4094").getClagBackupIp(),
+        equalTo(Ip.parse("192.168.0.1")));
+
+    // clag backup-ip vrf
+    assertThat(
+        "Ensure clag backup-ip vrf is extracted",
+        vc.getInterfaces().get("bond2.4094").getClagBackupIpVrf(),
+        equalTo("mgmt"));
+    assertThat(
+        "Ensure clag backup-ip vrf is extracted",
+        vc.getInterfaces().get("bond3.4094").getClagBackupIpVrf(),
+        nullValue());
+
+    // clag peer-ip
+    assertThat(
+        "Ensure clag peer-ip is extracted",
+        vc.getInterfaces().get("bond2.4094").getClagPeerIp(),
+        equalTo(Ip.parse("10.0.0.2")));
+
+    // clag priority
+    assertThat(
+        "Ensure clag priority is extracted",
+        vc.getInterfaces().get("bond2.4094").getClagPriority(),
+        equalTo(1000));
+
+    // clag sys-mac
+    assertThat(
+        "Ensure clag sys-mac is extracted",
+        vc.getInterfaces().get("bond2.4094").getClagSysMac(),
+        equalTo(MacAddress.parse("00:11:22:33:44:55")));
+
+    // interface type (computed)
+    assertThat(
+        "Ensure type is correctly calculated",
+        vc.getInterfaces().get("bond1").getType(),
+        equalTo(CumulusInterfaceType.BOND));
+    assertThat(
+        "Ensure type is correctly calculated",
+        vc.getInterfaces().get("bond2.4094").getType(),
+        equalTo(CumulusInterfaceType.SUBINTERFACE));
+    assertThat(
+        "Ensure type is correctly calculated",
+        vc.getInterfaces().get("bond3.4094").getType(),
+        equalTo(CumulusInterfaceType.SUBINTERFACE));
+    assertThat(
+        "Ensure type is correctly calculated",
+        vc.getInterfaces().get("eth0").getType(),
+        equalTo(CumulusInterfaceType.PHYSICAL));
+    assertThat(
+        "Ensure type is correctly calculated",
+        vc.getInterfaces().get("swp1").getType(),
+        equalTo(CumulusInterfaceType.PHYSICAL));
+    assertThat(
+        "Ensure type is correctly calculated",
+        vc.getInterfaces().get("swp2").getType(),
+        equalTo(CumulusInterfaceType.PHYSICAL));
+    assertThat(
+        "Ensure type is correctly calculated",
+        vc.getInterfaces().get("swp3").getType(),
+        equalTo(CumulusInterfaceType.PHYSICAL));
+    assertThat(
+        "Ensure type is correctly calculated",
+        vc.getInterfaces().get("swp4").getType(),
+        equalTo(CumulusInterfaceType.PHYSICAL));
+    assertThat(
+        "Ensure type is correctly calculated",
+        vc.getInterfaces().get("swp5.1").getType(),
+        equalTo(CumulusInterfaceType.SUBINTERFACE));
+  }
+
+  @Test
   public void testInterfaceReferences() throws IOException {
     String hostname = "cumulus_nclu_interface_references";
     String filename = String.format("configs/%s", hostname);

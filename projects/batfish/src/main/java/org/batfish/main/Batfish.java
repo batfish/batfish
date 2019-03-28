@@ -668,12 +668,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _settings.setDiffActive(diffActive);
     _settings.setDiffQuestion(diff);
 
-    try (ActiveSpan loadConfigurationSpan =
-        GlobalTracer.get().buildSpan("Load configurations").startActive()) {
-      assert loadConfigurationSpan != null; // avoid not used warning
-      // Ensures configurations are parsed and ready
-      loadConfigurations();
-    }
+    // Ensures configurations are parsed and ready
+    loadConfigurations();
 
     try (ActiveSpan initQuestionEnvSpan =
         GlobalTracer.get().buildSpan("Init question environment").startActive()) {
@@ -1590,9 +1586,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public SortedMap<String, Configuration> loadConfigurations() {
-    NetworkSnapshot snapshot = getNetworkSnapshot();
-    _logger.debugf("Loading configurations for %s\n", snapshot);
-    return loadConfigurations(snapshot);
+    return loadConfigurations(getNetworkSnapshot());
   }
 
   SortedMap<String, Configuration> loadCompressedConfigurations(NetworkSnapshot snapshot) {
@@ -1621,25 +1615,30 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
-    // Do we already have configurations in the cache?
-    SortedMap<String, Configuration> configurations = _cachedConfigurations.getIfPresent(snapshot);
-    if (configurations != null) {
+    try (ActiveSpan span = GlobalTracer.get().buildSpan("Load configurations").startActive()) {
+      assert span != null; // avoid unused warning
+      _logger.debugf("Loading configurations for %s\n", snapshot);
+      // Do we already have configurations in the cache?
+      SortedMap<String, Configuration> configurations =
+          _cachedConfigurations.getIfPresent(snapshot);
+      if (configurations != null) {
+        return configurations;
+      }
+      _logger.debugf("Loading configurations for %s, cache miss", snapshot);
+
+      // Next, see if we have an up-to-date configurations on disk.
+      configurations = _storage.loadConfigurations(snapshot.getNetwork(), snapshot.getSnapshot());
+      if (configurations != null) {
+        _logger.debugf("Loaded configurations for %s off disk", snapshot);
+        postProcessSnapshot(configurations);
+      } else {
+        // Otherwise, we have to parse the configurations. Fall back to old, hacky code.
+        configurations = parseConfigurationsAndApplyEnvironment();
+      }
+
+      _cachedConfigurations.put(snapshot, configurations);
       return configurations;
     }
-    _logger.debugf("Loading configurations for %s, cache miss", snapshot);
-
-    // Next, see if we have an up-to-date configurations on disk.
-    configurations = _storage.loadConfigurations(snapshot.getNetwork(), snapshot.getSnapshot());
-    if (configurations != null) {
-      _logger.debugf("Loaded configurations for %s off disk", snapshot);
-      postProcessSnapshot(configurations);
-    } else {
-      // Otherwise, we have to parse the configurations. Fall back to old, hacky code.
-      configurations = parseConfigurationsAndApplyEnvironment();
-    }
-
-    _cachedConfigurations.put(snapshot, configurations);
-    return configurations;
   }
 
   @Nonnull
@@ -1682,7 +1681,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public DataPlane loadDataPlane() {
-    return loadDataPlane(false);
+    try (ActiveSpan span = GlobalTracer.get().buildSpan("Load data plane").startActive()) {
+      assert span != null; // avoid unused warning
+      return loadDataPlane(false);
+    }
   }
 
   DataPlane loadDataPlane(boolean compressed) {
@@ -3606,8 +3608,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Nonnull
   private BDDReachabilityAnalysisFactory getBddReachabilityAnalysisFactory(
       BDDPacket pkt, boolean ignoreFilters) {
-    return new BDDReachabilityAnalysisFactory(
-        pkt, loadConfigurations(), loadDataPlane().getForwardingAnalysis(), ignoreFilters, false);
+    try (ActiveSpan span =
+        GlobalTracer.get().buildSpan("getBddReachabilityAnalysisFactory").startActive()) {
+      assert span != null; // avoid unused warning
+      return new BDDReachabilityAnalysisFactory(
+          pkt, loadConfigurations(), loadDataPlane().getForwardingAnalysis(), ignoreFilters, false);
+    }
   }
 
   /**
