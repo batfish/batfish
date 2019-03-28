@@ -28,6 +28,8 @@ o_common
 :
    apply
    | o_area
+   | o_disable
+   | o_enable
    | o_export
    | o_external_preference
    | o_import
@@ -36,6 +38,16 @@ o_common
    | o_reference_bandwidth
    | o_rib_group
    | o_traffic_engineering
+;
+
+o_disable
+:
+   DISABLE
+;
+
+o_enable
+:
+   ENABLE
 ;
 
 o_export
@@ -119,6 +131,7 @@ oa_interface
       apply
       | oai_dead_interval
       | oai_disable
+      | oai_enable
       | oai_hello_interval
       | oai_interface_type
       | oai_ldp_synchronization
@@ -186,6 +199,11 @@ oai_dead_interval
 oai_disable
 :
    DISABLE
+;
+
+oai_enable
+:
+   ENABLE
 ;
 
 oai_hello_interval

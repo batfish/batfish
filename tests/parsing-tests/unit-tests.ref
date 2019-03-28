@@ -459,6 +459,9 @@
         "cumulus_nclu" : [
           "configs/cumulus_nclu"
         ],
+        "cumulus_nclu_invalid_interfaces" : [
+          "configs/cumulus_nclu_invalid_interfaces"
+        ],
         "eos_mlag" : [
           "configs/eos_mlag"
         ],
@@ -778,6 +781,9 @@
         "openflow" : [
           "configs/openflow"
         ],
+        "ospf-disable" : [
+          "configs/juniper_ospf_disable"
+        ],
         "peer_template" : [
           "configs/peer_template"
         ],
@@ -1007,6 +1013,7 @@
         "configs/community_name_numbers_dos" : "PASSED",
         "configs/community_set" : "PASSED",
         "configs/cumulus_nclu" : "PARTIALLY_UNRECOGNIZED",
+        "configs/cumulus_nclu_invalid_interfaces" : "PASSED",
         "configs/eos_mlag" : "PASSED",
         "configs/eos_trunk_group" : "PASSED",
         "configs/f5_bigip_imish_malformed" : "PASSED",
@@ -1078,6 +1085,7 @@
         "configs/juniper_nat" : "PASSED",
         "configs/juniper_ntp" : "PASSED",
         "configs/juniper_ospf" : "PASSED",
+        "configs/juniper_ospf_disable" : "PASSED",
         "configs/juniper_ospf_stub_areas" : "PASSED",
         "configs/juniper_passwords" : "PASSED",
         "configs/juniper_policy_statement" : "PASSED",
@@ -40415,14 +40423,7 @@
             "                      d = DEC:'7')",
             "                    DASH:'-'",
             "                    high = (uint16",
-            "                      d = DEC:'8'))))",
-            "              COMMA:','",
-            "              (glob_range_set",
-            "                base_word = (numbered_word",
-            "                  NUMBERED_WORD:'swp1a-b2')",
-            "                DASH:'-'",
-            "                first_interval_end = (uint16",
-            "                  d = DEC:'3')))",
+            "                      d = DEC:'8')))))",
             "            NEWLINE:'\\n')))))",
             "  (statement",
             "    (s_net_add",
@@ -40615,7 +40616,8 @@
             "          CLAG:'clag'",
             "          (ic_backup_ip",
             "            BACKUP_IP:'backup-ip'",
-            "            ip = IP_ADDRESS:'192.0.2.4'",
+            "            backup_ip = (ip_address",
+            "              IP_ADDRESS:'192.0.2.4')",
             "            VRF:'vrf'",
             "            vrf = (word",
             "              WORD:'mgmt')",
@@ -40634,7 +40636,8 @@
             "          CLAG:'clag'",
             "          (ic_peer_ip",
             "            PEER_IP:'peer-ip'",
-            "            ip = IP_ADDRESS:'192.0.2.5'",
+            "            peer_ip = (ip_address",
+            "              IP_ADDRESS:'192.0.2.5')",
             "            NEWLINE:'\\n')))))",
             "  (statement",
             "    (s_net_add",
@@ -40667,7 +40670,8 @@
             "          CLAG:'clag'",
             "          (ic_sys_mac",
             "            SYS_MAC:'sys-mac'",
-            "            mac = MAC_ADDRESS:'00:11:22:33:44:55'",
+            "            mac = (mac_address",
+            "              MAC_ADDRESS:'00:11:22:33:44:55')",
             "            NEWLINE:'\\n')))))",
             "  (statement",
             "    (s_net_add",
@@ -40682,7 +40686,8 @@
             "        (i_ip_address",
             "          IP:'ip'",
             "          ADDRESS:'address'",
-            "          address = IP_PREFIX:'192.0.2.6/24'",
+            "          address = (interface_address",
+            "            IP_PREFIX:'192.0.2.6/24')",
             "          NEWLINE:'\\n'))))",
             "  (statement",
             "    (s_net_add",
@@ -41258,6 +41263,119 @@
             "      text = EXTRA_CONFIGURATION:'vrf vrf1\\n  ip route 0.0.0.0/0 192.0.2.1\\n'  <== mode:M_Printf",
             "      EXTRA_CONFIGURATION_FOOTER:'' >> /etc/frr/frr.conf\"'  <== mode:M_Printf",
             "      NEWLINE:'\\n\\n'))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "configs/cumulus_nclu_invalid_interfaces" : {
+          "sentences" : [
+            "(cumulus_nclu_configuration",
+            "  (statement",
+            "    (s_null",
+            "      NET:'net'",
+            "      (null_rest_of_line",
+            "        DEL:'del'",
+            "        WORD:'all'",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_hostname",
+            "        HOSTNAME:'hostname'",
+            "        hostname = (word",
+            "          WORD:'cumulus_nclu_invalid_interfaces')",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        name = (word",
+            "          NUMBERED_WORD:'bond1')",
+            "        (bond_bond",
+            "          BOND:'bond'",
+            "          (bobo_slaves",
+            "            SLAVES:'slaves'",
+            "            slaves = (glob",
+            "              (glob_range_set",
+            "                base_word = (numbered_word",
+            "                  NUMBERED_WORD:'swp1'))",
+            "              COMMA:','",
+            "              (glob_range_set",
+            "                unnumbered = (glob_word",
+            "                  WORD:'unknown_interface')))",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            unnumbered = (glob_word",
+            "              WORD:'unknown_interface')))",
+            "        (i_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          address = (interface_address",
+            "            IP_PREFIX:'10.0.0.1/24')",
+            "          NEWLINE:'\\n'))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            unnumbered = (glob_word",
+            "              LO:'lo')))",
+            "        (i_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          address = (interface_address",
+            "            IP_PREFIX:'10.0.2.1/24')",
+            "          NEWLINE:'\\n'))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'mgmt.1')))",
+            "        (i_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          address = (interface_address",
+            "            IP_PREFIX:'10.0.3.1/24')",
+            "          NEWLINE:'\\n'))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp1.5000')))",
+            "        (i_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          address = (interface_address",
+            "            IP_PREFIX:'10.0.4.1/24')",
+            "          NEWLINE:'\\n'))))",
+            "  (statement",
+            "    (s_null",
+            "      NET:'net'",
+            "      (null_rest_of_line",
+            "        COMMIT:'commit'",
+            "        NEWLINE:'\\n\\n\\n')))",
             "  EOF:<EOF>)"
           ]
         },
@@ -60604,6 +60722,80 @@
             "  EOF:<EOF>)"
           ]
         },
+        "configs/juniper_ospf_disable" : {
+          "sentences" : [
+            "(flat_juniper_configuration",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_system",
+            "            SYSTEM:'system'",
+            "            (sy_host_name",
+            "              HOST_NAME:'host-name'",
+            "              (variable",
+            "                text = VARIABLE:'ospf-disable'))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = INTERFACE_NAME:'ge-0/0/0'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = DEC:'0'",
+            "                (i_common",
+            "                  (i_family",
+            "                    FAMILY:'family'",
+            "                    (if_inet",
+            "                      INET:'inet'",
+            "                      (ifi_address",
+            "                        ADDRESS:'address'",
+            "                        IP_PREFIX:'10.0.0.0/31'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'",
+            "            (p_ospf",
+            "              OSPF:'ospf'",
+            "              (o_common",
+            "                (o_area",
+            "                  AREA:'area'",
+            "                  area = IP_ADDRESS:'0.0.0.0'",
+            "                  (oa_interface",
+            "                    INTERFACE:'interface'",
+            "                    id = (interface_id",
+            "                      name = INTERFACE_NAME:'ge-0/0/0'  <== mode:M_Interface",
+            "                      PERIOD:'.'",
+            "                      unit = DEC:'0')",
+            "                    (apply)))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'",
+            "            (p_ospf",
+            "              OSPF:'ospf'",
+            "              (o_common",
+            "                (o_disable",
+            "                  DISABLE:'disable')))))))",
+            "    NEWLINE:'\\n')",
+            "  EOF:<EOF>)"
+          ]
+        },
         "configs/juniper_ospf_stub_areas" : {
           "sentences" : [
             "(flat_juniper_configuration",
@@ -71324,54 +71516,6 @@
               "Text" : "net add dot1x radius authentication-port 2345\n"
             },
             {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 32,
-              "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "interface bond1.4094 clag backup-ip 192.0.2.4 vrf mgmt"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 33,
-              "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "interface bond1.4094 clag peer-ip 192.0.2.5"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 34,
-              "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "interface bond1.4094 clag priority 1000"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 35,
-              "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "interface bond1.4094 clag sys-mac 00:11:22:33:44:55"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 36,
-              "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "interface bond1.4094 ip address 192.0.2.6/24"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 37,
-              "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "interface eth0 vrf mgmt"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 38,
-              "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "interface swp1 bridge access 3"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 39,
-              "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "interface swp1,2-3"
-            },
-            {
               "Comment" : "This syntax is unrecognized",
               "Line" : 40,
               "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
@@ -71598,6 +71742,30 @@
               "Line" : 82,
               "Parser_Context" : "[s_extra_configuration statement cumulus_nclu_configuration]",
               "Text" : "sudo sh -c \"printf 'vrf vrf1\\n  ip route 0.0.0.0/0 192.0.2.1\\n' >> /etc/frr/frr.conf\"\n\n"
+            }
+          ]
+        },
+        "configs/cumulus_nclu_invalid_interfaces" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Interface name 'unknown_interface' is invalid in: slaves swp1,unknown_interface\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Interface name 'unknown_interface' is invalid in: interface unknown_interface ip address 10.0.0.1/24\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Loopback interface can only be configured via 'net add loopback' family of commands; following is invalid: interface lo ip address 10.0.2.1/24\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Subinterface name 'mgmt.1' is invalid since 'mgmt' is neither a physical nor a bond interface in: interface mgmt.1 ip address 10.0.3.1/24\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Subinterface name 'swp1.5000' is invalid since '5000' is not a valid VLAN number in: interface swp1.5000 ip address 10.0.4.1/24\n"
             }
           ]
         },
@@ -73312,6 +73480,7 @@
         "community_list_named" : "PASSED",
         "community_set" : "PASSED",
         "cumulus_nclu" : "PASSED",
+        "cumulus_nclu_invalid_interfaces" : "PASSED",
         "eos_mlag" : "PASSED",
         "eos_trunk_group" : "PASSED",
         "f5_bigip_imish_malformed" : "WARNINGS",
@@ -73416,6 +73585,7 @@
         "nxos_route_map_continue" : "PASSED",
         "nxos_system" : "PASSED",
         "openflow" : "PASSED",
+        "ospf-disable" : "PASSED",
         "peer_template" : "WARNINGS",
         "pim" : "PASSED",
         "pim_snooping" : "PASSED",
@@ -75961,35 +76131,35 @@
             }
           },
           "interface" : {
+            "bond1.4094" : {
+              "definitionLines" : [
+                32
+              ],
+              "numReferrers" : 5
+            },
+            "eth0" : {
+              "definitionLines" : [
+                37
+              ],
+              "numReferrers" : 1
+            },
             "swp1" : {
               "definitionLines" : [
                 19
               ],
-              "numReferrers" : 1
-            },
-            "swp1a-b2" : {
-              "definitionLines" : [
-                19
-              ],
-              "numReferrers" : 1
-            },
-            "swp1a-b3" : {
-              "definitionLines" : [
-                19
-              ],
-              "numReferrers" : 1
+              "numReferrers" : 3
             },
             "swp2" : {
               "definitionLines" : [
                 19
               ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             },
             "swp3" : {
               "definitionLines" : [
                 19
               ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             },
             "swp4" : {
               "definitionLines" : [
@@ -76018,6 +76188,16 @@
             "swp8" : {
               "definitionLines" : [
                 19
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "configs/cumulus_nclu_invalid_interfaces" : {
+          "bond" : {
+            "bond1" : {
+              "definitionLines" : [
+                6
               ],
               "numReferrers" : 1
             }
@@ -78515,6 +78695,22 @@
         },
         "configs/juniper_ntp" : { },
         "configs/juniper_ospf" : { },
+        "configs/juniper_ospf_disable" : {
+          "interface" : {
+            "ge-0/0/0" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 1
+            },
+            "ge-0/0/0.0" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 2
+            }
+          }
+        },
         "configs/juniper_ospf_stub_areas" : { },
         "configs/juniper_passwords" : { },
         "configs/juniper_policy_statement" : {
@@ -81503,29 +81699,43 @@
             }
           },
           "interface" : {
+            "bond1.4094" : {
+              "interface self-reference" : [
+                32,
+                33,
+                34,
+                35,
+                36
+              ]
+            },
+            "eth0" : {
+              "interface self-reference" : [
+                37
+              ]
+            },
             "swp1" : {
               "bond slave" : [
                 19
-              ]
-            },
-            "swp1a-b2" : {
-              "bond slave" : [
-                19
-              ]
-            },
-            "swp1a-b3" : {
-              "bond slave" : [
-                19
+              ],
+              "interface self-reference" : [
+                38,
+                39
               ]
             },
             "swp2" : {
               "bond slave" : [
                 19
+              ],
+              "interface self-reference" : [
+                39
               ]
             },
             "swp3" : {
               "bond slave" : [
                 19
+              ],
+              "interface self-reference" : [
+                39
               ]
             },
             "swp4" : {
@@ -81551,6 +81761,15 @@
             "swp8" : {
               "bond slave" : [
                 19
+              ]
+            }
+          }
+        },
+        "configs/cumulus_nclu_invalid_interfaces" : {
+          "bond" : {
+            "bond1" : {
+              "bond self-reference" : [
+                6
               ]
             }
           }
@@ -82962,6 +83181,23 @@
             "xe-0/0/21:0.0" : {
               "ospf area interface" : [
                 7
+              ]
+            }
+          }
+        },
+        "configs/juniper_ospf_disable" : {
+          "interface" : {
+            "ge-0/0/0" : {
+              "interface" : [
+                4
+              ]
+            },
+            "ge-0/0/0.0" : {
+              "interface" : [
+                4
+              ],
+              "ospf area interface" : [
+                6
               ]
             }
           }
@@ -86335,6 +86571,7 @@
         "configs/community_name_numbers_dos" : "PASSED",
         "configs/community_set" : "PASSED",
         "configs/cumulus_nclu" : "PARTIALLY_UNRECOGNIZED",
+        "configs/cumulus_nclu_invalid_interfaces" : "PASSED",
         "configs/eos_mlag" : "PASSED",
         "configs/eos_trunk_group" : "PASSED",
         "configs/f5_bigip_imish_malformed" : "PASSED",
@@ -86406,6 +86643,7 @@
         "configs/juniper_nat" : "PASSED",
         "configs/juniper_ntp" : "PASSED",
         "configs/juniper_ospf" : "PASSED",
+        "configs/juniper_ospf_disable" : "PASSED",
         "configs/juniper_ospf_stub_areas" : "PASSED",
         "configs/juniper_passwords" : "PASSED",
         "configs/juniper_policy_statement" : "PASSED",

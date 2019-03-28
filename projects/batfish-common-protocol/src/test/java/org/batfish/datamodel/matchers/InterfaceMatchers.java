@@ -39,6 +39,7 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasNativeVlan;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfArea;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfAreaName;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfCost;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfEnabled;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfPointToPoint;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasSpeed;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasSwitchPortMode;
@@ -289,6 +290,11 @@ public final class InterfaceMatchers {
    */
   public static HasOspfCost hasOspfCost(Matcher<Integer> subMatcher) {
     return new HasOspfCost(subMatcher);
+  }
+
+  /** Provides an {@link Interface} matcher that matches if the interface has OSPF enabled. */
+  public static HasOspfEnabled hasOspfEnabled() {
+    return new HasOspfEnabled(equalTo(true));
   }
 
   /**

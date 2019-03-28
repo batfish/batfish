@@ -1,12 +1,15 @@
 package org.batfish.grammar.cumulus_nclu;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,8 +20,10 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
+import org.batfish.datamodel.MacAddress;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_bgpContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_bondContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_bridgeContext;
@@ -39,8 +44,15 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Dn4Context;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Dn6Context;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.GlobContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Glob_range_setContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.I_ip_addressContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ic_backup_ipContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ic_peer_ipContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ic_priorityContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ic_sys_macContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Interface_addressContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ip_addressContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ipv6_addressContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Mac_addressContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.RangeContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Range_setContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.S_extra_configurationContext;
@@ -50,6 +62,7 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vlan_idContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vlan_rangeContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vlan_range_setContext;
 import org.batfish.representation.cumulus.Bond;
+import org.batfish.representation.cumulus.CumulusInterfaceType;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
@@ -61,7 +74,10 @@ import org.batfish.representation.cumulus.Interface;
  */
 public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListener {
 
+  private static final String LOOPBACK_INTERFACE_NAME = "lo";
   private static final Pattern NUMBERED_WORD_PATTERN = Pattern.compile("^(.*[^0-9])([0-9]+)$");
+  private static final Pattern PHYSICAL_INTERFACE_PATTERN = Pattern.compile("(swp|eth)[0-9]+");
+  private static final Pattern SUBINTERFACE_PATTERN = Pattern.compile("^(.*)\\.([0-9]+)$");
 
   private static int toInteger(Uint16Context ctx) {
     return Integer.parseInt(ctx.getText(), 10);
@@ -71,12 +87,20 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     return Integer.parseInt(ctx.getText(), 10);
   }
 
+  private static @Nonnull InterfaceAddress toInterfaceAddress(Interface_addressContext ctx) {
+    return new InterfaceAddress(ctx.getText());
+  }
+
   private static @Nonnull Ip toIp(Ip_addressContext ctx) {
     return Ip.parse(ctx.getText());
   }
 
   private static @Nonnull Ip6 toIp6(Ipv6_addressContext ctx) {
     return Ip6.parse(ctx.getText());
+  }
+
+  private static @Nonnull MacAddress toMacAddress(Mac_addressContext ctx) {
+    return MacAddress.parse(ctx.getText());
   }
 
   private static @Nonnull Range<Integer> toRange(RangeContext ctx) {
@@ -141,6 +165,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   private @Nullable CumulusNcluConfiguration _c;
   private @Nullable Bond _currentBond;
+  private @Nullable List<Interface> _currentInterfaces;
   private final @Nonnull CumulusNcluCombinedParser _parser;
   private final @Nonnull String _text;
   private final @Nonnull Warnings _w;
@@ -160,6 +185,55 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     return defaultReturnValue;
   }
 
+  /**
+   * Returns a newly-created {@link Interface} with given {@code name}, or {@code null} if {@code
+   * name} is invalid.
+   */
+  private @Nullable Interface createInterface(String name, ParserRuleContext ctx) {
+    Matcher subinterfaceMatcher = SUBINTERFACE_PATTERN.matcher(name);
+    Integer encapsulationVlan = null;
+    CumulusInterfaceType type;
+    if (name.equals(LOOPBACK_INTERFACE_NAME)) {
+      _w.redFlag(
+          String.format(
+              "Loopback interface can only be configured via 'net add loopback' family of commands; following is invalid: %s",
+              getFullText(ctx)));
+      return null;
+    } else if (PHYSICAL_INTERFACE_PATTERN.matcher(name).matches()) {
+      type = CumulusInterfaceType.PHYSICAL;
+    } else if (subinterfaceMatcher.matches()) {
+      String layer1LogicalInterfaceName = subinterfaceMatcher.group(1);
+      String vlanStr = subinterfaceMatcher.group(2);
+      if (!PHYSICAL_INTERFACE_PATTERN.matcher(layer1LogicalInterfaceName).matches()
+          && !_c.getBonds().containsKey(layer1LogicalInterfaceName)) {
+        _w.redFlag(
+            String.format(
+                "Subinterface name '%s' is invalid since '%s' is neither a physical nor a bond interface in: %s",
+                name, layer1LogicalInterfaceName, getFullText(ctx)));
+        return null;
+      }
+      try {
+        encapsulationVlan = Integer.parseInt(vlanStr, 10);
+        checkArgument(1 <= encapsulationVlan && encapsulationVlan <= 4094);
+      } catch (IllegalArgumentException e) {
+        _w.redFlag(
+            String.format(
+                "Subinterface name '%s' is invalid since '%s' is not a valid VLAN number in: %s",
+                name, vlanStr, getFullText(ctx)));
+        return null;
+      }
+      type = CumulusInterfaceType.SUBINTERFACE;
+    } else if (_c.getBonds().containsKey(name)) {
+      type = CumulusInterfaceType.BOND;
+    } else {
+      _w.redFlag(String.format("Interface name '%s' is invalid in: %s", name, getFullText(ctx)));
+      return null;
+    }
+    Interface iface = new Interface(name, type);
+    iface.setEncapsulationVlan(encapsulationVlan);
+    return iface;
+  }
+
   @Override
   public void enterA_bond(A_bondContext ctx) {
     String name = ctx.name.getText();
@@ -168,6 +242,13 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     _c.referenceStructure(
         CumulusStructureType.BOND, name, CumulusStructureUsage.BOND_SELF_REFERENCE, line);
     _currentBond = _c.getBonds().computeIfAbsent(name, Bond::new);
+  }
+
+  @Override
+  public void enterA_interface(A_interfaceContext ctx) {
+    Set<String> interfaceNames = toStrings(ctx.interfaces);
+    _currentInterfaces =
+        initInterfacesIfAbsent(interfaceNames, ctx, CumulusStructureUsage.INTERFACE_SELF_REFERENCE);
   }
 
   @Override
@@ -197,7 +278,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   @Override
   public void exitA_interface(A_interfaceContext ctx) {
-    todo(ctx);
+    _currentInterfaces = null;
   }
 
   @Override
@@ -243,13 +324,10 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   @Override
   public void exitBobo_slaves(Bobo_slavesContext ctx) {
     Set<String> slaves = toStrings(ctx.slaves);
-    int line = ctx.getStart().getLine();
-    slaves.forEach(slave -> initInterfaceIfAbsent(slave, line));
-    slaves.forEach(
-        slave ->
-            _c.referenceStructure(
-                CumulusStructureType.INTERFACE, slave, CumulusStructureUsage.BOND_SLAVE, line));
-    _currentBond.setSlaves(slaves);
+    _currentBond.setSlaves(
+        initInterfacesIfAbsent(slaves, ctx, CumulusStructureUsage.BOND_SLAVE).isEmpty()
+            ? ImmutableSet.of()
+            : slaves);
   }
 
   @Override
@@ -265,6 +343,50 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   @Override
   public void exitDn6(Dn6Context ctx) {
     _c.getIpv6Nameservers().add(toIp6(ctx.address6));
+  }
+
+  @Override
+  public void exitI_ip_address(I_ip_addressContext ctx) {
+    InterfaceAddress address = toInterfaceAddress(ctx.address);
+    _currentInterfaces.forEach(iface -> iface.getIpAddresses().add(address));
+  }
+
+  @Override
+  public void exitIc_backup_ip(Ic_backup_ipContext ctx) {
+    Ip backupIp = toIp(ctx.backup_ip);
+    String vrf = ctx.vrf != null ? ctx.vrf.getText() : null;
+    _currentInterfaces.forEach(
+        iface -> {
+          iface.setClagBackupIp(backupIp);
+          iface.setClagBackupIpVrf(vrf);
+        });
+  }
+
+  @Override
+  public void exitIc_peer_ip(Ic_peer_ipContext ctx) {
+    Ip peerIp = toIp(ctx.peer_ip);
+    _currentInterfaces.forEach(
+        iface -> {
+          iface.setClagPeerIp(peerIp);
+        });
+  }
+
+  @Override
+  public void exitIc_priority(Ic_priorityContext ctx) {
+    int priority = toInteger(ctx.priority);
+    _currentInterfaces.forEach(
+        iface -> {
+          iface.setClagPriority(priority);
+        });
+  }
+
+  @Override
+  public void exitIc_sys_mac(Ic_sys_macContext ctx) {
+    MacAddress macAddress = toMacAddress(ctx.mac);
+    _currentInterfaces.forEach(
+        iface -> {
+          iface.setClagSysMac(macAddress);
+        });
   }
 
   @Override
@@ -297,12 +419,33 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     return text;
   }
 
-  private void initInterfaceIfAbsent(String name, int line) {
-    if (_c.getInterfaces().containsKey(name)) {
-      return;
+  /**
+   * Returns already-present or newly-created {@link Interface}s with given {@code names}, or an
+   * empty {@link List} if any name in {@code names} is invalid.
+   */
+  private @Nonnull List<Interface> initInterfacesIfAbsent(
+      Set<String> names, ParserRuleContext ctx, CumulusStructureUsage usage) {
+    ImmutableList.Builder<Interface> interfacesBuilder = ImmutableList.builder();
+    ImmutableList.Builder<String> newInterfaces = ImmutableList.builder();
+    for (String name : names) {
+      Interface iface = _c.getInterfaces().get(name);
+      if (iface == null) {
+        iface = createInterface(name, ctx);
+        if (iface == null) {
+          return ImmutableList.of();
+        }
+        newInterfaces.add(name);
+      }
+      interfacesBuilder.add(iface);
     }
-    _c.getInterfaces().computeIfAbsent(name, Interface::new);
-    _c.defineStructure(CumulusStructureType.INTERFACE, name, line);
+    List<Interface> interfaces = interfacesBuilder.build();
+    interfaces.forEach(iface -> _c.getInterfaces().computeIfAbsent(iface.getName(), n -> iface));
+    int line = ctx.getStart().getLine();
+    newInterfaces
+        .build()
+        .forEach(name -> _c.defineStructure(CumulusStructureType.INTERFACE, name, line));
+    names.forEach(name -> _c.referenceStructure(CumulusStructureType.INTERFACE, name, usage, line));
+    return interfaces;
   }
 
   @SuppressWarnings("unused")
