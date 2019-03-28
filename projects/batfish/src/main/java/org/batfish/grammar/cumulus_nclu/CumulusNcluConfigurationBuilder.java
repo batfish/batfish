@@ -195,7 +195,11 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     Integer encapsulationVlan = null;
     CumulusInterfaceType type;
     if (name.equals(LOOPBACK_INTERFACE_NAME)) {
-      type = CumulusInterfaceType.LOOPBACK;
+      _w.redFlag(
+          String.format(
+              "Loopback interface can only be configured via 'net add loopback' family of commands; following is invalid: %s",
+              getFullText(ctx)));
+      return null;
     } else if (name.equals(MGMT_INTERFACE_NAME)) {
       type = CumulusInterfaceType.MGMT;
     } else if (PHYSICAL_INTERFACE_PATTERN.matcher(name).matches()) {

@@ -41326,13 +41326,29 @@
             "        INTERFACE:'interface'",
             "        interfaces = (glob",
             "          (glob_range_set",
+            "            unnumbered = (glob_word",
+            "              LO:'lo')))",
+            "        (i_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          address = (interface_address",
+            "            IP_PREFIX:'10.0.2.1/24')",
+            "          NEWLINE:'\\n'))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
             "            base_word = (numbered_word",
             "              NUMBERED_WORD:'mgmt.1')))",
             "        (i_ip_address",
             "          IP:'ip'",
             "          ADDRESS:'address'",
             "          address = (interface_address",
-            "            IP_PREFIX:'10.0.1.1/24')",
+            "            IP_PREFIX:'10.0.3.1/24')",
             "          NEWLINE:'\\n'))))",
             "  (statement",
             "    (s_net_add",
@@ -41348,7 +41364,7 @@
             "          IP:'ip'",
             "          ADDRESS:'address'",
             "          address = (interface_address",
-            "            IP_PREFIX:'10.0.2.1/24')",
+            "            IP_PREFIX:'10.0.4.1/24')",
             "          NEWLINE:'\\n'))))",
             "  (statement",
             "    (s_null",
@@ -71663,11 +71679,15 @@
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Subinterface name 'mgmt.1' is invalid since 'mgmt' is neither a physical nor a bond interface in: interface mgmt.1 ip address 10.0.1.1/24\n"
+              "text" : "Loopback interface can only be configured via 'net add loopback' family of commands; following is invalid: interface lo ip address 10.0.2.1/24\n"
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Subinterface name 'swp1.5000' is invalid since '5000' is not a valid VLAN number in: interface swp1.5000 ip address 10.0.2.1/24\n"
+              "text" : "Subinterface name 'mgmt.1' is invalid since 'mgmt' is neither a physical nor a bond interface in: interface mgmt.1 ip address 10.0.3.1/24\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Subinterface name 'swp1.5000' is invalid since '5000' is not a valid VLAN number in: interface swp1.5000 ip address 10.0.4.1/24\n"
             }
           ]
         },
