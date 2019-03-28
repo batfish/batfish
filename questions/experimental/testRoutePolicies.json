@@ -42,7 +42,7 @@
             },
             "inputRoute": {
                 "description": "The BGP route announcement to test the policy on",
-                "type": "bgpRouteSpec",
+                "type": "bgpRoute",
                 "displayName": "Input Route",
                 "fields": {
                     "network": { "type" : "prefix"},
