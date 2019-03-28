@@ -868,6 +868,11 @@ M_Printf_VRF
 
 // FRR in printf complex tokens
 
+M_Printf_EXTRA_CONFIGURATION_FOOTER
+:
+  '\' >> /etc/frr/frr.conf"' -> type ( EXTRA_CONFIGURATION_FOOTER ) , popMode
+;
+
 M_Printf_IP_ADDRESS
 :
   F_IpAddress -> type ( IP_ADDRESS )
@@ -883,17 +888,12 @@ M_Printf_NEWLINE
   '\\n' -> type ( NEWLINE )
 ;
 
-M_Printf_WS
-:
-  F_Whitespace+ -> channel ( HIDDEN )
-;
-
 M_Printf_WORD
 :
   F_Word -> type ( WORD )
 ;
 
-M_Printf_EXTRA_CONFIGURATION_FOOTER
+M_Printf_WS
 :
-  '\' >> /etc/frr/frr.conf"' -> type ( EXTRA_CONFIGURATION_FOOTER ) , popMode
+  F_Whitespace+ -> channel ( HIDDEN )
 ;
