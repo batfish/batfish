@@ -80,7 +80,7 @@
           }
         },
         "optional" : false,
-        "type" : "bgpRouteSpec",
+        "type" : "bgpRoute",
         "value" : {
           "class" : "org.batfish.datamodel.BgpRoute",
           "network" : "0.0.0.0/0",
