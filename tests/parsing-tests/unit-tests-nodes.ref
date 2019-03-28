@@ -13151,7 +13151,6 @@
         "deviceType" : "SWITCH",
         "vendorFamily" : { }
       },
-<<<<<<< HEAD
       "cumulus_nclu_invalid_bonds" : {
         "configurationFormat" : "CUMULUS_NCLU",
         "name" : "cumulus_nclu_invalid_bonds",
@@ -13176,17 +13175,6 @@
         "deviceType" : "SWITCH",
         "vendorFamily" : { }
       },
-||||||| merged common ancestors
-=======
-      "cumulus_nclu_invalid_interfaces" : {
-        "configurationFormat" : "CUMULUS_NCLU",
-        "name" : "cumulus_nclu_invalid_interfaces",
-        "defaultCrossZoneAction" : "PERMIT",
-        "defaultInboundAction" : "PERMIT",
-        "deviceType" : "SWITCH",
-        "vendorFamily" : { }
-      },
->>>>>>> master
       "eos_mlag" : {
         "configurationFormat" : "ARISTA",
         "name" : "eos_mlag",

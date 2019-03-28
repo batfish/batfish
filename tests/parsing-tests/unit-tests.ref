@@ -459,7 +459,6 @@
         "cumulus_nclu" : [
           "configs/cumulus_nclu"
         ],
-<<<<<<< HEAD
         "cumulus_nclu_invalid_bonds" : [
           "configs/cumulus_nclu_invalid_bonds"
         ],
@@ -469,12 +468,6 @@
         "cumulus_nclu_invalid_vrfs" : [
           "configs/cumulus_nclu_invalid_vrfs"
         ],
-||||||| merged common ancestors
-=======
-        "cumulus_nclu_invalid_interfaces" : [
-          "configs/cumulus_nclu_invalid_interfaces"
-        ],
->>>>>>> master
         "eos_mlag" : [
           "configs/eos_mlag"
         ],
@@ -1026,14 +1019,9 @@
         "configs/community_name_numbers_dos" : "PASSED",
         "configs/community_set" : "PASSED",
         "configs/cumulus_nclu" : "PARTIALLY_UNRECOGNIZED",
-<<<<<<< HEAD
         "configs/cumulus_nclu_invalid_bonds" : "PASSED",
         "configs/cumulus_nclu_invalid_interfaces" : "PASSED",
         "configs/cumulus_nclu_invalid_vrfs" : "PASSED",
-||||||| merged common ancestors
-=======
-        "configs/cumulus_nclu_invalid_interfaces" : "PASSED",
->>>>>>> master
         "configs/eos_mlag" : "PASSED",
         "configs/eos_trunk_group" : "PASSED",
         "configs/f5_bigip_imish_malformed" : "PASSED",
@@ -41303,7 +41291,6 @@
             "  EOF:<EOF>)"
           ]
         },
-<<<<<<< HEAD
         "configs/cumulus_nclu_invalid_bonds" : {
           "sentences" : [
             "(cumulus_nclu_configuration",
@@ -41645,122 +41632,6 @@
             "  EOF:<EOF>)"
           ]
         },
-||||||| merged common ancestors
-=======
-        "configs/cumulus_nclu_invalid_interfaces" : {
-          "sentences" : [
-            "(cumulus_nclu_configuration",
-            "  (statement",
-            "    (s_null",
-            "      NET:'net'",
-            "      (null_rest_of_line",
-            "        DEL:'del'",
-            "        WORD:'all'",
-            "        NEWLINE:'\\n')))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_hostname",
-            "        HOSTNAME:'hostname'",
-            "        hostname = (word",
-            "          WORD:'cumulus_nclu_invalid_interfaces')",
-            "        NEWLINE:'\\n')))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_bond",
-            "        BOND:'bond'",
-            "        name = (word",
-            "          NUMBERED_WORD:'bond1')",
-            "        (bond_bond",
-            "          BOND:'bond'",
-            "          (bobo_slaves",
-            "            SLAVES:'slaves'",
-            "            slaves = (glob",
-            "              (glob_range_set",
-            "                base_word = (numbered_word",
-            "                  NUMBERED_WORD:'swp1'))",
-            "              COMMA:','",
-            "              (glob_range_set",
-            "                unnumbered = (glob_word",
-            "                  WORD:'unknown_interface')))",
-            "            NEWLINE:'\\n')))))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_interface",
-            "        INTERFACE:'interface'",
-            "        interfaces = (glob",
-            "          (glob_range_set",
-            "            unnumbered = (glob_word",
-            "              WORD:'unknown_interface')))",
-            "        (i_ip_address",
-            "          IP:'ip'",
-            "          ADDRESS:'address'",
-            "          address = (interface_address",
-            "            IP_PREFIX:'10.0.0.1/24')",
-            "          NEWLINE:'\\n'))))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_interface",
-            "        INTERFACE:'interface'",
-            "        interfaces = (glob",
-            "          (glob_range_set",
-            "            unnumbered = (glob_word",
-            "              LO:'lo')))",
-            "        (i_ip_address",
-            "          IP:'ip'",
-            "          ADDRESS:'address'",
-            "          address = (interface_address",
-            "            IP_PREFIX:'10.0.2.1/24')",
-            "          NEWLINE:'\\n'))))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_interface",
-            "        INTERFACE:'interface'",
-            "        interfaces = (glob",
-            "          (glob_range_set",
-            "            base_word = (numbered_word",
-            "              NUMBERED_WORD:'mgmt.1')))",
-            "        (i_ip_address",
-            "          IP:'ip'",
-            "          ADDRESS:'address'",
-            "          address = (interface_address",
-            "            IP_PREFIX:'10.0.3.1/24')",
-            "          NEWLINE:'\\n'))))",
-            "  (statement",
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_interface",
-            "        INTERFACE:'interface'",
-            "        interfaces = (glob",
-            "          (glob_range_set",
-            "            base_word = (numbered_word",
-            "              NUMBERED_WORD:'swp1.5000')))",
-            "        (i_ip_address",
-            "          IP:'ip'",
-            "          ADDRESS:'address'",
-            "          address = (interface_address",
-            "            IP_PREFIX:'10.0.4.1/24')",
-            "          NEWLINE:'\\n'))))",
-            "  (statement",
-            "    (s_null",
-            "      NET:'net'",
-            "      (null_rest_of_line",
-            "        COMMIT:'commit'",
-            "        NEWLINE:'\\n\\n\\n')))",
-            "  EOF:<EOF>)"
-          ]
-        },
->>>>>>> master
         "configs/eos_mlag" : {
           "sentences" : [
             "(cisco_configuration",
@@ -72097,7 +71968,6 @@
             }
           ]
         },
-<<<<<<< HEAD
         "configs/cumulus_nclu_invalid_bonds" : {
           "Red flags" : [
             {
@@ -72170,33 +72040,6 @@
             }
           ]
         },
-||||||| merged common ancestors
-=======
-        "configs/cumulus_nclu_invalid_interfaces" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Interface name 'unknown_interface' is invalid in: slaves swp1,unknown_interface\n"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Interface name 'unknown_interface' is invalid in: interface unknown_interface ip address 10.0.0.1/24\n"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Loopback interface can only be configured via 'net add loopback' family of commands; following is invalid: interface lo ip address 10.0.2.1/24\n"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Subinterface name 'mgmt.1' is invalid since 'mgmt' is neither a physical nor a bond interface in: interface mgmt.1 ip address 10.0.3.1/24\n"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Subinterface name 'swp1.5000' is invalid since '5000' is not a valid VLAN number in: interface swp1.5000 ip address 10.0.4.1/24\n"
-            }
-          ]
-        },
->>>>>>> master
         "configs/f5_bigip_imish_malformed" : {
           "Red flags" : [
             {
@@ -73908,14 +73751,9 @@
         "community_list_named" : "PASSED",
         "community_set" : "PASSED",
         "cumulus_nclu" : "PASSED",
-<<<<<<< HEAD
         "cumulus_nclu_invalid_bonds" : "PASSED",
         "cumulus_nclu_invalid_interfaces" : "PASSED",
         "cumulus_nclu_invalid_vrfs" : "PASSED",
-||||||| merged common ancestors
-=======
-        "cumulus_nclu_invalid_interfaces" : "PASSED",
->>>>>>> master
         "eos_mlag" : "PASSED",
         "eos_trunk_group" : "PASSED",
         "f5_bigip_imish_malformed" : "WARNINGS",
@@ -76705,16 +76543,6 @@
             "swp1" : {
               "definitionLines" : [
                 8
-              ],
-              "numReferrers" : 1
-            }
-          }
-        },
-        "configs/cumulus_nclu_invalid_interfaces" : {
-          "bond" : {
-            "bond1" : {
-              "definitionLines" : [
-                6
               ],
               "numReferrers" : 1
             }
@@ -82356,15 +82184,6 @@
             }
           }
         },
-        "configs/cumulus_nclu_invalid_interfaces" : {
-          "bond" : {
-            "bond1" : {
-              "bond self-reference" : [
-                6
-              ]
-            }
-          }
-        },
         "configs/eos_mlag" : {
           "interface" : {
             "Port-Channel1" : {
@@ -87162,14 +86981,9 @@
         "configs/community_name_numbers_dos" : "PASSED",
         "configs/community_set" : "PASSED",
         "configs/cumulus_nclu" : "PARTIALLY_UNRECOGNIZED",
-<<<<<<< HEAD
         "configs/cumulus_nclu_invalid_bonds" : "PASSED",
         "configs/cumulus_nclu_invalid_interfaces" : "PASSED",
         "configs/cumulus_nclu_invalid_vrfs" : "PASSED",
-||||||| merged common ancestors
-=======
-        "configs/cumulus_nclu_invalid_interfaces" : "PASSED",
->>>>>>> master
         "configs/eos_mlag" : "PASSED",
         "configs/eos_trunk_group" : "PASSED",
         "configs/f5_bigip_imish_malformed" : "PASSED",

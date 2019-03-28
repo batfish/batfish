@@ -2438,22 +2438,10 @@
       }
     ],
     "summary" : {
-<<<<<<< HEAD
-      "notes" : "Found 344 results",
-||||||| merged common ancestors
-      "notes" : "Found 355 results",
-=======
-      "notes" : "Found 345 results",
->>>>>>> master
+      "notes" : "Found 342 results",
       "numFailed" : 0,
       "numPassed" : 0,
-<<<<<<< HEAD
-      "numResults" : 344
-||||||| merged common ancestors
-      "numResults" : 355
-=======
-      "numResults" : 345
->>>>>>> master
+      "numResults" : 342
     }
   }
 ]
