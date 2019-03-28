@@ -171,12 +171,12 @@ l_clag
 
 lc_vxlan_anycast_ip
 :
-  VXLAN_ANYCAST_IP ip = IP_ADDRESS NEWLINE
+  VXLAN_ANYCAST_IP ip = ip_address NEWLINE
 ;
 
 l_ip_address
 :
-  IP ADDRESS address = IP_PREFIX NEWLINE
+  IP ADDRESS address = interface_address NEWLINE
 ;
 
 a_time
