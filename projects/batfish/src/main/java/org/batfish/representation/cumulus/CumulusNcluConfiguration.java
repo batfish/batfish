@@ -57,7 +57,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     return _ipv6Nameservers;
   }
 
-  public Loopback getLoopback() {
+  public @Nonnull Loopback getLoopback() {
     return _loopback;
   }
 
