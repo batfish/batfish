@@ -3,8 +3,10 @@ package net.sf.javabdd;
 import static org.junit.Assert.assertEquals;
 
 import org.batfish.common.bdd.BDDInteger;
+import org.junit.Ignore;
 import org.junit.Test;
 
+/** Tests for {link JFactory}. */
 public class JFactoryTest {
   @Test
   public void testMultiOr() {
@@ -20,6 +22,7 @@ public class JFactoryTest {
     assertEquals(multiOr, or);
   }
 
+  @Ignore
   @Test
   public void benchMultiOr() {
     int bits = 20;
@@ -38,9 +41,6 @@ public class JFactoryTest {
     assert resMultiOr.isOne();
     tMultiOr = System.currentTimeMillis() - tMultiOr;
     System.out.println(String.format("MultOr: %dms", tMultiOr));
-    if (false) {
-      return;
-    }
 
     factory = (JFactory) JFactory.init(100000, 10000);
     factory.setVarNum(bits);
