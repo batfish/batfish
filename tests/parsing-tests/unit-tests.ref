@@ -778,6 +778,9 @@
         "openflow" : [
           "configs/openflow"
         ],
+        "ospf-disable" : [
+          "configs/juniper_ospf_disable"
+        ],
         "peer_template" : [
           "configs/peer_template"
         ],
@@ -1078,6 +1081,7 @@
         "configs/juniper_nat" : "PASSED",
         "configs/juniper_ntp" : "PASSED",
         "configs/juniper_ospf" : "PASSED",
+        "configs/juniper_ospf_disable" : "PASSED",
         "configs/juniper_ospf_stub_areas" : "PASSED",
         "configs/juniper_passwords" : "PASSED",
         "configs/juniper_policy_statement" : "PASSED",
@@ -60547,6 +60551,80 @@
             "  EOF:<EOF>)"
           ]
         },
+        "configs/juniper_ospf_disable" : {
+          "sentences" : [
+            "(flat_juniper_configuration",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_system",
+            "            SYSTEM:'system'",
+            "            (sy_host_name",
+            "              HOST_NAME:'host-name'",
+            "              (variable",
+            "                text = VARIABLE:'ospf-disable'))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = INTERFACE_NAME:'ge-0/0/0'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = DEC:'0'",
+            "                (i_common",
+            "                  (i_family",
+            "                    FAMILY:'family'",
+            "                    (if_inet",
+            "                      INET:'inet'",
+            "                      (ifi_address",
+            "                        ADDRESS:'address'",
+            "                        IP_PREFIX:'10.0.0.0/31'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'",
+            "            (p_ospf",
+            "              OSPF:'ospf'",
+            "              (o_common",
+            "                (o_area",
+            "                  AREA:'area'",
+            "                  area = IP_ADDRESS:'0.0.0.0'",
+            "                  (oa_interface",
+            "                    INTERFACE:'interface'",
+            "                    id = (interface_id",
+            "                      name = INTERFACE_NAME:'ge-0/0/0'  <== mode:M_Interface",
+            "                      PERIOD:'.'",
+            "                      unit = DEC:'0')",
+            "                    (apply)))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'",
+            "            (p_ospf",
+            "              OSPF:'ospf'",
+            "              (o_common",
+            "                (o_disable",
+            "                  DISABLE:'disable')))))))",
+            "    NEWLINE:'\\n')",
+            "  EOF:<EOF>)"
+          ]
+        },
         "configs/juniper_ospf_stub_areas" : {
           "sentences" : [
             "(flat_juniper_configuration",
@@ -73383,6 +73461,7 @@
         "nxos_route_map_continue" : "PASSED",
         "nxos_system" : "PASSED",
         "openflow" : "PASSED",
+        "ospf-disable" : "PASSED",
         "peer_template" : "WARNINGS",
         "pim" : "PASSED",
         "pim_snooping" : "PASSED",
@@ -78403,6 +78482,22 @@
         },
         "configs/juniper_ntp" : { },
         "configs/juniper_ospf" : { },
+        "configs/juniper_ospf_disable" : {
+          "interface" : {
+            "ge-0/0/0" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 1
+            },
+            "ge-0/0/0.0" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 2
+            }
+          }
+        },
         "configs/juniper_ospf_stub_areas" : { },
         "configs/juniper_passwords" : { },
         "configs/juniper_policy_statement" : {
@@ -82786,6 +82881,23 @@
             }
           }
         },
+        "configs/juniper_ospf_disable" : {
+          "interface" : {
+            "ge-0/0/0" : {
+              "interface" : [
+                4
+              ]
+            },
+            "ge-0/0/0.0" : {
+              "interface" : [
+                4
+              ],
+              "ospf area interface" : [
+                6
+              ]
+            }
+          }
+        },
         "configs/juniper_policy_statement" : {
           "as-path" : {
             "ORIGINATED_IN_65535" : {
@@ -86226,6 +86338,7 @@
         "configs/juniper_nat" : "PASSED",
         "configs/juniper_ntp" : "PASSED",
         "configs/juniper_ospf" : "PASSED",
+        "configs/juniper_ospf_disable" : "PASSED",
         "configs/juniper_ospf_stub_areas" : "PASSED",
         "configs/juniper_passwords" : "PASSED",
         "configs/juniper_policy_statement" : "PASSED",

@@ -60,6 +60,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfAreaName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfCost;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfEnabled;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfPointToPoint;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
@@ -2010,6 +2011,23 @@ public final class FlatJuniperGrammarTest {
 
     OspfArea area2 = config.getDefaultVrf().getOspfProcess().getAreas().get(2L);
     assertThat(area2, not(hasInjectDefaultRoute()));
+  }
+
+  @Test
+  public void testOspfInterfaceDisable() throws IOException {
+    // Config has interfaces ge-0/0/1.0 and ge-0/0/2.0 configured in OSPF.
+    // Interface ge-0/0/2.0 has disable set in OSPF config.
+    Configuration config = parseConfig("ospf-interface-disable");
+    assertThat(config.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcess(), notNullValue());
+    assertThat(config.getActiveInterfaces().get("ge-0/0/1.0"), hasOspfEnabled(true));
+    assertThat(config.getActiveInterfaces().get("ge-0/0/2.0"), hasOspfEnabled(false));
+  }
+
+  @Test
+  public void testOspfDisable() throws IOException {
+    // Config has "set protocols ospf disable"; no VI OSPF process should be created
+    Configuration config = parseConfig("ospf-disable");
+    assertThat(config.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcess(), nullValue());
   }
 
   @Test
