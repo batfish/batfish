@@ -5255,8 +5255,8 @@ public final class JFactory extends BDDFactory {
   }
 
   @Override
-  public double setCacheRatio(double x) {
-    return bdd_setcacheratio((int) (x * 100)) / 100.;
+  public int setCacheRatio(int r) {
+    return bdd_setcacheratio(r);
   }
 
   private int bdd_setcacheratio(int r) {
