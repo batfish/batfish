@@ -23,6 +23,7 @@ public class Interface implements Serializable {
   private @Nullable List<InterfaceAddress> _ipAddresses;
   private final @Nonnull String _name;
   private final @Nonnull CumulusInterfaceType _type;
+  private @Nullable String _vrf;
 
   public Interface(String name, CumulusInterfaceType type) {
     _name = name;
@@ -66,6 +67,10 @@ public class Interface implements Serializable {
     return _type;
   }
 
+  public @Nullable String getVrf() {
+    return _vrf;
+  }
+
   public void setClagBackupIp(@Nullable Ip clagBackupIp) {
     _clagBackupIp = clagBackupIp;
   }
@@ -88,5 +93,9 @@ public class Interface implements Serializable {
 
   public void setEncapsulationVlan(@Nullable Integer encapsulationVlan) {
     _encapsulationVlan = encapsulationVlan;
+  }
+
+  public void setVrf(@Nullable String vrf) {
+    _vrf = vrf;
   }
 }

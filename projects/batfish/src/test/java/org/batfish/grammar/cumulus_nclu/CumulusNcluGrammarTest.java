@@ -193,6 +193,10 @@ public final class CumulusNcluGrammarTest {
         vc.getInterfaces().get("bond2.4094").getClagSysMac(),
         equalTo(MacAddress.parse("00:11:22:33:44:55")));
 
+    // vrf
+    assertThat(
+        "Ensure vrf is extracted", vc.getInterfaces().get("swp5.1").getVrf(), equalTo("vrf1"));
+
     // interface type (computed)
     assertThat(
         "Ensure type is correctly calculated",
@@ -297,5 +301,7 @@ public final class CumulusNcluGrammarTest {
         getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
 
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VRF, "vrf1", 1));
+    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VRF, "vrf2", 1));
+    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VRF, "vrf3", 1));
   }
 }

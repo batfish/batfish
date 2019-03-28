@@ -73,7 +73,11 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         CumulusStructureType.INTERFACE,
         CumulusStructureUsage.BOND_SLAVE,
         CumulusStructureUsage.INTERFACE_SELF_REFERENCE);
-    markConcreteStructure(CumulusStructureType.VRF, CumulusStructureUsage.VRF_SELF_REFERENCE);
+    markConcreteStructure(
+        CumulusStructureType.VRF,
+        CumulusStructureUsage.INTERFACE_CLAG_BACKUP_IP_VRF,
+        CumulusStructureUsage.INTERFACE_VRF,
+        CumulusStructureUsage.VRF_SELF_REFERENCE);
   }
 
   @Override

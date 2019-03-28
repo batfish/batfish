@@ -45,6 +45,7 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Dn6Context;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.GlobContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Glob_range_setContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.I_ip_addressContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.I_vrfContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ic_backup_ipContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ic_peer_ipContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ic_priorityContext;
@@ -434,9 +435,32 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   }
 
   @Override
+  public void exitI_vrf(I_vrfContext ctx) {
+    String vrf = ctx.name.getText();
+    if (initVrfsIfAbsent(ImmutableSet.of(vrf), ctx, CumulusStructureUsage.INTERFACE_VRF)
+        .isEmpty()) {
+      return;
+    }
+    _currentInterfaces.forEach(
+        iface -> {
+          iface.setVrf(vrf);
+        });
+  }
+
+  @Override
   public void exitIc_backup_ip(Ic_backup_ipContext ctx) {
     Ip backupIp = toIp(ctx.backup_ip);
-    String vrf = ctx.vrf != null ? ctx.vrf.getText() : null;
+    String vrf;
+    if (ctx.vrf != null) {
+      vrf = ctx.vrf.getText();
+      if (initVrfsIfAbsent(
+              ImmutableSet.of(vrf), ctx, CumulusStructureUsage.INTERFACE_CLAG_BACKUP_IP_VRF)
+          .isEmpty()) {
+        return;
+      }
+    } else {
+      vrf = null;
+    }
     _currentInterfaces.forEach(
         iface -> {
           iface.setClagBackupIp(backupIp);

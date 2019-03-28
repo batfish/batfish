@@ -76466,9 +76466,9 @@
           "vrf" : {
             "mgmt" : {
               "definitionLines" : [
-                66
+                32
               ],
-              "numReferrers" : 3
+              "numReferrers" : 5
             },
             "vrf1" : {
               "definitionLines" : [
@@ -82109,6 +82109,12 @@
           },
           "vrf" : {
             "mgmt" : {
+              "interface clag backup-ip vrf" : [
+                32
+              ],
+              "interface vrf" : [
+                37
+              ],
               "vrf self-reference" : [
                 66,
                 67,
