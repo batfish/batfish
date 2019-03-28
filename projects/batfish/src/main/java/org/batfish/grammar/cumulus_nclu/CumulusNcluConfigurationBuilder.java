@@ -52,6 +52,8 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ic_sys_macContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Interface_addressContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ip_addressContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ipv6_addressContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.L_ip_addressContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Lc_vxlan_anycast_ipContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Mac_addressContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.RangeContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Range_setContext;
@@ -252,6 +254,11 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   }
 
   @Override
+  public void enterA_loopback(A_loopbackContext ctx) {
+    _c.getLoopback().setEnabled(true);
+  }
+
+  @Override
   public void enterCumulus_nclu_configuration(Cumulus_nclu_configurationContext ctx) {
     _c = new CumulusNcluConfiguration();
   }
@@ -279,11 +286,6 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   @Override
   public void exitA_interface(A_interfaceContext ctx) {
     _currentInterfaces = null;
-  }
-
-  @Override
-  public void exitA_loopback(A_loopbackContext ctx) {
-    todo(ctx);
   }
 
   @Override
@@ -387,6 +389,16 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
         iface -> {
           iface.setClagSysMac(macAddress);
         });
+  }
+
+  @Override
+  public void exitL_ip_address(L_ip_addressContext ctx) {
+    _c.getLoopback().getAddresses().add(toInterfaceAddress(ctx.address));
+  }
+
+  @Override
+  public void exitLc_vxlan_anycast_ip(Lc_vxlan_anycast_ipContext ctx) {
+    _c.getLoopback().setClagVxlanAnycastIp(toIp(ctx.ip));
   }
 
   @Override

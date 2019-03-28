@@ -40756,7 +40756,8 @@
             "          CLAG:'clag'",
             "          (lc_vxlan_anycast_ip",
             "            VXLAN_ANYCAST_IP:'vxlan-anycast-ip'",
-            "            ip = IP_ADDRESS:'192.0.2.7'",
+            "            ip = (ip_address",
+            "              IP_ADDRESS:'192.0.2.7')",
             "            NEWLINE:'\\n')))))",
             "  (statement",
             "    (s_net_add",
@@ -40768,7 +40769,8 @@
             "        (l_ip_address",
             "          IP:'ip'",
             "          ADDRESS:'address'",
-            "          address = IP_PREFIX:'192.0.2.8/32'",
+            "          address = (interface_address",
+            "            IP_PREFIX:'192.0.2.8/32')",
             "          NEWLINE:'\\n'))))",
             "  (statement",
             "    (s_net_add_unrecognized",
@@ -71442,18 +71444,6 @@
               "Line" : 40,
               "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
               "Text" : "net add loopback lo\n"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 41,
-              "Parser_Context" : "[a_loopback s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "loopback lo clag vxlan-anycast-ip 192.0.2.7"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 42,
-              "Parser_Context" : "[a_loopback s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "loopback lo ip address 192.0.2.8/32"
             },
             {
               "Comment" : "This syntax is unrecognized",

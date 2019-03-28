@@ -8,7 +8,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.Range;
 import java.io.IOException;
@@ -237,5 +239,27 @@ public final class CumulusNcluGrammarTest {
         getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
 
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "swp1", 1));
+  }
+
+  @Test
+  public void testLoopbackExtraction() throws IOException {
+    CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_loopback");
+
+    assertTrue("Ensure loopback is enabled", vc.getLoopback().getEnabled());
+    assertThat(
+        "Ensure clag vxlan-anycast-ip is extracted",
+        vc.getLoopback().getClagVxlanAnycastIp(),
+        equalTo(Ip.parse("192.0.2.1")));
+    assertThat(
+        "Ensure clag vxlan-anycast-ip is extracted",
+        vc.getLoopback().getAddresses(),
+        contains(new InterfaceAddress("10.0.0.1/32"), new InterfaceAddress("10.0.1.1/24")));
+  }
+
+  @Test
+  public void testLoopbackMissingExtraction() throws IOException {
+    CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_loopback_missing");
+
+    assertFalse("Ensure loopback is disabled", vc.getLoopback().getEnabled());
   }
 }
