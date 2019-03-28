@@ -75,7 +75,6 @@ import org.batfish.representation.cumulus.Interface;
 public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListener {
 
   private static final String LOOPBACK_INTERFACE_NAME = "lo";
-  private static final String MGMT_INTERFACE_NAME = "mgmt";
   private static final Pattern NUMBERED_WORD_PATTERN = Pattern.compile("^(.*[^0-9])([0-9]+)$");
   private static final Pattern PHYSICAL_INTERFACE_PATTERN = Pattern.compile("(swp|eth)[0-9]+");
   private static final Pattern SUBINTERFACE_PATTERN = Pattern.compile("^(.*)\\.([0-9]+)$");
@@ -200,8 +199,6 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
               "Loopback interface can only be configured via 'net add loopback' family of commands; following is invalid: %s",
               getFullText(ctx)));
       return null;
-    } else if (name.equals(MGMT_INTERFACE_NAME)) {
-      type = CumulusInterfaceType.MGMT;
     } else if (PHYSICAL_INTERFACE_PATTERN.matcher(name).matches()) {
       type = CumulusInterfaceType.PHYSICAL;
     } else if (subinterfaceMatcher.matches()) {

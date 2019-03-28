@@ -144,16 +144,7 @@ public final class CumulusNcluGrammarTest {
         "Ensure interfaces are created",
         vc.getInterfaces().keySet(),
         containsInAnyOrder(
-            "bond1",
-            "bond2.4094",
-            "bond3.4094",
-            "eth0",
-            "mgmt",
-            "swp1",
-            "swp2",
-            "swp3",
-            "swp4",
-            "swp5.1"));
+            "bond1", "bond2.4094", "bond3.4094", "eth0", "swp1", "swp2", "swp3", "swp4", "swp5.1"));
 
     // ip address
     assertThat(
@@ -216,10 +207,6 @@ public final class CumulusNcluGrammarTest {
         "Ensure type is correctly calculated",
         vc.getInterfaces().get("eth0").getType(),
         equalTo(CumulusInterfaceType.PHYSICAL));
-    assertThat(
-        "Ensure type is correctly calculated",
-        vc.getInterfaces().get("mgmt").getType(),
-        equalTo(CumulusInterfaceType.MGMT));
     assertThat(
         "Ensure type is correctly calculated",
         vc.getInterfaces().get("swp1").getType(),
