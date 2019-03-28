@@ -42,6 +42,8 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bond_clag_idContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Cumulus_nclu_configurationContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Dn4Context;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Dn6Context;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Frr_unrecognizedContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Frr_vrfContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.GlobContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Glob_range_setContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.I_ip_addressContext;
@@ -57,7 +59,6 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Lc_vxlan_anycast_ipCon
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Mac_addressContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.RangeContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Range_setContext;
-import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.S_extra_configurationContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.S_net_add_unrecognizedContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Uint16Context;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vlan_idContext;
@@ -348,6 +349,16 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   }
 
   @Override
+  public void exitFrr_unrecognized(Frr_unrecognizedContext ctx) {
+    unrecognized(ctx);
+  }
+
+  @Override
+  public void exitFrr_vrf(Frr_vrfContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
   public void exitI_ip_address(I_ip_addressContext ctx) {
     InterfaceAddress address = toInterfaceAddress(ctx.address);
     _currentInterfaces.forEach(iface -> iface.getIpAddresses().add(address));
@@ -399,11 +410,6 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   @Override
   public void exitLc_vxlan_anycast_ip(Lc_vxlan_anycast_ipContext ctx) {
     _c.getLoopback().setClagVxlanAnycastIp(toIp(ctx.ip));
-  }
-
-  @Override
-  public void exitS_extra_configuration(S_extra_configurationContext ctx) {
-    unrecognized(ctx);
   }
 
   @Override

@@ -5,7 +5,6 @@ options {
 }
 
 tokens {
-  EXTRA_CONFIGURATION,
   EXTRA_CONFIGURATION_FOOTER
 }
 
@@ -837,7 +836,7 @@ F_Word
 fragment
 F_WordChar
 :
-  ~( [ \t\n\r{}[\],] | '-' )
+  ~( [ \t\n\r{}[\],\\] | '-' )
 ;
 
 fragment
@@ -850,9 +849,48 @@ F_WordSegment
 // Lexer Modes
 mode M_Printf;
 
-M_Printf_EXTRA_CONFIGURATION
+// FRR in printf keywords
+
+M_Printf_IP
 :
-  ~'\''+ -> type ( EXTRA_CONFIGURATION )
+  'ip' -> type ( IP )
+;
+
+M_Printf_ROUTE
+:
+  'route' -> type ( ROUTE )
+;
+
+M_Printf_VRF
+:
+  'vrf' -> type ( VRF )
+;
+
+// FRR in printf complex tokens
+
+M_Printf_IP_ADDRESS
+:
+  F_IpAddress -> type ( IP_ADDRESS )
+;
+
+M_Printf_IP_PREFIX
+:
+  F_IpPrefix -> type ( IP_PREFIX )
+;
+
+M_Printf_NEWLINE
+:
+  '\\n' -> type ( NEWLINE )
+;
+
+M_Printf_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+M_Printf_WORD
+:
+  F_Word -> type ( WORD )
 ;
 
 M_Printf_EXTRA_CONFIGURATION_FOOTER
