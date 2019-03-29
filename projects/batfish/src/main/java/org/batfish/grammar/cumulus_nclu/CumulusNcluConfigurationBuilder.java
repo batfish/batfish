@@ -47,6 +47,7 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Frr_vrfContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.GlobContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Glob_range_setContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.I_ip_addressContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.I_vrfContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ic_backup_ipContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ic_peer_ipContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ic_priorityContext;
@@ -64,12 +65,16 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Uint16Context;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vlan_idContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vlan_rangeContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vlan_range_setContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vni_numberContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vrf_ip_addressContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vrf_vniContext;
 import org.batfish.representation.cumulus.Bond;
 import org.batfish.representation.cumulus.CumulusInterfaceType;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.Interface;
+import org.batfish.representation.cumulus.Vrf;
 
 /**
  * A listener that builds a {@link CumulusNcluConfiguration} while walking a parse tree produced by
@@ -87,6 +92,10 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   }
 
   private static int toInteger(Vlan_idContext ctx) {
+    return Integer.parseInt(ctx.getText(), 10);
+  }
+
+  private static int toInteger(Vni_numberContext ctx) {
     return Integer.parseInt(ctx.getText(), 10);
   }
 
@@ -169,6 +178,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   private @Nullable CumulusNcluConfiguration _c;
   private @Nullable Bond _currentBond;
   private @Nullable List<Interface> _currentInterfaces;
+  private @Nullable List<Vrf> _currentVrfs;
   private final @Nonnull CumulusNcluCombinedParser _parser;
   private final @Nonnull String _text;
   private final @Nonnull Warnings _w;
@@ -189,6 +199,28 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   }
 
   /**
+   * Returns a newly-created {@link Bond} with given {@code name}, or {@code null} if {@code name}
+   * is invalid.
+   */
+  private @Nullable Bond createBond(String name, A_bondContext ctx) {
+    if (name.equals(LOOPBACK_INTERFACE_NAME)
+        || PHYSICAL_INTERFACE_PATTERN.matcher(name).matches()
+        || SUBINTERFACE_PATTERN.matcher(name).matches()) {
+      _w.redFlag(String.format("Invalid name '%s' for bond in: %s", name, getFullText(ctx)));
+      return null;
+    }
+    if (_c.getVrfs().containsKey(name)) {
+      _w.redFlag(
+          String.format(
+              "Invalid name '%s' for bond clashes with existing vrf in: %s",
+              name, getFullText(ctx)));
+      return null;
+    }
+
+    return new Bond(name);
+  }
+
+  /**
    * Returns a newly-created {@link Interface} with given {@code name}, or {@code null} if {@code
    * name} is invalid.
    */
@@ -201,6 +233,12 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
           String.format(
               "Loopback interface can only be configured via 'net add loopback' family of commands; following is invalid: %s",
               getFullText(ctx)));
+      return null;
+    } else if (_c.getVrfs().containsKey(name)) {
+      _w.redFlag(
+          String.format(
+              "Invalid name '%s' for interface clashes with existing vrf in: %s",
+              name, getFullText(ctx)));
       return null;
     } else if (PHYSICAL_INTERFACE_PATTERN.matcher(name).matches()) {
       type = CumulusInterfaceType.PHYSICAL;
@@ -237,26 +275,68 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     return iface;
   }
 
+  /**
+   * Returns a newly-created {@link Vrf} with given {@code name}, or {@code null} if {@code name} is
+   * invalid.
+   */
+  private @Nullable Vrf createVrf(String name, ParserRuleContext ctx) {
+    if (name.equals(LOOPBACK_INTERFACE_NAME)
+        || PHYSICAL_INTERFACE_PATTERN.matcher(name).matches()
+        || SUBINTERFACE_PATTERN.matcher(name).matches()) {
+      _w.redFlag(String.format("Invalid name '%s' for vrf in: %s", name, getFullText(ctx)));
+      return null;
+    }
+    if (_c.getBonds().containsKey(name)) {
+      _w.redFlag(
+          String.format(
+              "Invalid name '%s' for vrf clashes with existing bond interface in: %s",
+              name, getFullText(ctx)));
+      return null;
+    }
+    if (_c.getInterfaces().containsKey(name)) {
+      _w.redFlag(
+          String.format(
+              "Invalid name '%s' for vrf clashes with existing interface in: %s",
+              name, getFullText(ctx)));
+      return null;
+    }
+    return new Vrf(name);
+  }
+
   @Override
   public void enterA_bond(A_bondContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.getStart().getLine();
-    _c.defineStructure(CumulusStructureType.BOND, name, line);
-    _c.referenceStructure(
-        CumulusStructureType.BOND, name, CumulusStructureUsage.BOND_SELF_REFERENCE, line);
-    _currentBond = _c.getBonds().computeIfAbsent(name, Bond::new);
+    Bond bond = _c.getBonds().get(name);
+    if (bond == null) {
+      bond = createBond(name, ctx);
+      if (bond == null) {
+        bond = new Bond("dummy");
+      } else {
+        _c.defineStructure(CumulusStructureType.BOND, name, line);
+        _c.referenceStructure(
+            CumulusStructureType.BOND, name, CumulusStructureUsage.BOND_SELF_REFERENCE, line);
+        _c.getBonds().put(name, bond);
+      }
+    }
+    _currentBond = bond;
   }
 
   @Override
   public void enterA_interface(A_interfaceContext ctx) {
     Set<String> interfaceNames = toStrings(ctx.interfaces);
-    _currentInterfaces =
-        initInterfacesIfAbsent(interfaceNames, ctx, CumulusStructureUsage.INTERFACE_SELF_REFERENCE);
+    _currentInterfaces = initInterfacesIfAbsent(interfaceNames, ctx, null);
   }
 
   @Override
   public void enterA_loopback(A_loopbackContext ctx) {
     _c.getLoopback().setEnabled(true);
+  }
+
+  @Override
+  public void enterA_vrf(A_vrfContext ctx) {
+    Set<String> vrfNames = toStrings(ctx.names);
+    _currentVrfs = initVrfsIfAbsent(vrfNames, ctx, null);
   }
 
   @Override
@@ -306,7 +386,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   @Override
   public void exitA_vrf(A_vrfContext ctx) {
-    todo(ctx);
+    _currentVrfs = null;
   }
 
   @Override
@@ -365,9 +445,32 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   }
 
   @Override
+  public void exitI_vrf(I_vrfContext ctx) {
+    String vrf = ctx.name.getText();
+    if (initVrfsIfAbsent(ImmutableSet.of(vrf), ctx, CumulusStructureUsage.INTERFACE_VRF)
+        .isEmpty()) {
+      return;
+    }
+    _currentInterfaces.forEach(
+        iface -> {
+          iface.setVrf(vrf);
+        });
+  }
+
+  @Override
   public void exitIc_backup_ip(Ic_backup_ipContext ctx) {
     Ip backupIp = toIp(ctx.backup_ip);
-    String vrf = ctx.vrf != null ? ctx.vrf.getText() : null;
+    String vrf;
+    if (ctx.vrf != null) {
+      vrf = ctx.vrf.getText();
+      if (initVrfsIfAbsent(
+              ImmutableSet.of(vrf), ctx, CumulusStructureUsage.INTERFACE_CLAG_BACKUP_IP_VRF)
+          .isEmpty()) {
+        return;
+      }
+    } else {
+      vrf = null;
+    }
     _currentInterfaces.forEach(
         iface -> {
           iface.setClagBackupIp(backupIp);
@@ -417,6 +520,18 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     unrecognized(ctx);
   }
 
+  @Override
+  public void exitVrf_ip_address(Vrf_ip_addressContext ctx) {
+    InterfaceAddress address = toInterfaceAddress(ctx.address);
+    _currentVrfs.forEach(vrf -> vrf.getAddresses().add(address));
+  }
+
+  @Override
+  public void exitVrf_vni(Vrf_vniContext ctx) {
+    int vni = toInteger(ctx.vni);
+    _currentVrfs.forEach(vrf -> vrf.setVni(vni));
+  }
+
   /**
    * Returns built {@link CumulusNcluConfiguration}.
    *
@@ -442,7 +557,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
    * empty {@link List} if any name in {@code names} is invalid.
    */
   private @Nonnull List<Interface> initInterfacesIfAbsent(
-      Set<String> names, ParserRuleContext ctx, CumulusStructureUsage usage) {
+      Set<String> names, ParserRuleContext ctx, @Nullable CumulusStructureUsage usage) {
     ImmutableList.Builder<Interface> interfacesBuilder = ImmutableList.builder();
     ImmutableList.Builder<String> newInterfaces = ImmutableList.builder();
     for (String name : names) {
@@ -461,9 +576,56 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     int line = ctx.getStart().getLine();
     newInterfaces
         .build()
-        .forEach(name -> _c.defineStructure(CumulusStructureType.INTERFACE, name, line));
-    names.forEach(name -> _c.referenceStructure(CumulusStructureType.INTERFACE, name, usage, line));
+        .forEach(
+            name -> {
+              _c.defineStructure(CumulusStructureType.INTERFACE, name, line);
+              _c.referenceStructure(
+                  CumulusStructureType.INTERFACE,
+                  name,
+                  CumulusStructureUsage.INTERFACE_SELF_REFERENCE,
+                  line);
+            });
+    if (usage != null) {
+      names.forEach(
+          name -> _c.referenceStructure(CumulusStructureType.INTERFACE, name, usage, line));
+    }
     return interfaces;
+  }
+
+  /**
+   * Returns already-present or newly-created {@link Vrf}s with given {@code names}, or an empty
+   * {@link List} if any name in {@code names} is invalid.
+   */
+  private @Nonnull List<Vrf> initVrfsIfAbsent(
+      Set<String> names, ParserRuleContext ctx, @Nullable CumulusStructureUsage usage) {
+    ImmutableList.Builder<Vrf> vrfsBuilder = ImmutableList.builder();
+    ImmutableList.Builder<String> newVrfs = ImmutableList.builder();
+    for (String name : names) {
+      Vrf vrf = _c.getVrfs().get(name);
+      if (vrf == null) {
+        vrf = createVrf(name, ctx);
+        if (vrf == null) {
+          return ImmutableList.of();
+        }
+        newVrfs.add(name);
+      }
+      vrfsBuilder.add(vrf);
+    }
+    List<Vrf> vrfs = vrfsBuilder.build();
+    vrfs.forEach(vrf -> _c.getVrfs().computeIfAbsent(vrf.getName(), n -> vrf));
+    int line = ctx.getStart().getLine();
+    newVrfs
+        .build()
+        .forEach(
+            name -> {
+              _c.defineStructure(CumulusStructureType.VRF, name, line);
+              _c.referenceStructure(
+                  CumulusStructureType.VRF, name, CumulusStructureUsage.VRF_SELF_REFERENCE, line);
+            });
+    if (usage != null) {
+      names.forEach(name -> _c.referenceStructure(CumulusStructureType.VRF, name, usage, line));
+    }
+    return vrfs;
   }
 
   @SuppressWarnings("unused")
