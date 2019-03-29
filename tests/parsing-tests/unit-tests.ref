@@ -71971,37 +71971,15 @@
             },
             {
               "Comment" : "This syntax is unrecognized",
-<<<<<<< HEAD
               "Line" : 82,
-              "Parser_Context" : "[s_extra_configuration statement cumulus_nclu_configuration]",
-              "Text" : "sudo sh -c \"printf 'username cumulus nopassword\\n' >> /etc/frr/frr.conf\"\n"
-||||||| merged common ancestors
-              "Line" : 81,
-              "Parser_Context" : "[s_extra_configuration statement cumulus_nclu_configuration]",
-              "Text" : "sudo sh -c \"printf 'username cumulus nopassword\\n' >> /etc/frr/frr.conf\"\n"
-=======
-              "Line" : 81,
               "Parser_Context" : "[frr_unrecognized s_extra_configuration statement cumulus_nclu_configuration]",
               "Text" : "username cumulus nopassword\\n"
->>>>>>> master
             },
             {
-<<<<<<< HEAD
-              "Comment" : "This syntax is unrecognized",
-              "Line" : 83,
-              "Parser_Context" : "[s_extra_configuration statement cumulus_nclu_configuration]",
-              "Text" : "sudo sh -c \"printf 'vrf vrf1\\n  ip route 0.0.0.0/0 192.0.2.1\\n' >> /etc/frr/frr.conf\"\n\n"
-||||||| merged common ancestors
-              "Comment" : "This syntax is unrecognized",
-              "Line" : 82,
-              "Parser_Context" : "[s_extra_configuration statement cumulus_nclu_configuration]",
-              "Text" : "sudo sh -c \"printf 'vrf vrf1\\n  ip route 0.0.0.0/0 192.0.2.1\\n' >> /etc/frr/frr.conf\"\n\n"
-=======
               "Comment" : "This feature is not currently supported",
-              "Line" : 82,
+              "Line" : 83,
               "Parser_Context" : "[frr_vrf s_extra_configuration statement cumulus_nclu_configuration]",
               "Text" : "vrf vrf1\\n  ip route 0.0.0.0/0 192.0.2.1\\n"
->>>>>>> master
             }
           ]
         },
