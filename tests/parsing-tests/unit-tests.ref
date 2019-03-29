@@ -76406,7 +76406,7 @@
               "definitionLines" : [
                 32
               ],
-              "numReferrers" : 5
+              "numReferrers" : 1
             },
             "eth0" : {
               "definitionLines" : [
@@ -76418,7 +76418,7 @@
               "definitionLines" : [
                 19
               ],
-              "numReferrers" : 3
+              "numReferrers" : 2
             },
             "swp2" : {
               "definitionLines" : [
@@ -76436,31 +76436,31 @@
               "definitionLines" : [
                 19
               ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             },
             "swp5" : {
               "definitionLines" : [
                 19
               ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             },
             "swp6" : {
               "definitionLines" : [
                 19
               ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             },
             "swp7" : {
               "definitionLines" : [
                 19
               ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             },
             "swp8" : {
               "definitionLines" : [
                 19
               ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             }
           },
           "vrf" : {
@@ -76468,13 +76468,13 @@
               "definitionLines" : [
                 32
               ],
-              "numReferrers" : 5
+              "numReferrers" : 3
             },
             "vrf1" : {
               "definitionLines" : [
                 68
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             }
           }
         },
@@ -76484,31 +76484,31 @@
               "definitionLines" : [
                 6
               ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             },
             "swp2" : {
               "definitionLines" : [
                 9
               ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             },
             "swp3" : {
               "definitionLines" : [
                 11
               ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             },
             "swp5" : {
               "definitionLines" : [
                 12
               ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             },
             "swp6" : {
               "definitionLines" : [
                 14
               ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             }
           },
           "vrf" : {
@@ -76544,7 +76544,7 @@
               "definitionLines" : [
                 8
               ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             }
           }
         },
@@ -82044,11 +82044,7 @@
           "interface" : {
             "bond1.4094" : {
               "interface self-reference" : [
-                32,
-                33,
-                34,
-                35,
-                36
+                32
               ]
             },
             "eth0" : {
@@ -82061,8 +82057,7 @@
                 19
               ],
               "interface self-reference" : [
-                38,
-                39
+                19
               ]
             },
             "swp2" : {
@@ -82070,7 +82065,7 @@
                 19
               ],
               "interface self-reference" : [
-                39
+                19
               ]
             },
             "swp3" : {
@@ -82078,31 +82073,46 @@
                 19
               ],
               "interface self-reference" : [
-                39
+                19
               ]
             },
             "swp4" : {
               "bond slave" : [
+                19
+              ],
+              "interface self-reference" : [
                 19
               ]
             },
             "swp5" : {
               "bond slave" : [
                 19
+              ],
+              "interface self-reference" : [
+                19
               ]
             },
             "swp6" : {
               "bond slave" : [
+                19
+              ],
+              "interface self-reference" : [
                 19
               ]
             },
             "swp7" : {
               "bond slave" : [
                 19
+              ],
+              "interface self-reference" : [
+                19
               ]
             },
             "swp8" : {
               "bond slave" : [
+                19
+              ],
+              "interface self-reference" : [
                 19
               ]
             }
@@ -82116,15 +82126,12 @@
                 37
               ],
               "vrf self-reference" : [
-                66,
-                67,
-                69
+                32
               ]
             },
             "vrf1" : {
               "vrf self-reference" : [
-                68,
-                69
+                68
               ]
             }
           }
@@ -82134,25 +82141,40 @@
             "swp1" : {
               "bond slave" : [
                 6
+              ],
+              "interface self-reference" : [
+                6
               ]
             },
             "swp2" : {
               "bond slave" : [
+                9
+              ],
+              "interface self-reference" : [
                 9
               ]
             },
             "swp3" : {
               "bond slave" : [
                 11
+              ],
+              "interface self-reference" : [
+                11
               ]
             },
             "swp5" : {
               "bond slave" : [
                 12
+              ],
+              "interface self-reference" : [
+                12
               ]
             },
             "swp6" : {
               "bond slave" : [
+                14
+              ],
+              "interface self-reference" : [
                 14
               ]
             }
@@ -82185,6 +82207,9 @@
           "interface" : {
             "swp1" : {
               "bond slave" : [
+                8
+              ],
+              "interface self-reference" : [
                 8
               ]
             }

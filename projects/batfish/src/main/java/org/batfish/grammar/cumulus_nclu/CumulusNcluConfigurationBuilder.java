@@ -324,8 +324,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   @Override
   public void enterA_interface(A_interfaceContext ctx) {
     Set<String> interfaceNames = toStrings(ctx.interfaces);
-    _currentInterfaces =
-        initInterfacesIfAbsent(interfaceNames, ctx, CumulusStructureUsage.INTERFACE_SELF_REFERENCE);
+    _currentInterfaces = initInterfacesIfAbsent(interfaceNames, ctx, null);
   }
 
   @Override
@@ -336,7 +335,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   @Override
   public void enterA_vrf(A_vrfContext ctx) {
     Set<String> vrfNames = toStrings(ctx.names);
-    _currentVrfs = initVrfsIfAbsent(vrfNames, ctx, CumulusStructureUsage.VRF_SELF_REFERENCE);
+    _currentVrfs = initVrfsIfAbsent(vrfNames, ctx, null);
   }
 
   @Override
@@ -552,7 +551,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
    * empty {@link List} if any name in {@code names} is invalid.
    */
   private @Nonnull List<Interface> initInterfacesIfAbsent(
-      Set<String> names, ParserRuleContext ctx, CumulusStructureUsage usage) {
+      Set<String> names, ParserRuleContext ctx, @Nullable CumulusStructureUsage usage) {
     ImmutableList.Builder<Interface> interfacesBuilder = ImmutableList.builder();
     ImmutableList.Builder<String> newInterfaces = ImmutableList.builder();
     for (String name : names) {
@@ -571,8 +570,19 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     int line = ctx.getStart().getLine();
     newInterfaces
         .build()
-        .forEach(name -> _c.defineStructure(CumulusStructureType.INTERFACE, name, line));
-    names.forEach(name -> _c.referenceStructure(CumulusStructureType.INTERFACE, name, usage, line));
+        .forEach(
+            name -> {
+              _c.defineStructure(CumulusStructureType.INTERFACE, name, line);
+              _c.referenceStructure(
+                  CumulusStructureType.INTERFACE,
+                  name,
+                  CumulusStructureUsage.INTERFACE_SELF_REFERENCE,
+                  line);
+            });
+    if (usage != null) {
+      names.forEach(
+          name -> _c.referenceStructure(CumulusStructureType.INTERFACE, name, usage, line));
+    }
     return interfaces;
   }
 
@@ -581,7 +591,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
    * {@link List} if any name in {@code names} is invalid.
    */
   private @Nonnull List<Vrf> initVrfsIfAbsent(
-      Set<String> names, ParserRuleContext ctx, CumulusStructureUsage usage) {
+      Set<String> names, ParserRuleContext ctx, @Nullable CumulusStructureUsage usage) {
     ImmutableList.Builder<Vrf> vrfsBuilder = ImmutableList.builder();
     ImmutableList.Builder<String> newVrfs = ImmutableList.builder();
     for (String name : names) {
@@ -598,8 +608,17 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     List<Vrf> vrfs = vrfsBuilder.build();
     vrfs.forEach(vrf -> _c.getVrfs().computeIfAbsent(vrf.getName(), n -> vrf));
     int line = ctx.getStart().getLine();
-    newVrfs.build().forEach(name -> _c.defineStructure(CumulusStructureType.VRF, name, line));
-    names.forEach(name -> _c.referenceStructure(CumulusStructureType.VRF, name, usage, line));
+    newVrfs
+        .build()
+        .forEach(
+            name -> {
+              _c.defineStructure(CumulusStructureType.VRF, name, line);
+              _c.referenceStructure(
+                  CumulusStructureType.VRF, name, CumulusStructureUsage.VRF_SELF_REFERENCE, line);
+            });
+    if (usage != null) {
+      names.forEach(name -> _c.referenceStructure(CumulusStructureType.VRF, name, usage, line));
+    }
     return vrfs;
   }
 
