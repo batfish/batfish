@@ -5,6 +5,7 @@ import org.batfish.vendor.StructureType;
 public enum CumulusStructureType implements StructureType {
   BOND("bond"),
   INTERFACE("interface"),
+  VLAN("vlan"),
   VRF("vrf");
 
   private final String _description;

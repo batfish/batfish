@@ -7,5 +7,6 @@ net add interface eth0 vrf vrf1
 net add vrf vrf1
 net add interface swp0 vrf vrf2
 net add vrf vrf3
+net add vlan 2 vrf vrf4
 #
 net commit
