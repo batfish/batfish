@@ -569,7 +569,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   @Override
   public void exitV_vlan_id(V_vlan_idContext ctx) {
-    _currentVlan.setVlanId(toInteger(ctx.vlan_id()));
+    _currentVlan.setVlanId(toInteger(ctx.id));
   }
 
   @Override
