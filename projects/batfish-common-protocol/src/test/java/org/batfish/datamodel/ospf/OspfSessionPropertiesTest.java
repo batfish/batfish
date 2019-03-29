@@ -12,8 +12,9 @@ public class OspfSessionPropertiesTest {
     IpLink l1 = new IpLink(Ip.parse("1.1.1.2"), Ip.parse("1.1.1.3"));
     IpLink l2 = new IpLink(Ip.parse("1.1.1.3"), Ip.parse("1.1.1.4"));
     new EqualsTester()
-        .addEqualityGroup(new OspfSessionProperties(l1), new OspfSessionProperties(l1))
-        .addEqualityGroup(new OspfSessionProperties(l2))
+        .addEqualityGroup(new OspfSessionProperties(0, l1), new OspfSessionProperties(0, l1))
+        .addEqualityGroup(new OspfSessionProperties(0, l2))
+        .addEqualityGroup(new OspfSessionProperties(1, l1))
         .addEqualityGroup(new Object())
         .testEquals();
   }

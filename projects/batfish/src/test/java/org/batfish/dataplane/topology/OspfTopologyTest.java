@@ -177,10 +177,12 @@ public class OspfTopologyTest {
     assertThat(topology.neighbors(r3i31), equalTo(ImmutableSet.of(r1i13)));
     assertThat(
         topology.getSession(OspfTopology.makeEdge(r1i13, r3i31)).get(),
-        equalTo(new OspfSessionProperties(new IpLink(Ip.parse("1.1.1.2"), Ip.parse("1.1.1.3")))));
+        equalTo(
+            new OspfSessionProperties(0, new IpLink(Ip.parse("1.1.1.2"), Ip.parse("1.1.1.3")))));
     assertThat(
         topology.getSession(OspfTopology.makeEdge(r3i31, r1i13)).get(),
-        equalTo(new OspfSessionProperties(new IpLink(Ip.parse("1.1.1.3"), Ip.parse("1.1.1.2")))));
+        equalTo(
+            new OspfSessionProperties(0, new IpLink(Ip.parse("1.1.1.3"), Ip.parse("1.1.1.2")))));
 
     // Everyone else has no neighbors
     assertThat(
