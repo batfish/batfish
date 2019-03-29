@@ -2,7 +2,7 @@ parser grammar CumulusNcluParser;
 
 /* This is only needed if parser grammar is spread across files */
 import
-CumulusNclu_common, CumulusNclu_bgp, CumulusNclu_interface, CumulusNclu_routing;
+CumulusNclu_common, CumulusNclu_bgp, CumulusNclu_frr, CumulusNclu_interface, CumulusNclu_routing;
 
 options {
   superClass =
@@ -29,8 +29,12 @@ statement
 
 s_extra_configuration
 :
-  EXTRA_CONFIGURATION_HEADER text = EXTRA_CONFIGURATION
-  EXTRA_CONFIGURATION_FOOTER NEWLINE
+  EXTRA_CONFIGURATION_HEADER
+  (
+    frr_vrf
+    | // frr_unrecognized must be last
+    frr_unrecognized
+  ) EXTRA_CONFIGURATION_FOOTER NEWLINE
 ;
 
 s_net_add

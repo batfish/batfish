@@ -41279,13 +41279,28 @@
             "  (statement",
             "    (s_extra_configuration",
             "      EXTRA_CONFIGURATION_HEADER:'sudo sh -c \"printf ''",
-            "      text = EXTRA_CONFIGURATION:'username cumulus nopassword\\n'  <== mode:M_Printf",
+            "      (frr_unrecognized",
+            "        (word",
+            "          WORD:'username'  <== mode:M_Printf)",
+            "        WORD:'cumulus'  <== mode:M_Printf",
+            "        WORD:'nopassword'  <== mode:M_Printf",
+            "        NEWLINE:'\\n'  <== mode:M_Printf)",
             "      EXTRA_CONFIGURATION_FOOTER:'' >> /etc/frr/frr.conf\"'  <== mode:M_Printf",
             "      NEWLINE:'\\n'))",
             "  (statement",
             "    (s_extra_configuration",
             "      EXTRA_CONFIGURATION_HEADER:'sudo sh -c \"printf ''",
-            "      text = EXTRA_CONFIGURATION:'vrf vrf1\\n  ip route 0.0.0.0/0 192.0.2.1\\n'  <== mode:M_Printf",
+            "      (frr_vrf",
+            "        VRF:'vrf'  <== mode:M_Printf",
+            "        name = (word",
+            "          WORD:'vrf1'  <== mode:M_Printf)",
+            "        NEWLINE:'\\n'  <== mode:M_Printf",
+            "        (frrv_ip_route",
+            "          IP:'ip'  <== mode:M_Printf",
+            "          ROUTE:'route'  <== mode:M_Printf",
+            "          network = IP_PREFIX:'0.0.0.0/0'  <== mode:M_Printf",
+            "          nhip = IP_ADDRESS:'192.0.2.1'  <== mode:M_Printf",
+            "          NEWLINE:'\\n'  <== mode:M_Printf))",
             "      EXTRA_CONFIGURATION_FOOTER:'' >> /etc/frr/frr.conf\"'  <== mode:M_Printf",
             "      NEWLINE:'\\n\\n'))",
             "  EOF:<EOF>)"
@@ -71956,15 +71971,37 @@
             },
             {
               "Comment" : "This syntax is unrecognized",
+<<<<<<< HEAD
               "Line" : 82,
               "Parser_Context" : "[s_extra_configuration statement cumulus_nclu_configuration]",
               "Text" : "sudo sh -c \"printf 'username cumulus nopassword\\n' >> /etc/frr/frr.conf\"\n"
+||||||| merged common ancestors
+              "Line" : 81,
+              "Parser_Context" : "[s_extra_configuration statement cumulus_nclu_configuration]",
+              "Text" : "sudo sh -c \"printf 'username cumulus nopassword\\n' >> /etc/frr/frr.conf\"\n"
+=======
+              "Line" : 81,
+              "Parser_Context" : "[frr_unrecognized s_extra_configuration statement cumulus_nclu_configuration]",
+              "Text" : "username cumulus nopassword\\n"
+>>>>>>> master
             },
             {
+<<<<<<< HEAD
               "Comment" : "This syntax is unrecognized",
               "Line" : 83,
               "Parser_Context" : "[s_extra_configuration statement cumulus_nclu_configuration]",
               "Text" : "sudo sh -c \"printf 'vrf vrf1\\n  ip route 0.0.0.0/0 192.0.2.1\\n' >> /etc/frr/frr.conf\"\n\n"
+||||||| merged common ancestors
+              "Comment" : "This syntax is unrecognized",
+              "Line" : 82,
+              "Parser_Context" : "[s_extra_configuration statement cumulus_nclu_configuration]",
+              "Text" : "sudo sh -c \"printf 'vrf vrf1\\n  ip route 0.0.0.0/0 192.0.2.1\\n' >> /etc/frr/frr.conf\"\n\n"
+=======
+              "Comment" : "This feature is not currently supported",
+              "Line" : 82,
+              "Parser_Context" : "[frr_vrf s_extra_configuration statement cumulus_nclu_configuration]",
+              "Text" : "vrf vrf1\\n  ip route 0.0.0.0/0 192.0.2.1\\n"
+>>>>>>> master
             }
           ]
         },
