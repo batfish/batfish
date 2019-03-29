@@ -243,7 +243,9 @@ public final class CumulusNcluGrammarTest {
     ConvertConfigurationAnswerElement ans =
         getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
 
-    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "swp1", 1));
+    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "swp1", 2));
+    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "swp2", 2));
+    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "swp3", 1));
   }
 
   @Test
