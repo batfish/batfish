@@ -978,9 +978,10 @@ public final class JFactory extends BDDFactory {
     } else if (ISONE(g)) {
       return or_rec(f, h);
     } else if (ISZERO(h)) {
-      return and_rec(f, h);
+      return and_rec(f, g);
     } else if (ISONE(h)) {
-      return or_rec(f, g);
+      applyop = bddop_imp;
+      return apply_rec(f, g);
     }
 
     entry = BddCache_lookupI(itecache, ITEHASH(f, g, h));

@@ -402,4 +402,31 @@ public class JFactoryTest {
     // x invimp x is one.
     assertThat(x.invimp(x), equalTo(one));
   }
+
+  @Test
+  public void testIte() {
+    _factory.setVarNum(10);
+    BDD x = _factory.ithVar(0);
+    BDD notx = _factory.nithVar(0);
+    BDD y = _factory.ithVar(1);
+    BDD zero = _factory.zero();
+    BDD one = _factory.one();
+
+    // then/else same
+    assertThat(x.ite(zero, zero), equalTo(zero));
+    assertThat(x.ite(one, one), equalTo(one));
+    assertThat(x.ite(x, x), equalTo(x));
+
+    // true/false guard
+    assertThat(one.ite(x, y), equalTo(x));
+    assertThat(zero.ite(x, y), equalTo(y));
+
+    // true/false in then
+    assertThat(x.ite(one, y), equalTo(x.or(y)));
+    assertThat(x.ite(zero, y), equalTo(notx.and(y)));
+
+    // true/false in else
+    assertThat(x.ite(y, one), equalTo(notx.or(y)));
+    assertThat(x.ite(y, zero), equalTo(x.and(y)));
+  }
 }
