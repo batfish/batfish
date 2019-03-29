@@ -1245,7 +1245,7 @@ public final class JFactory extends BDDFactory {
         } else if (ISONE(l)) {
           return r;
         } else if (ISONE(r)) {
-          return l;
+          return BDDONE;
         }
         break;
     }
