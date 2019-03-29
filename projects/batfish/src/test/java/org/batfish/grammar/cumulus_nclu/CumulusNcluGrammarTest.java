@@ -4,6 +4,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.notNullValue;
@@ -192,6 +193,10 @@ public final class CumulusNcluGrammarTest {
         vc.getInterfaces().get("bond2.4094").getClagSysMac(),
         equalTo(MacAddress.parse("00:11:22:33:44:55")));
 
+    // vrf
+    assertThat(
+        "Ensure vrf is extracted", vc.getInterfaces().get("swp5.1").getVrf(), equalTo("vrf1"));
+
     // interface type (computed)
     assertThat(
         "Ensure type is correctly calculated",
@@ -238,7 +243,9 @@ public final class CumulusNcluGrammarTest {
     ConvertConfigurationAnswerElement ans =
         getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
 
-    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "swp1", 1));
+    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "swp1", 2));
+    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "swp2", 2));
+    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "swp3", 1));
   }
 
   @Test
@@ -261,5 +268,42 @@ public final class CumulusNcluGrammarTest {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_loopback_missing");
 
     assertFalse("Ensure loopback is disabled", vc.getLoopback().getEnabled());
+  }
+
+  @Test
+  public void testVrfExtraction() throws IOException {
+    CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_vrf");
+
+    // vrfs
+    assertThat(
+        "Ensure vrfs are created", vc.getVrfs().keySet(), containsInAnyOrder("vrf1", "vrf2"));
+
+    // name
+    assertThat("Ensure name is extracted", vc.getVrfs().get("vrf1").getName(), equalTo("vrf1"));
+    assertThat("Ensure name is extracted", vc.getVrfs().get("vrf2").getName(), equalTo("vrf2"));
+
+    // ip address
+    assertThat(
+        "Ensure ip addresses are extracted",
+        vc.getVrfs().get("vrf1").getAddresses(),
+        contains(new InterfaceAddress("10.0.0.1/24"), new InterfaceAddress("10.0.1.1/24")));
+    assertThat(
+        "Ensure ip addresses are extracted", vc.getVrfs().get("vrf2").getAddresses(), empty());
+
+    // vni
+    assertThat("Ensure vni is extracted", vc.getVrfs().get("vrf1").getVni(), equalTo(10001));
+    assertThat("Ensure vni is extracted", vc.getVrfs().get("vrf2").getVni(), nullValue());
+  }
+
+  @Test
+  public void testVrfReferences() throws IOException {
+    String hostname = "cumulus_nclu_vrf_references";
+    String filename = String.format("configs/%s", hostname);
+    ConvertConfigurationAnswerElement ans =
+        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VRF, "vrf1", 3));
+    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VRF, "vrf2", 2));
+    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VRF, "vrf3", 1));
   }
 }
