@@ -934,16 +934,16 @@
       {
         "Filename" : "configs/cumulus_nclu",
         "Line" : 81,
-        "Text" : "sudo sh -c \"printf 'username cumulus nopassword\\n' >> /etc/frr/frr.conf\"\n",
-        "Parser_Context" : "[s_extra_configuration statement cumulus_nclu_configuration]",
+        "Text" : "username cumulus nopassword\\n",
+        "Parser_Context" : "[frr_unrecognized s_extra_configuration statement cumulus_nclu_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "configs/cumulus_nclu",
         "Line" : 82,
-        "Text" : "sudo sh -c \"printf 'vrf vrf1\\n  ip route 0.0.0.0/0 192.0.2.1\\n' >> /etc/frr/frr.conf\"\n\n",
-        "Parser_Context" : "[s_extra_configuration statement cumulus_nclu_configuration]",
-        "Comment" : "This syntax is unrecognized"
+        "Text" : "vrf vrf1\\n  ip route 0.0.0.0/0 192.0.2.1\\n",
+        "Parser_Context" : "[frr_vrf s_extra_configuration statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cumulus_nclu",
