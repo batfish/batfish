@@ -12,7 +12,7 @@
         "orderedVariableNames": [
             "nodes",
             "policies",
-            "inputRoute",
+            "inputRoutes",
             "direction"
         ],
         "tags": [
