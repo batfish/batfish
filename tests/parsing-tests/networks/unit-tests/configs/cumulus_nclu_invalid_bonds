@@ -14,6 +14,9 @@ net add bond swp4 bond slaves swp5
 net add bond bond1.1000 bond slaves swp6
 # looks like vlan
 net add bond vlan1 bond slaves swp7
+# name of vxlan
+net add vxlan v1 vxlan id 10001
+net add bond v1 bond slaves swp8
 #
 net commit
 

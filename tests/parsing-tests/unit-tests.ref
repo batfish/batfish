@@ -468,6 +468,9 @@
         "cumulus_nclu_invalid_vrfs" : [
           "configs/cumulus_nclu_invalid_vrfs"
         ],
+        "cumulus_nclu_invalid_vxlans" : [
+          "configs/cumulus_nclu_invalid_vxlans"
+        ],
         "eos_mlag" : [
           "configs/eos_mlag"
         ],
@@ -1022,6 +1025,7 @@
         "configs/cumulus_nclu_invalid_bonds" : "PASSED",
         "configs/cumulus_nclu_invalid_interfaces" : "PASSED",
         "configs/cumulus_nclu_invalid_vrfs" : "PASSED",
+        "configs/cumulus_nclu_invalid_vxlans" : "PASSED",
         "configs/eos_mlag" : "PASSED",
         "configs/eos_trunk_group" : "PASSED",
         "configs/f5_bigip_imish_malformed" : "PASSED",
@@ -41135,7 +41139,7 @@
             "      ADD:'add'",
             "      (a_vxlan",
             "        VXLAN:'vxlan'",
-            "        vni_names = (glob",
+            "        names = (glob",
             "          (glob_range_set",
             "            base_word = (numbered_word",
             "              NUMBERED_WORD:'vni10001')))",
@@ -41152,7 +41156,7 @@
             "      ADD:'add'",
             "      (a_vxlan",
             "        VXLAN:'vxlan'",
-            "        vni_names = (glob",
+            "        names = (glob",
             "          (glob_range_set",
             "            base_word = (numbered_word",
             "              NUMBERED_WORD:'vni10001')))",
@@ -41169,7 +41173,7 @@
             "      ADD:'add'",
             "      (a_vxlan",
             "        VXLAN:'vxlan'",
-            "        vni_names = (glob",
+            "        names = (glob",
             "          (glob_range_set",
             "            base_word = (numbered_word",
             "              NUMBERED_WORD:'vni10001')",
@@ -41193,7 +41197,7 @@
             "      ADD:'add'",
             "      (a_vxlan",
             "        VXLAN:'vxlan'",
-            "        vni_names = (glob",
+            "        names = (glob",
             "          (glob_range_set",
             "            base_word = (numbered_word",
             "              NUMBERED_WORD:'vni10001')",
@@ -41217,7 +41221,7 @@
             "      ADD:'add'",
             "      (a_vxlan",
             "        VXLAN:'vxlan'",
-            "        vni_names = (glob",
+            "        names = (glob",
             "          (glob_range_set",
             "            base_word = (numbered_word",
             "              NUMBERED_WORD:'vni10001')",
@@ -41240,7 +41244,7 @@
             "      ADD:'add'",
             "      (a_vxlan",
             "        VXLAN:'vxlan'",
-            "        vni_names = (glob",
+            "        names = (glob",
             "          (glob_range_set",
             "            base_word = (numbered_word",
             "              NUMBERED_WORD:'vni10001')",
@@ -41263,7 +41267,7 @@
             "      ADD:'add'",
             "      (a_vxlan",
             "        VXLAN:'vxlan'",
-            "        vni_names = (glob",
+            "        names = (glob",
             "          (glob_range_set",
             "            base_word = (numbered_word",
             "              NUMBERED_WORD:'vni10001')",
@@ -41279,7 +41283,8 @@
             "          VXLAN:'vxlan'",
             "          (vxv_local_tunnelip",
             "            LOCAL_TUNNELIP:'local-tunnelip'",
-            "            ip = IP_ADDRESS:'192.0.2.10'",
+            "            ip = (ip_address",
+            "              IP_ADDRESS:'192.0.2.10')",
             "            NEWLINE:'\\n')))))",
             "  (statement",
             "    (s_null",
@@ -41450,6 +41455,40 @@
             "                  NUMBERED_WORD:'swp7')))",
             "            NEWLINE:'\\n')))))",
             "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vxlan",
+            "        VXLAN:'vxlan'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'v1')))",
+            "        (vx_vxlan",
+            "          VXLAN:'vxlan'",
+            "          (vxv_id",
+            "            ID:'id'",
+            "            vni = (vni_number",
+            "              v = DEC:'10001')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        name = (word",
+            "          NUMBERED_WORD:'v1')",
+            "        (bond_bond",
+            "          BOND:'bond'",
+            "          (bobo_slaves",
+            "            SLAVES:'slaves'",
+            "            slaves = (glob",
+            "              (glob_range_set",
+            "                base_word = (numbered_word",
+            "                  NUMBERED_WORD:'swp8')))",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
             "    (s_null",
             "      NET:'net'",
             "      (null_rest_of_line",
@@ -41563,6 +41602,66 @@
             "            IP_PREFIX:'10.0.4.1/24')",
             "          NEWLINE:'\\n'))))",
             "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vrf",
+            "        VRF:'vrf'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'vrf1')))",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'vrf1')))",
+            "        (i_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          address = (interface_address",
+            "            IP_PREFIX:'10.0.5.1/24')",
+            "          NEWLINE:'\\n'))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vxlan",
+            "        VXLAN:'vxlan'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'v1')))",
+            "        (vx_vxlan",
+            "          VXLAN:'vxlan'",
+            "          (vxv_id",
+            "            ID:'id'",
+            "            vni = (vni_number",
+            "              v = DEC:'10001')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'v1')))",
+            "        (i_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          address = (interface_address",
+            "            IP_PREFIX:'10.0.6.1/24')",
+            "          NEWLINE:'\\n'))))",
+            "  (statement",
             "    (s_null",
             "      NET:'net'",
             "      (null_rest_of_line",
@@ -41666,6 +41765,220 @@
             "            base_word = (numbered_word",
             "              NUMBERED_WORD:'vrf1.1000')))",
             "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vxlan",
+            "        VXLAN:'vxlan'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'vx1')))",
+            "        (vx_vxlan",
+            "          VXLAN:'vxlan'",
+            "          (vxv_id",
+            "            ID:'id'",
+            "            vni = (vni_number",
+            "              v = DEC:'10001')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vrf",
+            "        VRF:'vrf'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'vx1')))",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vrf",
+            "        VRF:'vrf'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'vlan1')))",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_null",
+            "      NET:'net'",
+            "      (null_rest_of_line",
+            "        COMMIT:'commit'",
+            "        NEWLINE:'\\n\\n\\n')))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "configs/cumulus_nclu_invalid_vxlans" : {
+          "sentences" : [
+            "(cumulus_nclu_configuration",
+            "  (statement",
+            "    (s_null",
+            "      NET:'net'",
+            "      (null_rest_of_line",
+            "        DEL:'del'",
+            "        WORD:'all'",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_hostname",
+            "        HOSTNAME:'hostname'",
+            "        hostname = (word",
+            "          WORD:'cumulus_nclu_invalid_vxlans')",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vxlan",
+            "        VXLAN:'vxlan'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            unnumbered = (glob_word",
+            "              LO:'lo')))",
+            "        (vx_vxlan",
+            "          VXLAN:'vxlan'",
+            "          (vxv_id",
+            "            ID:'id'",
+            "            vni = (vni_number",
+            "              v = DEC:'10001')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        name = (word",
+            "          NUMBERED_WORD:'bond1')",
+            "        (bond_bond",
+            "          BOND:'bond'",
+            "          (bobo_slaves",
+            "            SLAVES:'slaves'",
+            "            slaves = (glob",
+            "              (glob_range_set",
+            "                base_word = (numbered_word",
+            "                  NUMBERED_WORD:'swp0')))",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vxlan",
+            "        VXLAN:'vxlan'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'bond1')))",
+            "        (vx_vxlan",
+            "          VXLAN:'vxlan'",
+            "          (vxv_id",
+            "            ID:'id'",
+            "            vni = (vni_number",
+            "              v = DEC:'10002')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vrf",
+            "        VRF:'vrf'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'vrf1')))",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vxlan",
+            "        VXLAN:'vxlan'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'vrf1')))",
+            "        (vx_vxlan",
+            "          VXLAN:'vxlan'",
+            "          (vxv_id",
+            "            ID:'id'",
+            "            vni = (vni_number",
+            "              v = DEC:'10003')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vxlan",
+            "        VXLAN:'vxlan'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'eth0')))",
+            "        (vx_vxlan",
+            "          VXLAN:'vxlan'",
+            "          (vxv_id",
+            "            ID:'id'",
+            "            vni = (vni_number",
+            "              v = DEC:'10004')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vxlan",
+            "        VXLAN:'vxlan'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp0')))",
+            "        (vx_vxlan",
+            "          VXLAN:'vxlan'",
+            "          (vxv_id",
+            "            ID:'id'",
+            "            vni = (vni_number",
+            "              v = DEC:'10005')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vxlan",
+            "        VXLAN:'vxlan'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'vxlan1.1000')))",
+            "        (vx_vxlan",
+            "          VXLAN:'vxlan'",
+            "          (vxv_id",
+            "            ID:'id'",
+            "            vni = (vni_number",
+            "              v = DEC:'10006')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vxlan",
+            "        VXLAN:'vxlan'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'vlan1')))",
+            "        (vx_vxlan",
+            "          VXLAN:'vxlan'",
+            "          (vxv_id",
+            "            ID:'id'",
+            "            vni = (vni_number",
+            "              v = DEC:'10007')",
+            "            NEWLINE:'\\n')))))",
             "  (statement",
             "    (s_null",
             "      NET:'net'",
@@ -71933,45 +72246,27 @@
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 70,
-              "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vxlan vni10001 bridge access 5"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 71,
-              "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vxlan vni10001 vxlan id 100001"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
               "Line" : 72,
-              "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vxlan vni10001,10002-10003 bridge arp-nd-suppress on"
+              "Parser_Context" : "[vxb_arp_nd_suppress vx_bridge a_vxlan s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "arp-nd-suppress on"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 73,
-              "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vxlan vni10001,10002-10003 bridge learning off"
+              "Parser_Context" : "[vxb_learning vx_bridge a_vxlan s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "learning off"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 74,
-              "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vxlan vni10001,10002-10003 stp bpduguard"
+              "Parser_Context" : "[vx_stp a_vxlan s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "stp bpduguard"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 75,
-              "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vxlan vni10001,10002-10003 stp portbpdufilter"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 76,
-              "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vxlan vni10001,10002-10003 vxlan local-tunnelip 192.0.2.10"
+              "Parser_Context" : "[vx_stp a_vxlan s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "stp portbpdufilter"
             },
             {
               "Comment" : "This syntax is unrecognized",
@@ -71984,6 +72279,32 @@
               "Line" : 83,
               "Parser_Context" : "[frr_vrf s_extra_configuration statement cumulus_nclu_configuration]",
               "Text" : "vrf vrf1\\n  ip route 0.0.0.0/0 192.0.2.1\\n"
+            }
+          ],
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id <id>' before line: vxlan vni10001 bridge access 5\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id <id>' before line: vxlan vni10001,10002-10003 bridge arp-nd-suppress on\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id <id>' before line: vxlan vni10001,10002-10003 bridge learning off\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id <id>' before line: vxlan vni10001,10002-10003 stp bpduguard\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id <id>' before line: vxlan vni10001,10002-10003 stp portbpdufilter\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id <id>' before line: vxlan vni10001,10002-10003 vxlan local-tunnelip 192.0.2.10\n"
             }
           ]
         },
@@ -72012,6 +72333,10 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Invalid name 'vlan1' for bond in: bond vlan1 bond slaves swp7\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'v1' for bond clashes with existing vxlan in: bond v1 bond slaves swp8\n"
             }
           ]
         },
@@ -72036,6 +72361,14 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Subinterface name 'swp1.5000' is invalid since '5000' is not a valid VLAN number in: interface swp1.5000 ip address 10.0.4.1/24\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "VRF loopback interface 'vrf1' can only be configured via 'net add vrf' family of commands; following is invalid: interface vrf1 ip address 10.0.5.1/24\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "VXLAN interface 'v1' can only be configured via 'net add vxlan' family of commands; following is invalid: interface v1 ip address 10.0.6.1/24\n"
             }
           ]
         },
@@ -72060,6 +72393,46 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Invalid name 'vrf1.1000' for vrf in: vrf vrf1.1000\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'vx1' for vrf clashes with existing vxlan in: vrf vx1\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'vlan1' for vrf in: vrf vlan1\n"
+            }
+          ]
+        },
+        "configs/cumulus_nclu_invalid_vxlans" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'lo' for vxlan in: vxlan lo vxlan id 10001\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'bond1' for vxlan clashes with existing bond interface in: vxlan bond1 vxlan id 10002\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'vrf1' for vxlan clashes with existing vrf in: vxlan vrf1 vxlan id 10003\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'eth0' for vxlan in: vxlan eth0 vxlan id 10004\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'swp0' for vxlan in: vxlan swp0 vxlan id 10005\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'vxlan1.1000' for vxlan in: vxlan vxlan1.1000 vxlan id 10006\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'vlan1' for vxlan in: vxlan vlan1 vxlan id 10007\n"
             }
           ]
         },
@@ -73777,6 +74150,7 @@
         "cumulus_nclu_invalid_bonds" : "PASSED",
         "cumulus_nclu_invalid_interfaces" : "PASSED",
         "cumulus_nclu_invalid_vrfs" : "PASSED",
+        "cumulus_nclu_invalid_vxlans" : "PASSED",
         "eos_mlag" : "PASSED",
         "eos_trunk_group" : "PASSED",
         "f5_bigip_imish_malformed" : "WARNINGS",
@@ -76507,6 +76881,14 @@
               ],
               "numReferrers" : 2
             }
+          },
+          "vxlan" : {
+            "vni10001" : {
+              "definitionLines" : [
+                71
+              ],
+              "numReferrers" : 1
+            }
           }
         },
         "configs/cumulus_nclu_invalid_bonds" : {
@@ -76546,12 +76928,26 @@
                 16
               ],
               "numReferrers" : 2
+            },
+            "swp8" : {
+              "definitionLines" : [
+                19
+              ],
+              "numReferrers" : 2
             }
           },
           "vrf" : {
             "vrf1" : {
               "definitionLines" : [
                 8
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "vxlan" : {
+            "v1" : {
+              "definitionLines" : [
+                18
               ],
               "numReferrers" : 1
             }
@@ -76562,6 +76958,22 @@
             "bond1" : {
               "definitionLines" : [
                 6
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "vrf" : {
+            "vrf1" : {
+              "definitionLines" : [
+                16
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "vxlan" : {
+            "v1" : {
+              "definitionLines" : [
+                19
               ],
               "numReferrers" : 1
             }
@@ -76582,6 +76994,40 @@
                 8
               ],
               "numReferrers" : 2
+            }
+          },
+          "vxlan" : {
+            "vx1" : {
+              "definitionLines" : [
+                16
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "configs/cumulus_nclu_invalid_vxlans" : {
+          "bond" : {
+            "bond1" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "interface" : {
+            "swp0" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 2
+            }
+          },
+          "vrf" : {
+            "vrf1" : {
+              "definitionLines" : [
+                11
+              ],
+              "numReferrers" : 1
             }
           }
         },
@@ -82181,6 +82627,13 @@
                 65
               ]
             }
+          },
+          "vxlan" : {
+            "vni10001" : {
+              "vxlan self-reference" : [
+                71
+              ]
+            }
           }
         },
         "configs/cumulus_nclu_invalid_bonds" : {
@@ -82232,12 +82685,27 @@
               "interface self-reference" : [
                 16
               ]
+            },
+            "swp8" : {
+              "bond slave" : [
+                19
+              ],
+              "interface self-reference" : [
+                19
+              ]
             }
           },
           "vrf" : {
             "vrf1" : {
               "vrf self-reference" : [
                 8
+              ]
+            }
+          },
+          "vxlan" : {
+            "v1" : {
+              "vxlan self-reference" : [
+                18
               ]
             }
           }
@@ -82247,6 +82715,20 @@
             "bond1" : {
               "bond self-reference" : [
                 6
+              ]
+            }
+          },
+          "vrf" : {
+            "vrf1" : {
+              "vrf self-reference" : [
+                16
+              ]
+            }
+          },
+          "vxlan" : {
+            "v1" : {
+              "vxlan self-reference" : [
+                19
               ]
             }
           }
@@ -82266,6 +82748,39 @@
               ],
               "interface self-reference" : [
                 8
+              ]
+            }
+          },
+          "vxlan" : {
+            "vx1" : {
+              "vxlan self-reference" : [
+                16
+              ]
+            }
+          }
+        },
+        "configs/cumulus_nclu_invalid_vxlans" : {
+          "bond" : {
+            "bond1" : {
+              "bond self-reference" : [
+                8
+              ]
+            }
+          },
+          "interface" : {
+            "swp0" : {
+              "bond slave" : [
+                8
+              ],
+              "interface self-reference" : [
+                8
+              ]
+            }
+          },
+          "vrf" : {
+            "vrf1" : {
+              "vrf self-reference" : [
+                11
               ]
             }
           }
@@ -87070,6 +87585,7 @@
         "configs/cumulus_nclu_invalid_bonds" : "PASSED",
         "configs/cumulus_nclu_invalid_interfaces" : "PASSED",
         "configs/cumulus_nclu_invalid_vrfs" : "PASSED",
+        "configs/cumulus_nclu_invalid_vxlans" : "PASSED",
         "configs/eos_mlag" : "PASSED",
         "configs/eos_trunk_group" : "PASSED",
         "configs/f5_bigip_imish_malformed" : "PASSED",

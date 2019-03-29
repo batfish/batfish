@@ -357,4 +357,59 @@ public final class CumulusNcluGrammarTest {
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VRF, "vrf2", 2));
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VRF, "vrf3", 1));
   }
+
+  @Test
+  public void testVxlanExtraction() throws IOException {
+    CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_vxlan");
+
+    // vxlan interfaces
+    assertThat(
+        vc.getVxlans().keySet(),
+        containsInAnyOrder("v2", "v3", "v5", "v6", "v7", "v8", "v9", "v10"));
+
+    // name
+    assertThat(vc.getVxlans().get("v2").getName(), equalTo("v2"));
+    assertThat(vc.getVxlans().get("v3").getName(), equalTo("v3"));
+    // v4 is missing
+    assertThat(vc.getVxlans().get("v5").getName(), equalTo("v5"));
+    assertThat(vc.getVxlans().get("v6").getName(), equalTo("v6"));
+    assertThat(vc.getVxlans().get("v7").getName(), equalTo("v7"));
+    assertThat(vc.getVxlans().get("v8").getName(), equalTo("v8"));
+    assertThat(vc.getVxlans().get("v9").getName(), equalTo("v9"));
+    assertThat(vc.getVxlans().get("v10").getName(), equalTo("v10"));
+
+    // vxlan id
+    assertThat(vc.getVxlans().get("v2").getId(), equalTo(10002));
+    assertThat(vc.getVxlans().get("v3").getId(), equalTo(10003));
+    // v4 is missing
+    assertThat(vc.getVxlans().get("v5").getId(), equalTo(10005));
+    assertThat(vc.getVxlans().get("v6").getId(), equalTo(10005)); // dumb
+    assertThat(vc.getVxlans().get("v7").getId(), equalTo(10007));
+    assertThat(vc.getVxlans().get("v8").getId(), equalTo(10008));
+    assertThat(vc.getVxlans().get("v9").getId(), equalTo(10009));
+    assertThat(vc.getVxlans().get("v10").getId(), equalTo(10010));
+
+    // bridge access
+    assertThat(vc.getVxlans().get("v2").getBridgeAccessVlan(), equalTo(2));
+    assertThat(vc.getVxlans().get("v3").getBridgeAccessVlan(), nullValue()); // out of order
+    // v4 is missing
+    assertThat(vc.getVxlans().get("v5").getBridgeAccessVlan(), equalTo(5));
+    assertThat(vc.getVxlans().get("v6").getBridgeAccessVlan(), equalTo(5)); // dumb
+    assertThat(vc.getVxlans().get("v7").getBridgeAccessVlan(), equalTo(7));
+    assertThat(vc.getVxlans().get("v8").getBridgeAccessVlan(), equalTo(8));
+    assertThat(vc.getVxlans().get("v9").getBridgeAccessVlan(), equalTo(9));
+    assertThat(vc.getVxlans().get("v10").getBridgeAccessVlan(), nullValue()); // missing
+
+    // vxlan local-tunnelip
+    Ip expectedLocalTunnelip = Ip.parse("192.0.2.1");
+    assertThat(vc.getVxlans().get("v2").getLocalTunnelip(), equalTo(expectedLocalTunnelip));
+    assertThat(vc.getVxlans().get("v3").getLocalTunnelip(), nullValue()); // out of order
+    // v4 is missing
+    assertThat(vc.getVxlans().get("v5").getLocalTunnelip(), equalTo(expectedLocalTunnelip));
+    assertThat(vc.getVxlans().get("v6").getLocalTunnelip(), equalTo(expectedLocalTunnelip));
+    assertThat(vc.getVxlans().get("v7").getLocalTunnelip(), equalTo(expectedLocalTunnelip));
+    assertThat(vc.getVxlans().get("v8").getLocalTunnelip(), equalTo(expectedLocalTunnelip));
+    assertThat(vc.getVxlans().get("v9").getLocalTunnelip(), nullValue()); // missing
+    assertThat(vc.getVxlans().get("v10").getLocalTunnelip(), equalTo(expectedLocalTunnelip));
+  }
 }
