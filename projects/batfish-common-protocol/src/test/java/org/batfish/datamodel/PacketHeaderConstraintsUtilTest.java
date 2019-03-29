@@ -10,6 +10,7 @@ import static org.batfish.datamodel.PacketHeaderConstraintsUtil.setIcmpValues;
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.setPacketLength;
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.setSrcPort;
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.setTcpFlags;
+import static org.batfish.datamodel.PacketHeaderConstraintsUtil.toFlow;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -61,6 +62,32 @@ public class PacketHeaderConstraintsUtilTest {
             UniverseIpSpace.INSTANCE,
             UniverseIpSpace.INSTANCE),
         equalTo(packet.getFactory().one()));
+  }
+
+  @Test
+  public void testSetIcmpCode() {
+    PacketHeaderConstraints phc =
+        PacketHeaderConstraints.builder()
+            .setIcmpCodes(IntegerSpace.of(1))
+            .setIcmpTypes(IntegerSpace.of(2))
+            .build();
+    Builder builder = Flow.builder();
+    setIcmpValues(phc, builder);
+    assertThat(builder.getIcmpCode(), equalTo(1));
+    assertThat(builder.getIcmpType(), equalTo(2));
+  }
+
+  /**
+   * Test that unconstrained ICMP type/code defaults to ICMP ping (echo request) if the ip protocol
+   * is ICMP.
+   */
+  @Test
+  public void testDefaultToIcmpPing() {
+    PacketHeaderConstraints phc =
+        PacketHeaderConstraints.builder().setIpProtocols(ImmutableSet.of(IpProtocol.ICMP)).build();
+    Builder builder = toFlow(phc);
+    assertThat(builder.getIcmpType(), equalTo(8));
+    assertThat(builder.getIcmpCode(), equalTo(0));
   }
 
   @Test
