@@ -1,7 +1,6 @@
 package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import java.util.EnumSet;
@@ -13,11 +12,10 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.Answerer;
+import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.ConfigurationDiff;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.NodeType;
 import org.batfish.datamodel.RoutingProtocol;
@@ -336,134 +334,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
 
     @Override
     public AnswerElement answerDiff() {
-      NodesQuestion question = (NodesQuestion) _question;
-      if (question.getSummary()) {
-        return super.answerDiff();
-      }
-      _batfish.pushBaseSnapshot();
-      _batfish.checkSnapshotOutputReady();
-      _batfish.popSnapshot();
-      _batfish.pushDeltaSnapshot();
-      _batfish.checkSnapshotOutputReady();
-      _batfish.popSnapshot();
-      _batfish.pushBaseSnapshot();
-      NodesAnswerer beforeAnswerer = (NodesAnswerer) create(_question, _batfish);
-      NodesAnswerElement before = beforeAnswerer.answer();
-      _batfish.popSnapshot();
-      _batfish.pushDeltaSnapshot();
-      NodesAnswerer afterAnswerer = (NodesAnswerer) create(_question, _batfish);
-      NodesAnswerElement after = afterAnswerer.answer();
-      _batfish.popSnapshot();
-      return new NodesDiffAnswerElement(before, after);
-    }
-  }
-
-  public static class NodesDiffAnswerElement extends AnswerElement {
-
-    private static final String PROP_CONFIG_DIFF = "configDiff";
-
-    // private static final String PROP_IDENTICAL = "identical";
-
-    private static final String PROP_IN_AFTER_ONLY = "inAfterOnly";
-
-    private static final String PROP_IN_BEFORE_ONLY = "inBeforeOnly";
-
-    private static final int MAX_IDENTICAL = 10;
-
-    private transient NodesAnswerElement _after;
-
-    private transient NodesAnswerElement _before;
-
-    private SortedMap<String, ConfigurationDiff> _configDiff;
-
-    private SortedSet<String> _identical;
-
-    private SortedSet<String> _inAfterOnly;
-
-    private SortedSet<String> _inBeforeOnly;
-
-    @JsonCreator
-    private NodesDiffAnswerElement() {}
-
-    public NodesDiffAnswerElement(NodesAnswerElement before, NodesAnswerElement after) {
-      _before = before;
-      _after = after;
-      _configDiff = new TreeMap<>();
-      _identical = new TreeSet<>();
-      generateDiff();
-    }
-
-    private void generateDiff() {
-      Set<String> beforeNodes = _before._nodes.keySet();
-      Set<String> afterNodes = _after._nodes.keySet();
-      _inBeforeOnly = CommonUtil.difference(beforeNodes, afterNodes, TreeSet::new);
-      _inAfterOnly = CommonUtil.difference(afterNodes, beforeNodes, TreeSet::new);
-      Set<String> commonNodes = CommonUtil.intersection(beforeNodes, afterNodes, TreeSet::new);
-      for (String node : commonNodes) {
-        Configuration before = _before._nodes.get(node);
-        Configuration after = _after._nodes.get(node);
-        ConfigurationDiff currentDiff = new ConfigurationDiff(before, after);
-        if (!currentDiff.isEmpty()) {
-          _configDiff.put(node, currentDiff);
-        } else {
-          _identical.add(node);
-        }
-      }
-      summarizeIdentical();
-      if (_configDiff.isEmpty() && _inBeforeOnly.isEmpty() && _inAfterOnly.isEmpty()) {
-        _identical = null;
-      }
-    }
-
-    /** @return the _configDiff */
-    @JsonProperty(PROP_CONFIG_DIFF)
-    public SortedMap<String, ConfigurationDiff> getConfigDiff() {
-      return _configDiff;
-    }
-
-    // @JsonProperty(PROP_IDENTICAL)
-    @JsonIgnore
-    public SortedSet<String> getIdentical() {
-      return _identical;
-    }
-
-    @JsonProperty(PROP_IN_AFTER_ONLY)
-    public SortedSet<String> getInAfterOnly() {
-      return _inAfterOnly;
-    }
-
-    @JsonProperty(PROP_IN_BEFORE_ONLY)
-    public SortedSet<String> getInBeforeOnly() {
-      return _inBeforeOnly;
-    }
-
-    @JsonProperty(PROP_CONFIG_DIFF)
-    public void setConfigDiff(SortedMap<String, ConfigurationDiff> configDiff) {
-      _configDiff = configDiff;
-    }
-
-    // @JsonProperty(PROP_IDENTICAL)
-    @JsonIgnore
-    public void setIdentical(SortedSet<String> identical) {
-      _identical = identical;
-    }
-
-    @JsonProperty(PROP_IN_AFTER_ONLY)
-    public void setInAfterOnly(SortedSet<String> inAfterOnly) {
-      _inAfterOnly = inAfterOnly;
-    }
-
-    @JsonProperty(PROP_IN_BEFORE_ONLY)
-    public void setInBeforeOnly(SortedSet<String> inBeforeOnly) {
-      _inBeforeOnly = inBeforeOnly;
-    }
-
-    private void summarizeIdentical() {
-      int numIdentical = _identical.size();
-      if (numIdentical > MAX_IDENTICAL) {
-        _identical = new TreeSet<>();
-        _identical.add(numIdentical + " identical elements not shown for readability.");
-      }
+      throw new BatfishException("Nodes question in differential mode no longer supported.");
     }
   }
 
