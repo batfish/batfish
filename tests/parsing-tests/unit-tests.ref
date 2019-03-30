@@ -41438,7 +41438,6 @@
             "                  NUMBERED_WORD:'swp6')))",
             "            NEWLINE:'\\n')))))",
             "  (statement",
-<<<<<<< HEAD
             "    (s_net_add",
             "      NET:'net'",
             "      ADD:'add'",
@@ -41490,26 +41489,6 @@
             "                  NUMBERED_WORD:'swp8')))",
             "            NEWLINE:'\\n')))))",
             "  (statement",
-||||||| merged common ancestors
-=======
-            "    (s_net_add",
-            "      NET:'net'",
-            "      ADD:'add'",
-            "      (a_bond",
-            "        BOND:'bond'",
-            "        name = (word",
-            "          NUMBERED_WORD:'vlan1')",
-            "        (bond_bond",
-            "          BOND:'bond'",
-            "          (bobo_slaves",
-            "            SLAVES:'slaves'",
-            "            slaves = (glob",
-            "              (glob_range_set",
-            "                base_word = (numbered_word",
-            "                  NUMBERED_WORD:'swp7')))",
-            "            NEWLINE:'\\n')))))",
-            "  (statement",
->>>>>>> master
             "    (s_null",
             "      NET:'net'",
             "      (null_rest_of_line",
@@ -72262,46 +72241,8 @@
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 64,
-<<<<<<< HEAD
               "Parser_Context" : "[v_vlan_raw_device a_vlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "vlan-raw-device bridge"
-||||||| merged common ancestors
-              "Parser_Context" : "[a_vlan s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vlan 4 vlan-raw-device bridge"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 65,
-              "Parser_Context" : "[a_vlan s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vlan 4 vrf vrf1"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 70,
-              "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vxlan vni10001 bridge access 5"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 71,
-              "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vxlan vni10001 vxlan id 100001"
-=======
-              "Parser_Context" : "[v_vlan_raw_device a_vlan s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vlan-raw-device bridge"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 70,
-              "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vxlan vni10001 bridge access 5"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 71,
-              "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vxlan vni10001 vxlan id 100001"
->>>>>>> master
             },
             {
               "Comment" : "This feature is not currently supported",
@@ -72388,7 +72329,6 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Invalid name 'bond1.1000' for bond in: bond bond1.1000 bond slaves swp6\n"
-<<<<<<< HEAD
             },
             {
               "tag" : "MISCELLANEOUS",
@@ -72397,13 +72337,6 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Invalid name 'v1' for bond clashes with existing vxlan in: bond v1 bond slaves swp8\n"
-||||||| merged common ancestors
-=======
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Invalid name 'vlan1' for bond in: bond vlan1 bond slaves swp7\n"
->>>>>>> master
             }
           ]
         },
@@ -76944,7 +76877,6 @@
             },
             "vrf1" : {
               "definitionLines" : [
-<<<<<<< HEAD
                 65
               ],
               "numReferrers" : 2
@@ -76954,13 +76886,8 @@
             "vni10001" : {
               "definitionLines" : [
                 71
-||||||| merged common ancestors
-                68
-=======
-                65
->>>>>>> master
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             }
           }
         },
@@ -76995,7 +76922,6 @@
                 14
               ],
               "numReferrers" : 2
-<<<<<<< HEAD
             },
             "swp7" : {
               "definitionLines" : [
@@ -77008,15 +76934,6 @@
                 19
               ],
               "numReferrers" : 2
-||||||| merged common ancestors
-=======
-            },
-            "swp7" : {
-              "definitionLines" : [
-                16
-              ],
-              "numReferrers" : 2
->>>>>>> master
             }
           },
           "vrf" : {
@@ -82707,7 +82624,6 @@
                 65
               ],
               "vrf self-reference" : [
-<<<<<<< HEAD
                 65
               ]
             }
@@ -82716,11 +82632,6 @@
             "vni10001" : {
               "vxlan self-reference" : [
                 71
-||||||| merged common ancestors
-                68
-=======
-                65
->>>>>>> master
               ]
             }
           }
@@ -82766,7 +82677,6 @@
               "interface self-reference" : [
                 14
               ]
-<<<<<<< HEAD
             },
             "swp7" : {
               "bond slave" : [
@@ -82783,17 +82693,6 @@
               "interface self-reference" : [
                 19
               ]
-||||||| merged common ancestors
-=======
-            },
-            "swp7" : {
-              "bond slave" : [
-                16
-              ],
-              "interface self-reference" : [
-                16
-              ]
->>>>>>> master
             }
           },
           "vrf" : {

@@ -2389,22 +2389,10 @@
       }
     ],
     "summary" : {
-<<<<<<< HEAD
       "notes" : "Found 335 results",
-||||||| merged common ancestors
-      "notes" : "Found 342 results",
-=======
-      "notes" : "Found 338 results",
->>>>>>> master
       "numFailed" : 0,
       "numPassed" : 0,
-<<<<<<< HEAD
       "numResults" : 335
-||||||| merged common ancestors
-      "numResults" : 342
-=======
-      "numResults" : 338
->>>>>>> master
     }
   }
 ]
