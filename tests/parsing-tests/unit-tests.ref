@@ -40999,12 +40999,15 @@
             "      ADD:'add'",
             "      (a_vlan",
             "        VLAN:'vlan'",
-            "        id = (vlan_id",
-            "          v = DEC:'4')",
+            "        suffixes = (range_set",
+            "          (range",
+            "            low = (uint16",
+            "              d = DEC:'4')))",
             "        (v_ip_address",
             "          IP:'ip'",
             "          ADDRESS:'address'",
-            "          address = IP_PREFIX:'192.0.2.9/24'",
+            "          address = (interface_address",
+            "            IP_PREFIX:'192.0.2.9/24')",
             "          NEWLINE:'\\n'))))",
             "  (statement",
             "    (s_net_add",
@@ -41012,13 +41015,17 @@
             "      ADD:'add'",
             "      (a_vlan",
             "        VLAN:'vlan'",
-            "        id = (vlan_id",
-            "          v = DEC:'4')",
+            "        suffixes = (range_set",
+            "          (range",
+            "            low = (uint16",
+            "              d = DEC:'4')))",
             "        (v_ip_address_virtual",
             "          IP:'ip'",
             "          ADDRESS_VIRTUAL:'address-virtual'",
-            "          mac = MAC_ADDRESS:'01:23:45:67:89:ab'",
-            "          address = IP_PREFIX:'192.168.0.1/24'",
+            "          mac = (mac_address",
+            "            MAC_ADDRESS:'01:23:45:67:89:ab')",
+            "          address = (interface_address",
+            "            IP_PREFIX:'192.168.0.1/24')",
             "          NEWLINE:'\\n'))))",
             "  (statement",
             "    (s_net_add",
@@ -41026,8 +41033,8 @@
             "      ADD:'add'",
             "      (a_vlan",
             "        VLAN:'vlan'",
-            "        id = (vlan_id",
-            "          v = DEC:'4')",
+            "        suffix = (uint16",
+            "          d = DEC:'4')",
             "        (v_vlan_id",
             "          VLAN_ID:'vlan-id'",
             "          id = (vlan_id",
@@ -41039,8 +41046,10 @@
             "      ADD:'add'",
             "      (a_vlan",
             "        VLAN:'vlan'",
-            "        id = (vlan_id",
-            "          v = DEC:'4')",
+            "        suffixes = (range_set",
+            "          (range",
+            "            low = (uint16",
+            "              d = DEC:'4')))",
             "        (v_vlan_raw_device",
             "          VLAN_RAW_DEVICE:'vlan-raw-device'",
             "          device = BRIDGE:'bridge'",
@@ -41051,8 +41060,10 @@
             "      ADD:'add'",
             "      (a_vlan",
             "        VLAN:'vlan'",
-            "        id = (vlan_id",
-            "          v = DEC:'4')",
+            "        suffixes = (range_set",
+            "          (range",
+            "            low = (uint16",
+            "              d = DEC:'4')))",
             "        (v_vrf",
             "          VRF:'vrf'",
             "          name = (word",
@@ -41420,6 +41431,23 @@
             "              (glob_range_set",
             "                base_word = (numbered_word",
             "                  NUMBERED_WORD:'swp6')))",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        name = (word",
+            "          NUMBERED_WORD:'vlan1')",
+            "        (bond_bond",
+            "          BOND:'bond'",
+            "          (bobo_slaves",
+            "            SLAVES:'slaves'",
+            "            slaves = (glob",
+            "              (glob_range_set",
+            "                base_word = (numbered_word",
+            "                  NUMBERED_WORD:'swp7')))",
             "            NEWLINE:'\\n')))))",
             "  (statement",
             "    (s_null",
@@ -71899,33 +71927,9 @@
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 61,
-              "Parser_Context" : "[a_vlan s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vlan 4 ip address 192.0.2.9/24"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 62,
-              "Parser_Context" : "[a_vlan s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vlan 4 ip address-virtual 01:23:45:67:89:ab 192.168.0.1/24"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 63,
-              "Parser_Context" : "[a_vlan s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vlan 4 vlan-id 4"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
               "Line" : 64,
-              "Parser_Context" : "[a_vlan s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vlan 4 vlan-raw-device bridge"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 65,
-              "Parser_Context" : "[a_vlan s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vlan 4 vrf vrf1"
+              "Parser_Context" : "[v_vlan_raw_device a_vlan s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "vlan-raw-device bridge"
             },
             {
               "Comment" : "This feature is not currently supported",
@@ -72004,6 +72008,10 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Invalid name 'bond1.1000' for bond in: bond bond1.1000 bond slaves swp6\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'vlan1' for bond in: bond vlan1 bond slaves swp7\n"
             }
           ]
         },
@@ -76478,6 +76486,14 @@
               "numReferrers" : 2
             }
           },
+          "vlan" : {
+            "vlan4" : {
+              "definitionLines" : [
+                61
+              ],
+              "numReferrers" : 1
+            }
+          },
           "vrf" : {
             "mgmt" : {
               "definitionLines" : [
@@ -76487,9 +76503,9 @@
             },
             "vrf1" : {
               "definitionLines" : [
-                68
+                65
               ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             }
           }
         },
@@ -76522,6 +76538,12 @@
             "swp6" : {
               "definitionLines" : [
                 14
+              ],
+              "numReferrers" : 2
+            },
+            "swp7" : {
+              "definitionLines" : [
+                16
               ],
               "numReferrers" : 2
             }
@@ -82132,6 +82154,13 @@
               ]
             }
           },
+          "vlan" : {
+            "vlan4" : {
+              "vlan self-reference" : [
+                61
+              ]
+            }
+          },
           "vrf" : {
             "mgmt" : {
               "interface clag backup-ip vrf" : [
@@ -82145,8 +82174,11 @@
               ]
             },
             "vrf1" : {
+              "vlan vrf" : [
+                65
+              ],
               "vrf self-reference" : [
-                68
+                65
               ]
             }
           }
@@ -82191,6 +82223,14 @@
               ],
               "interface self-reference" : [
                 14
+              ]
+            },
+            "swp7" : {
+              "bond slave" : [
+                16
+              ],
+              "interface self-reference" : [
+                16
               ]
             }
           },

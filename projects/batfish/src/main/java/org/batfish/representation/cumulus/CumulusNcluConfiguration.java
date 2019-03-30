@@ -27,6 +27,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private final @Nonnull List<Ip> _ipv4Nameservers;
   private final @Nonnull List<Ip6> _ipv6Nameservers;
   private final @Nonnull Loopback _loopback;
+  private final @Nonnull Map<String, Vlan> _vlans;
   private final @Nonnull Map<String, Vrf> _vrfs;
 
   public CumulusNcluConfiguration() {
@@ -35,6 +36,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     _ipv4Nameservers = new LinkedList<>();
     _ipv6Nameservers = new LinkedList<>();
     _loopback = new Loopback();
+    _vlans = new HashMap<>();
     _vrfs = new HashMap<>();
   }
 
@@ -63,6 +65,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     return _loopback;
   }
 
+  public @Nonnull Map<String, Vlan> getVlans() {
+    return _vlans;
+  }
+
   public @Nonnull Map<String, Vrf> getVrfs() {
     return _vrfs;
   }
@@ -73,10 +79,12 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         CumulusStructureType.INTERFACE,
         CumulusStructureUsage.BOND_SLAVE,
         CumulusStructureUsage.INTERFACE_SELF_REFERENCE);
+    markConcreteStructure(CumulusStructureType.VLAN, CumulusStructureUsage.VLAN_SELF_REFERENCE);
     markConcreteStructure(
         CumulusStructureType.VRF,
         CumulusStructureUsage.INTERFACE_CLAG_BACKUP_IP_VRF,
         CumulusStructureUsage.INTERFACE_VRF,
+        CumulusStructureUsage.VLAN_VRF,
         CumulusStructureUsage.VRF_SELF_REFERENCE);
   }
 
