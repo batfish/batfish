@@ -218,24 +218,33 @@ t_zone
 
 a_vlan
 :
-  VLAN id = vlan_id
+  VLAN
   (
-    v_ip_address
-    | v_ip_address_virtual
-    | v_vlan_id
-    | v_vlan_raw_device
-    | v_vrf
+    (
+      suffix = uint16 v_vlan_id
+    )
+    |
+    (
+      suffixes = range_set
+      (
+        v_ip_address
+        | v_ip_address_virtual
+        | v_vlan_raw_device
+        | v_vrf
+        | NEWLINE
+      )
+    )
   )
 ;
 
 v_ip_address
 :
-  IP ADDRESS address = IP_PREFIX NEWLINE
+  IP ADDRESS address = interface_address NEWLINE
 ;
 
 v_ip_address_virtual
 :
-  IP ADDRESS_VIRTUAL mac = MAC_ADDRESS address = IP_PREFIX NEWLINE
+  IP ADDRESS_VIRTUAL mac = mac_address address = interface_address NEWLINE
 ;
 
 v_vlan_id

@@ -2,6 +2,7 @@ package org.batfish.grammar.cumulus_nclu;
 
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
+import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -13,6 +14,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import java.io.IOException;
 import java.util.Arrays;
@@ -271,6 +274,54 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
+  public void testVlanExtraction() throws IOException {
+    CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_vlan");
+
+    // vlan interfaces
+    assertThat(vc.getVlans().keySet(), containsInAnyOrder("vlan2", "vlan3", "vlan4", "vlan5"));
+
+    // name
+    assertThat(vc.getVlans().get("vlan2").getName(), equalTo("vlan2"));
+    assertThat(vc.getVlans().get("vlan3").getName(), equalTo("vlan3"));
+    assertThat(vc.getVlans().get("vlan4").getName(), equalTo("vlan4"));
+    assertThat(vc.getVlans().get("vlan5").getName(), equalTo("vlan5"));
+
+    // vlan-id
+    assertThat(vc.getVlans().get("vlan2").getVlanId(), equalTo(2));
+    assertThat(vc.getVlans().get("vlan3").getVlanId(), nullValue());
+    assertThat(vc.getVlans().get("vlan4").getVlanId(), nullValue());
+    assertThat(vc.getVlans().get("vlan5").getVlanId(), equalTo(6)); // intentional 6
+
+    // ip address
+    assertThat(
+        vc.getVlans().get("vlan2").getAddresses(),
+        contains(new InterfaceAddress("10.0.0.1/24"), new InterfaceAddress("10.0.1.1/24")));
+    assertThat(vc.getVlans().get("vlan3").getAddresses(), empty());
+    assertThat(vc.getVlans().get("vlan4").getAddresses(), empty());
+    assertThat(vc.getVlans().get("vlan5").getAddresses(), empty());
+
+    // ip address-virtual
+    assertThat(
+        vc.getVlans().get("vlan2").getAddressVirtuals(),
+        equalTo(
+            ImmutableMap.of(
+                MacAddress.parse("00:00:00:00:00:01"),
+                ImmutableSet.of(
+                    new InterfaceAddress("10.0.2.1/24"), new InterfaceAddress("10.0.3.1/24")),
+                MacAddress.parse("00:00:00:00:00:02"),
+                ImmutableSet.of(new InterfaceAddress("10.0.4.1/24")))));
+    assertThat(vc.getVlans().get("vlan3").getAddressVirtuals(), anEmptyMap());
+    assertThat(vc.getVlans().get("vlan4").getAddressVirtuals(), anEmptyMap());
+    assertThat(vc.getVlans().get("vlan5").getAddressVirtuals(), anEmptyMap());
+
+    // vrf
+    assertThat(vc.getVlans().get("vlan2").getVrf(), equalTo("vrf1"));
+    assertThat(vc.getVlans().get("vlan3").getVrf(), nullValue());
+    assertThat(vc.getVlans().get("vlan4").getVrf(), nullValue());
+    assertThat(vc.getVlans().get("vlan5").getVrf(), nullValue());
+  }
+
+  @Test
   public void testVrfExtraction() throws IOException {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_vrf");
 
@@ -302,7 +353,7 @@ public final class CumulusNcluGrammarTest {
     ConvertConfigurationAnswerElement ans =
         getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
 
-    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VRF, "vrf1", 3));
+    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VRF, "vrf1", 4));
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VRF, "vrf2", 2));
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VRF, "vrf3", 1));
   }

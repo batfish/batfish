@@ -8,6 +8,8 @@ public enum CumulusStructureUsage implements StructureUsage {
   INTERFACE_CLAG_BACKUP_IP_VRF("interface clag backup-ip vrf"),
   INTERFACE_SELF_REFERENCE("interface self-reference"),
   INTERFACE_VRF("interface vrf"),
+  VLAN_SELF_REFERENCE("vlan self-reference"),
+  VLAN_VRF("vlan vrf"),
   VRF_SELF_REFERENCE("vrf self-reference");
 
   private final String _description;
