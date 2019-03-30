@@ -790,10 +790,6 @@ public final class JFactory extends BDDFactory {
     return TRIPLE(l, r, op);
   }
 
-  private static int ITEHASH(int f, int g, int h) {
-    return TRIPLE(f, g, h);
-  }
-
   private static int RESTRHASH(int r, int var) {
     return PAIR(r, var);
   }
@@ -844,7 +840,7 @@ public final class JFactory extends BDDFactory {
     return Math.abs(quantvarset[a]) == quantvarsetID; /* signed check */
   }
 
-  private static final int bddop_and = 0;
+  private static final int bddop_and = 0; // NOTE: ite_rec caching exploits bddop_and==0.
   private static final int bddop_xor = 1;
   private static final int bddop_or = 2;
   private static final int bddop_nand = 3;
@@ -941,9 +937,6 @@ public final class JFactory extends BDDFactory {
     if (applycache == null) {
       applycache = BddCacheI_init(cachesize);
     }
-    if (itecache == null) {
-      itecache = BddCacheI_init(cachesize);
-    }
 
     while (true) {
       try {
@@ -994,8 +987,14 @@ public final class JFactory extends BDDFactory {
       return apply_rec(f, g);
     }
 
-    entry = BddCache_lookupI(itecache, ITEHASH(f, g, h));
-    if (entry.a == f && entry.b == g && entry.c == h) {
+    // ITE and APPLY share the same cache:
+    //    APPLY is (l, r, op) where op in 0..10 (0=and, ..., 10=not) where l, r are BDD ids.
+    //    ITE is (f, g, -h) where f, g, h are all BDD ids.
+    //
+    // The only possible collision is apply(l, r, bddop_and) and ite(l, r, 0==BDDZERO).
+    // Fortuitously, these are logically equivalent -- if f then g else false === f and g.
+    entry = BddCache_lookupI(applycache, APPLYHASH(f, g, -h));
+    if (entry.a == f && entry.b == g && entry.c == -h) { // To explain -h, see caching note above.
       if (CACHESTATS) {
         cachestats.opHit++;
       }
@@ -1056,7 +1055,7 @@ public final class JFactory extends BDDFactory {
     }
     entry.a = f;
     entry.b = g;
-    entry.c = h;
+    entry.c = -h; // To explain -h, see caching note above.
     entry.res = res;
 
     return res;
@@ -2162,9 +2161,6 @@ public final class JFactory extends BDDFactory {
     if (applycache == null) {
       applycache = BddCacheI_init(cachesize);
     }
-    if (itecache == null) {
-      itecache = BddCacheI_init(cachesize);
-    }
 
     while (true) {
       try {
@@ -2253,9 +2249,6 @@ public final class JFactory extends BDDFactory {
 
     if (applycache == null) {
       applycache = BddCacheI_init(cachesize);
-    }
-    if (itecache == null) {
-      itecache = BddCacheI_init(cachesize);
     }
     if (replacecache == null) {
       replacecache = BddCacheI_init(cachesize);
@@ -3645,8 +3638,7 @@ public final class JFactory extends BDDFactory {
   private int supportMin; /* Min. used level in support calc. */
   private int supportMax; /* Max. used level in support calc. */
   @Nonnull private int[] supportSet; /* The found support set */
-  private BddCache applycache; /* Cache for apply results */
-  private BddCache itecache; /* Cache for ITE results */
+  private BddCache applycache; /* Cache for apply and ite results. See note in ite_rec. */
   private BddCache quantcache; /* Cache for exist/forall results */
   private BddCache appexcache; /* Cache for appex/appall results */
   private BddCache replacecache; /* Cache for replace results */
@@ -3662,7 +3654,6 @@ public final class JFactory extends BDDFactory {
   private void bdd_operator_init(int cachesize) {
     if (false) {
       applycache = BddCacheI_init(cachesize);
-      itecache = BddCacheI_init(cachesize);
       quantcache = BddCacheI_init(cachesize);
       appexcache = BddCacheI_init(cachesize);
       replacecache = BddCacheI_init(cachesize);
@@ -3683,8 +3674,6 @@ public final class JFactory extends BDDFactory {
 
     BddCache_done(applycache);
     applycache = null;
-    BddCache_done(itecache);
-    itecache = null;
     BddCache_done(quantcache);
     quantcache = null;
     BddCache_done(appexcache);
@@ -3703,7 +3692,6 @@ public final class JFactory extends BDDFactory {
 
   private void bdd_operator_reset() {
     BddCache_reset(applycache);
-    BddCache_reset(itecache);
     BddCache_reset(quantcache);
     BddCache_reset(appexcache);
     BddCache_reset(replacecache);
@@ -3713,7 +3701,6 @@ public final class JFactory extends BDDFactory {
 
   private void bdd_operator_clean() {
     BddCache_clean_ab(applycache);
-    BddCache_clean_abc(itecache);
     BddCache_clean_a(quantcache);
     BddCache_clean_ab(appexcache);
     BddCache_clean_ab(replacecache);
@@ -3734,7 +3721,6 @@ public final class JFactory extends BDDFactory {
   public int setCacheSize(int newcachesize) {
     int old = cachesize;
     BddCache_resize(applycache, newcachesize);
-    BddCache_resize(itecache, newcachesize);
     BddCache_resize(quantcache, newcachesize);
     BddCache_resize(appexcache, newcachesize);
     BddCache_resize(replacecache, newcachesize);
@@ -3748,7 +3734,6 @@ public final class JFactory extends BDDFactory {
       int newcachesize = bddnodesize / cacheratio;
 
       BddCache_resize(applycache, newcachesize);
-      BddCache_resize(itecache, newcachesize);
       BddCache_resize(quantcache, newcachesize);
       BddCache_resize(appexcache, newcachesize);
       BddCache_resize(replacecache, newcachesize);
@@ -7156,9 +7141,6 @@ public final class JFactory extends BDDFactory {
     JFactory INSTANCE = new JFactory();
     if (applycache != null) {
       INSTANCE.applycache = this.applycache.copy();
-    }
-    if (itecache != null) {
-      INSTANCE.itecache = this.itecache.copy();
     }
     if (quantcache != null) {
       INSTANCE.quantcache = this.quantcache.copy();
