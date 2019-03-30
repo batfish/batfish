@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -66,7 +67,8 @@ public class TestRoutePoliciesAnswererTest {
             .build();
 
     TestRoutePoliciesQuestion question =
-        new TestRoutePoliciesQuestion(Direction.IN, inputRoute, _c.getHostname(), policy.getName());
+        new TestRoutePoliciesQuestion(
+            Direction.IN, ImmutableList.of(inputRoute), _c.getHostname(), policy.getName());
     TestRoutePoliciesAnswerer answerer = new TestRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer();
@@ -113,7 +115,8 @@ public class TestRoutePoliciesAnswererTest {
             .build();
 
     TestRoutePoliciesQuestion question =
-        new TestRoutePoliciesQuestion(Direction.IN, inputRoute, _c.getHostname(), policy.getName());
+        new TestRoutePoliciesQuestion(
+            Direction.IN, ImmutableList.of(inputRoute), _c.getHostname(), policy.getName());
     TestRoutePoliciesAnswerer answerer = new TestRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer();
@@ -163,7 +166,8 @@ public class TestRoutePoliciesAnswererTest {
             ImmutableSortedSet.of(new BgpRouteDiff(BgpRoute.PROP_METRIC, "0", "500")));
 
     TestRoutePoliciesQuestion question =
-        new TestRoutePoliciesQuestion(Direction.IN, inputRoute, _c.getHostname(), policy.getName());
+        new TestRoutePoliciesQuestion(
+            Direction.IN, ImmutableList.of(inputRoute), _c.getHostname(), policy.getName());
     TestRoutePoliciesAnswerer answerer = new TestRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer();
