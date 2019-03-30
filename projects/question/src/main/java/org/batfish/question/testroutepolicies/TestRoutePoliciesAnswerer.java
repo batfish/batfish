@@ -16,6 +16,7 @@ import com.google.common.collect.Ordering;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
+import java.util.stream.Stream;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.BgpRoute;
@@ -47,14 +48,14 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
   public static final String COL_DIFF = "Difference";
 
   private final Direction _direction;
-  private final BgpRoute _inputRoute;
+  private final List<BgpRoute> _inputRoutes;
   private final String _nodes;
   private final String _policies;
 
   public TestRoutePoliciesAnswerer(TestRoutePoliciesQuestion question, IBatfish batfish) {
     super(question, batfish);
     _direction = question.getDirection();
-    _inputRoute = question.getInputRoute();
+    _inputRoutes = question.getInputRoutes();
     _nodes = question.getNodes();
     _policies = question.getPolicies();
   }
@@ -75,8 +76,11 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
   }
 
-  private Row testPolicy(RoutingPolicy policy) {
-    BgpRoute inputRoute = _inputRoute;
+  private Stream<Row> testPolicy(RoutingPolicy policy) {
+    return _inputRoutes.stream().map(route -> testPolicy(policy, route));
+  }
+
+  private Row testPolicy(RoutingPolicy policy, BgpRoute inputRoute) {
     BgpRoute.Builder outputRoute = inputRoute.toBuilder();
 
     boolean permit =
@@ -101,7 +105,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
             .map(
                 policyId ->
                     configs.get(policyId.getNode()).getRoutingPolicies().get(policyId.getPolicy()))
-            .map(this::testPolicy)
+            .flatMap(this::testPolicy)
             .collect(ImmutableMultiset.toImmutableMultiset());
 
     TableAnswerElement answerElement = new TableAnswerElement(metadata());
