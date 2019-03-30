@@ -1,26 +1,35 @@
 package org.batfish.question.testroutepolicies;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+import static org.batfish.datamodel.BgpRouteDiff.routeDiffs;
 import static org.batfish.datamodel.LineAction.DENY;
 import static org.batfish.datamodel.LineAction.PERMIT;
 import static org.batfish.datamodel.answers.Schema.BGP_ROUTE;
 import static org.batfish.datamodel.answers.Schema.BGP_ROUTE_DIFFS;
 import static org.batfish.datamodel.answers.Schema.NODE;
 import static org.batfish.datamodel.answers.Schema.STRING;
+import static org.batfish.datamodel.table.TableDiff.baseColumnName;
+import static org.batfish.datamodel.table.TableDiff.deltaColumnName;
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Ordering;
+import com.google.common.collect.Sets;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.SortedSet;
+import java.util.function.Function;
 import java.util.stream.Stream;
+import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.BgpRoute;
-import org.batfish.datamodel.BgpRouteDiff;
 import org.batfish.datamodel.BgpRouteDiffs;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.LineAction;
@@ -76,39 +85,91 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
   }
 
-  private Stream<Row> testPolicy(RoutingPolicy policy) {
+  private Stream<Result> testPolicy(RoutingPolicy policy) {
     return _inputRoutes.stream().map(route -> testPolicy(policy, route));
   }
 
-  private Row testPolicy(RoutingPolicy policy, BgpRoute inputRoute) {
+  private Result testPolicy(RoutingPolicy policy, BgpRoute inputRoute) {
     BgpRoute.Builder outputRoute = inputRoute.toBuilder();
 
     boolean permit =
         policy.process(
             inputRoute, outputRoute, null, null, Configuration.DEFAULT_VRF_NAME, _direction);
-
-    return row(
-        policy.getOwner().getHostname(),
-        policy.getName(),
+    return new Result(
+        new RoutingPolicyId(policy.getOwner().getHostname(), policy.getName()),
         inputRoute,
         permit ? PERMIT : DENY,
-        outputRoute.build());
+        permit ? outputRoute.build() : null);
   }
 
   @Override
   public AnswerElement answer() {
-    Map<String, Configuration> configs = _batfish.loadConfigurations();
 
     SortedSet<RoutingPolicyId> policies = resolvePolicies();
     Multiset<Row> rows =
-        policies.stream()
-            .map(
-                policyId ->
-                    configs.get(policyId.getNode()).getRoutingPolicies().get(policyId.getPolicy()))
+        getResults(policies)
             .flatMap(this::testPolicy)
+            .map(TestRoutePoliciesAnswerer::toRow)
             .collect(ImmutableMultiset.toImmutableMultiset());
 
     TableAnswerElement answerElement = new TableAnswerElement(metadata());
+    answerElement.postProcessAnswer(_question, rows);
+    return answerElement;
+  }
+
+  @Nonnull
+  private Stream<RoutingPolicy> getResults(SortedSet<RoutingPolicyId> policies) {
+    Map<String, Configuration> configs = _batfish.loadConfigurations();
+    return policies.stream()
+        .map(
+            policyId ->
+                configs.get(policyId.getNode()).getRoutingPolicies().get(policyId.getPolicy()));
+  }
+
+  @Override
+  public AnswerElement answerDiff() {
+    _batfish.pushBaseSnapshot();
+    SortedSet<RoutingPolicyId> basePolicies = resolvePolicies();
+    _batfish.popSnapshot();
+
+    _batfish.pushBaseSnapshot();
+    SortedSet<RoutingPolicyId> deltaPolicies = resolvePolicies();
+    _batfish.popSnapshot();
+
+    SortedSet<RoutingPolicyId> policies =
+        Sets.intersection(basePolicies, deltaPolicies).stream()
+            .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
+
+    _batfish.pushBaseSnapshot();
+    Map<Result.Key, Result> baseResults =
+        getResults(policies)
+            .flatMap(this::testPolicy)
+            .collect(ImmutableMap.toImmutableMap(Result::getKey, Function.identity()));
+    _batfish.popSnapshot();
+    _batfish.pushDeltaSnapshot();
+    Map<Result.Key, Result> deltaResults =
+        getResults(policies)
+            .flatMap(this::testPolicy)
+            .collect(ImmutableMap.toImmutableMap(Result::getKey, Function.identity()));
+    _batfish.popSnapshot();
+
+    checkState(
+        baseResults.keySet().equals(deltaResults.keySet()),
+        "base and delta results should have the same keySets");
+
+    Multiset<Row> rows =
+        baseResults.entrySet().stream()
+            .map(
+                baseEntry -> {
+                  Result.Key key = baseEntry.getKey();
+                  Result baseResult = baseEntry.getValue();
+                  Result deltaResult = deltaResults.get(key);
+                  return baseResult.equals(deltaResult) ? null : toDiffRow(baseResult, deltaResult);
+                })
+            .filter(Objects::nonNull)
+            .collect(ImmutableMultiset.toImmutableMultiset());
+
+    TableAnswerElement answerElement = new TableAnswerElement(diffMetadata());
     answerElement.postProcessAnswer(_question, rows);
     return answerElement;
   }
@@ -133,18 +194,89 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         columnMetadata, String.format("Results for route ${%s}", COL_INPUT_ROUTE));
   }
 
-  private static Row row(
-      String node, String policy, BgpRoute inputRoute, LineAction action, BgpRoute outputRoute) {
+  public static TableMetadata diffMetadata() {
+    List<ColumnMetadata> columnMetadata =
+        ImmutableList.of(
+            new ColumnMetadata(COL_NODE, NODE, "The node that has the policy", true, false),
+            new ColumnMetadata(COL_POLICY_NAME, STRING, "The name of this policy", true, false),
+            new ColumnMetadata(COL_INPUT_ROUTE, BGP_ROUTE, "The input route", true, false),
+            new ColumnMetadata(
+                baseColumnName(COL_ACTION),
+                STRING,
+                "The action of the policy on the input route",
+                false,
+                true),
+            new ColumnMetadata(
+                deltaColumnName(COL_ACTION),
+                STRING,
+                "The action of the policy on the input route",
+                false,
+                true),
+            new ColumnMetadata(
+                baseColumnName(COL_OUTPUT_ROUTE),
+                BGP_ROUTE,
+                "The output route, if any",
+                false,
+                true),
+            new ColumnMetadata(
+                deltaColumnName(COL_OUTPUT_ROUTE),
+                BGP_ROUTE,
+                "The output route, if any",
+                false,
+                true),
+            new ColumnMetadata(
+                COL_DIFF,
+                BGP_ROUTE_DIFFS,
+                "The difference between the output routes",
+                false,
+                true));
+    return new TableMetadata(
+        columnMetadata, String.format("Results for route ${%s}", COL_INPUT_ROUTE));
+  }
+
+  private static Row toRow(Result result) {
+    BgpRoute inputRoute = result.getInputRoute();
+    LineAction action = result.getAction();
+    BgpRoute outputRoute = result.getOutputRoute();
     boolean permit = action == PERMIT;
+    RoutingPolicyId policyId = result.getPolicyId();
     return Row.builder()
-        .put(COL_NODE, new Node(node))
-        .put(COL_POLICY_NAME, policy)
+        .put(COL_NODE, new Node(policyId.getNode()))
+        .put(COL_POLICY_NAME, policyId.getPolicy())
         .put(COL_INPUT_ROUTE, inputRoute)
         .put(COL_ACTION, action)
         .put(COL_OUTPUT_ROUTE, permit ? outputRoute : null)
-        .put(
-            COL_DIFF,
-            permit ? new BgpRouteDiffs(BgpRouteDiff.routeDiffs(inputRoute, outputRoute)) : null)
+        .put(COL_DIFF, permit ? new BgpRouteDiffs(routeDiffs(inputRoute, outputRoute)) : null)
+        .build();
+  }
+
+  private static Row toDiffRow(Result baseResult, Result deltaResult) {
+    checkArgument(
+        baseResult.getKey().equals(deltaResult.getKey()),
+        "results must be for the same policy and input route");
+    BgpRoute baseOutputRoute = baseResult.getOutputRoute();
+    BgpRoute deltaOutputRoute = deltaResult.getOutputRoute();
+    boolean equalAction = baseResult.getAction() == deltaResult.getAction();
+    boolean equalOutputRoutes = Objects.equals(baseOutputRoute, deltaOutputRoute);
+    checkArgument(
+        !(equalAction && equalOutputRoutes), "Results must have different action or output route");
+
+    // delta is reference, base is current. so show diffs from delta -> base
+    BgpRouteDiffs routeDiffs =
+        new BgpRouteDiffs(routeDiffs(deltaOutputRoute, baseOutputRoute))
+       ;
+
+    RoutingPolicyId policyId = baseResult.getPolicyId();
+    BgpRoute inputRoute = baseResult.getInputRoute();
+    return Row.builder()
+        .put(COL_NODE, new Node(policyId.getNode()))
+        .put(COL_POLICY_NAME, policyId.getPolicy())
+        .put(COL_INPUT_ROUTE, inputRoute)
+        .put(baseColumnName(COL_ACTION), baseResult.getAction())
+        .put(deltaColumnName(COL_ACTION), deltaResult.getAction())
+        .put(baseColumnName(COL_OUTPUT_ROUTE), baseResult.getOutputRoute())
+        .put(deltaColumnName(COL_OUTPUT_ROUTE), deltaResult.getOutputRoute())
+        .put(COL_DIFF, routeDiffs)
         .build();
   }
 }
