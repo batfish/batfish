@@ -3,7 +3,7 @@
     "differential": false,
     "nodes": "${nodes}",
     "policies": "${policies}",
-    "inputRoute": "${inputRoute}",
+    "inputRoutes": "${inputRoutes}",
     "direction": "${direction}",
     "instance": {
         "description": "Evaluate the processing of a route by a given policy",
@@ -12,7 +12,7 @@
         "orderedVariableNames": [
             "nodes",
             "policies",
-            "inputRoute",
+            "inputRoutes",
             "direction"
         ],
         "tags": [
@@ -40,16 +40,10 @@
                 "value": ".*",
                 "displayName": "Policies"
             },
-            "inputRoute": {
-                "description": "The BGP route announcement to test the policy on",
-                "type": "bgpRouteSpec",
-                "displayName": "Input Route",
-                "fields": {
-                    "network": { "type" : "prefix"},
-                    "originatorIp": { "type": "ip"},
-                    "originType": { "type": "string" },
-                    "protocol": { "type": "routingProtocolSpec"}
-                }
+            "inputRoutes": {
+                "description": "The BGP route announcements to test the policy on",
+                "type": "bgpRoutes",
+                "displayName": "Input Routes"
             }
         }
     }
