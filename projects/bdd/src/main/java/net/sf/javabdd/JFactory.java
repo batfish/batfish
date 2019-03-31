@@ -548,6 +548,16 @@ public final class JFactory extends BDDFactory {
       }
       return that;
     }
+
+    /**
+     * Returns the number of used entries in this cache.
+     *
+     * <p>Slow. Should only be used in debugging contexts.
+     */
+    private int used() {
+      // Array lengths in Java must be representable by a signed int.
+      return (int) Arrays.stream(table).filter(e -> e.a != -1).count();
+    }
   }
 
   private static class JavaBDDException extends BDDException {
@@ -3666,10 +3676,42 @@ public final class JFactory extends BDDFactory {
     cache.tablesize = 0;
   }
 
+  /**
+   * Returns the name of the type of {@link BddCache} that {@code cache} represents.
+   *
+   * <p>Slow. Should only be used in debugging contexts.
+   */
+  private String getCacheName(BddCache cache) {
+    if (cache == applycache) {
+      return "apply";
+    } else if (cache == appexcache) {
+      return "appex";
+    } else if (cache == countcache) {
+      return "count";
+    } else if (cache == itecache) {
+      return "ite";
+    } else if (cache == misccache) {
+      return "misc";
+    } else if (cache == quantcache) {
+      return "quant";
+    } else if (cache == replacecache) {
+      return "replace";
+    } else {
+      return "unknown";
+    }
+  }
+
   private int BddCache_resize(BddCache cache, int newsize) {
     if (cache == null) {
       return 0;
     }
+
+    if (CACHESTATS) {
+      System.err.printf(
+          "Cache %s resize: %d/%d slots used%n",
+          getCacheName(cache), cache.used(), cache.table.length);
+    }
+
     int n;
 
     boolean is_d = cache.table instanceof BddCacheDataD[];
@@ -3705,10 +3747,16 @@ public final class JFactory extends BDDFactory {
     return (BddCacheDataD) cache.table[Math.abs(hash % cache.tablesize)];
   }
 
-  private static void BddCache_reset(BddCache cache) {
+  private void BddCache_reset(BddCache cache) {
     if (cache == null) {
       return;
     }
+    if (CACHESTATS) {
+      System.err.printf(
+          "Cache %s reset: %d/%d slots used%n",
+          getCacheName(cache), cache.used(), cache.table.length);
+    }
+
     int n;
     for (n = 0; n < cache.tablesize; n++) {
       cache.table[n].a = -1;
