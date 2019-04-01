@@ -62,7 +62,13 @@ public final class BDDIpSpaceSpecializer extends IpSpaceSpecializer {
 
   @Override
   protected Optional<IpSpaceSpecializer> restrictSpecializerToBlacklist(Set<IpWildcard> blacklist) {
-    BDD refinedBDD = blacklist.stream().map(_ipSpaceToBDD::toBDD).reduce(_bdd, BDD::diff);
+    BDD refinedBDD = _bdd;
+    for (IpWildcard blacklisted : blacklist) {
+      refinedBDD = refinedBDD.diff(_ipSpaceToBDD.toBDD(blacklisted));
+      if (refinedBDD.isZero()) {
+        break;
+      }
+    }
     return refinedBDD.isZero()
         ? Optional.empty()
         : Optional.of(new BDDIpSpaceSpecializer(refinedBDD, _namedIpSpaces, _ipSpaceToBDD));
