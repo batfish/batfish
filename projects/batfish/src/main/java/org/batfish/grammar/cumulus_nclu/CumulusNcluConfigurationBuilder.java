@@ -35,7 +35,6 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_bridgeContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_hostnameContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_interfaceContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_loopbackContext;
-import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_routingContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_timeContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_vlanContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_vrfContext;
@@ -66,8 +65,11 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.L_ip_addressContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Lc_vxlan_anycast_ipContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Line_actionContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Mac_addressContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.R_defaults_datacenterContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.R_logContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.R_routeContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.R_route_mapContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.R_service_integrated_vtysh_configContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.RangeContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Range_setContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Rmm_interfaceContext;
@@ -227,7 +229,6 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   private @Nullable List<Vxlan> _currentVxlans;
   private final @Nonnull CumulusNcluCombinedParser _parser;
   private final @Nonnull String _text;
-
   private final @Nonnull Warnings _w;
 
   public CumulusNcluConfigurationBuilder(
@@ -561,11 +562,6 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   }
 
   @Override
-  public void exitA_routing(A_routingContext ctx) {
-    todo(ctx);
-  }
-
-  @Override
   public void exitA_time(A_timeContext ctx) {
     todo(ctx);
   }
@@ -708,6 +704,16 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   }
 
   @Override
+  public void exitR_defaults_datacenter(R_defaults_datacenterContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitR_log(R_logContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
   public void exitR_route(R_routeContext ctx) {
     _c.getStaticRoutes().add(new StaticRoute(toPrefix(ctx.prefix), toIp(ctx.nhip)));
   }
@@ -715,6 +721,11 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   @Override
   public void exitR_route_map(R_route_mapContext ctx) {
     _currentRouteMapEntry = null;
+  }
+
+  @Override
+  public void exitR_service_integrated_vtysh_config(R_service_integrated_vtysh_configContext ctx) {
+    todo(ctx);
   }
 
   @Override

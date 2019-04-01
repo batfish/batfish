@@ -72191,8 +72191,8 @@
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 52,
-              "Parser_Context" : "[a_routing s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "routing defaults datacenter"
+              "Parser_Context" : "[r_defaults_datacenter a_routing s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "defaults datacenter"
             },
             {
               "Comment" : "This syntax is unrecognized",
@@ -72202,21 +72202,9 @@
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 54,
-              "Parser_Context" : "[a_routing s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "routing route 192.0.2.0/24 10.0.0.1"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 55,
-              "Parser_Context" : "[a_routing s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "routing route-map rm1 permit 1 match interface lo"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
               "Line" : 56,
-              "Parser_Context" : "[a_routing s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "routing service integrated-vtysh-config"
+              "Parser_Context" : "[r_service_integrated_vtysh_config a_routing s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "service integrated-vtysh-config"
             },
             {
               "Comment" : "This syntax is unrecognized",
