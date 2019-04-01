@@ -80,6 +80,7 @@ public class OspfTopologyTest {
             .setOwner(c1)
             .setOspfEnabled(true)
             .setOspfPassive(true)
+            .setOspfProcess("1")
             .setName("i12")
             .build();
 
@@ -89,6 +90,7 @@ public class OspfTopologyTest {
             .setOwner(c1)
             .setOspfEnabled(true)
             .setOspfPassive(false)
+            .setOspfProcess("1")
             .setName("i13")
             .build();
 
@@ -98,6 +100,7 @@ public class OspfTopologyTest {
             .setOwner(c1)
             .setOspfEnabled(true)
             .setOspfPassive(false)
+            .setOspfProcess("1")
             .setActive(false)
             .setName("i14")
             .build();
@@ -117,6 +120,7 @@ public class OspfTopologyTest {
             .setOwner(c2)
             .setOspfEnabled(true)
             .setOspfPassive(false)
+            .setOspfProcess("1")
             .setName("i21")
             .build();
     oab.setInterfaces(Collections.singleton(i21.getName())).setOspfProcess(proc2).build();
@@ -131,6 +135,7 @@ public class OspfTopologyTest {
             .setOwner(c3)
             .setOspfEnabled(true)
             .setOspfPassive(false)
+            .setOspfProcess("1")
             .setName("i31")
             .build();
     oab.setInterfaces(Collections.singleton(i31.getName())).setOspfProcess(proc3).build();
@@ -145,6 +150,7 @@ public class OspfTopologyTest {
             .setOwner(c4)
             .setOspfEnabled(true)
             .setOspfPassive(false)
+            .setOspfProcess("1")
             .setName("i41")
             .build();
     oab.setInterfaces(Collections.singleton(i41.getName())).setOspfProcess(proc4).build();
@@ -164,9 +170,9 @@ public class OspfTopologyTest {
 
     // Active neighbor relationship
     final OspfNeighborConfigId r1i13 =
-        new OspfNeighborConfigId("r1", Configuration.DEFAULT_VRF_NAME, "i13");
+        new OspfNeighborConfigId("r1", Configuration.DEFAULT_VRF_NAME, "1", "i13");
     final OspfNeighborConfigId r3i31 =
-        new OspfNeighborConfigId("r3", Configuration.DEFAULT_VRF_NAME, "i31");
+        new OspfNeighborConfigId("r3", Configuration.DEFAULT_VRF_NAME, "1", "i31");
     assertThat(topology.neighbors(r1i13), equalTo(ImmutableSet.of(r3i31)));
     assertThat(topology.neighbors(r3i31), equalTo(ImmutableSet.of(r1i13)));
     assertThat(
@@ -178,16 +184,20 @@ public class OspfTopologyTest {
 
     // Everyone else has no neighbors
     assertThat(
-        topology.neighbors(new OspfNeighborConfigId("r1", Configuration.DEFAULT_VRF_NAME, "i12")),
+        topology.neighbors(
+            new OspfNeighborConfigId("r1", Configuration.DEFAULT_VRF_NAME, "p", "i12")),
         empty());
     assertThat(
-        topology.neighbors(new OspfNeighborConfigId("r1", Configuration.DEFAULT_VRF_NAME, "i14")),
+        topology.neighbors(
+            new OspfNeighborConfigId("r1", Configuration.DEFAULT_VRF_NAME, "p", "i14")),
         empty());
     assertThat(
-        topology.neighbors(new OspfNeighborConfigId("r2", Configuration.DEFAULT_VRF_NAME, "i21")),
+        topology.neighbors(
+            new OspfNeighborConfigId("r2", Configuration.DEFAULT_VRF_NAME, "p", "i21")),
         empty());
     assertThat(
-        topology.neighbors(new OspfNeighborConfigId("r4", Configuration.DEFAULT_VRF_NAME, "i41")),
+        topology.neighbors(
+            new OspfNeighborConfigId("r4", Configuration.DEFAULT_VRF_NAME, "p", "i41")),
         empty());
   }
 }

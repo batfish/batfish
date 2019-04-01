@@ -126,7 +126,7 @@ public abstract class IpAccessListToBdd {
     for (IpAccessListLine line : acl.getLines()) {
       BDD match = visit(line.getMatchCondition());
       bdds.add(reach.and(match));
-      reach = reach.and(match.not());
+      reach = reach.diff(match);
     }
     bdds.add(reach);
     return bdds.build();

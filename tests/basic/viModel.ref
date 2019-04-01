@@ -6444,6 +6444,12 @@
               "Loopback0"
             ],
             "ospfProcess" : {
+              "adminCosts" : {
+                "ospf" : 110,
+                "ospfE1" : 110,
+                "ospfE2" : 110,
+                "ospfIA" : 110
+              },
               "areas" : {
                 "1" : {
                   "injectDefaultRoute" : true,
@@ -7730,6 +7736,12 @@
               "Loopback0"
             ],
             "ospfProcess" : {
+              "adminCosts" : {
+                "ospf" : 110,
+                "ospfE1" : 110,
+                "ospfE2" : 110,
+                "ospfIA" : 110
+              },
               "areas" : {
                 "1" : {
                   "injectDefaultRoute" : true,
@@ -8161,6 +8173,12 @@
               "Loopback0"
             ],
             "ospfProcess" : {
+              "adminCosts" : {
+                "ospf" : 110,
+                "ospfE1" : 110,
+                "ospfE2" : 110,
+                "ospfIA" : 110
+              },
               "areas" : {
                 "1" : {
                   "injectDefaultRoute" : true,
@@ -9475,6 +9493,12 @@
               "Loopback0"
             ],
             "ospfProcess" : {
+              "adminCosts" : {
+                "ospf" : 110,
+                "ospfE1" : 110,
+                "ospfE2" : 110,
+                "ospfIA" : 110
+              },
               "areas" : {
                 "1" : {
                   "injectDefaultRoute" : true,
@@ -10732,6 +10756,12 @@
               "Loopback0"
             ],
             "ospfProcess" : {
+              "adminCosts" : {
+                "ospf" : 110,
+                "ospfE1" : 110,
+                "ospfE2" : 110,
+                "ospfIA" : 110
+              },
               "areas" : {
                 "1" : {
                   "injectDefaultRoute" : true,
@@ -11392,6 +11422,12 @@
               "Loopback0"
             ],
             "ospfProcess" : {
+              "adminCosts" : {
+                "ospf" : 110,
+                "ospfE1" : 110,
+                "ospfE2" : 110,
+                "ospfIA" : 110
+              },
               "areas" : {
                 "1" : {
                   "injectDefaultRoute" : true,
@@ -12015,6 +12051,12 @@
               "Loopback0"
             ],
             "ospfProcess" : {
+              "adminCosts" : {
+                "ospf" : 110,
+                "ospfE1" : 110,
+                "ospfE2" : 110,
+                "ospfIA" : 110
+              },
               "areas" : {
                 "1" : {
                   "injectDefaultRoute" : true,
@@ -13813,6 +13855,12 @@
               "Loopback0"
             ],
             "ospfProcess" : {
+              "adminCosts" : {
+                "ospf" : 110,
+                "ospfE1" : 110,
+                "ospfE2" : 110,
+                "ospfIA" : 110
+              },
               "areas" : {
                 "1" : {
                   "injectDefaultRoute" : true,
@@ -14617,6 +14665,12 @@
               "Loopback0"
             ],
             "ospfProcess" : {
+              "adminCosts" : {
+                "ospf" : 110,
+                "ospfE1" : 110,
+                "ospfE2" : 110,
+                "ospfIA" : 110
+              },
               "areas" : {
                 "1" : {
                   "injectDefaultRoute" : true,
@@ -15785,6 +15839,12 @@
               "Loopback0"
             ],
             "ospfProcess" : {
+              "adminCosts" : {
+                "ospf" : 110,
+                "ospfE1" : 110,
+                "ospfE2" : 110,
+                "ospfIA" : 110
+              },
               "areas" : {
                 "1" : {
                   "injectDefaultRoute" : true,
@@ -16897,6 +16957,12 @@
               "Loopback0"
             ],
             "ospfProcess" : {
+              "adminCosts" : {
+                "ospf" : 110,
+                "ospfE1" : 110,
+                "ospfE2" : 110,
+                "ospfIA" : 110
+              },
               "areas" : {
                 "1" : {
                   "injectDefaultRoute" : true,
@@ -17538,6 +17604,12 @@
               "Loopback0"
             ],
             "ospfProcess" : {
+              "adminCosts" : {
+                "ospf" : 110,
+                "ospfE1" : 110,
+                "ospfE2" : 110,
+                "ospfIA" : 110
+              },
               "areas" : {
                 "1" : {
                   "injectDefaultRoute" : true,

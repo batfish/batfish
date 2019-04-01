@@ -20,9 +20,9 @@ public class OspfTopologyUtilsTest {
     // Setup
     MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> graph =
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
-    OspfNeighborConfigId n1 = new OspfNeighborConfigId("h1", "v", "i");
-    OspfNeighborConfigId n2 = new OspfNeighborConfigId("h2", "v", "i");
-    OspfNeighborConfigId n3 = new OspfNeighborConfigId("h3", "v", "i");
+    OspfNeighborConfigId n1 = new OspfNeighborConfigId("h1", "v", "p", "i");
+    OspfNeighborConfigId n2 = new OspfNeighborConfigId("h2", "v", "p", "i");
+    OspfNeighborConfigId n3 = new OspfNeighborConfigId("h3", "v", "p", "i");
     graph.addNode(n1);
     graph.addNode(n2);
     graph.addNode(n3);

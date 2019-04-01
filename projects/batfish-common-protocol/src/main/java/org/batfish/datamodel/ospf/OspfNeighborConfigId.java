@@ -14,11 +14,22 @@ public final class OspfNeighborConfigId implements Serializable {
 
   private final String _hostname;
   private final String _vrfName;
+  private final String _procName;
   private final String _interfaceName;
 
-  public OspfNeighborConfigId(String hostname, String vrfName, String interfaceName) {
+  /**
+   * Create a new unique identifier for an OSPF process
+   *
+   * @param hostname the hostname on which the neighbor exists
+   * @param vrfName the name of a VRF on which the neighbor exists
+   * @param procName the name of OSPF process on which the neighbor exists
+   * @param interfaceName the interface name
+   */
+  public OspfNeighborConfigId(
+      String hostname, String vrfName, String procName, String interfaceName) {
     _hostname = hostname;
     _vrfName = vrfName;
+    _procName = procName;
     _interfaceName = interfaceName;
   }
 
@@ -28,6 +39,10 @@ public final class OspfNeighborConfigId implements Serializable {
 
   public String getVrfName() {
     return _vrfName;
+  }
+
+  public String getProcName() {
+    return _procName;
   }
 
   public String getInterfaceName() {
@@ -49,6 +64,7 @@ public final class OspfNeighborConfigId implements Serializable {
     OspfNeighborConfigId other = (OspfNeighborConfigId) o;
     return Objects.equals(_hostname, other._hostname)
         && Objects.equals(_vrfName, other._vrfName)
+        && Objects.equals(_procName, other._procName)
         && Objects.equals(_interfaceName, other._interfaceName);
   }
 
@@ -62,6 +78,7 @@ public final class OspfNeighborConfigId implements Serializable {
     return MoreObjects.toStringHelper(this)
         .add("hostname", _hostname)
         .add("vrfName", _vrfName)
+        .add("procName", _procName)
         .add("intefaceName", _interfaceName)
         .toString();
   }
