@@ -79,7 +79,6 @@ public class Vrf extends ComparableStructure<String> {
   private static final long serialVersionUID = 1L;
 
   private SortedMap<RoutingProtocol, RibGroup> _appliedRibGroups;
-  private transient NavigableSet<BgpAdvertisement> _bgpAdvertisements;
   private BgpProcess _bgpProcess;
   private String _description;
   private NavigableSet<GeneratedRoute6> _generatedIpv6Routes;
@@ -91,18 +90,8 @@ public class Vrf extends ComparableStructure<String> {
   private NavigableMap<String, Interface> _interfaces;
   private IsisProcess _isisProcess;
   private SortedSet<KernelRoute> _kernelRoutes;
-  private transient NavigableSet<BgpAdvertisement> _originatedAdvertisements;
-  private transient NavigableSet<BgpAdvertisement> _originatedEbgpAdvertisements;
-  private transient NavigableSet<BgpAdvertisement> _originatedIbgpAdvertisements;
   @Nullable private OspfProcess _ospfProcess;
-  private transient NavigableSet<BgpAdvertisement> _receivedAdvertisements;
-  private transient NavigableSet<BgpAdvertisement> _receivedEbgpAdvertisements;
-  private transient NavigableSet<BgpAdvertisement> _receivedIbgpAdvertisements;
   private RipProcess _ripProcess;
-  private transient NavigableSet<Route> _routes;
-  private transient NavigableSet<BgpAdvertisement> _sentAdvertisements;
-  private transient NavigableSet<BgpAdvertisement> _sentEbgpAdvertisements;
-  private transient NavigableSet<BgpAdvertisement> _sentIbgpAdvertisements;
   private SnmpServer _snmpServer;
   private SortedSet<StaticRoute> _staticRoutes;
   private NavigableMap<Integer, VniSettings> _vniSettings;
@@ -123,11 +112,6 @@ public class Vrf extends ComparableStructure<String> {
   /** Return any RIB groups applied to a given routing protocol */
   public Map<RoutingProtocol, RibGroup> getAppliedRibGroups() {
     return _appliedRibGroups;
-  }
-
-  @JsonIgnore
-  public NavigableSet<BgpAdvertisement> getBgpAdvertisements() {
-    return _bgpAdvertisements;
   }
 
   @JsonProperty(PROP_BGP_PROCESS)
@@ -206,65 +190,15 @@ public class Vrf extends ComparableStructure<String> {
     return _kernelRoutes;
   }
 
-  @JsonIgnore
-  public NavigableSet<BgpAdvertisement> getOriginatedAdvertisements() {
-    return _originatedAdvertisements;
-  }
-
-  @JsonIgnore
-  public NavigableSet<BgpAdvertisement> getOriginatedEbgpAdvertisements() {
-    return _originatedEbgpAdvertisements;
-  }
-
-  @JsonIgnore
-  public NavigableSet<BgpAdvertisement> getOriginatedIbgpAdvertisements() {
-    return _originatedIbgpAdvertisements;
-  }
-
   @JsonPropertyDescription("OSPF routing process for this VRF")
   @JsonProperty(PROP_OSPF_PROCESS)
   public OspfProcess getOspfProcess() {
     return _ospfProcess;
   }
 
-  @JsonIgnore
-  public NavigableSet<BgpAdvertisement> getReceivedAdvertisements() {
-    return _receivedAdvertisements;
-  }
-
-  @JsonIgnore
-  public NavigableSet<BgpAdvertisement> getReceivedEbgpAdvertisements() {
-    return _receivedEbgpAdvertisements;
-  }
-
-  @JsonIgnore
-  public NavigableSet<BgpAdvertisement> getReceivedIbgpAdvertisements() {
-    return _receivedIbgpAdvertisements;
-  }
-
   @JsonProperty(PROP_RIP_PROCESS)
   public RipProcess getRipProcess() {
     return _ripProcess;
-  }
-
-  @JsonIgnore
-  public NavigableSet<Route> getRoutes() {
-    return _routes;
-  }
-
-  @JsonIgnore
-  public NavigableSet<BgpAdvertisement> getSentAdvertisements() {
-    return _sentAdvertisements;
-  }
-
-  @JsonIgnore
-  public NavigableSet<BgpAdvertisement> getSentEbgpAdvertisements() {
-    return _sentEbgpAdvertisements;
-  }
-
-  @JsonIgnore
-  public NavigableSet<BgpAdvertisement> getSentIbgpAdvertisements() {
-    return _sentIbgpAdvertisements;
   }
 
   public SnmpServer getSnmpServer() {
@@ -280,23 +214,6 @@ public class Vrf extends ComparableStructure<String> {
   @JsonProperty(PROP_VNI_SETTINGS)
   public NavigableMap<Integer, VniSettings> getVniSettings() {
     return _vniSettings;
-  }
-
-  public void initBgpAdvertisements() {
-    _bgpAdvertisements = new TreeSet<>();
-    _originatedAdvertisements = new TreeSet<>();
-    _originatedEbgpAdvertisements = new TreeSet<>();
-    _originatedIbgpAdvertisements = new TreeSet<>();
-    _receivedAdvertisements = new TreeSet<>();
-    _receivedEbgpAdvertisements = new TreeSet<>();
-    _receivedIbgpAdvertisements = new TreeSet<>();
-    _sentAdvertisements = new TreeSet<>();
-    _sentEbgpAdvertisements = new TreeSet<>();
-    _sentIbgpAdvertisements = new TreeSet<>();
-  }
-
-  public void initRoutes() {
-    _routes = new TreeSet<>();
   }
 
   public void resolveReferences(Configuration owner) {
