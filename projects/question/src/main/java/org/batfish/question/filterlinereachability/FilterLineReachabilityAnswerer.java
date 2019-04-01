@@ -514,7 +514,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
 
       BDD blockedLineOverlap = prevLine.and(blockedLine);
       linesByWeight.add(new LineAndWeight(prevLineNum, blockedLineOverlap.satCount()));
-      restOfLine = restOfLine.and(restOfLineOverlap.not());
+      restOfLine = restOfLine.diff(restOfLineOverlap);
       diffAction = diffAction || actions.get(prevLineNum) != blockedLineAction;
     }
 
@@ -532,7 +532,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
 
       // The original line is still not blocked, or this is the first line with a different action.
       if (!restOfLine.isZero() || needDiffAction && curDiff) {
-        restOfLine = restOfLine.and(bdds.get(curLineNum).not());
+        restOfLine = restOfLine.diff(bdds.get(curLineNum));
         answerLines.add(curLineNum);
         needDiffAction = needDiffAction && !curDiff;
       }
@@ -582,7 +582,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
             findBlockingLinesForLine(lineNum, actions, ipLineToBDDMap);
         answerRows.addUnreachableLine(aclSpec, lineNum, false, blockingLines);
       }
-      unmatchedPackets = unmatchedPackets.and(lineBDD.not());
+      unmatchedPackets = unmatchedPackets.diff(lineBDD);
     }
   }
 
