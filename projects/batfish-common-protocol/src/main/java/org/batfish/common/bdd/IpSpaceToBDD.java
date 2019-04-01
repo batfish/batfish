@@ -98,7 +98,7 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
       if (bitValue) {
         acc = acc.and(bitBDDs[i]);
       } else {
-        acc = acc.and(bitBDDs[i].not());
+        acc = acc.diff(bitBDDs[i]);
       }
     }
     return acc;
@@ -127,7 +127,7 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
         if (bitValue) {
           acc = acc.and(bitBDDs[i]);
         } else {
-          acc = acc.and(bitBDDs[i].not());
+          acc = acc.diff(bitBDDs[i]);
         }
       }
     }
@@ -188,7 +188,7 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
                 .map((IpWildcard wc) -> this.visit(wc.toIpSpace()))
                 .collect(Collectors.toList()));
 
-    return whitelist.and(blacklist.not());
+    return whitelist.diff(blacklist);
   }
 
   @Override

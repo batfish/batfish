@@ -64,7 +64,7 @@ class PacketPolicyToBdd {
      * which can be expressed as the complement of the union of packets we have already accounted
      * for.
      */
-    new Collector(firstNonNull(BDDOps.orNull(_fibLookups.values()), _zero).or(_toDrop).not())
+    new Collector(firstNonNull(BDDOps.orNull(_fibLookups.values()), _zero).nor(_toDrop))
         .visit(p.getDefaultAction().getAction());
   }
 
@@ -109,7 +109,7 @@ class PacketPolicyToBdd {
       // Process true statements
       ifStmt.getTrueStatements().forEach(this::visit);
       // If fell through, constrain packets with complement of match condition and move on
-      _currentConstraint = oldConstraint.and(matchConstraint.not());
+      _currentConstraint = oldConstraint.diff(matchConstraint);
       return null;
     }
 

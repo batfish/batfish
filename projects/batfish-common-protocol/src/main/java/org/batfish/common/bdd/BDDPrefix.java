@@ -79,7 +79,7 @@ public final class BDDPrefix {
       if (res) {
         result = result.and(bits[i]);
       } else {
-        result = result.and(bits[i].not());
+        result = result.diff(bits[i]);
       }
     }
     return result;

@@ -101,7 +101,7 @@ public class BDDInteger {
 
       Long val = satAssignmentToLong(satAssignment);
       values.add(val);
-      pred = pred.and(value(val).not());
+      pred = pred.diff(value(val));
       num++;
     }
     return values.build();
@@ -140,7 +140,7 @@ public class BDDInteger {
       if ((currentVal & 1) != 0) {
         bdd = bdd.and(b);
       } else {
-        bdd = bdd.and(b.not());
+        bdd = bdd.diff(b);
       }
       currentVal >>= 1;
     }
