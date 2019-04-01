@@ -12,6 +12,11 @@ net add vrf eth0
 net add vrf swp2
 # looks like subinterface
 net add vrf vrf1.1000
+# name of vxlan
+net add vxlan vx1 vxlan id 10001
+net add vrf vx1
+# looks like vlan
+net add vrf vlan1
 #
 net commit
 

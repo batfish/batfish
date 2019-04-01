@@ -74,6 +74,12 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vlan_range_setContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vni_numberContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vrf_ip_addressContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vrf_vniContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vx_stpContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vxb_accessContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vxb_arp_nd_suppressContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vxb_learningContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vxv_idContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vxv_local_tunnelipContext;
 import org.batfish.representation.cumulus.Bond;
 import org.batfish.representation.cumulus.CumulusInterfaceType;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
@@ -82,6 +88,7 @@ import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.Interface;
 import org.batfish.representation.cumulus.Vlan;
 import org.batfish.representation.cumulus.Vrf;
+import org.batfish.representation.cumulus.Vxlan;
 
 /**
  * A listener that builds a {@link CumulusNcluConfiguration} while walking a parse tree produced by
@@ -189,6 +196,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   private @Nullable Vlan _currentVlan;
   private @Nullable List<Vlan> _currentVlans;
   private @Nullable List<Vrf> _currentVrfs;
+  private @Nullable List<Vxlan> _currentVxlans;
   private final @Nonnull CumulusNcluCombinedParser _parser;
   private final @Nonnull String _text;
   private final @Nonnull Warnings _w;
@@ -227,7 +235,13 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
               name, getFullText(ctx)));
       return null;
     }
-
+    if (_c.getVxlans().containsKey(name)) {
+      _w.redFlag(
+          String.format(
+              "Invalid name '%s' for bond clashes with existing vxlan in: %s",
+              name, getFullText(ctx)));
+      return null;
+    }
     return new Bond(name);
   }
 
@@ -239,19 +253,31 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     Matcher subinterfaceMatcher = SUBINTERFACE_PATTERN.matcher(name);
     Integer encapsulationVlan = null;
     CumulusInterfaceType type;
+
+    // Early exits
     if (name.equals(LOOPBACK_INTERFACE_NAME)) {
       _w.redFlag(
           String.format(
               "Loopback interface can only be configured via 'net add loopback' family of commands; following is invalid: %s",
               getFullText(ctx)));
       return null;
-    } else if (_c.getVrfs().containsKey(name)) {
+    }
+    if (_c.getVrfs().containsKey(name)) {
       _w.redFlag(
           String.format(
-              "Invalid name '%s' for interface clashes with existing vrf in: %s",
+              "VRF loopback interface '%s' can only be configured via 'net add vrf' family of commands; following is invalid: %s",
               name, getFullText(ctx)));
       return null;
-    } else if (PHYSICAL_INTERFACE_PATTERN.matcher(name).matches()) {
+    }
+    if (_c.getVxlans().containsKey(name)) {
+      _w.redFlag(
+          String.format(
+              "VXLAN interface '%s' can only be configured via 'net add vxlan' family of commands; following is invalid: %s",
+              name, getFullText(ctx)));
+      return null;
+    }
+
+    if (PHYSICAL_INTERFACE_PATTERN.matcher(name).matches()) {
       type = CumulusInterfaceType.PHYSICAL;
     } else if (subinterfaceMatcher.matches()) {
       String layer1LogicalInterfaceName = subinterfaceMatcher.group(1);
@@ -293,7 +319,8 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   private @Nullable Vrf createVrf(String name, ParserRuleContext ctx) {
     if (name.equals(LOOPBACK_INTERFACE_NAME)
         || PHYSICAL_INTERFACE_PATTERN.matcher(name).matches()
-        || SUBINTERFACE_PATTERN.matcher(name).matches()) {
+        || SUBINTERFACE_PATTERN.matcher(name).matches()
+        || VLAN_INTERFACE_PATTERN.matcher(name).matches()) {
       _w.redFlag(String.format("Invalid name '%s' for vrf in: %s", name, getFullText(ctx)));
       return null;
     }
@@ -311,7 +338,50 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
               name, getFullText(ctx)));
       return null;
     }
+    if (_c.getVxlans().containsKey(name)) {
+      _w.redFlag(
+          String.format(
+              "Invalid name '%s' for vrf clashes with existing vxlan in: %s",
+              name, getFullText(ctx)));
+      return null;
+    }
     return new Vrf(name);
+  }
+
+  /**
+   * Returns a newly-created {@link Vxlan} with given {@code name}, or {@code null} if {@code name}
+   * is invalid.
+   */
+  private @Nullable Vxlan createVxlan(String name, ParserRuleContext ctx) {
+    if (name.equals(LOOPBACK_INTERFACE_NAME)
+        || PHYSICAL_INTERFACE_PATTERN.matcher(name).matches()
+        || SUBINTERFACE_PATTERN.matcher(name).matches()
+        || VLAN_INTERFACE_PATTERN.matcher(name).matches()) {
+      _w.redFlag(String.format("Invalid name '%s' for vxlan in: %s", name, getFullText(ctx)));
+      return null;
+    }
+    if (_c.getBonds().containsKey(name)) {
+      _w.redFlag(
+          String.format(
+              "Invalid name '%s' for vxlan clashes with existing bond interface in: %s",
+              name, getFullText(ctx)));
+      return null;
+    }
+    if (_c.getInterfaces().containsKey(name)) {
+      _w.redFlag(
+          String.format(
+              "Invalid name '%s' for vxlan clashes with existing interface in: %s",
+              name, getFullText(ctx)));
+      return null;
+    }
+    if (_c.getVrfs().containsKey(name)) {
+      _w.redFlag(
+          String.format(
+              "Invalid name '%s' for vxlan clashes with existing vrf in: %s",
+              name, getFullText(ctx)));
+      return null;
+    }
+    return new Vxlan(name);
   }
 
   @Override
@@ -369,6 +439,24 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   }
 
   @Override
+  public void enterA_vxlan(A_vxlanContext ctx) {
+    Set<String> names = toStrings(ctx.names);
+    if (ctx.vx_vxlan() != null && ctx.vx_vxlan().vxv_id() != null) {
+      // create them if necessary when settings id
+      _currentVxlans = initVxlansIfAbsent(names, ctx);
+    } else if (!_c.getVxlans().keySet().containsAll(names)) {
+      _w.redFlag(
+          String.format(
+              "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id <id>' before line: %s",
+              getFullText(ctx)));
+      _currentVxlans = ImmutableList.of();
+    } else {
+      _currentVxlans =
+          names.stream().map(_c.getVxlans()::get).collect(ImmutableList.toImmutableList());
+    }
+  }
+
+  @Override
   public void enterCumulus_nclu_configuration(Cumulus_nclu_configurationContext ctx) {
     _c = new CumulusNcluConfiguration();
   }
@@ -421,7 +509,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   @Override
   public void exitA_vxlan(A_vxlanContext ctx) {
-    todo(ctx);
+    _currentVxlans = null;
   }
 
   @Override
@@ -599,6 +687,39 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     _currentVrfs.forEach(vrf -> vrf.setVni(vni));
   }
 
+  @Override
+  public void exitVx_stp(Vx_stpContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitVxb_access(Vxb_accessContext ctx) {
+    int vlan = toInteger(ctx.vlan);
+    _currentVxlans.forEach(vxlan -> vxlan.setBridgeAccessVlan(vlan));
+  }
+
+  @Override
+  public void exitVxb_arp_nd_suppress(Vxb_arp_nd_suppressContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitVxb_learning(Vxb_learningContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitVxv_id(Vxv_idContext ctx) {
+    int id = toInteger(ctx.vni);
+    _currentVxlans.forEach(vxlan -> vxlan.setId(id));
+  }
+
+  @Override
+  public void exitVxv_local_tunnelip(Vxv_local_tunnelipContext ctx) {
+    Ip localTunnelip = toIp(ctx.ip);
+    _currentVxlans.forEach(vxlan -> vxlan.setLocalTunnelip(localTunnelip));
+  }
+
   /**
    * Returns built {@link CumulusNcluConfiguration}.
    *
@@ -713,6 +834,42 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
       names.forEach(name -> _c.referenceStructure(CumulusStructureType.VRF, name, usage, line));
     }
     return vrfs;
+  }
+
+  /**
+   * Returns already-present or newly-created {@link Vxlan}s with given {@code names} if all {@code
+   * names}. are valid. Returns an empty {@link List} without any side-effects if any name is
+   * invalid, since in that case the whole line would be rejected.
+   */
+  private @Nonnull List<Vxlan> initVxlansIfAbsent(Set<String> names, ParserRuleContext ctx) {
+    ImmutableList.Builder<Vxlan> vxlansBuilder = ImmutableList.builder();
+    ImmutableList.Builder<String> newVxlans = ImmutableList.builder();
+    for (String name : names) {
+      Vxlan vxlan = _c.getVxlans().get(name);
+      if (vxlan == null) {
+        vxlan = createVxlan(name, ctx);
+        if (vxlan == null) {
+          return ImmutableList.of();
+        }
+        newVxlans.add(name);
+      }
+      vxlansBuilder.add(vxlan);
+    }
+    List<Vxlan> vxlans = vxlansBuilder.build();
+    vxlans.forEach(vxlan -> _c.getVxlans().computeIfAbsent(vxlan.getName(), n -> vxlan));
+    int line = ctx.getStart().getLine();
+    newVxlans
+        .build()
+        .forEach(
+            name -> {
+              _c.defineStructure(CumulusStructureType.VXLAN, name, line);
+              _c.referenceStructure(
+                  CumulusStructureType.VXLAN,
+                  name,
+                  CumulusStructureUsage.VXLAN_SELF_REFERENCE,
+                  line);
+            });
+    return vxlans;
   }
 
   @SuppressWarnings("unused")

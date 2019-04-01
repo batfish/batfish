@@ -1,0 +1,33 @@
+net del all
+#
+net add hostname cumulus_nclu_vxlan
+# v2
+net add vxlan v2 vxlan id 10002
+net add vxlan v2 bridge access 2
+net add vxlan v2 vxlan local-tunnelip 192.0.2.1
+# v3 - configuration except vxlan id should be lost since vxlan id must appear first
+net add vxlan v3 bridge access 3
+net add vxlan v3 vxlan local-tunnelip 192.0.2.1
+net add vxlan v3 vxlan id 10003
+# v4 - same as v3, but should not survive conversion due to missing vxlan id
+net add vxlan v4 bridge access 4
+net add vxlan v4 vxlan local-tunnelip 192.0.2.1
+# v5-6 - Horrible, but you are allowed to do this as long as you uniquify fields before commit.
+#        Since neither has id overriden, neither will make it past conversion
+net add vxlan v5-6 vxlan id 10005
+net add vxlan v5-6 bridge access 5
+net add vxlan v5-6 vxlan local-tunnelip 192.0.2.1
+# v7-8 - Same as 5-6, but uniquified before commit so they both should survive conversion
+net add vxlan v7-8 vxlan id 10007
+net add vxlan v7-8 vxlan local-tunnelip 192.0.2.1
+net add vxlan v7 bridge access 7
+net add vxlan v8 bridge access 8
+net add vxlan v8 vxlan id 10008
+# v9 - missing vxlan local-tunnelip, so should not survive conversion
+net add vxlan v9 vxlan id 10009
+net add vxlan v9 bridge access 9
+# v10 - missing bridge access, so should not survive conversion
+net add vxlan v10 vxlan id 10010
+net add vxlan v10 vxlan local-tunnelip 192.0.2.1
+#
+net commit

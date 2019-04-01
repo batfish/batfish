@@ -29,6 +29,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private final @Nonnull Loopback _loopback;
   private final @Nonnull Map<String, Vlan> _vlans;
   private final @Nonnull Map<String, Vrf> _vrfs;
+  private final @Nonnull Map<String, Vxlan> _vxlans;
 
   public CumulusNcluConfiguration() {
     _bonds = new HashMap<>();
@@ -38,6 +39,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     _loopback = new Loopback();
     _vlans = new HashMap<>();
     _vrfs = new HashMap<>();
+    _vxlans = new HashMap<>();
   }
 
   public @Nonnull Map<String, Bond> getBonds() {
@@ -73,6 +75,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     return _vrfs;
   }
 
+  public @Nonnull Map<String, Vxlan> getVxlans() {
+    return _vxlans;
+  }
+
   private void markStructures() {
     markConcreteStructure(CumulusStructureType.BOND, CumulusStructureUsage.BOND_SELF_REFERENCE);
     markConcreteStructure(
@@ -86,6 +92,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         CumulusStructureUsage.INTERFACE_VRF,
         CumulusStructureUsage.VLAN_VRF,
         CumulusStructureUsage.VRF_SELF_REFERENCE);
+    markConcreteStructure(CumulusStructureType.VXLAN, CumulusStructureUsage.VXLAN_SELF_REFERENCE);
   }
 
   @Override

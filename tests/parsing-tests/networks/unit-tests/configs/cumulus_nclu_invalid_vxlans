@@ -1,0 +1,22 @@
+net del all
+#
+net add hostname cumulus_nclu_invalid_vxlans
+#
+# lo
+net add vxlan lo vxlan id 10001
+# name of bond
+net add bond bond1 bond slaves swp0
+net add vxlan bond1 vxlan id 10002
+# name of vrf
+net add vrf vrf1
+net add vxlan vrf1 vxlan id 10003
+# name of physical interface
+net add vxlan eth0 vxlan id 10004
+net add vxlan swp0 vxlan id 10005
+# looks like subinterface
+net add vxlan vxlan1.1000 vxlan id 10006
+# looks like vlan
+net add vxlan vlan1 vxlan id 10007
+#
+net commit
+

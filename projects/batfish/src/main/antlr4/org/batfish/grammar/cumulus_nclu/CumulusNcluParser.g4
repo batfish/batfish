@@ -294,7 +294,7 @@ vrf_vrf_table
 
 a_vxlan
 :
-  VXLAN vni_names = glob
+  VXLAN names = glob
   (
     vx_bridge
     | vx_stp
@@ -370,7 +370,7 @@ vxv_id
 
 vxv_local_tunnelip
 :
-  LOCAL_TUNNELIP ip = IP_ADDRESS NEWLINE
+  LOCAL_TUNNELIP ip = ip_address NEWLINE
 ;
 
 s_net_add_unrecognized

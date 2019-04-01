@@ -1,5 +1,6 @@
 package org.batfish.representation.cumulus;
 
+import javax.annotation.Nonnull;
 import org.batfish.vendor.StructureUsage;
 
 public enum CumulusStructureUsage implements StructureUsage {
@@ -10,16 +11,17 @@ public enum CumulusStructureUsage implements StructureUsage {
   INTERFACE_VRF("interface vrf"),
   VLAN_SELF_REFERENCE("vlan self-reference"),
   VLAN_VRF("vlan vrf"),
-  VRF_SELF_REFERENCE("vrf self-reference");
+  VRF_SELF_REFERENCE("vrf self-reference"),
+  VXLAN_SELF_REFERENCE("vxlan self-reference");
 
-  private final String _description;
+  private final @Nonnull String _description;
 
   private CumulusStructureUsage(String description) {
     _description = description;
   }
 
   @Override
-  public String getDescription() {
+  public @Nonnull String getDescription() {
     return _description;
   }
 }
