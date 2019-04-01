@@ -917,8 +917,9 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   }
 
   /**
-   * Returns already-present or newly-created {@link Vxlan}s with given {@code names}, or an empty
-   * {@link List} if any name in {@code names} is invalid.
+   * Returns already-present or newly-created {@link Vxlan}s with given {@code names} if all {@code
+   * names}. are valid. Returns an empty {@link List} without any side-effects if any name is
+   * invalid, since in that case the whole line would be rejected.
    */
   private @Nonnull List<Vxlan> initVxlansIfAbsent(Set<String> names, ParserRuleContext ctx) {
     ImmutableList.Builder<Vxlan> vxlansBuilder = ImmutableList.builder();
