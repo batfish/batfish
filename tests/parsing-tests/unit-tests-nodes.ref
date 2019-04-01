@@ -2581,6 +2581,12 @@
               "blah"
             ],
             "ospfProcess" : {
+              "adminCosts" : {
+                "ospf" : 110,
+                "ospfE1" : 110,
+                "ospfE2" : 110,
+                "ospfIA" : 110
+              },
               "areas" : {
                 "0" : {
                   "injectDefaultRoute" : true,
@@ -10946,6 +10952,12 @@
               "Loopback0"
             ],
             "ospfProcess" : {
+              "adminCosts" : {
+                "ospf" : 110,
+                "ospfE1" : 110,
+                "ospfE2" : 110,
+                "ospfIA" : 110
+              },
               "areas" : {
                 "0" : {
                   "injectDefaultRoute" : true,
@@ -11205,6 +11217,12 @@
               "Loopback0"
             ],
             "ospfProcess" : {
+              "adminCosts" : {
+                "ospf" : 110,
+                "ospfE1" : 110,
+                "ospfE2" : 110,
+                "ospfIA" : 110
+              },
               "areas" : {
                 "0" : {
                   "injectDefaultRoute" : true,
@@ -14947,6 +14965,12 @@
               "Ethernet1"
             ],
             "ospfProcess" : {
+              "adminCosts" : {
+                "ospf" : 110,
+                "ospfE1" : 110,
+                "ospfE2" : 110,
+                "ospfIA" : 110
+              },
               "areas" : {
                 "0" : {
                   "injectDefaultRoute" : true,
@@ -15983,6 +16007,12 @@
               "xe-0/0/0:0.0"
             ],
             "ospfProcess" : {
+              "adminCosts" : {
+                "ospf" : 10,
+                "ospfE1" : 150,
+                "ospfE2" : 150,
+                "ospfIA" : 10
+              },
               "areas" : {
                 "0" : {
                   "injectDefaultRoute" : false,
@@ -17240,6 +17270,12 @@
               "TenGigabitEthernet0/0/0/5"
             ],
             "ospfProcess" : {
+              "adminCosts" : {
+                "ospf" : 110,
+                "ospfE1" : 110,
+                "ospfE2" : 110,
+                "ospfIA" : 110
+              },
               "areas" : {
                 "0" : {
                   "injectDefaultRoute" : true,
@@ -17905,6 +17941,12 @@
               "xe-0/0/21:0.0"
             ],
             "ospfProcess" : {
+              "adminCosts" : {
+                "ospf" : 10,
+                "ospfE1" : 150,
+                "ospfE2" : 150,
+                "ospfIA" : 10
+              },
               "areas" : {
                 "66051" : {
                   "injectDefaultRoute" : false,
@@ -20965,6 +21007,12 @@
           "default" : {
             "name" : "default",
             "ospfProcess" : {
+              "adminCosts" : {
+                "ospf" : 10,
+                "ospfE1" : 150,
+                "ospfE2" : 150,
+                "ospfIA" : 10
+              },
               "areas" : {
                 "7" : {
                   "injectDefaultRoute" : true,
@@ -25849,6 +25897,12 @@
           "OTHER" : {
             "name" : "OTHER",
             "ospfProcess" : {
+              "adminCosts" : {
+                "ospf" : 110,
+                "ospfE1" : 110,
+                "ospfE2" : 110,
+                "ospfIA" : 110
+              },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:OTHER~",
               "processId" : "1",
               "referenceBandwidth" : 4.0E10,
@@ -25861,6 +25915,12 @@
               "Ethernet0/0"
             ],
             "ospfProcess" : {
+              "adminCosts" : {
+                "ospf" : 110,
+                "ospfE1" : 110,
+                "ospfE2" : 110,
+                "ospfIA" : 110
+              },
               "areas" : {
                 "1" : {
                   "injectDefaultRoute" : true,
