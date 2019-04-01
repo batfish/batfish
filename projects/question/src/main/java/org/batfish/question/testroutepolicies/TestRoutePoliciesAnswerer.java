@@ -1,6 +1,7 @@
 package org.batfish.question.testroutepolicies;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.BgpRouteDiff.routeDiffs;
 import static org.batfish.datamodel.LineAction.DENY;
@@ -27,6 +28,7 @@ import java.util.SortedSet;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.BgpRoute;
@@ -48,6 +50,7 @@ import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierFactories;
 
 /** An answerer for {@link TestRoutePoliciesQuestion}. */
+@ParametersAreNonnullByDefault
 public final class TestRoutePoliciesAnswerer extends Answerer {
   public static final String COL_NODE = "Node";
   public static final String COL_POLICY_NAME = "Policy_Name";
@@ -132,7 +135,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     SortedSet<RoutingPolicyId> basePolicies = resolvePolicies();
     _batfish.popSnapshot();
 
-    _batfish.pushBaseSnapshot();
+    _batfish.pushDeltaSnapshot();
     SortedSet<RoutingPolicyId> deltaPolicies = resolvePolicies();
     _batfish.popSnapshot();
 
