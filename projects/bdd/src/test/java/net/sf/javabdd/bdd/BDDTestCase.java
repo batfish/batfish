@@ -45,7 +45,7 @@ import net.sf.javabdd.BDDFactory;
 public abstract class BDDTestCase extends TestCase implements Iterator<BDDFactory> {
 
   public static final String[] factoryNames = {
-    "net.sf.javabdd.JFactory", "net.sf.javabdd.MicroFactory",
+    "net.sf.javabdd.JFactory",
   };
 
   private static Collection<BDDFactory> factories;
