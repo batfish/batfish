@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.LineAction;
 
+/** A {@link TestRoutePoliciesQuestion} result for a single policy and input route. */
 final class Result {
   /** A key to relate results by policy and input route. */
   public final class Key {

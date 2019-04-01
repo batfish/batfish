@@ -1,7 +1,6 @@
 package org.batfish.question.testroutepolicies;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.BgpRouteDiff.routeDiffs;
 import static org.batfish.datamodel.LineAction.DENY;
