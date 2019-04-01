@@ -500,6 +500,24 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   }
 
   @Override
+  public void enterA_vxlan(A_vxlanContext ctx) {
+    Set<String> names = toStrings(ctx.names);
+    if (ctx.vx_vxlan() != null && ctx.vx_vxlan().vxv_id() != null) {
+      // create them if necessary when settings id
+      _currentVxlans = initVxlansIfAbsent(names, ctx);
+    } else if (!_c.getVxlans().keySet().containsAll(names)) {
+      _w.redFlag(
+          String.format(
+              "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id <id>' before line: %s",
+              getFullText(ctx)));
+      _currentVxlans = ImmutableList.of();
+    } else {
+      _currentVxlans =
+          names.stream().map(_c.getVxlans()::get).collect(ImmutableList.toImmutableList());
+    }
+  }
+
+  @Override
   public void enterCumulus_nclu_configuration(Cumulus_nclu_configurationContext ctx) {
     _c = new CumulusNcluConfiguration();
   }
@@ -979,6 +997,42 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     names.forEach(
         name -> _c.referenceStructure(CumulusStructureType.ABSTRACT_INTERFACE, name, usage, line));
     return true;
+  }
+
+  /**
+   * Returns already-present or newly-created {@link Vxlan}s with given {@code names} if all {@code
+   * names}. are valid. Returns an empty {@link List} without any side-effects if any name is
+   * invalid, since in that case the whole line would be rejected.
+   */
+  private @Nonnull List<Vxlan> initVxlansIfAbsent(Set<String> names, ParserRuleContext ctx) {
+    ImmutableList.Builder<Vxlan> vxlansBuilder = ImmutableList.builder();
+    ImmutableList.Builder<String> newVxlans = ImmutableList.builder();
+    for (String name : names) {
+      Vxlan vxlan = _c.getVxlans().get(name);
+      if (vxlan == null) {
+        vxlan = createVxlan(name, ctx);
+        if (vxlan == null) {
+          return ImmutableList.of();
+        }
+        newVxlans.add(name);
+      }
+      vxlansBuilder.add(vxlan);
+    }
+    List<Vxlan> vxlans = vxlansBuilder.build();
+    vxlans.forEach(vxlan -> _c.getVxlans().computeIfAbsent(vxlan.getName(), n -> vxlan));
+    int line = ctx.getStart().getLine();
+    newVxlans
+        .build()
+        .forEach(
+            name -> {
+              _c.defineStructure(CumulusStructureType.VXLAN, name, line);
+              _c.referenceStructure(
+                  CumulusStructureType.VXLAN,
+                  name,
+                  CumulusStructureUsage.VXLAN_SELF_REFERENCE,
+                  line);
+            });
+    return vxlans;
   }
 
   @SuppressWarnings("unused")

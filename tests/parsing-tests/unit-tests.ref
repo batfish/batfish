@@ -72304,6 +72304,32 @@
               "tag" : "MISCELLANEOUS",
               "text" : "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id <id>' before line: vxlan vni10001,10002-10003 vxlan local-tunnelip 192.0.2.10\n"
             }
+          ],
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id <id>' before line: vxlan vni10001 bridge access 5\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id <id>' before line: vxlan vni10001,10002-10003 bridge arp-nd-suppress on\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id <id>' before line: vxlan vni10001,10002-10003 bridge learning off\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id <id>' before line: vxlan vni10001,10002-10003 stp bpduguard\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id <id>' before line: vxlan vni10001,10002-10003 stp portbpdufilter\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id <id>' before line: vxlan vni10001,10002-10003 vxlan local-tunnelip 192.0.2.10\n"
+            }
           ]
         },
         "configs/cumulus_nclu_invalid_bonds" : {
@@ -76904,6 +76930,14 @@
               ],
               "numReferrers" : 1
             }
+          },
+          "vxlan" : {
+            "vni10001" : {
+              "definitionLines" : [
+                71
+              ],
+              "numReferrers" : 1
+            }
           }
         },
         "configs/cumulus_nclu_invalid_bonds" : {
@@ -76942,6 +76976,7 @@
               "definitionLines" : [
                 16
               ],
+<<<<<<< HEAD
               "numReferrers" : 1
             },
             "swp8" : {
@@ -76949,6 +76984,17 @@
                 19
               ],
               "numReferrers" : 1
+||||||| merged common ancestors
+              "numReferrers" : 2
+=======
+              "numReferrers" : 2
+            },
+            "swp8" : {
+              "definitionLines" : [
+                19
+              ],
+              "numReferrers" : 2
+>>>>>>> master
             }
           },
           "vrf" : {
@@ -77035,6 +77081,40 @@
                 8
               ],
               "numReferrers" : 1
+            }
+          },
+          "vrf" : {
+            "vrf1" : {
+              "definitionLines" : [
+                11
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "vxlan" : {
+            "vx1" : {
+              "definitionLines" : [
+                16
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "configs/cumulus_nclu_invalid_vxlans" : {
+          "bond" : {
+            "bond1" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "interface" : {
+            "swp0" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 2
             }
           },
           "vrf" : {
@@ -82662,6 +82742,13 @@
                 71
               ]
             }
+          },
+          "vxlan" : {
+            "vni10001" : {
+              "vxlan self-reference" : [
+                71
+              ]
+            }
           }
         },
         "configs/cumulus_nclu_invalid_bonds" : {
@@ -82698,6 +82785,14 @@
             },
             "swp8" : {
               "bond slave" : [
+                19
+              ]
+            },
+            "swp8" : {
+              "bond slave" : [
+                19
+              ],
+              "interface self-reference" : [
                 19
               ]
             }
@@ -82777,6 +82872,7 @@
                 8
               ]
             }
+<<<<<<< HEAD
           },
           "vrf" : {
             "vrf1" : {
@@ -82784,6 +82880,42 @@
                 11
               ]
             }
+||||||| merged common ancestors
+=======
+          },
+          "vxlan" : {
+            "vx1" : {
+              "vxlan self-reference" : [
+                16
+              ]
+            }
+          }
+        },
+        "configs/cumulus_nclu_invalid_vxlans" : {
+          "bond" : {
+            "bond1" : {
+              "bond self-reference" : [
+                8
+              ]
+            }
+          },
+          "interface" : {
+            "swp0" : {
+              "bond slave" : [
+                8
+              ],
+              "interface self-reference" : [
+                8
+              ]
+            }
+          },
+          "vrf" : {
+            "vrf1" : {
+              "vrf self-reference" : [
+                11
+              ]
+            }
+>>>>>>> master
           }
         },
         "configs/eos_mlag" : {
