@@ -3686,7 +3686,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return commonSources.stream()
         .flatMap(
             source -> {
-              BDD difference = includeBDDs.get(source).and(excludeBDDs.get(source).not());
+              BDD difference = includeBDDs.get(source).diff(excludeBDDs.get(source));
 
               if (difference.isZero()) {
                 return Stream.of();
