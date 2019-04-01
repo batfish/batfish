@@ -53,9 +53,36 @@ import javax.annotation.Nonnull;
  * @version $Id: JFactory.java,v 1.28 2005/09/27 22:56:18 joewhaley Exp $
  */
 public final class JFactory extends BDDFactory {
+  /** Whether to maintain (and in some cases print) statistics about the cache use. */
+  private static final boolean CACHESTATS = false;
 
+  /**
+   * Whether to flush (clear completely) the cache when live BDD nodes are garbage collected. If
+   * {@code false}, the cache will be attempted to be cleaned and maintain existing valid cache
+   * entries.
+   */
+  // Warning: we've never tried with this flag false.
+  private static final boolean FLUSH_CACHE_ON_GC = true;
+
+  /**
+   * If true, all BDDs will be created with a finalizer that attempts to free them if the user has
+   * not done so. This flag implies non-trivial runtime overhead but defers BDD garbage collection
+   * to Java, rather than manual user control of reference counting.
+   */
+  private static final boolean USE_FINALIZER = true;
+
+  /**
+   * When {@link #USE_FINALIZER} is true, setting this flag to true enables debug print messages
+   * whenever BDDs are freed by the finalizer instead of by the calling code.
+   */
+  private static final boolean DEBUG_FINALIZER = false;
+
+  /**
+   * If set, assertions will be made on BDD internal computations. Used in developing the factory.
+   */
   private static final boolean VERIFY_ASSERTIONS = false;
-  public static final String REVISION = "$Revision: 1.28 $";
+
+  private static final String REVISION = "$Revision: 1.28 $";
 
   @Override
   public String getVersion() {
@@ -71,9 +98,6 @@ public final class JFactory extends BDDFactory {
     f.initialize(nodenum, cachesize);
     return f;
   }
-
-  private static final boolean USE_FINALIZER = true;
-  private static final boolean FLUSH_CACHE_ON_GC = true;
 
   /** Private helper function to create BDD objects. */
   private BDDImpl makeBDD(int id) {
@@ -348,8 +372,6 @@ public final class JFactory extends BDDFactory {
       _index = INVALID_BDD;
     }
   }
-
-  private static final boolean DEBUG_FINALIZER = false;
 
   private class BDDImplWithFinalizer extends BDDImpl {
 
@@ -3367,8 +3389,6 @@ public final class JFactory extends BDDFactory {
     bdd_unmark(HIGH(i));
   }
 
-  private static final boolean CACHESTATS = false;
-
   private int bdd_makenode(int level, int low, int high) {
     /* check whether childs are equal */
     if (low == high) {
@@ -5767,8 +5787,6 @@ public final class JFactory extends BDDFactory {
     }
   }
 
-  private static final boolean SWAPCOUNT = false;
-
   private int reorder_downSimple(int var0) {
     int toBeProcessed = 0;
     int var1 = bddlevel2var[bddvar2level[var0] + 1];
@@ -5800,7 +5818,7 @@ public final class JFactory extends BDDFactory {
           /* Node depends on next var - save it for later procesing */
           SETNEXT(r, toBeProcessed);
           toBeProcessed = r;
-          if (SWAPCOUNT) {
+          if (CACHESTATS) {
             cachestats.swapCount++;
           }
         }
