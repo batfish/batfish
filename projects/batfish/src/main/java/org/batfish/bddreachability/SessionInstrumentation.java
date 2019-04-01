@@ -341,11 +341,11 @@ public class SessionInstrumentation {
         .map(
             inIface -> {
               StateExpr preState = new PreInInterface(hostname, inIface);
-              BDD inAclDenyBdd = getIncomingingSessionFilterBdd(hostname, inIface).not();
+              BDD inAclPermitBdd = getIncomingingSessionFilterBdd(hostname, inIface);
 
               Transition transition =
                   compose(
-                      constraint(sessionFlows.and(inAclDenyBdd)),
+                      constraint(sessionFlows.diff(inAclPermitBdd)),
                       removeSourceConstraint(srcMgr),
                       removeLastHopConstraint(_lastHopMgr, hostname));
               if (transition == Zero.INSTANCE) {
