@@ -262,9 +262,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         !(equalAction && equalOutputRoutes), "Results must have different action or output route");
 
     // delta is reference, base is current. so show diffs from delta -> base
-    BgpRouteDiffs routeDiffs =
-        new BgpRouteDiffs(routeDiffs(deltaOutputRoute, baseOutputRoute))
-       ;
+    BgpRouteDiffs routeDiffs = new BgpRouteDiffs(routeDiffs(deltaOutputRoute, baseOutputRoute));
 
     RoutingPolicyId policyId = baseResult.getPolicyId();
     BgpRoute inputRoute = baseResult.getInputRoute();
