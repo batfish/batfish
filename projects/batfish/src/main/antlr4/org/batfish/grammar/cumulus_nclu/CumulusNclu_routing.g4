@@ -45,7 +45,7 @@ rl_syslog
 
 r_route
 :
-  ROUTE prefix = IP_PREFIX nhip = IP_ADDRESS NEWLINE
+  ROUTE prefix = ip_prefix nhip = ip_address NEWLINE
 ;
 
 r_route_map

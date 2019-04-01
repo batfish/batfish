@@ -2,7 +2,9 @@ package org.batfish.grammar.cumulus_nclu;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Predicates.not;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.ImmutableSet;
@@ -24,7 +26,9 @@ import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MacAddress;
+import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_bgpContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_bondContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_bridgeContext;
@@ -45,6 +49,7 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Dn4Context;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Dn6Context;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Frr_unrecognizedContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Frr_vrfContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Frrv_ip_routeContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.GlobContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Glob_range_setContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.I_ip_addressContext;
@@ -55,12 +60,17 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ic_priorityContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ic_sys_macContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Interface_addressContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ip_addressContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ip_prefixContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ipv6_addressContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.L_ip_addressContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Lc_vxlan_anycast_ipContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Line_actionContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Mac_addressContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.R_routeContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.R_route_mapContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.RangeContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Range_setContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Rmm_interfaceContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.S_net_add_unrecognizedContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Uint16Context;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.V_ip_addressContext;
@@ -86,6 +96,10 @@ import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.Interface;
+import org.batfish.representation.cumulus.RouteMap;
+import org.batfish.representation.cumulus.RouteMapEntry;
+import org.batfish.representation.cumulus.RouteMapMatchInterface;
+import org.batfish.representation.cumulus.StaticRoute;
 import org.batfish.representation.cumulus.Vlan;
 import org.batfish.representation.cumulus.Vrf;
 import org.batfish.representation.cumulus.Vxlan;
@@ -96,7 +110,7 @@ import org.batfish.representation.cumulus.Vxlan;
  */
 public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListener {
 
-  private static final String LOOPBACK_INTERFACE_NAME = "lo";
+  @VisibleForTesting static final String LOOPBACK_INTERFACE_NAME = "lo";
   private static final Pattern NUMBERED_WORD_PATTERN = Pattern.compile("^(.*[^0-9])([0-9]+)$");
   private static final Pattern PHYSICAL_INTERFACE_PATTERN = Pattern.compile("(swp|eth)[0-9]+");
   private static final Pattern SUBINTERFACE_PATTERN = Pattern.compile("^(.*)\\.([0-9]+)$");
@@ -126,8 +140,20 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     return Ip6.parse(ctx.getText());
   }
 
+  private static @Nonnull LineAction toLineAction(Line_actionContext ctx) {
+    if (ctx.PERMIT() != null) {
+      return LineAction.PERMIT;
+    } else {
+      return LineAction.DENY;
+    }
+  }
+
   private static @Nonnull MacAddress toMacAddress(Mac_addressContext ctx) {
     return MacAddress.parse(ctx.getText());
+  }
+
+  private static @Nonnull Prefix toPrefix(Ip_prefixContext ctx) {
+    return Prefix.parse(ctx.getText());
   }
 
   private static @Nonnull Range<Integer> toRange(RangeContext ctx) {
@@ -193,12 +219,15 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   private @Nullable CumulusNcluConfiguration _c;
   private @Nullable Bond _currentBond;
   private @Nullable List<Interface> _currentInterfaces;
+  private @Nullable RouteMapEntry _currentRouteMapEntry;
   private @Nullable Vlan _currentVlan;
   private @Nullable List<Vlan> _currentVlans;
+  private @Nullable Vrf _currentVrf;
   private @Nullable List<Vrf> _currentVrfs;
   private @Nullable List<Vxlan> _currentVxlans;
   private final @Nonnull CumulusNcluCombinedParser _parser;
   private final @Nonnull String _text;
+
   private final @Nonnull Warnings _w;
 
   public CumulusNcluConfigurationBuilder(
@@ -406,43 +435,57 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   @Override
   public void enterA_interface(A_interfaceContext ctx) {
     Set<String> interfaceNames = toStrings(ctx.interfaces);
-    _currentInterfaces = initInterfacesIfAbsent(interfaceNames, ctx, null);
+    _currentInterfaces =
+        initInterfacesIfAbsent(interfaceNames, ctx, CumulusStructureUsage.INTERFACE_SELF_REFERENCE);
   }
 
   @Override
   public void enterA_loopback(A_loopbackContext ctx) {
     _c.getLoopback().setEnabled(true);
+    _c.defineStructure(
+        CumulusStructureType.LOOPBACK, LOOPBACK_INTERFACE_NAME, ctx.getStart().getLine());
+    _c.referenceStructure(
+        CumulusStructureType.LOOPBACK,
+        LOOPBACK_INTERFACE_NAME,
+        CumulusStructureUsage.LOOPBACK_SELF_REFERENCE,
+        ctx.getStart().getLine());
   }
 
   @Override
   public void enterA_vlan(A_vlanContext ctx) {
     int line = ctx.getStart().getLine();
     if (ctx.suffix != null) {
-      _currentVlan =
-          initVlansIfAbsent(ImmutableSet.of(String.format("vlan%d", toInteger(ctx.suffix))), line)
-              .iterator()
-              .next();
+      String name = String.format("vlan%d", toInteger(ctx.suffix));
+      _currentVlan = initVlansIfAbsent(ImmutableSet.of(name), line).iterator().next();
+      _c.referenceStructure(
+          CumulusStructureType.VLAN, name, CumulusStructureUsage.VLAN_SELF_REFERENCE, line);
     } else {
-      _currentVlans =
-          initVlansIfAbsent(
-              IntegerSpace.of(toRangeSet(ctx.suffixes)).enumerate().stream()
-                  .map(suffix -> String.format("vlan%d", suffix))
-                  .collect(ImmutableSet.toImmutableSet()),
-              line);
+      Set<String> names =
+          IntegerSpace.of(toRangeSet(ctx.suffixes)).enumerate().stream()
+              .map(suffix -> String.format("vlan%d", suffix))
+              .collect(ImmutableSet.toImmutableSet());
+      _currentVlans = initVlansIfAbsent(names, line);
+      names.forEach(
+          name ->
+              _c.referenceStructure(
+                  CumulusStructureType.VLAN,
+                  name,
+                  CumulusStructureUsage.VLAN_SELF_REFERENCE,
+                  line));
     }
   }
 
   @Override
   public void enterA_vrf(A_vrfContext ctx) {
     Set<String> vrfNames = toStrings(ctx.names);
-    _currentVrfs = initVrfsIfAbsent(vrfNames, ctx, null);
+    _currentVrfs = initVrfsIfAbsent(vrfNames, ctx, CumulusStructureUsage.VRF_SELF_REFERENCE);
   }
 
   @Override
   public void enterA_vxlan(A_vxlanContext ctx) {
     Set<String> names = toStrings(ctx.names);
     if (ctx.vx_vxlan() != null && ctx.vx_vxlan().vxv_id() != null) {
-      // create them if necessary when settings id
+      // create them if necessary when setting id
       _currentVxlans = initVxlansIfAbsent(names, ctx);
     } else if (!_c.getVxlans().keySet().containsAll(names)) {
       _w.redFlag(
@@ -459,6 +502,37 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   @Override
   public void enterCumulus_nclu_configuration(Cumulus_nclu_configurationContext ctx) {
     _c = new CumulusNcluConfiguration();
+  }
+
+  @Override
+  public void enterFrr_vrf(Frr_vrfContext ctx) {
+    _currentVrf =
+        initVrfsIfAbsent(
+                ImmutableSet.of(ctx.name.getText()), ctx, CumulusStructureUsage.VRF_SELF_REFERENCE)
+            .iterator()
+            .next();
+  }
+
+  @Override
+  public void enterFrrv_ip_route(Frrv_ip_routeContext ctx) {
+    _currentVrf.getStaticRoutes().add(new StaticRoute(toPrefix(ctx.network), toIp(ctx.nhip)));
+  }
+
+  @Override
+  public void enterR_route_map(R_route_mapContext ctx) {
+    String name = ctx.name.getText();
+    _c.defineStructure(CumulusStructureType.ROUTE_MAP, name, ctx.getStart().getLine());
+    LineAction action = toLineAction(ctx.action);
+    _currentRouteMapEntry =
+        _c.getRouteMaps()
+            .computeIfAbsent(name, RouteMap::new)
+            .getEntries()
+            .compute(
+                toInteger(ctx.num),
+                (num, existingEntry) ->
+                    existingEntry != null && existingEntry.getAction().equals(action)
+                        ? existingEntry
+                        : new RouteMapEntry(num, action));
   }
 
   @Override
@@ -553,7 +627,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   @Override
   public void exitFrr_vrf(Frr_vrfContext ctx) {
-    todo(ctx);
+    _currentVrf = null;
   }
 
   @Override
@@ -631,6 +705,29 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   @Override
   public void exitLc_vxlan_anycast_ip(Lc_vxlan_anycast_ipContext ctx) {
     _c.getLoopback().setClagVxlanAnycastIp(toIp(ctx.ip));
+  }
+
+  @Override
+  public void exitR_route(R_routeContext ctx) {
+    _c.getStaticRoutes().add(new StaticRoute(toPrefix(ctx.prefix), toIp(ctx.nhip)));
+  }
+
+  @Override
+  public void exitR_route_map(R_route_mapContext ctx) {
+    _currentRouteMapEntry = null;
+  }
+
+  @Override
+  public void exitRmm_interface(Rmm_interfaceContext ctx) {
+    Set<String> names = toStrings(ctx.interfaces);
+    if (!referenceAbstractInterfaces(names, ctx, CumulusStructureUsage.ROUTE_MAP_MATCH_INTERFACE)) {
+      _w.redFlag(
+          String.format(
+              "Cannot match illegal interface glob '%s' in: %s",
+              ctx.interfaces.getText(), getFullText(ctx)));
+      return;
+    }
+    _currentRouteMapEntry.setMatchInterface(new RouteMapMatchInterface(names));
   }
 
   @Override
@@ -745,7 +842,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
    * empty {@link List} if any name in {@code names} is invalid.
    */
   private @Nonnull List<Interface> initInterfacesIfAbsent(
-      Set<String> names, ParserRuleContext ctx, @Nullable CumulusStructureUsage usage) {
+      Set<String> names, ParserRuleContext ctx, @Nonnull CumulusStructureUsage usage) {
     ImmutableList.Builder<Interface> interfacesBuilder = ImmutableList.builder();
     ImmutableList.Builder<String> newInterfaces = ImmutableList.builder();
     for (String name : names) {
@@ -767,16 +864,8 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
         .forEach(
             name -> {
               _c.defineStructure(CumulusStructureType.INTERFACE, name, line);
-              _c.referenceStructure(
-                  CumulusStructureType.INTERFACE,
-                  name,
-                  CumulusStructureUsage.INTERFACE_SELF_REFERENCE,
-                  line);
             });
-    if (usage != null) {
-      names.forEach(
-          name -> _c.referenceStructure(CumulusStructureType.INTERFACE, name, usage, line));
-    }
+    names.forEach(name -> _c.referenceStructure(CumulusStructureType.INTERFACE, name, usage, line));
     return interfaces;
   }
 
@@ -790,11 +879,6 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
                         name,
                         n -> {
                           _c.defineStructure(CumulusStructureType.VLAN, n, line);
-                          _c.referenceStructure(
-                              CumulusStructureType.VLAN,
-                              n,
-                              CumulusStructureUsage.VLAN_SELF_REFERENCE,
-                              line);
                           return new Vlan(n);
                         }))
         .collect(ImmutableList.toImmutableList());
@@ -805,7 +889,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
    * {@link List} if any name in {@code names} is invalid.
    */
   private @Nonnull List<Vrf> initVrfsIfAbsent(
-      Set<String> names, ParserRuleContext ctx, @Nullable CumulusStructureUsage usage) {
+      Set<String> names, ParserRuleContext ctx, @Nonnull CumulusStructureUsage usage) {
     ImmutableList.Builder<Vrf> vrfsBuilder = ImmutableList.builder();
     ImmutableList.Builder<String> newVrfs = ImmutableList.builder();
     for (String name : names) {
@@ -827,12 +911,8 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
         .forEach(
             name -> {
               _c.defineStructure(CumulusStructureType.VRF, name, line);
-              _c.referenceStructure(
-                  CumulusStructureType.VRF, name, CumulusStructureUsage.VRF_SELF_REFERENCE, line);
             });
-    if (usage != null) {
-      names.forEach(name -> _c.referenceStructure(CumulusStructureType.VRF, name, usage, line));
-    }
+    names.forEach(name -> _c.referenceStructure(CumulusStructureType.VRF, name, usage, line));
     return vrfs;
   }
 
@@ -869,6 +949,35 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
                   line);
             });
     return vxlans;
+  }
+
+  /**
+   * Attempt to add references to named abstract interfaces of type 'bond', 'interface', 'loopback'
+   * 'vlan', 'vrf'. Any non-existent interface will be created if its name is valid for an
+   * 'interface'-type interface.
+   *
+   * @return {@code false} iff some name in {@code names} does not correspond to an existing
+   *     abstract interface nor is a valid name for an 'interface'-type interface.
+   */
+  private boolean referenceAbstractInterfaces(
+      Set<String> names, ParserRuleContext ctx, CumulusStructureUsage usage) {
+    Set<String> potentialInterfaceNames =
+        names.stream()
+            .filter(not(_c.getBonds()::containsKey))
+            .filter(not(_c.getVlans()::containsKey))
+            .filter(not(_c.getVrfs()::containsKey))
+            .filter(not("lo"::equals))
+            .collect(ImmutableSet.toImmutableSet());
+    if (!potentialInterfaceNames.isEmpty()
+        && initInterfacesIfAbsent(
+                potentialInterfaceNames, ctx, CumulusStructureUsage.ROUTE_MAP_MATCH_INTERFACE)
+            .isEmpty()) {
+      return false;
+    }
+    int line = ctx.getStart().getLine();
+    names.forEach(
+        name -> _c.referenceStructure(CumulusStructureType.ABSTRACT_INTERFACE, name, usage, line));
+    return true;
   }
 
   @SuppressWarnings("unused")

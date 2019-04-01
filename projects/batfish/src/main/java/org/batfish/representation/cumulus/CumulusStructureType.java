@@ -4,8 +4,11 @@ import javax.annotation.Nonnull;
 import org.batfish.vendor.StructureType;
 
 public enum CumulusStructureType implements StructureType {
+  ABSTRACT_INTERFACE("abstract interface"),
   BOND("bond"),
   INTERFACE("interface"),
+  LOOPBACK("loopback"),
+  ROUTE_MAP("route-map"),
   VLAN("vlan"),
   VRF("vrf"),
   VXLAN("vxlan");

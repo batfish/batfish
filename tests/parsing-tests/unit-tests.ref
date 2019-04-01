@@ -40915,8 +40915,10 @@
             "        ROUTING:'routing'",
             "        (r_route",
             "          ROUTE:'route'",
-            "          prefix = IP_PREFIX:'192.0.2.0/24'",
-            "          nhip = IP_ADDRESS:'10.0.0.1'",
+            "          prefix = (ip_prefix",
+            "            IP_PREFIX:'192.0.2.0/24')",
+            "          nhip = (ip_address",
+            "            IP_ADDRESS:'10.0.0.1')",
             "          NEWLINE:'\\n'))))",
             "  (statement",
             "    (s_net_add",
@@ -41314,8 +41316,10 @@
             "        (frrv_ip_route",
             "          IP:'ip'  <== mode:M_Printf",
             "          ROUTE:'route'  <== mode:M_Printf",
-            "          network = IP_PREFIX:'0.0.0.0/0'  <== mode:M_Printf",
-            "          nhip = IP_ADDRESS:'192.0.2.1'  <== mode:M_Printf",
+            "          network = (ip_prefix",
+            "            IP_PREFIX:'0.0.0.0/0'  <== mode:M_Printf)",
+            "          nhip = (ip_address",
+            "            IP_ADDRESS:'192.0.2.1'  <== mode:M_Printf)",
             "          NEWLINE:'\\n'  <== mode:M_Printf))",
             "      EXTRA_CONFIGURATION_FOOTER:'' >> /etc/frr/frr.conf\"'  <== mode:M_Printf",
             "      NEWLINE:'\\n\\n'))",
@@ -72273,12 +72277,6 @@
               "Line" : 82,
               "Parser_Context" : "[frr_unrecognized s_extra_configuration statement cumulus_nclu_configuration]",
               "Text" : "username cumulus nopassword\\n"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 83,
-              "Parser_Context" : "[frr_vrf s_extra_configuration statement cumulus_nclu_configuration]",
-              "Text" : "vrf vrf1\\n  ip route 0.0.0.0/0 192.0.2.1\\n"
             }
           ],
           "Red flags" : [
@@ -76803,7 +76801,7 @@
               "definitionLines" : [
                 32
               ],
-              "numReferrers" : 1
+              "numReferrers" : 5
             },
             "eth0" : {
               "definitionLines" : [
@@ -76815,7 +76813,7 @@
               "definitionLines" : [
                 19
               ],
-              "numReferrers" : 2
+              "numReferrers" : 3
             },
             "swp2" : {
               "definitionLines" : [
@@ -76833,31 +76831,48 @@
               "definitionLines" : [
                 19
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             },
             "swp5" : {
               "definitionLines" : [
                 19
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             },
             "swp6" : {
               "definitionLines" : [
                 19
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             },
             "swp7" : {
               "definitionLines" : [
                 19
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             },
             "swp8" : {
               "definitionLines" : [
                 19
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
+            }
+          },
+          "loopback" : {
+            "lo" : {
+              "definitionLines" : [
+                41,
+                42
+              ],
+              "numReferrers" : 3
+            }
+          },
+          "route-map" : {
+            "rm1" : {
+              "definitionLines" : [
+                55
+              ],
+              "numReferrers" : 0
             }
           },
           "vlan" : {
@@ -76865,7 +76880,7 @@
               "definitionLines" : [
                 61
               ],
-              "numReferrers" : 1
+              "numReferrers" : 5
             }
           },
           "vrf" : {
@@ -76873,13 +76888,13 @@
               "definitionLines" : [
                 32
               ],
-              "numReferrers" : 3
+              "numReferrers" : 5
             },
             "vrf1" : {
               "definitionLines" : [
                 65
               ],
-              "numReferrers" : 2
+              "numReferrers" : 4
             }
           },
           "vxlan" : {
@@ -76897,43 +76912,43 @@
               "definitionLines" : [
                 6
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             },
             "swp2" : {
               "definitionLines" : [
                 9
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             },
             "swp3" : {
               "definitionLines" : [
                 11
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             },
             "swp5" : {
               "definitionLines" : [
                 12
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             },
             "swp6" : {
               "definitionLines" : [
                 14
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             },
             "swp7" : {
               "definitionLines" : [
                 16
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             },
             "swp8" : {
               "definitionLines" : [
                 19
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             }
           },
           "vrf" : {
@@ -76993,7 +77008,7 @@
               "definitionLines" : [
                 8
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             }
           },
           "vxlan" : {
@@ -77019,7 +77034,7 @@
               "definitionLines" : [
                 8
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             }
           },
           "vrf" : {
@@ -82512,6 +82527,13 @@
           }
         },
         "configs/cumulus_nclu" : {
+          "abstract interface" : {
+            "lo" : {
+              "route-map match interface" : [
+                55
+              ]
+            }
+          },
           "bond" : {
             "bond1" : {
               "bond self-reference" : [
@@ -82527,7 +82549,11 @@
           "interface" : {
             "bond1.4094" : {
               "interface self-reference" : [
-                32
+                32,
+                33,
+                34,
+                35,
+                36
               ]
             },
             "eth0" : {
@@ -82540,7 +82566,8 @@
                 19
               ],
               "interface self-reference" : [
-                19
+                38,
+                39
               ]
             },
             "swp2" : {
@@ -82548,7 +82575,7 @@
                 19
               ],
               "interface self-reference" : [
-                19
+                39
               ]
             },
             "swp3" : {
@@ -82556,54 +82583,51 @@
                 19
               ],
               "interface self-reference" : [
-                19
+                39
               ]
             },
             "swp4" : {
               "bond slave" : [
-                19
-              ],
-              "interface self-reference" : [
                 19
               ]
             },
             "swp5" : {
               "bond slave" : [
                 19
-              ],
-              "interface self-reference" : [
-                19
               ]
             },
             "swp6" : {
               "bond slave" : [
-                19
-              ],
-              "interface self-reference" : [
                 19
               ]
             },
             "swp7" : {
               "bond slave" : [
                 19
-              ],
-              "interface self-reference" : [
-                19
               ]
             },
             "swp8" : {
               "bond slave" : [
                 19
-              ],
-              "interface self-reference" : [
-                19
+              ]
+            }
+          },
+          "loopback" : {
+            "lo" : {
+              "loopback self-reference" : [
+                41,
+                42
               ]
             }
           },
           "vlan" : {
             "vlan4" : {
               "vlan self-reference" : [
-                61
+                61,
+                62,
+                63,
+                64,
+                65
               ]
             }
           },
@@ -82616,7 +82640,9 @@
                 37
               ],
               "vrf self-reference" : [
-                32
+                66,
+                67,
+                69
               ]
             },
             "vrf1" : {
@@ -82624,7 +82650,9 @@
                 65
               ],
               "vrf self-reference" : [
-                65
+                68,
+                69,
+                83
               ]
             }
           },
@@ -82641,56 +82669,35 @@
             "swp1" : {
               "bond slave" : [
                 6
-              ],
-              "interface self-reference" : [
-                6
               ]
             },
             "swp2" : {
               "bond slave" : [
-                9
-              ],
-              "interface self-reference" : [
                 9
               ]
             },
             "swp3" : {
               "bond slave" : [
                 11
-              ],
-              "interface self-reference" : [
-                11
               ]
             },
             "swp5" : {
               "bond slave" : [
-                12
-              ],
-              "interface self-reference" : [
                 12
               ]
             },
             "swp6" : {
               "bond slave" : [
                 14
-              ],
-              "interface self-reference" : [
-                14
               ]
             },
             "swp7" : {
               "bond slave" : [
                 16
-              ],
-              "interface self-reference" : [
-                16
               ]
             },
             "swp8" : {
               "bond slave" : [
-                19
-              ],
-              "interface self-reference" : [
                 19
               ]
             }
@@ -82745,9 +82752,6 @@
             "swp1" : {
               "bond slave" : [
                 8
-              ],
-              "interface self-reference" : [
-                8
               ]
             }
           },
@@ -82770,9 +82774,6 @@
           "interface" : {
             "swp0" : {
               "bond slave" : [
-                8
-              ],
-              "interface self-reference" : [
                 8
               ]
             }
