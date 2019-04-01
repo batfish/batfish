@@ -72,6 +72,7 @@ public class OspfSessionCompatibilityAnswererTest {
         .setName("int_u")
         .setVrf(vrfU)
         .setOwner(configurationU)
+        .setOspfProcess("U")
         .build();
 
     nf.interfaceBuilder()
@@ -79,10 +80,12 @@ public class OspfSessionCompatibilityAnswererTest {
         .setName("int_v")
         .setVrf(vrfV)
         .setOwner(configurationV)
+        .setOspfProcess("V")
         .build();
 
     nf.ospfProcessBuilder()
         .setVrf(vrfU)
+        .setProcessId("U")
         .setNeighbors(
             ImmutableMap.of(
                 "int_u",
@@ -95,6 +98,7 @@ public class OspfSessionCompatibilityAnswererTest {
         .build();
     nf.ospfProcessBuilder()
         .setVrf(vrfV)
+        .setProcessId("V")
         .setNeighbors(
             ImmutableMap.of(
                 "int_v",
@@ -112,8 +116,8 @@ public class OspfSessionCompatibilityAnswererTest {
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
 
     ospfGraph.putEdgeValue(
-        new OspfNeighborConfigId("configuration_u", "vrf_u", "int_u"),
-        new OspfNeighborConfigId("configuration_v", "vrf_v", "int_v"),
+        new OspfNeighborConfigId("configuration_u", "vrf_u", "U", "int_u"),
+        new OspfNeighborConfigId("configuration_v", "vrf_v", "V", "int_v"),
         new OspfSessionProperties(new IpLink(Ip.parse("1.1.1.2"), Ip.parse("1.1.1.3"))));
     _ospfTopology = new OspfTopology(ImmutableValueGraph.copyOf(ospfGraph));
   }

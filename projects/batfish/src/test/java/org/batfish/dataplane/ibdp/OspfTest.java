@@ -164,10 +164,10 @@ public class OspfTest {
     Vrf v1 = vb.setOwner(c1).build();
     RoutingPolicy c1ExportPolicy =
         rpb.setOwner(c1).setStatements(getExportPolicyStatements(C1_L1_ADDRESS)).build();
-    OspfProcess op1 = opb.setVrf(v1).setExportPolicy(c1ExportPolicy).build();
+    OspfProcess op1 = opb.setVrf(v1).setProcessId("1").setExportPolicy(c1ExportPolicy).build();
     OspfArea oa1a = oaba.setOspfProcess(op1).build();
     OspfArea oa1b = areaA == areaB ? oa1a : oabb.setOspfProcess(op1).build();
-    ib.setOwner(c1).setVrf(v1).setOspfArea(oa1a);
+    ib.setOwner(c1).setVrf(v1).setOspfArea(oa1a).setOspfProcess("1");
     ib.setOspfPassive(true).setName(l0Name).setAddress(C1_L0_ADDRESS).build();
     ib.setOspfEnabled(false)
         .setOspfPassive(false)
@@ -320,6 +320,7 @@ public class OspfTest {
             .setOspfCost(10)
             .setOspfEnabled(true)
             .setOspfPointToPoint(true)
+            .setOspfProcess("1")
             .setBandwidth(100E6);
     OspfProcess.Builder opb = nf.ospfProcessBuilder().setProcessId("1");
     OspfArea.Builder oab = nf.ospfAreaBuilder();
