@@ -2382,22 +2382,10 @@
       }
     ],
     "summary" : {
-<<<<<<< HEAD
       "notes" : "Found 334 results",
-||||||| merged common ancestors
-      "notes" : "Found 338 results",
-=======
-      "notes" : "Found 335 results",
->>>>>>> master
       "numFailed" : 0,
       "numPassed" : 0,
-<<<<<<< HEAD
       "numResults" : 334
-||||||| merged common ancestors
-      "numResults" : 338
-=======
-      "numResults" : 335
->>>>>>> master
     }
   }
 ]
