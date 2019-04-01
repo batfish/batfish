@@ -14,7 +14,7 @@ public final class RouteMapEntry implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private @Nonnull LineAction _action;
+  private final @Nonnull LineAction _action;
   private @Nullable RouteMapMatchInterface _matchInterface;
   private final int _number;
 
@@ -43,10 +43,6 @@ public final class RouteMapEntry implements Serializable {
   /** Return stream of set statements for this entry. */
   public @Nonnull Stream<RouteMapSet> getSets() {
     return Stream.<RouteMapSet>of().filter(Objects::nonNull);
-  }
-
-  public void setAction(@Nullable LineAction action) {
-    _action = action;
   }
 
   public void setMatchInterface(@Nullable RouteMapMatchInterface matchInterface) {
