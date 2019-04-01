@@ -3128,10 +3128,14 @@ public final class JFactory extends BDDFactory {
       }
     }
 
-    if (FLUSH_CACHE_ON_GC) {
-      bdd_operator_reset();
-    } else {
-      bdd_operator_clean();
+    if (bddfreenum > 0) {
+      // Don't reset or clean caches if we didn't free any nodes.
+
+      if (FLUSH_CACHE_ON_GC) {
+        bdd_operator_reset();
+      } else {
+        bdd_operator_clean();
+      }
     }
 
     c2 = System.currentTimeMillis();
