@@ -1,29 +1,37 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 /** OSPF intra-area route. Must stay within a single OSPF area. */
+@ParametersAreNonnullByDefault
 public class OspfIntraAreaRoute extends OspfInternalRoute {
 
   private static final long serialVersionUID = 1L;
 
   @JsonCreator
   private static OspfIntraAreaRoute jsonCreator(
-      @JsonProperty(PROP_NETWORK) Prefix network,
+      @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
       @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
-      @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
-      @JsonProperty(PROP_METRIC) long metric,
-      @JsonProperty(PROP_AREA) long area) {
+      @Nullable @JsonProperty(PROP_ADMINISTRATIVE_COST) Integer admin,
+      @Nullable @JsonProperty(PROP_METRIC) Long metric,
+      @Nullable @JsonProperty(PROP_AREA) Long area) {
+    checkArgument(network != null, "%s must be specified", PROP_NETWORK);
+    checkArgument(admin != null, "%s must be specified", PROP_ADMINISTRATIVE_COST);
+    checkArgument(metric != null, "%s must be specified", PROP_METRIC);
+    checkArgument(area != null, "%s must be specified", PROP_AREA);
     return new OspfIntraAreaRoute(network, nextHopIp, admin, metric, area, false, false);
   }
 
-  OspfIntraAreaRoute(
+  public OspfIntraAreaRoute(
       Prefix network,
-      @Nullable Ip nextHopIp,
+      Ip nextHopIp,
       int admin,
       long metric,
       long area,
@@ -32,6 +40,7 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
     super(network, nextHopIp, admin, metric, area, nonForwarding, nonRouting);
   }
 
+  @Nonnull
   @Override
   public RoutingProtocol getProtocol() {
     return RoutingProtocol.OSPF;
@@ -69,8 +78,8 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
   }
 
   @Override
-  public OspfInternalRoute.Builder toBuilder() {
-    return OspfInternalRoute.builder()
+  public Builder toBuilder() {
+    return builder()
         // AbstractRoute properties
         .setNetwork(getNetwork())
         .setNextHopIp(getNextHopIp())
@@ -79,7 +88,40 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
         .setNonForwarding(getNonForwarding())
         .setNonRouting(getNonRouting())
         // OspfIntraAreaRoute properties
-        .setProtocol(getProtocol())
         .setArea(getArea());
+  }
+
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  public static final class Builder extends AbstractRouteBuilder<Builder, OspfIntraAreaRoute> {
+
+    private Long _area;
+
+    @Override
+    public OspfIntraAreaRoute build() {
+      return new OspfIntraAreaRoute(
+          getNetwork(),
+          getNextHopIp(),
+          getAdmin(),
+          getMetric(),
+          _area,
+          getNonForwarding(),
+          getNonRouting());
+    }
+
+    @Nonnull
+    @Override
+    protected Builder getThis() {
+      return this;
+    }
+
+    public Builder setArea(long area) {
+      _area = area;
+      return this;
+    }
+
+    private Builder() {}
   }
 }
