@@ -982,10 +982,16 @@ public final class JFactory extends BDDFactory {
       return h;
     } else if (g == h) {
       return g;
-    } else if (ISONE(g) && ISZERO(h)) {
-      return f;
-    } else if (ISZERO(g) && ISONE(h)) {
-      return not_rec(f);
+    } else if (ISZERO(g)) {
+      applyop = bddop_less;
+      return apply_rec(f, h);
+    } else if (ISONE(g)) {
+      return or_rec(f, h);
+    } else if (ISZERO(h)) {
+      return and_rec(f, g);
+    } else if (ISONE(h)) {
+      applyop = bddop_imp;
+      return apply_rec(f, g);
     }
 
     entry = BddCache_lookupI(itecache, ITEHASH(f, g, h));
@@ -1230,6 +1236,7 @@ public final class JFactory extends BDDFactory {
     }
 
     switch (applyop) {
+        // case bddop_and: is handled elsehwere
       case bddop_xor:
         if (l == r) {
           return BDDZERO;
@@ -1237,16 +1244,48 @@ public final class JFactory extends BDDFactory {
           return r;
         } else if (ISZERO(r)) {
           return l;
+        } else if (ISONE(l)) {
+          return not_rec(r);
+        } else if (ISONE(r)) {
+          return not_rec(l);
+        } else if (l > r) {
+          // Since XOR is symmetric, maximize caching by ensuring l < r (== handled above).
+          int t = l;
+          l = r;
+          r = t;
         }
         break;
+        // case bddop_or: is handled elsehwere
       case bddop_nand:
-        if (ISZERO(l) || ISZERO(r)) {
+        if (l == r) {
+          return not_rec(l);
+        } else if (ISZERO(l) || ISZERO(r)) {
           return BDDONE;
+        } else if (ISONE(l)) {
+          return not_rec(r);
+        } else if (ISONE(r)) {
+          return not_rec(l);
+        } else if (l > r) {
+          // Since NAND is symmetric, maximize caching by ensuring l < r (== handled above).
+          int t = l;
+          l = r;
+          r = t;
         }
         break;
       case bddop_nor:
-        if (ISONE(l) || ISONE(r)) {
+        if (l == r) {
+          return not_rec(l);
+        } else if (ISONE(l) || ISONE(r)) {
           return BDDZERO;
+        } else if (ISZERO(l)) {
+          return not_rec(r);
+        } else if (ISZERO(r)) {
+          return not_rec(l);
+        } else if (l > r) {
+          // Since NOR is symmetric, maximize caching by ensuring l < r (== handled above).
+          int t = l;
+          l = r;
+          r = t;
         }
         break;
       case bddop_imp:
@@ -1254,8 +1293,79 @@ public final class JFactory extends BDDFactory {
           return BDDONE;
         } else if (ISONE(l)) {
           return r;
+        } else if (ISZERO(r)) {
+          return not_rec(l);
         } else if (ISONE(r)) {
           return BDDONE;
+        }
+        break;
+      case bddop_biimp:
+        if (l == r) {
+          return BDDONE;
+        } else if (ISZERO(l)) {
+          return not_rec(r);
+        } else if (ISZERO(r)) {
+          return not_rec(l);
+        } else if (ISONE(l)) {
+          return r;
+        } else if (ISONE(r)) {
+          return l;
+        } else if (l > r) {
+          // Since BIIMP is symmetric, maximize caching by ensuring l < r (== handled above).
+          int t = l;
+          l = r;
+          r = t;
+        }
+        break;
+      case bddop_diff:
+        if (l == r) {
+          return BDDZERO;
+        } else if (ISZERO(l)) {
+          return BDDZERO;
+        } else if (ISONE(r)) {
+          return BDDZERO;
+        } else if (ISONE(l)) {
+          return not_rec(r);
+        } else if (ISZERO(r)) {
+          return l;
+        }
+        break;
+      case bddop_less:
+        if (l == r) {
+          return BDDZERO;
+        } else if (ISONE(l)) {
+          return BDDZERO;
+        } else if (ISZERO(r)) {
+          return BDDZERO;
+        } else if (ISZERO(l)) {
+          return r;
+        } else if (ISONE(r)) {
+          return not_rec(l);
+        } else {
+          // Rewrite as equivalent diff to improve caching.
+          applyop = bddop_diff;
+          int t = l;
+          l = r;
+          r = t;
+        }
+        break;
+      case bddop_invimp:
+        if (l == r) {
+          return BDDONE;
+        } else if (ISONE(l)) {
+          return BDDONE;
+        } else if (ISZERO(r)) {
+          return BDDONE;
+        } else if (ISONE(r)) {
+          return l;
+        } else if (ISZERO(l)) {
+          return not_rec(r);
+        } else {
+          // Rewrite as equivalent imp to improve caching.
+          applyop = bddop_imp;
+          int t = l;
+          l = r;
+          r = t;
         }
         break;
     }
@@ -1311,6 +1421,11 @@ public final class JFactory extends BDDFactory {
       return r;
     } else if (ISONE(r)) {
       return l;
+    } else if (l > r) {
+      // Since AND is symmetric, maximize caching by ensuring l < r (== handled above).
+      int t = l;
+      l = r;
+      r = t;
     }
     entry = BddCache_lookupI(applycache, APPLYHASH(l, r, bddop_and));
 
@@ -1363,6 +1478,11 @@ public final class JFactory extends BDDFactory {
       return r;
     } else if (ISZERO(r)) {
       return l;
+    } else if (l > r) {
+      // Since OR is symmetric, maximize caching by ensuring l < r (== handled above).
+      int t = l;
+      l = r;
+      r = t;
     }
     entry = BddCache_lookupI(applycache, APPLYHASH(l, r, bddop_or));
 
