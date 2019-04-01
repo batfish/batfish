@@ -156,7 +156,7 @@ public final class BDDIpAccessListSpecializer extends IpAccessListSpecializer {
       OriginatingFromDevice originatingFromDevice) {
     if (_simplifyToTrue && _flowBDD.imp(_bddSrcManager.getOriginatingFromDeviceBDD()).isOne()) {
       return TrueExpr.INSTANCE;
-    } else if (_flowBDD.imp(_bddSrcManager.getOriginatingFromDeviceBDD().not()).isOne()) {
+    } else if (_flowBDD.and(_bddSrcManager.getOriginatingFromDeviceBDD()).isZero()) {
       return FalseExpr.INSTANCE;
     }
     return originatingFromDevice;

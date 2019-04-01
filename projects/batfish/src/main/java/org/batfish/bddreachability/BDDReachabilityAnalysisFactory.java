@@ -775,12 +775,12 @@ public final class BDDReachabilityAnalysisFactory {
                           String node = nodeEntry.getKey();
                           String vrf = vrfEntry.getKey();
                           BDD notAcceptBDD = vrfEntry.getValue();
-                          BDD notRoutableBDD = _routableBDDs.get(node).get(vrf).not();
+                          BDD routableBDD = _routableBDDs.get(node).get(vrf);
                           return new Edge(
                               new PostInVrf(node, vrf),
                               new NodeDropNoRoute(node),
                               compose(
-                                  constraint(notAcceptBDD.and(notRoutableBDD)),
+                                  constraint(notAcceptBDD.diff(routableBDD)),
                                   removeSourceConstraint(_bddSourceManagers.get(node)),
                                   removeLastHopConstraint(_lastHopMgr, node)));
                         }));
