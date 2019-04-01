@@ -54,72 +54,40 @@ public class Interface implements Serializable {
   }
 
   private String _accessVlan;
-
   private boolean _active;
-
   private Set<Ip> _additionalArpIps;
-
   private final Set<InterfaceAddress> _allAddresses;
-
   // Dumb name to appease checkstyle
   private String _agg8023adInterface;
-
   private final Set<Ip> _allAddressIps;
-
   private final List<SubRange> _allowedVlans;
-
   private final List<String> _allowedVlanNames;
-
   private double _bandwidth;
-
   private String _description;
-
   private String _incomingFilter;
-
   private transient boolean _inherited;
-
   @Nonnull private final IsisInterfaceSettings _isisSettings;
-
   private IsoAddress _isoAddress;
-
   private Integer _mtu;
-
   private final String _name;
-
   @Nullable private Integer _nativeVlan;
-
   private Ip _ospfArea;
-
   private Integer _ospfCost;
-
   private int _ospfDeadInterval;
-
+  @Nullable private Boolean _ospfDisable;
   private int _ospfHelloMultiplier;
-
   private boolean _ospfPassive;
-
   private OspfInterfaceType _ospfInterfaceType;
-
   private String _outgoingFilter;
-
   private Interface _parent;
-
   private InterfaceAddress _preferredAddress;
-
   private InterfaceAddress _primaryAddress;
-
   @Nullable private String _redundantParentInterface;
-
   private String _routingInstance;
-
   private SwitchportMode _switchportMode;
-
   private SwitchportEncapsulationType _switchportTrunkEncapsulation;
-
   private final SortedMap<String, Interface> _units;
-
   private final SortedMap<Integer, VrrpGroup> _vrrpGroups;
-
   private Integer _tcpMss;
 
   public Interface(String name) {
@@ -223,6 +191,11 @@ public class Interface implements Serializable {
     return _ospfDeadInterval;
   }
 
+  @Nullable
+  public Boolean getOspfDisable() {
+    return _ospfDisable;
+  }
+
   public int getOspfHelloMultiplier() {
     return _ospfHelloMultiplier;
   }
@@ -293,6 +266,9 @@ public class Interface implements Serializable {
     }
     if (_ospfArea == null) {
       _ospfArea = _parent._ospfArea;
+    }
+    if (_ospfDisable == null) {
+      _ospfDisable = _parent._ospfDisable;
     }
   }
 
@@ -368,6 +344,10 @@ public class Interface implements Serializable {
 
   public void setOspfDeadInterval(int seconds) {
     _ospfDeadInterval = seconds;
+  }
+
+  public void setOspfDisable(boolean disable) {
+    _ospfDisable = disable;
   }
 
   public void setOspfHelloMultiplier(int multiplier) {

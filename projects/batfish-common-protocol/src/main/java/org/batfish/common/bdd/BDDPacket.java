@@ -38,16 +38,17 @@ public class BDDPacket {
   private static final int JFACTORY_INITIAL_NODE_TABLE_SIZE = 10000;
 
   /*
-   * Initial size of the BDD factory node cache. Automatically resized when the node table is,
-   * to preserve the cache ratio.
-   */
-  private static final int JFACTORY_INITIAL_NODE_CACHE_SIZE = 1000;
-
-  /*
    * The ratio of node table size to node cache size to preserve when resizing. The default
    * value is 0, which means never resize the cache.
    */
   private static final int JFACTORY_CACHE_RATIO = 64;
+
+  /*
+   * Initial size of the BDD factory node cache. Automatically resized when the node table is,
+   * to preserve the cache ratio.
+   */
+  private static final int JFACTORY_INITIAL_NODE_CACHE_SIZE =
+      (JFACTORY_INITIAL_NODE_TABLE_SIZE + JFACTORY_CACHE_RATIO - 1) / JFACTORY_CACHE_RATIO;
 
   private static final int DSCP_LENGTH = 6;
 
@@ -117,6 +118,9 @@ public class BDDPacket {
 
   private final BDDPairing _swapSourceAndDestinationPairing;
 
+  // Picking representative flows
+  private final BDDRepresentativePicker _picker;
+
   /*
    * Creates a collection of BDD variables representing the
    * various attributes of a control plane advertisement.
@@ -183,6 +187,10 @@ public class BDDPacket {
         swapPairing(
             getDstIp(), getSrcIp(), //
             getDstPort(), getSrcPort());
+
+    _picker =
+        new BDDRepresentativePicker(
+            new BDDFlowConstraintGenerator(this).generateFlowPreference(FlowPreference.DEBUGGING));
   }
 
   /*
@@ -294,11 +302,7 @@ public class BDDPacket {
    * @return A Flow.Builder for a representative of the set, if it's non-empty
    */
   public Optional<Flow.Builder> getFlow(BDD bdd) {
-    BDDFlowConstraintGenerator bddFlowConstraint = new BDDFlowConstraintGenerator(this);
-    BDDRepresentativePicker picker =
-        new BDDRepresentativePicker(
-            bddFlowConstraint.generateFlowPreference(FlowPreference.DEBUGGING));
-    BDD representativeBDD = picker.pickRepresentative(bdd);
+    BDD representativeBDD = _picker.pickRepresentative(bdd);
     if (representativeBDD.isZero()) {
       return Optional.empty();
     }

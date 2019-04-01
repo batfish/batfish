@@ -3,11 +3,12 @@ package org.batfish.datamodel.acl;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Ordering;
 import java.util.Objects;
 import java.util.SortedSet;
 import javax.annotation.Nullable;
-import org.batfish.common.util.CommonUtil;
 
 public class AndMatchExpr extends AclLineMatchExpr {
   private static final String PROP_CONJUNCTS = "conjuncts";
@@ -34,7 +35,8 @@ public class AndMatchExpr extends AclLineMatchExpr {
 
   @Override
   protected int compareSameClass(AclLineMatchExpr o) {
-    return CommonUtil.compareIterable(_conjuncts, ((AndMatchExpr) o)._conjuncts);
+    return Comparators.lexicographical(Ordering.<AclLineMatchExpr>natural())
+        .compare(_conjuncts, ((AndMatchExpr) o)._conjuncts);
   }
 
   @Override

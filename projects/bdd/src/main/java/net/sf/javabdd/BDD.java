@@ -291,6 +291,32 @@ public abstract class BDD {
   }
 
   /**
+   * Returns the logical 'inverse implication' of two BDDs. This is a shortcut for calling "apply"
+   * with the "invimp" operator.
+   *
+   * <p>Compare to bdd_invimp.
+   *
+   * @param that the BDD to 'inverse implication' with
+   * @return the logical 'inverse implication' of two BDDs
+   */
+  public BDD invimp(BDD that) {
+    return this.apply(that, BDDFactory.invimp);
+  }
+
+  /**
+   * Makes this BDD be the logical 'inverse implication' of two BDDs. The "that" BDD is consumed,
+   * and can no longer be used. This is a shortcut for calling "applyWith" with the "invimp"
+   * operator.
+   *
+   * <p>Compare to bdd_invimp and bdd_delref.
+   *
+   * @param that the BDD to 'inverse implication' with
+   */
+  public BDD invimpWith(BDD that) {
+    return this.applyWith(that, BDDFactory.invimp);
+  }
+
+  /**
    * Returns the logical 'bi-implication' of two BDDs. This is a shortcut for calling "apply" with
    * the "biimp" operator.
    *

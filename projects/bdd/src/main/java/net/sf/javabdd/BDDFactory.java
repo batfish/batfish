@@ -337,8 +337,9 @@ public abstract class BDDFactory {
    * <p>Compare to bdd_setcacheratio.
    *
    * @param x cache ratio
+   * @return the previous cache ratio
    */
-  public abstract double setCacheRatio(double x);
+  public abstract int setCacheRatio(int x);
 
   /**
    * Sets the node table size.
@@ -1122,8 +1123,10 @@ public abstract class BDDFactory {
     public int uniqueChain;
     public int uniqueHit;
     public int uniqueMiss;
+    public int uniqueTrivial;
     public int opHit;
     public int opMiss;
+    public int opOverwrite;
     public int swapCount;
 
     protected CacheStats() {}
@@ -1133,8 +1136,10 @@ public abstract class BDDFactory {
       this.uniqueChain = that.uniqueChain;
       this.uniqueHit = that.uniqueHit;
       this.uniqueMiss = that.uniqueMiss;
+      this.uniqueTrivial = that.uniqueTrivial;
       this.opHit = that.opHit;
       this.opMiss = that.opMiss;
+      this.opOverwrite = that.opOverwrite;
       this.swapCount = that.swapCount;
     }
 
@@ -1148,17 +1153,20 @@ public abstract class BDDFactory {
       sb.append("----------------");
       sb.append(newLine);
 
+      sb.append("Unique Trivial: ");
+      sb.append(uniqueTrivial);
+      sb.append(newLine);
       sb.append("Unique Access:  ");
       sb.append(uniqueAccess);
-      sb.append(newLine);
-      sb.append("Unique Chain:   ");
-      sb.append(uniqueChain);
       sb.append(newLine);
       sb.append("Unique Hit:     ");
       sb.append(uniqueHit);
       sb.append(newLine);
       sb.append("Unique Miss:    ");
       sb.append(uniqueMiss);
+      sb.append(newLine);
+      sb.append("Unique Chain:   ");
+      sb.append(uniqueChain);
       sb.append(newLine);
       sb.append("=> Hit rate =   ");
       if (uniqueHit + uniqueMiss > 0) {
@@ -1172,6 +1180,9 @@ public abstract class BDDFactory {
       sb.append(newLine);
       sb.append("Operator Miss:  ");
       sb.append(opMiss);
+      sb.append(newLine);
+      sb.append("Operator Overwrite:  ");
+      sb.append(opOverwrite);
       sb.append(newLine);
       sb.append("=> Hit rate =   ");
       if (opHit + opMiss > 0) {

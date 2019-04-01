@@ -270,7 +270,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return authenticationKeyChains;
   }
 
+  @Nullable
   private BgpProcess createBgpProcess(RoutingInstance routingInstance) {
+    BgpGroup mg = routingInstance.getMasterBgpGroup();
+    if (firstNonNull(mg.getDisable(), Boolean.FALSE)) {
+      return null;
+    }
     initDefaultBgpExportPolicy();
     initDefaultBgpImportPolicy();
     String vrfName = routingInstance.getName();
@@ -284,7 +289,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
     }
     proc.setRouterId(routerId);
-    BgpGroup mg = routingInstance.getMasterBgpGroup();
     boolean multipathEbgp = false;
     boolean multipathIbgp = false;
     boolean multipathMultipleAs = false;
@@ -767,7 +771,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .build();
   }
 
+  @Nullable
   private OspfProcess createOspfProcess(RoutingInstance routingInstance) {
+    if (firstNonNull(routingInstance.getOspfDisable(), Boolean.FALSE)) {
+      return null;
+    }
     OspfProcess newProc =
         OspfProcess.builder()
             // Use routing instance name since OSPF processes are not named
@@ -1046,7 +1054,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     long ospfAreaLong = ospfArea.asLong();
     org.batfish.datamodel.ospf.OspfArea.Builder newArea = newAreas.get(ospfAreaLong);
     newArea.addInterface(interfaceName);
-    newIface.setOspfEnabled(true);
+    newIface.setOspfEnabled(!firstNonNull(iface.getOspfDisable(), Boolean.FALSE));
     newIface.setOspfPassive(iface.getOspfPassive());
     Integer ospfCost = iface.getOspfCost();
     if (ospfCost == null && newIface.isLoopback(ConfigurationFormat.FLAT_JUNIPER)) {
@@ -2775,19 +2783,21 @@ public final class JuniperConfiguration extends VendorConfiguration {
                               riName,
                               _w))));
 
-      // create ospf process
+      // Create OSPF process (oproc will be null iff disable is configured at process level)
       if (ri.getOspfAreas().size() > 0) {
         OspfProcess oproc = createOspfProcess(ri);
-        vrf.setOspfProcess(oproc);
-        // add discard routes for OSPF summaries
-        oproc.getAreas().values().stream()
-            .flatMap(a -> a.getSummaries().entrySet().stream())
-            .forEach(
-                summaryEntry ->
-                    vrf.getGeneratedRoutes()
-                        .add(
-                            ospfSummaryToAggregateRoute(
-                                summaryEntry.getKey(), summaryEntry.getValue())));
+        if (oproc != null) {
+          vrf.setOspfProcess(oproc);
+          // add discard routes for OSPF summaries
+          oproc.getAreas().values().stream()
+              .flatMap(a -> a.getSummaries().entrySet().stream())
+              .forEach(
+                  summaryEntry ->
+                      vrf.getGeneratedRoutes()
+                          .add(
+                              ospfSummaryToAggregateRoute(
+                                  summaryEntry.getKey(), summaryEntry.getValue())));
+        }
       }
 
       // create is-is process

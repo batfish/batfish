@@ -554,6 +554,356 @@
         "Comment" : "This feature is not currently supported"
       },
       {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 10,
+        "Text" : "bgp l2vpn evpn  advertise ipv4 unicast",
+        "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 11,
+        "Text" : "bgp l2vpn evpn  neighbor swp1 activate",
+        "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 12,
+        "Text" : "bgp neighbor swp1 interface remote-as external",
+        "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 13,
+        "Text" : "bgp router-id 192.0.2.2",
+        "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 14,
+        "Text" : "bgp vrf vrf1 autonomous-system 65501",
+        "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 15,
+        "Text" : "bgp vrf vrf1 ipv4 unicast redistribute connected",
+        "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 16,
+        "Text" : "bgp vrf vrf1 ipv4 unicast redistribute static",
+        "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 17,
+        "Text" : "bgp vrf vrf1 l2vpn evpn  advertise ipv4 unicast",
+        "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 18,
+        "Text" : "bgp vrf vrf1 router-id 192.0.2.3",
+        "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 23,
+        "Text" : "bridge bridge ports bond1,swp1,vni10001",
+        "Parser_Context" : "[a_bridge s_net_add statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 24,
+        "Text" : "bridge bridge vids 1,2-3",
+        "Parser_Context" : "[a_bridge s_net_add statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 25,
+        "Text" : "bridge bridge vlan-aware",
+        "Parser_Context" : "[a_bridge s_net_add statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 28,
+        "Text" : "net add dot1x eap-reauth-period 0\n",
+        "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 29,
+        "Text" : "net add dot1x mab-activation-delay 30\n",
+        "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 30,
+        "Text" : "net add dot1x radius accounting-port 1234\n",
+        "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 31,
+        "Text" : "net add dot1x radius authentication-port 2345\n",
+        "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 40,
+        "Text" : "net add loopback lo\n",
+        "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 43,
+        "Text" : "net add ptp global domain-number 0\n",
+        "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 44,
+        "Text" : "net add ptp global logging-level 5\n",
+        "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 45,
+        "Text" : "net add ptp global path-trace-enabled no\n",
+        "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 46,
+        "Text" : "net add ptp global priority1 255\n",
+        "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 47,
+        "Text" : "net add ptp global slave-only no\n",
+        "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 48,
+        "Text" : "net add ptp global summary-interval 0\n",
+        "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 49,
+        "Text" : "net add ptp global time-stamping\n",
+        "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 5,
+        "Text" : "bgp autonomous-system 65500",
+        "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 50,
+        "Text" : "net add ptp global use-syslog yes\n",
+        "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 51,
+        "Text" : "net add ptp global verbose no\n",
+        "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 52,
+        "Text" : "routing defaults datacenter",
+        "Parser_Context" : "[a_routing s_net_add statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 53,
+        "Text" : "net add routing log syslog informational\n",
+        "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 54,
+        "Text" : "routing route 192.0.2.0/24 10.0.0.1",
+        "Parser_Context" : "[a_routing s_net_add statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 55,
+        "Text" : "routing route-map rm1 permit 1 match interface lo",
+        "Parser_Context" : "[a_routing s_net_add statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 56,
+        "Text" : "routing service integrated-vtysh-config",
+        "Parser_Context" : "[a_routing s_net_add statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 57,
+        "Text" : "net add snmp-server listening-address localhost\n",
+        "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 58,
+        "Text" : "net add time ntp server 0.pool.ntp.example.com iburst\n",
+        "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 59,
+        "Text" : "time ntp source eth0",
+        "Parser_Context" : "[a_time s_net_add statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 6,
+        "Text" : "bgp ipv4 unicast network 192.0.2.1/32",
+        "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 60,
+        "Text" : "time zone Etc/UTC",
+        "Parser_Context" : "[a_time s_net_add statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 64,
+        "Text" : "vlan-raw-device bridge",
+        "Parser_Context" : "[v_vlan_raw_device a_vlan s_net_add statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 7,
+        "Text" : "bgp ipv4 unicast redistribute connected route-map rm1",
+        "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 70,
+        "Text" : "vxlan vni10001 bridge access 5",
+        "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 71,
+        "Text" : "vxlan vni10001 vxlan id 100001",
+        "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 72,
+        "Text" : "vxlan vni10001,10002-10003 bridge arp-nd-suppress on",
+        "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 73,
+        "Text" : "vxlan vni10001,10002-10003 bridge learning off",
+        "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 74,
+        "Text" : "vxlan vni10001,10002-10003 stp bpduguard",
+        "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 75,
+        "Text" : "vxlan vni10001,10002-10003 stp portbpdufilter",
+        "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 76,
+        "Text" : "vxlan vni10001,10002-10003 vxlan local-tunnelip 192.0.2.10",
+        "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 8,
+        "Text" : "bgp l2vpn evpn  advertise-all-vni",
+        "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 82,
+        "Text" : "username cumulus nopassword\\n",
+        "Parser_Context" : "[frr_unrecognized s_extra_configuration statement cumulus_nclu_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 83,
+        "Text" : "vrf vrf1\\n  ip route 0.0.0.0/0 192.0.2.1\\n",
+        "Parser_Context" : "[frr_vrf s_extra_configuration statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cumulus_nclu",
+        "Line" : 9,
+        "Text" : "bgp l2vpn evpn  advertise-default-gw",
+        "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
         "Filename" : "configs/f5_bigip_structured_ltm",
         "Line" : 10,
         "Text" : "ltm",
@@ -2060,10 +2410,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 288 results",
+      "notes" : "Found 338 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 288
+      "numResults" : 338
     }
   }
 ]

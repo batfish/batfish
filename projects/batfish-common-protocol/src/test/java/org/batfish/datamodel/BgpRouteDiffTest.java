@@ -1,26 +1,29 @@
-package org.batfish.question.testroutepolicies;
+package org.batfish.datamodel;
 
 import static org.batfish.datamodel.AbstractRoute.PROP_METRIC;
 import static org.batfish.datamodel.BgpRoute.PROP_AS_PATH;
 import static org.batfish.datamodel.BgpRoute.PROP_COMMUNITIES;
 import static org.batfish.datamodel.BgpRoute.PROP_LOCAL_PREFERENCE;
-import static org.batfish.question.testroutepolicies.BgpRouteDiff.routeDiffs;
+import static org.batfish.datamodel.BgpRouteDiff.routeDiffs;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
-import org.batfish.datamodel.AsPath;
-import org.batfish.datamodel.BgpRoute;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.OriginType;
-import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.RoutingProtocol;
+import java.io.IOException;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
 /** Tests of {@link BgpRouteDiff}. */
 public class BgpRouteDiffTest {
+  @Test
+  public void testJsonSerialization() throws IOException {
+    BgpRouteDiff diff = new BgpRouteDiff(PROP_AS_PATH, "A", "B");
+    assertEquals(diff, BatfishObjectMapper.clone(diff, BgpRouteDiff.class));
+  }
+
   @Test
   public void testEquals() {
     new EqualsTester()

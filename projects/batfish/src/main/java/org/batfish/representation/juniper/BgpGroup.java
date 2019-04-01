@@ -14,59 +14,34 @@ public class BgpGroup implements Serializable {
     INTERNAL
   }
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private Boolean _advertiseExternal;
-
   private Boolean _advertiseInactive;
-
   private Boolean _advertisePeerAs;
-
   private BgpAuthenticationAlgorithm _authenticationAlgorithm;
-
   private String _authenticationKey;
-
   private String _authenticationKeyChainName;
-
   private Ip _clusterId;
-
   private String _description;
-
+  @Nullable private Boolean _disable;
   private boolean _dynamic;
-
   private Boolean _ebgpMultihop;
-
   private Boolean _enforceFirstAs;
-
   private final List<String> _exportPolicies;
-
   protected String _groupName;
-
   private final List<String> _importPolicies;
-
   protected transient boolean _inherited;
-
   private boolean _ipv6;
-
   private Ip _localAddress;
-
   private Long _localAs;
-
   private Integer _loops;
-
   private Boolean _multipath;
-
   private Boolean _multipathMultipleAs;
-
   private BgpGroup _parent;
-
   private Long _peerAs;
-
   private Boolean _removePrivate;
-
   @Nullable private String _ribGroup;
-
   private BgpGroupType _type;
 
   public BgpGroup() {
@@ -104,6 +79,9 @@ public class BgpGroup implements Serializable {
       }
       if (_description == null) {
         _description = _parent._description;
+      }
+      if (_disable == null) {
+        _disable = _parent._disable;
       }
       if (_enforceFirstAs == null) {
         _enforceFirstAs = _parent._enforceFirstAs;
@@ -177,6 +155,11 @@ public class BgpGroup implements Serializable {
 
   public final String getDescription() {
     return _description;
+  }
+
+  @Nullable
+  public Boolean getDisable() {
+    return _disable;
   }
 
   public boolean getDynamic() {
@@ -278,6 +261,10 @@ public class BgpGroup implements Serializable {
 
   public final void setDescription(String description) {
     _description = description;
+  }
+
+  public void setDisable(boolean disable) {
+    _disable = disable;
   }
 
   public void setDynamic(boolean dynamic) {

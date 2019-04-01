@@ -2,6 +2,7 @@ package org.batfish.bddreachability;
 
 import static org.batfish.bddreachability.transition.Transitions.constraint;
 
+import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -51,7 +52,6 @@ final class Edge {
 
   @Override
   public int hashCode() {
-
     return Objects.hash(_postState, _preState, _transition);
   }
 
@@ -78,5 +78,14 @@ final class Edge {
   @Nonnull
   BDD traverseForward(BDD bdd) {
     return _transition.transitForward(bdd);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(Edge.class)
+        .add("postState", _postState)
+        .add("preState", _preState)
+        .add("transition", _transition)
+        .toString();
   }
 }

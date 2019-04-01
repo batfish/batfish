@@ -496,18 +496,24 @@ public final class BDDReachabilityAnalysisFactory {
 
   private static Map<String, Map<String, Map<String, BDD>>> computeDispositionBDDs(
       Map<String, Map<String, Map<String, IpSpace>>> ipSpaceMap, IpSpaceToBDD ipSpaceToBDD) {
-    return toImmutableMap(
-        ipSpaceMap,
-        Entry::getKey,
-        nodeEntry ->
-            toImmutableMap(
-                nodeEntry.getValue(),
-                Entry::getKey,
-                vrfEntry ->
-                    toImmutableMap(
-                        vrfEntry.getValue(),
-                        Entry::getKey,
-                        ifaceEntry -> ifaceEntry.getValue().accept(ipSpaceToBDD))));
+    try (ActiveSpan span =
+        GlobalTracer.get()
+            .buildSpan("BDDReachabilityAnalysisFactory.computeDispositionBDDs")
+            .startActive()) {
+      assert span != null; // avoid unused warning
+      return toImmutableMap(
+          ipSpaceMap,
+          Entry::getKey,
+          nodeEntry ->
+              toImmutableMap(
+                  nodeEntry.getValue(),
+                  Entry::getKey,
+                  vrfEntry ->
+                      toImmutableMap(
+                          vrfEntry.getValue(),
+                          Entry::getKey,
+                          ifaceEntry -> ifaceEntry.getValue().accept(ipSpaceToBDD))));
+    }
   }
 
   private Stream<Edge> generateRootEdges(Map<StateExpr, BDD> rootBdds) {

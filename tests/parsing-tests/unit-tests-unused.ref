@@ -1001,8 +1001,8 @@
         "Source_Lines" : {
           "filename" : "configs/cisco_route_map",
           "lines" : [
-            49,
-            50
+            50,
+            51
           ]
         }
       },
@@ -1012,10 +1012,10 @@
         "Source_Lines" : {
           "filename" : "configs/cisco_route_map",
           "lines" : [
-            52,
             53,
-            55,
-            56
+            54,
+            56,
+            57
           ]
         }
       },
@@ -1045,7 +1045,8 @@
             41,
             42,
             43,
-            44
+            44,
+            45
           ]
         }
       },
@@ -1093,8 +1094,8 @@
         "Source_Lines" : {
           "filename" : "configs/cisco_route_map",
           "lines" : [
-            46,
-            47
+            47,
+            48
           ]
         }
       },
@@ -2565,6 +2566,16 @@
       },
       {
         "Structure_Type" : "bgp group",
+        "Structure_Name" : "GROUP",
+        "Source_Lines" : {
+          "filename" : "configs/juniper_bgp_disable",
+          "lines" : [
+            4
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "bgp group",
         "Structure_Name" : "someipv4bgpgroup",
         "Source_Lines" : {
           "filename" : "configs/juniper_bgp_remove_private_as",
@@ -3448,10 +3459,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 230 results",
+      "notes" : "Found 231 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 230
+      "numResults" : 231
     }
   }
 ]

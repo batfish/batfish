@@ -1,6 +1,8 @@
 package org.batfish.common.bdd;
 
 import com.google.common.collect.ImmutableList;
+import io.opentracing.ActiveSpan;
+import io.opentracing.util.GlobalTracer;
 import java.util.List;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
@@ -25,10 +27,14 @@ public final class BDDFlowConstraintGenerator {
   private BDD _tcpFlow;
 
   BDDFlowConstraintGenerator(BDDPacket pkt) {
-    _bddPacket = pkt;
-    _icmpFlow = computeICMPConstraint();
-    _udpFlow = computeUDPConstraint();
-    _tcpFlow = computeTCPConstraint();
+    try (ActiveSpan span =
+        GlobalTracer.get().buildSpan("construct BDDFlowConstraintGenerator").startActive()) {
+      assert span != null; // avoid unused warning
+      _bddPacket = pkt;
+      _icmpFlow = computeICMPConstraint();
+      _udpFlow = computeUDPConstraint();
+      _tcpFlow = computeTCPConstraint();
+    }
   }
 
   public BDD getUDPFlow() {

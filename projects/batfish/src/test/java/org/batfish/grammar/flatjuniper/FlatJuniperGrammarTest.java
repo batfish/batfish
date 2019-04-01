@@ -60,6 +60,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfAreaName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfCost;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfEnabled;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfPointToPoint;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
@@ -952,6 +953,14 @@ public final class FlatJuniperGrammarTest {
     BgpRoute br6 = b6.build();
 
     assertThat(br6.getCommunities(), equalTo(ImmutableSet.of(5L)));
+  }
+
+  @Test
+  public void testBgpDisable() throws IOException {
+    // Config has "set protocols bgp disable"; no VI BGP process should be created
+    String hostname = "bgp_disable";
+    Configuration c = getBatfishForConfigurationNames(hostname).loadConfigurations().get(hostname);
+    assertThat(c.getVrfs().get(DEFAULT_VRF_NAME).getBgpProcess(), nullValue());
   }
 
   @Test
@@ -2002,6 +2011,43 @@ public final class FlatJuniperGrammarTest {
 
     OspfArea area2 = config.getDefaultVrf().getOspfProcess().getAreas().get(2L);
     assertThat(area2, not(hasInjectDefaultRoute()));
+  }
+
+  @Test
+  public void testOspfInterfaceDisable() throws IOException {
+    // Config has interfaces ge-0/0/1.0 and ge-0/0/2.0 configured in OSPF.
+    // Interface ge-0/0/2.0 has disable set in OSPF config.
+    Configuration config = parseConfig("ospf-interface-disable");
+    assertThat(config.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcess(), notNullValue());
+    assertThat(config.getActiveInterfaces().get("ge-0/0/1.0"), hasOspfEnabled());
+    assertThat(config.getActiveInterfaces().get("ge-0/0/2.0"), not(hasOspfEnabled()));
+  }
+
+  @Test
+  public void testOspfDisable() throws IOException {
+    /*
+    - Default VRF has OSPF process disabled, with interface ge-0/0/0.0
+    - VRF INSTANCE_1 has OSPF process disabled, with interface ge-0/0/1.0
+    - VRF INSTANCE_2 has OSPF process disabled, then enabled, with interface ge-0/0/2.0
+    - VRF INSTANCE_3 has OSPF process enabled, then disabled, with interface ge-0/0/3.0
+     */
+    Configuration config = parseConfig("ospf-disable");
+
+    // Default VRF: OSPF process should not be created
+    assertThat(config.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcess(), nullValue());
+    assertThat(config.getActiveInterfaces().get("ge-0/0/0.0"), not(hasOspfEnabled()));
+
+    // INSTANCE_1: OSPF process should not be created
+    assertThat(config.getVrfs().get("INSTANCE_1").getOspfProcess(), nullValue());
+    assertThat(config.getActiveInterfaces().get("ge-0/0/1.0"), not(hasOspfEnabled()));
+
+    // INSTANCE_2: OSPF process should be created and its interface enabled
+    assertThat(config.getVrfs().get("INSTANCE_2").getOspfProcess(), notNullValue());
+    assertThat(config.getActiveInterfaces().get("ge-0/0/2.0"), hasOspfEnabled());
+
+    // INSTANCE_3: OSPF process should not be created
+    assertThat(config.getVrfs().get("INSTANCE_3").getOspfProcess(), nullValue());
+    assertThat(config.getActiveInterfaces().get("ge-0/0/3.0"), not(hasOspfEnabled()));
   }
 
   @Test

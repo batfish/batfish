@@ -6,8 +6,10 @@ import static java.util.Comparator.nullsFirst;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Ordering;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
@@ -17,7 +19,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.SortedSet;
 import javax.annotation.Nullable;
-import org.batfish.common.util.CommonUtil;
 
 public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
 
@@ -427,38 +428,54 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
   }
 
   private static final Comparator<HeaderSpace> COMPARATOR =
-      Comparator.comparing(HeaderSpace::getDscps, CommonUtil::compareIterable)
+      Comparator.comparing(HeaderSpace::getDscps, Comparators.lexicographical(Ordering.natural()))
           .thenComparing(HeaderSpace::getDstIps, nullsFirst(naturalOrder()))
-          .thenComparing(HeaderSpace::getDstPorts, CommonUtil::compareIterable)
-          .thenComparing(HeaderSpace::getDstProtocols, CommonUtil::compareIterable)
-          .thenComparing(HeaderSpace::getEcns, CommonUtil::compareIterable)
-          .thenComparing(HeaderSpace::getFragmentOffsets, CommonUtil::compareIterable)
-          .thenComparing(HeaderSpace::getIcmpCodes, CommonUtil::compareIterable)
-          .thenComparing(HeaderSpace::getIcmpTypes, CommonUtil::compareIterable)
-          .thenComparing(HeaderSpace::getIpProtocols, CommonUtil::compareIterable)
+          .thenComparing(HeaderSpace::getDstPorts, Comparators.lexicographical(Ordering.natural()))
+          .thenComparing(
+              HeaderSpace::getDstProtocols, Comparators.lexicographical(Ordering.natural()))
+          .thenComparing(HeaderSpace::getEcns, Comparators.lexicographical(Ordering.natural()))
+          .thenComparing(
+              HeaderSpace::getFragmentOffsets, Comparators.lexicographical(Ordering.natural()))
+          .thenComparing(HeaderSpace::getIcmpCodes, Comparators.lexicographical(Ordering.natural()))
+          .thenComparing(HeaderSpace::getIcmpTypes, Comparators.lexicographical(Ordering.natural()))
+          .thenComparing(
+              HeaderSpace::getIpProtocols, Comparators.lexicographical(Ordering.natural()))
           .thenComparing(HeaderSpace::getNegate)
-          .thenComparing(HeaderSpace::getNotDscps, CommonUtil::compareIterable)
+          .thenComparing(HeaderSpace::getNotDscps, Comparators.lexicographical(Ordering.natural()))
           .thenComparing(HeaderSpace::getNotDstIps, nullsFirst(naturalOrder()))
-          .thenComparing(HeaderSpace::getNotDstPorts, CommonUtil::compareIterable)
-          .thenComparing(HeaderSpace::getNotDstProtocols, CommonUtil::compareIterable)
-          .thenComparing(HeaderSpace::getNotEcns, CommonUtil::compareIterable)
-          .thenComparing(HeaderSpace::getNotFragmentOffsets, CommonUtil::compareIterable)
-          .thenComparing(HeaderSpace::getNotIcmpCodes, CommonUtil::compareIterable)
-          .thenComparing(HeaderSpace::getNotIcmpTypes, CommonUtil::compareIterable)
-          .thenComparing(HeaderSpace::getNotIpProtocols, CommonUtil::compareIterable)
-          .thenComparing(HeaderSpace::getNotPacketLengths, CommonUtil::compareIterable)
+          .thenComparing(
+              HeaderSpace::getNotDstPorts, Comparators.lexicographical(Ordering.natural()))
+          .thenComparing(
+              HeaderSpace::getNotDstProtocols, Comparators.lexicographical(Ordering.natural()))
+          .thenComparing(HeaderSpace::getNotEcns, Comparators.lexicographical(Ordering.natural()))
+          .thenComparing(
+              HeaderSpace::getNotFragmentOffsets, Comparators.lexicographical(Ordering.natural()))
+          .thenComparing(
+              HeaderSpace::getNotIcmpCodes, Comparators.lexicographical(Ordering.natural()))
+          .thenComparing(
+              HeaderSpace::getNotIcmpTypes, Comparators.lexicographical(Ordering.natural()))
+          .thenComparing(
+              HeaderSpace::getNotIpProtocols, Comparators.lexicographical(Ordering.natural()))
+          .thenComparing(
+              HeaderSpace::getNotPacketLengths, Comparators.lexicographical(Ordering.natural()))
           .thenComparing(HeaderSpace::getNotSrcIps, nullsFirst(naturalOrder()))
-          .thenComparing(HeaderSpace::getNotSrcPorts, CommonUtil::compareIterable)
-          .thenComparing(HeaderSpace::getNotSrcProtocols, CommonUtil::compareIterable)
-          .thenComparing(HeaderSpace::getPacketLengths, CommonUtil::compareIterable)
+          .thenComparing(
+              HeaderSpace::getNotSrcPorts, Comparators.lexicographical(Ordering.natural()))
+          .thenComparing(
+              HeaderSpace::getNotSrcProtocols, Comparators.lexicographical(Ordering.natural()))
+          .thenComparing(
+              HeaderSpace::getPacketLengths, Comparators.lexicographical(Ordering.natural()))
           .thenComparing(HeaderSpace::getSrcIps, nullsFirst(naturalOrder()))
           .thenComparing(HeaderSpace::getSrcOrDstIps, nullsFirst(naturalOrder()))
-          .thenComparing(HeaderSpace::getSrcOrDstPorts, CommonUtil::compareIterable)
-          .thenComparing(HeaderSpace::getSrcOrDstProtocols, CommonUtil::compareIterable)
-          .thenComparing(HeaderSpace::getSrcPorts, CommonUtil::compareIterable)
-          .thenComparing(HeaderSpace::getSrcProtocols, CommonUtil::compareIterable)
-          .thenComparing(HeaderSpace::getStates, CommonUtil::compareIterable)
-          .thenComparing(HeaderSpace::getTcpFlags, CommonUtil::compareIterable);
+          .thenComparing(
+              HeaderSpace::getSrcOrDstPorts, Comparators.lexicographical(Ordering.natural()))
+          .thenComparing(
+              HeaderSpace::getSrcOrDstProtocols, Comparators.lexicographical(Ordering.natural()))
+          .thenComparing(HeaderSpace::getSrcPorts, Comparators.lexicographical(Ordering.natural()))
+          .thenComparing(
+              HeaderSpace::getSrcProtocols, Comparators.lexicographical(Ordering.natural()))
+          .thenComparing(HeaderSpace::getStates, Comparators.lexicographical(Ordering.natural()))
+          .thenComparing(HeaderSpace::getTcpFlags, Comparators.lexicographical(Ordering.natural()));
 
   private static final String PROP_DSCPS = "dscps";
   private static final String PROP_DST_IPS = "dstIps";

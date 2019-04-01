@@ -33,6 +33,7 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbo
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEquivalentAsPathMatchMode;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasWeight;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkePhase1Policy;
@@ -264,6 +265,7 @@ import org.batfish.common.util.IpsecUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
@@ -1751,23 +1753,134 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosNeighborDefaultOriginate() throws IOException {
+  public void testIosNeighborDefaultOriginateRouteMapsAsGenerationPolicies() throws IOException {
+    /*
+                              Listener 2
+                                  |
+                               (Peer 2)
+       Listener 1 -- (Peer 1) Originator (Peer 3) -- Listener 3
+
+     All listeners have EBGP sessions established with the originator, and the originator has
+     default-originate configured for all three peers. Some peers also have a route-map configured
+     with default-originate, which will act as a generation policy for the default route.
+
+      - Peer 1: default-originate has no route-map attached, but there is a route-map configured as
+        an export policy that denies the default route. However, the default-originate route doesn't
+        go through configured export policies, so should reach listener 1.
+
+      - Peer 2: default-originate has a route-map attached that permits routes to 1.2.3.4; the
+      originator has a static route to 1.2.3.4, so default route should still be generated.
+
+      - Peer 3: default-originate has a route-map attached that permits routes to 5.6.7.8; the
+      originator has no route to 5.6.7.8, so no default route should appear on listener 3.
+    */
     String testrigName = "ios-default-originate";
+    String originatorName = "originator";
+    String l1Name = "listener1";
+    String l2Name = "listener2";
+    String l3Name = "listener3";
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
                 .setConfigurationText(
-                    TESTRIGS_PREFIX + testrigName, ImmutableList.of("originator", "listener"))
+                    TESTRIGS_PREFIX + testrigName,
+                    ImmutableList.of(originatorName, l1Name, l2Name, l3Name))
                 .build(),
             _folder);
 
     batfish.computeDataPlane();
     DataPlane dp = batfish.loadDataPlane();
-    Set<AbstractRoute> routesOnListener =
-        dp.getRibs().get("listener").get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> l1Routes = dp.getRibs().get(l1Name).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> l2Routes = dp.getRibs().get(l2Name).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> l3Routes = dp.getRibs().get(l3Name).get(DEFAULT_VRF_NAME).getRoutes();
 
-    // Ensure that default route is advertised to and installed on listener
-    assertThat(routesOnListener, hasItem(hasPrefix(Prefix.ZERO)));
+    // Listener 1
+    Ip originatorId = Ip.parse("1.1.1.1");
+    Ip originatorIp = Ip.parse("10.1.1.1");
+    Long originatorAs = 1L;
+    BgpRoute expected =
+        BgpRoute.builder()
+            .setNetwork(Prefix.ZERO)
+            .setNextHopIp(originatorIp)
+            .setAdmin(20)
+            .setAsPath(AsPath.of(AsSet.of(originatorAs)))
+            .setLocalPreference(100)
+            .setOriginatorIp(originatorId)
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setSrcProtocol(RoutingProtocol.BGP)
+            .setReceivedFromIp(originatorIp)
+            .build();
+    assertThat(l1Routes, hasItem(expected));
+
+    // Listener 2
+    originatorIp = Ip.parse("10.2.2.1");
+    expected =
+        expected.toBuilder().setNextHopIp(originatorIp).setReceivedFromIp(originatorIp).build();
+    assertThat(l2Routes, hasItem(expected));
+
+    // Listener 3
+    assertThat(l3Routes, not(hasItem(hasPrefix(Prefix.ZERO))));
+  }
+
+  @Test
+  public void testIosRedistributeStaticDefaultWithDefaultOriginatePolicy() throws IOException {
+    /*
+       Listener 1 -- (Peer 1) Originator (Peer 2) -- Listener 2
+
+     Both listeners have EBGP sessions established with the originator. The originator has
+     default-originate configured on both peers, but with a generation policy that only matches
+     routes to 1.2.3.4, so default routes won't be generated. This way both peers' BGP export
+     policies include the default route export policy, but we don't have to worry about the
+     default-originate route overwriting other default routes in neighbors' RIBs.
+
+     The originator has a static default route and redistributes it to BGP on both peers with a
+     route-map that sets tag to 25, so we can be certain of the route's origin in neighbors.
+
+     Peer 1 has no outbound route-map, so the static route should be redistributed to listener 1.
+
+     Peer 2 has an outbound route-map that denies 0.0.0.0/0, so no default route on listener 2.
+    */
+    String testrigName = "ios-default-originate";
+    String originatorName = "originator-static-route";
+    String l1Name = "listener1";
+    String l2Name = "listener2";
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(
+                    TESTRIGS_PREFIX + testrigName, ImmutableList.of(originatorName, l1Name, l2Name))
+                .build(),
+            _folder);
+
+    batfish.computeDataPlane();
+    DataPlane dp = batfish.loadDataPlane();
+    Set<AbstractRoute> l1Routes = dp.getRibs().get(l1Name).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> l2Routes = dp.getRibs().get(l2Name).get(DEFAULT_VRF_NAME).getRoutes();
+
+    Ip originatorId = Ip.parse("1.1.1.1");
+    Ip originatorIp = Ip.parse("10.1.1.1");
+    Long originatorAs = 1L;
+    BgpRoute redistributedStaticRoute =
+        BgpRoute.builder()
+            .setTag(25)
+            .setNetwork(Prefix.ZERO)
+            .setNextHopIp(originatorIp)
+            .setAdmin(20)
+            .setAsPath(AsPath.of(AsSet.of(originatorAs)))
+            .setLocalPreference(100)
+            .setOriginatorIp(originatorId)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setSrcProtocol(RoutingProtocol.BGP)
+            .setReceivedFromIp(originatorIp)
+            .build();
+
+    // Listener 1 should have received the static route
+    assertThat(l1Routes, hasItem(redistributedStaticRoute));
+
+    // Listener 2 should not have received the static route since export policy prevents it
+    assertThat(l2Routes, not(hasItem(hasPrefix(Prefix.ZERO))));
   }
 
   @Test
@@ -2390,6 +2503,29 @@ public class CiscoGrammarTest {
 
     /* Confirm undefined route-map is detected */
     assertThat(ccae, hasUndefinedReference(filename, ROUTE_MAP, "rm_undef"));
+  }
+
+  @Test
+  public void testIosRouteMapSetWeight() throws IOException {
+    // Config contains a route-map SET_WEIGHT with one line, "set weight 20"
+    String hostname = "ios-route-map-set-weight";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    RoutingPolicy setWeightPolicy =
+        batfish.loadConfigurations().get(hostname).getRoutingPolicies().get("SET_WEIGHT");
+    BgpRoute r =
+        BgpRoute.builder()
+            .setWeight(1)
+            .setNetwork(Prefix.ZERO)
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .build();
+    BgpRoute.Builder transformedRoute = r.toBuilder();
+
+    assertThat(
+        setWeightPolicy.process(r, transformedRoute, Ip.ZERO, DEFAULT_VRF_NAME, Direction.IN),
+        equalTo(true));
+    assertThat(transformedRoute.build(), hasWeight(20));
   }
 
   @Test

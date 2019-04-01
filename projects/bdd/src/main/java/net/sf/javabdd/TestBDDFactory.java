@@ -496,9 +496,9 @@ public class TestBDDFactory extends BDDFactory {
   }
 
   @Override
-  public double setCacheRatio(double x) {
-    double r1 = f1.setCacheRatio(x);
-    double r2 = f2.setCacheRatio(x);
+  public int setCacheRatio(int r) {
+    int r1 = f1.setCacheRatio(r);
+    int r2 = f2.setCacheRatio(r);
     assertSame(r1 == r2, "setCacheRatio");
     return r1;
   }

@@ -1,4 +1,7 @@
 net del all
+#
+net add hostname cumulus_nclu
+#
 net add bgp autonomous-system 65500
 net add bgp ipv4 unicast network 192.0.2.1/32 
 net add bgp ipv4 unicast redistribute connected route-map rm1
@@ -13,13 +16,15 @@ net add bgp vrf vrf1 ipv4 unicast redistribute connected
 net add bgp vrf vrf1 ipv4 unicast redistribute static
 net add bgp vrf vrf1 l2vpn evpn  advertise ipv4 unicast
 net add bgp vrf vrf1 router-id 192.0.2.3
-net add bond bond1 bond slaves swp1,swp2
+net add bond bond1 bond slaves swp1,swp2-4,5,swp6,7-8
 net add bond bond1 bridge access 2
+net add bond bond2 bridge vids 3,4-5
 net add bond bond1 clag id 1
 net add bridge bridge ports bond1,swp1,vni10001
 net add bridge bridge vids 1,2-3
 net add bridge bridge vlan-aware
 net add dns nameserver ipv4 192.0.2.3
+net add dns nameserver ipv6 dead:beef::1
 net add dot1x eap-reauth-period 0
 net add dot1x mab-activation-delay 30
 net add dot1x radius accounting-port 1234
@@ -58,15 +63,16 @@ net add vlan 4 ip address-virtual 01:23:45:67:89:ab 192.168.0.1/24
 net add vlan 4 vlan-id 4
 net add vlan 4 vlan-raw-device bridge
 net add vlan 4 vrf vrf1
+net add vrf mgmt
 net add vrf mgmt ip address 10.0.0.2/8
 net add vrf vrf1 vni 10001
 net add vrf vrf1,mgmt vrf-table auto
 net add vxlan vni10001 bridge access 5
 net add vxlan vni10001 vxlan id 100001
 net add vxlan vni10001,10002-10003 bridge arp-nd-suppress on
-net add vxlan vni10001-10002-10003 bridge learning off
-net add vxlan vni10001-10002-10003 stp bpduguard
-net add vxlan vni10001-10002-10003 stp portbpdufilter
+net add vxlan vni10001,10002-10003 bridge learning off
+net add vxlan vni10001,10002-10003 stp bpduguard
+net add vxlan vni10001,10002-10003 stp portbpdufilter
 net add vxlan vni10001,10002-10003 vxlan local-tunnelip 192.0.2.10
 net commit
 

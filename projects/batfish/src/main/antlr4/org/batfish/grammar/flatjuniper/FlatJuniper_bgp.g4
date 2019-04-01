@@ -104,6 +104,11 @@ b_description
    description
 ;
 
+b_disable
+:
+   DISABLE
+;
+
 b_disable_4byte_as
 :
    DISABLE_4BYTE_AS
@@ -486,6 +491,7 @@ p_bgp
    BGP
    (
       b_common
+      | b_disable
       | b_enable
       | b_group
       | b_neighbor
