@@ -122,7 +122,7 @@ public final class ModelingUtils {
             .map(BorderInterfaceInfo::getBorderInterface)
             .collect(
                 Collectors.groupingBy(
-                    NodeInterfacePair::getHostname,
+                    nodeInterfacePair -> nodeInterfacePair.getHostname().toLowerCase(),
                     Collectors.mapping(NodeInterfacePair::getInterface, Collectors.toSet())));
 
     Map<Long, IspInfo> asnToIspInfos = new HashMap<>();

@@ -287,6 +287,44 @@ public class ModelingUtilsTest {
   }
 
   @Test
+  public void testGetInternetAndIspsCaseInsensitive() {
+    NetworkFactory nf = new NetworkFactory();
+
+    Configuration.Builder cb = nf.configurationBuilder();
+    Configuration configuration =
+        cb.setHostname("conf").setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(configuration).build();
+    nf.interfaceBuilder()
+        .setName("interface")
+        .setOwner(configuration)
+        .setAddress(new InterfaceAddress(Ip.parse("2.2.2.2"), 24))
+        .build();
+    BgpActivePeerConfig peer =
+        BgpActivePeerConfig.builder()
+            .setPeerAddress(Ip.parse("1.1.1.1"))
+            .setRemoteAs(1L)
+            .setLocalIp(Ip.parse("2.2.2.2"))
+            .setLocalAs(2L)
+            .build();
+    BgpProcess bgpProcess = new BgpProcess();
+    bgpProcess.getActiveNeighbors().put(Prefix.parse("1.1.1.1/32"), peer);
+    configuration.getDefaultVrf().setBgpProcess(bgpProcess);
+
+    Map<String, Configuration> internetAndIsps =
+        ModelingUtils.getInternetAndIspNodes(
+            ImmutableMap.of(configuration.getHostname(), configuration),
+            new IspConfiguration(
+                ImmutableList.of(
+                    new BorderInterfaceInfo(new NodeInterfacePair("CoNf", "interface"))),
+                IspFilter.ALLOW_ALL),
+            new BatfishLogger("output", false));
+
+    // Isp and Internet nodes should be created irrespective of case used in Isp configuration
+    assertThat(internetAndIsps, hasKey("Isp_1"));
+    assertThat(internetAndIsps, hasKey("Internet"));
+  }
+
+  @Test
   public void testGetInternetAndIspNodes() {
     NetworkFactory nf = new NetworkFactory();
 
