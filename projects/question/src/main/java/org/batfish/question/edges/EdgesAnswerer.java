@@ -302,7 +302,9 @@ public class EdgesAnswerer extends Answerer {
             .forEach(
                 interfaceName ->
                     topology
-                        .neighbors(new OspfNeighborConfigId(hostname, vrf.getName(), interfaceName))
+                        .neighbors(
+                            new OspfNeighborConfigId(
+                                hostname, vrf.getName(), proc.getProcessId(), interfaceName))
                         .stream()
                         .filter(n -> includeRemoteNodes.contains(n.getHostname()))
                         .forEach(

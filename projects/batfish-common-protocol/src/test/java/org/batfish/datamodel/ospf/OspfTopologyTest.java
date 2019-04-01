@@ -19,10 +19,10 @@ public class OspfTopologyTest {
   public void testEquals() {
     MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> g1 =
         ValueGraphBuilder.directed().build();
-    g1.addNode(new OspfNeighborConfigId("h1", "vrf1", "i1"));
+    g1.addNode(new OspfNeighborConfigId("h1", "vrf1", "p", "i1"));
     MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> g2 =
         ValueGraphBuilder.from(g1).build();
-    g2.addNode(new OspfNeighborConfigId("h2", "vrf2", "i2"));
+    g2.addNode(new OspfNeighborConfigId("h2", "vrf2", "p", "i2"));
     new EqualsTester()
         .addEqualityGroup(OspfTopology.empty())
         .addEqualityGroup(new OspfTopology(g1), new OspfTopology(g1))
@@ -39,21 +39,21 @@ public class OspfTopologyTest {
 
   @Test
   public void testGetNeighborsNonExistentNode() {
-    OspfNeighborConfigId n = new OspfNeighborConfigId("h1", "vrf1", "i1");
+    OspfNeighborConfigId n = new OspfNeighborConfigId("h1", "vrf1", "p", "i1");
     assertThat(OspfTopology.empty().neighbors(n), empty());
   }
 
   @Test
   public void testGetIncomingEdgesNonExistentNode() {
-    OspfNeighborConfigId n = new OspfNeighborConfigId("h1", "vrf1", "i1");
+    OspfNeighborConfigId n = new OspfNeighborConfigId("h1", "vrf1", "p", "i1");
     assertThat(OspfTopology.empty().incomingEdges(n), empty());
   }
 
   @Test
   public void testGetIncomingEdges() {
     // Setup: small topo with one edge
-    OspfNeighborConfigId n = new OspfNeighborConfigId("h1", "vrf1", "i1");
-    OspfNeighborConfigId n2 = new OspfNeighborConfigId("h2", "vrf2", "i2");
+    OspfNeighborConfigId n = new OspfNeighborConfigId("h1", "vrf1", "p", "i1");
+    OspfNeighborConfigId n2 = new OspfNeighborConfigId("h2", "vrf2", "p2", "i2");
     MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> graph =
         ValueGraphBuilder.directed().build();
     graph.addNode(n);
@@ -71,8 +71,8 @@ public class OspfTopologyTest {
 
   @Test
   public void testEdgeIdEquals() {
-    OspfNeighborConfigId n = new OspfNeighborConfigId("h1", "vrf1", "i1");
-    OspfNeighborConfigId n2 = new OspfNeighborConfigId("h2", "vrf2", "i2");
+    OspfNeighborConfigId n = new OspfNeighborConfigId("h1", "vrf1", "p", "i1");
+    OspfNeighborConfigId n2 = new OspfNeighborConfigId("h2", "vrf2", "p", "i2");
     new EqualsTester()
         .addEqualityGroup(OspfTopology.makeEdge(n, n2), OspfTopology.makeEdge(n, n2))
         .addEqualityGroup(OspfTopology.makeEdge(n, n))
@@ -83,8 +83,8 @@ public class OspfTopologyTest {
 
   @Test
   public void testEdgeIdReverse() {
-    OspfNeighborConfigId n = new OspfNeighborConfigId("h1", "vrf1", "i1");
-    OspfNeighborConfigId n2 = new OspfNeighborConfigId("h2", "vrf2", "i2");
+    OspfNeighborConfigId n = new OspfNeighborConfigId("h1", "vrf1", "p", "i1");
+    OspfNeighborConfigId n2 = new OspfNeighborConfigId("h2", "vrf2", "p", "i2");
     EdgeId edgeId = OspfTopology.makeEdge(n, n2);
     assertThat(edgeId.reverse(), equalTo(OspfTopology.makeEdge(n2, n)));
   }

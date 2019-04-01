@@ -287,8 +287,12 @@ public class EdgesAnswererTest {
 
     _host1.setVrfs(ImmutableSortedMap.of("vrf1", vrf1));
     _host2.setVrfs(ImmutableSortedMap.of("vrf2", vrf2));
-    _host1.getAllInterfaces().get("int1").setVrf(vrf1);
-    _host2.getAllInterfaces().get("int2").setVrf(vrf2);
+    Interface i1 = _host1.getAllInterfaces().get("int1");
+    i1.setVrf(vrf1);
+    i1.setOspfProcess(ospf1.getProcessId());
+    Interface i2 = _host2.getAllInterfaces().get("int2");
+    i2.setVrf(vrf2);
+    i2.setOspfProcess(ospf2.getProcessId());
 
     OspfTopologyUtils.initNeighborConfigs(NetworkConfigurations.of(_configurations));
     // Need edges to be bi-directional

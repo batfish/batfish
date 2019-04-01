@@ -95,7 +95,8 @@ public class OspfSessionCompatibilityAnswerer extends Answerer {
                     .forEach(
                         iface -> {
                           OspfNeighborConfigId ospfNeighborConfigId =
-                              new OspfNeighborConfigId(node, vrf.getName(), iface);
+                              new OspfNeighborConfigId(
+                                  node, vrf.getName(), ospfProcess.getProcessId(), iface);
                           Set<OspfNeighborConfigId> filteredNeighbors =
                               ospfTopology.neighbors(ospfNeighborConfigId).stream()
                                   .filter(

@@ -439,7 +439,10 @@ public class VirtualRouter implements Serializable {
                     topology
                         .incomingEdges(
                             new OspfNeighborConfigId(
-                                _node.getConfiguration().getHostname(), _name, interfaceName))
+                                _node.getConfiguration().getHostname(),
+                                _name,
+                                proc.getProcessId(),
+                                interfaceName))
                         .stream())
             .collect(
                 ImmutableSortedMap.toImmutableSortedMap(
