@@ -3797,8 +3797,6 @@ public final class JFactory extends BDDFactory {
       return "appex";
     } else if (cache == countcache) {
       return "count";
-    } else if (cache == itecache) {
-      return "ite";
     } else if (cache == misccache) {
       return "misc";
     } else if (cache == quantcache) {
