@@ -204,7 +204,7 @@ public class SessionInstrumentation {
             inIface -> {
               StateExpr preState = new PreInInterface(hostname, inIface);
               BDD sessionFlows = sessionInfo.getSessionFlows();
-              BDD inAclBdd = getIncomingingSessionFilterBdd(hostname, inIface);
+              BDD inAclBdd = getIncomingSessionFilterBdd(hostname, inIface);
 
               Transition transition =
                   compose(
@@ -247,7 +247,7 @@ public class SessionInstrumentation {
         .map(
             inIface -> {
               StateExpr preState = new PreInInterface(hostname, inIface);
-              BDD inAclBdd = getIncomingingSessionFilterBdd(hostname, inIface);
+              BDD inAclBdd = getIncomingSessionFilterBdd(hostname, inIface);
 
               Transition transition =
                   compose(
@@ -277,7 +277,7 @@ public class SessionInstrumentation {
         .map(
             inIface -> {
               StateExpr preState = new PreInInterface(hostname, inIface);
-              BDD inAclBdd = getIncomingingSessionFilterBdd(hostname, inIface);
+              BDD inAclBdd = getIncomingSessionFilterBdd(hostname, inIface);
               BDD sessionFlows = sessionInfo.getSessionFlows();
 
               /* Don't remove the source interface/last hop constraints here. They get removed in
@@ -309,7 +309,7 @@ public class SessionInstrumentation {
         .map(
             inIface -> {
               StateExpr preState = new PreInInterface(hostname, inIface);
-              BDD inAclBdd = getIncomingingSessionFilterBdd(hostname, inIface);
+              BDD inAclBdd = getIncomingSessionFilterBdd(hostname, inIface);
 
               Transition transition =
                   compose(
@@ -341,7 +341,7 @@ public class SessionInstrumentation {
         .map(
             inIface -> {
               StateExpr preState = new PreInInterface(hostname, inIface);
-              BDD inAclPermitBdd = getIncomingingSessionFilterBdd(hostname, inIface);
+              BDD inAclPermitBdd = getIncomingSessionFilterBdd(hostname, inIface);
 
               Transition transition =
                   compose(
@@ -356,7 +356,7 @@ public class SessionInstrumentation {
         .filter(Objects::nonNull);
   }
 
-  private BDD getIncomingingSessionFilterBdd(String hostname, String inIface) {
+  private BDD getIncomingSessionFilterBdd(String hostname, String inIface) {
     return getSessionFilterBDD(hostname, inIface, FirewallSessionInterfaceInfo::getIncomingAclName);
   }
 
