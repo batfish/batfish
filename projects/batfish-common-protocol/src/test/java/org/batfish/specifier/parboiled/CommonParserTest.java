@@ -20,7 +20,7 @@ import org.parboiled.parserunners.BasicParseRunner;
 public class CommonParserTest {
 
   private static boolean matches(String query, Rule rule) {
-    return new BasicParseRunner<AstNode>(CommonParser.instance().input(rule)).run(query).matched;
+    return new BasicParseRunner<AstNode>(rule).run(query).matched;
   }
 
   @Test
@@ -57,7 +57,8 @@ public class CommonParserTest {
 
   @Test
   public void testNameLiteral() {
-    Rule rule = Parser.instance().NameLiteral();
+    CommonParser parser = CommonParser.instance();
+    Rule rule = parser.input(parser.NameLiteral());
 
     // legal naked strings
     assertTrue(matches("a", rule));
@@ -87,7 +88,8 @@ public class CommonParserTest {
 
   @Test
   public void testNodeRoleNameLiteral() {
-    Rule rule = CommonParser.instance().NodeRoleNameLiteral();
+    CommonParser parser = CommonParser.instance();
+    Rule rule = parser.input(parser.NodeRoleNameLiteral());
 
     for (String name : NODE_ROLE_VALID_NAMES) {
       assertTrue(name, matches(name, rule));
@@ -100,7 +102,8 @@ public class CommonParserTest {
 
   @Test
   public void testReferenceObjectNameLiteral() {
-    Rule rule = CommonParser.instance().ReferenceObjectNameLiteral();
+    CommonParser parser = CommonParser.instance();
+    Rule rule = parser.input(parser.ReferenceObjectNameLiteral());
 
     for (String name : REFERENCE_OBJECT_VALID_NAMES) {
       assertTrue(name, matches(name, rule));
@@ -113,7 +116,8 @@ public class CommonParserTest {
 
   @Test
   public void testRegexDeprecated() {
-    Rule rule = Parser.instance().RegexDeprecated();
+    CommonParser parser = CommonParser.instance();
+    Rule rule = parser.input(parser.RegexDeprecated());
 
     assertTrue(matches(".*", rule));
     assertTrue(matches("host.*", rule));
