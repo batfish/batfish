@@ -290,15 +290,18 @@ class FlowTracer {
 
     String currentNodeName = _currentNode.getName();
 
+    // Trace was received on a source interface of this hop - this should always be first.
+    if (_ingressInterface != null) {
+      _steps.add(buildEnterSrcIfaceStep(_currentConfig, _ingressInterface));
+    }
+
     if (processSessions()) {
-      // flow was processed by a session.
+      // flow was processed by a session, rest of pipeline including inbound ACL is skipped.
       return;
     }
 
     // trace was received on a source interface of this hop
     if (_ingressInterface != null) {
-      _steps.add(buildEnterSrcIfaceStep(_currentConfig, _ingressInterface));
-
       // apply ingress filter
       Interface incomingInterface = _currentConfig.getAllInterfaces().get(_ingressInterface);
       // if defined, use routing/packet policy applied to the interface

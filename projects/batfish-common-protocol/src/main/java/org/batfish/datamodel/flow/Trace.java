@@ -6,6 +6,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -28,6 +29,7 @@ public final class Trace {
   public Trace(FlowDisposition disposition, List<Hop> hops) {
     _disposition = disposition;
     _hops = ImmutableList.copyOf(hops);
+    assert sanityCheck();
   }
 
   @JsonCreator
@@ -64,5 +66,22 @@ public final class Trace {
   @Override
   public int hashCode() {
     return Objects.hash(_hops, _disposition.ordinal());
+  }
+
+  private boolean sanityCheck() {
+    assert _disposition != null : "missing disposition";
+    assert _hops != null : "missing hops";
+    for (int i = 0; i < _hops.size(); ++i) {
+      Hop h = _hops.get(i);
+      if (i > 0) {
+        Step<?> s = Iterables.getFirst(h.getSteps(), null);
+        assert s instanceof EnterInputIfaceStep : s;
+      }
+      if (i < _hops.size() - 1) {
+        Step<?> s = Iterables.getLast(h.getSteps(), null);
+        assert s instanceof ExitOutputIfaceStep : h;
+      }
+    }
+    return true;
   }
 }
