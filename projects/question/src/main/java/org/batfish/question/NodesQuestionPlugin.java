@@ -334,7 +334,8 @@ public class NodesQuestionPlugin extends QuestionPlugin {
 
     @Override
     public AnswerElement answerDiff() {
-      throw new BatfishException("Nodes question in differential mode no longer supported.");
+      throw new BatfishException(
+          "Nodes question in differential mode is no longer supported. Please use nodeProperties question.");
     }
   }
 
