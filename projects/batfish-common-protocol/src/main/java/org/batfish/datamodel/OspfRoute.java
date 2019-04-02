@@ -2,7 +2,6 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
@@ -23,13 +22,12 @@ public abstract class OspfRoute extends AbstractRoute {
   protected final long _metric;
   @Nonnull protected final Ip _nextHopIp;
 
-  @JsonCreator
   protected OspfRoute(
-      @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
-      @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
-      @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
-      @JsonProperty(PROP_METRIC) long metric,
-      @JsonProperty(PROP_AREA) long area,
+      Prefix network,
+      @Nullable Ip nextHopIp,
+      int admin,
+      long metric,
+      long area,
       boolean nonRouting,
       boolean nonForwarding) {
     super(network, admin, nonRouting, nonForwarding);
@@ -38,14 +36,16 @@ public abstract class OspfRoute extends AbstractRoute {
     _area = area;
   }
 
+  /** The route's area number */
   @JsonProperty(PROP_AREA)
   public long getArea() {
     return _area;
   }
 
+  @Override
+  @Nonnull
   @JsonIgnore(false)
   @JsonProperty(PROP_METRIC)
-  @Override
   public final Long getMetric() {
     return _metric;
   }
@@ -57,14 +57,15 @@ public abstract class OspfRoute extends AbstractRoute {
   }
 
   @Nonnull
+  @Override
   @JsonIgnore(false)
   @JsonProperty(PROP_NEXT_HOP_IP)
-  @Override
   public final Ip getNextHopIp() {
     return _nextHopIp;
   }
 
   @Override
+  @Nonnull
   public abstract RoutingProtocol getProtocol();
 
   @Override
