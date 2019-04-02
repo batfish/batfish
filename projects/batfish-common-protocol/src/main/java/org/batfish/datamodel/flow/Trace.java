@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import java.util.List;
@@ -76,7 +77,8 @@ public final class Trace {
    * </ul>
    */
   @Nonnull
-  private static List<Hop> validateHops(@Nonnull List<Hop> hops) {
+  @VisibleForTesting
+  static List<Hop> validateHops(@Nonnull List<Hop> hops) {
     for (int i = 0; i < hops.size(); ++i) {
       Hop h = hops.get(i);
       List<Step<?>> steps = h.getSteps();
@@ -84,9 +86,9 @@ public final class Trace {
         Step<?> s = Iterables.getFirst(steps, null);
         checkArgument(
             s instanceof EnterInputIfaceStep,
-            "Hop %s/%s of trace does not begin with an %s step: %s",
-            i,
-            steps.size(),
+            "Hop %s/%s of trace does not begin with an %s: %s",
+            i + 1,
+            hops.size(),
             EnterInputIfaceStep.class.getSimpleName(),
             h);
       }
@@ -94,9 +96,9 @@ public final class Trace {
         Step<?> s = Iterables.getLast(steps, null);
         checkArgument(
             s instanceof ExitOutputIfaceStep,
-            "Hop %s/%s of trace does not end with an %s step: %s",
-            i,
-            steps.size(),
+            "Hop %s/%s of trace does not end with an %s: %s",
+            i + 1,
+            hops.size(),
             ExitOutputIfaceStep.class.getSimpleName(),
             h);
       }
