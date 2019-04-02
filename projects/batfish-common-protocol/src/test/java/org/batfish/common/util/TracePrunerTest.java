@@ -8,14 +8,41 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.flow.EnterInputIfaceStep;
+import org.batfish.datamodel.flow.EnterInputIfaceStep.EnterInputIfaceStepDetail;
+import org.batfish.datamodel.flow.ExitOutputIfaceStep;
+import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceStepDetail;
 import org.batfish.datamodel.flow.Hop;
+import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.pojo.Node;
 import org.junit.Test;
 
+/** Tests of {@link TracePruner}. */
 public class TracePrunerTest {
-  private static final Hop HOP_A = new Hop(new Node("A"), ImmutableList.of());
-  private static final Hop HOP_B = new Hop(new Node("B"), ImmutableList.of());
+  private static final Hop HOP_A =
+      new Hop(
+          new Node("A"),
+          ImmutableList.of(
+              ExitOutputIfaceStep.builder()
+                  .setAction(StepAction.FORWARDED)
+                  .setDetail(
+                      ExitOutputIfaceStepDetail.builder()
+                          .setOutputInterface(new NodeInterfacePair("A", "out"))
+                          .build())
+                  .build()));
+  private static final Hop HOP_B =
+      new Hop(
+          new Node("B"),
+          ImmutableList.of(
+              EnterInputIfaceStep.builder()
+                  .setAction(StepAction.RECEIVED)
+                  .setDetail(
+                      EnterInputIfaceStepDetail.builder()
+                          .setInputInterface(new NodeInterfacePair("B", "in"))
+                          .build())
+                  .build()));
   private static final Hop HOP_C = new Hop(new Node("C"), ImmutableList.of());
 
   private static final Trace TRACE_A_ACCEPTED = new Trace(ACCEPTED, ImmutableList.of(HOP_A));
