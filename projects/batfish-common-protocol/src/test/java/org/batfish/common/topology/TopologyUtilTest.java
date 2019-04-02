@@ -698,15 +698,15 @@ public final class TopologyUtilTest {
   public void testIncompleteLyaer1TopologyHandlingIsp() {
     /*
      * Connectivity between border routers and generated ISP nodes
-     * Expected: H1 <=> B1 <=> INTERNET <=> B2 <=> H2
-     * Provided: H1 <=> B1   B2 <=> H2
-     * Use case: B1 and B2 are declared as border routers; topological connectivity should be
+     * Expected: h1 <=> b1 <=> INTERNET <=> b2 <=> h2
+     * Provided: h1 <=> b1   b2 <=> h2
+     * Use case: b1 and b2 are declared as border routers; topological connectivity should be
      *           synthesized via generated ISP nodes
      */
-    String b1Name = "B1";
-    String b2Name = "B2";
-    String h1Name = "H1";
-    String h2Name = "H2";
+    String b1Name = "b1";
+    String b2Name = "b2";
+    String h1Name = "h1";
+    String h2Name = "h2";
 
     String i1Name = "i1";
     String i2Name = "i2";
@@ -728,16 +728,16 @@ public final class TopologyUtilTest {
 
     Configuration cH1 = _cb.setHostname(h1Name).build();
     Vrf vH1 = _vb.setOwner(cH1).build();
-    _ib.setOwner(cH1).setVrf(vH1).setName(i1Name).build(); // H1 => B1
+    _ib.setOwner(cH1).setVrf(vH1).setName(i1Name).build(); // h1 => b1
 
     Configuration cH2 = _cb.setHostname(h2Name).build();
     Vrf vH2 = _vb.setOwner(cH2).build();
-    _ib.setOwner(cH2).setVrf(vH2).setName(i1Name).build(); // H2 => B2
+    _ib.setOwner(cH2).setVrf(vH2).setName(i1Name).build(); // h2 => b2
 
     Configuration cB1 = _cb.setHostname(b1Name).build();
     Vrf vB1 = _vb.setOwner(cB1).build();
-    _ib.setOwner(cB1).setVrf(vB1).setName(i1Name).build(); // B1 => H1
-    _ib.setName(i2Name).setAddress(b1i2Address).build(); // B1 => INTERNET
+    _ib.setOwner(cB1).setVrf(vB1).setName(i1Name).build(); // b1 => h1
+    _ib.setName(i2Name).setAddress(b1i2Address).build(); // b1 => INTERNET
     BgpProcess b1Proc =
         _nf.bgpProcessBuilder().setRouterId(b1i2Address.getIp()).setVrf(vB1).build();
     _nf.bgpNeighborBuilder()
@@ -750,7 +750,7 @@ public final class TopologyUtilTest {
 
     Configuration cB2 = _cb.setHostname(b2Name).build();
     Vrf vB2 = _vb.setOwner(cB2).build();
-    _ib.setOwner(cB2).setVrf(vB2).setName(i1Name).setAddress(null).build(); // B2 => H2
+    _ib.setOwner(cB2).setVrf(vB2).setName(i1Name).setAddress(null).build(); // b2 => h2
     _ib.setName(i2Name).setAddress(b2i2Address).build(); // B2 => INTERNET
     BgpProcess b2Proc =
         _nf.bgpProcessBuilder().setRouterId(b2i2Address.getIp()).setVrf(vB2).build();
@@ -825,10 +825,10 @@ public final class TopologyUtilTest {
                         || explicitNodes.contains(edge.getNode2()))
             .collect(ImmutableSet.toImmutableSet()),
         containsInAnyOrder(
-            both(hasHead(l3B1)).and(hasNode1(in(ispNodes))), // INTERNET => B1
-            both(hasTail(l3B1)).and(hasNode2(in(ispNodes))), // B1 => INTERNET
-            both(hasHead(l3B2)).and(hasNode1(in(ispNodes))), // INTERNET => B2
-            both(hasTail(l3B2)).and(hasNode2(in(ispNodes))))); // B2 => INTERNET
+            both(hasHead(l3B1)).and(hasNode1(in(ispNodes))), // INTERNET => b1
+            both(hasTail(l3B1)).and(hasNode2(in(ispNodes))), // b1 => INTERNET
+            both(hasHead(l3B2)).and(hasNode1(in(ispNodes))), // INTERNET => b2
+            both(hasTail(l3B2)).and(hasNode2(in(ispNodes))))); // b2 => INTERNET
 
     // Layer-3 topology should also contain other synthetic edges for the modeled ISPs
     assertThat(

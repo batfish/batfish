@@ -28,6 +28,7 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceType;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
@@ -37,7 +38,6 @@ import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -122,8 +122,10 @@ public final class ModelingUtils {
             .map(BorderInterfaceInfo::getBorderInterface)
             .collect(
                 Collectors.groupingBy(
-                    NodeInterfacePair::getHostname,
-                    Collectors.mapping(NodeInterfacePair::getInterface, Collectors.toSet())));
+                    nodeInterfacePair -> nodeInterfacePair.getHostname().toLowerCase(),
+                    Collectors.mapping(
+                        nodeInterfacePair -> nodeInterfacePair.getInterface().toLowerCase(),
+                        Collectors.toSet())));
 
     Map<Long, IspInfo> asnToIspInfos = new HashMap<>();
 
@@ -263,9 +265,12 @@ public final class ModelingUtils {
       Map<Long, IspInfo> allIspInfos) {
 
     // collecting InterfaceAddresses for interfaces
+    Map<String, Interface> caseInsensitiveIfaces =
+        configuration.getAllInterfaces().entrySet().stream()
+            .collect(Collectors.toMap(entry -> entry.getKey().toLowerCase(), Entry::getValue));
     Map<Ip, InterfaceAddress> ipToInterfaceAddresses =
         interfaces.stream()
-            .map(iface -> configuration.getAllInterfaces().get(iface))
+            .map(caseInsensitiveIfaces::get)
             .filter(Objects::nonNull)
             .flatMap(iface -> iface.getAllAddresses().stream())
             .collect(ImmutableMap.toImmutableMap(InterfaceAddress::getIp, Function.identity()));
