@@ -44,7 +44,9 @@ public class CommonParser extends BaseParser<AstNode> {
 
   private static final char[] SPECIAL_CHARS_ARRAY = SPECIAL_CHARS.toCharArray();
 
-  public static final CommonParser INSTANCE = Parboiled.createParser(CommonParser.class);
+  static CommonParser instance() {
+    return Parboiled.createParser(CommonParser.class);
+  }
 
   static Map<String, Type> initAnchors(Class<?> parserClass) {
     ImmutableMap.Builder<String, Anchor.Type> completionTypes = ImmutableMap.builder();

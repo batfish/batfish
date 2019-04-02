@@ -48,8 +48,6 @@ public class Parser extends CommonParser {
 
   static final boolean SUPPORT_DEPRECATED_UNENCLOSED_REGEXES = true;
 
-  static final Parser INSTANCE = Parboiled.createParser(Parser.class);
-
   static final Map<String, Anchor.Type> ANCHORS = initAnchors(Parser.class);
 
   /**
@@ -63,6 +61,35 @@ public class Parser extends CommonParser {
   final Rule[] _ipProtocolNameRules = initIpProtocolNameRules();
 
   final Rule[] _deviceTypeRules = initEnumRules(DeviceType.values());
+
+  static Parser instance() {
+    return Parboiled.createParser(Parser.class);
+  }
+
+  /** Get the main entry point for the grammar */
+  Rule getInputRule(Grammar grammar) {
+    switch (grammar) {
+      case APPLICATION_SPECIFIER:
+        return input(ApplicationSpec());
+      case FILTER_SPECIFIER:
+        return input(FilterSpec());
+      case INTERFACE_SPECIFIER:
+        return input(InterfaceSpec());
+      case IP_PROTOCOL_SPECIFIER:
+        return input(IpProtocolSpec());
+      case IP_SPACE_SPECIFIER:
+        return input(IpSpaceSpec());
+      case LOCATION_SPECIFIER:
+        return input(LocationSpec());
+      case NODE_SPECIFIER:
+        return input(NodeSpec());
+      case ROUTING_POLICY_SPECIFIER:
+        return input(RoutingPolicySpec());
+      default:
+        throw new IllegalArgumentException(
+            "Main grammar rule not defined for " + grammar.getFriendlyName());
+    }
+  }
 
   /**
    * Application grammar

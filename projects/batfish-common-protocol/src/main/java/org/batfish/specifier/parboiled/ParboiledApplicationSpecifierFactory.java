@@ -24,7 +24,7 @@ public class ParboiledApplicationSpecifierFactory implements ApplicationSpecifie
 
     ParsingResult<AstNode> result =
         new ReportingParseRunner<AstNode>(
-                Parser.INSTANCE.input(Grammar.APPLICATION_SPECIFIER.getExpression()))
+                Parser.instance().getInputRule(Grammar.APPLICATION_SPECIFIER))
             .run((String) input);
 
     if (!result.parseErrors.isEmpty()) {

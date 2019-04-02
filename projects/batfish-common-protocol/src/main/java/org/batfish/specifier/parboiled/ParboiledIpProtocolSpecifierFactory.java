@@ -24,7 +24,7 @@ public class ParboiledIpProtocolSpecifierFactory implements IpProtocolSpecifierF
 
     ParsingResult<AstNode> result =
         new ReportingParseRunner<AstNode>(
-                Parser.INSTANCE.input(Grammar.IP_PROTOCOL_SPECIFIER.getExpression()))
+                Parser.instance().getInputRule(Grammar.IP_PROTOCOL_SPECIFIER))
             .run((String) input);
 
     if (!result.parseErrors.isEmpty()) {
