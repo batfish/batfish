@@ -41,7 +41,7 @@ b_ipv4_unicast
 
 bi4_network
 :
-  NETWORK network = IP_PREFIX NEWLINE
+  NETWORK network = ip_prefix NEWLINE
 ;
 
 bi4_redistribute_connected
@@ -113,7 +113,7 @@ bni_remote_as_external
 
 b_router_id
 :
-  ROUTER_ID id = IP_ADDRESS NEWLINE
+  ROUTER_ID id = ip_address NEWLINE
 ;
 
 b_vrf
