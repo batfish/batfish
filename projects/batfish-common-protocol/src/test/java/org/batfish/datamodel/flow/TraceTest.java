@@ -14,8 +14,8 @@ public class TraceTest {
 
   public @Rule ExpectedException _thrown = ExpectedException.none();
 
-  private Hop emptyHop = new Hop(new Node("Empty"), ImmutableList.of());
-  private Hop hopWithOnlyEnter =
+  private Hop _emptyHop = new Hop(new Node("Empty"), ImmutableList.of());
+  private Hop _hopWithOnlyEnter =
       new Hop(
           new Node("Enter"),
           ImmutableList.of(
@@ -26,7 +26,7 @@ public class TraceTest {
                           .setInputInterface(new NodeInterfacePair("Enter", "in"))
                           .build())
                   .build()));
-  private Hop hopWithOnlyExit =
+  private Hop _hopWithOnlyExit =
       new Hop(
           new Node("Exit"),
           ImmutableList.of(
@@ -41,21 +41,21 @@ public class TraceTest {
   @Test
   public void validateHopBeginsWithEnterInputInterface() {
     _thrown.expectMessage("Hop 2/2 of trace does not begin with an EnterInputIfaceStep:");
-    Trace.validateHops(ImmutableList.of(hopWithOnlyExit, emptyHop));
+    Trace.validateHops(ImmutableList.of(_hopWithOnlyExit, _emptyHop));
   }
 
   @Test
   public void validateHopEndsWithExitOutputInterface() {
     _thrown.expectMessage("Hop 1/2 of trace does not end with an ExitOutputIfaceStep:");
-    Trace.validateHops(ImmutableList.of(emptyHop, hopWithOnlyEnter));
+    Trace.validateHops(ImmutableList.of(_emptyHop, _hopWithOnlyEnter));
   }
 
   @Test
   public void validateValidHops() {
     Trace.validateHops(ImmutableList.of());
-    Trace.validateHops(ImmutableList.of(emptyHop));
-    Trace.validateHops(ImmutableList.of(hopWithOnlyEnter));
-    Trace.validateHops(ImmutableList.of(hopWithOnlyExit));
-    Trace.validateHops(ImmutableList.of(hopWithOnlyExit, hopWithOnlyEnter));
+    Trace.validateHops(ImmutableList.of(_emptyHop));
+    Trace.validateHops(ImmutableList.of(_hopWithOnlyEnter));
+    Trace.validateHops(ImmutableList.of(_hopWithOnlyExit));
+    Trace.validateHops(ImmutableList.of(_hopWithOnlyExit, _hopWithOnlyEnter));
   }
 }
