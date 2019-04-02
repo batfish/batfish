@@ -338,8 +338,22 @@ public abstract class BDDFactory {
    */
   public abstract int setCacheRatio(int x);
 
+  /**
+   * Returns the logical 'or' of zero or more BDDs. None of the input BDDs are consumed or mutated.
+   * More efficient than using {@link BDD::or} or {@link BDD::orWith} iteratively, especially for
+   * large numbers of operands, because it creates fewer intermediate BDDs.
+   *
+   * @param bddOperands the BDDs to 'or' together
+   */
   public abstract BDD orAll(BDD... bddOperands);
 
+  /**
+   * Returns the logical 'or' of zero or more BDDs. None of the input BDDs are consumed or mutated.
+   * More efficient than using {@link BDD::or} or {@link BDD::orWith} iteratively, especially for
+   * large numbers of operands, because it creates fewer intermediate BDDs.
+   *
+   * @param bddOperands the BDDs to 'or' together
+   */
   public abstract BDD orAll(Collection<BDD> bddOperands);
 
   /**
