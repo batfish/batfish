@@ -504,6 +504,16 @@ public class TestBDDFactory extends BDDFactory {
   }
 
   @Override
+  public BDD orAll(BDD... bddOperands) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public BDD orAll(Collection<BDD> bddOperands) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public int setNodeTableSize(int size) {
     int r1 = f1.setNodeTableSize(size);
     int r2 = f2.setNodeTableSize(size);

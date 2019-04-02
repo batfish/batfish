@@ -2,8 +2,11 @@ package net.sf.javabdd;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
 import org.junit.Test;
 
 /** Tests of {@link JFactory}. */
@@ -428,5 +431,19 @@ public class JFactoryTest {
     // true/false in else
     assertThat(x.ite(y, one), equalTo(notx.or(y)));
     assertThat(x.ite(y, zero), equalTo(x.and(y)));
+  }
+
+  @Test
+  public void testDedupSorted() {
+    int[] a1 = {1, 1, 2, 2, 3, 3};
+    int[] a2 = {1, 2, 3};
+    assertTrue(Arrays.equals(JFactory.dedupSorted(a1), a2));
+
+    // these tests use pointer equality intentionally. no copying if no dupes
+    assertEquals(JFactory.dedupSorted(a2), a2);
+    int[] a3 = {};
+    assertEquals(JFactory.dedupSorted(a3), a3);
+    int[] a4 = {1};
+    assertEquals(JFactory.dedupSorted(a4), a4);
   }
 }
