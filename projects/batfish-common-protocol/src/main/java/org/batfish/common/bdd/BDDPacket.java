@@ -10,10 +10,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
+import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
@@ -53,71 +53,42 @@ public class BDDPacket {
       (JFACTORY_INITIAL_NODE_TABLE_SIZE + JFACTORY_CACHE_RATIO - 1) / JFACTORY_CACHE_RATIO;
 
   private static final int DSCP_LENGTH = 6;
-
   private static final int ECN_LENGTH = 2;
-
   private static final int FRAGMENT_OFFSET_LENGTH = 13;
-
   private static final int ICMP_CODE_LENGTH = 8;
-
   private static final int ICMP_TYPE_LENGTH = 8;
-
   private static final int IP_LENGTH = 32;
-
   private static final int IP_PROTOCOL_LENGTH = 8;
-
   private static final int PORT_LENGTH = 16;
-
   private static final int STATE_LENGTH = 2;
-
   private static final int TCP_FLAG_LENGTH = 1;
 
-  private Map<Integer, String> _bitNames;
-
-  private BDDInteger _dscp;
-
-  private BDDInteger _dstIp;
-
-  private BDDInteger _dstPort;
-
-  private BDDInteger _ecn;
-
+  private final Map<Integer, String> _bitNames;
   private final BDDFactory _factory;
-
-  private BDDInteger _fragmentOffset;
-
-  private BDDIcmpCode _icmpCode;
-
-  private BDDIcmpType _icmpType;
-
-  private BDDIpProtocol _ipProtocol;
-
   private int _nextFreeBDDVarIdx = 0;
 
+  // Packet bits
+  private final @Nonnull BDDInteger _dscp;
+  private final @Nonnull BDDInteger _dstIp;
+  private final @Nonnull BDDInteger _dstPort;
+  private final @Nonnull BDDInteger _ecn;
+  private final @Nonnull BDDInteger _fragmentOffset;
+  private final @Nonnull BDDIcmpCode _icmpCode;
+  private final @Nonnull BDDIcmpType _icmpType;
+  private final @Nonnull BDDIpProtocol _ipProtocol;
+  private final @Nonnull BDDInteger _srcIp;
+  private final @Nonnull BDDInteger _srcPort;
+  private final @Nonnull BDDInteger _state;
+  private final @Nonnull BDD _tcpAck;
+  private final @Nonnull BDD _tcpCwr;
+  private final @Nonnull BDD _tcpEce;
+  private final @Nonnull BDD _tcpFin;
+  private final @Nonnull BDD _tcpPsh;
+  private final @Nonnull BDD _tcpRst;
+  private final @Nonnull BDD _tcpSyn;
+  private final @Nonnull BDD _tcpUrg;
+
   private final BDDPairing _pairing;
-
-  private BDDInteger _srcIp;
-
-  private BDDInteger _srcPort;
-
-  private BDDInteger _state;
-
-  private BDD _tcpAck;
-
-  private BDD _tcpCwr;
-
-  private BDD _tcpEce;
-
-  private BDD _tcpFin;
-
-  private BDD _tcpPsh;
-
-  private BDD _tcpRst;
-
-  private BDD _tcpSyn;
-
-  private BDD _tcpUrg;
-
   private final BDDPairing _swapSourceAndDestinationPairing;
 
   // Picking representative flows
@@ -150,10 +121,7 @@ public class BDDPacket {
       e.printStackTrace();
     }
     */
-    _pairing = _factory.makePair();
-
     // Make sure we have the right number of variables
-    int numVars = _factory.varNum();
     int numNeeded =
         IP_LENGTH * 2
             + PORT_LENGTH * 2
@@ -165,7 +133,7 @@ public class BDDPacket {
             + ECN_LENGTH
             + FRAGMENT_OFFSET_LENGTH
             + STATE_LENGTH;
-    if (numVars < numNeeded) {
+    if (_factory.varNum() < numNeeded) {
       _factory.setVarNum(numNeeded);
     }
 
@@ -190,6 +158,8 @@ public class BDDPacket {
     _ecn = allocateBDDInteger("ecn", ECN_LENGTH, false);
     _fragmentOffset = allocateBDDInteger("fragmentOffset", FRAGMENT_OFFSET_LENGTH, false);
     _state = allocateBDDInteger("state", STATE_LENGTH, false);
+
+    _pairing = _factory.makePair();
     _swapSourceAndDestinationPairing =
         swapPairing(
             getDstIp(), getSrcIp(), //
@@ -338,179 +308,122 @@ public class BDDPacket {
     return fb;
   }
 
+  @Nonnull
   public BDDInteger getDscp() {
     return _dscp;
   }
 
-  public void setDscp(BDDInteger x) {
-    this._dscp = x;
-  }
-
+  @Nonnull
   public BDDInteger getDstIp() {
     return _dstIp;
   }
 
-  public void setDstIp(BDDInteger x) {
-    this._dstIp = x;
-  }
-
+  @Nonnull
   public BDDInteger getDstPort() {
     return _dstPort;
   }
 
-  public void setDstPort(BDDInteger x) {
-    this._dstPort = x;
-  }
-
+  @Nonnull
   public BDDInteger getEcn() {
     return _ecn;
   }
 
-  public void setEcn(BDDInteger x) {
-    this._ecn = x;
-  }
-
+  @Nonnull
   public BDDInteger getFragmentOffset() {
     return _fragmentOffset;
   }
 
-  public void setFragmentOffset(BDDInteger x) {
-    this._fragmentOffset = x;
-  }
-
+  @Nonnull
   public BDDIcmpCode getIcmpCode() {
     return _icmpCode;
   }
 
-  public void setIcmpCode(BDDIcmpCode x) {
-    this._icmpCode = x;
-  }
-
+  @Nonnull
   public BDDIcmpType getIcmpType() {
     return _icmpType;
   }
 
-  public void setIcmpType(BDDIcmpType x) {
-    this._icmpType = x;
-  }
-
+  @Nonnull
   public BDDIpProtocol getIpProtocol() {
     return _ipProtocol;
   }
 
-  public void setIpProtocol(BDDIpProtocol x) {
-    this._ipProtocol = x;
-  }
-
+  @Nonnull
   public BDDInteger getSrcIp() {
     return _srcIp;
   }
 
-  public void setSrcIp(BDDInteger x) {
-    this._srcIp = x;
-  }
-
+  @Nonnull
   public BDDInteger getSrcPort() {
     return _srcPort;
   }
 
-  public void setSrcPort(BDDInteger x) {
-    this._srcPort = x;
-  }
-
+  @Nonnull
   public BDDInteger getState() {
     return _state;
   }
 
-  public void setState(BDDInteger x) {
-    this._state = x;
-  }
-
+  @Nonnull
   public BDD getTcpAck() {
     return _tcpAck;
   }
 
-  public void setTcpAck(BDD tcpAck) {
-    this._tcpAck = tcpAck;
-  }
-
+  @Nonnull
   public BDD getTcpCwr() {
     return _tcpCwr;
   }
 
-  public void setTcpCwr(BDD tcpCwr) {
-    this._tcpCwr = tcpCwr;
-  }
-
+  @Nonnull
   public BDD getTcpEce() {
     return _tcpEce;
   }
 
-  public void setTcpEce(BDD tcpEce) {
-    this._tcpEce = tcpEce;
-  }
-
+  @Nonnull
   public BDD getTcpFin() {
     return _tcpFin;
   }
 
-  public void setTcpFin(BDD tcpFin) {
-    this._tcpFin = tcpFin;
-  }
-
+  @Nonnull
   public BDD getTcpPsh() {
     return _tcpPsh;
   }
 
-  public void setTcpPsh(BDD tcpPsh) {
-    this._tcpPsh = tcpPsh;
-  }
-
+  @Nonnull
   public BDD getTcpRst() {
     return _tcpRst;
   }
 
-  public void setTcpRst(BDD tcpRst) {
-    this._tcpRst = tcpRst;
-  }
-
+  @Nonnull
   public BDD getTcpSyn() {
     return _tcpSyn;
   }
 
-  public void setTcpSyn(BDD tcpSyn) {
-    this._tcpSyn = tcpSyn;
-  }
-
+  @Nonnull
   public BDD getTcpUrg() {
     return _tcpUrg;
   }
 
-  public void setTcpUrg(BDD tcpUrg) {
-    this._tcpUrg = tcpUrg;
-  }
-
   @Override
   public int hashCode() {
-    int result = _dstIp != null ? _dstIp.hashCode() : 0;
-    result = 31 * result + (_srcIp != null ? _srcIp.hashCode() : 0);
-    result = 31 * result + (_dstPort != null ? _dstPort.hashCode() : 0);
-    result = 31 * result + (_srcPort != null ? _srcPort.hashCode() : 0);
-    result = 31 * result + (_icmpCode != null ? _icmpCode.hashCode() : 0);
-    result = 31 * result + (_icmpType != null ? _icmpType.hashCode() : 0);
-    result = 31 * result + (_ipProtocol != null ? _ipProtocol.hashCode() : 0);
-    result = 31 * result + (_tcpAck != null ? _tcpAck.hashCode() : 0);
-    result = 31 * result + (_tcpCwr != null ? _tcpCwr.hashCode() : 0);
-    result = 31 * result + (_tcpEce != null ? _tcpEce.hashCode() : 0);
-    result = 31 * result + (_tcpFin != null ? _tcpFin.hashCode() : 0);
-    result = 31 * result + (_tcpPsh != null ? _tcpPsh.hashCode() : 0);
-    result = 31 * result + (_tcpRst != null ? _tcpRst.hashCode() : 0);
-    result = 31 * result + (_tcpSyn != null ? _tcpSyn.hashCode() : 0);
-    result = 31 * result + (_tcpUrg != null ? _tcpUrg.hashCode() : 0);
-    result = 31 * result + (_dscp != null ? _dscp.hashCode() : 0);
-    result = 31 * result + (_ecn != null ? _ecn.hashCode() : 0);
-    result = 31 * result + (_fragmentOffset != null ? _fragmentOffset.hashCode() : 0);
-    result = 31 * result + (_state != null ? _state.hashCode() : 0);
+    int result = _dstIp.hashCode();
+    result = 31 * result + _srcIp.hashCode();
+    result = 31 * result + _dstPort.hashCode();
+    result = 31 * result + _srcPort.hashCode();
+    result = 31 * result + _icmpCode.hashCode();
+    result = 31 * result + _icmpType.hashCode();
+    result = 31 * result + _ipProtocol.hashCode();
+    result = 31 * result + _tcpAck.hashCode();
+    result = 31 * result + _tcpCwr.hashCode();
+    result = 31 * result + _tcpEce.hashCode();
+    result = 31 * result + _tcpFin.hashCode();
+    result = 31 * result + _tcpPsh.hashCode();
+    result = 31 * result + _tcpRst.hashCode();
+    result = 31 * result + _tcpSyn.hashCode();
+    result = 31 * result + _tcpUrg.hashCode();
+    result = 31 * result + _dscp.hashCode();
+    result = 31 * result + _ecn.hashCode();
+    result = 31 * result + _fragmentOffset.hashCode();
+    result = 31 * result + _state.hashCode();
     return result;
   }
 
@@ -521,25 +434,25 @@ public class BDDPacket {
     }
     BDDPacket other = (BDDPacket) o;
 
-    return Objects.equals(_srcPort, other._srcPort)
-        && Objects.equals(_icmpType, other._icmpType)
-        && Objects.equals(_icmpCode, other._icmpCode)
-        && Objects.equals(_ipProtocol, other._ipProtocol)
-        && Objects.equals(_dstPort, other._dstPort)
-        && Objects.equals(_dstIp, other._dstIp)
-        && Objects.equals(_srcIp, other._srcIp)
-        && Objects.equals(_tcpAck, other._tcpAck)
-        && Objects.equals(_tcpCwr, other._tcpCwr)
-        && Objects.equals(_tcpEce, other._tcpEce)
-        && Objects.equals(_tcpFin, other._tcpFin)
-        && Objects.equals(_tcpPsh, other._tcpPsh)
-        && Objects.equals(_tcpRst, other._tcpRst)
-        && Objects.equals(_tcpSyn, other._tcpSyn)
-        && Objects.equals(_tcpUrg, other._tcpUrg)
-        && Objects.equals(_dscp, other._dscp)
-        && Objects.equals(_ecn, other._ecn)
-        && Objects.equals(_fragmentOffset, other._fragmentOffset)
-        && Objects.equals(_state, other._state);
+    return _dstIp.equals(other._dstIp)
+        && _srcIp.equals(other._srcIp)
+        && _srcPort.equals(other._srcPort)
+        && _dstPort.equals(other._dstPort)
+        && _icmpCode.equals(other._icmpCode)
+        && _icmpType.equals(other._icmpType)
+        && _ipProtocol.equals(other._ipProtocol)
+        && _tcpAck.equals(other._tcpAck)
+        && _tcpCwr.equals(other._tcpCwr)
+        && _tcpEce.equals(other._tcpEce)
+        && _tcpFin.equals(other._tcpFin)
+        && _tcpPsh.equals(other._tcpPsh)
+        && _tcpRst.equals(other._tcpRst)
+        && _tcpSyn.equals(other._tcpSyn)
+        && _tcpUrg.equals(other._tcpUrg)
+        && _dscp.equals(other._dscp)
+        && _ecn.equals(other._ecn)
+        && _fragmentOffset.equals(other._fragmentOffset)
+        && _state.equals(other._state);
   }
 
   public BDD restrict(BDD bdd, Prefix pfx) {
