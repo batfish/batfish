@@ -23,6 +23,7 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
       @Nullable @JsonProperty(PROP_METRIC) Long metric,
       @Nullable @JsonProperty(PROP_AREA) Long area) {
     checkArgument(network != null, "%s must be specified", PROP_NETWORK);
+    checkArgument(nextHopIp != null, "%s must be specified", PROP_NEXT_HOP_IP);
     checkArgument(admin != null, "%s must be specified", PROP_ADMINISTRATIVE_COST);
     checkArgument(metric != null, "%s must be specified", PROP_METRIC);
     checkArgument(area != null, "%s must be specified", PROP_AREA);
@@ -69,7 +70,7 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
   }
 
   @Override
-  public int routeCompare(@Nonnull AbstractRoute rhs) {
+  public int routeCompare(AbstractRoute rhs) {
     if (getClass() != rhs.getClass()) {
       return 0;
     }

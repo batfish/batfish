@@ -1,6 +1,5 @@
 package org.batfish.datamodel;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -11,7 +10,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-/** OSPF iter-area area (can traverse OSPF areas). */
+/** OSPF inter-area area (can traverse OSPF areas). */
 @ParametersAreNonnullByDefault
 public final class OspfInterAreaRoute extends OspfInternalRoute {
 
@@ -25,17 +24,11 @@ public final class OspfInterAreaRoute extends OspfInternalRoute {
       @Nullable @JsonProperty(PROP_METRIC) Long metric,
       @Nullable @JsonProperty(PROP_AREA) Long area) {
     checkArgument(network != null, "%s must be specified", PROP_NETWORK);
+    checkArgument(nextHopIp != null, "%s must be specified", PROP_NEXT_HOP_IP);
     checkArgument(admin != null, "%s must be specified", PROP_ADMINISTRATIVE_COST);
     checkArgument(metric != null, "%s must be specified", PROP_METRIC);
     checkArgument(area != null, "%s must be specified", PROP_AREA);
-    return new OspfInterAreaRoute(
-        network,
-        firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP),
-        admin,
-        metric,
-        area,
-        false,
-        false);
+    return new OspfInterAreaRoute(network, nextHopIp, admin, metric, area, false, false);
   }
 
   private OspfInterAreaRoute(
@@ -78,7 +71,7 @@ public final class OspfInterAreaRoute extends OspfInternalRoute {
   }
 
   @Override
-  public int routeCompare(@Nonnull AbstractRoute rhs) {
+  public int routeCompare(AbstractRoute rhs) {
     if (getClass() != rhs.getClass()) {
       return 0;
     }
