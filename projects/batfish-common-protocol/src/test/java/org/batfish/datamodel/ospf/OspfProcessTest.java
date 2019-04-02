@@ -82,4 +82,25 @@ public class OspfProcessTest {
     // Compute values for passive interfaces
     assertThat(i3.getOspfCost(), equalTo(100));
   }
+
+  @Test
+  public void setAreasMismatchedNumbers() {
+    final NetworkFactory networkFactory = new NetworkFactory();
+    OspfProcess proc =
+        OspfProcess.builder(networkFactory).setProcessId("1").setReferenceBandwidth(10e8).build();
+    _thrown.expect(IllegalArgumentException.class);
+    proc.setAreas(
+        ImmutableSortedMap.of(1L, OspfArea.builder(networkFactory).setNumber(2L).build()));
+  }
+
+  @Test
+  public void setAreasMismatchedNumbersOnBuild() {
+    final NetworkFactory networkFactory = new NetworkFactory();
+    _thrown.expect(IllegalArgumentException.class);
+    OspfProcess.builder(networkFactory)
+        .setProcessId("1")
+        .setReferenceBandwidth(10e8)
+        .setAreas(ImmutableSortedMap.of(1L, OspfArea.builder(networkFactory).setNumber(2L).build()))
+        .build();
+  }
 }

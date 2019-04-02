@@ -247,6 +247,11 @@ public final class OspfProcess implements Serializable {
                 computeDefaultAdminCosts(ConfigurationFormat.CISCO_IOS)));
     checkArgument(_adminCosts.keySet().containsAll(REQUIRES_ADMIN));
     _areas = firstNonNull(areas, ImmutableSortedMap.of());
+    // Ensure area numbers match up
+    checkArgument(
+        _areas.entrySet().stream()
+            .allMatch(entry -> entry.getKey() == entry.getValue().getAreaNumber()),
+        "Area number does not match up with map key");
     _exportPolicy = exportPolicy;
     _exportPolicySources = firstNonNull(exportPolicySources, ImmutableSortedSet.of());
     _generatedRoutes = firstNonNull(generatedRoutes, ImmutableSortedSet.of());
@@ -427,6 +432,11 @@ public final class OspfProcess implements Serializable {
   }
 
   public void setAreas(SortedMap<Long, OspfArea> areas) {
+    // Ensure area numbers match up
+    checkArgument(
+        areas.entrySet().stream()
+            .allMatch(entry -> entry.getKey() == entry.getValue().getAreaNumber()),
+        "Area number does not match up with map key");
     _areas = areas;
   }
 
