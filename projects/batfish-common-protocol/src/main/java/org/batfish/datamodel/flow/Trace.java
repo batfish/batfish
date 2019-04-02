@@ -28,8 +28,7 @@ public final class Trace {
 
   public Trace(FlowDisposition disposition, List<Hop> hops) {
     _disposition = disposition;
-    _hops = ImmutableList.copyOf(hops);
-    assert sanityCheck();
+    _hops = validateHops(hops);
   }
 
   @JsonCreator
@@ -68,20 +67,40 @@ public final class Trace {
     return Objects.hash(_hops, _disposition.ordinal());
   }
 
-  private boolean sanityCheck() {
-    assert _disposition != null : "missing disposition";
-    assert _hops != null : "missing hops";
-    for (int i = 0; i < _hops.size(); ++i) {
-      Hop h = _hops.get(i);
+  /**
+   * Validate hops.
+   *
+   * <ul>
+   *   <li>All hops but the first must begin with {@link EnterInputIfaceStep}. (The first may).
+   *   <li>All hops but the last must end with {@link ExitOutputIfaceStep}. (The last may).
+   * </ul>
+   */
+  @Nonnull
+  private static List<Hop> validateHops(@Nonnull List<Hop> hops) {
+    for (int i = 0; i < hops.size(); ++i) {
+      Hop h = hops.get(i);
+      List<Step<?>> steps = h.getSteps();
       if (i > 0) {
-        Step<?> s = Iterables.getFirst(h.getSteps(), null);
-        assert s instanceof EnterInputIfaceStep : s;
+        Step<?> s = Iterables.getFirst(steps, null);
+        checkArgument(
+            s instanceof EnterInputIfaceStep,
+            "Hop %s/%s of trace does not begin with an %s step: %s",
+            i,
+            steps.size(),
+            EnterInputIfaceStep.class.getSimpleName(),
+            h);
       }
-      if (i < _hops.size() - 1) {
-        Step<?> s = Iterables.getLast(h.getSteps(), null);
-        assert s instanceof ExitOutputIfaceStep : h;
+      if (i < hops.size() - 1) {
+        Step<?> s = Iterables.getLast(steps, null);
+        checkArgument(
+            s instanceof ExitOutputIfaceStep,
+            "Hop %s/%s of trace does not end with an %s step: %s",
+            i,
+            steps.size(),
+            ExitOutputIfaceStep.class.getSimpleName(),
+            h);
       }
     }
-    return true;
+    return ImmutableList.copyOf(hops);
   }
 }
