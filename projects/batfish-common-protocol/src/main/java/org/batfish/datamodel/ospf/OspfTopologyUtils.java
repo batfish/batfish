@@ -290,7 +290,8 @@ public final class OspfTopologyUtils {
       return Optional.empty();
     }
     // invariant localIP == ip1
-    return Optional.of(new OspfSessionProperties(new IpLink(localIp, remoteIp)));
+    return Optional.of(
+        new OspfSessionProperties(localConfig.getArea(), new IpLink(localIp, remoteIp)));
   }
 
   /** Ensure links in the graph are bi-directional */
