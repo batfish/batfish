@@ -50,7 +50,8 @@ public class OspfProcessConfigAnswererTest {
     nf.ospfProcessBuilder()
         .setProcessId("ospf_1")
         .setAreas(
-            ImmutableSortedMap.of(1L, nf.ospfAreaBuilder().setInjectDefaultRoute(true).build()))
+            ImmutableSortedMap.of(
+                1L, nf.ospfAreaBuilder().setNumber(1).setInjectDefaultRoute(true).build()))
         .setExportPolicySources(ImmutableSortedSet.of("export_policy_source"))
         .setExportPolicyName("export_policy")
         .setReferenceBandwidth(12d)
@@ -91,7 +92,8 @@ public class OspfProcessConfigAnswererTest {
         nf.ospfProcessBuilder()
             .setProcessId("ospf_1")
             .setAreas(
-                ImmutableSortedMap.of(1L, nf.ospfAreaBuilder().setInjectDefaultRoute(true).build()))
+                ImmutableSortedMap.of(
+                    1L, nf.ospfAreaBuilder().setNumber(1).setInjectDefaultRoute(true).build()))
             .setExportPolicySources(ImmutableSortedSet.of("export_policy_source"))
             .setExportPolicyName("export_policy")
             .setReferenceBandwidth(12d)
