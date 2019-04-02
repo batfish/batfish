@@ -13,7 +13,7 @@ frr_vrf
 
 frrv_ip_route
 :
-  IP ROUTE network = IP_PREFIX nhip = IP_ADDRESS NEWLINE
+  IP ROUTE network = ip_prefix nhip = ip_address NEWLINE
 ;
 
 frr_unrecognized

@@ -1,0 +1,8 @@
+net del all
+#
+net add hostname cumulus_nclu_loopback
+#
+net add loopback lo ip address 10.0.0.1/32
+net add routing route-map rm1 permit 1 match interface lo
+#
+net commit
