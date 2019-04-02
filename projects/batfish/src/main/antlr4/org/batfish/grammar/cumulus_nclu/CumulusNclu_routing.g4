@@ -50,7 +50,11 @@ r_route
 
 r_route_map
 :
-  ROUTE_MAP name = word action = line_action num = uint16 rm_match
+  ROUTE_MAP name = word action = line_action num = uint16
+  (
+    rm_match
+    | NEWLINE
+  )
 ;
 
 rm_match

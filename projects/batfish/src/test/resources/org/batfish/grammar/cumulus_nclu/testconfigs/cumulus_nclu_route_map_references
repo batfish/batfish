@@ -1,0 +1,9 @@
+net del all
+#
+net add hostname cumulus_nclu_route_map_references
+#
+net add routing route-map rm1 permit 10
+net add bgp ipv4 unicast redistribute connected route-map rm1
+net add bgp ipv4 unicast redistribute static route-map rm1
+#
+net commit

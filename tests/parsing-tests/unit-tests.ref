@@ -40205,7 +40205,8 @@
             "            UNICAST:'unicast'",
             "            (bi4_network",
             "              NETWORK:'network'",
-            "              network = IP_PREFIX:'192.0.2.1/32'",
+            "              network = (ip_prefix",
+            "                IP_PREFIX:'192.0.2.1/32')",
             "              NEWLINE:'\\n'))))))",
             "  (statement",
             "    (s_net_add",
@@ -40308,7 +40309,8 @@
             "        (b_common",
             "          (b_router_id",
             "            ROUTER_ID:'router-id'",
-            "            id = IP_ADDRESS:'192.0.2.2'",
+            "            id = (ip_address",
+            "              IP_ADDRESS:'192.0.2.2')",
             "            NEWLINE:'\\n')))))",
             "  (statement",
             "    (s_net_add",
@@ -40394,7 +40396,8 @@
             "          (b_common",
             "            (b_router_id",
             "              ROUTER_ID:'router-id'",
-            "              id = IP_ADDRESS:'192.0.2.3'",
+            "              id = (ip_address",
+            "                IP_ADDRESS:'192.0.2.3')",
             "              NEWLINE:'\\n'))))))",
             "  (statement",
             "    (s_net_add",
@@ -72004,90 +72007,6 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 5,
-              "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bgp autonomous-system 65500"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 6,
-              "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bgp ipv4 unicast network 192.0.2.1/32"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 7,
-              "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bgp ipv4 unicast redistribute connected route-map rm1"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 8,
-              "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bgp l2vpn evpn  advertise-all-vni"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 9,
-              "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bgp l2vpn evpn  advertise-default-gw"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 10,
-              "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bgp l2vpn evpn  advertise ipv4 unicast"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 11,
-              "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bgp l2vpn evpn  neighbor swp1 activate"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 12,
-              "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bgp neighbor swp1 interface remote-as external"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 13,
-              "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bgp router-id 192.0.2.2"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 14,
-              "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bgp vrf vrf1 autonomous-system 65501"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 15,
-              "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bgp vrf vrf1 ipv4 unicast redistribute connected"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 16,
-              "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bgp vrf vrf1 ipv4 unicast redistribute static"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 17,
-              "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bgp vrf vrf1 l2vpn evpn  advertise ipv4 unicast"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 18,
-              "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bgp vrf vrf1 router-id 192.0.2.3"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
               "Line" : 23,
               "Parser_Context" : "[a_bridge s_net_add statement cumulus_nclu_configuration]",
               "Text" : "bridge bridge ports bond1,swp1,vni10001"
@@ -76799,9 +76718,9 @@
             },
             "swp1" : {
               "definitionLines" : [
-                19
+                12
               ],
-              "numReferrers" : 3
+              "numReferrers" : 4
             },
             "swp2" : {
               "definitionLines" : [
@@ -76860,7 +76779,7 @@
               "definitionLines" : [
                 55
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           },
           "vlan" : {
@@ -76880,9 +76799,9 @@
             },
             "vrf1" : {
               "definitionLines" : [
-                65
+                14
               ],
-              "numReferrers" : 4
+              "numReferrers" : 9
             }
           },
           "vxlan" : {
@@ -82520,6 +82439,11 @@
               "route-map match interface" : [
                 55
               ]
+            },
+            "swp1" : {
+              "bgp neighbor interface" : [
+                12
+              ]
             }
           },
           "bond" : {
@@ -82556,6 +82480,9 @@
               "interface self-reference" : [
                 38,
                 39
+              ],
+              "route-map match interface" : [
+                12
               ]
             },
             "swp2" : {
@@ -82608,6 +82535,13 @@
               ]
             }
           },
+          "route-map" : {
+            "rm1" : {
+              "bgp ipv4 unicast redistribute connected route-map" : [
+                7
+              ]
+            }
+          },
           "vlan" : {
             "vlan4" : {
               "vlan self-reference" : [
@@ -82634,6 +82568,13 @@
               ]
             },
             "vrf1" : {
+              "bgp vrf" : [
+                14,
+                15,
+                16,
+                17,
+                18
+              ],
               "vlan vrf" : [
                 65
               ],
