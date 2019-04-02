@@ -459,6 +459,18 @@
         "cumulus_nclu" : [
           "configs/cumulus_nclu"
         ],
+        "cumulus_nclu_invalid_bonds" : [
+          "configs/cumulus_nclu_invalid_bonds"
+        ],
+        "cumulus_nclu_invalid_interfaces" : [
+          "configs/cumulus_nclu_invalid_interfaces"
+        ],
+        "cumulus_nclu_invalid_vrfs" : [
+          "configs/cumulus_nclu_invalid_vrfs"
+        ],
+        "cumulus_nclu_invalid_vxlans" : [
+          "configs/cumulus_nclu_invalid_vxlans"
+        ],
         "eos_mlag" : [
           "configs/eos_mlag"
         ],
@@ -778,6 +790,9 @@
         "openflow" : [
           "configs/openflow"
         ],
+        "ospf-disable" : [
+          "configs/juniper_ospf_disable"
+        ],
         "peer_template" : [
           "configs/peer_template"
         ],
@@ -1007,6 +1022,10 @@
         "configs/community_name_numbers_dos" : "PASSED",
         "configs/community_set" : "PASSED",
         "configs/cumulus_nclu" : "PARTIALLY_UNRECOGNIZED",
+        "configs/cumulus_nclu_invalid_bonds" : "PASSED",
+        "configs/cumulus_nclu_invalid_interfaces" : "PASSED",
+        "configs/cumulus_nclu_invalid_vrfs" : "PASSED",
+        "configs/cumulus_nclu_invalid_vxlans" : "PASSED",
         "configs/eos_mlag" : "PASSED",
         "configs/eos_trunk_group" : "PASSED",
         "configs/f5_bigip_imish_malformed" : "PASSED",
@@ -1078,6 +1097,7 @@
         "configs/juniper_nat" : "PASSED",
         "configs/juniper_ntp" : "PASSED",
         "configs/juniper_ospf" : "PASSED",
+        "configs/juniper_ospf_disable" : "PASSED",
         "configs/juniper_ospf_stub_areas" : "PASSED",
         "configs/juniper_passwords" : "PASSED",
         "configs/juniper_policy_statement" : "PASSED",
@@ -40415,14 +40435,7 @@
             "                      d = DEC:'7')",
             "                    DASH:'-'",
             "                    high = (uint16",
-            "                      d = DEC:'8'))))",
-            "              COMMA:','",
-            "              (glob_range_set",
-            "                base_word = (numbered_word",
-            "                  NUMBERED_WORD:'swp1a-b2')",
-            "                DASH:'-'",
-            "                first_interval_end = (uint16",
-            "                  d = DEC:'3')))",
+            "                      d = DEC:'8')))))",
             "            NEWLINE:'\\n')))))",
             "  (statement",
             "    (s_net_add",
@@ -40615,7 +40628,8 @@
             "          CLAG:'clag'",
             "          (ic_backup_ip",
             "            BACKUP_IP:'backup-ip'",
-            "            ip = IP_ADDRESS:'192.0.2.4'",
+            "            backup_ip = (ip_address",
+            "              IP_ADDRESS:'192.0.2.4')",
             "            VRF:'vrf'",
             "            vrf = (word",
             "              WORD:'mgmt')",
@@ -40634,7 +40648,8 @@
             "          CLAG:'clag'",
             "          (ic_peer_ip",
             "            PEER_IP:'peer-ip'",
-            "            ip = IP_ADDRESS:'192.0.2.5'",
+            "            peer_ip = (ip_address",
+            "              IP_ADDRESS:'192.0.2.5')",
             "            NEWLINE:'\\n')))))",
             "  (statement",
             "    (s_net_add",
@@ -40667,7 +40682,8 @@
             "          CLAG:'clag'",
             "          (ic_sys_mac",
             "            SYS_MAC:'sys-mac'",
-            "            mac = MAC_ADDRESS:'00:11:22:33:44:55'",
+            "            mac = (mac_address",
+            "              MAC_ADDRESS:'00:11:22:33:44:55')",
             "            NEWLINE:'\\n')))))",
             "  (statement",
             "    (s_net_add",
@@ -40682,7 +40698,8 @@
             "        (i_ip_address",
             "          IP:'ip'",
             "          ADDRESS:'address'",
-            "          address = IP_PREFIX:'192.0.2.6/24'",
+            "          address = (interface_address",
+            "            IP_PREFIX:'192.0.2.6/24')",
             "          NEWLINE:'\\n'))))",
             "  (statement",
             "    (s_net_add",
@@ -40755,7 +40772,8 @@
             "          CLAG:'clag'",
             "          (lc_vxlan_anycast_ip",
             "            VXLAN_ANYCAST_IP:'vxlan-anycast-ip'",
-            "            ip = IP_ADDRESS:'192.0.2.7'",
+            "            ip = (ip_address",
+            "              IP_ADDRESS:'192.0.2.7')",
             "            NEWLINE:'\\n')))))",
             "  (statement",
             "    (s_net_add",
@@ -40767,7 +40785,8 @@
             "        (l_ip_address",
             "          IP:'ip'",
             "          ADDRESS:'address'",
-            "          address = IP_PREFIX:'192.0.2.8/32'",
+            "          address = (interface_address",
+            "            IP_PREFIX:'192.0.2.8/32')",
             "          NEWLINE:'\\n'))))",
             "  (statement",
             "    (s_net_add_unrecognized",
@@ -40984,12 +41003,15 @@
             "      ADD:'add'",
             "      (a_vlan",
             "        VLAN:'vlan'",
-            "        id = (vlan_id",
-            "          v = DEC:'4')",
+            "        suffixes = (range_set",
+            "          (range",
+            "            low = (uint16",
+            "              d = DEC:'4')))",
             "        (v_ip_address",
             "          IP:'ip'",
             "          ADDRESS:'address'",
-            "          address = IP_PREFIX:'192.0.2.9/24'",
+            "          address = (interface_address",
+            "            IP_PREFIX:'192.0.2.9/24')",
             "          NEWLINE:'\\n'))))",
             "  (statement",
             "    (s_net_add",
@@ -40997,13 +41019,17 @@
             "      ADD:'add'",
             "      (a_vlan",
             "        VLAN:'vlan'",
-            "        id = (vlan_id",
-            "          v = DEC:'4')",
+            "        suffixes = (range_set",
+            "          (range",
+            "            low = (uint16",
+            "              d = DEC:'4')))",
             "        (v_ip_address_virtual",
             "          IP:'ip'",
             "          ADDRESS_VIRTUAL:'address-virtual'",
-            "          mac = MAC_ADDRESS:'01:23:45:67:89:ab'",
-            "          address = IP_PREFIX:'192.168.0.1/24'",
+            "          mac = (mac_address",
+            "            MAC_ADDRESS:'01:23:45:67:89:ab')",
+            "          address = (interface_address",
+            "            IP_PREFIX:'192.168.0.1/24')",
             "          NEWLINE:'\\n'))))",
             "  (statement",
             "    (s_net_add",
@@ -41011,8 +41037,8 @@
             "      ADD:'add'",
             "      (a_vlan",
             "        VLAN:'vlan'",
-            "        id = (vlan_id",
-            "          v = DEC:'4')",
+            "        suffix = (uint16",
+            "          d = DEC:'4')",
             "        (v_vlan_id",
             "          VLAN_ID:'vlan-id'",
             "          id = (vlan_id",
@@ -41024,8 +41050,10 @@
             "      ADD:'add'",
             "      (a_vlan",
             "        VLAN:'vlan'",
-            "        id = (vlan_id",
-            "          v = DEC:'4')",
+            "        suffixes = (range_set",
+            "          (range",
+            "            low = (uint16",
+            "              d = DEC:'4')))",
             "        (v_vlan_raw_device",
             "          VLAN_RAW_DEVICE:'vlan-raw-device'",
             "          device = BRIDGE:'bridge'",
@@ -41036,24 +41064,25 @@
             "      ADD:'add'",
             "      (a_vlan",
             "        VLAN:'vlan'",
-            "        id = (vlan_id",
-            "          v = DEC:'4')",
+            "        suffixes = (range_set",
+            "          (range",
+            "            low = (uint16",
+            "              d = DEC:'4')))",
             "        (v_vrf",
             "          VRF:'vrf'",
             "          name = (word",
             "            NUMBERED_WORD:'vrf1')",
             "          NEWLINE:'\\n'))))",
             "  (statement",
-            "    (s_net_add_unrecognized",
+            "    (s_net_add",
             "      NET:'net'",
             "      ADD:'add'",
-            "      (word",
-            "        VRF:'vrf')",
-            "      (null_rest_of_line",
-            "        WORD:'mgmt'",
-            "        IP:'ip'",
-            "        ADDRESS:'address'",
-            "        IP_PREFIX:'10.0.0.2/8'",
+            "      (a_vrf",
+            "        VRF:'vrf'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            unnumbered = (glob_word",
+            "              WORD:'mgmt')))",
             "        NEWLINE:'\\n')))",
             "  (statement",
             "    (s_net_add",
@@ -41061,7 +41090,23 @@
             "      ADD:'add'",
             "      (a_vrf",
             "        VRF:'vrf'",
-            "        name = (glob",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            unnumbered = (glob_word",
+            "              WORD:'mgmt')))",
+            "        (vrf_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          address = (interface_address",
+            "            IP_PREFIX:'10.0.0.2/8')",
+            "          NEWLINE:'\\n'))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vrf",
+            "        VRF:'vrf'",
+            "        names = (glob",
             "          (glob_range_set",
             "            base_word = (numbered_word",
             "              NUMBERED_WORD:'vrf1')))",
@@ -41076,7 +41121,7 @@
             "      ADD:'add'",
             "      (a_vrf",
             "        VRF:'vrf'",
-            "        name = (glob",
+            "        names = (glob",
             "          (glob_range_set",
             "            base_word = (numbered_word",
             "              NUMBERED_WORD:'vrf1'))",
@@ -41094,7 +41139,7 @@
             "      ADD:'add'",
             "      (a_vxlan",
             "        VXLAN:'vxlan'",
-            "        vni_names = (glob",
+            "        names = (glob",
             "          (glob_range_set",
             "            base_word = (numbered_word",
             "              NUMBERED_WORD:'vni10001')))",
@@ -41111,7 +41156,7 @@
             "      ADD:'add'",
             "      (a_vxlan",
             "        VXLAN:'vxlan'",
-            "        vni_names = (glob",
+            "        names = (glob",
             "          (glob_range_set",
             "            base_word = (numbered_word",
             "              NUMBERED_WORD:'vni10001')))",
@@ -41128,7 +41173,7 @@
             "      ADD:'add'",
             "      (a_vxlan",
             "        VXLAN:'vxlan'",
-            "        vni_names = (glob",
+            "        names = (glob",
             "          (glob_range_set",
             "            base_word = (numbered_word",
             "              NUMBERED_WORD:'vni10001')",
@@ -41152,7 +41197,7 @@
             "      ADD:'add'",
             "      (a_vxlan",
             "        VXLAN:'vxlan'",
-            "        vni_names = (glob",
+            "        names = (glob",
             "          (glob_range_set",
             "            base_word = (numbered_word",
             "              NUMBERED_WORD:'vni10001')",
@@ -41176,7 +41221,7 @@
             "      ADD:'add'",
             "      (a_vxlan",
             "        VXLAN:'vxlan'",
-            "        vni_names = (glob",
+            "        names = (glob",
             "          (glob_range_set",
             "            base_word = (numbered_word",
             "              NUMBERED_WORD:'vni10001')",
@@ -41199,7 +41244,7 @@
             "      ADD:'add'",
             "      (a_vxlan",
             "        VXLAN:'vxlan'",
-            "        vni_names = (glob",
+            "        names = (glob",
             "          (glob_range_set",
             "            base_word = (numbered_word",
             "              NUMBERED_WORD:'vni10001')",
@@ -41222,7 +41267,7 @@
             "      ADD:'add'",
             "      (a_vxlan",
             "        VXLAN:'vxlan'",
-            "        vni_names = (glob",
+            "        names = (glob",
             "          (glob_range_set",
             "            base_word = (numbered_word",
             "              NUMBERED_WORD:'vni10001')",
@@ -41238,7 +41283,8 @@
             "          VXLAN:'vxlan'",
             "          (vxv_local_tunnelip",
             "            LOCAL_TUNNELIP:'local-tunnelip'",
-            "            ip = IP_ADDRESS:'192.0.2.10'",
+            "            ip = (ip_address",
+            "              IP_ADDRESS:'192.0.2.10')",
             "            NEWLINE:'\\n')))))",
             "  (statement",
             "    (s_null",
@@ -41249,15 +41295,696 @@
             "  (statement",
             "    (s_extra_configuration",
             "      EXTRA_CONFIGURATION_HEADER:'sudo sh -c \"printf ''",
-            "      text = EXTRA_CONFIGURATION:'username cumulus nopassword\\n'  <== mode:M_Printf",
+            "      (frr_unrecognized",
+            "        (word",
+            "          WORD:'username'  <== mode:M_Printf)",
+            "        WORD:'cumulus'  <== mode:M_Printf",
+            "        WORD:'nopassword'  <== mode:M_Printf",
+            "        NEWLINE:'\\n'  <== mode:M_Printf)",
             "      EXTRA_CONFIGURATION_FOOTER:'' >> /etc/frr/frr.conf\"'  <== mode:M_Printf",
             "      NEWLINE:'\\n'))",
             "  (statement",
             "    (s_extra_configuration",
             "      EXTRA_CONFIGURATION_HEADER:'sudo sh -c \"printf ''",
-            "      text = EXTRA_CONFIGURATION:'vrf vrf1\\n  ip route 0.0.0.0/0 192.0.2.1\\n'  <== mode:M_Printf",
+            "      (frr_vrf",
+            "        VRF:'vrf'  <== mode:M_Printf",
+            "        name = (word",
+            "          WORD:'vrf1'  <== mode:M_Printf)",
+            "        NEWLINE:'\\n'  <== mode:M_Printf",
+            "        (frrv_ip_route",
+            "          IP:'ip'  <== mode:M_Printf",
+            "          ROUTE:'route'  <== mode:M_Printf",
+            "          network = IP_PREFIX:'0.0.0.0/0'  <== mode:M_Printf",
+            "          nhip = IP_ADDRESS:'192.0.2.1'  <== mode:M_Printf",
+            "          NEWLINE:'\\n'  <== mode:M_Printf))",
             "      EXTRA_CONFIGURATION_FOOTER:'' >> /etc/frr/frr.conf\"'  <== mode:M_Printf",
             "      NEWLINE:'\\n\\n'))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "configs/cumulus_nclu_invalid_bonds" : {
+          "sentences" : [
+            "(cumulus_nclu_configuration",
+            "  (statement",
+            "    (s_null",
+            "      NET:'net'",
+            "      (null_rest_of_line",
+            "        DEL:'del'",
+            "        WORD:'all'",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_hostname",
+            "        HOSTNAME:'hostname'",
+            "        hostname = (word",
+            "          WORD:'cumulus_nclu_invalid_bonds')",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        name = (word",
+            "          LO:'lo')",
+            "        (bond_bond",
+            "          BOND:'bond'",
+            "          (bobo_slaves",
+            "            SLAVES:'slaves'",
+            "            slaves = (glob",
+            "              (glob_range_set",
+            "                base_word = (numbered_word",
+            "                  NUMBERED_WORD:'swp1')))",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vrf",
+            "        VRF:'vrf'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'vrf1')))",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        name = (word",
+            "          NUMBERED_WORD:'vrf1')",
+            "        (bond_bond",
+            "          BOND:'bond'",
+            "          (bobo_slaves",
+            "            SLAVES:'slaves'",
+            "            slaves = (glob",
+            "              (glob_range_set",
+            "                base_word = (numbered_word",
+            "                  NUMBERED_WORD:'swp2')))",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        name = (word",
+            "          NUMBERED_WORD:'eth0')",
+            "        (bond_bond",
+            "          BOND:'bond'",
+            "          (bobo_slaves",
+            "            SLAVES:'slaves'",
+            "            slaves = (glob",
+            "              (glob_range_set",
+            "                base_word = (numbered_word",
+            "                  NUMBERED_WORD:'swp3')))",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        name = (word",
+            "          NUMBERED_WORD:'swp4')",
+            "        (bond_bond",
+            "          BOND:'bond'",
+            "          (bobo_slaves",
+            "            SLAVES:'slaves'",
+            "            slaves = (glob",
+            "              (glob_range_set",
+            "                base_word = (numbered_word",
+            "                  NUMBERED_WORD:'swp5')))",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        name = (word",
+            "          NUMBERED_WORD:'bond1.1000')",
+            "        (bond_bond",
+            "          BOND:'bond'",
+            "          (bobo_slaves",
+            "            SLAVES:'slaves'",
+            "            slaves = (glob",
+            "              (glob_range_set",
+            "                base_word = (numbered_word",
+            "                  NUMBERED_WORD:'swp6')))",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        name = (word",
+            "          NUMBERED_WORD:'vlan1')",
+            "        (bond_bond",
+            "          BOND:'bond'",
+            "          (bobo_slaves",
+            "            SLAVES:'slaves'",
+            "            slaves = (glob",
+            "              (glob_range_set",
+            "                base_word = (numbered_word",
+            "                  NUMBERED_WORD:'swp7')))",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vxlan",
+            "        VXLAN:'vxlan'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'v1')))",
+            "        (vx_vxlan",
+            "          VXLAN:'vxlan'",
+            "          (vxv_id",
+            "            ID:'id'",
+            "            vni = (vni_number",
+            "              v = DEC:'10001')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        name = (word",
+            "          NUMBERED_WORD:'v1')",
+            "        (bond_bond",
+            "          BOND:'bond'",
+            "          (bobo_slaves",
+            "            SLAVES:'slaves'",
+            "            slaves = (glob",
+            "              (glob_range_set",
+            "                base_word = (numbered_word",
+            "                  NUMBERED_WORD:'swp8')))",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_null",
+            "      NET:'net'",
+            "      (null_rest_of_line",
+            "        COMMIT:'commit'",
+            "        NEWLINE:'\\n\\n\\n')))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "configs/cumulus_nclu_invalid_interfaces" : {
+          "sentences" : [
+            "(cumulus_nclu_configuration",
+            "  (statement",
+            "    (s_null",
+            "      NET:'net'",
+            "      (null_rest_of_line",
+            "        DEL:'del'",
+            "        WORD:'all'",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_hostname",
+            "        HOSTNAME:'hostname'",
+            "        hostname = (word",
+            "          WORD:'cumulus_nclu_invalid_interfaces')",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        name = (word",
+            "          NUMBERED_WORD:'bond1')",
+            "        (bond_bond",
+            "          BOND:'bond'",
+            "          (bobo_slaves",
+            "            SLAVES:'slaves'",
+            "            slaves = (glob",
+            "              (glob_range_set",
+            "                base_word = (numbered_word",
+            "                  NUMBERED_WORD:'swp1'))",
+            "              COMMA:','",
+            "              (glob_range_set",
+            "                unnumbered = (glob_word",
+            "                  WORD:'unknown_interface')))",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            unnumbered = (glob_word",
+            "              WORD:'unknown_interface')))",
+            "        (i_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          address = (interface_address",
+            "            IP_PREFIX:'10.0.0.1/24')",
+            "          NEWLINE:'\\n'))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            unnumbered = (glob_word",
+            "              LO:'lo')))",
+            "        (i_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          address = (interface_address",
+            "            IP_PREFIX:'10.0.2.1/24')",
+            "          NEWLINE:'\\n'))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'mgmt.1')))",
+            "        (i_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          address = (interface_address",
+            "            IP_PREFIX:'10.0.3.1/24')",
+            "          NEWLINE:'\\n'))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp1.5000')))",
+            "        (i_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          address = (interface_address",
+            "            IP_PREFIX:'10.0.4.1/24')",
+            "          NEWLINE:'\\n'))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vrf",
+            "        VRF:'vrf'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'vrf1')))",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'vrf1')))",
+            "        (i_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          address = (interface_address",
+            "            IP_PREFIX:'10.0.5.1/24')",
+            "          NEWLINE:'\\n'))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vxlan",
+            "        VXLAN:'vxlan'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'v1')))",
+            "        (vx_vxlan",
+            "          VXLAN:'vxlan'",
+            "          (vxv_id",
+            "            ID:'id'",
+            "            vni = (vni_number",
+            "              v = DEC:'10001')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'v1')))",
+            "        (i_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          address = (interface_address",
+            "            IP_PREFIX:'10.0.6.1/24')",
+            "          NEWLINE:'\\n'))))",
+            "  (statement",
+            "    (s_null",
+            "      NET:'net'",
+            "      (null_rest_of_line",
+            "        COMMIT:'commit'",
+            "        NEWLINE:'\\n\\n\\n')))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "configs/cumulus_nclu_invalid_vrfs" : {
+          "sentences" : [
+            "(cumulus_nclu_configuration",
+            "  (statement",
+            "    (s_null",
+            "      NET:'net'",
+            "      (null_rest_of_line",
+            "        DEL:'del'",
+            "        WORD:'all'",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_hostname",
+            "        HOSTNAME:'hostname'",
+            "        hostname = (word",
+            "          WORD:'cumulus_nclu_invalid_vrfs')",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vrf",
+            "        VRF:'vrf'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            unnumbered = (glob_word",
+            "              LO:'lo'))",
+            "          COMMA:','",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'vrf1')))",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        name = (word",
+            "          NUMBERED_WORD:'bond1')",
+            "        (bond_bond",
+            "          BOND:'bond'",
+            "          (bobo_slaves",
+            "            SLAVES:'slaves'",
+            "            slaves = (glob",
+            "              (glob_range_set",
+            "                base_word = (numbered_word",
+            "                  NUMBERED_WORD:'swp1')))",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vrf",
+            "        VRF:'vrf'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'bond1')))",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vrf",
+            "        VRF:'vrf'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'eth0')))",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vrf",
+            "        VRF:'vrf'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp2')))",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vrf",
+            "        VRF:'vrf'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'vrf1.1000')))",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vxlan",
+            "        VXLAN:'vxlan'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'vx1')))",
+            "        (vx_vxlan",
+            "          VXLAN:'vxlan'",
+            "          (vxv_id",
+            "            ID:'id'",
+            "            vni = (vni_number",
+            "              v = DEC:'10001')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vrf",
+            "        VRF:'vrf'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'vx1')))",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vrf",
+            "        VRF:'vrf'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'vlan1')))",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_null",
+            "      NET:'net'",
+            "      (null_rest_of_line",
+            "        COMMIT:'commit'",
+            "        NEWLINE:'\\n\\n\\n')))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "configs/cumulus_nclu_invalid_vxlans" : {
+          "sentences" : [
+            "(cumulus_nclu_configuration",
+            "  (statement",
+            "    (s_null",
+            "      NET:'net'",
+            "      (null_rest_of_line",
+            "        DEL:'del'",
+            "        WORD:'all'",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_hostname",
+            "        HOSTNAME:'hostname'",
+            "        hostname = (word",
+            "          WORD:'cumulus_nclu_invalid_vxlans')",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vxlan",
+            "        VXLAN:'vxlan'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            unnumbered = (glob_word",
+            "              LO:'lo')))",
+            "        (vx_vxlan",
+            "          VXLAN:'vxlan'",
+            "          (vxv_id",
+            "            ID:'id'",
+            "            vni = (vni_number",
+            "              v = DEC:'10001')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        name = (word",
+            "          NUMBERED_WORD:'bond1')",
+            "        (bond_bond",
+            "          BOND:'bond'",
+            "          (bobo_slaves",
+            "            SLAVES:'slaves'",
+            "            slaves = (glob",
+            "              (glob_range_set",
+            "                base_word = (numbered_word",
+            "                  NUMBERED_WORD:'swp0')))",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vxlan",
+            "        VXLAN:'vxlan'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'bond1')))",
+            "        (vx_vxlan",
+            "          VXLAN:'vxlan'",
+            "          (vxv_id",
+            "            ID:'id'",
+            "            vni = (vni_number",
+            "              v = DEC:'10002')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vrf",
+            "        VRF:'vrf'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'vrf1')))",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vxlan",
+            "        VXLAN:'vxlan'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'vrf1')))",
+            "        (vx_vxlan",
+            "          VXLAN:'vxlan'",
+            "          (vxv_id",
+            "            ID:'id'",
+            "            vni = (vni_number",
+            "              v = DEC:'10003')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vxlan",
+            "        VXLAN:'vxlan'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'eth0')))",
+            "        (vx_vxlan",
+            "          VXLAN:'vxlan'",
+            "          (vxv_id",
+            "            ID:'id'",
+            "            vni = (vni_number",
+            "              v = DEC:'10004')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vxlan",
+            "        VXLAN:'vxlan'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp0')))",
+            "        (vx_vxlan",
+            "          VXLAN:'vxlan'",
+            "          (vxv_id",
+            "            ID:'id'",
+            "            vni = (vni_number",
+            "              v = DEC:'10005')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vxlan",
+            "        VXLAN:'vxlan'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'vxlan1.1000')))",
+            "        (vx_vxlan",
+            "          VXLAN:'vxlan'",
+            "          (vxv_id",
+            "            ID:'id'",
+            "            vni = (vni_number",
+            "              v = DEC:'10006')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vxlan",
+            "        VXLAN:'vxlan'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'vlan1')))",
+            "        (vx_vxlan",
+            "          VXLAN:'vxlan'",
+            "          (vxv_id",
+            "            ID:'id'",
+            "            vni = (vni_number",
+            "              v = DEC:'10007')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_null",
+            "      NET:'net'",
+            "      (null_rest_of_line",
+            "        COMMIT:'commit'",
+            "        NEWLINE:'\\n\\n\\n')))",
             "  EOF:<EOF>)"
           ]
         },
@@ -60604,6 +61331,80 @@
             "  EOF:<EOF>)"
           ]
         },
+        "configs/juniper_ospf_disable" : {
+          "sentences" : [
+            "(flat_juniper_configuration",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_system",
+            "            SYSTEM:'system'",
+            "            (sy_host_name",
+            "              HOST_NAME:'host-name'",
+            "              (variable",
+            "                text = VARIABLE:'ospf-disable'))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = INTERFACE_NAME:'ge-0/0/0'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = DEC:'0'",
+            "                (i_common",
+            "                  (i_family",
+            "                    FAMILY:'family'",
+            "                    (if_inet",
+            "                      INET:'inet'",
+            "                      (ifi_address",
+            "                        ADDRESS:'address'",
+            "                        IP_PREFIX:'10.0.0.0/31'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'",
+            "            (p_ospf",
+            "              OSPF:'ospf'",
+            "              (o_common",
+            "                (o_area",
+            "                  AREA:'area'",
+            "                  area = IP_ADDRESS:'0.0.0.0'",
+            "                  (oa_interface",
+            "                    INTERFACE:'interface'",
+            "                    id = (interface_id",
+            "                      name = INTERFACE_NAME:'ge-0/0/0'  <== mode:M_Interface",
+            "                      PERIOD:'.'",
+            "                      unit = DEC:'0')",
+            "                    (apply)))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'",
+            "            (p_ospf",
+            "              OSPF:'ospf'",
+            "              (o_common",
+            "                (o_disable",
+            "                  DISABLE:'disable')))))))",
+            "    NEWLINE:'\\n')",
+            "  EOF:<EOF>)"
+          ]
+        },
         "configs/juniper_ospf_stub_areas" : {
           "sentences" : [
             "(flat_juniper_configuration",
@@ -71324,70 +72125,10 @@
               "Text" : "net add dot1x radius authentication-port 2345\n"
             },
             {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 32,
-              "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "interface bond1.4094 clag backup-ip 192.0.2.4 vrf mgmt"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 33,
-              "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "interface bond1.4094 clag peer-ip 192.0.2.5"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 34,
-              "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "interface bond1.4094 clag priority 1000"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 35,
-              "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "interface bond1.4094 clag sys-mac 00:11:22:33:44:55"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 36,
-              "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "interface bond1.4094 ip address 192.0.2.6/24"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 37,
-              "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "interface eth0 vrf mgmt"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 38,
-              "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "interface swp1 bridge access 3"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 39,
-              "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "interface swp1,2-3"
-            },
-            {
               "Comment" : "This syntax is unrecognized",
               "Line" : 40,
               "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
               "Text" : "net add loopback lo\n"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 41,
-              "Parser_Context" : "[a_loopback s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "loopback lo clag vxlan-anycast-ip 192.0.2.7"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 42,
-              "Parser_Context" : "[a_loopback s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "loopback lo ip address 192.0.2.8/32"
             },
             {
               "Comment" : "This syntax is unrecognized",
@@ -71499,105 +72240,199 @@
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 61,
-              "Parser_Context" : "[a_vlan s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vlan 4 ip address 192.0.2.9/24"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 62,
-              "Parser_Context" : "[a_vlan s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vlan 4 ip address-virtual 01:23:45:67:89:ab 192.168.0.1/24"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 63,
-              "Parser_Context" : "[a_vlan s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vlan 4 vlan-id 4"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
               "Line" : 64,
-              "Parser_Context" : "[a_vlan s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vlan 4 vlan-raw-device bridge"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 65,
-              "Parser_Context" : "[a_vlan s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vlan 4 vrf vrf1"
-            },
-            {
-              "Comment" : "This syntax is unrecognized",
-              "Line" : 66,
-              "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
-              "Text" : "net add vrf mgmt ip address 10.0.0.2/8\n"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 67,
-              "Parser_Context" : "[a_vrf s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vrf vrf1 vni 10001"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 68,
-              "Parser_Context" : "[a_vrf s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vrf vrf1,mgmt vrf-table auto"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 69,
-              "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vxlan vni10001 bridge access 5"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 70,
-              "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vxlan vni10001 vxlan id 100001"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 71,
-              "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vxlan vni10001,10002-10003 bridge arp-nd-suppress on"
+              "Parser_Context" : "[v_vlan_raw_device a_vlan s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "vlan-raw-device bridge"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 72,
-              "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vxlan vni10001,10002-10003 bridge learning off"
+              "Parser_Context" : "[vxb_arp_nd_suppress vx_bridge a_vxlan s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "arp-nd-suppress on"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 73,
-              "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vxlan vni10001,10002-10003 stp bpduguard"
+              "Parser_Context" : "[vxb_learning vx_bridge a_vxlan s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "learning off"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 74,
-              "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vxlan vni10001,10002-10003 stp portbpdufilter"
+              "Parser_Context" : "[vx_stp a_vxlan s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "stp bpduguard"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 75,
-              "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "vxlan vni10001,10002-10003 vxlan local-tunnelip 192.0.2.10"
-            },
-            {
-              "Comment" : "This syntax is unrecognized",
-              "Line" : 81,
-              "Parser_Context" : "[s_extra_configuration statement cumulus_nclu_configuration]",
-              "Text" : "sudo sh -c \"printf 'username cumulus nopassword\\n' >> /etc/frr/frr.conf\"\n"
+              "Parser_Context" : "[vx_stp a_vxlan s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "stp portbpdufilter"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 82,
-              "Parser_Context" : "[s_extra_configuration statement cumulus_nclu_configuration]",
-              "Text" : "sudo sh -c \"printf 'vrf vrf1\\n  ip route 0.0.0.0/0 192.0.2.1\\n' >> /etc/frr/frr.conf\"\n\n"
+              "Parser_Context" : "[frr_unrecognized s_extra_configuration statement cumulus_nclu_configuration]",
+              "Text" : "username cumulus nopassword\\n"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 83,
+              "Parser_Context" : "[frr_vrf s_extra_configuration statement cumulus_nclu_configuration]",
+              "Text" : "vrf vrf1\\n  ip route 0.0.0.0/0 192.0.2.1\\n"
+            }
+          ],
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id <id>' before line: vxlan vni10001 bridge access 5\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id <id>' before line: vxlan vni10001,10002-10003 bridge arp-nd-suppress on\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id <id>' before line: vxlan vni10001,10002-10003 bridge learning off\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id <id>' before line: vxlan vni10001,10002-10003 stp bpduguard\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id <id>' before line: vxlan vni10001,10002-10003 stp portbpdufilter\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id <id>' before line: vxlan vni10001,10002-10003 vxlan local-tunnelip 192.0.2.10\n"
+            }
+          ]
+        },
+        "configs/cumulus_nclu_invalid_bonds" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'lo' for bond in: bond lo bond slaves swp1\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'vrf1' for bond clashes with existing vrf in: bond vrf1 bond slaves swp2\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'eth0' for bond in: bond eth0 bond slaves swp3\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'swp4' for bond in: bond swp4 bond slaves swp5\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'bond1.1000' for bond in: bond bond1.1000 bond slaves swp6\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'vlan1' for bond in: bond vlan1 bond slaves swp7\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'v1' for bond clashes with existing vxlan in: bond v1 bond slaves swp8\n"
+            }
+          ]
+        },
+        "configs/cumulus_nclu_invalid_interfaces" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Interface name 'unknown_interface' is invalid in: slaves swp1,unknown_interface\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Interface name 'unknown_interface' is invalid in: interface unknown_interface ip address 10.0.0.1/24\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Loopback interface can only be configured via 'net add loopback' family of commands; following is invalid: interface lo ip address 10.0.2.1/24\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Subinterface name 'mgmt.1' is invalid since 'mgmt' is neither a physical nor a bond interface in: interface mgmt.1 ip address 10.0.3.1/24\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Subinterface name 'swp1.5000' is invalid since '5000' is not a valid VLAN number in: interface swp1.5000 ip address 10.0.4.1/24\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "VRF loopback interface 'vrf1' can only be configured via 'net add vrf' family of commands; following is invalid: interface vrf1 ip address 10.0.5.1/24\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "VXLAN interface 'v1' can only be configured via 'net add vxlan' family of commands; following is invalid: interface v1 ip address 10.0.6.1/24\n"
+            }
+          ]
+        },
+        "configs/cumulus_nclu_invalid_vrfs" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'lo' for vrf in: vrf lo,vrf1\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'bond1' for vrf clashes with existing bond interface in: vrf bond1\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'eth0' for vrf in: vrf eth0\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'swp2' for vrf in: vrf swp2\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'vrf1.1000' for vrf in: vrf vrf1.1000\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'vx1' for vrf clashes with existing vxlan in: vrf vx1\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'vlan1' for vrf in: vrf vlan1\n"
+            }
+          ]
+        },
+        "configs/cumulus_nclu_invalid_vxlans" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'lo' for vxlan in: vxlan lo vxlan id 10001\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'bond1' for vxlan clashes with existing bond interface in: vxlan bond1 vxlan id 10002\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'vrf1' for vxlan clashes with existing vrf in: vxlan vrf1 vxlan id 10003\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'eth0' for vxlan in: vxlan eth0 vxlan id 10004\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'swp0' for vxlan in: vxlan swp0 vxlan id 10005\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'vxlan1.1000' for vxlan in: vxlan vxlan1.1000 vxlan id 10006\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'vlan1' for vxlan in: vxlan vlan1 vxlan id 10007\n"
             }
           ]
         },
@@ -73312,6 +74147,10 @@
         "community_list_named" : "PASSED",
         "community_set" : "PASSED",
         "cumulus_nclu" : "PASSED",
+        "cumulus_nclu_invalid_bonds" : "PASSED",
+        "cumulus_nclu_invalid_interfaces" : "PASSED",
+        "cumulus_nclu_invalid_vrfs" : "PASSED",
+        "cumulus_nclu_invalid_vxlans" : "PASSED",
         "eos_mlag" : "PASSED",
         "eos_trunk_group" : "PASSED",
         "f5_bigip_imish_malformed" : "WARNINGS",
@@ -73416,6 +74255,7 @@
         "nxos_route_map_continue" : "PASSED",
         "nxos_system" : "PASSED",
         "openflow" : "PASSED",
+        "ospf-disable" : "PASSED",
         "peer_template" : "WARNINGS",
         "pim" : "PASSED",
         "pim_snooping" : "PASSED",
@@ -75947,11 +76787,9 @@
           "bond" : {
             "bond1" : {
               "definitionLines" : [
-                19,
-                20,
-                22
+                19
               ],
-              "numReferrers" : 3
+              "numReferrers" : 1
             },
             "bond2" : {
               "definitionLines" : [
@@ -75961,63 +76799,233 @@
             }
           },
           "interface" : {
+            "bond1.4094" : {
+              "definitionLines" : [
+                32
+              ],
+              "numReferrers" : 1
+            },
+            "eth0" : {
+              "definitionLines" : [
+                37
+              ],
+              "numReferrers" : 1
+            },
             "swp1" : {
               "definitionLines" : [
                 19
               ],
-              "numReferrers" : 1
-            },
-            "swp1a-b2" : {
-              "definitionLines" : [
-                19
-              ],
-              "numReferrers" : 1
-            },
-            "swp1a-b3" : {
-              "definitionLines" : [
-                19
-              ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             },
             "swp2" : {
               "definitionLines" : [
                 19
               ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             },
             "swp3" : {
               "definitionLines" : [
                 19
               ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             },
             "swp4" : {
               "definitionLines" : [
                 19
               ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             },
             "swp5" : {
               "definitionLines" : [
                 19
               ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             },
             "swp6" : {
               "definitionLines" : [
                 19
               ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             },
             "swp7" : {
               "definitionLines" : [
                 19
               ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             },
             "swp8" : {
               "definitionLines" : [
                 19
+              ],
+              "numReferrers" : 2
+            }
+          },
+          "vlan" : {
+            "vlan4" : {
+              "definitionLines" : [
+                61
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "vrf" : {
+            "mgmt" : {
+              "definitionLines" : [
+                32
+              ],
+              "numReferrers" : 3
+            },
+            "vrf1" : {
+              "definitionLines" : [
+                65
+              ],
+              "numReferrers" : 2
+            }
+          },
+          "vxlan" : {
+            "vni10001" : {
+              "definitionLines" : [
+                71
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "configs/cumulus_nclu_invalid_bonds" : {
+          "interface" : {
+            "swp1" : {
+              "definitionLines" : [
+                6
+              ],
+              "numReferrers" : 2
+            },
+            "swp2" : {
+              "definitionLines" : [
+                9
+              ],
+              "numReferrers" : 2
+            },
+            "swp3" : {
+              "definitionLines" : [
+                11
+              ],
+              "numReferrers" : 2
+            },
+            "swp5" : {
+              "definitionLines" : [
+                12
+              ],
+              "numReferrers" : 2
+            },
+            "swp6" : {
+              "definitionLines" : [
+                14
+              ],
+              "numReferrers" : 2
+            },
+            "swp7" : {
+              "definitionLines" : [
+                16
+              ],
+              "numReferrers" : 2
+            },
+            "swp8" : {
+              "definitionLines" : [
+                19
+              ],
+              "numReferrers" : 2
+            }
+          },
+          "vrf" : {
+            "vrf1" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "vxlan" : {
+            "v1" : {
+              "definitionLines" : [
+                18
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "configs/cumulus_nclu_invalid_interfaces" : {
+          "bond" : {
+            "bond1" : {
+              "definitionLines" : [
+                6
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "vrf" : {
+            "vrf1" : {
+              "definitionLines" : [
+                16
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "vxlan" : {
+            "v1" : {
+              "definitionLines" : [
+                19
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "configs/cumulus_nclu_invalid_vrfs" : {
+          "bond" : {
+            "bond1" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "interface" : {
+            "swp1" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 2
+            }
+          },
+          "vxlan" : {
+            "vx1" : {
+              "definitionLines" : [
+                16
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "configs/cumulus_nclu_invalid_vxlans" : {
+          "bond" : {
+            "bond1" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "interface" : {
+            "swp0" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 2
+            }
+          },
+          "vrf" : {
+            "vrf1" : {
+              "definitionLines" : [
+                11
               ],
               "numReferrers" : 1
             }
@@ -78515,6 +79523,22 @@
         },
         "configs/juniper_ntp" : { },
         "configs/juniper_ospf" : { },
+        "configs/juniper_ospf_disable" : {
+          "interface" : {
+            "ge-0/0/0" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 1
+            },
+            "ge-0/0/0.0" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 2
+            }
+          }
+        },
         "configs/juniper_ospf_stub_areas" : { },
         "configs/juniper_passwords" : { },
         "configs/juniper_policy_statement" : {
@@ -81491,9 +82515,7 @@
           "bond" : {
             "bond1" : {
               "bond self-reference" : [
-                19,
-                20,
-                22
+                19
               ]
             },
             "bond2" : {
@@ -81503,54 +82525,262 @@
             }
           },
           "interface" : {
+            "bond1.4094" : {
+              "interface self-reference" : [
+                32
+              ]
+            },
+            "eth0" : {
+              "interface self-reference" : [
+                37
+              ]
+            },
             "swp1" : {
               "bond slave" : [
                 19
-              ]
-            },
-            "swp1a-b2" : {
-              "bond slave" : [
-                19
-              ]
-            },
-            "swp1a-b3" : {
-              "bond slave" : [
+              ],
+              "interface self-reference" : [
                 19
               ]
             },
             "swp2" : {
               "bond slave" : [
                 19
+              ],
+              "interface self-reference" : [
+                19
               ]
             },
             "swp3" : {
               "bond slave" : [
+                19
+              ],
+              "interface self-reference" : [
                 19
               ]
             },
             "swp4" : {
               "bond slave" : [
                 19
+              ],
+              "interface self-reference" : [
+                19
               ]
             },
             "swp5" : {
               "bond slave" : [
+                19
+              ],
+              "interface self-reference" : [
                 19
               ]
             },
             "swp6" : {
               "bond slave" : [
                 19
+              ],
+              "interface self-reference" : [
+                19
               ]
             },
             "swp7" : {
               "bond slave" : [
+                19
+              ],
+              "interface self-reference" : [
                 19
               ]
             },
             "swp8" : {
               "bond slave" : [
                 19
+              ],
+              "interface self-reference" : [
+                19
+              ]
+            }
+          },
+          "vlan" : {
+            "vlan4" : {
+              "vlan self-reference" : [
+                61
+              ]
+            }
+          },
+          "vrf" : {
+            "mgmt" : {
+              "interface clag backup-ip vrf" : [
+                32
+              ],
+              "interface vrf" : [
+                37
+              ],
+              "vrf self-reference" : [
+                32
+              ]
+            },
+            "vrf1" : {
+              "vlan vrf" : [
+                65
+              ],
+              "vrf self-reference" : [
+                65
+              ]
+            }
+          },
+          "vxlan" : {
+            "vni10001" : {
+              "vxlan self-reference" : [
+                71
+              ]
+            }
+          }
+        },
+        "configs/cumulus_nclu_invalid_bonds" : {
+          "interface" : {
+            "swp1" : {
+              "bond slave" : [
+                6
+              ],
+              "interface self-reference" : [
+                6
+              ]
+            },
+            "swp2" : {
+              "bond slave" : [
+                9
+              ],
+              "interface self-reference" : [
+                9
+              ]
+            },
+            "swp3" : {
+              "bond slave" : [
+                11
+              ],
+              "interface self-reference" : [
+                11
+              ]
+            },
+            "swp5" : {
+              "bond slave" : [
+                12
+              ],
+              "interface self-reference" : [
+                12
+              ]
+            },
+            "swp6" : {
+              "bond slave" : [
+                14
+              ],
+              "interface self-reference" : [
+                14
+              ]
+            },
+            "swp7" : {
+              "bond slave" : [
+                16
+              ],
+              "interface self-reference" : [
+                16
+              ]
+            },
+            "swp8" : {
+              "bond slave" : [
+                19
+              ],
+              "interface self-reference" : [
+                19
+              ]
+            }
+          },
+          "vrf" : {
+            "vrf1" : {
+              "vrf self-reference" : [
+                8
+              ]
+            }
+          },
+          "vxlan" : {
+            "v1" : {
+              "vxlan self-reference" : [
+                18
+              ]
+            }
+          }
+        },
+        "configs/cumulus_nclu_invalid_interfaces" : {
+          "bond" : {
+            "bond1" : {
+              "bond self-reference" : [
+                6
+              ]
+            }
+          },
+          "vrf" : {
+            "vrf1" : {
+              "vrf self-reference" : [
+                16
+              ]
+            }
+          },
+          "vxlan" : {
+            "v1" : {
+              "vxlan self-reference" : [
+                19
+              ]
+            }
+          }
+        },
+        "configs/cumulus_nclu_invalid_vrfs" : {
+          "bond" : {
+            "bond1" : {
+              "bond self-reference" : [
+                8
+              ]
+            }
+          },
+          "interface" : {
+            "swp1" : {
+              "bond slave" : [
+                8
+              ],
+              "interface self-reference" : [
+                8
+              ]
+            }
+          },
+          "vxlan" : {
+            "vx1" : {
+              "vxlan self-reference" : [
+                16
+              ]
+            }
+          }
+        },
+        "configs/cumulus_nclu_invalid_vxlans" : {
+          "bond" : {
+            "bond1" : {
+              "bond self-reference" : [
+                8
+              ]
+            }
+          },
+          "interface" : {
+            "swp0" : {
+              "bond slave" : [
+                8
+              ],
+              "interface self-reference" : [
+                8
+              ]
+            }
+          },
+          "vrf" : {
+            "vrf1" : {
+              "vrf self-reference" : [
+                11
               ]
             }
           }
@@ -82962,6 +84192,23 @@
             "xe-0/0/21:0.0" : {
               "ospf area interface" : [
                 7
+              ]
+            }
+          }
+        },
+        "configs/juniper_ospf_disable" : {
+          "interface" : {
+            "ge-0/0/0" : {
+              "interface" : [
+                4
+              ]
+            },
+            "ge-0/0/0.0" : {
+              "interface" : [
+                4
+              ],
+              "ospf area interface" : [
+                6
               ]
             }
           }
@@ -86335,6 +87582,10 @@
         "configs/community_name_numbers_dos" : "PASSED",
         "configs/community_set" : "PASSED",
         "configs/cumulus_nclu" : "PARTIALLY_UNRECOGNIZED",
+        "configs/cumulus_nclu_invalid_bonds" : "PASSED",
+        "configs/cumulus_nclu_invalid_interfaces" : "PASSED",
+        "configs/cumulus_nclu_invalid_vrfs" : "PASSED",
+        "configs/cumulus_nclu_invalid_vxlans" : "PASSED",
         "configs/eos_mlag" : "PASSED",
         "configs/eos_trunk_group" : "PASSED",
         "configs/f5_bigip_imish_malformed" : "PASSED",
@@ -86406,6 +87657,7 @@
         "configs/juniper_nat" : "PASSED",
         "configs/juniper_ntp" : "PASSED",
         "configs/juniper_ospf" : "PASSED",
+        "configs/juniper_ospf_disable" : "PASSED",
         "configs/juniper_ospf_stub_areas" : "PASSED",
         "configs/juniper_passwords" : "PASSED",
         "configs/juniper_policy_statement" : "PASSED",

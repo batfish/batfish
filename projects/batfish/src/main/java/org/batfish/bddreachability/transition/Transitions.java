@@ -25,8 +25,15 @@ public final class Transitions {
     if (Stream.of(transitions).anyMatch(t -> t == ZERO)) {
       return ZERO;
     }
-    List<Transition> nonIdentityTransitions =
+    Stream<Transition> flatTransitions =
         Stream.of(transitions)
+            .flatMap(
+                t ->
+                    t instanceof Composite
+                        ? ((Composite) t).getTransitions().stream()
+                        : Stream.of(t));
+    List<Transition> nonIdentityTransitions =
+        flatTransitions
             .filter(transition -> transition != IDENTITY)
             .collect(ImmutableList.toImmutableList());
     if (nonIdentityTransitions.isEmpty()) {
@@ -58,8 +65,12 @@ public final class Transitions {
   }
 
   public static Transition or(Transition... transitions) {
-    List<Transition> nonZeroTransitions =
+    Stream<Transition> flatUniqueTransitions =
         Stream.of(transitions)
+            .flatMap(t -> t instanceof Or ? ((Or) t).getTransitions().stream() : Stream.of(t))
+            .distinct();
+    List<Transition> nonZeroTransitions =
+        flatUniqueTransitions
             .filter(transition -> transition != ZERO)
             .collect(ImmutableList.toImmutableList());
     if (nonZeroTransitions.isEmpty()) {

@@ -35,5 +35,6 @@ junit_tests(
     deps = [
         ":bdd",
         ":bdd_testlib",
+        "@hamcrest//:compile",
     ],
 )

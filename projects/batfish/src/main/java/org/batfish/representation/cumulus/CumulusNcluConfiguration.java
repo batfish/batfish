@@ -26,12 +26,20 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, Interface> _interfaces;
   private final @Nonnull List<Ip> _ipv4Nameservers;
   private final @Nonnull List<Ip6> _ipv6Nameservers;
+  private final @Nonnull Loopback _loopback;
+  private final @Nonnull Map<String, Vlan> _vlans;
+  private final @Nonnull Map<String, Vrf> _vrfs;
+  private final @Nonnull Map<String, Vxlan> _vxlans;
 
   public CumulusNcluConfiguration() {
     _bonds = new HashMap<>();
     _interfaces = new HashMap<>();
     _ipv4Nameservers = new LinkedList<>();
     _ipv6Nameservers = new LinkedList<>();
+    _loopback = new Loopback();
+    _vlans = new HashMap<>();
+    _vrfs = new HashMap<>();
+    _vxlans = new HashMap<>();
   }
 
   public @Nonnull Map<String, Bond> getBonds() {
@@ -55,9 +63,36 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     return _ipv6Nameservers;
   }
 
+  public @Nonnull Loopback getLoopback() {
+    return _loopback;
+  }
+
+  public @Nonnull Map<String, Vlan> getVlans() {
+    return _vlans;
+  }
+
+  public @Nonnull Map<String, Vrf> getVrfs() {
+    return _vrfs;
+  }
+
+  public @Nonnull Map<String, Vxlan> getVxlans() {
+    return _vxlans;
+  }
+
   private void markStructures() {
     markConcreteStructure(CumulusStructureType.BOND, CumulusStructureUsage.BOND_SELF_REFERENCE);
-    markConcreteStructure(CumulusStructureType.INTERFACE, CumulusStructureUsage.BOND_SLAVE);
+    markConcreteStructure(
+        CumulusStructureType.INTERFACE,
+        CumulusStructureUsage.BOND_SLAVE,
+        CumulusStructureUsage.INTERFACE_SELF_REFERENCE);
+    markConcreteStructure(CumulusStructureType.VLAN, CumulusStructureUsage.VLAN_SELF_REFERENCE);
+    markConcreteStructure(
+        CumulusStructureType.VRF,
+        CumulusStructureUsage.INTERFACE_CLAG_BACKUP_IP_VRF,
+        CumulusStructureUsage.INTERFACE_VRF,
+        CumulusStructureUsage.VLAN_VRF,
+        CumulusStructureUsage.VRF_SELF_REFERENCE);
+    markConcreteStructure(CumulusStructureType.VXLAN, CumulusStructureUsage.VXLAN_SELF_REFERENCE);
   }
 
   @Override

@@ -143,11 +143,15 @@ public class PacketHeaderConstraintsUtil {
     if (icmpTypes != null) {
       checkArgument(icmpTypes.isSingleton(), "Cannot construct flow with multiple ICMP types");
       builder.setIcmpType(icmpTypes.singletonValue());
+    } else if (builder.getIpProtocol() == IpProtocol.ICMP) {
+      builder.setIcmpType(8); // Default to Echo request for unconstrained, used for ICMP ping
     }
     IntegerSpace icmpCodes = constraints.getIcmpCodes();
     if (icmpCodes != null) {
       checkArgument(icmpCodes.isSingleton(), "Cannot construct flow with multiple ICMP codes");
-      builder.setIcmpType(icmpCodes.singletonValue());
+      builder.setIcmpCode(icmpCodes.singletonValue());
+    } else if (builder.getIpProtocol() == IpProtocol.ICMP) {
+      builder.setIcmpCode(0); // Default to Echo request for unconstrained, used for ICMP ping
     }
   }
 

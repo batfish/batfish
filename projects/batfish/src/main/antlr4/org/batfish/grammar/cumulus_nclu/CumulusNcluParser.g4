@@ -2,7 +2,7 @@ parser grammar CumulusNcluParser;
 
 /* This is only needed if parser grammar is spread across files */
 import
-CumulusNclu_common, CumulusNclu_bgp, CumulusNclu_interface, CumulusNclu_routing;
+CumulusNclu_common, CumulusNclu_bgp, CumulusNclu_frr, CumulusNclu_interface, CumulusNclu_routing;
 
 options {
   superClass =
@@ -29,8 +29,12 @@ statement
 
 s_extra_configuration
 :
-  EXTRA_CONFIGURATION_HEADER text = EXTRA_CONFIGURATION
-  EXTRA_CONFIGURATION_FOOTER NEWLINE
+  EXTRA_CONFIGURATION_HEADER
+  (
+    frr_vrf
+    | // frr_unrecognized must be last
+    frr_unrecognized
+  ) EXTRA_CONFIGURATION_FOOTER NEWLINE
 ;
 
 s_net_add
@@ -171,12 +175,12 @@ l_clag
 
 lc_vxlan_anycast_ip
 :
-  VXLAN_ANYCAST_IP ip = IP_ADDRESS NEWLINE
+  VXLAN_ANYCAST_IP ip = ip_address NEWLINE
 ;
 
 l_ip_address
 :
-  IP ADDRESS address = IP_PREFIX NEWLINE
+  IP ADDRESS address = interface_address NEWLINE
 ;
 
 a_time
@@ -214,24 +218,33 @@ t_zone
 
 a_vlan
 :
-  VLAN id = vlan_id
+  VLAN
   (
-    v_ip_address
-    | v_ip_address_virtual
-    | v_vlan_id
-    | v_vlan_raw_device
-    | v_vrf
+    (
+      suffix = uint16 v_vlan_id
+    )
+    |
+    (
+      suffixes = range_set
+      (
+        v_ip_address
+        | v_ip_address_virtual
+        | v_vlan_raw_device
+        | v_vrf
+        | NEWLINE
+      )
+    )
   )
 ;
 
 v_ip_address
 :
-  IP ADDRESS address = IP_PREFIX NEWLINE
+  IP ADDRESS address = interface_address NEWLINE
 ;
 
 v_ip_address_virtual
 :
-  IP ADDRESS_VIRTUAL mac = MAC_ADDRESS address = IP_PREFIX NEWLINE
+  IP ADDRESS_VIRTUAL mac = mac_address address = interface_address NEWLINE
 ;
 
 v_vlan_id
@@ -251,11 +264,18 @@ v_vrf
 
 a_vrf
 :
-  VRF name = glob
+  VRF names = glob
   (
-    vrf_vni
+    vrf_ip_address
+    | vrf_vni
     | vrf_vrf_table
+    | NEWLINE
   )
+;
+
+vrf_ip_address
+:
+  IP ADDRESS address = interface_address NEWLINE
 ;
 
 vrf_vni
@@ -274,7 +294,7 @@ vrf_vrf_table
 
 a_vxlan
 :
-  VXLAN vni_names = glob
+  VXLAN names = glob
   (
     vx_bridge
     | vx_stp
@@ -350,7 +370,7 @@ vxv_id
 
 vxv_local_tunnelip
 :
-  LOCAL_TUNNELIP ip = IP_ADDRESS NEWLINE
+  LOCAL_TUNNELIP ip = ip_address NEWLINE
 ;
 
 s_net_add_unrecognized

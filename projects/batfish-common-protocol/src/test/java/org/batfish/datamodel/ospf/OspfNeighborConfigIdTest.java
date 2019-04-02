@@ -13,17 +13,19 @@ public class OspfNeighborConfigIdTest {
   public void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
-            new OspfNeighborConfigId("h", "v", "i"), new OspfNeighborConfigId("h", "v", "i"))
-        .addEqualityGroup(new OspfNeighborConfigId("h2", "v", "i"))
-        .addEqualityGroup(new OspfNeighborConfigId("h", "v2", "i"))
-        .addEqualityGroup(new OspfNeighborConfigId("h", "v", "i2"))
+            new OspfNeighborConfigId("h", "v", "p", "i"),
+            new OspfNeighborConfigId("h", "v", "p", "i"))
+        .addEqualityGroup(new OspfNeighborConfigId("h2", "v", "p", "i"))
+        .addEqualityGroup(new OspfNeighborConfigId("h", "v2", "p", "i"))
+        .addEqualityGroup(new OspfNeighborConfigId("h", "v", "p2", "i"))
+        .addEqualityGroup(new OspfNeighborConfigId("h", "v", "p", "i2"))
         .addEqualityGroup(new Object())
         .testEquals();
   }
 
   @Test
   public void testJavaSerialization() {
-    OspfNeighborConfigId cid = new OspfNeighborConfigId("h", "v", "i");
+    OspfNeighborConfigId cid = new OspfNeighborConfigId("h", "v", "p", "i");
     assertThat(SerializationUtils.clone(cid), equalTo(cid));
   }
 }

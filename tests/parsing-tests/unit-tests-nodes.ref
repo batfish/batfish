@@ -2581,6 +2581,12 @@
               "blah"
             ],
             "ospfProcess" : {
+              "adminCosts" : {
+                "ospf" : 110,
+                "ospfE1" : 110,
+                "ospfE2" : 110,
+                "ospfIA" : 110
+              },
               "areas" : {
                 "0" : {
                   "injectDefaultRoute" : true,
@@ -10946,6 +10952,12 @@
               "Loopback0"
             ],
             "ospfProcess" : {
+              "adminCosts" : {
+                "ospf" : 110,
+                "ospfE1" : 110,
+                "ospfE2" : 110,
+                "ospfIA" : 110
+              },
               "areas" : {
                 "0" : {
                   "injectDefaultRoute" : true,
@@ -11205,6 +11217,12 @@
               "Loopback0"
             ],
             "ospfProcess" : {
+              "adminCosts" : {
+                "ospf" : 110,
+                "ospfE1" : 110,
+                "ospfE2" : 110,
+                "ospfIA" : 110
+              },
               "areas" : {
                 "0" : {
                   "injectDefaultRoute" : true,
@@ -13151,6 +13169,38 @@
         "deviceType" : "SWITCH",
         "vendorFamily" : { }
       },
+      "cumulus_nclu_invalid_bonds" : {
+        "configurationFormat" : "CUMULUS_NCLU",
+        "name" : "cumulus_nclu_invalid_bonds",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : { }
+      },
+      "cumulus_nclu_invalid_interfaces" : {
+        "configurationFormat" : "CUMULUS_NCLU",
+        "name" : "cumulus_nclu_invalid_interfaces",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : { }
+      },
+      "cumulus_nclu_invalid_vrfs" : {
+        "configurationFormat" : "CUMULUS_NCLU",
+        "name" : "cumulus_nclu_invalid_vrfs",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : { }
+      },
+      "cumulus_nclu_invalid_vxlans" : {
+        "configurationFormat" : "CUMULUS_NCLU",
+        "name" : "cumulus_nclu_invalid_vxlans",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : { }
+      },
       "eos_mlag" : {
         "configurationFormat" : "ARISTA",
         "name" : "eos_mlag",
@@ -14923,6 +14973,12 @@
               "Ethernet1"
             ],
             "ospfProcess" : {
+              "adminCosts" : {
+                "ospf" : 110,
+                "ospfE1" : 110,
+                "ospfE2" : 110,
+                "ospfIA" : 110
+              },
               "areas" : {
                 "0" : {
                   "injectDefaultRoute" : true,
@@ -15959,6 +16015,12 @@
               "xe-0/0/0:0.0"
             ],
             "ospfProcess" : {
+              "adminCosts" : {
+                "ospf" : 10,
+                "ospfE1" : 150,
+                "ospfE2" : 150,
+                "ospfIA" : 10
+              },
               "areas" : {
                 "0" : {
                   "injectDefaultRoute" : false,
@@ -17216,6 +17278,12 @@
               "TenGigabitEthernet0/0/0/5"
             ],
             "ospfProcess" : {
+              "adminCosts" : {
+                "ospf" : 110,
+                "ospfE1" : 110,
+                "ospfE2" : 110,
+                "ospfIA" : 110
+              },
               "areas" : {
                 "0" : {
                   "injectDefaultRoute" : true,
@@ -17881,6 +17949,12 @@
               "xe-0/0/21:0.0"
             ],
             "ospfProcess" : {
+              "adminCosts" : {
+                "ospf" : 10,
+                "ospfE1" : 150,
+                "ospfE2" : 150,
+                "ospfIA" : 10
+              },
               "areas" : {
                 "66051" : {
                   "injectDefaultRoute" : false,
@@ -20941,6 +21015,12 @@
           "default" : {
             "name" : "default",
             "ospfProcess" : {
+              "adminCosts" : {
+                "ospf" : 10,
+                "ospfE1" : 150,
+                "ospfE2" : 150,
+                "ospfIA" : 10
+              },
               "areas" : {
                 "7" : {
                   "injectDefaultRoute" : true,
@@ -25825,6 +25905,12 @@
           "OTHER" : {
             "name" : "OTHER",
             "ospfProcess" : {
+              "adminCosts" : {
+                "ospf" : 110,
+                "ospfE1" : 110,
+                "ospfE2" : 110,
+                "ospfIA" : 110
+              },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:OTHER~",
               "processId" : "1",
               "referenceBandwidth" : 4.0E10,
@@ -25837,6 +25923,12 @@
               "Ethernet0/0"
             ],
             "ospfProcess" : {
+              "adminCosts" : {
+                "ospf" : 110,
+                "ospfE1" : 110,
+                "ospfE2" : 110,
+                "ospfIA" : 110
+              },
               "areas" : {
                 "1" : {
                   "injectDefaultRoute" : true,
@@ -27064,6 +27156,117 @@
         "vrfs" : {
           "default" : {
             "name" : "default"
+          }
+        }
+      },
+      "ospf-disable" : {
+        "configurationFormat" : "FLAT_JUNIPER",
+        "name" : "ospf-disable",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "interfaces" : {
+          "ge-0/0/0" : {
+            "name" : "ge-0/0/0",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "ge-0/0/0"
+            ],
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "ge-0/0/0.0" : {
+            "name" : "ge-0/0/0.0",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allPrefixes" : [
+              "10.0.0.0/31"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "ge-0/0/0.0"
+            ],
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "10.0.0.0/31",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOGICAL",
+            "vrf" : "default"
+          }
+        },
+        "vendorFamily" : {
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "ge-0/0/0",
+              "ge-0/0/0.0"
+            ]
           }
         }
       },

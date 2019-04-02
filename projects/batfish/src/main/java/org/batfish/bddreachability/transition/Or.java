@@ -2,6 +2,7 @@ package org.batfish.bddreachability.transition;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import net.sf.javabdd.BDD;
@@ -26,6 +27,10 @@ public class Or implements Transition {
     this(ImmutableList.copyOf(transitions));
   }
 
+  public List<Transition> getTransitions() {
+    return _transitions;
+  }
+
   @Override
   public BDD transitForward(BDD bdd) {
     JFactory factory = (JFactory) bdd.getFactory();
@@ -44,5 +49,25 @@ public class Or implements Transition {
         _transitions.stream()
             .map(transition -> transition.transitBackward(bdd))
             .toArray(BDD[]::new));
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    } else if (!(o instanceof Or)) {
+      return false;
+    }
+    return _transitions.equals(((Or) o)._transitions);
+  }
+
+  @Override
+  public int hashCode() {
+    return _transitions.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(Or.class).add("transitions", _transitions).toString();
   }
 }

@@ -53,9 +53,36 @@ import javax.annotation.Nonnull;
  * @version $Id: JFactory.java,v 1.28 2005/09/27 22:56:18 joewhaley Exp $
  */
 public final class JFactory extends BDDFactory {
+  /** Whether to maintain (and in some cases print) statistics about the cache use. */
+  private static final boolean CACHESTATS = false;
 
+  /**
+   * Whether to flush (clear completely) the cache when live BDD nodes are garbage collected. If
+   * {@code false}, the cache will be attempted to be cleaned and maintain existing valid cache
+   * entries.
+   */
+  // Warning: we've never tried with this flag false.
+  private static final boolean FLUSH_CACHE_ON_GC = true;
+
+  /**
+   * If true, all BDDs will be created with a finalizer that attempts to free them if the user has
+   * not done so. This flag implies non-trivial runtime overhead but defers BDD garbage collection
+   * to Java, rather than manual user control of reference counting.
+   */
+  private static final boolean USE_FINALIZER = true;
+
+  /**
+   * When {@link #USE_FINALIZER} is true, setting this flag to true enables debug print messages
+   * whenever BDDs are freed by the finalizer instead of by the calling code.
+   */
+  private static final boolean DEBUG_FINALIZER = false;
+
+  /**
+   * If set, assertions will be made on BDD internal computations. Used in developing the factory.
+   */
   private static final boolean VERIFY_ASSERTIONS = false;
-  public static final String REVISION = "$Revision: 1.28 $";
+
+  private static final String REVISION = "$Revision: 1.28 $";
 
   @Override
   public String getVersion() {
@@ -71,9 +98,6 @@ public final class JFactory extends BDDFactory {
     f.initialize(nodenum, cachesize);
     return f;
   }
-
-  private static final boolean USE_FINALIZER = true;
-  private static final boolean FLUSH_CACHE_ON_GC = true;
 
   /** Private helper function to create BDD objects. */
   private BDDImpl makeBDD(int id) {
@@ -349,8 +373,6 @@ public final class JFactory extends BDDFactory {
     }
   }
 
-  private static final boolean DEBUG_FINALIZER = false;
-
   private class BDDImplWithFinalizer extends BDDImpl {
 
     BDDImplWithFinalizer(int id) {
@@ -565,6 +587,16 @@ public final class JFactory extends BDDFactory {
         that.table[i] = this.table[i].copy();
       }
       return that;
+    }
+
+    /**
+     * Returns the number of used entries in this cache.
+     *
+     * <p>Slow. Should only be used in debugging contexts.
+     */
+    private int used() {
+      // Array lengths in Java must be representable by a signed int.
+      return (int) Arrays.stream(table).filter(e -> e.a != -1).count();
     }
   }
 
@@ -806,10 +838,6 @@ public final class JFactory extends BDDFactory {
     return result;
   }
 
-  private static int ITEHASH(int f, int g, int h) {
-    return TRIPLE(f, g, h);
-  }
-
   private static int RESTRHASH(int r, int var) {
     return PAIR(r, var);
   }
@@ -860,7 +888,7 @@ public final class JFactory extends BDDFactory {
     return Math.abs(quantvarset[a]) == quantvarsetID; /* signed check */
   }
 
-  private static final int bddop_and = 0;
+  private static final int bddop_and = 0; // NOTE: ite_rec caching exploits bddop_and==0.
   private static final int bddop_xor = 1;
   private static final int bddop_or = 2;
   private static final int bddop_nand = 3;
@@ -963,8 +991,7 @@ public final class JFactory extends BDDFactory {
 
     if (ISZERO(r)) {
       return BDDONE;
-    }
-    if (ISONE(r)) {
+    } else if (ISONE(r)) {
       return BDDZERO;
     }
 
@@ -985,6 +1012,9 @@ public final class JFactory extends BDDFactory {
     res = bdd_makenode(LEVEL(r), READREF(2), READREF(1));
     POPREF(2);
 
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
     entry.a = r;
     entry.c = bddop_not;
     entry.res = res;
@@ -1002,9 +1032,6 @@ public final class JFactory extends BDDFactory {
 
     if (applycache == null) {
       applycache = BddCacheI_init(cachesize);
-    }
-    if (itecache == null) {
-      itecache = BddCacheI_init(cachesize);
     }
 
     while (true) {
@@ -1040,22 +1067,30 @@ public final class JFactory extends BDDFactory {
 
     if (ISONE(f)) {
       return g;
-    }
-    if (ISZERO(f)) {
+    } else if (ISZERO(f)) {
       return h;
-    }
-    if (g == h) {
+    } else if (g == h) {
       return g;
-    }
-    if (ISONE(g) && ISZERO(h)) {
-      return f;
-    }
-    if (ISZERO(g) && ISONE(h)) {
-      return not_rec(f);
+    } else if (ISZERO(g)) {
+      applyop = bddop_less;
+      return apply_rec(f, h);
+    } else if (ISONE(g)) {
+      return or_rec(f, h);
+    } else if (ISZERO(h)) {
+      return and_rec(f, g);
+    } else if (ISONE(h)) {
+      applyop = bddop_imp;
+      return apply_rec(f, g);
     }
 
-    entry = BddCache_lookupI(itecache, ITEHASH(f, g, h));
-    if (entry.a == f && entry.b == g && entry.c == h) {
+    // ITE and APPLY share the same cache:
+    //    APPLY is (l, r, op) where op in 0..10 (0=and, ..., 10=not) where l, r are BDD ids.
+    //    ITE is (f, g, -h) where f, g, h are all BDD ids.
+    //
+    // The only possible collision is apply(l, r, bddop_and) and ite(l, r, 0==BDDZERO).
+    // Fortuitously, these are logically equivalent -- if f then g else false === f and g.
+    entry = BddCache_lookupI(applycache, APPLYHASH(f, g, -h));
+    if (entry.a == f && entry.b == g && entry.c == -h) { // To explain -h, see caching note above.
       if (CACHESTATS) {
         cachestats.opHit++;
       }
@@ -1111,9 +1146,12 @@ public final class JFactory extends BDDFactory {
 
     POPREF(2);
 
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
     entry.a = f;
     entry.b = g;
-    entry.c = h;
+    entry.c = -h; // To explain -h, see caching note above.
     entry.res = res;
 
     return res;
@@ -1184,6 +1222,9 @@ public final class JFactory extends BDDFactory {
     res = bdd_correctify(LEVEL(replacepair[LEVEL(r)]), READREF(2), READREF(1));
     POPREF(2);
 
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
     entry.a = r;
     entry.c = replaceid;
     entry.res = res;
@@ -1285,77 +1326,180 @@ public final class JFactory extends BDDFactory {
       _assert(applyop != bddop_and && applyop != bddop_or);
     }
 
+    if (ISCONST(l) && ISCONST(r)) {
+      return oprres[applyop][l << 1 | r];
+    }
+
     switch (applyop) {
+        // case bddop_and: is handled elsehwere
       case bddop_xor:
         if (l == r) {
-          return 0;
-        }
-        if (ISZERO(l)) {
+          return BDDZERO;
+        } else if (ISZERO(l)) {
           return r;
-        }
-        if (ISZERO(r)) {
+        } else if (ISZERO(r)) {
           return l;
+        } else if (ISONE(l)) {
+          return not_rec(r);
+        } else if (ISONE(r)) {
+          return not_rec(l);
+        } else if (l > r) {
+          // Since XOR is symmetric, maximize caching by ensuring l < r (== handled above).
+          int t = l;
+          l = r;
+          r = t;
         }
         break;
+        // case bddop_or: is handled elsehwere
       case bddop_nand:
-        if (ISZERO(l) || ISZERO(r)) {
-          return 1;
+        if (l == r) {
+          return not_rec(l);
+        } else if (ISZERO(l) || ISZERO(r)) {
+          return BDDONE;
+        } else if (ISONE(l)) {
+          return not_rec(r);
+        } else if (ISONE(r)) {
+          return not_rec(l);
+        } else if (l > r) {
+          // Since NAND is symmetric, maximize caching by ensuring l < r (== handled above).
+          int t = l;
+          l = r;
+          r = t;
         }
         break;
       case bddop_nor:
-        if (ISONE(l) || ISONE(r)) {
-          return 0;
+        if (l == r) {
+          return not_rec(l);
+        } else if (ISONE(l) || ISONE(r)) {
+          return BDDZERO;
+        } else if (ISZERO(l)) {
+          return not_rec(r);
+        } else if (ISZERO(r)) {
+          return not_rec(l);
+        } else if (l > r) {
+          // Since NOR is symmetric, maximize caching by ensuring l < r (== handled above).
+          int t = l;
+          l = r;
+          r = t;
         }
         break;
       case bddop_imp:
         if (ISZERO(l)) {
-          return 1;
-        }
-        if (ISONE(l)) {
+          return BDDONE;
+        } else if (ISONE(l)) {
           return r;
+        } else if (ISZERO(r)) {
+          return not_rec(l);
+        } else if (ISONE(r)) {
+          return BDDONE;
         }
-        if (ISONE(r)) {
-          return 1;
+        break;
+      case bddop_biimp:
+        if (l == r) {
+          return BDDONE;
+        } else if (ISZERO(l)) {
+          return not_rec(r);
+        } else if (ISZERO(r)) {
+          return not_rec(l);
+        } else if (ISONE(l)) {
+          return r;
+        } else if (ISONE(r)) {
+          return l;
+        } else if (l > r) {
+          // Since BIIMP is symmetric, maximize caching by ensuring l < r (== handled above).
+          int t = l;
+          l = r;
+          r = t;
+        }
+        break;
+      case bddop_diff:
+        if (l == r) {
+          return BDDZERO;
+        } else if (ISZERO(l)) {
+          return BDDZERO;
+        } else if (ISONE(r)) {
+          return BDDZERO;
+        } else if (ISONE(l)) {
+          return not_rec(r);
+        } else if (ISZERO(r)) {
+          return l;
+        }
+        break;
+      case bddop_less:
+        if (l == r) {
+          return BDDZERO;
+        } else if (ISONE(l)) {
+          return BDDZERO;
+        } else if (ISZERO(r)) {
+          return BDDZERO;
+        } else if (ISZERO(l)) {
+          return r;
+        } else if (ISONE(r)) {
+          return not_rec(l);
+        } else {
+          // Rewrite as equivalent diff to improve caching.
+          applyop = bddop_diff;
+          int t = l;
+          l = r;
+          r = t;
+        }
+        break;
+      case bddop_invimp:
+        if (l == r) {
+          return BDDONE;
+        } else if (ISONE(l)) {
+          return BDDONE;
+        } else if (ISZERO(r)) {
+          return BDDONE;
+        } else if (ISONE(r)) {
+          return l;
+        } else if (ISZERO(l)) {
+          return not_rec(r);
+        } else {
+          // Rewrite as equivalent imp to improve caching.
+          applyop = bddop_imp;
+          int t = l;
+          l = r;
+          r = t;
         }
         break;
     }
 
-    if (ISCONST(l) && ISCONST(r)) {
-      res = oprres[applyop][l << 1 | r];
-    } else {
-      entry = BddCache_lookupI(applycache, APPLYHASH(l, r, applyop));
+    entry = BddCache_lookupI(applycache, APPLYHASH(l, r, applyop));
 
-      if (entry.a == l && entry.b == r && entry.c == applyop) {
-        if (CACHESTATS) {
-          cachestats.opHit++;
-        }
-        return entry.res;
-      }
+    if (entry.a == l && entry.b == r && entry.c == applyop) {
       if (CACHESTATS) {
-        cachestats.opMiss++;
+        cachestats.opHit++;
       }
-
-      if (LEVEL(l) == LEVEL(r)) {
-        PUSHREF(apply_rec(LOW(l), LOW(r)));
-        PUSHREF(apply_rec(HIGH(l), HIGH(r)));
-        res = bdd_makenode(LEVEL(l), READREF(2), READREF(1));
-      } else if (LEVEL(l) < LEVEL(r)) {
-        PUSHREF(apply_rec(LOW(l), r));
-        PUSHREF(apply_rec(HIGH(l), r));
-        res = bdd_makenode(LEVEL(l), READREF(2), READREF(1));
-      } else {
-        PUSHREF(apply_rec(l, LOW(r)));
-        PUSHREF(apply_rec(l, HIGH(r)));
-        res = bdd_makenode(LEVEL(r), READREF(2), READREF(1));
-      }
-
-      POPREF(2);
-
-      entry.a = l;
-      entry.b = r;
-      entry.c = applyop;
-      entry.res = res;
+      return entry.res;
     }
+    if (CACHESTATS) {
+      cachestats.opMiss++;
+    }
+
+    if (LEVEL(l) == LEVEL(r)) {
+      PUSHREF(apply_rec(LOW(l), LOW(r)));
+      PUSHREF(apply_rec(HIGH(l), HIGH(r)));
+      res = bdd_makenode(LEVEL(l), READREF(2), READREF(1));
+    } else if (LEVEL(l) < LEVEL(r)) {
+      PUSHREF(apply_rec(LOW(l), r));
+      PUSHREF(apply_rec(HIGH(l), r));
+      res = bdd_makenode(LEVEL(l), READREF(2), READREF(1));
+    } else {
+      PUSHREF(apply_rec(l, LOW(r)));
+      PUSHREF(apply_rec(l, HIGH(r)));
+      res = bdd_makenode(LEVEL(r), READREF(2), READREF(1));
+    }
+
+    POPREF(2);
+
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
+    entry.a = l;
+    entry.b = r;
+    entry.c = applyop;
+    entry.res = res;
 
     return res;
   }
@@ -1366,15 +1510,17 @@ public final class JFactory extends BDDFactory {
 
     if (l == r) {
       return l;
-    }
-    if (ISZERO(l) || ISZERO(r)) {
-      return 0;
-    }
-    if (ISONE(l)) {
+    } else if (ISZERO(l) || ISZERO(r)) {
+      return BDDZERO;
+    } else if (ISONE(l)) {
       return r;
-    }
-    if (ISONE(r)) {
+    } else if (ISONE(r)) {
       return l;
+    } else if (l > r) {
+      // Since AND is symmetric, maximize caching by ensuring l < r (== handled above).
+      int t = l;
+      l = r;
+      r = t;
     }
     entry = BddCache_lookupI(applycache, APPLYHASH(l, r, bddop_and));
 
@@ -1404,6 +1550,9 @@ public final class JFactory extends BDDFactory {
 
     POPREF(2);
 
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
     entry.a = l;
     entry.b = r;
     entry.c = bddop_and;
@@ -1537,15 +1686,17 @@ public final class JFactory extends BDDFactory {
 
     if (l == r) {
       return l;
-    }
-    if (ISONE(l) || ISONE(r)) {
-      return 1;
-    }
-    if (ISZERO(l)) {
+    } else if (ISONE(l) || ISONE(r)) {
+      return BDDONE;
+    } else if (ISZERO(l)) {
       return r;
-    }
-    if (ISZERO(r)) {
+    } else if (ISZERO(r)) {
       return l;
+    } else if (l > r) {
+      // Since OR is symmetric, maximize caching by ensuring l < r (== handled above).
+      int t = l;
+      l = r;
+      r = t;
     }
     entry = BddCache_lookupI(applycache, APPLYHASH(l, r, bddop_or));
 
@@ -1575,6 +1726,9 @@ public final class JFactory extends BDDFactory {
 
     POPREF(2);
 
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
     entry.a = l;
     entry.b = r;
     entry.c = bddop_or;
@@ -1587,16 +1741,13 @@ public final class JFactory extends BDDFactory {
     BddCacheDataI entry;
     int res;
 
-    if (l == 0 || r == 0) {
-      return 0;
-    }
-    if (l == r) {
+    if (l == BDDZERO || r == BDDZERO) {
+      return BDDZERO;
+    } else if (l == r) {
       return quant_rec(l);
-    }
-    if (l == 1) {
+    } else if (l == BDDONE) {
       return quant_rec(r);
-    }
-    if (r == 1) {
+    } else if (r == BDDONE) {
       return quant_rec(l);
     }
 
@@ -1646,6 +1797,9 @@ public final class JFactory extends BDDFactory {
 
       POPREF(2);
 
+      if (CACHESTATS && entry.a != -1) {
+        cachestats.opOverwrite++;
+      }
       entry.a = l;
       entry.b = r;
       entry.c = appexid;
@@ -1795,38 +1949,33 @@ public final class JFactory extends BDDFactory {
 
     switch (appexop) {
       case bddop_or:
-        if (l == 1 || r == 1) {
-          return 1;
-        }
-        if (l == r) {
+        if (l == BDDONE || r == BDDONE) {
+          return BDDONE;
+        } else if (l == r) {
           return quant_rec(l);
-        }
-        if (l == 0) {
+        } else if (l == BDDZERO) {
           return quant_rec(r);
-        }
-        if (r == 0) {
+        } else if (r == BDDZERO) {
           return quant_rec(l);
         }
         break;
       case bddop_xor:
         if (l == r) {
-          return 0;
-        }
-        if (l == 0) {
+          return BDDZERO;
+        } else if (l == BDDZERO) {
           return quant_rec(r);
-        }
-        if (r == 0) {
+        } else if (r == BDDZERO) {
           return quant_rec(l);
         }
         break;
       case bddop_nand:
-        if (l == 0 || r == 0) {
-          return 1;
+        if (l == BDDZERO || r == BDDZERO) {
+          return BDDONE;
         }
         break;
       case bddop_nor:
-        if (l == 1 || r == 1) {
-          return 0;
+        if (l == BDDONE || r == BDDONE) {
+          return BDDZERO;
         }
         break;
     }
@@ -1893,6 +2042,9 @@ public final class JFactory extends BDDFactory {
 
       POPREF(2);
 
+      if (CACHESTATS && entry.a != -1) {
+        cachestats.opOverwrite++;
+      }
       entry.a = l;
       entry.b = r;
       entry.c = appexid;
@@ -1994,6 +2146,9 @@ public final class JFactory extends BDDFactory {
 
       POPREF(2);
 
+      if (CACHESTATS && entry.a != -1) {
+        cachestats.opOverwrite++;
+      }
       entry.a = l;
       entry.b = r;
       entry.c = appexid;
@@ -2042,6 +2197,9 @@ public final class JFactory extends BDDFactory {
 
     POPREF(2);
 
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
     entry.a = r;
     entry.c = quantid;
     entry.res = res;
@@ -2090,6 +2248,9 @@ public final class JFactory extends BDDFactory {
 
     POPREF(2);
 
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
     entry.a = r;
     entry.c = quantid;
     entry.res = res;
@@ -2142,14 +2303,11 @@ public final class JFactory extends BDDFactory {
 
     if (ISONE(c)) {
       return f;
-    }
-    if (ISCONST(f)) {
+    } else if (ISCONST(f)) {
       return f;
-    }
-    if (c == f) {
+    } else if (c == f) {
       return BDDONE;
-    }
-    if (ISZERO(c)) {
+    } else if (ISZERO(c)) {
       return BDDZERO;
     }
 
@@ -2193,6 +2351,9 @@ public final class JFactory extends BDDFactory {
       }
     }
 
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
     entry.a = f;
     entry.b = c;
     entry.c = miscid;
@@ -2214,9 +2375,6 @@ public final class JFactory extends BDDFactory {
 
     if (applycache == null) {
       applycache = BddCacheI_init(cachesize);
-    }
-    if (itecache == null) {
-      itecache = BddCacheI_init(cachesize);
     }
 
     while (true) {
@@ -2287,6 +2445,9 @@ public final class JFactory extends BDDFactory {
       res = ite_rec(g, HIGH(f), LOW(f));
     }
 
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
     entry.a = f;
     entry.b = g;
     entry.c = replaceid;
@@ -2303,9 +2464,6 @@ public final class JFactory extends BDDFactory {
 
     if (applycache == null) {
       applycache = BddCacheI_init(cachesize);
-    }
-    if (itecache == null) {
-      itecache = BddCacheI_init(cachesize);
     }
     if (replacecache == null) {
       replacecache = BddCacheI_init(cachesize);
@@ -2365,6 +2523,9 @@ public final class JFactory extends BDDFactory {
     res = ite_rec(replacepair[LEVEL(f)], READREF(1), READREF(2));
     POPREF(2);
 
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
     entry.a = f;
     entry.c = replaceid;
     entry.res = res;
@@ -2598,6 +2759,9 @@ public final class JFactory extends BDDFactory {
       POPREF(2);
     }
 
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
     entry.a = r;
     entry.c = miscid;
     entry.res = res;
@@ -2650,11 +2814,9 @@ public final class JFactory extends BDDFactory {
 
     if (ISONE(d) || ISCONST(f)) {
       return f;
-    }
-    if (d == f) {
+    } else if (d == f) {
       return BDDONE;
-    }
-    if (ISZERO(d)) {
+    } else if (ISZERO(d)) {
       return BDDZERO;
     }
 
@@ -2692,6 +2854,9 @@ public final class JFactory extends BDDFactory {
       POPREF(1);
     }
 
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
     entry.a = f;
     entry.b = d;
     entry.c = bddop_simplify;
@@ -2742,7 +2907,7 @@ public final class JFactory extends BDDFactory {
       if (supportSet[n] == supportID) {
         int tmp;
         bdd_addref(res);
-        tmp = bdd_makenode(n, 0, res);
+        tmp = bdd_makenode(n, BDDZERO, res);
         bdd_delref(res);
         res = tmp;
       }
@@ -3002,7 +3167,7 @@ public final class JFactory extends BDDFactory {
     int v;
 
     CHECKa(r, BDDZERO);
-    if (r == 0) {
+    if (r == BDDZERO) {
       return 0;
     }
 
@@ -3012,7 +3177,7 @@ public final class JFactory extends BDDFactory {
     res = fullsatone_rec(r);
 
     for (v = LEVEL(r) - 1; v >= 0; v--) {
-      res = PUSHREF(bdd_makenode(v, res, 0));
+      res = PUSHREF(bdd_makenode(v, res, BDDZERO));
     }
 
     bdd_enable_reorder();
@@ -3026,24 +3191,24 @@ public final class JFactory extends BDDFactory {
       return r;
     }
 
-    if (LOW(r) != 0) {
+    if (LOW(r) != BDDZERO) {
       int res = fullsatone_rec(LOW(r));
       int v;
 
       for (v = LEVEL(LOW(r)) - 1; v > LEVEL(r); v--) {
-        res = PUSHREF(bdd_makenode(v, res, 0));
+        res = PUSHREF(bdd_makenode(v, res, BDDZERO));
       }
 
-      return PUSHREF(bdd_makenode(LEVEL(r), res, 0));
+      return PUSHREF(bdd_makenode(LEVEL(r), res, BDDZERO));
     } else {
       int res = fullsatone_rec(HIGH(r));
       int v;
 
       for (v = LEVEL(HIGH(r)) - 1; v > LEVEL(r); v--) {
-        res = PUSHREF(bdd_makenode(v, res, 0));
+        res = PUSHREF(bdd_makenode(v, res, BDDZERO));
       }
 
-      return PUSHREF(bdd_makenode(LEVEL(r), 0, res));
+      return PUSHREF(bdd_makenode(LEVEL(r), BDDZERO, res));
     }
   }
 
@@ -3163,11 +3328,20 @@ public final class JFactory extends BDDFactory {
 
     entry = BddCache_lookupD(countcache, PATHCOUHASH(r));
     if (entry.a == r && entry.c == miscid) {
+      if (CACHESTATS) {
+        cachestats.opHit++;
+      }
       return entry.dres;
     }
 
+    if (CACHESTATS) {
+      cachestats.opMiss++;
+    }
     size = bdd_pathcount_rec(LOW(r)) + bdd_pathcount_rec(HIGH(r));
 
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
     entry.a = r;
     entry.c = miscid;
     entry.dres = size;
@@ -3217,9 +3391,15 @@ public final class JFactory extends BDDFactory {
 
     entry = BddCache_lookupD(countcache, SATCOUHASH(root));
     if (entry.a == root && entry.c == miscid) {
+      if (CACHESTATS) {
+        cachestats.opHit++;
+      }
       return entry.dres;
     }
 
+    if (CACHESTATS) {
+      cachestats.opMiss++;
+    }
     size = 0;
     s = 1;
 
@@ -3230,6 +3410,9 @@ public final class JFactory extends BDDFactory {
     s *= Math.pow(2.0, (float) (LEVEL(HIGH(root)) - LEVEL(root) - 1));
     size += s * satcount_rec(HIGH(root));
 
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
     entry.a = root;
     entry.c = miscid;
     entry.dres = size;
@@ -3283,10 +3466,14 @@ public final class JFactory extends BDDFactory {
       }
     }
 
-    if (FLUSH_CACHE_ON_GC) {
-      bdd_operator_reset();
-    } else {
-      bdd_operator_clean();
+    if (bddfreenum > 0) {
+      // Don't reset or clean caches if we didn't free any nodes.
+
+      if (FLUSH_CACHE_ON_GC) {
+        bdd_operator_reset();
+      } else {
+        bdd_operator_clean();
+      }
     }
 
     c2 = System.currentTimeMillis();
@@ -3395,24 +3582,22 @@ public final class JFactory extends BDDFactory {
     bdd_unmark(HIGH(i));
   }
 
-  private static final boolean CACHESTATS = false;
-
   private int bdd_makenode(int level, int low, int high) {
-    int hash2;
-    int res;
+    /* check whether childs are equal */
+    if (low == high) {
+      if (CACHESTATS) {
+        cachestats.uniqueTrivial++;
+      }
+      return low;
+    }
 
     if (CACHESTATS) {
       cachestats.uniqueAccess++;
     }
 
-    /* check whether childs are equal */
-    if (low == high) {
-      return low;
-    }
-
     /* Try to find an existing node of this kind */
-    hash2 = NODEHASH(level, low, high);
-    res = HASH(hash2);
+    int hash2 = NODEHASH(level, low, high);
+    int res = HASH(hash2);
 
     while (res != 0) {
       if (LEVEL(res) == level && LOW(res) == low && HIGH(res) == high) {
@@ -3666,8 +3851,7 @@ public final class JFactory extends BDDFactory {
   private int supportMin; /* Min. used level in support calc. */
   private int supportMax; /* Max. used level in support calc. */
   @Nonnull private int[] supportSet; /* The found support set */
-  private BddCache applycache; /* Cache for apply results */
-  private BddCache itecache; /* Cache for ITE results */
+  private BddCache applycache; /* Cache for apply and ite results. See note in ite_rec. */
   private BddCache quantcache; /* Cache for exist/forall results */
   private BddCache appexcache; /* Cache for appex/appall results */
   private BddCache replacecache; /* Cache for replace results */
@@ -3684,7 +3868,6 @@ public final class JFactory extends BDDFactory {
   private void bdd_operator_init(int cachesize) {
     if (false) {
       applycache = BddCacheI_init(cachesize);
-      itecache = BddCacheI_init(cachesize);
       quantcache = BddCacheI_init(cachesize);
       appexcache = BddCacheI_init(cachesize);
       replacecache = BddCacheI_init(cachesize);
@@ -3705,8 +3888,6 @@ public final class JFactory extends BDDFactory {
 
     BddCache_done(applycache);
     applycache = null;
-    BddCache_done(itecache);
-    itecache = null;
     BddCache_done(quantcache);
     quantcache = null;
     BddCache_done(appexcache);
@@ -3725,7 +3906,6 @@ public final class JFactory extends BDDFactory {
 
   private void bdd_operator_reset() {
     BddCache_reset(applycache);
-    BddCache_reset(itecache);
     BddCache_reset(quantcache);
     BddCache_reset(appexcache);
     BddCache_reset(replacecache);
@@ -3736,7 +3916,6 @@ public final class JFactory extends BDDFactory {
 
   private void bdd_operator_clean() {
     BddCache_clean_ab(applycache);
-    BddCache_clean_abc(itecache);
     BddCache_clean_a(quantcache);
     BddCache_clean_ab(appexcache);
     BddCache_clean_ab(replacecache);
@@ -3757,7 +3936,6 @@ public final class JFactory extends BDDFactory {
   public int setCacheSize(int newcachesize) {
     int old = cachesize;
     BddCache_resize(applycache, newcachesize);
-    BddCache_resize(itecache, newcachesize);
     BddCache_resize(quantcache, newcachesize);
     BddCache_resize(appexcache, newcachesize);
     BddCache_resize(replacecache, newcachesize);
@@ -3772,7 +3950,6 @@ public final class JFactory extends BDDFactory {
       int newcachesize = bddnodesize / cacheratio;
 
       BddCache_resize(applycache, newcachesize);
-      BddCache_resize(itecache, newcachesize);
       BddCache_resize(quantcache, newcachesize);
       BddCache_resize(appexcache, newcachesize);
       BddCache_resize(replacecache, newcachesize);
@@ -3841,10 +4018,40 @@ public final class JFactory extends BDDFactory {
     cache.tablesize = 0;
   }
 
+  /**
+   * Returns the name of the type of {@link BddCache} that {@code cache} represents.
+   *
+   * <p>Slow. Should only be used in debugging contexts.
+   */
+  private String getCacheName(BddCache cache) {
+    if (cache == applycache) {
+      return "apply";
+    } else if (cache == appexcache) {
+      return "appex";
+    } else if (cache == countcache) {
+      return "count";
+    } else if (cache == misccache) {
+      return "misc";
+    } else if (cache == quantcache) {
+      return "quant";
+    } else if (cache == replacecache) {
+      return "replace";
+    } else {
+      return "unknown";
+    }
+  }
+
   private int BddCache_resize(BddCache cache, int newsize) {
     if (cache == null) {
       return 0;
     }
+
+    if (CACHESTATS) {
+      System.err.printf(
+          "Cache %s resize: %d/%d slots used%n",
+          getCacheName(cache), cache.used(), cache.table.length);
+    }
+
     int n;
 
     newsize = bdd_prime_gte(newsize);
@@ -3888,10 +4095,16 @@ public final class JFactory extends BDDFactory {
     return (MultiOpBddCacheData) cache.table[Math.abs(hash % cache.tablesize)];
   }
 
-  private static void BddCache_reset(BddCache cache) {
+  private void BddCache_reset(BddCache cache) {
     if (cache == null) {
       return;
     }
+    if (CACHESTATS) {
+      System.err.printf(
+          "Cache %s reset: %d/%d slots used%n",
+          getCacheName(cache), cache.used(), cache.table.length);
+    }
+
     int n;
     for (n = 0; n < cache.tablesize; n++) {
       cache.table[n].a = -1;
@@ -5315,8 +5528,8 @@ public final class JFactory extends BDDFactory {
     bddlevel2var[lev + 1] = newVar;
     // Fix up bddvarset
     for (int bdv = 0; bdv < bddvarnum; bdv++) {
-      bddvarset[bdv * 2] = PUSHREF(bdd_makenode(bddvar2level[bdv], 0, 1));
-      bddvarset[bdv * 2 + 1] = bdd_makenode(bddvar2level[bdv], 1, 0);
+      bddvarset[bdv * 2] = PUSHREF(bdd_makenode(bddvar2level[bdv], BDDZERO, BDDONE));
+      bddvarset[bdv * 2 + 1] = bdd_makenode(bddvar2level[bdv], BDDONE, BDDZERO);
       POPREF(1);
 
       SETMAXREF(bddvarset[bdv * 2]);
@@ -5378,8 +5591,8 @@ public final class JFactory extends BDDFactory {
     bddrefstacktop = 0;
 
     for (bdv = bddvarnum; bddvarnum < num; bddvarnum++) {
-      bddvarset[bddvarnum * 2] = PUSHREF(bdd_makenode(bddvarnum, 0, 1));
-      bddvarset[bddvarnum * 2 + 1] = bdd_makenode(bddvarnum, 1, 0);
+      bddvarset[bddvarnum * 2] = PUSHREF(bdd_makenode(bddvarnum, BDDZERO, BDDONE));
+      bddvarset[bddvarnum * 2 + 1] = bdd_makenode(bddvarnum, BDDONE, BDDZERO);
       POPREF(1);
 
       if (bdderrorcond != 0) {
@@ -5795,8 +6008,6 @@ public final class JFactory extends BDDFactory {
     }
   }
 
-  private static final boolean SWAPCOUNT = false;
-
   private int reorder_downSimple(int var0) {
     int toBeProcessed = 0;
     int var1 = bddlevel2var[bddvar2level[var0] + 1];
@@ -5828,7 +6039,7 @@ public final class JFactory extends BDDFactory {
           /* Node depends on next var - save it for later procesing */
           SETNEXT(r, toBeProcessed);
           toBeProcessed = r;
-          if (SWAPCOUNT) {
+          if (CACHESTATS) {
             cachestats.swapCount++;
           }
         }
@@ -6011,25 +6222,24 @@ public final class JFactory extends BDDFactory {
   private boolean resizedInMakenode;
 
   private int reorder_makenode(int var, int low, int high) {
-    int hash;
-    int res;
+    /* check whether childs are equal */
+    if (low == high) {
+      /* Note: We know that low,high has a refcou greater than zero, so
+      there is no need to add reference *recursively* */
+      INCREF(low);
+      if (CACHESTATS) {
+        cachestats.uniqueTrivial++;
+      }
+      return low;
+    }
 
     if (CACHESTATS) {
       cachestats.uniqueAccess++;
     }
 
-    /* Note: We know that low,high has a refcou greater than zero, so
-    there is no need to add reference *recursively* */
-
-    /* check whether childs are equal */
-    if (low == high) {
-      INCREF(low);
-      return low;
-    }
-
     /* Try to find an existing node of this kind */
-    hash = NODEHASH2(var, low, high);
-    res = HASH(hash);
+    int hash = NODEHASH2(var, low, high);
+    int res = HASH(hash);
 
     while (res != 0) {
       if (LOW(res) == low && HIGH(res) == high) {
@@ -7168,9 +7378,6 @@ public final class JFactory extends BDDFactory {
     JFactory INSTANCE = new JFactory();
     if (applycache != null) {
       INSTANCE.applycache = this.applycache.copy();
-    }
-    if (itecache != null) {
-      INSTANCE.itecache = this.itecache.copy();
     }
     if (quantcache != null) {
       INSTANCE.quantcache = this.quantcache.copy();

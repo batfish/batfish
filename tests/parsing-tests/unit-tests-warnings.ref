@@ -667,80 +667,10 @@
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 32,
-        "Text" : "interface bond1.4094 clag backup-ip 192.0.2.4 vrf mgmt",
-        "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "configs/cumulus_nclu",
-        "Line" : 33,
-        "Text" : "interface bond1.4094 clag peer-ip 192.0.2.5",
-        "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "configs/cumulus_nclu",
-        "Line" : 34,
-        "Text" : "interface bond1.4094 clag priority 1000",
-        "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "configs/cumulus_nclu",
-        "Line" : 35,
-        "Text" : "interface bond1.4094 clag sys-mac 00:11:22:33:44:55",
-        "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "configs/cumulus_nclu",
-        "Line" : 36,
-        "Text" : "interface bond1.4094 ip address 192.0.2.6/24",
-        "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "configs/cumulus_nclu",
-        "Line" : 37,
-        "Text" : "interface eth0 vrf mgmt",
-        "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "configs/cumulus_nclu",
-        "Line" : 38,
-        "Text" : "interface swp1 bridge access 3",
-        "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "configs/cumulus_nclu",
-        "Line" : 39,
-        "Text" : "interface swp1,2-3",
-        "Parser_Context" : "[a_interface s_net_add statement cumulus_nclu_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "configs/cumulus_nclu",
         "Line" : 40,
         "Text" : "net add loopback lo\n",
         "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
         "Comment" : "This syntax is unrecognized"
-      },
-      {
-        "Filename" : "configs/cumulus_nclu",
-        "Line" : 41,
-        "Text" : "loopback lo clag vxlan-anycast-ip 192.0.2.7",
-        "Parser_Context" : "[a_loopback s_net_add statement cumulus_nclu_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "configs/cumulus_nclu",
-        "Line" : 42,
-        "Text" : "loopback lo ip address 192.0.2.8/32",
-        "Parser_Context" : "[a_loopback s_net_add statement cumulus_nclu_configuration]",
-        "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cumulus_nclu",
@@ -884,65 +814,9 @@
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 61,
-        "Text" : "vlan 4 ip address 192.0.2.9/24",
-        "Parser_Context" : "[a_vlan s_net_add statement cumulus_nclu_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "configs/cumulus_nclu",
-        "Line" : 62,
-        "Text" : "vlan 4 ip address-virtual 01:23:45:67:89:ab 192.168.0.1/24",
-        "Parser_Context" : "[a_vlan s_net_add statement cumulus_nclu_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "configs/cumulus_nclu",
-        "Line" : 63,
-        "Text" : "vlan 4 vlan-id 4",
-        "Parser_Context" : "[a_vlan s_net_add statement cumulus_nclu_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "configs/cumulus_nclu",
         "Line" : 64,
-        "Text" : "vlan 4 vlan-raw-device bridge",
-        "Parser_Context" : "[a_vlan s_net_add statement cumulus_nclu_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "configs/cumulus_nclu",
-        "Line" : 65,
-        "Text" : "vlan 4 vrf vrf1",
-        "Parser_Context" : "[a_vlan s_net_add statement cumulus_nclu_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "configs/cumulus_nclu",
-        "Line" : 66,
-        "Text" : "net add vrf mgmt ip address 10.0.0.2/8\n",
-        "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
-        "Comment" : "This syntax is unrecognized"
-      },
-      {
-        "Filename" : "configs/cumulus_nclu",
-        "Line" : 67,
-        "Text" : "vrf vrf1 vni 10001",
-        "Parser_Context" : "[a_vrf s_net_add statement cumulus_nclu_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "configs/cumulus_nclu",
-        "Line" : 68,
-        "Text" : "vrf vrf1,mgmt vrf-table auto",
-        "Parser_Context" : "[a_vrf s_net_add statement cumulus_nclu_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "configs/cumulus_nclu",
-        "Line" : 69,
-        "Text" : "vxlan vni10001 bridge access 5",
-        "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
+        "Text" : "vlan-raw-device bridge",
+        "Parser_Context" : "[v_vlan_raw_device a_vlan s_net_add statement cumulus_nclu_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
@@ -954,44 +828,30 @@
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 70,
-        "Text" : "vxlan vni10001 vxlan id 100001",
-        "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "configs/cumulus_nclu",
-        "Line" : 71,
-        "Text" : "vxlan vni10001,10002-10003 bridge arp-nd-suppress on",
-        "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "configs/cumulus_nclu",
         "Line" : 72,
-        "Text" : "vxlan vni10001,10002-10003 bridge learning off",
-        "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
+        "Text" : "arp-nd-suppress on",
+        "Parser_Context" : "[vxb_arp_nd_suppress vx_bridge a_vxlan s_net_add statement cumulus_nclu_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cumulus_nclu",
         "Line" : 73,
-        "Text" : "vxlan vni10001,10002-10003 stp bpduguard",
-        "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
+        "Text" : "learning off",
+        "Parser_Context" : "[vxb_learning vx_bridge a_vxlan s_net_add statement cumulus_nclu_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cumulus_nclu",
         "Line" : 74,
-        "Text" : "vxlan vni10001,10002-10003 stp portbpdufilter",
-        "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
+        "Text" : "stp bpduguard",
+        "Parser_Context" : "[vx_stp a_vxlan s_net_add statement cumulus_nclu_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cumulus_nclu",
         "Line" : 75,
-        "Text" : "vxlan vni10001,10002-10003 vxlan local-tunnelip 192.0.2.10",
-        "Parser_Context" : "[a_vxlan s_net_add statement cumulus_nclu_configuration]",
+        "Text" : "stp portbpdufilter",
+        "Parser_Context" : "[vx_stp a_vxlan s_net_add statement cumulus_nclu_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
@@ -1003,17 +863,17 @@
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 81,
-        "Text" : "sudo sh -c \"printf 'username cumulus nopassword\\n' >> /etc/frr/frr.conf\"\n",
-        "Parser_Context" : "[s_extra_configuration statement cumulus_nclu_configuration]",
+        "Line" : 82,
+        "Text" : "username cumulus nopassword\\n",
+        "Parser_Context" : "[frr_unrecognized s_extra_configuration statement cumulus_nclu_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "configs/cumulus_nclu",
-        "Line" : 82,
-        "Text" : "sudo sh -c \"printf 'vrf vrf1\\n  ip route 0.0.0.0/0 192.0.2.1\\n' >> /etc/frr/frr.conf\"\n\n",
-        "Parser_Context" : "[s_extra_configuration statement cumulus_nclu_configuration]",
-        "Comment" : "This syntax is unrecognized"
+        "Line" : 83,
+        "Text" : "vrf vrf1\\n  ip route 0.0.0.0/0 192.0.2.1\\n",
+        "Parser_Context" : "[frr_vrf s_extra_configuration statement cumulus_nclu_configuration]",
+        "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cumulus_nclu",
@@ -2529,10 +2389,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 355 results",
+      "notes" : "Found 335 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 355
+      "numResults" : 335
     }
   }
 ]

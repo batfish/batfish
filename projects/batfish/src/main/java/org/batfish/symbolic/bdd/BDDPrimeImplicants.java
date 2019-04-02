@@ -87,8 +87,8 @@ public class BDDPrimeImplicants implements Iterable<BDD> {
     BDD highPI = computePrimeImplicantBDD(bdd.high(), memoTable);
     BDD lowPI = computePrimeImplicantBDD(bdd.low(), memoTable);
     BDD commonPI = highPI.and(lowPI);
-    BDD highPIOnly = highPI.and(lowPI.not());
-    BDD lowPIOnly = lowPI.and(highPI.not());
+    BDD highPIOnly = highPI.diff(lowPI);
+    BDD lowPIOnly = lowPI.diff(highPI);
     int occurrenceVar = var2OccurrenceVar(currVar);
     int signVar = var2SignVar(currVar);
     BDD signPI =

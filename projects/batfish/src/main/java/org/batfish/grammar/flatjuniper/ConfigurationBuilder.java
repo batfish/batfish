@@ -315,11 +315,15 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Natp_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Natp_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Natp_routing_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_areaContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_disableContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_enableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_reference_bandwidthContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_nssaContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_stubContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_disableContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_enableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_interface_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_passiveContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oan_default_lsaContext;
@@ -4491,6 +4495,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void exitO_disable(O_disableContext ctx) {
+    _currentRoutingInstance.setOspfDisable(true);
+  }
+
+  @Override
+  public void exitO_enable(O_enableContext ctx) {
+    _currentRoutingInstance.setOspfDisable(false);
+  }
+
+  @Override
   public void exitO_export(O_exportContext ctx) {
     String name = ctx.name.getText();
     _currentRoutingInstance.getOspfExportPolicies().add(name);
@@ -4528,6 +4542,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitOaa_restrict(FlatJuniperParser.Oaa_restrictContext ctx) {
     _currentAreaRangeRestrict = true;
+  }
+
+  @Override
+  public void exitOai_disable(Oai_disableContext ctx) {
+    _currentOspfInterface.setOspfDisable(true);
+  }
+
+  @Override
+  public void exitOai_enable(Oai_enableContext ctx) {
+    _currentOspfInterface.setOspfDisable(false);
   }
 
   @Override

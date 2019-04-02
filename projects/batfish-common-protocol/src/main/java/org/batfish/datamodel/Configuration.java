@@ -186,8 +186,6 @@ public final class Configuration implements Serializable {
 
   private NavigableMap<String, AuthenticationKeyChain> _authenticationKeyChains;
 
-  private transient NavigableSet<BgpAdvertisement> _bgpAdvertisements;
-
   private NavigableMap<String, CommunityList> _communityLists;
 
   private final ConfigurationFormat _configurationFormat;
@@ -357,11 +355,6 @@ public final class Configuration implements Serializable {
   @JsonPropertyDescription("Dictionary of all authentication key chains for this node.")
   public NavigableMap<String, AuthenticationKeyChain> getAuthenticationKeyChains() {
     return _authenticationKeyChains;
-  }
-
-  @JsonIgnore
-  public NavigableSet<BgpAdvertisement> getBgpAdvertisements() {
-    return _bgpAdvertisements;
   }
 
   /** Returns the lowest IP across all interfaces for now. We'll improve it later. */
@@ -629,13 +622,6 @@ public final class Configuration implements Serializable {
   @JsonPropertyDescription("Dictionary of all firewall zones for this node.")
   public NavigableMap<String, Zone> getZones() {
     return _zones;
-  }
-
-  public void initBgpAdvertisements() {
-    _bgpAdvertisements = new TreeSet<>();
-    for (Vrf vrf : _vrfs.values()) {
-      vrf.initBgpAdvertisements();
-    }
   }
 
   @JsonProperty(PROP_AS_PATH_ACCESS_LISTS)

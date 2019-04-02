@@ -215,9 +215,6 @@ public final class BDDReachabilityAnalysisFactory {
   // node --> vrf --> set of packets accepted by the vrf
   private final Map<String, Map<String, BDD>> _vrfAcceptBDDs;
 
-  // node --> vrf --> set of packets not accepted by the vrf
-  private final Map<String, Map<String, BDD>> _vrfNotAcceptBDDs;
-
   private BDD _zero;
 
   public BDDReachabilityAnalysisFactory(
@@ -266,7 +263,6 @@ public final class BDDReachabilityAnalysisFactory {
           computeDispositionBDDs(forwardingAnalysis.getInsufficientInfo(), _dstIpSpaceToBDD);
       _routableBDDs = computeRoutableBDDs(forwardingAnalysis, _dstIpSpaceToBDD);
       _vrfAcceptBDDs = computeVrfAcceptBDDs(configs, _dstIpSpaceToBDD);
-      _vrfNotAcceptBDDs = computeVrfNotAcceptBDDs(_vrfAcceptBDDs);
 
       _convertedPacketPolicies = convertPacketPolicies(configs);
 
@@ -413,22 +409,6 @@ public final class BDDReachabilityAnalysisFactory {
                   nodeEntry.getValue(),
                   Entry::getKey,
                   vrfEntry -> vrfEntry.getValue().accept(ipSpaceToBDD)));
-    }
-  }
-
-  private static Map<String, Map<String, BDD>> computeVrfNotAcceptBDDs(
-      Map<String, Map<String, BDD>> vrfAcceptBDDs) {
-    try (ActiveSpan span =
-        GlobalTracer.get()
-            .buildSpan("BDDReachabilityAnalysisFactory.computeVrfNotAcceptBDDs")
-            .startActive()) {
-      assert span != null; // avoid unused warning
-      return toImmutableMap(
-          vrfAcceptBDDs,
-          Entry::getKey,
-          nodeEntry ->
-              toImmutableMap(
-                  nodeEntry.getValue(), Entry::getKey, vrfEntry -> vrfEntry.getValue().not()));
     }
   }
 
@@ -766,7 +746,7 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private Stream<Edge> generateRules_PostInVrf_NodeDropNoRoute() {
-    return _vrfNotAcceptBDDs.entrySet().stream()
+    return _vrfAcceptBDDs.entrySet().stream()
         .flatMap(
             nodeEntry ->
                 nodeEntry.getValue().entrySet().stream()
@@ -774,20 +754,20 @@ public final class BDDReachabilityAnalysisFactory {
                         vrfEntry -> {
                           String node = nodeEntry.getKey();
                           String vrf = vrfEntry.getKey();
-                          BDD notAcceptBDD = vrfEntry.getValue();
-                          BDD notRoutableBDD = _routableBDDs.get(node).get(vrf).not();
+                          BDD acceptBDD = vrfEntry.getValue();
+                          BDD routableBDD = _routableBDDs.get(node).get(vrf);
                           return new Edge(
                               new PostInVrf(node, vrf),
                               new NodeDropNoRoute(node),
                               compose(
-                                  constraint(notAcceptBDD.and(notRoutableBDD)),
+                                  constraint(acceptBDD.nor(routableBDD)),
                                   removeSourceConstraint(_bddSourceManagers.get(node)),
                                   removeLastHopConstraint(_lastHopMgr, node)));
                         }));
   }
 
   private Stream<Edge> generateRules_PostInVrf_PreOutVrf() {
-    return _vrfNotAcceptBDDs.entrySet().stream()
+    return _vrfAcceptBDDs.entrySet().stream()
         .flatMap(
             nodeEntry ->
                 nodeEntry.getValue().entrySet().stream()
@@ -795,12 +775,12 @@ public final class BDDReachabilityAnalysisFactory {
                         vrfEntry -> {
                           String node = nodeEntry.getKey();
                           String vrf = vrfEntry.getKey();
-                          BDD notAcceptBDD = vrfEntry.getValue();
+                          BDD acceptBDD = vrfEntry.getValue();
                           BDD routableBDD = _routableBDDs.get(node).get(vrf);
                           return new Edge(
                               new PostInVrf(node, vrf),
                               new PreOutVrf(node, vrf),
-                              notAcceptBDD.and(routableBDD));
+                              routableBDD.diff(acceptBDD));
                         }));
   }
 
