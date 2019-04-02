@@ -905,11 +905,7 @@ public final class JFactory extends BDDFactory {
 
   @Override
   public BDD orAll(BDD... bddOperands) {
-    int[] operands = new int[bddOperands.length];
-    for (int i = 0; i < operands.length; i++) {
-      operands[i] = ((BDDImpl) bddOperands[i])._index;
-    }
-    return makeBDD(bdd_orAll(operands));
+    return orAll(Arrays.asList(bddOperands));
   }
 
   @Override
