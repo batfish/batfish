@@ -118,7 +118,7 @@ public class OspfSessionCompatibilityAnswererTest {
     ospfGraph.putEdgeValue(
         new OspfNeighborConfigId("configuration_u", "vrf_u", "U", "int_u"),
         new OspfNeighborConfigId("configuration_v", "vrf_v", "V", "int_v"),
-        new OspfSessionProperties(new IpLink(Ip.parse("1.1.1.2"), Ip.parse("1.1.1.3"))));
+        new OspfSessionProperties(0, new IpLink(Ip.parse("1.1.1.2"), Ip.parse("1.1.1.3"))));
     _ospfTopology = new OspfTopology(ImmutableValueGraph.copyOf(ospfGraph));
   }
 
