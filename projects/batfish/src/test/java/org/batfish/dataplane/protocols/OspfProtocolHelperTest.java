@@ -15,7 +15,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OspfInterAreaRoute;
-import org.batfish.datamodel.OspfInternalRoute;
 import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
@@ -39,17 +38,14 @@ public class OspfProtocolHelperTest {
     long definedMetric = 5;
     long definedArea = 1;
     OspfInterAreaRoute route =
-        (OspfInterAreaRoute)
-            OspfInternalRoute.builder()
-                .setProtocol(RoutingProtocol.OSPF_IA)
-                .setNetwork(ospfInterAreaRoutePrefix)
-                .setNextHopIp(Ip.MAX)
-                .setAdmin(
-                    RoutingProtocol.OSPF_IA.getDefaultAdministrativeCost(
-                        ConfigurationFormat.CISCO_IOS))
-                .setMetric(definedMetric)
-                .setArea(definedArea)
-                .build();
+        OspfInterAreaRoute.builder()
+            .setNetwork(ospfInterAreaRoutePrefix)
+            .setNextHopIp(Ip.MAX)
+            .setAdmin(
+                RoutingProtocol.OSPF_IA.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS))
+            .setMetric(definedMetric)
+            .setArea(definedArea)
+            .build();
 
     // The route is in the prefix and existing metric is null, so return the route's metric
     assertThat(
@@ -83,17 +79,14 @@ public class OspfProtocolHelperTest {
         equalTo(4L));
 
     OspfInterAreaRoute sameAreaRoute =
-        (OspfInterAreaRoute)
-            OspfInternalRoute.builder()
-                .setProtocol(RoutingProtocol.OSPF_IA)
-                .setNetwork(ospfInterAreaRoutePrefix)
-                .setNextHopIp(Ip.MAX)
-                .setAdmin(
-                    RoutingProtocol.OSPF_IA.getDefaultAdministrativeCost(
-                        ConfigurationFormat.CISCO_IOS))
-                .setArea(99L)
-                .setMetric(definedMetric)
-                .build();
+        OspfInterAreaRoute.builder()
+            .setNetwork(ospfInterAreaRoutePrefix)
+            .setNextHopIp(Ip.MAX)
+            .setAdmin(
+                RoutingProtocol.OSPF_IA.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS))
+            .setArea(99L)
+            .setMetric(definedMetric)
+            .build();
     // The area is different from definedArea thus the metric should remain null
     assertThat(
         OspfProtocolHelper.computeUpdatedOspfSummaryMetric(
@@ -163,15 +156,13 @@ public class OspfProtocolHelperTest {
 
     Prefix network = Prefix.parse("1.1.1.1/32");
     OspfIntraAreaRoute route =
-        (OspfIntraAreaRoute)
-            OspfInternalRoute.builder()
-                .setProtocol(RoutingProtocol.OSPF)
-                .setNetwork(network)
-                .setNextHopIp(Ip.parse("9.9.9.9"))
-                .setAdmin(20)
-                .setMetric(10)
-                .setArea(0L)
-                .build();
+        OspfIntraAreaRoute.builder()
+            .setNetwork(network)
+            .setNextHopIp(Ip.parse("9.9.9.9"))
+            .setAdmin(20)
+            .setMetric(10)
+            .setArea(0L)
+            .build();
 
     // Test: Area-0 route going from area 0 to area 1. Area 0 has a filter list suppressing routes.
     // Denied propagation because of the filter list.
@@ -201,15 +192,13 @@ public class OspfProtocolHelperTest {
 
     Prefix network = Prefix.parse("1.1.1.1/32");
     OspfIntraAreaRoute route =
-        (OspfIntraAreaRoute)
-            OspfInternalRoute.builder()
-                .setProtocol(RoutingProtocol.OSPF)
-                .setNetwork(network)
-                .setNextHopIp(Ip.parse("9.9.9.9"))
-                .setAdmin(20)
-                .setMetric(10)
-                .setArea(1L)
-                .build();
+        OspfIntraAreaRoute.builder()
+            .setNetwork(network)
+            .setNextHopIp(Ip.parse("9.9.9.9"))
+            .setAdmin(20)
+            .setMetric(10)
+            .setArea(1L)
+            .build();
 
     // Test: route going from 0 to 1, no filter lists; denied propagation because of type3
     // suppression.
