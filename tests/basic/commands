@@ -26,7 +26,6 @@ test tests/basic/bgpSessionStatus.ref get bgpsessionstatus nodes="as2.*", remote
 test tests/basic/compareSameName.ref get compareSameName
 test tests/basic/error.ref -error get error
 test tests/basic/isisLoopbacks.ref get isisLoopbacks
-test tests/basic/ospfSessionCheck.ref get ospfsessioncheck
 test tests/basic/ospfStatus.ref get ospfstatus interfaces="Loopback.*", status=".*passive"
 test tests/basic/selfAdjacencies.ref get selfAdjacencies
 test tests/basic/testfilters.ref get testFilters headers={"dstIps": "1.1.1.1"}, nodes="host.*", filters="filter.*"
