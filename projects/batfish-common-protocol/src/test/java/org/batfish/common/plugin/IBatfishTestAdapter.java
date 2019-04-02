@@ -438,7 +438,7 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public SpecifierContext specifierContext() {
-    return new SpecifierContextImpl(this, networkSnapshot());
+    return new SpecifierContextImpl(this, getNetworkSnapshot());
   }
 
   @Override
@@ -471,15 +471,10 @@ public class IBatfishTestAdapter implements IBatfish {
     throw new UnsupportedOperationException();
   }
 
-  public NetworkSnapshot networkSnapshot() {
-    return new NetworkSnapshot(
-        new NetworkId(UUID.randomUUID().toString()), new SnapshotId(UUID.randomUUID().toString()));
-  }
-
   @Override
   public NetworkSnapshot getNetworkSnapshot() {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    return new NetworkSnapshot(
+        new NetworkId(UUID.randomUUID().toString()), new SnapshotId(UUID.randomUUID().toString()));
   }
 
   @Override

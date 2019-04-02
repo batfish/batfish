@@ -1,5 +1,6 @@
 package org.batfish.question.specifiers;
 
+import org.apache.commons.lang3.StringUtils;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -28,5 +29,18 @@ public final class SpecifiersReachabilityAnswerer extends Answerer {
     } else {
       return answer;
     }
+  }
+
+  private static final String[] DIFFERENTIAL_ALTERNATIVES =
+      new String[] {
+        "Differential Reachability https://pybatfish.readthedocs.io/en/latest/questions.html#pybatfish.question.bfq.differentialReachability",
+        "Routes (in differential mode) https://pybatfish.readthedocs.io/en/latest/questions.html#pybatfish.question.bfq.routes",
+      };
+
+  @Override
+  public AnswerElement answerDiff() {
+    throw new IllegalArgumentException(
+        "This question should not be run in differential mode. Instead, consider: "
+            + StringUtils.join(DIFFERENTIAL_ALTERNATIVES, ", "));
   }
 }

@@ -1,9 +1,12 @@
 package org.batfish.representation.cumulus;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
@@ -27,6 +30,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private final @Nonnull List<Ip> _ipv4Nameservers;
   private final @Nonnull List<Ip6> _ipv6Nameservers;
   private final @Nonnull Loopback _loopback;
+  private final @Nonnull Map<String, RouteMap> _routeMaps;
+  private final @Nonnull Set<StaticRoute> _staticRoutes;
   private final @Nonnull Map<String, Vlan> _vlans;
   private final @Nonnull Map<String, Vrf> _vrfs;
   private final @Nonnull Map<String, Vxlan> _vxlans;
@@ -37,6 +42,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     _ipv4Nameservers = new LinkedList<>();
     _ipv6Nameservers = new LinkedList<>();
     _loopback = new Loopback();
+    _routeMaps = new HashMap<>();
+    _staticRoutes = new HashSet<>();
     _vlans = new HashMap<>();
     _vrfs = new HashMap<>();
     _vxlans = new HashMap<>();
@@ -67,6 +74,14 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     return _loopback;
   }
 
+  public @Nonnull Map<String, RouteMap> getRouteMaps() {
+    return _routeMaps;
+  }
+
+  public @Nonnull Set<StaticRoute> getStaticRoutes() {
+    return _staticRoutes;
+  }
+
   public @Nonnull Map<String, Vlan> getVlans() {
     return _vlans;
   }
@@ -80,12 +95,23 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   }
 
   private void markStructures() {
+    markAbstractStructure(
+        CumulusStructureType.ABSTRACT_INTERFACE,
+        CumulusStructureUsage.ROUTE_MAP_MATCH_INTERFACE,
+        ImmutableSet.of(
+            CumulusStructureType.BOND,
+            CumulusStructureType.INTERFACE,
+            CumulusStructureType.LOOPBACK,
+            CumulusStructureType.VLAN,
+            CumulusStructureType.VRF));
     markConcreteStructure(CumulusStructureType.BOND, CumulusStructureUsage.BOND_SELF_REFERENCE);
     markConcreteStructure(
         CumulusStructureType.INTERFACE,
         CumulusStructureUsage.BOND_SLAVE,
         CumulusStructureUsage.INTERFACE_SELF_REFERENCE);
     markConcreteStructure(CumulusStructureType.VLAN, CumulusStructureUsage.VLAN_SELF_REFERENCE);
+    markConcreteStructure(
+        CumulusStructureType.LOOPBACK, CumulusStructureUsage.LOOPBACK_SELF_REFERENCE);
     markConcreteStructure(
         CumulusStructureType.VRF,
         CumulusStructureUsage.INTERFACE_CLAG_BACKUP_IP_VRF,

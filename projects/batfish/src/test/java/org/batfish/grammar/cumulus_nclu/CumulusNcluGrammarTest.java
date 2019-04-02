@@ -2,6 +2,7 @@ package org.batfish.grammar.cumulus_nclu;
 
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
+import static org.batfish.grammar.cumulus_nclu.CumulusNcluConfigurationBuilder.LOOPBACK_INTERFACE_NAME;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -14,6 +15,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
@@ -31,7 +33,9 @@ import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MacAddress;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -39,6 +43,9 @@ import org.batfish.representation.cumulus.Bond;
 import org.batfish.representation.cumulus.CumulusInterfaceType;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
+import org.batfish.representation.cumulus.RouteMap;
+import org.batfish.representation.cumulus.RouteMapMatchInterface;
+import org.batfish.representation.cumulus.StaticRoute;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -123,7 +130,8 @@ public final class CumulusNcluGrammarTest {
     ConvertConfigurationAnswerElement ans =
         getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
 
-    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.BOND, "bond1", 1));
+    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.BOND, "bond1", 2));
+    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "bond2.4094", 2));
   }
 
   @Test
@@ -246,8 +254,8 @@ public final class CumulusNcluGrammarTest {
     ConvertConfigurationAnswerElement ans =
         getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
 
-    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "swp1", 2));
-    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "swp2", 2));
+    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "swp1", 3));
+    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "swp2", 1));
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "swp3", 1));
   }
 
@@ -271,6 +279,82 @@ public final class CumulusNcluGrammarTest {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_loopback_missing");
 
     assertFalse("Ensure loopback is disabled", vc.getLoopback().getEnabled());
+  }
+
+  @Test
+  public void testLoopbackReferences() throws IOException {
+    String hostname = "cumulus_nclu_loopback_references";
+    String filename = String.format("configs/%s", hostname);
+    ConvertConfigurationAnswerElement ans =
+        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(
+        ans, hasNumReferrers(filename, CumulusStructureType.LOOPBACK, LOOPBACK_INTERFACE_NAME, 2));
+  }
+
+  @Test
+  public void testRoutingExtraction() throws IOException {
+    CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_routing");
+
+    // static route (main vrf)
+    assertThat(
+        vc.getStaticRoutes(),
+        containsInAnyOrder(
+            new StaticRoute(Prefix.strict("10.0.1.0/24"), Ip.parse("10.1.0.1")),
+            new StaticRoute(Prefix.strict("10.0.1.0/24"), Ip.parse("10.1.0.2"))));
+
+    // static route (alternate vrf)
+    assertThat(
+        vc.getVrfs().get("vrf1").getStaticRoutes(),
+        containsInAnyOrder(
+            new StaticRoute(Prefix.strict("10.0.2.0/24"), Ip.parse("192.0.2.1")),
+            new StaticRoute(Prefix.strict("10.0.2.0/24"), Ip.parse("192.0.2.2"))));
+
+    // route-map keys
+    assertThat(vc.getRouteMaps().keySet(), containsInAnyOrder("rm1", "rm2"));
+    RouteMap rm1 = vc.getRouteMaps().get("rm1");
+    RouteMap rm2 = vc.getRouteMaps().get("rm2");
+
+    // route-map entries
+    assertThat(rm1.getEntries().keySet(), contains(1, 2, 3, 4));
+    assertThat(rm2.getEntries().keySet(), contains(1));
+    // route-map entry num
+    assertThat(rm1.getEntries().get(1).getNumber(), equalTo(1));
+    assertThat(rm1.getEntries().get(2).getNumber(), equalTo(2));
+    assertThat(rm1.getEntries().get(3).getNumber(), equalTo(3));
+    assertThat(rm1.getEntries().get(4).getNumber(), equalTo(4));
+    assertThat(rm2.getEntries().get(1).getNumber(), equalTo(1));
+    // route-map entry action
+    assertThat(rm1.getEntries().get(1).getAction(), equalTo(LineAction.PERMIT));
+    assertThat(rm1.getEntries().get(2).getAction(), equalTo(LineAction.PERMIT));
+    assertThat(rm1.getEntries().get(3).getAction(), equalTo(LineAction.PERMIT));
+    assertThat(rm1.getEntries().get(4).getAction(), equalTo(LineAction.PERMIT));
+    assertThat(rm2.getEntries().get(1).getAction(), equalTo(LineAction.DENY));
+
+    // route-map match
+    assertThat(
+        rm1.getEntries().get(1).getMatches().collect(ImmutableList.toImmutableList()),
+        contains(new RouteMapMatchInterface(ImmutableSet.of("bond1"))));
+
+    // route-map match interface
+    assertThat(
+        rm1.getEntries().get(1).getMatchInterface(),
+        equalTo(new RouteMapMatchInterface(ImmutableSet.of("bond1"))));
+    assertThat(
+        rm1.getEntries().get(1).getMatchInterface(),
+        equalTo(new RouteMapMatchInterface(ImmutableSet.of("bond1"))));
+    assertThat(
+        rm1.getEntries().get(2).getMatchInterface(),
+        equalTo(new RouteMapMatchInterface(ImmutableSet.of(LOOPBACK_INTERFACE_NAME))));
+    assertThat(
+        rm1.getEntries().get(3).getMatchInterface(),
+        equalTo(new RouteMapMatchInterface(ImmutableSet.of("eth0.4094"))));
+    assertThat(
+        rm1.getEntries().get(4).getMatchInterface(),
+        equalTo(new RouteMapMatchInterface(ImmutableSet.of("swp1", "swp2"))));
+    assertThat(
+        rm2.getEntries().get(1).getMatchInterface(),
+        equalTo(new RouteMapMatchInterface(ImmutableSet.of("vrf1"))));
   }
 
   @Test
@@ -353,8 +437,8 @@ public final class CumulusNcluGrammarTest {
     ConvertConfigurationAnswerElement ans =
         getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
 
-    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VRF, "vrf1", 4));
-    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VRF, "vrf2", 2));
+    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VRF, "vrf1", 5));
+    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VRF, "vrf2", 1));
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VRF, "vrf3", 1));
   }
 

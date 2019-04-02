@@ -42,6 +42,11 @@ ip_address
   IP_ADDRESS
 ;
 
+ip_prefix
+:
+  IP_PREFIX
+;
+
 ipv6_address
 :
   IPV6_ADDRESS

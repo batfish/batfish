@@ -5,12 +5,14 @@ import static org.batfish.common.bdd.BDDInteger.makeFromIndex;
 import static org.batfish.common.bdd.BDDUtils.isAssignment;
 import static org.batfish.common.bdd.BDDUtils.swapPairing;
 
+import com.google.common.base.Suppliers;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
@@ -90,7 +92,12 @@ public class BDDPacket {
   private final BDDPairing _swapSourceAndDestinationPairing;
 
   // Picking representative flows
-  private final BDDRepresentativePicker _picker;
+  private final Supplier<BDDRepresentativePicker> _picker =
+      Suppliers.memoize(
+          () ->
+              new BDDRepresentativePicker(
+                  new BDDFlowConstraintGenerator(this)
+                      .generateFlowPreference(FlowPreference.DEBUGGING)));
 
   /*
    * Creates a collection of BDD variables representing the
@@ -157,10 +164,6 @@ public class BDDPacket {
         swapPairing(
             getDstIp(), getSrcIp(), //
             getDstPort(), getSrcPort());
-
-    _picker =
-        new BDDRepresentativePicker(
-            new BDDFlowConstraintGenerator(this).generateFlowPreference(FlowPreference.DEBUGGING));
   }
 
   /*
@@ -272,7 +275,7 @@ public class BDDPacket {
    * @return A Flow.Builder for a representative of the set, if it's non-empty
    */
   public Optional<Flow.Builder> getFlow(BDD bdd) {
-    BDD representativeBDD = _picker.pickRepresentative(bdd);
+    BDD representativeBDD = _picker.get().pickRepresentative(bdd);
     if (representativeBDD.isZero()) {
       return Optional.empty();
     }
