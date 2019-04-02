@@ -22,7 +22,6 @@ public class ParboiledIpProtocolSpecifierFactory implements IpProtocolSpecifierF
   public IpProtocolSpecifier buildIpProtocolSpecifier(Object input) {
     checkArgument(input instanceof String, "%s requires String input", NAME);
 
-    Parser parser = Parser.instance();
     ParsingResult<AstNode> result =
         new ReportingParseRunner<AstNode>(
                 Parser.instance().getInputRule(Grammar.IP_PROTOCOL_SPECIFIER))
