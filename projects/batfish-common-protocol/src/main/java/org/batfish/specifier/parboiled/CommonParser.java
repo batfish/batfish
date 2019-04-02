@@ -34,8 +34,8 @@ public class CommonParser extends BaseParser<AstNode> {
   public static final String ESCAPE_CHAR = "\"";
 
   /**
-   * Characters that we deem special in our grammar and cannot appear in unquoted names. Wpackete
-   * are currently using the first bunch and setting aside some more for future use.
+   * Characters that we deem special in our grammar and cannot appear in unquoted names. We are
+   * currently using the first bunch and setting aside some more for future use.
    *
    * <p>Once we stop supporting now-deprecated regexes, '*' should probably added to the reserved
    * list.
