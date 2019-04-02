@@ -24,7 +24,7 @@ public class ParserLocationTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static AbstractParseRunner<AstNode> getRunner() {
-    return new ReportingParseRunner<>(Parser.INSTANCE.input(Parser.INSTANCE.LocationSpec()));
+    return new ReportingParseRunner<>(Parser.instance().input(Parser.instance().LocationSpec()));
   }
 
   /** This testParses if we have proper completion annotations on the rules */
@@ -46,8 +46,7 @@ public class ParserLocationTest {
 
     ParboiledAutoComplete pac =
         new ParboiledAutoComplete(
-            Parser.INSTANCE,
-            Parser.INSTANCE.input(Parser.INSTANCE.LocationSpec()),
+            Parser.instance().getInputRule(Grammar.LOCATION_SPECIFIER),
             Parser.ANCHORS,
             "network",
             "snapshot",
@@ -95,8 +94,7 @@ public class ParserLocationTest {
 
     ParboiledAutoComplete pac =
         new ParboiledAutoComplete(
-            Parser.INSTANCE,
-            Parser.INSTANCE.input(Parser.INSTANCE.LocationSpec()),
+            Parser.instance().getInputRule(Grammar.LOCATION_SPECIFIER),
             Parser.ANCHORS,
             "network",
             "snapshot",

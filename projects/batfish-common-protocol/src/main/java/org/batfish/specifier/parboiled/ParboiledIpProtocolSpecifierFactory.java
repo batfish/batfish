@@ -22,9 +22,11 @@ public class ParboiledIpProtocolSpecifierFactory implements IpProtocolSpecifierF
   public IpProtocolSpecifier buildIpProtocolSpecifier(Object input) {
     checkArgument(input instanceof String, "%s requires String input", NAME);
 
+    Parser parser = Parser.instance();
     ParsingResult<AstNode> result =
         new ReportingParseRunner<AstNode>(
-                Parser.INSTANCE.input(Grammar.IP_PROTOCOL_SPECIFIER.getExpression()))
+                // Parser.instance().input(Grammar.IP_PROTOCOL_SPECIFIER.getExpression()))
+                parser.input(parser.IpProtocolSpec()))
             .run((String) input);
 
     if (!result.parseErrors.isEmpty()) {
@@ -36,11 +38,16 @@ public class ParboiledIpProtocolSpecifierFactory implements IpProtocolSpecifierF
               Parser.ANCHORS));
     }
 
-    AstNode ast = ParserUtils.getAst(result);
+    try {
+      AstNode ast = ParserUtils.getAst(result);
 
-    checkArgument(
-        ast instanceof IpProtocolAstNode, "%s requires an IP protocol specifier input", NAME);
-    return new ParboiledIpProtocolSpecifier((IpProtocolAstNode) ast);
+      checkArgument(
+          ast instanceof IpProtocolAstNode, "%s requires an IP protocol specifier input", NAME);
+      return new ParboiledIpProtocolSpecifier((IpProtocolAstNode) ast);
+
+    } catch (Exception e) {
+      throw e;
+    }
   }
 
   @Override

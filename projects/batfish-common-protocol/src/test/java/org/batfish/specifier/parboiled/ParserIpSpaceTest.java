@@ -22,7 +22,7 @@ public class ParserIpSpaceTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static AbstractParseRunner<AstNode> getRunner() {
-    return new ReportingParseRunner<>(Parser.INSTANCE.input(Parser.INSTANCE.IpSpaceSpec()));
+    return new ReportingParseRunner<>(Parser.instance().input(Parser.instance().IpSpaceSpec()));
   }
 
   /** This tests if we have proper completion annotations on the rules */
@@ -49,8 +49,7 @@ public class ParserIpSpaceTest {
 
     ParboiledAutoComplete pac =
         new ParboiledAutoComplete(
-            Parser.INSTANCE,
-            Parser.INSTANCE.input(Parser.INSTANCE.IpSpaceSpec()),
+            Parser.instance().getInputRule(Grammar.IP_SPACE_SPECIFIER),
             Parser.ANCHORS,
             "network",
             "snapshot",

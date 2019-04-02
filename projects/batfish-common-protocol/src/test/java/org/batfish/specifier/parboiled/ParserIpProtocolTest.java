@@ -24,7 +24,7 @@ public class ParserIpProtocolTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static AbstractParseRunner<AstNode> getRunner() {
-    return new ReportingParseRunner<>(Parser.INSTANCE.input(Parser.INSTANCE.IpProtocolSpec()));
+    return new ReportingParseRunner<>(Parser.instance().input(Parser.instance().IpProtocolSpec()));
   }
 
   /** This testParses if we have proper completion annotations on the rules */
@@ -43,8 +43,7 @@ public class ParserIpProtocolTest {
 
     ParboiledAutoComplete pac =
         new ParboiledAutoComplete(
-            Parser.INSTANCE,
-            Parser.INSTANCE.input(Parser.INSTANCE.IpProtocolSpec()),
+            Parser.instance().getInputRule(Grammar.IP_PROTOCOL_SPECIFIER),
             Parser.ANCHORS,
             "network",
             "snapshot",
@@ -76,8 +75,7 @@ public class ParserIpProtocolTest {
 
     ParboiledAutoComplete pac =
         new ParboiledAutoComplete(
-            Parser.INSTANCE,
-            Parser.INSTANCE.input(Parser.INSTANCE.IpProtocolSpec()),
+            Parser.instance().getInputRule(Grammar.IP_PROTOCOL_SPECIFIER),
             Parser.ANCHORS,
             "network",
             "snapshot",
@@ -101,8 +99,7 @@ public class ParserIpProtocolTest {
 
     ParboiledAutoComplete pac =
         new ParboiledAutoComplete(
-            Parser.INSTANCE,
-            Parser.INSTANCE.input(Parser.INSTANCE.IpProtocolSpec()),
+            Parser.instance().getInputRule(Grammar.IP_PROTOCOL_SPECIFIER),
             Parser.ANCHORS,
             "network",
             "snapshot",

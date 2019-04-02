@@ -19,9 +19,9 @@ public class ParboiledNodeSpecifierFactory implements NodeSpecifierFactory {
   public NodeSpecifier buildNodeSpecifier(Object input) {
     checkArgument(input instanceof String, "%s requires String input", NAME);
 
+    Parser parser = Parser.instance();
     ParsingResult<AstNode> result =
-        new ReportingParseRunner<AstNode>(
-                Parser.INSTANCE.input(Grammar.NODE_SPECIFIER.getExpression()))
+        new ReportingParseRunner<AstNode>(Parser.instance().getInputRule(Grammar.NODE_SPECIFIER))
             .run((String) input);
 
     if (!result.parseErrors.isEmpty()) {

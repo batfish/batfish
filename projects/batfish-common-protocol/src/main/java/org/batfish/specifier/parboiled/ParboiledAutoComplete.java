@@ -34,7 +34,6 @@ public final class ParboiledAutoComplete {
 
   public static final int RANK_STRING_LITERAL = 1;
 
-  private final CommonParser _parser;
   private final Rule _expression;
   private final Map<String, Anchor.Type> _completionTypes;
 
@@ -47,7 +46,6 @@ public final class ParboiledAutoComplete {
   private final ReferenceLibrary _referenceLibrary;
 
   ParboiledAutoComplete(
-      CommonParser parser,
       Rule expression,
       Map<String, Anchor.Type> completionTypes,
       String network,
@@ -57,7 +55,6 @@ public final class ParboiledAutoComplete {
       CompletionMetadata completionMetadata,
       NodeRolesData nodeRolesData,
       ReferenceLibrary referenceLibrary) {
-    _parser = parser;
     _expression = expression;
     _completionTypes = completionTypes;
     _network = network;
@@ -69,7 +66,6 @@ public final class ParboiledAutoComplete {
     _referenceLibrary = referenceLibrary;
   }
 
-  /** Auto completes IpSpace queries */
   public static List<AutocompleteSuggestion> autoComplete(
       Grammar grammar,
       String network,
@@ -80,8 +76,7 @@ public final class ParboiledAutoComplete {
       NodeRolesData nodeRolesData,
       ReferenceLibrary referenceLibrary) {
     return new ParboiledAutoComplete(
-            Parser.INSTANCE,
-            grammar.getExpression(),
+            Parser.instance().getInputRule(grammar),
             Parser.ANCHORS,
             network,
             snapshot,
@@ -101,8 +96,7 @@ public final class ParboiledAutoComplete {
      * character (soccer ball :)). We will not get any errors backs if the string is legal.
      */
     String testQuery = _query + new String(Character.toChars(ILLEGAL_CHAR));
-    ParsingResult<AstNode> result =
-        new ReportingParseRunner<AstNode>(_parser.input(_expression)).run(testQuery);
+    ParsingResult<AstNode> result = new ReportingParseRunner<AstNode>(_expression).run(testQuery);
     if (result.parseErrors.isEmpty()) {
       throw new IllegalStateException("Failed to force erroneous input");
     }

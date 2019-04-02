@@ -22,9 +22,11 @@ public class ParboiledApplicationSpecifierFactory implements ApplicationSpecifie
   public ApplicationSpecifier buildApplicationSpecifier(Object input) {
     checkArgument(input instanceof String, "%s requires String input", NAME);
 
+    Parser parser = Parser.instance();
     ParsingResult<AstNode> result =
         new ReportingParseRunner<AstNode>(
-                Parser.INSTANCE.input(Grammar.APPLICATION_SPECIFIER.getExpression()))
+                // Parser.instance().input(Grammar.APPLICATION_SPECIFIER.getExpression()))
+                parser.input(parser.ApplicationSpec()))
             .run((String) input);
 
     if (!result.parseErrors.isEmpty()) {
@@ -36,11 +38,14 @@ public class ParboiledApplicationSpecifierFactory implements ApplicationSpecifie
               Parser.ANCHORS));
     }
 
-    AstNode ast = ParserUtils.getAst(result);
-
-    checkArgument(
-        ast instanceof ApplicationAstNode, "%s requires an ApplicationSpecifier input", NAME);
-    return new ParboiledApplicationSpecifier((ApplicationAstNode) ast);
+    try {
+      AstNode ast = ParserUtils.getAst(result);
+      checkArgument(
+          ast instanceof ApplicationAstNode, "%s requires an ApplicationSpecifier input", NAME);
+      return new ParboiledApplicationSpecifier((ApplicationAstNode) ast);
+    } catch (Exception e) {
+      throw e;
+    }
   }
 
   @Override

@@ -23,7 +23,7 @@ public class ParboiledInterfaceSpecifierFactory implements InterfaceSpecifierFac
 
     ParsingResult<AstNode> result =
         new ReportingParseRunner<AstNode>(
-                Parser.INSTANCE.input(Grammar.INTERFACE_SPECIFIER.getExpression()))
+                Parser.instance().getInputRule(Grammar.INTERFACE_SPECIFIER))
             .run((String) input);
 
     if (!result.parseErrors.isEmpty()) {

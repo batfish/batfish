@@ -34,8 +34,8 @@ public class CommonParser extends BaseParser<AstNode> {
   public static final String ESCAPE_CHAR = "\"";
 
   /**
-   * Characters that we deem special in our grammar and cannot appear in unquoted names. We are
-   * currently using the first bunch and setting aside some more for future use.
+   * Characters that we deem special in our grammar and cannot appear in unquoted names. Wpackete
+   * are currently using the first bunch and setting aside some more for future use.
    *
    * <p>Once we stop supporting now-deprecated regexes, '*' should probably added to the reserved
    * list.
@@ -44,7 +44,9 @@ public class CommonParser extends BaseParser<AstNode> {
 
   private static final char[] SPECIAL_CHARS_ARRAY = SPECIAL_CHARS.toCharArray();
 
-  public static final CommonParser INSTANCE = Parboiled.createParser(CommonParser.class);
+  static CommonParser instance() {
+    return Parboiled.createParser(CommonParser.class);
+  }
 
   static Map<String, Type> initAnchors(Class<?> parserClass) {
     ImmutableMap.Builder<String, Anchor.Type> completionTypes = ImmutableMap.builder();

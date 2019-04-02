@@ -23,7 +23,7 @@ public class ParserInterfaceTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static AbstractParseRunner<AstNode> getRunner() {
-    return new ReportingParseRunner<>(Parser.INSTANCE.input(Parser.INSTANCE.InterfaceSpec()));
+    return new ReportingParseRunner<>(Parser.instance().input(Parser.instance().InterfaceSpec()));
   }
 
   /** This testParses if we have proper completion annotations on the rules */
@@ -48,8 +48,7 @@ public class ParserInterfaceTest {
 
     ParboiledAutoComplete pac =
         new ParboiledAutoComplete(
-            Parser.INSTANCE,
-            Parser.INSTANCE.input(Parser.INSTANCE.InterfaceSpec()),
+            Parser.instance().getInputRule(Grammar.INTERFACE_SPECIFIER),
             Parser.ANCHORS,
             "network",
             "snapshot",
@@ -105,8 +104,7 @@ public class ParserInterfaceTest {
 
     ParboiledAutoComplete pac =
         new ParboiledAutoComplete(
-            Parser.INSTANCE,
-            Parser.INSTANCE.input(Parser.INSTANCE.InterfaceSpec()),
+            Parser.instance().getInputRule(Grammar.INTERFACE_SPECIFIER),
             Parser.ANCHORS,
             "network",
             "snapshot",

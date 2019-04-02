@@ -24,7 +24,7 @@ public class ParboiledRoutingPolicySpecifierFactory implements RoutingPolicySpec
 
     ParsingResult<AstNode> result =
         new ReportingParseRunner<AstNode>(
-                Parser.INSTANCE.input(Grammar.ROUTING_POLICY_SPECIFIER.getExpression()))
+                Parser.instance().getInputRule(Grammar.ROUTING_POLICY_SPECIFIER))
             .run((String) input);
 
     if (!result.parseErrors.isEmpty()) {

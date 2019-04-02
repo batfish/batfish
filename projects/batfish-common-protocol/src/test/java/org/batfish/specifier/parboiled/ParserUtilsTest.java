@@ -31,7 +31,8 @@ public class ParserUtilsTest {
   @org.junit.Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static AbstractParseRunner<AstNode> getRunner() {
-    return new ReportingParseRunner<>(TestParser.INSTANCE.input(TestParser.INSTANCE.TestSpec()));
+    TestParser parser = TestParser.instance();
+    return new ReportingParseRunner<>(parser.input(parser.TestSpec()));
   }
 
   /** These represent all the ways valid input can start */
@@ -131,7 +132,7 @@ public class ParserUtilsTest {
 
     ParsingResult<AstNode> result =
         new ReportingParseRunner<AstNode>(
-                Parser.INSTANCE.input(Grammar.IP_SPACE_SPECIFIER.getExpression()))
+                Parser.instance().getInputRule(Grammar.IP_SPACE_SPECIFIER))
             .run(input);
 
     String errorString =
