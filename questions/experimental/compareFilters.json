@@ -2,6 +2,7 @@
     "class": "org.batfish.question.comparefilters.CompareFiltersQuestion",
     "differential": true,
     "filters": "${filters}",
+    "ignoreComposites": "${ignoreComposites}",
     "nodes": "${nodes}",
     "instance": {
       "description": "Compares filters with the same name in the current and reference snapshots. Returns pairs of lines, one from each filter, that match the same flow(s) but treat them differently (i.e. one permits and the other denies the flow).",
@@ -9,7 +10,8 @@
         "longDescription": "This question can be used to summarize how a filter has changed over time. In particular, it highlights differences that cause flows to be denied when they used to be permitted, or vice versa. The output is a table that includes pairs of lines, one from each version of the filter, that both match at least one common flow, and have different action (permit or deny).",
         "orderedVariableNames": [
             "nodes",
-            "filters"
+            "filters",
+            "ignoreComposites"
         ],
         "tags": [
             "dataPlane",
@@ -21,6 +23,13 @@
                 "optional": true,
                 "type": "filter",
                 "displayName": "Filters"
+            },
+            "ignoreComposites": {
+                "description": "Whether to ignore filters that are composed of multiple filters defined in the configs",
+                "type": "boolean",
+                "optional": true,
+                "value": false,
+                "displayName": "Ignore composite filters"
             },
             "nodes": {
                 "description": "Only evaluate filters present on nodes matching this specifier",

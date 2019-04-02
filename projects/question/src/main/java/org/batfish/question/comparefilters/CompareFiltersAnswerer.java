@@ -11,7 +11,6 @@ import com.google.common.collect.Multimaps;
 import com.google.common.collect.Multiset;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -35,6 +34,7 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.specifier.SpecifierContext;
 
 /** An answerer for {@link CompareFiltersQuestion}. */
 public class CompareFiltersAnswerer extends Answerer {
@@ -64,23 +64,23 @@ public class CompareFiltersAnswerer extends Answerer {
   @Override
   public AnswerElement answerDiff() {
     _batfish.pushBaseSnapshot();
-    SortedMap<String, Configuration> currentConfigs = _batfish.loadConfigurations();
+    SpecifierContext currentContext = _batfish.specifierContext();
     Multimap<String, String> currentFilters =
         getSpecifiedFilters(
-            currentConfigs,
+            currentContext,
             _question.getNodeSpecifier(),
             _question.getFilterSpecifier(),
-            _batfish.specifierContext());
+            _question.getIgnoreComposites());
     _batfish.popSnapshot();
 
     _batfish.pushDeltaSnapshot();
-    SortedMap<String, Configuration> referenceConfigs = _batfish.loadConfigurations();
+    SpecifierContext referenceContext = _batfish.specifierContext();
     Multimap<String, String> referenceFilters =
         getSpecifiedFilters(
-            currentConfigs,
+            referenceContext,
             _question.getNodeSpecifier(),
             _question.getFilterSpecifier(),
-            _batfish.specifierContext());
+            _question.getIgnoreComposites());
     _batfish.popSnapshot();
 
     Multimap<String, String> commonFilters =
@@ -97,9 +97,9 @@ public class CompareFiltersAnswerer extends Answerer {
                         entry.getKey(),
                         entry.getValue(),
                         bddPacket,
-                        currentConfigs,
-                        referenceConfigs))
-            .map(filterDifference -> toRow(filterDifference, currentConfigs, referenceConfigs))
+                        currentContext,
+                        referenceContext))
+            .map(filterDifference -> toRow(filterDifference, currentContext, referenceContext))
             .collect(ImmutableMultiset.toImmutableMultiset());
 
     TableAnswerElement table = new TableAnswerElement(metadata());
@@ -109,55 +109,59 @@ public class CompareFiltersAnswerer extends Answerer {
 
   private static Row toRow(
       FilterDifference difference,
-      Map<String, Configuration> currentConfigurations,
-      Map<String, Configuration> referenceConfigurations) {
+      SpecifierContext currentContext,
+      SpecifierContext referenceContext) {
+
+    Row.TypedRowBuilder ret = Row.builder(metadata().toColumnMap());
+
     String hostname = difference.getHostname();
     String filtername = difference.getFilterName();
+    ret.put(COL_NODE, new Node(hostname)).put(COL_FILTER_NAME, filtername);
 
-    Integer currentIndex = difference.getCurrentIndex();
-    String currentIndexStr = currentIndex == null ? END_OF_ACL : currentIndex.toString();
-    IpAccessListLine currentLine =
-        currentIndex == null
-            ? null
-            : currentConfigurations
-                .get(hostname)
-                .getIpAccessLists()
-                .get(filtername)
-                .getLines()
-                .get(currentIndex);
-    LineAction currentAction = currentIndex == null ? LineAction.DENY : currentLine.getAction();
-    String currentLineName = currentIndex == null ? "" : currentLine.getName();
+    if (difference.getCurrentIndex() == null) {
+      ret.put(COL_CURRENT_LINE, END_OF_ACL)
+          .put(COL_CURRENT_ACTION, LineAction.DENY)
+          .put(COL_CURRENT_NAME, "");
+    } else {
+      int index = difference.getCurrentIndex();
+      IpAccessListLine line =
+          currentContext
+              .getConfigs()
+              .get(hostname)
+              .getIpAccessLists()
+              .get(filtername)
+              .getLines()
+              .get(index);
+      ret.put(COL_CURRENT_LINE, index)
+          .put(COL_CURRENT_ACTION, line.getAction())
+          .put(COL_CURRENT_NAME, line.getName());
+    }
 
-    Integer referenceIndex = difference.getReferenceIndex();
-    String referenceIndexStr = referenceIndex == null ? END_OF_ACL : referenceIndex.toString();
-    String referenceLineName =
-        referenceIndex == null
-            ? ""
-            : referenceConfigurations
-                .get(hostname)
-                .getIpAccessLists()
-                .get(filtername)
-                .getLines()
-                .get(referenceIndex)
-                .getName();
-    return Row.builder()
-        .put(COL_NODE, new Node(hostname))
-        .put(COL_FILTER_NAME, filtername)
-        .put(COL_CURRENT_LINE, currentIndexStr)
-        .put(COL_CURRENT_NAME, currentLineName)
-        .put(COL_CURRENT_ACTION, currentAction)
-        .put(COL_REFERENCE_LINE, referenceIndexStr)
-        .put(COL_REFERENCE_NAME, referenceLineName)
-        .build();
+    if (difference.getReferenceIndex() == null) {
+      ret.put(COL_REFERENCE_LINE, END_OF_ACL).put(COL_REFERENCE_NAME, "");
+    } else {
+      int index = difference.getReferenceIndex();
+      IpAccessListLine line =
+          referenceContext
+              .getConfigs()
+              .get(hostname)
+              .getIpAccessLists()
+              .get(filtername)
+              .getLines()
+              .get(index);
+      ret.put(COL_REFERENCE_LINE, index).put(COL_REFERENCE_NAME, line.getName());
+    }
+
+    return ret.build();
   }
 
   private static Stream<FilterDifference> compareFilter(
       String hostname,
       String filtername,
       BDDPacket bddPacket,
-      SortedMap<String, Configuration> currentConfigs,
-      SortedMap<String, Configuration> referenceConfigs) {
-    Configuration currentConfig = currentConfigs.get(hostname);
+      SpecifierContext currentContext,
+      SpecifierContext referenceContext) {
+    Configuration currentConfig = currentContext.getConfigs().get(hostname);
     Map<String, IpAccessList> currentAcls = currentConfig.getIpAccessLists();
     Map<String, IpSpace> currentIpSpaces = currentConfig.getIpSpaces();
     IpAccessList currentAcl = currentAcls.get(filtername);
@@ -171,7 +175,7 @@ public class CompareFiltersAnswerer extends Answerer {
         new IpAccessListToBddImpl(bddPacket, currentSrcMgr, currentAcls, currentIpSpaces);
     List<BDD> currentBdds = currentToBdd.reachAndMatchLines(currentAcl);
 
-    Configuration referenceConfig = referenceConfigs.get(hostname);
+    Configuration referenceConfig = referenceContext.getConfigs().get(hostname);
     Map<String, IpAccessList> referenceAcls = referenceConfig.getIpAccessLists();
     Map<String, IpSpace> referenceIpSpaces = referenceConfig.getIpSpaces();
     IpAccessList referenceAcl = referenceAcls.get(filtername);
