@@ -171,7 +171,7 @@ public final class CumulusNcluGrammarTest {
     //// VRF settings
     assertThat(proc.getVrfs().keySet(), contains("vrf1"));
     BgpVrf vrf = proc.getVrfs().get("vrf1");
-    assertThat("Ensure vrf uses correct name", vrf.getName(), equalTo("vrf1"));
+    assertThat("Ensure vrf uses correct name", vrf.getVrfName(), equalTo("vrf1"));
 
     // autonomous-system
     assertThat("Ensure autonomous-sytem is set", vrf.getAutonomousSystem(), equalTo(65501L));

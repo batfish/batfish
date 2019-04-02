@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.Configuration;
 
 /** BGP routing process */
 public class BgpProcess implements Serializable {
@@ -14,7 +15,7 @@ public class BgpProcess implements Serializable {
   private final @Nonnull Map<String, BgpVrf> _vrfs;
 
   public BgpProcess() {
-    _defaultVrf = new BgpVrf("");
+    _defaultVrf = new BgpVrf(Configuration.DEFAULT_VRF_NAME);
     _vrfs = new HashMap<>();
   }
 

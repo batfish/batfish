@@ -4,6 +4,7 @@ import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/** Interface to be used for BGP unnumbered session */
 public class BgpInterfaceNeighbor implements Serializable {
 
   private static final long serialVersionUID = 1L;

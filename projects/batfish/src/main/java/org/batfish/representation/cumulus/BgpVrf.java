@@ -7,6 +7,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 
+/** BGP configuration for a particular VRF. */
 public class BgpVrf implements Serializable {
 
   private static final long serialVersionUID = 1L;
@@ -15,12 +16,11 @@ public class BgpVrf implements Serializable {
   private final @Nonnull Map<String, BgpInterfaceNeighbor> _interfaceNeighbors;
   private @Nullable BgpIpv4UnicastAddressFamily _ipv4Unicast;
   private @Nullable BgpL2vpnEvpnAddressFamily _l2VpnEvpn;
-  private final @Nonnull String _name;
-
   private @Nullable Ip _routerId;
+  private final @Nonnull String _vrfName;
 
-  public BgpVrf(String name) {
-    _name = name;
+  public BgpVrf(String vrfName) {
+    _vrfName = vrfName;
     _interfaceNeighbors = new HashMap<>();
   }
 
@@ -40,12 +40,12 @@ public class BgpVrf implements Serializable {
     return _l2VpnEvpn;
   }
 
-  public @Nonnull String getName() {
-    return _name;
-  }
-
   public @Nullable Ip getRouterId() {
     return _routerId;
+  }
+
+  public @Nonnull String getVrfName() {
+    return _vrfName;
   }
 
   public void setAutonomousSystem(@Nullable Long autonomousSystem) {
