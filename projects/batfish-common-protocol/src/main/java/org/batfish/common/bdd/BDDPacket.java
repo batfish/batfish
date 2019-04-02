@@ -6,6 +6,7 @@ import static org.batfish.common.bdd.BDDUtils.isAssignment;
 import static org.batfish.common.bdd.BDDUtils.swapPairing;
 
 import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -90,6 +91,8 @@ public class BDDPacket {
 
   private final BDDPairing _pairing;
   private final BDDPairing _swapSourceAndDestinationPairing;
+  private final IpSpaceToBDD _dstIpSpaceToBDD;
+  private final IpSpaceToBDD _srcIpSpaceToBDD;
 
   // Picking representative flows
   private final Supplier<BDDRepresentativePicker> _picker =
@@ -164,6 +167,9 @@ public class BDDPacket {
         swapPairing(
             getDstIp(), getSrcIp(), //
             getDstPort(), getSrcPort());
+
+    _dstIpSpaceToBDD = new MemoizedIpSpaceToBDD(_dstIp, ImmutableMap.of());
+    _srcIpSpaceToBDD = new MemoizedIpSpaceToBDD(_srcIp, ImmutableMap.of());
   }
 
   /*
@@ -259,6 +265,14 @@ public class BDDPacket {
     visited.add(bdd);
     dotRec(sb, bdd.low(), visited);
     dotRec(sb, bdd.high(), visited);
+  }
+
+  public IpSpaceToBDD getDstIpSpaceToBDD() {
+    return _dstIpSpaceToBDD;
+  }
+
+  public IpSpaceToBDD getSrcIpSpaceToBDD() {
+    return _srcIpSpaceToBDD;
   }
 
   /** @return The {@link BDDFactory} used by this packet. */

@@ -1,11 +1,8 @@
 package org.batfish.datamodel.visitors;
 
-import com.google.common.collect.ImmutableMap;
 import java.util.Optional;
-import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
-import org.batfish.common.bdd.MemoizedIpSpaceToBDD;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 
@@ -15,8 +12,7 @@ public final class IpSpaceRepresentative {
 
   public IpSpaceRepresentative() {
     BDDPacket bddPacket = new BDDPacket();
-    BDDInteger ipAddrBdd = bddPacket.getDstIp();
-    _ipSpaceToBDD = new MemoizedIpSpaceToBDD(ipAddrBdd, ImmutableMap.of());
+    _ipSpaceToBDD = bddPacket.getDstIpSpaceToBDD();
   }
 
   /** Returns some representative element of an {@link IpSpace ip space}, if any exists. */
