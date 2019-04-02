@@ -22,7 +22,7 @@ public class ParserRoutingPolicyTest {
 
   private static AbstractParseRunner<AstNode> getRunner() {
     return new ReportingParseRunner<>(
-        Parser.instance().input(Parser.instance().RoutingPolicySpec()));
+        Parser.instance().getInputRule(Grammar.ROUTING_POLICY_SPECIFIER));
   }
 
   /** This testParses if we have proper completion annotations on the rules */

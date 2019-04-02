@@ -24,7 +24,7 @@ public class ParserLocationTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static AbstractParseRunner<AstNode> getRunner() {
-    return new ReportingParseRunner<>(Parser.instance().input(Parser.instance().LocationSpec()));
+    return new ReportingParseRunner<>(Parser.instance().getInputRule(Grammar.LOCATION_SPECIFIER));
   }
 
   /** This testParses if we have proper completion annotations on the rules */

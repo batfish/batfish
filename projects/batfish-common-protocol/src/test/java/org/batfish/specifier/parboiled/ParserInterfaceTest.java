@@ -23,7 +23,7 @@ public class ParserInterfaceTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static AbstractParseRunner<AstNode> getRunner() {
-    return new ReportingParseRunner<>(Parser.instance().input(Parser.instance().InterfaceSpec()));
+    return new ReportingParseRunner<>(Parser.instance().getInputRule(Grammar.INTERFACE_SPECIFIER));
   }
 
   /** This testParses if we have proper completion annotations on the rules */

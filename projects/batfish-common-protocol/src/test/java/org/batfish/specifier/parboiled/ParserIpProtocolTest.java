@@ -24,7 +24,8 @@ public class ParserIpProtocolTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static AbstractParseRunner<AstNode> getRunner() {
-    return new ReportingParseRunner<>(Parser.instance().input(Parser.instance().IpProtocolSpec()));
+    return new ReportingParseRunner<>(
+        Parser.instance().getInputRule(Grammar.IP_PROTOCOL_SPECIFIER));
   }
 
   /** This testParses if we have proper completion annotations on the rules */

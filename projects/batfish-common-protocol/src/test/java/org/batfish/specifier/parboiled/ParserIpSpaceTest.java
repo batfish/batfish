@@ -22,7 +22,7 @@ public class ParserIpSpaceTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static AbstractParseRunner<AstNode> getRunner() {
-    return new ReportingParseRunner<>(Parser.instance().input(Parser.instance().IpSpaceSpec()));
+    return new ReportingParseRunner<>(Parser.instance().getInputRule(Grammar.IP_SPACE_SPECIFIER));
   }
 
   /** This tests if we have proper completion annotations on the rules */

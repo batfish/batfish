@@ -22,7 +22,7 @@ public class ParserNodeTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static AbstractParseRunner<AstNode> getRunner() {
-    return new ReportingParseRunner<>(Parser.instance().input(Parser.instance().NodeSpec()));
+    return new ReportingParseRunner<>(Parser.instance().getInputRule(Grammar.NODE_SPECIFIER));
   }
 
   /** This testParses if we have proper completion annotations on the rules */
