@@ -22,7 +22,7 @@ test -raw tests/questions/experimental/bidirectionalTraceroute.ref validate-temp
 test -raw tests/questions/experimental/bidirectionalReachability.ref validate-template bidirectionalReachability headers={"dstIps" : "1.1.1.1/32"}, pathConstraints={"startLocation": "loc"}, returnFlowType="SUCCESS"
 
 # validate compareFilters
-test -raw tests/questions/experimental/compareFilters.ref validate-template compareFilters filters=".*", nodes=".*"
+test -raw tests/questions/experimental/compareFilters.ref validate-template compareFilters filters=".*", ignoreComposites=false, nodes=".*"
 
 # validate detectLoops
 test -raw tests/questions/experimental/detectLoops.ref validate-template detectLoops maxTraces=0

@@ -1,6 +1,7 @@
 {
   "class" : "org.batfish.question.comparefilters.CompareFiltersQuestion",
   "filters" : ".*",
+  "ignoreComposites" : false,
   "nodes" : ".*",
   "differential" : true,
   "includeOneTableKeys" : true,
@@ -23,6 +24,13 @@
         "optional" : true,
         "type" : "filter",
         "value" : ".*"
+      },
+      "ignoreComposites" : {
+        "description" : "Whether to ignore filters that are composed of multiple filters defined in the configs",
+        "displayName" : "Ignore composite filters",
+        "optional" : true,
+        "type" : "boolean",
+        "value" : false
       },
       "nodes" : {
         "description" : "Only evaluate filters present on nodes matching this specifier",

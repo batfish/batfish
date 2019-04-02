@@ -1,5 +1,7 @@
 package org.batfish.question.comparefilters;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -17,21 +19,26 @@ import org.batfish.specifier.SpecifierFactories;
 @ParametersAreNonnullByDefault
 public final class CompareFiltersQuestion extends Question {
   private static final String PROP_FILTERS = "filters";
+  private static final String PROP_IGNORE_COMPOSITES = "ignoreComposites";
   private static final String PROP_NODES = "nodes";
 
   private static final FilterSpecifier DEFAULT_FILTER_SPECIFIER =
       AllFiltersFilterSpecifier.INSTANCE;
+  private static final Boolean DEFAULT_IGNORE_COMPOSITES = Boolean.TRUE;
   private static final NodeSpecifier DEFAULT_NODE_SPECIFIER = AllNodesNodeSpecifier.INSTANCE;
 
   @Nullable private final String _filters;
+  private final boolean _ignoreComposites;
   @Nullable private final String _nodes;
 
   CompareFiltersQuestion() {
-    this(null, null);
+    this(null, null, null);
   }
 
-  CompareFiltersQuestion(@Nullable String filters, @Nullable String nodes) {
+  CompareFiltersQuestion(
+      @Nullable String filters, @Nullable Boolean ignoreComposites, @Nullable String nodes) {
     _filters = filters;
+    _ignoreComposites = firstNonNull(ignoreComposites, DEFAULT_IGNORE_COMPOSITES);
     _nodes = nodes;
     setDifferential(true);
   }
@@ -39,8 +46,9 @@ public final class CompareFiltersQuestion extends Question {
   @JsonCreator
   private static CompareFiltersQuestion jsonCreator(
       @JsonProperty(PROP_FILTERS) @Nullable String filters,
+      @JsonProperty(PROP_IGNORE_COMPOSITES) @Nullable Boolean ignoreComposites,
       @JsonProperty(PROP_NODES) @Nullable String nodes) {
-    return new CompareFiltersQuestion(filters, nodes);
+    return new CompareFiltersQuestion(filters, ignoreComposites, nodes);
   }
 
   @Override
@@ -63,6 +71,11 @@ public final class CompareFiltersQuestion extends Question {
   @JsonIgnore
   FilterSpecifier getFilterSpecifier() {
     return SpecifierFactories.getFilterSpecifierOrDefault(_filters, DEFAULT_FILTER_SPECIFIER);
+  }
+
+  @JsonProperty(PROP_IGNORE_COMPOSITES)
+  public boolean getIgnoreComposites() {
+    return _ignoreComposites;
   }
 
   @Nullable
