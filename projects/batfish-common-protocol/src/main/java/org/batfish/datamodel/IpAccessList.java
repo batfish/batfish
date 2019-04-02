@@ -185,17 +185,6 @@ public class IpAccessList implements Serializable {
     return getName().startsWith("~");
   }
 
-  private boolean noDenyOrLastDeny(IpAccessList acl) {
-    int count = 0;
-    for (IpAccessListLine line : acl.getLines()) {
-      if (line.getAction() == LineAction.DENY && count < acl.getLines().size() - 1) {
-        return false;
-      }
-      count++;
-    }
-    return true;
-  }
-
   @JsonProperty(PROP_LINES)
   public void setLines(List<IpAccessListLine> lines) {
     _lines = ImmutableList.copyOf(lines);
@@ -220,30 +209,5 @@ public class IpAccessList implements Serializable {
       output.append(line);
     }
     return output.toString();
-  }
-
-  public boolean unorderedEqual(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (this.equals(obj)) {
-      return true;
-    }
-    IpAccessList other = (IpAccessList) obj;
-    if (this.getLines().size() != other.getLines().size()) {
-      return false;
-    }
-    // Unordered check is valid only if there is no deny OR if there is only
-    // one, at the
-    // end, in both lists.
-    if (!noDenyOrLastDeny(this) || !noDenyOrLastDeny(other)) {
-      return false;
-    }
-    for (IpAccessListLine line : this.getLines()) {
-      if (!other.getLines().contains(line)) {
-        return false;
-      }
-    }
-    return true;
   }
 }

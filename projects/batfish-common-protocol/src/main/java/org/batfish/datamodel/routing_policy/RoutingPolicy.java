@@ -153,13 +153,13 @@ public class RoutingPolicy implements Serializable {
       return false;
     }
     RoutingPolicy policy = (RoutingPolicy) o;
-    // Skip owner, sources for compatibility with ConfigDiffElement
+    // Skip owner, sources
     return Objects.equals(_name, policy._name) && Objects.equals(_statements, policy._statements);
   }
 
   @Override
   public int hashCode() {
-    // Skip owner, sources for compatibility with ConfigDiffElement
+    // Skip owner, sources
     return Objects.hash(_name, _statements);
   }
 
