@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.Warnings;
 import org.batfish.common.util.ModelingUtils.IspInfo;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -208,7 +209,8 @@ public class ModelingUtilsTest {
         ImmutableSet.of("interface"),
         ImmutableList.of(),
         ImmutableList.of(),
-        inputMap);
+        inputMap,
+        new Warnings());
 
     assertThat(inputMap, hasKey(1L));
 
@@ -317,7 +319,8 @@ public class ModelingUtilsTest {
                 ImmutableList.of(
                     new BorderInterfaceInfo(new NodeInterfacePair("CoNf", "InTeRfAcE"))),
                 IspFilter.ALLOW_ALL),
-            new BatfishLogger("output", false));
+            new BatfishLogger("output", false),
+            new Warnings());
 
     // Isp and Internet nodes should be created irrespective of case used in Isp configuration
     assertThat(internetAndIsps, hasKey("Isp_1"));
@@ -355,7 +358,8 @@ public class ModelingUtilsTest {
                 ImmutableList.of(
                     new BorderInterfaceInfo(new NodeInterfacePair("conf", "interface"))),
                 IspFilter.ALLOW_ALL),
-            new BatfishLogger("output", false));
+            new BatfishLogger("output", false),
+            new Warnings());
 
     assertThat(internetAndIsps, hasKey(ModelingUtils.INTERNET_HOST_NAME));
     Configuration internetNode = internetAndIsps.get(ModelingUtils.INTERNET_HOST_NAME);
@@ -531,7 +535,8 @@ public class ModelingUtilsTest {
                     new BorderInterfaceInfo(new NodeInterfacePair("conf1", "interface1")),
                     new BorderInterfaceInfo(new NodeInterfacePair("conf2", "interface2"))),
                 IspFilter.ALLOW_ALL),
-            new BatfishLogger("output", false));
+            new BatfishLogger("output", false),
+            new Warnings());
 
     assertThat(internetAndIsps, hasKey("Isp_1234"));
 
@@ -576,7 +581,8 @@ public class ModelingUtilsTest {
                     new BorderInterfaceInfo(new NodeInterfacePair("conf2", "interface2")),
                     new BorderInterfaceInfo(new NodeInterfacePair("conf2", "interface2"))),
                 IspFilter.ALLOW_ALL),
-            new BatfishLogger("output", false));
+            new BatfishLogger("output", false),
+            new Warnings());
 
     // no ISPs and no Internet
     assertThat(internetAndIsps, anEmptyMap());
