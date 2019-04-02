@@ -1,33 +1,46 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
 import java.util.Objects;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 /** A line in a {@link RouteFilterList}. */
-public class RouteFilterLine implements Serializable {
+@ParametersAreNonnullByDefault
+public final class RouteFilterLine implements Serializable {
 
   private static final String PROP_ACTION = "action";
-
   private static final String PROP_LENGTH_RANGE = "lengthRange";
-
   private static final String PROP_IP_WILDCARD = "ipWildcard";
 
   private static final long serialVersionUID = 1L;
 
   private final LineAction _action;
-
   private final IpWildcard _ipWildcard;
-
   private final SubRange _lengthRange;
 
+  /** Route filter line that permits all routes */
+  public static final RouteFilterLine PERMIT_ALL =
+      new RouteFilterLine(
+          LineAction.PERMIT, Prefix.ZERO, new SubRange(0, Prefix.MAX_PREFIX_LENGTH));
+
   @JsonCreator
-  public RouteFilterLine(
-      @JsonProperty(PROP_ACTION) LineAction action,
-      @JsonProperty(PROP_IP_WILDCARD) IpWildcard ipWildcard,
-      @JsonProperty(PROP_LENGTH_RANGE) SubRange lengthRange) {
+  private static RouteFilterLine create(
+      @Nullable @JsonProperty(PROP_ACTION) LineAction action,
+      @Nullable @JsonProperty(PROP_IP_WILDCARD) IpWildcard ipWildcard,
+      @Nullable @JsonProperty(PROP_LENGTH_RANGE) SubRange lengthRange) {
+    checkArgument(action != null, "% is missing", PROP_ACTION);
+    checkArgument(ipWildcard != null, "% is missing", PROP_IP_WILDCARD);
+    checkArgument(lengthRange != null, "% is missing", PROP_LENGTH_RANGE);
+    return new RouteFilterLine(action, ipWildcard, lengthRange);
+  }
+
+  public RouteFilterLine(LineAction action, IpWildcard ipWildcard, SubRange lengthRange) {
     _action = action;
     _ipWildcard = ipWildcard;
     _lengthRange = lengthRange;
@@ -44,7 +57,7 @@ public class RouteFilterLine implements Serializable {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (o == this) {
       return true;
     } else if (!(o instanceof RouteFilterLine)) {
