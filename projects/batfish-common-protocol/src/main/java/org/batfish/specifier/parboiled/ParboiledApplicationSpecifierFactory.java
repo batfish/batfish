@@ -22,11 +22,9 @@ public class ParboiledApplicationSpecifierFactory implements ApplicationSpecifie
   public ApplicationSpecifier buildApplicationSpecifier(Object input) {
     checkArgument(input instanceof String, "%s requires String input", NAME);
 
-    Parser parser = Parser.instance();
     ParsingResult<AstNode> result =
         new ReportingParseRunner<AstNode>(
-                // Parser.instance().input(Grammar.APPLICATION_SPECIFIER.getExpression()))
-                parser.input(parser.ApplicationSpec()))
+                Parser.instance().getInputRule(Grammar.APPLICATION_SPECIFIER))
             .run((String) input);
 
     if (!result.parseErrors.isEmpty()) {
