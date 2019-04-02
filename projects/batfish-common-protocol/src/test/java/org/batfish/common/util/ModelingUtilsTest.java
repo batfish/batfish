@@ -295,7 +295,7 @@ public class ModelingUtilsTest {
         cb.setHostname("conf").setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
     nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(configuration).build();
     nf.interfaceBuilder()
-        .setName("interface")
+        .setName("Interface")
         .setOwner(configuration)
         .setAddress(new InterfaceAddress(Ip.parse("2.2.2.2"), 24))
         .build();
@@ -315,7 +315,7 @@ public class ModelingUtilsTest {
             ImmutableMap.of(configuration.getHostname(), configuration),
             new IspConfiguration(
                 ImmutableList.of(
-                    new BorderInterfaceInfo(new NodeInterfacePair("CoNf", "interface"))),
+                    new BorderInterfaceInfo(new NodeInterfacePair("CoNf", "InTeRfAcE"))),
                 IspFilter.ALLOW_ALL),
             new BatfishLogger("output", false));
 
