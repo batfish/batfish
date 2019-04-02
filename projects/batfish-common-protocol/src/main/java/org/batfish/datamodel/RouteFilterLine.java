@@ -83,14 +83,6 @@ public class RouteFilterLine implements Serializable {
     return Objects.hash(_action.ordinal(), _lengthRange, _ipWildcard);
   }
 
-  public String toCompactString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(_action + " ");
-    sb.append(_ipWildcard + " ");
-    sb.append(_lengthRange + " ");
-    return sb.toString();
-  }
-
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(getClass())
