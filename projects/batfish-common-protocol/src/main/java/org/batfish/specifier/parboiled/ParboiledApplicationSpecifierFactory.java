@@ -38,14 +38,11 @@ public class ParboiledApplicationSpecifierFactory implements ApplicationSpecifie
               Parser.ANCHORS));
     }
 
-    try {
-      AstNode ast = ParserUtils.getAst(result);
-      checkArgument(
-          ast instanceof ApplicationAstNode, "%s requires an ApplicationSpecifier input", NAME);
-      return new ParboiledApplicationSpecifier((ApplicationAstNode) ast);
-    } catch (Exception e) {
-      throw e;
-    }
+    AstNode ast = ParserUtils.getAst(result);
+
+    checkArgument(
+        ast instanceof ApplicationAstNode, "%s requires an ApplicationSpecifier input", NAME);
+    return new ParboiledApplicationSpecifier((ApplicationAstNode) ast);
   }
 
   @Override

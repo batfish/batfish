@@ -38,16 +38,11 @@ public class ParboiledIpProtocolSpecifierFactory implements IpProtocolSpecifierF
               Parser.ANCHORS));
     }
 
-    try {
-      AstNode ast = ParserUtils.getAst(result);
+    AstNode ast = ParserUtils.getAst(result);
 
-      checkArgument(
-          ast instanceof IpProtocolAstNode, "%s requires an IP protocol specifier input", NAME);
-      return new ParboiledIpProtocolSpecifier((IpProtocolAstNode) ast);
-
-    } catch (Exception e) {
-      throw e;
-    }
+    checkArgument(
+        ast instanceof IpProtocolAstNode, "%s requires an IP protocol specifier input", NAME);
+    return new ParboiledIpProtocolSpecifier((IpProtocolAstNode) ast);
   }
 
   @Override
