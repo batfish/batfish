@@ -11,7 +11,8 @@
     "longDescription" : "This question can be used to summarize how a filter has changed over time. In particular, it highlights differences that cause flows to be denied when they used to be permitted, or vice versa. The output is a table that includes pairs of lines, one from each version of the filter, that both match at least one common flow, and have different action (permit or deny).",
     "orderedVariableNames" : [
       "nodes",
-      "filters"
+      "filters",
+      "ignoreComposites"
     ],
     "tags" : [
       "acl",
