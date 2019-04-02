@@ -32,16 +32,20 @@ public class Or implements Transition {
 
   @Override
   public BDD transitForward(BDD bdd) {
-    return _transitions.stream()
-        .map(transition -> transition.transitForward(bdd))
-        .reduce(bdd.getFactory().zero(), BDD::or);
+    return bdd.getFactory()
+        .orAll(
+            _transitions.stream()
+                .map(transition -> transition.transitForward(bdd))
+                .toArray(BDD[]::new));
   }
 
   @Override
   public BDD transitBackward(BDD bdd) {
-    return _transitions.stream()
-        .map(transition -> transition.transitBackward(bdd))
-        .reduce(bdd.getFactory().zero(), BDD::or);
+    return bdd.getFactory()
+        .orAll(
+            _transitions.stream()
+                .map(transition -> transition.transitBackward(bdd))
+                .toArray(BDD[]::new));
   }
 
   @Override
