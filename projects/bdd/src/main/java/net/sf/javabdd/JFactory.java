@@ -903,20 +903,22 @@ public final class JFactory extends BDDFactory {
   private static final int bddop_not = 10;
   private static final int bddop_simplify = 11;
 
-  public BDD multiOr(BDD... bddOperands) {
+  @Override
+  public BDD orAll(BDD... bddOperands) {
     int[] operands = new int[bddOperands.length];
     for (int i = 0; i < operands.length; i++) {
       operands[i] = ((BDDImpl) bddOperands[i])._index;
     }
-    return makeBDD(bdd_multiOr(operands));
+    return makeBDD(bdd_orAll(operands));
   }
 
-  public BDD multiOr(Collection<BDD> bddOperands) {
+  @Override
+  public BDD orAll(Collection<BDD> bddOperands) {
     int[] operands = bddOperands.stream().mapToInt(bdd -> ((BDDImpl) bdd)._index).toArray();
-    return makeBDD(bdd_multiOr(operands));
+    return makeBDD(bdd_orAll(operands));
   }
 
-  private int bdd_multiOr(int[] operands) {
+  private int bdd_orAll(int[] operands) {
     if (multiopcache == null) {
       multiopcache = BddCacheMultiOp_init(cachesize);
     }
@@ -929,7 +931,7 @@ public final class JFactory extends BDDFactory {
         if (firstReorder == 0) {
           bdd_disable_reorder();
         }
-        res = multiOr_rec(operands);
+        res = orAll_rec(operands);
         if (firstReorder == 0) {
           bdd_enable_reorder();
         }
@@ -1561,7 +1563,7 @@ public final class JFactory extends BDDFactory {
     return res;
   }
 
-  private int multiOr_rec(int[] operands) {
+  private int orAll_rec(int[] operands) {
     if (operands.length == 0) {
       return BDDZERO;
     }
@@ -1572,16 +1574,13 @@ public final class JFactory extends BDDFactory {
       return or_rec(operands[0], operands[1]);
     }
 
+    // sort the operands to optimize caching
+    Arrays.sort(operands);
+
     MultiOpBddCacheData entry =
         BddCache_lookupMultiOp(multiopcache, MULTIOPHASH(operands, bddop_or));
     if (entry.a == bddop_or && entry.operands.length == operands.length) {
-      int i = 0;
-      for (; i < operands.length; i++) {
-        if (operands[i] != entry.operands[i]) {
-          break;
-        }
-      }
-      if (i == operands.length) {
+      if (Arrays.equals(operands, entry.operands)) {
         if (CACHESTATS) {
           cachestats.opHit++;
         }
@@ -1640,7 +1639,7 @@ public final class JFactory extends BDDFactory {
         }
       }
       assert i == lowOperands.length;
-      PUSHREF(multiOr_rec(lowOperands));
+      PUSHREF(orAll_rec(lowOperands));
     }
 
     if (!nodeWithMinLevelHasHighOne) {
@@ -1658,7 +1657,7 @@ public final class JFactory extends BDDFactory {
         }
       }
       assert i == highOperands.length;
-      PUSHREF(multiOr_rec(highOperands));
+      PUSHREF(orAll_rec(highOperands));
     }
 
     int low =

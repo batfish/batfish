@@ -338,6 +338,10 @@ public abstract class BDDFactory {
    */
   public abstract int setCacheRatio(int x);
 
+  public abstract BDD orAll(BDD... bddOperands);
+
+  public abstract BDD orAll(Collection<BDD> bddOperands);
+
   /**
    * Sets the node table size.
    *

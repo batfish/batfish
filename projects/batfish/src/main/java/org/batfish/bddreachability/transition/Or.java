@@ -6,7 +6,6 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import net.sf.javabdd.BDD;
-import net.sf.javabdd.JFactory;
 
 /**
  * A {@link Transition} with multiple subtransitions -- a packet can transit this transition if it
@@ -33,22 +32,20 @@ public class Or implements Transition {
 
   @Override
   public BDD transitForward(BDD bdd) {
-    JFactory factory = (JFactory) bdd.getFactory();
-
-    return factory.multiOr(
-        _transitions.stream()
-            .map(transition -> transition.transitForward(bdd))
-            .toArray(BDD[]::new));
+    return bdd.getFactory()
+        .orAll(
+            _transitions.stream()
+                .map(transition -> transition.transitForward(bdd))
+                .toArray(BDD[]::new));
   }
 
   @Override
   public BDD transitBackward(BDD bdd) {
-    JFactory factory = (JFactory) bdd.getFactory();
-
-    return factory.multiOr(
-        _transitions.stream()
-            .map(transition -> transition.transitBackward(bdd))
-            .toArray(BDD[]::new));
+    return bdd.getFactory()
+        .orAll(
+            _transitions.stream()
+                .map(transition -> transition.transitBackward(bdd))
+                .toArray(BDD[]::new));
   }
 
   @Override

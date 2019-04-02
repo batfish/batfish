@@ -17,7 +17,7 @@ public class JFactoryTest {
     BDD bdd1 = var.leq(8);
     BDD bdd2 = var.geq(128);
     BDD bdd3 = var.value(64);
-    BDD multiOr = factory.multiOr(bdd1, bdd2, bdd3);
+    BDD multiOr = factory.orAll(bdd1, bdd2, bdd3);
     BDD or = bdd1.or(bdd2).or(bdd3);
     assertEquals(multiOr, or);
   }
@@ -37,7 +37,7 @@ public class JFactoryTest {
     }
 
     long tMultiOr = System.currentTimeMillis();
-    BDD resMultiOr = factory.multiOr(bdds);
+    BDD resMultiOr = factory.orAll(bdds);
     assert resMultiOr.isOne();
     tMultiOr = System.currentTimeMillis() - tMultiOr;
     System.out.println(String.format("MultOr: %dms", tMultiOr));

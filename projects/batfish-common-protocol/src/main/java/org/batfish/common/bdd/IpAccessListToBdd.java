@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -107,33 +106,14 @@ public abstract class IpAccessListToBdd {
    */
   @Nonnull
   public final BDD toBdd(IpAccessList acl) {
-    BDDFactory bddFactory = _pkt.getFactory();
-    BDD result = bddFactory.zero();
-    LineAction currentAction = LineAction.PERMIT;
-    List<BDD> lineBddsWithCurrentAction = new ArrayList<>();
-    for (IpAccessListLine line : Lists.reverse(acl.getLines())) {
-      LineAction lineAction = line.getAction();
-      if (lineAction != currentAction) {
-        if (currentAction == LineAction.PERMIT) {
-          lineBddsWithCurrentAction.add(result);
-          result = _bddOps.multiOr(lineBddsWithCurrentAction);
-        } else {
-          result = result.diff(_bddOps.multiOr(lineBddsWithCurrentAction));
-        }
-        currentAction = lineAction;
-        lineBddsWithCurrentAction.clear();
-      }
-      lineBddsWithCurrentAction.add(toBdd(line.getMatchCondition()));
+    int size = acl.getLines().size();
+    List<BDD> lineBdds = new ArrayList<>(size);
+    List<LineAction> lineActions = new ArrayList<>(size);
+    for (IpAccessListLine line : acl.getLines()) {
+      lineActions.add(line.getAction());
+      lineBdds.add(toBdd(line.getMatchCondition()));
     }
-
-    if (currentAction == LineAction.PERMIT) {
-      lineBddsWithCurrentAction.add(result);
-      result = _bddOps.multiOr(lineBddsWithCurrentAction);
-    } else {
-      result = result.diff(_bddOps.multiOr(lineBddsWithCurrentAction));
-    }
-
-    return result;
+    return _bddOps.bddAclLines(lineBdds, lineActions);
   }
 
   /**
@@ -195,7 +175,7 @@ public abstract class IpAccessListToBdd {
 
     @Override
     public final BDD visitOrMatchExpr(OrMatchExpr orMatchExpr) {
-      return _bddOps.multiOr(
+      return _bddOps.orAll(
           orMatchExpr.getDisjuncts().stream()
               .map(IpAccessListToBdd.this::toBdd)
               .toArray(BDD[]::new));
