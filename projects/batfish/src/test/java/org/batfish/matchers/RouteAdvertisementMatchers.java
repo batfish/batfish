@@ -13,7 +13,7 @@ import org.hamcrest.Matcher;
 
 /** Matchers for {@link RouteAdvertisement} */
 @ParametersAreNonnullByDefault
-public class RouteAdvertisementMatchers {
+public final class RouteAdvertisementMatchers {
   /**
    * Provides a matcher that matches when the {@code reason} is equal to the {@link
    * RouteAdvertisement}'s reason.
@@ -29,4 +29,6 @@ public class RouteAdvertisementMatchers {
   public static @Nonnull HasRoute hasRoute(Matcher<? super AbstractRouteDecorator> subMatcher) {
     return new HasRoute(subMatcher);
   }
+
+  private RouteAdvertisementMatchers() {}
 }

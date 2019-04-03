@@ -8,7 +8,7 @@ import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 @ParametersAreNonnullByDefault
-public class RouteAdvertisementMatchersImpl {
+public final class RouteAdvertisementMatchersImpl {
 
   static final class HasReason
       extends FeatureMatcher<RouteAdvertisement<? extends AbstractRouteDecorator>, Reason> {
@@ -35,4 +35,6 @@ public class RouteAdvertisementMatchersImpl {
       return actual.getRoute();
     }
   }
+
+  private RouteAdvertisementMatchersImpl() {}
 }
