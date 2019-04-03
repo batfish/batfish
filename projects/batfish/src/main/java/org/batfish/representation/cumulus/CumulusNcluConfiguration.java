@@ -158,6 +158,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             _w.redFlag(
                 String.format(
                     "CLAG ID %d is erroneously configured on more than one bond: %s",
+                    id,
                     clagBonds.stream()
                         .map(Bond::getName)
                         .collect(ImmutableList.toImmutableList())));
