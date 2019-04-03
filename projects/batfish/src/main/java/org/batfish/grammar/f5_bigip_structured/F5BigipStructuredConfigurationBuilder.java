@@ -68,6 +68,7 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.VIRTUAL_
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.VIRTUAL_VLANS_VLAN;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.VLAN_INTERFACE;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
 import java.util.Objects;
@@ -198,6 +199,7 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ns_allow_
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ns_traffic_groupContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ns_vlanContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nti_interfaceContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ntp_serversContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nv_tagContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nvi_interfaceContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Prefix_list_actionContext;
@@ -297,6 +299,12 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     _parser = parser;
     _text = text;
     _w = w;
+  }
+
+  @Override
+  public void exitNtp_servers(Ntp_serversContext ctx) {
+    _c.setNtpServers(
+        ctx.servers.stream().map(WordContext::getText).collect(ImmutableList.toImmutableList()));
   }
 
   private String convErrorMessage(Class<?> type, ParserRuleContext ctx) {

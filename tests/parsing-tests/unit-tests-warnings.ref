@@ -2053,9 +2053,9 @@
       },
       {
         "Filename" : "configs/f5_bigip_structured_sys",
-        "Line" : 48,
-        "Text" : "ntp",
-        "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
+        "Line" : 50,
+        "Text" : "timezone",
+        "Parser_Context" : "[unrecognized sys_ntp s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
