@@ -760,6 +760,16 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
+  public void testNtp() throws IOException {
+    String hostname = "f5_bigip_structured_sys_ntp";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(
+        c.getNtpServers(),
+        containsInAnyOrder("0.ntp.example.com", "1.ntp.example.com", "192.0.2.1"));
+  }
+
+  @Test
   public void testPersistenceReferences() throws IOException {
     String hostname = "f5_bigip_structured_ltm_references";
     String file = "configs/" + hostname;
