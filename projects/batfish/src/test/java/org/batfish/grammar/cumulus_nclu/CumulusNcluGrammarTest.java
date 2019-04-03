@@ -2,13 +2,13 @@ package org.batfish.grammar.cumulus_nclu;
 
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
-import static org.batfish.grammar.cumulus_nclu.CumulusNcluConfigurationBuilder.LOOPBACK_INTERFACE_NAME;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
@@ -53,6 +53,7 @@ import org.batfish.representation.cumulus.RemoteAsType;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapMatchInterface;
 import org.batfish.representation.cumulus.StaticRoute;
+import org.batfish.vendor.VendorConfiguration;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -85,6 +86,9 @@ public final class CumulusNcluGrammarTest {
   private @Nonnull CumulusNcluConfiguration parseVendorConfig(String hostname) {
     String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
     Settings settings = new Settings();
+    settings.setDisableUnrecognized(true);
+    settings.setThrowOnLexerError(true);
+    settings.setThrowOnParserError(true);
     CumulusNcluCombinedParser parser = new CumulusNcluCombinedParser(src, settings);
     CumulusNcluControlPlaneExtractor extractor =
         new CumulusNcluControlPlaneExtractor(src, parser, new Warnings());
@@ -95,7 +99,9 @@ public final class CumulusNcluGrammarTest {
         String.format("Ensure '%s' was successfully parsed", hostname),
         extractor.getVendorConfiguration(),
         notNullValue());
-    return (CumulusNcluConfiguration) extractor.getVendorConfiguration();
+    VendorConfiguration vc = extractor.getVendorConfiguration();
+    assertThat(vc, instanceOf(CumulusNcluConfiguration.class));
+    return (CumulusNcluConfiguration) vc;
   }
 
   @Test
@@ -209,6 +215,7 @@ public final class CumulusNcluGrammarTest {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_bond");
     String bond1Name = "bond1";
     String bond2Name = "bond2";
+    String bond3Name = "bond3";
 
     String[] expectedSlaves =
         new String[] {
@@ -221,19 +228,24 @@ public final class CumulusNcluGrammarTest {
     assertThat(
         "Ensure bonds were extracted",
         vc.getBonds().keySet(),
-        containsInAnyOrder(bond1Name, bond2Name));
+        containsInAnyOrder(bond1Name, bond2Name, bond3Name));
 
     Bond bond1 = vc.getBonds().get(bond1Name);
     Bond bond2 = vc.getBonds().get(bond2Name);
+    Bond bond3 = vc.getBonds().get(bond3Name);
 
     assertThat("Ensure access VLAN ID was set", bond1.getBridge().getAccess(), equalTo(2));
     assertThat("Ensure CLAG ID was set", bond1.getClagId(), equalTo(1));
     assertThat("Ensure slaves were set", bond1.getSlaves(), containsInAnyOrder(expectedSlaves));
-
     assertThat(
         "Ensure trunk VLAN IDs were set",
         bond2.getBridge().getVids(),
         equalTo(IntegerSpace.of(Range.closed(3, 5))));
+    assertThat(
+        "Ensure IP address was extracted",
+        bond3.getIpAddresses(),
+        contains(new InterfaceAddress("192.0.2.1/24")));
+    assertThat("Ensure VRF was extracted", bond3.getVrf(), equalTo("vrf1"));
   }
 
   @Test
@@ -271,7 +283,7 @@ public final class CumulusNcluGrammarTest {
         "Ensure interfaces are created",
         vc.getInterfaces().keySet(),
         containsInAnyOrder(
-            "bond1", "bond2.4094", "bond3.4094", "eth0", "swp1", "swp2", "swp3", "swp4", "swp5.1"));
+            "bond2.4094", "bond3.4094", "eth0", "swp1", "swp2", "swp3", "swp4", "swp5.1"));
 
     // ip address
     assertThat(
@@ -324,16 +336,12 @@ public final class CumulusNcluGrammarTest {
     // interface type (computed)
     assertThat(
         "Ensure type is correctly calculated",
-        vc.getInterfaces().get("bond1").getType(),
-        equalTo(CumulusInterfaceType.BOND));
-    assertThat(
-        "Ensure type is correctly calculated",
         vc.getInterfaces().get("bond2.4094").getType(),
-        equalTo(CumulusInterfaceType.SUBINTERFACE));
+        equalTo(CumulusInterfaceType.BOND_SUBINTERFACE));
     assertThat(
         "Ensure type is correctly calculated",
         vc.getInterfaces().get("bond3.4094").getType(),
-        equalTo(CumulusInterfaceType.SUBINTERFACE));
+        equalTo(CumulusInterfaceType.BOND_SUBINTERFACE));
     assertThat(
         "Ensure type is correctly calculated",
         vc.getInterfaces().get("eth0").getType(),
@@ -357,7 +365,7 @@ public final class CumulusNcluGrammarTest {
     assertThat(
         "Ensure type is correctly calculated",
         vc.getInterfaces().get("swp5.1").getType(),
-        equalTo(CumulusInterfaceType.SUBINTERFACE));
+        equalTo(CumulusInterfaceType.PHYSICAL_SUBINTERFACE));
   }
 
   @Test
@@ -376,13 +384,13 @@ public final class CumulusNcluGrammarTest {
   public void testLoopbackExtraction() throws IOException {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_loopback");
 
-    assertTrue("Ensure loopback is enabled", vc.getLoopback().getEnabled());
+    assertTrue("Ensure loopback is configured", vc.getLoopback().getConfigured());
     assertThat(
         "Ensure clag vxlan-anycast-ip is extracted",
         vc.getLoopback().getClagVxlanAnycastIp(),
         equalTo(Ip.parse("192.0.2.1")));
     assertThat(
-        "Ensure clag vxlan-anycast-ip is extracted",
+        "Ensure ip addresses are extracted",
         vc.getLoopback().getAddresses(),
         contains(new InterfaceAddress("10.0.0.1/32"), new InterfaceAddress("10.0.1.1/24")));
   }
@@ -391,7 +399,7 @@ public final class CumulusNcluGrammarTest {
   public void testLoopbackMissingExtraction() throws IOException {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_loopback_missing");
 
-    assertFalse("Ensure loopback is disabled", vc.getLoopback().getEnabled());
+    assertFalse("Ensure loopback is disabled", vc.getLoopback().getConfigured());
   }
 
   @Test
@@ -402,7 +410,12 @@ public final class CumulusNcluGrammarTest {
         getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
 
     assertThat(
-        ans, hasNumReferrers(filename, CumulusStructureType.LOOPBACK, LOOPBACK_INTERFACE_NAME, 2));
+        ans,
+        hasNumReferrers(
+            filename,
+            CumulusStructureType.LOOPBACK,
+            CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME,
+            2));
   }
 
   @Test
@@ -440,19 +453,21 @@ public final class CumulusNcluGrammarTest {
 
     // route-map entries
     assertThat(rm1.getEntries().keySet(), contains(1, 2, 3, 4));
-    assertThat(rm2.getEntries().keySet(), contains(1));
+    assertThat(rm2.getEntries().keySet(), contains(1, 2));
     // route-map entry num
     assertThat(rm1.getEntries().get(1).getNumber(), equalTo(1));
     assertThat(rm1.getEntries().get(2).getNumber(), equalTo(2));
     assertThat(rm1.getEntries().get(3).getNumber(), equalTo(3));
     assertThat(rm1.getEntries().get(4).getNumber(), equalTo(4));
     assertThat(rm2.getEntries().get(1).getNumber(), equalTo(1));
+    assertThat(rm2.getEntries().get(2).getNumber(), equalTo(2));
     // route-map entry action
     assertThat(rm1.getEntries().get(1).getAction(), equalTo(LineAction.PERMIT));
     assertThat(rm1.getEntries().get(2).getAction(), equalTo(LineAction.PERMIT));
     assertThat(rm1.getEntries().get(3).getAction(), equalTo(LineAction.PERMIT));
     assertThat(rm1.getEntries().get(4).getAction(), equalTo(LineAction.PERMIT));
     assertThat(rm2.getEntries().get(1).getAction(), equalTo(LineAction.DENY));
+    assertThat(rm2.getEntries().get(2).getAction(), equalTo(LineAction.PERMIT));
 
     // route-map match
     assertThat(
@@ -468,7 +483,9 @@ public final class CumulusNcluGrammarTest {
         equalTo(new RouteMapMatchInterface(ImmutableSet.of("bond1"))));
     assertThat(
         rm1.getEntries().get(2).getMatchInterface(),
-        equalTo(new RouteMapMatchInterface(ImmutableSet.of(LOOPBACK_INTERFACE_NAME))));
+        equalTo(
+            new RouteMapMatchInterface(
+                ImmutableSet.of(CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME))));
     assertThat(
         rm1.getEntries().get(3).getMatchInterface(),
         equalTo(new RouteMapMatchInterface(ImmutableSet.of("eth0.4094"))));
@@ -560,7 +577,7 @@ public final class CumulusNcluGrammarTest {
     ConvertConfigurationAnswerElement ans =
         getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
 
-    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VRF, "vrf1", 6));
+    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VRF, "vrf1", 7));
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VRF, "vrf2", 1));
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VRF, "vrf3", 1));
   }

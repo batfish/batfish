@@ -1,8 +1,7 @@
 package org.batfish.representation.cumulus;
 
 public enum CumulusInterfaceType {
-  BOND,
-  LOOPBACK,
+  BOND_SUBINTERFACE,
   PHYSICAL,
-  SUBINTERFACE
+  PHYSICAL_SUBINTERFACE
 }
