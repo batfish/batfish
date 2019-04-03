@@ -5,7 +5,8 @@ options {
 }
 
 tokens {
-  EXTRA_CONFIGURATION_FOOTER
+  EXTRA_CONFIGURATION_FOOTER,
+  USERNAME
 }
 
 @members {
@@ -115,6 +116,11 @@ CLAG
   'clag'
 ;
 
+COMMIT
+:
+  'commit'
+;
+
 CONNECTED
 :
   'connected'
@@ -140,6 +146,11 @@ DEFAULTS
   'defaults'
 ;
 
+DEL
+:
+  'del'
+;
+
 DENY
 :
   'deny'
@@ -148,6 +159,11 @@ DENY
 DNS
 :
   'dns'
+;
+
+DOT1X
+:
+  'dot1x'
 ;
 
 EMERGENCIES
@@ -168,6 +184,16 @@ EVPN
 EXTERNAL
 :
   'external'
+;
+
+HOSTNAME
+:
+  'hostname'
+;
+
+IBURST
+:
+  'iburst'
 ;
 
 ID
@@ -227,7 +253,7 @@ LOCAL_TUNNELIP
 
 LOG
 :
-  'LOG'
+  'log'
 ;
 
 LOOPBACK
@@ -255,34 +281,14 @@ NETWORK
   'network'
 ;
 
-NOTIFICATIONS
-:
-  'notifications'
-;
-
-SLAVES
-:
-  'slaves'
-;
-
-COMMIT
-:
-  'commit'
-;
-
-DEL
-:
-  'del'
-;
-
-HOSTNAME
-:
-  'hostname'
-;
-
 NET
 :
   'net'
+;
+
+NOTIFICATIONS
+:
+  'notifications'
 ;
 
 NTP
@@ -325,6 +331,11 @@ PRIORITY
   'priority'
 ;
 
+PTP
+:
+  'ptp'
+;
+
 REDISTRIBUTE
 :
   'redistribute'
@@ -363,6 +374,16 @@ SERVER
 SERVICE
 :
   'service'
+;
+
+SLAVES
+:
+  'slaves'
+;
+
+SNMP_SERVER
+:
+  'snmp-server'
 ;
 
 SOURCE
@@ -886,6 +907,11 @@ M_Printf_IP_PREFIX
 M_Printf_NEWLINE
 :
   '\\n' -> type ( NEWLINE )
+;
+
+M_Printf_USERNAME
+:
+  'username' -> type (USERNAME)
 ;
 
 M_Printf_WORD

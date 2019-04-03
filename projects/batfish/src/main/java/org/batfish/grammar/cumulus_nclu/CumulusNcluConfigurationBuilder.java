@@ -4,7 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.not;
 
-import com.google.common.annotations.VisibleForTesting;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.ImmutableSet;
@@ -20,8 +20,10 @@ import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -29,12 +31,16 @@ import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.Prefix;
+import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_bgpContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_bondContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_bridgeContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_dot1xContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_hostnameContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_interfaceContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_loopbackContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_ptpContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_snmp_serverContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_timeContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_vlanContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_vrfContext;
@@ -57,10 +63,13 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bob_accessContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bob_vidsContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bobo_slavesContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bond_clag_idContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bond_ip_addressContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bond_vrfContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Cumulus_nclu_configurationContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Dn4Context;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Dn6Context;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Frr_unrecognizedContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Frr_usernameContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Frr_vrfContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Frrv_ip_routeContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.GlobContext;
@@ -137,7 +146,6 @@ import org.batfish.representation.cumulus.Vxlan;
  */
 public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListener {
 
-  @VisibleForTesting static final String LOOPBACK_INTERFACE_NAME = "lo";
   private static final Pattern NUMBERED_WORD_PATTERN = Pattern.compile("^(.*[^0-9])([0-9]+)$");
   private static final Pattern PHYSICAL_INTERFACE_PATTERN = Pattern.compile("(swp|eth)[0-9]+");
   private static final Pattern SUBINTERFACE_PATTERN = Pattern.compile("^(.*)\\.([0-9]+)$");
@@ -284,7 +292,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
    * is invalid.
    */
   private @Nullable Bond createBond(String name, A_bondContext ctx) {
-    if (name.equals(LOOPBACK_INTERFACE_NAME)
+    if (name.equals(CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME)
         || PHYSICAL_INTERFACE_PATTERN.matcher(name).matches()
         || SUBINTERFACE_PATTERN.matcher(name).matches()
         || VLAN_INTERFACE_PATTERN.matcher(name).matches()) {
@@ -316,13 +324,21 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     Matcher subinterfaceMatcher = SUBINTERFACE_PATTERN.matcher(name);
     Integer encapsulationVlan = null;
     CumulusInterfaceType type;
+    String superInterfaceName = null;
 
     // Early exits
-    if (name.equals(LOOPBACK_INTERFACE_NAME)) {
+    if (name.equals(CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME)) {
       _w.redFlag(
           String.format(
               "Loopback interface can only be configured via 'net add loopback' family of commands; following is invalid: %s",
               getFullText(ctx)));
+      return null;
+    }
+    if (_c.getBonds().containsKey(name)) {
+      _w.redFlag(
+          String.format(
+              "bond interface '%s' can only be configured via 'net add bond' family of commands; following is invalid: %s",
+              name, getFullText(ctx)));
       return null;
     }
     if (_c.getVrfs().containsKey(name)) {
@@ -339,18 +355,20 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
               name, getFullText(ctx)));
       return null;
     }
-
     if (PHYSICAL_INTERFACE_PATTERN.matcher(name).matches()) {
       type = CumulusInterfaceType.PHYSICAL;
     } else if (subinterfaceMatcher.matches()) {
-      String layer1LogicalInterfaceName = subinterfaceMatcher.group(1);
+      superInterfaceName = subinterfaceMatcher.group(1);
       String vlanStr = subinterfaceMatcher.group(2);
-      if (!PHYSICAL_INTERFACE_PATTERN.matcher(layer1LogicalInterfaceName).matches()
-          && !_c.getBonds().containsKey(layer1LogicalInterfaceName)) {
+      if (PHYSICAL_INTERFACE_PATTERN.matcher(superInterfaceName).matches()) {
+        type = CumulusInterfaceType.PHYSICAL_SUBINTERFACE;
+      } else if (_c.getBonds().containsKey(superInterfaceName)) {
+        type = CumulusInterfaceType.BOND_SUBINTERFACE;
+      } else {
         _w.redFlag(
             String.format(
                 "Subinterface name '%s' is invalid since '%s' is neither a physical nor a bond interface in: %s",
-                name, layer1LogicalInterfaceName, getFullText(ctx)));
+                name, superInterfaceName, getFullText(ctx)));
         return null;
       }
       try {
@@ -363,16 +381,11 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
                 name, vlanStr, getFullText(ctx)));
         return null;
       }
-      type = CumulusInterfaceType.SUBINTERFACE;
-    } else if (_c.getBonds().containsKey(name)) {
-      type = CumulusInterfaceType.BOND;
     } else {
       _w.redFlag(String.format("Interface name '%s' is invalid in: %s", name, getFullText(ctx)));
       return null;
     }
-    Interface iface = new Interface(name, type);
-    iface.setEncapsulationVlan(encapsulationVlan);
-    return iface;
+    return new Interface(name, type, superInterfaceName, encapsulationVlan);
   }
 
   /**
@@ -380,7 +393,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
    * invalid.
    */
   private @Nullable Vrf createVrf(String name, ParserRuleContext ctx) {
-    if (name.equals(LOOPBACK_INTERFACE_NAME)
+    if (name.equals(CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME)
         || PHYSICAL_INTERFACE_PATTERN.matcher(name).matches()
         || SUBINTERFACE_PATTERN.matcher(name).matches()
         || VLAN_INTERFACE_PATTERN.matcher(name).matches()) {
@@ -416,7 +429,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
    * is invalid.
    */
   private @Nullable Vxlan createVxlan(String name, ParserRuleContext ctx) {
-    if (name.equals(LOOPBACK_INTERFACE_NAME)
+    if (name.equals(CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME)
         || PHYSICAL_INTERFACE_PATTERN.matcher(name).matches()
         || SUBINTERFACE_PATTERN.matcher(name).matches()
         || VLAN_INTERFACE_PATTERN.matcher(name).matches()) {
@@ -497,12 +510,14 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   @Override
   public void enterA_loopback(A_loopbackContext ctx) {
-    _c.getLoopback().setEnabled(true);
+    _c.getLoopback().setConfigured(true);
     _c.defineStructure(
-        CumulusStructureType.LOOPBACK, LOOPBACK_INTERFACE_NAME, ctx.getStart().getLine());
+        CumulusStructureType.LOOPBACK,
+        CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME,
+        ctx.getStart().getLine());
     _c.referenceStructure(
         CumulusStructureType.LOOPBACK,
-        LOOPBACK_INTERFACE_NAME,
+        CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME,
         CumulusStructureUsage.LOOPBACK_SELF_REFERENCE,
         ctx.getStart().getLine());
   }
@@ -656,6 +671,11 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   }
 
   @Override
+  public void exitA_dot1x(A_dot1xContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
   public void exitA_hostname(A_hostnameContext ctx) {
     _c.setHostname(ctx.hostname.getText());
   }
@@ -663,6 +683,16 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   @Override
   public void exitA_interface(A_interfaceContext ctx) {
     _currentInterfaces = null;
+  }
+
+  @Override
+  public void exitA_ptp(A_ptpContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitA_snmp_server(A_snmp_serverContext ctx) {
+    todo(ctx);
   }
 
   @Override
@@ -794,6 +824,20 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   }
 
   @Override
+  public void exitBond_ip_address(Bond_ip_addressContext ctx) {
+    _currentBond.getIpAddresses().add(toInterfaceAddress(ctx.address));
+  }
+
+  @Override
+  public void exitBond_vrf(Bond_vrfContext ctx) {
+    String vrf = ctx.name.getText();
+    if (initVrfsIfAbsent(ImmutableSet.of(vrf), ctx, CumulusStructureUsage.BOND_VRF).isEmpty()) {
+      return;
+    }
+    _currentBond.setVrf(vrf);
+  }
+
+  @Override
   public void exitDn4(Dn4Context ctx) {
     _c.getIpv4Nameservers().add(toIp(ctx.address));
   }
@@ -806,6 +850,11 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   @Override
   public void exitFrr_unrecognized(Frr_unrecognizedContext ctx) {
     unrecognized(ctx);
+  }
+
+  @Override
+  public void exitFrr_username(Frr_usernameContext ctx) {
+    todo(ctx);
   }
 
   @Override
@@ -1174,6 +1223,11 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
       return false;
     }
     int line = ctx.getStart().getLine();
+    if (potentialInterfaceNames.contains(CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME)
+        && !_c.getLoopback().getConfigured()) {
+      _c.defineStructure(
+          CumulusStructureType.LOOPBACK, CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME, line);
+    }
     names.forEach(
         name -> _c.referenceStructure(CumulusStructureType.ABSTRACT_INTERFACE, name, usage, line));
     return true;
@@ -1185,13 +1239,29 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   }
 
   private void unrecognized(ParserRuleContext ctx) {
-    _w.getParseWarnings()
-        .add(
-            new ParseWarning(
-                ctx.getStart().getLine(),
-                getFullText(ctx),
-                ctx.toString(Arrays.asList(_parser.getParser().getRuleNames())),
-                "This syntax is unrecognized"));
+    ParseWarning warning =
+        new ParseWarning(
+            ctx.getStart().getLine(),
+            getFullText(ctx),
+            ctx.toString(Arrays.asList(_parser.getParser().getRuleNames())),
+            "This syntax is unrecognized");
+
+    // for testing
+    if (_parser.getSettings().getDisableUnrecognized()) {
+      try {
+        String warningStr = BatfishObjectMapper.writePrettyString(warning);
+        String parseTreeStr =
+            ParseTreePrettyPrinter.print(
+                ctx, _parser, _parser.getSettings().getPrintParseTreeLineNums());
+        throw new BatfishException(
+            String.format(
+                "Forcing failure on unrecognized line: %s\n%s", warningStr, parseTreeStr));
+      } catch (JsonProcessingException e) {
+        throw new BatfishException("Failure describing unrecognized line", e);
+      }
+    }
+
+    _w.getParseWarnings().add(warning);
     _c.setUnrecognized(true);
   }
 }

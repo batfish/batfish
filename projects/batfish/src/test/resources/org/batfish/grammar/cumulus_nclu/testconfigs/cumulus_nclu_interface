@@ -5,7 +5,6 @@ net add hostname cumulus_nclu_interface
 net add bond bond1 bond slaves swp1
 net add bond bond2 bond slaves swp2
 net add bond bond3 bond slaves swp3
-net add interface bond1 ip address 10.0.0.1/24
 net add interface bond2.4094 ip address 10.0.1.1/24
 net add interface bond2.4094 ip address 172.16.0.1/24
 net add interface bond2.4094 clag backup-ip 192.0.2.1 vrf mgmt

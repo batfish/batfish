@@ -15,7 +15,7 @@ public class Loopback implements Serializable {
 
   private final @Nonnull List<InterfaceAddress> _addresses;
   private @Nullable Ip _clagVxlanAnycastIp;
-  private boolean _enabled;
+  private boolean _configured;
 
   public Loopback() {
     _addresses = new LinkedList<>();
@@ -29,15 +29,15 @@ public class Loopback implements Serializable {
     return _clagVxlanAnycastIp;
   }
 
-  public boolean getEnabled() {
-    return _enabled;
+  public boolean getConfigured() {
+    return _configured;
   }
 
   public void setClagVxlanAnycastIp(@Nullable Ip clagVxlanAnycastIp) {
     _clagVxlanAnycastIp = clagVxlanAnycastIp;
   }
 
-  public void setEnabled(boolean enabled) {
-    _enabled = enabled;
+  public void setConfigured(boolean configured) {
+    _configured = configured;
   }
 }
