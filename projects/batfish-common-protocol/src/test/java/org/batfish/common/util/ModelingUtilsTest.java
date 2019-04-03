@@ -73,11 +73,10 @@ public class ModelingUtilsTest {
   @Test
   public void testNonExistentNode() {
     NetworkFactory nf = new NetworkFactory();
-    Map<String, Configuration> configurations =
-        ImmutableMap.of("conf", nf.configurationBuilder().setHostname("conf").build());
+
     Warnings warnings = new Warnings(true, true, true);
     ModelingUtils.getInternetAndIspNodes(
-        configurations,
+        ImmutableMap.of("conf", nf.configurationBuilder().setHostname("conf").build()),
         new IspConfiguration(
             ImmutableList.of(new BorderInterfaceInfo(new NodeInterfacePair("conf1", "init1"))),
             IspFilter.ALLOW_ALL),
