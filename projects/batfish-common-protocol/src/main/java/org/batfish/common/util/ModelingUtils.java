@@ -23,6 +23,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
@@ -38,6 +39,7 @@ import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -58,7 +60,7 @@ public final class ModelingUtils {
   static final String EXPORT_POLICY_ON_ISP = "exportPolicyOnIsp";
   private static final Ip FIRST_EVEN_INTERNET_IP = Ip.parse("240.1.1.2");
   static final long INTERNET_AS = 65537L;
-  static final String INTERNET_HOST_NAME = "Internet";
+  public static final String INTERNET_HOST_NAME = "Internet";
   static final Ip INTERNET_OUT_ADDRESS = Ip.parse("240.254.254.1");
   static final String INTERNET_OUT_INTERFACE = "Internet_out_interface";
   static final int INTERNET_OUT_SUBNET = 30;
@@ -109,12 +111,14 @@ public final class ModelingUtils {
    * @param configurations {@link Configuration}s for the given network
    * @param ispConfiguration {@link IspConfiguration} required to initialize the ISPs
    * @param logger {@link BatfishLogger} to log warnings and errors
+   * @param warnings {@link Warnings} containing all the warnings logged during the ISP modeling
    * @return {@link Map} of {@link Configuration}s for the ISPs and Internet
    */
   public static Map<String, Configuration> getInternetAndIspNodes(
       @Nonnull Map<String, Configuration> configurations,
       @Nonnull IspConfiguration ispConfiguration,
-      @Nonnull BatfishLogger logger) {
+      @Nonnull BatfishLogger logger,
+      @Nonnull Warnings warnings) {
 
     NetworkFactory nf = new NetworkFactory();
     Map<String, Set<String>> interfaceSetByNodes =
@@ -123,15 +127,17 @@ public final class ModelingUtils {
             .collect(
                 Collectors.groupingBy(
                     nodeInterfacePair -> nodeInterfacePair.getHostname().toLowerCase(),
-                    Collectors.mapping(
-                        nodeInterfacePair -> nodeInterfacePair.getInterface().toLowerCase(),
-                        Collectors.toSet())));
+                    Collectors.mapping(NodeInterfacePair::getInterface, Collectors.toSet())));
 
     Map<Long, IspInfo> asnToIspInfos = new HashMap<>();
 
     for (Entry<String, Set<String>> nodeAndInterfaces : interfaceSetByNodes.entrySet()) {
       Configuration configuration = configurations.get(nodeAndInterfaces.getKey());
       if (configuration == null) {
+        warnings.redFlag(
+            String.format(
+                "ISP Modeling: Non-existent border node %s specified in ISP configuration",
+                nodeAndInterfaces.getKey()));
         continue;
       }
       populateIspInfos(
@@ -139,7 +145,8 @@ public final class ModelingUtils {
           nodeAndInterfaces.getValue(),
           ispConfiguration.getfilter().getOnlyRemoteIps(),
           ispConfiguration.getfilter().getOnlyRemoteAsns(),
-          asnToIspInfos);
+          asnToIspInfos,
+          warnings);
     }
 
     Map<String, Configuration> ispConfigurations =
@@ -255,6 +262,7 @@ public final class ModelingUtils {
    * @param remoteAsns Expected ASNs of the ISP nodes (optional)
    * @param allIspInfos {@link Map} containing existing ASNs and corresponding {@link IspInfo}s to
    *     which ISPs extracted from this {@link Configuration} will be merged
+   * @param warnings {@link Warnings} for ISP and Internet modeling
    */
   @VisibleForTesting
   static void populateIspInfos(
@@ -262,15 +270,26 @@ public final class ModelingUtils {
       @Nonnull Set<String> interfaces,
       @Nonnull List<Ip> remoteIps,
       @Nonnull List<Long> remoteAsns,
-      Map<Long, IspInfo> allIspInfos) {
+      Map<Long, IspInfo> allIspInfos,
+      @Nonnull Warnings warnings) {
 
     // collecting InterfaceAddresses for interfaces
-    Map<String, Interface> caseInsensitiveIfaces =
+    Map<String, Interface> lowerCasedInterfaces =
         configuration.getAllInterfaces().entrySet().stream()
             .collect(Collectors.toMap(entry -> entry.getKey().toLowerCase(), Entry::getValue));
     Map<Ip, InterfaceAddress> ipToInterfaceAddresses =
         interfaces.stream()
-            .map(caseInsensitiveIfaces::get)
+            .map(
+                ifaceName -> {
+                  Interface iface = lowerCasedInterfaces.get(ifaceName.toLowerCase());
+                  if (iface == null) {
+                    warnings.redFlag(
+                        String.format(
+                            "ISP Modeling: Cannot find interface %s on node %s",
+                            ifaceName, configuration.getHostname()));
+                  }
+                  return iface;
+                })
             .filter(Objects::nonNull)
             .flatMap(iface -> iface.getAllAddresses().stream())
             .collect(ImmutableMap.toImmutableMap(InterfaceAddress::getIp, Function.identity()));
@@ -292,6 +311,12 @@ public final class ModelingUtils {
                         remoteAsnsSet))
             .collect(Collectors.toList());
 
+    if (validBgpActivePeerConfigs.isEmpty()) {
+      warnings.redFlag(
+          String.format(
+              "ISP Modeling: Cannot find any valid eBGP configurations for provided interfaces on node %s",
+              configuration.getHostname()));
+    }
     for (BgpActivePeerConfig bgpActivePeerConfig : validBgpActivePeerConfigs) {
       IspInfo ispInfo =
           allIspInfos.computeIfAbsent(bgpActivePeerConfig.getRemoteAs(), k -> new IspInfo());
