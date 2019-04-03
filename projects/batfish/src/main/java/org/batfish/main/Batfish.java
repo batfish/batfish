@@ -1929,7 +1929,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private void outputAnswer(Answer answer, boolean writeLog) {
     try {
-      String answerString = BatfishObjectMapper.writePrettyString(answer) + '\n';
+      String answerString = BatfishObjectMapper.writePrettyString(answer);
       _logger.debug(answerString);
       @Nullable String logString = writeLog ? answerString : null;
       writeJsonAnswerWithLog(logString, answerString);
@@ -1938,7 +1938,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       try {
         Answer failureAnswer = Answer.failureAnswer(e.toString(), answer.getQuestion());
         failureAnswer.addAnswerElement(be.getBatfishStackTrace());
-        String answerString = BatfishObjectMapper.writePrettyString(failureAnswer) + '\n';
+        String answerString = BatfishObjectMapper.writePrettyString(failureAnswer);
         _logger.error(answerString);
         @Nullable String logString = writeLog ? answerString : null;
         writeJsonAnswerWithLog(logString, answerString);
