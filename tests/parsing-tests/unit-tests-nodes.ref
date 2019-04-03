@@ -13947,6 +13947,10 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
+        "ntpServers" : [
+          "192.0.2.3",
+          "my.example.com"
+        ],
         "vendorFamily" : {
           "f5Bigip" : { }
         },
