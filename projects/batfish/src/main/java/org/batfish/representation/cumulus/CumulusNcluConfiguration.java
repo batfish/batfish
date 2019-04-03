@@ -21,6 +21,7 @@ import org.parboiled.common.ImmutableList;
 /** A {@link VendorConfiguration} for the Cumulus NCLU configuration language. */
 public class CumulusNcluConfiguration extends VendorConfiguration {
 
+  public static final String LOOPBACK_INTERFACE_NAME = "lo";
   private static final long serialVersionUID = 1L;
 
   private @Nullable BgpProcess _bgpProcess;
@@ -133,6 +134,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     markConcreteStructure(
         CumulusStructureType.VRF,
         CumulusStructureUsage.BGP_VRF,
+        CumulusStructureUsage.BOND_VRF,
         CumulusStructureUsage.INTERFACE_CLAG_BACKUP_IP_VRF,
         CumulusStructureUsage.INTERFACE_VRF,
         CumulusStructureUsage.VLAN_VRF,

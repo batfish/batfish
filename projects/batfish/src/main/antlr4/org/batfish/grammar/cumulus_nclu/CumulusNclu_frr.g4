@@ -16,7 +16,17 @@ frrv_ip_route
   IP ROUTE network = ip_prefix nhip = ip_address NEWLINE
 ;
 
+frr_username
+:
+  USERNAME frr_null_rest_of_line
+;
+
+frr_null_rest_of_line
+:
+  ~EXTRA_CONFIGURATION_FOOTER*
+;
+
 frr_unrecognized
 :
-  word ~EXTRA_CONFIGURATION_FOOTER*
+  word frr_null_rest_of_line
 ;

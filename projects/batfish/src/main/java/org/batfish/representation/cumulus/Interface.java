@@ -19,16 +19,33 @@ public class Interface implements Serializable {
   private @Nullable Ip _clagPeerIp;
   private @Nullable Integer _clagPriority;
   private @Nullable MacAddress _clagSysMac;
-  private @Nullable Integer _encapsulationVlan;
-  private @Nullable List<InterfaceAddress> _ipAddresses;
+  private final @Nullable Integer _encapsulationVlan;
+  private final @Nonnull List<InterfaceAddress> _ipAddresses;
   private final @Nonnull String _name;
+  private final @Nullable String _superInterfaceName;
   private final @Nonnull CumulusInterfaceType _type;
   private @Nullable String _vrf;
 
-  public Interface(String name, CumulusInterfaceType type) {
+  /**
+   * Construct an Interface
+   *
+   * @param name Name of the interface
+   * @param type Type of the interface
+   * @param superInterfaceName Name of the super interface if this is a subinterface, or else {@code
+   *     null}
+   * @param encapsulationVlan Encapsulation VLAN number for this interface if this is a
+   *     subinterface, or else {@code null}
+   */
+  public Interface(
+      String name,
+      CumulusInterfaceType type,
+      @Nullable String superInterfaceName,
+      @Nullable Integer encapsulationVlan) {
     _name = name;
     _ipAddresses = new LinkedList<>();
     _type = type;
+    _superInterfaceName = superInterfaceName;
+    _encapsulationVlan = encapsulationVlan;
   }
 
   public @Nullable Ip getClagBackupIp() {
@@ -63,6 +80,10 @@ public class Interface implements Serializable {
     return _name;
   }
 
+  public @Nullable String getSuperInterfaceName() {
+    return _superInterfaceName;
+  }
+
   public @Nonnull CumulusInterfaceType getType() {
     return _type;
   }
@@ -89,10 +110,6 @@ public class Interface implements Serializable {
 
   public void setClagSysMac(@Nullable MacAddress clagSysMac) {
     _clagSysMac = clagSysMac;
-  }
-
-  public void setEncapsulationVlan(@Nullable Integer encapsulationVlan) {
-    _encapsulationVlan = encapsulationVlan;
   }
 
   public void setVrf(@Nullable String vrf) {
