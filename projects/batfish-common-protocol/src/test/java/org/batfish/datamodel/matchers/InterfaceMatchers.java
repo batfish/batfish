@@ -45,6 +45,7 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasSpeed;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasSwitchPortMode;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasVlan;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasVrf;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasVrfName;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasZoneName;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsActive;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsOspfPassive;
@@ -352,6 +353,11 @@ public final class InterfaceMatchers {
    */
   public static HasVrf hasVrf(Matcher<? super Vrf> subMatcher) {
     return new HasVrf(subMatcher);
+  }
+
+  /** Provides a matcher that matches if the interface's vrfName is {@code expectedVrfName}. */
+  public static @Nonnull Matcher<Interface> hasVrfName(@Nonnull String expectedVrfName) {
+    return new HasVrfName(equalTo(expectedVrfName));
   }
 
   /**

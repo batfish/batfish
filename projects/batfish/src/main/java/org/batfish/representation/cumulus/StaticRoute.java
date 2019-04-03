@@ -1,5 +1,8 @@
 package org.batfish.representation.cumulus;
 
+import static org.batfish.representation.cumulus.CumulusNcluConfiguration.DEFAULT_STATIC_ROUTE_ADMINISTRATIVE_DISTANCE;
+import static org.batfish.representation.cumulus.CumulusNcluConfiguration.DEFAULT_STATIC_ROUTE_METRIC;
+
 import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -43,5 +46,14 @@ public class StaticRoute implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(_network, _nextHopIp);
+  }
+
+  org.batfish.datamodel.StaticRoute convert() {
+    return org.batfish.datamodel.StaticRoute.builder()
+        .setAdmin(DEFAULT_STATIC_ROUTE_ADMINISTRATIVE_DISTANCE)
+        .setMetric(DEFAULT_STATIC_ROUTE_METRIC)
+        .setNetwork(_network)
+        .setNextHopIp(_nextHopIp)
+        .build();
   }
 }
