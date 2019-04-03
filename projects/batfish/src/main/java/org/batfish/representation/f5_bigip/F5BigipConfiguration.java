@@ -165,6 +165,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
       _interfaceIncomingFilterLines;
   private final @Nonnull Map<String, Interface> _interfaces;
   private final @Nonnull Map<String, Node> _nodes;
+  private @Nonnull List<String> _ntpServers;
   private final @Nonnull Map<String, Pool> _pools;
   private final @Nonnull Map<String, PrefixList> _prefixLists;
   private final @Nonnull Map<String, RouteMap> _routeMaps;
@@ -189,6 +190,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     _bgpProcesses = new HashMap<>();
     _interfaces = new HashMap<>();
     _nodes = new HashMap<>();
+    _ntpServers = ImmutableList.of();
     _pools = new HashMap<>();
     _prefixLists = new HashMap<>();
     _routeMaps = new HashMap<>();
@@ -998,6 +1000,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
     _imish = imish;
   }
 
+  public void setNtpServers(List<String> ntpServers) {
+    _ntpServers = ImmutableList.copyOf(ntpServers);
+  }
+
   @Override
   public void setVendor(ConfigurationFormat format) {
     _format = format;
@@ -1324,6 +1330,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
     initSnatTransformations();
     initVirtualTransformations();
     _vlans.keySet().stream().map(_c.getAllInterfaces()::get).forEach(this::addNatRules);
+
+    // NTP servers
+    _c.setNtpServers(ImmutableSortedSet.copyOf(_ntpServers));
 
     markStructures();
 

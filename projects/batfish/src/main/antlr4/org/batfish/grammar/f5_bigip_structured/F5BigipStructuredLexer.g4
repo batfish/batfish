@@ -246,6 +246,11 @@ NODE
   'node'
 ;
 
+NTP
+:
+  'ntp'
+;
+
 OCSP_STAPLING_PARAMS
 :
   'ocsp-stapling-params'
@@ -379,6 +384,11 @@ SELF
 SERVER_SSL
 :
   'server-ssl'
+;
+
+SERVERS
+:
+  'servers'
 ;
 
 SET
