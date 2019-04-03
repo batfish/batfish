@@ -1,5 +1,6 @@
 package org.batfish.common.util;
 
+import static org.batfish.common.Warnings.TAG_RED_FLAG;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
@@ -33,6 +34,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.ModelingUtils.IspInfo;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -67,6 +69,52 @@ import org.junit.Test;
 
 /** Tests for {@link ModelingUtils} */
 public class ModelingUtilsTest {
+
+  @Test
+  public void testNonExistentNode() {
+    NetworkFactory nf = new NetworkFactory();
+    Map<String, Configuration> configurations =
+        ImmutableMap.of("conf", nf.configurationBuilder().setHostname("conf").build());
+    Warnings warnings = new Warnings(true, true, true);
+    ModelingUtils.getInternetAndIspNodes(
+        configurations,
+        new IspConfiguration(
+            ImmutableList.of(new BorderInterfaceInfo(new NodeInterfacePair("conf1", "init1"))),
+            IspFilter.ALLOW_ALL),
+        new BatfishLogger("debug", true),
+        warnings);
+
+    assertThat(
+        warnings.getRedFlagWarnings(),
+        equalTo(
+            ImmutableList.of(
+                new Warning(
+                    "ISP Modeling: Non-existent border node conf1 specified in ISP configuration",
+                    TAG_RED_FLAG))));
+  }
+
+  @Test
+  public void testNonExistentInterface() {
+    NetworkFactory nf = new NetworkFactory();
+    Warnings warnings = new Warnings(true, true, true);
+
+    ModelingUtils.populateIspInfos(
+        nf.configurationBuilder().setHostname("conf").build(),
+        ImmutableSet.of("init"),
+        ImmutableList.of(),
+        ImmutableList.of(),
+        Maps.newHashMap(),
+        warnings);
+
+    assertThat(
+        warnings.getRedFlagWarnings(),
+        equalTo(
+            ImmutableList.of(
+                new Warning("ISP Modeling: Cannot find interface init on node conf", TAG_RED_FLAG),
+                new Warning(
+                    "ISP Modeling: Cannot find any valid eBGP configurations for provided interfaces on node conf",
+                    TAG_RED_FLAG))));
+  }
 
   @Test
   public void testReverseLocalAndRemote() {
