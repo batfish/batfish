@@ -3,6 +3,15 @@ package org.batfish.representation.cumulus;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import org.batfish.common.Warnings;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.PrefixRange;
+import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
+import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 
 /**
  * A route-map condition that matches a route whose network is assigned to one of a set of provided
@@ -36,5 +45,19 @@ public class RouteMapMatchInterface implements RouteMapMatch {
   @Override
   public int hashCode() {
     return _interfaces.hashCode();
+  }
+
+  @Override
+  public BooleanExpr toBooleanExpr(Configuration c, CumulusNcluConfiguration vc, Warnings w) {
+    return new MatchPrefixSet(
+        DestinationNetwork.instance(),
+        new ExplicitPrefixSet(
+            new PrefixSpace(
+                _interfaces.stream()
+                    .flatMap(
+                        ifaceName -> c.getAllInterfaces().get(ifaceName).getAllAddresses().stream())
+                    .map(InterfaceAddress::getPrefix)
+                    .map(PrefixRange::fromPrefix)
+                    .collect(ImmutableSet.toImmutableSet()))));
   }
 }

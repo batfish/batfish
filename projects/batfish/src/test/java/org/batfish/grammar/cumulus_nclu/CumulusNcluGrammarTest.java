@@ -1,8 +1,25 @@
 package org.batfish.grammar.cumulus_nclu;
 
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDependencies;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isSwitchport;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasInterfaces;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.hamcrest.Matchers.anEmptyMap;
+import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -28,15 +45,23 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.Interface.Dependency;
+import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.routing_policy.Environment.Direction;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
@@ -65,15 +90,36 @@ public final class CumulusNcluGrammarTest {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
+  private void assertRoutingPolicyDeniesNetwork(RoutingPolicy routingPolicy, Prefix network) {
+    assertFalse(
+        routingPolicy.process(
+            new ConnectedRoute(network, "dummy"),
+            BgpRoute.builder().setNetwork(network),
+            Ip.parse("192.0.2.1"),
+            DEFAULT_VRF_NAME,
+            Direction.OUT));
+  }
+
+  private void assertRoutingPolicyPermitsNetwork(RoutingPolicy routingPolicy, Prefix network) {
+    assertTrue(
+        routingPolicy.process(
+            new ConnectedRoute(network, "dummy"),
+            BgpRoute.builder().setNetwork(network),
+            Ip.parse("192.0.2.1"),
+            DEFAULT_VRF_NAME,
+            Direction.OUT));
+  }
+
   private Batfish getBatfishForConfigurationNames(String... configurationNames) throws IOException {
     String[] names =
         Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
     return BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
   }
 
-  @SuppressWarnings("unused")
   private Configuration parseConfig(String hostname) throws IOException {
-    return parseTextConfigs(hostname).get(hostname);
+    Configuration c = parseTextConfigs(hostname).get(hostname);
+    assertThat(c, notNullValue());
+    return c;
   }
 
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
@@ -211,6 +257,45 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
+  public void testBondConversion() throws IOException {
+    Configuration c = parseConfig("cumulus_nclu_bond");
+
+    // bond1
+    assertThat(
+        c,
+        hasInterface(
+            "bond1",
+            (hasDependencies(
+                containsInAnyOrder(
+                    new Dependency("swp1", DependencyType.AGGREGATE),
+                    new Dependency("swp2", DependencyType.AGGREGATE),
+                    new Dependency("swp3", DependencyType.AGGREGATE),
+                    new Dependency("swp4", DependencyType.AGGREGATE),
+                    new Dependency("swp5", DependencyType.AGGREGATE),
+                    new Dependency("swp6", DependencyType.AGGREGATE),
+                    new Dependency("swp7", DependencyType.AGGREGATE),
+                    new Dependency("swp8", DependencyType.AGGREGATE))))));
+    assertThat(c, hasInterface("bond1", isSwitchport()));
+    assertThat(c, hasInterface("bond1", hasSwitchPortMode(SwitchportMode.ACCESS)));
+    assertThat(c, hasInterface("bond1", hasAccessVlan(2)));
+    assertThat(c, hasInterface("bond1", isActive()));
+    assertThat(c, hasInterface("bond1", hasVrfName(DEFAULT_VRF_NAME)));
+
+    // bond2
+    assertThat(c, hasInterface("bond2", isSwitchport()));
+    assertThat(c, hasInterface("bond2", hasSwitchPortMode(SwitchportMode.TRUNK)));
+    assertThat(c, hasInterface("bond2", hasAllowedVlans(IntegerSpace.of(new SubRange(3, 5)))));
+    assertThat(c, hasInterface("bond2", isActive(false)));
+    assertThat(c, hasInterface("bond2", hasVrfName(DEFAULT_VRF_NAME)));
+
+    // bond3
+    assertThat(c, hasInterface("bond3", isSwitchport(false)));
+    assertThat(c, hasInterface("bond3", isActive(false)));
+    assertThat(c, hasInterface("bond3", hasAddress(new InterfaceAddress("192.0.2.1/24"))));
+    assertThat(c, hasInterface("bond3", hasVrfName("vrf1")));
+  }
+
+  @Test
   public void testBondExtraction() throws IOException {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_bond");
     String bond1Name = "bond1";
@@ -260,6 +345,13 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
+  public void testDnsConversion() throws IOException {
+    Configuration c = parseConfig("cumulus_nclu_dns");
+
+    assertThat(c.getDnsServers(), containsInAnyOrder("192.0.2.3", "192.0.2.4"));
+  }
+
+  @Test
   public void testDnsExtraction() throws IOException {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_dns");
 
@@ -273,6 +365,74 @@ public final class CumulusNcluGrammarTest {
     String hostname = "custom_hostname";
     Batfish batfish = getBatfishForConfigurationNames(filename);
     assertThat(batfish.loadConfigurations(), hasEntry(equalTo(hostname), hasHostname(hostname)));
+  }
+
+  @Test
+  public void testInterfaceConversion() throws IOException {
+    Configuration c = parseConfig("cumulus_nclu_interface");
+
+    assertThat(
+        "Ensure interfaces are created",
+        c.getAllInterfaces().keySet(),
+        containsInAnyOrder(
+            "bond1",
+            "bond2",
+            "bond2.4094",
+            "bond3",
+            "bond3.4094",
+            "eth0",
+            "lo",
+            "mgmt",
+            "swp1",
+            "swp2",
+            "swp3",
+            "swp4",
+            "swp5",
+            "swp5.1",
+            "vrf1"));
+
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasInterfaces(
+                containsInAnyOrder(
+                    "bond1",
+                    "bond2",
+                    "bond2.4094",
+                    "bond3",
+                    "bond3.4094",
+                    "eth0",
+                    "lo",
+                    "swp1",
+                    "swp2",
+                    "swp3",
+                    "swp4",
+                    "swp5"))));
+    assertThat(c, hasVrf("mgmt", hasInterfaces(containsInAnyOrder("mgmt"))));
+    assertThat(c, hasVrf("vrf1", hasInterfaces(containsInAnyOrder("vrf1", "swp5.1"))));
+
+    // ip address
+    assertThat(
+        c,
+        hasInterface(
+            "bond2.4094",
+            both(hasAllAddresses(
+                    containsInAnyOrder(
+                        new InterfaceAddress("10.0.1.1/24"),
+                        new InterfaceAddress("172.16.0.1/24"))))
+                .and(hasAddress(new InterfaceAddress("10.0.1.1/24")))));
+    assertThat(
+        c,
+        hasInterface(
+            "eth0",
+            both(hasAllAddresses(containsInAnyOrder(new InterfaceAddress("10.0.2.1/24"))))
+                .and(hasAddress(new InterfaceAddress("10.0.2.1/24")))));
+    assertThat(
+        c,
+        hasInterface(
+            "swp4",
+            both(hasAllAddresses(containsInAnyOrder(new InterfaceAddress("10.0.3.1/24"))))
+                .and(hasAddress(new InterfaceAddress("10.0.3.1/24")))));
   }
 
   @Test
@@ -381,6 +541,22 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
+  public void testLoopbackConversion() throws IOException {
+    Configuration c = parseConfig("cumulus_nclu_loopback");
+
+    assertThat(c, hasInterface("lo", hasAddress(new InterfaceAddress("10.0.0.1/32"))));
+    assertThat(
+        c,
+        hasInterface(
+            "lo",
+            hasAllAddresses(
+                containsInAnyOrder(
+                    new InterfaceAddress("10.0.0.1/32"), new InterfaceAddress("10.0.1.1/24")))));
+    assertThat(c, hasInterface("lo", hasVrfName(DEFAULT_VRF_NAME)));
+    assertThat(c, hasDefaultVrf(hasInterfaces(contains("lo"))));
+  }
+
+  @Test
   public void testLoopbackExtraction() throws IOException {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_loopback");
 
@@ -426,6 +602,71 @@ public final class CumulusNcluGrammarTest {
         getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
 
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.ROUTE_MAP, "rm1", 2));
+  }
+
+  @Test
+  public void testRoutingConversion() throws IOException {
+    Configuration c = parseConfig("cumulus_nclu_routing");
+
+    org.batfish.datamodel.StaticRoute.Builder builder =
+        org.batfish.datamodel.StaticRoute.builder().setAdmin(1).setMetric(0);
+
+    // static routes in default VRF
+    builder.setNetwork(Prefix.strict("10.0.1.0/24"));
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasStaticRoutes(
+                containsInAnyOrder(
+                    builder.setNextHopIp(Ip.parse("10.1.0.1")).build(),
+                    builder.setNextHopIp(Ip.parse("10.1.0.2")).build()))));
+
+    // static routes in vrf1
+    builder.setNetwork(Prefix.strict("10.0.2.0/24"));
+    assertThat(
+        c,
+        hasVrf(
+            "vrf1",
+            hasStaticRoutes(
+                containsInAnyOrder(
+                    builder.setNextHopIp(Ip.parse("192.0.2.1")).build(),
+                    builder.setNextHopIp(Ip.parse("192.0.2.2")).build()))));
+
+    // route-maps
+    assertThat(
+        "Ensure route-maps are converted",
+        c.getRoutingPolicies().keySet(),
+        containsInAnyOrder("rm1", "rm2"));
+
+    Prefix bond1Prefix = Prefix.strict("10.1.0.0/24");
+    Prefix eth04094Prefix = Prefix.strict("10.1.1.0/24");
+    Prefix swp1Prefix = Prefix.strict("10.1.2.0/24");
+    Prefix swp2Prefix = Prefix.strict("10.1.3.0/24");
+    Prefix loPrefix = Prefix.strict("10.1.4.0/24");
+    Prefix vrf1Prefix1 = Prefix.strict("10.1.5.0/24");
+    Prefix vrf1Prefix2 = Prefix.strict("10.1.6.0/24");
+    Prefix otherPrefix = Prefix.strict("10.10.10.10/32");
+
+    RoutingPolicy rm1 = c.getRoutingPolicies().get("rm1");
+    RoutingPolicy rm2 = c.getRoutingPolicies().get("rm2");
+
+    assertRoutingPolicyPermitsNetwork(rm1, bond1Prefix);
+    assertRoutingPolicyPermitsNetwork(rm1, eth04094Prefix);
+    assertRoutingPolicyPermitsNetwork(rm1, swp1Prefix);
+    assertRoutingPolicyPermitsNetwork(rm1, swp2Prefix);
+    assertRoutingPolicyPermitsNetwork(rm1, loPrefix);
+    assertRoutingPolicyDeniesNetwork(rm1, vrf1Prefix1);
+    assertRoutingPolicyDeniesNetwork(rm1, vrf1Prefix2);
+    assertRoutingPolicyDeniesNetwork(rm1, otherPrefix);
+
+    assertRoutingPolicyPermitsNetwork(rm2, bond1Prefix);
+    assertRoutingPolicyPermitsNetwork(rm2, eth04094Prefix);
+    assertRoutingPolicyPermitsNetwork(rm2, swp1Prefix);
+    assertRoutingPolicyPermitsNetwork(rm2, swp2Prefix);
+    assertRoutingPolicyPermitsNetwork(rm2, loPrefix);
+    assertRoutingPolicyDeniesNetwork(rm2, vrf1Prefix1);
+    assertRoutingPolicyDeniesNetwork(rm2, vrf1Prefix2);
+    assertRoutingPolicyPermitsNetwork(rm2, otherPrefix);
   }
 
   @Test
@@ -498,6 +739,40 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
+  public void testVlanConversion() throws IOException {
+    Configuration c = parseConfig("cumulus_nclu_vlan");
+
+    // vlan interfaces should be put in correct vrfs
+    assertThat(
+        c, hasDefaultVrf(hasInterfaces(containsInAnyOrder("vlan3", "vlan4", "vlan5", "lo"))));
+    assertThat(c, hasVrf("vrf1", hasInterfaces(containsInAnyOrder("vrf1", "vlan2"))));
+    assertThat(c, hasInterface("vlan2", hasVrfName("vrf1")));
+    assertThat(c, hasInterface("vlan3", hasVrfName(DEFAULT_VRF_NAME)));
+    assertThat(c, hasInterface("vlan4", hasVrfName(DEFAULT_VRF_NAME)));
+    assertThat(c, hasInterface("vlan5", hasVrfName(DEFAULT_VRF_NAME)));
+
+    // vlan-id
+    assertThat(c, hasInterface("vlan2", hasVlan(2)));
+    assertThat(c, hasInterface("vlan3", hasVlan(nullValue())));
+    assertThat(c, hasInterface("vlan4", hasVlan(nullValue())));
+    assertThat(c, hasInterface("vlan5", hasVlan(6)));
+
+    // ip address
+    assertThat(c, hasInterface("vlan2", hasAddress(new InterfaceAddress("10.0.0.1/24"))));
+    assertThat(
+        c,
+        hasInterface(
+            "vlan2",
+            hasAllAddresses(
+                containsInAnyOrder(
+                    new InterfaceAddress("10.0.0.1/24"),
+                    new InterfaceAddress("10.0.1.1/24"),
+                    new InterfaceAddress("10.0.2.1/24"),
+                    new InterfaceAddress("10.0.3.1/24"),
+                    new InterfaceAddress("10.0.4.1/24")))));
+  }
+
+  @Test
   public void testVlanExtraction() throws IOException {
     CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_vlan");
 
@@ -543,6 +818,25 @@ public final class CumulusNcluGrammarTest {
     assertThat(vc.getVlans().get("vlan3").getVrf(), nullValue());
     assertThat(vc.getVlans().get("vlan4").getVrf(), nullValue());
     assertThat(vc.getVlans().get("vlan5").getVrf(), nullValue());
+  }
+
+  @Test
+  public void testVrfConversion() throws IOException {
+    Configuration c = parseConfig("cumulus_nclu_vrf");
+
+    // vrf presence and loopbacks
+    assertThat(c, hasVrf("vrf1", hasInterfaces(contains("vrf1"))));
+    assertThat(c, hasVrf("vrf2", hasInterfaces(contains("vrf2"))));
+
+    // ip address
+    assertThat(c, hasInterface("vrf1", hasAddress(new InterfaceAddress("10.0.0.1/24"))));
+    assertThat(
+        c,
+        hasInterface(
+            "vrf1",
+            hasAllAddresses(
+                containsInAnyOrder(
+                    new InterfaceAddress("10.0.0.1/24"), new InterfaceAddress("10.0.1.1/24")))));
   }
 
   @Test
