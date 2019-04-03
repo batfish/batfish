@@ -392,6 +392,17 @@ final class InterfaceMatchersImpl {
     }
   }
 
+  static final class HasVrfName extends FeatureMatcher<Interface, String> {
+    HasVrfName(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "an Interface with vrfName:", "vrfName");
+    }
+
+    @Override
+    protected String featureValueOf(Interface actual) {
+      return actual.getVrfName();
+    }
+  }
+
   static final class HasZoneName extends FeatureMatcher<Interface, String> {
     HasZoneName(@Nonnull Matcher<? super String> subMatcher) {
       super(subMatcher, "an Interface with zoneName:", "zoneName");

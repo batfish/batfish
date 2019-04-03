@@ -13167,7 +13167,509 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : { }
+        "dnsServers" : [
+          "192.0.2.3"
+        ],
+        "interfaces" : {
+          "bond1" : {
+            "name" : "bond1",
+            "accessVlan" : 2,
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 0.0,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : true,
+            "switchportMode" : "ACCESS",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "AGGREGATED",
+            "vrf" : "default"
+          },
+          "bond1.4094" : {
+            "name" : "bond1.4094",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allPrefixes" : [
+              "192.0.2.6/24"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "192.0.2.6/24",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOGICAL",
+            "vrf" : "default"
+          },
+          "bond2" : {
+            "name" : "bond2",
+            "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "3-5",
+            "autostate" : true,
+            "bandwidth" : 0.0,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : true,
+            "switchportMode" : "TRUNK",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "AGGREGATED",
+            "vrf" : "default"
+          },
+          "eth0" : {
+            "name" : "eth0",
+            "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "mgmt"
+          },
+          "lo" : {
+            "name" : "lo",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allPrefixes" : [
+              "192.0.2.8/32"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "192.0.2.8/32",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOOPBACK",
+            "vrf" : "default"
+          },
+          "mgmt" : {
+            "name" : "mgmt",
+            "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allPrefixes" : [
+              "10.0.0.2/8"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "10.0.0.2/8",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOOPBACK",
+            "vrf" : "mgmt"
+          },
+          "swp1" : {
+            "name" : "swp1",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "swp2" : {
+            "name" : "swp2",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "swp3" : {
+            "name" : "swp3",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "swp4" : {
+            "name" : "swp4",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "swp5" : {
+            "name" : "swp5",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "swp6" : {
+            "name" : "swp6",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "swp7" : {
+            "name" : "swp7",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "swp8" : {
+            "name" : "swp8",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "vlan4" : {
+            "name" : "vlan4",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allPrefixes" : [
+              "192.0.2.9/24",
+              "192.168.0.1/24"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "192.0.2.9/24",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "VLAN",
+            "vlan" : 4,
+            "vrf" : "vrf1"
+          },
+          "vrf1" : {
+            "name" : "vrf1",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOOPBACK",
+            "vrf" : "vrf1"
+          }
+        },
+        "routingPolicies" : {
+          "rm1" : {
+            "name" : "rm1",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                      "prefix" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                      },
+                      "prefixSet" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                        "prefixSpace" : [
+                          "192.0.2.8/32"
+                        ]
+                      }
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ReturnFalse"
+              }
+            ]
+          }
+        },
+        "vendorFamily" : { },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "bond1",
+              "bond1.4094",
+              "bond2",
+              "lo",
+              "swp1",
+              "swp2",
+              "swp3",
+              "swp4",
+              "swp5",
+              "swp6",
+              "swp7",
+              "swp8"
+            ],
+            "staticRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "192.0.2.0/24",
+                "nextHopInterface" : "dynamic",
+                "nextHopIp" : "10.0.0.1",
+                "tag" : -1
+              }
+            ]
+          },
+          "mgmt" : {
+            "name" : "mgmt",
+            "interfaces" : [
+              "eth0",
+              "mgmt"
+            ]
+          },
+          "vrf1" : {
+            "name" : "vrf1",
+            "interfaces" : [
+              "vlan4",
+              "vrf1"
+            ],
+            "staticRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "0.0.0.0/0",
+                "nextHopInterface" : "dynamic",
+                "nextHopIp" : "192.0.2.1",
+                "tag" : -1
+              }
+            ]
+          }
+        }
       },
       "cumulus_nclu_invalid_bonds" : {
         "configurationFormat" : "CUMULUS_NCLU",
@@ -13175,7 +13677,246 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : { }
+        "interfaces" : {
+          "lo" : {
+            "name" : "lo",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOOPBACK",
+            "vrf" : "default"
+          },
+          "swp1" : {
+            "name" : "swp1",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "swp2" : {
+            "name" : "swp2",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "swp3" : {
+            "name" : "swp3",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "swp5" : {
+            "name" : "swp5",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "swp6" : {
+            "name" : "swp6",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "swp7" : {
+            "name" : "swp7",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "swp8" : {
+            "name" : "swp8",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "vrf1" : {
+            "name" : "vrf1",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOOPBACK",
+            "vrf" : "vrf1"
+          }
+        },
+        "vendorFamily" : { },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "lo",
+              "swp1",
+              "swp2",
+              "swp3",
+              "swp5",
+              "swp6",
+              "swp7",
+              "swp8"
+            ]
+          },
+          "vrf1" : {
+            "name" : "vrf1",
+            "interfaces" : [
+              "vrf1"
+            ]
+          }
+        }
       },
       "cumulus_nclu_invalid_interfaces" : {
         "configurationFormat" : "CUMULUS_NCLU",
@@ -13183,7 +13924,97 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : { }
+        "interfaces" : {
+          "bond1" : {
+            "name" : "bond1",
+            "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 0.0,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "AGGREGATED",
+            "vrf" : "default"
+          },
+          "lo" : {
+            "name" : "lo",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOOPBACK",
+            "vrf" : "default"
+          },
+          "vrf1" : {
+            "name" : "vrf1",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOOPBACK",
+            "vrf" : "vrf1"
+          }
+        },
+        "vendorFamily" : { },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "bond1",
+              "lo"
+            ]
+          },
+          "vrf1" : {
+            "name" : "vrf1",
+            "interfaces" : [
+              "vrf1"
+            ]
+          }
+        }
       },
       "cumulus_nclu_invalid_vrfs" : {
         "configurationFormat" : "CUMULUS_NCLU",
@@ -13191,7 +14022,92 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : { }
+        "interfaces" : {
+          "bond1" : {
+            "name" : "bond1",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 0.0,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "AGGREGATED",
+            "vrf" : "default"
+          },
+          "lo" : {
+            "name" : "lo",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOOPBACK",
+            "vrf" : "default"
+          },
+          "swp1" : {
+            "name" : "swp1",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          }
+        },
+        "vendorFamily" : { },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "bond1",
+              "lo",
+              "swp1"
+            ]
+          }
+        }
       },
       "cumulus_nclu_invalid_vxlans" : {
         "configurationFormat" : "CUMULUS_NCLU",
@@ -13199,7 +14115,122 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : { }
+        "interfaces" : {
+          "bond1" : {
+            "name" : "bond1",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 0.0,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "AGGREGATED",
+            "vrf" : "default"
+          },
+          "lo" : {
+            "name" : "lo",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOOPBACK",
+            "vrf" : "default"
+          },
+          "swp0" : {
+            "name" : "swp0",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "vrf1" : {
+            "name" : "vrf1",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOOPBACK",
+            "vrf" : "vrf1"
+          }
+        },
+        "vendorFamily" : { },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "bond1",
+              "lo",
+              "swp0"
+            ]
+          },
+          "vrf1" : {
+            "name" : "vrf1",
+            "interfaces" : [
+              "vrf1"
+            ]
+          }
+        }
       },
       "eos_mlag" : {
         "configurationFormat" : "ARISTA",
