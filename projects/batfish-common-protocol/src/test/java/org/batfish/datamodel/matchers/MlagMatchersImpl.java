@@ -9,8 +9,8 @@ import org.hamcrest.Matcher;
 final class MlagMatchersImpl {
 
   static final class HasId extends FeatureMatcher<Mlag, String> {
-    HasId(String name, Matcher<? super String> subMatcher) {
-      super(subMatcher, "An MLAG Configuration with id " + name + ":", "id " + name);
+    HasId(Matcher<? super String> subMatcher) {
+      super(subMatcher, "An MLAG Configuration with id:", "id");
     }
 
     @Override
@@ -19,9 +19,21 @@ final class MlagMatchersImpl {
     }
   }
 
+  static final class HasLocalInterface extends FeatureMatcher<Mlag, String> {
+    HasLocalInterface(Matcher<? super String> subMatcher) {
+      super(subMatcher, "An MLAG Configuration with localInterface:", "localInterface");
+    }
+
+    @Nullable
+    @Override
+    protected String featureValueOf(Mlag mlag) {
+      return mlag.getLocalInterface();
+    }
+  }
+
   static final class HasPeerAddress extends FeatureMatcher<Mlag, Ip> {
-    HasPeerAddress(Ip ip, Matcher<? super Ip> subMatcher) {
-      super(subMatcher, "An MLAG Configuration with peer address " + ip + ":", "peerAddress " + ip);
+    HasPeerAddress(Matcher<? super Ip> subMatcher) {
+      super(subMatcher, "An MLAG Configuration with peerAddress:", "peerAddress");
     }
 
     @Override
@@ -32,32 +44,14 @@ final class MlagMatchersImpl {
   }
 
   static final class HasPeerInterface extends FeatureMatcher<Mlag, String> {
-    HasPeerInterface(String name, Matcher<? super String> subMatcher) {
-      super(
-          subMatcher,
-          "An MLAG Configuration with peer interface " + name + ":",
-          "peerInterface" + name);
+    HasPeerInterface(Matcher<? super String> subMatcher) {
+      super(subMatcher, "An MLAG Configuration with peerInterface:", "peerInterface");
     }
 
     @Nullable
     @Override
     protected String featureValueOf(Mlag mlag) {
       return mlag.getPeerInterface();
-    }
-  }
-
-  static final class HasLocalInterface extends FeatureMatcher<Mlag, String> {
-    HasLocalInterface(String name, Matcher<? super String> subMatcher) {
-      super(
-          subMatcher,
-          "An MLAG Configuration with local interface " + name + ":",
-          "localInterface" + name);
-    }
-
-    @Nullable
-    @Override
-    protected String featureValueOf(Mlag mlag) {
-      return mlag.getLocalInterface();
     }
   }
 

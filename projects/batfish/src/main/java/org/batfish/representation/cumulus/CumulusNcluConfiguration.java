@@ -4,6 +4,7 @@ import static java.util.Comparator.naturalOrder;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Streams;
@@ -16,6 +17,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -30,6 +32,7 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -118,6 +121,60 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   private void convertBondInterfaces() {
     _bonds.forEach((name, bond) -> _c.getAllInterfaces().put(name, toInterface(bond)));
+  }
+
+  private void convertClags() {
+    List<Interface> clagPeeringInterfaces =
+        _interfaces.values().stream()
+            .filter(i -> i.getClagPeerIp() != null)
+            .collect(ImmutableList.toImmutableList());
+    if (clagPeeringInterfaces.isEmpty()) {
+      return;
+    }
+    if (clagPeeringInterfaces.size() > 1) {
+      _w.redFlag(
+          String.format(
+              "CLAG configuration on multiple peering interfaces is unsupported: %s",
+              clagPeeringInterfaces.stream()
+                  .map(Interface::getName)
+                  .collect(ImmutableList.toImmutableList())));
+      return;
+    }
+    Map<Integer, List<Bond>> clagBondsById = new HashMap<>();
+    Interface clagPeeringInterface = clagPeeringInterfaces.get(0);
+    Ip peerAddress = clagPeeringInterface.getClagPeerIp();
+    String peerInterfaceName = clagPeeringInterface.getName();
+    _bonds.values().stream()
+        .filter(bond -> bond.getClagId() != null)
+        .forEach(
+            clagBond ->
+                clagBondsById
+                    .computeIfAbsent(clagBond.getClagId(), id -> new LinkedList<>())
+                    .add(clagBond));
+    ImmutableList.Builder<Mlag> mlags = ImmutableList.builder();
+    clagBondsById.forEach(
+        (id, clagBonds) -> {
+          if (clagBonds.size() > 1) {
+            _w.redFlag(
+                String.format(
+                    "CLAG ID %d is erroneously configured on more than one bond: %s",
+                    clagBonds.stream()
+                        .map(Bond::getName)
+                        .collect(ImmutableList.toImmutableList())));
+            return;
+          }
+          String idStr = Integer.toString(id);
+          mlags.add(
+              Mlag.builder()
+                  .setId(idStr)
+                  .setLocalInterface(clagBonds.get(0).getName())
+                  .setPeerAddress(peerAddress)
+                  .setPeerInterface(peerInterfaceName)
+                  .build());
+        });
+    _c.setMlags(
+        mlags.build().stream()
+            .collect(ImmutableMap.toImmutableMap(Mlag::getId, Function.identity())));
   }
 
   private void convertDefaultVrf() {
@@ -331,6 +388,20 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   @Override
   public void setVendor(ConfigurationFormat format) {}
 
+  private @Nonnull List<Statement> toActions(RouteMapEntry entry) {
+    ImmutableList.Builder<Statement> builder = ImmutableList.builder();
+    entry.getSets().flatMap(set -> set.toStatements(_c, this, _w)).forEach(builder::add);
+    return builder.add(toStatement(entry.getAction())).build();
+  }
+
+  private @Nonnull BooleanExpr toGuard(RouteMapEntry entry) {
+    return new Conjunction(
+        entry
+            .getMatches()
+            .map(match -> match.toBooleanExpr(_c, this, _w))
+            .collect(ImmutableList.toImmutableList()));
+  }
+
   private @Nonnull org.batfish.datamodel.Interface toInterface(Bond bond) {
     String name = bond.getName();
     org.batfish.datamodel.Interface newIface =
@@ -358,6 +429,9 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       newIface.setAddress(bond.getIpAddresses().get(0));
     }
     newIface.setAllAddresses(bond.getIpAddresses());
+
+    newIface.setMlagId(bond.getClagId());
+
     return newIface;
   }
 
@@ -407,6 +481,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     return builder.addStatement(Statements.ReturnFalse.toStaticStatement()).build();
   }
 
+  private @Nonnull Statement toRoutingPolicyStatement(RouteMapEntry entry) {
+    return new If(toGuard(entry), toActions(entry));
+  }
+
   private @Nonnull Statement toStatement(LineAction action) {
     switch (action) {
       case PERMIT:
@@ -416,24 +494,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       default:
         throw new IllegalArgumentException(String.format("Invalid action: %s", action));
     }
-  }
-
-  private @Nonnull List<Statement> toActions(RouteMapEntry entry) {
-    ImmutableList.Builder<Statement> builder = ImmutableList.builder();
-    entry.getSets().flatMap(set -> set.toStatements(_c, this, _w)).forEach(builder::add);
-    return builder.add(toStatement(entry.getAction())).build();
-  }
-
-  private @Nonnull Statement toRoutingPolicyStatement(RouteMapEntry entry) {
-    return new If(toGuard(entry), toActions(entry));
-  }
-
-  private @Nonnull BooleanExpr toGuard(RouteMapEntry entry) {
-    return new Conjunction(
-        entry
-            .getMatches()
-            .map(match -> match.toBooleanExpr(_c, this, _w))
-            .collect(ImmutableList.toImmutableList()));
   }
 
   private @Nonnull Configuration toVendorIndependentConfiguration() {
@@ -451,6 +511,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     convertDefaultVrf();
     convertRouteMaps();
     convertDnsServers();
+    convertClags();
 
     markStructures();
     return _c;

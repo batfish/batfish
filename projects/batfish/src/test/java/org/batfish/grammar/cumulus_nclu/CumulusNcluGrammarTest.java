@@ -11,11 +11,16 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDependencies;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMlagId;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isSwitchport;
+import static org.batfish.datamodel.matchers.MlagMatchers.hasId;
+import static org.batfish.datamodel.matchers.MlagMatchers.hasLocalInterface;
+import static org.batfish.datamodel.matchers.MlagMatchers.hasPeerAddress;
+import static org.batfish.datamodel.matchers.MlagMatchers.hasPeerInterface;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.hamcrest.Matchers.anEmptyMap;
@@ -56,6 +61,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MacAddress;
+import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
@@ -275,6 +281,7 @@ public final class CumulusNcluGrammarTest {
                     new Dependency("swp6", DependencyType.AGGREGATE),
                     new Dependency("swp7", DependencyType.AGGREGATE),
                     new Dependency("swp8", DependencyType.AGGREGATE))))));
+    assertThat(c, hasInterface("bond1", hasMlagId(1)));
     assertThat(c, hasInterface("bond1", isSwitchport()));
     assertThat(c, hasInterface("bond1", hasSwitchPortMode(SwitchportMode.ACCESS)));
     assertThat(c, hasInterface("bond1", hasAccessVlan(2)));
@@ -342,6 +349,25 @@ public final class CumulusNcluGrammarTest {
 
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.BOND, "bond1", 2));
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "bond2.4094", 2));
+  }
+
+  @Test
+  public void testClagConversion() throws IOException {
+    Configuration c = parseConfig("cumulus_nclu_clag");
+
+    assertThat(c.getMlags().keySet(), containsInAnyOrder("1", "2"));
+
+    Mlag clag1 = c.getMlags().get("1");
+    assertThat(clag1, hasId("1"));
+    assertThat(clag1, hasLocalInterface("clag1bond"));
+    assertThat(clag1, hasPeerAddress(Ip.parse("192.0.2.2")));
+    assertThat(clag1, hasPeerInterface("peerlink.4094"));
+
+    Mlag clag2 = c.getMlags().get("2");
+    assertThat(clag2, hasId("2"));
+    assertThat(clag2, hasLocalInterface("clag2bond"));
+    assertThat(clag2, hasPeerAddress(Ip.parse("192.0.2.2")));
+    assertThat(clag2, hasPeerInterface("peerlink.4094"));
   }
 
   @Test
