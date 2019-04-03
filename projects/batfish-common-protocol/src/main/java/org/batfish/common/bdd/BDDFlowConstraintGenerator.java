@@ -69,16 +69,18 @@ public final class BDDFlowConstraintGenerator {
   // named port
   BDD computeTCPConstraint() {
     BDDInteger dstPort = _bddPacket.getDstPort();
-    BDD dstPortBdd =
+    BDDInteger srcPort = _bddPacket.getSrcPort();
+    BDD bdd1 =
         _bddPacket
             .getFactory()
             .orAll(
                 Arrays.stream(NamedPort.values())
                     .map(namedPort -> dstPort.value(namedPort.number()))
                     .collect(Collectors.toList()));
-    BDD srcPortBdd = _bddPacket.swapSourceAndDestinationFields(dstPortBdd);
+    bdd1 = bdd1.and(srcPort.geq(NamedPort.EPHEMERAL_LOWEST.number()));
+    BDD bdd2 = _bddPacket.swapSourceAndDestinationFields(bdd1);
     BDD tcp = _bddPacket.getIpProtocol().value(IpProtocol.TCP);
-    return tcp.and(dstPortBdd.or(srcPortBdd));
+    return tcp.and(bdd1.or(bdd2));
   }
 
   // Get UDP packets for traceroute:
