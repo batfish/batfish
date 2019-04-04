@@ -125,26 +125,26 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   }
 
   private void convertClags() {
-    List<Interface> clagPeeringInterfaces =
+    List<Interface> clagSourceInterfaces =
         _interfaces.values().stream()
             .filter(i -> i.getClagPeerIp() != null)
             .collect(ImmutableList.toImmutableList());
-    if (clagPeeringInterfaces.isEmpty()) {
+    if (clagSourceInterfaces.isEmpty()) {
       return;
     }
-    if (clagPeeringInterfaces.size() > 1) {
+    if (clagSourceInterfaces.size() > 1) {
       _w.redFlag(
           String.format(
               "CLAG configuration on multiple peering interfaces is unsupported: %s",
-              clagPeeringInterfaces.stream()
+              clagSourceInterfaces.stream()
                   .map(Interface::getName)
                   .collect(ImmutableList.toImmutableList())));
       return;
     }
-    Interface clagPeeringInterface = clagPeeringInterfaces.get(0);
-    Ip peerAddress = clagPeeringInterface.getClagPeerIp();
-    String peerInterfaceName = clagPeeringInterface.getName();
-    String sourceInterfaceName = clagPeeringInterface.getSuperInterfaceName();
+    Interface clagSourceInterface = clagSourceInterfaces.get(0);
+    Ip peerAddress = clagSourceInterface.getClagPeerIp();
+    String sourceInterfaceName = clagSourceInterface.getName();
+    String peerInterfaceName = clagSourceInterface.getSuperInterfaceName();
     _c.setMlags(
         ImmutableMap.of(
             CUMULUS_CLAG_DOMAIN_ID,
