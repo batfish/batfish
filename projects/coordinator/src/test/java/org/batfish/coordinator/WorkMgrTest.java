@@ -940,7 +940,7 @@ public final class WorkMgrTest {
 
     Answer failedAnswer = Answer.failureAnswer("Not answered", null);
     failedAnswer.setStatus(AnswerStatus.NOTFOUND);
-    String failedAnswerString = BatfishObjectMapper.writePrettyString(failedAnswer);
+    String failedAnswerString = BatfishObjectMapper.writeString(failedAnswer);
 
     assertThat(
         ((StringAnswerElement)
