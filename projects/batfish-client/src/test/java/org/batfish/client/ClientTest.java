@@ -1,46 +1,30 @@
 package org.batfish.client;
 
-import static org.batfish.client.Command.ADD_ANALYSIS_QUESTIONS;
 import static org.batfish.client.Command.ADD_BATFISH_OPTION;
 import static org.batfish.client.Command.ANSWER;
 import static org.batfish.client.Command.ANSWER_REFERENCE;
-import static org.batfish.client.Command.CAT;
 import static org.batfish.client.Command.CHECK_API_KEY;
-import static org.batfish.client.Command.CLEAR_SCREEN;
-import static org.batfish.client.Command.DEL_ANALYSIS;
-import static org.batfish.client.Command.DEL_ANALYSIS_QUESTIONS;
 import static org.batfish.client.Command.DEL_BATFISH_OPTION;
 import static org.batfish.client.Command.DEL_NETWORK;
 import static org.batfish.client.Command.DEL_QUESTION;
 import static org.batfish.client.Command.DEL_SNAPSHOT;
-import static org.batfish.client.Command.DIR;
 import static org.batfish.client.Command.EXIT;
 import static org.batfish.client.Command.GEN_DP;
 import static org.batfish.client.Command.GEN_REFERENCE_DP;
 import static org.batfish.client.Command.GET;
-import static org.batfish.client.Command.GET_ANALYSIS_ANSWERS;
-import static org.batfish.client.Command.GET_ANALYSIS_ANSWERS_DIFFERENTIAL;
-import static org.batfish.client.Command.GET_ANALYSIS_ANSWERS_REFERENCE;
 import static org.batfish.client.Command.GET_ANSWER;
 import static org.batfish.client.Command.GET_ANSWER_DIFFERENTIAL;
 import static org.batfish.client.Command.GET_ANSWER_REFERENCE;
 import static org.batfish.client.Command.GET_CONFIGURATION;
 import static org.batfish.client.Command.GET_REFERENCE;
 import static org.batfish.client.Command.HELP;
-import static org.batfish.client.Command.INIT_ANALYSIS;
 import static org.batfish.client.Command.INIT_NETWORK;
 import static org.batfish.client.Command.INIT_REFERENCE_SNAPSHOT;
 import static org.batfish.client.Command.INIT_SNAPSHOT;
-import static org.batfish.client.Command.LIST_ANALYSES;
 import static org.batfish.client.Command.LIST_NETWORKS;
 import static org.batfish.client.Command.LIST_QUESTIONS;
 import static org.batfish.client.Command.LIST_SNAPSHOTS;
 import static org.batfish.client.Command.LOAD_QUESTIONS;
-import static org.batfish.client.Command.PROMPT;
-import static org.batfish.client.Command.PWD;
-import static org.batfish.client.Command.RUN_ANALYSIS;
-import static org.batfish.client.Command.RUN_ANALYSIS_DIFFERENTIAL;
-import static org.batfish.client.Command.RUN_ANALYSIS_REFERENCE;
 import static org.batfish.client.Command.SET_BATFISH_LOGLEVEL;
 import static org.batfish.client.Command.SET_LOGLEVEL;
 import static org.batfish.client.Command.SET_NETWORK;
@@ -170,11 +154,6 @@ public final class ClientTest {
   }
 
   @Test
-  public void testAddAnalysisQuestionInvalidParas() throws Exception {
-    testInvalidInput(ADD_ANALYSIS_QUESTIONS, new String[] {}, new String[] {});
-  }
-
-  @Test
   public void testAddBatfishOptionInvalidParas() throws Exception {
     testInvalidInput(ADD_BATFISH_OPTION, new String[] {}, new String[] {});
   }
@@ -208,34 +187,9 @@ public final class ClientTest {
   }
 
   @Test
-  public void testCatInvalidParas() throws Exception {
-    Command command = CAT;
-    String[] args = new String[] {command.commandName()};
-    Pair<String, String> usage = Command.getUsageMap().get(command);
-    String expected =
-        String.format(
-            "Invalid arguments: %s\n%s %s\n\t%s\n\n",
-            Arrays.toString(args), command.commandName(), usage.getFirst(), usage.getSecond());
-    checkProcessCommandErrorMessage(command, new String[] {}, expected);
-  }
-
-  @Test
-  public void testCatValidParas() throws Exception {
-    Path tempFilePath = _folder.newFile("temp").toPath();
-    String[] parameters = new String[] {tempFilePath.toString()};
-    testProcessCommandWithValidInput(CAT, parameters, "");
-  }
-
-  @Test
   public void testCheckApiKeyInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     testInvalidInput(CHECK_API_KEY, new String[] {}, parameters);
-  }
-
-  @Test
-  public void testClearScreenInvalidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(CLEAR_SCREEN, new String[] {}, parameters);
   }
 
   @Test
@@ -248,28 +202,6 @@ public final class ClientTest {
     String expected = "Command failed: Not a valid command: \"non-exist command\"\n";
     assertFalse(client.processCommand(args, writer));
     assertThat(client.getLogger().getHistory().toString(500), equalTo(expected));
-  }
-
-  @Test
-  public void testDelAnalysisInvalidParas() throws Exception {
-    testInvalidInput(DEL_ANALYSIS, new String[] {}, new String[] {});
-  }
-
-  @Test
-  public void testDelAnalysisQuestionInvalidParas() throws Exception {
-    testInvalidInput(DEL_ANALYSIS_QUESTIONS, new String[] {}, new String[] {});
-  }
-
-  @Test
-  public void testDelAnalysisQuestionValidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1", "parameter2"};
-    checkProcessCommandErrorMessage(DEL_ANALYSIS_QUESTIONS, parameters, NETWORK_NOT_SET);
-  }
-
-  @Test
-  public void testDelAnalysisValidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(DEL_ANALYSIS, parameters, NETWORK_NOT_SET);
   }
 
   @Test
@@ -309,19 +241,6 @@ public final class ClientTest {
   public void testDelSnapshotValidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     checkProcessCommandErrorMessage(DEL_SNAPSHOT, parameters, NETWORK_NOT_SET);
-  }
-
-  @Test
-  public void testDirInvalidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1", "parameter2"};
-    testInvalidInput(DIR, new String[] {}, parameters);
-  }
-
-  @Test
-  public void testDirValidParas() throws Exception {
-    Path tempFilePath = _folder.newFolder("temp").toPath();
-    String[] parameters = new String[] {tempFilePath.toString()};
-    testProcessCommandWithValidInput(DIR, parameters, "");
   }
 
   @Test
@@ -374,30 +293,6 @@ public final class ClientTest {
   @Test
   public void testGenerateDataplaneValidParas() throws Exception {
     checkProcessCommandErrorMessage(GEN_DP, new String[] {}, SNAPSHOT_NOT_SET);
-  }
-
-  @Test
-  public void testGetAnalysisAnswersReferenceValidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(GET_ANALYSIS_ANSWERS_REFERENCE, parameters, SNAPSHOT_NOT_SET);
-  }
-
-  @Test
-  public void testGetAnalysisAnswersDifferentialValidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(
-        GET_ANALYSIS_ANSWERS_DIFFERENTIAL, parameters, SNAPSHOT_NOT_SET);
-  }
-
-  @Test
-  public void testGetAnalysisAnswersInvalidParas() throws Exception {
-    testInvalidInput(GET_ANALYSIS_ANSWERS, new String[] {}, new String[] {});
-  }
-
-  @Test
-  public void testGetAnalysisAnswersValidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(GET_ANALYSIS_ANSWERS, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test
@@ -501,11 +396,6 @@ public final class ClientTest {
     String expected =
         String.format("%s %s\n\t%s\n\n", GET.commandName(), usage.getFirst(), usage.getSecond());
     testProcessCommandWithValidInput(HELP, parameters, expected);
-  }
-
-  @Test
-  public void testInitAnalysisQuestionInvalidParas() throws Exception {
-    testInvalidInput(INIT_ANALYSIS, new String[] {}, new String[] {});
   }
 
   @Test
@@ -939,18 +829,6 @@ public final class ClientTest {
   }
 
   @Test
-  public void testListAnalysisInvalidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(LIST_ANALYSES, new String[] {}, parameters);
-  }
-
-  @Test
-  public void testListAnalysisValidParas() throws Exception {
-    String[] parameters = new String[] {};
-    checkProcessCommandErrorMessage(LIST_ANALYSES, parameters, NETWORK_NOT_SET);
-  }
-
-  @Test
   public void testListNetworksInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     testInvalidInput(LIST_NETWORKS, new String[] {}, parameters);
@@ -1311,12 +1189,6 @@ public final class ClientTest {
   }
 
   @Test
-  public void testPromptInvalidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(PROMPT, new String[] {}, parameters);
-  }
-
-  @Test
   public void testProvideNonOptionalParameterWithValue() throws IOException {
     Map<String, Variable> variables = new HashMap<>();
     Variable integerVariable = new Variable();
@@ -1333,43 +1205,6 @@ public final class ClientTest {
     integerVariable.setValue(_mapper.readTree("3"));
     variables.put("integer", integerVariable);
     Client.checkVariableState(variables);
-  }
-
-  @Test
-  public void testPwdInvalidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(PWD, new String[] {}, parameters);
-  }
-
-  @Test
-  public void testPwdValidParas() throws Exception {
-    testProcessCommandWithValidInput(
-        PWD,
-        new String[] {},
-        String.format("working directory = %s\n", System.getProperty("user.dir")));
-  }
-
-  @Test
-  public void testRunAnalysisReferenceValidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(RUN_ANALYSIS_REFERENCE, parameters, NETWORK_NOT_SET);
-  }
-
-  @Test
-  public void testRunAnalysisDifferentialValidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(RUN_ANALYSIS_DIFFERENTIAL, parameters, NETWORK_NOT_SET);
-  }
-
-  @Test
-  public void testRunAnalysisInvalidParas() throws Exception {
-    testInvalidInput(RUN_ANALYSIS, new String[] {}, new String[] {});
-  }
-
-  @Test
-  public void testRunAnalysisValidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(RUN_ANALYSIS, parameters, NETWORK_NOT_SET);
   }
 
   @Test
