@@ -1069,7 +1069,7 @@ public class BfCoordWorkHelper {
   boolean syncSnapshotsUpdateSettings(
       String pluginId, String networkName, Map<String, String> settings) {
     try {
-      String settingsStr = BatfishObjectMapper.writePrettyString(settings);
+      String settingsStr = BatfishObjectMapper.writeString(settings);
 
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_SYNC_SNAPSHOTS_UPDATE_SETTINGS);
 
