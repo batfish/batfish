@@ -79,8 +79,8 @@ public abstract class Answerer {
       return finalTable;
     } else {
       try {
-        String beforeJsonStr = BatfishObjectMapper.writePrettyString(baseAnswer);
-        String afterJsonStr = BatfishObjectMapper.writePrettyString(deltaAnswer);
+        String beforeJsonStr = BatfishObjectMapper.writeString(baseAnswer);
+        String afterJsonStr = BatfishObjectMapper.writeString(deltaAnswer);
         JSONObject beforeJson = new JSONObject(beforeJsonStr);
         JSONObject afterJson = new JSONObject(afterJsonStr);
         JsonDiff diff = new JsonDiff(beforeJson, afterJson);
