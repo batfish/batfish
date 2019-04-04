@@ -49,6 +49,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   private @Nullable BgpProcess _bgpProcess;
   private final @Nonnull Map<String, Bond> _bonds;
+  private final @Nonnull Bridge _bridge;
   private transient Configuration _c;
   private @Nullable String _hostname;
   private final @Nonnull Map<String, Interface> _interfaces;
@@ -60,7 +61,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, Vlan> _vlans;
   private final @Nonnull Map<String, Vrf> _vrfs;
   private final @Nonnull Map<String, Vxlan> _vxlans;
-  private final @Nonnull Bridge _bridge;
 
   public CumulusNcluConfiguration() {
     _bonds = new HashMap<>();
@@ -226,6 +226,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   public @Nonnull Map<String, Bond> getBonds() {
     return _bonds;
+  }
+
+  public @Nonnull Bridge getBridge() {
+    return _bridge;
   }
 
   @Override
@@ -471,9 +475,5 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   public @Nonnull List<Configuration> toVendorIndependentConfigurations()
       throws VendorConversionException {
     return ImmutableList.of(toVendorIndependentConfiguration());
-  }
-
-  public @Nonnull Bridge getBridge() {
-    return _bridge;
   }
 }

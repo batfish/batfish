@@ -87,6 +87,7 @@ bond_bridge
   BRIDGE
   (
     bob_access
+    | bob_pvid
     | bob_vids
   )
 ;
@@ -94,6 +95,11 @@ bond_bridge
 bob_access
 :
   ACCESS vlan = vlan_id NEWLINE
+;
+
+bob_pvid
+:
+  PVID id = vlan_id NEWLINE
 ;
 
 bob_vids

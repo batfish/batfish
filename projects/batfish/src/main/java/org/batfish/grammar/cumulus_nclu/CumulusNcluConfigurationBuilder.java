@@ -59,6 +59,7 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ble_advertise_ipv4_uni
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bn_interfaceContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bni_remote_as_externalContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bob_accessContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bob_pvidContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bob_vidsContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bobo_slavesContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bond_clag_idContext;
@@ -79,6 +80,9 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.GlobContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Glob_range_setContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.I_ip_addressContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.I_vrfContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ib_accessContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ib_pvidContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ib_vidsContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ic_backup_ipContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ic_peer_ipContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ic_priorityContext;
@@ -803,6 +807,11 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   }
 
   @Override
+  public void exitBob_pvid(Bob_pvidContext ctx) {
+    _currentBond.getBridge().setPvid(toInteger(ctx.id));
+  }
+
+  @Override
   public void exitBob_vids(Bob_vidsContext ctx) {
     _currentBond.getBridge().setVids(IntegerSpace.of(toRangeSet(ctx.vlans)));
   }
@@ -915,6 +924,22 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
         iface -> {
           iface.setVrf(vrf);
         });
+  }
+
+  @Override
+  public void exitIb_access(Ib_accessContext ctx) {
+    _currentInterfaces.forEach(iface -> iface.getBridge().setAccess(toInteger(ctx.vlan)));
+  }
+
+  @Override
+  public void exitIb_pvid(Ib_pvidContext ctx) {
+    _currentInterfaces.forEach(iface -> iface.getBridge().setPvid(toInteger(ctx.id)));
+  }
+
+  @Override
+  public void exitIb_vids(Ib_vidsContext ctx) {
+    _currentInterfaces.forEach(
+        iface -> iface.getBridge().setVids(IntegerSpace.of(toRangeSet(ctx.vlans))));
   }
 
   @Override
