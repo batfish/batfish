@@ -441,7 +441,7 @@ public final class FileBasedStorage implements StorageProvider {
   public void storeAnswerMetadata(AnswerMetadata answerMetadata, AnswerId answerId) {
     String metricsStr;
     try {
-      metricsStr = BatfishObjectMapper.writePrettyString(answerMetadata);
+      metricsStr = BatfishObjectMapper.writeString(answerMetadata);
     } catch (JsonProcessingException e) {
       throw new BatfishException("Could not write answer metrics", e);
     }
@@ -652,7 +652,7 @@ public final class FileBasedStorage implements StorageProvider {
       throws IOException {
     FileUtils.writeStringToFile(
         getAnalysisMetadataPath(networkId, analysisId).toFile(),
-        BatfishObjectMapper.writePrettyString(analysisMetadata),
+        BatfishObjectMapper.writeString(analysisMetadata),
         UTF_8);
   }
 
@@ -669,7 +669,7 @@ public final class FileBasedStorage implements StorageProvider {
       throws IOException {
     FileUtils.writeStringToFile(
         getSnapshotMetadataPath(networkId, snapshotId).toFile(),
-        BatfishObjectMapper.writePrettyString(snapshotMetadata),
+        BatfishObjectMapper.writeString(snapshotMetadata),
         UTF_8);
   }
 
@@ -685,7 +685,7 @@ public final class FileBasedStorage implements StorageProvider {
       throws IOException {
     FileUtils.write(
         getNodeRolesPath(nodeRolesId).toFile(),
-        BatfishObjectMapper.writePrettyString(nodeRolesData),
+        BatfishObjectMapper.writeString(nodeRolesData),
         UTF_8);
   }
 
@@ -950,8 +950,7 @@ public final class FileBasedStorage implements StorageProvider {
       throws IOException {
     Path path = getEnvTopologyPath(networkId, snapshotId);
     path.getParent().toFile().mkdirs();
-    FileUtils.writeStringToFile(
-        path.toFile(), BatfishObjectMapper.writePrettyString(topology), UTF_8);
+    FileUtils.writeStringToFile(path.toFile(), BatfishObjectMapper.writeString(topology), UTF_8);
   }
 
   @Override
@@ -960,8 +959,7 @@ public final class FileBasedStorage implements StorageProvider {
       throws IOException {
     Path path = getPojoTopologyPath(networkId, snapshotId);
     path.getParent().toFile().mkdirs();
-    FileUtils.writeStringToFile(
-        path.toFile(), BatfishObjectMapper.writePrettyString(topology), UTF_8);
+    FileUtils.writeStringToFile(path.toFile(), BatfishObjectMapper.writeString(topology), UTF_8);
   }
 
   @Override
