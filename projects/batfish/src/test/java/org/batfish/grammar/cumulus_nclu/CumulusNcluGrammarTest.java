@@ -359,9 +359,9 @@ public final class CumulusNcluGrammarTest {
                 CUMULUS_CLAG_DOMAIN_ID,
                 Mlag.builder()
                     .setId(CUMULUS_CLAG_DOMAIN_ID)
-                    .setLocalInterface("peerlink")
+                    .setLocalInterface("peerlink.4094")
                     .setPeerAddress(Ip.parse("192.0.2.2"))
-                    .setPeerInterface("peerlink.4094")
+                    .setPeerInterface("peerlink")
                     .build())));
   }
 
