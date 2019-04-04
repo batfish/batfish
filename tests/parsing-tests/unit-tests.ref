@@ -40465,6 +40465,21 @@
             "          NUMBERED_WORD:'bond2')",
             "        (bond_bridge",
             "          BRIDGE:'bridge'",
+            "          (bob_pvid",
+            "            PVID:'pvid'",
+            "            id = (vlan_id",
+            "              v = DEC:'1')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        name = (word",
+            "          NUMBERED_WORD:'bond2')",
+            "        (bond_bridge",
+            "          BRIDGE:'bridge'",
             "          (bob_vids",
             "            VIDS:'vids'",
             "            vlans = (vlan_range_set",
@@ -40748,6 +40763,45 @@
             "            ACCESS:'access'",
             "            vlan = (vlan_id",
             "              v = DEC:'3')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp2')))",
+            "        (i_bridge",
+            "          BRIDGE:'bridge'",
+            "          (ib_pvid",
+            "            PVID:'pvid'",
+            "            id = (vlan_id",
+            "              v = DEC:'4')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp2')))",
+            "        (i_bridge",
+            "          BRIDGE:'bridge'",
+            "          (ib_vids",
+            "            VIDS:'vids'",
+            "            vlans = (vlan_range_set",
+            "              (vlan_range",
+            "                low = (vlan_id",
+            "                  v = DEC:'5')",
+            "                DASH:'-'",
+            "                high = (vlan_id",
+            "                  v = DEC:'6')))",
             "            NEWLINE:'\\n')))))",
             "  (statement",
             "    (s_net_add",
@@ -72014,163 +72068,163 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 26,
+              "Line" : 27,
               "Parser_Context" : "[brbr_vlan_aware bridge_bridge a_bridge s_net_add statement cumulus_nclu_configuration]",
               "Text" : "vlan-aware"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 29,
+              "Line" : 30,
               "Parser_Context" : "[a_dot1x s_net_add statement cumulus_nclu_configuration]",
               "Text" : "dot1x eap-reauth-period 0"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 30,
+              "Line" : 31,
               "Parser_Context" : "[a_dot1x s_net_add statement cumulus_nclu_configuration]",
               "Text" : "dot1x mab-activation-delay 30"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 31,
+              "Line" : 32,
               "Parser_Context" : "[a_dot1x s_net_add statement cumulus_nclu_configuration]",
               "Text" : "dot1x radius accounting-port 1234"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 32,
+              "Line" : 33,
               "Parser_Context" : "[a_dot1x s_net_add statement cumulus_nclu_configuration]",
               "Text" : "dot1x radius authentication-port 2345"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 44,
+              "Line" : 47,
               "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
               "Text" : "ptp global domain-number 0"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 45,
+              "Line" : 48,
               "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
               "Text" : "ptp global logging-level 5"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 46,
+              "Line" : 49,
               "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
               "Text" : "ptp global path-trace-enabled no"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 47,
+              "Line" : 50,
               "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
               "Text" : "ptp global priority1 255"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 48,
+              "Line" : 51,
               "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
               "Text" : "ptp global slave-only no"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 49,
+              "Line" : 52,
               "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
               "Text" : "ptp global summary-interval 0"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 50,
+              "Line" : 53,
               "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
               "Text" : "ptp global time-stamping"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 51,
+              "Line" : 54,
               "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
               "Text" : "ptp global use-syslog yes"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 52,
+              "Line" : 55,
               "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
               "Text" : "ptp global verbose no"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 53,
+              "Line" : 56,
               "Parser_Context" : "[r_defaults_datacenter a_routing s_net_add statement cumulus_nclu_configuration]",
               "Text" : "defaults datacenter"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 54,
+              "Line" : 57,
               "Parser_Context" : "[r_log a_routing s_net_add statement cumulus_nclu_configuration]",
               "Text" : "log syslog informational"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 57,
+              "Line" : 60,
               "Parser_Context" : "[r_service_integrated_vtysh_config a_routing s_net_add statement cumulus_nclu_configuration]",
               "Text" : "service integrated-vtysh-config"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 58,
+              "Line" : 61,
               "Parser_Context" : "[a_snmp_server s_net_add statement cumulus_nclu_configuration]",
               "Text" : "snmp-server listening-address localhost"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 59,
+              "Line" : 62,
               "Parser_Context" : "[a_time s_net_add statement cumulus_nclu_configuration]",
               "Text" : "time ntp server 0.pool.ntp.example.com iburst"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 60,
+              "Line" : 63,
               "Parser_Context" : "[a_time s_net_add statement cumulus_nclu_configuration]",
               "Text" : "time ntp source eth0"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 61,
+              "Line" : 64,
               "Parser_Context" : "[a_time s_net_add statement cumulus_nclu_configuration]",
               "Text" : "time zone Etc/UTC"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 65,
+              "Line" : 68,
               "Parser_Context" : "[v_vlan_raw_device a_vlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "vlan-raw-device bridge"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 73,
+              "Line" : 76,
               "Parser_Context" : "[vxb_arp_nd_suppress vx_bridge a_vxlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "arp-nd-suppress on"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 74,
+              "Line" : 77,
               "Parser_Context" : "[vxb_learning vx_bridge a_vxlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "learning off"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 75,
+              "Line" : 78,
               "Parser_Context" : "[vx_stp a_vxlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "stp bpduguard"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 76,
+              "Line" : 79,
               "Parser_Context" : "[vx_stp a_vxlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "stp portbpdufilter"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 83,
+              "Line" : 86,
               "Parser_Context" : "[frr_username s_extra_configuration statement cumulus_nclu_configuration]",
               "Text" : "username cumulus nopassword\\n"
             }
@@ -76703,13 +76757,13 @@
           "interface" : {
             "bond1.4094" : {
               "definitionLines" : [
-                33
+                34
               ],
               "numReferrers" : 5
             },
             "eth0" : {
               "definitionLines" : [
-                38
+                39
               ],
               "numReferrers" : 1
             },
@@ -76723,7 +76777,7 @@
               "definitionLines" : [
                 19
               ],
-              "numReferrers" : 2
+              "numReferrers" : 4
             },
             "swp3" : {
               "definitionLines" : [
@@ -76765,9 +76819,9 @@
           "loopback" : {
             "lo" : {
               "definitionLines" : [
-                41,
-                42,
-                43
+                44,
+                45,
+                46
               ],
               "numReferrers" : 4
             }
@@ -76775,7 +76829,7 @@
           "route-map" : {
             "rm1" : {
               "definitionLines" : [
-                56
+                59
               ],
               "numReferrers" : 1
             }
@@ -76783,7 +76837,7 @@
           "vlan" : {
             "vlan4" : {
               "definitionLines" : [
-                62
+                65
               ],
               "numReferrers" : 5
             }
@@ -76791,7 +76845,7 @@
           "vrf" : {
             "mgmt" : {
               "definitionLines" : [
-                33
+                34
               ],
               "numReferrers" : 5
             },
@@ -76805,7 +76859,7 @@
           "vxlan" : {
             "vni10001" : {
               "definitionLines" : [
-                72
+                75
               ],
               "numReferrers" : 1
             }
@@ -82435,7 +82489,7 @@
           "abstract interface" : {
             "lo" : {
               "route-map match interface" : [
-                56
+                59
               ]
             },
             "swp1" : {
@@ -82459,16 +82513,16 @@
           "interface" : {
             "bond1.4094" : {
               "interface self-reference" : [
-                33,
                 34,
                 35,
                 36,
-                37
+                37,
+                38
               ]
             },
             "eth0" : {
               "interface self-reference" : [
-                38
+                39
               ]
             },
             "swp1" : {
@@ -82479,8 +82533,8 @@
                 19
               ],
               "interface self-reference" : [
-                39,
-                40
+                40,
+                43
               ]
             },
             "swp2" : {
@@ -82488,7 +82542,9 @@
                 19
               ],
               "interface self-reference" : [
-                40
+                41,
+                42,
+                43
               ]
             },
             "swp3" : {
@@ -82496,7 +82552,7 @@
                 19
               ],
               "interface self-reference" : [
-                40
+                43
               ]
             },
             "swp4" : {
@@ -82528,9 +82584,9 @@
           "loopback" : {
             "lo" : {
               "loopback self-reference" : [
-                41,
-                42,
-                43
+                44,
+                45,
+                46
               ]
             }
           },
@@ -82544,26 +82600,26 @@
           "vlan" : {
             "vlan4" : {
               "vlan self-reference" : [
-                62,
-                63,
-                64,
                 65,
-                66
+                66,
+                67,
+                68,
+                69
               ]
             }
           },
           "vrf" : {
             "mgmt" : {
               "interface clag backup-ip vrf" : [
-                33
+                34
               ],
               "interface vrf" : [
-                38
+                39
               ],
               "vrf self-reference" : [
-                67,
-                68,
-                70
+                70,
+                71,
+                73
               ]
             },
             "vrf1" : {
@@ -82575,19 +82631,19 @@
                 18
               ],
               "vlan vrf" : [
-                66
+                69
               ],
               "vrf self-reference" : [
-                69,
-                70,
-                84
+                72,
+                73,
+                87
               ]
             }
           },
           "vxlan" : {
             "vni10001" : {
               "vxlan self-reference" : [
-                72
+                75
               ]
             }
           }
