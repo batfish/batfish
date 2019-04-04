@@ -1,0 +1,14 @@
+net del all
+#
+net add hostname cumulus_nclu_bridge
+#
+net add bond bond1 bond slaves swp1
+net add vxlan vni10001 vxlan id 10001
+net add vxlan vni10001 bridge access 2
+net add vxlan vni10001 vxlan local-tunnelip 192.0.2.1
+net add bridge bridge ports bond1,swp2,vni10001
+net add bridge bridge pvid 2
+net add bridge bridge vids 1,2-3
+net add bridge bridge vlan-aware
+#
+net commit

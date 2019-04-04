@@ -126,6 +126,7 @@ bridge_bridge
   BRIDGE
   (
     brbr_ports
+    | brbr_pvid
     | brbr_vids
     | brbr_vlan_aware
   )
@@ -134,6 +135,11 @@ bridge_bridge
 brbr_ports
 :
   PORTS ports = glob NEWLINE
+;
+
+brbr_pvid
+:
+  PVID pvid = vlan_id NEWLINE
 ;
 
 brbr_vids

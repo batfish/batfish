@@ -340,8 +340,17 @@ public final class CumulusNcluGrammarTest {
     ConvertConfigurationAnswerElement ans =
         getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
 
-    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.BOND, "bond1", 2));
+    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.BOND, "bond1", 3));
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "bond2.4094", 2));
+  }
+
+  @Test
+  public void testBridgeExtraction() throws IOException {
+    CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_bridge");
+
+    assertThat(vc.getBridge().getPorts(), containsInAnyOrder("bond1", "swp2", "vni10001"));
+    assertThat(vc.getBridge().getPvid(), equalTo(2));
+    assertThat(vc.getBridge().getVids(), equalTo(IntegerSpace.of(Range.closed(1, 3))));
   }
 
   @Test
@@ -535,7 +544,7 @@ public final class CumulusNcluGrammarTest {
     ConvertConfigurationAnswerElement ans =
         getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
 
-    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "swp1", 3));
+    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "swp1", 4));
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "swp2", 1));
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "swp3", 1));
   }
@@ -929,5 +938,15 @@ public final class CumulusNcluGrammarTest {
     assertThat(vc.getVxlans().get("v8").getLocalTunnelip(), equalTo(expectedLocalTunnelip));
     assertThat(vc.getVxlans().get("v9").getLocalTunnelip(), nullValue()); // missing
     assertThat(vc.getVxlans().get("v10").getLocalTunnelip(), equalTo(expectedLocalTunnelip));
+  }
+
+  @Test
+  public void testVxlanReferences() throws IOException {
+    String hostname = "cumulus_nclu_vxlan_references";
+    String filename = String.format("configs/%s", hostname);
+    ConvertConfigurationAnswerElement ans =
+        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VXLAN, "v2", 1));
   }
 }

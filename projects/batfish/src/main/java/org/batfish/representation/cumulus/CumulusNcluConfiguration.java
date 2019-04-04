@@ -60,9 +60,11 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, Vlan> _vlans;
   private final @Nonnull Map<String, Vrf> _vrfs;
   private final @Nonnull Map<String, Vxlan> _vxlans;
+  private final @Nonnull Bridge _bridge;
 
   public CumulusNcluConfiguration() {
     _bonds = new HashMap<>();
+    _bridge = new Bridge();
     _interfaces = new HashMap<>();
     _ipv4Nameservers = new LinkedList<>();
     _ipv6Nameservers = new LinkedList<>();
@@ -289,6 +291,15 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             CumulusStructureType.VRF));
     markAbstractStructure(
         CumulusStructureType.ABSTRACT_INTERFACE,
+        CumulusStructureUsage.BRIDGE_PORT,
+        ImmutableSet.of(
+            CumulusStructureType.BOND,
+            CumulusStructureType.INTERFACE,
+            CumulusStructureType.LOOPBACK,
+            CumulusStructureType.VLAN,
+            CumulusStructureType.VRF));
+    markAbstractStructure(
+        CumulusStructureType.ABSTRACT_INTERFACE,
         CumulusStructureUsage.ROUTE_MAP_MATCH_INTERFACE,
         ImmutableSet.of(
             CumulusStructureType.BOND,
@@ -460,5 +471,9 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   public @Nonnull List<Configuration> toVendorIndependentConfigurations()
       throws VendorConversionException {
     return ImmutableList.of(toVendorIndependentConfiguration());
+  }
+
+  public @Nonnull Bridge getBridge() {
+    return _bridge;
   }
 }
