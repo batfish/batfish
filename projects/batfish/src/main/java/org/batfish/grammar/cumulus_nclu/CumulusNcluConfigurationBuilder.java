@@ -34,7 +34,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_bgpContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_bondContext;
-import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_bridgeContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_dot1xContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_hostnameContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_interfaceContext;
