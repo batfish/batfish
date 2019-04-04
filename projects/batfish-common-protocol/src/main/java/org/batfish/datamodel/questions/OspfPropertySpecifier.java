@@ -67,9 +67,6 @@ public class OspfPropertySpecifier extends PropertySpecifier {
               MAX_METRIC_TRANSIT_LINKS,
               new PropertyDescriptor<>(OspfProcess::getMaxMetricTransitLinks, Schema.INTEGER))
           .put(
-              NEIGHBORS,
-              new PropertyDescriptor<>(OspfProcess::getOspfNeighbors, Schema.set(Schema.STRING)))
-          .put(
               REFERENCE_BANDWIDTH,
               new PropertyDescriptor<>(OspfProcess::getReferenceBandwidth, Schema.DOUBLE))
           .put(
