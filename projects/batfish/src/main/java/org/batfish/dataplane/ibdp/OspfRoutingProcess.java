@@ -19,7 +19,6 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
@@ -377,7 +376,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       return Optional.empty();
     }
     // Transform the route
-    routeAdvertisement =
+    return Optional.of(
         routeAdvertisement
             .toBuilder()
             .setRoute(
@@ -389,8 +388,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                     .setNonRouting(false)
                     .setNonRouting(false)
                     .build())
-            .build();
-    return Optional.of(routeAdvertisement);
+            .build());
   }
 
   /**
@@ -428,17 +426,15 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       RouteAdvertisement<OspfIntraAreaRoute> routeAdvertisement, long incrementalCost) {
     OspfIntraAreaRoute route = routeAdvertisement.getRoute();
     // Transform the route
-    routeAdvertisement =
-        routeAdvertisement
-            .toBuilder()
-            .setRoute(
-                route
-                    .toBuilder()
-                    .setMetric(route.getMetric() + incrementalCost)
-                    .setAdmin(_process.getAdminCosts().get(route.getProtocol()))
-                    .build())
-            .build();
-    return routeAdvertisement;
+    return routeAdvertisement
+        .toBuilder()
+        .setRoute(
+            route
+                .toBuilder()
+                .setMetric(route.getMetric() + incrementalCost)
+                .setAdmin(_process.getAdminCosts().get(route.getProtocol()))
+                .build())
+        .build();
   }
 
   /**
@@ -472,8 +468,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   /**
    * Compute a summary route for a given area and prefix.
    *
-   * <p><emph>Note:</emph> The resulting route will be marked non-routing (see {@link
-   * AbstractRoute#getNonRouting})
+   * <p><emph>Note:</emph> The resulting route will be marked non-routing
    *
    * @param prefix The prefix for which to create a summary route
    * @param summary The {@link OspfAreaSummary summary configuration} (e.g., whether or not to
