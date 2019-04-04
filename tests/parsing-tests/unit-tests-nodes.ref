@@ -13581,9 +13581,9 @@
         "mlags" : {
           "~CUMULUS_CLAG_DOMAIN~" : {
             "id" : "~CUMULUS_CLAG_DOMAIN~",
-            "localInterface" : "bond1",
+            "localInterface" : "bond1.4094",
             "peerAddress" : "192.0.2.5",
-            "peerInterface" : "bond1.4094"
+            "peerInterface" : "bond1"
           }
         },
         "routingPolicies" : {
