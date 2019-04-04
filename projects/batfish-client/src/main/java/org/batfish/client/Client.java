@@ -739,6 +739,9 @@ public class Client extends AbstractClient implements IClient {
             new BatfishLogger(_settings.getLogLevel(), false, _settings.getLogFile(), false, false);
         break;
       case interactive:
+        System.err.println(
+            "This is not a supported client for Batfish. Please use pybatfish following the "
+                + "instructions in the README: https://github.com/batfish/batfish/#how-do-i-get-started");
         try {
           Terminal terminal = TerminalBuilder.builder().build();
           _reader =
