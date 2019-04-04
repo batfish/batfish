@@ -17,12 +17,9 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isSwitchport;
-import static org.batfish.datamodel.matchers.MlagMatchers.hasId;
-import static org.batfish.datamodel.matchers.MlagMatchers.hasLocalInterface;
-import static org.batfish.datamodel.matchers.MlagMatchers.hasPeerAddress;
-import static org.batfish.datamodel.matchers.MlagMatchers.hasPeerInterface;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
+import static org.batfish.representation.cumulus.CumulusNcluConfiguration.CUMULUS_CLAG_DOMAIN_ID;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.contains;
@@ -355,19 +352,17 @@ public final class CumulusNcluGrammarTest {
   public void testClagConversion() throws IOException {
     Configuration c = parseConfig("cumulus_nclu_clag");
 
-    assertThat(c.getMlags().keySet(), containsInAnyOrder("1", "2"));
-
-    Mlag clag1 = c.getMlags().get("1");
-    assertThat(clag1, hasId("1"));
-    assertThat(clag1, hasLocalInterface("clag1bond"));
-    assertThat(clag1, hasPeerAddress(Ip.parse("192.0.2.2")));
-    assertThat(clag1, hasPeerInterface("peerlink.4094"));
-
-    Mlag clag2 = c.getMlags().get("2");
-    assertThat(clag2, hasId("2"));
-    assertThat(clag2, hasLocalInterface("clag2bond"));
-    assertThat(clag2, hasPeerAddress(Ip.parse("192.0.2.2")));
-    assertThat(clag2, hasPeerInterface("peerlink.4094"));
+    assertThat(
+        c.getMlags(),
+        equalTo(
+            ImmutableMap.of(
+                CUMULUS_CLAG_DOMAIN_ID,
+                Mlag.builder()
+                    .setId(CUMULUS_CLAG_DOMAIN_ID)
+                    .setLocalInterface("peerlink")
+                    .setPeerAddress(Ip.parse("192.0.2.2"))
+                    .setPeerInterface("peerlink.4094")
+                    .build())));
   }
 
   @Test
