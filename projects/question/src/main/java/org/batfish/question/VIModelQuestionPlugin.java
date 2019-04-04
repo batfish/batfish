@@ -8,6 +8,7 @@ import com.google.auto.service.AutoService;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Ordering;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.Network;
 import com.google.common.graph.ValueGraph;
@@ -45,7 +46,6 @@ import org.batfish.datamodel.collections.IpEdge;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.VerboseBgpEdge;
 import org.batfish.datamodel.collections.VerboseEigrpEdge;
-import org.batfish.datamodel.collections.VerboseOspfEdge;
 import org.batfish.datamodel.collections.VerboseRipEdge;
 import org.batfish.datamodel.eigrp.EigrpEdge;
 import org.batfish.datamodel.eigrp.EigrpInterface;
@@ -53,9 +53,7 @@ import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.isis.IsisEdge;
 import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.isis.IsisTopology;
-import org.batfish.datamodel.ospf.OspfNeighbor;
-import org.batfish.datamodel.ospf.OspfProcess;
-import org.batfish.datamodel.ospf.OspfTopologyUtils;
+import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.questions.Question;
 
 @AutoService(Plugin.class)
@@ -99,7 +97,7 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
 
       private SortedSet<Layer3Edge> _layer3Edges;
 
-      private SortedSet<VerboseOspfEdge> _ospfEdges;
+      private SortedSet<OspfTopology.EdgeId> _ospfEdges;
 
       private SortedSet<VerboseRipEdge> _ripEdges;
 
@@ -115,7 +113,7 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
           @JsonProperty(PROP_LAYER1) Layer1Topology layer1Edges,
           @JsonProperty(PROP_LAYER2) Layer2Topology layer2Edges,
           @JsonProperty(PROP_LAYER3) SortedSet<Layer3Edge> layer3Edges,
-          @JsonProperty(PROP_OSPF) SortedSet<VerboseOspfEdge> ospfEdges,
+          @JsonProperty(PROP_OSPF) SortedSet<OspfTopology.EdgeId> ospfEdges,
           @JsonProperty(PROP_RIP) SortedSet<VerboseRipEdge> ripEdges) {
         _bgpEdges = new TreeSet<>(VERBOSE_BGP_EDGE_COMPARATOR);
         _bgpEdges.addAll(firstNonNull(bgpEdges, ImmutableSet.of()));
@@ -159,7 +157,7 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
       }
 
       @JsonProperty(PROP_OSPF)
-      public @Nonnull SortedSet<VerboseOspfEdge> getOspfEdges() {
+      public @Nonnull SortedSet<OspfTopology.EdgeId> getOspfEdges() {
         return _ospfEdges;
       }
 
@@ -193,7 +191,7 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
         Layer1Topology layer1,
         Layer2Topology layer2,
         SortedSet<Layer3Edge> layer3,
-        SortedSet<VerboseOspfEdge> ospf,
+        SortedSet<OspfTopology.EdgeId> ospf,
         SortedSet<VerboseRipEdge> rip) {
       this._nodes = nodes;
       this._edges = new Edges(bgp, eigrp, isis, layer1, layer2, layer3, ospf, rip);
@@ -221,7 +219,6 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
       SortedMap<String, Configuration> configs = _batfish.loadConfigurations();
       Topology topology = _batfish.getEnvironmentTopology();
       Map<Ip, Set<String>> ipOwners = TopologyUtil.computeIpNodeOwners(configs, true);
-      OspfTopologyUtils.initRemoteOspfNeighbors(configs, topology);
       _batfish.initRemoteRipNeighbors(configs, ipOwners, topology);
 
       return new VIModelAnswerElement(
@@ -232,7 +229,8 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
           _batfish.getLayer1Topology(),
           _batfish.getLayer2Topology(),
           getLayer3Edges(configs, topology),
-          getOspfEdges(configs),
+          getOspfEdges(
+              _batfish.getTopologyProvider().getOspfTopology(_batfish.getNetworkSnapshot())),
           getRipEdges(configs));
     }
 
@@ -311,28 +309,8 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
       return layer3Edges;
     }
 
-    private static SortedSet<VerboseOspfEdge> getOspfEdges(Map<String, Configuration> configs) {
-      SortedSet<VerboseOspfEdge> ospfEdges = new TreeSet<>();
-      for (Configuration c : configs.values()) {
-        String hostname = c.getHostname();
-        for (Vrf vrf : c.getVrfs().values()) {
-          OspfProcess proc = vrf.getOspfProcess();
-          if (proc != null) {
-            for (OspfNeighbor ospfNeighbor : proc.getOspfNeighbors().values()) {
-              OspfNeighbor remoteOspfNeighbor = ospfNeighbor.getRemoteOspfNeighbor();
-              if (remoteOspfNeighbor != null) {
-                Configuration remoteHost = remoteOspfNeighbor.getOwner();
-                String remoteHostname = remoteHost.getHostname();
-                Ip localIp = ospfNeighbor.getLocalIp();
-                Ip remoteIp = remoteOspfNeighbor.getLocalIp();
-                IpEdge edge = new IpEdge(hostname, localIp, remoteHostname, remoteIp);
-                ospfEdges.add(new VerboseOspfEdge(ospfNeighbor, remoteOspfNeighbor, edge));
-              }
-            }
-          }
-        }
-      }
-      return ospfEdges;
+    private static SortedSet<OspfTopology.EdgeId> getOspfEdges(OspfTopology topology) {
+      return ImmutableSortedSet.copyOf(Ordering.natural(), topology.edges());
     }
 
     private static SortedSet<VerboseRipEdge> getRipEdges(Map<String, Configuration> configs) {

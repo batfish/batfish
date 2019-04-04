@@ -41,6 +41,14 @@ public final class OspfTopology {
     return _graph.adjacentNodes(node);
   }
 
+  /** Return edges present in the topology */
+  @Nonnull
+  public Set<EdgeId> edges() {
+    return _graph.edges().stream()
+        .map(pair -> makeEdge(pair.nodeU(), pair.nodeV()))
+        .collect(ImmutableSet.toImmutableSet());
+  }
+
   @Nonnull
   public Optional<OspfSessionProperties> getSession(EdgeId id) {
     return _graph.edgeValue(id.getTail(), id.getHead());
@@ -67,7 +75,7 @@ public final class OspfTopology {
   }
 
   /**
-   * Return the {@link EdgeId} represending an adjacency between two {@link OspfNeighborConfigId}s
+   * Return the {@link EdgeId} representing an adjacency between two {@link OspfNeighborConfigId}s
    */
   public static EdgeId makeEdge(OspfNeighborConfigId tail, OspfNeighborConfigId head) {
     return new EdgeId(tail, head);
