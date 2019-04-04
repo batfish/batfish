@@ -173,6 +173,7 @@ public class BDDPacketTest {
     assertThat(flow, hasSrcIp(srcIp));
     assertThat(flow, hasIpProtocol(IpProtocol.TCP));
     assertThat(flow, not(hasDstPort(0)));
+    assertThat(flow, not(hasSrcPort(0)));
   }
 
   @Test

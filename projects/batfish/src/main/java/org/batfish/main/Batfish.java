@@ -1282,14 +1282,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Nonnull
   private Map<String, Configuration> getIspConfigurations(
-      Map<String, Configuration> configurations) {
+      Map<String, Configuration> configurations, Map<String, Warnings> warningsByHost) {
     NetworkSnapshot networkSnapshot = getNetworkSnapshot();
     IspConfiguration ispConfiguration =
         _storage.loadIspConfiguration(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
     if (ispConfiguration == null) {
       return ImmutableMap.of();
     }
-    return ModelingUtils.getInternetAndIspNodes(configurations, ispConfiguration, _logger);
+    Warnings warnings =
+        warningsByHost.computeIfAbsent(
+            ModelingUtils.INTERNET_HOST_NAME, k -> buildWarnings(_settings));
+    return ModelingUtils.getInternetAndIspNodes(
+        configurations, ispConfiguration, _logger, warnings);
   }
 
   @Nonnull
@@ -1925,7 +1929,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private void outputAnswer(Answer answer, boolean writeLog) {
     try {
-      String answerString = BatfishObjectMapper.writePrettyString(answer) + '\n';
+      String answerString = BatfishObjectMapper.writePrettyString(answer);
       _logger.debug(answerString);
       @Nullable String logString = writeLog ? answerString : null;
       writeJsonAnswerWithLog(logString, answerString);
@@ -1934,7 +1938,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       try {
         Answer failureAnswer = Answer.failureAnswer(e.toString(), answer.getQuestion());
         failureAnswer.addAnswerElement(be.getBatfishStackTrace());
-        String answerString = BatfishObjectMapper.writePrettyString(failureAnswer) + '\n';
+        String answerString = BatfishObjectMapper.writePrettyString(failureAnswer);
         _logger.error(answerString);
         @Nullable String logString = writeLog ? answerString : null;
         writeJsonAnswerWithLog(logString, answerString);
@@ -2900,7 +2904,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         configurations = getConfigurations(vendorConfigPath, answerElement);
       }
 
-      configurations.putAll(getIspConfigurations(configurations));
+      configurations.putAll(getIspConfigurations(configurations, answerElement.getWarnings()));
 
       try (ActiveSpan storeSpan =
           GlobalTracer.get().buildSpan("Store vendor-independent configs").startActive()) {

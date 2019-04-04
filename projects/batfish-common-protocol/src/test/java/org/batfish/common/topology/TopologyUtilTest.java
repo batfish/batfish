@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.Warnings;
 import org.batfish.common.util.ModelingUtils;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
@@ -781,7 +782,8 @@ public final class TopologyUtilTest {
         ModelingUtils.getInternetAndIspNodes(
             explicitConfigurations,
             ispConfiguration,
-            new BatfishLogger(BatfishLogger.LEVELSTR_ERROR, false));
+            new BatfishLogger(BatfishLogger.LEVELSTR_ERROR, false),
+            new Warnings());
     Map<String, Configuration> configurations =
         ImmutableMap.<String, Configuration>builder()
             .putAll(explicitConfigurations)
