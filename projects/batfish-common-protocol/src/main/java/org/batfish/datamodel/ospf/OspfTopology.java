@@ -1,5 +1,10 @@
 package org.batfish.datamodel.ospf;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
@@ -18,7 +23,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class OspfTopology {
 
-  private final ValueGraph<OspfNeighborConfigId, OspfSessionProperties> _graph;
+  @Nonnull private final ValueGraph<OspfNeighborConfigId, OspfSessionProperties> _graph;
 
   public OspfTopology(ValueGraph<OspfNeighborConfigId, OspfSessionProperties> graph) {
     _graph = ImmutableValueGraph.copyOf(graph);
@@ -94,8 +99,11 @@ public final class OspfTopology {
   /** Directed OSPF edge representing a link between two {@link OspfNeighborConfigId} */
   @ParametersAreNonnullByDefault
   public static final class EdgeId implements Comparable<EdgeId> {
-    private final OspfNeighborConfigId _tail;
-    private final OspfNeighborConfigId _head;
+    private static final String PROP_TAIL = "tail";
+    private static final String PROP_HEAD = "head";
+
+    @Nonnull private final OspfNeighborConfigId _tail;
+    @Nonnull private final OspfNeighborConfigId _head;
 
     private static final Comparator<OspfNeighborConfigId> ID_COMPARATOR =
         Comparator.comparing(OspfNeighborConfigId::getHostname)
@@ -107,16 +115,30 @@ public final class OspfTopology {
       _head = head;
     }
 
+    @JsonCreator
+    private static EdgeId create(
+        @Nullable @JsonProperty(PROP_TAIL) OspfNeighborConfigId tail,
+        @Nullable @JsonProperty(PROP_HEAD) OspfNeighborConfigId head) {
+      checkArgument(tail != null, "Missing %s", PROP_TAIL);
+      checkArgument(head != null, "Missing %s", PROP_HEAD);
+      return new EdgeId(tail, head);
+    }
+
     /** Return the tail/src node */
+    @Nonnull
+    @JsonProperty(PROP_TAIL)
     public OspfNeighborConfigId getTail() {
       return _tail;
     }
 
     /** Return the head/dst node */
+    @Nonnull
+    @JsonProperty(PROP_HEAD)
     public OspfNeighborConfigId getHead() {
       return _head;
     }
 
+    @JsonIgnore
     public EdgeId reverse() {
       return makeEdge(_head, _tail);
     }

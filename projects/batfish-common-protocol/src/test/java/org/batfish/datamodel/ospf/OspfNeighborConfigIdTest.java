@@ -4,7 +4,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
+import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
 /** Tests of {@link OspfNeighborConfigId} */
@@ -27,5 +29,11 @@ public class OspfNeighborConfigIdTest {
   public void testJavaSerialization() {
     OspfNeighborConfigId cid = new OspfNeighborConfigId("h", "v", "p", "i");
     assertThat(SerializationUtils.clone(cid), equalTo(cid));
+  }
+
+  @Test
+  public void testJsonSerialization() throws IOException {
+    OspfNeighborConfigId cid = new OspfNeighborConfigId("h", "v", "p", "i");
+    assertThat(BatfishObjectMapper.clone(cid, OspfNeighborConfigId.class), equalTo(cid));
   }
 }
