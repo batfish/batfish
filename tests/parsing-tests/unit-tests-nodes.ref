@@ -13181,6 +13181,7 @@
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 0.0,
+            "mlagId" : 1,
             "mtu" : 1500,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
@@ -13575,6 +13576,14 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOOPBACK",
             "vrf" : "vrf1"
+          }
+        },
+        "mlags" : {
+          "~CUMULUS_CLAG_DOMAIN~" : {
+            "id" : "~CUMULUS_CLAG_DOMAIN~",
+            "localInterface" : "bond1.4094",
+            "peerAddress" : "192.0.2.5",
+            "peerInterface" : "bond1"
           }
         },
         "routingPolicies" : {

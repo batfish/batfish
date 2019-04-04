@@ -2,8 +2,10 @@ package org.batfish.representation.cumulus;
 
 import static java.util.Comparator.naturalOrder;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Streams;
@@ -30,6 +32,7 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -42,6 +45,7 @@ import org.batfish.vendor.VendorConfiguration;
 /** A {@link VendorConfiguration} for the Cumulus NCLU configuration language. */
 public class CumulusNcluConfiguration extends VendorConfiguration {
 
+  @VisibleForTesting public static final String CUMULUS_CLAG_DOMAIN_ID = "~CUMULUS_CLAG_DOMAIN~";
   public static final int DEFAULT_STATIC_ROUTE_ADMINISTRATIVE_DISTANCE = 1;
   public static final int DEFAULT_STATIC_ROUTE_METRIC = 0;
   public static final String LOOPBACK_INTERFACE_NAME = "lo";
@@ -120,6 +124,38 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   private void convertBondInterfaces() {
     _bonds.forEach((name, bond) -> _c.getAllInterfaces().put(name, toInterface(bond)));
+  }
+
+  private void convertClags() {
+    List<Interface> clagSourceInterfaces =
+        _interfaces.values().stream()
+            .filter(i -> i.getClagPeerIp() != null)
+            .collect(ImmutableList.toImmutableList());
+    if (clagSourceInterfaces.isEmpty()) {
+      return;
+    }
+    if (clagSourceInterfaces.size() > 1) {
+      _w.redFlag(
+          String.format(
+              "CLAG configuration on multiple peering interfaces is unsupported: %s",
+              clagSourceInterfaces.stream()
+                  .map(Interface::getName)
+                  .collect(ImmutableList.toImmutableList())));
+      return;
+    }
+    Interface clagSourceInterface = clagSourceInterfaces.get(0);
+    Ip peerAddress = clagSourceInterface.getClagPeerIp();
+    String sourceInterfaceName = clagSourceInterface.getName();
+    String peerInterfaceName = clagSourceInterface.getSuperInterfaceName();
+    _c.setMlags(
+        ImmutableMap.of(
+            CUMULUS_CLAG_DOMAIN_ID,
+            Mlag.builder()
+                .setId(CUMULUS_CLAG_DOMAIN_ID)
+                .setLocalInterface(sourceInterfaceName)
+                .setPeerAddress(peerAddress)
+                .setPeerInterface(peerInterfaceName)
+                .build()));
   }
 
   private void convertDefaultVrf() {
@@ -346,6 +382,20 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   @Override
   public void setVendor(ConfigurationFormat format) {}
 
+  private @Nonnull List<Statement> toActions(RouteMapEntry entry) {
+    ImmutableList.Builder<Statement> builder = ImmutableList.builder();
+    entry.getSets().flatMap(set -> set.toStatements(_c, this, _w)).forEach(builder::add);
+    return builder.add(toStatement(entry.getAction())).build();
+  }
+
+  private @Nonnull BooleanExpr toGuard(RouteMapEntry entry) {
+    return new Conjunction(
+        entry
+            .getMatches()
+            .map(match -> match.toBooleanExpr(_c, this, _w))
+            .collect(ImmutableList.toImmutableList()));
+  }
+
   private @Nonnull org.batfish.datamodel.Interface toInterface(Bond bond) {
     String name = bond.getName();
     org.batfish.datamodel.Interface newIface =
@@ -373,6 +423,9 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       newIface.setAddress(bond.getIpAddresses().get(0));
     }
     newIface.setAllAddresses(bond.getIpAddresses());
+
+    newIface.setMlagId(bond.getClagId());
+
     return newIface;
   }
 
@@ -422,6 +475,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     return builder.addStatement(Statements.ReturnFalse.toStaticStatement()).build();
   }
 
+  private @Nonnull Statement toRoutingPolicyStatement(RouteMapEntry entry) {
+    return new If(toGuard(entry), toActions(entry));
+  }
+
   private @Nonnull Statement toStatement(LineAction action) {
     switch (action) {
       case PERMIT:
@@ -431,24 +488,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       default:
         throw new IllegalArgumentException(String.format("Invalid action: %s", action));
     }
-  }
-
-  private @Nonnull List<Statement> toActions(RouteMapEntry entry) {
-    ImmutableList.Builder<Statement> builder = ImmutableList.builder();
-    entry.getSets().flatMap(set -> set.toStatements(_c, this, _w)).forEach(builder::add);
-    return builder.add(toStatement(entry.getAction())).build();
-  }
-
-  private @Nonnull Statement toRoutingPolicyStatement(RouteMapEntry entry) {
-    return new If(toGuard(entry), toActions(entry));
-  }
-
-  private @Nonnull BooleanExpr toGuard(RouteMapEntry entry) {
-    return new Conjunction(
-        entry
-            .getMatches()
-            .map(match -> match.toBooleanExpr(_c, this, _w))
-            .collect(ImmutableList.toImmutableList()));
   }
 
   private @Nonnull Configuration toVendorIndependentConfiguration() {
@@ -466,8 +505,12 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     convertDefaultVrf();
     convertRouteMaps();
     convertDnsServers();
+    convertClags();
 
     markStructures();
+
+    warnDuplicateClagIds();
+
     return _c;
   }
 
@@ -475,5 +518,28 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   public @Nonnull List<Configuration> toVendorIndependentConfigurations()
       throws VendorConversionException {
     return ImmutableList.of(toVendorIndependentConfiguration());
+  }
+
+  private void warnDuplicateClagIds() {
+    Map<Integer, List<Bond>> clagBondsById = new HashMap<>();
+    _bonds.values().stream()
+        .filter(bond -> bond.getClagId() != null)
+        .forEach(
+            clagBond ->
+                clagBondsById
+                    .computeIfAbsent(clagBond.getClagId(), id -> new LinkedList<>())
+                    .add(clagBond));
+    clagBondsById.forEach(
+        (id, clagBonds) -> {
+          if (clagBonds.size() > 1) {
+            _w.redFlag(
+                String.format(
+                    "clag-id %d is erroneously configured on more than one bond: %s",
+                    id,
+                    clagBonds.stream()
+                        .map(Bond::getName)
+                        .collect(ImmutableList.toImmutableList())));
+          }
+        });
   }
 }
