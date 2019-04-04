@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.flow.StepAction.SETUP_SESSION;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import javax.annotation.Nullable;
@@ -16,7 +17,7 @@ public final class SetupSessionStep extends Step<SetupSessionStepDetail> {
     super(DETAIL, SETUP_SESSION);
   }
 
-  /** */
+  @JsonInclude // if not present, empty object will be omitted
   static final class SetupSessionStepDetail {}
 
   private static final SetupSessionStepDetail DETAIL = new SetupSessionStepDetail();
