@@ -1,6 +1,7 @@
 package org.batfish.representation.cumulus;
 
 import java.io.Serializable;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MacAddress;
@@ -54,5 +55,15 @@ public final class InterfaceClagSettings implements Serializable {
 
   public void setSysMac(@Nullable MacAddress sysMac) {
     _sysMac = sysMac;
+  }
+
+  public @Nonnull org.batfish.datamodel.vendor_family.cumulus.InterfaceClagSettings toDataModel() {
+    return org.batfish.datamodel.vendor_family.cumulus.InterfaceClagSettings.builder()
+        .setBackupIp(_backupIp)
+        .setBackupIpVrf(_backupIpVrf)
+        .setPeerIp(_peerIp)
+        .setPriority(_priority)
+        .setSysMac(_sysMac)
+        .build();
   }
 }

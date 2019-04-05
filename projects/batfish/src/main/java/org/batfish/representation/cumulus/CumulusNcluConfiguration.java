@@ -54,17 +54,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   public static final String LOOPBACK_INTERFACE_NAME = "lo";
   private static final long serialVersionUID = 1L;
 
-  private static @Nonnull org.batfish.datamodel.vendor_family.cumulus.InterfaceClagSettings
-      convertClag(InterfaceClagSettings clag) {
-    return org.batfish.datamodel.vendor_family.cumulus.InterfaceClagSettings.builder()
-        .setBackupIp(clag.getBackupIp())
-        .setBackupIpVrf(clag.getBackupIpVrf())
-        .setPeerIp(clag.getPeerIp())
-        .setPriority(clag.getPriority())
-        .setSysMac(clag.getSysMac())
-        .build();
-  }
-
   private @Nullable BgpProcess _bgpProcess;
   private final @Nonnull Map<String, Bond> _bonds;
   private final @Nonnull Bridge _bridge;
@@ -363,7 +352,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
                             ImmutableSortedMap.toImmutableSortedMap(
                                 Comparator.naturalOrder(),
                                 Entry::getKey,
-                                ifaceEntry -> convertClag(ifaceEntry.getValue().getClag()))))
+                                ifaceEntry -> ifaceEntry.getValue().getClag().toDataModel())))
                 .build());
   }
 
