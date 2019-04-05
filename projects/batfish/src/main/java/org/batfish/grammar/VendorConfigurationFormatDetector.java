@@ -47,7 +47,7 @@ public final class VendorConfigurationFormatDetector {
   private static final Pattern RANCID_FOUNDRY_PATTERN =
       Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: foundry$");
   private static final Pattern RANCID_JUNIPER_PATTERN =
-      Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: juniper$");
+      Pattern.compile("(?m)^[!#]RANCID-CONTENT-TYPE: juniper$");
   private static final Pattern RANCID_MRV_PATTERN =
       Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: mrv$");
   private static final Pattern RANCID_PALO_ALTO_PATTERN =
@@ -229,13 +229,11 @@ public final class VendorConfigurationFormatDetector {
         || FLAT_JUNIPER_HOSTNAME_DECLARATION_PATTERN.matcher(_fileText).find(0)
         || (_fileText.contains("apply-groups") && SET_PATTERN.matcher(_fileText).find(0))) {
       return ConfigurationFormat.FLAT_JUNIPER;
-    } else if (_firstChar == '#'
-        || (_fileText.contains("version")
-            && _fileText.contains("system")
+    } else if (_fileText.contains("system")
             && _fileText.contains("{")
             && _fileText.contains("}")
             && _fileText.contains("host-name")
-            && _fileText.contains("interfaces"))
+            && _fileText.contains("interfaces")
         || fileTextMatches(JUNIPER_ACL_PATTERN)
         || fileTextMatches(JUNIPER_POLICY_OPTIONS_PATTERN)
         || fileTextMatches(JUNIPER_SNMP_PATTERN)) {

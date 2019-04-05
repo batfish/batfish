@@ -9,6 +9,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.junit.Test;
 
+/** Tests of {@link FlattenVendorConfigurationJob}. */
 public class FlattenVendorConfigurationJobTest {
   private static final String JUNIPER_TESTCONFIGS_PREFIX =
       "org/batfish/grammar/juniper/testconfigs/";
