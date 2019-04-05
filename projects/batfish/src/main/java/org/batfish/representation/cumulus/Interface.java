@@ -6,8 +6,6 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.InterfaceAddress;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.MacAddress;
 
 /** A physical or logical interface */
 public class Interface implements Serializable {
@@ -15,11 +13,7 @@ public class Interface implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private final @Nonnull InterfaceBridgeSettings _bridge;
-  private @Nullable Ip _clagBackupIp;
-  private @Nullable String _clagBackupIpVrf;
-  private @Nullable Ip _clagPeerIp;
-  private @Nullable Integer _clagPriority;
-  private @Nullable MacAddress _clagSysMac;
+  private @Nullable InterfaceClagSettings _clag;
   private final @Nullable Integer _encapsulationVlan;
   private final @Nonnull List<InterfaceAddress> _ipAddresses;
   private final @Nonnull String _name;
@@ -54,24 +48,8 @@ public class Interface implements Serializable {
     return _bridge;
   }
 
-  public @Nullable Ip getClagBackupIp() {
-    return _clagBackupIp;
-  }
-
-  public @Nullable String getClagBackupIpVrf() {
-    return _clagBackupIpVrf;
-  }
-
-  public @Nullable Ip getClagPeerIp() {
-    return _clagPeerIp;
-  }
-
-  public @Nullable Integer getClagPriority() {
-    return _clagPriority;
-  }
-
-  public MacAddress getClagSysMac() {
-    return _clagSysMac;
+  public @Nullable InterfaceClagSettings getClag() {
+    return _clag;
   }
 
   public @Nullable Integer getEncapsulationVlan() {
@@ -86,6 +64,13 @@ public class Interface implements Serializable {
     return _name;
   }
 
+  public @Nonnull InterfaceClagSettings getOrInitClag() {
+    if (_clag == null) {
+      _clag = new InterfaceClagSettings();
+    }
+    return _clag;
+  }
+
   public @Nullable String getSuperInterfaceName() {
     return _superInterfaceName;
   }
@@ -96,26 +81,6 @@ public class Interface implements Serializable {
 
   public @Nullable String getVrf() {
     return _vrf;
-  }
-
-  public void setClagBackupIp(@Nullable Ip clagBackupIp) {
-    _clagBackupIp = clagBackupIp;
-  }
-
-  public void setClagBackupIpVrf(@Nullable String clagBackupIpVrf) {
-    _clagBackupIpVrf = clagBackupIpVrf;
-  }
-
-  public void setClagPeerIp(@Nullable Ip clagPeerIp) {
-    _clagPeerIp = clagPeerIp;
-  }
-
-  public void setClagPriority(@Nullable Integer clagPriority) {
-    _clagPriority = clagPriority;
-  }
-
-  public void setClagSysMac(@Nullable MacAddress clagSysMac) {
-    _clagSysMac = clagSysMac;
   }
 
   public void setVrf(@Nullable String vrf) {
