@@ -107,7 +107,7 @@ public final class InterfaceClagSettings implements Serializable {
   }
 
   @JsonProperty(PROP_SYS_MAC)
-  public MacAddress getSysMac() {
+  public @Nullable MacAddress getSysMac() {
     return _sysMac;
   }
 

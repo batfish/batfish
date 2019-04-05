@@ -32,7 +32,7 @@ public final class InterfaceClagSettings implements Serializable {
     return _priority;
   }
 
-  public MacAddress getSysMac() {
+  public @Nullable MacAddress getSysMac() {
     return _sysMac;
   }
 
