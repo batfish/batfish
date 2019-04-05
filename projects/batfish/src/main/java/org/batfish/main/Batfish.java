@@ -2998,7 +2998,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         try {
           byte[] serialized = SerializationUtils.serialize(result);
           _storage.storeNetworkBlob(new ByteArrayInputStream(serialized), getContainerName(), id);
-        } catch (IOException e) {
+        } catch (Exception e) {
           _logger.warnf(
               "Error caching parse result for %s: %s",
               filename, Throwables.getStackTraceAsString(e));
