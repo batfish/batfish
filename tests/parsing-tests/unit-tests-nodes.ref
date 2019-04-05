@@ -13173,7 +13173,6 @@
         "interfaces" : {
           "bond1" : {
             "name" : "bond1",
-            "accessVlan" : 2,
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -13192,8 +13191,8 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
-            "switchport" : true,
-            "switchportMode" : "ACCESS",
+            "switchport" : false,
+            "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "AGGREGATED",
             "vrf" : "default"
@@ -13232,7 +13231,7 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
-            "allowedVlans" : "3-5",
+            "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 0.0,
             "mtu" : 1500,
@@ -13245,8 +13244,8 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
-            "switchport" : true,
-            "switchportMode" : "TRUNK",
+            "switchport" : false,
+            "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "AGGREGATED",
             "vrf" : "default"
@@ -13525,7 +13524,7 @@
           },
           "vlan4" : {
             "name" : "vlan4",
-            "active" : true,
+            "active" : false,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
