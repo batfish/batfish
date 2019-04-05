@@ -1,8 +1,10 @@
 package org.batfish.dataplane.ibdp;
 
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.isNonRouting;
 import static org.batfish.dataplane.ibdp.OspfRoutingProcess.computeDefaultInterAreaRouteToInject;
 import static org.batfish.dataplane.ibdp.OspfRoutingProcess.convertAndFilterIntraAreaRoutesToPropagate;
 import static org.batfish.dataplane.ibdp.OspfRoutingProcess.filterInterAreaRoutesToPropagateAtABR;
@@ -17,6 +19,8 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -31,8 +35,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
@@ -40,17 +47,22 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpLink;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.OspfInterAreaRoute;
 import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixRange;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.ospf.NssaSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
+import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfNeighborConfig;
 import org.batfish.datamodel.ospf.OspfNeighborConfigId;
 import org.batfish.datamodel.ospf.OspfProcess;
@@ -59,6 +71,13 @@ import org.batfish.datamodel.ospf.OspfSessionProperties;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.ospf.StubSettings;
 import org.batfish.datamodel.ospf.StubType;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
+import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.dataplane.rib.RouteAdvertisement;
 import org.junit.Before;
@@ -102,7 +121,7 @@ public class OspfRoutingProcessTest {
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .setHostname(HOSTNAME)
             .build();
-    Vrf vrf = nf.vrfBuilder().setName(VRF_NAME).build();
+    Vrf vrf = nf.vrfBuilder().setName(VRF_NAME).setOwner(_c).build();
     Interface.Builder ib =
         nf.interfaceBuilder()
             .setVrf(vrf)
@@ -652,4 +671,110 @@ public class OspfRoutingProcessTest {
                     hasNextHopIp(equalTo(nextHopIp)),
                     hasMetric(route0.getMetric())))));
   }
+
+  @Test
+  public void testTransformType1RouteOnImport() {}
+
+  @Test
+  public void testTransformType2RouteOnImport() {}
+
+  @Test
+  public void testTransformType1RouteOnExport() {}
+
+  @Test
+  public void testTransformType2RouteOnExport() {}
+
+  @Test
+  public void testActivateGeneratedRoute() {
+    RibDelta<AnnotatedRoute<AbstractRoute>> delta =
+        RibDelta.<AnnotatedRoute<AbstractRoute>>builder()
+            .add(
+                new AnnotatedRoute<>(
+                    StaticRoute.builder()
+                        .setAdministrativeCost(1)
+                        .setNetwork(Prefix.parse("1.1.1.0/24"))
+                        .setNextHopInterface("Null")
+                        .build(),
+                    VRF_NAME))
+            .build();
+
+    final GeneratedRoute.Builder generatedRoute = GeneratedRoute.builder().setNetwork(Prefix.ZERO);
+
+    final String policyName = "GEN_POLICY";
+    RoutingPolicy.builder()
+        .setOwner(_c)
+        .setName(policyName)
+        .setStatements(
+            ImmutableList.of(
+                new If(
+                    new MatchPrefixSet(
+                        DestinationNetwork.instance(),
+                        new ExplicitPrefixSet(
+                            new PrefixSpace(PrefixRange.fromPrefix(Prefix.parse("2.2.2.2/32"))))),
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement()))))
+        .build();
+
+    // Unconditional generation
+    assertThat(
+        _routingProcess.activateGeneratedRoute(delta, generatedRoute.build()),
+        equalTo(generatedRoute.build()));
+    // Conditional generation
+    assertThat(
+        _routingProcess.activateGeneratedRoute(
+            delta, generatedRoute.setGenerationPolicy(policyName).build()),
+        nullValue());
+    // Conditional generation with missing policy
+    assertThat(
+        _routingProcess.activateGeneratedRoute(
+            delta, generatedRoute.setGenerationPolicy("nonexistent").build()),
+        nullValue());
+  }
+
+  @Test
+  public void testConvertToExternalRoute() {
+    StaticRoute.Builder sb =
+        StaticRoute.builder()
+            .setAdministrativeCost(1)
+            .setNetwork(Prefix.parse("2.2.2.2/32"))
+            .setNextHopInterface("Null");
+    StaticRoute route = sb.build();
+
+    RoutingPolicy exportPolicy =
+        RoutingPolicy.builder()
+            .setOwner(_c)
+            .setName("EXPORT_POLICY")
+            .setStatements(
+                ImmutableList.of(
+                    new If(
+                        new MatchPrefixSet(
+                            DestinationNetwork.instance(),
+                            new ExplicitPrefixSet(
+                                new PrefixSpace(
+                                    PrefixRange.fromPrefix(Prefix.parse("2.2.2.2/32"))))),
+                        ImmutableList.of(
+                            new SetOspfMetricType(OspfMetricType.E1),
+                            Statements.ExitAccept.toStaticStatement()),
+                        ImmutableList.of(Statements.ExitReject.toStaticStatement()))))
+            .build();
+
+    // Allowed to export
+    assertThat(
+        _routingProcess.convertToExternalRoute(route, exportPolicy).get(),
+        allOf(
+            instanceOf(OspfExternalType1Route.class),
+            hasPrefix(route.getNetwork()),
+            hasMetric(0L),
+            hasAdministrativeCost(equalTo(300)),
+            isNonRouting(true)));
+    // Not allowed to export
+    assertFalse(
+        "Export policy does not permit export",
+        _routingProcess
+            .convertToExternalRoute(sb.setNetwork(Prefix.parse("1.1.1.1/32")).build(), exportPolicy)
+            .isPresent());
+  }
+
+  @Test
+  public void testFilterExternalRoutesOnExport() {}
 }
