@@ -91,8 +91,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       if (access != null || ifacePvid != null || !ifaceVids.isEmpty()) {
         _w.redFlag(
             String.format(
-                "Do not support VLAN switching options for for non-'bridge bridge' port: '%s'",
-                name));
+                "No support for VLAN switching options on non-'bridge bridge' port: '%s'", name));
       }
       return;
     }
