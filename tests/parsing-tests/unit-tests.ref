@@ -87113,19 +87113,19 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Do not support VLAN switching options for for non-'bridge bridge' port: 'swp2'"
+              "text" : "No support for VLAN switching options on non-'bridge bridge' port: 'swp2'"
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Do not support VLAN switching options for for non-'bridge bridge' port: 'swp1'"
+              "text" : "No support for VLAN switching options on non-'bridge bridge' port: 'swp1'"
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Do not support VLAN switching options for for non-'bridge bridge' port: 'bond2'"
+              "text" : "No support for VLAN switching options on non-'bridge bridge' port: 'bond2'"
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Do not support VLAN switching options for for non-'bridge bridge' port: 'bond1'"
+              "text" : "No support for VLAN switching options on non-'bridge bridge' port: 'bond1'"
             }
           ]
         },
