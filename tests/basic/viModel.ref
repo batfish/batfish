@@ -2932,2310 +2932,338 @@
       ],
       "ospf" : [
         {
-          "edgeSummary" : {
-            "ip1" : "1.0.1.1",
-            "ip2" : "1.0.1.2",
-            "node1" : "as1border1",
-            "node2" : "as1core1"
-          },
-          "node1Session" : {
-            "name" : {
-              "ip1" : "1.0.1.1",
-              "ip2" : "1.0.1.2"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet0/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "1.0.1.1/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet0/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "1.0.1.1/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "head" : {
+            "hostname" : "as1core1",
+            "interface" : "GigabitEthernet1/0",
+            "process" : "1",
             "vrf" : "default"
           },
-          "node2Session" : {
-            "name" : {
-              "ip1" : "1.0.1.2",
-              "ip2" : "1.0.1.1"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet1/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "1.0.1.2/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet1/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "1.0.1.2/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "tail" : {
+            "hostname" : "as1border1",
+            "interface" : "GigabitEthernet0/0",
+            "process" : "1",
             "vrf" : "default"
           }
         },
         {
-          "edgeSummary" : {
-            "ip1" : "1.0.2.1",
-            "ip2" : "1.0.2.2",
-            "node1" : "as1border2",
-            "node2" : "as1core1"
-          },
-          "node1Session" : {
-            "name" : {
-              "ip1" : "1.0.2.1",
-              "ip2" : "1.0.2.2"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet1/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "1.0.2.1/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet1/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "1.0.2.1/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "head" : {
+            "hostname" : "as1core1",
+            "interface" : "GigabitEthernet0/0",
+            "process" : "1",
             "vrf" : "default"
           },
-          "node2Session" : {
-            "name" : {
-              "ip1" : "1.0.2.2",
-              "ip2" : "1.0.2.1"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet0/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "1.0.2.2/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet0/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "1.0.2.2/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "tail" : {
+            "hostname" : "as1border2",
+            "interface" : "GigabitEthernet1/0",
+            "process" : "1",
             "vrf" : "default"
           }
         },
         {
-          "edgeSummary" : {
-            "ip1" : "1.0.1.2",
-            "ip2" : "1.0.1.1",
-            "node1" : "as1core1",
-            "node2" : "as1border1"
-          },
-          "node1Session" : {
-            "name" : {
-              "ip1" : "1.0.1.2",
-              "ip2" : "1.0.1.1"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet1/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "1.0.1.2/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet1/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "1.0.1.2/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "head" : {
+            "hostname" : "as1border2",
+            "interface" : "GigabitEthernet1/0",
+            "process" : "1",
             "vrf" : "default"
           },
-          "node2Session" : {
-            "name" : {
-              "ip1" : "1.0.1.1",
-              "ip2" : "1.0.1.2"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet0/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "1.0.1.1/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet0/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "1.0.1.1/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "tail" : {
+            "hostname" : "as1core1",
+            "interface" : "GigabitEthernet0/0",
+            "process" : "1",
             "vrf" : "default"
           }
         },
         {
-          "edgeSummary" : {
-            "ip1" : "1.0.2.2",
-            "ip2" : "1.0.2.1",
-            "node1" : "as1core1",
-            "node2" : "as1border2"
-          },
-          "node1Session" : {
-            "name" : {
-              "ip1" : "1.0.2.2",
-              "ip2" : "1.0.2.1"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet0/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "1.0.2.2/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet0/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "1.0.2.2/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "head" : {
+            "hostname" : "as1border1",
+            "interface" : "GigabitEthernet0/0",
+            "process" : "1",
             "vrf" : "default"
           },
-          "node2Session" : {
-            "name" : {
-              "ip1" : "1.0.2.1",
-              "ip2" : "1.0.2.2"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet1/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "1.0.2.1/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet1/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "1.0.2.1/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "tail" : {
+            "hostname" : "as1core1",
+            "interface" : "GigabitEthernet1/0",
+            "process" : "1",
             "vrf" : "default"
           }
         },
         {
-          "edgeSummary" : {
-            "ip1" : "2.12.11.1",
-            "ip2" : "2.12.11.2",
-            "node1" : "as2border1",
-            "node2" : "as2core1"
-          },
-          "node1Session" : {
-            "name" : {
-              "ip1" : "2.12.11.1",
-              "ip2" : "2.12.11.2"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet1/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "2.12.11.1/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet1/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "2.12.11.1/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "head" : {
+            "hostname" : "as2core1",
+            "interface" : "GigabitEthernet0/0",
+            "process" : "1",
             "vrf" : "default"
           },
-          "node2Session" : {
-            "name" : {
-              "ip1" : "2.12.11.2",
-              "ip2" : "2.12.11.1"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet0/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "2.12.11.2/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet0/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "2.12.11.2/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "tail" : {
+            "hostname" : "as2border1",
+            "interface" : "GigabitEthernet1/0",
+            "process" : "1",
             "vrf" : "default"
           }
         },
         {
-          "edgeSummary" : {
-            "ip1" : "2.12.12.1",
-            "ip2" : "2.12.12.2",
-            "node1" : "as2border1",
-            "node2" : "as2core2"
-          },
-          "node1Session" : {
-            "name" : {
-              "ip1" : "2.12.12.1",
-              "ip2" : "2.12.12.2"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet2/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "2.12.12.1/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet2/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "2.12.12.1/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "head" : {
+            "hostname" : "as2core2",
+            "interface" : "GigabitEthernet1/0",
+            "process" : "1",
             "vrf" : "default"
           },
-          "node2Session" : {
-            "name" : {
-              "ip1" : "2.12.12.2",
-              "ip2" : "2.12.12.1"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet1/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "2.12.12.2/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet1/0"
-              ],
-              "mtu" : 1600,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "2.12.12.2/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "tail" : {
+            "hostname" : "as2border1",
+            "interface" : "GigabitEthernet2/0",
+            "process" : "1",
             "vrf" : "default"
           }
         },
         {
-          "edgeSummary" : {
-            "ip1" : "2.12.21.1",
-            "ip2" : "2.12.21.2",
-            "node1" : "as2border2",
-            "node2" : "as2core1"
-          },
-          "node1Session" : {
-            "name" : {
-              "ip1" : "2.12.21.1",
-              "ip2" : "2.12.21.2"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet2/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "2.12.21.1/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet2/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "2.12.21.1/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "head" : {
+            "hostname" : "as2core2",
+            "interface" : "GigabitEthernet0/0",
+            "process" : "1",
             "vrf" : "default"
           },
-          "node2Session" : {
-            "name" : {
-              "ip1" : "2.12.21.2",
-              "ip2" : "2.12.21.1"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet1/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "2.12.21.2/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet1/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "2.12.21.2/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "tail" : {
+            "hostname" : "as2border2",
+            "interface" : "GigabitEthernet1/0",
+            "process" : "1",
             "vrf" : "default"
           }
         },
         {
-          "edgeSummary" : {
-            "ip1" : "2.12.22.1",
-            "ip2" : "2.12.22.2",
-            "node1" : "as2border2",
-            "node2" : "as2core2"
-          },
-          "node1Session" : {
-            "name" : {
-              "ip1" : "2.12.22.1",
-              "ip2" : "2.12.22.2"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet1/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "2.12.22.1/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet1/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "2.12.22.1/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "head" : {
+            "hostname" : "as2core1",
+            "interface" : "GigabitEthernet1/0",
+            "process" : "1",
             "vrf" : "default"
           },
-          "node2Session" : {
-            "name" : {
-              "ip1" : "2.12.22.2",
-              "ip2" : "2.12.22.1"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet0/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "2.12.22.2/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet0/0"
-              ],
-              "mtu" : 1800,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "2.12.22.2/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "tail" : {
+            "hostname" : "as2border2",
+            "interface" : "GigabitEthernet2/0",
+            "process" : "1",
             "vrf" : "default"
           }
         },
         {
-          "edgeSummary" : {
-            "ip1" : "2.12.11.2",
-            "ip2" : "2.12.11.1",
-            "node1" : "as2core1",
-            "node2" : "as2border1"
-          },
-          "node1Session" : {
-            "name" : {
-              "ip1" : "2.12.11.2",
-              "ip2" : "2.12.11.1"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet0/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "2.12.11.2/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet0/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "2.12.11.2/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "head" : {
+            "hostname" : "as2border1",
+            "interface" : "GigabitEthernet1/0",
+            "process" : "1",
             "vrf" : "default"
           },
-          "node2Session" : {
-            "name" : {
-              "ip1" : "2.12.11.1",
-              "ip2" : "2.12.11.2"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet1/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "2.12.11.1/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet1/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "2.12.11.1/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "tail" : {
+            "hostname" : "as2core1",
+            "interface" : "GigabitEthernet0/0",
+            "process" : "1",
             "vrf" : "default"
           }
         },
         {
-          "edgeSummary" : {
-            "ip1" : "2.12.21.2",
-            "ip2" : "2.12.21.1",
-            "node1" : "as2core1",
-            "node2" : "as2border2"
-          },
-          "node1Session" : {
-            "name" : {
-              "ip1" : "2.12.21.2",
-              "ip2" : "2.12.21.1"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet1/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "2.12.21.2/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet1/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "2.12.21.2/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "head" : {
+            "hostname" : "as2border2",
+            "interface" : "GigabitEthernet2/0",
+            "process" : "1",
             "vrf" : "default"
           },
-          "node2Session" : {
-            "name" : {
-              "ip1" : "2.12.21.1",
-              "ip2" : "2.12.21.2"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet2/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "2.12.21.1/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet2/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "2.12.21.1/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "tail" : {
+            "hostname" : "as2core1",
+            "interface" : "GigabitEthernet1/0",
+            "process" : "1",
             "vrf" : "default"
           }
         },
         {
-          "edgeSummary" : {
-            "ip1" : "2.23.11.2",
-            "ip2" : "2.23.11.3",
-            "node1" : "as2core1",
-            "node2" : "as2dist1"
-          },
-          "node1Session" : {
-            "name" : {
-              "ip1" : "2.23.11.2",
-              "ip2" : "2.23.11.3"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet2/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "2.23.11.2/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet2/0"
-              ],
-              "incomingFilter" : "blocktelnet",
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "2.23.11.2/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "head" : {
+            "hostname" : "as2dist1",
+            "interface" : "GigabitEthernet0/0",
+            "process" : "1",
             "vrf" : "default"
           },
-          "node2Session" : {
-            "name" : {
-              "ip1" : "2.23.11.3",
-              "ip2" : "2.23.11.2"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet0/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "2.23.11.3/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet0/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "2.23.11.3/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "tail" : {
+            "hostname" : "as2core1",
+            "interface" : "GigabitEthernet2/0",
+            "process" : "1",
             "vrf" : "default"
           }
         },
         {
-          "edgeSummary" : {
-            "ip1" : "2.23.12.2",
-            "ip2" : "2.23.12.3",
-            "node1" : "as2core1",
-            "node2" : "as2dist2"
-          },
-          "node1Session" : {
-            "name" : {
-              "ip1" : "2.23.12.2",
-              "ip2" : "2.23.12.3"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet3/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "2.23.12.2/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet3/0"
-              ],
-              "incomingFilter" : "blocktelnet",
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "2.23.12.2/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "head" : {
+            "hostname" : "as2dist2",
+            "interface" : "GigabitEthernet1/0",
+            "process" : "1",
             "vrf" : "default"
           },
-          "node2Session" : {
-            "name" : {
-              "ip1" : "2.23.12.3",
-              "ip2" : "2.23.12.2"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet1/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "2.23.12.3/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet1/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "2.23.12.3/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "tail" : {
+            "hostname" : "as2core1",
+            "interface" : "GigabitEthernet3/0",
+            "process" : "1",
             "vrf" : "default"
           }
         },
         {
-          "edgeSummary" : {
-            "ip1" : "2.12.12.2",
-            "ip2" : "2.12.12.1",
-            "node1" : "as2core2",
-            "node2" : "as2border1"
-          },
-          "node1Session" : {
-            "name" : {
-              "ip1" : "2.12.12.2",
-              "ip2" : "2.12.12.1"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet1/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "2.12.12.2/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet1/0"
-              ],
-              "mtu" : 1600,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "2.12.12.2/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "head" : {
+            "hostname" : "as2border2",
+            "interface" : "GigabitEthernet1/0",
+            "process" : "1",
             "vrf" : "default"
           },
-          "node2Session" : {
-            "name" : {
-              "ip1" : "2.12.12.1",
-              "ip2" : "2.12.12.2"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet2/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "2.12.12.1/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet2/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "2.12.12.1/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "tail" : {
+            "hostname" : "as2core2",
+            "interface" : "GigabitEthernet0/0",
+            "process" : "1",
             "vrf" : "default"
           }
         },
         {
-          "edgeSummary" : {
-            "ip1" : "2.12.22.2",
-            "ip2" : "2.12.22.1",
-            "node1" : "as2core2",
-            "node2" : "as2border2"
-          },
-          "node1Session" : {
-            "name" : {
-              "ip1" : "2.12.22.2",
-              "ip2" : "2.12.22.1"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet0/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "2.12.22.2/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet0/0"
-              ],
-              "mtu" : 1800,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "2.12.22.2/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "head" : {
+            "hostname" : "as2border1",
+            "interface" : "GigabitEthernet2/0",
+            "process" : "1",
             "vrf" : "default"
           },
-          "node2Session" : {
-            "name" : {
-              "ip1" : "2.12.22.1",
-              "ip2" : "2.12.22.2"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet1/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "2.12.22.1/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet1/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "2.12.22.1/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "tail" : {
+            "hostname" : "as2core2",
+            "interface" : "GigabitEthernet1/0",
+            "process" : "1",
             "vrf" : "default"
           }
         },
         {
-          "edgeSummary" : {
-            "ip1" : "2.23.21.2",
-            "ip2" : "2.23.21.3",
-            "node1" : "as2core2",
-            "node2" : "as2dist1"
-          },
-          "node1Session" : {
-            "name" : {
-              "ip1" : "2.23.21.2",
-              "ip2" : "2.23.21.3"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet3/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "2.23.21.2/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet3/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "2.23.21.2/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "head" : {
+            "hostname" : "as2dist2",
+            "interface" : "GigabitEthernet0/0",
+            "process" : "1",
             "vrf" : "default"
           },
-          "node2Session" : {
-            "name" : {
-              "ip1" : "2.23.21.3",
-              "ip2" : "2.23.21.2"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet1/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "2.23.21.3/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet1/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "2.23.21.3/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "tail" : {
+            "hostname" : "as2core2",
+            "interface" : "GigabitEthernet2/0",
+            "process" : "1",
             "vrf" : "default"
           }
         },
         {
-          "edgeSummary" : {
-            "ip1" : "2.23.22.2",
-            "ip2" : "2.23.22.3",
-            "node1" : "as2core2",
-            "node2" : "as2dist2"
-          },
-          "node1Session" : {
-            "name" : {
-              "ip1" : "2.23.22.2",
-              "ip2" : "2.23.22.3"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet2/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "2.23.22.2/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet2/0"
-              ],
-              "mtu" : 1700,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "2.23.22.2/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "head" : {
+            "hostname" : "as2dist1",
+            "interface" : "GigabitEthernet1/0",
+            "process" : "1",
             "vrf" : "default"
           },
-          "node2Session" : {
-            "name" : {
-              "ip1" : "2.23.22.3",
-              "ip2" : "2.23.22.2"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet0/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "2.23.22.3/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet0/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "2.23.22.3/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "tail" : {
+            "hostname" : "as2core2",
+            "interface" : "GigabitEthernet3/0",
+            "process" : "1",
             "vrf" : "default"
           }
         },
         {
-          "edgeSummary" : {
-            "ip1" : "2.23.11.3",
-            "ip2" : "2.23.11.2",
-            "node1" : "as2dist1",
-            "node2" : "as2core1"
-          },
-          "node1Session" : {
-            "name" : {
-              "ip1" : "2.23.11.3",
-              "ip2" : "2.23.11.2"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet0/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "2.23.11.3/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet0/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "2.23.11.3/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "head" : {
+            "hostname" : "as2core1",
+            "interface" : "GigabitEthernet2/0",
+            "process" : "1",
             "vrf" : "default"
           },
-          "node2Session" : {
-            "name" : {
-              "ip1" : "2.23.11.2",
-              "ip2" : "2.23.11.3"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet2/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "2.23.11.2/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet2/0"
-              ],
-              "incomingFilter" : "blocktelnet",
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "2.23.11.2/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "tail" : {
+            "hostname" : "as2dist1",
+            "interface" : "GigabitEthernet0/0",
+            "process" : "1",
             "vrf" : "default"
           }
         },
         {
-          "edgeSummary" : {
-            "ip1" : "2.23.21.3",
-            "ip2" : "2.23.21.2",
-            "node1" : "as2dist1",
-            "node2" : "as2core2"
-          },
-          "node1Session" : {
-            "name" : {
-              "ip1" : "2.23.21.3",
-              "ip2" : "2.23.21.2"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet1/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "2.23.21.3/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet1/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "2.23.21.3/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "head" : {
+            "hostname" : "as2core2",
+            "interface" : "GigabitEthernet3/0",
+            "process" : "1",
             "vrf" : "default"
           },
-          "node2Session" : {
-            "name" : {
-              "ip1" : "2.23.21.2",
-              "ip2" : "2.23.21.3"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet3/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "2.23.21.2/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet3/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "2.23.21.2/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "tail" : {
+            "hostname" : "as2dist1",
+            "interface" : "GigabitEthernet1/0",
+            "process" : "1",
             "vrf" : "default"
           }
         },
         {
-          "edgeSummary" : {
-            "ip1" : "2.23.12.3",
-            "ip2" : "2.23.12.2",
-            "node1" : "as2dist2",
-            "node2" : "as2core1"
-          },
-          "node1Session" : {
-            "name" : {
-              "ip1" : "2.23.12.3",
-              "ip2" : "2.23.12.2"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet1/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "2.23.12.3/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet1/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "2.23.12.3/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "head" : {
+            "hostname" : "as2core2",
+            "interface" : "GigabitEthernet2/0",
+            "process" : "1",
             "vrf" : "default"
           },
-          "node2Session" : {
-            "name" : {
-              "ip1" : "2.23.12.2",
-              "ip2" : "2.23.12.3"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet3/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "2.23.12.2/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet3/0"
-              ],
-              "incomingFilter" : "blocktelnet",
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "2.23.12.2/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "tail" : {
+            "hostname" : "as2dist2",
+            "interface" : "GigabitEthernet0/0",
+            "process" : "1",
             "vrf" : "default"
           }
         },
         {
-          "edgeSummary" : {
-            "ip1" : "2.23.22.3",
-            "ip2" : "2.23.22.2",
-            "node1" : "as2dist2",
-            "node2" : "as2core2"
-          },
-          "node1Session" : {
-            "name" : {
-              "ip1" : "2.23.22.3",
-              "ip2" : "2.23.22.2"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet0/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "2.23.22.3/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet0/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "2.23.22.3/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "head" : {
+            "hostname" : "as2core1",
+            "interface" : "GigabitEthernet3/0",
+            "process" : "1",
             "vrf" : "default"
           },
-          "node2Session" : {
-            "name" : {
-              "ip1" : "2.23.22.2",
-              "ip2" : "2.23.22.3"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet2/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "2.23.22.2/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet2/0"
-              ],
-              "mtu" : 1700,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "2.23.22.2/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "tail" : {
+            "hostname" : "as2dist2",
+            "interface" : "GigabitEthernet1/0",
+            "process" : "1",
             "vrf" : "default"
           }
         },
         {
-          "edgeSummary" : {
-            "ip1" : "3.0.1.1",
-            "ip2" : "3.0.1.2",
-            "node1" : "as3border1",
-            "node2" : "as3core1"
-          },
-          "node1Session" : {
-            "name" : {
-              "ip1" : "3.0.1.1",
-              "ip2" : "3.0.1.2"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet0/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "3.0.1.1/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet0/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "3.0.1.1/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "head" : {
+            "hostname" : "as3core1",
+            "interface" : "GigabitEthernet1/0",
+            "process" : "1",
             "vrf" : "default"
           },
-          "node2Session" : {
-            "name" : {
-              "ip1" : "3.0.1.2",
-              "ip2" : "3.0.1.1"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet1/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "3.0.1.2/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet1/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "3.0.1.2/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "tail" : {
+            "hostname" : "as3border1",
+            "interface" : "GigabitEthernet0/0",
+            "process" : "1",
             "vrf" : "default"
           }
         },
         {
-          "edgeSummary" : {
-            "ip1" : "3.0.2.1",
-            "ip2" : "3.0.2.2",
-            "node1" : "as3border2",
-            "node2" : "as3core1"
-          },
-          "node1Session" : {
-            "name" : {
-              "ip1" : "3.0.2.1",
-              "ip2" : "3.0.2.2"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet1/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "3.0.2.1/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet1/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "3.0.2.1/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "head" : {
+            "hostname" : "as3core1",
+            "interface" : "GigabitEthernet0/0",
+            "process" : "1",
             "vrf" : "default"
           },
-          "node2Session" : {
-            "name" : {
-              "ip1" : "3.0.2.2",
-              "ip2" : "3.0.2.1"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet0/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "3.0.2.2/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet0/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "3.0.2.2/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "tail" : {
+            "hostname" : "as3border2",
+            "interface" : "GigabitEthernet1/0",
+            "process" : "1",
             "vrf" : "default"
           }
         },
         {
-          "edgeSummary" : {
-            "ip1" : "3.0.1.2",
-            "ip2" : "3.0.1.1",
-            "node1" : "as3core1",
-            "node2" : "as3border1"
-          },
-          "node1Session" : {
-            "name" : {
-              "ip1" : "3.0.1.2",
-              "ip2" : "3.0.1.1"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet1/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "3.0.1.2/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet1/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "3.0.1.2/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "head" : {
+            "hostname" : "as3border2",
+            "interface" : "GigabitEthernet1/0",
+            "process" : "1",
             "vrf" : "default"
           },
-          "node2Session" : {
-            "name" : {
-              "ip1" : "3.0.1.1",
-              "ip2" : "3.0.1.2"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet0/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "3.0.1.1/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet0/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "3.0.1.1/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "tail" : {
+            "hostname" : "as3core1",
+            "interface" : "GigabitEthernet0/0",
+            "process" : "1",
             "vrf" : "default"
           }
         },
         {
-          "edgeSummary" : {
-            "ip1" : "3.0.2.2",
-            "ip2" : "3.0.2.1",
-            "node1" : "as3core1",
-            "node2" : "as3border2"
-          },
-          "node1Session" : {
-            "name" : {
-              "ip1" : "3.0.2.2",
-              "ip2" : "3.0.2.1"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet0/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "3.0.2.2/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet0/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "3.0.2.2/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "head" : {
+            "hostname" : "as3border1",
+            "interface" : "GigabitEthernet0/0",
+            "process" : "1",
             "vrf" : "default"
           },
-          "node2Session" : {
-            "name" : {
-              "ip1" : "3.0.2.1",
-              "ip2" : "3.0.2.2"
-            },
-            "area" : 1,
-            "iface" : {
-              "name" : "GigabitEthernet1/0",
-              "active" : true,
-              "additionalArpIps" : {
-                "class" : "org.batfish.datamodel.EmptyIpSpace"
-              },
-              "allPrefixes" : [
-                "3.0.2.1/24"
-              ],
-              "allowedVlans" : "",
-              "autostate" : true,
-              "bandwidth" : 1.0E9,
-              "declaredNames" : [
-                "GigabitEthernet1/0"
-              ],
-              "mtu" : 1500,
-              "ospfArea" : 1,
-              "ospfCost" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "ospfProcess" : "1",
-              "prefix" : "3.0.2.1/24",
-              "proxyArp" : true,
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "speed" : 1.0E9,
-              "switchport" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            },
+          "tail" : {
+            "hostname" : "as3core1",
+            "interface" : "GigabitEthernet1/0",
+            "process" : "1",
             "vrf" : "default"
           }
         }
