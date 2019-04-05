@@ -138,6 +138,7 @@ import org.batfish.representation.cumulus.CumulusRoutingProtocol;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.Interface;
+import org.batfish.representation.cumulus.InterfaceClagSettings;
 import org.batfish.representation.cumulus.RemoteAsType;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapEntry;
@@ -958,8 +959,9 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     }
     _currentInterfaces.forEach(
         iface -> {
-          iface.setClagBackupIp(backupIp);
-          iface.setClagBackupIpVrf(vrf);
+          InterfaceClagSettings clag = iface.getOrInitClag();
+          clag.setBackupIp(backupIp);
+          clag.setBackupIpVrf(vrf);
         });
   }
 
@@ -968,7 +970,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     Ip peerIp = toIp(ctx.peer_ip);
     _currentInterfaces.forEach(
         iface -> {
-          iface.setClagPeerIp(peerIp);
+          iface.getOrInitClag().setPeerIp(peerIp);
         });
   }
 
@@ -977,7 +979,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     int priority = toInteger(ctx.priority);
     _currentInterfaces.forEach(
         iface -> {
-          iface.setClagPriority(priority);
+          iface.getOrInitClag().setPriority(priority);
         });
   }
 
@@ -986,7 +988,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     MacAddress macAddress = toMacAddress(ctx.mac);
     _currentInterfaces.forEach(
         iface -> {
-          iface.setClagSysMac(macAddress);
+          iface.getOrInitClag().setSysMac(macAddress);
         });
   }
 

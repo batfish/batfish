@@ -66,6 +66,7 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.vendor_family.cumulus.InterfaceClagSettings;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
@@ -605,39 +606,39 @@ public final class CumulusNcluGrammarTest {
     // clag backup-ip
     assertThat(
         "Ensure clag backup-ip extracted",
-        vc.getInterfaces().get("bond2.4094").getClagBackupIp(),
+        vc.getInterfaces().get("bond2.4094").getClag().getBackupIp(),
         equalTo(Ip.parse("192.0.2.1")));
     assertThat(
         "Ensure clag backup-ip is extracted",
-        vc.getInterfaces().get("bond3.4094").getClagBackupIp(),
+        vc.getInterfaces().get("bond3.4094").getClag().getBackupIp(),
         equalTo(Ip.parse("192.168.0.1")));
 
     // clag backup-ip vrf
     assertThat(
         "Ensure clag backup-ip vrf is extracted",
-        vc.getInterfaces().get("bond2.4094").getClagBackupIpVrf(),
+        vc.getInterfaces().get("bond2.4094").getClag().getBackupIpVrf(),
         equalTo("mgmt"));
     assertThat(
         "Ensure clag backup-ip vrf is extracted",
-        vc.getInterfaces().get("bond3.4094").getClagBackupIpVrf(),
+        vc.getInterfaces().get("bond3.4094").getClag().getBackupIpVrf(),
         nullValue());
 
     // clag peer-ip
     assertThat(
         "Ensure clag peer-ip is extracted",
-        vc.getInterfaces().get("bond2.4094").getClagPeerIp(),
+        vc.getInterfaces().get("bond2.4094").getClag().getPeerIp(),
         equalTo(Ip.parse("10.0.0.2")));
 
     // clag priority
     assertThat(
         "Ensure clag priority is extracted",
-        vc.getInterfaces().get("bond2.4094").getClagPriority(),
+        vc.getInterfaces().get("bond2.4094").getClag().getPriority(),
         equalTo(1000));
 
     // clag sys-mac
     assertThat(
         "Ensure clag sys-mac is extracted",
-        vc.getInterfaces().get("bond2.4094").getClagSysMac(),
+        vc.getInterfaces().get("bond2.4094").getClag().getSysMac(),
         equalTo(MacAddress.parse("00:11:22:33:44:55")));
 
     // vrf
@@ -887,6 +888,29 @@ public final class CumulusNcluGrammarTest {
     assertThat(
         rm2.getEntries().get(1).getMatchInterface(),
         equalTo(new RouteMapMatchInterface(ImmutableSet.of("vrf1"))));
+  }
+
+  @Test
+  public void testVendorFamilyClag() throws IOException {
+    Configuration c = parseConfig("cumulus_nclu_clag");
+
+    assertThat(c.getVendorFamily().getCumulus(), notNullValue());
+
+    Map<String, InterfaceClagSettings> clagByInterface =
+        c.getVendorFamily().getCumulus().getInterfaceClagSettings();
+
+    assertThat(
+        clagByInterface,
+        equalTo(
+            ImmutableMap.of(
+                "peerlink.4094",
+                InterfaceClagSettings.builder()
+                    .setBackupIp(Ip.parse("10.0.0.2"))
+                    .setBackupIpVrf("mgmt")
+                    .setPeerIp(Ip.parse("192.0.2.2"))
+                    .setPriority(1000)
+                    .setSysMac(MacAddress.parse("00:11:22:33:44:55"))
+                    .build())));
   }
 
   @Test

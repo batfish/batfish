@@ -8,6 +8,7 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Streams;
 import java.util.Comparator;
@@ -41,6 +42,7 @@ import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.vendor_family.cumulus.CumulusFamily;
 import org.batfish.vendor.VendorConfiguration;
 
 /** A {@link VendorConfiguration} for the Cumulus NCLU configuration language. */
@@ -51,6 +53,17 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   public static final int DEFAULT_STATIC_ROUTE_METRIC = 0;
   public static final String LOOPBACK_INTERFACE_NAME = "lo";
   private static final long serialVersionUID = 1L;
+
+  private static @Nonnull org.batfish.datamodel.vendor_family.cumulus.InterfaceClagSettings
+      convertClag(InterfaceClagSettings clag) {
+    return org.batfish.datamodel.vendor_family.cumulus.InterfaceClagSettings.builder()
+        .setBackupIp(clag.getBackupIp())
+        .setBackupIpVrf(clag.getBackupIpVrf())
+        .setPeerIp(clag.getPeerIp())
+        .setPriority(clag.getPriority())
+        .setSysMac(clag.getSysMac())
+        .build();
+  }
 
   private @Nullable BgpProcess _bgpProcess;
   private final @Nonnull Map<String, Bond> _bonds;
@@ -65,6 +78,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private final @Nonnull Set<StaticRoute> _staticRoutes;
   private final @Nonnull Map<String, Vlan> _vlans;
   private final @Nonnull Map<String, Vrf> _vrfs;
+
   private final @Nonnull Map<String, Vxlan> _vxlans;
 
   public CumulusNcluConfiguration() {
@@ -159,7 +173,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private void convertClags() {
     List<Interface> clagSourceInterfaces =
         _interfaces.values().stream()
-            .filter(i -> i.getClagPeerIp() != null)
+            .filter(i -> i.getClag() != null)
             .collect(ImmutableList.toImmutableList());
     if (clagSourceInterfaces.isEmpty()) {
       return;
@@ -174,7 +188,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       return;
     }
     Interface clagSourceInterface = clagSourceInterfaces.get(0);
-    Ip peerAddress = clagSourceInterface.getClagPeerIp();
+    Ip peerAddress = clagSourceInterface.getClag().getPeerIp();
     String sourceInterfaceName = clagSourceInterface.getName();
     String peerInterfaceName = clagSourceInterface.getSuperInterfaceName();
     _c.setMlags(
@@ -337,6 +351,21 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   public @Nonnull Map<String, Vxlan> getVxlans() {
     return _vxlans;
+  }
+
+  private void initVendorFamily() {
+    _c.getVendorFamily()
+        .setCumulus(
+            CumulusFamily.builder()
+                .setInterfaceClagSettings(
+                    _interfaces.entrySet().stream()
+                        .filter(ifaceEntry -> ifaceEntry.getValue().getClag() != null)
+                        .collect(
+                            ImmutableSortedMap.toImmutableSortedMap(
+                                Comparator.naturalOrder(),
+                                Entry::getKey,
+                                ifaceEntry -> convertClag(ifaceEntry.getValue().getClag()))))
+                .build());
   }
 
   private void initVrf(String name, Vrf vrf) {
@@ -529,6 +558,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     convertRouteMaps();
     convertDnsServers();
     convertClags();
+
+    initVendorFamily();
 
     markStructures();
 
