@@ -62,7 +62,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   @Nonnull private OspfTopology _topology;
 
   /* Computed configuration & cached variables */
-  private final Boolean _useMinMetricForSummaries;
+  private final boolean _useMinMetricForSummaries;
 
   /* Internal RIBs */
   @Nonnull private final OspfIntraAreaRib _intraAreaRib;
@@ -78,7 +78,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   private SortedMap<EdgeId, Queue<RouteAdvertisement<OspfInterAreaRoute>>>
       _interAreaIncomingRoutes = ImmutableSortedMap.of();
 
-  /** Delta which captures process initialization (creating intra-area routes based on interfaces */
+  /** Delta that captures process initialization (creating intra-area routes based on interfaces) */
   @Nonnull private RibDelta<OspfIntraAreaRoute> _initializationDelta;
   /** Delta to pass to the main RIB */
   @Nonnull private RibDelta.Builder<OspfRoute> _changeset;
@@ -145,7 +145,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
         interAreaBuilder = ImmutableSortedMap.naturalOrder();
     interAreaBuilder.putAll(_interAreaIncomingRoutes);
 
-    getEdgeStream(topology)
+    getIncomingEdgeStream(topology)
         .forEach(
             edgeId -> {
               if (!_intraAreaIncomingRoutes.keySet().contains(edgeId)) {
@@ -204,12 +204,11 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
 
     for (String ifaceName : area.getInterfaces()) {
       Interface iface = _c.getAllInterfaces().get(ifaceName);
-      if (iface == null) {
-        // Skip non-existent interfaces
-        continue;
-      }
-      if (!iface.getActive()) {
-        // Skip interfaces that are down
+      if (iface == null || !iface.getActive() || !iface.getOspfEnabled()) {
+        /*
+         * Skip non-existent interfaces, interfaces that are down,
+         * and interfaces that have OSPF disabled
+         */
         continue;
       }
       // Create a route for each interface address
@@ -266,8 +265,9 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
         .get(ospfNeighborId.getProcName());
   }
 
+  /** Return the stream of incoming edges, for all neighbors that belong to this process. */
   @Nonnull
-  private Stream<EdgeId> getEdgeStream(OspfTopology topology) {
+  private Stream<EdgeId> getIncomingEdgeStream(OspfTopology topology) {
     return _process.getOspfNeighborConfigs().keySet().stream()
         .flatMap(
             interfaceName ->
@@ -306,22 +306,21 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   /**
    * Return the interface cost for a given interface.
    *
-   * <p>For actual details see {@link #getIncrementalCost(Interface, boolean)}
+   * <p>For details see {@link #getIncrementalCost(Interface, boolean)}
    *
    * @param interfaceName name of the interface
-   * @param stub whether this is a stub network
    */
   @VisibleForTesting
-  long getIncrementalCost(String interfaceName, boolean stub) {
-    assert _c.getAllInterfaces().get(interfaceName) != null;
+  long getIncrementalCost(String interfaceName, boolean considerP2PasStub) {
     Interface iface = _c.getAllInterfaces().get(interfaceName);
-    return getIncrementalCost(iface, stub);
+    assert iface != null;
+    return getIncrementalCost(iface, considerP2PasStub);
   }
 
   /**
    * Return the interface cost for a given interface (used as increment to route metric).
    *
-   * @param iface the {@link Interface} to for which to compute the cost
+   * @param iface the {@link Interface} for which to compute the incremental cost
    * @param considerP2PasStub whether or not to consider point-to-point links as stub networks.
    *     <strong>Do not confuse this with stub areas</strong>. Stub here means a non-transit link.
    *     If point-to-point links needs to be considered as stub links (which can happen during
@@ -331,11 +330,10 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   private long getIncrementalCost(Interface iface, boolean considerP2PasStub) {
     long cost = iface.getOspfCost();
     if (iface.getOspfPassive() || (considerP2PasStub && iface.getOspfPointToPoint())) {
-      cost = firstNonNull(_process.getMaxMetricStubNetworks(), cost);
+      return firstNonNull(_process.getMaxMetricStubNetworks(), cost);
     } else {
-      cost = firstNonNull(_process.getMaxMetricTransitLinks(), cost);
+      return firstNonNull(_process.getMaxMetricTransitLinks(), cost);
     }
-    return cost;
   }
 
   /**
@@ -349,7 +347,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     _interAreaIncomingRoutes.forEach(
         (edgeId, queue) -> {
           long incrementalCost = getIncrementalCost(edgeId.getHead().getInterfaceName(), false);
-          while (queue.peek() != null) {
+          while (!queue.isEmpty()) {
             RouteAdvertisement<OspfInterAreaRoute> routeAdvertisement = queue.remove();
             transformInterAreaRouteOnImport(routeAdvertisement, incrementalCost)
                 .ifPresent(r -> interAreaDelta.from(processRouteAdvertisement(r, _interAreaRib)));
@@ -402,7 +400,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     _intraAreaIncomingRoutes.forEach(
         (edgeId, queue) -> {
           long incrementalCost = getIncrementalCost(edgeId.getHead().getInterfaceName(), false);
-          while (queue.peek() != null) {
+          while (!queue.isEmpty()) {
             RouteAdvertisement<OspfIntraAreaRoute> routeAdvertisement = queue.remove();
             intraAreaDelta.from(
                 processRouteAdvertisement(
@@ -433,6 +431,9 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                 .toBuilder()
                 .setMetric(route.getMetric() + incrementalCost)
                 .setAdmin(_process.getAdminCosts().get(route.getProtocol()))
+                // Clear any non-routing or non-forwarding bit
+                .setNonRouting(false)
+                .setNonRouting(false)
                 .build())
         .build();
   }
@@ -473,7 +474,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    * @param prefix The prefix for which to create a summary route
    * @param summary The {@link OspfAreaSummary summary configuration} (e.g., whether or not to
    *     advertise)
-   * @param areaNumber area number for which to generate the route.r
+   * @param areaNumber area number for which to generate the route
    * @return {@link Optional#empty()} if the summary is not supposed to be advertised or there are
    *     no contributing routes, otherwise an optional containing a new inter-area route
    */
@@ -505,8 +506,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                         && prefix.containsPrefix(candidateContributor.getNetwork()))
             .map(OspfRoute::getMetric);
 
-    // Use the metric as a proxy value to determine if there are any contributing values (e.g.,
-    // stream empty or not)
+    // Use the metric as a proxy value to determine if there are any contributing routes (i.e.,
+    // whether the stream is empty or not)
     Long computedMetric =
         _useMinMetricForSummaries
             ? contributingMetrics.min(Comparator.naturalOrder()).orElse(null)
@@ -597,12 +598,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
         .map(
             r ->
                 r.toBuilder()
-                    .setRoute(
-                        r.getRoute()
-                            .toBuilder()
-                            .setMetric(r.getRoute().getMetric())
-                            .setNextHopIp(nextHopIp)
-                            .build())
+                    .setRoute(r.getRoute().toBuilder().setNextHopIp(nextHopIp).build())
                     .build())
         .collect(ImmutableList.toImmutableList());
   }
@@ -791,7 +787,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    *
    * @param areaConfig {@link OspfArea} for which the ABR should consider injecting a route into
    * @param nextHopIp the next hop IP to use for the generated route
-   * @return a stream containing the default route. May be empty if there is no route to inject
+   * @return an Optional containing the default route. May be empty if no route needs to be injected
+   *     into the given area.
    */
   @Nonnull
   @VisibleForTesting

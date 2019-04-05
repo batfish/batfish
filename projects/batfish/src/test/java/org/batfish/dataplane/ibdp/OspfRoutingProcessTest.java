@@ -72,6 +72,7 @@ public class OspfRoutingProcessTest {
   private static final InterfaceAddress ACTIVE_ADDR_1 = new InterfaceAddress("2.2.2.2/24");
   private static final InterfaceAddress ACTIVE_ADDR_2 = new InterfaceAddress("3.3.3.3/24");
   private static final InterfaceAddress PASSIVE_ADDR = new InterfaceAddress("4.4.4.4/24");
+  private static final InterfaceAddress OSPF_DISABLED_ADDR = new InterfaceAddress("5.5.5.5/24");
   private static final String HOSTNAME = "r1";
   private static final String VRF_NAME = "vrf";
   private static OspfArea AREA0_CONFIG;
@@ -106,6 +107,7 @@ public class OspfRoutingProcessTest {
             .setOwner(_c)
             .setOspfProcess("1")
             .setOspfPointToPoint(true)
+            .setOspfEnabled(true)
             .setType(InterfaceType.PHYSICAL)
             .setBandwidth(1e8);
     Interface inactiveIface =
@@ -122,6 +124,13 @@ public class OspfRoutingProcessTest {
             .setOspfPassive(true)
             .setOspfPointToPoint(false)
             .build();
+    Interface ospfDisabled =
+        ib.setName("ospfDisabled")
+            .setAddress(OSPF_DISABLED_ADDR)
+            .setOspfPassive(false)
+            .setOspfPointToPoint(false)
+            .setOspfEnabled(false)
+            .build();
     AREA0_CONFIG =
         OspfArea.builder(nf)
             .setNumber(0)
@@ -130,6 +139,7 @@ public class OspfRoutingProcessTest {
                     inactiveIface.getName(),
                     activeIface.getName(),
                     passiveIface.getName(),
+                    ospfDisabled.getName(),
                     "NonExistent"))
             .build();
 
