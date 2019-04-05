@@ -19,6 +19,7 @@ public final class CumulusFamilyTest {
     CumulusFamily c1 = builder.build();
 
     new EqualsTester()
+        .addEqualityGroup(new Object())
         .addEqualityGroup(c1, c1, builder.build())
         .addEqualityGroup(
             builder.setInterfaceClagSettings(

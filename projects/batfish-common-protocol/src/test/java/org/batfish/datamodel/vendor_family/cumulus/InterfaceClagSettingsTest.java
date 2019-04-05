@@ -20,6 +20,7 @@ public final class InterfaceClagSettingsTest {
     InterfaceClagSettings c1 = builder.build();
 
     new EqualsTester()
+        .addEqualityGroup(new Object())
         .addEqualityGroup(c1, c1, builder.build())
         .addEqualityGroup(builder.setBackupIp(Ip.ZERO).build())
         .addEqualityGroup(builder.build().toString())
