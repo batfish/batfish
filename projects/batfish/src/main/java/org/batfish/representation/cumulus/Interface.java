@@ -14,6 +14,7 @@ public class Interface implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
+  private final @Nonnull InterfaceBridgeSettings _bridge;
   private @Nullable Ip _clagBackupIp;
   private @Nullable String _clagBackupIpVrf;
   private @Nullable Ip _clagPeerIp;
@@ -42,10 +43,15 @@ public class Interface implements Serializable {
       @Nullable String superInterfaceName,
       @Nullable Integer encapsulationVlan) {
     _name = name;
+    _bridge = new InterfaceBridgeSettings();
     _ipAddresses = new LinkedList<>();
     _type = type;
     _superInterfaceName = superInterfaceName;
     _encapsulationVlan = encapsulationVlan;
+  }
+
+  public @Nonnull InterfaceBridgeSettings getBridge() {
+    return _bridge;
   }
 
   public @Nullable Ip getClagBackupIp() {

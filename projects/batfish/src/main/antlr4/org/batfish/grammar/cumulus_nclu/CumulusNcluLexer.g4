@@ -336,6 +336,11 @@ PTP
   'ptp'
 ;
 
+PVID
+:
+  'pvid'
+;
+
 REDISTRIBUTE
 :
   'redistribute'
@@ -911,7 +916,7 @@ M_Printf_NEWLINE
 
 M_Printf_USERNAME
 :
-  'username' -> type (USERNAME)
+  'username' -> type ( USERNAME )
 ;
 
 M_Printf_WORD

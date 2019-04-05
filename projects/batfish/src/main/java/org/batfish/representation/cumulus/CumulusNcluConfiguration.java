@@ -53,6 +53,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   private @Nullable BgpProcess _bgpProcess;
   private final @Nonnull Map<String, Bond> _bonds;
+  private final @Nonnull Bridge _bridge;
   private transient Configuration _c;
   private @Nullable String _hostname;
   private final @Nonnull Map<String, Interface> _interfaces;
@@ -67,6 +68,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
   public CumulusNcluConfiguration() {
     _bonds = new HashMap<>();
+    _bridge = new Bridge();
     _interfaces = new HashMap<>();
     _ipv4Nameservers = new LinkedList<>();
     _ipv6Nameservers = new LinkedList<>();
@@ -262,6 +264,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     return _bonds;
   }
 
+  public @Nonnull Bridge getBridge() {
+    return _bridge;
+  }
+
   @Override
   public @Nullable String getHostname() {
     return _hostname;
@@ -317,6 +323,15 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     markAbstractStructure(
         CumulusStructureType.ABSTRACT_INTERFACE,
         CumulusStructureUsage.BGP_NEIGHBOR_INTERFACE,
+        ImmutableSet.of(
+            CumulusStructureType.BOND,
+            CumulusStructureType.INTERFACE,
+            CumulusStructureType.LOOPBACK,
+            CumulusStructureType.VLAN,
+            CumulusStructureType.VRF));
+    markAbstractStructure(
+        CumulusStructureType.ABSTRACT_INTERFACE,
+        CumulusStructureUsage.BRIDGE_PORT,
         ImmutableSet.of(
             CumulusStructureType.BOND,
             CumulusStructureType.INTERFACE,

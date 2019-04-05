@@ -13,6 +13,7 @@ public class InterfaceBridgeSettings implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private @Nullable Integer _access;
+  private @Nullable Integer _pvid;
   private @Nonnull IntegerSpace _vids;
 
   public InterfaceBridgeSettings() {
@@ -25,8 +26,18 @@ public class InterfaceBridgeSettings implements Serializable {
   }
 
   /**
+   * Native trunk (untagged) VLAN ID if interface is in trunk mode. If {@link #getAccess} and {@link
+   * #getPvid} are both {@code null}, and interface is in {@link Bridge#getPorts}, then value from
+   * {@link Bridge#getPvid()} should be used.
+   */
+  public Integer getPvid() {
+    return _pvid;
+  }
+
+  /**
    * Returns trunk (tagged) VLAN IDs if interface is in trunk mode, or else an empty {@link
-   * IntegerSpace}.
+   * IntegerSpace}. If {@link #getAccess} is {@code null}, {@link #getVids} is empty, and interface
+   * is in {@link Bridge#getPorts}, then value from {@link Bridge#getVids()} should be used.
    */
   public @Nonnull IntegerSpace getVids() {
     return _vids;
@@ -38,8 +49,19 @@ public class InterfaceBridgeSettings implements Serializable {
    * @throws IllegalStateException if trunk VIDs present
    */
   public void setAccess(@Nullable Integer access) {
+    checkState(_pvid == null, "Cannot set access VLAN ID when pvid (native VLAN) already set.");
     checkState(_vids.isEmpty(), "Cannot set access VLAN ID when trunk VIDs already present.");
     _access = access;
+  }
+
+  /**
+   * Sets native trunk (untagged) VLAN ID.
+   *
+   * @throws IllegalStateException if access VLAN ID already set.
+   */
+  public void setPvid(Integer pvid) {
+    checkState(_access == null, "Cannot set native VLAN ID when access VLAN ID already set.");
+    _pvid = pvid;
   }
 
   /**

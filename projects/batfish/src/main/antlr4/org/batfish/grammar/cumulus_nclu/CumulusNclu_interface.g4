@@ -20,12 +20,27 @@ a_interface
 
 i_bridge
 :
-  BRIDGE ib_access
+  BRIDGE
+  (
+    ib_access
+    | ib_pvid
+    | ib_vids
+  )
 ;
 
 ib_access
 :
   ACCESS vlan = vlan_id NEWLINE
+;
+
+ib_pvid
+:
+  PVID id = vlan_id NEWLINE
+;
+
+ib_vids
+:
+  VIDS vlans = vlan_range_set NEWLINE
 ;
 
 i_clag
