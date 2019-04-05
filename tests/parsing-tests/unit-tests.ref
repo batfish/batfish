@@ -74102,7 +74102,7 @@
         "community-name-numbers_dos" : "PASSED",
         "community_list_named" : "PASSED",
         "community_set" : "PASSED",
-        "cumulus_nclu" : "PASSED",
+        "cumulus_nclu" : "WARNINGS",
         "cumulus_nclu_invalid_bonds" : "PASSED",
         "cumulus_nclu_invalid_interfaces" : "PASSED",
         "cumulus_nclu_invalid_vrfs" : "PASSED",
@@ -87106,6 +87106,26 @@
             {
               "tag" : "1",
               "text" : "Multiple OSPF processes are not supported, choosing the last defined OSPF process with id %s"
+            }
+          ]
+        },
+        "cumulus_nclu" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Do not support VLAN switching options for for non-'bridge bridge' port: 'swp2'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Do not support VLAN switching options for for non-'bridge bridge' port: 'swp1'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Do not support VLAN switching options for for non-'bridge bridge' port: 'bond2'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Do not support VLAN switching options for for non-'bridge bridge' port: 'bond1'"
             }
           ]
         },

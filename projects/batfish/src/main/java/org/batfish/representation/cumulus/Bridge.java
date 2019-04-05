@@ -18,6 +18,7 @@ public class Bridge implements Serializable {
   public Bridge() {
     _ports = ImmutableSet.of();
     _pvid = 1;
+    _vids = IntegerSpace.EMPTY;
   }
 
   /** Bridged ports */

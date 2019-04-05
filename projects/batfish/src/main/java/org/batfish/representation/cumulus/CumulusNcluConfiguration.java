@@ -1,5 +1,6 @@
 package org.batfish.representation.cumulus;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Comparator.naturalOrder;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -78,6 +79,36 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     _vlans = new HashMap<>();
     _vrfs = new HashMap<>();
     _vxlans = new HashMap<>();
+  }
+
+  private void applyBridgeSettings(
+      InterfaceBridgeSettings bridge, org.batfish.datamodel.Interface newIface) {
+    String name = newIface.getName();
+    Integer access = bridge.getAccess();
+    Integer ifacePvid = bridge.getPvid();
+    IntegerSpace ifaceVids = bridge.getVids();
+    if (!_bridge.getPorts().contains(name)) {
+      if (access != null || ifacePvid != null || !ifaceVids.isEmpty()) {
+        _w.redFlag(
+            String.format(
+                "Do not support VLAN switching options for for non-'bridge bridge' port: '%s'",
+                name));
+      }
+      return;
+    }
+    newIface.setSwitchport(true);
+    if (access != null) {
+      // access
+      newIface.setSwitchportMode(SwitchportMode.ACCESS);
+      newIface.setAccessVlan(access);
+      return;
+    }
+    // trunk
+    newIface.setSwitchportMode(SwitchportMode.TRUNK);
+    int nativeVlan = firstNonNull(ifacePvid, _bridge.getPvid());
+    newIface.setNativeVlan(nativeVlan);
+    newIface.setAllowedVlans(
+        (!ifaceVids.isEmpty() ? ifaceVids : _bridge.getVids()).union(IntegerSpace.of(nativeVlan)));
   }
 
   private void applyCommonInterfaceSettings(
@@ -406,17 +437,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .map(slave -> new Dependency(slave, DependencyType.AGGREGATE))
             .collect(ImmutableSet.toImmutableSet()));
 
-    Integer accessVlan = bond.getBridge().getAccess();
-    IntegerSpace allowedVlans = bond.getBridge().getVids();
-    if (accessVlan != null) {
-      newIface.setSwitchport(true);
-      newIface.setSwitchportMode(SwitchportMode.ACCESS);
-      newIface.setAccessVlan(accessVlan);
-    } else if (!allowedVlans.isEmpty()) {
-      newIface.setSwitchport(true);
-      newIface.setSwitchportMode(SwitchportMode.TRUNK);
-      newIface.setAllowedVlans(allowedVlans);
-    }
+    applyBridgeSettings(bond.getBridge(), newIface);
 
     newIface.setActive(true);
     if (!bond.getIpAddresses().isEmpty()) {
@@ -434,6 +455,9 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     org.batfish.datamodel.Interface newIface =
         new org.batfish.datamodel.Interface(name, _c, InterfaceType.PHYSICAL);
     applyCommonInterfaceSettings(iface, newIface);
+
+    applyBridgeSettings(iface.getBridge(), newIface);
+
     return newIface;
   }
 

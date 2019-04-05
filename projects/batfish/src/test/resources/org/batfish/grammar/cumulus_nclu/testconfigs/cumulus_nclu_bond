@@ -8,5 +8,6 @@ net add bond bond1 clag id 1
 net add bond bond2 bridge vids 3,4-5
 net add bond bond3 ip address 192.0.2.1/24
 net add bond bond3 vrf vrf1
+net add bridge bridge ports bond1-2
 #
 net commit
