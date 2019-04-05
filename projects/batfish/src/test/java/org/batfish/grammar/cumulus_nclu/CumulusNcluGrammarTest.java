@@ -12,6 +12,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDependencies;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMlagId;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
@@ -289,7 +290,12 @@ public final class CumulusNcluGrammarTest {
     // bond2
     assertThat(c, hasInterface("bond2", isSwitchport()));
     assertThat(c, hasInterface("bond2", hasSwitchPortMode(SwitchportMode.TRUNK)));
-    assertThat(c, hasInterface("bond2", hasAllowedVlans(IntegerSpace.of(new SubRange(3, 5)))));
+    assertThat(
+        c,
+        hasInterface(
+            "bond2",
+            hasAllowedVlans(
+                IntegerSpace.builder().including(1).including(new SubRange(3, 5)).build())));
     assertThat(c, hasInterface("bond2", isActive(false)));
     assertThat(c, hasInterface("bond2", hasVrfName(DEFAULT_VRF_NAME)));
 
@@ -350,20 +356,69 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
-  public void testClagConversion() throws IOException {
-    Configuration c = parseConfig("cumulus_nclu_clag");
+  public void testBridgeConversion() throws IOException {
+    Configuration c = parseConfig("cumulus_nclu_bridge");
 
-    assertThat(
-        c.getMlags(),
-        equalTo(
-            ImmutableMap.of(
-                CUMULUS_CLAG_DOMAIN_ID,
-                Mlag.builder()
-                    .setId(CUMULUS_CLAG_DOMAIN_ID)
-                    .setLocalInterface("peerlink.4094")
-                    .setPeerAddress(Ip.parse("192.0.2.2"))
-                    .setPeerInterface("peerlink")
-                    .build())));
+    IntegerSpace bridgeVlans =
+        IntegerSpace.builder().including(Range.closed(1, 7)).including(1000).build();
+
+    //// bond
+    org.batfish.datamodel.Interface bond1 = c.getAllInterfaces().get("bond1");
+    org.batfish.datamodel.Interface bond2 = c.getAllInterfaces().get("bond2");
+    org.batfish.datamodel.Interface bond3 = c.getAllInterfaces().get("bond3");
+    org.batfish.datamodel.Interface bond4 = c.getAllInterfaces().get("bond4");
+
+    // bond1 is in access mode using VLAN 1000
+    assertThat(bond1, isSwitchport());
+    assertThat(bond1, hasSwitchPortMode(SwitchportMode.ACCESS));
+    assertThat(bond1, hasAccessVlan(1000));
+
+    // bond2 is in trunk mode with native vlan 1, allowed vlans 1-7,1000 (inherited)
+    assertThat(bond2, isSwitchport());
+    assertThat(bond2, hasSwitchPortMode(SwitchportMode.TRUNK));
+    assertThat(bond2, hasNativeVlan(1));
+    assertThat(bond2, hasAllowedVlans(bridgeVlans));
+
+    // bond3 is in trunk mode with native vlan 2 (inherited), allowed vlans 2,3 (pvid 2, vids 3)
+    assertThat(bond3, isSwitchport());
+    assertThat(bond3, hasSwitchPortMode(SwitchportMode.TRUNK));
+    assertThat(bond3, hasNativeVlan(2));
+    assertThat(bond3, hasAllowedVlans(IntegerSpace.of(Range.closed(2, 3))));
+
+    // bond4 is not a switchport
+    assertThat(bond4, isSwitchport(false));
+    assertThat(bond4, hasSwitchPortMode(SwitchportMode.NONE));
+    assertThat(bond4, hasNativeVlan(nullValue()));
+    assertThat(bond4, hasAllowedVlans(equalTo(IntegerSpace.EMPTY)));
+
+    // swp
+    org.batfish.datamodel.Interface swp5 = c.getAllInterfaces().get("swp5");
+    org.batfish.datamodel.Interface swp6 = c.getAllInterfaces().get("swp6");
+    org.batfish.datamodel.Interface swp7 = c.getAllInterfaces().get("swp7");
+    org.batfish.datamodel.Interface swp8 = c.getAllInterfaces().get("swp8");
+
+    // swp5 is in access mode using VLAN 1000
+    assertThat(swp5, isSwitchport());
+    assertThat(swp5, hasSwitchPortMode(SwitchportMode.ACCESS));
+    assertThat(swp5, hasAccessVlan(1000));
+
+    // swp6 is in trunk mode with native vlan 1, allowed vlans 1-7,1000 (inherited)
+    assertThat(swp6, isSwitchport());
+    assertThat(swp6, hasSwitchPortMode(SwitchportMode.TRUNK));
+    assertThat(swp6, hasNativeVlan(1));
+    assertThat(swp6, hasAllowedVlans(bridgeVlans));
+
+    // swp7 is in trunk mode with native vlan 2 (inherited), allowed vlans 2,7 (pvid 2, vids 7)
+    assertThat(swp7, isSwitchport());
+    assertThat(swp7, hasSwitchPortMode(SwitchportMode.TRUNK));
+    assertThat(swp7, hasNativeVlan(2));
+    assertThat(swp7, hasAllowedVlans(IntegerSpace.builder().including(2).including(7).build()));
+
+    // swp8 is not a switchport
+    assertThat(swp8, isSwitchport(false));
+    assertThat(swp8, hasSwitchPortMode(SwitchportMode.NONE));
+    assertThat(swp8, hasNativeVlan(nullValue()));
+    assertThat(swp8, hasAllowedVlans(equalTo(IntegerSpace.EMPTY)));
   }
 
   @Test
@@ -421,6 +476,23 @@ public final class CumulusNcluGrammarTest {
     assertThat("swp8 has no access VLAN", swp8.getBridge().getAccess(), nullValue());
     assertTrue("swp8 has no vids", swp8.getBridge().getVids().isEmpty());
     assertThat("swp8 has no pvid", swp8.getBridge().getPvid(), nullValue());
+  }
+
+  @Test
+  public void testClagConversion() throws IOException {
+    Configuration c = parseConfig("cumulus_nclu_clag");
+
+    assertThat(
+        c.getMlags(),
+        equalTo(
+            ImmutableMap.of(
+                CUMULUS_CLAG_DOMAIN_ID,
+                Mlag.builder()
+                    .setId(CUMULUS_CLAG_DOMAIN_ID)
+                    .setLocalInterface("peerlink.4094")
+                    .setPeerAddress(Ip.parse("192.0.2.2"))
+                    .setPeerInterface("peerlink")
+                    .build())));
   }
 
   @Test
