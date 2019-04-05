@@ -1,10 +1,8 @@
 package org.batfish.dataplane.ibdp;
 
-import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
-import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.isNonRouting;
 import static org.batfish.dataplane.ibdp.OspfRoutingProcess.computeDefaultInterAreaRouteToInject;
 import static org.batfish.dataplane.ibdp.OspfRoutingProcess.convertAndFilterIntraAreaRoutesToPropagate;
 import static org.batfish.dataplane.ibdp.OspfRoutingProcess.filterInterAreaRoutesToPropagateAtABR;
@@ -32,6 +30,7 @@ import com.google.common.graph.ValueGraphBuilder;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -78,6 +77,10 @@ public class OspfRoutingProcessTest {
   private static OspfArea AREA0_CONFIG;
   private final OspfTopology _emptyOspfTopology =
       new OspfTopology(ValueGraphBuilder.directed().build());
+  private static final String INACTIVE_IFACE_NAME = "inactive";
+  private static final String PASSIVE_IFACE_NAME = "passive";
+  private static final String ACTIVE_IFACE_NAME = "active";
+  private static final String OSPF_DISABLED_IFACE_NAME = "ospfDisabled";
   private OspfRoutingProcess _routingProcess;
   private Configuration _c;
   // Non-default, distinctive costs
@@ -111,21 +114,25 @@ public class OspfRoutingProcessTest {
             .setType(InterfaceType.PHYSICAL)
             .setBandwidth(1e8);
     Interface inactiveIface =
-        ib.setActive(false).setName("inactive").setAddress(INACTIVE_ADDR).setOspfCost(10).build();
+        ib.setActive(false)
+            .setName(INACTIVE_IFACE_NAME)
+            .setAddress(INACTIVE_ADDR)
+            .setOspfCost(10)
+            .build();
     ib.setActive(true);
     Interface activeIface =
-        ib.setName("active")
+        ib.setName(ACTIVE_IFACE_NAME)
             .setAddresses(ACTIVE_ADDR_1, ACTIVE_ADDR_2)
             .setOspfPointToPoint(true)
             .build();
     Interface passiveIface =
-        ib.setName("passive")
+        ib.setName(PASSIVE_IFACE_NAME)
             .setAddress(PASSIVE_ADDR)
             .setOspfPassive(true)
             .setOspfPointToPoint(false)
             .build();
     Interface ospfDisabled =
-        ib.setName("ospfDisabled")
+        ib.setName(OSPF_DISABLED_IFACE_NAME)
             .setAddress(OSPF_DISABLED_ADDR)
             .setOspfPassive(false)
             .setOspfPointToPoint(false)
@@ -143,20 +150,22 @@ public class OspfRoutingProcessTest {
                     "NonExistent"))
             .build();
 
+    OspfArea area1Config = OspfArea.builder().setNumber(1).build();
+
     OspfProcess ospfProcess =
         nf.ospfProcessBuilder()
             .setProcessId("1")
             .setReferenceBandwidth(10e9)
             .setVrf(vrf)
-            .setAreas(ImmutableSortedMap.of(0L, AREA0_CONFIG))
+            .setAreas(ImmutableSortedMap.of(0L, AREA0_CONFIG, 1L, area1Config))
             .setAdminCosts(ADMIN_COSTS)
             .setNeighbors(
                 ImmutableMap.of(
-                    "active",
+                    ACTIVE_IFACE_NAME,
                     OspfNeighborConfig.builder()
                         .setHostname(HOSTNAME)
                         .setVrfName(VRF_NAME)
-                        .setInterfaceName("active")
+                        .setInterfaceName(ACTIVE_IFACE_NAME)
                         .setArea(0L)
                         .build()))
             .build();
@@ -166,7 +175,7 @@ public class OspfRoutingProcessTest {
   private OspfTopology nonEmptyOspfTopology() {
     MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> graph =
         ValueGraphBuilder.directed().build();
-    OspfNeighborConfigId c1 = new OspfNeighborConfigId(HOSTNAME, VRF_NAME, "1", "active");
+    OspfNeighborConfigId c1 = new OspfNeighborConfigId(HOSTNAME, VRF_NAME, "1", ACTIVE_IFACE_NAME);
     OspfNeighborConfigId c2 = new OspfNeighborConfigId("r2", VRF_NAME, "1", "someIface");
     // Add edges both directions
     graph.putEdgeValue(
@@ -217,7 +226,8 @@ public class OspfRoutingProcessTest {
 
     /*
       Requirements:
-    - Must skip disabled interface
+    - Must skip inactive interface
+    - Must skip OSPF disabled interface
     - Must include OSPF passive interface
     - Must include all addresses from active interface
     */
@@ -232,7 +242,7 @@ public class OspfRoutingProcessTest {
   @Test
   public void testGetIncrementalCost() {
     // Default behavior
-    assertThat(_routingProcess.getIncrementalCost("active", false), equalTo(10L));
+    assertThat(_routingProcess.getIncrementalCost(ACTIVE_IFACE_NAME, false), equalTo(10L));
 
     // Overriden behavior for transit links
     final long overrideMetric = 8888L;
@@ -245,18 +255,18 @@ public class OspfRoutingProcessTest {
 
     assertThat(
         new OspfRoutingProcess(ospfProcess.build(), VRF_NAME, _c, _emptyOspfTopology)
-            .getIncrementalCost("active", false),
+            .getIncrementalCost(ACTIVE_IFACE_NAME, false),
         equalTo(overrideMetric));
 
     // Overriden behavior for stub links
     ospfProcess.setMaxMetricTransitLinks(null).setMaxMetricStubNetworks(overrideMetric);
     assertThat(
         new OspfRoutingProcess(ospfProcess.build(), VRF_NAME, _c, _emptyOspfTopology)
-            .getIncrementalCost("active", false),
+            .getIncrementalCost(ACTIVE_IFACE_NAME, false),
         equalTo(10L));
     assertThat(
         new OspfRoutingProcess(ospfProcess.build(), VRF_NAME, _c, _emptyOspfTopology)
-            .getIncrementalCost("active", true),
+            .getIncrementalCost(ACTIVE_IFACE_NAME, true),
         equalTo(overrideMetric));
     assertThat(
         new OspfRoutingProcess(ospfProcess.build(), VRF_NAME, _c, _emptyOspfTopology)
@@ -310,7 +320,7 @@ public class OspfRoutingProcessTest {
   @Test
   public void testUpdateTopology() {
     _routingProcess.updateTopology(nonEmptyOspfTopology());
-    OspfNeighborConfigId n1 = new OspfNeighborConfigId(HOSTNAME, VRF_NAME, "1", "active");
+    OspfNeighborConfigId n1 = new OspfNeighborConfigId(HOSTNAME, VRF_NAME, "1", ACTIVE_IFACE_NAME);
     OspfNeighborConfigId n2 = new OspfNeighborConfigId("r2", VRF_NAME, "1", "someIface");
 
     // Both of these should not crash because new message queues exist now
@@ -321,7 +331,7 @@ public class OspfRoutingProcessTest {
   @Test
   public void updateTopologyIsNonDestructive() {
     _routingProcess.updateTopology(nonEmptyOspfTopology());
-    OspfNeighborConfigId n1 = new OspfNeighborConfigId(HOSTNAME, VRF_NAME, "1", "active");
+    OspfNeighborConfigId n1 = new OspfNeighborConfigId(HOSTNAME, VRF_NAME, "1", ACTIVE_IFACE_NAME);
     OspfNeighborConfigId n2 = new OspfNeighborConfigId("r2", VRF_NAME, "1", "someIface");
     _routingProcess.enqueueMessagesIntra(
         OspfTopology.makeEdge(n2, n1),
@@ -339,42 +349,48 @@ public class OspfRoutingProcessTest {
   }
 
   @Test
-  public void testProcessIntraAreaRouteOnImport() {
+  public void testTransformIntraAreaRouteOnImport() {
+    final OspfIntraAreaRoute.Builder builder =
+        OspfIntraAreaRoute.builder()
+            .setArea(0)
+            .setNetwork(Prefix.parse("1.1.1.1/29"))
+            .setMetric(1)
+            .setNonRouting(true)
+            .setNextHopIp(Ip.parse("8.8.8.8"));
     RouteAdvertisement<OspfIntraAreaRoute> transformed =
         _routingProcess.transformIntraAreaRouteOnImport(
-            new RouteAdvertisement<>(
-                OspfIntraAreaRoute.builder()
-                    .setArea(0)
-                    .setNetwork(Prefix.ZERO)
-                    .setMetric(1)
-                    .setNextHopIp(Ip.parse("8.8.8.8"))
-                    .build()),
-            10);
-
-    // Update metric, admin
-    assertThat(transformed.getRoute(), allOf(hasMetric(11L), hasAdministrativeCost(equalTo(100))));
-  }
-
-  @Test
-  public void testProcessInterAreaRouteOnImport() {
-    RouteAdvertisement<OspfInterAreaRoute> transformed =
-        _routingProcess
-            .transformInterAreaRouteOnImport(
-                new RouteAdvertisement<>(
-                    OspfInterAreaRoute.builder()
-                        .setArea(0)
-                        .setNetwork(Prefix.ZERO)
-                        .setMetric(1)
-                        .setNonRouting(true)
-                        .setNextHopIp(Ip.parse("8.8.8.8"))
-                        .build()),
-                10)
-            .get();
+            new RouteAdvertisement<>(builder.build()), 10);
 
     // Update metric, admin, clear non-routing bit
     assertThat(
         transformed.getRoute(),
-        allOf(hasMetric(11L), hasAdministrativeCost(equalTo(200)), isNonRouting(false)));
+        equalTo(builder.setMetric(11L).setAdmin(100).setNonRouting(false).build()));
+  }
+
+  @Test
+  public void testTransformInterAreaRouteOnImport() {
+    final OspfInterAreaRoute.Builder builder =
+        OspfInterAreaRoute.builder()
+            .setArea(0)
+            .setNetwork(Prefix.ZERO)
+            .setMetric(1)
+            .setNonRouting(true)
+            .setNextHopIp(Ip.parse("8.8.8.8"));
+
+    Optional<RouteAdvertisement<OspfInterAreaRoute>> transformed =
+        _routingProcess.transformInterAreaRouteOnImport(
+            new RouteAdvertisement<>(builder.build()), 10);
+    assertFalse("Default route rejected by ABR", transformed.isPresent());
+
+    // Non-default route
+    builder.setNetwork(Prefix.parse("1.1.1.1/29"));
+    transformed =
+        _routingProcess.transformInterAreaRouteOnImport(
+            new RouteAdvertisement<>(builder.build()), 10);
+    // Update metric, admin, clear non-routing bit
+    assertThat(
+        transformed.get().getRoute(),
+        equalTo(builder.setMetric(11L).setAdmin(200).setNonRouting(false).build()));
   }
 
   @Test
@@ -592,7 +608,6 @@ public class OspfRoutingProcessTest {
         contains(
             hasRoute(
                 allOf(
-                    instanceOf(OspfInterAreaRoute.class),
                     hasPrefix(route0.getNetwork()),
                     hasNextHopIp(equalTo(nextHopIp)),
                     hasMetric(route0.getMetric())))));
@@ -604,7 +619,6 @@ public class OspfRoutingProcessTest {
         contains(
             hasRoute(
                 allOf(
-                    instanceOf(OspfInterAreaRoute.class),
                     hasPrefix(route0.getNetwork()),
                     hasNextHopIp(equalTo(nextHopIp)),
                     hasMetric(999L)))));
@@ -639,7 +653,6 @@ public class OspfRoutingProcessTest {
         contains(
             hasRoute(
                 allOf(
-                    instanceOf(OspfIntraAreaRoute.class),
                     hasPrefix(route0.getNetwork()),
                     hasNextHopIp(equalTo(nextHopIp)),
                     hasMetric(route0.getMetric())))));
