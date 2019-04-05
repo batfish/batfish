@@ -78,7 +78,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private final @Nonnull Set<StaticRoute> _staticRoutes;
   private final @Nonnull Map<String, Vlan> _vlans;
   private final @Nonnull Map<String, Vrf> _vrfs;
-
   private final @Nonnull Map<String, Vxlan> _vxlans;
 
   public CumulusNcluConfiguration() {
