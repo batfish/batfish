@@ -34,7 +34,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_bgpContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_bondContext;
-import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_bridgeContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_dot1xContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_hostnameContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_interfaceContext;
@@ -60,11 +59,16 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ble_advertise_ipv4_uni
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bn_interfaceContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bni_remote_as_externalContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bob_accessContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bob_pvidContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bob_vidsContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bobo_slavesContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bond_clag_idContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bond_ip_addressContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bond_vrfContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Brbr_portsContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Brbr_pvidContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Brbr_vidsContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Brbr_vlan_awareContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Cumulus_nclu_configurationContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Dn4Context;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Dn6Context;
@@ -76,6 +80,9 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.GlobContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Glob_range_setContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.I_ip_addressContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.I_vrfContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ib_accessContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ib_pvidContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ib_vidsContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ic_backup_ipContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ic_peer_ipContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ic_priorityContext;
@@ -666,11 +673,6 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   }
 
   @Override
-  public void exitA_bridge(A_bridgeContext ctx) {
-    todo(ctx);
-  }
-
-  @Override
   public void exitA_dot1x(A_dot1xContext ctx) {
     todo(ctx);
   }
@@ -805,6 +807,11 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   }
 
   @Override
+  public void exitBob_pvid(Bob_pvidContext ctx) {
+    _currentBond.getBridge().setPvid(toInteger(ctx.id));
+  }
+
+  @Override
   public void exitBob_vids(Bob_vidsContext ctx) {
     _currentBond.getBridge().setVids(IntegerSpace.of(toRangeSet(ctx.vlans)));
   }
@@ -835,6 +842,44 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
       return;
     }
     _currentBond.setVrf(vrf);
+  }
+
+  @Override
+  public void exitBrbr_ports(Brbr_portsContext ctx) {
+    Set<String> ports = toStrings(ctx.ports);
+    List<String> subinterfaces =
+        ports.stream()
+            .filter(port -> SUBINTERFACE_PATTERN.matcher(port).matches())
+            .collect(ImmutableList.toImmutableList());
+    if (!subinterfaces.isEmpty()) {
+      _w.redFlag(
+          String.format(
+              "Cannot add subinterfaces: %s to bridge in: %s", subinterfaces, getFullText(ctx)));
+      return;
+    }
+    if (!referenceAbstractInterfaces(ports, ctx, CumulusStructureUsage.BRIDGE_PORT)) {
+      _w.redFlag(
+          String.format(
+              "Cannot add illegal ports glob '%s' to bridge in: %s",
+              ctx.ports.getText(), getFullText(ctx)));
+      return;
+    }
+    _c.getBridge().setPorts(ports);
+  }
+
+  @Override
+  public void exitBrbr_pvid(Brbr_pvidContext ctx) {
+    _c.getBridge().setPvid(toInteger(ctx.pvid));
+  }
+
+  @Override
+  public void exitBrbr_vids(Brbr_vidsContext ctx) {
+    _c.getBridge().setVids(IntegerSpace.of(toRangeSet(ctx.ids)));
+  }
+
+  @Override
+  public void exitBrbr_vlan_aware(Brbr_vlan_awareContext ctx) {
+    todo(ctx);
   }
 
   @Override
@@ -879,6 +924,22 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
         iface -> {
           iface.setVrf(vrf);
         });
+  }
+
+  @Override
+  public void exitIb_access(Ib_accessContext ctx) {
+    _currentInterfaces.forEach(iface -> iface.getBridge().setAccess(toInteger(ctx.vlan)));
+  }
+
+  @Override
+  public void exitIb_pvid(Ib_pvidContext ctx) {
+    _currentInterfaces.forEach(iface -> iface.getBridge().setPvid(toInteger(ctx.id)));
+  }
+
+  @Override
+  public void exitIb_vids(Ib_vidsContext ctx) {
+    _currentInterfaces.forEach(
+        iface -> iface.getBridge().setVids(IntegerSpace.of(toRangeSet(ctx.vlans))));
   }
 
   @Override
@@ -1201,7 +1262,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   /**
    * Attempt to add references to named abstract interfaces of type 'bond', 'interface', 'loopback'
-   * 'vlan', 'vrf'. Any non-existent interface will be created if its name is valid for an
+   * 'vlan', 'vrf', 'vxlan'. Any non-existent interface will be created if its name is valid for an
    * 'interface'-type interface.
    *
    * @return {@code false} iff some name in {@code names} does not correspond to an existing
@@ -1214,12 +1275,11 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
             .filter(not(_c.getBonds()::containsKey))
             .filter(not(_c.getVlans()::containsKey))
             .filter(not(_c.getVrfs()::containsKey))
+            .filter(not(_c.getVxlans()::containsKey))
             .filter(not("lo"::equals))
             .collect(ImmutableSet.toImmutableSet());
     if (!potentialInterfaceNames.isEmpty()
-        && initInterfacesIfAbsent(
-                potentialInterfaceNames, ctx, CumulusStructureUsage.ROUTE_MAP_MATCH_INTERFACE)
-            .isEmpty()) {
+        && initInterfacesIfAbsent(potentialInterfaceNames, ctx, usage).isEmpty()) {
       return false;
     }
     int line = ctx.getStart().getLine();

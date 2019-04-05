@@ -77,6 +77,7 @@ import org.batfish.representation.cumulus.CumulusInterfaceType;
 import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusRoutingProtocol;
 import org.batfish.representation.cumulus.CumulusStructureType;
+import org.batfish.representation.cumulus.Interface;
 import org.batfish.representation.cumulus.RemoteAsType;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapMatchInterface;
@@ -344,7 +345,7 @@ public final class CumulusNcluGrammarTest {
     ConvertConfigurationAnswerElement ans =
         getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
 
-    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.BOND, "bond1", 2));
+    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.BOND, "bond1", 3));
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "bond2.4094", 2));
   }
 
@@ -363,6 +364,63 @@ public final class CumulusNcluGrammarTest {
                     .setPeerAddress(Ip.parse("192.0.2.2"))
                     .setPeerInterface("peerlink")
                     .build())));
+  }
+
+  @Test
+  public void testBridgeExtraction() throws IOException {
+    CumulusNcluConfiguration vc = parseVendorConfig("cumulus_nclu_bridge");
+
+    // bridge
+    assertThat(
+        vc.getBridge().getPorts(),
+        containsInAnyOrder("bond1", "bond2", "bond3", "swp5", "swp6", "swp7", "vni10001"));
+    assertThat(vc.getBridge().getPvid(), equalTo(2));
+    assertThat(
+        vc.getBridge().getVids(),
+        equalTo(IntegerSpace.builder().including(Range.closed(1, 7)).including(1000).build()));
+
+    // bond
+    Bond bond1 = vc.getBonds().get("bond1");
+    Bond bond2 = vc.getBonds().get("bond2");
+    Bond bond3 = vc.getBonds().get("bond3");
+    Bond bond4 = vc.getBonds().get("bond4");
+
+    assertThat(
+        "bond1 is in access mode using VLAN 1000", bond1.getBridge().getAccess(), equalTo(1000));
+    assertTrue("bond1 has no vids", bond1.getBridge().getVids().isEmpty());
+    assertThat("bond1 has no pvid", bond1.getBridge().getPvid(), nullValue());
+    assertThat("bond2 has no access VLAN", bond2.getBridge().getAccess(), nullValue());
+    assertTrue("bond2 has no vids (inherits from bridge)", bond2.getBridge().getVids().isEmpty());
+    assertThat("bond2 has manual pvid 1", bond2.getBridge().getPvid(), equalTo(1));
+    assertThat("bond3 has no access VLAN", bond3.getBridge().getAccess(), nullValue());
+    assertThat(
+        "bond3 has has manual vids 3", bond3.getBridge().getVids(), equalTo(IntegerSpace.of(3)));
+    assertThat(
+        "bond3 has no pvid (inherits from bridge)", bond3.getBridge().getPvid(), nullValue());
+    assertThat("bond4 has no access VLAN", bond4.getBridge().getAccess(), nullValue());
+    assertTrue("bond4 has no vids", bond4.getBridge().getVids().isEmpty());
+    assertThat("bond4 has no pvid", bond4.getBridge().getPvid(), nullValue());
+
+    // swp
+    Interface swp5 = vc.getInterfaces().get("swp5");
+    Interface swp6 = vc.getInterfaces().get("swp6");
+    Interface swp7 = vc.getInterfaces().get("swp7");
+    Interface swp8 = vc.getInterfaces().get("swp8");
+
+    assertThat(
+        "swp5 is in access mode using VLAN 1000", swp5.getBridge().getAccess(), equalTo(1000));
+    assertTrue("swp5 has no vids", swp5.getBridge().getVids().isEmpty());
+    assertThat("swp5 has no pvid", swp5.getBridge().getPvid(), nullValue());
+    assertThat("swp6 has no access VLAN", swp6.getBridge().getAccess(), nullValue());
+    assertTrue("swp6 has no vids (inherits from bridge)", swp6.getBridge().getVids().isEmpty());
+    assertThat("swp6 has manual pvid 1", swp6.getBridge().getPvid(), equalTo(1));
+    assertThat("swp7 has no access VLAN", swp7.getBridge().getAccess(), nullValue());
+    assertThat(
+        "swp7 has has manual vids 7", swp7.getBridge().getVids(), equalTo(IntegerSpace.of(7)));
+    assertThat("swp7 has no pvid (inherits from bridge)", swp7.getBridge().getPvid(), nullValue());
+    assertThat("swp8 has no access VLAN", swp8.getBridge().getAccess(), nullValue());
+    assertTrue("swp8 has no vids", swp8.getBridge().getVids().isEmpty());
+    assertThat("swp8 has no pvid", swp8.getBridge().getPvid(), nullValue());
   }
 
   @Test
@@ -556,7 +614,7 @@ public final class CumulusNcluGrammarTest {
     ConvertConfigurationAnswerElement ans =
         getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
 
-    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "swp1", 3));
+    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "swp1", 4));
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "swp2", 1));
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.INTERFACE, "swp3", 1));
   }
@@ -950,5 +1008,15 @@ public final class CumulusNcluGrammarTest {
     assertThat(vc.getVxlans().get("v8").getLocalTunnelip(), equalTo(expectedLocalTunnelip));
     assertThat(vc.getVxlans().get("v9").getLocalTunnelip(), nullValue()); // missing
     assertThat(vc.getVxlans().get("v10").getLocalTunnelip(), equalTo(expectedLocalTunnelip));
+  }
+
+  @Test
+  public void testVxlanReferences() throws IOException {
+    String hostname = "cumulus_nclu_vxlan_references";
+    String filename = String.format("configs/%s", hostname);
+    ConvertConfigurationAnswerElement ans =
+        getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VXLAN, "v2", 1));
   }
 }
