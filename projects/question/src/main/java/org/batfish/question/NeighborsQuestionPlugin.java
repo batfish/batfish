@@ -56,7 +56,6 @@ import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.ospf.OspfSessionProperties;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.ospf.OspfTopology.EdgeId;
-import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.specifier.AllNodesNodeSpecifier;
@@ -310,16 +309,8 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       _ibgpNeighbors = new TreeSet<>();
     }
 
-    public void initLayer3Neighbors() {
-      _layer3Neighbors = new TreeSet<>();
-    }
-
     public void initRipNeighbors() {
       _ripNeighbors = new TreeSet<>();
-    }
-
-    public void initVerboseLayer3Neighbors() {
-      _verboseLayer3Neighbors = new TreeSet<>();
     }
 
     @Override
@@ -548,8 +539,6 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     private boolean _remoteBgpNeighborsInitialized;
 
     private boolean _remoteEigrpNeighborsInitialized;
-
-    private boolean _remoteOspfNeighborsInitialized;
 
     Topology _topology;
 
@@ -934,14 +923,6 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       if (!_remoteEigrpNeighborsInitialized) {
         _eigrpTopology = EigrpTopology.initEigrpTopology(configurations, topology);
         _remoteEigrpNeighborsInitialized = true;
-      }
-    }
-
-    private void initRemoteOspfNeighbors(
-        Map<String, Configuration> configurations, Topology topology) {
-      if (!_remoteOspfNeighborsInitialized) {
-        OspfTopologyUtils.initRemoteOspfNeighbors(configurations, topology);
-        _remoteOspfNeighborsInitialized = true;
       }
     }
 
