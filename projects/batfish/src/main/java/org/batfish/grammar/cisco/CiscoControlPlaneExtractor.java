@@ -8661,9 +8661,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
       _configuration.referenceStructure(INTERFACE, ifaceName, usage, line);
       if (in) {
-        _currentOspfProcess.getInboundLocalDistributeLists().put(ifaceName, distributeList);
+        _currentOspfProcess.getInboundInterfaceDistributeLists().put(ifaceName, distributeList);
       } else {
-        _currentOspfProcess.getOutboundLocalDistributeLists().put(ifaceName, distributeList);
+        _currentOspfProcess.getOutboundInterfaceDistributeLists().put(ifaceName, distributeList);
       }
     } else {
       if (in) {
@@ -8672,6 +8672,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         _currentOspfProcess.setOutboundGlobalDistributeList(distributeList);
       }
     }
+    todo(ctx);
   }
 
   @Override

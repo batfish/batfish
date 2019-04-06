@@ -2352,24 +2352,60 @@ public class CiscoGrammarTest {
   @Test
   public void testIosOspfDistributeList() throws IOException {
     CiscoConfiguration c = parseCiscoConfig("iosOspfDistributeList", ConfigurationFormat.CISCO_IOS);
-    DistributeList globalIn = new DistributeList("block_5", DistributeListFilterType.PREFIX_LIST);
-    DistributeList globalOut = new DistributeList("block_6", DistributeListFilterType.PREFIX_LIST);
-    DistributeList dlGig0In = new DistributeList("block_1", DistributeListFilterType.PREFIX_LIST);
-    DistributeList dlGig1In = new DistributeList("block_2", DistributeListFilterType.PREFIX_LIST);
-    DistributeList dlGig0Out = new DistributeList("block_3", DistributeListFilterType.PREFIX_LIST);
-    DistributeList dlGig1Out = new DistributeList("block_4", DistributeListFilterType.PREFIX_LIST);
+    DistributeList globalInPrefix =
+        new DistributeList("block_5", DistributeListFilterType.PREFIX_LIST);
+    DistributeList globalOutPrefix =
+        new DistributeList("block_6", DistributeListFilterType.PREFIX_LIST);
+    DistributeList dlGig0InPrefix =
+        new DistributeList("block_1", DistributeListFilterType.PREFIX_LIST);
+    DistributeList dlGig1InPrefix =
+        new DistributeList("block_2", DistributeListFilterType.PREFIX_LIST);
+    DistributeList dlGig0OutPrefix =
+        new DistributeList("block_3", DistributeListFilterType.PREFIX_LIST);
+    DistributeList dlGig1OutPrefix =
+        new DistributeList("block_4", DistributeListFilterType.PREFIX_LIST);
 
-    org.batfish.representation.cisco.OspfProcess ospfProcess =
+    DistributeList globalInRm = new DistributeList("rm1", DistributeListFilterType.ROUTE_MAP);
+    DistributeList globalOutRm = new DistributeList("rm2", DistributeListFilterType.ROUTE_MAP);
+
+    DistributeList globalInAcl = new DistributeList("acl3", DistributeListFilterType.ACCESS_LIST);
+    DistributeList globalOutAcl = new DistributeList("acl4", DistributeListFilterType.ACCESS_LIST);
+    DistributeList dlGig0InAcl = new DistributeList("acl1", DistributeListFilterType.ACCESS_LIST);
+    DistributeList dlGig1OutAcl = new DistributeList("acl2", DistributeListFilterType.ACCESS_LIST);
+
+    org.batfish.representation.cisco.OspfProcess ospfProcessPrefix =
         c.getDefaultVrf().getOspfProcesses().get("1");
 
-    assertThat(ospfProcess.getInboundGlobalDistributeList(), equalTo(globalIn));
-    assertThat(ospfProcess.getOutboundGlobalDistributeList(), equalTo(globalOut));
+    assertThat(ospfProcessPrefix.getInboundGlobalDistributeList(), equalTo(globalInPrefix));
+    assertThat(ospfProcessPrefix.getOutboundGlobalDistributeList(), equalTo(globalOutPrefix));
     assertThat(
-        ospfProcess.getInboundLocalDistributeLists(),
-        equalTo(ImmutableMap.of("GigabitEthernet0/0", dlGig0In, "GigabitEthernet1/0", dlGig1In)));
+        ospfProcessPrefix.getInboundInterfaceDistributeLists(),
+        equalTo(
+            ImmutableMap.of(
+                "GigabitEthernet0/0", dlGig0InPrefix, "GigabitEthernet1/0", dlGig1InPrefix)));
     assertThat(
-        ospfProcess.getOutboundLocalDistributeLists(),
-        equalTo(ImmutableMap.of("GigabitEthernet0/0", dlGig0Out, "GigabitEthernet1/0", dlGig1Out)));
+        ospfProcessPrefix.getOutboundInterfaceDistributeLists(),
+        equalTo(
+            ImmutableMap.of(
+                "GigabitEthernet0/0", dlGig0OutPrefix, "GigabitEthernet1/0", dlGig1OutPrefix)));
+
+    org.batfish.representation.cisco.OspfProcess ospfProcessRouteMap =
+        c.getDefaultVrf().getOspfProcesses().get("2");
+
+    assertThat(ospfProcessRouteMap.getInboundGlobalDistributeList(), equalTo(globalInRm));
+    assertThat(ospfProcessRouteMap.getOutboundGlobalDistributeList(), equalTo(globalOutRm));
+
+    org.batfish.representation.cisco.OspfProcess ospfProcessAcl =
+        c.getDefaultVrf().getOspfProcesses().get("3");
+
+    assertThat(ospfProcessAcl.getInboundGlobalDistributeList(), equalTo(globalInAcl));
+    assertThat(ospfProcessAcl.getOutboundGlobalDistributeList(), equalTo(globalOutAcl));
+    assertThat(
+        ospfProcessAcl.getInboundInterfaceDistributeLists(),
+        equalTo(ImmutableMap.of("GigabitEthernet0/0", dlGig0InAcl)));
+    assertThat(
+        ospfProcessAcl.getOutboundInterfaceDistributeLists(),
+        equalTo(ImmutableMap.of("GigabitEthernet0/0", dlGig1OutAcl)));
   }
 
   @Test

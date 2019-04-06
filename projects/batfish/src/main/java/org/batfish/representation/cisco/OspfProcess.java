@@ -56,7 +56,7 @@ public class OspfProcess implements Serializable {
 
   @Nullable private DistributeList _inboundGlobalDistributeList;
 
-  @Nonnull private Map<String, DistributeList> _inboundLocalDistributeLists;
+  @Nonnull private Map<String, DistributeList> _inboundIInterfaceDistributeLists;
 
   private Long _maxMetricExternalLsa;
 
@@ -78,7 +78,7 @@ public class OspfProcess implements Serializable {
 
   @Nullable private DistributeList _outboundGlobalDistributeList;
 
-  @Nonnull private Map<String, DistributeList> _outboundLocalDistributeLists;
+  @Nonnull private Map<String, DistributeList> _outboundInterfaceDistributeLists;
 
   private boolean _passiveInterfaceDefault;
 
@@ -156,10 +156,10 @@ public class OspfProcess implements Serializable {
     _networks = new TreeSet<>();
     _defaultInformationMetric = DEFAULT_DEFAULT_INFORMATION_METRIC;
     _defaultInformationMetricType = DEFAULT_DEFAULT_INFORMATION_METRIC_TYPE;
-    _inboundLocalDistributeLists = new HashMap<>();
+    _inboundIInterfaceDistributeLists = new HashMap<>();
     _nonDefaultInterfaces = new HashSet<>();
     _nssas = new HashMap<>();
-    _outboundLocalDistributeLists = new HashMap<>();
+    _outboundInterfaceDistributeLists = new HashMap<>();
     _passiveInterfaces = new HashSet<>();
     _stubs = new HashMap<>();
     _wildcardNetworks = new TreeSet<>();
@@ -226,8 +226,8 @@ public class OspfProcess implements Serializable {
   }
 
   @Nonnull
-  public Map<String, DistributeList> getInboundLocalDistributeLists() {
-    return _inboundLocalDistributeLists;
+  public Map<String, DistributeList> getInboundInterfaceDistributeLists() {
+    return _inboundIInterfaceDistributeLists;
   }
 
   public Long getMaxMetricExternalLsa() {
@@ -268,8 +268,8 @@ public class OspfProcess implements Serializable {
   }
 
   @Nonnull
-  public Map<String, DistributeList> getOutboundLocalDistributeLists() {
-    return _outboundLocalDistributeLists;
+  public Map<String, DistributeList> getOutboundInterfaceDistributeLists() {
+    return _outboundInterfaceDistributeLists;
   }
 
   public boolean getPassiveInterfaceDefault() {
