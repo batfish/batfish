@@ -17,7 +17,6 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -270,7 +269,7 @@ public class OspfRoutingProcessTest {
         equalTo(overrideMetric));
     assertThat(
         new OspfRoutingProcess(ospfProcess.build(), VRF_NAME, _c, _emptyOspfTopology)
-            .getIncrementalCost("passive", false),
+            .getIncrementalCost(PASSIVE_IFACE_NAME, false),
         equalTo(overrideMetric));
   }
 
@@ -423,7 +422,6 @@ public class OspfRoutingProcessTest {
         contains(
             hasRoute(
                 allOf(
-                    instanceOf(OspfInterAreaRoute.class),
                     hasPrefix(route1.getNetwork()),
                     hasNextHopIp(equalTo(nextHopIp)),
                     hasMetric(route1.getMetric())))));
@@ -437,7 +435,6 @@ public class OspfRoutingProcessTest {
         contains(
             hasRoute(
                 allOf(
-                    instanceOf(OspfInterAreaRoute.class),
                     hasPrefix(route1.getNetwork()),
                     hasNextHopIp(equalTo(nextHopIp)),
                     hasMetric(999L)))));
@@ -516,7 +513,6 @@ public class OspfRoutingProcessTest {
         contains(
             hasRoute(
                 allOf(
-                    instanceOf(OspfInterAreaRoute.class),
                     hasPrefix(route1.getNetwork()),
                     hasNextHopIp(equalTo(nextHopIp)),
                     hasMetric(route1.getMetric())))));
@@ -530,7 +526,6 @@ public class OspfRoutingProcessTest {
         contains(
             hasRoute(
                 allOf(
-                    instanceOf(OspfInterAreaRoute.class),
                     hasPrefix(route1.getNetwork()),
                     hasNextHopIp(equalTo(nextHopIp)),
                     hasMetric(999L)))));
