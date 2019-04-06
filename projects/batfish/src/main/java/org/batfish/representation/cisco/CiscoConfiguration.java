@@ -697,12 +697,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private Ip getBgpRouterId(final Configuration c, String vrfName, BgpProcess proc) {
     Ip processRouterId = proc.getRouterId();
-    org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
     if (processRouterId == null) {
       processRouterId = _vrfs.get(Configuration.DEFAULT_VRF_NAME).getBgpProcess().getRouterId();
     }
     if (processRouterId == null) {
       processRouterId = Ip.ZERO;
+      org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
       for (Entry<String, org.batfish.datamodel.Interface> e : vrf.getInterfaces().entrySet()) {
         String iname = e.getKey();
         org.batfish.datamodel.Interface iface = e.getValue();
