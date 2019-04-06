@@ -42,21 +42,15 @@ public class RouteMapMatchIpAccessListLine extends RouteMapMatchLine {
     Disjunction d = new Disjunction();
     List<BooleanExpr> disjuncts = d.getDisjuncts();
     for (String listName : _listNames) {
-      Object list;
-      IpAccessList ipAccessList = null;
-      RouteFilterList routeFilterList = null;
       if (_routing) {
-        routeFilterList = c.getRouteFilterLists().get(listName);
-        list = routeFilterList;
-      } else {
-        ipAccessList = c.getIpAccessLists().get(listName);
-        list = ipAccessList;
-      }
-      if (list != null) {
-        if (_routing) {
+        RouteFilterList routeFilterList = c.getRouteFilterLists().get(listName);
+        if (routeFilterList != null) {
           disjuncts.add(
               new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet(listName)));
-        } else {
+        }
+      } else {
+        IpAccessList ipAccessList = c.getIpAccessLists().get(listName);
+        if (ipAccessList != null) {
           disjuncts.add(new MatchIpAccessList(listName));
         }
       }
