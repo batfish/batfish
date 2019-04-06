@@ -28,6 +28,22 @@ final class ParboiledIpSpaceSpecifier implements IpSpaceSpecifier {
     }
 
     @Override
+    public IpSpace visitDifferenceIpSpaceAstNode(
+        DifferenceIpSpaceAstNode differenceIpSpaceAstNode) {
+      return AclIpSpace.difference(
+          differenceIpSpaceAstNode.getLeft().accept(this),
+          differenceIpSpaceAstNode.getRight().accept(this));
+    }
+
+    @Override
+    public IpSpace visitIntersectionIpSpaceAstNode(
+        IntersectionIpSpaceAstNode intersectionIpSpaceAstNode) {
+      return AclIpSpace.intersection(
+          intersectionIpSpaceAstNode.getLeft().accept(this),
+          intersectionIpSpaceAstNode.getRight().accept(this));
+    }
+
+    @Override
     public IpSpace visitUnionIpSpaceAstNode(UnionIpSpaceAstNode unionIpSpaceAstNode) {
       return AclIpSpace.union(
           unionIpSpaceAstNode.getLeft().accept(this), unionIpSpaceAstNode.getRight().accept(this));
