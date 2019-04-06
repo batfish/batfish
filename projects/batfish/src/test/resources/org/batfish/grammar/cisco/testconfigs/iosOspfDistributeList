@@ -1,0 +1,12 @@
+!
+hostname iosOspfDistributeList
+!
+router ospf 1
+ network 192.168.12.0 0.0.0.255 area 0
+ distribute-list prefix block_1 in GigabitEthernet0/0
+ distribute-list prefix block_2 in GigabitEthernet1/0
+ distribute-list prefix block_3 out GigabitEthernet0/0
+ distribute-list prefix block_4 out GigabitEthernet1/0
+ distribute-list prefix block_5 in
+ distribute-list prefix block_6 out
+

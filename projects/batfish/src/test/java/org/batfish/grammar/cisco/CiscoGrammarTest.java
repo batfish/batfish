@@ -363,6 +363,8 @@ import org.batfish.main.TestrigText;
 import org.batfish.representation.cisco.CiscoAsaNat;
 import org.batfish.representation.cisco.CiscoAsaNat.Section;
 import org.batfish.representation.cisco.CiscoConfiguration;
+import org.batfish.representation.cisco.DistributeList;
+import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco.EigrpProcess;
 import org.batfish.representation.cisco.NetworkObject;
 import org.batfish.representation.cisco.NetworkObjectAddressSpecifier;
@@ -2332,7 +2334,7 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosOspfDistributeList() throws IOException {
+  public void testIosOspfDistributeListReference() throws IOException {
     String hostname = "ios-ospf-distribute-list";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -2345,6 +2347,29 @@ public class CiscoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "plout", 1));
     assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "rmin", 1));
     assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "rmout", 1));
+  }
+
+  @Test
+  public void testIosOspfDistributeList() throws IOException {
+    CiscoConfiguration c = parseCiscoConfig("iosOspfDistributeList", ConfigurationFormat.CISCO_IOS);
+    DistributeList globalIn = new DistributeList("block_5", DistributeListFilterType.PREFIX_LIST);
+    DistributeList globalOut = new DistributeList("block_6", DistributeListFilterType.PREFIX_LIST);
+    DistributeList dlGig0In = new DistributeList("block_1", DistributeListFilterType.PREFIX_LIST);
+    DistributeList dlGig1In = new DistributeList("block_2", DistributeListFilterType.PREFIX_LIST);
+    DistributeList dlGig0Out = new DistributeList("block_3", DistributeListFilterType.PREFIX_LIST);
+    DistributeList dlGig1Out = new DistributeList("block_4", DistributeListFilterType.PREFIX_LIST);
+
+    org.batfish.representation.cisco.OspfProcess ospfProcess =
+        c.getDefaultVrf().getOspfProcesses().get("1");
+
+    assertThat(ospfProcess.getInboundGlobalDistributeList(), equalTo(globalIn));
+    assertThat(ospfProcess.getOutboundGlobalDistributeList(), equalTo(globalOut));
+    assertThat(
+        ospfProcess.getInboundLocalDistributeLists(),
+        equalTo(ImmutableMap.of("GigabitEthernet0/0", dlGig0In, "GigabitEthernet1/0", dlGig1In)));
+    assertThat(
+        ospfProcess.getOutboundLocalDistributeLists(),
+        equalTo(ImmutableMap.of("GigabitEthernet0/0", dlGig0Out, "GigabitEthernet1/0", dlGig1Out)));
   }
 
   @Test
