@@ -81,6 +81,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
@@ -131,9 +132,11 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.Trace;
+import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.matchers.IpAccessListMatchers;
@@ -635,6 +638,71 @@ public final class F5BigipStructuredGrammarTest {
               equalTo(
                   FlowDiff.flowDiff(
                       IpField.DESTINATION, Ip.parse("192.0.2.1"), Ip.parse("192.0.2.10")))));
+    }
+
+    {
+      // bidirectional traceroute with DNAT
+      Flow flow =
+          Flow.builder()
+              .setTag(tag)
+              .setDstIp(Ip.parse("192.0.2.1"))
+              .setDstPort(80)
+              .setIngressInterface("/Common/SOME_VLAN")
+              .setIngressNode(natHostname)
+              .setIpProtocol(IpProtocol.TCP)
+              .setSrcIp(Ip.parse("8.8.8.8"))
+              .setSrcPort(50000)
+              .build();
+      SortedMap<Flow, List<TraceAndReverseFlow>> flowTraces =
+          batfish.getTracerouteEngine().computeTracesAndReverseFlows(ImmutableSet.of(flow), false);
+      List<TraceAndReverseFlow> traces = flowTraces.get(flow);
+
+      assertThat(traces, hasSize(1));
+
+      Flow reverseFlow = traces.get(0).getReverseFlow();
+      assertThat(
+          reverseFlow,
+          equalTo(
+              Flow.builder()
+                  .setTag(tag)
+                  .setSrcIp(Ip.parse("192.0.2.10"))
+                  .setSrcPort(80)
+                  .setIngressInterface("/Common/SOME_VLAN")
+                  .setIngressNode(natHostname)
+                  .setIpProtocol(IpProtocol.TCP)
+                  .setDstIp(Ip.parse("8.8.8.8"))
+                  .setDstPort(50000)
+                  .build()));
+
+      Set<FirewallSessionTraceInfo> sessions = traces.get(0).getNewFirewallSessions();
+      SortedMap<Flow, List<TraceAndReverseFlow>> reverseFlowTraces =
+          batfish
+              .getTracerouteEngine()
+              .computeTracesAndReverseFlows(ImmutableSet.of(reverseFlow), sessions, false);
+
+      Optional<TransformationStepDetail> stepDetailOptional =
+          reverseFlowTraces.get(reverseFlow).stream()
+              .map(TraceAndReverseFlow::getTrace)
+              .map(Trace::getHops)
+              .flatMap(Collection::stream)
+              .map(Hop::getSteps)
+              .flatMap(Collection::stream)
+              .map(Step::getDetail)
+              .filter(Predicates.instanceOf(TransformationStepDetail.class))
+              .map(TransformationStepDetail.class::cast)
+              .filter(d -> d.getTransformationType() == TransformationType.SOURCE_NAT)
+              .findFirst();
+
+      assertTrue("There is a DNAT transformation step.", stepDetailOptional.isPresent());
+
+      TransformationStepDetail detail = stepDetailOptional.get();
+
+      assertThat(
+          detail.getFlowDiffs(),
+          hasItem(
+              equalTo(
+                  FlowDiff.flowDiff(
+                      IpField.SOURCE, Ip.parse("192.0.2.10"), Ip.parse("192.0.2.1")))));
     }
   }
 
@@ -1351,6 +1419,85 @@ public final class F5BigipStructuredGrammarTest {
 
     // detect all structure references
     assertThat(ans, hasNumReferrers(file, SNAT_TRANSLATION, used, 1));
+  }
+
+  @Test
+  public void testSnatBidirectionalTraceroute() throws IOException {
+    String hostname = "f5_bigip_structured_snat";
+    String tag = "tag";
+
+    Configuration c = parseConfig(hostname);
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.computeDataPlane();
+
+    // Assume a flow is going out of /Common/vlan1
+    Transformation outgoingTransformation =
+        c.getAllInterfaces().get("/Common/vlan1").getOutgoingTransformation();
+
+    // SNAT via snat /Common/snat1
+    Flow flow =
+        Flow.builder()
+            .setTag(tag)
+            .setDstIp(Ip.parse("192.0.2.1"))
+            .setDstPort(80)
+            .setIngressInterface("/Common/vlan1")
+            .setIngressNode(hostname)
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcIp(Ip.parse("8.8.8.8"))
+            .setSrcPort(50000)
+            .build();
+    SortedMap<Flow, List<TraceAndReverseFlow>> flowTraces =
+        batfish.getTracerouteEngine().computeTracesAndReverseFlows(ImmutableSet.of(flow), false);
+    List<TraceAndReverseFlow> traces = flowTraces.get(flow);
+
+    assertThat(traces, hasSize(1));
+
+    Flow reverseFlow = traces.get(0).getReverseFlow();
+    assertThat(
+        reverseFlow,
+        equalTo(
+            Flow.builder()
+                .setTag(tag)
+                .setSrcIp(Ip.parse("192.0.2.1"))
+                .setSrcPort(80)
+                .setIngressInterface("/Common/vlan1")
+                .setIngressNode(hostname)
+                .setIpProtocol(IpProtocol.TCP)
+                .setDstIp(Ip.parse("10.200.1.2"))
+                // TODO:
+                .setDstPort(1024)
+                .build()));
+
+    Set<FirewallSessionTraceInfo> sessions = traces.get(0).getNewFirewallSessions();
+    SortedMap<Flow, List<TraceAndReverseFlow>> reverseFlowTraces =
+        batfish
+            .getTracerouteEngine()
+            .computeTracesAndReverseFlows(ImmutableSet.of(reverseFlow), sessions, false);
+
+    Optional<TransformationStepDetail> stepDetailOptional =
+        reverseFlowTraces.get(reverseFlow).stream()
+            .map(TraceAndReverseFlow::getTrace)
+            .map(Trace::getHops)
+            .flatMap(Collection::stream)
+            .map(Hop::getSteps)
+            .flatMap(Collection::stream)
+            .map(Step::getDetail)
+            .filter(Predicates.instanceOf(TransformationStepDetail.class))
+            .map(TransformationStepDetail.class::cast)
+            .filter(d -> d.getTransformationType() == TransformationType.DEST_NAT)
+            .findFirst();
+
+    assertTrue("There is a DNAT transformation step.", stepDetailOptional.isPresent());
+
+    TransformationStepDetail detail = stepDetailOptional.get();
+
+    assertThat(
+        detail.getFlowDiffs(),
+        hasItem(
+            equalTo(
+                FlowDiff.flowDiff(
+                    IpField.DESTINATION, Ip.parse("10.200.1.2"), Ip.parse("8.8.8.8")))));
   }
 
   @Test
