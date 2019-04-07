@@ -2461,6 +2461,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
             .setAdminCosts(
                 org.batfish.datamodel.ospf.OspfProcess.computeDefaultAdminCosts(
                     c.getConfigurationFormat()))
+            .setSummaryAdminCost(
+                RoutingProtocol.OSPF_IA.getSummaryAdministrativeCost(c.getConfigurationFormat()))
             .build();
     org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
 
