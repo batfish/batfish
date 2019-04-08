@@ -13624,6 +13624,10 @@
         },
         "vendorFamily" : {
           "cumulus" : {
+            "bridge" : {
+              "pvid" : 2,
+              "vids" : "1-3"
+            },
             "interfaceClagSettings" : {
               "bond1.4094" : {
                 "backupIp" : "192.0.2.4",
@@ -13916,7 +13920,12 @@
           }
         },
         "vendorFamily" : {
-          "cumulus" : { }
+          "cumulus" : {
+            "bridge" : {
+              "pvid" : 1,
+              "vids" : ""
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14022,7 +14031,12 @@
           }
         },
         "vendorFamily" : {
-          "cumulus" : { }
+          "cumulus" : {
+            "bridge" : {
+              "pvid" : 1,
+              "vids" : ""
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14122,7 +14136,12 @@
           }
         },
         "vendorFamily" : {
-          "cumulus" : { }
+          "cumulus" : {
+            "bridge" : {
+              "pvid" : 1,
+              "vids" : ""
+            }
+          }
         },
         "vrfs" : {
           "default" : {
@@ -14241,7 +14260,12 @@
           }
         },
         "vendorFamily" : {
-          "cumulus" : { }
+          "cumulus" : {
+            "bridge" : {
+              "pvid" : 1,
+              "vids" : ""
+            }
+          }
         },
         "vrfs" : {
           "default" : {
