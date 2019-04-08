@@ -484,6 +484,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         new org.batfish.datamodel.Interface(name, _c, InterfaceType.LOGICAL);
     newIface.setDependencies(
         ImmutableSet.of(new Dependency(superInterfaceName, DependencyType.BIND)));
+    newIface.setEncapsulationVlan(iface.getEncapsulationVlan());
     applyCommonInterfaceSettings(iface, newIface);
     return newIface;
   }
