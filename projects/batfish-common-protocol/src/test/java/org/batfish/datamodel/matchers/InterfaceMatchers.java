@@ -28,6 +28,7 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDeclaredNames;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDependencies;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDescription;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasEigrp;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasEncapsulationVlan;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasHsrpGroup;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasHsrpVersion;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasInterfaceType;
@@ -181,6 +182,23 @@ public final class InterfaceMatchers {
   public static @Nonnull Matcher<Interface> hasEigrp(
       @Nonnull Matcher<? super EigrpInterfaceSettings> subMatcher) {
     return new HasEigrp(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if interface's encapsulationVlan is {@code
+   * expectedEncapsulationVlan}.
+   */
+  public static @Nonnull Matcher<Interface> hasEncapsulationVlan(int expectedEncapsulationVlan) {
+    return new HasEncapsulationVlan(equalTo(expectedEncapsulationVlan));
+  }
+
+  /**
+   * Provides a matcher that matches if interface's encapsulationVlan is matched by the provided
+   * {@code subMatcher}.
+   */
+  public static @Nonnull Matcher<Interface> hasEncapsulationVlan(
+      @Nonnull Matcher<? super Integer> subMatcher) {
+    return new HasEncapsulationVlan(subMatcher);
   }
 
   /**
