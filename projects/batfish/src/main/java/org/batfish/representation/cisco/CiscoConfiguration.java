@@ -4317,6 +4317,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
           if (containsIpAccessList(aclName, currentMapName)) {
             return true;
           }
+          if (aclName.equals(pg.getInboundIpAccessList())
+              || aclName.equals(pg.getOutboundIpAccessList())) {
+            return true;
+          }
         }
       }
     }

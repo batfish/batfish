@@ -264,16 +264,21 @@ class CiscoConversions {
   @Nullable
   static String generateBgpImportPolicy(
       LeafBgpPeerGroup lpg, String vrfName, Configuration c, Warnings w) {
-    // TODO Support filter-list and distribute-list
+    // TODO Support filter-list
     // https://www.cisco.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/5816-bgpfaq-5816.html
 
     String inboundRouteMapName = lpg.getInboundRouteMap();
     String inboundPrefixListName = lpg.getInboundPrefixList();
+    String inboundIpAccessListName = lpg.getInboundIpAccessList();
 
-    // TODO Support using both a route-map and a prefix-list in BGP import policies
-    if (inboundRouteMapName != null && inboundPrefixListName != null) {
+    // TODO Support using multiple filters in BGP import policies
+    if (Stream.of(inboundRouteMapName, inboundPrefixListName, inboundIpAccessListName)
+            .filter(Objects::nonNull)
+            .count()
+        > 1) {
       w.redFlag(
-          "Batfish does not support configuring both a route-map and a prefix-list for incoming BGP routes. When this occurs, the prefix-list will be ignored.");
+          "Batfish does not support configuring more than one filter (route-map/prefix-list/distribute-list) for incoming BGP routes."
+              + " When this occurs, only the route-map will be used, or the prefix-list if no route-map is configured.");
     }
 
     // Warnings for references to undefined route-maps and prefix-lists will be surfaced elsewhere.
@@ -281,9 +286,18 @@ class CiscoConversions {
       // Inbound route-map is defined. Use that as the BGP import policy.
       return inboundRouteMapName;
     }
+
+    String exportRouteFilter = null;
     if (inboundPrefixListName != null
         && c.getRouteFilterLists().containsKey(inboundPrefixListName)) {
-      // Inbound prefix-list is defined. Build an import policy around it.
+      exportRouteFilter = inboundPrefixListName;
+    } else if (inboundIpAccessListName != null
+        && c.getRouteFilterLists().containsKey(inboundIpAccessListName)) {
+      exportRouteFilter = inboundIpAccessListName;
+    }
+
+    if (exportRouteFilter != null) {
+      // Inbound prefix-list or distribute-list is defined. Build an import policy around it.
       String generatedImportPolicyName = computeBgpPeerImportPolicyName(vrfName, lpg.getName());
       RoutingPolicy.builder()
           .setOwner(c)
@@ -291,7 +305,7 @@ class CiscoConversions {
           .addStatement(
               new If(
                   new MatchPrefixSet(
-                      DestinationNetwork.instance(), new NamedPrefixSet(inboundPrefixListName)),
+                      DestinationNetwork.instance(), new NamedPrefixSet(exportRouteFilter)),
                   ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
                   ImmutableList.of(Statements.ExitReject.toStaticStatement())))
           .build();
@@ -332,14 +346,18 @@ class CiscoConversions {
     List<BooleanExpr> peerExportConjuncts = new ArrayList<>();
     peerExportConjuncts.add(new CallExpr(computeBgpCommonExportPolicyName(vrfName)));
 
-    // Add constraints on export routes from configured route-map or prefix-list. If both are
-    // configured, use route-map and warn. TODO support configuring route-map + prefix-list here.
+    // Add constraints on export routes from configured outbound filter.
+    // TODO support configuring multiple outbound filters
     String outboundPrefixListName = lpg.getOutboundPrefixList();
     String outboundRouteMapName = lpg.getOutboundRouteMap();
-    if (outboundPrefixListName != null && outboundRouteMapName != null) {
+    String outboundIpAccessListName = lpg.getOutboundIpAccessList();
+    if (Stream.of(outboundRouteMapName, outboundPrefixListName, outboundIpAccessListName)
+            .filter(Objects::nonNull)
+            .count()
+        > 1) {
       w.redFlag(
-          "Batfish does not support configuring both a route-map and a prefix-list for outgoing BGP routes."
-              + " When this occurs, the prefix-list will be ignored.");
+          "Batfish does not support configuring more than one filter (route-map/prefix-list/distribute-list) for outgoing BGP routes."
+              + " When this occurs, only the route-map will be used, or the prefix-list if no route-map is configured.");
     }
     if (outboundRouteMapName != null && c.getRoutingPolicies().containsKey(outboundRouteMapName)) {
       peerExportConjuncts.add(new CallExpr(outboundRouteMapName));
@@ -348,6 +366,11 @@ class CiscoConversions {
       peerExportConjuncts.add(
           new MatchPrefixSet(
               DestinationNetwork.instance(), new NamedPrefixSet(outboundPrefixListName)));
+    } else if (outboundIpAccessListName != null
+        && c.getRouteFilterLists().containsKey(outboundIpAccessListName)) {
+      peerExportConjuncts.add(
+          new MatchPrefixSet(
+              DestinationNetwork.instance(), new NamedPrefixSet(outboundIpAccessListName)));
     }
     exportPolicyStatements.add(
         new If(
