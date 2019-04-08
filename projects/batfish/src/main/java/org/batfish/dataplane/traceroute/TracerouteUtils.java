@@ -8,6 +8,7 @@ import static org.batfish.datamodel.flow.StepAction.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.flow.StepAction.RECEIVED;
 import static org.batfish.datamodel.transformation.Transformation.always;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
+import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -229,11 +230,23 @@ public final class TracerouteUtils {
       transformationStepsBuilder.add(assignSourceIp(origDstIp, origDstIp));
     }
 
+    Integer origDstPort = inputFlow.getDstPort();
+    if (!origDstPort.equals(currentFlow.getDstPort())) {
+      transformationStepsBuilder.add(assignSourcePort(origDstPort, origDstPort));
+    }
+
     Ip origSrcIp = inputFlow.getSrcIp();
     if (!origSrcIp.equals(currentFlow.getSrcIp())) {
       transformationStepsBuilder.add(
           org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp(
               origSrcIp, origSrcIp));
+    }
+
+    Integer origSrcPort = inputFlow.getSrcPort();
+    if (!origSrcPort.equals(currentFlow.getSrcPort())) {
+      transformationStepsBuilder.add(
+          org.batfish.datamodel.transformation.TransformationStep.assignDestinationPort(
+              origSrcPort, origSrcPort));
     }
 
     List<org.batfish.datamodel.transformation.TransformationStep> transformationSteps =
