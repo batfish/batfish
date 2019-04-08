@@ -234,6 +234,7 @@ public class Ip implements Comparable<Ip>, Serializable {
     }
   }
 
+  @Nonnull
   public IpIpSpace toIpSpace() {
     return new IpIpSpace(this);
   }

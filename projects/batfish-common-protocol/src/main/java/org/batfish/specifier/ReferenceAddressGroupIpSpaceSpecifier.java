@@ -7,6 +7,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpSpace;
@@ -51,6 +52,7 @@ public final class ReferenceAddressGroupIpSpaceSpecifier implements IpSpaceSpeci
   }
 
   /* Returns the IpSpace in the address group. Returns the empty space if the addressgroup is empty */
+  @Nonnull
   public static IpSpace computeIpSpace(
       String addressGroupName, String bookName, SpecifierContext ctxt) {
     AddressGroup addressGroup =

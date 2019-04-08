@@ -54,6 +54,7 @@ public final class LocationIpSpaceSpecifier implements IpSpaceSpecifier {
     return IpSpaceAssignment.builder().assign(key, computeIpSpace(locations, ctxt)).build();
   }
 
+  @Nonnull
   public static IpSpace computeIpSpace(Set<Location> locations, SpecifierContext ctxt) {
     checkArgument(!locations.isEmpty(), "No such locations");
     return firstNonNull(
