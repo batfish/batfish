@@ -4260,7 +4260,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return String.format("SECURITY_LEVEL_%s", securityLevel);
   }
 
-  private boolean isAclUsedForRouting(String aclName) {
+  private boolean isAclUsedForRouting(@Nonnull String aclName) {
     String currentMapName;
     for (Vrf vrf : _vrfs.values()) {
       // check ospf policies
