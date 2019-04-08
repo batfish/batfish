@@ -49,6 +49,7 @@ import org.batfish.vendor.VendorConfiguration;
 public class CumulusNcluConfiguration extends VendorConfiguration {
 
   @VisibleForTesting public static final String CUMULUS_CLAG_DOMAIN_ID = "~CUMULUS_CLAG_DOMAIN~";
+  private static final double DEFAULT_PORT_BANDWIDTH = 10E9D;
   public static final int DEFAULT_STATIC_ROUTE_ADMINISTRATIVE_DISTANCE = 1;
   public static final int DEFAULT_STATIC_ROUTE_METRIC = 0;
   public static final String LOOPBACK_INTERFACE_NAME = "lo";
@@ -449,6 +450,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     org.batfish.datamodel.Interface newIface =
         new org.batfish.datamodel.Interface(name, _c, InterfaceType.AGGREGATED);
 
+    bond.getSlaves().forEach(slave -> _c.getAllInterfaces().get(slave).setChannelGroup(name));
+    newIface.setChannelGroupMembers(bond.getSlaves());
     newIface.setDependencies(
         bond.getSlaves().stream()
             .map(slave -> new Dependency(slave, DependencyType.AGGREGATE))
@@ -474,6 +477,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     applyCommonInterfaceSettings(iface, newIface);
 
     applyBridgeSettings(iface.getBridge(), newIface);
+
+    newIface.setBandwidth(DEFAULT_PORT_BANDWIDTH);
 
     return newIface;
   }
