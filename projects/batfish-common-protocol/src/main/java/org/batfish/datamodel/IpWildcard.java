@@ -174,6 +174,7 @@ public final class IpWildcard implements Serializable, Comparable<IpWildcard> {
         && (wildToThis & differentIpBits) == differentIpBits;
   }
 
+  @Nonnull
   public IpWildcardIpSpace toIpSpace() {
     return new IpWildcardIpSpace(this);
   }
