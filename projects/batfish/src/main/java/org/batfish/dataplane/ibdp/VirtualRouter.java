@@ -214,6 +214,8 @@ public class VirtualRouter implements Serializable {
   transient OspfExternalType2Rib _ospfExternalType2Rib;
   transient OspfExternalType2Rib _ospfExternalType2StagingRib;
 
+  transient Map<String, OspfRoutingProcess> _ospfProcesses;
+
   @VisibleForTesting
   transient SortedMap<OspfTopology.EdgeId, Queue<RouteAdvertisement<OspfExternalRoute>>>
       _ospfExternalIncomingRoutes;
@@ -260,6 +262,7 @@ public class VirtualRouter implements Serializable {
     _bgpIncomingRoutes = new TreeMap<>();
     _prefixTracer = new PrefixTracer();
     _virtualEigrpProcesses = ImmutableMap.of();
+    _ospfProcesses = ImmutableMap.of();
   }
 
   @VisibleForTesting
@@ -2905,5 +2908,9 @@ public class VirtualRouter implements Serializable {
 
   private <R extends AbstractRoute> AnnotatedRoute<R> annotateRoute(R route) {
     return new AnnotatedRoute<>(route, _name);
+  }
+
+  public Map<String, OspfRoutingProcess> getOspfProcesses() {
+    return _ospfProcesses;
   }
 }

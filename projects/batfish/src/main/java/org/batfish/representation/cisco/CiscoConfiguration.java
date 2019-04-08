@@ -657,59 +657,33 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   private boolean containsIpAccessList(String eaListName, String mapName) {
-    if (mapName != null) {
-      RouteMap currentMap = _routeMaps.get(mapName);
-      if (currentMap != null) {
-        for (RouteMapClause clause : currentMap.getClauses().values()) {
-          for (RouteMapMatchLine matchLine : clause.getMatchList()) {
-            if (matchLine instanceof RouteMapMatchIpAccessListLine) {
-              RouteMapMatchIpAccessListLine ipall = (RouteMapMatchIpAccessListLine) matchLine;
-              for (String listName : ipall.getListNames()) {
-                if (eaListName.equals(listName)) {
-                  return true;
-                }
-              }
-            }
-          }
-        }
-      }
+    if (mapName == null || !_routeMaps.containsKey(mapName)) {
+      return false;
     }
-    return false;
+    return _routeMaps.get(mapName).getClauses().values().stream()
+        .flatMap(clause -> clause.getMatchList().stream())
+        .filter(line -> line instanceof RouteMapMatchIpAccessListLine)
+        .anyMatch(
+            line -> ((RouteMapMatchIpAccessListLine) line).getListNames().contains(eaListName));
   }
 
   private boolean containsIpv6AccessList(String eaListName, String mapName) {
-    if (mapName != null) {
-      RouteMap currentMap = _routeMaps.get(mapName);
-      if (currentMap != null) {
-        for (RouteMapClause clause : currentMap.getClauses().values()) {
-          for (RouteMapMatchLine matchLine : clause.getMatchList()) {
-            if (matchLine instanceof RouteMapMatchIpv6AccessListLine) {
-              RouteMapMatchIpv6AccessListLine ipall = (RouteMapMatchIpv6AccessListLine) matchLine;
-              for (String listName : ipall.getListNames()) {
-                if (eaListName.equals(listName)) {
-                  return true;
-                }
-              }
-            }
-          }
-        }
-      }
+    if (mapName == null || !_routeMaps.containsKey(mapName)) {
+      return false;
     }
-    return false;
+    return _routeMaps.get(mapName).getClauses().values().stream()
+        .flatMap(clause -> clause.getMatchList().stream())
+        .filter(line -> line instanceof RouteMapMatchIpv6AccessListLine)
+        .anyMatch(
+            line -> ((RouteMapMatchIpv6AccessListLine) line).getListNames().contains(eaListName));
   }
 
   private static void convertForPurpose(Set<RouteMap> routingRouteMaps, RouteMap map) {
     if (routingRouteMaps.contains(map)) {
-      for (RouteMapClause clause : map.getClauses().values()) {
-        List<RouteMapMatchLine> matchList = clause.getMatchList();
-        for (RouteMapMatchLine line : matchList) {
-          if (line instanceof RouteMapMatchIpAccessListLine) {
-            RouteMapMatchIpAccessListLine matchIpAccessListLine =
-                (RouteMapMatchIpAccessListLine) line;
-            matchIpAccessListLine.setRouting(true);
-          }
-        }
-      }
+      map.getClauses().values().stream()
+          .flatMap(clause -> clause.getMatchList().stream())
+          .filter(line -> line instanceof RouteMapMatchIpAccessListLine)
+          .forEach(line -> ((RouteMapMatchIpAccessListLine) line).setRouting(true));
     }
   }
 
@@ -722,14 +696,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   private Ip getBgpRouterId(final Configuration c, String vrfName, BgpProcess proc) {
-    Ip routerId;
     Ip processRouterId = proc.getRouterId();
-    org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
     if (processRouterId == null) {
       processRouterId = _vrfs.get(Configuration.DEFAULT_VRF_NAME).getBgpProcess().getRouterId();
     }
     if (processRouterId == null) {
       processRouterId = Ip.ZERO;
+      org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
       for (Entry<String, org.batfish.datamodel.Interface> e : vrf.getInterfaces().entrySet()) {
         String iname = e.getKey();
         org.batfish.datamodel.Interface iface = e.getValue();
@@ -755,8 +728,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         }
       }
     }
-    routerId = processRouterId;
-    return routerId;
+    return processRouterId;
   }
 
   public CiscoFamily getCf() {

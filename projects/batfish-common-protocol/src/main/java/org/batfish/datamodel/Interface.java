@@ -40,9 +40,13 @@ public final class Interface extends ComparableStructure<String> {
 
   public static class Builder extends NetworkFactoryBuilder<Interface> {
 
+    private @Nullable Integer _accessVlan;
+
     private boolean _active;
 
     private InterfaceAddress _address;
+
+    private @Nullable IntegerSpace _allowedVlans;
 
     @Nullable private Double _bandwidth;
 
@@ -68,7 +72,11 @@ public final class Interface extends ComparableStructure<String> {
 
     private IsisInterfaceSettings _isis;
 
+    private @Nullable Integer _mlagId;
+
     private String _name;
+
+    private @Nullable Integer _nativeVlan;
 
     private OspfArea _ospfArea;
 
@@ -96,6 +104,10 @@ public final class Interface extends ComparableStructure<String> {
 
     private Set<InterfaceAddress> _secondaryAddresses;
 
+    private @Nullable Boolean _switchport;
+
+    private @Nullable SwitchportMode _switchportMode;
+
     private @Nonnull IpSpace _additionalArpIps;
 
     private InterfaceType _type;
@@ -117,8 +129,12 @@ public final class Interface extends ComparableStructure<String> {
     @Override
     public Interface build() {
       String name = _name != null ? _name : generateName();
-      Interface iface = new Interface(name, _owner);
+      Interface iface =
+          _type == null ? new Interface(name, _owner) : new Interface(name, _owner, _type);
       ImmutableSet.Builder<InterfaceAddress> allAddresses = ImmutableSet.builder();
+      if (_accessVlan != null) {
+        iface.setAccessVlan(_accessVlan);
+      }
       iface.setActive(_active);
       if (_address != null) {
         iface.setAddress(_address);
@@ -126,6 +142,9 @@ public final class Interface extends ComparableStructure<String> {
       }
       iface.setAdditionalArpIps(_additionalArpIps);
       iface.setAllAddresses(allAddresses.addAll(_secondaryAddresses).build());
+      if (_allowedVlans != null) {
+        iface.setAllowedVlans(_allowedVlans);
+      }
       iface.setBandwidth(_bandwidth);
       iface.setBlacklisted(_blacklisted);
       iface.setDeclaredNames(_declaredNames);
@@ -138,6 +157,10 @@ public final class Interface extends ComparableStructure<String> {
       iface.setIncomingFilter(_incomingFilter);
       iface.setIncomingTransformation(_incomingTransformation);
       iface.setIsis(_isis);
+      iface.setMlagId(_mlagId);
+      if (_nativeVlan != null) {
+        iface.setNativeVlan(_nativeVlan);
+      }
       iface.setOspfArea(_ospfArea);
       if (_ospfArea != null) {
         _ospfArea.addInterface(name);
@@ -157,6 +180,12 @@ public final class Interface extends ComparableStructure<String> {
       iface.setPostTransformationIncomingFilter(_postTransformationIncomingFilter);
       iface.setPreTransformationOutgoingFilter(_preTransformationOutgoingFilter);
       iface.setProxyArp(_proxyArp);
+      if (_switchport != null) {
+        iface.setSwitchport(_switchport);
+      }
+      if (_switchportMode != null) {
+        iface.setSwitchportMode(_switchportMode);
+      }
       if (_type != null) {
         iface.setInterfaceType(_type);
       }
@@ -229,6 +258,16 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
+    public @Nonnull Builder setAccessVlan(@Nullable Integer accessVlan) {
+      _accessVlan = accessVlan;
+      return this;
+    }
+
+    public @Nonnull Builder setAllowedVlans(@Nullable IntegerSpace allowedVlans) {
+      _allowedVlans = allowedVlans;
+      return this;
+    }
+
     public Builder setBandwidth(@Nullable Double bandwidth) {
       _bandwidth = bandwidth;
       return this;
@@ -290,8 +329,18 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
+    public @Nonnull Builder setMlagId(@Nullable Integer mlagId) {
+      _mlagId = mlagId;
+      return this;
+    }
+
     public Builder setName(String name) {
       _name = name;
+      return this;
+    }
+
+    public @Nonnull Builder setNativeVlan(@Nullable Integer nativeVlan) {
+      _nativeVlan = nativeVlan;
       return this;
     }
 
@@ -369,6 +418,16 @@ public final class Interface extends ComparableStructure<String> {
      */
     public Builder setSecondaryAddresses(Iterable<InterfaceAddress> secondaryAddresses) {
       _secondaryAddresses = ImmutableSet.copyOf(secondaryAddresses);
+      return this;
+    }
+
+    public @Nonnull Builder setSwitchport(@Nullable Boolean switchport) {
+      _switchport = switchport;
+      return this;
+    }
+
+    public @Nonnull Builder setSwitchportMode(@Nullable SwitchportMode switchportMode) {
+      _switchportMode = switchportMode;
       return this;
     }
 

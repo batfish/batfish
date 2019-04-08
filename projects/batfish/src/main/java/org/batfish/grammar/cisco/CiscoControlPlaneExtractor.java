@@ -1166,6 +1166,8 @@ import org.batfish.representation.cisco.CommunitySetElemHalves;
 import org.batfish.representation.cisco.CommunitySetElemIosRegex;
 import org.batfish.representation.cisco.CryptoMapEntry;
 import org.batfish.representation.cisco.CryptoMapSet;
+import org.batfish.representation.cisco.DistributeList;
+import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco.DynamicIpBgpPeerGroup;
 import org.batfish.representation.cisco.DynamicIpv6BgpPeerGroup;
 import org.batfish.representation.cisco.EigrpProcess;
@@ -8638,23 +8640,38 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     boolean in = ctx.IN() != null;
     CiscoStructureType type;
     CiscoStructureUsage usage;
+    DistributeListFilterType filterType;
     if (ctx.PREFIX() != null) {
       type = PREFIX_LIST;
+      filterType = DistributeListFilterType.PREFIX_LIST;
       usage = in ? OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN : OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
     } else if (ctx.ROUTE_MAP() != null) {
+      filterType = DistributeListFilterType.ROUTE_MAP;
       type = ROUTE_MAP;
       usage = in ? OSPF_DISTRIBUTE_LIST_ROUTE_MAP_IN : OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT;
     } else {
+      filterType = DistributeListFilterType.ACCESS_LIST;
       type = IP_ACCESS_LIST;
       usage = in ? OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN : OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
     }
     _configuration.referenceStructure(type, name, usage, line);
 
+    DistributeList distributeList = new DistributeList(name, filterType);
     if (ctx.iname != null) {
       String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
       _configuration.referenceStructure(INTERFACE, ifaceName, usage, line);
+      if (in) {
+        _currentOspfProcess.getInboundInterfaceDistributeLists().put(ifaceName, distributeList);
+      } else {
+        _currentOspfProcess.getOutboundInterfaceDistributeLists().put(ifaceName, distributeList);
+      }
+    } else {
+      if (in) {
+        _currentOspfProcess.setInboundGlobalDistributeList(distributeList);
+      } else {
+        _currentOspfProcess.setOutboundGlobalDistributeList(distributeList);
+      }
     }
-
     todo(ctx);
   }
 

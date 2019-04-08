@@ -1,4 +1,4 @@
-#
+#RANCID-CONTENT-TYPE: juniper
 security {
     policies {
         global {

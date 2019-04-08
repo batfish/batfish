@@ -13208,6 +13208,7 @@
             ],
             "allowedVlans" : "",
             "autostate" : true,
+            "encapsulationVlan" : 4094,
             "mtu" : 1500,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
@@ -13622,7 +13623,23 @@
             ]
           }
         },
-        "vendorFamily" : { },
+        "vendorFamily" : {
+          "cumulus" : {
+            "bridge" : {
+              "pvid" : 2,
+              "vids" : "1-3"
+            },
+            "interfaceClagSettings" : {
+              "bond1.4094" : {
+                "backupIp" : "192.0.2.4",
+                "backupIpVrf" : "mgmt",
+                "peerIp" : "192.0.2.5",
+                "priority" : 1000,
+                "sysMac" : "00:11:22:33:44:55"
+              }
+            }
+          }
+        },
         "vrfs" : {
           "default" : {
             "name" : "default",
@@ -13903,7 +13920,14 @@
             "vrf" : "vrf1"
           }
         },
-        "vendorFamily" : { },
+        "vendorFamily" : {
+          "cumulus" : {
+            "bridge" : {
+              "pvid" : 1,
+              "vids" : ""
+            }
+          }
+        },
         "vrfs" : {
           "default" : {
             "name" : "default",
@@ -14007,7 +14031,14 @@
             "vrf" : "vrf1"
           }
         },
-        "vendorFamily" : { },
+        "vendorFamily" : {
+          "cumulus" : {
+            "bridge" : {
+              "pvid" : 1,
+              "vids" : ""
+            }
+          }
+        },
         "vrfs" : {
           "default" : {
             "name" : "default",
@@ -14105,7 +14136,14 @@
             "vrf" : "default"
           }
         },
-        "vendorFamily" : { },
+        "vendorFamily" : {
+          "cumulus" : {
+            "bridge" : {
+              "pvid" : 1,
+              "vids" : ""
+            }
+          }
+        },
         "vrfs" : {
           "default" : {
             "name" : "default",
@@ -14222,7 +14260,14 @@
             "vrf" : "vrf1"
           }
         },
-        "vendorFamily" : { },
+        "vendorFamily" : {
+          "cumulus" : {
+            "bridge" : {
+              "pvid" : 1,
+              "vids" : ""
+            }
+          }
+        },
         "vrfs" : {
           "default" : {
             "name" : "default",

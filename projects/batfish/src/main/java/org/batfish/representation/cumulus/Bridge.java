@@ -47,4 +47,12 @@ public class Bridge implements Serializable {
   public void setVids(IntegerSpace vids) {
     _vids = vids;
   }
+
+  public @Nonnull org.batfish.datamodel.vendor_family.cumulus.Bridge toDataModel() {
+    return org.batfish.datamodel.vendor_family.cumulus.Bridge.builder()
+        .setPorts(_ports)
+        .setPvid(_pvid)
+        .setVids(_vids)
+        .build();
+  }
 }
