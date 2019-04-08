@@ -5,12 +5,14 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDependencies;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMlagId;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
@@ -563,6 +565,11 @@ public final class CumulusNcluGrammarTest {
     assertThat(c, hasVrf("mgmt", hasInterfaces(containsInAnyOrder("mgmt"))));
     assertThat(c, hasVrf("vrf1", hasInterfaces(containsInAnyOrder("vrf1", "swp5.1"))));
 
+    // encapsulation vlan
+    assertThat(c, hasInterface("bond2.4094", hasEncapsulationVlan(4094)));
+    assertThat(c, hasInterface("bond3.4094", hasEncapsulationVlan(4094)));
+    assertThat(c, hasInterface("swp5.1", hasEncapsulationVlan(1)));
+
     // ip address
     assertThat(
         c,
@@ -585,6 +592,27 @@ public final class CumulusNcluGrammarTest {
             "swp4",
             both(hasAllAddresses(containsInAnyOrder(new InterfaceAddress("10.0.3.1/24"))))
                 .and(hasAddress(new InterfaceAddress("10.0.3.1/24")))));
+
+    // bandwidth
+    assertThat(c, hasInterface("bond1", hasBandwidth(10E9D)));
+    assertThat(c, hasInterface("bond2", hasBandwidth(10E9D)));
+    assertThat(c, hasInterface("bond3", hasBandwidth(10E9D)));
+    assertThat(c, hasInterface("eth0", hasBandwidth(10E9D)));
+    assertThat(c, hasInterface("swp1", hasBandwidth(10E9D)));
+    assertThat(c, hasInterface("swp2", hasBandwidth(10E9D)));
+    assertThat(c, hasInterface("swp3", hasBandwidth(10E9D)));
+    assertThat(c, hasInterface("swp4", hasBandwidth(10E9D)));
+    assertThat(c, hasInterface("swp5", hasBandwidth(10E9D)));
+
+    // channel group
+    assertThat(c.getAllInterfaces().get("swp1").getChannelGroup(), equalTo("bond1"));
+    assertThat(c.getAllInterfaces().get("swp2").getChannelGroup(), equalTo("bond2"));
+    assertThat(c.getAllInterfaces().get("swp3").getChannelGroup(), equalTo("bond3"));
+
+    // channel group members
+    assertThat(c.getAllInterfaces().get("bond1").getChannelGroupMembers(), contains("swp1"));
+    assertThat(c.getAllInterfaces().get("bond2").getChannelGroupMembers(), contains("swp2"));
+    assertThat(c.getAllInterfaces().get("bond3").getChannelGroupMembers(), contains("swp3"));
   }
 
   @Test
@@ -596,6 +624,20 @@ public final class CumulusNcluGrammarTest {
         vc.getInterfaces().keySet(),
         containsInAnyOrder(
             "bond2.4094", "bond3.4094", "eth0", "swp1", "swp2", "swp3", "swp4", "swp5.1"));
+
+    // encapsulation vlan
+    assertThat(
+        "Ensure encapsulation VLAN is extracted",
+        vc.getInterfaces().get("bond2.4094").getEncapsulationVlan(),
+        equalTo(4094));
+    assertThat(
+        "Ensure encapsulation VLAN is extracted",
+        vc.getInterfaces().get("bond3.4094").getEncapsulationVlan(),
+        equalTo(4094));
+    assertThat(
+        "Ensure encapsulation VLAN is extracted",
+        vc.getInterfaces().get("swp5.1").getEncapsulationVlan(),
+        equalTo(1));
 
     // ip address
     assertThat(

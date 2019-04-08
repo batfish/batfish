@@ -133,6 +133,18 @@ final class InterfaceMatchersImpl {
     }
   }
 
+  static final class HasEncapsulationVlan extends FeatureMatcher<Interface, Integer> {
+    HasEncapsulationVlan(@Nonnull Matcher<? super Integer> subMatcher) {
+      super(subMatcher, "an Interface with encapsulationVlan:", "encapsulationVlan");
+    }
+
+    @Override
+    @Nullable
+    protected Integer featureValueOf(Interface actual) {
+      return actual.getEncapsulationVlan();
+    }
+  }
+
   static final class HasHsrpGroup extends FeatureMatcher<Interface, HsrpGroup> {
     private final int _number;
 

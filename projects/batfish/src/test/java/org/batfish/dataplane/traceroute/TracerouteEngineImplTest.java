@@ -39,6 +39,7 @@ import static org.batfish.datamodel.transformation.Noop.NOOP_SOURCE_NAT;
 import static org.batfish.datamodel.transformation.Transformation.always;
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
+import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationPort;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.getFinalActionForDisposition;
@@ -1452,7 +1453,8 @@ public class TracerouteEngineImplTest {
     Ip poolIp = Ip.parse("4.4.4.4");
     ib.setName(i4Name)
         .setAddress(new InterfaceAddress("1.1.4.1/24"))
-        .setOutgoingTransformation(always().apply(assignSourceIp(poolIp, poolIp)).build())
+        .setOutgoingTransformation(
+            always().apply(assignSourceIp(poolIp, poolIp), assignSourcePort(2000, 2000)).build())
         .setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(
                 ImmutableSet.of(i4Name), incomingAclName, outgoingAclName))
@@ -1583,7 +1585,7 @@ public class TracerouteEngineImplTest {
                           .setSrcIp(dstIp)
                           .setSrcPort(dstPort)
                           .setDstIp(poolIp)
-                          .setDstPort(srcPort)
+                          .setDstPort(2000)
                           .setTag("TAG")
                           .build()),
                   hasNewFirewallSessions(
@@ -1593,8 +1595,12 @@ public class TracerouteEngineImplTest {
                               i1Name,
                               null,
                               ImmutableSet.of(i4Name),
-                              match5Tuple(dstIp, dstPort, poolIp, srcPort, ipProtocol),
-                              always().apply(assignDestinationIp(srcIp, srcIp)).build()))))));
+                              match5Tuple(dstIp, dstPort, poolIp, 2000, ipProtocol),
+                              always()
+                                  .apply(
+                                      assignDestinationIp(srcIp, srcIp),
+                                      assignDestinationPort(srcPort, srcPort))
+                                  .build()))))));
     }
   }
 
