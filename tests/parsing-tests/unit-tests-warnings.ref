@@ -2115,6 +2115,13 @@
         "Comment" : "clause in IPv6 extended access list"
       },
       {
+        "Filename" : "configs/ios_bgp",
+        "Line" : 11,
+        "Text" : "prefix-list VPNV6_PL in",
+        "Parser_Context" : "[prefix_list_bgp_tail bgp_tail neighbor_flat_rb_stanza address_family_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
+        "Comment" : "IPv6 prefix-lists not supported for BGP"
+      },
+      {
         "Filename" : "configs/ios_xr_bgp_neighbor_group",
         "Line" : 17,
         "Text" : "use session-group blabber",
@@ -2249,10 +2256,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 315 results",
+      "notes" : "Found 316 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 315
+      "numResults" : 316
     }
   }
 ]

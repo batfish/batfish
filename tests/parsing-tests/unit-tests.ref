@@ -73664,6 +73664,16 @@
             }
           ]
         },
+        "configs/ios_bgp" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "IPv6 prefix-lists not supported for BGP",
+              "Line" : 11,
+              "Parser_Context" : "[prefix_list_bgp_tail bgp_tail neighbor_flat_rb_stanza address_family_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
+              "Text" : "prefix-list VPNV6_PL in"
+            }
+          ]
+        },
         "configs/ios_xr_bgp_neighbor_group" : {
           "Parse warnings" : [
             {
