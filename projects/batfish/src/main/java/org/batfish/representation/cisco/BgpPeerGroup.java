@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 
 public abstract class BgpPeerGroup implements Serializable {
@@ -12,75 +13,46 @@ public abstract class BgpPeerGroup implements Serializable {
   private static final long serialVersionUID = 1L;
 
   protected Boolean _active;
-
   protected Boolean _additionalPathsReceive;
-
   protected Boolean _additionalPathsSelectAll;
-
   protected Boolean _additionalPathsSend;
-
   protected Boolean _advertiseInactive;
-
   protected Boolean _allowAsIn;
-
   private Set<Long> _alternateAs;
-
   protected Ip _clusterId;
-
   protected Integer _defaultMetric;
-
   protected Boolean _defaultOriginate;
-
   protected String _defaultOriginateMap;
-
   protected String _description;
-
   protected Boolean _disablePeerAsCheck;
-
   protected Boolean _ebgpMultihop;
-
   private String _groupName;
+  /** Name of IPv4 access list used to filter inbound BGP routes to this peer */
+  protected String _inboundIpAccessList;
 
   protected String _inboundPrefixList;
-
   private String _inboundRoute6Map;
-
   protected String _inboundRouteMap;
-
   private transient boolean _inherited;
-
   private Long _localAs;
-
   private Integer _maximumPaths;
-
   private Integer _maximumPathsEbgp;
-
   private Integer _maximumPathsEibgp;
-
   private Integer _maximumPathsIbgp;
-
   private Boolean _nextHopSelf;
+  /** Name of IPv4 access list used to filter outbound BGP routes from this peer */
+  protected String _outboundIpAccessList;
 
   protected String _outboundPrefixList;
-
   protected String _outboundRoute6Map;
-
   protected String _outboundRouteMap;
-
   private String _peerSession;
-
   protected Long _remoteAs;
-
   protected Boolean _removePrivateAs;
-
   protected Boolean _routeReflectorClient;
-
   protected Boolean _sendCommunity;
-
   private boolean _sendExtendedCommunity;
-
   protected Boolean _shutdown;
-
   protected String _updateSource;
 
   public BgpPeerGroup() {}
@@ -145,6 +117,11 @@ public abstract class BgpPeerGroup implements Serializable {
     return _groupName;
   }
 
+  @Nullable
+  public String getInboundIpAccessList() {
+    return _inboundIpAccessList;
+  }
+
   public String getInboundPrefixList() {
     return _inboundPrefixList;
   }
@@ -185,6 +162,11 @@ public abstract class BgpPeerGroup implements Serializable {
 
   public Boolean getNextHopSelf() {
     return _nextHopSelf;
+  }
+
+  @Nullable
+  public String getOutboundIpAccessList() {
+    return _outboundIpAccessList;
   }
 
   public String getOutboundPrefixList() {
@@ -298,6 +280,9 @@ public abstract class BgpPeerGroup implements Serializable {
     if (_ebgpMultihop == null) {
       _ebgpMultihop = pg.getEbgpMultihop();
     }
+    if (_inboundIpAccessList == null) {
+      _inboundIpAccessList = pg.getInboundIpAccessList();
+    }
     if (_inboundPrefixList == null) {
       _inboundPrefixList = pg.getInboundPrefixList();
     }
@@ -324,6 +309,9 @@ public abstract class BgpPeerGroup implements Serializable {
     }
     if (_nextHopSelf == null) {
       _nextHopSelf = pg.getNextHopSelf();
+    }
+    if (_outboundIpAccessList == null) {
+      _outboundIpAccessList = pg.getOutboundIpAccessList();
     }
     if (_outboundPrefixList == null) {
       _outboundPrefixList = pg.getOutboundPrefixList();
@@ -431,6 +419,10 @@ public abstract class BgpPeerGroup implements Serializable {
     _groupName = groupName;
   }
 
+  public void setInboundIpAccessList(String inboundIpAccessList) {
+    _inboundIpAccessList = inboundIpAccessList;
+  }
+
   public void setInboundPrefixList(String inboundPrefixList) {
     _inboundPrefixList = inboundPrefixList;
   }
@@ -465,6 +457,10 @@ public abstract class BgpPeerGroup implements Serializable {
 
   public void setNextHopSelf(boolean nextHopSelf) {
     _nextHopSelf = nextHopSelf;
+  }
+
+  public void setOutboundIpAccessList(String outboundIpAccessList) {
+    _outboundIpAccessList = outboundIpAccessList;
   }
 
   public void setOutboundPrefixList(String listName) {
