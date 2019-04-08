@@ -520,9 +520,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
         OspfInterAreaRoute.builder()
             .setNetwork(prefix)
             .setNextHopIp(Ip.ZERO)
-            // TODO: update to be truly vendor-independent
-            .setAdmin(
-                RoutingProtocol.OSPF_IA.getSummaryAdministrativeCost(_c.getConfigurationFormat()))
+            .setAdmin(_process.getSummaryAdminCost())
             .setMetric(firstNonNull(summary.getMetric(), computedMetric))
             .setArea(areaNumber)
             // Note the non-routing bit: must not go into our own main RIB

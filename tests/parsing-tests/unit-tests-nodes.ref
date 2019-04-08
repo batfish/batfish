@@ -2610,7 +2610,8 @@
               },
               "processId" : "1",
               "referenceBandwidth" : 1.0E8,
-              "routerId" : "192.168.1.0"
+              "routerId" : "192.168.1.0",
+              "summaryAdminCost" : 254
             }
           }
         },
@@ -10988,7 +10989,8 @@
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
               "processId" : "1",
               "referenceBandwidth" : 4.0E10,
-              "routerId" : "1.2.3.4"
+              "routerId" : "1.2.3.4",
+              "summaryAdminCost" : 254
             }
           }
         }
@@ -11270,7 +11272,8 @@
               },
               "processId" : "1",
               "referenceBandwidth" : 1.0E8,
-              "routerId" : "1.1.1.1"
+              "routerId" : "1.1.1.1",
+              "summaryAdminCost" : 254
             }
           }
         }
@@ -16098,7 +16101,8 @@
               },
               "processId" : "1",
               "referenceBandwidth" : 1.0E8,
-              "routerId" : "2.130.0.1"
+              "routerId" : "2.130.0.1",
+              "summaryAdminCost" : 254
             }
           }
         }
@@ -17133,7 +17137,8 @@
               },
               "processId" : "default",
               "referenceBandwidth" : 1.0E9,
-              "routerId" : "10.1.2.3"
+              "routerId" : "10.1.2.3",
+              "summaryAdminCost" : 10
             }
           }
         }
@@ -18401,7 +18406,8 @@
               ],
               "processId" : "2",
               "referenceBandwidth" : 1.0E8,
-              "routerId" : "169.232.1.4"
+              "routerId" : "169.232.1.4",
+              "summaryAdminCost" : 254
             }
           }
         }
@@ -19065,7 +19071,8 @@
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
               "processId" : "default",
-              "referenceBandwidth" : 1.0E9
+              "referenceBandwidth" : 1.0E9,
+              "summaryAdminCost" : 10
             }
           }
         }
@@ -22133,7 +22140,8 @@
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
               "processId" : "default",
-              "referenceBandwidth" : 1.0E9
+              "referenceBandwidth" : 1.0E9,
+              "summaryAdminCost" : 10
             }
           }
         }
@@ -27002,7 +27010,8 @@
               "exportPolicy" : "~OSPF_EXPORT_POLICY:OTHER~",
               "processId" : "1",
               "referenceBandwidth" : 4.0E10,
-              "routerId" : "1.2.3.4"
+              "routerId" : "1.2.3.4",
+              "summaryAdminCost" : 254
             }
           },
           "default" : {
@@ -27043,7 +27052,8 @@
               },
               "processId" : "1",
               "referenceBandwidth" : 4.0E10,
-              "routerId" : "1.2.3.4"
+              "routerId" : "1.2.3.4",
+              "summaryAdminCost" : 254
             }
           }
         }
