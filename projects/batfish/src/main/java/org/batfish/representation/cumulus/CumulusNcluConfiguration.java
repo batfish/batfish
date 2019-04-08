@@ -345,6 +345,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     _c.getVendorFamily()
         .setCumulus(
             CumulusFamily.builder()
+                .setBridge(_bridge.toDataModel())
                 .setInterfaceClagSettings(
                     _interfaces.entrySet().stream()
                         .filter(ifaceEntry -> ifaceEntry.getValue().getClag() != null)
