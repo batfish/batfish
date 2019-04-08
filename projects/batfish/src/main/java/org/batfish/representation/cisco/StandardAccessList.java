@@ -3,16 +3,16 @@ package org.batfish.representation.cisco;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nonnull;
 
 public class StandardAccessList implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private List<StandardAccessListLine> _lines;
+  @Nonnull private List<StandardAccessListLine> _lines;
+  @Nonnull private final String _name;
 
-  private final String _name;
-
-  public StandardAccessList(String id) {
+  public StandardAccessList(@Nonnull String id) {
     _name = id;
     _lines = new ArrayList<>();
   }
@@ -21,10 +21,12 @@ public class StandardAccessList implements Serializable {
     _lines.add(all);
   }
 
+  @Nonnull
   public List<StandardAccessListLine> getLines() {
     return _lines;
   }
 
+  @Nonnull
   public String getName() {
     return _name;
   }
