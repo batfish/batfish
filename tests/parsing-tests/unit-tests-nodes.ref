@@ -13208,6 +13208,7 @@
             ],
             "allowedVlans" : "",
             "autostate" : true,
+            "encapsulationVlan" : 4094,
             "mtu" : 1500,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
