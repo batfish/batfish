@@ -210,7 +210,7 @@ A specification for a set of IPv4 addresses.
 
 <pre>
 ipSpec :=
-    ipTerm [<b>,</b> ipTerm]
+    ipTerm [(<b>&</b>|<b>,</b>|<b>\</b>) ipTerm]
 
 ipTerm :=
     &lt;<i>ip-address</i>&gt;
