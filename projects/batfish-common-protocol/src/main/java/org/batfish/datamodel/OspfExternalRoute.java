@@ -98,7 +98,7 @@ public abstract class OspfExternalRoute extends OspfRoute {
     }
 
     @Nonnull
-    public Builder setOspfMetricType(OspfMetricType ospfMetricType) {
+    public Builder setOspfMetricType(@Nonnull OspfMetricType ospfMetricType) {
       _ospfMetricType = ospfMetricType;
       return getThis();
     }

@@ -77,7 +77,7 @@ public class OspfExternalType2Route extends OspfExternalRoute {
   }
 
   @Override
-  public int routeCompare(@Nonnull AbstractRoute rhs) {
+  public int routeCompare(AbstractRoute rhs) {
     if (getClass() != rhs.getClass()) {
       return 0;
     }
