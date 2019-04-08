@@ -2473,6 +2473,29 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosDistributeList() throws IOException {
+    /*
+    r1 and r2 are BGP neighbors. r2 redistributes static routes 1.2.3.4 and 5.6.7.8 into BGP,
+    but has a distribute-list for r1 that blocks 1.2.3.4. r1 should get 5.6.7.8 but not 1.2.3.4.
+     */
+    String testrigName = "bgp-distribute-list";
+    String r1Name = "r1";
+    List<String> configurationNames = ImmutableList.of(r1Name, "r2");
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    batfish.computeDataPlane();
+    DataPlane dp = batfish.loadDataPlane();
+
+    Set<AbstractRoute> r1Routes = dp.getRibs().get(r1Name).get(DEFAULT_VRF_NAME).getRoutes();
+    assertThat(r1Routes, not(hasItem(hasPrefix(Prefix.parse("1.2.3.4/32")))));
+    assertThat(r1Routes, hasItem(hasPrefix(Prefix.parse("5.6.7.8/32"))));
+  }
+
+  @Test
   public void testIosPrefixList() throws IOException {
     String hostname = "ios-prefix-list";
     String filename = "configs/" + hostname;
