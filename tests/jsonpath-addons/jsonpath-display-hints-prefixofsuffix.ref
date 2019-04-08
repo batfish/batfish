@@ -1336,7 +1336,8 @@
                     },
                     "processId" : "1",
                     "referenceBandwidth" : 1.0E8,
-                    "routerId" : "2.1.1.1"
+                    "routerId" : "2.1.1.1",
+                    "summaryAdminCost" : 254
                   }
                 }
               }
