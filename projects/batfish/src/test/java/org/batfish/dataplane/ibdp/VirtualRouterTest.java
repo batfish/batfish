@@ -587,6 +587,7 @@ public class VirtualRouterTest {
                 .setMetric(100)
                 .setOspfMetricType(OspfMetricType.E2)
                 .setArea(1L)
+                .setAdvertiser("someNode")
                 .build();
 
     RibDelta<OspfExternalType1Route> emptyType1Delta =
