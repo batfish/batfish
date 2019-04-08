@@ -1494,10 +1494,9 @@ public final class F5BigipStructuredGrammarTest {
 
     assertThat(
         detail.getFlowDiffs(),
-        hasItem(
-            equalTo(
-                FlowDiff.flowDiff(
-                    IpField.DESTINATION, Ip.parse("10.200.1.2"), Ip.parse("8.8.8.8")))));
+        contains(
+            FlowDiff.flowDiff(IpField.DESTINATION, Ip.parse("10.200.1.2"), Ip.parse("8.8.8.8")),
+            FlowDiff.flowDiff(PortField.DESTINATION, 1024, 50000)));
   }
 
   @Test
