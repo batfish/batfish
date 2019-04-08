@@ -18,7 +18,7 @@ public class ExtendedAccessList implements Serializable {
     _lines = new ArrayList<>();
   }
 
-  public void addLine(ExtendedAccessListLine line) {
+  public void addLine(@Nonnull ExtendedAccessListLine line) {
     _lines.add(line);
   }
 

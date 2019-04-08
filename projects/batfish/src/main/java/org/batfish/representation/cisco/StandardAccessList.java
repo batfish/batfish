@@ -17,8 +17,8 @@ public class StandardAccessList implements Serializable {
     _lines = new ArrayList<>();
   }
 
-  public void addLine(StandardAccessListLine all) {
-    _lines.add(all);
+  public void addLine(@Nonnull StandardAccessListLine line) {
+    _lines.add(line);
   }
 
   @Nonnull
