@@ -605,15 +605,15 @@ public final class CumulusNcluGrammarTest {
 
     // encapsulation vlan
     assertThat(
-        "Ensure encapsulation VLAN is exrtacted",
+        "Ensure encapsulation VLAN is extracted",
         vc.getInterfaces().get("bond2.4094").getEncapsulationVlan(),
         equalTo(4094));
     assertThat(
-        "Ensure encapsulation VLAN is exrtacted",
+        "Ensure encapsulation VLAN is extracted",
         vc.getInterfaces().get("bond3.4094").getEncapsulationVlan(),
         equalTo(4094));
     assertThat(
-        "Ensure encapsulation VLAN is exrtacted",
+        "Ensure encapsulation VLAN is extracted",
         vc.getInterfaces().get("swp5.1").getEncapsulationVlan(),
         equalTo(1));
 
