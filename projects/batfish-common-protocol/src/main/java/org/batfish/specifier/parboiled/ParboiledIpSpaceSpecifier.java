@@ -36,7 +36,7 @@ final class ParboiledIpSpaceSpecifier implements IpSpaceSpecifier {
     public IpSpace visitDifferenceIpSpaceAstNode(
         DifferenceIpSpaceAstNode differenceIpSpaceAstNode) {
       // using firstNonNull to stop compiler warning. since neither left nor right should will be
-      // null, the union will not be null
+      // null, the difference will not be null
       return firstNonNull(
           AclIpSpace.difference(
               differenceIpSpaceAstNode.getLeft().accept(this),
@@ -49,7 +49,7 @@ final class ParboiledIpSpaceSpecifier implements IpSpaceSpecifier {
     public IpSpace visitIntersectionIpSpaceAstNode(
         IntersectionIpSpaceAstNode intersectionIpSpaceAstNode) {
       // using firstNonNull to stop compiler warning. since neither left nor right should will be
-      // null, the union will not be null
+      // null, the intersection will not be null
       return firstNonNull(
           AclIpSpace.intersection(
               intersectionIpSpaceAstNode.getLeft().accept(this),
