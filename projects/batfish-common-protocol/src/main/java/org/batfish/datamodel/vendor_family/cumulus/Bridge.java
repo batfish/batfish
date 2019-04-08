@@ -6,20 +6,21 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.IntegerSpace;
 
 /** Settings for bridged ports */
-public class Bridge implements Serializable {
+public final class Bridge implements Serializable {
 
   public static final class Builder {
 
-    private @Nullable Set<String> _ports;
+    private @Nullable SortedSet<String> _ports;
     private @Nullable Integer _pvid;
     private @Nullable IntegerSpace _vids;
 
@@ -32,8 +33,8 @@ public class Bridge implements Serializable {
       return new Bridge(_ports, _pvid, _vids);
     }
 
-    public @Nonnull Builder setPorts(Set<String> ports) {
-      _ports = ImmutableSet.copyOf(ports);
+    public @Nonnull Builder setPorts(Iterable<String> ports) {
+      _ports = ImmutableSortedSet.copyOf(ports);
       return this;
     }
 
@@ -64,14 +65,15 @@ public class Bridge implements Serializable {
       @JsonProperty(PROP_VIDS) @Nullable IntegerSpace vids) {
     checkArgument(pvid != null, "Missing %s", PROP_PVID);
     checkArgument(vids != null, "Missing %s", PROP_VIDS);
-    return new Bridge(ImmutableSet.copyOf(firstNonNull(ports, ImmutableSet.of())), pvid, vids);
+    return new Bridge(
+        ImmutableSortedSet.copyOf(firstNonNull(ports, ImmutableSortedSet.of())), pvid, vids);
   }
 
-  private final @Nonnull Set<String> _ports;
+  private final @Nonnull SortedSet<String> _ports;
   private final int _pvid;
   private final @Nonnull IntegerSpace _vids;
 
-  private Bridge(Set<String> ports, int pvid, IntegerSpace vids) {
+  private Bridge(SortedSet<String> ports, int pvid, IntegerSpace vids) {
     _ports = ports;
     _pvid = pvid;
     _vids = vids;
