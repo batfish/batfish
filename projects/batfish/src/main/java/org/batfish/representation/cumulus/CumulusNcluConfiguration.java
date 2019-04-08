@@ -49,7 +49,13 @@ import org.batfish.vendor.VendorConfiguration;
 public class CumulusNcluConfiguration extends VendorConfiguration {
 
   @VisibleForTesting public static final String CUMULUS_CLAG_DOMAIN_ID = "~CUMULUS_CLAG_DOMAIN~";
+
+  /**
+   * Bandwidth cannot be determined from name alone, so we choose the following made-up plausible
+   * value in absence of explicit information.
+   */
   private static final double DEFAULT_PORT_BANDWIDTH = 10E9D;
+
   public static final int DEFAULT_STATIC_ROUTE_ADMINISTRATIVE_DISTANCE = 1;
   public static final int DEFAULT_STATIC_ROUTE_METRIC = 0;
   public static final String LOOPBACK_INTERFACE_NAME = "lo";
@@ -478,6 +484,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
     applyBridgeSettings(iface.getBridge(), newIface);
 
+    // TODO: support explicitly-configured bandwidth
     newIface.setBandwidth(DEFAULT_PORT_BANDWIDTH);
 
     return newIface;
