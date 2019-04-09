@@ -3628,6 +3628,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markIpOrMacAcls(
         CiscoStructureUsage.CLASS_MAP_ACCESS_GROUP, CiscoStructureUsage.CLASS_MAP_ACCESS_LIST);
     markIpv4Acls(
+        CiscoStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_IN,
+        CiscoStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
         CiscoStructureUsage.CONTROL_PLANE_ACCESS_GROUP,
         CiscoStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL,
         CiscoStructureUsage.INTERFACE_INCOMING_FILTER,
@@ -3652,6 +3654,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL4,
         CiscoStructureUsage.SSH_IPV4_ACL);
     markIpv6Acls(
+        CiscoStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_IN,
+        CiscoStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_OUT,
         CiscoStructureUsage.LINE_ACCESS_CLASS_LIST6,
         CiscoStructureUsage.NTP_ACCESS_GROUP,
         CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST,

@@ -2482,18 +2482,27 @@ public class CiscoGrammarTest {
     - Routes to r2 are filtered by extended access-list 100, which denies everything but 5.6.7.8
     */
     String testrigName = "bgp-distribute-list";
+    String advertiserName = "advertiser";
     String r1Name = "r1";
     String r2Name = "r2";
-    List<String> configurationNames = ImmutableList.of("advertiser", r1Name, r2Name);
+    List<String> configurationNames = ImmutableList.of(advertiserName, r1Name, r2Name);
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
+
+    /* Confirm access list uses are counted correctly */
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+    String filename = "configs/" + advertiserName;
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_STANDARD, "1", 1));
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "100", 1));
+
+    /* Ensure both neighbors have 5.6.7.8 but not 1.2.3.4 */
     batfish.computeDataPlane();
     DataPlane dp = batfish.loadDataPlane();
-
     Set<AbstractRoute> r1Routes = dp.getRibs().get(r1Name).get(DEFAULT_VRF_NAME).getRoutes();
     Set<AbstractRoute> r2Routes = dp.getRibs().get(r2Name).get(DEFAULT_VRF_NAME).getRoutes();
     assertThat(r1Routes, not(hasItem(hasPrefix(Prefix.parse("1.2.3.4/32")))));
