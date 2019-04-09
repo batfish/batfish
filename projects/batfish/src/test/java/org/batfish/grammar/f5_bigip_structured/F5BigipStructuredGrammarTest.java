@@ -1431,10 +1431,6 @@ public final class F5BigipStructuredGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     batfish.computeDataPlane();
 
-    // Assume a flow is going out of /Common/vlan1
-    Transformation outgoingTransformation =
-        c.getAllInterfaces().get("/Common/vlan1").getOutgoingTransformation();
-
     // SNAT via snat /Common/snat1
     Flow flow =
         Flow.builder()

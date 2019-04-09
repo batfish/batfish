@@ -14627,6 +14627,11 @@
             "allPrefixes" : [
               "10.0.0.1/24"
             ],
+            "firewallSessionInterfaceInfo" : {
+              "sessionInterfaces" : [
+                "/Common/MYVLAN"
+              ]
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
