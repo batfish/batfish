@@ -11,9 +11,9 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_jar")
 ## First section: enable pubref_rules_maven at all
 git_repository(
     name = "org_pubref_rules_maven",
-    commit = "fce4f35b5a36109ed4faa820606c518870805bde",
+    commit = "3a63c612b9192db72685751d82e0a2be432a7497",
     remote = "https://github.com/dhalperi/rules_maven",
-    shallow_since = "1541091071 -0700",
+    shallow_since = "1554829738 -0700",
 )
 
 load("@org_pubref_rules_maven//maven:rules.bzl", "maven_repositories", "maven_repository")
