@@ -962,7 +962,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
 
   /** Transform type1 routes on import */
   @Nonnull
-  private RouteAdvertisement<OspfExternalType1Route> transformType1RouteOnImport(
+  @VisibleForTesting
+  RouteAdvertisement<OspfExternalType1Route> transformType1RouteOnImport(
       RouteAdvertisement<OspfExternalType1Route> routeAdvertisement,
       Ip nextHopIp,
       long incrementalCost) {
@@ -1003,7 +1004,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
 
   /** Transform type2 routes on import */
   @Nonnull
-  private RouteAdvertisement<OspfExternalType2Route> transformType2RouteOnImport(
+  @VisibleForTesting
+  RouteAdvertisement<OspfExternalType2Route> transformType2RouteOnImport(
       RouteAdvertisement<OspfExternalType2Route> routeAdvertisement,
       Ip nextHopIp,
       long incrementalCost) {
@@ -1022,6 +1024,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   /** Common transformations for type 1 and type 2 routes on import (e.g., nextHopIp, admin cost) */
   private OspfExternalRoute.Builder transformType1and2CommonOnImport(
       OspfExternalRoute r, Ip nextHopIp) {
+    assert r.getArea() != OspfRoute.NO_AREA; // Area must be set during export
     return (OspfExternalRoute.Builder)
         r.toBuilder()
             .setNextHopIp(nextHopIp)
@@ -1111,7 +1114,9 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    * @param routeAdvertisements routes that are being sent to a given area
    * @param areaConfig area to which we are sending the routes
    */
-  private Collection<RouteAdvertisement<OspfExternalType1Route>> transformType1RoutesOnExport(
+  @Nonnull
+  @VisibleForTesting
+  Collection<RouteAdvertisement<OspfExternalType1Route>> transformType1RoutesOnExport(
       Collection<RouteAdvertisement<OspfExternalType1Route>> routeAdvertisements,
       OspfArea areaConfig) {
     Long metricOverride = _process.getMaxMetricSummaryNetworks();
@@ -1162,7 +1167,9 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    * @param routeAdvertisements routes that are being sent to a given area
    * @param areaConfig area to which we are sending the routes
    */
-  private Collection<RouteAdvertisement<OspfExternalType2Route>> transformType2RoutesOnExport(
+  @Nonnull
+  @VisibleForTesting
+  Collection<RouteAdvertisement<OspfExternalType2Route>> transformType2RoutesOnExport(
       Collection<RouteAdvertisement<OspfExternalType2Route>> routeAdvertisements,
       OspfArea areaConfig) {
     return routeAdvertisements.stream()
