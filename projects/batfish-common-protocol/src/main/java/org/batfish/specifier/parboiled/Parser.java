@@ -538,7 +538,7 @@ public class Parser extends CommonParser {
    * IpSpace grammar
    *
    * <pre>
-   * ipSpaceSpec := ipSpecTerm [, ipSpecTerm]*
+   * ipSpaceSpec := ipSpecTerm [{@literal &} | , | \ ipSpecTerm]*
    *
    * ipSpecTerm := @addgressgroup(groupname, bookname)  //ref.addressgroup for back compat
    *               | locationSpec
@@ -550,13 +550,29 @@ public class Parser extends CommonParser {
    * </pre>
    */
 
-  /* An IpSpace expression is a comma-separated list of IpSpaceTerms */
+  /* An IpSpace expression is union or difference of IpSpace intersection terms */
   public Rule IpSpaceSpec() {
+    Var<Character> op = new Var<>();
+    return Sequence(
+        IpSpaceIntersection(),
+        WhiteSpace(),
+        ZeroOrMore(
+            FirstOf(", ", "\\ "),
+            op.set(matchedChar()),
+            IpSpaceIntersection(),
+            push(SetOpIpSpaceAstNode.create(op.get(), pop(1), pop())),
+            WhiteSpace()));
+  }
+
+  public Rule IpSpaceIntersection() {
     return Sequence(
         IpSpaceTerm(),
         WhiteSpace(),
         ZeroOrMore(
-            ", ", IpSpaceTerm(), push(new UnionIpSpaceAstNode(pop(1), pop())), WhiteSpace()));
+            "& ",
+            IpSpaceTerm(),
+            push(new IntersectionIpSpaceAstNode(pop(1), pop())),
+            WhiteSpace()));
   }
 
   /* An IpSpace term is one of these things */

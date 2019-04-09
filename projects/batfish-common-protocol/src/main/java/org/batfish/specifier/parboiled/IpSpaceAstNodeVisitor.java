@@ -14,4 +14,8 @@ interface IpSpaceAstNodeVisitor<T> {
   T visitPrefixAstNode(PrefixAstNode prefixAstNode);
 
   T visitLocationIpSpaceAstNode(LocationIpSpaceAstNode locationIpSpaceAstNode);
+
+  T visitDifferenceIpSpaceAstNode(DifferenceIpSpaceAstNode differenceIpSpaceAstNode);
+
+  T visitIntersectionIpSpaceAstNode(IntersectionIpSpaceAstNode intersectionIpSpaceAstNode);
 }
