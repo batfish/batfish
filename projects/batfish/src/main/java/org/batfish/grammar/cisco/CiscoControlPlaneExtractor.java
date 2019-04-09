@@ -8278,7 +8278,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     int line = ctx.list_name.getLine();
     CiscoStructureUsage usage;
     if (_inIpv6BgpPeer) {
-      todo(ctx, "IPv6 prefix-lists not supported for BGP");
+      // TODO Support IPv6 prefix-lists in BGP
       if (ctx.IN() != null) {
         usage = BGP_INBOUND_PREFIX6_LIST;
       } else if (ctx.OUT() != null) {
