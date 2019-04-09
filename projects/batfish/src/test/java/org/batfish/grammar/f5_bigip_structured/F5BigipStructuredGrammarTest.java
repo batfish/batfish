@@ -1465,7 +1465,6 @@ public final class F5BigipStructuredGrammarTest {
                 .setIngressNode(hostname)
                 .setIpProtocol(IpProtocol.TCP)
                 .setDstIp(Ip.parse("10.200.1.2"))
-                // TODO:
                 .setDstPort(1024)
                 .build()));
 

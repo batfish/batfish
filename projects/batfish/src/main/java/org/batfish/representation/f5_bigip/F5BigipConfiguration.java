@@ -1090,9 +1090,6 @@ public class F5BigipConfiguration extends VendorConfiguration {
     newIface.setBandwidth(firstNonNull(iface.getBandwidth(), speed, Interface.DEFAULT_BANDWIDTH));
     // Assume all interfaces are in default VRF for now
     newIface.setVrf(_c.getDefaultVrf());
-    // Assume each interface has its own session info
-    newIface.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(ImmutableList.of(newIface.getName()), null, null));
     return newIface;
   }
 
@@ -1106,9 +1103,6 @@ public class F5BigipConfiguration extends VendorConfiguration {
             .collect(ImmutableSet.toImmutableSet()));
     // Assume all interfaces are in default VRF for now
     newIface.setVrf(_c.getDefaultVrf());
-    // Assume each interface has its own session info
-    newIface.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(ImmutableList.of(newIface.getName()), null, null));
     return newIface;
   }
 
