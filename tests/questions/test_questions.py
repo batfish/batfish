@@ -106,7 +106,6 @@ NO_ORDERED_VARIABLE_NAMES_QUESTIONS = {
     'questions/experimental/bgpProcessConfiguration.json',
     'questions/experimental/bgpSessionCompatibility.json',
     'questions/experimental/bgpSessionStatus.json',
-    'questions/experimental/bidirectionalTraceroute.json',
     'questions/experimental/differentialReachability.json',
     'questions/experimental/filterLineReachability.json',
     'questions/experimental/filterTable.json',
