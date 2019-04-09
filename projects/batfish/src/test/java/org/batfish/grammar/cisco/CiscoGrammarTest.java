@@ -2473,7 +2473,7 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosDistributeList() throws IOException {
+  public void testIosBgpDistributeList() throws IOException {
     /*
          r1 -- advertiser -- r2
     The advertiser redistributes static routes 1.2.3.4 and 5.6.7.8 into BGP, but has outbound
@@ -2503,7 +2503,7 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosPrefixList() throws IOException {
+  public void testIosBgpPrefixList() throws IOException {
     String hostname = "ios-prefix-list";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
