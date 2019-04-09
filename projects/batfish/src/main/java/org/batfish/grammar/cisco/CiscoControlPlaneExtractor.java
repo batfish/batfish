@@ -5281,7 +5281,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     int line = ctx.list_name.getStart().getLine();
     CiscoStructureUsage usage;
     if (_inIpv6BgpPeer) {
-      todo(ctx, "IPv6 access lists not supported for BGP distribute-lists");
+      // TODO Support IPv6 access lists in BGP distribute-lists
       if (ctx.IN() != null) {
         usage = BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_IN;
       } else if (ctx.OUT() != null) {
