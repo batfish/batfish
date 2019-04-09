@@ -37,6 +37,7 @@ router bgp 1
  exit-peer-policy
  neighbor 10.0.0.1 disable-connected-check
  neighbor 10.0.0.1 unsuppress-map UNSUPP-MAP
+ neighbor 10.0.0.1 distribute-list 5 out
  address-family ipv6 unicast
    bgp scan-time 5
    redistribute ospfv3 1 route-map ospfv3_map
@@ -55,3 +56,4 @@ route-map AGGREGATE-MAP permit 10
 !
 route-map UNSUPP-MAP permit 10
 !
+access-list 5 deny any

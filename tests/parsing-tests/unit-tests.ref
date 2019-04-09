@@ -15287,6 +15287,17 @@
             "                VARIABLE:'UNSUPP-MAP')",
             "              NEWLINE:'\\n'))))",
             "      (router_bgp_stanza_tail",
+            "        (neighbor_flat_rb_stanza",
+            "          NEIGHBOR:'neighbor'",
+            "          ip = IP_ADDRESS:'10.0.0.1'  <== mode:M_NEIGHBOR",
+            "          (bgp_tail",
+            "            (distribute_list_bgp_tail",
+            "              DISTRIBUTE_LIST:'distribute-list'",
+            "              list_name = (variable",
+            "                DEC:'5')",
+            "              OUT:'out'",
+            "              NEWLINE:'\\n'))))",
+            "      (router_bgp_stanza_tail",
             "        (address_family_rb_stanza",
             "          (address_family_header",
             "            ADDRESS_FAMILY:'address-family'",
@@ -15385,6 +15396,16 @@
             "        PERMIT:'permit')",
             "      num = DEC:'10'",
             "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (standard_access_list_stanza",
+            "      ACCESS_LIST:'access-list'",
+            "      num = ACL_NUM_STANDARD:'5'",
+            "      (standard_access_list_tail",
+            "        ala = (access_list_action",
+            "          DENY:'deny')",
+            "        ipr = (access_list_ip_range",
+            "          ANY:'any')",
+            "        NEWLINE:'\\n\\n')))",
             "  EOF:<EOF>)"
           ]
         },
@@ -75095,25 +75116,33 @@
           "route-map" : {
             "AGGREGATE-MAP" : {
               "definitionLines" : [
-                54
+                55
               ],
               "numReferrers" : 1
             },
             "CONNECTED-TO-BGP" : {
               "definitionLines" : [
-                52
+                53
               ],
               "numReferrers" : 1
             },
             "UNSUPP-MAP" : {
               "definitionLines" : [
-                56
+                57
               ],
               "numReferrers" : 1
             },
             "ospfv3_map" : {
               "definitionLines" : [
-                50
+                51
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "standard ipv4 access-list" : {
+            "5" : {
+              "definitionLines" : [
+                59
               ],
               "numReferrers" : 1
             }
@@ -81131,15 +81160,22 @@
               ]
             }
           },
+          "ipv4 acl" : {
+            "5" : {
+              "bgp neighbor distribute-list access-list out" : [
+                40
+              ]
+            }
+          },
           "route-map" : {
             "AGGREGATE-MAP" : {
               "bgp vrf aggregate-address attribute-map" : [
-                46
+                47
               ]
             },
             "CONNECTED-TO-BGP" : {
               "bgp redistribute connected route-map" : [
-                47
+                48
               ]
             },
             "UNSUPP-MAP" : {
@@ -81164,7 +81200,7 @@
             },
             "ospfv3_map" : {
               "bgp redistribute ospfv3 route-map" : [
-                42
+                43
               ]
             }
           },
@@ -81172,7 +81208,8 @@
             "10.0.0.1" : {
               "bgp neighbor without remote-as" : [
                 38,
-                39
+                39,
+                40
               ]
             },
             "10.20.2.2" : {
@@ -85207,7 +85244,8 @@
             "10.0.0.1" : {
               "bgp neighbor without remote-as" : [
                 38,
-                39
+                39,
+                40
               ]
             },
             "10.20.2.2" : {
