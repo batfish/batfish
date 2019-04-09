@@ -750,7 +750,9 @@
           "filename" : "configs/cisco_bgp",
           "lines" : [
             38,
-            39
+            39,
+            40,
+            41
           ]
         }
       },

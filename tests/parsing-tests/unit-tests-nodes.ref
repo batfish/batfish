@@ -6173,6 +6173,33 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
+        "ipAccessLists" : {
+          "5" : {
+            "name" : "5",
+            "lines" : [
+              {
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    },
+                    "negate" : false,
+                    "srcIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    }
+                  }
+                },
+                "name" : "deny any"
+              }
+            ],
+            "sourceName" : "5",
+            "sourceType" : "standard ipv4 access-list"
+          }
+        },
         "routeFilterLists" : {
           "~MATCH_SUPPRESSED_SUMMARY_ONLY:aVrfWithInnerStatements~" : {
             "lines" : [
