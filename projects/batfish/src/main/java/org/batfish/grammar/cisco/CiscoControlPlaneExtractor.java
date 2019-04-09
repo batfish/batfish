@@ -8276,17 +8276,28 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitPrefix_list_bgp_tail(Prefix_list_bgp_tailContext ctx) {
     String listName = ctx.list_name.getText();
     int line = ctx.list_name.getLine();
-    CiscoStructureType type = _inIpv6BgpPeer ? PREFIX6_LIST : PREFIX_LIST;
     CiscoStructureUsage usage;
-    if (ctx.IN() != null) {
-      _currentPeerGroup.setInboundPrefixList(listName);
-      usage = _inIpv6BgpPeer ? BGP_INBOUND_PREFIX6_LIST : BGP_INBOUND_PREFIX_LIST;
-    } else if (ctx.OUT() != null) {
-      _currentPeerGroup.setOutboundPrefixList(listName);
-      usage = _inIpv6BgpPeer ? BGP_OUTBOUND_PREFIX6_LIST : BGP_OUTBOUND_PREFIX_LIST;
+    if (_inIpv6BgpPeer) {
+      // TODO Support IPv6 prefix-lists in BGP
+      if (ctx.IN() != null) {
+        usage = BGP_INBOUND_PREFIX6_LIST;
+      } else if (ctx.OUT() != null) {
+        usage = BGP_OUTBOUND_PREFIX6_LIST;
+      } else {
+        throw new BatfishException("Invalid direction for BGP prefix-list");
+      }
     } else {
-      throw new BatfishException("bad direction");
+      if (ctx.IN() != null) {
+        _currentPeerGroup.setInboundPrefixList(listName);
+        usage = BGP_INBOUND_PREFIX_LIST;
+      } else if (ctx.OUT() != null) {
+        _currentPeerGroup.setOutboundPrefixList(listName);
+        usage = BGP_OUTBOUND_PREFIX_LIST;
+      } else {
+        throw new BatfishException("Invalid direction for BGP prefix-list");
+      }
     }
+    CiscoStructureType type = _inIpv6BgpPeer ? PREFIX6_LIST : PREFIX_LIST;
     _configuration.referenceStructure(type, listName, usage, line);
   }
 
