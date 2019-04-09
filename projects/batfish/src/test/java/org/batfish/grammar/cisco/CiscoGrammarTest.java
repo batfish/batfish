@@ -280,6 +280,7 @@ import org.batfish.datamodel.EigrpExternalRoute;
 import org.batfish.datamodel.EigrpInternalRoute;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.HeaderSpace;
@@ -326,6 +327,8 @@ import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpProcessMode;
+import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
+import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.matchers.CommunityListLineMatchers;
 import org.batfish.datamodel.matchers.CommunityListMatchers;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
@@ -372,6 +375,7 @@ import org.batfish.representation.cisco.NetworkObjectGroupAddressSpecifier;
 import org.batfish.representation.cisco.WildcardAddressSpecifier;
 import org.batfish.representation.cisco.eos.AristaEosVxlan;
 import org.hamcrest.Matchers;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -5321,5 +5325,64 @@ public class CiscoGrammarTest {
         ccae, not(hasUndefinedReference(filename, NETWORK_OBJECT_GROUP, "source-real-group")));
     assertThat(ccae, hasUndefinedReference(filename, NETWORK_OBJECT, "undef-source-mapped"));
     assertThat(ccae, hasUndefinedReference(filename, NETWORK_OBJECT, "undef-source-real"));
+  }
+
+  @Ignore
+  @Test
+  public void testNatTable() throws IOException {
+    String hostname = "ios-nat-table";
+
+    Configuration configuration = parseConfig(hostname);
+    Interface inside = configuration.getAllInterfaces().get("FastEthernet0/0");
+    Interface outside = configuration.getAllInterfaces().get("GigabitEthernet1/0");
+
+    Flow flow =
+        Flow.builder()
+            .setSrcIp(Ip.parse("1.0.0.2"))
+            .setSrcPort(10000)
+            .setDstIp(Ip.parse("2.0.0.1"))
+            .setDstPort(20000)
+            .setIngressNode(hostname)
+            .setIngressInterface(inside.getName())
+            .setIpProtocol(IpProtocol.TCP)
+            .setTag("tag")
+            .build();
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.computeDataPlane();
+    Map<Flow, List<TraceAndReverseFlow>> traces =
+        batfish.getTracerouteEngine().computeTracesAndReverseFlows(ImmutableSet.of(flow), false);
+
+    assertThat(traces.get(flow), hasSize(1));
+
+    Flow returnFlow = traces.get(flow).get(0).getReverseFlow();
+    assertThat(
+        returnFlow,
+        equalTo(
+            Flow.builder()
+                .setDstIp(Ip.parse("10.0.0.1"))
+                .setDstPort(10000)
+                .setSrcIp(Ip.parse("2.0.0.1"))
+                .setSrcPort(20000)
+                .setIngressNode(hostname)
+                .setIngressInterface(outside.getName())
+                .setIpProtocol(IpProtocol.TCP)
+                .setTag("tag")
+                .build()));
+
+    Set<FirewallSessionTraceInfo> sessions = traces.get(flow).get(0).getNewFirewallSessions();
+
+    Map<Flow, List<TraceAndReverseFlow>> returnFlowTraces =
+        batfish
+            .getTracerouteEngine()
+            .computeTracesAndReverseFlows(ImmutableSet.of(returnFlow), sessions, false);
+
+    assertThat(returnFlowTraces.get(returnFlow), hasSize(1));
+    List<TraceAndReverseFlow> returnTraceAndReverseFlows = returnFlowTraces.get(returnFlow);
+
+    // return flow should be null routed given the null route in the config
+    assertThat(
+        returnTraceAndReverseFlows.get(0).getTrace().getDisposition(),
+        equalTo(FlowDisposition.NULL_ROUTED));
   }
 }
