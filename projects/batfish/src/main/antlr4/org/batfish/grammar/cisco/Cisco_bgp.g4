@@ -309,7 +309,11 @@ disable_peer_as_check_bgp_tail
 
 distribute_list_bgp_tail
 :
-   DISTRIBUTE_LIST null_rest_of_line
+   DISTRIBUTE_LIST  list_name = variable
+   (
+      IN
+      | OUT
+   ) NEWLINE
 ;
 
 ebgp_multihop_bgp_tail
