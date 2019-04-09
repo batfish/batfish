@@ -15295,6 +15295,17 @@
             "              DISTRIBUTE_LIST:'distribute-list'",
             "              list_name = (variable",
             "                DEC:'5')",
+            "              IN:'in'",
+            "              NEWLINE:'\\n'))))",
+            "      (router_bgp_stanza_tail",
+            "        (neighbor_flat_rb_stanza",
+            "          NEIGHBOR:'neighbor'",
+            "          ip = IP_ADDRESS:'10.0.0.1'  <== mode:M_NEIGHBOR",
+            "          (bgp_tail",
+            "            (distribute_list_bgp_tail",
+            "              DISTRIBUTE_LIST:'distribute-list'",
+            "              list_name = (variable",
+            "                DEC:'5')",
             "              OUT:'out'",
             "              NEWLINE:'\\n'))))",
             "      (router_bgp_stanza_tail",
@@ -75116,25 +75127,25 @@
           "route-map" : {
             "AGGREGATE-MAP" : {
               "definitionLines" : [
-                55
+                56
               ],
               "numReferrers" : 1
             },
             "CONNECTED-TO-BGP" : {
               "definitionLines" : [
-                53
+                54
               ],
               "numReferrers" : 1
             },
             "UNSUPP-MAP" : {
               "definitionLines" : [
-                57
+                58
               ],
               "numReferrers" : 1
             },
             "ospfv3_map" : {
               "definitionLines" : [
-                51
+                52
               ],
               "numReferrers" : 1
             }
@@ -75142,9 +75153,9 @@
           "standard ipv4 access-list" : {
             "5" : {
               "definitionLines" : [
-                59
+                60
               ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             }
           }
         },
@@ -81162,20 +81173,23 @@
           },
           "ipv4 acl" : {
             "5" : {
-              "bgp neighbor distribute-list access-list out" : [
+              "bgp neighbor distribute-list access-list in" : [
                 40
+              ],
+              "bgp neighbor distribute-list access-list out" : [
+                41
               ]
             }
           },
           "route-map" : {
             "AGGREGATE-MAP" : {
               "bgp vrf aggregate-address attribute-map" : [
-                47
+                48
               ]
             },
             "CONNECTED-TO-BGP" : {
               "bgp redistribute connected route-map" : [
-                48
+                49
               ]
             },
             "UNSUPP-MAP" : {
@@ -81200,7 +81214,7 @@
             },
             "ospfv3_map" : {
               "bgp redistribute ospfv3 route-map" : [
-                43
+                44
               ]
             }
           },
@@ -81209,7 +81223,8 @@
               "bgp neighbor without remote-as" : [
                 38,
                 39,
-                40
+                40,
+                41
               ]
             },
             "10.20.2.2" : {
@@ -85245,7 +85260,8 @@
               "bgp neighbor without remote-as" : [
                 38,
                 39,
-                40
+                40,
+                41
               ]
             },
             "10.20.2.2" : {
