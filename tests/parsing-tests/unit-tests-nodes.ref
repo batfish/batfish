@@ -14627,14 +14627,14 @@
             "allPrefixes" : [
               "10.0.0.1/24"
             ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
             "firewallSessionInterfaceInfo" : {
               "sessionInterfaces" : [
                 "/Common/MYVLAN"
               ]
             },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
             "incomingFilter" : "~incoming_filter:/Common/MYVLAN~",
             "mtu" : 1500,
             "ospfDeadInterval" : 0,

@@ -1113,7 +1113,12 @@ public class F5BigipConfiguration extends VendorConfiguration {
     newIface.setVlan(vlan.getTag());
     newIface.setBandwidth(Interface.DEFAULT_BANDWIDTH);
     newIface.setVrf(_c.getDefaultVrf());
-    // Assume each interface has its own session info
+    // Assume each interface has its own session info (sessions are not shared by interfaces).
+    // That is, return flows can only enter the interface the forward flow exited in order to match
+    // the session setup by the forward flow.
+    // By default, F5 do not apply packet filters to established connections; but one can enable
+    // packet filter for established connections
+    // TODO: support packet filter for established connections
     newIface.setFirewallSessionInterfaceInfo(
         new FirewallSessionInterfaceInfo(ImmutableList.of(newIface.getName()), null, null));
     return newIface;

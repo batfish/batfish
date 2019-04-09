@@ -1426,7 +1426,7 @@ public final class F5BigipStructuredGrammarTest {
     String hostname = "f5_bigip_structured_snat";
     String tag = "tag";
 
-    Configuration c = parseConfig(hostname);
+    parseConfig(hostname);
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     batfish.computeDataPlane();
