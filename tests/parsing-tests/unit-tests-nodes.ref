@@ -14704,6 +14704,11 @@
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
+            "firewallSessionInterfaceInfo" : {
+              "sessionInterfaces" : [
+                "/Common/MYVLAN"
+              ]
+            },
             "incomingFilter" : "~incoming_filter:/Common/MYVLAN~",
             "mtu" : 1500,
             "ospfDeadInterval" : 0,
