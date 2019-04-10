@@ -149,6 +149,11 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
     return _parserErrorListener;
   }
 
+  /**
+   * Returns {@code true} iff this is grammar uses custom recovery infrastructure, e.g. via {@link
+   * BatfishANTLRErrorStrategy}. For non-recovery-based grammars, this should return {@code false}
+   * even when unrecognized lines are allowed.
+   */
   public boolean getRecovery() {
     return _recovery;
   }
