@@ -69,7 +69,7 @@ public final class JFactory extends BDDFactory {
    * not done so. This flag implies non-trivial runtime overhead but defers BDD garbage collection
    * to Java, rather than manual user control of reference counting.
    */
-  private static final boolean USE_FINALIZER = true;
+  private static final boolean USE_FINALIZER = false;
 
   /**
    * When {@link #USE_FINALIZER} is true, setting this flag to true enables debug print messages
