@@ -21,15 +21,29 @@ public class BatfishLexerErrorListener extends BatfishGrammarErrorListener {
       int charPositionInLine,
       String msg,
       RecognitionException e) {
-    if (!_settings.getDisableUnrecognized()) {
+    if (!_settings.getDisableUnrecognized() && _combinedParser.getRecovery()) {
+      // recovery should have added error node for parse tree listener, so we can stop here
       return;
     }
-    StringBuilder sb = new StringBuilder();
     BatfishParser parser = _combinedParser.getParser();
     BatfishLexer lexer = _combinedParser.getLexer();
     List<String> ruleNames = Arrays.asList(parser.getRuleNames());
     ParserRuleContext ctx = parser.getContext();
     String ruleStack = ctx.toString(ruleNames);
+    String text = _combinedParser.getInput();
+    String[] lines = text.split("\n", -1);
+    int errorLineIndex = line - 1;
+    if (!_settings.getDisableUnrecognized()) {
+      // no recovery, so have to store error node for parse tree listener to process later
+      parser
+          .getContext()
+          .addErrorNode(
+              parser.createErrorNode(
+                  parser.getContext(),
+                  new UnrecognizedLineToken(lines[errorLineIndex], line, ruleStack)));
+      return;
+    }
+    StringBuilder sb = new StringBuilder();
     sb.append(
         "lexer: " + _grammarName + ": line " + line + ":" + charPositionInLine + ": " + msg + "\n");
     sb.append("Current rule stack: '" + ruleStack + "'.\n");
@@ -50,9 +64,6 @@ public class BatfishLexerErrorListener extends BatfishGrammarErrorListener {
     sb.append(lexer.printStateVariables());
 
     // collect context from text
-    String text = _combinedParser.getInput();
-    String[] lines = text.split("\n", -1);
-    int errorLineIndex = line - 1;
     int errorContextStartLine = Math.max(errorLineIndex - _settings.getMaxParserContextLines(), 0);
     int errorContextEndLine =
         Math.min(errorLineIndex + _settings.getMaxParserContextLines(), lines.length);
