@@ -43,6 +43,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.StaticRoute.Builder;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.flow.BidirectionalTrace;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.table.TableAnswerElement;
@@ -945,7 +946,6 @@ public class TracerouteTest {
   public void testNatTable() throws IOException {
     String hostname = "ios-nat-table";
     String inside = "FastEthernet0/0";
-    String outside = "GigabitEthernet1/0";
 
     _batfish =
         BatfishTestUtils.getBatfishForTextConfigs(
@@ -965,39 +965,16 @@ public class TracerouteTest {
             .setTag("tag")
             .build();
 
-    Map<Flow, List<TraceAndReverseFlow>> traces =
-        _batfish.getTracerouteEngine().computeTracesAndReverseFlows(ImmutableSet.of(flow), false);
+    List<BidirectionalTrace> traces =
+        BidirectionalTracerouteAnswerer.computeBidirectionalTraces(
+            ImmutableSet.of(flow), _batfish.getTracerouteEngine(), false);
 
-    assertThat(traces.get(flow), hasSize(1));
+    assertThat(traces, hasSize(1));
 
-    Flow returnFlow = traces.get(flow).get(0).getReverseFlow();
+    BidirectionalTrace bidirectionalTrace = traces.get(0);
+
     assertThat(
-        returnFlow,
-        equalTo(
-            Flow.builder()
-                .setDstIp(Ip.parse("10.0.0.1"))
-                .setDstPort(10000)
-                .setSrcIp(Ip.parse("2.0.0.1"))
-                .setSrcPort(20000)
-                .setIngressNode(hostname)
-                .setIngressInterface(outside)
-                .setIpProtocol(IpProtocol.TCP)
-                .setTag("tag")
-                .build()));
-
-    Set<FirewallSessionTraceInfo> sessions = traces.get(flow).get(0).getNewFirewallSessions();
-
-    Map<Flow, List<TraceAndReverseFlow>> returnFlowTraces =
-        _batfish
-            .getTracerouteEngine()
-            .computeTracesAndReverseFlows(ImmutableSet.of(returnFlow), sessions, false);
-
-    assertThat(returnFlowTraces.get(returnFlow), hasSize(1));
-    List<TraceAndReverseFlow> returnTraceAndReverseFlows = returnFlowTraces.get(returnFlow);
-
-    // return flow should be null routed given the null route in the config
-    assertThat(
-        returnTraceAndReverseFlows.get(0).getTrace().getDisposition(),
+        bidirectionalTrace.getReverseTrace().getDisposition(),
         equalTo(FlowDisposition.NULL_ROUTED));
   }
 }
