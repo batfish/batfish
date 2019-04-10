@@ -18,19 +18,24 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.Prefix;
@@ -38,11 +43,14 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.StaticRoute.Builder;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
+import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -930,5 +938,66 @@ public class TracerouteTest {
                         containsInAnyOrder(
                             ImmutableList.of(hasDisposition(FlowDisposition.INSUFFICIENT_INFO))),
                         Schema.set(Schema.TRACE))))));
+  }
+
+  @Ignore
+  @Test
+  public void testNatTable() throws IOException {
+    String hostname = "ios-nat-table";
+    String inside = "FastEthernet0/0";
+    String outside = "GigabitEthernet1/0";
+
+    _batfish =
+        BatfishTestUtils.getBatfishForTextConfigs(
+            _folder, "org/batfish/allinone/testconfigs/" + hostname);
+
+    _batfish.computeDataPlane();
+
+    Flow flow =
+        Flow.builder()
+            .setSrcIp(Ip.parse("1.0.0.2"))
+            .setSrcPort(10000)
+            .setDstIp(Ip.parse("2.0.0.1"))
+            .setDstPort(20000)
+            .setIngressNode(hostname)
+            .setIngressInterface(inside)
+            .setIpProtocol(IpProtocol.TCP)
+            .setTag("tag")
+            .build();
+
+    Map<Flow, List<TraceAndReverseFlow>> traces =
+        _batfish.getTracerouteEngine().computeTracesAndReverseFlows(ImmutableSet.of(flow), false);
+
+    assertThat(traces.get(flow), hasSize(1));
+
+    Flow returnFlow = traces.get(flow).get(0).getReverseFlow();
+    assertThat(
+        returnFlow,
+        equalTo(
+            Flow.builder()
+                .setDstIp(Ip.parse("10.0.0.1"))
+                .setDstPort(10000)
+                .setSrcIp(Ip.parse("2.0.0.1"))
+                .setSrcPort(20000)
+                .setIngressNode(hostname)
+                .setIngressInterface(outside)
+                .setIpProtocol(IpProtocol.TCP)
+                .setTag("tag")
+                .build()));
+
+    Set<FirewallSessionTraceInfo> sessions = traces.get(flow).get(0).getNewFirewallSessions();
+
+    Map<Flow, List<TraceAndReverseFlow>> returnFlowTraces =
+        _batfish
+            .getTracerouteEngine()
+            .computeTracesAndReverseFlows(ImmutableSet.of(returnFlow), sessions, false);
+
+    assertThat(returnFlowTraces.get(returnFlow), hasSize(1));
+    List<TraceAndReverseFlow> returnTraceAndReverseFlows = returnFlowTraces.get(returnFlow);
+
+    // return flow should be null routed given the null route in the config
+    assertThat(
+        returnTraceAndReverseFlows.get(0).getTrace().getDisposition(),
+        equalTo(FlowDisposition.NULL_ROUTED));
   }
 }
