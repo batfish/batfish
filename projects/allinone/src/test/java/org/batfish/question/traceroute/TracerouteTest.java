@@ -944,7 +944,7 @@ public class TracerouteTest {
                         Schema.set(Schema.TRACE))))));
   }
 
-  @Ignore("https://github.com/intentionet/internal-support/issues/608")
+  @Ignore
   @Test
   public void testNatTable() throws IOException {
     String hostname = "ios-nat-table";
