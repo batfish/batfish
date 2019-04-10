@@ -648,6 +648,15 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
+  public void testHostnameCapital() throws IOException {
+    String filename = "f5_bigip_structured_hostname_capital";
+    String hostname = "myhostname";
+    Map<String, Configuration> configurations = parseTextConfigs(filename);
+
+    assertThat(configurations, hasKey(hostname));
+  }
+
+  @Test
   public void testImish() {
     assertTrue(
         "Configuration contains an imish component",

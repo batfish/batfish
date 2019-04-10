@@ -1,0 +1,5 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+    hostname MYHOSTNAME
+}
