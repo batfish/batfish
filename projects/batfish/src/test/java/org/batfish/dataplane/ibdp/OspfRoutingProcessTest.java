@@ -848,6 +848,13 @@ public class OspfRoutingProcessTest {
         ImmutableList.of(new RouteAdvertisement<>((OspfExternalType2Route) builder.build()));
     assertThat(
         _routingProcess.transformType2RoutesOnExport(routes, AREA0_CONFIG),
+        equalTo(ImmutableList.of(new RouteAdvertisement<>(builder.setArea(1).build()))));
+    assertThat(
+        _routingProcess.transformType2RoutesOnExport(
+            ImmutableList.of(
+                new RouteAdvertisement<>(
+                    (OspfExternalType2Route) builder.setArea(OspfRoute.NO_AREA).build())),
+            AREA0_CONFIG),
         equalTo(ImmutableList.of(new RouteAdvertisement<>(builder.setArea(0).build()))));
   }
 

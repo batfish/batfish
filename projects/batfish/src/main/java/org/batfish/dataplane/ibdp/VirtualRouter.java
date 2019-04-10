@@ -2907,11 +2907,7 @@ public class VirtualRouter implements Serializable {
   }
 
   private <R extends AbstractRoute> AnnotatedRoute<R> annotateRoute(R route) {
-    return annotateRoute(route, _name);
-  }
-
-  static <R extends AbstractRoute> AnnotatedRoute<R> annotateRoute(R route, String vrfName) {
-    return new AnnotatedRoute<>(route, vrfName);
+    return new AnnotatedRoute<>(route, _name);
   }
 
   public Map<String, OspfRoutingProcess> getOspfProcesses() {
