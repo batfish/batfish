@@ -33,6 +33,8 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
 
   private BatfishParserErrorListener _parserErrorListener;
 
+  private boolean _recovery;
+
   private GrammarSettings _settings;
 
   private List<Integer> _tokenModes;
@@ -82,7 +84,7 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
       Class<L> lClass,
       String input,
       GrammarSettings settings,
-      BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFactory batfishANTLRErrorStrategyFactor,
+      BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFactory batfishANTLRErrorStrategyFactory,
       Set<Integer> separatorChars) {
     this(pClass, lClass, input, settings);
     /*
@@ -91,8 +93,9 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
      */
     if (!settings.getDisableUnrecognized()) {
       _parser.setInterpreter(new BatfishParserATNSimulator(_parser.getInterpreter()));
-      _parser.setErrorHandler(batfishANTLRErrorStrategyFactor.build(_input));
+      _parser.setErrorHandler(batfishANTLRErrorStrategyFactory.build(_input));
       _lexer.setRecoveryStrategy(new BatfishLexerRecoveryStrategy(_lexer, separatorChars));
+      _recovery = true;
     }
   }
 
@@ -144,6 +147,15 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
 
   public BatfishParserErrorListener getParserErrorListener() {
     return _parserErrorListener;
+  }
+
+  /**
+   * Returns {@code true} iff this is grammar uses custom recovery infrastructure, e.g. via {@link
+   * BatfishANTLRErrorStrategy}. For non-recovery-based grammars, this should return {@code false}
+   * even when unrecognized lines are allowed.
+   */
+  public boolean getRecovery() {
+    return _recovery;
   }
 
   public GrammarSettings getSettings() {

@@ -46,12 +46,24 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
 
   public void syntaxError(
       ParserRuleContext ctx, Object offendingSymbol, int line, int charPositionInLine, String msg) {
-    if (!_settings.getDisableUnrecognized()) {
+    if (!_settings.getDisableUnrecognized() && _combinedParser.getRecovery()) {
+      // recovery should have added error node for parse tree listener, so we can stop here
       return;
     }
     BatfishParser parser = _combinedParser.getParser();
     List<String> ruleNames = Arrays.asList(parser.getRuleNames());
     String ruleStack = ctx.toString(ruleNames);
+    String text = _combinedParser.getInput();
+    String[] lines = text.split("\n", -1);
+    Token offendingToken = (Token) offendingSymbol;
+    int errorLineIndex = offendingToken.getLine() - 1;
+    if (!_settings.getDisableUnrecognized()) {
+      // no recovery, so have to store error node for parse tree listener to process later
+      ctx.addErrorNode(
+          parser.createErrorNode(
+              ctx, new UnrecognizedLineToken(lines[errorLineIndex], line, ruleStack)));
+      return;
+    }
     List<Token> tokens = _combinedParser.getTokens().getTokens();
     int startTokenIndex = parser.getInputStream().index();
     StringBuilder sb = new StringBuilder();
@@ -65,7 +77,6 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
             + ": "
             + msg
             + "\n");
-    Token offendingToken = (Token) offendingSymbol;
     String offendingTokenText = printToken(offendingToken);
     sb.append("Offending Token: " + offendingTokenText + "\n");
     sb.append("Error parsing top (leftmost) parser rule in stack: '" + ruleStack + "'.\n");
@@ -101,9 +112,6 @@ public class BatfishParserErrorListener extends BatfishGrammarErrorListener {
     }
 
     // collect context from text
-    String text = _combinedParser.getInput();
-    String[] lines = text.split("\n", -1);
-    int errorLineIndex = offendingToken.getLine() - 1;
     int errorContextStartLine = Math.max(errorLineIndex - _settings.getMaxParserContextLines(), 0);
     sb.append("Error context lines:\n");
     for (int i = errorContextStartLine; i < errorLineIndex; i++) {
