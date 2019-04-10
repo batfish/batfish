@@ -13,6 +13,7 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpRouteThat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.KernelRouteMatchers.isKernelRouteThat;
@@ -62,6 +63,8 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.InitInfoAnswerElement;
+import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
@@ -421,6 +424,20 @@ public final class F5BigipImishGrammarTest {
 
     // BGP Router-ID manually set
     assertThat(c, hasDefaultVrf(hasBgpProcess(hasRouterId(Ip.parse("192.0.2.1")))));
+  }
+
+  @Test
+  public void testRecovery() throws IOException {
+    String hostname = "f5_bigip_imish_recovery";
+    String filename = String.format("configs/%s", hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.getSettings().setDisableUnrecognized(false);
+    batfish.getSettings().setThrowOnLexerError(false);
+    batfish.getSettings().setThrowOnParserError(false);
+    Configuration c = batfish.loadConfigurations().get(hostname);
+    assertThat(c, hasIpAccessLists(hasKey("acl2")));
+    InitInfoAnswerElement initAns = batfish.initInfo(false, true);
+    assertThat(initAns.getParseStatus().get(filename), equalTo(ParseStatus.PARTIALLY_UNRECOGNIZED));
   }
 
   @Test
