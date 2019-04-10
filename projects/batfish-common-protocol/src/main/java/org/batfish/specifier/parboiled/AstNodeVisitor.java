@@ -100,4 +100,8 @@ interface AstNodeVisitor<T> {
 
   T visitIntersectionRoutingPolicyAstNode(
       IntersectionRoutingPolicyAstNode intersectionRoutingPolicyAstNode);
+
+  T visitDifferenceIpSpaceAstNode(DifferenceIpSpaceAstNode differenceIpSpaceAstNode);
+
+  T visitIntersectionIpSpaceAstNode(IntersectionIpSpaceAstNode intersectionIpSpaceAstNode);
 }

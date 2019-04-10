@@ -1,10 +1,14 @@
 package org.batfish.specifier.parboiled;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.specifier.IpSpaceAssignment;
@@ -28,27 +32,63 @@ final class ParboiledIpSpaceSpecifier implements IpSpaceSpecifier {
     }
 
     @Override
-    public IpSpace visitUnionIpSpaceAstNode(UnionIpSpaceAstNode unionIpSpaceAstNode) {
-      return AclIpSpace.union(
-          unionIpSpaceAstNode.getLeft().accept(this), unionIpSpaceAstNode.getRight().accept(this));
+    @Nonnull
+    public IpSpace visitDifferenceIpSpaceAstNode(
+        DifferenceIpSpaceAstNode differenceIpSpaceAstNode) {
+      // using firstNonNull to stop compiler warning. since neither left nor right should will be
+      // null, the difference will not be null
+      return firstNonNull(
+          AclIpSpace.difference(
+              differenceIpSpaceAstNode.getLeft().accept(this),
+              differenceIpSpaceAstNode.getRight().accept(this)),
+          EmptyIpSpace.INSTANCE);
     }
 
     @Override
+    @Nonnull
+    public IpSpace visitIntersectionIpSpaceAstNode(
+        IntersectionIpSpaceAstNode intersectionIpSpaceAstNode) {
+      // using firstNonNull to stop compiler warning. since neither left nor right should will be
+      // null, the intersection will not be null
+      return firstNonNull(
+          AclIpSpace.intersection(
+              intersectionIpSpaceAstNode.getLeft().accept(this),
+              intersectionIpSpaceAstNode.getRight().accept(this)),
+          EmptyIpSpace.INSTANCE);
+    }
+
+    @Override
+    @Nonnull
+    public IpSpace visitUnionIpSpaceAstNode(UnionIpSpaceAstNode unionIpSpaceAstNode) {
+      // using firstNonNull to stop compiler warning. since neither left nor right should will be
+      // null, the union will not be null
+      return firstNonNull(
+          AclIpSpace.union(
+              unionIpSpaceAstNode.getLeft().accept(this),
+              unionIpSpaceAstNode.getRight().accept(this)),
+          EmptyIpSpace.INSTANCE);
+    }
+
+    @Override
+    @Nonnull
     public IpSpace visitIpAstNode(IpAstNode ipAstNode) {
       return ipAstNode.getIp().toIpSpace();
     }
 
     @Override
+    @Nonnull
     public IpSpace visitIpRangeAstNode(IpRangeAstNode rangeIpSpaceAstNode) {
       return IpRange.range(rangeIpSpaceAstNode.getLow(), rangeIpSpaceAstNode.getHigh());
     }
 
     @Override
+    @Nonnull
     public IpSpace visitIpWildcardAstNode(IpWildcardAstNode ipWildcardAstNode) {
       return ipWildcardAstNode.getIpWildcard().toIpSpace();
     }
 
     @Override
+    @Nonnull
     public IpSpace visitLocationIpSpaceAstNode(LocationIpSpaceAstNode locationIpSpaceAstNode) {
       return LocationIpSpaceSpecifier.computeIpSpace(
           new ParboiledLocationSpecifier(locationIpSpaceAstNode.getLocationAst()).resolve(_ctxt),
@@ -56,11 +96,13 @@ final class ParboiledIpSpaceSpecifier implements IpSpaceSpecifier {
     }
 
     @Override
+    @Nonnull
     public IpSpace visitPrefixAstNode(PrefixAstNode prefixAstNode) {
       return prefixAstNode.getPrefix().toIpSpace();
     }
 
     @Override
+    @Nonnull
     public IpSpace visitAddressGroupAstNode(AddressGroupIpSpaceAstNode addressGroupIpSpaceAstNode) {
       return ReferenceAddressGroupIpSpaceSpecifier.computeIpSpace(
           addressGroupIpSpaceAstNode.getAddressGroup(),
@@ -98,6 +140,7 @@ final class ParboiledIpSpaceSpecifier implements IpSpaceSpecifier {
   }
 
   @VisibleForTesting
+  @Nonnull
   static IpSpace computeIpSpace(IpSpaceAstNode ast, SpecifierContext ctxt) {
     return ast.accept(new IpSpaceAstNodeToIpSpace(ctxt));
   }

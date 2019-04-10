@@ -1,25 +1,38 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.ospf.OspfMetricType;
 
+/** OSPF external route of type 1 */
+@ParametersAreNonnullByDefault
 public class OspfExternalType1Route extends OspfExternalRoute {
 
   private static final long serialVersionUID = 1L;
 
   @JsonCreator
   private static OspfExternalType1Route jsonCreator(
-      @JsonProperty(PROP_NETWORK) Prefix prefix,
-      @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
-      @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
-      @JsonProperty(PROP_METRIC) long metric,
-      @JsonProperty(PROP_LSA_METRIC) long lsaMetric,
-      @JsonProperty(PROP_AREA) long area,
-      @JsonProperty(PROP_COST_TO_ADVERTISER) long costToAdvertiser,
-      @JsonProperty(PROP_ADVERTISER) String advertiser) {
+      @Nullable @JsonProperty(PROP_NETWORK) Prefix prefix,
+      @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
+      @Nullable @JsonProperty(PROP_ADMINISTRATIVE_COST) Integer admin,
+      @Nullable @JsonProperty(PROP_METRIC) Long metric,
+      @Nullable @JsonProperty(PROP_LSA_METRIC) Long lsaMetric,
+      @Nullable @JsonProperty(PROP_AREA) Long area,
+      @Nullable @JsonProperty(PROP_COST_TO_ADVERTISER) Long costToAdvertiser,
+      @Nullable @JsonProperty(PROP_ADVERTISER) String advertiser) {
+    checkArgument(prefix != null, "Missing %s", PROP_NETWORK);
+    checkArgument(nextHopIp != null, "Missing %s", PROP_NEXT_HOP_IP);
+    checkArgument(admin != null, "Missing %s", PROP_ADMINISTRATIVE_COST);
+    checkArgument(metric != null, "Missing %s", PROP_METRIC);
+    checkArgument(lsaMetric != null, "Missing %s", PROP_LSA_METRIC);
+    checkArgument(area != null, "Missing %s", PROP_AREA);
+    checkArgument(costToAdvertiser != null, "Missing %s", PROP_COST_TO_ADVERTISER);
+    checkArgument(advertiser != null, "Missing %s", PROP_ADVERTISER);
     return new OspfExternalType1Route(
         prefix,
         nextHopIp,
@@ -57,6 +70,7 @@ public class OspfExternalType1Route extends OspfExternalRoute {
         nonRouting);
   }
 
+  @Nonnull
   @Override
   public OspfMetricType getOspfMetricType() {
     return OspfMetricType.E1;
@@ -85,23 +99,5 @@ public class OspfExternalType1Route extends OspfExternalRoute {
         .setAdvertiser(getAdvertiser());
   }
 
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (!(obj instanceof OspfExternalType1Route)) {
-      return false;
-    }
-    if (!super.equals(obj)) {
-      return false;
-    }
-    OspfExternalType1Route other = (OspfExternalType1Route) obj;
-    return getCostToAdvertiser() == other.getCostToAdvertiser();
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(super.hashCode(), getCostToAdvertiser());
-  }
+  // Equals and hashcode inherited from OspfExternalRoute, since it has all the fields
 }

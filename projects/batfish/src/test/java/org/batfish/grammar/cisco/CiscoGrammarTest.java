@@ -2477,7 +2477,46 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosPrefixList() throws IOException {
+  public void testIosBgpDistributeList() throws IOException {
+    /*
+         r1 -- advertiser -- r2
+    The advertiser redistributes static routes 1.2.3.4 and 5.6.7.8 into BGP, but has outbound
+    distribute-lists configured for both r1 and r2:
+    - Routes to r1 are filtered by standard access-list 1, which permits everything but 1.2.3.4
+    - Routes to r2 are filtered by extended access-list 100, which denies everything but 5.6.7.8
+    */
+    String testrigName = "bgp-distribute-list";
+    String advertiserName = "advertiser";
+    String r1Name = "r1";
+    String r2Name = "r2";
+    List<String> configurationNames = ImmutableList.of(advertiserName, r1Name, r2Name);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+
+    /* Confirm access list uses are counted correctly */
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+    String filename = "configs/" + advertiserName;
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_STANDARD, "1", 1));
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "100", 1));
+
+    /* Ensure both neighbors have 5.6.7.8 but not 1.2.3.4 */
+    batfish.computeDataPlane();
+    DataPlane dp = batfish.loadDataPlane();
+    Set<AbstractRoute> r1Routes = dp.getRibs().get(r1Name).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r2Routes = dp.getRibs().get(r2Name).get(DEFAULT_VRF_NAME).getRoutes();
+    assertThat(r1Routes, not(hasItem(hasPrefix(Prefix.parse("1.2.3.4/32")))));
+    assertThat(r2Routes, not(hasItem(hasPrefix(Prefix.parse("1.2.3.4/32")))));
+    assertThat(r1Routes, hasItem(hasPrefix(Prefix.parse("5.6.7.8/32"))));
+    assertThat(r2Routes, hasItem(hasPrefix(Prefix.parse("5.6.7.8/32"))));
+  }
+
+  @Test
+  public void testIosBgpPrefixList() throws IOException {
     String hostname = "ios-prefix-list";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);

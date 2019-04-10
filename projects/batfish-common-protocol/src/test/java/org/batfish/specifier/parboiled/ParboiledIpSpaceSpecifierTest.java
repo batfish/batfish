@@ -50,15 +50,6 @@ public class ParboiledIpSpaceSpecifierTest {
   }
 
   @Test
-  public void testComputeIpSpaceComma() {
-    Ip ip1 = Ip.parse("1.1.1.1");
-    Ip ip2 = Ip.parse("1.1.1.10");
-    assertThat(
-        computeIpSpace(new UnionIpSpaceAstNode(new IpAstNode(ip1), new IpAstNode(ip2)), _emptyCtxt),
-        equalTo(AclIpSpace.union(ip1.toIpSpace(), ip2.toIpSpace())));
-  }
-
-  @Test
   public void testComputeIpSpaceIp() {
     Ip ip = Ip.parse("1.1.1.1");
     assertThat(computeIpSpace(new IpAstNode(ip), _emptyCtxt), equalTo(ip.toIpSpace()));
@@ -113,5 +104,34 @@ public class ParboiledIpSpaceSpecifierTest {
   public void testComputeIpSpacePrefix() {
     Prefix pfx = Prefix.parse("1.1.1.1/24");
     assertThat(computeIpSpace(new PrefixAstNode(pfx), _emptyCtxt), equalTo(pfx.toIpSpace()));
+  }
+
+  @Test
+  public void testComputeIpSpaceSetDifference() {
+    Ip ip1 = Ip.parse("1.1.1.1");
+    Ip ip2 = Ip.parse("1.1.1.10");
+    assertThat(
+        computeIpSpace(
+            new DifferenceIpSpaceAstNode(new IpAstNode(ip1), new IpAstNode(ip2)), _emptyCtxt),
+        equalTo(AclIpSpace.difference(ip1.toIpSpace(), ip2.toIpSpace())));
+  }
+
+  @Test
+  public void testComputeIpSpaceSetIntersection() {
+    Ip ip1 = Ip.parse("1.1.1.1");
+    Ip ip2 = Ip.parse("1.1.1.10");
+    assertThat(
+        computeIpSpace(
+            new IntersectionIpSpaceAstNode(new IpAstNode(ip1), new IpAstNode(ip2)), _emptyCtxt),
+        equalTo(AclIpSpace.intersection(ip1.toIpSpace(), ip2.toIpSpace())));
+  }
+
+  @Test
+  public void testComputeIpSpaceSetUnion() {
+    Ip ip1 = Ip.parse("1.1.1.1");
+    Ip ip2 = Ip.parse("1.1.1.10");
+    assertThat(
+        computeIpSpace(new UnionIpSpaceAstNode(new IpAstNode(ip1), new IpAstNode(ip2)), _emptyCtxt),
+        equalTo(AclIpSpace.union(ip1.toIpSpace(), ip2.toIpSpace())));
   }
 }

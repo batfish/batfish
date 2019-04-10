@@ -9,6 +9,12 @@
         "description": "Trace the path(s) for the specified flow, along with path(s) for reverse flows.",
         "instanceName": "bidirectionalTraceroute",
         "longDescription": "This question performs a virtual traceroute in the network from a starting node. A destination IP and ingress (source) node must be specified. Other IP headers are given default values if unspecified.\nIf the trace succeeds, a traceroute is performed in the reverse direction.",
+        "orderedVariableNames": [
+            "startLocation",
+            "headers",
+            "maxTraces",
+            "ignoreFilters"
+        ],
         "tags": [
             "dataPlane",
             "reachability",

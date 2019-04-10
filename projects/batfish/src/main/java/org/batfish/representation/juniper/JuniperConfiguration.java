@@ -784,6 +784,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .setAdminCosts(
                 org.batfish.datamodel.ospf.OspfProcess.computeDefaultAdminCosts(
                     _c.getConfigurationFormat()))
+            .setSummaryAdminCost(
+                RoutingProtocol.OSPF_IA.getSummaryAdministrativeCost(_c.getConfigurationFormat()))
             .build();
     String vrfName = routingInstance.getName();
     // export policies

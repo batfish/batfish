@@ -2461,6 +2461,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
             .setAdminCosts(
                 org.batfish.datamodel.ospf.OspfProcess.computeDefaultAdminCosts(
                     c.getConfigurationFormat()))
+            .setSummaryAdminCost(
+                RoutingProtocol.OSPF_IA.getSummaryAdministrativeCost(c.getConfigurationFormat()))
             .build();
     org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
 
@@ -3626,6 +3628,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markIpOrMacAcls(
         CiscoStructureUsage.CLASS_MAP_ACCESS_GROUP, CiscoStructureUsage.CLASS_MAP_ACCESS_LIST);
     markIpv4Acls(
+        CiscoStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_IN,
+        CiscoStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
         CiscoStructureUsage.CONTROL_PLANE_ACCESS_GROUP,
         CiscoStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL,
         CiscoStructureUsage.INTERFACE_INCOMING_FILTER,
@@ -3650,6 +3654,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL4,
         CiscoStructureUsage.SSH_IPV4_ACL);
     markIpv6Acls(
+        CiscoStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_IN,
+        CiscoStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_OUT,
         CiscoStructureUsage.LINE_ACCESS_CLASS_LIST6,
         CiscoStructureUsage.NTP_ACCESS_GROUP,
         CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST,
@@ -4258,7 +4264,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return String.format("SECURITY_LEVEL_%s", securityLevel);
   }
 
-  private boolean isAclUsedForRouting(String aclName) {
+  private boolean isAclUsedForRouting(@Nonnull String aclName) {
     String currentMapName;
     for (Vrf vrf : _vrfs.values()) {
       // check ospf policies
@@ -4313,6 +4319,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
           }
           currentMapName = pg.getDefaultOriginateMap();
           if (containsIpAccessList(aclName, currentMapName)) {
+            return true;
+          }
+          if (aclName.equals(pg.getInboundIpAccessList())
+              || aclName.equals(pg.getOutboundIpAccessList())) {
             return true;
           }
         }

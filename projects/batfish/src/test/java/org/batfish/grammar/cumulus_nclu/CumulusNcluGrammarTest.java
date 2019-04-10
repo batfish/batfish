@@ -5,6 +5,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
@@ -591,6 +592,27 @@ public final class CumulusNcluGrammarTest {
             "swp4",
             both(hasAllAddresses(containsInAnyOrder(new InterfaceAddress("10.0.3.1/24"))))
                 .and(hasAddress(new InterfaceAddress("10.0.3.1/24")))));
+
+    // bandwidth
+    assertThat(c, hasInterface("bond1", hasBandwidth(10E9D)));
+    assertThat(c, hasInterface("bond2", hasBandwidth(10E9D)));
+    assertThat(c, hasInterface("bond3", hasBandwidth(10E9D)));
+    assertThat(c, hasInterface("eth0", hasBandwidth(10E9D)));
+    assertThat(c, hasInterface("swp1", hasBandwidth(10E9D)));
+    assertThat(c, hasInterface("swp2", hasBandwidth(10E9D)));
+    assertThat(c, hasInterface("swp3", hasBandwidth(10E9D)));
+    assertThat(c, hasInterface("swp4", hasBandwidth(10E9D)));
+    assertThat(c, hasInterface("swp5", hasBandwidth(10E9D)));
+
+    // channel group
+    assertThat(c.getAllInterfaces().get("swp1").getChannelGroup(), equalTo("bond1"));
+    assertThat(c.getAllInterfaces().get("swp2").getChannelGroup(), equalTo("bond2"));
+    assertThat(c.getAllInterfaces().get("swp3").getChannelGroup(), equalTo("bond3"));
+
+    // channel group members
+    assertThat(c.getAllInterfaces().get("bond1").getChannelGroupMembers(), contains("swp1"));
+    assertThat(c.getAllInterfaces().get("bond2").getChannelGroupMembers(), contains("swp2"));
+    assertThat(c.getAllInterfaces().get("bond3").getChannelGroupMembers(), contains("swp3"));
   }
 
   @Test
