@@ -429,17 +429,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     List<String> errors = parser.getErrors();
     int numErrors = errors.size();
     if (numErrors > 0) {
-      logger.error(numErrors + " ERROR(S)\n");
-      for (int i = 0; i < numErrors; i++) {
-        String msg = errors.get(i);
-        String[] lines = msg.split("\n", -1);
-        StringBuilder sb = new StringBuilder();
-        for (String line : lines) {
-          sb.append("ERROR ").append(i + 1).append(": ").append(line).append("\n");
-        }
-        logger.error(sb.append('\n').toString());
-      }
-      throw new ParserBatfishException("Parser error(s)");
+      throw new ParserBatfishException("Parser error(s)", errors);
     } else if (!settings.getPrintParseTree()) {
       logger.info("OK\n");
     } else {
