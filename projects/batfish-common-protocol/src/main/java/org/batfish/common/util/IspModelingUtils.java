@@ -54,20 +54,20 @@ import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 
 /** Util classes and functions to model ISPs and Internet for a given network */
-public final class ModelingUtils {
+public final class IspModelingUtils {
 
   static final String EXPORT_POLICY_ON_INTERNET = "exportPolicyOnInternet";
   static final String EXPORT_POLICY_ON_ISP = "exportPolicyOnIsp";
   private static final Ip FIRST_EVEN_INTERNET_IP = Ip.parse("240.1.1.2");
   static final long INTERNET_AS = 65537L;
-  public static final String INTERNET_HOST_NAME = "Internet";
+  public static final String INTERNET_HOST_NAME = "internet";
   static final Ip INTERNET_OUT_ADDRESS = Ip.parse("240.254.254.1");
   static final String INTERNET_OUT_INTERFACE = "Internet_out_interface";
   static final int INTERNET_OUT_SUBNET = 30;
   private static final int ISP_INTERNET_SUBNET = 31;
-  private static final String ISP_HOSTNAME_PREFIX = "Isp";
+  private static final String ISP_HOSTNAME_PREFIX = "isp";
 
-  private ModelingUtils() {}
+  private IspModelingUtils() {}
 
   /** Contains the information required to create one ISP node */
   @ParametersAreNonnullByDefault

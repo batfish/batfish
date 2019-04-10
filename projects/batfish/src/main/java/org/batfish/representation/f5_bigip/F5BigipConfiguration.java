@@ -34,6 +34,7 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
@@ -1112,6 +1113,14 @@ public class F5BigipConfiguration extends VendorConfiguration {
     newIface.setVlan(vlan.getTag());
     newIface.setBandwidth(Interface.DEFAULT_BANDWIDTH);
     newIface.setVrf(_c.getDefaultVrf());
+    // Assume each interface has its own session info (sessions are not shared by interfaces).
+    // That is, return flows can only enter the interface the forward flow exited in order to match
+    // the session setup by the forward flow.
+    // By default, F5 do not apply packet filters to established connections; but one can enable
+    // packet filter for established connections. However, packet filters are not fully supported at
+    // this point
+    newIface.setFirewallSessionInterfaceInfo(
+        new FirewallSessionInterfaceInfo(ImmutableList.of(newIface.getName()), null, null));
     return newIface;
   }
 
