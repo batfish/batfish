@@ -1375,7 +1375,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitSgs_hostname(Sgs_hostnameContext ctx) {
-    String hostname = unquote(ctx.hostname.getText());
+    String hostname = unquote(ctx.hostname.getText()).toLowerCase();
     _c.setHostname(hostname);
   }
 
