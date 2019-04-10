@@ -114,7 +114,7 @@ import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.common.util.ModelingUtils;
+import org.batfish.common.util.IspModelingUtils;
 import org.batfish.config.Settings;
 import org.batfish.config.TestrigSettings;
 import org.batfish.datamodel.AbstractRoute;
@@ -1291,8 +1291,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     Warnings warnings =
         warningsByHost.computeIfAbsent(
-            ModelingUtils.INTERNET_HOST_NAME, k -> buildWarnings(_settings));
-    return ModelingUtils.getInternetAndIspNodes(
+            IspModelingUtils.INTERNET_HOST_NAME, k -> buildWarnings(_settings));
+    return IspModelingUtils.getInternetAndIspNodes(
         configurations, ispConfiguration, _logger, warnings);
   }
 

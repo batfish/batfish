@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
-import org.batfish.common.util.ModelingUtils;
+import org.batfish.common.util.IspModelingUtils;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
@@ -779,7 +779,7 @@ public final class TopologyUtilTest {
                 new BorderInterfaceInfo(new NodeInterfacePair(b2Name, i2Name))),
             new IspFilter(ImmutableList.of(), ImmutableList.of()));
     Map<String, Configuration> ispConfigurations =
-        ModelingUtils.getInternetAndIspNodes(
+        IspModelingUtils.getInternetAndIspNodes(
             explicitConfigurations,
             ispConfiguration,
             new BatfishLogger(BatfishLogger.LEVELSTR_ERROR, false),
