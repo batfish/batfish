@@ -1,13 +1,16 @@
 package org.batfish.question.traceroute;
 
 import static org.batfish.common.util.TracePruner.DEFAULT_MAX_TRACES;
+import static org.batfish.datamodel.FlowDiff.flowDiff;
 import static org.batfish.datamodel.matchers.HopMatchers.hasNodeName;
+import static org.batfish.datamodel.matchers.HopMatchers.hasSteps;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasHops;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasLastHop;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasNthHop;
+import static org.batfish.datamodel.transformation.IpField.DESTINATION;
 import static org.batfish.question.traceroute.TracerouteAnswerer.COL_TRACES;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
@@ -18,6 +21,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
@@ -26,11 +30,13 @@ import java.util.List;
 import java.util.SortedMap;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.Prefix;
@@ -38,11 +44,17 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.StaticRoute.Builder;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.flow.BidirectionalTrace;
+import org.batfish.datamodel.flow.StepAction;
+import org.batfish.datamodel.flow.TransformationStep;
+import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
+import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -930,5 +942,56 @@ public class TracerouteTest {
                         containsInAnyOrder(
                             ImmutableList.of(hasDisposition(FlowDisposition.INSUFFICIENT_INFO))),
                         Schema.set(Schema.TRACE))))));
+  }
+
+  @Ignore("https://github.com/batfish/batfish/issues/3588")
+  @Test
+  public void testNatTable() throws IOException {
+    String hostname = "ios-nat-table";
+    String inside = "FastEthernet0/0";
+
+    _batfish =
+        BatfishTestUtils.getBatfishForTextConfigs(
+            _folder, "org/batfish/allinone/testconfigs/" + hostname);
+
+    _batfish.computeDataPlane();
+
+    Flow flow =
+        Flow.builder()
+            .setSrcIp(Ip.parse("1.0.0.2"))
+            .setSrcPort(10000)
+            .setDstIp(Ip.parse("2.0.0.1"))
+            .setDstPort(20000)
+            .setIngressNode(hostname)
+            .setIngressInterface(inside)
+            .setIpProtocol(IpProtocol.TCP)
+            .setTag("tag")
+            .build();
+
+    List<BidirectionalTrace> traces =
+        BidirectionalTracerouteAnswerer.computeBidirectionalTraces(
+            ImmutableSet.of(flow), _batfish.getTracerouteEngine(), false);
+
+    assertThat(traces, hasSize(1));
+
+    BidirectionalTrace bidirectionalTrace = traces.get(0);
+
+    // Reverse source nat should be applied to the return flow
+    assertThat(
+        bidirectionalTrace.getReverseTrace(),
+        hasHops(
+            contains(
+                hasSteps(
+                    containsInAnyOrder(
+                        new TransformationStep(
+                            new TransformationStepDetail(
+                                TransformationType.DEST_NAT,
+                                ImmutableSortedSet.of(
+                                    flowDiff(
+                                        DESTINATION, Ip.parse("10.0.0.1"), Ip.parse("1.0.0.2")))),
+                            StepAction.TRANSFORMED))))));
+
+    // Routing should NOT be skipped to the return flow thus resulting in NULL_ROUTED disposition
+    assertThat(bidirectionalTrace.getReverseTrace(), hasDisposition(FlowDisposition.NULL_ROUTED));
   }
 }
