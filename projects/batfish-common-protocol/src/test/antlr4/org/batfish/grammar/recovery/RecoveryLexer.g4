@@ -27,6 +27,11 @@ INNER
    'inner'
 ;
 
+OTHER
+:
+  'other'
+;
+
 SIMPLE
 :
    'simple'

@@ -4,10 +4,10 @@ package org.batfish.grammar;
 public interface GrammarSettings {
 
   /**
-   * Controls whether or not unrecognized lines will trigger recovery mode wherein they are
-   * collected and ignored, i.e. they do not trigger a crash.
-   *
-   * @return true iff recovery from unrecognized lines is disabled
+   * When {@code true}, unrecognized lines will trigger a crash. When {@code false}, custom recovery
+   * via {@link BatfishANTLRErrorStrategy} will be performed for supported grammars; for other
+   * grammars, vanilla ANTLR recovery will be performed and syntax errors logged via {@link
+   * BatfishParserErrorListener} and {@link BatfishLexerErrorListener}.
    */
   boolean getDisableUnrecognized();
 
