@@ -1,13 +1,16 @@
 package org.batfish.question.traceroute;
 
 import static org.batfish.common.util.TracePruner.DEFAULT_MAX_TRACES;
+import static org.batfish.datamodel.FlowDiff.flowDiff;
 import static org.batfish.datamodel.matchers.HopMatchers.hasNodeName;
+import static org.batfish.datamodel.matchers.HopMatchers.hasSteps;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasHops;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasLastHop;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasNthHop;
+import static org.batfish.datamodel.transformation.IpField.DESTINATION;
 import static org.batfish.question.traceroute.TracerouteAnswerer.COL_TRACES;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
@@ -24,8 +27,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -44,8 +45,10 @@ import org.batfish.datamodel.StaticRoute.Builder;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.flow.BidirectionalTrace;
-import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
-import org.batfish.datamodel.flow.TraceAndReverseFlow;
+import org.batfish.datamodel.flow.StepAction;
+import org.batfish.datamodel.flow.TransformationStep;
+import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
+import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -941,7 +944,7 @@ public class TracerouteTest {
                         Schema.set(Schema.TRACE))))));
   }
 
-  @Ignore
+  @Ignore("https://github.com/intentionet/internal-support/issues/608")
   @Test
   public void testNatTable() throws IOException {
     String hostname = "ios-nat-table";
@@ -973,8 +976,22 @@ public class TracerouteTest {
 
     BidirectionalTrace bidirectionalTrace = traces.get(0);
 
+    // Reverse source nat should be applied to the return flow
     assertThat(
-        bidirectionalTrace.getReverseTrace().getDisposition(),
-        equalTo(FlowDisposition.NULL_ROUTED));
+        bidirectionalTrace.getReverseTrace(),
+        hasHops(
+            contains(
+                hasSteps(
+                    containsInAnyOrder(
+                        new TransformationStep(
+                            new TransformationStepDetail(
+                                TransformationType.DEST_NAT,
+                                ImmutableSortedSet.of(
+                                    flowDiff(
+                                        DESTINATION, Ip.parse("10.0.0.1"), Ip.parse("1.0.0.2")))),
+                            StepAction.TRANSFORMED))))));
+
+    // Routing should NOT be skipped to the return flow thus resulting in NULL_ROUTED disposition
+    assertThat(bidirectionalTrace.getReverseTrace(), hasDisposition(FlowDisposition.NULL_ROUTED));
   }
 }
