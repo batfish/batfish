@@ -944,7 +944,7 @@ public class TracerouteTest {
                         Schema.set(Schema.TRACE))))));
   }
 
-  @Ignore
+  @Ignore("https://github.com/batfish/batfish/issues/3588")
   @Test
   public void testNatTable() throws IOException {
     String hostname = "ios-nat-table";
