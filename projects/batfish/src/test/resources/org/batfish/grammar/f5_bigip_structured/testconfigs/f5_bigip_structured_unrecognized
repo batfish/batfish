@@ -1,0 +1,7 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+    hostname f5_bigip_structured_unrecognized
+}
+net uh_oh_unrecognized { }
+net interface 1.0 { }

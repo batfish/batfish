@@ -79,6 +79,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
@@ -98,6 +99,7 @@ import org.batfish.datamodel.vendor_family.f5_bigip.PoolMember;
 import org.batfish.datamodel.vendor_family.f5_bigip.RouteAdvertisementMode;
 import org.batfish.datamodel.vendor_family.f5_bigip.Virtual;
 import org.batfish.datamodel.vendor_family.f5_bigip.VirtualAddress;
+import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Bundle_speedContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.F5_bigip_structured_configurationContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Imish_chunkContext;
@@ -606,6 +608,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void enterUnrecognized(UnrecognizedContext ctx) {
+    _c.setUnrecognized(true);
     if (_currentUnrecognized == null) {
       _currentUnrecognized = ctx;
     }
@@ -1532,5 +1535,24 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
                 start.getText(),
                 ctx.toString(Arrays.asList(_parser.getParser().getRuleNames())),
                 "This syntax is unrecognized"));
+  }
+
+  @Override
+  public void visitErrorNode(ErrorNode errorNode) {
+    Token token = errorNode.getSymbol();
+    int line = token.getLine();
+    String lineText = errorNode.getText().replace("\n", "").replace("\r", "").trim();
+    _c.setUnrecognized(true);
+
+    if (token instanceof UnrecognizedLineToken) {
+      UnrecognizedLineToken unrecToken = (UnrecognizedLineToken) token;
+      _w.getParseWarnings()
+          .add(
+              new ParseWarning(
+                  line, lineText, unrecToken.getParserContext(), "This syntax is unrecognized"));
+    } else {
+      String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
+      _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
+    }
   }
 }
