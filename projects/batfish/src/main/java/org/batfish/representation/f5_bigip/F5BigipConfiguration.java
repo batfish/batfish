@@ -1117,8 +1117,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // That is, return flows can only enter the interface the forward flow exited in order to match
     // the session setup by the forward flow.
     // By default, F5 do not apply packet filters to established connections; but one can enable
-    // packet filter for established connections
-    // TODO: support packet filter for established connections
+    // packet filter for established connections. However, packet filters are not fully supported at
+    // this point
     newIface.setFirewallSessionInterfaceInfo(
         new FirewallSessionInterfaceInfo(ImmutableList.of(newIface.getName()), null, null));
     return newIface;
