@@ -592,6 +592,39 @@ public class BasicTests extends BDDTestCase {
     }
   }
 
+  public void testCompose() {
+    reset();
+    assertTrue(hasNext());
+    while (hasNext()) {
+      BDDFactory bdd = next();
+      if (bdd.varNum() < 4) {
+        bdd.setVarNum(4);
+      }
+      BDD a = bdd.ithVar(0);
+      BDD b = bdd.ithVar(1);
+      BDD c = bdd.ithVar(2);
+      BDD d = bdd.ithVar(3);
+
+      BDD xorCD = c.xor(d);
+
+      // b doesn't occur in a
+      BDD res = a.compose(xorCD, b.var());
+      assert res.equals(a);
+
+      res = b.compose(xorCD, b.var());
+      assert res.equals(xorCD);
+
+      res = b.not().compose(xorCD, b.var());
+      assert res.equals(xorCD.not());
+
+      res = a.and(b).compose(xorCD, b.var());
+      assert res.equals(a.and(xorCD));
+
+      res = a.diff(b).compose(xorCD, b.var());
+      assert res.equals(a.diff(xorCD));
+    }
+  }
+
   void tEnsureCapacity() {
     reset();
     assertTrue(hasNext());
