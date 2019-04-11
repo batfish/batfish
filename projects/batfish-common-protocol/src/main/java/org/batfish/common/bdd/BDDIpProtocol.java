@@ -28,4 +28,9 @@ public final class BDDIpProtocol {
   public IpProtocol satAssignmentToValue(BDD satAssignment) {
     return IpProtocol.fromNumber(_var.satAssignmentToLong(satAssignment).intValue());
   }
+
+  /** @return the {@link BDDInteger} backing this. */
+  public BDDInteger getBDDInteger() {
+    return _var;
+  }
 }
