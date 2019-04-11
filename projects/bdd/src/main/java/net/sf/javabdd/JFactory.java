@@ -1287,7 +1287,7 @@ public final class JFactory extends BDDFactory {
       cachestats.opOverwrite++;
     }
     entry.a = level;
-    entry.b = l; // this identifies the entry as being for replace
+    entry.b = l; // l is always >=0, which identifies the entry as being for correctify
     entry.c = r;
     entry.res = res;
 
