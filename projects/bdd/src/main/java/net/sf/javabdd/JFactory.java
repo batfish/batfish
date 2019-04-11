@@ -854,6 +854,10 @@ public final class JFactory extends BDDFactory {
     return r;
   }
 
+  private static int CORRECTIFYHASH(int level, int l, int r) {
+    return TRIPLE(level, l, r);
+  }
+
   private static int VECCOMPOSEHASH(int f) {
     return f;
   }
@@ -1214,7 +1218,7 @@ public final class JFactory extends BDDFactory {
     }
 
     entry = BddCache_lookupI(replacecache, REPLACEHASH(r));
-    if (entry.a == r && entry.c == replaceid) {
+    if (entry.a == r && entry.b == -1 && entry.c == replaceid) {
       if (CACHESTATS) {
         cachestats.opHit++;
       }
@@ -1234,6 +1238,7 @@ public final class JFactory extends BDDFactory {
       cachestats.opOverwrite++;
     }
     entry.a = r;
+    entry.b = -1; // this identifies the entry as being for replace
     entry.c = replaceid;
     entry.res = res;
 
@@ -1252,6 +1257,17 @@ public final class JFactory extends BDDFactory {
       return 0;
     }
 
+    BddCacheDataI entry = BddCache_lookupI(replacecache, CORRECTIFYHASH(level, l, r));
+    if (entry.a == level && entry.b == l && entry.c == r) {
+      if (CACHESTATS) {
+        cachestats.opHit++;
+      }
+      return entry.res;
+    }
+    if (CACHESTATS) {
+      cachestats.opMiss++;
+    }
+
     if (LEVEL(l) == LEVEL(r)) {
       PUSHREF(bdd_correctify(level, LOW(l), LOW(r)));
       PUSHREF(bdd_correctify(level, HIGH(l), HIGH(r)));
@@ -1267,7 +1283,15 @@ public final class JFactory extends BDDFactory {
     }
     POPREF(2);
 
-    return res; /* FIXME: cache ? */
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
+    entry.a = level;
+    entry.b = l; // this identifies the entry as being for replace
+    entry.c = r;
+    entry.res = res;
+
+    return res;
   }
 
   private int bdd_apply(int l, int r, int op) {
