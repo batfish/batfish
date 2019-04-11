@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.CommonToken;
@@ -222,12 +223,7 @@ public final class Hierarchy {
       }
 
       public String pathString() {
-        StringBuilder sb = new StringBuilder();
-        for (HierarchyChildNode node : _nodes) {
-          sb.append(node._text + " ");
-        }
-        String out = sb.toString().trim();
-        return out;
+        return _nodes.stream().map(node -> node._text).collect(Collectors.joining(" "));
       }
 
       public void setStatement(StatementContext statement) {
