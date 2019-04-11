@@ -1317,16 +1317,20 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
 
               neighborProcess.enqueueMessagesType1(
                   edge.reverse(),
-                  filterGeneratedRoutesOnExport(
-                      _activatedGeneratedRoutes.getRoutes(),
-                      areaConfig,
-                      OspfExternalType1Route.class));
+                  transformType1RoutesOnExport(
+                      filterGeneratedRoutesOnExport(
+                          _activatedGeneratedRoutes.getRoutes(),
+                          areaConfig,
+                          OspfExternalType1Route.class),
+                      areaConfig));
               neighborProcess.enqueueMessagesType2(
                   edge.reverse(),
-                  filterGeneratedRoutesOnExport(
-                      _activatedGeneratedRoutes.getRoutes(),
-                      areaConfig,
-                      OspfExternalType2Route.class));
+                  transformType2RoutesOnExport(
+                      filterGeneratedRoutesOnExport(
+                          _activatedGeneratedRoutes.getRoutes(),
+                          areaConfig,
+                          OspfExternalType2Route.class),
+                      areaConfig));
             });
   }
 
