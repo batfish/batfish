@@ -32,11 +32,11 @@ public final class HeaderSpaceToBDD {
     _dstIpSpaceToBdd =
         namedIpSpaces.isEmpty()
             ? bddPacket.getDstIpSpaceToBDD()
-            : new IpSpaceToBDD(_bddPacket.getDstIp(), namedIpSpaces);
+            : new MemoizedIpSpaceToBDD(_bddPacket.getDstIp(), namedIpSpaces);
     _srcIpSpaceToBdd =
         namedIpSpaces.isEmpty()
             ? bddPacket.getSrcIpSpaceToBDD()
-            : new IpSpaceToBDD(_bddPacket.getSrcIp(), namedIpSpaces);
+            : new MemoizedIpSpaceToBDD(_bddPacket.getSrcIp(), namedIpSpaces);
   }
 
   public HeaderSpaceToBDD(
