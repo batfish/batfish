@@ -1218,7 +1218,7 @@ public final class JFactory extends BDDFactory {
     }
 
     entry = BddCache_lookupI(replacecache, REPLACEHASH(replaceid, r));
-    if (entry.a == r && entry.b == -1 && entry.c == replaceid) {
+    if (entry.a == r && entry.c == replaceid) {
       if (CACHESTATS) {
         cachestats.opHit++;
       }
@@ -1252,7 +1252,6 @@ public final class JFactory extends BDDFactory {
       cachestats.opOverwrite++;
     }
     entry.a = r;
-    entry.b = -1; // this identifies the entry as being for replace
     entry.c = replaceid;
     entry.res = res;
 
@@ -1260,10 +1259,10 @@ public final class JFactory extends BDDFactory {
   }
 
   /**
-   * This is similar to {@link JFactory::bdd_makenode} -- it returns a BDD that branches at the
-   * input level with the input low and high nodes. The difference between this and bdd_makenode is
-   * that bdd_makenode requires level to be strictly less than LEVEL(l) and LEVEL(r), where this
-   * does not. The base case of bdd_correctify is when that is true -- then it simply delegates to
+   * This is similar to {@link JFactory#bdd_makenode} -- it returns a BDD that branches at the input
+   * level with the input low and high nodes. The difference between this and bdd_makenode is that
+   * bdd_makenode requires level to be strictly less than LEVEL(l) and LEVEL(r), where this does
+   * not. The base case of bdd_correctify is when that is true -- then it simply delegates to
    * bdd_makenode.
    *
    * @param level The level to branch on.
@@ -2483,6 +2482,12 @@ public final class JFactory extends BDDFactory {
       return BDDZERO;
     }
 
+    // compose_rec uses replacecache
+    if (replacecache == null) {
+      replacecache = BddCacheI_init(cachesize);
+    }
+
+    // compose_rec can call ite_rec, which uses applycache
     if (applycache == null) {
       applycache = BddCacheI_init(cachesize);
     }
