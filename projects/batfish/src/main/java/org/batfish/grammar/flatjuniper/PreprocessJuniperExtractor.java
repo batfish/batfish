@@ -64,10 +64,10 @@ public final class PreprocessJuniperExtractor {
       DeactivateLinePruner dp = new DeactivateLinePruner();
       walker.walk(dp, tree);
     }
-    DeactivatedLinePruner dlp = new DeactivatedLinePruner(hierarchy);
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("FlatJuniper::DeactivatedLinePruner").startActive()) {
       assert span != null; // avoid unused warning
+      DeactivatedLinePruner dlp = new DeactivatedLinePruner(hierarchy);
       walker.walk(dlp, tree);
     }
     try (ActiveSpan span =
@@ -107,11 +107,6 @@ public final class PreprocessJuniperExtractor {
       assert span != null; // avoid unused warning
       WildcardPruner wp = new WildcardPruner();
       walker.walk(wp, tree);
-    }
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("FlatJuniper::DeactivatedLinePruner again").startActive()) {
-      assert span != null; // avoid unused warning
-      walker.walk(dlp, tree);
     }
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("FlatJuniper::ApplyPathApplicator").startActive()) {
