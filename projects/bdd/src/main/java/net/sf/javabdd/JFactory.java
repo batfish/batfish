@@ -850,20 +850,20 @@ public final class JFactory extends BDDFactory {
     return r;
   }
 
-  private static int REPLACEHASH(int r) {
-    return r;
+  private static int REPLACEHASH(int cacheid, int r) {
+    return PAIR(cacheid, r);
   }
 
   private static int CORRECTIFYHASH(int level, int l, int r) {
     return TRIPLE(level, l, r);
   }
 
-  private static int VECCOMPOSEHASH(int f) {
-    return f;
+  private static int VECCOMPOSEHASH(int cacheid, int f) {
+    return PAIR(cacheid, f);
   }
 
-  private static int COMPOSEHASH(int f, int g) {
-    return PAIR(f, g);
+  private static int COMPOSEHASH(int cacheid, int f, int g) {
+    return TRIPLE(cacheid, f, g);
   }
 
   private static int SATCOUHASH(int r) {
@@ -1217,7 +1217,7 @@ public final class JFactory extends BDDFactory {
       return r;
     }
 
-    entry = BddCache_lookupI(replacecache, REPLACEHASH(r));
+    entry = BddCache_lookupI(replacecache, REPLACEHASH(replaceid, r));
     if (entry.a == r && entry.b == -1 && entry.c == replaceid) {
       if (CACHESTATS) {
         cachestats.opHit++;
@@ -1231,7 +1231,21 @@ public final class JFactory extends BDDFactory {
     PUSHREF(replace_rec(LOW(r)));
     PUSHREF(replace_rec(HIGH(r)));
 
-    res = bdd_correctify(LEVEL(replacepair[LEVEL(r)]), READREF(2), READREF(1));
+    /* Replace the root variable with the new one. Replacements at the root or in the subbdds can
+     * cause the new root to be out of order. bdd_correctify builds the bdd correctly by branching
+     * on the new root at the correct level of the bdd.
+     */
+    {
+      int level = LEVEL(replacepair[LEVEL(r)]);
+
+      /* bdd_correctify calls are cached separately from replace_rec calls. Set the cacheid for
+       * the bdd_correctify calls and restore when it returns.
+       */
+      int tmp = replaceid;
+      replaceid = (level << 2) | CACHEID_CORRECTIFY;
+      res = bdd_correctify(level, READREF(2), READREF(1));
+      replaceid = tmp;
+    }
     POPREF(2);
 
     if (CACHESTATS && entry.a != -1) {
@@ -1245,6 +1259,17 @@ public final class JFactory extends BDDFactory {
     return res;
   }
 
+  /**
+   * This is similar to {@link JFactory::bdd_makenode} -- it returns a BDD that branches at the
+   * input level with the input low and high nodes. The difference between this and bdd_makenode is
+   * that bdd_makenode requires level to be strictly less than LEVEL(l) and LEVEL(r), where this
+   * does not. The base case of bdd_correctify is when that is true -- then it simply delegates to
+   * bdd_makenode.
+   *
+   * @param level The level to branch on.
+   * @param l The low branch.
+   * @param r The high branch.
+   */
   private int bdd_correctify(int level, int l, int r) {
     int res;
 
@@ -1257,8 +1282,8 @@ public final class JFactory extends BDDFactory {
       return 0;
     }
 
-    BddCacheDataI entry = BddCache_lookupI(replacecache, CORRECTIFYHASH(level, l, r));
-    if (entry.a == level && entry.b == l && entry.c == r) {
+    BddCacheDataI entry = BddCache_lookupI(replacecache, CORRECTIFYHASH(replaceid, l, r));
+    if (entry.a == l && entry.b == r && entry.c == replaceid) {
       if (CACHESTATS) {
         cachestats.opHit++;
       }
@@ -1286,9 +1311,9 @@ public final class JFactory extends BDDFactory {
     if (CACHESTATS && entry.a != -1) {
       cachestats.opOverwrite++;
     }
-    entry.a = level;
-    entry.b = l; // l is always >=0, which identifies the entry as being for correctify
-    entry.c = r;
+    entry.a = l;
+    entry.b = r;
+    entry.c = replaceid;
     entry.res = res;
 
     return res;
@@ -2499,7 +2524,7 @@ public final class JFactory extends BDDFactory {
       return f;
     }
 
-    entry = BddCache_lookupI(replacecache, COMPOSEHASH(f, g));
+    entry = BddCache_lookupI(replacecache, COMPOSEHASH(replaceid, f, g));
     if (entry.a == f && entry.b == g && entry.c == replaceid) {
       if (CACHESTATS) {
         cachestats.opHit++;
@@ -2592,7 +2617,7 @@ public final class JFactory extends BDDFactory {
       return f;
     }
 
-    entry = BddCache_lookupI(replacecache, VECCOMPOSEHASH(f));
+    entry = BddCache_lookupI(replacecache, VECCOMPOSEHASH(replaceid, f));
     if (entry.a == f && entry.c == replaceid) {
       if (CACHESTATS) {
         cachestats.opHit++;
@@ -3668,6 +3693,8 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_makenode(int level, int low, int high) {
+    assert (ISCONST(low) || level < LEVEL(low)) && (ISCONST(high) || level < LEVEL(high));
+
     /* check whether childs are equal */
     if (low == high) {
       if (CACHESTATS) {
@@ -3893,6 +3920,7 @@ public final class JFactory extends BDDFactory {
   private static final int CACHEID_REPLACE = 0x0;
   private static final int CACHEID_COMPOSE = 0x1;
   private static final int CACHEID_VECCOMPOSE = 0x2;
+  private static final int CACHEID_CORRECTIFY = 0x3;
 
   /* Hash value modifiers for quantification */
   private static final int CACHEID_EXIST = 0x0;
