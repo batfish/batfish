@@ -20,8 +20,7 @@ public class ParboiledFilterSpecifierFactory implements FilterSpecifierFactory {
     checkArgument(input instanceof String, "%s requires String input", NAME);
 
     ParsingResult<AstNode> result =
-        new ReportingParseRunner<AstNode>(
-                Parser.INSTANCE.input(Grammar.FILTER_SPECIFIER.getExpression()))
+        new ReportingParseRunner<AstNode>(Parser.instance().getInputRule(Grammar.FILTER_SPECIFIER))
             .run((String) input);
 
     if (!result.parseErrors.isEmpty()) {

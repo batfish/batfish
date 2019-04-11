@@ -18,7 +18,6 @@ test tests/basic/routes.ref get routes
 
 # some ref tests using reference snapshot
 test -compareall tests/basic/init-candidate.ref init-reference-snapshot networks/example/candidate basic-example-candidate
-test tests/basic/nodes-diff.ref get nodes summary=false, differential=true
 
 # Everything below here is to be converted into regular unit tests in some form.
 test tests/basic/filterLineReachability.ref get filterLineReachability
@@ -26,7 +25,6 @@ test tests/basic/bgpSessionStatus.ref get bgpsessionstatus nodes="as2.*", remote
 test tests/basic/compareSameName.ref get compareSameName
 test tests/basic/error.ref -error get error
 test tests/basic/isisLoopbacks.ref get isisLoopbacks
-test tests/basic/ospfSessionCheck.ref get ospfsessioncheck
 test tests/basic/ospfStatus.ref get ospfstatus interfaces="Loopback.*", status=".*passive"
 test tests/basic/selfAdjacencies.ref get selfAdjacencies
 test tests/basic/testfilters.ref get testFilters headers={"dstIps": "1.1.1.1"}, nodes="host.*", filters="filter.*"

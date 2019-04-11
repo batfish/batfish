@@ -33,18 +33,19 @@ public final class FilterQuestionUtils {
 
   /** Get filters specified by the given filter specifier. */
   public static Multimap<String, String> getSpecifiedFilters(
-      Map<String, Configuration> configs,
+      SpecifierContext specifierContext,
       NodeSpecifier nodeSpecifier,
       FilterSpecifier filterSpecifier,
-      SpecifierContext specifierContext) {
+      boolean ignoreComposites) {
     Set<String> nodes = nodeSpecifier.resolve(specifierContext);
     ImmutableMultimap.Builder<String, String> filters = ImmutableMultimap.builder();
+    Map<String, Configuration> configs = specifierContext.getConfigs();
     nodes.stream()
         .map(configs::get)
         .forEach(
             config ->
-                filterSpecifier
-                    .resolve(config.getHostname(), specifierContext)
+                filterSpecifier.resolve(config.getHostname(), specifierContext).stream()
+                    .filter(f -> !ignoreComposites || !f.isComposite())
                     .forEach(filter -> filters.put(config.getHostname(), filter.getName())));
     return filters.build();
   }

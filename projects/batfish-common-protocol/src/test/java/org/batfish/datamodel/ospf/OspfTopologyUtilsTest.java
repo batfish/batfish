@@ -28,7 +28,7 @@ public class OspfTopologyUtilsTest {
     graph.addNode(n3);
     // n1 <--> n2. Link values (IPs) don't matter
     Ip ip = Ip.parse("1.1.1.1");
-    OspfSessionProperties s = new OspfSessionProperties(new IpLink(ip, ip));
+    OspfSessionProperties s = new OspfSessionProperties(0, new IpLink(ip, ip));
     graph.putEdgeValue(n1, n2, s);
     graph.putEdgeValue(n2, n1, s);
 

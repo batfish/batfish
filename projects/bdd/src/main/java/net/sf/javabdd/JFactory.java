@@ -69,7 +69,7 @@ public final class JFactory extends BDDFactory {
    * not done so. This flag implies non-trivial runtime overhead but defers BDD garbage collection
    * to Java, rather than manual user control of reference counting.
    */
-  private static final boolean USE_FINALIZER = true;
+  private static final boolean USE_FINALIZER = false;
 
   /**
    * When {@link #USE_FINALIZER} is true, setting this flag to true enables debug print messages
@@ -552,17 +552,35 @@ public final class JFactory extends BDDFactory {
     }
   }
 
+  // a = operator, b = result, c = unused
+  private static class MultiOpBddCacheData extends BddCacheData {
+    int[] operands;
+
+    @Override
+    BddCacheData copy() {
+      MultiOpBddCacheData that = new MultiOpBddCacheData();
+      that.a = a;
+      that.b = b;
+      that.c = c;
+      that.operands = Arrays.copyOf(operands, operands.length);
+      return that;
+    }
+  }
+
   private static class BddCache {
     BddCacheData[] table;
     int tablesize;
 
     BddCache copy() {
       BddCache that = new BddCache();
-      boolean is_d = this.table instanceof BddCacheDataD[];
-      if (is_d) {
+      if (this.table instanceof BddCacheDataD[]) {
         that.table = new BddCacheDataD[this.table.length];
-      } else {
+      } else if (this.table instanceof BddCacheDataI[]) {
         that.table = new BddCacheDataI[this.table.length];
+      } else if (this.table instanceof MultiOpBddCacheData[]) {
+        that.table = new MultiOpBddCacheData[this.table.length];
+      } else {
+        throw new IllegalStateException("Unexpected BddCache type");
       }
       that.tablesize = this.tablesize;
       for (int i = 0; i < table.length; ++i) {
@@ -812,6 +830,14 @@ public final class JFactory extends BDDFactory {
     return TRIPLE(l, r, op);
   }
 
+  private static int MULTIOPHASH(int[] operands, int op) {
+    int result = op;
+    for (int operand : operands) {
+      result = PAIR(result, operand);
+    }
+    return result;
+  }
+
   private static int RESTRHASH(int r, int var) {
     return PAIR(r, var);
   }
@@ -876,6 +902,62 @@ public final class JFactory extends BDDFactory {
   /* Should *not* be used in bdd_apply calls !!! */
   private static final int bddop_not = 10;
   private static final int bddop_simplify = 11;
+
+  @Override
+  public BDD orAll(BDD... bddOperands) {
+    return orAll(Arrays.asList(bddOperands));
+  }
+
+  @Override
+  public BDD orAll(Collection<BDD> bddOperands) {
+    int[] operands =
+        bddOperands.stream()
+            .mapToInt(bdd -> ((BDDImpl) bdd)._index)
+            .filter(i -> i != 0)
+            .sorted()
+            .distinct()
+            .toArray();
+    if (operands.length == 0) {
+      return zero();
+    } else if (ISONE(operands[0])) {
+      return one();
+    } else {
+      return makeBDD(bdd_orAll(operands));
+    }
+  }
+
+  private int bdd_orAll(int[] operands) {
+    if (multiopcache == null) {
+      multiopcache = BddCacheMultiOp_init(cachesize);
+    }
+
+    int res;
+    while (true) {
+      try {
+        INITREF();
+
+        if (firstReorder == 0) {
+          bdd_disable_reorder();
+        }
+        res = orAll_rec(operands);
+        if (firstReorder == 0) {
+          bdd_enable_reorder();
+        }
+      } catch (ReorderException x) {
+        bdd_checkreorder();
+
+        if (firstReorder-- == 1) {
+          continue;
+        }
+        res = BDDZERO;
+        /* avoid warning about res being uninitialized */
+      }
+      break;
+    }
+
+    checkresize();
+    return res;
+  }
 
   private int bdd_not(int r) {
     int res;
@@ -1484,6 +1566,178 @@ public final class JFactory extends BDDFactory {
     entry.c = bddop_and;
     entry.res = res;
 
+    return res;
+  }
+
+  /**
+   * Dedup a sorted array. Returns the input array if it contains no duplicates. Mutates the array
+   * if there are duplicates.
+   */
+  static int[] dedupSorted(int[] values) {
+    if (values.length < 2) {
+      return values;
+    }
+    int i = 0; // index last written to
+    int j = 1; // index to read from next
+    while (j < values.length) {
+      if (values[i] != values[j]) {
+        values[++i] = values[j++];
+      } else {
+        j++;
+      }
+    }
+
+    int dedupLen = i + 1;
+    if (dedupLen < values.length) {
+      return Arrays.copyOf(values, dedupLen);
+    } else {
+      return values;
+    }
+  }
+
+  private int orAll_rec(int[] operands) {
+    if (operands.length == 0) {
+      return BDDZERO;
+    } else if (operands.length == 1) {
+      return operands[0];
+    } else if (operands.length == 2) {
+      return or_rec(operands[0], operands[1]);
+    }
+
+    // sort and dedup the operands to optimize caching
+    Arrays.sort(operands);
+    operands = dedupSorted(operands);
+
+    MultiOpBddCacheData entry =
+        BddCache_lookupMultiOp(multiopcache, MULTIOPHASH(operands, bddop_or));
+    if (entry.a == bddop_or && Arrays.equals(operands, entry.operands)) {
+      if (CACHESTATS) {
+        cachestats.opHit++;
+      }
+      return entry.b;
+    }
+    if (CACHESTATS) {
+      cachestats.opMiss++;
+    }
+
+    /* Compute the result in a way that generalizes or_rec. Identify the variable to branch on, and
+     * make two recursive calls (for when that variable is high or low).
+     *
+     * In a single pass over operands:
+     * 1. Find the level of the variable the result BDD should branch on. This is the minimum level
+     *    branched on at the roots of the current operand BDDs.
+     * 2. Compute the size needed for the operand arrays of the two recursive calls. This is equal
+     *    to the number of operands whose root level are greater than the minimum, plus the number
+     *    of operands whose root level is equal to the minimum and whose child (low or high,
+     *    corresponding to if the recursive call is computing the low or high child of the result)
+     *    is not the zero BDD.
+     * 3. Whether either recursive call can be short-circuited because one of the operands is the
+     *    one BDD. This can only happen when the one is a child a BDD whose root level is the
+     *    minimum.
+     */
+
+    int minLevel = LEVEL(operands[0]);
+    int nodesWithMinLevel = 0;
+    int nodesWithMinLevelLowNonZero = 0;
+    int nodesWithMinLevelHighNonZero = 0;
+    boolean nodeWithMinLevelHasLowOne = false;
+    boolean nodeWithMinLevelHasHighOne = false;
+    for (int n : operands) {
+      int level = LEVEL(n);
+      if (level < minLevel) {
+        minLevel = level;
+        nodesWithMinLevel = 0;
+        nodesWithMinLevelHighNonZero = 0;
+        nodesWithMinLevelLowNonZero = 0;
+        nodeWithMinLevelHasHighOne = false;
+        nodeWithMinLevelHasLowOne = false;
+      } else if (level > minLevel) {
+        continue;
+      }
+
+      // level == minLevel
+      nodesWithMinLevel++;
+
+      int high = HIGH(n);
+      nodeWithMinLevelHasHighOne |= ISONE(high);
+      nodesWithMinLevelHighNonZero += ISZERO(high) ? 0 : 1;
+
+      int low = LOW(n);
+      nodeWithMinLevelHasLowOne |= ISONE(low);
+      nodesWithMinLevelLowNonZero += ISZERO(low) ? 0 : 1;
+    }
+
+    int nodesWithoutMinLevel = operands.length - nodesWithMinLevel;
+
+    int low;
+    if (!nodeWithMinLevelHasLowOne) {
+      /* Make the resursive call for the low branch. None of the operands are 1, so we can't
+       * short-circuit to 1. Allocate and build the array of operands, then make the call and push
+       * the result onto the stack.
+       */
+      int[] lowOperands = new int[nodesWithMinLevelLowNonZero + nodesWithoutMinLevel];
+      int i = 0;
+      for (int operand : operands) {
+        if (LEVEL(operand) == minLevel) {
+          int l = LOW(operand);
+          if (!ISZERO(l)) {
+            assert !ISCONST(l);
+            lowOperands[i++] = l;
+          }
+        } else {
+          assert !ISCONST(operand);
+          lowOperands[i++] = operand;
+        }
+      }
+      assert i == lowOperands.length;
+      low = orAll_rec(lowOperands);
+      PUSHREF(low); // make sure low isn't garbage collected.
+    } else {
+      low = BDDONE;
+    }
+
+    int high;
+    if (!nodeWithMinLevelHasHighOne) {
+      /* Make the resursive call for the high branch. None of the operands are 1, so we can't
+       * short-circuit to 1. Allocate and build the array of operands, then make the call and push
+       * the result onto the stack.
+       */
+      int[] highOperands = new int[nodesWithMinLevelHighNonZero + nodesWithoutMinLevel];
+      int i = 0;
+      for (int operand : operands) {
+        if (LEVEL(operand) == minLevel) {
+          int h = HIGH(operand);
+          if (!ISZERO(h)) {
+            assert !ISCONST(h);
+            highOperands[i++] = h;
+          }
+        } else {
+          assert !ISCONST(operand);
+          highOperands[i++] = operand;
+        }
+      }
+      assert i == highOperands.length;
+      high = orAll_rec(highOperands);
+      PUSHREF(high); // make sure high isn't garbage collected.
+    } else {
+      high = BDDONE;
+    }
+
+    int res = bdd_makenode(minLevel, low, high);
+
+    if (!nodeWithMinLevelHasHighOne) {
+      POPREF(1);
+    }
+    if (!nodeWithMinLevelHasLowOne) {
+      POPREF(1);
+    }
+
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
+    entry.a = bddop_or;
+    entry.b = res;
+    entry.operands = operands;
     return res;
   }
 
@@ -3663,6 +3917,7 @@ public final class JFactory extends BDDFactory {
   private BddCache appexcache; /* Cache for appex/appall results */
   private BddCache replacecache; /* Cache for replace results */
   private BddCache misccache; /* Cache for other results */
+  private BddCache multiopcache; /* Cache for varargs operators */
   private BddCache countcache; /* Cache for count results */
   private int cacheratio;
   private int satPolarity;
@@ -3678,6 +3933,7 @@ public final class JFactory extends BDDFactory {
       appexcache = BddCacheI_init(cachesize);
       replacecache = BddCacheI_init(cachesize);
       misccache = BddCacheI_init(cachesize);
+      multiopcache = BddCacheMultiOp_init(cachesize);
       countcache = BddCacheD_init(cachesize);
     }
 
@@ -3702,6 +3958,8 @@ public final class JFactory extends BDDFactory {
     replacecache = null;
     BddCache_done(misccache);
     misccache = null;
+    BddCache_done(multiopcache);
+    multiopcache = null;
     BddCache_done(countcache);
     countcache = null;
 
@@ -3716,6 +3974,7 @@ public final class JFactory extends BDDFactory {
     BddCache_reset(appexcache);
     BddCache_reset(replacecache);
     BddCache_reset(misccache);
+    BddCache_reset(multiopcache);
     BddCache_reset(countcache);
   }
 
@@ -3725,6 +3984,7 @@ public final class JFactory extends BDDFactory {
     BddCache_clean_ab(appexcache);
     BddCache_clean_ab(replacecache);
     BddCache_clean_ab(misccache);
+    BddCache_clean_multiop(multiopcache);
     BddCache_clean_d(countcache);
   }
 
@@ -3745,6 +4005,7 @@ public final class JFactory extends BDDFactory {
     BddCache_resize(appexcache, newcachesize);
     BddCache_resize(replacecache, newcachesize);
     BddCache_resize(misccache, newcachesize);
+    BddCache_resize(multiopcache, newcachesize);
     BddCache_resize(countcache, newcachesize);
     return old;
   }
@@ -3758,6 +4019,7 @@ public final class JFactory extends BDDFactory {
       BddCache_resize(appexcache, newcachesize);
       BddCache_resize(replacecache, newcachesize);
       BddCache_resize(misccache, newcachesize);
+      BddCache_resize(multiopcache, newcachesize);
       BddCache_resize(countcache, newcachesize);
     }
   }
@@ -3772,6 +4034,23 @@ public final class JFactory extends BDDFactory {
 
     for (n = 0; n < size; n++) {
       cache.table[n] = new BddCacheDataI();
+      cache.table[n].a = -1;
+    }
+    cache.tablesize = size;
+
+    return cache;
+  }
+
+  private BddCache BddCacheMultiOp_init(int size) {
+    int n;
+
+    size = bdd_prime_gte(size);
+
+    BddCache cache = new BddCache();
+    cache.table = new MultiOpBddCacheData[size];
+
+    for (n = 0; n < size; n++) {
+      cache.table[n] = new MultiOpBddCacheData();
       cache.table[n].a = -1;
     }
     cache.tablesize = size;
@@ -3819,6 +4098,8 @@ public final class JFactory extends BDDFactory {
       return "count";
     } else if (cache == misccache) {
       return "misc";
+    } else if (cache == multiopcache) {
+      return "multiop";
     } else if (cache == quantcache) {
       return "quant";
     } else if (cache == replacecache) {
@@ -3841,23 +4122,27 @@ public final class JFactory extends BDDFactory {
 
     int n;
 
-    boolean is_d = cache.table instanceof BddCacheDataD[];
-
-    cache.table = null;
-
     newsize = bdd_prime_gte(newsize);
 
-    if (is_d) {
+    if (cache.table instanceof BddCacheDataD[]) {
       cache.table = new BddCacheDataD[newsize];
-    } else {
+    } else if (cache.table instanceof BddCacheDataI[]) {
       cache.table = new BddCacheDataI[newsize];
+    } else if (cache.table instanceof MultiOpBddCacheData[]) {
+      cache.table = new MultiOpBddCacheData[newsize];
+    } else {
+      throw new IllegalStateException("unknown cache table type");
     }
 
     for (n = 0; n < newsize; n++) {
-      if (is_d) {
+      if (cache.table instanceof BddCacheDataD[]) {
         cache.table[n] = new BddCacheDataD();
-      } else {
+      } else if (cache.table instanceof BddCacheDataI[]) {
         cache.table[n] = new BddCacheDataI();
+      } else if (cache.table instanceof MultiOpBddCacheData[]) {
+        cache.table[n] = new MultiOpBddCacheData();
+      } else {
+        throw new IllegalStateException("unknown cache table type");
       }
       cache.table[n].a = -1;
     }
@@ -3872,6 +4157,10 @@ public final class JFactory extends BDDFactory {
 
   private static BddCacheDataD BddCache_lookupD(BddCache cache, int hash) {
     return (BddCacheDataD) cache.table[Math.abs(hash % cache.tablesize)];
+  }
+
+  private static MultiOpBddCacheData BddCache_lookupMultiOp(BddCache cache, int hash) {
+    return (MultiOpBddCacheData) cache.table[Math.abs(hash % cache.tablesize)];
   }
 
   private void BddCache_reset(BddCache cache) {
@@ -3954,6 +4243,10 @@ public final class JFactory extends BDDFactory {
         cache.table[n].a = -1;
       }
     }
+  }
+
+  private void BddCache_clean_multiop(BddCache cache) {
+    throw new UnsupportedOperationException("Clean is unimplemented for multiop cache.");
   }
 
   private void bdd_setpair(bddPair pair, int oldvar, int newvar) {
@@ -7167,6 +7460,9 @@ public final class JFactory extends BDDFactory {
     }
     if (misccache != null) {
       INSTANCE.misccache = this.misccache.copy();
+    }
+    if (multiopcache != null) {
+      INSTANCE.multiopcache = this.multiopcache.copy();
     }
     if (countcache != null) {
       INSTANCE.countcache = this.countcache.copy();

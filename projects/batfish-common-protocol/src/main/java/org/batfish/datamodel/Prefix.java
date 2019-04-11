@@ -192,6 +192,7 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
     return Objects.hash(_ip, _prefixLength);
   }
 
+  @Nonnull
   public IpSpace toIpSpace() {
     if (_prefixLength == 0) {
       return UniverseIpSpace.INSTANCE;

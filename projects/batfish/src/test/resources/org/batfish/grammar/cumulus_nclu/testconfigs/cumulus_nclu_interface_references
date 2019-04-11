@@ -6,5 +6,6 @@ net add bond bond1 bond slaves swp1-2
 net add interface swp1
 net add interface swp3
 net add routing route-map rm1 permit 1 match interface swp1
+net add bridge bridge ports swp1
 #
 net commit

@@ -23,11 +23,29 @@ sys_global_settings
   )? BRACE_RIGHT NEWLINE
 ;
 
+sys_ntp
+:
+  NTP BRACE_LEFT
+  (
+    NEWLINE
+    (
+      ntp_servers
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+ntp_servers
+:
+  SERVERS BRACE_LEFT servers += word* BRACE_RIGHT NEWLINE
+;
+
 s_sys
 :
   SYS
   (
     sys_global_settings
+    | sys_ntp
     | unrecognized
   )
 ;

@@ -34,6 +34,7 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
@@ -165,6 +166,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
       _interfaceIncomingFilterLines;
   private final @Nonnull Map<String, Interface> _interfaces;
   private final @Nonnull Map<String, Node> _nodes;
+  private @Nonnull List<String> _ntpServers;
   private final @Nonnull Map<String, Pool> _pools;
   private final @Nonnull Map<String, PrefixList> _prefixLists;
   private final @Nonnull Map<String, RouteMap> _routeMaps;
@@ -189,6 +191,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     _bgpProcesses = new HashMap<>();
     _interfaces = new HashMap<>();
     _nodes = new HashMap<>();
+    _ntpServers = ImmutableList.of();
     _pools = new HashMap<>();
     _prefixLists = new HashMap<>();
     _routeMaps = new HashMap<>();
@@ -998,6 +1001,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
     _imish = imish;
   }
 
+  public void setNtpServers(List<String> ntpServers) {
+    _ntpServers = ImmutableList.copyOf(ntpServers);
+  }
+
   @Override
   public void setVendor(ConfigurationFormat format) {
     _format = format;
@@ -1106,6 +1113,14 @@ public class F5BigipConfiguration extends VendorConfiguration {
     newIface.setVlan(vlan.getTag());
     newIface.setBandwidth(Interface.DEFAULT_BANDWIDTH);
     newIface.setVrf(_c.getDefaultVrf());
+    // Assume each interface has its own session info (sessions are not shared by interfaces).
+    // That is, return flows can only enter the interface the forward flow exited in order to match
+    // the session setup by the forward flow.
+    // By default, F5 do not apply packet filters to established connections; but one can enable
+    // packet filter for established connections. However, packet filters are not fully supported at
+    // this point
+    newIface.setFirewallSessionInterfaceInfo(
+        new FirewallSessionInterfaceInfo(ImmutableList.of(newIface.getName()), null, null));
     return newIface;
   }
 
@@ -1324,6 +1339,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
     initSnatTransformations();
     initVirtualTransformations();
     _vlans.keySet().stream().map(_c.getAllInterfaces()::get).forEach(this::addNatRules);
+
+    // NTP servers
+    _c.setNtpServers(ImmutableSortedSet.copyOf(_ntpServers));
 
     markStructures();
 

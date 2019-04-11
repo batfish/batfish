@@ -138,6 +138,16 @@ public class TypedBDDFactory extends BDDFactory {
   }
 
   @Override
+  public BDD orAll(BDD... bddOperands) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public BDD orAll(Collection<BDD> bddOperands) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public int varNum() {
     return factory.varNum();
   }

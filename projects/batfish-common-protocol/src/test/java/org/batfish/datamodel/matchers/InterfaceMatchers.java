@@ -28,6 +28,7 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDeclaredNames;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDependencies;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDescription;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasEigrp;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasEncapsulationVlan;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasHsrpGroup;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasHsrpVersion;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasInterfaceType;
@@ -45,6 +46,7 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasSpeed;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasSwitchPortMode;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasVlan;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasVrf;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasVrfName;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasZoneName;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsActive;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsOspfPassive;
@@ -180,6 +182,23 @@ public final class InterfaceMatchers {
   public static @Nonnull Matcher<Interface> hasEigrp(
       @Nonnull Matcher<? super EigrpInterfaceSettings> subMatcher) {
     return new HasEigrp(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if interface's encapsulationVlan is {@code
+   * expectedEncapsulationVlan}.
+   */
+  public static @Nonnull Matcher<Interface> hasEncapsulationVlan(int expectedEncapsulationVlan) {
+    return new HasEncapsulationVlan(equalTo(expectedEncapsulationVlan));
+  }
+
+  /**
+   * Provides a matcher that matches if interface's encapsulationVlan is matched by the provided
+   * {@code subMatcher}.
+   */
+  public static @Nonnull Matcher<Interface> hasEncapsulationVlan(
+      @Nonnull Matcher<? super Integer> subMatcher) {
+    return new HasEncapsulationVlan(subMatcher);
   }
 
   /**
@@ -352,6 +371,11 @@ public final class InterfaceMatchers {
    */
   public static HasVrf hasVrf(Matcher<? super Vrf> subMatcher) {
     return new HasVrf(subMatcher);
+  }
+
+  /** Provides a matcher that matches if the interface's vrfName is {@code expectedVrfName}. */
+  public static @Nonnull Matcher<Interface> hasVrfName(@Nonnull String expectedVrfName) {
+    return new HasVrfName(equalTo(expectedVrfName));
   }
 
   /**

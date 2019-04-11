@@ -26,7 +26,7 @@ export ALLINONE="$ALLINONE_PATH/allinone"
 export COMMON_PATH="$PROJECTS_PATH/batfish-common-protocol"
 export COMMON_JAR="$COMMON_PATH/target/batfish-common-protocol-${BATFISH_VERSION}.jar"
 
-export QUESTION_PATH="$PROJECTS_PATH/question"
+export QUESTIONS_PATH="${BATFISH_ROOT}/questions"
 export BATFISH_QUESTION_PLUGIN_DIR="$PROJECTS_PATH/question/target/"
 
 export ALLINONE_COMPLETION_FILE="$BATFISH_TOOLS_PATH/completion-allinone.tmp"

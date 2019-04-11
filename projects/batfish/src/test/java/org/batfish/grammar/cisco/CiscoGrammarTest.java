@@ -307,7 +307,7 @@ import org.batfish.datamodel.LineType;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
-import org.batfish.datamodel.OspfInternalRoute;
+import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.PrefixRange;
@@ -363,6 +363,8 @@ import org.batfish.main.TestrigText;
 import org.batfish.representation.cisco.CiscoAsaNat;
 import org.batfish.representation.cisco.CiscoAsaNat.Section;
 import org.batfish.representation.cisco.CiscoConfiguration;
+import org.batfish.representation.cisco.DistributeList;
+import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco.EigrpProcess;
 import org.batfish.representation.cisco.NetworkObject;
 import org.batfish.representation.cisco.NetworkObjectAddressSpecifier;
@@ -1507,8 +1509,7 @@ public class CiscoGrammarTest {
     // Check if routingPolicy accepts OSPF route and sets correct default metric
     assertTrue(
         routingPolicy.process(
-            OspfInternalRoute.builder()
-                .setProtocol(RoutingProtocol.OSPF)
+            OspfIntraAreaRoute.builder()
                 .setNetwork(Prefix.parse("4.4.4.4/32"))
                 .setAdmin(1)
                 .setMetric(1)
@@ -2333,7 +2334,7 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosOspfDistributeList() throws IOException {
+  public void testIosOspfDistributeListReference() throws IOException {
     String hostname = "ios-ospf-distribute-list";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -2346,6 +2347,65 @@ public class CiscoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "plout", 1));
     assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "rmin", 1));
     assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "rmout", 1));
+  }
+
+  @Test
+  public void testIosOspfDistributeList() throws IOException {
+    CiscoConfiguration c = parseCiscoConfig("iosOspfDistributeList", ConfigurationFormat.CISCO_IOS);
+    DistributeList globalInPrefix =
+        new DistributeList("block_5", DistributeListFilterType.PREFIX_LIST);
+    DistributeList globalOutPrefix =
+        new DistributeList("block_6", DistributeListFilterType.PREFIX_LIST);
+    DistributeList dlGig0InPrefix =
+        new DistributeList("block_1", DistributeListFilterType.PREFIX_LIST);
+    DistributeList dlGig1InPrefix =
+        new DistributeList("block_2", DistributeListFilterType.PREFIX_LIST);
+    DistributeList dlGig0OutPrefix =
+        new DistributeList("block_3", DistributeListFilterType.PREFIX_LIST);
+    DistributeList dlGig1OutPrefix =
+        new DistributeList("block_4", DistributeListFilterType.PREFIX_LIST);
+
+    DistributeList globalInRm = new DistributeList("rm1", DistributeListFilterType.ROUTE_MAP);
+    DistributeList globalOutRm = new DistributeList("rm2", DistributeListFilterType.ROUTE_MAP);
+
+    DistributeList globalInAcl = new DistributeList("acl3", DistributeListFilterType.ACCESS_LIST);
+    DistributeList globalOutAcl = new DistributeList("acl4", DistributeListFilterType.ACCESS_LIST);
+    DistributeList dlGig0InAcl = new DistributeList("acl1", DistributeListFilterType.ACCESS_LIST);
+    DistributeList dlGig1OutAcl = new DistributeList("acl2", DistributeListFilterType.ACCESS_LIST);
+
+    org.batfish.representation.cisco.OspfProcess ospfProcessPrefix =
+        c.getDefaultVrf().getOspfProcesses().get("1");
+
+    assertThat(ospfProcessPrefix.getInboundGlobalDistributeList(), equalTo(globalInPrefix));
+    assertThat(ospfProcessPrefix.getOutboundGlobalDistributeList(), equalTo(globalOutPrefix));
+    assertThat(
+        ospfProcessPrefix.getInboundInterfaceDistributeLists(),
+        equalTo(
+            ImmutableMap.of(
+                "GigabitEthernet0/0", dlGig0InPrefix, "GigabitEthernet1/0", dlGig1InPrefix)));
+    assertThat(
+        ospfProcessPrefix.getOutboundInterfaceDistributeLists(),
+        equalTo(
+            ImmutableMap.of(
+                "GigabitEthernet0/0", dlGig0OutPrefix, "GigabitEthernet1/0", dlGig1OutPrefix)));
+
+    org.batfish.representation.cisco.OspfProcess ospfProcessRouteMap =
+        c.getDefaultVrf().getOspfProcesses().get("2");
+
+    assertThat(ospfProcessRouteMap.getInboundGlobalDistributeList(), equalTo(globalInRm));
+    assertThat(ospfProcessRouteMap.getOutboundGlobalDistributeList(), equalTo(globalOutRm));
+
+    org.batfish.representation.cisco.OspfProcess ospfProcessAcl =
+        c.getDefaultVrf().getOspfProcesses().get("3");
+
+    assertThat(ospfProcessAcl.getInboundGlobalDistributeList(), equalTo(globalInAcl));
+    assertThat(ospfProcessAcl.getOutboundGlobalDistributeList(), equalTo(globalOutAcl));
+    assertThat(
+        ospfProcessAcl.getInboundInterfaceDistributeLists(),
+        equalTo(ImmutableMap.of("GigabitEthernet0/0", dlGig0InAcl)));
+    assertThat(
+        ospfProcessAcl.getOutboundInterfaceDistributeLists(),
+        equalTo(ImmutableMap.of("GigabitEthernet0/0", dlGig1OutAcl)));
   }
 
   @Test
@@ -2413,7 +2473,46 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosPrefixList() throws IOException {
+  public void testIosBgpDistributeList() throws IOException {
+    /*
+         r1 -- advertiser -- r2
+    The advertiser redistributes static routes 1.2.3.4 and 5.6.7.8 into BGP, but has outbound
+    distribute-lists configured for both r1 and r2:
+    - Routes to r1 are filtered by standard access-list 1, which permits everything but 1.2.3.4
+    - Routes to r2 are filtered by extended access-list 100, which denies everything but 5.6.7.8
+    */
+    String testrigName = "bgp-distribute-list";
+    String advertiserName = "advertiser";
+    String r1Name = "r1";
+    String r2Name = "r2";
+    List<String> configurationNames = ImmutableList.of(advertiserName, r1Name, r2Name);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+
+    /* Confirm access list uses are counted correctly */
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+    String filename = "configs/" + advertiserName;
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_STANDARD, "1", 1));
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "100", 1));
+
+    /* Ensure both neighbors have 5.6.7.8 but not 1.2.3.4 */
+    batfish.computeDataPlane();
+    DataPlane dp = batfish.loadDataPlane();
+    Set<AbstractRoute> r1Routes = dp.getRibs().get(r1Name).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r2Routes = dp.getRibs().get(r2Name).get(DEFAULT_VRF_NAME).getRoutes();
+    assertThat(r1Routes, not(hasItem(hasPrefix(Prefix.parse("1.2.3.4/32")))));
+    assertThat(r2Routes, not(hasItem(hasPrefix(Prefix.parse("1.2.3.4/32")))));
+    assertThat(r1Routes, hasItem(hasPrefix(Prefix.parse("5.6.7.8/32"))));
+    assertThat(r2Routes, hasItem(hasPrefix(Prefix.parse("5.6.7.8/32"))));
+  }
+
+  @Test
+  public void testIosBgpPrefixList() throws IOException {
     String hostname = "ios-prefix-list";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);

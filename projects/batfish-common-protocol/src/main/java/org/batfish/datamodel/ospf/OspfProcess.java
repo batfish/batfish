@@ -57,6 +57,7 @@ public final class OspfProcess implements Serializable {
     @Nullable private SortedSet<GeneratedRoute> _generatedRoutes;
     @Nullable private Boolean _rfc1583Compatible;
     @Nullable private Ip _routerId;
+    @Nullable private Integer _summaryAdminCost;
 
     private Builder(@Nullable NetworkFactory networkFactory) {
       super(networkFactory, OspfProcess.class);
@@ -79,7 +80,8 @@ public final class OspfProcess implements Serializable {
               _processId != null ? _processId : generateName(),
               _referenceBandwidth,
               _rfc1583Compatible,
-              _routerId);
+              _routerId,
+              _summaryAdminCost);
       if (_vrf != null) {
         _vrf.setOspfProcess(ospfProcess);
       }
@@ -165,6 +167,11 @@ public final class OspfProcess implements Serializable {
       _routerId = routerId;
       return this;
     }
+
+    public Builder setSummaryAdminCost(int admin) {
+      _summaryAdminCost = admin;
+      return this;
+    }
   }
 
   private static final int DEFAULT_CISCO_VLAN_OSPF_COST = 1;
@@ -190,6 +197,7 @@ public final class OspfProcess implements Serializable {
   private static final String PROP_REFERENCE_BANDWIDTH = "referenceBandwidth";
   private static final String PROP_ROUTER_ID = "routerId";
   private static final String PROP_RFC1583 = "rfc1583Compatible";
+  private static final String PROP_SUMMARY_ADMIN = "summaryAdminCost";
 
   private static final long serialVersionUID = 1L;
 
@@ -220,6 +228,7 @@ public final class OspfProcess implements Serializable {
   @Nonnull private Double _referenceBandwidth;
   @Nullable private Boolean _rfc1583Compatible;
   @Nullable private Ip _routerId;
+  private int _summaryAdminCost;
 
   @JsonCreator
   private OspfProcess(
@@ -236,7 +245,8 @@ public final class OspfProcess implements Serializable {
       @Nullable @JsonProperty(PROP_PROCESS_ID) String processId,
       @Nullable @JsonProperty(PROP_REFERENCE_BANDWIDTH) Double referenceBandwidth,
       @Nullable @JsonProperty(PROP_RFC1583) Boolean rfc1583Compatible,
-      @Nullable @JsonProperty(PROP_ROUTER_ID) Ip routerId) {
+      @Nullable @JsonProperty(PROP_ROUTER_ID) Ip routerId,
+      @Nullable @JsonProperty(PROP_SUMMARY_ADMIN) Integer summaryAdminCost) {
     checkArgument(processId != null, "Missing %s", PROP_PROCESS_ID);
     checkArgument(referenceBandwidth != null, "Missing %s", PROP_REFERENCE_BANDWIDTH);
     _adminCosts =
@@ -247,6 +257,11 @@ public final class OspfProcess implements Serializable {
                 computeDefaultAdminCosts(ConfigurationFormat.CISCO_IOS)));
     checkArgument(_adminCosts.keySet().containsAll(REQUIRES_ADMIN));
     _areas = firstNonNull(areas, ImmutableSortedMap.of());
+    // Ensure area numbers match up
+    checkArgument(
+        _areas.entrySet().stream()
+            .allMatch(entry -> entry.getKey() == entry.getValue().getAreaNumber()),
+        "Area number does not match up with map key");
     _exportPolicy = exportPolicy;
     _exportPolicySources = firstNonNull(exportPolicySources, ImmutableSortedSet.of());
     _generatedRoutes = firstNonNull(generatedRoutes, ImmutableSortedSet.of());
@@ -261,6 +276,11 @@ public final class OspfProcess implements Serializable {
     _referenceBandwidth = referenceBandwidth;
     _rfc1583Compatible = rfc1583Compatible;
     _routerId = routerId;
+    // In the absence of provided value, default to Cisco IOS value
+    _summaryAdminCost =
+        firstNonNull(
+            summaryAdminCost,
+            RoutingProtocol.OSPF_IA.getSummaryAdministrativeCost(ConfigurationFormat.CISCO_IOS));
   }
 
   /** Compute default admin costs based on a given configuration format */
@@ -407,6 +427,11 @@ public final class OspfProcess implements Serializable {
     return _routerId;
   }
 
+  /** Return the admin cost assigned to inter-area summaries */
+  public int getSummaryAdminCost() {
+    return _summaryAdminCost;
+  }
+
   /** Initialize interface costs for all interfaces that belong to this process */
   public void initInterfaceCosts(Configuration c) {
     _areas.values().stream()
@@ -427,6 +452,11 @@ public final class OspfProcess implements Serializable {
   }
 
   public void setAreas(SortedMap<Long, OspfArea> areas) {
+    // Ensure area numbers match up
+    checkArgument(
+        areas.entrySet().stream()
+            .allMatch(entry -> entry.getKey() == entry.getValue().getAreaNumber()),
+        "Area number does not match up with map key");
     _areas = areas;
   }
 

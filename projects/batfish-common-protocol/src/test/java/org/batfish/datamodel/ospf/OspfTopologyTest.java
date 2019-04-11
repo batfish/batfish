@@ -59,7 +59,7 @@ public class OspfTopologyTest {
     graph.addNode(n);
     graph.addNode(n2);
     OspfSessionProperties session =
-        new OspfSessionProperties(new IpLink(Ip.parse("1.1.1.2"), Ip.parse("1.1.1.3")));
+        new OspfSessionProperties(0, new IpLink(Ip.parse("1.1.1.2"), Ip.parse("1.1.1.3")));
     graph.putEdgeValue(n, n2, session);
     OspfTopology topo = new OspfTopology(graph);
 

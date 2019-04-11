@@ -10,7 +10,7 @@ import org.junit.Test;
 
 public class GrammarTest {
 
-  /** Check that the base URL is valid */
+  /** Check that the base URL is valid. This test will fail without Internet connectivity */
   @Test
   public void testBaseUrl() throws IOException {
     HttpURLConnection huc = (HttpURLConnection) new URL(Grammar.BASE_URL).openConnection();

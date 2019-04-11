@@ -22,7 +22,7 @@ public class ParserIpSpaceTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static AbstractParseRunner<AstNode> getRunner() {
-    return new ReportingParseRunner<>(Parser.INSTANCE.input(Parser.INSTANCE.IpSpaceSpec()));
+    return new ReportingParseRunner<>(Parser.instance().getInputRule(Grammar.IP_SPACE_SPECIFIER));
   }
 
   /** This tests if we have proper completion annotations on the rules */
@@ -49,8 +49,7 @@ public class ParserIpSpaceTest {
 
     ParboiledAutoComplete pac =
         new ParboiledAutoComplete(
-            Parser.INSTANCE,
-            Parser.INSTANCE.input(Parser.INSTANCE.IpSpaceSpec()),
+            Parser.instance().getInputRule(Grammar.IP_SPACE_SPECIFIER),
             Parser.ANCHORS,
             "network",
             "snapshot",
@@ -72,6 +71,8 @@ public class ParserIpSpaceTest {
                 new AutocompleteSuggestion(":", true, null, RANK_STRING_LITERAL, 7),
                 new AutocompleteSuggestion("/", true, null, RANK_STRING_LITERAL, 7),
                 new AutocompleteSuggestion("1.1.1.1/22", true, null, RANK_STRING_LITERAL, 0),
+                new AutocompleteSuggestion("\\", true, null, RANK_STRING_LITERAL, 7),
+                new AutocompleteSuggestion("&", true, null, RANK_STRING_LITERAL, 7),
                 new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, 7))));
   }
 
@@ -127,37 +128,6 @@ public class ParserIpSpaceTest {
   }
 
   @Test
-  public void testIpSpaceList2() {
-    IpSpaceAstNode expectedNode =
-        new UnionIpSpaceAstNode(new IpAstNode("1.1.1.1"), new IpAstNode("2.2.2.2"));
-
-    assertThat(ParserUtils.getAst(getRunner().run("1.1.1.1,2.2.2.2")), equalTo(expectedNode));
-    assertThat(ParserUtils.getAst(getRunner().run("1.1.1.1 , 2.2.2.2 ")), equalTo(expectedNode));
-  }
-
-  @Test
-  public void testIpSpaceList3() {
-    IpSpaceAstNode expectedNode =
-        new UnionIpSpaceAstNode(
-            new UnionIpSpaceAstNode(new IpAstNode("1.1.1.1"), new IpAstNode("2.2.2.2")),
-            new IpAstNode("3.3.3.3"));
-
-    assertThat(
-        ParserUtils.getAst(getRunner().run("1.1.1.1,2.2.2.2,3.3.3.3")), equalTo(expectedNode));
-
-    // a more complex list
-    IpSpaceAstNode expectedNode2 =
-        new UnionIpSpaceAstNode(
-            new UnionIpSpaceAstNode(
-                new IpAstNode("1.1.1.1"), new IpRangeAstNode("2.2.2.2", "2.2.2.3")),
-            new IpAstNode("3.3.3.3"));
-
-    assertThat(
-        ParserUtils.getAst(getRunner().run("1.1.1.1,2.2.2.2-2.2.2.3,3.3.3.3")),
-        equalTo(expectedNode2));
-  }
-
-  @Test
   public void testIpSpaceLocationNode() {
     IpSpaceAstNode expectedNode =
         new LocationIpSpaceAstNode(InterfaceLocationAstNode.createFromNode("node"));
@@ -188,5 +158,57 @@ public class ParserIpSpaceTest {
     _thrown.expectMessage("Invalid prefix length");
     _thrown.expect(ParserRuntimeException.class);
     getRunner().run("1.1.1.1/33");
+  }
+
+  @Test
+  public void testIpSpaceSeDifference() {
+    IpSpaceAstNode expectedNode =
+        new DifferenceIpSpaceAstNode(new IpAstNode("1.1.1.1"), new IpAstNode("2.2.2.2"));
+
+    assertThat(ParserUtils.getAst(getRunner().run("1.1.1.1\\2.2.2.2")), equalTo(expectedNode));
+    assertThat(ParserUtils.getAst(getRunner().run(" 1.1.1.1 \\ 2.2.2.2 ")), equalTo(expectedNode));
+  }
+
+  @Test
+  public void testIpSpaceSetIntersection() {
+    IpSpaceAstNode expectedNode =
+        new IntersectionIpSpaceAstNode(new IpAstNode("1.1.1.1"), new IpAstNode("2.2.2.2"));
+
+    assertThat(ParserUtils.getAst(getRunner().run("1.1.1.1&2.2.2.2")), equalTo(expectedNode));
+    assertThat(ParserUtils.getAst(getRunner().run(" 1.1.1.1 & 2.2.2.2 ")), equalTo(expectedNode));
+  }
+
+  @Test
+  public void testIpSpaceSetUnion() {
+    IpSpaceAstNode expectedNode =
+        new UnionIpSpaceAstNode(new IpAstNode("1.1.1.1"), new IpAstNode("2.2.2.2"));
+
+    assertThat(ParserUtils.getAst(getRunner().run("1.1.1.1,2.2.2.2")), equalTo(expectedNode));
+    assertThat(ParserUtils.getAst(getRunner().run(" 1.1.1.1 , 2.2.2.2 ")), equalTo(expectedNode));
+  }
+
+  @Test
+  public void testIpSpaceSetPrecedence() {
+    IpSpaceAstNode expectedNode =
+        new UnionIpSpaceAstNode(
+            new IpAstNode("1.1.1.1"),
+            new IntersectionIpSpaceAstNode(new IpAstNode("2.2.2.2"), new IpAstNode("3.3.3.3")));
+
+    assertThat(
+        ParserUtils.getAst(getRunner().run("1.1.1.1,2.2.2.2&3.3.3.3")), equalTo(expectedNode));
+  }
+
+  /** Test complex terms in set operations */
+  @Test
+  public void testIpSpaceSetComplexTerms() {
+    IpSpaceAstNode expectedNode2 =
+        new UnionIpSpaceAstNode(
+            new UnionIpSpaceAstNode(
+                new IpAstNode("1.1.1.1"), new IpRangeAstNode("2.2.2.2", "2.2.2.3")),
+            new IpAstNode("3.3.3.3"));
+
+    assertThat(
+        ParserUtils.getAst(getRunner().run("1.1.1.1,2.2.2.2-2.2.2.3,3.3.3.3")),
+        equalTo(expectedNode2));
   }
 }

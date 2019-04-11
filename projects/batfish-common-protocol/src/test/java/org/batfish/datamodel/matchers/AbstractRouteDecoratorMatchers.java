@@ -13,6 +13,7 @@ import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.HasNext
 import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.HasPrefix;
 import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.HasProtocol;
 import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.IsNonForwarding;
+import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.IsNonRouting;
 import org.hamcrest.Matcher;
 
 public final class AbstractRouteDecoratorMatchers {
@@ -97,6 +98,14 @@ public final class AbstractRouteDecoratorMatchers {
    */
   public static IsNonForwarding isNonForwarding(boolean nonForwarding) {
     return new IsNonForwarding(equalTo(nonForwarding));
+  }
+
+  /**
+   * Provides a matcher that matches when the supplied {@code nonRouting} is equal to the {@link
+   * AbstractRouteDecorator}'s nonRouting.
+   */
+  public static IsNonRouting isNonRouting(boolean nonForwarding) {
+    return new IsNonRouting(equalTo(nonForwarding));
   }
 
   private AbstractRouteDecoratorMatchers() {}

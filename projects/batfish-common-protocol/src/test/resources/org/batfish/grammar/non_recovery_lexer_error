@@ -1,0 +1,4 @@
+### Unrecognized. Tests expect line 2 of this file to be result in syntax error, keep it that way.
+error
+### Valid: statement->simple_statement
+simple simple simple

@@ -114,7 +114,7 @@ import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.common.util.ModelingUtils;
+import org.batfish.common.util.IspModelingUtils;
 import org.batfish.config.Settings;
 import org.batfish.config.TestrigSettings;
 import org.batfish.datamodel.AbstractRoute;
@@ -429,17 +429,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     List<String> errors = parser.getErrors();
     int numErrors = errors.size();
     if (numErrors > 0) {
-      logger.error(numErrors + " ERROR(S)\n");
-      for (int i = 0; i < numErrors; i++) {
-        String msg = errors.get(i);
-        String[] lines = msg.split("\n", -1);
-        StringBuilder sb = new StringBuilder();
-        for (String line : lines) {
-          sb.append("ERROR ").append(i + 1).append(": ").append(line).append("\n");
-        }
-        logger.error(sb.append('\n').toString());
-      }
-      throw new ParserBatfishException("Parser error(s)");
+      throw new ParserBatfishException("Parser error(s)", errors);
     } else if (!settings.getPrintParseTree()) {
       logger.info("OK\n");
     } else {
@@ -1282,14 +1272,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Nonnull
   private Map<String, Configuration> getIspConfigurations(
-      Map<String, Configuration> configurations) {
+      Map<String, Configuration> configurations, Map<String, Warnings> warningsByHost) {
     NetworkSnapshot networkSnapshot = getNetworkSnapshot();
     IspConfiguration ispConfiguration =
         _storage.loadIspConfiguration(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
     if (ispConfiguration == null) {
       return ImmutableMap.of();
     }
-    return ModelingUtils.getInternetAndIspNodes(configurations, ispConfiguration, _logger);
+    Warnings warnings =
+        warningsByHost.computeIfAbsent(
+            IspModelingUtils.INTERNET_HOST_NAME, k -> buildWarnings(_settings));
+    return IspModelingUtils.getInternetAndIspNodes(
+        configurations, ispConfiguration, _logger, warnings);
   }
 
   @Nonnull
@@ -1925,7 +1919,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private void outputAnswer(Answer answer, boolean writeLog) {
     try {
-      String answerString = BatfishObjectMapper.writePrettyString(answer) + '\n';
+      String answerString = BatfishObjectMapper.writeString(answer);
       _logger.debug(answerString);
       @Nullable String logString = writeLog ? answerString : null;
       writeJsonAnswerWithLog(logString, answerString);
@@ -1934,7 +1928,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       try {
         Answer failureAnswer = Answer.failureAnswer(e.toString(), answer.getQuestion());
         failureAnswer.addAnswerElement(be.getBatfishStackTrace());
-        String answerString = BatfishObjectMapper.writePrettyString(failureAnswer) + '\n';
+        String answerString = BatfishObjectMapper.writeString(failureAnswer);
         _logger.error(answerString);
         @Nullable String logString = writeLog ? answerString : null;
         writeJsonAnswerWithLog(logString, answerString);
@@ -2900,7 +2894,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         configurations = getConfigurations(vendorConfigPath, answerElement);
       }
 
-      configurations.putAll(getIspConfigurations(configurations));
+      configurations.putAll(getIspConfigurations(configurations, answerElement.getWarnings()));
 
       try (ActiveSpan storeSpan =
           GlobalTracer.get().buildSpan("Store vendor-independent configs").startActive()) {
@@ -2994,7 +2988,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         try {
           byte[] serialized = SerializationUtils.serialize(result);
           _storage.storeNetworkBlob(new ByteArrayInputStream(serialized), getContainerName(), id);
-        } catch (IOException e) {
+        } catch (Exception e) {
           _logger.warnf(
               "Error caching parse result for %s: %s",
               filename, Throwables.getStackTraceAsString(e));

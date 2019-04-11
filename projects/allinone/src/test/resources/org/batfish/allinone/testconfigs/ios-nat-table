@@ -1,0 +1,18 @@
+!
+hostname ios-nat-table
+!
+!
+interface FastEthernet0/0
+ ip address 1.0.0.1 255.255.255.0
+ ip nat inside
+!
+interface GigabitEthernet1/0
+ ip address 2.0.0.2 255.255.255.0
+ ip nat outside
+!
+ip nat pool POOL 10.0.0.1 10.0.0.3 prefix-length 9
+ip nat inside source list 1 pool POOL
+!
+ip route 1.0.0.2 255.255.255.255 null0
+!
+access-list 1 permit 1.0.0.2

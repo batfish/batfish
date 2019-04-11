@@ -1,5 +1,7 @@
 package org.batfish.datamodel.bgp;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -20,7 +22,6 @@ import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
@@ -87,6 +88,9 @@ public final class BgpTopologyUtils {
       boolean keepInvalid,
       boolean checkReachability,
       @Nullable TracerouteEngine tracerouteEngine) {
+    checkArgument(
+        !checkReachability || tracerouteEngine != null,
+        "Cannot check reachability without a traceroute engine");
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("BgpTopologyUtils.initBgpTopology").startActive()) {
       assert span != null; // avoid unused warning
@@ -247,15 +251,11 @@ public final class BgpTopologyUtils {
       @Nonnull BgpPeerConfigId initiator,
       @Nonnull BgpPeerConfigId listener,
       @Nonnull BgpActivePeerConfig src,
-      @Nullable TracerouteEngine tracerouteEngine) {
+      @Nonnull TracerouteEngine tracerouteEngine) {
     Ip srcAddress = src.getLocalIp();
     Ip dstAddress = src.getPeerAddress();
     if (dstAddress == null) {
       return false;
-    }
-    if (tracerouteEngine == null) {
-      throw new BatfishException(
-          "Cannot compute neighbor reachability without a traceroute engine");
     }
 
     // we do a bidirectional traceroute only from the initiator to the listener since the other

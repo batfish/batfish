@@ -62,7 +62,7 @@ public class Service {
       if (task == null) {
         task = new Task(TaskStatus.Unknown);
       }
-      String taskStr = BatfishObjectMapper.writePrettyString(task);
+      String taskStr = BatfishObjectMapper.writeString(task);
       return new JSONArray(Arrays.asList(BfConsts.SVC_SUCCESS_KEY, taskStr));
     } catch (Exception e) {
       return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY, e.getMessage()));
@@ -79,7 +79,7 @@ public class Service {
         return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY, "taskid not supplied"));
       }
       Task task = Driver.killTask(taskId);
-      String taskStr = BatfishObjectMapper.writePrettyString(task);
+      String taskStr = BatfishObjectMapper.writeString(task);
       return new JSONArray(Arrays.asList(BfConsts.SVC_SUCCESS_KEY, taskStr));
     } catch (Exception e) {
       return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY, e.getMessage()));

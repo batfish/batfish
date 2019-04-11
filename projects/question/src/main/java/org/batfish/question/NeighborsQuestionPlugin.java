@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.auto.service.AutoService;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.ImmutableSortedSet.Builder;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.Network;
 import com.google.common.graph.ValueGraph;
@@ -48,14 +49,13 @@ import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.collections.IpEdge;
 import org.batfish.datamodel.collections.VerboseBgpEdge;
 import org.batfish.datamodel.collections.VerboseEigrpEdge;
-import org.batfish.datamodel.collections.VerboseOspfEdge;
 import org.batfish.datamodel.collections.VerboseRipEdge;
 import org.batfish.datamodel.eigrp.EigrpEdge;
 import org.batfish.datamodel.eigrp.EigrpInterface;
 import org.batfish.datamodel.eigrp.EigrpTopology;
-import org.batfish.datamodel.ospf.OspfNeighbor;
-import org.batfish.datamodel.ospf.OspfProcess;
-import org.batfish.datamodel.ospf.OspfTopologyUtils;
+import org.batfish.datamodel.ospf.OspfSessionProperties;
+import org.batfish.datamodel.ospf.OspfTopology;
+import org.batfish.datamodel.ospf.OspfTopology.EdgeId;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.specifier.AllNodesNodeSpecifier;
@@ -163,7 +163,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     private SortedSet<IpEdge> _eigrpNeighbors;
 
-    private SortedSet<IpEdge> _ospfNeighbors;
+    @Nonnull private SortedSet<IpEdge> _ospfNeighbors = ImmutableSortedSet.of();
 
     private SortedSet<IpEdge> _ripNeighbors;
 
@@ -187,7 +187,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     private SortedSet<VerboseEdge> _verboseLayer3Neighbors;
 
-    private SortedSet<VerboseOspfEdge> _verboseOspfNeighbors;
+    @Nonnull private SortedSet<EdgeId> _verboseOspfNeighbors = ImmutableSortedSet.of();
 
     private SortedSet<VerboseRipEdge> _verboseRipNeighbors;
 
@@ -226,6 +226,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_OSPF_NEIGHBORS)
+    @Nonnull
     public SortedSet<IpEdge> getOspfNeighbors() {
       return _ospfNeighbors;
     }
@@ -286,7 +287,8 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_VERBOSE_OSPF_NEIGHBORS)
-    public SortedSet<VerboseOspfEdge> getVerboseOspfNeighbors() {
+    @Nonnull
+    public SortedSet<EdgeId> getVerboseOspfNeighbors() {
       return _verboseOspfNeighbors;
     }
 
@@ -307,20 +309,8 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       _ibgpNeighbors = new TreeSet<>();
     }
 
-    public void initLayer3Neighbors() {
-      _layer3Neighbors = new TreeSet<>();
-    }
-
-    public void initOspfNeighbors() {
-      _ospfNeighbors = new TreeSet<>();
-    }
-
     public void initRipNeighbors() {
       _ripNeighbors = new TreeSet<>();
-    }
-
-    public void initVerboseLayer3Neighbors() {
-      _verboseLayer3Neighbors = new TreeSet<>();
     }
 
     @Override
@@ -411,16 +401,16 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
         }
       }
 
-      if (_ospfNeighbors != null) {
+      if (!_ospfNeighbors.isEmpty()) {
         sb.append("  OSPF Neighbors\n");
         for (IpEdge ipEdge : _ospfNeighbors) {
           sb.append("    " + ipEdge + "\n");
         }
       }
 
-      if (_verboseOspfNeighbors != null) {
+      if (!_verboseOspfNeighbors.isEmpty()) {
         sb.append("  OSPF neighbors\n");
-        for (VerboseOspfEdge edge : _verboseOspfNeighbors) {
+        for (EdgeId edge : _verboseOspfNeighbors) {
           sb.append("    " + edge + "\n");
         }
       }
@@ -466,8 +456,8 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_OSPF_NEIGHBORS)
-    public void setOspfNeighbors(SortedSet<IpEdge> ospfNeighbors) {
-      _ospfNeighbors = ospfNeighbors;
+    public void setOspfNeighbors(@Nullable SortedSet<IpEdge> ospfNeighbors) {
+      _ospfNeighbors = firstNonNull(ospfNeighbors, ImmutableSortedSet.of());
     }
 
     @JsonProperty(PROP_RIP_NEIGHBORS)
@@ -528,8 +518,8 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_VERBOSE_OSPF_NEIGHBORS)
-    public void setVerboseOspfNeighbors(SortedSet<VerboseOspfEdge> verboseOspfNeighbors) {
-      _verboseOspfNeighbors = verboseOspfNeighbors;
+    public void setVerboseOspfNeighbors(@Nullable SortedSet<EdgeId> verboseOspfNeighbors) {
+      _verboseOspfNeighbors = firstNonNull(verboseOspfNeighbors, ImmutableSortedSet.of());
     }
 
     @JsonProperty(PROP_VERBOSE_RIP_NEIGHBORS)
@@ -549,8 +539,6 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     private boolean _remoteBgpNeighborsInitialized;
 
     private boolean _remoteEigrpNeighborsInitialized;
-
-    private boolean _remoteOspfNeighborsInitialized;
 
     Topology _topology;
 
@@ -631,55 +619,40 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       }
 
       if (question.getNeighborTypes().contains(NeighborType.OSPF)) {
-        SortedSet<VerboseOspfEdge> vedges = new TreeSet<>();
-        initTopology();
-        initRemoteOspfNeighbors(configurations, _topology);
-        for (Configuration c : configurations.values()) {
-          String hostname = c.getHostname();
-          for (Vrf vrf : c.getVrfs().values()) {
-            OspfProcess proc = vrf.getOspfProcess();
-            if (proc != null) {
-              for (OspfNeighbor ospfNeighbor : proc.getOspfNeighbors().values()) {
-                OspfNeighbor remoteOspfNeighbor = ospfNeighbor.getRemoteOspfNeighbor();
-                if (remoteOspfNeighbor != null) {
-                  Configuration remoteHost = remoteOspfNeighbor.getOwner();
-                  String remoteHostname = remoteHost.getHostname();
-                  if (includeNodes1.contains(hostname) && includeNodes2.contains(remoteHostname)) {
-                    Ip localIp = ospfNeighbor.getLocalIp();
-                    Ip remoteIp = remoteOspfNeighbor.getLocalIp();
-                    IpEdge edge = new IpEdge(hostname, localIp, remoteHostname, remoteIp);
-                    vedges.add(new VerboseOspfEdge(ospfNeighbor, remoteOspfNeighbor, edge));
-                  }
-                }
-              }
-            }
-          }
-        }
-
+        OspfTopology ospfTopology =
+            _batfish.getTopologyProvider().getOspfTopology(_batfish.getNetworkSnapshot());
         switch (question.getStyle()) {
           case SUMMARY:
-            answerElement.initOspfNeighbors();
-            for (VerboseOspfEdge vedge : vedges) {
-              answerElement.getOspfNeighbors().add(vedge.getEdgeSummary());
-            }
+            answerElement.setOspfNeighbors(
+                ospfTopology.edges().stream()
+                    .map(
+                        edge -> {
+                          OspfSessionProperties session = ospfTopology.getSession(edge).get();
+                          return new IpEdge(
+                              edge.getTail().getHostname(),
+                              session.getIpLink().getIp1(),
+                              edge.getHead().getHostname(),
+                              session.getIpLink().getIp2());
+                        })
+                    .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
             break;
           case VERBOSE:
-            answerElement.setVerboseOspfNeighbors(vedges);
+            answerElement.setVerboseOspfNeighbors(ImmutableSortedSet.copyOf(ospfTopology.edges()));
             break;
           case ROLE:
-            SortedSet<RoleEdge> redges = new TreeSet<>();
-            for (VerboseOspfEdge vedge : vedges) {
+            Builder<RoleEdge> redges = ImmutableSortedSet.naturalOrder();
+            for (EdgeId edge : ospfTopology.edges()) {
               SortedSet<String> roles1 =
-                  _nodeRolesMap.getOrDefault(vedge.getEdgeSummary().getNode1(), new TreeSet<>());
+                  _nodeRolesMap.getOrDefault(edge.getTail().getHostname(), ImmutableSortedSet.of());
               SortedSet<String> roles2 =
-                  _nodeRolesMap.getOrDefault(vedge.getEdgeSummary().getNode2(), new TreeSet<>());
+                  _nodeRolesMap.getOrDefault(edge.getHead().getHostname(), ImmutableSortedSet.of());
               for (String r1 : roles1) {
                 for (String r2 : roles2) {
                   redges.add(new RoleEdge(r1, r2));
                 }
               }
             }
-            answerElement.setRoleOspfNeighbors(redges);
+            answerElement.setRoleOspfNeighbors(redges.build());
             break;
           default:
             throw new BatfishException(
@@ -950,14 +923,6 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       if (!_remoteEigrpNeighborsInitialized) {
         _eigrpTopology = EigrpTopology.initEigrpTopology(configurations, topology);
         _remoteEigrpNeighborsInitialized = true;
-      }
-    }
-
-    private void initRemoteOspfNeighbors(
-        Map<String, Configuration> configurations, Topology topology) {
-      if (!_remoteOspfNeighborsInitialized) {
-        OspfTopologyUtils.initRemoteOspfNeighbors(configurations, topology);
-        _remoteOspfNeighborsInitialized = true;
       }
     }
 

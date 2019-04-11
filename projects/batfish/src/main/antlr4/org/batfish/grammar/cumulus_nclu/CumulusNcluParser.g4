@@ -31,7 +31,8 @@ s_extra_configuration
 :
   EXTRA_CONFIGURATION_HEADER
   (
-    frr_vrf
+    frr_username
+    | frr_vrf
     | // frr_unrecognized must be last
     frr_unrecognized
   ) EXTRA_CONFIGURATION_FOOTER NEWLINE
@@ -45,10 +46,13 @@ s_net_add
     | a_bond
     | a_bridge
     | a_dns
+    | a_dot1x
     | a_hostname
     | a_interface
     | a_loopback
+    | a_ptp
     | a_routing
+    | a_snmp_server
     | a_time
     | a_vlan
     | a_vrf
@@ -63,6 +67,8 @@ a_bond
     bond_bond
     | bond_bridge
     | bond_clag_id
+    | bond_ip_address
+    | bond_vrf
   )
 ;
 
@@ -81,6 +87,7 @@ bond_bridge
   BRIDGE
   (
     bob_access
+    | bob_pvid
     | bob_vids
   )
 ;
@@ -88,6 +95,11 @@ bond_bridge
 bob_access
 :
   ACCESS vlan = vlan_id NEWLINE
+;
+
+bob_pvid
+:
+  PVID id = vlan_id NEWLINE
 ;
 
 bob_vids
@@ -100,6 +112,16 @@ bond_clag_id
   CLAG ID id = uint16 NEWLINE
 ;
 
+bond_ip_address
+:
+  IP ADDRESS address = interface_address NEWLINE
+;
+
+bond_vrf
+:
+  VRF name = word NEWLINE
+;
+
 a_bridge
 :
   BRIDGE bridge_bridge
@@ -110,6 +132,7 @@ bridge_bridge
   BRIDGE
   (
     brbr_ports
+    | brbr_pvid
     | brbr_vids
     | brbr_vlan_aware
   )
@@ -118,6 +141,11 @@ bridge_bridge
 brbr_ports
 :
   PORTS ports = glob NEWLINE
+;
+
+brbr_pvid
+:
+  PVID pvid = vlan_id NEWLINE
 ;
 
 brbr_vids
@@ -154,6 +182,11 @@ dn6
   IPV6 address6 = ipv6_address NEWLINE
 ;
 
+a_dot1x
+:
+  DOT1X null_rest_of_line
+;
+
 a_hostname
 :
   HOSTNAME hostname = word NEWLINE
@@ -165,6 +198,7 @@ a_loopback
   (
     l_clag
     | l_ip_address
+    | NEWLINE
   )
 ;
 
@@ -181,6 +215,16 @@ lc_vxlan_anycast_ip
 l_ip_address
 :
   IP ADDRESS address = interface_address NEWLINE
+;
+
+a_ptp
+:
+  PTP null_rest_of_line
+;
+
+a_snmp_server
+:
+  SNMP_SERVER null_rest_of_line
 ;
 
 a_time
@@ -203,7 +247,7 @@ t_ntp
 
 tn_server
 :
-  SERVER server = word NEWLINE
+  SERVER server = word IBURST? NEWLINE
 ;
 
 tn_source

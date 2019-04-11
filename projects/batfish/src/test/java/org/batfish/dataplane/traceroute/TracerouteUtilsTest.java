@@ -1,14 +1,22 @@
 package org.batfish.dataplane.traceroute;
 
+import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
+import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationPort;
+import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
+import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.getTcpFlagsForReverse;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.datamodel.transformation.Transformation;
 import org.junit.Test;
 
 /** Tests for {@link TracerouteUtils}. */
@@ -127,5 +135,55 @@ public final class TracerouteUtilsTest {
     assertFalse(reverseTcpFlags.getEce());
     assertFalse(reverseTcpFlags.getPsh());
     assertFalse(reverseTcpFlags.getCwr());
+  }
+
+  @Test
+  public void testSessionTransformation() {
+    Ip srcIp1 = Ip.parse("1.1.1.1");
+    Ip dstIp1 = Ip.parse("2.2.2.2");
+    int srcPort1 = 10001;
+    int dstPort1 = 10002;
+    Ip srcIp2 = Ip.parse("3.3.3.3");
+    Ip dstIp2 = Ip.parse("4.4.4.4");
+    int srcPort2 = 10003;
+    int dstPort2 = 10004;
+
+    Flow inputFlow =
+        Flow.builder()
+            .setIngressNode("inNode")
+            .setIngressInterface("inInterf")
+            .setTag("tag")
+            .setDstIp(dstIp1)
+            .setSrcIp(srcIp1)
+            .setDstPort(dstPort1)
+            .setSrcPort(srcPort1)
+            .setIpProtocol(IpProtocol.TCP)
+            .build();
+    Flow currentFlow =
+        Flow.builder()
+            .setIngressNode("inNode")
+            .setIngressInterface("inInterf")
+            .setTag("tag")
+            .setDstIp(dstIp2)
+            .setSrcIp(srcIp2)
+            .setDstPort(dstPort2)
+            .setSrcPort(srcPort2)
+            .setIpProtocol(IpProtocol.TCP)
+            .build();
+
+    Transformation transformation = TracerouteUtils.sessionTransformation(inputFlow, currentFlow);
+
+    assertThat(
+        transformation,
+        equalTo(
+            new Transformation(
+                AclLineMatchExprs.TRUE,
+                ImmutableList.of(
+                    assignSourceIp(dstIp1, dstIp1),
+                    assignSourcePort(dstPort1, dstPort1),
+                    assignDestinationIp(srcIp1, srcIp1),
+                    assignDestinationPort(srcPort1, srcPort1)),
+                null,
+                null)));
   }
 }

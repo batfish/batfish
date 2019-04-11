@@ -1021,7 +1021,7 @@
         "configs/community_name_numbers" : "PASSED",
         "configs/community_name_numbers_dos" : "PASSED",
         "configs/community_set" : "PASSED",
-        "configs/cumulus_nclu" : "PARTIALLY_UNRECOGNIZED",
+        "configs/cumulus_nclu" : "PASSED",
         "configs/cumulus_nclu_invalid_bonds" : "PASSED",
         "configs/cumulus_nclu_invalid_interfaces" : "PASSED",
         "configs/cumulus_nclu_invalid_vrfs" : "PASSED",
@@ -1029,12 +1029,12 @@
         "configs/eos_mlag" : "PASSED",
         "configs/eos_trunk_group" : "PASSED",
         "configs/f5_bigip_imish_malformed" : "PASSED",
-        "configs/f5_bigip_structured_ltm" : "PASSED",
-        "configs/f5_bigip_structured_net" : "PASSED",
-        "configs/f5_bigip_structured_net_routing_bgp" : "PASSED",
+        "configs/f5_bigip_structured_ltm" : "PARTIALLY_UNRECOGNIZED",
+        "configs/f5_bigip_structured_net" : "PARTIALLY_UNRECOGNIZED",
+        "configs/f5_bigip_structured_net_routing_bgp" : "PARTIALLY_UNRECOGNIZED",
         "configs/f5_bigip_structured_net_routing_prefix_list" : "PASSED",
         "configs/f5_bigip_structured_net_routing_route_map" : "PASSED",
-        "configs/f5_bigip_structured_sys" : "PASSED",
+        "configs/f5_bigip_structured_sys" : "PARTIALLY_UNRECOGNIZED",
         "configs/f5_bigip_structured_with_imish" : "PASSED",
         "configs/foundry_access_list" : "PASSED",
         "configs/foundry_bgp" : "PASSED",
@@ -15287,6 +15287,28 @@
             "                VARIABLE:'UNSUPP-MAP')",
             "              NEWLINE:'\\n'))))",
             "      (router_bgp_stanza_tail",
+            "        (neighbor_flat_rb_stanza",
+            "          NEIGHBOR:'neighbor'",
+            "          ip = IP_ADDRESS:'10.0.0.1'  <== mode:M_NEIGHBOR",
+            "          (bgp_tail",
+            "            (distribute_list_bgp_tail",
+            "              DISTRIBUTE_LIST:'distribute-list'",
+            "              list_name = (variable",
+            "                DEC:'5')",
+            "              IN:'in'",
+            "              NEWLINE:'\\n'))))",
+            "      (router_bgp_stanza_tail",
+            "        (neighbor_flat_rb_stanza",
+            "          NEIGHBOR:'neighbor'",
+            "          ip = IP_ADDRESS:'10.0.0.1'  <== mode:M_NEIGHBOR",
+            "          (bgp_tail",
+            "            (distribute_list_bgp_tail",
+            "              DISTRIBUTE_LIST:'distribute-list'",
+            "              list_name = (variable",
+            "                DEC:'5')",
+            "              OUT:'out'",
+            "              NEWLINE:'\\n'))))",
+            "      (router_bgp_stanza_tail",
             "        (address_family_rb_stanza",
             "          (address_family_header",
             "            ADDRESS_FAMILY:'address-family'",
@@ -15385,6 +15407,16 @@
             "        PERMIT:'permit')",
             "      num = DEC:'10'",
             "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (standard_access_list_stanza",
+            "      ACCESS_LIST:'access-list'",
+            "      num = ACL_NUM_STANDARD:'5'",
+            "      (standard_access_list_tail",
+            "        ala = (access_list_action",
+            "          DENY:'deny')",
+            "        ipr = (access_list_ip_range",
+            "          ANY:'any')",
+            "        NEWLINE:'\\n\\n')))",
             "  EOF:<EOF>)"
           ]
         },
@@ -40205,7 +40237,8 @@
             "            UNICAST:'unicast'",
             "            (bi4_network",
             "              NETWORK:'network'",
-            "              network = IP_PREFIX:'192.0.2.1/32'",
+            "              network = (ip_prefix",
+            "                IP_PREFIX:'192.0.2.1/32')",
             "              NEWLINE:'\\n'))))))",
             "  (statement",
             "    (s_net_add",
@@ -40308,7 +40341,8 @@
             "        (b_common",
             "          (b_router_id",
             "            ROUTER_ID:'router-id'",
-            "            id = IP_ADDRESS:'192.0.2.2'",
+            "            id = (ip_address",
+            "              IP_ADDRESS:'192.0.2.2')",
             "            NEWLINE:'\\n')))))",
             "  (statement",
             "    (s_net_add",
@@ -40394,7 +40428,8 @@
             "          (b_common",
             "            (b_router_id",
             "              ROUTER_ID:'router-id'",
-            "              id = IP_ADDRESS:'192.0.2.3'",
+            "              id = (ip_address",
+            "                IP_ADDRESS:'192.0.2.3')",
             "              NEWLINE:'\\n'))))))",
             "  (statement",
             "    (s_net_add",
@@ -40451,6 +40486,21 @@
             "            ACCESS:'access'",
             "            vlan = (vlan_id",
             "              v = DEC:'2')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bond",
+            "        BOND:'bond'",
+            "        name = (word",
+            "          NUMBERED_WORD:'bond2')",
+            "        (bond_bridge",
+            "          BRIDGE:'bridge'",
+            "          (bob_pvid",
+            "            PVID:'pvid'",
+            "            id = (vlan_id",
+            "              v = DEC:'1')",
             "            NEWLINE:'\\n')))))",
             "  (statement",
             "    (s_net_add",
@@ -40521,6 +40571,19 @@
             "        BRIDGE:'bridge'",
             "        (bridge_bridge",
             "          BRIDGE:'bridge'",
+            "          (brbr_pvid",
+            "            PVID:'pvid'",
+            "            pvid = (vlan_id",
+            "              v = DEC:'2')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bridge",
+            "        BRIDGE:'bridge'",
+            "        (bridge_bridge",
+            "          BRIDGE:'bridge'",
             "          (brbr_vids",
             "            VIDS:'vids'",
             "            ids = (range_set",
@@ -40573,47 +40636,47 @@
             "              IPV6_ADDRESS:'dead:beef::1')",
             "            NEWLINE:'\\n')))))",
             "  (statement",
-            "    (s_net_add_unrecognized",
+            "    (s_net_add",
             "      NET:'net'",
             "      ADD:'add'",
-            "      (word",
-            "        WORD:'dot1x')",
-            "      (null_rest_of_line",
-            "        WORD:'eap-reauth-period'",
-            "        DEC:'0'",
-            "        NEWLINE:'\\n')))",
+            "      (a_dot1x",
+            "        DOT1X:'dot1x'",
+            "        (null_rest_of_line",
+            "          WORD:'eap-reauth-period'",
+            "          DEC:'0'",
+            "          NEWLINE:'\\n'))))",
             "  (statement",
-            "    (s_net_add_unrecognized",
+            "    (s_net_add",
             "      NET:'net'",
             "      ADD:'add'",
-            "      (word",
-            "        WORD:'dot1x')",
-            "      (null_rest_of_line",
-            "        WORD:'mab-activation-delay'",
-            "        DEC:'30'",
-            "        NEWLINE:'\\n')))",
+            "      (a_dot1x",
+            "        DOT1X:'dot1x'",
+            "        (null_rest_of_line",
+            "          WORD:'mab-activation-delay'",
+            "          DEC:'30'",
+            "          NEWLINE:'\\n'))))",
             "  (statement",
-            "    (s_net_add_unrecognized",
+            "    (s_net_add",
             "      NET:'net'",
             "      ADD:'add'",
-            "      (word",
-            "        WORD:'dot1x')",
-            "      (null_rest_of_line",
-            "        WORD:'radius'",
-            "        WORD:'accounting-port'",
-            "        DEC:'1234'",
-            "        NEWLINE:'\\n')))",
+            "      (a_dot1x",
+            "        DOT1X:'dot1x'",
+            "        (null_rest_of_line",
+            "          WORD:'radius'",
+            "          WORD:'accounting-port'",
+            "          DEC:'1234'",
+            "          NEWLINE:'\\n'))))",
             "  (statement",
-            "    (s_net_add_unrecognized",
+            "    (s_net_add",
             "      NET:'net'",
             "      ADD:'add'",
-            "      (word",
-            "        WORD:'dot1x')",
-            "      (null_rest_of_line",
-            "        WORD:'radius'",
-            "        WORD:'authentication-port'",
-            "        DEC:'2345'",
-            "        NEWLINE:'\\n')))",
+            "      (a_dot1x",
+            "        DOT1X:'dot1x'",
+            "        (null_rest_of_line",
+            "          WORD:'radius'",
+            "          WORD:'authentication-port'",
+            "          DEC:'2345'",
+            "          NEWLINE:'\\n'))))",
             "  (statement",
             "    (s_net_add",
             "      NET:'net'",
@@ -40742,6 +40805,45 @@
             "        interfaces = (glob",
             "          (glob_range_set",
             "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp2')))",
+            "        (i_bridge",
+            "          BRIDGE:'bridge'",
+            "          (ib_pvid",
+            "            PVID:'pvid'",
+            "            id = (vlan_id",
+            "              v = DEC:'4')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'swp2')))",
+            "        (i_bridge",
+            "          BRIDGE:'bridge'",
+            "          (ib_vids",
+            "            VIDS:'vids'",
+            "            vlans = (vlan_range_set",
+            "              (vlan_range",
+            "                low = (vlan_id",
+            "                  v = DEC:'5')",
+            "                DASH:'-'",
+            "                high = (vlan_id",
+            "                  v = DEC:'6')))",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_interface",
+            "        INTERFACE:'interface'",
+            "        interfaces = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
             "              NUMBERED_WORD:'swp1')",
             "            COMMA:','",
             "            other_numeric_ranges = (range_set",
@@ -40753,12 +40855,11 @@
             "                  d = DEC:'3')))))",
             "        NEWLINE:'\\n')))",
             "  (statement",
-            "    (s_net_add_unrecognized",
+            "    (s_net_add",
             "      NET:'net'",
             "      ADD:'add'",
-            "      (word",
-            "        LOOPBACK:'loopback')",
-            "      (null_rest_of_line",
+            "      (a_loopback",
+            "        LOOPBACK:'loopback'",
             "        LO:'lo'",
             "        NEWLINE:'\\n')))",
             "  (statement",
@@ -40789,103 +40890,103 @@
             "            IP_PREFIX:'192.0.2.8/32')",
             "          NEWLINE:'\\n'))))",
             "  (statement",
-            "    (s_net_add_unrecognized",
+            "    (s_net_add",
             "      NET:'net'",
             "      ADD:'add'",
-            "      (word",
-            "        WORD:'ptp')",
-            "      (null_rest_of_line",
-            "        WORD:'global'",
-            "        WORD:'domain-number'",
-            "        DEC:'0'",
-            "        NEWLINE:'\\n')))",
+            "      (a_ptp",
+            "        PTP:'ptp'",
+            "        (null_rest_of_line",
+            "          WORD:'global'",
+            "          WORD:'domain-number'",
+            "          DEC:'0'",
+            "          NEWLINE:'\\n'))))",
             "  (statement",
-            "    (s_net_add_unrecognized",
+            "    (s_net_add",
             "      NET:'net'",
             "      ADD:'add'",
-            "      (word",
-            "        WORD:'ptp')",
-            "      (null_rest_of_line",
-            "        WORD:'global'",
-            "        WORD:'logging-level'",
-            "        DEC:'5'",
-            "        NEWLINE:'\\n')))",
+            "      (a_ptp",
+            "        PTP:'ptp'",
+            "        (null_rest_of_line",
+            "          WORD:'global'",
+            "          WORD:'logging-level'",
+            "          DEC:'5'",
+            "          NEWLINE:'\\n'))))",
             "  (statement",
-            "    (s_net_add_unrecognized",
+            "    (s_net_add",
             "      NET:'net'",
             "      ADD:'add'",
-            "      (word",
-            "        WORD:'ptp')",
-            "      (null_rest_of_line",
-            "        WORD:'global'",
-            "        WORD:'path-trace-enabled'",
-            "        WORD:'no'",
-            "        NEWLINE:'\\n')))",
+            "      (a_ptp",
+            "        PTP:'ptp'",
+            "        (null_rest_of_line",
+            "          WORD:'global'",
+            "          WORD:'path-trace-enabled'",
+            "          WORD:'no'",
+            "          NEWLINE:'\\n'))))",
             "  (statement",
-            "    (s_net_add_unrecognized",
+            "    (s_net_add",
             "      NET:'net'",
             "      ADD:'add'",
-            "      (word",
-            "        WORD:'ptp')",
-            "      (null_rest_of_line",
-            "        WORD:'global'",
-            "        NUMBERED_WORD:'priority1'",
-            "        DEC:'255'",
-            "        NEWLINE:'\\n')))",
+            "      (a_ptp",
+            "        PTP:'ptp'",
+            "        (null_rest_of_line",
+            "          WORD:'global'",
+            "          NUMBERED_WORD:'priority1'",
+            "          DEC:'255'",
+            "          NEWLINE:'\\n'))))",
             "  (statement",
-            "    (s_net_add_unrecognized",
+            "    (s_net_add",
             "      NET:'net'",
             "      ADD:'add'",
-            "      (word",
-            "        WORD:'ptp')",
-            "      (null_rest_of_line",
-            "        WORD:'global'",
-            "        WORD:'slave-only'",
-            "        WORD:'no'",
-            "        NEWLINE:'\\n')))",
+            "      (a_ptp",
+            "        PTP:'ptp'",
+            "        (null_rest_of_line",
+            "          WORD:'global'",
+            "          WORD:'slave-only'",
+            "          WORD:'no'",
+            "          NEWLINE:'\\n'))))",
             "  (statement",
-            "    (s_net_add_unrecognized",
+            "    (s_net_add",
             "      NET:'net'",
             "      ADD:'add'",
-            "      (word",
-            "        WORD:'ptp')",
-            "      (null_rest_of_line",
-            "        WORD:'global'",
-            "        WORD:'summary-interval'",
-            "        DEC:'0'",
-            "        NEWLINE:'\\n')))",
+            "      (a_ptp",
+            "        PTP:'ptp'",
+            "        (null_rest_of_line",
+            "          WORD:'global'",
+            "          WORD:'summary-interval'",
+            "          DEC:'0'",
+            "          NEWLINE:'\\n'))))",
             "  (statement",
-            "    (s_net_add_unrecognized",
+            "    (s_net_add",
             "      NET:'net'",
             "      ADD:'add'",
-            "      (word",
-            "        WORD:'ptp')",
-            "      (null_rest_of_line",
-            "        WORD:'global'",
-            "        WORD:'time-stamping'",
-            "        NEWLINE:'\\n')))",
+            "      (a_ptp",
+            "        PTP:'ptp'",
+            "        (null_rest_of_line",
+            "          WORD:'global'",
+            "          WORD:'time-stamping'",
+            "          NEWLINE:'\\n'))))",
             "  (statement",
-            "    (s_net_add_unrecognized",
+            "    (s_net_add",
             "      NET:'net'",
             "      ADD:'add'",
-            "      (word",
-            "        WORD:'ptp')",
-            "      (null_rest_of_line",
-            "        WORD:'global'",
-            "        WORD:'use-syslog'",
-            "        WORD:'yes'",
-            "        NEWLINE:'\\n')))",
+            "      (a_ptp",
+            "        PTP:'ptp'",
+            "        (null_rest_of_line",
+            "          WORD:'global'",
+            "          WORD:'use-syslog'",
+            "          WORD:'yes'",
+            "          NEWLINE:'\\n'))))",
             "  (statement",
-            "    (s_net_add_unrecognized",
+            "    (s_net_add",
             "      NET:'net'",
             "      ADD:'add'",
-            "      (word",
-            "        WORD:'ptp')",
-            "      (null_rest_of_line",
-            "        WORD:'global'",
-            "        WORD:'verbose'",
-            "        WORD:'no'",
-            "        NEWLINE:'\\n')))",
+            "      (a_ptp",
+            "        PTP:'ptp'",
+            "        (null_rest_of_line",
+            "          WORD:'global'",
+            "          WORD:'verbose'",
+            "          WORD:'no'",
+            "          NEWLINE:'\\n'))))",
             "  (statement",
             "    (s_net_add",
             "      NET:'net'",
@@ -40897,16 +40998,17 @@
             "          DATACENTER:'datacenter'",
             "          NEWLINE:'\\n'))))",
             "  (statement",
-            "    (s_net_add_unrecognized",
+            "    (s_net_add",
             "      NET:'net'",
             "      ADD:'add'",
-            "      (word",
-            "        ROUTING:'routing')",
-            "      (null_rest_of_line",
-            "        WORD:'log'",
-            "        SYSLOG:'syslog'",
-            "        INFORMATIONAL:'informational'",
-            "        NEWLINE:'\\n')))",
+            "      (a_routing",
+            "        ROUTING:'routing'",
+            "        (r_log",
+            "          LOG:'log'",
+            "          (rl_syslog",
+            "            SYSLOG:'syslog'",
+            "            INFORMATIONAL:'informational'",
+            "            NEWLINE:'\\n')))))",
             "  (statement",
             "    (s_net_add",
             "      NET:'net'",
@@ -40954,27 +41056,29 @@
             "          INTEGRATED_VTYSH_CONFIG:'integrated-vtysh-config'",
             "          NEWLINE:'\\n'))))",
             "  (statement",
-            "    (s_net_add_unrecognized",
+            "    (s_net_add",
             "      NET:'net'",
             "      ADD:'add'",
-            "      (word",
-            "        WORD:'snmp-server')",
-            "      (null_rest_of_line",
-            "        WORD:'listening-address'",
-            "        WORD:'localhost'",
-            "        NEWLINE:'\\n')))",
+            "      (a_snmp_server",
+            "        SNMP_SERVER:'snmp-server'",
+            "        (null_rest_of_line",
+            "          WORD:'listening-address'",
+            "          WORD:'localhost'",
+            "          NEWLINE:'\\n'))))",
             "  (statement",
-            "    (s_net_add_unrecognized",
+            "    (s_net_add",
             "      NET:'net'",
             "      ADD:'add'",
-            "      (word",
-            "        TIME:'time')",
-            "      (null_rest_of_line",
-            "        NTP:'ntp'",
-            "        SERVER:'server'",
-            "        WORD:'0.pool.ntp.example.com'",
-            "        WORD:'iburst'",
-            "        NEWLINE:'\\n')))",
+            "      (a_time",
+            "        TIME:'time'",
+            "        (t_ntp",
+            "          NTP:'ntp'",
+            "          (tn_server",
+            "            SERVER:'server'",
+            "            server = (word",
+            "              WORD:'0.pool.ntp.example.com')",
+            "            IBURST:'iburst'",
+            "            NEWLINE:'\\n')))))",
             "  (statement",
             "    (s_net_add",
             "      NET:'net'",
@@ -41297,12 +41401,12 @@
             "  (statement",
             "    (s_extra_configuration",
             "      EXTRA_CONFIGURATION_HEADER:'sudo sh -c \"printf ''",
-            "      (frr_unrecognized",
-            "        (word",
-            "          WORD:'username'  <== mode:M_Printf)",
-            "        WORD:'cumulus'  <== mode:M_Printf",
-            "        WORD:'nopassword'  <== mode:M_Printf",
-            "        NEWLINE:'\\n'  <== mode:M_Printf)",
+            "      (frr_username",
+            "        USERNAME:'username'  <== mode:M_Printf",
+            "        (frr_null_rest_of_line",
+            "          WORD:'cumulus'  <== mode:M_Printf",
+            "          WORD:'nopassword'  <== mode:M_Printf",
+            "          NEWLINE:'\\n'  <== mode:M_Printf))",
             "      EXTRA_CONFIGURATION_FOOTER:'' >> /etc/frr/frr.conf\"'  <== mode:M_Printf",
             "      NEWLINE:'\\n'))",
             "  (statement",
@@ -45887,36 +45991,28 @@
             "  (statement",
             "    (s_sys",
             "      SYS:'sys'",
-            "      (unrecognized",
-            "        (u_word",
+            "      (sys_ntp",
+            "        NTP:'ntp'",
+            "        BRACE_LEFT:'{'",
+            "        NEWLINE:'\\n'",
+            "        (ntp_servers",
+            "          SERVERS:'servers'",
+            "          BRACE_LEFT:'{'",
             "          (word",
-            "            WORD:'ntp'))",
-            "        (list",
-            "          (u_list",
-            "            BRACE_LEFT:'{'",
-            "            NEWLINE:'\\n'",
-            "            (unrecognized",
-            "              (u_word",
-            "                (word",
-            "                  WORD:'servers'))",
-            "              (list",
-            "                (word_list",
-            "                  BRACE_LEFT:'{'",
-            "                  (word",
-            "                    WORD:'192.0.2.3')",
-            "                  (word",
-            "                    WORD:'my.example.com')",
-            "                  BRACE_RIGHT:'}'))",
-            "              NEWLINE:'\\n')",
-            "            (unrecognized",
-            "              (u_word",
-            "                (word",
-            "                  WORD:'timezone'))",
-            "              (u_word",
-            "                (word",
-            "                  WORD:'America/Seattle'))",
-            "              NEWLINE:'\\n')",
-            "            BRACE_RIGHT:'}'))",
+            "            WORD:'192.0.2.3')",
+            "          (word",
+            "            WORD:'my.example.com')",
+            "          BRACE_RIGHT:'}'",
+            "          NEWLINE:'\\n')",
+            "        (unrecognized",
+            "          (u_word",
+            "            (word",
+            "              WORD:'timezone'))",
+            "          (u_word",
+            "            (word",
+            "              WORD:'America/Seattle'))",
+            "          NEWLINE:'\\n')",
+            "        BRACE_RIGHT:'}'",
             "        NEWLINE:'\\n')))",
             "  (statement",
             "    (s_sys",
@@ -72004,270 +72100,176 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 5,
-              "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bgp autonomous-system 65500"
+              "Line" : 27,
+              "Parser_Context" : "[brbr_vlan_aware bridge_bridge a_bridge s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "vlan-aware"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 6,
-              "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bgp ipv4 unicast network 192.0.2.1/32"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 7,
-              "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bgp ipv4 unicast redistribute connected route-map rm1"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 8,
-              "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bgp l2vpn evpn  advertise-all-vni"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 9,
-              "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bgp l2vpn evpn  advertise-default-gw"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 10,
-              "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bgp l2vpn evpn  advertise ipv4 unicast"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 11,
-              "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bgp l2vpn evpn  neighbor swp1 activate"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 12,
-              "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bgp neighbor swp1 interface remote-as external"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 13,
-              "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bgp router-id 192.0.2.2"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 14,
-              "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bgp vrf vrf1 autonomous-system 65501"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 15,
-              "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bgp vrf vrf1 ipv4 unicast redistribute connected"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 16,
-              "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bgp vrf vrf1 ipv4 unicast redistribute static"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 17,
-              "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bgp vrf vrf1 l2vpn evpn  advertise ipv4 unicast"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 18,
-              "Parser_Context" : "[a_bgp s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bgp vrf vrf1 router-id 192.0.2.3"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 23,
-              "Parser_Context" : "[a_bridge s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bridge bridge ports bond1,swp1,vni10001"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 24,
-              "Parser_Context" : "[a_bridge s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bridge bridge vids 1,2-3"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 25,
-              "Parser_Context" : "[a_bridge s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "bridge bridge vlan-aware"
-            },
-            {
-              "Comment" : "This syntax is unrecognized",
-              "Line" : 28,
-              "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
-              "Text" : "net add dot1x eap-reauth-period 0\n"
-            },
-            {
-              "Comment" : "This syntax is unrecognized",
-              "Line" : 29,
-              "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
-              "Text" : "net add dot1x mab-activation-delay 30\n"
-            },
-            {
-              "Comment" : "This syntax is unrecognized",
               "Line" : 30,
-              "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
-              "Text" : "net add dot1x radius accounting-port 1234\n"
+              "Parser_Context" : "[a_dot1x s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "dot1x eap-reauth-period 0"
             },
             {
-              "Comment" : "This syntax is unrecognized",
+              "Comment" : "This feature is not currently supported",
               "Line" : 31,
-              "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
-              "Text" : "net add dot1x radius authentication-port 2345\n"
+              "Parser_Context" : "[a_dot1x s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "dot1x mab-activation-delay 30"
             },
             {
-              "Comment" : "This syntax is unrecognized",
-              "Line" : 40,
-              "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
-              "Text" : "net add loopback lo\n"
+              "Comment" : "This feature is not currently supported",
+              "Line" : 32,
+              "Parser_Context" : "[a_dot1x s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "dot1x radius accounting-port 1234"
             },
             {
-              "Comment" : "This syntax is unrecognized",
-              "Line" : 43,
-              "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
-              "Text" : "net add ptp global domain-number 0\n"
+              "Comment" : "This feature is not currently supported",
+              "Line" : 33,
+              "Parser_Context" : "[a_dot1x s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "dot1x radius authentication-port 2345"
             },
             {
-              "Comment" : "This syntax is unrecognized",
-              "Line" : 44,
-              "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
-              "Text" : "net add ptp global logging-level 5\n"
-            },
-            {
-              "Comment" : "This syntax is unrecognized",
-              "Line" : 45,
-              "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
-              "Text" : "net add ptp global path-trace-enabled no\n"
-            },
-            {
-              "Comment" : "This syntax is unrecognized",
-              "Line" : 46,
-              "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
-              "Text" : "net add ptp global priority1 255\n"
-            },
-            {
-              "Comment" : "This syntax is unrecognized",
+              "Comment" : "This feature is not currently supported",
               "Line" : 47,
-              "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
-              "Text" : "net add ptp global slave-only no\n"
+              "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "ptp global domain-number 0"
             },
             {
-              "Comment" : "This syntax is unrecognized",
+              "Comment" : "This feature is not currently supported",
               "Line" : 48,
-              "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
-              "Text" : "net add ptp global summary-interval 0\n"
+              "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "ptp global logging-level 5"
             },
             {
-              "Comment" : "This syntax is unrecognized",
+              "Comment" : "This feature is not currently supported",
               "Line" : 49,
-              "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
-              "Text" : "net add ptp global time-stamping\n"
+              "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "ptp global path-trace-enabled no"
             },
             {
-              "Comment" : "This syntax is unrecognized",
+              "Comment" : "This feature is not currently supported",
               "Line" : 50,
-              "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
-              "Text" : "net add ptp global use-syslog yes\n"
+              "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "ptp global priority1 255"
             },
             {
-              "Comment" : "This syntax is unrecognized",
+              "Comment" : "This feature is not currently supported",
               "Line" : 51,
-              "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
-              "Text" : "net add ptp global verbose no\n"
+              "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "ptp global slave-only no"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 52,
-              "Parser_Context" : "[r_defaults_datacenter a_routing s_net_add statement cumulus_nclu_configuration]",
-              "Text" : "defaults datacenter"
+              "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "ptp global summary-interval 0"
             },
             {
-              "Comment" : "This syntax is unrecognized",
+              "Comment" : "This feature is not currently supported",
               "Line" : 53,
-              "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
-              "Text" : "net add routing log syslog informational\n"
+              "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "ptp global time-stamping"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 54,
+              "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "ptp global use-syslog yes"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 55,
+              "Parser_Context" : "[a_ptp s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "ptp global verbose no"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 56,
+              "Parser_Context" : "[r_defaults_datacenter a_routing s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "defaults datacenter"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 57,
+              "Parser_Context" : "[r_log a_routing s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "log syslog informational"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 60,
               "Parser_Context" : "[r_service_integrated_vtysh_config a_routing s_net_add statement cumulus_nclu_configuration]",
               "Text" : "service integrated-vtysh-config"
             },
             {
-              "Comment" : "This syntax is unrecognized",
-              "Line" : 57,
-              "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
-              "Text" : "net add snmp-server listening-address localhost\n"
-            },
-            {
-              "Comment" : "This syntax is unrecognized",
-              "Line" : 58,
-              "Parser_Context" : "[s_net_add_unrecognized statement cumulus_nclu_configuration]",
-              "Text" : "net add time ntp server 0.pool.ntp.example.com iburst\n"
+              "Comment" : "This feature is not currently supported",
+              "Line" : 61,
+              "Parser_Context" : "[a_snmp_server s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "snmp-server listening-address localhost"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 59,
+              "Line" : 62,
+              "Parser_Context" : "[a_time s_net_add statement cumulus_nclu_configuration]",
+              "Text" : "time ntp server 0.pool.ntp.example.com iburst"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 63,
               "Parser_Context" : "[a_time s_net_add statement cumulus_nclu_configuration]",
               "Text" : "time ntp source eth0"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 60,
+              "Line" : 64,
               "Parser_Context" : "[a_time s_net_add statement cumulus_nclu_configuration]",
               "Text" : "time zone Etc/UTC"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 64,
+              "Line" : 68,
               "Parser_Context" : "[v_vlan_raw_device a_vlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "vlan-raw-device bridge"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 72,
+              "Line" : 76,
               "Parser_Context" : "[vxb_arp_nd_suppress vx_bridge a_vxlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "arp-nd-suppress on"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 73,
+              "Line" : 77,
               "Parser_Context" : "[vxb_learning vx_bridge a_vxlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "learning off"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 74,
+              "Line" : 78,
               "Parser_Context" : "[vx_stp a_vxlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "stp bpduguard"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 75,
+              "Line" : 79,
               "Parser_Context" : "[vx_stp a_vxlan s_net_add statement cumulus_nclu_configuration]",
               "Text" : "stp portbpdufilter"
             },
             {
-              "Comment" : "This syntax is unrecognized",
-              "Line" : 82,
-              "Parser_Context" : "[frr_unrecognized s_extra_configuration statement cumulus_nclu_configuration]",
+              "Comment" : "This feature is not currently supported",
+              "Line" : 86,
+              "Parser_Context" : "[frr_username s_extra_configuration statement cumulus_nclu_configuration]",
               "Text" : "username cumulus nopassword\\n"
             }
           ],
           "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Interface name 'vni10001' is invalid in: ports bond1,swp1,vni10001\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot add illegal ports glob 'bond1,swp1,vni10001' to bridge in: ports bond1,swp1,vni10001\n"
+            },
             {
               "tag" : "MISCELLANEOUS",
               "text" : "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id <id>' before line: vxlan vni10001 bridge access 5\n"
@@ -73600,9 +73602,9 @@
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 48,
-              "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
-              "Text" : "ntp"
+              "Line" : 50,
+              "Parser_Context" : "[unrecognized sys_ntp s_sys statement f5_bigip_structured_configuration]",
+              "Text" : "timezone"
             },
             {
               "Comment" : "This syntax is unrecognized",
@@ -74132,7 +74134,7 @@
         "community-name-numbers_dos" : "PASSED",
         "community_list_named" : "PASSED",
         "community_set" : "PASSED",
-        "cumulus_nclu" : "PASSED",
+        "cumulus_nclu" : "WARNINGS",
         "cumulus_nclu_invalid_bonds" : "PASSED",
         "cumulus_nclu_invalid_interfaces" : "PASSED",
         "cumulus_nclu_invalid_vrfs" : "PASSED",
@@ -75125,27 +75127,35 @@
           "route-map" : {
             "AGGREGATE-MAP" : {
               "definitionLines" : [
-                54
+                56
               ],
               "numReferrers" : 1
             },
             "CONNECTED-TO-BGP" : {
               "definitionLines" : [
-                52
+                54
               ],
               "numReferrers" : 1
             },
             "UNSUPP-MAP" : {
               "definitionLines" : [
-                56
+                58
               ],
               "numReferrers" : 1
             },
             "ospfv3_map" : {
               "definitionLines" : [
-                50
+                52
               ],
               "numReferrers" : 1
+            }
+          },
+          "standard ipv4 access-list" : {
+            "5" : {
+              "definitionLines" : [
+                60
+              ],
+              "numReferrers" : 2
             }
           }
         },
@@ -76787,27 +76797,27 @@
           "interface" : {
             "bond1.4094" : {
               "definitionLines" : [
-                32
+                34
               ],
               "numReferrers" : 5
             },
             "eth0" : {
               "definitionLines" : [
-                37
+                39
               ],
               "numReferrers" : 1
             },
             "swp1" : {
               "definitionLines" : [
-                19
+                12
               ],
-              "numReferrers" : 3
+              "numReferrers" : 4
             },
             "swp2" : {
               "definitionLines" : [
                 19
               ],
-              "numReferrers" : 2
+              "numReferrers" : 4
             },
             "swp3" : {
               "definitionLines" : [
@@ -76849,24 +76859,25 @@
           "loopback" : {
             "lo" : {
               "definitionLines" : [
-                41,
-                42
+                44,
+                45,
+                46
               ],
-              "numReferrers" : 3
+              "numReferrers" : 4
             }
           },
           "route-map" : {
             "rm1" : {
               "definitionLines" : [
-                55
+                59
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           },
           "vlan" : {
             "vlan4" : {
               "definitionLines" : [
-                61
+                65
               ],
               "numReferrers" : 5
             }
@@ -76874,21 +76885,21 @@
           "vrf" : {
             "mgmt" : {
               "definitionLines" : [
-                32
+                34
               ],
               "numReferrers" : 5
             },
             "vrf1" : {
               "definitionLines" : [
-                65
+                14
               ],
-              "numReferrers" : 4
+              "numReferrers" : 9
             }
           },
           "vxlan" : {
             "vni10001" : {
               "definitionLines" : [
-                71
+                75
               ],
               "numReferrers" : 1
             }
@@ -81160,15 +81171,25 @@
               ]
             }
           },
+          "ipv4 acl" : {
+            "5" : {
+              "bgp neighbor distribute-list access-list in" : [
+                40
+              ],
+              "bgp neighbor distribute-list access-list out" : [
+                41
+              ]
+            }
+          },
           "route-map" : {
             "AGGREGATE-MAP" : {
               "bgp vrf aggregate-address attribute-map" : [
-                46
+                48
               ]
             },
             "CONNECTED-TO-BGP" : {
               "bgp redistribute connected route-map" : [
-                47
+                49
               ]
             },
             "UNSUPP-MAP" : {
@@ -81193,7 +81214,7 @@
             },
             "ospfv3_map" : {
               "bgp redistribute ospfv3 route-map" : [
-                42
+                44
               ]
             }
           },
@@ -81201,7 +81222,9 @@
             "10.0.0.1" : {
               "bgp neighbor without remote-as" : [
                 38,
-                39
+                39,
+                40,
+                41
               ]
             },
             "10.20.2.2" : {
@@ -82518,7 +82541,12 @@
           "abstract interface" : {
             "lo" : {
               "route-map match interface" : [
-                55
+                59
+              ]
+            },
+            "swp1" : {
+              "bgp neighbor interface" : [
+                12
               ]
             }
           },
@@ -82537,25 +82565,28 @@
           "interface" : {
             "bond1.4094" : {
               "interface self-reference" : [
-                32,
-                33,
                 34,
                 35,
-                36
+                36,
+                37,
+                38
               ]
             },
             "eth0" : {
               "interface self-reference" : [
-                37
+                39
               ]
             },
             "swp1" : {
+              "bgp neighbor interface" : [
+                12
+              ],
               "bond slave" : [
                 19
               ],
               "interface self-reference" : [
-                38,
-                39
+                40,
+                43
               ]
             },
             "swp2" : {
@@ -82563,7 +82594,9 @@
                 19
               ],
               "interface self-reference" : [
-                39
+                41,
+                42,
+                43
               ]
             },
             "swp3" : {
@@ -82571,7 +82604,7 @@
                 19
               ],
               "interface self-reference" : [
-                39
+                43
               ]
             },
             "swp4" : {
@@ -82603,51 +82636,66 @@
           "loopback" : {
             "lo" : {
               "loopback self-reference" : [
-                41,
-                42
+                44,
+                45,
+                46
+              ]
+            }
+          },
+          "route-map" : {
+            "rm1" : {
+              "bgp ipv4 unicast redistribute connected route-map" : [
+                7
               ]
             }
           },
           "vlan" : {
             "vlan4" : {
               "vlan self-reference" : [
-                61,
-                62,
-                63,
-                64,
-                65
+                65,
+                66,
+                67,
+                68,
+                69
               ]
             }
           },
           "vrf" : {
             "mgmt" : {
               "interface clag backup-ip vrf" : [
-                32
+                34
               ],
               "interface vrf" : [
-                37
+                39
               ],
               "vrf self-reference" : [
-                66,
-                67,
-                69
+                70,
+                71,
+                73
               ]
             },
             "vrf1" : {
+              "bgp vrf" : [
+                14,
+                15,
+                16,
+                17,
+                18
+              ],
               "vlan vrf" : [
-                65
+                69
               ],
               "vrf self-reference" : [
-                68,
-                69,
-                83
+                72,
+                73,
+                87
               ]
             }
           },
           "vxlan" : {
             "vni10001" : {
               "vxlan self-reference" : [
-                71
+                75
               ]
             }
           }
@@ -85211,7 +85259,9 @@
             "10.0.0.1" : {
               "bgp neighbor without remote-as" : [
                 38,
-                39
+                39,
+                40,
+                41
               ]
             },
             "10.20.2.2" : {
@@ -87113,6 +87163,26 @@
             }
           ]
         },
+        "cumulus_nclu" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No support for VLAN switching options on non-'bridge bridge' port: 'swp2'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No support for VLAN switching options on non-'bridge bridge' port: 'swp1'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No support for VLAN switching options on non-'bridge bridge' port: 'bond2'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No support for VLAN switching options on non-'bridge bridge' port: 'bond1'"
+            }
+          ]
+        },
         "f5_bigip_imish_malformed" : {
           "Red flags" : [
             {
@@ -87570,7 +87640,7 @@
         "configs/community_name_numbers" : "PASSED",
         "configs/community_name_numbers_dos" : "PASSED",
         "configs/community_set" : "PASSED",
-        "configs/cumulus_nclu" : "PARTIALLY_UNRECOGNIZED",
+        "configs/cumulus_nclu" : "PASSED",
         "configs/cumulus_nclu_invalid_bonds" : "PASSED",
         "configs/cumulus_nclu_invalid_interfaces" : "PASSED",
         "configs/cumulus_nclu_invalid_vrfs" : "PASSED",
@@ -87578,12 +87648,12 @@
         "configs/eos_mlag" : "PASSED",
         "configs/eos_trunk_group" : "PASSED",
         "configs/f5_bigip_imish_malformed" : "PASSED",
-        "configs/f5_bigip_structured_ltm" : "PASSED",
-        "configs/f5_bigip_structured_net" : "PASSED",
-        "configs/f5_bigip_structured_net_routing_bgp" : "PASSED",
+        "configs/f5_bigip_structured_ltm" : "PARTIALLY_UNRECOGNIZED",
+        "configs/f5_bigip_structured_net" : "PARTIALLY_UNRECOGNIZED",
+        "configs/f5_bigip_structured_net_routing_bgp" : "PARTIALLY_UNRECOGNIZED",
         "configs/f5_bigip_structured_net_routing_prefix_list" : "PASSED",
         "configs/f5_bigip_structured_net_routing_route_map" : "PASSED",
-        "configs/f5_bigip_structured_sys" : "PASSED",
+        "configs/f5_bigip_structured_sys" : "PARTIALLY_UNRECOGNIZED",
         "configs/f5_bigip_structured_with_imish" : "PASSED",
         "configs/foundry_access_list" : "PASSED",
         "configs/foundry_bgp" : "PASSED",

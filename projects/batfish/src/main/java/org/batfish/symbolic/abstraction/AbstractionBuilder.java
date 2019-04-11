@@ -531,6 +531,7 @@ class AbstractionBuilder {
             OspfProcess.builder()
                 .setReferenceBandwidth(ospf.getReferenceBandwidth())
                 .setAdminCosts(ospf.getAdminCosts())
+                .setSummaryAdminCost(ospf.getSummaryAdminCost())
                 .build();
         abstractOspf.setAreas(ospf.getAreas());
         abstractOspf.setExportPolicy(ospf.getExportPolicy());

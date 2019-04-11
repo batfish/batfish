@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -53,6 +54,10 @@ public class OspfProcess implements Serializable {
 
   private Long _defaultMetric;
 
+  @Nullable private DistributeList _inboundGlobalDistributeList;
+
+  @Nonnull private Map<String, DistributeList> _inboundIInterfaceDistributeLists;
+
   private Long _maxMetricExternalLsa;
 
   private boolean _maxMetricIncludeStub;
@@ -70,6 +75,10 @@ public class OspfProcess implements Serializable {
   private Map<Long, NssaSettings> _nssas;
 
   private Map<Long, StubSettings> _stubs;
+
+  @Nullable private DistributeList _outboundGlobalDistributeList;
+
+  @Nonnull private Map<String, DistributeList> _outboundInterfaceDistributeLists;
 
   private boolean _passiveInterfaceDefault;
 
@@ -147,8 +156,10 @@ public class OspfProcess implements Serializable {
     _networks = new TreeSet<>();
     _defaultInformationMetric = DEFAULT_DEFAULT_INFORMATION_METRIC;
     _defaultInformationMetricType = DEFAULT_DEFAULT_INFORMATION_METRIC_TYPE;
+    _inboundIInterfaceDistributeLists = new HashMap<>();
     _nonDefaultInterfaces = new HashSet<>();
     _nssas = new HashMap<>();
+    _outboundInterfaceDistributeLists = new HashMap<>();
     _passiveInterfaces = new HashSet<>();
     _stubs = new HashMap<>();
     _wildcardNetworks = new TreeSet<>();
@@ -209,6 +220,16 @@ public class OspfProcess implements Serializable {
     return _defaultMetric;
   }
 
+  @Nullable
+  public DistributeList getInboundGlobalDistributeList() {
+    return _inboundGlobalDistributeList;
+  }
+
+  @Nonnull
+  public Map<String, DistributeList> getInboundInterfaceDistributeLists() {
+    return _inboundIInterfaceDistributeLists;
+  }
+
   public Long getMaxMetricExternalLsa() {
     return _maxMetricExternalLsa;
   }
@@ -239,6 +260,16 @@ public class OspfProcess implements Serializable {
 
   public Map<Long, NssaSettings> getNssas() {
     return _nssas;
+  }
+
+  @Nullable
+  public DistributeList getOutboundGlobalDistributeList() {
+    return _outboundGlobalDistributeList;
+  }
+
+  @Nonnull
+  public Map<String, DistributeList> getOutboundInterfaceDistributeLists() {
+    return _outboundInterfaceDistributeLists;
   }
 
   public boolean getPassiveInterfaceDefault() {
@@ -305,6 +336,10 @@ public class OspfProcess implements Serializable {
     _defaultMetric = metric;
   }
 
+  public void setInboundGlobalDistributeList(@Nullable DistributeList inboundGlobalDistributeList) {
+    _inboundGlobalDistributeList = inboundGlobalDistributeList;
+  }
+
   public void setMaxMetricExternalLsa(Long maxMetricExternalLsa) {
     _maxMetricExternalLsa = maxMetricExternalLsa;
   }
@@ -319,6 +354,11 @@ public class OspfProcess implements Serializable {
 
   public void setMaxMetricSummaryLsa(Long maxMetricSummaryLsa) {
     _maxMetricSummaryLsa = maxMetricSummaryLsa;
+  }
+
+  public void setOutboundGlobalDistributeList(
+      @Nullable DistributeList outboundGlobalDistributeList) {
+    _outboundGlobalDistributeList = outboundGlobalDistributeList;
   }
 
   public void setPassiveInterfaceDefault(boolean b) {

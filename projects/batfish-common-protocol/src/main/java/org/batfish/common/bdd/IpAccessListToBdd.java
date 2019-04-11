@@ -4,7 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -106,14 +106,14 @@ public abstract class IpAccessListToBdd {
    */
   @Nonnull
   public final BDD toBdd(IpAccessList acl) {
-    BDDFactory bddFactory = _pkt.getFactory();
-    BDD result = bddFactory.zero();
-    for (IpAccessListLine line : Lists.reverse(acl.getLines())) {
-      BDD lineBDD = toBdd(line.getMatchCondition());
-      BDD actionBDD = line.getAction() == LineAction.PERMIT ? bddFactory.one() : bddFactory.zero();
-      result = lineBDD.ite(actionBDD, result);
+    int size = acl.getLines().size();
+    List<BDD> lineBdds = new ArrayList<>(size);
+    List<LineAction> lineActions = new ArrayList<>(size);
+    for (IpAccessListLine line : acl.getLines()) {
+      lineActions.add(line.getAction());
+      lineBdds.add(toBdd(line.getMatchCondition()));
     }
-    return result;
+    return _bddOps.bddAclLines(lineBdds, lineActions);
   }
 
   /**
@@ -175,10 +175,10 @@ public abstract class IpAccessListToBdd {
 
     @Override
     public final BDD visitOrMatchExpr(OrMatchExpr orMatchExpr) {
-      return _bddOps.or(
+      return _bddOps.orAll(
           orMatchExpr.getDisjuncts().stream()
               .map(IpAccessListToBdd.this::toBdd)
-              .collect(ImmutableList.toImmutableList()));
+              .toArray(BDD[]::new));
     }
 
     @Override

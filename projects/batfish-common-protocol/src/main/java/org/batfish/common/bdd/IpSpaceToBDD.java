@@ -5,7 +5,8 @@ import static org.batfish.common.util.CommonUtil.toImmutableMap;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Supplier;
@@ -136,16 +137,14 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
 
   @Override
   public BDD visitAclIpSpace(AclIpSpace aclIpSpace) {
-    BDD bdd = _zero;
-    for (AclIpSpaceLine aclIpSpaceLine : Lists.reverse(aclIpSpace.getLines())) {
-      BDD line = visit(aclIpSpaceLine.getIpSpace());
-      if (aclIpSpaceLine.getAction() == LineAction.PERMIT) {
-        bdd = line.or(bdd);
-      } else {
-        bdd = bdd.diff(line);
-      }
+    int size = aclIpSpace.getLines().size();
+    List<BDD> lineBdds = new ArrayList<>(size);
+    List<LineAction> lineActions = new ArrayList<>(size);
+    for (AclIpSpaceLine line : aclIpSpace.getLines()) {
+      lineActions.add(line.getAction());
+      lineBdds.add(visit(line.getIpSpace()));
     }
-    return bdd;
+    return _bddOps.bddAclLines(lineBdds, lineActions);
   }
 
   @Override
@@ -177,13 +176,13 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
   @Override
   public BDD visitIpWildcardSetIpSpace(IpWildcardSetIpSpace ipWildcardSetIpSpace) {
     BDD whitelist =
-        _bddOps.or(
+        _bddOps.orAll(
             ipWildcardSetIpSpace.getWhitelist().stream()
                 .map((IpWildcard wc) -> this.visit(wc.toIpSpace()))
                 .collect(Collectors.toList()));
 
     BDD blacklist =
-        _bddOps.or(
+        _bddOps.orAll(
             ipWildcardSetIpSpace.getBlacklist().stream()
                 .map((IpWildcard wc) -> this.visit(wc.toIpSpace()))
                 .collect(Collectors.toList()));

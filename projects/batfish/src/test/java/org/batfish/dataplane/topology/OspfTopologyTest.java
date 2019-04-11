@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.SortedMap;
 import org.batfish.common.topology.TopologyProvider;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
@@ -25,6 +26,7 @@ import org.batfish.datamodel.ospf.OspfNeighborConfigId;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.OspfSessionProperties;
 import org.batfish.datamodel.ospf.OspfTopology;
+import org.batfish.datamodel.ospf.OspfTopology.EdgeId;
 import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -177,10 +179,12 @@ public class OspfTopologyTest {
     assertThat(topology.neighbors(r3i31), equalTo(ImmutableSet.of(r1i13)));
     assertThat(
         topology.getSession(OspfTopology.makeEdge(r1i13, r3i31)).get(),
-        equalTo(new OspfSessionProperties(new IpLink(Ip.parse("1.1.1.2"), Ip.parse("1.1.1.3")))));
+        equalTo(
+            new OspfSessionProperties(0, new IpLink(Ip.parse("1.1.1.2"), Ip.parse("1.1.1.3")))));
     assertThat(
         topology.getSession(OspfTopology.makeEdge(r3i31, r1i13)).get(),
-        equalTo(new OspfSessionProperties(new IpLink(Ip.parse("1.1.1.3"), Ip.parse("1.1.1.2")))));
+        equalTo(
+            new OspfSessionProperties(0, new IpLink(Ip.parse("1.1.1.3"), Ip.parse("1.1.1.2")))));
 
     // Everyone else has no neighbors
     assertThat(
@@ -199,5 +203,15 @@ public class OspfTopologyTest {
         topology.neighbors(
             new OspfNeighborConfigId("r4", Configuration.DEFAULT_VRF_NAME, "p", "i41")),
         empty());
+  }
+
+  @Test
+  public void testEdgeIdJsonSerialization() throws IOException {
+    final OspfNeighborConfigId r1i13 =
+        new OspfNeighborConfigId("r1", Configuration.DEFAULT_VRF_NAME, "1", "i13");
+    final OspfNeighborConfigId r3i31 =
+        new OspfNeighborConfigId("r3", Configuration.DEFAULT_VRF_NAME, "1", "i31");
+    EdgeId edge = OspfTopology.makeEdge(r1i13, r3i31);
+    assertThat(BatfishObjectMapper.clone(edge, EdgeId.class), equalTo(edge));
   }
 }

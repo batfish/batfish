@@ -136,50 +136,6 @@ public class BfCoordWorkHelper {
     }
   }
 
-  boolean configureAnalysis(
-      String networkName,
-      boolean newAnalysis,
-      String analysisName,
-      @Nullable String addQuestionsFileName,
-      @Nullable String delQuestionsStr) {
-    try {
-      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_CONFIGURE_ANALYSIS);
-
-      MultiPart multiPart = new MultiPart();
-      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
-
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_NETWORK_NAME, networkName);
-      if (newAnalysis) {
-        addTextMultiPart(multiPart, CoordConsts.SVC_KEY_NEW_ANALYSIS, "new");
-      }
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_ANALYSIS_NAME, analysisName);
-      if (addQuestionsFileName != null) {
-        addFileMultiPart(multiPart, CoordConsts.SVC_KEY_FILE, addQuestionsFileName);
-      }
-      if (delQuestionsStr != null) {
-        addTextMultiPart(multiPart, CoordConsts.SVC_KEY_DEL_ANALYSIS_QUESTIONS, delQuestionsStr);
-      }
-
-      return postData(webTarget, multiPart) != null;
-    } catch (Exception e) {
-      if (e.getMessage().contains("FileNotFoundException")) {
-        _logger.errorf("File not found: %s (addQuestionsFile file)\n", addQuestionsFileName);
-      } else {
-        _logger.errorf(
-            "Exception when configuring analysis to %s using (%s, %s, %s, %s, %s): %s\n",
-            _coordWorkMgr,
-            networkName,
-            newAnalysis,
-            analysisName,
-            addQuestionsFileName,
-            delQuestionsStr,
-            Throwables.getStackTraceAsString(e));
-      }
-      return false;
-    }
-  }
-
   @Nullable
   String configureTemplate(String inTemplate, JsonNode exceptions, JsonNode assertion) {
     try {
@@ -214,26 +170,6 @@ public class BfCoordWorkHelper {
           _coordWorkMgr, inTemplate, exceptions, assertion);
       _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return null;
-    }
-  }
-
-  boolean delAnalysis(String networkName, String analysisName) {
-    try {
-      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_DEL_ANALYSIS);
-
-      MultiPart multiPart = new MultiPart();
-      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
-
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_NETWORK_NAME, networkName);
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_ANALYSIS_NAME, analysisName);
-
-      return postData(webTarget, multiPart) != null;
-    } catch (Exception e) {
-      _logger.errorf(
-          "Exception when deleting analysis to %s using (%s, %s): %s\n",
-          _coordWorkMgr, networkName, analysisName, Throwables.getStackTraceAsString(e));
-      return false;
     }
   }
 
@@ -351,43 +287,6 @@ public class BfCoordWorkHelper {
   // throw e;
   // }
   // }
-
-  @Nullable
-  String getAnalysisAnswers(
-      String networkName, String snapshot, String referenceSnapshot, String analysisName) {
-    try {
-      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_ANALYSIS_ANSWERS);
-
-      MultiPart multiPart = new MultiPart();
-      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
-
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_NETWORK_NAME, networkName);
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_SNAPSHOT_NAME, snapshot);
-      if (referenceSnapshot != null) {
-        addTextMultiPart(multiPart, CoordConsts.SVC_KEY_REFERENCE_SNAPSHOT_NAME, referenceSnapshot);
-      }
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_ANALYSIS_NAME, analysisName);
-
-      JSONObject jObj = postData(webTarget, multiPart);
-      if (jObj == null) {
-        return null;
-      }
-
-      if (!jObj.has(CoordConsts.SVC_KEY_ANSWERS)) {
-        _logger.errorf("answer key not found in: %s\n", jObj);
-        return null;
-      }
-
-      return jObj.getString(CoordConsts.SVC_KEY_ANSWERS);
-    } catch (Exception e) {
-      _logger.errorf(
-          "Exception in getAnalysisAnswers from %s using (%s, %s, %s, %s)\n",
-          _coordWorkMgr, networkName, snapshot, referenceSnapshot, analysisName);
-      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
-      return null;
-    }
-  }
 
   @Nullable
   String getAnswer(
@@ -814,35 +713,6 @@ public class BfCoordWorkHelper {
   }
 
   @Nullable
-  JSONObject listAnalyses(String networkName) {
-    try {
-      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_LIST_ANALYSES);
-
-      MultiPart multiPart = new MultiPart();
-      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
-
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_NETWORK_NAME, networkName);
-
-      JSONObject jObj = postData(webTarget, multiPart);
-      if (jObj == null) {
-        return null;
-      }
-
-      if (!jObj.has(CoordConsts.SVC_KEY_ANALYSIS_LIST)) {
-        _logger.errorf("analysis list key not found in: %s\n", jObj);
-        return null;
-      }
-
-      return jObj.getJSONObject(CoordConsts.SVC_KEY_ANALYSIS_LIST);
-    } catch (Exception e) {
-      _logger.errorf("exception: ");
-      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
-      return null;
-    }
-  }
-
-  @Nullable
   String[] listNetworks() {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_LIST_NETWORKS);
@@ -1039,53 +909,6 @@ public class BfCoordWorkHelper {
       return jObj != null;
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
-      return false;
-    }
-  }
-
-  boolean syncSnapshotsSyncNow(String pluginId, String networkName, boolean force) {
-    try {
-      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_SYNC_SNAPSHOTS_SYNC_NOW);
-
-      MultiPart multiPart = new MultiPart();
-      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
-
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_VERSION, Version.getVersion());
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_NETWORK_NAME, networkName);
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_PLUGIN_ID, pluginId);
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_FORCE, String.valueOf(force));
-
-      JSONObject jObj = postData(webTarget, multiPart);
-      return jObj != null;
-    } catch (Exception e) {
-      _logger.errorf("Exception syncing snapshots in network %s:\n", networkName);
-      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
-      return false;
-    }
-  }
-
-  boolean syncSnapshotsUpdateSettings(
-      String pluginId, String networkName, Map<String, String> settings) {
-    try {
-      String settingsStr = BatfishObjectMapper.writePrettyString(settings);
-
-      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_SYNC_SNAPSHOTS_UPDATE_SETTINGS);
-
-      MultiPart multiPart = new MultiPart();
-      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
-
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_VERSION, Version.getVersion());
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_NETWORK_NAME, networkName);
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_PLUGIN_ID, pluginId);
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_SETTINGS, settingsStr);
-
-      JSONObject jObj = postData(webTarget, multiPart);
-      return jObj != null;
-    } catch (Exception e) {
-      _logger.errorf("Exception syncing snapshots in network %s:\n", networkName);
       _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return false;
     }

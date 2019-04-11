@@ -15,10 +15,15 @@ import org.parboiled.Rule;
 })
 class TestParser extends CommonParser {
 
-  public static final TestParser INSTANCE = Parboiled.createParser(TestParser.class);
+  static TestParser instance() {
+    return Parboiled.createParser(TestParser.class);
+  }
 
   public static final Map<String, Type> ANCHORS = initAnchors(TestParser.class);
 
+  Rule getInputRule() {
+    return input(TestSpec());
+  }
   /**
    * Test grammar
    *

@@ -1,3 +1,0 @@
-{
-  "unusedstructures" : "{\n  \"answerElements\" : [\n    {\n      \"class\" : \"org.batfish.datamodel.answers.StringAnswerElement\",\n      \"answer\" : \"Not answered\"\n    }\n  ],\n  \"status\" : \"NOTFOUND\",\n  \"summary\" : {\n    \"numFailed\" : 0,\n    \"numPassed\" : 0,\n    \"numResults\" : 0\n  }\n}"
-}

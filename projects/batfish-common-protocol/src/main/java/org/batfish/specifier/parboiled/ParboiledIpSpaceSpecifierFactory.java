@@ -21,7 +21,7 @@ public class ParboiledIpSpaceSpecifierFactory implements IpSpaceSpecifierFactory
 
     ParsingResult<AstNode> result =
         new ReportingParseRunner<AstNode>(
-                Parser.INSTANCE.input(Grammar.IP_SPACE_SPECIFIER.getExpression()))
+                Parser.instance().getInputRule(Grammar.IP_SPACE_SPECIFIER))
             .run((String) input);
 
     if (!result.parseErrors.isEmpty()) {

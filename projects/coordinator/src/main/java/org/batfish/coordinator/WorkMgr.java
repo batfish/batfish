@@ -847,7 +847,7 @@ public class WorkMgr extends AbstractCoordinator {
       if (!_storage.hasAnswerMetadata(baseAnswerId)) {
         Answer ans = Answer.failureAnswer("Not answered", null);
         ans.setStatus(AnswerStatus.NOTFOUND);
-        return BatfishObjectMapper.writePrettyString(ans);
+        return BatfishObjectMapper.writeString(ans);
       }
       AnswerMetadata baseAnswerMetadata = _storage.loadAnswerMetadata(baseAnswerId);
       AnswerId finalAnswerId =
@@ -872,7 +872,7 @@ public class WorkMgr extends AbstractCoordinator {
               Throwables.getStackTraceAsString(e));
       Answer ans = Answer.failureAnswer(message, null);
       ans.setStatus(AnswerStatus.FAILURE);
-      answer = BatfishObjectMapper.writePrettyString(ans);
+      answer = BatfishObjectMapper.writeString(ans);
       return answer;
     }
   }
@@ -1179,9 +1179,9 @@ public class WorkMgr extends AbstractCoordinator {
     newAnswer.setSummary(newTable.getSummary());
     newAnswer.setAnswerElements(ImmutableList.of(newTable));
 
-    // Compute and store new answer and answer metdata
+    // Compute and store new answer and answer metadata
     AnswerMetadata newAnswerMetadata = AnswerMetadataUtil.computeAnswerMetadata(newAnswer, _logger);
-    String answerStr = BatfishObjectMapper.writePrettyString(newAnswer);
+    String answerStr = BatfishObjectMapper.writeString(newAnswer);
     _storage.storeAnswer(answerStr, finalAnswerId);
     _storage.storeAnswerMetadata(newAnswerMetadata, finalAnswerId);
   }
@@ -1727,7 +1727,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
     CommonUtil.writeFile(
         originalDir.resolve(BfConsts.RELPATH_FORK_REQUEST_FILE),
-        BatfishObjectMapper.writePrettyString(forkSnapshotBean));
+        BatfishObjectMapper.writeString(forkSnapshotBean));
 
     SnapshotId baseSnapshotId = _idManager.getSnapshotId(baseSnapshotName, networkId);
     Path baseSnapshotDir =
@@ -1817,7 +1817,7 @@ public class WorkMgr extends AbstractCoordinator {
     } else {
       baseList = ImmutableList.copyOf(addition);
     }
-    CommonUtil.writeFile(serializedObjectPath, BatfishObjectMapper.writePrettyString(baseList));
+    CommonUtil.writeFile(serializedObjectPath, BatfishObjectMapper.writeString(baseList));
   }
 
   @VisibleForTesting
@@ -1850,7 +1850,7 @@ public class WorkMgr extends AbstractCoordinator {
         missing);
 
     baseList.removeAll(subtraction);
-    CommonUtil.writeFile(serializedObjectPath, BatfishObjectMapper.writePrettyString(baseList));
+    CommonUtil.writeFile(serializedObjectPath, BatfishObjectMapper.writeString(baseList));
   }
 
   List<WorkItem> getAutoWorkQueue(String networkName, String testrigName) {
@@ -2617,7 +2617,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
     QuestionSettingsId questionSettingsId = _idManager.generateQuestionSettingsId();
     _storage.storeQuestionSettings(
-        BatfishObjectMapper.writePrettyString(root), networkId, questionSettingsId);
+        BatfishObjectMapper.writeString(root), networkId, questionSettingsId);
     _idManager.assignQuestionSettingsId(questionClassId, networkId, questionSettingsId);
   }
 

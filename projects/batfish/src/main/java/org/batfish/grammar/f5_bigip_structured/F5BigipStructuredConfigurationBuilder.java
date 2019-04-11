@@ -68,6 +68,7 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.VIRTUAL_
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.VIRTUAL_VLANS_VLAN;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.VLAN_INTERFACE;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
 import java.util.Objects;
@@ -78,6 +79,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
@@ -97,6 +99,7 @@ import org.batfish.datamodel.vendor_family.f5_bigip.PoolMember;
 import org.batfish.datamodel.vendor_family.f5_bigip.RouteAdvertisementMode;
 import org.batfish.datamodel.vendor_family.f5_bigip.Virtual;
 import org.batfish.datamodel.vendor_family.f5_bigip.VirtualAddress;
+import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Bundle_speedContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.F5_bigip_structured_configurationContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Imish_chunkContext;
@@ -198,6 +201,7 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ns_allow_
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ns_traffic_groupContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ns_vlanContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nti_interfaceContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ntp_serversContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nv_tagContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nvi_interfaceContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Prefix_list_actionContext;
@@ -297,6 +301,12 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     _parser = parser;
     _text = text;
     _w = w;
+  }
+
+  @Override
+  public void exitNtp_servers(Ntp_serversContext ctx) {
+    _c.setNtpServers(
+        ctx.servers.stream().map(WordContext::getText).collect(ImmutableList.toImmutableList()));
   }
 
   private String convErrorMessage(Class<?> type, ParserRuleContext ctx) {
@@ -598,6 +608,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void enterUnrecognized(UnrecognizedContext ctx) {
+    _c.setUnrecognized(true);
     if (_currentUnrecognized == null) {
       _currentUnrecognized = ctx;
     }
@@ -1367,7 +1378,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitSgs_hostname(Sgs_hostnameContext ctx) {
-    String hostname = unquote(ctx.hostname.getText());
+    String hostname = unquote(ctx.hostname.getText()).toLowerCase();
     _c.setHostname(hostname);
   }
 
@@ -1524,5 +1535,24 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
                 start.getText(),
                 ctx.toString(Arrays.asList(_parser.getParser().getRuleNames())),
                 "This syntax is unrecognized"));
+  }
+
+  @Override
+  public void visitErrorNode(ErrorNode errorNode) {
+    Token token = errorNode.getSymbol();
+    int line = token.getLine();
+    String lineText = errorNode.getText().replace("\n", "").replace("\r", "").trim();
+    _c.setUnrecognized(true);
+
+    if (token instanceof UnrecognizedLineToken) {
+      UnrecognizedLineToken unrecToken = (UnrecognizedLineToken) token;
+      _w.getParseWarnings()
+          .add(
+              new ParseWarning(
+                  line, lineText, unrecToken.getParserContext(), "This syntax is unrecognized"));
+    } else {
+      String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
+      _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
+    }
   }
 }
