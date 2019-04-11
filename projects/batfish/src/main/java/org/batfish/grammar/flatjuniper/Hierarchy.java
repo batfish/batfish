@@ -148,7 +148,7 @@ public final class Hierarchy {
        * a leaf.
        */
       protected final void appendSetLines(@Nonnull String prefix, @Nonnull StringBuilder output) {
-        String prefixString = prefix.toString();
+        String prefixString = prefix;
         if (_children.isEmpty()) {
           // leaf, so append set line
           output.append(prefix).append("\n");
