@@ -55,7 +55,6 @@ import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
-import org.batfish.common.bdd.MemoizedIpSpaceToBDD;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
@@ -339,20 +338,12 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private TransformationToTransition initTransformationToTransformation(Configuration node) {
-    IpSpaceToBDD dstIpSpaceToBdd =
-        node.getIpSpaces().isEmpty()
-            ? _bddPacket.getDstIpSpaceToBDD()
-            : new MemoizedIpSpaceToBDD(_bddPacket.getDstIp(), node.getIpSpaces());
-    IpSpaceToBDD srcIpSpaceToBdd =
-        node.getIpSpaces().isEmpty()
-            ? _bddPacket.getSrcIpSpaceToBDD()
-            : new MemoizedIpSpaceToBDD(_bddPacket.getSrcIp(), node.getIpSpaces());
     return new TransformationToTransition(
         _bddPacket,
         new IpAccessListToBddImpl(
             _bddPacket,
             _bddSourceManagers.get(node.getHostname()),
-            new HeaderSpaceToBDD(_bddPacket, dstIpSpaceToBdd, srcIpSpaceToBdd),
+            new HeaderSpaceToBDD(_bddPacket, node.getIpSpaces()),
             node.getIpAccessLists()));
   }
 

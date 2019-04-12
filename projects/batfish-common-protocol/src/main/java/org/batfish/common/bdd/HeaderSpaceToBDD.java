@@ -39,15 +39,6 @@ public final class HeaderSpaceToBDD {
             : new MemoizedIpSpaceToBDD(_bddPacket.getSrcIp(), namedIpSpaces);
   }
 
-  public HeaderSpaceToBDD(
-      BDDPacket bddPacket, IpSpaceToBDD dstIpSpaceToBdd, IpSpaceToBDD srcIpSpaceToBdd) {
-    _bddFactory = bddPacket.getFactory();
-    _bddOps = new BDDOps(_bddFactory);
-    _bddPacket = bddPacket;
-    _dstIpSpaceToBdd = dstIpSpaceToBdd;
-    _srcIpSpaceToBdd = srcIpSpaceToBdd;
-  }
-
   public IpSpaceToBDD getDstIpSpaceToBdd() {
     return _dstIpSpaceToBdd;
   }
