@@ -21,14 +21,7 @@ public final class MemoizedIpAccessListToBdd extends IpAccessListToBdd {
       BDDSourceManager mgr,
       Map<String, IpAccessList> aclEnv,
       Map<String, IpSpace> namedIpSpaces) {
-    super(
-        packet,
-        mgr,
-        new HeaderSpaceToBDD(
-            packet,
-            new MemoizedIpSpaceToBDD(packet.getDstIp(), namedIpSpaces),
-            new MemoizedIpSpaceToBDD(packet.getSrcIp(), namedIpSpaces)),
-        aclEnv);
+    super(packet, mgr, new HeaderSpaceToBDD(packet, namedIpSpaces), aclEnv);
   }
 
   @Override

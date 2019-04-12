@@ -57,7 +57,7 @@ public final class BDDIpSpaceSpecializer extends IpSpaceSpecializer {
       Map<String, IpSpace> namedIpSpaces,
       boolean simplifyToUniverse) {
     return new BDDIpSpaceSpecializer(
-        headerSpaceBdd, namedIpSpaces, new IpSpaceToBDD(pkt.getDstIp()), simplifyToUniverse);
+        headerSpaceBdd, namedIpSpaces, pkt.getDstIpSpaceToBDD(), simplifyToUniverse);
   }
 
   @Override
