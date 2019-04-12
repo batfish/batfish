@@ -13,8 +13,8 @@ import org.batfish.datamodel.IpSpace;
 public final class MemoizedIpSpaceToBDD extends IpSpaceToBDD {
   private final LoadingCache<IpSpace, BDD> _cache =
       CacheBuilder.newBuilder()
-          .weakValues()
           .maximumSize(1_000_000)
+          .concurrencyLevel(1) // The underlying BDD is not threadsafe.
           .build(CacheLoader.from(super::visit));
 
   public MemoizedIpSpaceToBDD(BDDInteger var, Map<String, IpSpace> namedIpSpaces) {
