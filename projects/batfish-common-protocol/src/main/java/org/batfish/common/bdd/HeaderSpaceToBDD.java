@@ -29,17 +29,14 @@ public final class HeaderSpaceToBDD {
     _bddFactory = bddPacket.getFactory();
     _bddOps = new BDDOps(_bddFactory);
     _bddPacket = bddPacket;
-    _dstIpSpaceToBdd = new IpSpaceToBDD(_bddPacket.getDstIp(), namedIpSpaces);
-    _srcIpSpaceToBdd = new IpSpaceToBDD(_bddPacket.getSrcIp(), namedIpSpaces);
-  }
-
-  public HeaderSpaceToBDD(
-      BDDPacket bddPacket, IpSpaceToBDD dstIpSpaceToBdd, IpSpaceToBDD srcIpSpaceToBdd) {
-    _bddFactory = bddPacket.getFactory();
-    _bddOps = new BDDOps(_bddFactory);
-    _bddPacket = bddPacket;
-    _dstIpSpaceToBdd = dstIpSpaceToBdd;
-    _srcIpSpaceToBdd = srcIpSpaceToBdd;
+    _dstIpSpaceToBdd =
+        namedIpSpaces.isEmpty()
+            ? bddPacket.getDstIpSpaceToBDD()
+            : new MemoizedIpSpaceToBDD(_bddPacket.getDstIp(), namedIpSpaces);
+    _srcIpSpaceToBdd =
+        namedIpSpaces.isEmpty()
+            ? bddPacket.getSrcIpSpaceToBDD()
+            : new MemoizedIpSpaceToBDD(_bddPacket.getSrcIp(), namedIpSpaces);
   }
 
   public IpSpaceToBDD getDstIpSpaceToBdd() {
