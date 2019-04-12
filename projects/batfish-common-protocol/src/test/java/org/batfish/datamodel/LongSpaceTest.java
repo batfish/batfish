@@ -307,7 +307,7 @@ public class LongSpaceTest {
   }
 
   @Test
-  public void testLongersection() {
+  public void testIntersection() {
     LongSpace space = _b.including(Range.closed(0L, 90L)).excluding(Range.closed(10L, 20L)).build();
     LongSpace space2 =
         LongSpace.builder()
