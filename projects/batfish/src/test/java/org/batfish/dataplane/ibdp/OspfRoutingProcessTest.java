@@ -17,6 +17,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -31,8 +32,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
@@ -40,17 +44,25 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpLink;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.OspfExternalRoute;
+import org.batfish.datamodel.OspfExternalType1Route;
+import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.OspfInterAreaRoute;
 import org.batfish.datamodel.OspfIntraAreaRoute;
+import org.batfish.datamodel.OspfRoute;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixRange;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.ospf.NssaSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
+import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfNeighborConfig;
 import org.batfish.datamodel.ospf.OspfNeighborConfigId;
 import org.batfish.datamodel.ospf.OspfProcess;
@@ -59,6 +71,13 @@ import org.batfish.datamodel.ospf.OspfSessionProperties;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.ospf.StubSettings;
 import org.batfish.datamodel.ospf.StubType;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
+import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.dataplane.rib.RouteAdvertisement;
 import org.junit.Before;
@@ -102,7 +121,7 @@ public class OspfRoutingProcessTest {
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .setHostname(HOSTNAME)
             .build();
-    Vrf vrf = nf.vrfBuilder().setName(VRF_NAME).build();
+    Vrf vrf = nf.vrfBuilder().setName(VRF_NAME).setOwner(_c).build();
     Interface.Builder ib =
         nf.interfaceBuilder()
             .setVrf(vrf)
@@ -651,5 +670,319 @@ public class OspfRoutingProcessTest {
                     hasPrefix(route0.getNetwork()),
                     hasNextHopIp(equalTo(nextHopIp)),
                     hasMetric(route0.getMetric())))));
+  }
+
+  @Test
+  public void testTransformType1RouteOnImport() {
+    final OspfExternalRoute.Builder builder =
+        OspfExternalType1Route.builder()
+            .setNetwork(Prefix.parse("2.2.2.2/32"))
+            .setLsaMetric(0L)
+            .setCostToAdvertiser(0L)
+            .setAdvertiser("someNode")
+            .setArea(1L)
+            .setAdmin(0)
+            .setNextHopIp(Ip.parse("1.1.1.1"));
+    RouteAdvertisement<OspfExternalType1Route> ra =
+        new RouteAdvertisement<>((OspfExternalType1Route) builder.build());
+    final Ip nextHopIp = Ip.parse("9.9.9.9");
+    assertThat(
+        _routingProcess.transformType1RouteOnImport(ra, nextHopIp, 10),
+        equalTo(
+            new RouteAdvertisement<>(
+                builder
+                    .setCostToAdvertiser(10)
+                    .setMetric(10)
+                    .setNextHopIp(nextHopIp)
+                    .setAdmin(300)
+                    .build())));
+  }
+
+  @Test
+  public void testTransformType2RouteOnImport() {
+    final OspfExternalRoute.Builder builder =
+        OspfExternalType2Route.builder()
+            .setNetwork(Prefix.parse("2.2.2.2/32"))
+            .setLsaMetric(0L)
+            .setCostToAdvertiser(0L)
+            .setAdvertiser("someNode")
+            .setArea(1L)
+            .setAdmin(0)
+            .setNextHopIp(Ip.parse("1.1.1.1"));
+    RouteAdvertisement<OspfExternalType2Route> ra =
+        new RouteAdvertisement<>((OspfExternalType2Route) builder.build());
+    final Ip nextHopIp = Ip.parse("9.9.9.9");
+    assertThat(
+        _routingProcess.transformType2RouteOnImport(ra, nextHopIp, 10),
+        equalTo(
+            new RouteAdvertisement<>(
+                builder.setCostToAdvertiser(10).setNextHopIp(nextHopIp).setAdmin(400).build())));
+  }
+
+  @Test
+  public void testTransformType1RouteOnExportNoMetricOverride() {
+    final OspfExternalRoute.Builder builder =
+        OspfExternalType1Route.builder()
+            .setNetwork(Prefix.parse("2.2.2.2/32"))
+            .setLsaMetric(0L)
+            .setCostToAdvertiser(0L)
+            .setAdvertiser("someNode")
+            .setArea(1L)
+            .setAdmin(0)
+            .setNextHopIp(Ip.parse("1.1.1.1"));
+    Collection<RouteAdvertisement<OspfExternalType1Route>> routes =
+        ImmutableList.of(new RouteAdvertisement<>((OspfExternalType1Route) builder.build()));
+    final OspfArea ospfArea = OspfArea.builder().setNumber(33).build();
+
+    // Going to area 0
+    assertThat(
+        _routingProcess.transformType1RoutesOnExport(routes, AREA0_CONFIG),
+        equalTo(ImmutableList.of(new RouteAdvertisement<>(builder.setArea(0).build()))));
+
+    // Going from area 0 to some area
+    assertThat(
+        _routingProcess.transformType1RoutesOnExport(
+            ImmutableList.of(
+                new RouteAdvertisement<>((OspfExternalType1Route) builder.setArea(0).build())),
+            ospfArea),
+        equalTo(
+            ImmutableList.of(
+                new RouteAdvertisement<>(builder.setArea(ospfArea.getAreaNumber()).build()))));
+
+    // Generated locally, going to some area
+    assertThat(
+        _routingProcess.transformType1RoutesOnExport(
+            ImmutableList.of(
+                new RouteAdvertisement<>(
+                    (OspfExternalType1Route) builder.setArea(OspfRoute.NO_AREA).build())),
+            ospfArea),
+        equalTo(
+            ImmutableList.of(
+                new RouteAdvertisement<>(builder.setArea(ospfArea.getAreaNumber()).build()))));
+
+    // In the same area
+    assertThat(
+        _routingProcess.transformType1RoutesOnExport(
+            ImmutableList.of(
+                new RouteAdvertisement<>(
+                    (OspfExternalType1Route) builder.setArea(ospfArea.getAreaNumber()).build())),
+            ospfArea),
+        equalTo(
+            ImmutableList.of(
+                new RouteAdvertisement<>(builder.setArea(ospfArea.getAreaNumber()).build()))));
+
+    // Going across two non-zero areas: not allowed
+    assertThat(
+        _routingProcess.transformType1RoutesOnExport(
+            ImmutableList.of(
+                new RouteAdvertisement<>(
+                    (OspfExternalType1Route) builder.setArea(ospfArea.getAreaNumber()).build())),
+            OspfArea.builder().setNumber(44).build()),
+        empty());
+  }
+
+  @Test
+  public void testTransformType1RouteOnExportWithMetricOverride() {
+    // Overriden behavior for summary routes
+    final long overrideMetric = 8888L;
+    Builder ospfProcess =
+        OspfProcess.builder()
+            .setProcessId("1")
+            .setReferenceBandwidth(10e9)
+            .setAreas(ImmutableSortedMap.of(0L, AREA0_CONFIG))
+            .setMaxMetricSummaryNetworks(overrideMetric);
+    OspfRoutingProcess routingProcess =
+        new OspfRoutingProcess(ospfProcess.build(), VRF_NAME, _c, _emptyOspfTopology);
+    final OspfExternalRoute.Builder builder =
+        OspfExternalType1Route.builder()
+            .setNetwork(Prefix.parse("2.2.2.2/32"))
+            .setLsaMetric(10L)
+            .setCostToAdvertiser(0L)
+            .setAdvertiser("someNode")
+            .setArea(1L)
+            .setAdmin(0)
+            .setNextHopIp(Ip.parse("1.1.1.1"));
+    Collection<RouteAdvertisement<OspfExternalType1Route>> routes =
+        ImmutableList.of(new RouteAdvertisement<>((OspfExternalType1Route) builder.build()));
+
+    // Override for routes transiting across areas
+    assertThat(
+        routingProcess.transformType1RoutesOnExport(routes, AREA0_CONFIG),
+        equalTo(
+            ImmutableList.of(
+                new RouteAdvertisement<>(
+                    (OspfExternalType1Route)
+                        builder
+                            .setCostToAdvertiser(overrideMetric)
+                            .setMetric(overrideMetric + 10) // + LsaMetric
+                            .setArea(0)
+                            .build()))));
+
+    // No override for locally generated routes
+    assertThat(
+        routingProcess.transformType1RoutesOnExport(
+            ImmutableList.of(
+                new RouteAdvertisement<>(
+                    (OspfExternalType1Route) builder.setArea(OspfRoute.NO_AREA).build())),
+            AREA0_CONFIG),
+        equalTo(
+            ImmutableList.of(
+                new RouteAdvertisement<>((OspfExternalType1Route) builder.setArea(0).build()))));
+  }
+
+  @Test
+  public void testTransformType2RouteOnExport() {
+    final OspfExternalRoute.Builder builder =
+        OspfExternalType2Route.builder()
+            .setNetwork(Prefix.parse("2.2.2.2/32"))
+            .setLsaMetric(0L)
+            .setCostToAdvertiser(0L)
+            .setAdvertiser("someNode")
+            .setArea(1L)
+            .setAdmin(0)
+            .setNextHopIp(Ip.parse("1.1.1.1"));
+    Collection<RouteAdvertisement<OspfExternalType2Route>> routes =
+        ImmutableList.of(new RouteAdvertisement<>((OspfExternalType2Route) builder.build()));
+    assertThat(
+        _routingProcess.transformType2RoutesOnExport(routes, AREA0_CONFIG),
+        equalTo(ImmutableList.of(new RouteAdvertisement<>(builder.setArea(1).build()))));
+    assertThat(
+        _routingProcess.transformType2RoutesOnExport(
+            ImmutableList.of(
+                new RouteAdvertisement<>(
+                    (OspfExternalType2Route) builder.setArea(OspfRoute.NO_AREA).build())),
+            AREA0_CONFIG),
+        equalTo(ImmutableList.of(new RouteAdvertisement<>(builder.setArea(0).build()))));
+  }
+
+  @Test
+  public void testActivateGeneratedRoute() {
+    RibDelta<AnnotatedRoute<AbstractRoute>> delta =
+        RibDelta.<AnnotatedRoute<AbstractRoute>>builder()
+            .add(
+                new AnnotatedRoute<>(
+                    StaticRoute.builder()
+                        .setAdministrativeCost(1)
+                        .setNetwork(Prefix.parse("1.1.1.0/24"))
+                        .setNextHopInterface("Null")
+                        .build(),
+                    VRF_NAME))
+            .build();
+
+    final GeneratedRoute.Builder generatedRoute = GeneratedRoute.builder().setNetwork(Prefix.ZERO);
+
+    final String policyName = "GEN_POLICY";
+    RoutingPolicy.builder()
+        .setOwner(_c)
+        .setName(policyName)
+        .setStatements(ImmutableList.of(Statements.ExitReject.toStaticStatement()))
+        .build();
+
+    // Unconditional generation
+    assertThat(
+        _routingProcess.activateGeneratedRoute(delta, generatedRoute.build()),
+        equalTo(generatedRoute.build()));
+    // Conditional generation
+    assertThat(
+        _routingProcess.activateGeneratedRoute(
+            delta, generatedRoute.setGenerationPolicy(policyName).build()),
+        nullValue());
+    // Conditional generation with missing policy
+    assertThat(
+        _routingProcess.activateGeneratedRoute(
+            delta, generatedRoute.setGenerationPolicy("nonexistent").build()),
+        nullValue());
+  }
+
+  @Test
+  public void testConvertToExternalRoute() {
+    StaticRoute.Builder sb =
+        StaticRoute.builder()
+            .setAdministrativeCost(1)
+            .setNetwork(Prefix.parse("2.2.2.2/32"))
+            .setNextHopInterface("Null");
+    StaticRoute route = sb.build();
+
+    RoutingPolicy exportPolicy =
+        RoutingPolicy.builder()
+            .setOwner(_c)
+            .setName("EXPORT_POLICY")
+            .setStatements(
+                ImmutableList.of(
+                    new If(
+                        new MatchPrefixSet(
+                            DestinationNetwork.instance(),
+                            new ExplicitPrefixSet(
+                                new PrefixSpace(
+                                    PrefixRange.fromPrefix(Prefix.parse("2.2.2.2/32"))))),
+                        ImmutableList.of(
+                            new SetOspfMetricType(OspfMetricType.E1),
+                            Statements.ExitAccept.toStaticStatement()),
+                        ImmutableList.of(Statements.ExitReject.toStaticStatement()))))
+            .build();
+
+    // Allowed to export
+    assertThat(
+        _routingProcess.convertToExternalRoute(route, exportPolicy).get(),
+        equalTo(
+            OspfExternalType1Route.builder()
+                .setNetwork(route.getNetwork())
+                .setMetric(0)
+                .setLsaMetric(0)
+                .setCostToAdvertiser(0)
+                .setArea(OspfRoute.NO_AREA)
+                .setAdmin(300)
+                .setAdvertiser(_c.getHostname())
+                .setNonRouting(true)
+                .build()));
+    // Not allowed to export
+    assertFalse(
+        "Export policy does not permit export",
+        _routingProcess
+            .convertToExternalRoute(sb.setNetwork(Prefix.parse("1.1.1.1/32")).build(), exportPolicy)
+            .isPresent());
+  }
+
+  @Test
+  public void testFilterExternalRoutesOnExport() {
+    RibDelta<OspfExternalRoute> routes =
+        RibDelta.<OspfExternalRoute>builder()
+            .add(
+                OspfExternalType1Route.builder()
+                    .setNetwork(Prefix.parse("1.1.1.1/32"))
+                    .setLsaMetric(0L)
+                    .setCostToAdvertiser(0L)
+                    .setAdvertiser("someNode")
+                    .setArea(OspfRoute.NO_AREA)
+                    .build())
+            .build();
+    // No filtering to regular area
+    assertThat(
+        _routingProcess.filterExternalRoutesOnExport(routes, AREA0_CONFIG),
+        equalTo(routes.getActions()));
+    // Filtering to STUB
+    assertThat(
+        _routingProcess.filterExternalRoutesOnExport(
+            routes,
+            OspfArea.builder().setNumber(33).setStub(StubSettings.builder().build()).build()),
+        empty());
+    // Filtering to NSSA with type7 suppression
+    assertThat(
+        _routingProcess.filterExternalRoutesOnExport(
+            routes,
+            OspfArea.builder()
+                .setNumber(33)
+                .setNssa(NssaSettings.builder().setSuppressType7(true).build())
+                .build()),
+        empty());
+    // No filtering to NSSA without type7 suppression
+    assertThat(
+        _routingProcess.filterExternalRoutesOnExport(
+            routes,
+            OspfArea.builder()
+                .setNumber(33)
+                .setNssa(NssaSettings.builder().setSuppressType7(false).build())
+                .build()),
+        equalTo(routes.getActions()));
   }
 }
