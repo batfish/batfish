@@ -482,7 +482,7 @@ public class CommonUtil {
   }
 
   /** A collector that returns a hashcode of all the objects in a stream */
-  static <T> Collector<T, ?, Integer> toHashcode() {
+  public static <T> Collector<T, ?, Integer> toHashcode() {
     // See https://stackoverflow.com/a/39396614 for mode detail
     return Collector.of(
         // Initial state: [0] - current hashcode, [1] - number of elements encountered
