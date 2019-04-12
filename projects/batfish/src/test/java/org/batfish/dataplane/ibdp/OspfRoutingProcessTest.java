@@ -1,10 +1,8 @@
 package org.batfish.dataplane.ibdp;
 
-import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
-import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.isNonRouting;
 import static org.batfish.dataplane.ibdp.OspfRoutingProcess.computeDefaultInterAreaRouteToInject;
 import static org.batfish.dataplane.ibdp.OspfRoutingProcess.convertAndFilterIntraAreaRoutesToPropagate;
 import static org.batfish.dataplane.ibdp.OspfRoutingProcess.filterInterAreaRoutesToPropagateAtABR;
@@ -19,7 +17,6 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -878,15 +875,7 @@ public class OspfRoutingProcessTest {
     RoutingPolicy.builder()
         .setOwner(_c)
         .setName(policyName)
-        .setStatements(
-            ImmutableList.of(
-                new If(
-                    new MatchPrefixSet(
-                        DestinationNetwork.instance(),
-                        new ExplicitPrefixSet(
-                            new PrefixSpace(PrefixRange.fromPrefix(Prefix.parse("2.2.2.2/32"))))),
-                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
-                    ImmutableList.of(Statements.ExitReject.toStaticStatement()))))
+        .setStatements(ImmutableList.of(Statements.ExitReject.toStaticStatement()))
         .build();
 
     // Unconditional generation
@@ -935,12 +924,17 @@ public class OspfRoutingProcessTest {
     // Allowed to export
     assertThat(
         _routingProcess.convertToExternalRoute(route, exportPolicy).get(),
-        allOf(
-            instanceOf(OspfExternalType1Route.class),
-            hasPrefix(route.getNetwork()),
-            hasMetric(0L),
-            hasAdministrativeCost(equalTo(300)),
-            isNonRouting(true)));
+        equalTo(
+            OspfExternalType1Route.builder()
+                .setNetwork(route.getNetwork())
+                .setMetric(0)
+                .setLsaMetric(0)
+                .setCostToAdvertiser(0)
+                .setArea(OspfRoute.NO_AREA)
+                .setAdmin(300)
+                .setAdvertiser(_c.getHostname())
+                .setNonRouting(true)
+                .build()));
     // Not allowed to export
     assertFalse(
         "Export policy does not permit export",
@@ -970,11 +964,7 @@ public class OspfRoutingProcessTest {
     assertThat(
         _routingProcess.filterExternalRoutesOnExport(
             routes,
-            OspfArea.builder()
-                .setNumber(33)
-                .setStub(StubSettings.builder().build())
-                .setNumber(2)
-                .build()),
+            OspfArea.builder().setNumber(33).setStub(StubSettings.builder().build()).build()),
         empty());
     // Filtering to NSSA with type7 suppression
     assertThat(
@@ -983,7 +973,6 @@ public class OspfRoutingProcessTest {
             OspfArea.builder()
                 .setNumber(33)
                 .setNssa(NssaSettings.builder().setSuppressType7(true).build())
-                .setNumber(2)
                 .build()),
         empty());
     // No filtering to NSSA without type7 suppression
@@ -993,7 +982,6 @@ public class OspfRoutingProcessTest {
             OspfArea.builder()
                 .setNumber(33)
                 .setNssa(NssaSettings.builder().setSuppressType7(false).build())
-                .setNumber(2)
                 .build()),
         equalTo(routes.getActions()));
   }
