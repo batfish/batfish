@@ -365,7 +365,7 @@ public class LongSpaceTest {
   @Test
   public void testStream() {
     LongSpace space = LongSpace.unionOf(Range.closed(1L, 5L), Range.closed(-3L, -1L));
-    List<Long> streamed = space.stream().boxed().collect(ImmutableList.toImmutableList());
+    List<Long> streamed = space.stream().collect(ImmutableList.toImmutableList());
     assertThat(streamed, equalTo(ImmutableList.of(-3L, -2L, -1L, 1L, 2L, 3L, 4L, 5L)));
   }
 

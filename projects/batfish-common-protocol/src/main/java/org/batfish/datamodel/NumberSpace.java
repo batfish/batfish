@@ -23,8 +23,8 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
- * A finite, closed, not necessarily contiguous space of longs. Long spaces are by design
- * <i>immutable</i>, but can be altered by converting {@link #toBuilder()} and recreated again.
+ * A finite, closed, not necessarily contiguous space of numbers. {@link NumberSpace}s are by design
+ * <i>immutable</i>, but can be altered by converting {@link #toBuilder()} and rebuilding.
  */
 @ParametersAreNonnullByDefault
 public abstract class NumberSpace<

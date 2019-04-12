@@ -16,11 +16,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-/**
- * A finite, closed, not necessarily contiguous space of integers. Designed to be able to represent
- * set of port ranges or other packet fields that are integers. Integer spaces are by design
- * <i>immutable</i>, but can be altered by converting {@link #toBuilder()} and recreated again.
- */
+/** A {@link NumberSpace} of {@link Integer}s */
 @ParametersAreNonnullByDefault
 public final class IntegerSpace extends NumberSpace<Integer, IntegerSpace, IntegerSpace.Builder> {
 
