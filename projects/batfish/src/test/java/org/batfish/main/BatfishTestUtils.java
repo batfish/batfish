@@ -63,8 +63,6 @@ public class BatfishTestUtils {
     Settings settings = new Settings(new String[] {});
     settings.setLogger(new BatfishLogger("debug", false));
     final Cache<NetworkSnapshot, SortedMap<String, Configuration>> testrigs = makeTestrigCache();
-    final Cache<NetworkSnapshot, SortedMap<String, Configuration>> compressedTestrigs =
-        makeTestrigCache();
 
     settings.setStorageBase(tempFolder.newFolder().toPath());
     settings.setContainer("tempNetworkId");
@@ -82,9 +80,7 @@ public class BatfishTestUtils {
     Batfish batfish =
         new Batfish(
             settings,
-            compressedTestrigs,
             testrigs,
-            makeDataPlaneCache(),
             makeDataPlaneCache(),
             makeEnvBgpCache(),
             makeEnvRouteCache(),
@@ -105,8 +101,6 @@ public class BatfishTestUtils {
     Settings settings = new Settings(new String[] {});
     settings.setLogger(new BatfishLogger("debug", false));
     final Cache<NetworkSnapshot, SortedMap<String, Configuration>> testrigs = makeTestrigCache();
-    final Cache<NetworkSnapshot, SortedMap<String, Configuration>> compressedTestrigs =
-        makeTestrigCache();
 
     settings.setStorageBase(tempFolder.newFolder().toPath());
     settings.setContainer("tempNetworkId");
@@ -129,9 +123,7 @@ public class BatfishTestUtils {
     Batfish batfish =
         new Batfish(
             settings,
-            compressedTestrigs,
             testrigs,
-            makeDataPlaneCache(),
             makeDataPlaneCache(),
             makeEnvBgpCache(),
             makeEnvRouteCache(),
@@ -211,8 +203,6 @@ public class BatfishTestUtils {
         new Batfish(
             settings,
             makeTestrigCache(),
-            makeTestrigCache(),
-            makeDataPlaneCache(),
             makeDataPlaneCache(),
             makeEnvBgpCache(),
             makeEnvRouteCache(),
@@ -258,17 +248,11 @@ public class BatfishTestUtils {
       @Nonnull StorageProvider storageProvider, @Nonnull IdResolver idResolver) {
     Settings settings = new Settings(new String[] {});
     settings.setLogger(new BatfishLogger("debug", false));
-    final Cache<NetworkSnapshot, SortedMap<String, Configuration>> testrigs = makeTestrigCache();
-    final Cache<NetworkSnapshot, SortedMap<String, Configuration>> compressedTestrigs =
-        makeTestrigCache();
-
     settings.setContainer("tempContainer");
     Batfish batfish =
         new Batfish(
             settings,
-            compressedTestrigs,
-            testrigs,
-            makeDataPlaneCache(),
+            makeTestrigCache(),
             makeDataPlaneCache(),
             makeEnvBgpCache(),
             makeEnvRouteCache(),

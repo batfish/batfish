@@ -61,8 +61,6 @@ public final class ReachabilityParameters {
 
     private boolean _specialize = true;
 
-    private boolean _useCompression = false;
-
     public ReachabilityParameters build() {
       return new ReachabilityParameters(this);
     }
@@ -133,11 +131,6 @@ public final class ReachabilityParameters {
       _specialize = specialize;
       return this;
     }
-
-    public Builder setUseCompression(boolean useCompression) {
-      _useCompression = useCompression;
-      return this;
-    }
   }
 
   private final SortedSet<FlowDisposition> _actions;
@@ -166,8 +159,6 @@ public final class ReachabilityParameters {
 
   private final @Nonnull NodeSpecifier _requiredTransitNodesSpecifier;
 
-  private final boolean _useCompression;
-
   private ReachabilityParameters(Builder builder) {
     _actions = builder._actions;
     _destinationIpSpaceSpecifier = builder._destinationIpSpaceSpecifier;
@@ -182,7 +173,6 @@ public final class ReachabilityParameters {
     _sourceNatted = builder._srcNatted;
     _specialize = builder._specialize;
     _requiredTransitNodesSpecifier = builder._requiredTransitNodesSpecifier;
-    _useCompression = builder._useCompression;
   }
 
   public static Builder builder() {
@@ -243,10 +233,6 @@ public final class ReachabilityParameters {
   @Nonnull
   public NodeSpecifier getRequiredTransitNodesSpecifier() {
     return _requiredTransitNodesSpecifier;
-  }
-
-  public boolean getUseCompression() {
-    return _useCompression;
   }
 
   /**

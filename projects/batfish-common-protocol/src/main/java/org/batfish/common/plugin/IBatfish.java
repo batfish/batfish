@@ -123,7 +123,7 @@ public interface IBatfish extends IPluginConsumer {
 
   Map<String, String> getQuestionTemplates(boolean verbose);
 
-  SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(boolean useCompression);
+  SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes();
 
   /**
    * Get batfish settings

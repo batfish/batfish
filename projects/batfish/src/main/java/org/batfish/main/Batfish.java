@@ -128,7 +128,6 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.GenericConfigObject;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Dependency;
@@ -232,7 +231,6 @@ import org.batfish.specifier.SpecifierContextImpl;
 import org.batfish.specifier.UnionLocationSpecifier;
 import org.batfish.storage.FileBasedStorage;
 import org.batfish.storage.StorageProvider;
-import org.batfish.symbolic.abstraction.BatfishCompressor;
 import org.batfish.symbolic.abstraction.Roles;
 import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.topology.TopologyProviderImpl;
@@ -447,12 +445,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private SortedMap<BgpTableFormat, BgpTablePlugin> _bgpTablePlugins;
 
-  private final Cache<NetworkSnapshot, SortedMap<String, Configuration>>
-      _cachedCompressedConfigurations;
-
   private final Cache<NetworkSnapshot, SortedMap<String, Configuration>> _cachedConfigurations;
-
-  private final Cache<NetworkSnapshot, DataPlane> _cachedCompressedDataPlanes;
 
   private final Cache<NetworkSnapshot, DataPlane> _cachedDataPlanes;
 
@@ -488,9 +481,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public Batfish(
       Settings settings,
-      Cache<NetworkSnapshot, SortedMap<String, Configuration>> cachedCompressedConfigurations,
       Cache<NetworkSnapshot, SortedMap<String, Configuration>> cachedConfigurations,
-      Cache<NetworkSnapshot, DataPlane> cachedCompressedDataPlanes,
       Cache<NetworkSnapshot, DataPlane> cachedDataPlanes,
       Map<NetworkSnapshot, SortedMap<String, BgpAdvertisementsByVrf>> cachedEnvironmentBgpTables,
       Map<NetworkSnapshot, SortedMap<String, RoutesByVrf>> cachedEnvironmentRoutingTables,
@@ -499,9 +490,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     super(settings.getSerializeToText());
     _settings = settings;
     _bgpTablePlugins = new TreeMap<>();
-    _cachedCompressedConfigurations = cachedCompressedConfigurations;
     _cachedConfigurations = cachedConfigurations;
-    _cachedCompressedDataPlanes = cachedCompressedDataPlanes;
     _cachedDataPlanes = cachedDataPlanes;
     _cachedEnvironmentBgpTables = cachedEnvironmentBgpTables;
     _cachedEnvironmentRoutingTables = cachedEnvironmentRoutingTables;
@@ -742,55 +731,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
         testrigSettings.getName());
   }
 
-  private CompressDataPlaneResult computeCompressedDataPlane() {
-    CompressDataPlaneResult result = computeCompressedDataPlane(new HeaderSpace());
-    _cachedCompressedConfigurations.put(
-        getNetworkSnapshot(), new TreeMap<>(result._compressedConfigs));
-    saveDataPlane(result._compressedDataPlane, result._answerElement, true);
-    return result;
-  }
-
-  public class CompressDataPlaneResult {
-    public final Map<String, Configuration> _compressedConfigs;
-    public final DataPlane _compressedDataPlane;
-    public final DataPlaneAnswerElement _answerElement;
-
-    public CompressDataPlaneResult(
-        Map<String, Configuration> compressedConfigs,
-        DataPlane compressedDataPlane,
-        DataPlaneAnswerElement answerElement) {
-      _compressedConfigs = compressedConfigs;
-      _compressedDataPlane = compressedDataPlane;
-      _answerElement = answerElement;
-    }
-  }
-
-  CompressDataPlaneResult computeCompressedDataPlane(HeaderSpace headerSpace) {
-    // Since compression mutates the configurations, we must clone them before that happens.
-    // A simple way to do this is to create a deep clone of each entry using Java serialization.
-    _logger.info("Computing compressed dataplane\n");
-    Map<String, Configuration> clonedConfigs =
-        loadConfigurations()
-            .entrySet()
-            .parallelStream()
-            .collect(toMap(Entry::getKey, entry -> SerializationUtils.clone(entry.getValue())));
-
-    Map<String, Configuration> configs =
-        new BatfishCompressor(new BDDPacket(), this, clonedConfigs).compress(headerSpace);
-    Topology topo = TopologyUtil.synthesizeL3Topology(configs);
-    DataPlanePlugin dataPlanePlugin = getDataPlanePlugin();
-    ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane(configs, topo);
-
-    _storage.storeCompressedConfigurations(
-        configs, _settings.getContainer(), _testrigSettings.getName());
-    return new CompressDataPlaneResult(configs, result._dataPlane, result._answerElement);
-  }
-
   @Override
   public DataPlaneAnswerElement computeDataPlane() {
     checkSnapshotOutputReady();
     ComputeDataPlaneResult result = getDataPlanePlugin().computeDataPlane();
-    saveDataPlane(result._dataPlane, result._answerElement, false);
+    saveDataPlane(result._dataPlane, result._answerElement);
     return result._answerElement;
   }
 
@@ -802,30 +747,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   /* Write the dataplane to disk and cache, and write the answer element to disk.
    */
-  private void saveDataPlane(
-      DataPlane dataPlane, DataPlaneAnswerElement answerElement, boolean compressed) {
-    Path dataPlanePath =
-        compressed
-            ? _testrigSettings.getCompressedDataPlanePath()
-            : _testrigSettings.getDataPlanePath();
-
-    Path answerElementPath =
-        compressed
-            ? _testrigSettings.getCompressedDataPlaneAnswerPath()
-            : _testrigSettings.getDataPlaneAnswerPath();
-
-    Cache<NetworkSnapshot, DataPlane> cache =
-        compressed ? _cachedCompressedDataPlanes : _cachedDataPlanes;
-
-    cache.put(getNetworkSnapshot(), dataPlane);
+  private void saveDataPlane(DataPlane dataPlane, DataPlaneAnswerElement answerElement) {
+    _cachedDataPlanes.put(getNetworkSnapshot(), dataPlane);
 
     _logger.resetTimer();
     newBatch("Writing data plane to disk", 0);
     try (ActiveSpan writeDataplane =
         GlobalTracer.get().buildSpan("Writing data plane").startActive()) {
       assert writeDataplane != null; // avoid unused warning
-      serializeObject(dataPlane, dataPlanePath);
-      serializeObject(answerElement, answerElementPath);
+      serializeObject(dataPlane, _testrigSettings.getDataPlanePath());
+      serializeObject(answerElement, _testrigSettings.getDataPlaneAnswerPath());
     }
     _logger.printElapsedTime();
   }
@@ -884,11 +815,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private boolean dataPlaneDependenciesExist(TestrigSettings testrigSettings) {
     Path dpPath = testrigSettings.getDataPlaneAnswerPath();
     return Files.exists(dpPath);
-  }
-
-  private boolean compressedDataPlaneDependenciesExist(TestrigSettings testrigSettings) {
-    Path path = testrigSettings.getCompressedDataPlaneAnswerPath();
-    return Files.exists(path);
   }
 
   @Override
@@ -1400,9 +1326,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(
-      boolean useCompression) {
-    return getDataPlanePlugin().getRoutes(loadDataPlane(useCompression));
+  public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes() {
+    return getDataPlanePlugin().getRoutes(loadDataPlane());
   }
 
   public Settings getSettings() {
@@ -1484,10 +1409,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (dp) {
       if (!dataPlaneDependenciesExist(_testrigSettings)) {
         computeDataPlane();
-      }
-
-      if (!compressedDataPlaneDependenciesExist(_testrigSettings)) {
-        // computeCompressedDataPlane();
       }
     }
   }
@@ -1583,30 +1504,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return loadConfigurations(getNetworkSnapshot());
   }
 
-  SortedMap<String, Configuration> loadCompressedConfigurations(NetworkSnapshot snapshot) {
-    // Do we already have configurations in the cache?
-    SortedMap<String, Configuration> configurations =
-        _cachedCompressedConfigurations.getIfPresent(snapshot);
-    if (configurations != null) {
-      return configurations;
-    }
-    _logger.debugf("Loading configurations for %s, cache miss", snapshot);
-
-    // Next, see if we have an up-to-date configurations on disk.
-    configurations =
-        _storage.loadCompressedConfigurations(_settings.getContainer(), snapshot.getSnapshot());
-    if (configurations != null) {
-      return configurations;
-    } else {
-      computeCompressedDataPlane();
-      configurations = _cachedCompressedConfigurations.getIfPresent(snapshot);
-      if (configurations == null) {
-        throw new BatfishException("Could not compute compressed configs");
-      }
-      return configurations;
-    }
-  }
-
   @Override
   public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
     try (ActiveSpan span = GlobalTracer.get().buildSpan("Load configurations").startActive()) {
@@ -1677,54 +1574,37 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public DataPlane loadDataPlane() {
     try (ActiveSpan span = GlobalTracer.get().buildSpan("Load data plane").startActive()) {
       assert span != null; // avoid unused warning
-      return loadDataPlane(false);
-    }
-  }
-
-  DataPlane loadDataPlane(boolean compressed) {
-    Cache<NetworkSnapshot, DataPlane> cache =
-        compressed ? _cachedCompressedDataPlanes : _cachedDataPlanes;
-
-    Path path =
-        compressed
-            ? _testrigSettings.getCompressedDataPlanePath()
-            : _testrigSettings.getDataPlanePath();
-
-    NetworkSnapshot snapshot = getNetworkSnapshot();
-    DataPlane dp = cache.getIfPresent(snapshot);
-    if (dp == null) {
-      /*
-       * Data plane should exist after loading answer element, as it triggers
-       * repair if necessary. However, it might not be cached if it was not
-       * repaired, so we still might need to load it from disk.
-       */
-      loadDataPlaneAnswerElement(compressed);
-      dp = cache.getIfPresent(snapshot);
+      NetworkSnapshot snapshot = getNetworkSnapshot();
+      DataPlane dp = _cachedDataPlanes.getIfPresent(snapshot);
       if (dp == null) {
-        newBatch("Loading data plane from disk", 0);
-        dp = deserializeObject(path, DataPlane.class);
-        cache.put(snapshot, dp);
+        /*
+         * Data plane should exist after loading answer element, as it triggers
+         * repair if necessary. However, it might not be cached if it was not
+         * repaired, so we still might need to load it from disk.
+         */
+        loadDataPlaneAnswerElement(false);
+        dp = _cachedDataPlanes.getIfPresent(snapshot);
+        if (dp == null) {
+          newBatch("Loading data plane from disk", 0);
+          dp = deserializeObject(_testrigSettings.getDataPlanePath(), DataPlane.class);
+          _cachedDataPlanes.put(snapshot, dp);
+        }
       }
+      return dp;
     }
-    return dp;
   }
 
-  private DataPlaneAnswerElement loadDataPlaneAnswerElement(boolean compressed) {
-    return loadDataPlaneAnswerElement(compressed, true);
+  private DataPlaneAnswerElement loadDataPlaneAnswerElement() {
+    return loadDataPlaneAnswerElement(true);
   }
 
-  private DataPlaneAnswerElement loadDataPlaneAnswerElement(
-      boolean compressed, boolean firstAttempt) {
-    Path answerPath =
-        compressed
-            ? _testrigSettings.getCompressedDataPlaneAnswerPath()
-            : _testrigSettings.getDataPlaneAnswerPath();
-
-    DataPlaneAnswerElement bae = deserializeObject(answerPath, DataPlaneAnswerElement.class);
+  private DataPlaneAnswerElement loadDataPlaneAnswerElement(boolean firstAttempt) {
+    DataPlaneAnswerElement bae =
+        deserializeObject(_testrigSettings.getDataPlaneAnswerPath(), DataPlaneAnswerElement.class);
     if (!Version.isCompatibleVersion("Service", "Old data plane", bae.getVersion())) {
       if (firstAttempt) {
-        repairDataPlane(compressed);
-        return loadDataPlaneAnswerElement(compressed, false);
+        repairDataPlane();
+        return loadDataPlaneAnswerElement(false);
       } else {
         throw new BatfishException(
             "Version error repairing data plane for data plane answer element");
@@ -2511,25 +2391,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
     serializeIndependentConfigs(inputPath);
   }
 
-  private void repairDataPlane(boolean compressed) {
-    Path dataPlanePath =
-        compressed
-            ? _testrigSettings.getCompressedDataPlanePath()
-            : _testrigSettings.getDataPlanePath();
+  private void repairDataPlane() {
+    CommonUtil.deleteIfExists(_testrigSettings.getDataPlanePath());
+    CommonUtil.deleteIfExists(_testrigSettings.getDataPlaneAnswerPath());
 
-    Path dataPlaneAnswerPath =
-        compressed
-            ? _testrigSettings.getCompressedDataPlaneAnswerPath()
-            : _testrigSettings.getDataPlaneAnswerPath();
-
-    CommonUtil.deleteIfExists(dataPlanePath);
-    CommonUtil.deleteIfExists(dataPlaneAnswerPath);
-
-    if (compressed) {
-      computeCompressedDataPlane();
-    } else {
-      computeDataPlane();
-    }
+    computeDataPlane();
   }
 
   /**

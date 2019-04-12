@@ -178,8 +178,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(
-      boolean useCompression) {
+  public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes() {
     throw new UnsupportedOperationException();
   }
 
