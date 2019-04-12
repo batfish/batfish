@@ -781,7 +781,7 @@ class IncrementalBdpEngine {
 
           if (iterationsWithThisHashCode.isEmpty()) {
             iterationsWithThisHashCode.add(_numIterations);
-          } else if (hasNotReachedRoutingFixedPoint(nodes)) {
+          } else {
             // If oscillation detected, switch to a more restrictive schedule
             if (currentSchedule != Schedule.NODE_SERIALIZED) {
               _bfLogger.debugf(

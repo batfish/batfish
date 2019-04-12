@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 import static org.batfish.common.util.CommonUtil.toImmutableSortedMap;
+import static org.batfish.common.util.CommonUtil.toOrderedHashCode;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.IN;
 import static org.batfish.dataplane.protocols.IsisProtocolHelper.convertRouteLevel1ToLevel2;
@@ -21,6 +22,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
+import com.google.common.collect.Streams;
 import com.google.common.graph.Network;
 import com.google.common.graph.ValueGraph;
 import java.io.Serializable;
@@ -112,6 +114,7 @@ import org.batfish.dataplane.exceptions.BgpRoutePropagationException;
 import org.batfish.dataplane.protocols.BgpProtocolHelper;
 import org.batfish.dataplane.protocols.GeneratedRouteHelper;
 import org.batfish.dataplane.protocols.OspfProtocolHelper;
+import org.batfish.dataplane.rib.AbstractRib;
 import org.batfish.dataplane.rib.AnnotatedRib;
 import org.batfish.dataplane.rib.BgpRib;
 import org.batfish.dataplane.rib.ConnectedRib;
@@ -2688,28 +2691,23 @@ public class VirtualRouter implements Serializable {
    * @return integer hashcode
    */
   int computeIterationHashCode() {
-    return _mainRib.getTypedRoutes().hashCode()
-        + _ospfExternalType1Rib.getTypedRoutes().hashCode()
-        + _ospfExternalType2Rib.getTypedRoutes().hashCode()
-        + _bgpIncomingRoutes.values().stream()
-            .flatMap(Queue::stream)
-            .mapToInt(RouteAdvertisement::hashCode)
-            .sum()
-        + _ospfExternalIncomingRoutes.values().stream()
-            .flatMap(Queue::stream)
-            .mapToInt(RouteAdvertisement::hashCode)
-            .sum()
-        + _isisIncomingRoutes.values().stream()
-            .flatMap(Queue::stream)
-            .mapToInt(RouteAdvertisement::hashCode)
-            .sum()
-        + _virtualEigrpProcesses.values().stream()
-            .mapToInt(VirtualEigrpProcess::computeIterationHashCode)
-            .sum()
-        + _crossVrfIncomingRoutes.values().stream()
-            .flatMap(Queue::stream)
-            .mapToInt(RouteAdvertisement::hashCode)
-            .sum();
+    return Streams.concat(
+            // RIB State
+            Stream.of(_mainRib, _ospfExternalType1Rib, _ospfExternalType2Rib)
+                .map(AbstractRib::getTypedRoutes),
+            // Message queues
+            Stream.of(
+                    _bgpIncomingRoutes,
+                    _ospfExternalIncomingRoutes,
+                    _isisIncomingRoutes,
+                    _crossVrfIncomingRoutes)
+                .flatMap(m -> m.values().stream())
+                .flatMap(Queue::stream),
+            // Processes
+            Stream.of(_virtualEigrpProcesses)
+                .flatMap(m -> m.values().stream())
+                .map(VirtualEigrpProcess::computeIterationHashCode))
+        .collect(toOrderedHashCode());
   }
 
   PrefixTracer getPrefixTracer() {
