@@ -55,7 +55,6 @@ import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
-import org.batfish.common.bdd.MemoizedIpSpaceToBDD;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
@@ -243,8 +242,8 @@ public final class BDDReachabilityAnalysisFactory {
       _bddSourceManagers = BDDSourceManager.forNetwork(_bddPacket, configs, initializeSessions);
       _configs = configs;
       _forwardingAnalysis = forwardingAnalysis;
-      _dstIpSpaceToBDD = new MemoizedIpSpaceToBDD(_bddPacket.getDstIp(), ImmutableMap.of());
-      _srcIpSpaceToBDD = new MemoizedIpSpaceToBDD(_bddPacket.getSrcIp(), ImmutableMap.of());
+      _dstIpSpaceToBDD = _bddPacket.getDstIpSpaceToBDD();
+      _srcIpSpaceToBDD = _bddPacket.getSrcIpSpaceToBDD();
 
       _aclPermitBDDs = computeAclBDDs(_bddPacket, _bddSourceManagers, configs);
       _aclDenyBDDs = computeAclDenyBDDs(_aclPermitBDDs);
@@ -339,16 +338,12 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private TransformationToTransition initTransformationToTransformation(Configuration node) {
-    IpSpaceToBDD dstIpSpaceToBdd =
-        new MemoizedIpSpaceToBDD(_bddPacket.getDstIp(), node.getIpSpaces());
-    IpSpaceToBDD srcIpSpaceToBdd =
-        new MemoizedIpSpaceToBDD(_bddPacket.getSrcIp(), node.getIpSpaces());
     return new TransformationToTransition(
         _bddPacket,
         new IpAccessListToBddImpl(
             _bddPacket,
             _bddSourceManagers.get(node.getHostname()),
-            new HeaderSpaceToBDD(_bddPacket, dstIpSpaceToBdd, srcIpSpaceToBdd),
+            new HeaderSpaceToBDD(_bddPacket, node.getIpSpaces()),
             node.getIpAccessLists()));
   }
 
@@ -1556,8 +1551,7 @@ public final class BDDReachabilityAnalysisFactory {
       assert span != null; // avoid unused warning
       LocationVisitor<Optional<StateExpr>> locationToStateExpr =
           new LocationToOriginationStateExpr(_configs);
-      IpSpaceToBDD srcIpSpaceToBDD =
-          new MemoizedIpSpaceToBDD(_bddPacket.getSrcIp(), ImmutableMap.of());
+      IpSpaceToBDD srcIpSpaceToBDD = _bddPacket.getSrcIpSpaceToBDD();
 
       // convert Locations to StateExprs, and merge srcIp constraints
       Map<StateExpr, BDD> rootConstraints = new HashMap<>();

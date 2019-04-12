@@ -60,13 +60,6 @@ public class TransformationToTransition {
     return new EraseAndSet(erase, setValue);
   }
 
-  private static EraseAndSet shiftIpIntoPrefix(BDDInteger var, Prefix prefix) {
-    int len = prefix.getPrefixLength();
-    BDD erase = Arrays.stream(var.getBitvec()).limit(len).reduce(var.getFactory().one(), BDD::and);
-    BDD setValue = new IpSpaceToBDD(var).toBDD(prefix);
-    return new EraseAndSet(erase, setValue);
-  }
-
   private static EraseAndSet assignPortFromPool(BDDInteger var, int poolStart, int poolEnd) {
     BDD erase = Arrays.stream(var.getBitvec()).reduce(var.getFactory().one(), BDD::and);
     BDD setValue =
@@ -81,6 +74,17 @@ public class TransformationToTransition {
           return _bddPacket.getDstIp();
         case SOURCE:
           return _bddPacket.getSrcIp();
+        default:
+          throw new IllegalArgumentException("Unknown IpField: " + ipField);
+      }
+    }
+
+    private IpSpaceToBDD ipFieldToBDD(IpField ipField) {
+      switch (ipField) {
+        case DESTINATION:
+          return _bddPacket.getDstIpSpaceToBDD();
+        case SOURCE:
+          return _bddPacket.getSrcIpSpaceToBDD();
         default:
           throw new IllegalArgumentException("Unknown IpField: " + ipField);
       }
@@ -109,7 +113,14 @@ public class TransformationToTransition {
 
     @Override
     public Transition visitShiftIpAddressIntoSubnet(ShiftIpAddressIntoSubnet step) {
-      return shiftIpIntoPrefix(ipField(step.getIpField()), step.getSubnet());
+      Prefix prefix = step.getSubnet();
+      BDDInteger var = ipField(step.getIpField());
+      IpSpaceToBDD varToBdd = ipFieldToBDD(step.getIpField());
+      int len = prefix.getPrefixLength();
+      BDD erase =
+          Arrays.stream(var.getBitvec()).limit(len).reduce(var.getFactory().one(), BDD::and);
+      BDD setValue = varToBdd.toBDD(prefix);
+      return new EraseAndSet(erase, setValue);
     }
 
     @Override
