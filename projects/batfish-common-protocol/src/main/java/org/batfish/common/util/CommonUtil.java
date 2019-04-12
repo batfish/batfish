@@ -1,5 +1,8 @@
 package org.batfish.common.util;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -29,6 +32,7 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -475,6 +479,40 @@ public class CommonUtil {
         .collect(
             ImmutableSortedMap.toImmutableSortedMap(
                 Comparator.naturalOrder(), keyFunction, valueFunction));
+  }
+
+  /** A collector that returns a hashcode of all the objects in a stream */
+  static <T> Collector<T, ?, Integer> toHashcode() {
+    // See https://stackoverflow.com/a/39396614 for mode detail
+    return Collector.of(
+        // Initial state: [0] - current hashcode, [1] - number of elements encountered
+        () -> new int[2],
+        // accumulator: single element added to hashcode
+        (a, o) -> {
+          a[0] = a[0] * 31 + Objects.hashCode(o);
+          a[1]++;
+        },
+        // combiner: merge two hashcodes
+        (a1, a2) -> {
+          a1[0] = a1[0] * iPow(31, a2[1]) + a2[0];
+          a1[1] += a2[1];
+          return a1;
+        },
+        // finisher: collapse the state to a single int
+        a -> iPow(31, a[1]) + a[0]);
+  }
+
+  /** Perform fast integer exponentiation using square and multiply */
+  @VisibleForTesting
+  static int iPow(int base, int exp) {
+    checkArgument(exp >= 0, "Negative exponents are not supported");
+    int result = 1;
+    for (; exp > 0; exp >>= 1, base *= base) {
+      if ((exp & 1) != 0) {
+        result *= base;
+      }
+    }
+    return result;
   }
 
   public static void writeFile(Path outputPath, String output) {
