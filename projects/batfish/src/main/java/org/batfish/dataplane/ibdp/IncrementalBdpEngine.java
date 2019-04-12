@@ -750,7 +750,9 @@ class IncrementalBdpEngine {
               GlobalTracer.get().buildSpan("Compute schedule").startActive()) {
             assert innerSpan != null; // avoid unused warning
             // Compute node schedule
-            schedule = IbdpSchedule.getSchedule(_settings, currentSchedule, nodes, bgpTopology);
+            schedule =
+                IbdpSchedule.getSchedule(
+                    _settings, currentSchedule, nodes, bgpTopology, ospfTopology);
           }
 
           // compute dependent routes for each allowable set of nodes until we cover all nodes
