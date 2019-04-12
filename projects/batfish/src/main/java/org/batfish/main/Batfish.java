@@ -3610,6 +3610,26 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
+  @Nonnull
+  public BDDReachabilityAnalysis getBddReachabilityAnalysis(
+      BDDPacket pkt,
+      IpSpaceAssignment srcIpSpaceAssignment,
+      AclLineMatchExpr initialHeaderSpace,
+      Set<String> forbiddenTransitNodes,
+      Set<String> requiredTransitNodes,
+      Set<String> finalNodes,
+      Set<FlowDisposition> actions,
+      boolean ignoreFilters) {
+    BDDReachabilityAnalysisFactory factory = getBddReachabilityAnalysisFactory(pkt, ignoreFilters);
+    return factory.bddReachabilityAnalysis(
+        srcIpSpaceAssignment,
+        initialHeaderSpace,
+        forbiddenTransitNodes,
+        requiredTransitNodes,
+        finalNodes,
+        actions);
+  }
+
   /**
    * Return a set of flows (at most 1 per source {@link Location}) for which reachability has been
    * reduced by the change from base to delta snapshot.
