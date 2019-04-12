@@ -4078,6 +4078,8 @@ public final class JFactory extends BDDFactory {
       BddCache_resize(misccache, newcachesize);
       BddCache_resize(multiopcache, newcachesize);
       BddCache_resize(countcache, newcachesize);
+
+      cachesize = newcachesize;
     }
   }
 
