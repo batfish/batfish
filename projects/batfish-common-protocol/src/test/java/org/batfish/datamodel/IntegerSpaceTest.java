@@ -28,7 +28,7 @@ import org.junit.runners.JUnit4;
 
 /** Tests for {@link IntegerSpace}. */
 @RunWith(JUnit4.class)
-public class IntegerSpaceTest {
+public final class IntegerSpaceTest {
   private IntegerSpace.Builder _b;
 
   @Rule public ExpectedException _expected = ExpectedException.none();
@@ -397,7 +397,7 @@ public class IntegerSpaceTest {
   @Test
   public void testStream() {
     IntegerSpace space = IntegerSpace.unionOf(new SubRange(1, 5), new SubRange(-3, -1));
-    List<Integer> streamed = space.stream().boxed().collect(ImmutableList.toImmutableList());
+    List<Integer> streamed = space.stream().collect(ImmutableList.toImmutableList());
     assertThat(streamed, equalTo(ImmutableList.of(-3, -2, -1, 1, 2, 3, 4, 5)));
   }
 
