@@ -1,12 +1,10 @@
 package org.batfish.common.util;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.hash.Hashing;
+import com.google.common.math.IntMath;
 import com.ibm.icu.text.CharsetDetector;
 import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
 import io.opentracing.util.GlobalTracer;
@@ -29,6 +27,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
@@ -40,6 +39,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.net.ssl.HostnameVerifier;
@@ -481,8 +481,12 @@ public class CommonUtil {
                 Comparator.naturalOrder(), keyFunction, valueFunction));
   }
 
-  /** A collector that returns a hashcode of all the objects in a stream */
-  public static <T> Collector<T, ?, Integer> toHashcode() {
+  /**
+   * A collector that returns a hashcode of all the objects in a stream (order-dependent).
+   *
+   * <p>Equivalent to to collecting elements into a list and calling {@link List#hashCode()}
+   */
+  public static <T> Collector<T, ?, Integer> toOrderedHashCode() {
     // See https://stackoverflow.com/a/39396614 for mode detail
     return Collector.of(
         // Initial state: [0] - current hashcode, [1] - number of elements encountered
@@ -494,25 +498,21 @@ public class CommonUtil {
         },
         // combiner: merge two hashcodes
         (a1, a2) -> {
-          a1[0] = a1[0] * iPow(31, a2[1]) + a2[0];
+          a1[0] = a1[0] * IntMath.pow(31, a2[1]) + a2[0];
           a1[1] += a2[1];
           return a1;
         },
         // finisher: collapse the state to a single int
-        a -> iPow(31, a[1]) + a[0]);
+        a -> IntMath.pow(31, a[1]) + a[0]);
   }
 
-  /** Perform fast integer exponentiation using square and multiply */
-  @VisibleForTesting
-  static int iPow(int base, int exp) {
-    checkArgument(exp >= 0, "Negative exponents are not supported");
-    int result = 1;
-    for (; exp > 0; exp >>= 1, base *= base) {
-      if ((exp & 1) != 0) {
-        result *= base;
-      }
-    }
-    return result;
+  /**
+   * A collector that returns a hashcode of all the objects in a stream (order-independent).
+   *
+   * <p>Equivalent to collecting elements into a set and calling {@link Set#hashCode()}
+   */
+  public static <T> Collector<T, ?, Integer> toUnorderedHashCode() {
+    return Collectors.summingInt(Objects::hashCode);
   }
 
   public static void writeFile(Path outputPath, String output) {
