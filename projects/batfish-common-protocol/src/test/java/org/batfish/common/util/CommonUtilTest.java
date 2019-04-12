@@ -4,10 +4,15 @@ import static org.batfish.common.util.CommonUtil.asNegativeIpWildcards;
 import static org.batfish.common.util.CommonUtil.asPositiveIpWildcards;
 import static org.batfish.common.util.CommonUtil.communityStringToLong;
 import static org.batfish.common.util.CommonUtil.longToCommunity;
+import static org.batfish.common.util.CommonUtil.toOrderedHashCode;
+import static org.batfish.common.util.CommonUtil.toUnorderedHashCode;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import java.util.stream.Stream;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -58,5 +63,23 @@ public class CommonUtilTest {
   public void testLongToCommunity() {
     assertThat(longToCommunity(0L), equalTo("0:0"));
     assertThat(longToCommunity(4294967295L), equalTo("65535:65535"));
+  }
+
+  @Test
+  public void testToOrderedHashCode() {
+    assertThat(Stream.of().collect(toOrderedHashCode()), equalTo(ImmutableList.of().hashCode()));
+    assertThat(Stream.of(1).collect(toOrderedHashCode()), equalTo(ImmutableList.of(1).hashCode()));
+    assertThat(
+        Stream.of(1, 2).collect(toOrderedHashCode()), equalTo(ImmutableList.of(1, 2).hashCode()));
+    assertThat(
+        Stream.of(2, 1).collect(toOrderedHashCode()), equalTo(ImmutableList.of(2, 1).hashCode()));
+  }
+
+  @Test
+  public void testToUnorderedHashCode() {
+    assertThat(Stream.of().collect(toUnorderedHashCode()), equalTo(ImmutableSet.of().hashCode()));
+    assertThat(Stream.of(1).collect(toUnorderedHashCode()), equalTo(ImmutableSet.of(1).hashCode()));
+    assertThat(
+        Stream.of(1, 2).collect(toUnorderedHashCode()), equalTo(ImmutableSet.of(2, 1).hashCode()));
   }
 }
