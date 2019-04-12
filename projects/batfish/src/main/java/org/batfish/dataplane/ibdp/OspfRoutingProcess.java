@@ -9,7 +9,9 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Streams;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
@@ -19,11 +21,17 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteDecorator;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.OspfExternalRoute;
+import org.batfish.datamodel.OspfExternalType1Route;
+import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.OspfInterAreaRoute;
 import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.OspfRoute;
@@ -33,13 +41,20 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
+import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfNeighborConfigId;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.OspfSessionProperties;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.ospf.OspfTopology.EdgeId;
 import org.batfish.datamodel.ospf.StubType;
+import org.batfish.datamodel.routing_policy.Environment.Direction;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.dataplane.protocols.GeneratedRouteHelper;
 import org.batfish.dataplane.rib.AbstractRib;
+import org.batfish.dataplane.rib.OspfExternalType1Rib;
+import org.batfish.dataplane.rib.OspfExternalType2Rib;
 import org.batfish.dataplane.rib.OspfInterAreaRib;
 import org.batfish.dataplane.rib.OspfIntraAreaRib;
 import org.batfish.dataplane.rib.OspfRib;
@@ -63,10 +78,14 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
 
   /* Computed configuration & cached variables */
   private final boolean _useMinMetricForSummaries;
+  /** Export policy for external routes */
+  @Nonnull private final RoutingPolicy _exportPolicy;
 
   /* Internal RIBs */
   @Nonnull private final OspfIntraAreaRib _intraAreaRib;
   @Nonnull private final OspfInterAreaRib _interAreaRib;
+  @Nonnull private final OspfExternalType1Rib _type1Rib;
+  @Nonnull private final OspfExternalType2Rib _type2Rib;
   @Nonnull private final OspfRib _ospfRib;
 
   /* Message queues */
@@ -78,10 +97,26 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   private SortedMap<EdgeId, Queue<RouteAdvertisement<OspfInterAreaRoute>>>
       _interAreaIncomingRoutes = ImmutableSortedMap.of();
 
+  @Nonnull
+  private SortedMap<OspfTopology.EdgeId, Queue<RouteAdvertisement<OspfExternalType1Route>>>
+      _type1IncomingRoutes = ImmutableSortedMap.of();
+
+  @Nonnull
+  private SortedMap<OspfTopology.EdgeId, Queue<RouteAdvertisement<OspfExternalType2Route>>>
+      _type2IncomingRoutes = ImmutableSortedMap.of();
+
+  /* State we need to maintain between iterations */
+
   /** Delta that captures process initialization (creating intra-area routes based on interfaces) */
   @Nonnull private RibDelta<OspfIntraAreaRoute> _initializationDelta;
   /** Delta to pass to the main RIB */
   @Nonnull private RibDelta.Builder<OspfRoute> _changeset;
+  /** Delta of routes we have locally queued for re-distribution */
+  @Nonnull private ExternalDelta _queuedForRedistribution;
+  /**
+   * Delta of external routes we have activated in current iteration (but haven't advertised yet)
+   */
+  @Nonnull private RibDelta<OspfExternalRoute> _activatedGeneratedRoutes;
 
   OspfRoutingProcess(
       OspfProcess process, String vrfName, Configuration configuration, OspfTopology topology) {
@@ -92,6 +127,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
 
     _intraAreaRib = new OspfIntraAreaRib();
     _interAreaRib = new OspfInterAreaRib();
+    _type1Rib = new OspfExternalType1Rib(_c.getHostname(), new HashMap<>(0));
+    _type2Rib = new OspfExternalType2Rib(_c.getHostname(), new HashMap<>(0));
     _ospfRib = new OspfRib();
 
     updateQueues(topology);
@@ -101,8 +138,22 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     // RFC1583 compatibility explicitly disabled, in which case they default to max.
     _useMinMetricForSummaries = firstNonNull(process.getRfc1583Compatible(), Boolean.TRUE);
 
+    // Figure out what the export policy is. If undefined, fail closed -- export nothing.
+    String exportPolicy = _process.getExportPolicy();
+    if (exportPolicy == null || !_c.getRoutingPolicies().containsKey(exportPolicy)) {
+      _exportPolicy =
+          RoutingPolicy.builder()
+              .setName(String.format("~Drop_All_OSPF_External_%s~", _process.getProcessId()))
+              .setStatements(ImmutableList.of(Statements.ExitReject.toStaticStatement()))
+              .build();
+    } else {
+      _exportPolicy = _c.getRoutingPolicies().get(exportPolicy);
+    }
+
     _changeset = RibDelta.builder();
     _initializationDelta = RibDelta.empty();
+    _queuedForRedistribution = new ExternalDelta();
+    _activatedGeneratedRoutes = RibDelta.empty();
   }
 
   @Override
@@ -127,11 +178,23 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     InternalDelta internalDelta = processInternalRoutes();
     sendOutInternalRoutes(internalDelta, allNodes, _topology);
 
-    // TODO: Process external routes
+    // Send out anything we had queued for redistribution
+    sendOutExternalRoutes(_queuedForRedistribution, allNodes, _topology);
+    _queuedForRedistribution = new ExternalDelta();
+
+    // Process new external routes and re-advertise them as necessary
+    ExternalDelta externalDelta = processExternalRoutes();
+    sendOutExternalRoutes(externalDelta, allNodes, _topology);
+
+    // Re-advertise activated generated routes, clear delta
+    sendOutActiveGeneratedRoutes(allNodes, _topology);
+    _activatedGeneratedRoutes = RibDelta.empty();
 
     // Keep track of what what updates will go into the main RIB
     _changeset.from(RibDelta.importRibDelta(_ospfRib, internalDelta._intraArea));
     _changeset.from(RibDelta.importRibDelta(_ospfRib, internalDelta._interArea));
+    _changeset.from(RibDelta.importRibDelta(_ospfRib, externalDelta._type1));
+    _changeset.from(RibDelta.importRibDelta(_ospfRib, externalDelta._type2));
   }
 
   /** Update incoming message queues based on a new topology */
@@ -144,6 +207,14 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     ImmutableSortedMap.Builder<EdgeId, Queue<RouteAdvertisement<OspfInterAreaRoute>>>
         interAreaBuilder = ImmutableSortedMap.naturalOrder();
     interAreaBuilder.putAll(_interAreaIncomingRoutes);
+    // Preserve existing type1 queues
+    ImmutableSortedMap.Builder<EdgeId, Queue<RouteAdvertisement<OspfExternalType1Route>>>
+        type1Builder = ImmutableSortedMap.naturalOrder();
+    type1Builder.putAll(_type1IncomingRoutes);
+    // Preserve existing type2 queues
+    ImmutableSortedMap.Builder<EdgeId, Queue<RouteAdvertisement<OspfExternalType2Route>>>
+        type2Builder = ImmutableSortedMap.naturalOrder();
+    type2Builder.putAll(_type2IncomingRoutes);
 
     getIncomingEdgeStream(topology)
         .forEach(
@@ -154,16 +225,34 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
               if (!_interAreaIncomingRoutes.keySet().contains(edgeId)) {
                 interAreaBuilder.put(edgeId, new ConcurrentLinkedQueue<>());
               }
+              if (!_type1IncomingRoutes.keySet().contains(edgeId)) {
+                type1Builder.put(edgeId, new ConcurrentLinkedQueue<>());
+              }
+              if (!_type2IncomingRoutes.keySet().contains(edgeId)) {
+                type2Builder.put(edgeId, new ConcurrentLinkedQueue<>());
+              }
             });
-    // TODO: add external queues
     _intraAreaIncomingRoutes = intraAreaBuilder.build();
     _interAreaIncomingRoutes = interAreaBuilder.build();
+    _type1IncomingRoutes = type1Builder.build();
+    _type2IncomingRoutes = type2Builder.build();
+
+    // Edges should always be consistent across all types of queues
+    assert _intraAreaIncomingRoutes.keySet().equals(_interAreaIncomingRoutes.keySet());
+    assert _intraAreaIncomingRoutes.keySet().equals(_type1IncomingRoutes.keySet());
+    assert _intraAreaIncomingRoutes.keySet().equals(_type2IncomingRoutes.keySet());
   }
 
   @Override
   public void updateTopology(OspfTopology topology) {
     _topology = topology;
     updateQueues(topology);
+    /*
+    TODO:
+      1. Send existing routes to new neighbors
+      2. Remove routes received from edges that are now down
+    */
+
   }
 
   @Nonnull
@@ -173,15 +262,20 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   }
 
   @Override
-  public void redistribute(RibDelta<? extends AbstractRouteDecorator> mainRibDelta) {
-    // TODO: take routes, initialize external routes from them, send out to neighbors
+  public void redistribute(RibDelta<? extends AnnotatedRoute<AbstractRoute>> mainRibDelta) {
+    _queuedForRedistribution = computeRedistributionDelta(mainRibDelta);
+    _activatedGeneratedRoutes = activateGeneratedRoutes(mainRibDelta);
   }
 
   @Override
   public boolean isDirty() {
     return !_changeset.build().isEmpty()
+        || !_queuedForRedistribution.isEmpty()
+        || !_activatedGeneratedRoutes.isEmpty()
         || !_interAreaIncomingRoutes.values().stream().allMatch(Queue::isEmpty)
-        || !_intraAreaIncomingRoutes.values().stream().allMatch(Queue::isEmpty);
+        || !_intraAreaIncomingRoutes.values().stream().allMatch(Queue::isEmpty)
+        || !_type1IncomingRoutes.values().stream().allMatch(Queue::isEmpty)
+        || !_type2IncomingRoutes.values().stream().allMatch(Queue::isEmpty);
   }
 
   /** Initialize intra-area routes based on available interfaces. */
@@ -283,8 +377,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    * must already have been applied to the route.
    */
   @Nonnull
-  private static <R extends AbstractRouteDecorator, T extends R>
-      RibDelta<R> processRouteAdvertisement(RouteAdvertisement<T> ra, AbstractRib<R> rib) {
+  private static <R extends AbstractRoute, T extends R> RibDelta<R> processRouteAdvertisement(
+      RouteAdvertisement<T> ra, AbstractRib<R> rib) {
     if (ra.isWithdrawn()) {
       rib.removeBackupRoute(ra.getRoute());
       return rib.removeRouteGetDelta(ra.getRoute(), ra.getReason());
@@ -813,6 +907,456 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   }
 
   /**
+   * Take routes to be redistributed, make OSPF external routes from them, merge into respective
+   * RIBs, and note the deltas.
+   */
+  private ExternalDelta computeRedistributionDelta(
+      RibDelta<? extends AbstractRouteDecorator> mainRibDelta) {
+    RibDelta.Builder<OspfExternalType1Route> type1deltaBuilder = RibDelta.builder();
+    RibDelta.Builder<OspfExternalType2Route> type2deltaBuilder = RibDelta.builder();
+    for (AbstractRouteDecorator potentialExport : mainRibDelta.getRoutes()) {
+      Optional<OspfExternalRoute> outputRoute =
+          convertToExternalRoute(potentialExport, _exportPolicy);
+      outputRoute.ifPresent(
+          route -> {
+            if (route.getOspfMetricType() == OspfMetricType.E1) {
+              type1deltaBuilder.from(_type1Rib.mergeRouteGetDelta((OspfExternalType1Route) route));
+            } else { // assuming here that MetricType exists. Or E2 is the default
+              type2deltaBuilder.from(_type2Rib.mergeRouteGetDelta((OspfExternalType2Route) route));
+            }
+          });
+    }
+    return new ExternalDelta(type1deltaBuilder.build(), type2deltaBuilder.build());
+  }
+
+  /** Process all OSPF external messages from all the message queues */
+  @Nonnull
+  private ExternalDelta processExternalRoutes() {
+    RibDelta<OspfExternalType1Route> type1delta = processType1Routes();
+    RibDelta<OspfExternalType2Route> type2delta = processType2Routes();
+    return new ExternalDelta(type1delta, type2delta);
+  }
+
+  /** Process type 1 routes from all message queues */
+  @Nonnull
+  private RibDelta<OspfExternalType1Route> processType1Routes() {
+    Builder<OspfExternalType1Route> type1deltaBuilder = RibDelta.builder();
+    _type1IncomingRoutes.forEach(
+        (edgeId, queue) -> {
+          OspfSessionProperties session = _topology.getSession(edgeId).orElse(null);
+          assert session != null; // Invariant of the edge existing
+          long incrementalCost = getIncrementalCost(edgeId.getHead().getInterfaceName(), false);
+          while (!queue.isEmpty()) {
+            RouteAdvertisement<OspfExternalType1Route> routeAdvertisement = queue.remove();
+            type1deltaBuilder.from(
+                processRouteAdvertisement(
+                    transformType1RouteOnImport(
+                        // Neighbor IP is the IP of tail node which means Ip1
+                        routeAdvertisement, session.getIpLink().getIp1(), incrementalCost),
+                    _type1Rib));
+          }
+        });
+    return type1deltaBuilder.build();
+  }
+
+  /** Transform type1 routes on import */
+  @Nonnull
+  @VisibleForTesting
+  RouteAdvertisement<OspfExternalType1Route> transformType1RouteOnImport(
+      RouteAdvertisement<OspfExternalType1Route> routeAdvertisement,
+      Ip nextHopIp,
+      long incrementalCost) {
+    OspfExternalType1Route r = routeAdvertisement.getRoute();
+    return routeAdvertisement
+        .toBuilder()
+        .setRoute(
+            (OspfExternalType1Route)
+                transformType1and2CommonOnImport(r, nextHopIp)
+                    // For type 1 routes both cost to advertiser and metric get incremented
+                    .setCostToAdvertiser(r.getCostToAdvertiser() + incrementalCost)
+                    .setMetric(r.getMetric() + incrementalCost)
+                    .build())
+        .build();
+  }
+
+  /** Process type 2 routes from all message queues */
+  @Nonnull
+  private RibDelta<OspfExternalType2Route> processType2Routes() {
+    Builder<OspfExternalType2Route> type2deltaBuilder = RibDelta.builder();
+    _type2IncomingRoutes.forEach(
+        (edgeId, queue) -> {
+          OspfSessionProperties session = _topology.getSession(edgeId).orElse(null);
+          assert session != null; // Invariant of the edge existing
+          long incrementalCost = getIncrementalCost(edgeId.getHead().getInterfaceName(), false);
+          while (!queue.isEmpty()) {
+            RouteAdvertisement<OspfExternalType2Route> routeAdvertisement = queue.remove();
+            type2deltaBuilder.from(
+                processRouteAdvertisement(
+                    transformType2RouteOnImport(
+                        // Neighbor IP is the IP of tail node which means Ip1
+                        routeAdvertisement, session.getIpLink().getIp1(), incrementalCost),
+                    _type2Rib));
+          }
+        });
+    return type2deltaBuilder.build();
+  }
+
+  /** Transform type2 routes on import */
+  @Nonnull
+  @VisibleForTesting
+  RouteAdvertisement<OspfExternalType2Route> transformType2RouteOnImport(
+      RouteAdvertisement<OspfExternalType2Route> routeAdvertisement,
+      Ip nextHopIp,
+      long incrementalCost) {
+    OspfExternalType2Route r = routeAdvertisement.getRoute();
+    return routeAdvertisement
+        .toBuilder()
+        .setRoute(
+            (OspfExternalType2Route)
+                transformType1and2CommonOnImport(r, nextHopIp)
+                    /*
+                     * For type 2 routes the metric remains constant, but we must keep track of
+                     * cost to advertiser as a tie-breaker.
+                     */
+                    .setCostToAdvertiser(r.getCostToAdvertiser() + incrementalCost)
+                    .build())
+        .build();
+  }
+
+  /** Common transformations for type 1 and type 2 routes on import (e.g., nextHopIp, admin cost) */
+  private OspfExternalRoute.Builder transformType1and2CommonOnImport(
+      OspfExternalRoute r, Ip nextHopIp) {
+    assert r.getArea() != OspfRoute.NO_AREA; // Area must be set during export
+    return (OspfExternalRoute.Builder)
+        r.toBuilder()
+            .setNextHopIp(nextHopIp)
+            .setAdmin(_process.getAdminCosts().get(r.getOspfMetricType().toRoutingProtocol()))
+            // Clear non-routing bit
+            .setNonRouting(false);
+  }
+
+  /** Send out all external route updates to all neighbors */
+  private void sendOutExternalRoutes(
+      ExternalDelta delta, Map<String, Node> allNodes, OspfTopology topology) {
+    sendOutType1Routes(delta._type1, allNodes, topology);
+    sendOutType2Routes(delta._type2, allNodes, topology);
+  }
+
+  /** Send out type 1 external route updates to all neighbors */
+  private void sendOutType1Routes(
+      RibDelta<OspfExternalType1Route> type1, Map<String, Node> allNodes, OspfTopology topology) {
+    _type1IncomingRoutes
+        .keySet()
+        .forEach(
+            edge -> {
+              OspfSessionProperties session = topology.getSession(edge).orElse(null);
+              assert session != null; // Invariant of the edge being in the topology
+              OspfArea areaConfig = _process.getAreas().get(session.getArea());
+              OspfRoutingProcess neighborProcess = getNeighborProcess(edge.getTail(), allNodes);
+              assert neighborProcess != null;
+              neighborProcess.enqueueMessagesType1(
+                  edge.reverse(),
+                  transformType1RoutesOnExport(
+                      filterExternalRoutesOnExport(type1, areaConfig), areaConfig));
+            });
+  }
+
+  /** Send out type 2 external route updates to all neighbors */
+  private void sendOutType2Routes(
+      RibDelta<OspfExternalType2Route> type2, Map<String, Node> allNodes, OspfTopology topology) {
+    _type2IncomingRoutes
+        .keySet()
+        .forEach(
+            edge -> {
+              OspfSessionProperties session = topology.getSession(edge).orElse(null);
+              assert session != null; // Invariant of the edge being in the topology
+              OspfArea areaConfig = _process.getAreas().get(session.getArea());
+              OspfRoutingProcess neighborProcess = getNeighborProcess(edge.getTail(), allNodes);
+              assert neighborProcess != null;
+              neighborProcess.enqueueMessagesType2(
+                  edge.reverse(),
+                  transformType2RoutesOnExport(
+                      filterExternalRoutesOnExport(type2, areaConfig), areaConfig));
+            });
+  }
+
+  /**
+   * Filter external routes on export. In some cases external routes should not propagate to a
+   * particular area (e.g., into a stub area).
+   *
+   * @param delta delta that captures which routes we are about to advertise
+   * @param areaConfig configuration for the area into which the routes will be advertised
+   * @param <T> specific external route type {@link OspfExternalType1Route} or {@link
+   *     OspfExternalType2Route}
+   * @return collection of routes that should be advertised into a given area
+   */
+  @Nonnull
+  @VisibleForTesting
+  <T extends OspfExternalRoute> Collection<RouteAdvertisement<T>> filterExternalRoutesOnExport(
+      RibDelta<T> delta, OspfArea areaConfig) {
+    // No external routes can propagate into a stub area
+    if (areaConfig.getStubType() == StubType.STUB) {
+      return ImmutableSet.of();
+    }
+
+    // If we're an ABR, do not propagate external routes to NSSAs that suppresses type 7 LSAs
+    if (isABR()
+        && areaConfig.getNssa() != null
+        && areaConfig.getNssa().getSuppressType7()
+        && areaConfig.getStubType() == StubType.NSSA) {
+      return ImmutableSet.of();
+    }
+
+    return delta.getActions();
+  }
+
+  /**
+   * Transform type 1 routes on export
+   *
+   * @param routeAdvertisements routes that are being sent to a given area
+   * @param areaConfig area to which we are sending the routes
+   */
+  @Nonnull
+  @VisibleForTesting
+  Collection<RouteAdvertisement<OspfExternalType1Route>> transformType1RoutesOnExport(
+      Collection<RouteAdvertisement<OspfExternalType1Route>> routeAdvertisements,
+      OspfArea areaConfig) {
+    Long metricOverride = _process.getMaxMetricSummaryNetworks();
+    return routeAdvertisements.stream()
+        .filter(
+            /*
+             * Route can propagate in the same area or, if crossing areas, only to/from area 0
+             *
+             * area == NO_AREA means we generated this route locally, so do not filter out
+             * and override the area below
+             */
+            r ->
+                r.getRoute().getArea() == 0
+                    || areaConfig.getAreaNumber() == 0
+                    || r.getRoute().getArea() == areaConfig.getAreaNumber()
+                    || r.getRoute().getArea() == OspfRoute.NO_AREA)
+        .map(
+            r -> {
+              final OspfExternalType1Route route = r.getRoute();
+              return r.toBuilder()
+                  .setRoute(
+                      (OspfExternalType1Route)
+                          route
+                              .toBuilder()
+                              /*
+                              Override the metric but only for "summary" routes that cross an area boundary.
+                              area == NO_AREA means we generated this route locally, so it can't be summarized (?)
+                               */
+                              .setMetric(
+                                  metricOverride != null
+                                          && route.getArea() != OspfRoute.NO_AREA
+                                          && areaConfig.getAreaNumber() != route.getArea()
+                                      ? metricOverride + route.getLsaMetric()
+                                      : route.getMetric())
+                              .setCostToAdvertiser(
+                                  firstNonNull(metricOverride, route.getCostToAdvertiser()))
+                              // Override area before sending out
+                              .setArea(areaConfig.getAreaNumber())
+                              .build())
+                  .build();
+            })
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  /**
+   * Transform type 2 routes on export
+   *
+   * @param routeAdvertisements routes that are being sent to a given area
+   * @param areaConfig area to which we are sending the routes
+   */
+  @Nonnull
+  @VisibleForTesting
+  Collection<RouteAdvertisement<OspfExternalType2Route>> transformType2RoutesOnExport(
+      Collection<RouteAdvertisement<OspfExternalType2Route>> routeAdvertisements,
+      OspfArea areaConfig) {
+    return routeAdvertisements.stream()
+        .map(
+            r -> {
+              final OspfExternalType2Route route = r.getRoute();
+              return r.toBuilder()
+                  .setRoute(
+                      (OspfExternalType2Route)
+                          route
+                              .toBuilder()
+                              .setArea(
+                                  // TODO: verify area setting logic
+                                  route.getArea() == OspfRoute.NO_AREA
+                                      ? areaConfig.getAreaNumber()
+                                      : route.getArea())
+                              .build())
+                  .build();
+            })
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  /**
+   * Convert a potential route we need to export into an OSPF external route
+   *
+   * @param potentialExportRoute route from Main RIB we are considering for export
+   * @param exportPolicy export policy for the route
+   * @return an external route to be advertised or an {@link Optional#empty()} if the route should
+   *     not be exported
+   */
+  @Nonnull
+  @VisibleForTesting
+  Optional<OspfExternalRoute> convertToExternalRoute(
+      AbstractRouteDecorator potentialExportRoute, RoutingPolicy exportPolicy) {
+    // Prepare the builder
+    OspfExternalRoute.Builder outputRouteBuilder = OspfExternalRoute.builder();
+    // Export based on the policy result of processing the potentialExportRoute
+    boolean accept =
+        exportPolicy.process(
+            potentialExportRoute, outputRouteBuilder, null, _vrfName, Direction.OUT);
+    if (!accept) {
+      return Optional.empty();
+    }
+
+    // Routing policy must always set OSPF metric type, otherwise we don't know which type of route
+    // to build
+    assert outputRouteBuilder.getOspfMetricType() != null;
+
+    outputRouteBuilder
+        .setAdmin(
+            _process
+                .getAdminCosts()
+                .get(outputRouteBuilder.getOspfMetricType().toRoutingProtocol()))
+        .setNetwork(potentialExportRoute.getNetwork());
+
+    // Override cost to advertiser if needed.
+    Long maxMetricExternalNetworks = _process.getMaxMetricExternalNetworks();
+    outputRouteBuilder.setCostToAdvertiser(firstNonNull(maxMetricExternalNetworks, 0L));
+    // Also override metric (if type 1)
+    OspfMetricType metricType = outputRouteBuilder.getOspfMetricType();
+    if (maxMetricExternalNetworks != null && metricType == OspfMetricType.E1) {
+      outputRouteBuilder.setMetric(maxMetricExternalNetworks);
+    }
+
+    outputRouteBuilder.setAdvertiser(_c.getHostname());
+    outputRouteBuilder.setLsaMetric(outputRouteBuilder.getMetric());
+    // Not defined yet, must be set correctly upon sending out a given edge
+    outputRouteBuilder.setArea(OspfRoute.NO_AREA);
+    // Note the non-routing bit, must not go into the main RIB
+    outputRouteBuilder.setNonRouting(true);
+    return Optional.of(outputRouteBuilder.build());
+  }
+
+  /**
+   * Activate all generated routes and merge them into appropriates external route RIBs
+   *
+   * @param mainRibDelta contributing route candidates from the main RIB
+   * @return a RIB delta indicating newly merged external routes
+   */
+  private RibDelta<OspfExternalRoute> activateGeneratedRoutes(
+      RibDelta<? extends AnnotatedRoute<AbstractRoute>> mainRibDelta) {
+    // Run each generated route through its own generation policy if present, then run the resulting
+    // activated routes through the standard OSPF export policy.
+    Builder<OspfExternalRoute> activated = RibDelta.builder();
+    _process.getGeneratedRoutes().stream()
+        .map(r -> activateGeneratedRoute(mainRibDelta, r))
+        .filter(Objects::nonNull)
+        .map(r -> convertToExternalRoute(new AnnotatedRoute<>(r, _vrfName), _exportPolicy))
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .forEach(
+            r -> {
+              // Merge into correct RIB
+              if (r.getOspfMetricType() == OspfMetricType.E1) {
+                activated.from(_type1Rib.mergeRouteGetDelta((OspfExternalType1Route) r));
+              } else { // only other option is E2
+                activated.from(_type2Rib.mergeRouteGetDelta((OspfExternalType2Route) r));
+              }
+            });
+    return activated.build();
+  }
+
+  /**
+   * Activate a generated route by invoking its generation policy (if present)
+   *
+   * @param mainRibDelta contributing route candidates from the main RIB
+   * @param r route to activate
+   * @return {@link GeneratedRoute} with any updated attributes, or {@code null} if shouldn't be
+   *     activated
+   */
+  @Nullable
+  @VisibleForTesting
+  GeneratedRoute activateGeneratedRoute(
+      RibDelta<? extends AnnotatedRoute<AbstractRoute>> mainRibDelta, GeneratedRoute r) {
+    String generationPolicyName = r.getGenerationPolicy();
+    if (generationPolicyName == null) {
+      // This route should be generated unconditionally
+      return r;
+    }
+    RoutingPolicy generationPolicy = _c.getRoutingPolicies().get(generationPolicyName);
+    if (generationPolicy == null) {
+      // Ignore route; its generation is supposed to depend on some undefined policy
+      return null;
+    }
+    GeneratedRoute.Builder activatedRoute =
+        GeneratedRouteHelper.activateGeneratedRoute(
+            r, generationPolicy, ImmutableSet.copyOf(mainRibDelta.getRoutes()), _vrfName);
+    return activatedRoute == null ? null : activatedRoute.build();
+  }
+
+  /** Send out active generated routes to all neighbors */
+  private void sendOutActiveGeneratedRoutes(Map<String, Node> allNodes, OspfTopology topology) {
+    // type1 edges should be equal to type2 edges, doesn't matter which ones we iterate over.
+    _type1IncomingRoutes
+        .keySet()
+        .forEach(
+            edge -> {
+              OspfSessionProperties session = topology.getSession(edge).orElse(null);
+              assert session != null; // Invariant of the edge being in the topology
+              OspfArea areaConfig = _process.getAreas().get(session.getArea());
+              OspfRoutingProcess neighborProcess = getNeighborProcess(edge.getTail(), allNodes);
+              assert neighborProcess != null;
+
+              neighborProcess.enqueueMessagesType1(
+                  edge.reverse(),
+                  transformType1RoutesOnExport(
+                      filterGeneratedRoutesOnExport(
+                          _activatedGeneratedRoutes.getRoutes(),
+                          areaConfig,
+                          OspfExternalType1Route.class),
+                      areaConfig));
+              neighborProcess.enqueueMessagesType2(
+                  edge.reverse(),
+                  transformType2RoutesOnExport(
+                      filterGeneratedRoutesOnExport(
+                          _activatedGeneratedRoutes.getRoutes(),
+                          areaConfig,
+                          OspfExternalType2Route.class),
+                      areaConfig));
+            });
+  }
+
+  /**
+   * Filter generated external routes on export. (e.g., default routes are not allowed to be
+   * advertised into stub areas).
+   *
+   * @param activeGeneratedRoutes the routes to filter
+   * @param areaConfig config for the area to which the routes are being sent to
+   * @param clazz the expected type for route {@link OspfExternalType1Route} or {@link
+   *     OspfExternalType2Route}
+   */
+  private static <T extends OspfExternalRoute>
+      Collection<RouteAdvertisement<T>> filterGeneratedRoutesOnExport(
+          Collection<OspfExternalRoute> activeGeneratedRoutes,
+          OspfArea areaConfig,
+          Class<T> clazz) {
+    return activeGeneratedRoutes.stream()
+        .filter(
+            r -> areaConfig.getStubType() == StubType.NONE || !r.getNetwork().equals(Prefix.ZERO))
+        .filter(clazz::isInstance)
+        .map(r -> new RouteAdvertisement<>(clazz.cast(r)))
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  /**
    * Tell this process that a collection of intra-area route advertisements is coming in on a given
    * edge.
    *
@@ -840,6 +1384,30 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     _interAreaIncomingRoutes.get(edge).addAll(routes);
   }
 
+  /**
+   * Tell this process that a collection of type1 route advertisements is coming in on a given edge
+   *
+   * @param edge {@link EdgeId} as with edge head pointing at {@code this} process
+   * @param routes collection of route advertisements
+   */
+  private void enqueueMessagesType1(
+      EdgeId edge, Collection<RouteAdvertisement<OspfExternalType1Route>> routes) {
+    assert _type1IncomingRoutes.keySet().contains(edge);
+    _type1IncomingRoutes.get(edge).addAll(routes);
+  }
+
+  /**
+   * Tell this process that a collection of type2 route advertisements is coming in on a given edge
+   *
+   * @param edge {@link EdgeId} as with edge head pointing at {@code this} process
+   * @param routes collection of route advertisements
+   */
+  private void enqueueMessagesType2(
+      EdgeId edge, Collection<RouteAdvertisement<OspfExternalType2Route>> routes) {
+    assert _type2IncomingRoutes.keySet().contains(edge);
+    _type2IncomingRoutes.get(edge).addAll(routes);
+  }
+
   /** Wrapper around intra- and inter-area RIB deltas */
   private static final class InternalDelta {
     @Nonnull private final RibDelta<OspfIntraAreaRoute> _intraArea;
@@ -848,6 +1416,26 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     InternalDelta(RibDelta<OspfIntraAreaRoute> intraArea, RibDelta<OspfInterAreaRoute> interArea) {
       _intraArea = intraArea;
       _interArea = interArea;
+    }
+  }
+
+  /** Wrapper around type1 and type2 external RIB deltas */
+  private static final class ExternalDelta {
+    @Nonnull private final RibDelta<OspfExternalType1Route> _type1;
+    @Nonnull private final RibDelta<OspfExternalType2Route> _type2;
+
+    private ExternalDelta() {
+      this(RibDelta.empty(), RibDelta.empty());
+    }
+
+    private ExternalDelta(
+        RibDelta<OspfExternalType1Route> type1, RibDelta<OspfExternalType2Route> type2) {
+      _type1 = type1;
+      _type2 = type2;
+    }
+
+    private boolean isEmpty() {
+      return _type1.isEmpty() && _type2.isEmpty();
     }
   }
 }
