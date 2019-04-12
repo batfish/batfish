@@ -5,11 +5,11 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
-import com.google.common.collect.ImmutableList;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.questions.ConfiguredSessionStatus;
@@ -106,7 +106,7 @@ public class BgpSessionAnswererTest {
         _nf.bgpDynamicNeighborBuilder()
             .setLocalAs(1L)
             .setPeerPrefix(Prefix.create(Ip.parse("1.1.1.1"), 24))
-            .setRemoteAs(ImmutableList.of())
+            .setRemoteAs(LongSpace.EMPTY)
             .build();
     assertThat(getLocallyBrokenStatus(peer), equalTo(ConfiguredSessionStatus.NO_REMOTE_AS));
   }
@@ -117,7 +117,7 @@ public class BgpSessionAnswererTest {
         _nf.bgpDynamicNeighborBuilder()
             .setLocalAs(1L)
             .setPeerPrefix(Prefix.create(Ip.parse("1.1.1.1"), 24))
-            .setRemoteAs(ImmutableList.of(1L))
+            .setRemoteAs(1L)
             .build();
     assertThat(getLocallyBrokenStatus(peer), nullValue());
   }

@@ -34,6 +34,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
@@ -193,7 +194,7 @@ public class BgpSessionCompatibilityAnswererTest {
     BgpPassivePeerConfig peerConfig =
         BgpPassivePeerConfig.builder()
             .setLocalAs(3L)
-            .setRemoteAs(remoteAsList)
+            .setRemoteAs(LongSpace.builder().includingAll(remoteAsList).build())
             .setLocalIp(localIp)
             .setPeerPrefix(remotePrefix)
             .build();

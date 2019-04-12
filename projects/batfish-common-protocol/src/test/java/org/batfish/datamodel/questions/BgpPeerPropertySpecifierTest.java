@@ -29,7 +29,7 @@ public class BgpPeerPropertySpecifierTest {
   @Test
   public void getRemoteAsPassivePeer() {
     BgpPassivePeerConfig passivePeerConfig =
-        BgpPassivePeerConfig.builder().setRemoteAs(ImmutableList.of(100L)).build();
+        BgpPassivePeerConfig.builder().setRemoteAs(100L).build();
     assertThat(
         getRemoteAs(passivePeerConfig),
         equalTo(new SelfDescribingObject(Schema.list(Schema.LONG), ImmutableList.of(100L))));

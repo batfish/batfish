@@ -33,6 +33,7 @@ import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
@@ -270,7 +271,10 @@ final class CiscoNxConversions {
     if (dynamic) {
       newNeighborBuilder =
           BgpPassivePeerConfig.builder()
-              .setRemoteAs(ImmutableList.of(firstNonNull(neighbor.getRemoteAs(), -1L)))
+              .setRemoteAs(
+                  Optional.ofNullable(neighbor.getRemoteAs())
+                      .map(LongSpace::of)
+                      .orElse(LongSpace.EMPTY))
               .setPeerPrefix(prefix);
     } else {
       newNeighborBuilder =

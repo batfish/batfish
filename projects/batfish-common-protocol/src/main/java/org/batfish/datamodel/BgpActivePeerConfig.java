@@ -20,9 +20,6 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
   /** The remote peer's IP address */
   @Nullable private final Ip _peerAddress;
 
-  /** The autonomous system number that the containing BGP process considers this peer to have. */
-  @Nullable private final Long _remoteAs;
-
   @JsonCreator
   protected BgpActivePeerConfig(
       @JsonProperty(PROP_ADDITIONAL_PATHS_RECEIVE) boolean additionalPathsReceive,
@@ -49,7 +46,7 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
       @JsonProperty(PROP_LOCAL_AS) @Nullable Long localAs,
       @JsonProperty(PROP_LOCAL_IP) @Nullable Ip localIp,
       @JsonProperty(PROP_PEER_ADDRESS) @Nullable Ip peerAddress,
-      @JsonProperty(PROP_REMOTE_AS) @Nullable Long remoteAs,
+      @JsonProperty(PROP_REMOTE_AS) @Nullable LongSpace remoteAs,
       @JsonProperty(PROP_ROUTE_REFLECTOR) boolean routeReflectorClient,
       @JsonProperty(PROP_SEND_COMMUNITY) boolean sendCommunity) {
     super(
@@ -75,10 +72,10 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
         importPolicySources,
         localAs,
         localIp,
+        remoteAs,
         routeReflectorClient,
         sendCommunity);
     _peerAddress = peerAddress;
-    _remoteAs = remoteAs;
   }
 
   @Nullable
@@ -86,13 +83,6 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
   @JsonPropertyDescription("The IPV4 address of the remote peer")
   public Ip getPeerAddress() {
     return _peerAddress;
-  }
-
-  @JsonProperty(PROP_REMOTE_AS)
-  @JsonPropertyDescription("The remote autonomous system of this peering")
-  @Nullable
-  public Long getRemoteAs() {
-    return _remoteAs;
   }
 
   @Override
@@ -104,19 +94,16 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
       return false;
     }
     BgpActivePeerConfig that = (BgpActivePeerConfig) o;
-    return Objects.equals(_peerAddress, that._peerAddress)
-        && Objects.equals(_remoteAs, that._remoteAs)
-        && super.equals(o);
+    return Objects.equals(_peerAddress, that._peerAddress) && super.equals(o);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), _peerAddress, _remoteAs);
+    return Objects.hash(super.hashCode(), _peerAddress);
   }
 
   public static class Builder extends BgpPeerConfig.Builder<Builder, BgpActivePeerConfig> {
     @Nullable private Ip _peerAddress;
-    @Nullable private Long _remoteAs;
 
     protected Builder() {
       super();
@@ -170,11 +157,6 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
 
     public Builder setPeerAddress(@Nullable Ip peerAddress) {
       _peerAddress = peerAddress;
-      return this;
-    }
-
-    public Builder setRemoteAs(@Nullable Long remoteAs) {
-      _remoteAs = remoteAs;
       return this;
     }
   }

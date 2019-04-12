@@ -129,6 +129,8 @@ public abstract class BgpPeerConfig implements Serializable {
   /** The ip address of the containing router as reported to this peer */
   @Nullable private final Ip _localIp;
 
+  @Nonnull protected final LongSpace _remoteAs;
+
   /** Flag indicating that this neighbor is a route reflector client */
   private final boolean _routeReflectorClient;
 
@@ -163,6 +165,7 @@ public abstract class BgpPeerConfig implements Serializable {
       @JsonProperty(PROP_IMPORT_POLICY_SOURCES) @Nullable SortedSet<String> importPolicySources,
       @JsonProperty(PROP_LOCAL_AS) @Nullable Long localAs,
       @JsonProperty(PROP_LOCAL_IP) @Nullable Ip localIp,
+      @JsonProperty(PROP_REMOTE_AS) @Nullable LongSpace remoteAs,
       @JsonProperty(PROP_ROUTE_REFLECTOR) boolean routeReflectorClient,
       @JsonProperty(PROP_SEND_COMMUNITY) boolean sendCommunity) {
     _additionalPathsReceive = additionalPathsReceive;
@@ -187,6 +190,7 @@ public abstract class BgpPeerConfig implements Serializable {
     _importPolicySources = firstNonNull(importPolicySources, ImmutableSortedSet.of());
     _localAs = localAs;
     _localIp = localIp;
+    _remoteAs = firstNonNull(remoteAs, LongSpace.EMPTY);
     _routeReflectorClient = routeReflectorClient;
     _sendCommunity = sendCommunity;
   }
@@ -340,6 +344,13 @@ public abstract class BgpPeerConfig implements Serializable {
     return _localIp;
   }
 
+  /** Space of acceptable remote AS numbers for session to be established */
+  @JsonProperty(PROP_REMOTE_AS)
+  @Nonnull
+  public LongSpace getRemoteAs() {
+    return _remoteAs;
+  }
+
   @JsonProperty(PROP_ROUTE_REFLECTOR)
   @JsonPropertyDescription("Whether or not this peer is a route-reflector client")
   public boolean getRouteReflectorClient() {
@@ -392,7 +403,8 @@ public abstract class BgpPeerConfig implements Serializable {
         && Objects.equals(_importPolicy, that._importPolicy)
         && Objects.equals(_importPolicySources, that._importPolicySources)
         && Objects.equals(_localAs, that._localAs)
-        && Objects.equals(_localIp, that._localIp);
+        && Objects.equals(_localIp, that._localIp)
+        && _remoteAs.equals(that._remoteAs);
   }
 
   @Override
@@ -419,6 +431,7 @@ public abstract class BgpPeerConfig implements Serializable {
         _importPolicySources,
         _localAs,
         _localIp,
+        _remoteAs,
         _routeReflectorClient,
         _sendCommunity);
   }
@@ -447,13 +460,16 @@ public abstract class BgpPeerConfig implements Serializable {
     @Nullable protected SortedSet<String> _importPolicySources;
     @Nullable protected Long _localAs;
     @Nullable protected Ip _localIp;
+    @Nonnull protected LongSpace _remoteAs;
     protected boolean _routeReflectorClient;
     protected boolean _sendCommunity;
 
     // Identifying fields
     @Nullable protected String _hostname;
 
-    protected Builder() {}
+    protected Builder() {
+      _remoteAs = LongSpace.EMPTY;
+    }
 
     public abstract T build();
 
@@ -575,6 +591,20 @@ public abstract class BgpPeerConfig implements Serializable {
 
     public S setLocalIp(@Nullable Ip localIp) {
       _localIp = localIp;
+      return getThis();
+    }
+
+    /**
+     * Sets space of acceptable remote AS numbers to singleton of {@code remoteAs} if non-null, or
+     * else {@link LongSpace#ALL_AS_NUMBERS}.
+     */
+    public S setRemoteAs(@Nullable Long remoteAs) {
+      _remoteAs = remoteAs != null ? LongSpace.of(remoteAs) : LongSpace.ALL_AS_NUMBERS;
+      return getThis();
+    }
+
+    public S setRemoteAs(LongSpace remoteAs) {
+      _remoteAs = remoteAs;
       return getThis();
     }
 

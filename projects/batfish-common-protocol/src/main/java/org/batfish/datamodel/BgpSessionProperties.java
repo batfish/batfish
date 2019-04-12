@@ -72,7 +72,7 @@ public final class BgpSessionProperties {
   public static @Nonnull SessionType getSessionType(BgpActivePeerConfig initiator) {
     SessionType sessionType = SessionType.UNSET;
     if (initiator.getLocalAs() != null && initiator.getRemoteAs() != null) {
-      if (initiator.getLocalAs().equals(initiator.getRemoteAs())) {
+      if (initiator.getRemoteAs().equals(LongSpace.of(initiator.getLocalAs()))) {
         sessionType = SessionType.IBGP;
       } else if (initiator.getEbgpMultihop()) {
         sessionType = SessionType.EBGP_MULTIHOP;

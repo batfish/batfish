@@ -227,7 +227,7 @@ public final class BgpTopologyUtils {
       BgpPassivePeerConfig candidate = nc.getBgpDynamicPeerConfig(candidateId);
       return candidate != null
           && candidate.canConnect(neighbor.getLocalAs())
-          && Objects.equals(neighbor.getRemoteAs(), candidate.getLocalAs())
+          && neighbor.getRemoteAs().contains(candidate.getLocalAs())
           && candidate.canConnect(neighbor.getLocalIp())
           && possibleHostnames.contains(candidateId.getHostname());
     } else {
@@ -235,8 +235,8 @@ public final class BgpTopologyUtils {
       return candidate != null
           && Objects.equals(neighbor.getPeerAddress(), candidate.getLocalIp())
           && Objects.equals(neighbor.getLocalIp(), candidate.getPeerAddress())
-          && Objects.equals(neighbor.getRemoteAs(), candidate.getLocalAs())
-          && Objects.equals(neighbor.getLocalAs(), candidate.getRemoteAs());
+          && neighbor.getRemoteAs().contains(candidate.getLocalAs())
+          && candidate.getRemoteAs().contains(neighbor.getLocalAs());
     }
   }
 

@@ -46,7 +46,7 @@ public class AutoAs extends AsExpr {
       throw new BatfishException("Expected a peer with address: " + peerAddress);
     }
     if (direction == Direction.IN) {
-      as = neighbor.getRemoteAs();
+      as = neighbor.getRemoteAs().singletonValue();
     } else if (direction == Direction.OUT) {
       as = neighbor.getLocalAs();
     } else {

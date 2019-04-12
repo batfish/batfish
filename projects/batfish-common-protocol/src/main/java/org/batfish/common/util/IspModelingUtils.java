@@ -32,6 +32,7 @@ import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -319,7 +320,8 @@ public final class IspModelingUtils {
     }
     for (BgpActivePeerConfig bgpActivePeerConfig : validBgpActivePeerConfigs) {
       IspInfo ispInfo =
-          allIspInfos.computeIfAbsent(bgpActivePeerConfig.getRemoteAs(), k -> new IspInfo());
+          allIspInfos.computeIfAbsent(
+              bgpActivePeerConfig.getRemoteAs().least(), k -> new IspInfo());
       // merging ISP's interface addresses and eBGP confs from the current configuration
       ispInfo.addInterfaceAddress(
           new InterfaceAddress(
@@ -465,11 +467,11 @@ public final class IspModelingUtils {
     return Objects.nonNull(bgpActivePeerConfig.getLocalIp())
         && Objects.nonNull(bgpActivePeerConfig.getLocalAs())
         && Objects.nonNull(bgpActivePeerConfig.getPeerAddress())
-        && Objects.nonNull(bgpActivePeerConfig.getRemoteAs())
-        && !bgpActivePeerConfig.getLocalAs().equals(bgpActivePeerConfig.getRemoteAs())
+        && !bgpActivePeerConfig.getRemoteAs().equals(LongSpace.of(bgpActivePeerConfig.getLocalAs()))
         && localIps.contains(bgpActivePeerConfig.getLocalIp())
         && (remoteIps.isEmpty() || remoteIps.contains(bgpActivePeerConfig.getPeerAddress()))
-        && (remoteAsns.isEmpty() || remoteAsns.contains(bgpActivePeerConfig.getRemoteAs()));
+        && (remoteAsns.isEmpty()
+            || remoteAsns.containsAll(bgpActivePeerConfig.getRemoteAs().enumerate()));
   }
 
   /**
@@ -482,7 +484,7 @@ public final class IspModelingUtils {
         .setPeerAddress(bgpActivePeerConfig.getLocalIp())
         .setRemoteAs(bgpActivePeerConfig.getLocalAs())
         .setLocalIp(bgpActivePeerConfig.getPeerAddress())
-        .setLocalAs(bgpActivePeerConfig.getRemoteAs())
+        .setLocalAs(bgpActivePeerConfig.getRemoteAs().least())
         .setExportPolicy(EXPORT_POLICY_ON_ISP)
         .build();
   }
