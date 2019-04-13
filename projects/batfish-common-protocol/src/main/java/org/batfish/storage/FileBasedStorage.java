@@ -111,21 +111,6 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   /**
-   * Returns the compressed configuration files for the given testrig. If a serialized copy of these
-   * configurations is not already present, then this function returns {@code null}.
-   */
-  @Override
-  @Nullable
-  public SortedMap<String, Configuration> loadCompressedConfigurations(
-      NetworkId network, SnapshotId snapshot) {
-    Path testrigDir = _d.getSnapshotDir(network, snapshot);
-    Path indepDir =
-        testrigDir.resolve(
-            Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_COMPRESSED_CONFIG_DIR));
-    return loadConfigurations(network, snapshot, indepDir);
-  }
-
-  /**
    * Returns the configuration files for the given testrig. If a serialized copy of these
    * configurations is not already present, then this function returns {@code null}.
    */
@@ -357,24 +342,6 @@ public final class FileBasedStorage implements StorageProvider {
     return _d.getNetworkSettingsDir(network)
         .resolve(BfConsts.RELPATH_QUESTIONS_DIR)
         .resolve(String.format("%s.json", questionSettingsId.getId()));
-  }
-
-  /**
-   * Stores the configurations into the compressed config path for the given testrig. Will replace
-   * any previously-stored compressed configurations.
-   */
-  @Override
-  public void storeCompressedConfigurations(
-      Map<String, Configuration> configurations, NetworkId network, SnapshotId snapshot) {
-    mkdirs(_d.getSnapshotDir(network, snapshot));
-
-    Path outputDir = _d.getCompressedConfigDir(network, snapshot);
-
-    String batchName =
-        String.format(
-            "Serializing %s compressed configuration structures for snapshot %s",
-            configurations.size(), snapshot);
-    storeConfigurations(outputDir, batchName, configurations);
   }
 
   /**

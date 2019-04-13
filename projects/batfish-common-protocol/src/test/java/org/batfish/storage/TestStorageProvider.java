@@ -32,11 +32,6 @@ import org.batfish.identifiers.SnapshotId;
 import org.batfish.role.NodeRolesData;
 
 public class TestStorageProvider implements StorageProvider {
-  @Override
-  public SortedMap<String, Configuration> loadCompressedConfigurations(
-      NetworkId network, SnapshotId snapshot) {
-    throw new UnsupportedOperationException("no implementation for generated method");
-  }
 
   @Override
   public SortedMap<String, Configuration> loadConfigurations(
@@ -94,12 +89,6 @@ public class TestStorageProvider implements StorageProvider {
   @Override
   public void storeMajorIssueConfig(
       NetworkId network, IssueSettingsId majorIssueType, MajorIssueConfig majorIssueConfig) {
-    throw new UnsupportedOperationException("no implementation for generated method");
-  }
-
-  @Override
-  public void storeCompressedConfigurations(
-      Map<String, Configuration> configurations, NetworkId network, SnapshotId snapshot) {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 

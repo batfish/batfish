@@ -146,8 +146,6 @@ public class BfConsts {
   public static final String RELPATH_CONTAINER_SETTINGS = "settings";
   public static final String RELPATH_CONTAINER_SETTINGS_ISSUES = "issues";
   public static final String RELPATH_CONVERT_ANSWER_PATH = "convert_answer";
-  public static final String RELPATH_COMPRESSED_DATA_PLANE = "compressed_dp";
-  public static final String RELPATH_COMPRESSED_DATA_PLANE_ANSWER = "compressed_dp_answer";
   public static final String RELPATH_DATA_PLANE = "dp";
   public static final String RELPATH_DATA_PLANE_ANSWER_PATH = "dp_answer";
   public static final String RELPATH_EDGE_BLACKLIST_FILE = "edge_blacklist";
@@ -183,7 +181,6 @@ public class BfConsts {
   public static final String RELPATH_SYNC_TESTRIGS_DIR = "testrig_sync";
   public static final String RELPATH_TESTRIG_TOPOLOGY_PATH = "testrig_topology";
   public static final String RELPATH_VALIDATE_SNAPSHOT_ANSWER = "venv_answer";
-  public static final String RELPATH_COMPRESSED_CONFIG_DIR = "compressed_configs";
   public static final String RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
   public static final String RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
 
