@@ -52,6 +52,11 @@ public final class IntegerSpace extends NumberSpace<Integer, IntegerSpace, Integ
     return IntegerSpace.Builder.create(s).build();
   }
 
+  @Override
+  protected @Nonnull IntegerSpace empty() {
+    return EMPTY;
+  }
+
   public static @Nonnull IntegerSpace parse(String s) {
     return create(s);
   }

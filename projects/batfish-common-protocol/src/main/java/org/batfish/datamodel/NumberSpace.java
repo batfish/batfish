@@ -188,9 +188,8 @@ public abstract class NumberSpace<
 
   protected abstract DiscreteDomain<T> discreteDomain();
 
-  protected final S empty() {
-    return newBuilder().build();
-  }
+  /** Should be overridden with implementation that always returns same instance. */
+  protected abstract @Nonnull S empty();
 
   /** Return an ordered set of numbers described by this space. */
   public abstract Set<T> enumerate();

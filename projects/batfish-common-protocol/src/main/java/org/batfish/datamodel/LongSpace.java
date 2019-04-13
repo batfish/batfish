@@ -117,6 +117,7 @@ public final class LongSpace extends NumberSpace<Long, LongSpace, LongSpace.Buil
 
   /** Create a new long space containing the union of the given {@link Range ranges}. */
   @SafeVarargs
+  @SuppressWarnings("varargs")
   public static LongSpace unionOf(Range<Long>... ranges) {
     return unionOf(Arrays.asList(ranges));
   }
@@ -130,15 +131,20 @@ public final class LongSpace extends NumberSpace<Long, LongSpace, LongSpace.Buil
     return DiscreteDomain.longs();
   }
 
-  /** Return an ordered set of longs described by this space. */
-  public @Nonnull Set<Long> enumerate() {
-    return ImmutableRangeSet.copyOf(_rangeset).asSet(DiscreteDomain.longs());
+  @Override
+  protected @Nonnull LongSpace empty() {
+    return EMPTY;
   }
 
   /*
    * Invariant: always ensure ranges are stored in canonical form (enforced in builder methods)
    * and immutable (enforced in constructor)
    */
+
+  /** Return an ordered set of longs described by this space. */
+  public @Nonnull Set<Long> enumerate() {
+    return ImmutableRangeSet.copyOf(_rangeset).asSet(DiscreteDomain.longs());
+  }
 
   @Override
   protected @Nonnull LongSpace getThis() {
