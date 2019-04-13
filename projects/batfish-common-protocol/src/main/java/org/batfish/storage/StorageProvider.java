@@ -38,14 +38,6 @@ import org.batfish.role.NodeRolesData;
 public interface StorageProvider {
 
   /**
-   * Returns the compressed configuration files for the given snapshot. If a serialized copy of
-   * these configurations is not already present, then this function returns {@code null}.
-   */
-  @Nullable
-  SortedMap<String, Configuration> loadCompressedConfigurations(
-      NetworkId network, SnapshotId snapshot);
-
-  /**
    * Returns the configuration files for the given snapshot. If a serialized copy of these
    * configurations is not already present, then this function returns {@code null}.
    */
@@ -136,13 +128,6 @@ public interface StorageProvider {
   void storeMajorIssueConfig(
       NetworkId network, IssueSettingsId majorIssueType, MajorIssueConfig majorIssueConfig)
       throws IOException;
-
-  /**
-   * Stores the configurations into the compressed config path for the given snapshot. Will replace
-   * any previously-stored compressed configurations.
-   */
-  void storeCompressedConfigurations(
-      Map<String, Configuration> configurations, NetworkId network, SnapshotId snapshot);
 
   /**
    * Stores the configuration information into the given snapshot. Will replace any

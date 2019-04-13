@@ -119,9 +119,6 @@ public class Driver {
 
   private static ConcurrentMap<String, Task> _taskLog;
 
-  private static final Cache<NetworkSnapshot, DataPlane> CACHED_COMPRESSED_DATA_PLANES =
-      buildDataPlaneCache();
-
   private static final Cache<NetworkSnapshot, DataPlane> CACHED_DATA_PLANES = buildDataPlaneCache();
 
   private static final Map<NetworkSnapshot, SortedMap<String, BgpAdvertisementsByVrf>>
@@ -132,9 +129,6 @@ public class Driver {
 
   private static final Cache<NetworkSnapshot, SortedMap<String, Configuration>> CACHED_TESTRIGS =
       buildTestrigCache();
-
-  private static final Cache<NetworkSnapshot, SortedMap<String, Configuration>>
-      CACHED_COMPRESSED_TESTRIGS = buildTestrigCache();
 
   private static final int COORDINATOR_CHECK_INTERVAL_MS = 1 * 60 * 1000; // 1 min
 
@@ -547,9 +541,7 @@ public class Driver {
       final Batfish batfish =
           new Batfish(
               settings,
-              CACHED_COMPRESSED_TESTRIGS,
               CACHED_TESTRIGS,
-              CACHED_COMPRESSED_DATA_PLANES,
               CACHED_DATA_PLANES,
               CACHED_ENVIRONMENT_BGP_TABLES,
               CACHED_ENVIRONMENT_ROUTING_TABLES,
