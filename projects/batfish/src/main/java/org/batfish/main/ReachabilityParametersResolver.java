@@ -38,9 +38,7 @@ import org.batfish.specifier.SpecifierContextImpl;
 final class ReachabilityParametersResolver {
   private final SpecifierContextImpl _context;
 
-  private Map<String, Configuration> _configs;
-
-  private DataPlane _dataPlane;
+  private final DataPlane _dataPlane;
 
   private final ReachabilityParameters _params;
 
@@ -49,6 +47,7 @@ final class ReachabilityParametersResolver {
   @VisibleForTesting
   ReachabilityParametersResolver(
       Batfish batfish, ReachabilityParameters params, NetworkSnapshot snapshot) {
+    _dataPlane = batfish.loadDataPlane();
     _params = params;
     _context = new SpecifierContextImpl(batfish, snapshot);
     _ipSpaceRepresentative = new IpSpaceRepresentative();
@@ -84,7 +83,7 @@ final class ReachabilityParametersResolver {
     }
     return ResolvedReachabilityParameters.builder()
         .setActions(actions)
-        .setConfigurations(resolver._configs)
+        .setConfigurations(resolver._context.getConfigs())
         .setDataPlane(resolver._dataPlane)
         .setFinalNodes(finalNodes)
         .setForbiddenTransitNodes(forbiddenTransitNodes)
@@ -151,7 +150,7 @@ final class ReachabilityParametersResolver {
   IpSpaceAssignment resolveSourceIpSpaceAssignment() throws InvalidReachabilityParametersException {
     Set<Location> sourceLocations =
         _params.getSourceLocationSpecifier().resolve(_context).stream()
-            .filter(l -> isActive(l, _configs))
+            .filter(l -> isActive(l, _context.getConfigs()))
             .collect(ImmutableSet.toImmutableSet());
     if (sourceLocations.isEmpty()) {
       throw new InvalidReachabilityParametersException("No matching source locations");
