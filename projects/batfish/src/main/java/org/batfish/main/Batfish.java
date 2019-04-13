@@ -7,7 +7,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
-import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
 import static org.batfish.common.util.CompletionMetadataUtils.getIps;
@@ -739,12 +738,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return result._answerElement;
   }
 
-  @Override
-  @Deprecated
-  public DataPlaneAnswerElement computeDataPlane(boolean differentialContext) {
-    return computeDataPlane();
-  }
-
   /* Write the dataplane to disk and cache, and write the answer element to disk.
    */
   private void saveDataPlane(DataPlane dataPlane, DataPlaneAnswerElement answerElement) {
@@ -1044,12 +1037,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       CommonUtil.writeFile(outputFile, flatConfigText);
       _logger.debug("OK\n");
     }
-  }
-
-  @Deprecated
-  @Override
-  public Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators() {
-    return toImmutableMap(_answererCreators, Entry::getKey, entry -> entry.getValue()::create);
   }
 
   public Map<String, Configuration> getConfigurations(
