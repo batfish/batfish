@@ -325,12 +325,12 @@ public final class LongSpaceTest {
 
   @Test
   public void testJacksonSerialization() throws IOException {
-    assertThat(BatfishObjectMapper.clone(ALL_AS_NUMBERS, LongSpace.class), equalTo(ALL_AS_NUMBERS));
+    assertThat(BatfishObjectMapper.clone(LONGSPACE1, LongSpace.class), equalTo(LONGSPACE1));
   }
 
   @Test
   public void testJavaSerialization() {
-    assertThat(SerializationUtils.clone(ALL_AS_NUMBERS), equalTo(ALL_AS_NUMBERS));
+    assertThat(SerializationUtils.clone(LONGSPACE1), equalTo(LONGSPACE1));
   }
 
   @Test
