@@ -1,12 +1,15 @@
 package org.batfish.representation.cisco;
 
 import static org.batfish.datamodel.RoutingProtocol.BGP;
+import static org.batfish.datamodel.RoutingProtocol.STATIC;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ExitAccept;
+import static org.batfish.representation.cisco.CiscoConfiguration.MATCH_DEFAULT_ROUTE;
 import static org.batfish.representation.cisco.CiscoConfiguration.NOT_DEFAULT_ROUTE;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ospf.OspfMetricType;
@@ -63,6 +66,28 @@ public class CiscoOspfRedistributionTest {
         contains(
             new SetOspfMetricType(OspfMetricType.E2),
             new SetMetric(new LiteralLong(1L)),
+            ExitAccept.toStaticStatement()));
+  }
+
+  @Test
+  public void testBasicConvertRedistributionPolicyArista() {
+    _config.setVendor(ConfigurationFormat.ARISTA);
+    OspfRedistributionPolicy rp = new OspfRedistributionPolicy(STATIC);
+    rp.setOspfMetricType(OspfMetricType.E2);
+    rp.setRouteMap("some-map");
+    _config.getRouteMaps().put("some-map", new RouteMap("some-map"));
+
+    If policy = _config.convertOspfRedistributionPolicy(rp, _proc);
+    List<BooleanExpr> guard = ((Conjunction) policy.getGuard()).getConjuncts();
+    assertThat(guard, contains(new MatchProtocol(STATIC), new CallExpr("some-map")));
+    assertThat(
+        policy.getTrueStatements(),
+        contains(
+            new SetOspfMetricType(OspfMetricType.E2),
+            new If(
+                MATCH_DEFAULT_ROUTE,
+                ImmutableList.of(new SetMetric(new LiteralLong(1L))),
+                ImmutableList.of(new SetMetric(new LiteralLong(10)))),
             ExitAccept.toStaticStatement()));
   }
 

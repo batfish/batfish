@@ -307,6 +307,7 @@ import org.batfish.datamodel.LineType;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
@@ -5360,5 +5361,41 @@ public class CiscoGrammarTest {
         ccae, not(hasUndefinedReference(filename, NETWORK_OBJECT_GROUP, "source-real-group")));
     assertThat(ccae, hasUndefinedReference(filename, NETWORK_OBJECT, "undef-source-mapped"));
     assertThat(ccae, hasUndefinedReference(filename, NETWORK_OBJECT, "undef-source-real"));
+  }
+
+  /**
+   * Ensure that Arista redistributes a static default route even though default-originate is not
+   * explicitly specified in the config
+   */
+  @Test
+  public void testAristaDefaultRouteRedistribution() throws IOException {
+    final String receiver = "ios_receiver";
+    final String advertiser = "arista_advertiser";
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(
+                    TESTRIGS_PREFIX + "arista-redistribute-default-route",
+                    ImmutableList.of(advertiser, receiver))
+                .build(),
+            _folder);
+
+    batfish.computeDataPlane();
+    Set<AbstractRoute> routes =
+        batfish.loadDataPlane().getRibs().get(receiver).get(DEFAULT_VRF_NAME).getRoutes();
+
+    assertThat(
+        routes,
+        hasItem(
+            OspfExternalType2Route.builder()
+                .setNetwork(Prefix.ZERO)
+                .setNextHopIp(Ip.parse("1.2.3.5"))
+                .setArea(1)
+                .setCostToAdvertiser(1)
+                .setAdvertiser(advertiser)
+                .setAdmin(110)
+                .setMetric(1)
+                .setLsaMetric(1)
+                .build()));
   }
 }

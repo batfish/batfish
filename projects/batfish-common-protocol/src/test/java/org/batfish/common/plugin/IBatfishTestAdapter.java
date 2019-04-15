@@ -91,24 +91,12 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  @Deprecated
-  public DataPlaneAnswerElement computeDataPlane(boolean differentialContext) {
-    return computeDataPlane();
-  }
-
-  @Override
   public boolean debugFlagEnabled(String flag) {
     throw new UnsupportedOperationException();
   }
 
   @Override
   public ReferenceLibrary getReferenceLibraryData() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Deprecated
-  @Override
-  public Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators() {
     throw new UnsupportedOperationException();
   }
 
@@ -178,8 +166,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(
-      boolean useCompression) {
+  public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes() {
     throw new UnsupportedOperationException();
   }
 

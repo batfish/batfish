@@ -70,6 +70,10 @@ public class OspfExternalType2Route extends OspfExternalRoute {
         nonRouting);
   }
 
+  public static OspfExternalRoute.Builder builder() {
+    return OspfExternalRoute.builder().setOspfMetricType(OspfMetricType.E2);
+  }
+
   @Nonnull
   @Override
   public OspfMetricType getOspfMetricType() {

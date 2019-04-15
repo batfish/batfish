@@ -11,12 +11,14 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.graph.ValueGraph;
+import com.google.common.graph.ValueGraphBuilder;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.SortedMap;
+import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
@@ -26,11 +28,17 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfProcess;
+import org.batfish.datamodel.ospf.OspfTopology;
+import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.dataplane.ibdp.Node;
 import org.batfish.dataplane.ibdp.TestUtils;
 import org.batfish.dataplane.ibdp.schedule.NodeColoredSchedule.Coloring;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -41,6 +49,8 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class NodeColoredScheduleTest {
 
+  private ImmutableSortedMap<String, Configuration> _configurations;
+
   @Parameters
   public static Collection<Object[]> data() {
     return ImmutableList.copyOf(
@@ -49,14 +59,74 @@ public class NodeColoredScheduleTest {
 
   @Parameter public Coloring _coloring;
 
+  @Before
+  public void setup() {
+    // Init BGP processes
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Vrf.Builder vb = nf.vrfBuilder();
+    Interface.Builder ib = nf.interfaceBuilder().setOspfEnabled(true).setOspfProcess("1");
+    BgpProcess.Builder pb = nf.bgpProcessBuilder();
+    BgpActivePeerConfig.Builder nb = nf.bgpNeighborBuilder();
+    OspfProcess.Builder ob = nf.ospfProcessBuilder().setProcessId("1").setReferenceBandwidth(1e8);
+    OspfArea.Builder ospfArea = nf.ospfAreaBuilder().setNumber(0);
+
+    Configuration r1 = cb.setHostname("r1").build();
+    Vrf vrf1 = vb.setOwner(r1).build();
+    final int networkBits = 30;
+    final Ip R1_IP = Ip.parse("1.1.1.1");
+    final Ip R2_IP = Ip.parse("1.1.1.2");
+    // Interface
+    Interface i1 =
+        ib.setOwner(r1).setVrf(vrf1).setAddress(new InterfaceAddress(R1_IP, networkBits)).build();
+    // Make OSPF process and areas
+    OspfArea r1ospfArea = ospfArea.setInterfaces(ImmutableSet.of(i1.getName())).build();
+    ob.setVrf(vrf1).setAreas(ImmutableSortedMap.of(0L, r1ospfArea)).build();
+    i1.setOspfArea(r1ospfArea);
+    // BGP process and neighbor
+    BgpProcess r1Proc = pb.setRouterId(R1_IP).setVrf(vrf1).build();
+    nb.setRemoteAs(2L)
+        .setPeerAddress(R2_IP)
+        .setBgpProcess(r1Proc)
+        .setLocalAs(1L)
+        .setLocalIp(R1_IP)
+        .build();
+
+    Configuration r2 = cb.setHostname("r2").build();
+    Vrf vrf2 = vb.setOwner(r2).build();
+    // Interface
+    Interface i2 =
+        ib.setOwner(r2).setVrf(vrf2).setAddress(new InterfaceAddress(R2_IP, networkBits)).build();
+    // Make OSPF process and areas
+    OspfArea r2ospfArea = ospfArea.setInterfaces(ImmutableSet.of(i2.getName())).build();
+    ob.setVrf(vrf2).setAreas(ImmutableSortedMap.of(0L, r2ospfArea)).build();
+    // BGP process and neighbor
+    BgpProcess r2Proc = pb.setRouterId(R2_IP).setVrf(vrf2).build();
+    nb.setRemoteAs(1L)
+        .setPeerAddress(R1_IP)
+        .setBgpProcess(r2Proc)
+        .setLocalAs(2L)
+        .setRouteReflectorClient(true)
+        .setLocalIp(R2_IP)
+        .build();
+
+    _configurations =
+        new ImmutableSortedMap.Builder<String, Configuration>(String::compareTo)
+            .put(r1.getHostname(), r1)
+            .put(r2.getHostname(), r2)
+            .build();
+  }
+
   @Test
-  public void testSinglenodeColoring() {
+  public void testSingleNodeColoring() {
     Node n = TestUtils.makeIosRouter("r1");
     Map<String, Node> nodes = ImmutableMap.of("r1", n);
     Map<String, Configuration> configs = ImmutableMap.of("r1", n.getConfiguration());
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
         initBgpTopology(configs, computeIpNodeOwners(configs, false), false);
-    NodeColoredSchedule schedule = new NodeColoredSchedule(nodes, _coloring, bgpTopology);
+    NodeColoredSchedule schedule =
+        new NodeColoredSchedule(nodes, _coloring, bgpTopology, OspfTopology.empty());
 
     assertThat(schedule.hasNext(), is(true));
     assertThat(schedule.next(), equalTo(nodes));
@@ -64,7 +134,7 @@ public class NodeColoredScheduleTest {
   }
 
   @Test
-  public void testTwoNodeColoringDisconnected() {
+  public void testTwoNodeColoringNoAdjacencies() {
     Map<String, Node> nodes =
         ImmutableMap.of("r1", TestUtils.makeIosRouter("r1"), "r2", TestUtils.makeIosRouter("r2"));
 
@@ -74,7 +144,8 @@ public class NodeColoredScheduleTest {
                 ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getConfiguration()));
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
         initBgpTopology(configs, computeIpNodeOwners(configs, false), false);
-    NodeColoredSchedule schedule = new NodeColoredSchedule(nodes, _coloring, bgpTopology);
+    NodeColoredSchedule schedule =
+        new NodeColoredSchedule(nodes, _coloring, bgpTopology, OspfTopology.empty());
 
     // Expect both nodes to have the same color because there is no edge between them
     assertThat(schedule.hasNext(), is(true));
@@ -83,55 +154,41 @@ public class NodeColoredScheduleTest {
   }
 
   @Test
-  public void testTwoNodesConnectedDirectly() {
-    // Init BGP processes
-    NetworkFactory nf = new NetworkFactory();
-    Configuration.Builder cb =
-        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    Vrf.Builder vb = nf.vrfBuilder();
-    Interface.Builder ib = nf.interfaceBuilder();
-    BgpProcess.Builder pb = nf.bgpProcessBuilder();
-    BgpActivePeerConfig.Builder nb = nf.bgpNeighborBuilder();
-
-    Configuration r1 = cb.setHostname("r1").build();
-    Vrf vEdge1 = vb.setOwner(r1).build();
-    ib.setOwner(r1).setVrf(vEdge1);
-    ib.setAddress(new InterfaceAddress(Ip.parse("1.1.1.1"), 32)).build();
-    BgpProcess r1Proc = pb.setRouterId(Ip.parse("1.1.1.1")).setVrf(vEdge1).build();
-    nb.setRemoteAs(2L)
-        .setPeerAddress(Ip.parse("2.2.2.2"))
-        .setBgpProcess(r1Proc)
-        .setLocalAs(1L)
-        .setLocalIp(Ip.parse("1.1.1.1"))
-        .build();
-
-    Configuration r2 = cb.setHostname("r2").build();
-    Vrf vrf2 = vb.setOwner(r2).build();
-    ib.setOwner(r2).setVrf(vrf2);
-    ib.setAddress(new InterfaceAddress(Ip.parse("2.2.2.2"), 32)).build();
-    BgpProcess r2Proc = pb.setRouterId(Ip.parse("2.2.2.2")).setVrf(vrf2).build();
-    nb.setRemoteAs(1L)
-        .setPeerAddress(Ip.parse("1.1.1.1"))
-        .setBgpProcess(r2Proc)
-        .setLocalAs(2L)
-        .setRouteReflectorClient(true)
-        .setLocalIp(Ip.parse("2.2.2.2"))
-        .build();
-
-    SortedMap<String, Configuration> configurations =
-        new ImmutableSortedMap.Builder<String, Configuration>(String::compareTo)
-            .put(r1.getHostname(), r1)
-            .put(r2.getHostname(), r2)
-            .build();
+  public void testTwoNodesConnectedDirectlyViaBGP() {
 
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-        initBgpTopology(configurations, computeIpNodeOwners(configurations, false), false);
-    ImmutableMap<String, Node> nodes = ImmutableMap.of("r1", new Node(r1), "r2", new Node(r2));
+        initBgpTopology(_configurations, computeIpNodeOwners(_configurations, false), false);
+    ImmutableMap<String, Node> nodes =
+        _configurations.entrySet().stream()
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> new Node(e.getValue())));
 
-    NodeColoredSchedule schedule = new NodeColoredSchedule(nodes, _coloring, bgpTopology);
+    // Note empty OSPF topology
+    NodeColoredSchedule schedule =
+        new NodeColoredSchedule(nodes, _coloring, bgpTopology, OspfTopology.empty());
     ImmutableList<Map<String, Node>> coloredNodes =
         ImmutableList.copyOf(schedule.getAllRemaining());
-    // 2 separate colors because of direct connection.
+    // 2 colors because of edge in the BGP topology
+    assertThat(coloredNodes, hasSize(2));
+  }
+
+  @Test
+  public void testNodeColoringWithOspfEdge() {
+    ImmutableMap<String, Node> nodes =
+        _configurations.entrySet().stream()
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> new Node(e.getValue())));
+    OspfTopologyUtils.initNeighborConfigs(NetworkConfigurations.of(_configurations));
+    OspfTopology ospfTopology =
+        OspfTopologyUtils.computeOspfTopology(
+            NetworkConfigurations.of(_configurations),
+            TopologyUtil.synthesizeL3Topology(_configurations));
+
+    NodeColoredSchedule schedule =
+        // Note empty BGP topology
+        new NodeColoredSchedule(
+            nodes, _coloring, ValueGraphBuilder.directed().build(), ospfTopology);
+    ImmutableList<Map<String, Node>> coloredNodes =
+        ImmutableList.copyOf(schedule.getAllRemaining());
+    // 2 colors because of edge in the OSPF topology
     assertThat(coloredNodes, hasSize(2));
   }
 }

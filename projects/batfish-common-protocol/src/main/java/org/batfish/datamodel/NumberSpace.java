@@ -278,7 +278,11 @@ public abstract class NumberSpace<
    * @throws NoSuchElementException if space is empty
    */
   public final @Nonnull T least() {
-    return _rangeset.span().lowerEndpoint();
+    Range<T> span = _rangeset.span();
+    T lowerEndpoint = span.lowerEndpoint();
+    return span.lowerBoundType() == BoundType.CLOSED
+        ? lowerEndpoint
+        : discreteDomain().next(lowerEndpoint);
   }
 
   protected abstract B newBuilder();
