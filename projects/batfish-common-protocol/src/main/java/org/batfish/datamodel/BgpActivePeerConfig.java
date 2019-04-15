@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -20,11 +22,8 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
   /** The remote peer's IP address */
   @Nullable private final Ip _peerAddress;
 
-  /** The autonomous system number that the containing BGP process considers this peer to have. */
-  @Nullable private final Long _remoteAs;
-
   @JsonCreator
-  protected BgpActivePeerConfig(
+  private static @Nonnull BgpActivePeerConfig create(
       @JsonProperty(PROP_ADDITIONAL_PATHS_RECEIVE) boolean additionalPathsReceive,
       @JsonProperty(PROP_ADDITIONAL_PATHS_SELECT_ALL) boolean additionalPathsSelectAll,
       @JsonProperty(PROP_ADDITIONAL_PATHS_SEND) boolean additionalPathsSend,
@@ -49,9 +48,65 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
       @JsonProperty(PROP_LOCAL_AS) @Nullable Long localAs,
       @JsonProperty(PROP_LOCAL_IP) @Nullable Ip localIp,
       @JsonProperty(PROP_PEER_ADDRESS) @Nullable Ip peerAddress,
-      @JsonProperty(PROP_REMOTE_AS) @Nullable Long remoteAs,
+      @JsonProperty(PROP_REMOTE_ASNS) @Nullable LongSpace remoteAsns,
       @JsonProperty(PROP_ROUTE_REFLECTOR) boolean routeReflectorClient,
       @JsonProperty(PROP_SEND_COMMUNITY) boolean sendCommunity) {
+    return new BgpActivePeerConfig(
+        additionalPathsReceive,
+        additionalPathsSelectAll,
+        additionalPathsSend,
+        advertiseExternal,
+        advertiseInactive,
+        allowLocalAsIn,
+        allowRemoteAsOut,
+        appliedRibGroup,
+        authenticationSettings,
+        clusterId,
+        defaultMetric,
+        description,
+        ebgpMultihop,
+        enforceFirstAs,
+        exportPolicy,
+        exportPolicySources,
+        generatedRoutes,
+        group,
+        importPolicy,
+        importPolicySources,
+        localAs,
+        localIp,
+        peerAddress,
+        firstNonNull(remoteAsns, LongSpace.EMPTY),
+        routeReflectorClient,
+        sendCommunity);
+  }
+
+  private BgpActivePeerConfig(
+      boolean additionalPathsReceive,
+      boolean additionalPathsSelectAll,
+      boolean additionalPathsSend,
+      boolean advertiseExternal,
+      boolean advertiseInactive,
+      boolean allowLocalAsIn,
+      boolean allowRemoteAsOut,
+      @Nullable RibGroup appliedRibGroup,
+      @Nullable BgpAuthenticationSettings authenticationSettings,
+      @Nullable Long clusterId,
+      int defaultMetric,
+      @Nullable String description,
+      boolean ebgpMultihop,
+      boolean enforceFirstAs,
+      @Nullable String exportPolicy,
+      @Nullable SortedSet<String> exportPolicySources,
+      @Nullable Set<GeneratedRoute> generatedRoutes,
+      @Nullable String group,
+      @Nullable String importPolicy,
+      @Nullable SortedSet<String> importPolicySources,
+      @Nullable Long localAs,
+      @Nullable Ip localIp,
+      @Nullable Ip peerAddress,
+      @Nullable LongSpace remoteAsns,
+      boolean routeReflectorClient,
+      boolean sendCommunity) {
     super(
         additionalPathsReceive,
         additionalPathsSelectAll,
@@ -75,10 +130,10 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
         importPolicySources,
         localAs,
         localIp,
+        remoteAsns,
         routeReflectorClient,
         sendCommunity);
     _peerAddress = peerAddress;
-    _remoteAs = remoteAs;
   }
 
   @Nullable
@@ -86,13 +141,6 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
   @JsonPropertyDescription("The IPV4 address of the remote peer")
   public Ip getPeerAddress() {
     return _peerAddress;
-  }
-
-  @JsonProperty(PROP_REMOTE_AS)
-  @JsonPropertyDescription("The remote autonomous system of this peering")
-  @Nullable
-  public Long getRemoteAs() {
-    return _remoteAs;
   }
 
   @Override
@@ -104,19 +152,16 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
       return false;
     }
     BgpActivePeerConfig that = (BgpActivePeerConfig) o;
-    return Objects.equals(_peerAddress, that._peerAddress)
-        && Objects.equals(_remoteAs, that._remoteAs)
-        && super.equals(o);
+    return Objects.equals(_peerAddress, that._peerAddress) && super.equals(o);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), _peerAddress, _remoteAs);
+    return Objects.hash(super.hashCode(), _peerAddress);
   }
 
   public static class Builder extends BgpPeerConfig.Builder<Builder, BgpActivePeerConfig> {
     @Nullable private Ip _peerAddress;
-    @Nullable private Long _remoteAs;
 
     protected Builder() {
       super();
@@ -155,7 +200,7 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
               _localAs,
               _localIp,
               _peerAddress,
-              _remoteAs,
+              _remoteAsns,
               _routeReflectorClient,
               _sendCommunity);
       if (_bgpProcess != null) {
@@ -170,11 +215,6 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
 
     public Builder setPeerAddress(@Nullable Ip peerAddress) {
       _peerAddress = peerAddress;
-      return this;
-    }
-
-    public Builder setRemoteAs(@Nullable Long remoteAs) {
-      _remoteAs = remoteAs;
       return this;
     }
   }

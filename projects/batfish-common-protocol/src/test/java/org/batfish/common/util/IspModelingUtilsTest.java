@@ -1,6 +1,7 @@
 package org.batfish.common.util;
 
 import static org.batfish.common.Warnings.TAG_RED_FLAG;
+import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
@@ -151,10 +152,10 @@ public class IspModelingUtilsTest {
 
     assertFalse(
         IspModelingUtils.isValidBgpPeerConfig(
-            invalidPeer, validLocalIps, ImmutableSet.of(), ImmutableSet.of()));
+            invalidPeer, validLocalIps, ImmutableSet.of(), ALL_AS_NUMBERS));
     assertTrue(
         IspModelingUtils.isValidBgpPeerConfig(
-            validPeer, validLocalIps, ImmutableSet.of(), ImmutableSet.of()));
+            validPeer, validLocalIps, ImmutableSet.of(), ALL_AS_NUMBERS));
   }
 
   @Test

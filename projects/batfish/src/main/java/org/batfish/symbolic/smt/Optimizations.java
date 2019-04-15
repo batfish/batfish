@@ -13,6 +13,7 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
@@ -413,7 +414,7 @@ class Optimizations {
                       p.getActiveNeighbors().entrySet()) {
                     BgpActivePeerConfig n = e.getValue();
                     // If iBGP used, then don't merge
-                    if (n.getLocalAs().equals(n.getRemoteAs())) {
+                    if (n.getRemoteAsns().equals(LongSpace.of(n.getLocalAs()))) {
                       acc = false;
                       break;
                     }
