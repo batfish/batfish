@@ -349,10 +349,16 @@ import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.CommunityHalvesExpr;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
+import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityHalf;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.RangeCommunityHalf;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
@@ -2406,6 +2412,141 @@ public class CiscoGrammarTest {
     assertThat(
         ospfProcessAcl.getOutboundInterfaceDistributeLists(),
         equalTo(ImmutableMap.of("GigabitEthernet0/0", dlGig1OutAcl)));
+  }
+
+  @Test
+  public void testIosOspfDistributeListPrefixList() throws IOException {
+    Configuration c = parseConfig("iosOspfDistributeListPrefixList");
+
+    assertThat(c.getRoutingPolicies(), hasKey("~OSPF_DIST_LIST_default_1_GigabitEthernet0/0~"));
+    assertThat(c.getRoutingPolicies(), hasKey("~OSPF_DIST_LIST_default_1~"));
+
+    assertThat(
+        c.getAllInterfaces().get("GigabitEthernet0/0").getOspfInboundDistributeListPolicy(),
+        equalTo("~OSPF_DIST_LIST_default_1_GigabitEthernet0/0~"));
+
+    RoutingPolicy routingPolicy =
+        c.getRoutingPolicies().get("~OSPF_DIST_LIST_default_1_GigabitEthernet0/0~");
+    List<org.batfish.datamodel.routing_policy.statement.Statement> statements =
+        routingPolicy.getStatements();
+
+    assertThat(statements, hasSize(1));
+    assertThat(
+        statements.iterator().next(),
+        equalTo(
+            new If(
+                new Conjunction(
+                    ImmutableList.of(
+                        new MatchPrefixSet(
+                            DestinationNetwork.instance(), new NamedPrefixSet("filter_2")),
+                        new MatchPrefixSet(
+                            DestinationNetwork.instance(), new NamedPrefixSet("filter_1")))),
+                ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                ImmutableList.of(Statements.ExitReject.toStaticStatement()))));
+
+    assertFalse(
+        routingPolicy.process(
+            OspfIntraAreaRoute.builder().setNetwork(Prefix.parse("1.1.1.0/24")).setArea(1L).build(),
+            OspfIntraAreaRoute.builder(),
+            null,
+            "default",
+            Direction.IN));
+    assertFalse(
+        routingPolicy.process(
+            OspfIntraAreaRoute.builder().setNetwork(Prefix.parse("2.2.2.0/24")).setArea(1L).build(),
+            OspfIntraAreaRoute.builder(),
+            null,
+            "default",
+            Direction.IN));
+    assertTrue(
+        routingPolicy.process(
+            OspfIntraAreaRoute.builder().setNetwork(Prefix.parse("3.3.3.0/24")).setArea(1L).build(),
+            OspfIntraAreaRoute.builder(),
+            null,
+            "default",
+            Direction.IN));
+  }
+
+  @Test
+  public void testIosOspfDistributeListPrefixListInterface() throws IOException {
+    Configuration c = parseConfig("iosOspfDistributeListPrefixListInterface");
+
+    assertThat(c.getRoutingPolicies(), hasKey("~OSPF_DIST_LIST_default_1_GigabitEthernet0/0~"));
+    assertThat(c.getRoutingPolicies(), not(hasKey("~OSPF_DIST_LIST_default_1~")));
+
+    assertThat(
+        c.getAllInterfaces().get("GigabitEthernet0/0").getOspfInboundDistributeListPolicy(),
+        equalTo("~OSPF_DIST_LIST_default_1_GigabitEthernet0/0~"));
+
+    RoutingPolicy routingPolicy =
+        c.getRoutingPolicies().get("~OSPF_DIST_LIST_default_1_GigabitEthernet0/0~");
+    List<org.batfish.datamodel.routing_policy.statement.Statement> statements =
+        routingPolicy.getStatements();
+
+    assertThat(statements, hasSize(1));
+    assertThat(
+        statements.iterator().next(),
+        equalTo(
+            new If(
+                new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet("filter_1")),
+                ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                ImmutableList.of(Statements.ExitReject.toStaticStatement()))));
+
+    assertFalse(
+        routingPolicy.process(
+            OspfIntraAreaRoute.builder().setNetwork(Prefix.parse("1.1.1.0/24")).setArea(1L).build(),
+            OspfIntraAreaRoute.builder(),
+            null,
+            "default",
+            Direction.IN));
+    assertTrue(
+        routingPolicy.process(
+            OspfIntraAreaRoute.builder().setNetwork(Prefix.parse("2.2.2.0/24")).setArea(1L).build(),
+            OspfIntraAreaRoute.builder(),
+            null,
+            "default",
+            Direction.IN));
+  }
+
+  @Test
+  public void testIosOspfDistributeListPrefixListGlobal() throws IOException {
+    Configuration c = parseConfig("iosOspfDistributeListPrefixListGlobal");
+
+    assertThat(
+        c.getRoutingPolicies(), not(hasKey("~OSPF_DIST_LIST_default_1_GigabitEthernet0/0~")));
+    assertThat(c.getRoutingPolicies(), hasKey("~OSPF_DIST_LIST_default_1~"));
+
+    assertThat(
+        c.getAllInterfaces().get("GigabitEthernet0/0").getOspfInboundDistributeListPolicy(),
+        equalTo("~OSPF_DIST_LIST_default_1~"));
+
+    RoutingPolicy routingPolicy = c.getRoutingPolicies().get("~OSPF_DIST_LIST_default_1~");
+    List<org.batfish.datamodel.routing_policy.statement.Statement> statements =
+        routingPolicy.getStatements();
+
+    assertThat(statements, hasSize(1));
+    assertThat(
+        statements.iterator().next(),
+        equalTo(
+            new If(
+                new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet("filter_2")),
+                ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                ImmutableList.of(Statements.ExitReject.toStaticStatement()))));
+
+    assertTrue(
+        routingPolicy.process(
+            OspfIntraAreaRoute.builder().setNetwork(Prefix.parse("1.1.1.0/24")).setArea(1L).build(),
+            OspfIntraAreaRoute.builder(),
+            null,
+            "default",
+            Direction.IN));
+    assertFalse(
+        routingPolicy.process(
+            OspfIntraAreaRoute.builder().setNetwork(Prefix.parse("2.2.2.0/24")).setArea(1L).build(),
+            OspfIntraAreaRoute.builder(),
+            null,
+            "default",
+            Direction.IN));
   }
 
   @Test

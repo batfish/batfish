@@ -1227,6 +1227,7 @@ class CiscoConversions {
       @Nonnull String ospfProcessId) {
     DistributeList globalDistributeList = ospfProcess.getInboundGlobalDistributeList();
 
+    String globalPolicyName = String.format("~OSPF_DIST_LIST_%s_%s~", vrf, ospfProcessId);
     BooleanExpr globalCondition = BooleanExprs.TRUE;
     if (globalDistributeList != null
         && globalDistributeList.getFilterType() == DistributeListFilterType.PREFIX_LIST
@@ -1235,10 +1236,6 @@ class CiscoConversions {
           new MatchPrefixSet(
               DestinationNetwork.instance(),
               new NamedPrefixSet(globalDistributeList.getFilterName()));
-    }
-
-    String globalPolicyName = String.format("~OSPF_DIST_LIST_%s_%s~", vrf, ospfProcessId);
-    if (globalCondition != BooleanExprs.TRUE) {
       RoutingPolicy globalPolicy = new RoutingPolicy(globalPolicyName, c);
       globalPolicy
           .getStatements()
@@ -1252,7 +1249,11 @@ class CiscoConversions {
 
     Map<String, DistributeList> interfaceDistributeLists =
         ospfProcess.getInboundInterfaceDistributeLists();
-    for (Entry<String, org.batfish.datamodel.Interface> entry : c.getAllInterfaces().entrySet()) {
+    if (!c.getVrfs().containsKey(vrf)) {
+      return;
+    }
+    for (Entry<String, org.batfish.datamodel.Interface> entry :
+        c.getVrfs().get(vrf).getInterfaces().entrySet()) {
       DistributeList ifaceDistributeList = interfaceDistributeLists.get(entry.getKey());
 
       BooleanExpr interfaceCondition = BooleanExprs.TRUE;
@@ -1266,9 +1267,9 @@ class CiscoConversions {
       }
       String ifacePolicyName =
           String.format("~OSPF_DIST_LIST_%s_%s_%s~", vrf, ospfProcessId, entry.getKey());
+      RoutingPolicy ifacePolicy = new RoutingPolicy(ifacePolicyName, c);
       if (globalCondition != BooleanExprs.TRUE && interfaceCondition != BooleanExprs.TRUE) {
         // conjunction needed only when both global and interface distribute lists are present
-        RoutingPolicy ifacePolicy = new RoutingPolicy(ifacePolicyName, c);
         ifacePolicy
             .getStatements()
             .add(
@@ -1283,6 +1284,14 @@ class CiscoConversions {
         entry.getValue().setOspfInboundDistributeListPolicy(globalPolicyName);
       } else if (interfaceCondition != BooleanExprs.TRUE) {
         // only interface dist list is present
+        ifacePolicy
+            .getStatements()
+            .add(
+                new If(
+                    interfaceCondition,
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement())));
+        c.getRoutingPolicies().put(ifacePolicyName, ifacePolicy);
         entry.getValue().setOspfInboundDistributeListPolicy(ifacePolicyName);
       }
       // do nothing if both global and interface dist lists are not present

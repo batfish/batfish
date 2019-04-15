@@ -13,6 +13,7 @@ import static org.batfish.representation.cisco.CiscoConversions.convertCryptoMap
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpExportPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpImportPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.generateGenerationPolicy;
+import static org.batfish.representation.cisco.CiscoConversions.populateDistributeListPolicies;
 import static org.batfish.representation.cisco.CiscoConversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveKeyringIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveTunnelIfaceNames;
@@ -2669,6 +2670,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
           new Conjunction(
               ImmutableList.of(MATCH_DEFAULT_ROUTE, new MatchProtocol(RoutingProtocol.AGGREGATE))));
     }
+
+    populateDistributeListPolicies(proc, c, vrfName, proc.getName());
 
     Ip routerId = proc.getRouterId();
     if (routerId == null) {
