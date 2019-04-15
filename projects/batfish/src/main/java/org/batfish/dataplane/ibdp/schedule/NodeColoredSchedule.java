@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Set;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpSessionProperties;
+import org.batfish.datamodel.ospf.OspfTopology;
+import org.batfish.datamodel.ospf.OspfTopology.EdgeId;
 import org.batfish.dataplane.ibdp.Node;
 import org.jgrapht.Graph;
 import org.jgrapht.alg.color.GreedyColoring;
@@ -35,14 +37,16 @@ public class NodeColoredSchedule extends IbdpSchedule {
    * Create a new schedule based on existing nodes and topology
    *
    * @param nodes all nodes in the network
-   * @param bgpTopology the bgp peering relationships
+   * @param bgpTopology the BGP peering relationships
+   * @param ospfTopology the OSPF neighbor topology
    */
   public NodeColoredSchedule(
       Map<String, Node> nodes,
       Coloring algorithm,
-      ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology) {
+      ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
+      OspfTopology ospfTopology) {
     super(nodes);
-    makeGraph(nodes, bgpTopology);
+    makeGraph(nodes, bgpTopology, ospfTopology);
 
     // Color the graph
     VertexColoringAlgorithm<String> coloringAlg = getColoringAlgorithmInstance(algorithm, _graph);
@@ -79,10 +83,13 @@ public class NodeColoredSchedule extends IbdpSchedule {
    */
   @SuppressWarnings("deprecation")
   private void makeGraph(
-      Map<String, Node> nodes, ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology) {
+      Map<String, Node> nodes,
+      ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
+      OspfTopology ospfTopology) {
     /*
      * For the purposes of coloring, two nodes are adjacent if:
      * - They have established a BGP session
+     * - They have an OSPF adjacency
      */
 
     // Add all nodes first
@@ -92,6 +99,10 @@ public class NodeColoredSchedule extends IbdpSchedule {
     // Process BGP connections
     for (EndpointPair<BgpPeerConfigId> edge : bgpTopology.edges()) {
       _graph.addEdge(edge.source().getHostname(), edge.target().getHostname());
+    }
+    // Process OSPF edges
+    for (EdgeId edge : ospfTopology.edges()) {
+      _graph.addEdge(edge.getTail().getHostname(), edge.getHead().getHostname());
     }
   }
 
