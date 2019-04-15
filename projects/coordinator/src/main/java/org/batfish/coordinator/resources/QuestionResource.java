@@ -11,10 +11,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.batfish.coordinator.Main;
 
-/**
- * This resource provided functionality for storing and retrieving user-defined data at the snapshot
- * level.
- */
+/** Resource for handling requests about specific ad-hoc or analysis questions */
 @ParametersAreNonnullByDefault
 public final class QuestionResource {
 
