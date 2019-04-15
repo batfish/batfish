@@ -70,9 +70,6 @@ public final class LongSpace extends NumberSpace<Long, LongSpace, LongSpace.Buil
     }
   }
 
-  /** A range expressing entire range of valid AS numbers */
-  public static final LongSpace ALL_AS_NUMBERS = LongSpace.of(Range.closed(1L, 0xFFFFFFFFL));
-
   /** Empty long space */
   public static final LongSpace EMPTY = builder().build();
 

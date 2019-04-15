@@ -1,6 +1,5 @@
 package org.batfish.datamodel;
 
-import static org.batfish.datamodel.LongSpace.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.LongSpace.EMPTY;
 import static org.batfish.datamodel.LongSpace.builder;
 import static org.hamcrest.Matchers.equalTo;
@@ -28,7 +27,10 @@ import org.junit.runners.JUnit4;
 
 /** Tests for {@link LongSpace}. */
 @RunWith(JUnit4.class)
-public class LongSpaceTest {
+public final class LongSpaceTest {
+
+  private static final LongSpace LONGSPACE1 = LongSpace.of(Range.closed(1L, 100000L));
+
   private LongSpace.Builder _b;
 
   @Rule public ExpectedException _expected = ExpectedException.none();
@@ -55,11 +57,10 @@ public class LongSpaceTest {
 
   @Test
   public void testComplement() {
-    LongSpace notAllAsNumbers = ALL_AS_NUMBERS.not(ALL_AS_NUMBERS);
+    LongSpace notAllAsNumbers = LONGSPACE1.not(LONGSPACE1);
     assertTrue("Complement of full space is empty", notAllAsNumbers.isEmpty());
 
-    LongSpace portsWithExclusion =
-        ALL_AS_NUMBERS.toBuilder().excluding(Range.closed(10L, 20L)).build();
+    LongSpace portsWithExclusion = LONGSPACE1.toBuilder().excluding(Range.closed(10L, 20L)).build();
     assertThat(
         portsWithExclusion.not(),
         equalTo(LongSpace.builder().including(Range.closed(10L, 20L)).build()));
@@ -79,7 +80,7 @@ public class LongSpaceTest {
 
   @Test
   public void testConversionToBuilder() {
-    LongSpace space = _b.including(ALL_AS_NUMBERS).excluding(Range.closed(22L, 22L)).build();
+    LongSpace space = _b.including(LONGSPACE1).excluding(Range.closed(22L, 22L)).build();
     Builder newBuilder = space.toBuilder();
     newBuilder.including(Range.closed(-10L, -5L));
     newBuilder.excluding(Range.closed(53L, 53L));
@@ -92,7 +93,8 @@ public class LongSpaceTest {
   public void testConversionToRanges() {
     assertThat(LongSpace.of(1L).getRanges(), equalTo(ImmutableSet.of(Range.closedOpen(1L, 2L))));
     assertThat(
-        ALL_AS_NUMBERS.getRanges(), equalTo(ImmutableSet.of(Range.closedOpen(1L, 0x100000000L))));
+        LONGSPACE1.getRanges(),
+        equalTo(ImmutableSet.of(Range.closedOpen(1L, LONGSPACE1.greatest() + 1L))));
     assertThat(EMPTY.getRanges(), equalTo(ImmutableSet.of()));
   }
 
@@ -317,21 +319,20 @@ public class LongSpaceTest {
     assertThat(
         space.intersection(space2),
         equalTo(LongSpace.builder().including(Range.closed(5L, 9L)).build()));
-    assertThat(ALL_AS_NUMBERS.intersection(EMPTY), equalTo(EMPTY));
+    assertThat(LONGSPACE1.intersection(EMPTY), equalTo(EMPTY));
   }
 
   @Test
   public void testRoundTripThroughBuilder() {
-    LongSpace space = _b.including(ALL_AS_NUMBERS).excluding(Range.closed(22L, 22L)).build();
+    LongSpace space = _b.including(LONGSPACE1).excluding(Range.closed(22L, 22L)).build();
     assertThat(space.toBuilder().build(), equalTo(space));
   }
 
   @Test
   public void testSerialization() throws IOException {
-    String serialized = BatfishObjectMapper.writeString(LongSpace.ALL_AS_NUMBERS);
+    String serialized = BatfishObjectMapper.writeString(LONGSPACE1);
     assertThat(
-        BatfishObjectMapper.mapper().readValue(serialized, LongSpace.class),
-        equalTo(LongSpace.ALL_AS_NUMBERS));
+        BatfishObjectMapper.mapper().readValue(serialized, LongSpace.class), equalTo(LONGSPACE1));
   }
 
   @Test
@@ -409,6 +410,6 @@ public class LongSpaceTest {
     assertThat(
         space.union(space2), equalTo(LongSpace.builder().including(Range.closed(0L, 90L)).build()));
 
-    assertThat(ALL_AS_NUMBERS.union(EMPTY), equalTo(ALL_AS_NUMBERS));
+    assertThat(LONGSPACE1.union(EMPTY), equalTo(LONGSPACE1));
   }
 }

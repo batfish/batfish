@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
+import com.google.common.collect.BoundType;
 import com.google.common.collect.DiscreteDomain;
 import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.Range;
@@ -250,6 +251,19 @@ public abstract class NumberSpace<
   private final boolean isSingletonRange(Range<T> range) {
     // note that argument is guaranteed to be closedOpen Range
     return range.upperEndpoint().equals(discreteDomain().next(range.lowerEndpoint()));
+  }
+
+  /**
+   * Return greatest value.
+   *
+   * @throws NoSuchElementException if space is empty
+   */
+  public final @Nonnull T greatest() {
+    Range<T> span = _rangeset.span();
+    T upperEndpoint = span.upperEndpoint();
+    return span.upperBoundType() == BoundType.CLOSED
+        ? upperEndpoint
+        : discreteDomain().previous(upperEndpoint);
   }
 
   /**
