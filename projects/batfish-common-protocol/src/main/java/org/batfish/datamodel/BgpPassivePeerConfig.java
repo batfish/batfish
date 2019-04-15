@@ -152,7 +152,7 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
 
   /** Check whether a connection from a peer with a given AS number will be accepted. */
   public boolean canConnect(@Nullable Long asNumber) {
-    return _remoteAsns.equals(LongSpace.ALL_AS_NUMBERS)
+    return _remoteAsns.equals(BgpPeerConfig.ALL_AS_NUMBERS)
         || (asNumber != null && _remoteAsns.contains(asNumber));
   }
 
