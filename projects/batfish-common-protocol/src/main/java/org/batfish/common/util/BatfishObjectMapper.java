@@ -19,8 +19,10 @@ import org.batfish.common.util.serialization.BatfishThirdPartySerializationModul
 public final class BatfishObjectMapper {
   private static final ObjectMapper MAPPER = baseMapper();
 
-  private static final ObjectWriter ALWAYS_WRITER =
-      baseMapper().setSerializationInclusion(Include.ALWAYS).writer();
+  private static final ObjectMapper ALWAYS_MAPPER =
+      baseMapper().setSerializationInclusion(Include.ALWAYS);
+
+  private static final ObjectWriter ALWAYS_WRITER = ALWAYS_MAPPER.writer();
 
   private static final ObjectWriter WRITER = MAPPER.writer();
 
@@ -35,6 +37,14 @@ public final class BatfishObjectMapper {
           .setSerializationInclusion(Include.ALWAYS);
 
   private static final ObjectWriter VERBOSE_WRITER = VERBOSE_MAPPER.writer(PRETTY_PRINTER);
+
+  /**
+   * Returns a {@link ObjectMapper} configured to Batfish JSON standards. The JSON produced is not
+   * pretty-printed but does include empty lists and null values.
+   */
+  public static ObjectMapper alwaysMapper() {
+    return ALWAYS_MAPPER;
+  }
 
   /**
    * Returns a {@link ObjectMapper} configured to Batfish JSON standards. The JSON produced is not
