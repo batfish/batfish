@@ -2380,7 +2380,7 @@
                 "localAs" : 1,
                 "localIp" : "1.1.1.1",
                 "peerAddress" : "1.10.1.1",
-                "remoteAs" : 1,
+                "remoteAsns" : "1",
                 "routeReflectorClient" : false,
                 "sendCommunity" : true
               },
@@ -2401,7 +2401,7 @@
                 "group" : "bad-ebgp",
                 "localAs" : 1,
                 "peerAddress" : "3.2.2.2",
-                "remoteAs" : 666,
+                "remoteAsns" : "666",
                 "routeReflectorClient" : false,
                 "sendCommunity" : false
               },
@@ -2422,7 +2422,7 @@
                 "group" : "xanadu",
                 "localAs" : 1,
                 "peerAddress" : "5.6.7.8",
-                "remoteAs" : 555,
+                "remoteAsns" : "555",
                 "routeReflectorClient" : false,
                 "sendCommunity" : false
               },
@@ -2451,7 +2451,7 @@
                 "localAs" : 1,
                 "localIp" : "10.12.11.1",
                 "peerAddress" : "10.12.11.2",
-                "remoteAs" : 2,
+                "remoteAsns" : "2",
                 "routeReflectorClient" : false,
                 "sendCommunity" : true
               }
