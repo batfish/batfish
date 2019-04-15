@@ -23,9 +23,8 @@ public final class LongSpace extends NumberSpace<Long, LongSpace, LongSpace.Buil
   public static final class Builder extends NumberSpace.Builder<Long, LongSpace, Builder> {
 
     @JsonCreator
-    @Nonnull
     @VisibleForTesting
-    static Builder create(@Nullable String s) {
+    static @Nonnull Builder create(@Nullable String s) {
       Builder builder = new Builder();
       create(builder, s);
       return builder;
@@ -70,52 +69,47 @@ public final class LongSpace extends NumberSpace<Long, LongSpace, LongSpace.Buil
     }
   }
 
-  /** Empty long space */
+  /** Empty {@link LongSpace} */
   public static final LongSpace EMPTY = builder().build();
 
   private static final String ERROR_MESSAGE_TEMPLATE = "Invalid range specification %s";
 
   private static final long serialVersionUID = 1L;
 
-  public static Builder builder() {
+  public static @Nonnull Builder builder() {
     return new Builder();
   }
 
   @JsonCreator
   @VisibleForTesting
-  @Nonnull
-  static LongSpace create(@Nullable String s) {
+  static @Nonnull LongSpace create(@Nullable String s) {
     return LongSpace.Builder.create(s).build();
   }
 
-  /** Create a new singleton long space from an long value */
+  /** Create a new singleton {@link LongSpace} from an long value */
   public static @Nonnull LongSpace of(long value) {
     return builder().including(Range.singleton(value)).build();
   }
 
-  /** Create a new long space from a {@link Range} */
+  /** Create a new {@link LongSpace} from a {@link Range} */
   public static @Nonnull LongSpace of(Range<Long> range) {
     return builder().including(range).build();
   }
 
-  /** Create a new long space from a {@link RangeSet} */
+  /** Create a new {@link LongSpace} from a {@link RangeSet} */
   public static @Nonnull LongSpace of(RangeSet<Long> rangeSet) {
     return builder().includingAll(rangeSet).build();
   }
 
-  /** Create a new long space containing the union of the given {@link Range ranges}. */
-  public static LongSpace unionOf(Iterable<Range<Long>> ranges) {
-    Builder b = builder();
-    for (Range<Long> range : ranges) {
-      b.including(range);
-    }
-    return b.build();
+  /** Create a new {@link LongSpace} containing the union of the given {@link Range ranges}. */
+  public static @Nonnull LongSpace unionOf(Iterable<Range<Long>> ranges) {
+    return builder().includingAll(ranges).build();
   }
 
-  /** Create a new long space containing the union of the given {@link Range ranges}. */
+  /** Create a new {@link LongSpace} containing the union of the given {@link Range ranges}. */
   @SafeVarargs
   @SuppressWarnings("varargs")
-  public static LongSpace unionOf(Range<Long>... ranges) {
+  public static @Nonnull LongSpace unionOf(Range<Long>... ranges) {
     return unionOf(Arrays.asList(ranges));
   }
 
@@ -133,12 +127,8 @@ public final class LongSpace extends NumberSpace<Long, LongSpace, LongSpace.Buil
     return EMPTY;
   }
 
-  /*
-   * Invariant: always ensure ranges are stored in canonical form (enforced in builder methods)
-   * and immutable (enforced in constructor)
-   */
-
   /** Return an ordered set of longs described by this space. */
+  @Override
   public @Nonnull Set<Long> enumerate() {
     return ImmutableRangeSet.copyOf(_rangeset).asSet(DiscreteDomain.longs());
   }

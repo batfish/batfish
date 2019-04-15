@@ -182,7 +182,7 @@ public abstract class NumberSpace<
     return _rangeset.contains(value);
   }
 
-  /** Compute the difference between two long spaces */
+  /** Compute the difference between two {@link NumberSpace}s */
   public final S difference(S other) {
     return this.intersection(other.not(getThis()));
   }
@@ -309,12 +309,12 @@ public abstract class NumberSpace<
     return enumerate().stream();
   }
 
-  /** Compute the symmetric difference between two long spaces */
+  /** Compute the symmetric difference between two {@link NumberSpace}s */
   public final S symmetricDifference(S other) {
     return this.union(other).difference(intersection(other));
   }
 
-  /** Return a builder initialized with existing long space */
+  /** Return a builder initialized with existing {@link NumberSpace} */
   public final B toBuilder() {
     return newBuilder().including(getThis());
   }
@@ -331,7 +331,7 @@ public abstract class NumberSpace<
     return getRanges().stream().map(this::toRangeString).collect(Collectors.joining(","));
   }
 
-  /** Union two long spaces together */
+  /** Union two {@link NumberSpace}s together */
   public final S union(S other) {
     B builder = toBuilder();
     other._rangeset.asRanges().forEach(builder::including);

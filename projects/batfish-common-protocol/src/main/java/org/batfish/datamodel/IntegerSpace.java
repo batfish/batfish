@@ -24,7 +24,7 @@ public final class IntegerSpace extends NumberSpace<Integer, IntegerSpace, Integ
     super(rangeset);
   }
 
-  /** Empty integer space */
+  /** Empty {@link IntegerSpace} */
   public static final IntegerSpace EMPTY = builder().build();
 
   /** A range expressing TCP/UDP ports */
@@ -47,8 +47,7 @@ public final class IntegerSpace extends NumberSpace<Integer, IntegerSpace, Integ
 
   @JsonCreator
   @VisibleForTesting
-  @Nonnull
-  static IntegerSpace create(@Nullable String s) {
+  static @Nonnull IntegerSpace create(@Nullable String s) {
     return IntegerSpace.Builder.create(s).build();
   }
 
@@ -62,52 +61,65 @@ public final class IntegerSpace extends NumberSpace<Integer, IntegerSpace, Integ
   }
 
   /** Return this space as a set of included {@link SubRange}s */
-  public Set<SubRange> getSubRanges() {
+  public @Nonnull Set<SubRange> getSubRanges() {
     return _rangeset.asRanges().stream()
         .map(r -> new SubRange(r.lowerEndpoint(), r.upperEndpoint() - 1))
         .collect(ImmutableSet.toImmutableSet());
   }
 
   /** Return an ordered set of integers described by this space. */
-  public Set<Integer> enumerate() {
+  @Override
+  public @Nonnull Set<Integer> enumerate() {
     return ImmutableRangeSet.copyOf(_rangeset).asSet(DiscreteDomain.integers());
   }
 
   /** Returns a stream of the included integers. */
-  public IntStream intStream() {
+  public @Nonnull IntStream intStream() {
     return stream().mapToInt(Integer::intValue);
   }
 
-  /** Create a new integer space from a {@link SubRange} */
-  public static IntegerSpace of(SubRange range) {
+  /** Create a new {@link IntegerSpace} from a {@link SubRange} */
+  public static @Nonnull IntegerSpace of(SubRange range) {
     return builder().including(range).build();
   }
 
-  /** Create a new integer space containing the union of the given {@link SubRange ranges}. */
-  public static IntegerSpace unionOf(SubRange... ranges) {
+  /**
+   * Create a new {@link IntegerSpace} containing the union of the given {@link SubRange subRanges}.
+   */
+  public static @Nonnull IntegerSpace unionOf(SubRange... subRanges) {
+    return unionOfSubRanges(Arrays.asList(subRanges));
+  }
+
+  /** Create a new {@link IntegerSpace} containing the union of the given {@link Range ranges}. */
+  @SafeVarargs
+  @SuppressWarnings("varargs")
+  public static @Nonnull IntegerSpace unionOf(Range<Integer>... ranges) {
     return unionOf(Arrays.asList(ranges));
   }
 
-  /** Create a new integer space containing the union of the given {@link SubRange ranges}. */
-  public static IntegerSpace unionOf(Iterable<SubRange> ranges) {
-    Builder b = builder();
-    for (SubRange range : ranges) {
-      b.including(range);
-    }
-    return b.build();
+  /** Create a new {@link IntegerSpace} containing the union of the given {@link Range ranges}. */
+  public static IntegerSpace unionOf(Iterable<Range<Integer>> ranges) {
+    return builder().includingAll(ranges).build();
   }
 
-  /** Create a new integer space from a {@link Range} */
+  /**
+   * Create a new {@link IntegerSpace} containing the union of the given {@link SubRange subRanges}.
+   */
+  public static IntegerSpace unionOfSubRanges(Iterable<SubRange> subRanges) {
+    return builder().includingAllSubRanges(subRanges).build();
+  }
+
+  /** Create a new {@link IntegerSpace} from a {@link Range} */
   public static IntegerSpace of(Range<Integer> range) {
     return builder().including(range).build();
   }
 
-  /** Create a new integer space from a {@link RangeSet} */
+  /** Create a new {@link IntegerSpace} from a {@link RangeSet} */
   public static IntegerSpace of(RangeSet<Integer> rangeSet) {
     return builder().includingAll(rangeSet).build();
   }
 
-  /** Create a new singleton integer space from an integer value */
+  /** Create a new singleton {@link IntegerSpace} from an integer value */
   public static IntegerSpace of(int value) {
     return builder().including(Range.singleton(value)).build();
   }
@@ -118,9 +130,9 @@ public final class IntegerSpace extends NumberSpace<Integer, IntegerSpace, Integ
 
   /** A builder for {@link IntegerSpace} */
   public static final class Builder extends NumberSpace.Builder<Integer, IntegerSpace, Builder> {
-    /** Include given {@code longs}. */
-    public final Builder includingAllSubranges(Iterable<SubRange> numbers) {
-      numbers.forEach(this::including);
+    /** Include given {@link SubRange subRanges}. */
+    public final @Nonnull Builder includingAllSubRanges(Iterable<SubRange> subRanges) {
+      subRanges.forEach(this::including);
       return getThis();
     }
 
@@ -139,7 +151,7 @@ public final class IntegerSpace extends NumberSpace<Integer, IntegerSpace, Integ
     }
 
     @Override
-    protected Range<Integer> parse(String s) {
+    protected @Nonnull Range<Integer> parse(String s) {
       try {
         int i = Integer.parseUnsignedInt(s);
         return (Range.closed(i, i));
@@ -154,7 +166,7 @@ public final class IntegerSpace extends NumberSpace<Integer, IntegerSpace, Integ
     }
 
     @Override
-    protected DiscreteDomain<Integer> discreteDomain() {
+    protected @Nonnull DiscreteDomain<Integer> discreteDomain() {
       return DiscreteDomain.integers();
     }
 
@@ -163,7 +175,7 @@ public final class IntegerSpace extends NumberSpace<Integer, IntegerSpace, Integ
     }
 
     /** Include a {@link SubRange} */
-    public Builder excluding(SubRange range) {
+    public @Nonnull Builder excluding(SubRange range) {
       if (!range.isEmpty()) {
         excluding(
             Range.closed(range.getStart(), range.getEnd()).canonical(DiscreteDomain.integers()));
@@ -172,7 +184,7 @@ public final class IntegerSpace extends NumberSpace<Integer, IntegerSpace, Integ
     }
 
     /** Include a {@link SubRange} */
-    public Builder including(SubRange range) {
+    public @Nonnull Builder including(SubRange range) {
       if (!range.isEmpty()) {
         including(
             Range.closed(range.getStart(), range.getEnd()).canonical(DiscreteDomain.integers()));
@@ -181,9 +193,8 @@ public final class IntegerSpace extends NumberSpace<Integer, IntegerSpace, Integ
     }
 
     @JsonCreator
-    @Nonnull
     @VisibleForTesting
-    static Builder create(@Nullable String s) {
+    static @Nonnull Builder create(@Nullable String s) {
       Builder builder = new Builder();
       NumberSpace.Builder.create(builder, s);
       return builder;
