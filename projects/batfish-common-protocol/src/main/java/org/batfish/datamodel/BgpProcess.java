@@ -102,10 +102,10 @@ public class BgpProcess implements Serializable {
   /** Constructs a BgpProcess */
   public BgpProcess() {
     _activeNeighbors = new TreeMap<>();
+    _interfaceNeighbors = new TreeMap<>();
     _tieBreaker = BgpTieBreaker.ARRIVAL_ORDER;
     _clusterIds = new ClusterIdsSupplier();
     _originationSpace = new PrefixSpace();
-    _activeNeighbors = new TreeMap<>();
     _passiveNeighbors = new TreeMap<>();
   }
 
