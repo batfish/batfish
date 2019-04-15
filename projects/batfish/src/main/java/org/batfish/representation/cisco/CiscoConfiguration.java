@@ -98,6 +98,7 @@ import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
@@ -1915,16 +1916,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
                 .setRemoteAs(lpg.getRemoteAs());
       } else if (lpg instanceof DynamicIpBgpPeerGroup) {
         DynamicIpBgpPeerGroup dpg = (DynamicIpBgpPeerGroup) lpg;
-        // Sort the remote AS numbers for consistent refs.
-        SortedSet<Long> asns =
-            ImmutableSortedSet.<Long>naturalOrder()
-                .add(dpg.getRemoteAs())
-                .addAll(firstNonNull(dpg.getAlternateAs(), ImmutableList.of()))
-                .build();
+        LongSpace.Builder asns = LongSpace.builder().including(dpg.getRemoteAs());
+        Optional.ofNullable(dpg.getAlternateAs()).ifPresent(asns::includingAll);
         newNeighborBuilder =
             BgpPassivePeerConfig.builder()
                 .setPeerPrefix(dpg.getPrefix())
-                .setRemoteAs(ImmutableList.copyOf(asns));
+                .setRemoteAsns(asns.build());
       } else {
         throw new VendorConversionException("Invalid BGP leaf neighbor type");
       }

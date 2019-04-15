@@ -1224,7 +1224,7 @@
                         "localAs" : 2,
                         "localIp" : "2.1.1.1",
                         "peerAddress" : "2.1.2.1",
-                        "remoteAs" : 2,
+                        "remoteAsns" : "2",
                         "routeReflectorClient" : false,
                         "sendCommunity" : true
                       },
@@ -1246,7 +1246,7 @@
                         "localAs" : 2,
                         "localIp" : "2.1.1.1",
                         "peerAddress" : "2.1.2.2",
-                        "remoteAs" : 2,
+                        "remoteAsns" : "2",
                         "routeReflectorClient" : false,
                         "sendCommunity" : true
                       },
@@ -1275,7 +1275,7 @@
                         "localAs" : 2,
                         "localIp" : "10.12.11.2",
                         "peerAddress" : "10.12.11.1",
-                        "remoteAs" : 1,
+                        "remoteAsns" : "1",
                         "routeReflectorClient" : false,
                         "sendCommunity" : true
                       }

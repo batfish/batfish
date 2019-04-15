@@ -32,6 +32,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.RegexCommunitySet;
@@ -653,11 +654,11 @@ public class Graph {
         continue;
       }
       for (BgpActivePeerConfig n : p.getActiveNeighbors().values()) {
-        if (n.getLocalAs() == null || n.getRemoteAs() == null) {
+        if (n.getLocalAs() == null || n.getRemoteAsns().isEmpty()) {
           // Invalid config
           continue;
         }
-        if (n.getLocalAs().equals(n.getRemoteAs()) && n.getLocalIp() != null) {
+        if (n.getRemoteAsns().equals(LongSpace.of(n.getLocalAs()))) {
           ips.computeIfAbsent(hostname, key -> new HashSet<>()).add(n.getLocalIp());
         }
       }
@@ -678,11 +679,11 @@ public class Graph {
       for (Entry<Prefix, BgpActivePeerConfig> entry2 : proc.getActiveNeighbors().entrySet()) {
         Prefix remotePrefix = entry2.getKey();
         BgpActivePeerConfig localBgpConfig = entry2.getValue();
-        if (localBgpConfig.getLocalAs() == null || localBgpConfig.getRemoteAs() == null) {
+        if (localBgpConfig.getLocalAs() == null || localBgpConfig.getRemoteAsns().isEmpty()) {
           // Invalid config
           continue;
         }
-        if (!localBgpConfig.getLocalAs().equals(localBgpConfig.getRemoteAs())) {
+        if (!localBgpConfig.getRemoteAsns().equals(LongSpace.of(localBgpConfig.getLocalAs()))) {
           // Not iBGP
           continue;
         }
