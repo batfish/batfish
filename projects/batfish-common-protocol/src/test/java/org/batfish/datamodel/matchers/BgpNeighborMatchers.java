@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasAllowLocalAsIn;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasAllowRemoteAsOut;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasClusterId;
@@ -106,16 +107,27 @@ public class BgpNeighborMatchers {
     return new HasEnforceFirstAs(equalTo(true));
   }
 
-  /** Provides a matcher that matches if the BGP neighbor has the specified remoteAs. */
-  public static HasRemoteAs hasRemoteAs(Long remoteAs) {
-    return new HasRemoteAs(equalTo(remoteAs));
+  /**
+   * Provides a matcher that matches if the {@link BgpPeerConfig}'s remoteAs contains exactly
+   * singleton {@code expectedRemoteAs}.
+   */
+  public static Matcher<BgpPeerConfig> hasRemoteAs(Long expectedRemoteAs) {
+    return new HasRemoteAs(equalTo(LongSpace.of(expectedRemoteAs)));
   }
 
   /**
-   * Provides a matcher that matches if the provided {@code subMatcher} matches the BGP neighbor's
-   * remoteAs.
+   * Provides a matcher that matches if the {@link BgpPeerConfig}'s remoteAs is {@code
+   * expectedRemoteAs}.
    */
-  public static HasRemoteAs hasRemoteAs(Matcher<? super Long> subMatcher) {
+  public static Matcher<BgpPeerConfig> hasRemoteAs(LongSpace expectedRemoteAs) {
+    return new HasRemoteAs(equalTo(expectedRemoteAs));
+  }
+
+  /**
+   * Provides a matcher that matches if the {@link BgpPeerConfig}'s remoteAs is matched by the
+   * provded {@code subMatcher}.
+   */
+  public static Matcher<BgpPeerConfig> hasRemoteAs(Matcher<? super LongSpace> subMatcher) {
     return new HasRemoteAs(subMatcher);
   }
 }

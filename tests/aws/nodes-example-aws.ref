@@ -1734,7 +1734,7 @@
                   "localAs" : 65301,
                   "localIp" : "10.10.10.38",
                   "peerAddress" : "10.10.10.37",
-                  "remoteAs" : 65201,
+                  "remoteAsns" : "65201",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 },
@@ -1756,7 +1756,7 @@
                   "localAs" : 65301,
                   "localIp" : "10.10.10.46",
                   "peerAddress" : "10.10.10.45",
-                  "remoteAs" : 65202,
+                  "remoteAsns" : "65202",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 },
@@ -1781,7 +1781,7 @@
                   "localAs" : 65301,
                   "localIp" : "10.10.30.1",
                   "peerAddress" : "10.10.30.2",
-                  "remoteAs" : 65331,
+                  "remoteAsns" : "65331",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 },
@@ -1802,7 +1802,7 @@
                   "localAs" : 65301,
                   "localIp" : "10.10.255.8",
                   "peerAddress" : "10.10.255.7",
-                  "remoteAs" : 65301,
+                  "remoteAsns" : "65301",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 },
@@ -1838,7 +1838,7 @@
                   "localAs" : 65301,
                   "localIp" : "169.254.13.238",
                   "peerAddress" : "169.254.13.237",
-                  "remoteAs" : 65401,
+                  "remoteAsns" : "65401",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 },
@@ -1874,7 +1874,7 @@
                   "localAs" : 65301,
                   "localIp" : "169.254.15.194",
                   "peerAddress" : "169.254.15.193",
-                  "remoteAs" : 65401,
+                  "remoteAsns" : "65401",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 }
@@ -4206,7 +4206,7 @@
                   "localAs" : 65401,
                   "localIp" : "169.254.13.237",
                   "peerAddress" : "169.254.13.238",
-                  "remoteAs" : 65301,
+                  "remoteAsns" : "65301",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 },
@@ -4226,7 +4226,7 @@
                   "localAs" : 65401,
                   "localIp" : "169.254.15.193",
                   "peerAddress" : "169.254.15.194",
-                  "remoteAs" : 65301,
+                  "remoteAsns" : "65301",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 },
@@ -4247,7 +4247,7 @@
                   "localAs" : 65401,
                   "localIp" : "240.0.0.6",
                   "peerAddress" : "240.0.0.7",
-                  "remoteAs" : 65401,
+                  "remoteAsns" : "65401",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 }
@@ -4359,7 +4359,7 @@
                   "localAs" : 65401,
                   "localIp" : "240.0.0.7",
                   "peerAddress" : "240.0.0.6",
-                  "remoteAs" : 65401,
+                  "remoteAsns" : "65401",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 }

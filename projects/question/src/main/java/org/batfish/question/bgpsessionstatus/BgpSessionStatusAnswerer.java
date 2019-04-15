@@ -25,6 +25,7 @@ import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.SelfDescribingObject;
@@ -195,7 +196,7 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
                 COL_LOCAL_IP, Schema.IP, "The local IP of the session", false, false),
             new ColumnMetadata(
                 COL_REMOTE_AS,
-                Schema.SELF_DESCRIBING,
+                Schema.STRING,
                 "The remote AS or list of ASes of the session",
                 false,
                 false),
@@ -248,7 +249,7 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
         .put(COL_LOCAL_AS, activePeer.getLocalAs())
         .put(COL_LOCAL_IP, activePeer.getLocalIp())
         .put(COL_NODE, new Node(activeId.getHostname()))
-        .put(COL_REMOTE_AS, new SelfDescribingObject(Schema.LONG, activePeer.getRemoteAs()))
+        .put(COL_REMOTE_AS, activePeer.getRemoteAsns().toString())
         .put(COL_REMOTE_NODE, remoteNode)
         .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, activePeer.getPeerAddress()))
         .put(COL_SESSION_TYPE, type)
@@ -268,9 +269,7 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
         .put(COL_LOCAL_AS, passivePeer.getLocalAs())
         .put(COL_LOCAL_IP, passivePeer.getLocalIp())
         .put(COL_NODE, new Node(passiveId.getHostname()))
-        .put(
-            COL_REMOTE_AS,
-            new SelfDescribingObject(Schema.list(Schema.LONG), passivePeer.getRemoteAs()))
+        .put(COL_REMOTE_AS, passivePeer.getRemoteAsns().toString())
         .put(COL_REMOTE_NODE, null)
         .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.PREFIX, passivePeer.getPeerPrefix()))
         .put(COL_SESSION_TYPE, SessionType.UNSET)
@@ -298,7 +297,7 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
         .put(COL_LOCAL_AS, passivePeer.getLocalAs())
         .put(COL_LOCAL_IP, localIp)
         .put(COL_NODE, new Node(passiveId.getHostname()))
-        .put(COL_REMOTE_AS, new SelfDescribingObject(Schema.LONG, activePeer.getLocalAs()))
+        .put(COL_REMOTE_AS, LongSpace.of(activePeer.getLocalAs()).toString())
         .put(COL_REMOTE_NODE, new Node(activeId.getHostname()))
         .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, activePeer.getLocalIp()))
         .put(COL_SESSION_TYPE, type)

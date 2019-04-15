@@ -43,7 +43,7 @@
           "isKey" : false,
           "isValue" : false,
           "name" : "Remote_AS",
-          "schema" : "SelfDescribing"
+          "schema" : "String"
         },
         {
           "description" : "Remote node for this session",
@@ -89,10 +89,7 @@
           "id" : "node-as2border2",
           "name" : "as2border2"
         },
-        "Remote_AS" : {
-          "schema" : "Long",
-          "value" : 3
-        },
+        "Remote_AS" : "3",
         "Remote_Node" : {
           "id" : "node-as3border1",
           "name" : "as3border1"

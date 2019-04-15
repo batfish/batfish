@@ -28,7 +28,7 @@
             "localAs" : 1,
             "localIp" : "1.1.1.1",
             "peerAddress" : "1.10.1.1",
-            "remoteAs" : 1,
+            "remoteAsns" : "1",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -56,7 +56,7 @@
             "localAs" : 1,
             "localIp" : "1.10.1.1",
             "peerAddress" : "1.1.1.1",
-            "remoteAs" : 1,
+            "remoteAsns" : "1",
             "routeReflectorClient" : true,
             "sendCommunity" : true
           },
@@ -99,7 +99,7 @@
             "localAs" : 1,
             "localIp" : "10.12.11.1",
             "peerAddress" : "10.12.11.2",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -134,7 +134,7 @@
             "localAs" : 2,
             "localIp" : "10.12.11.2",
             "peerAddress" : "10.12.11.1",
-            "remoteAs" : 1,
+            "remoteAsns" : "1",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -170,7 +170,7 @@
             "localAs" : 1,
             "localIp" : "1.2.2.2",
             "peerAddress" : "1.10.1.1",
-            "remoteAs" : 1,
+            "remoteAsns" : "1",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -198,7 +198,7 @@
             "localAs" : 1,
             "localIp" : "1.10.1.1",
             "peerAddress" : "1.2.2.2",
-            "remoteAs" : 1,
+            "remoteAsns" : "1",
             "routeReflectorClient" : true,
             "sendCommunity" : true
           },
@@ -241,7 +241,7 @@
             "localAs" : 1,
             "localIp" : "10.13.22.1",
             "peerAddress" : "10.13.22.3",
-            "remoteAs" : 3,
+            "remoteAsns" : "3",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -276,7 +276,7 @@
             "localAs" : 3,
             "localIp" : "10.13.22.3",
             "peerAddress" : "10.13.22.1",
-            "remoteAs" : 1,
+            "remoteAsns" : "1",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -312,7 +312,7 @@
             "localAs" : 1,
             "localIp" : "1.10.1.1",
             "peerAddress" : "1.1.1.1",
-            "remoteAs" : 1,
+            "remoteAsns" : "1",
             "routeReflectorClient" : true,
             "sendCommunity" : true
           },
@@ -340,7 +340,7 @@
             "localAs" : 1,
             "localIp" : "1.1.1.1",
             "peerAddress" : "1.10.1.1",
-            "remoteAs" : 1,
+            "remoteAsns" : "1",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -376,7 +376,7 @@
             "localAs" : 1,
             "localIp" : "1.10.1.1",
             "peerAddress" : "1.2.2.2",
-            "remoteAs" : 1,
+            "remoteAsns" : "1",
             "routeReflectorClient" : true,
             "sendCommunity" : true
           },
@@ -404,7 +404,7 @@
             "localAs" : 1,
             "localIp" : "1.2.2.2",
             "peerAddress" : "1.10.1.1",
-            "remoteAs" : 1,
+            "remoteAsns" : "1",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -440,7 +440,7 @@
             "localAs" : 2,
             "localIp" : "2.1.1.1",
             "peerAddress" : "2.1.2.1",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -468,7 +468,7 @@
             "localAs" : 2,
             "localIp" : "2.1.2.1",
             "peerAddress" : "2.1.1.1",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : true,
             "sendCommunity" : true
           },
@@ -504,7 +504,7 @@
             "localAs" : 2,
             "localIp" : "2.1.1.1",
             "peerAddress" : "2.1.2.2",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -532,7 +532,7 @@
             "localAs" : 2,
             "localIp" : "2.1.2.2",
             "peerAddress" : "2.1.1.1",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : true,
             "sendCommunity" : true
           },
@@ -575,7 +575,7 @@
             "localAs" : 2,
             "localIp" : "10.12.11.2",
             "peerAddress" : "10.12.11.1",
-            "remoteAs" : 1,
+            "remoteAsns" : "1",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -610,7 +610,7 @@
             "localAs" : 1,
             "localIp" : "10.12.11.1",
             "peerAddress" : "10.12.11.2",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -646,7 +646,7 @@
             "localAs" : 2,
             "localIp" : "2.1.1.2",
             "peerAddress" : "2.1.2.1",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -674,7 +674,7 @@
             "localAs" : 2,
             "localIp" : "2.1.2.1",
             "peerAddress" : "2.1.1.2",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : true,
             "sendCommunity" : true
           },
@@ -710,7 +710,7 @@
             "localAs" : 2,
             "localIp" : "2.1.1.2",
             "peerAddress" : "2.1.2.2",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -738,7 +738,7 @@
             "localAs" : 2,
             "localIp" : "2.1.2.2",
             "peerAddress" : "2.1.1.2",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : true,
             "sendCommunity" : true
           },
@@ -781,7 +781,7 @@
             "localAs" : 2,
             "localIp" : "10.23.21.2",
             "peerAddress" : "10.23.21.3",
-            "remoteAs" : 3,
+            "remoteAsns" : "3",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -816,7 +816,7 @@
             "localAs" : 3,
             "localIp" : "10.23.21.3",
             "peerAddress" : "10.23.21.2",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -852,7 +852,7 @@
             "localAs" : 2,
             "localIp" : "2.1.2.1",
             "peerAddress" : "2.1.1.1",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : true,
             "sendCommunity" : true
           },
@@ -880,7 +880,7 @@
             "localAs" : 2,
             "localIp" : "2.1.1.1",
             "peerAddress" : "2.1.2.1",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -916,7 +916,7 @@
             "localAs" : 2,
             "localIp" : "2.1.2.1",
             "peerAddress" : "2.1.1.2",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : true,
             "sendCommunity" : true
           },
@@ -944,7 +944,7 @@
             "localAs" : 2,
             "localIp" : "2.1.1.2",
             "peerAddress" : "2.1.2.1",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -980,7 +980,7 @@
             "localAs" : 2,
             "localIp" : "2.1.2.1",
             "peerAddress" : "2.1.3.1",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : true,
             "sendCommunity" : true
           },
@@ -1008,7 +1008,7 @@
             "localAs" : 2,
             "localIp" : "2.1.3.1",
             "peerAddress" : "2.1.2.1",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -1044,7 +1044,7 @@
             "localAs" : 2,
             "localIp" : "2.1.2.1",
             "peerAddress" : "2.1.3.2",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : true,
             "sendCommunity" : true
           },
@@ -1072,7 +1072,7 @@
             "localAs" : 2,
             "localIp" : "2.1.3.2",
             "peerAddress" : "2.1.2.1",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -1108,7 +1108,7 @@
             "localAs" : 2,
             "localIp" : "2.1.2.2",
             "peerAddress" : "2.1.1.1",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : true,
             "sendCommunity" : true
           },
@@ -1136,7 +1136,7 @@
             "localAs" : 2,
             "localIp" : "2.1.1.1",
             "peerAddress" : "2.1.2.2",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -1172,7 +1172,7 @@
             "localAs" : 2,
             "localIp" : "2.1.2.2",
             "peerAddress" : "2.1.1.2",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : true,
             "sendCommunity" : true
           },
@@ -1200,7 +1200,7 @@
             "localAs" : 2,
             "localIp" : "2.1.1.2",
             "peerAddress" : "2.1.2.2",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -1236,7 +1236,7 @@
             "localAs" : 2,
             "localIp" : "2.1.2.2",
             "peerAddress" : "2.1.3.1",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : true,
             "sendCommunity" : true
           },
@@ -1264,7 +1264,7 @@
             "localAs" : 2,
             "localIp" : "2.1.3.1",
             "peerAddress" : "2.1.2.2",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -1300,7 +1300,7 @@
             "localAs" : 2,
             "localIp" : "2.1.2.2",
             "peerAddress" : "2.1.3.2",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : true,
             "sendCommunity" : true
           },
@@ -1328,7 +1328,7 @@
             "localAs" : 2,
             "localIp" : "2.1.3.2",
             "peerAddress" : "2.1.2.2",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -1371,7 +1371,7 @@
             "localAs" : 65001,
             "localIp" : "2.34.101.4",
             "peerAddress" : "2.34.101.3",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -1406,7 +1406,7 @@
             "localAs" : 2,
             "localIp" : "2.34.101.3",
             "peerAddress" : "2.34.101.4",
-            "remoteAs" : 65001,
+            "remoteAsns" : "65001",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -1449,7 +1449,7 @@
             "localAs" : 65001,
             "localIp" : "2.34.201.4",
             "peerAddress" : "2.34.201.3",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -1484,7 +1484,7 @@
             "localAs" : 2,
             "localIp" : "2.34.201.3",
             "peerAddress" : "2.34.201.4",
-            "remoteAs" : 65001,
+            "remoteAsns" : "65001",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -1520,7 +1520,7 @@
             "localAs" : 2,
             "localIp" : "2.1.3.1",
             "peerAddress" : "2.1.2.1",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -1548,7 +1548,7 @@
             "localAs" : 2,
             "localIp" : "2.1.2.1",
             "peerAddress" : "2.1.3.1",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : true,
             "sendCommunity" : true
           },
@@ -1584,7 +1584,7 @@
             "localAs" : 2,
             "localIp" : "2.1.3.1",
             "peerAddress" : "2.1.2.2",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -1612,7 +1612,7 @@
             "localAs" : 2,
             "localIp" : "2.1.2.2",
             "peerAddress" : "2.1.3.1",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : true,
             "sendCommunity" : true
           },
@@ -1655,7 +1655,7 @@
             "localAs" : 2,
             "localIp" : "2.34.101.3",
             "peerAddress" : "2.34.101.4",
-            "remoteAs" : 65001,
+            "remoteAsns" : "65001",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -1690,7 +1690,7 @@
             "localAs" : 65001,
             "localIp" : "2.34.101.4",
             "peerAddress" : "2.34.101.3",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -1726,7 +1726,7 @@
             "localAs" : 2,
             "localIp" : "2.1.3.2",
             "peerAddress" : "2.1.2.1",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -1754,7 +1754,7 @@
             "localAs" : 2,
             "localIp" : "2.1.2.1",
             "peerAddress" : "2.1.3.2",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : true,
             "sendCommunity" : true
           },
@@ -1790,7 +1790,7 @@
             "localAs" : 2,
             "localIp" : "2.1.3.2",
             "peerAddress" : "2.1.2.2",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -1818,7 +1818,7 @@
             "localAs" : 2,
             "localIp" : "2.1.2.2",
             "peerAddress" : "2.1.3.2",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : true,
             "sendCommunity" : true
           },
@@ -1861,7 +1861,7 @@
             "localAs" : 2,
             "localIp" : "2.34.201.3",
             "peerAddress" : "2.34.201.4",
-            "remoteAs" : 65001,
+            "remoteAsns" : "65001",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -1896,7 +1896,7 @@
             "localAs" : 65001,
             "localIp" : "2.34.201.4",
             "peerAddress" : "2.34.201.3",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -1932,7 +1932,7 @@
             "localAs" : 3,
             "localIp" : "3.1.1.1",
             "peerAddress" : "3.10.1.1",
-            "remoteAs" : 3,
+            "remoteAsns" : "3",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -1960,7 +1960,7 @@
             "localAs" : 3,
             "localIp" : "3.10.1.1",
             "peerAddress" : "3.1.1.1",
-            "remoteAs" : 3,
+            "remoteAsns" : "3",
             "routeReflectorClient" : true,
             "sendCommunity" : true
           },
@@ -2003,7 +2003,7 @@
             "localAs" : 3,
             "localIp" : "10.23.21.3",
             "peerAddress" : "10.23.21.2",
-            "remoteAs" : 2,
+            "remoteAsns" : "2",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -2038,7 +2038,7 @@
             "localAs" : 2,
             "localIp" : "10.23.21.2",
             "peerAddress" : "10.23.21.3",
-            "remoteAs" : 3,
+            "remoteAsns" : "3",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -2074,7 +2074,7 @@
             "localAs" : 3,
             "localIp" : "3.2.2.2",
             "peerAddress" : "3.10.1.1",
-            "remoteAs" : 3,
+            "remoteAsns" : "3",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -2102,7 +2102,7 @@
             "localAs" : 3,
             "localIp" : "3.10.1.1",
             "peerAddress" : "3.2.2.2",
-            "remoteAs" : 3,
+            "remoteAsns" : "3",
             "routeReflectorClient" : true,
             "sendCommunity" : true
           },
@@ -2145,7 +2145,7 @@
             "localAs" : 3,
             "localIp" : "10.13.22.3",
             "peerAddress" : "10.13.22.1",
-            "remoteAs" : 1,
+            "remoteAsns" : "1",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -2180,7 +2180,7 @@
             "localAs" : 1,
             "localIp" : "10.13.22.1",
             "peerAddress" : "10.13.22.3",
-            "remoteAs" : 3,
+            "remoteAsns" : "3",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -2216,7 +2216,7 @@
             "localAs" : 3,
             "localIp" : "3.10.1.1",
             "peerAddress" : "3.1.1.1",
-            "remoteAs" : 3,
+            "remoteAsns" : "3",
             "routeReflectorClient" : true,
             "sendCommunity" : true
           },
@@ -2244,7 +2244,7 @@
             "localAs" : 3,
             "localIp" : "3.1.1.1",
             "peerAddress" : "3.10.1.1",
-            "remoteAs" : 3,
+            "remoteAsns" : "3",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -2280,7 +2280,7 @@
             "localAs" : 3,
             "localIp" : "3.10.1.1",
             "peerAddress" : "3.2.2.2",
-            "remoteAs" : 3,
+            "remoteAsns" : "3",
             "routeReflectorClient" : true,
             "sendCommunity" : true
           },
@@ -2308,7 +2308,7 @@
             "localAs" : 3,
             "localIp" : "3.2.2.2",
             "peerAddress" : "3.10.1.1",
-            "remoteAs" : 3,
+            "remoteAsns" : "3",
             "routeReflectorClient" : false,
             "sendCommunity" : true
           },
@@ -4386,7 +4386,7 @@
                   "localAs" : 1,
                   "localIp" : "1.1.1.1",
                   "peerAddress" : "1.10.1.1",
-                  "remoteAs" : 1,
+                  "remoteAsns" : "1",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 },
@@ -4407,7 +4407,7 @@
                   "group" : "bad-ebgp",
                   "localAs" : 1,
                   "peerAddress" : "3.2.2.2",
-                  "remoteAs" : 666,
+                  "remoteAsns" : "666",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 },
@@ -4428,7 +4428,7 @@
                   "group" : "xanadu",
                   "localAs" : 1,
                   "peerAddress" : "5.6.7.8",
-                  "remoteAs" : 555,
+                  "remoteAsns" : "555",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 },
@@ -4457,7 +4457,7 @@
                   "localAs" : 1,
                   "localIp" : "10.12.11.1",
                   "peerAddress" : "10.12.11.2",
-                  "remoteAs" : 2,
+                  "remoteAsns" : "2",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 }
@@ -5691,7 +5691,7 @@
                   "localAs" : 1,
                   "localIp" : "1.2.2.2",
                   "peerAddress" : "1.10.1.1",
-                  "remoteAs" : 1,
+                  "remoteAsns" : "1",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 },
@@ -5720,7 +5720,7 @@
                   "localAs" : 1,
                   "localIp" : "10.13.22.1",
                   "peerAddress" : "10.13.22.3",
-                  "remoteAs" : 3,
+                  "remoteAsns" : "3",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 },
@@ -5749,7 +5749,7 @@
                   "localAs" : 1,
                   "localIp" : "10.14.22.1",
                   "peerAddress" : "10.14.22.4",
-                  "remoteAs" : 4,
+                  "remoteAsns" : "4",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 }
@@ -6166,7 +6166,7 @@
                   "localAs" : 1,
                   "localIp" : "1.10.1.1",
                   "peerAddress" : "1.1.1.1",
-                  "remoteAs" : 1,
+                  "remoteAsns" : "1",
                   "routeReflectorClient" : true,
                   "sendCommunity" : true
                 },
@@ -6188,7 +6188,7 @@
                   "localAs" : 1,
                   "localIp" : "1.10.1.1",
                   "peerAddress" : "1.2.2.2",
-                  "remoteAs" : 1,
+                  "remoteAsns" : "1",
                   "routeReflectorClient" : true,
                   "sendCommunity" : true
                 }
@@ -7457,7 +7457,7 @@
                   "localAs" : 2,
                   "localIp" : "2.1.1.1",
                   "peerAddress" : "2.1.2.1",
-                  "remoteAs" : 2,
+                  "remoteAsns" : "2",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 },
@@ -7479,7 +7479,7 @@
                   "localAs" : 2,
                   "localIp" : "2.1.1.1",
                   "peerAddress" : "2.1.2.2",
-                  "remoteAs" : 2,
+                  "remoteAsns" : "2",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 },
@@ -7508,7 +7508,7 @@
                   "localAs" : 2,
                   "localIp" : "10.12.11.2",
                   "peerAddress" : "10.12.11.1",
-                  "remoteAs" : 1,
+                  "remoteAsns" : "1",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 }
@@ -8721,7 +8721,7 @@
                   "localAs" : 2,
                   "localIp" : "2.1.1.2",
                   "peerAddress" : "2.1.2.1",
-                  "remoteAs" : 2,
+                  "remoteAsns" : "2",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 },
@@ -8743,7 +8743,7 @@
                   "localAs" : 2,
                   "localIp" : "2.1.1.2",
                   "peerAddress" : "2.1.2.2",
-                  "remoteAs" : 2,
+                  "remoteAsns" : "2",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 },
@@ -8772,7 +8772,7 @@
                   "localAs" : 2,
                   "localIp" : "10.23.21.2",
                   "peerAddress" : "10.23.21.3",
-                  "remoteAs" : 3,
+                  "remoteAsns" : "3",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 }
@@ -9372,7 +9372,7 @@
                   "localAs" : 2,
                   "localIp" : "2.1.2.1",
                   "peerAddress" : "2.1.1.1",
-                  "remoteAs" : 2,
+                  "remoteAsns" : "2",
                   "routeReflectorClient" : true,
                   "sendCommunity" : true
                 },
@@ -9394,7 +9394,7 @@
                   "localAs" : 2,
                   "localIp" : "2.1.2.1",
                   "peerAddress" : "2.1.1.2",
-                  "remoteAs" : 2,
+                  "remoteAsns" : "2",
                   "routeReflectorClient" : true,
                   "sendCommunity" : true
                 },
@@ -9416,7 +9416,7 @@
                   "localAs" : 2,
                   "localIp" : "2.1.2.1",
                   "peerAddress" : "2.1.3.1",
-                  "remoteAs" : 2,
+                  "remoteAsns" : "2",
                   "routeReflectorClient" : true,
                   "sendCommunity" : true
                 },
@@ -9438,7 +9438,7 @@
                   "localAs" : 2,
                   "localIp" : "2.1.2.1",
                   "peerAddress" : "2.1.3.2",
-                  "remoteAs" : 2,
+                  "remoteAsns" : "2",
                   "routeReflectorClient" : true,
                   "sendCommunity" : true
                 }
@@ -10002,7 +10002,7 @@
                   "localAs" : 2,
                   "localIp" : "2.1.2.2",
                   "peerAddress" : "2.1.1.1",
-                  "remoteAs" : 2,
+                  "remoteAsns" : "2",
                   "routeReflectorClient" : true,
                   "sendCommunity" : true
                 },
@@ -10024,7 +10024,7 @@
                   "localAs" : 2,
                   "localIp" : "2.1.2.2",
                   "peerAddress" : "2.1.1.2",
-                  "remoteAs" : 2,
+                  "remoteAsns" : "2",
                   "routeReflectorClient" : true,
                   "sendCommunity" : true
                 },
@@ -10046,7 +10046,7 @@
                   "localAs" : 2,
                   "localIp" : "2.1.2.2",
                   "peerAddress" : "2.1.3.1",
-                  "remoteAs" : 2,
+                  "remoteAsns" : "2",
                   "routeReflectorClient" : true,
                   "sendCommunity" : true
                 },
@@ -10068,7 +10068,7 @@
                   "localAs" : 2,
                   "localIp" : "2.1.2.2",
                   "peerAddress" : "2.1.3.2",
-                  "remoteAs" : 2,
+                  "remoteAsns" : "2",
                   "routeReflectorClient" : true,
                   "sendCommunity" : true
                 }
@@ -11082,7 +11082,7 @@
                   "localAs" : 65001,
                   "localIp" : "2.34.101.4",
                   "peerAddress" : "2.34.101.3",
-                  "remoteAs" : 2,
+                  "remoteAsns" : "2",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 },
@@ -11111,7 +11111,7 @@
                   "localAs" : 65001,
                   "localIp" : "2.34.201.4",
                   "peerAddress" : "2.34.201.3",
-                  "remoteAs" : 2,
+                  "remoteAsns" : "2",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 }
@@ -11823,7 +11823,7 @@
                   "localAs" : 2,
                   "localIp" : "2.1.3.1",
                   "peerAddress" : "2.1.2.1",
-                  "remoteAs" : 2,
+                  "remoteAsns" : "2",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 },
@@ -11845,7 +11845,7 @@
                   "localAs" : 2,
                   "localIp" : "2.1.3.1",
                   "peerAddress" : "2.1.2.2",
-                  "remoteAs" : 2,
+                  "remoteAsns" : "2",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 },
@@ -11874,7 +11874,7 @@
                   "localAs" : 2,
                   "localIp" : "2.34.101.3",
                   "peerAddress" : "2.34.101.4",
-                  "remoteAs" : 65001,
+                  "remoteAsns" : "65001",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 }
@@ -12634,7 +12634,7 @@
                   "localAs" : 2,
                   "localIp" : "2.1.3.2",
                   "peerAddress" : "2.1.2.1",
-                  "remoteAs" : 2,
+                  "remoteAsns" : "2",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 },
@@ -12656,7 +12656,7 @@
                   "localAs" : 2,
                   "localIp" : "2.1.3.2",
                   "peerAddress" : "2.1.2.2",
-                  "remoteAs" : 2,
+                  "remoteAsns" : "2",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 },
@@ -12685,7 +12685,7 @@
                   "localAs" : 2,
                   "localIp" : "2.34.201.3",
                   "peerAddress" : "2.34.201.4",
-                  "remoteAs" : 65001,
+                  "remoteAsns" : "65001",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 }
@@ -13832,7 +13832,7 @@
                   "localAs" : 3,
                   "localIp" : "3.1.1.1",
                   "peerAddress" : "3.10.1.1",
-                  "remoteAs" : 3,
+                  "remoteAsns" : "3",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 },
@@ -13861,7 +13861,7 @@
                   "localAs" : 3,
                   "localIp" : "10.23.21.3",
                   "peerAddress" : "10.23.21.2",
-                  "remoteAs" : 2,
+                  "remoteAsns" : "2",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 }
@@ -14951,7 +14951,7 @@
                   "localAs" : 3,
                   "localIp" : "3.2.2.2",
                   "peerAddress" : "3.10.1.1",
-                  "remoteAs" : 3,
+                  "remoteAsns" : "3",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 },
@@ -14980,7 +14980,7 @@
                   "localAs" : 3,
                   "localIp" : "10.13.22.3",
                   "peerAddress" : "10.13.22.1",
-                  "remoteAs" : 1,
+                  "remoteAsns" : "1",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 }
@@ -15604,7 +15604,7 @@
                   "localAs" : 3,
                   "localIp" : "3.10.1.1",
                   "peerAddress" : "3.1.1.1",
-                  "remoteAs" : 3,
+                  "remoteAsns" : "3",
                   "routeReflectorClient" : true,
                   "sendCommunity" : true
                 },
@@ -15626,7 +15626,7 @@
                   "localAs" : 3,
                   "localIp" : "3.10.1.1",
                   "peerAddress" : "3.2.2.2",
-                  "remoteAs" : 3,
+                  "remoteAsns" : "3",
                   "routeReflectorClient" : true,
                   "sendCommunity" : true
                 }
