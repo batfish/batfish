@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Range;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.Set;
@@ -19,6 +20,9 @@ import org.batfish.datamodel.dataplane.rib.RibGroup;
 /** Represents a configured BGP peering, at the control plane level */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public abstract class BgpPeerConfig implements Serializable {
+
+  /** A range expressing entire range of valid AS numbers */
+  public static final LongSpace ALL_AS_NUMBERS = LongSpace.of(Range.closed(1L, 0xFFFFFFFFL));
 
   static final String PROP_ADDITIONAL_PATHS_RECEIVE = "additionalPathsReceive";
 
