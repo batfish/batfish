@@ -39,7 +39,7 @@ public final class BatfishObjectMapper {
   private static final ObjectWriter VERBOSE_WRITER = VERBOSE_MAPPER.writer(PRETTY_PRINTER);
 
   /**
-   * Returns a {@link ObjectMapper} configured to Batfish JSON standards. The JSON produced is not
+   * Returns an {@link ObjectMapper} configured to Batfish JSON standards. The JSON produced is not
    * pretty-printed but does include empty lists and null values.
    */
   public static ObjectMapper alwaysMapper() {
