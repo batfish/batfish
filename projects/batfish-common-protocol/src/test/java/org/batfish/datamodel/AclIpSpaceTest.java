@@ -54,6 +54,15 @@ public class AclIpSpaceTest {
   }
 
   @Test
+  public void testUnionNested() {
+    IpIpSpace a = Ip.parse("1.2.3.4").toIpSpace();
+    IpIpSpace b = Ip.parse("1.2.3.5").toIpSpace();
+    IpIpSpace c = Ip.parse("1.2.3.6").toIpSpace();
+    assertThat(union(a, b, c), equalTo(union(union(a, b), c)));
+    assertThat(union(a, b, c), equalTo(union(a, union(b, c))));
+  }
+
+  @Test
   public void testStopWhenEmpty() {
     IpSpace space =
         AclIpSpace.builder()

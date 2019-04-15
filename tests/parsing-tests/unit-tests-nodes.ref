@@ -20491,23 +20491,15 @@
                         {
                           "action" : "PERMIT",
                           "ipSpace" : {
-                            "class" : "org.batfish.datamodel.AclIpSpace",
-                            "lines" : [
-                              {
-                                "action" : "PERMIT",
-                                "ipSpace" : {
-                                  "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                                  "ipWildcard" : "1.2.3.4"
-                                }
-                              },
-                              {
-                                "action" : "PERMIT",
-                                "ipSpace" : {
-                                  "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                                  "ipWildcard" : "1.2.3.5"
-                                }
-                              }
-                            ]
+                            "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                            "ipWildcard" : "1.2.3.4"
+                          }
+                        },
+                        {
+                          "action" : "PERMIT",
+                          "ipSpace" : {
+                            "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                            "ipWildcard" : "1.2.3.5"
                           }
                         },
                         {
@@ -20597,23 +20589,15 @@
                           {
                             "action" : "PERMIT",
                             "ipSpace" : {
-                              "class" : "org.batfish.datamodel.AclIpSpace",
-                              "lines" : [
-                                {
-                                  "action" : "PERMIT",
-                                  "ipSpace" : {
-                                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                                    "ipWildcard" : "1.2.3.4"
-                                  }
-                                },
-                                {
-                                  "action" : "PERMIT",
-                                  "ipSpace" : {
-                                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                                    "ipWildcard" : "1.2.3.5"
-                                  }
-                                }
-                              ]
+                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                              "ipWildcard" : "1.2.3.4"
+                            }
+                          },
+                          {
+                            "action" : "PERMIT",
+                            "ipSpace" : {
+                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                              "ipWildcard" : "1.2.3.5"
                             }
                           },
                           {
