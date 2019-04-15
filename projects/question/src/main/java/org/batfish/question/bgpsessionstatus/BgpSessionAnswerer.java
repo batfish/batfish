@@ -114,7 +114,7 @@ public abstract class BgpSessionAnswerer extends Answerer {
       return ConfiguredSessionStatus.NO_LOCAL_AS;
     } else if (neighbor.getPeerAddress() == null) {
       return ConfiguredSessionStatus.NO_REMOTE_IP;
-    } else if (neighbor.getRemoteAsns() == null) {
+    } else if (neighbor.getRemoteAsns().isEmpty()) {
       return ConfiguredSessionStatus.NO_REMOTE_AS;
     }
     return null;

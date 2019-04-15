@@ -654,7 +654,7 @@ public class Graph {
         continue;
       }
       for (BgpActivePeerConfig n : p.getActiveNeighbors().values()) {
-        if (n.getLocalAs() == null || n.getRemoteAsns() == null) {
+        if (n.getLocalAs() == null || n.getRemoteAsns().isEmpty()) {
           // Invalid config
           continue;
         }
@@ -679,7 +679,7 @@ public class Graph {
       for (Entry<Prefix, BgpActivePeerConfig> entry2 : proc.getActiveNeighbors().entrySet()) {
         Prefix remotePrefix = entry2.getKey();
         BgpActivePeerConfig localBgpConfig = entry2.getValue();
-        if (localBgpConfig.getLocalAs() == null || localBgpConfig.getRemoteAsns() == null) {
+        if (localBgpConfig.getLocalAs() == null || localBgpConfig.getRemoteAsns().isEmpty()) {
           // Invalid config
           continue;
         }

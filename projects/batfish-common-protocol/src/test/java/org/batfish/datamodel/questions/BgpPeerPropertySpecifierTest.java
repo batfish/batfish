@@ -1,15 +1,11 @@
 package org.batfish.datamodel.questions;
 
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.getIsPassive;
-import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.getRemoteAs;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
-import org.batfish.datamodel.LongSpace;
-import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.answers.SelfDescribingObject;
 import org.junit.Test;
 
 public class BgpPeerPropertySpecifierTest {
@@ -18,22 +14,5 @@ public class BgpPeerPropertySpecifierTest {
   public void getIsPassiveTest() {
     assertThat(getIsPassive(BgpActivePeerConfig.builder().build()), equalTo(false));
     assertThat(getIsPassive(BgpPassivePeerConfig.builder().build()), equalTo(true));
-  }
-
-  @Test
-  public void getRemoteAsActivePeer() {
-    BgpActivePeerConfig activePeerConfig = BgpActivePeerConfig.builder().setRemoteAs(100L).build();
-    assertThat(
-        getRemoteAs(activePeerConfig),
-        equalTo(new SelfDescribingObject(Schema.STRING, LongSpace.of(100L).toString())));
-  }
-
-  @Test
-  public void getRemoteAsPassivePeer() {
-    BgpPassivePeerConfig passivePeerConfig =
-        BgpPassivePeerConfig.builder().setRemoteAs(100L).build();
-    assertThat(
-        getRemoteAs(passivePeerConfig),
-        equalTo(new SelfDescribingObject(Schema.STRING, LongSpace.of(100L).toString())));
   }
 }

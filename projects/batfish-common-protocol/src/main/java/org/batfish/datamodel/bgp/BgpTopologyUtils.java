@@ -148,7 +148,7 @@ public final class BgpTopologyUtils {
             || neighbor.getLocalIp() == null
             || neighbor.getLocalAs() == null
             || neighbor.getPeerAddress() == null
-            || neighbor.getRemoteAsns() == null) {
+            || neighbor.getRemoteAsns().isEmpty()) {
           continue;
         }
         // Find nodes that own the neighbor's peer address

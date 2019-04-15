@@ -17,7 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /** Tests of static methods of {@link BgpSessionAnswerer} */
-public class BgpSessionAnswererTest {
+public final class BgpSessionAnswererTest {
 
   private NetworkFactory _nf;
 
