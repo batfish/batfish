@@ -24,7 +24,7 @@ public final class IntegerSpace extends NumberSpace<Integer, IntegerSpace, Integ
     super(rangeset);
   }
 
-  /** Empty integer space */
+  /** Empty {@link IntegerSpace} */
   public static final IntegerSpace EMPTY = builder().build();
 
   /** A range expressing TCP/UDP ports */
@@ -78,44 +78,48 @@ public final class IntegerSpace extends NumberSpace<Integer, IntegerSpace, Integ
     return stream().mapToInt(Integer::intValue);
   }
 
-  /** Create a new integer space from a {@link SubRange} */
+  /** Create a new {@link IntegerSpace} from a {@link SubRange} */
   public static @Nonnull IntegerSpace of(SubRange range) {
     return builder().including(range).build();
   }
 
-  /** Create a new integer space containing the union of the given {@link SubRange subRanges}. */
+  /**
+   * Create a new {@link IntegerSpace} containing the union of the given {@link SubRange subRanges}.
+   */
   public static @Nonnull IntegerSpace unionOf(SubRange... subRanges) {
     return unionOfSubRanges(Arrays.asList(subRanges));
   }
 
-  /** Create a new integer space containing the union of the given {@link Range ranges}. */
+  /** Create a new {@link IntegerSpace} containing the union of the given {@link Range ranges}. */
   @SafeVarargs
   @SuppressWarnings("varargs")
   public static @Nonnull IntegerSpace unionOf(Range<Integer>... ranges) {
     return unionOf(Arrays.asList(ranges));
   }
 
-  /** Create a new integer space containing the union of the given {@link Range ranges}. */
+  /** Create a new {@link IntegerSpace} containing the union of the given {@link Range ranges}. */
   public static IntegerSpace unionOf(Iterable<Range<Integer>> ranges) {
     return builder().includingAll(ranges).build();
   }
 
-  /** Create a new integer space containing the union of the given {@link SubRange subRanges}. */
+  /**
+   * Create a new {@link IntegerSpace} containing the union of the given {@link SubRange subRanges}.
+   */
   public static IntegerSpace unionOfSubRanges(Iterable<SubRange> subRanges) {
     return builder().includingAllSubRanges(subRanges).build();
   }
 
-  /** Create a new integer space from a {@link Range} */
+  /** Create a new {@link IntegerSpace} from a {@link Range} */
   public static IntegerSpace of(Range<Integer> range) {
     return builder().including(range).build();
   }
 
-  /** Create a new integer space from a {@link RangeSet} */
+  /** Create a new {@link IntegerSpace} from a {@link RangeSet} */
   public static IntegerSpace of(RangeSet<Integer> rangeSet) {
     return builder().includingAll(rangeSet).build();
   }
 
-  /** Create a new singleton integer space from an integer value */
+  /** Create a new singleton {@link IntegerSpace} from an integer value */
   public static IntegerSpace of(int value) {
     return builder().including(Range.singleton(value)).build();
   }
