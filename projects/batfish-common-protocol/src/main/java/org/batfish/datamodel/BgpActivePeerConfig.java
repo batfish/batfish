@@ -24,8 +24,9 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
   /** The remote peer's IP address */
   @Nullable private final Ip _peerAddress;
 
+  @Deprecated // until removal of remoteAs
   @JsonCreator
-  protected BgpActivePeerConfig(
+  private static @Nonnull BgpActivePeerConfig create(
       @JsonProperty(PROP_ADDITIONAL_PATHS_RECEIVE) boolean additionalPathsReceive,
       @JsonProperty(PROP_ADDITIONAL_PATHS_SELECT_ALL) boolean additionalPathsSelectAll,
       @JsonProperty(PROP_ADDITIONAL_PATHS_SEND) boolean additionalPathsSend,
@@ -53,7 +54,63 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
       @JsonProperty(PROP_REMOTE_ASNS) @Nullable LongSpace remoteAsns,
       @JsonProperty(PROP_ROUTE_REFLECTOR) boolean routeReflectorClient,
       @JsonProperty(PROP_SEND_COMMUNITY) boolean sendCommunity,
-      @Deprecated @JsonProperty(PROP_REMOTE_AS) @Nullable Long remoteAs) {
+      @JsonProperty(PROP_REMOTE_AS) @Nullable Long remoteAs) {
+    return new BgpActivePeerConfig(
+        additionalPathsReceive,
+        additionalPathsSelectAll,
+        additionalPathsSend,
+        advertiseExternal,
+        advertiseInactive,
+        allowLocalAsIn,
+        allowRemoteAsOut,
+        appliedRibGroup,
+        authenticationSettings,
+        clusterId,
+        defaultMetric,
+        description,
+        ebgpMultihop,
+        enforceFirstAs,
+        exportPolicy,
+        exportPolicySources,
+        generatedRoutes,
+        group,
+        importPolicy,
+        importPolicySources,
+        localAs,
+        localIp,
+        peerAddress,
+        firstNonNull(remoteAsns, remoteAs != null ? LongSpace.of(remoteAs) : LongSpace.EMPTY),
+        routeReflectorClient,
+        sendCommunity);
+  }
+
+  private BgpActivePeerConfig(
+      boolean additionalPathsReceive,
+      boolean additionalPathsSelectAll,
+      boolean additionalPathsSend,
+      boolean advertiseExternal,
+      boolean advertiseInactive,
+      boolean allowLocalAsIn,
+      boolean allowRemoteAsOut,
+      @Nullable RibGroup appliedRibGroup,
+      @Nullable BgpAuthenticationSettings authenticationSettings,
+      @Nullable Long clusterId,
+      int defaultMetric,
+      @Nullable String description,
+      boolean ebgpMultihop,
+      boolean enforceFirstAs,
+      @Nullable String exportPolicy,
+      @Nullable SortedSet<String> exportPolicySources,
+      @Nullable Set<GeneratedRoute> generatedRoutes,
+      @Nullable String group,
+      @Nullable String importPolicy,
+      @Nullable SortedSet<String> importPolicySources,
+      @Nullable Long localAs,
+      @Nullable Ip localIp,
+      @Nullable Ip peerAddress,
+      @Nullable LongSpace remoteAsns,
+      boolean routeReflectorClient,
+      boolean sendCommunity) {
     super(
         additionalPathsReceive,
         additionalPathsSelectAll,
@@ -77,7 +134,7 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
         importPolicySources,
         localAs,
         localIp,
-        firstNonNull(remoteAsns, remoteAs != null ? LongSpace.of(remoteAs) : LongSpace.EMPTY),
+        remoteAsns,
         routeReflectorClient,
         sendCommunity);
     _peerAddress = peerAddress;
@@ -149,8 +206,7 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
               _peerAddress,
               _remoteAsns,
               _routeReflectorClient,
-              _sendCommunity,
-              null);
+              _sendCommunity);
       if (_bgpProcess != null) {
         _bgpProcess
             .getActiveNeighbors()
