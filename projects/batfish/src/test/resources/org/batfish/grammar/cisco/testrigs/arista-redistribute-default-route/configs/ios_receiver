@@ -1,0 +1,12 @@
+!
+! Last configuration change at 23:52:11 UTC Fri Apr 12 2019
+!
+hostname ios_receiver
+!
+interface GigabitEthernet1/0
+ ip address 1.2.3.4 255.255.255.0
+ negotiation auto
+!
+router ospf 1
+ network 1.2.3.0 0.0.0.255 area 0.0.0.1
+!
