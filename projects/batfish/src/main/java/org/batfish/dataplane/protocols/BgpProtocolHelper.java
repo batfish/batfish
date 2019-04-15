@@ -33,6 +33,11 @@ public class BgpProtocolHelper {
   /**
    * Perform BGP export transformations on a given route when sending an advertisement from {@code
    * fromNeighbor} to {@code toNeighbor} before export policy is applied.
+   *
+   * @param fromNeighbor {@link BgpPeerConfig} exporting {@code route}
+   * @param toNeighbor {@link BgpPeerConfig} to which to export {@code route}
+   * @param sessionProperties {@link BgpSessionProperties} representing the <em>incoming</em> edge:
+   *     i.e. the edge from {@code toNeighbor} to {@code fromNeighbor}
    */
   @Nullable
   public static BgpRoute.Builder transformBgpRoutePreExport(
@@ -46,10 +51,13 @@ public class BgpProtocolHelper {
 
     BgpRoute.Builder transformedOutgoingRouteBuilder = new BgpRoute.Builder();
 
+    // sessionProperties represents incoming edge, so fromNeighbor's IP is its toIp
+    Ip fromNeighborIp = sessionProperties.getToIp();
+
     // Set the tag
     transformedOutgoingRouteBuilder.setTag(route.getTag());
 
-    transformedOutgoingRouteBuilder.setReceivedFromIp(fromNeighbor.getLocalIp());
+    transformedOutgoingRouteBuilder.setReceivedFromIp(fromNeighborIp);
     RoutingProtocol remoteRouteProtocol = route.getProtocol();
 
     boolean remoteRouteIsBgp =
@@ -173,7 +181,7 @@ public class BgpProtocolHelper {
     Ip nextHopIp;
     long localPreference;
     if (sessionProperties.isEbgp() || !remoteRouteIsBgp) {
-      nextHopIp = fromNeighbor.getLocalIp();
+      nextHopIp = fromNeighborIp;
       localPreference = BgpRoute.DEFAULT_LOCAL_PREFERENCE;
     } else {
       nextHopIp = route.getNextHopIp();
