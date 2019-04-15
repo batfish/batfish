@@ -600,7 +600,7 @@ public abstract class BgpPeerConfig implements Serializable {
 
     /**
      * Sets space of acceptable remote AS numbers to singleton of {@code remoteAs} if non-null, or
-     * else {@link LongSpace#ALL_AS_NUMBERS}.
+     * else {@link ALL_AS_NUMBERS}.
      */
     public S setRemoteAs(@Nullable Long remoteAs) {
       _remoteAsns = remoteAs != null ? LongSpace.of(remoteAs) : ALL_AS_NUMBERS;
