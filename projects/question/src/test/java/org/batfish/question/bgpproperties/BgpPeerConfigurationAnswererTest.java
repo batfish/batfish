@@ -19,7 +19,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.HashMultiset;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -110,7 +109,9 @@ public class BgpPeerConfigurationAnswererTest {
             .put(COL_VRF, "v")
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, Ip.parse("2.2.2.2")))
             .put(getColumnName(LOCAL_AS), 100L)
-            .put(getColumnName(REMOTE_AS), new SelfDescribingObject(Schema.LONG, 200L))
+            .put(
+                getColumnName(REMOTE_AS),
+                new SelfDescribingObject(Schema.STRING, LongSpace.of(200L).toString()))
             .put(getColumnName(LOCAL_IP), Ip.parse("1.1.1.1"))
             .put(getColumnName(IS_PASSIVE), false)
             .put(getColumnName(ROUTE_REFLECTOR_CLIENT), false)
@@ -130,7 +131,7 @@ public class BgpPeerConfigurationAnswererTest {
                 new SelfDescribingObject(Schema.PREFIX, Prefix.create(Ip.parse("3.3.3.0"), 24)))
             .put(
                 getColumnName(REMOTE_AS),
-                new SelfDescribingObject(Schema.list(Schema.LONG), ImmutableList.of(300L)))
+                new SelfDescribingObject(Schema.STRING, LongSpace.of(300L).toString()))
             .put(getColumnName(LOCAL_IP), Ip.parse("1.1.1.2"))
             .put(getColumnName(IS_PASSIVE), true)
             .put(getColumnName(ROUTE_REFLECTOR_CLIENT), true)
