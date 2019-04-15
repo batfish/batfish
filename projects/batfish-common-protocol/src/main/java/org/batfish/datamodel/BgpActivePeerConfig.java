@@ -17,14 +17,11 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
 
   private static final String PROP_PEER_ADDRESS = "peerAddress";
 
-  @Deprecated static final String PROP_REMOTE_AS = "remoteAs";
-
   static final long serialVersionUID = 1L;
 
   /** The remote peer's IP address */
   @Nullable private final Ip _peerAddress;
 
-  @Deprecated // until removal of remoteAs
   @JsonCreator
   private static @Nonnull BgpActivePeerConfig create(
       @JsonProperty(PROP_ADDITIONAL_PATHS_RECEIVE) boolean additionalPathsReceive,
@@ -53,8 +50,7 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
       @JsonProperty(PROP_PEER_ADDRESS) @Nullable Ip peerAddress,
       @JsonProperty(PROP_REMOTE_ASNS) @Nullable LongSpace remoteAsns,
       @JsonProperty(PROP_ROUTE_REFLECTOR) boolean routeReflectorClient,
-      @JsonProperty(PROP_SEND_COMMUNITY) boolean sendCommunity,
-      @JsonProperty(PROP_REMOTE_AS) @Nullable Long remoteAs) {
+      @JsonProperty(PROP_SEND_COMMUNITY) boolean sendCommunity) {
     return new BgpActivePeerConfig(
         additionalPathsReceive,
         additionalPathsSelectAll,
@@ -79,7 +75,7 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
         localAs,
         localIp,
         peerAddress,
-        firstNonNull(remoteAsns, remoteAs != null ? LongSpace.of(remoteAs) : LongSpace.EMPTY),
+        firstNonNull(remoteAsns, LongSpace.EMPTY),
         routeReflectorClient,
         sendCommunity);
   }

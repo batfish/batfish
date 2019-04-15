@@ -5,7 +5,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
@@ -21,8 +20,6 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
 
   private static final String PROP_PEER_PREFIX = "peerPrefix";
 
-  @Deprecated private static final String PROP_REMOTE_AS = "remoteAs";
-
   static final long serialVersionUID = 1L;
 
   public static final Long ANY_AS = -1L;
@@ -30,7 +27,6 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
   /** The prefix from which remote peers can connect. */
   @Nullable private Prefix _peerPrefix;
 
-  @Deprecated // until removal of remoteAsList
   @JsonCreator
   private static @Nonnull BgpPassivePeerConfig create(
       @JsonProperty(PROP_ADDITIONAL_PATHS_RECEIVE) boolean additionalPathsReceive,
@@ -59,8 +55,7 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
       @JsonProperty(PROP_PEER_PREFIX) @Nullable Prefix peerPrefix,
       @JsonProperty(PROP_REMOTE_ASNS) @Nullable LongSpace remoteAsns,
       @JsonProperty(PROP_ROUTE_REFLECTOR) boolean routeReflectorClient,
-      @JsonProperty(PROP_SEND_COMMUNITY) boolean sendCommunity,
-      @JsonProperty(PROP_REMOTE_AS) @Nullable List<Long> remoteAsList) {
+      @JsonProperty(PROP_SEND_COMMUNITY) boolean sendCommunity) {
     return new BgpPassivePeerConfig(
         additionalPathsReceive,
         additionalPathsSelectAll,
@@ -85,11 +80,7 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
         localAs,
         localIp,
         peerPrefix,
-        firstNonNull(
-            remoteAsns,
-            remoteAsList != null
-                ? LongSpace.builder().includingAll(remoteAsList).build()
-                : LongSpace.EMPTY),
+        firstNonNull(remoteAsns, LongSpace.EMPTY),
         routeReflectorClient,
         sendCommunity);
   }
