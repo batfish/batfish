@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 import static org.batfish.common.util.CommonUtil.toImmutableSortedMap;
+import static org.batfish.common.util.CommonUtil.toOrderedHashCode;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.IN;
 import static org.batfish.dataplane.protocols.IsisProtocolHelper.convertRouteLevel1ToLevel2;
@@ -21,6 +22,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
+import com.google.common.collect.Streams;
 import com.google.common.graph.Network;
 import com.google.common.graph.ValueGraph;
 import java.io.Serializable;
@@ -112,6 +114,7 @@ import org.batfish.dataplane.exceptions.BgpRoutePropagationException;
 import org.batfish.dataplane.protocols.BgpProtocolHelper;
 import org.batfish.dataplane.protocols.GeneratedRouteHelper;
 import org.batfish.dataplane.protocols.OspfProtocolHelper;
+import org.batfish.dataplane.rib.AbstractRib;
 import org.batfish.dataplane.rib.AnnotatedRib;
 import org.batfish.dataplane.rib.BgpRib;
 import org.batfish.dataplane.rib.ConnectedRib;
@@ -2523,34 +2526,6 @@ public class VirtualRouter implements Serializable {
   }
 
   /**
-   * Check if RIBs that contribute to the dataplane "dependent routes" computation have any routes
-   * that still need to be merged. I.e., if this method returns true, we cannot converge yet.
-   *
-   * @return true if there are any routes remaining, in need of merging in to the RIBs
-   */
-  boolean hasOutstandingRoutes() {
-    return !_ospfExternalDeltaBuilder.build().isEmpty()
-        || !_mainRibRouteDeltaBuilder.build().isEmpty()
-        || !_bgpDeltaBuilder.build().isEmpty();
-  }
-
-  /**
-   * Check if this router has processed all its incoming BGP messages (i.e., all router queues are
-   * empty)
-   *
-   * @return true if all queues are empty.
-   */
-  boolean hasProcessedAllMessages() {
-    return (_vrf.getBgpProcess() == null
-            || _bgpIncomingRoutes.values().stream().allMatch(Queue::isEmpty))
-        && (_vrf.getOspfProcess() == null
-            || _ospfExternalIncomingRoutes.values().stream().allMatch(Queue::isEmpty))
-        && (_vrf.getIsisProcess() == null
-            || _isisIncomingRoutes.values().stream().allMatch(Queue::isEmpty))
-        && _crossVrfIncomingRoutes.values().stream().allMatch(Queue::isEmpty);
-  }
-
-  /**
    * Queues initial round of outgoing BGP messages based on the state of the RIBs prior to any data
    * plane iterations.
    */
@@ -2716,28 +2691,23 @@ public class VirtualRouter implements Serializable {
    * @return integer hashcode
    */
   int computeIterationHashCode() {
-    return _mainRib.getTypedRoutes().hashCode()
-        + _ospfExternalType1Rib.getTypedRoutes().hashCode()
-        + _ospfExternalType2Rib.getTypedRoutes().hashCode()
-        + _bgpIncomingRoutes.values().stream()
-            .flatMap(Queue::stream)
-            .mapToInt(RouteAdvertisement::hashCode)
-            .sum()
-        + _ospfExternalIncomingRoutes.values().stream()
-            .flatMap(Queue::stream)
-            .mapToInt(RouteAdvertisement::hashCode)
-            .sum()
-        + _isisIncomingRoutes.values().stream()
-            .flatMap(Queue::stream)
-            .mapToInt(RouteAdvertisement::hashCode)
-            .sum()
-        + _virtualEigrpProcesses.values().stream()
-            .mapToInt(VirtualEigrpProcess::computeIterationHashCode)
-            .sum()
-        + _crossVrfIncomingRoutes.values().stream()
-            .flatMap(Queue::stream)
-            .mapToInt(RouteAdvertisement::hashCode)
-            .sum();
+    return Streams.concat(
+            // RIB State
+            Stream.of(_mainRib, _ospfExternalType1Rib, _ospfExternalType2Rib)
+                .map(AbstractRib::getTypedRoutes),
+            // Message queues
+            Stream.of(
+                    _bgpIncomingRoutes,
+                    _ospfExternalIncomingRoutes,
+                    _isisIncomingRoutes,
+                    _crossVrfIncomingRoutes)
+                .flatMap(m -> m.values().stream())
+                .flatMap(Queue::stream),
+            // Processes
+            Stream.of(_virtualEigrpProcesses)
+                .flatMap(m -> m.values().stream())
+                .map(VirtualEigrpProcess::computeIterationHashCode))
+        .collect(toOrderedHashCode());
   }
 
   PrefixTracer getPrefixTracer() {
@@ -2912,5 +2882,21 @@ public class VirtualRouter implements Serializable {
 
   public Map<String, OspfRoutingProcess> getOspfProcesses() {
     return _ospfProcesses;
+  }
+
+  /** Check whether this virtual router has any remaining computation to do */
+  boolean isDirty() {
+    return
+    // Route Deltas
+    !_ospfExternalDeltaBuilder.build().isEmpty()
+        || !_mainRibRouteDeltaBuilder.build().isEmpty()
+        || !_bgpDeltaBuilder.build().isEmpty()
+        // Message queues
+        || !_bgpIncomingRoutes.values().stream().allMatch(Queue::isEmpty)
+        || !_ospfExternalIncomingRoutes.values().stream().allMatch(Queue::isEmpty)
+        || !_isisIncomingRoutes.values().stream().allMatch(Queue::isEmpty)
+        || !_crossVrfIncomingRoutes.values().stream().allMatch(Queue::isEmpty)
+        // Processes
+        || _ospfProcesses.values().stream().anyMatch(OspfRoutingProcess::isDirty);
   }
 }
