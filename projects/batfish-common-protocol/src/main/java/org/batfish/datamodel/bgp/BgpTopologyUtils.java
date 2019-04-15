@@ -180,19 +180,22 @@ public final class BgpTopologyUtils {
     }
   }
 
+  /**
+   * Sanity checks to avoid extra reachability checks when building BGP topology. Ensures that the
+   * given {@link BgpPeerConfig} either:
+   *
+   * <ul>
+   *   <li>is dynamic; or
+   *   <li>has no local IP (still viable because other peers could initiate a session with them); or
+   *   <li>has a local IP associated with the config's hostname, according to {@code ipOwners}
+   * </ul>
+   */
   private static boolean bgpConfigPassesSanityChecks(
       BgpPeerConfig config, String hostname, Map<Ip, Set<String>> ipOwners) {
-    /*
-     * Do these checks as a short-circuit to avoid extra reachability checks when building
-     * BGP topology.
-     * Only keep invalid neighbors that don't have local IPs if specifically requested to.
-     * Note: we use Ip.AUTO to denote the listening end of a dynamic peering.
-     */
-    Ip localAddress = config.getLocalIp();
-    return (localAddress != null
-            && ipOwners.containsKey(localAddress)
-            && ipOwners.get(localAddress).contains(hostname))
-        || Ip.AUTO.equals(localAddress);
+    Ip localIp = config.getLocalIp();
+    return localIp == null
+        || localIp.equals(Ip.AUTO) // dynamic
+        || (ipOwners.containsKey(localIp) && ipOwners.get(localIp).contains(hostname));
   }
 
   /**
@@ -214,7 +217,10 @@ public final class BgpTopologyUtils {
     } else {
       BgpActivePeerConfig candidate = nc.getBgpPointToPointPeerConfig(candidateId);
       return candidate != null
-          && Objects.equals(neighbor.getPeerAddress(), candidate.getLocalIp())
+          // If candidate has no local IP, we can still initiate unless session is EBGP single-hop.
+          && (Objects.equals(neighbor.getPeerAddress(), candidate.getLocalIp())
+              || (candidate.getLocalIp() == null
+                  && BgpSessionProperties.getSessionType(neighbor) != SessionType.EBGP_SINGLEHOP))
           && Objects.equals(neighbor.getLocalIp(), candidate.getPeerAddress())
           && neighbor.getRemoteAsns().contains(candidate.getLocalAs())
           && candidate.getRemoteAsns().contains(neighbor.getLocalAs());

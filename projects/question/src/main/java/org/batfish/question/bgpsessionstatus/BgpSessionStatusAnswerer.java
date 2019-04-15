@@ -1,5 +1,6 @@
 package org.batfish.question.bgpsessionstatus;
 
+import static org.batfish.datamodel.questions.ConfiguredSessionStatus.LOCAL_IP_UNKNOWN_STATICALLY;
 import static org.batfish.datamodel.questions.ConfiguredSessionStatus.UNIQUE_MATCH;
 import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.SessionStatus.ESTABLISHED;
 import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.SessionStatus.NOT_COMPATIBLE;
@@ -104,10 +105,17 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
                   if (establishedBgpTopology.nodes().contains(neighbor)
                       && establishedBgpTopology.outDegree(neighbor) == 1) {
                     status = ESTABLISHED;
-                  } else if (getConfiguredStatus(
-                          neighbor, activePeer, type, allInterfaceIps, configuredBgpTopology)
-                      == UNIQUE_MATCH) {
-                    status = NOT_ESTABLISHED;
+                  } else {
+                    ConfiguredSessionStatus configuredStatus =
+                        getConfiguredStatus(
+                            neighbor, activePeer, type, allInterfaceIps, configuredBgpTopology);
+                    if (configuredStatus == UNIQUE_MATCH) {
+                      status = NOT_ESTABLISHED;
+                    } else if (configuredStatus == LOCAL_IP_UNKNOWN_STATICALLY
+                        && establishedBgpTopology.inDegree(neighbor) == 1) {
+                      // Missing local IP, but another peer initiated a session
+                      status = ESTABLISHED;
+                    }
                   }
 
                   return buildActivePeerRow(
