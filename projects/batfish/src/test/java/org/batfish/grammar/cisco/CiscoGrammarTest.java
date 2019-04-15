@@ -5363,6 +5363,10 @@ public class CiscoGrammarTest {
     assertThat(ccae, hasUndefinedReference(filename, NETWORK_OBJECT, "undef-source-real"));
   }
 
+  /**
+   * Ensure that Arista redistributes a static default route even though default-originate is not
+   * explicitly specified in the config
+   */
   @Test
   public void testAristaDefaultRouteRedistribution() throws IOException {
     final String receiver = "ios_receiver";
