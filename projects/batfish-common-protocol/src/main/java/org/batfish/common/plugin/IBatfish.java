@@ -76,16 +76,9 @@ public interface IBatfish extends IPluginConsumer {
   /** Compute the dataplane for the current {@link NetworkSnapshot} */
   DataPlaneAnswerElement computeDataPlane();
 
-  /** @deprecated in favor of {@link #computeDataPlane()} */
-  @Deprecated
-  DataPlaneAnswerElement computeDataPlane(boolean differentialContext);
-
   boolean debugFlagEnabled(String flag);
 
   ReferenceLibrary getReferenceLibraryData();
-
-  @Deprecated // use createAnswerer instead
-  Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators();
 
   @Nullable
   Answerer createAnswerer(@Nonnull Question question);
@@ -123,7 +116,7 @@ public interface IBatfish extends IPluginConsumer {
 
   Map<String, String> getQuestionTemplates(boolean verbose);
 
-  SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(boolean useCompression);
+  SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes();
 
   /**
    * Get batfish settings

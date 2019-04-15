@@ -3,7 +3,9 @@ package org.batfish.dataplane.ibdp;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteDecorator;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.dataplane.rib.RibDelta;
 
 /**
@@ -56,7 +58,7 @@ public interface RoutingProcess<T, R extends AbstractRouteDecorator> {
    *
    * @param mainRibDelta {@link RibDelta} containing updates to the main RIB.
    */
-  void redistribute(RibDelta<? extends AbstractRouteDecorator> mainRibDelta);
+  void redistribute(RibDelta<? extends AnnotatedRoute<AbstractRoute>> mainRibDelta);
 
   /**
    * Returns true if any outstanding computation remains (e.g., unprocessed messages or non-empty

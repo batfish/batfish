@@ -52,8 +52,6 @@ public final class ReachabilitySettings {
 
     private boolean _specialize = true;
 
-    private boolean _useCompression;
-
     public ReachabilitySettings build() {
       return new ReachabilitySettings(this);
     }
@@ -100,10 +98,6 @@ public final class ReachabilitySettings {
 
     public NodeSpecifier getTransitNodes() {
       return _transitNodes;
-    }
-
-    public boolean getUseCompression() {
-      return _useCompression;
     }
 
     public Builder setActions(Iterable<FlowDisposition> actions) {
@@ -161,11 +155,6 @@ public final class ReachabilitySettings {
       return this;
     }
 
-    public Builder setUseCompression(boolean useCompression) {
-      _useCompression = useCompression;
-      return this;
-    }
-
     public Builder setIngressInterfaces(InterfaceSpecifier ingressInterfaces) {
       _ingressInterfaces = ingressInterfaces;
       return this;
@@ -200,8 +189,6 @@ public final class ReachabilitySettings {
 
   private final NodeSpecifier _transitNodes;
 
-  private final boolean _useCompression;
-
   private ReachabilitySettings(Builder builder) {
     _finalNodes = builder._finalNodes;
     _notFinalNodes = builder._notFinalNodes;
@@ -213,7 +200,6 @@ public final class ReachabilitySettings {
     _transitNodes = builder._transitNodes;
     _nonTransitNodes = builder._nonTransitNodes;
     _specialize = builder._specialize;
-    _useCompression = builder._useCompression;
     _actions = builder._actions;
     _srcNatted = builder._srcNatted;
   }
@@ -236,8 +222,7 @@ public final class ReachabilitySettings {
         && _nonTransitNodes.equals(other._nonTransitNodes)
         && Objects.equals(_srcNatted, other._srcNatted)
         && _transitNodes.equals(other._transitNodes)
-        && _specialize == other._specialize
-        && _useCompression == other._useCompression;
+        && _specialize == other._specialize;
   }
 
   public SortedSet<FlowDisposition> getActions() {
@@ -288,10 +273,6 @@ public final class ReachabilitySettings {
     return _specialize;
   }
 
-  public boolean getUseCompression() {
-    return _useCompression;
-  }
-
   @Override
   public int hashCode() {
     return Objects.hash(
@@ -303,8 +284,7 @@ public final class ReachabilitySettings {
         _nonTransitNodes,
         _srcNatted,
         _transitNodes,
-        _specialize,
-        _useCompression);
+        _specialize);
   }
 
   private static IpSpaceSpecifier toIpSpaceSpecifier(IpSpace include, IpSpace exclude) {
@@ -382,7 +362,6 @@ public final class ReachabilitySettings {
         .setSourceLocationSpecifier(sourceLocations)
         .setSrcNatted(SrcNattedConstraint.fromBoolean(_srcNatted))
         .setSpecialize(_specialize)
-        .setUseCompression(_useCompression)
         .build();
   }
 }
