@@ -88,7 +88,6 @@
     <servlet.version>4.0.0</servlet.version>
     <slf4j.version>1.7.25</slf4j.version>
     <sqlite-jdbc.version>3.25.2</sqlite-jdbc.version>
-    <xstream.version>1.4.7</xstream.version>
     <z3.version>2019-01-26-be61a26452735dfe62b14ddb4804ca5df0526dcf</z3.version>
 
     <!--
@@ -691,12 +690,6 @@
         <groupId>com.microsoft.z3</groupId>
         <artifactId>z3</artifactId>
         <version>${z3.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.thoughtworks.xstream</groupId>
-        <artifactId>xstream</artifactId>
-        <version>${xstream.version}</version>
       </dependency>
 
       <dependency>

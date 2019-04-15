@@ -1142,23 +1142,6 @@ load("@sqlite_jdbc//:rules.bzl", "sqlite_jdbc_compile")
 
 sqlite_jdbc_compile()
 
-# XStream
-maven_repository(
-    name = "xstream",
-    transitive_deps = [
-        "bce3282142b63068260f021fcbe48b72e8d71a1a:com.thoughtworks.xstream:xstream:1.4.7",
-        "2b8e230d2ab644e4ecaa94db7cdedbc40c805dfa:xmlpull:xmlpull:1.1.3.1",
-        "19d4e90b43059058f6e056f794f0ea4030d60b86:xpp3:xpp3_min:1.1.4c",
-    ],
-    deps = [
-        "com.thoughtworks.xstream:xstream:1.4.7",
-    ],
-)
-
-load("@xstream//:rules.bzl", "xstream_compile")
-
-xstream_compile()
-
 ##########################################################
 ## Third section: tools
 

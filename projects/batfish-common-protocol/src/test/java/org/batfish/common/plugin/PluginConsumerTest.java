@@ -16,8 +16,8 @@ public class PluginConsumerTest {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   private static class TestPluginConsumer extends PluginConsumer {
-    private TestPluginConsumer(boolean serializeToText) {
-      super(serializeToText);
+    private TestPluginConsumer() {
+      super();
     }
 
     @Override
@@ -31,9 +31,9 @@ public class PluginConsumerTest {
     }
   }
 
-  private void runSerializationTest(boolean serializeToText) throws Exception {
+  private void runSerializationTest() throws Exception {
     Path serializeFile = _folder.newFile().toPath();
-    TestPluginConsumer consumer = new TestPluginConsumer(serializeToText);
+    TestPluginConsumer consumer = new TestPluginConsumer();
 
     int[] ints = new int[] {1, 2, 3};
     consumer.serializeObject(ints, serializeFile);
@@ -44,11 +44,11 @@ public class PluginConsumerTest {
 
   @Test
   public void testSerializingAndDeserializingJava() throws Exception {
-    runSerializationTest(false);
+    runSerializationTest();
   }
 
   @Test
   public void testSerializingAndDeserializingText() throws Exception {
-    runSerializationTest(true);
+    runSerializationTest();
   }
 }
