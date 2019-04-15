@@ -30,7 +30,7 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
   /** The prefix from which remote peers can connect. */
   @Nullable private Prefix _peerPrefix;
 
-  @Deprecated // until removal remoteAs
+  @Deprecated // until removal of remoteAsList
   @JsonCreator
   private static @Nonnull BgpPassivePeerConfig create(
       @JsonProperty(PROP_ADDITIONAL_PATHS_RECEIVE) boolean additionalPathsReceive,
