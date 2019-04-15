@@ -603,7 +603,7 @@ public abstract class BgpPeerConfig implements Serializable {
      * else {@link LongSpace#ALL_AS_NUMBERS}.
      */
     public S setRemoteAs(@Nullable Long remoteAs) {
-      _remoteAsns = remoteAs != null ? LongSpace.of(remoteAs) : LongSpace.ALL_AS_NUMBERS;
+      _remoteAsns = remoteAs != null ? LongSpace.of(remoteAs) : ALL_AS_NUMBERS;
       return getThis();
     }
 

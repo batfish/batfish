@@ -1,6 +1,7 @@
 package org.batfish.common.util;
 
 import static com.google.common.base.Preconditions.checkState;
+import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -298,7 +299,7 @@ public final class IspModelingUtils {
     Set<Ip> remoteIpsSet = ImmutableSet.copyOf(remoteIps);
     LongSpace remoteAsns =
         remoteAsnsList.isEmpty()
-            ? LongSpace.ALL_AS_NUMBERS
+            ? ALL_AS_NUMBERS
             : LongSpace.builder().includingAll(remoteAsnsList).build();
 
     List<BgpActivePeerConfig> validBgpActivePeerConfigs =
