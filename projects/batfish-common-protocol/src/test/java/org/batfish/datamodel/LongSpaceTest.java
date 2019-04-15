@@ -17,6 +17,7 @@ import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.LongSpace.Builder;
 import org.junit.Before;
@@ -318,6 +319,16 @@ public class LongSpaceTest {
         space.intersection(space2),
         equalTo(LongSpace.builder().including(Range.closed(5L, 9L)).build()));
     assertThat(ALL_AS_NUMBERS.intersection(EMPTY), equalTo(EMPTY));
+  }
+
+  @Test
+  public void testJacksonSerialization() throws IOException {
+    assertThat(BatfishObjectMapper.clone(ALL_AS_NUMBERS, LongSpace.class), equalTo(ALL_AS_NUMBERS));
+  }
+
+  @Test
+  public void testJavaSerialization() {
+    assertThat(SerializationUtils.clone(ALL_AS_NUMBERS), equalTo(ALL_AS_NUMBERS));
   }
 
   @Test

@@ -17,6 +17,7 @@ import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.IntegerSpace.Builder;
 import org.junit.Before;
@@ -207,11 +208,15 @@ public final class IntegerSpaceTest {
   }
 
   @Test
-  public void testSerialization() throws IOException {
-    String serialized = BatfishObjectMapper.writeString(IntegerSpace.PORTS);
+  public void testJacksonSerialization() throws IOException {
     assertThat(
-        BatfishObjectMapper.mapper().readValue(serialized, IntegerSpace.class),
+        BatfishObjectMapper.clone(IntegerSpace.PORTS, IntegerSpace.class),
         equalTo(IntegerSpace.PORTS));
+  }
+
+  @Test
+  public void testJavaSerialization() throws IOException {
+    assertThat(SerializationUtils.clone(IntegerSpace.PORTS), equalTo(IntegerSpace.PORTS));
   }
 
   @Test

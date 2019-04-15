@@ -23,9 +23,8 @@ public final class LongSpace extends NumberSpace<Long, LongSpace, LongSpace.Buil
   public static final class Builder extends NumberSpace.Builder<Long, LongSpace, Builder> {
 
     @JsonCreator
-    @Nonnull
     @VisibleForTesting
-    static Builder create(@Nullable String s) {
+    static @Nonnull Builder create(@Nullable String s) {
       Builder builder = new Builder();
       create(builder, s);
       return builder;
@@ -80,14 +79,13 @@ public final class LongSpace extends NumberSpace<Long, LongSpace, LongSpace.Buil
 
   private static final long serialVersionUID = 1L;
 
-  public static Builder builder() {
+  public static @Nonnull Builder builder() {
     return new Builder();
   }
 
   @JsonCreator
   @VisibleForTesting
-  @Nonnull
-  static LongSpace create(@Nullable String s) {
+  static @Nonnull LongSpace create(@Nullable String s) {
     return LongSpace.Builder.create(s).build();
   }
 
@@ -107,18 +105,14 @@ public final class LongSpace extends NumberSpace<Long, LongSpace, LongSpace.Buil
   }
 
   /** Create a new long space containing the union of the given {@link Range ranges}. */
-  public static LongSpace unionOf(Iterable<Range<Long>> ranges) {
-    Builder b = builder();
-    for (Range<Long> range : ranges) {
-      b.including(range);
-    }
-    return b.build();
+  public static @Nonnull LongSpace unionOf(Iterable<Range<Long>> ranges) {
+    return builder().includingAll(ranges).build();
   }
 
   /** Create a new long space containing the union of the given {@link Range ranges}. */
   @SafeVarargs
   @SuppressWarnings("varargs")
-  public static LongSpace unionOf(Range<Long>... ranges) {
+  public static @Nonnull LongSpace unionOf(Range<Long>... ranges) {
     return unionOf(Arrays.asList(ranges));
   }
 
@@ -136,12 +130,8 @@ public final class LongSpace extends NumberSpace<Long, LongSpace, LongSpace.Buil
     return EMPTY;
   }
 
-  /*
-   * Invariant: always ensure ranges are stored in canonical form (enforced in builder methods)
-   * and immutable (enforced in constructor)
-   */
-
   /** Return an ordered set of longs described by this space. */
+  @Override
   public @Nonnull Set<Long> enumerate() {
     return ImmutableRangeSet.copyOf(_rangeset).asSet(DiscreteDomain.longs());
   }
