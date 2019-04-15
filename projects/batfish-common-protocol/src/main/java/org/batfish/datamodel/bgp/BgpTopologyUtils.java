@@ -230,31 +230,27 @@ public final class BgpTopologyUtils {
   /**
    * Check if a bgp peer is reachable to establish a session
    *
-   * <p><b>Warning:</b> Notion of directionality is important here, we are assuming {@code src} is
-   * initiating the connection according to its local configuration
+   * <p><b>Warning:</b> Notion of directionality is important here, we are assuming {@code
+   * initiator} is initiating the connection according to its local configuration
+   *
+   * <p>Assumes {@code initiator}'s local IP and peer address have already been confirmed nonnull.
    */
   @VisibleForTesting
   public static boolean isReachableBgpNeighbor(
-      @Nonnull BgpPeerConfigId initiator,
-      @Nonnull BgpPeerConfigId listener,
-      @Nonnull BgpActivePeerConfig src,
+      @Nonnull BgpPeerConfigId initiatorId,
+      @Nonnull BgpPeerConfigId listenerId,
+      @Nonnull BgpActivePeerConfig initiator,
       @Nonnull TracerouteEngine tracerouteEngine) {
-    Ip srcAddress = src.getLocalIp();
-    Ip dstAddress = src.getPeerAddress();
-    if (dstAddress == null) {
-      return false;
-    }
-
     // we do a bidirectional traceroute only from the initiator to the listener since the other
     // direction will be checked once we pick up the listener as the source. This is consistent with
     // the directional nature of BGP graph
     return canInitiateBgpSession(
-        initiator.getHostname(),
-        initiator.getVrfName(),
-        srcAddress,
-        dstAddress,
-        listener.getHostname(),
-        SessionType.isEbgp(BgpSessionProperties.getSessionType(src)) && !src.getEbgpMultihop(),
+        initiatorId.getHostname(),
+        initiatorId.getVrfName(),
+        initiator.getLocalIp(),
+        initiator.getPeerAddress(),
+        listenerId.getHostname(),
+        BgpSessionProperties.getSessionType(initiator) == SessionType.EBGP_SINGLEHOP,
         tracerouteEngine);
   }
 
