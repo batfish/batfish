@@ -14,6 +14,6 @@ public class ServiceObjectMapper implements ContextResolver<ObjectMapper> {
 
   @Override
   public ObjectMapper getContext(Class<?> type) {
-    return BatfishObjectMapper.alwaysMapper();
+    return BatfishObjectMapper.verboseMapper();
   }
 }

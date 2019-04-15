@@ -19,10 +19,8 @@ import org.batfish.common.util.serialization.BatfishThirdPartySerializationModul
 public final class BatfishObjectMapper {
   private static final ObjectMapper MAPPER = baseMapper();
 
-  private static final ObjectMapper ALWAYS_MAPPER =
-      baseMapper().setSerializationInclusion(Include.ALWAYS);
-
-  private static final ObjectWriter ALWAYS_WRITER = ALWAYS_MAPPER.writer();
+  private static final ObjectWriter ALWAYS_WRITER =
+      baseMapper().setSerializationInclusion(Include.ALWAYS).writer();
 
   private static final ObjectWriter WRITER = MAPPER.writer();
 
@@ -32,19 +30,9 @@ public final class BatfishObjectMapper {
       baseMapper().enable(SerializationFeature.INDENT_OUTPUT).writer(PRETTY_PRINTER);
 
   private static final ObjectMapper VERBOSE_MAPPER =
-      baseMapper()
-          .enable(SerializationFeature.INDENT_OUTPUT)
-          .setSerializationInclusion(Include.ALWAYS);
+      baseMapper().setSerializationInclusion(Include.ALWAYS);
 
   private static final ObjectWriter VERBOSE_WRITER = VERBOSE_MAPPER.writer(PRETTY_PRINTER);
-
-  /**
-   * Returns an {@link ObjectMapper} configured to Batfish JSON standards. The JSON produced
-   * includes empty lists and null values and is not pretty-printed.
-   */
-  public static ObjectMapper alwaysMapper() {
-    return ALWAYS_MAPPER;
-  }
 
   /**
    * Returns a {@link ObjectMapper} configured to Batfish JSON standards. The JSON produced is not
@@ -84,7 +72,7 @@ public final class BatfishObjectMapper {
 
   /**
    * Returns a {@link ObjectMapper} configured to Batfish JSON standards. Relative to {@link
-   * #mapper()}, it indents the JSON and includes null values and empty lists.
+   * #mapper()}, it includes null values and empty lists.
    */
   public static ObjectMapper verboseMapper() {
     return VERBOSE_MAPPER;
@@ -92,7 +80,7 @@ public final class BatfishObjectMapper {
 
   /**
    * Returns a {@link ObjectWriter} configured to Batfish JSON standards. The JSON produced is
-   * verbosely pretty-printed; all fields are included.
+   * verbosely but not pretty printed (including all fields).
    *
    * @see BatfishObjectMapper#writer()
    * @see BatfishObjectMapper#prettyWriter()
