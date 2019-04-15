@@ -93,7 +93,7 @@ public abstract class BgpSessionAnswerer extends Answerer {
       return ConfiguredSessionStatus.NO_LOCAL_AS;
     } else if (passivePeerConfig.getPeerPrefix() == null) {
       return ConfiguredSessionStatus.NO_REMOTE_PREFIX;
-    } else if (passivePeerConfig.getRemoteAs().isEmpty()) {
+    } else if (passivePeerConfig.getRemoteAsns().isEmpty()) {
       return ConfiguredSessionStatus.NO_REMOTE_AS;
     }
     return null;
@@ -114,7 +114,7 @@ public abstract class BgpSessionAnswerer extends Answerer {
       return ConfiguredSessionStatus.NO_LOCAL_AS;
     } else if (neighbor.getPeerAddress() == null) {
       return ConfiguredSessionStatus.NO_REMOTE_IP;
-    } else if (neighbor.getRemoteAs() == null) {
+    } else if (neighbor.getRemoteAsns() == null) {
       return ConfiguredSessionStatus.NO_REMOTE_AS;
     }
     return null;

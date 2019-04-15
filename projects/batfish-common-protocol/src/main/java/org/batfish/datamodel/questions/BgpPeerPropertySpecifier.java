@@ -119,15 +119,7 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
 
   @VisibleForTesting
   static SelfDescribingObject getRemoteAs(@Nonnull BgpPeerConfig peer) {
-    if (peer instanceof BgpActivePeerConfig) {
-      return new SelfDescribingObject(Schema.LONG, ((BgpActivePeerConfig) peer).getRemoteAs());
-    }
-    if (peer instanceof BgpPassivePeerConfig) {
-      return new SelfDescribingObject(
-          Schema.list(Schema.LONG), ((BgpPassivePeerConfig) peer).getRemoteAs());
-    }
-    throw new IllegalArgumentException(
-        String.format("Peer is neither Active nor Passive: %s", peer));
+    return new SelfDescribingObject(Schema.STRING, peer.getRemoteAsns().toString());
   }
 
   @Override

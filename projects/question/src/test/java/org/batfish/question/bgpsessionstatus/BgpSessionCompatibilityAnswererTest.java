@@ -194,7 +194,7 @@ public class BgpSessionCompatibilityAnswererTest {
     BgpPassivePeerConfig peerConfig =
         BgpPassivePeerConfig.builder()
             .setLocalAs(3L)
-            .setRemoteAs(LongSpace.builder().includingAll(remoteAsList).build())
+            .setRemoteAsns(LongSpace.builder().includingAll(remoteAsList).build())
             .setLocalIp(localIp)
             .setPeerPrefix(remotePrefix)
             .build();

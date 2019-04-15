@@ -414,7 +414,7 @@ class Optimizations {
                       p.getActiveNeighbors().entrySet()) {
                     BgpActivePeerConfig n = e.getValue();
                     // If iBGP used, then don't merge
-                    if (n.getRemoteAs().equals(LongSpace.of(n.getLocalAs()))) {
+                    if (n.getRemoteAsns().equals(LongSpace.of(n.getLocalAs()))) {
                       acc = false;
                       break;
                     }

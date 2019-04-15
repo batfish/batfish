@@ -233,7 +233,7 @@ public class BgpSessionCompatibilityAnswerer extends BgpSessionAnswerer {
         .put(COL_LOCAL_AS, activePeer.getLocalAs())
         .put(COL_LOCAL_IP, activePeer.getLocalIp())
         .put(COL_NODE, new Node(activeId.getHostname()))
-        .put(COL_REMOTE_AS, new SelfDescribingObject(Schema.LONG, activePeer.getRemoteAs()))
+        .put(COL_REMOTE_AS, new SelfDescribingObject(Schema.LONG, activePeer.getRemoteAsns()))
         .put(COL_REMOTE_NODE, remoteNode)
         .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, activePeer.getPeerAddress()))
         .put(COL_SESSION_TYPE, type)
@@ -254,7 +254,7 @@ public class BgpSessionCompatibilityAnswerer extends BgpSessionAnswerer {
         .put(COL_NODE, new Node(passiveId.getHostname()))
         .put(
             COL_REMOTE_AS,
-            new SelfDescribingObject(Schema.list(Schema.LONG), passivePeer.getRemoteAs()))
+            new SelfDescribingObject(Schema.list(Schema.LONG), passivePeer.getRemoteAsns()))
         .put(COL_REMOTE_NODE, null)
         .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.PREFIX, passivePeer.getPeerPrefix()))
         .put(COL_SESSION_TYPE, SessionType.UNSET)

@@ -260,7 +260,7 @@ public final class IspModelingUtils {
    * @param configuration {@link Configuration} owning given interfaces
    * @param interfaces {@link List} of interfaces on this node having eBGP sessions with the ISP
    * @param remoteIps Expected {@link Ip}s of the ISPs (optional)
-   * @param remoteAsns Expected ASNs of the ISP nodes (optional)
+   * @param remoteAsnsList Expected ASNs of the ISP nodes (optional)
    * @param allIspInfos {@link Map} containing existing ASNs and corresponding {@link IspInfo}s to
    *     which ISPs extracted from this {@link Configuration} will be merged
    * @param warnings {@link Warnings} for ISP and Internet modeling
@@ -270,7 +270,7 @@ public final class IspModelingUtils {
       @Nonnull Configuration configuration,
       @Nonnull Set<String> interfaces,
       @Nonnull List<Ip> remoteIps,
-      @Nonnull List<Long> remoteAsns,
+      @Nonnull List<Long> remoteAsnsList,
       Map<Long, IspInfo> allIspInfos,
       @Nonnull Warnings warnings) {
 
@@ -296,7 +296,10 @@ public final class IspModelingUtils {
             .collect(ImmutableMap.toImmutableMap(InterfaceAddress::getIp, Function.identity()));
 
     Set<Ip> remoteIpsSet = ImmutableSet.copyOf(remoteIps);
-    Set<Long> remoteAsnsSet = ImmutableSet.copyOf(remoteAsns);
+    LongSpace remoteAsns =
+        remoteAsnsList.isEmpty()
+            ? LongSpace.ALL_AS_NUMBERS
+            : LongSpace.builder().includingAll(remoteAsnsList).build();
 
     List<BgpActivePeerConfig> validBgpActivePeerConfigs =
         configuration.getVrfs().values().stream()
@@ -309,7 +312,7 @@ public final class IspModelingUtils {
                         bgpActivePeerConfig,
                         ipToInterfaceAddresses.keySet(),
                         remoteIpsSet,
-                        remoteAsnsSet))
+                        remoteAsns))
             .collect(Collectors.toList());
 
     if (validBgpActivePeerConfigs.isEmpty()) {
@@ -321,7 +324,7 @@ public final class IspModelingUtils {
     for (BgpActivePeerConfig bgpActivePeerConfig : validBgpActivePeerConfigs) {
       IspInfo ispInfo =
           allIspInfos.computeIfAbsent(
-              bgpActivePeerConfig.getRemoteAs().least(), k -> new IspInfo());
+              bgpActivePeerConfig.getRemoteAsns().least(), k -> new IspInfo());
       // merging ISP's interface addresses and eBGP confs from the current configuration
       ispInfo.addInterfaceAddress(
           new InterfaceAddress(
@@ -385,7 +388,7 @@ public final class IspModelingUtils {
                     .setLocalIp(bgpActivePeerConfig.getLocalIp())
                     .setLocalAs(bgpActivePeerConfig.getLocalAs())
                     .setPeerAddress(bgpActivePeerConfig.getPeerAddress())
-                    .setRemoteAs(bgpActivePeerConfig.getRemoteAs())
+                    .setRemoteAsns(bgpActivePeerConfig.getRemoteAsns())
                     .setExportPolicy(bgpActivePeerConfig.getExportPolicy())
                     .setBgpProcess(bgpProcess)
                     .build());
@@ -463,15 +466,16 @@ public final class IspModelingUtils {
       @Nonnull BgpActivePeerConfig bgpActivePeerConfig,
       @Nonnull Set<Ip> localIps,
       @Nonnull Set<Ip> remoteIps,
-      @Nonnull Set<Long> remoteAsns) {
+      @Nonnull LongSpace remoteAsns) {
     return Objects.nonNull(bgpActivePeerConfig.getLocalIp())
         && Objects.nonNull(bgpActivePeerConfig.getLocalAs())
         && Objects.nonNull(bgpActivePeerConfig.getPeerAddress())
-        && !bgpActivePeerConfig.getRemoteAs().equals(LongSpace.of(bgpActivePeerConfig.getLocalAs()))
+        && !bgpActivePeerConfig
+            .getRemoteAsns()
+            .equals(LongSpace.of(bgpActivePeerConfig.getLocalAs()))
         && localIps.contains(bgpActivePeerConfig.getLocalIp())
         && (remoteIps.isEmpty() || remoteIps.contains(bgpActivePeerConfig.getPeerAddress()))
-        && (remoteAsns.isEmpty()
-            || remoteAsns.containsAll(bgpActivePeerConfig.getRemoteAs().enumerate()));
+        && !remoteAsns.intersection(bgpActivePeerConfig.getRemoteAsns()).isEmpty();
   }
 
   /**
@@ -484,7 +488,7 @@ public final class IspModelingUtils {
         .setPeerAddress(bgpActivePeerConfig.getLocalIp())
         .setRemoteAs(bgpActivePeerConfig.getLocalAs())
         .setLocalIp(bgpActivePeerConfig.getPeerAddress())
-        .setLocalAs(bgpActivePeerConfig.getRemoteAs().least())
+        .setLocalAs(bgpActivePeerConfig.getRemoteAsns().least())
         .setExportPolicy(EXPORT_POLICY_ON_ISP)
         .build();
   }

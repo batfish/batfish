@@ -5,9 +5,9 @@ import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.getRemote
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import com.google.common.collect.ImmutableList;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.SelfDescribingObject;
 import org.junit.Test;
@@ -23,7 +23,9 @@ public class BgpPeerPropertySpecifierTest {
   @Test
   public void getRemoteAsActivePeer() {
     BgpActivePeerConfig activePeerConfig = BgpActivePeerConfig.builder().setRemoteAs(100L).build();
-    assertThat(getRemoteAs(activePeerConfig), equalTo(new SelfDescribingObject(Schema.LONG, 100L)));
+    assertThat(
+        getRemoteAs(activePeerConfig),
+        equalTo(new SelfDescribingObject(Schema.STRING, LongSpace.of(100L).toString())));
   }
 
   @Test
@@ -32,6 +34,6 @@ public class BgpPeerPropertySpecifierTest {
         BgpPassivePeerConfig.builder().setRemoteAs(100L).build();
     assertThat(
         getRemoteAs(passivePeerConfig),
-        equalTo(new SelfDescribingObject(Schema.list(Schema.LONG), ImmutableList.of(100L))));
+        equalTo(new SelfDescribingObject(Schema.STRING, LongSpace.of(100L).toString())));
   }
 }

@@ -55,7 +55,7 @@ public class BgpPeerConfigurationAnswererTest {
     BgpActivePeerConfig activePeer =
         BgpActivePeerConfig.builder()
             .setLocalAs(100L)
-            .setRemoteAs(LongSpace.of(200L))
+            .setRemoteAsns(LongSpace.of(200L))
             .setLocalIp(Ip.parse("1.1.1.1"))
             .setPeerAddress(Ip.parse("2.2.2.2"))
             .setRouteReflectorClient(false)
@@ -67,7 +67,7 @@ public class BgpPeerConfigurationAnswererTest {
     BgpPassivePeerConfig passivePeer =
         BgpPassivePeerConfig.builder()
             .setLocalAs(100L)
-            .setRemoteAs(LongSpace.of(300L))
+            .setRemoteAsns(LongSpace.of(300L))
             .setLocalIp(Ip.parse("1.1.1.2"))
             .setPeerPrefix(Prefix.create(Ip.parse("3.3.3.0"), 24))
             .setRouteReflectorClient(true)

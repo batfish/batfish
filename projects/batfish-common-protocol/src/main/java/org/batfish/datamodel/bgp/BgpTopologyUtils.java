@@ -148,7 +148,7 @@ public final class BgpTopologyUtils {
             || neighbor.getLocalIp() == null
             || neighbor.getLocalAs() == null
             || neighbor.getPeerAddress() == null
-            || neighbor.getRemoteAs() == null) {
+            || neighbor.getRemoteAsns() == null) {
           continue;
         }
         // Find nodes that own the neighbor's peer address
@@ -227,7 +227,7 @@ public final class BgpTopologyUtils {
       BgpPassivePeerConfig candidate = nc.getBgpDynamicPeerConfig(candidateId);
       return candidate != null
           && candidate.canConnect(neighbor.getLocalAs())
-          && neighbor.getRemoteAs().contains(candidate.getLocalAs())
+          && neighbor.getRemoteAsns().contains(candidate.getLocalAs())
           && candidate.canConnect(neighbor.getLocalIp())
           && possibleHostnames.contains(candidateId.getHostname());
     } else {
@@ -235,8 +235,8 @@ public final class BgpTopologyUtils {
       return candidate != null
           && Objects.equals(neighbor.getPeerAddress(), candidate.getLocalIp())
           && Objects.equals(neighbor.getLocalIp(), candidate.getPeerAddress())
-          && neighbor.getRemoteAs().contains(candidate.getLocalAs())
-          && candidate.getRemoteAs().contains(neighbor.getLocalAs());
+          && neighbor.getRemoteAsns().contains(candidate.getLocalAs())
+          && candidate.getRemoteAsns().contains(neighbor.getLocalAs());
     }
   }
 

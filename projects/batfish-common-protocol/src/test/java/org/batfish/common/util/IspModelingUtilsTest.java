@@ -44,6 +44,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -151,10 +152,10 @@ public class IspModelingUtilsTest {
 
     assertFalse(
         IspModelingUtils.isValidBgpPeerConfig(
-            invalidPeer, validLocalIps, ImmutableSet.of(), ImmutableSet.of()));
+            invalidPeer, validLocalIps, ImmutableSet.of(), LongSpace.ALL_AS_NUMBERS));
     assertTrue(
         IspModelingUtils.isValidBgpPeerConfig(
-            validPeer, validLocalIps, ImmutableSet.of(), ImmutableSet.of()));
+            validPeer, validLocalIps, ImmutableSet.of(), LongSpace.ALL_AS_NUMBERS));
   }
 
   @Test

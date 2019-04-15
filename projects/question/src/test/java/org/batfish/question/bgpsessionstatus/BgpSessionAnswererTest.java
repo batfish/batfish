@@ -106,7 +106,7 @@ public class BgpSessionAnswererTest {
         _nf.bgpDynamicNeighborBuilder()
             .setLocalAs(1L)
             .setPeerPrefix(Prefix.create(Ip.parse("1.1.1.1"), 24))
-            .setRemoteAs(LongSpace.EMPTY)
+            .setRemoteAsns(LongSpace.EMPTY)
             .build();
     assertThat(getLocallyBrokenStatus(peer), equalTo(ConfiguredSessionStatus.NO_REMOTE_AS));
   }

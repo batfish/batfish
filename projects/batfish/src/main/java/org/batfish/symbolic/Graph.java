@@ -654,11 +654,11 @@ public class Graph {
         continue;
       }
       for (BgpActivePeerConfig n : p.getActiveNeighbors().values()) {
-        if (n.getLocalAs() == null || n.getRemoteAs() == null) {
+        if (n.getLocalAs() == null || n.getRemoteAsns() == null) {
           // Invalid config
           continue;
         }
-        if (n.getRemoteAs().equals(LongSpace.of(n.getLocalAs()))) {
+        if (n.getRemoteAsns().equals(LongSpace.of(n.getLocalAs()))) {
           ips.computeIfAbsent(hostname, key -> new HashSet<>()).add(n.getLocalIp());
         }
       }
@@ -679,11 +679,11 @@ public class Graph {
       for (Entry<Prefix, BgpActivePeerConfig> entry2 : proc.getActiveNeighbors().entrySet()) {
         Prefix remotePrefix = entry2.getKey();
         BgpActivePeerConfig localBgpConfig = entry2.getValue();
-        if (localBgpConfig.getLocalAs() == null || localBgpConfig.getRemoteAs() == null) {
+        if (localBgpConfig.getLocalAs() == null || localBgpConfig.getRemoteAsns() == null) {
           // Invalid config
           continue;
         }
-        if (!localBgpConfig.getRemoteAs().equals(LongSpace.of(localBgpConfig.getLocalAs()))) {
+        if (!localBgpConfig.getRemoteAsns().equals(LongSpace.of(localBgpConfig.getLocalAs()))) {
           // Not iBGP
           continue;
         }

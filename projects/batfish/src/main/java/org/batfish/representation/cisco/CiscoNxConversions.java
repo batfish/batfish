@@ -271,7 +271,7 @@ final class CiscoNxConversions {
     if (dynamic) {
       newNeighborBuilder =
           BgpPassivePeerConfig.builder()
-              .setRemoteAs(
+              .setRemoteAsns(
                   Optional.ofNullable(neighbor.getRemoteAs())
                       .map(LongSpace::of)
                       .orElse(LongSpace.EMPTY))

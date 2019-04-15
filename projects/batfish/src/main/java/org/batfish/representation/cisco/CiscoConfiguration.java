@@ -1919,7 +1919,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
         LongSpace.Builder asns = LongSpace.builder().including(dpg.getRemoteAs());
         Optional.ofNullable(dpg.getAlternateAs()).ifPresent(asns::includingAll);
         newNeighborBuilder =
-            BgpPassivePeerConfig.builder().setPeerPrefix(dpg.getPrefix()).setRemoteAs(asns.build());
+            BgpPassivePeerConfig.builder()
+                .setPeerPrefix(dpg.getPrefix())
+                .setRemoteAsns(asns.build());
       } else {
         throw new VendorConversionException("Invalid BGP leaf neighbor type");
       }

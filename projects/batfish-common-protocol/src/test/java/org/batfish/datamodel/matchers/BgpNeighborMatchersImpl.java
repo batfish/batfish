@@ -103,7 +103,7 @@ final class BgpNeighborMatchersImpl {
 
     @Override
     protected LongSpace featureValueOf(BgpPeerConfig actual) {
-      return actual.getRemoteAs();
+      return actual.getRemoteAsns();
     }
   }
 }

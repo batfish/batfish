@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -17,6 +19,8 @@ import org.batfish.datamodel.dataplane.rib.RibGroup;
 public final class BgpPassivePeerConfig extends BgpPeerConfig {
 
   private static final String PROP_PEER_PREFIX = "peerPrefix";
+
+  @Deprecated private static final String PROP_REMOTE_AS = "remoteAs";
 
   static final long serialVersionUID = 1L;
 
@@ -51,9 +55,10 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
       @JsonProperty(PROP_LOCAL_AS) @Nullable Long localAs,
       @JsonProperty(PROP_LOCAL_IP) @Nullable Ip localIp,
       @JsonProperty(PROP_PEER_PREFIX) @Nullable Prefix peerPrefix,
-      @JsonProperty(PROP_REMOTE_AS) @Nullable LongSpace remoteAs,
+      @JsonProperty(PROP_REMOTE_ASNS) @Nullable LongSpace remoteAsns,
       @JsonProperty(PROP_ROUTE_REFLECTOR) boolean routeReflectorClient,
-      @JsonProperty(PROP_SEND_COMMUNITY) boolean sendCommunity) {
+      @JsonProperty(PROP_SEND_COMMUNITY) boolean sendCommunity,
+      @JsonProperty(PROP_REMOTE_AS) @Nullable Long remoteAs) {
     super(
         additionalPathsReceive,
         additionalPathsSelectAll,
@@ -77,7 +82,7 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
         importPolicySources,
         localAs,
         localIp,
-        remoteAs,
+        firstNonNull(remoteAsns, remoteAs != null ? LongSpace.of(remoteAs) : LongSpace.EMPTY),
         routeReflectorClient,
         sendCommunity);
     _peerPrefix = peerPrefix;
@@ -85,8 +90,8 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
 
   /** Check whether a connection from a peer with a given AS number will be accepted. */
   public boolean canConnect(@Nullable Long asNumber) {
-    return _remoteAs.equals(LongSpace.ALL_AS_NUMBERS)
-        || (asNumber != null && _remoteAs.contains(asNumber));
+    return _remoteAsns.equals(LongSpace.ALL_AS_NUMBERS)
+        || (asNumber != null && _remoteAsns.contains(asNumber));
   }
 
   public boolean canConnect(@Nonnull Ip address) {
@@ -152,9 +157,10 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
               _localAs,
               _localIp,
               _peerPrefix,
-              _remoteAs,
+              _remoteAsns,
               _routeReflectorClient,
-              _sendCommunity);
+              _sendCommunity,
+              null);
       if (_bgpProcess != null) {
         _bgpProcess.getPassiveNeighbors().put(_peerPrefix, bgpPeerConfig);
       }
