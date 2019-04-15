@@ -98,12 +98,12 @@ public final class LongSpace extends NumberSpace<Long, LongSpace, LongSpace.Buil
 
   /** Create a new {@link LongSpace} from a {@link RangeSet} */
   public static @Nonnull LongSpace of(RangeSet<Long> rangeSet) {
-    return builder().includingAll(rangeSet).build();
+    return builder().including(rangeSet).build();
   }
 
   /** Create a new {@link LongSpace} containing the union of the given {@link Range ranges}. */
   public static @Nonnull LongSpace unionOf(Iterable<Range<Long>> ranges) {
-    return builder().includingAll(ranges).build();
+    return builder().includingAllRanges(ranges).build();
   }
 
   /** Create a new {@link LongSpace} containing the union of the given {@link Range ranges}. */

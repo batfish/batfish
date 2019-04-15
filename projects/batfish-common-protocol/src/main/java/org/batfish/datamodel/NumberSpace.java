@@ -135,15 +135,21 @@ public abstract class NumberSpace<
       return including(Range.singleton(range));
     }
 
-    /** Include given {@code ranges}. */
-    public final B includingAll(Iterable<Range<T>> ranges) {
-      ranges.forEach(this::including);
+    /** Include given {@link RangeSet}. */
+    public final B including(RangeSet<T> rangeSet) {
+      rangeSet.asRanges().forEach(this::including);
       return getThis();
     }
 
-    /** Include given {@link RangeSet}. */
-    public final B includingAll(RangeSet<T> rangeSet) {
-      rangeSet.asRanges().forEach(this::including);
+    /** Include given {@code points}. */
+    public final B includingAll(Iterable<T> points) {
+      points.forEach(this::including);
+      return getThis();
+    }
+
+    /** Include given {@code ranges}. */
+    public final B includingAllRanges(Iterable<Range<T>> ranges) {
+      ranges.forEach(this::including);
       return getThis();
     }
 
@@ -224,7 +230,7 @@ public abstract class NumberSpace<
   /** Intersect two number spaces together. */
   public final S intersection(S other) {
     return newBuilder()
-        .includingAll(
+        .including(
             other._rangeset.asRanges().stream()
                 .map(_rangeset::subRangeSet) // intersect individual ranges with _rangeset
                 .map(RangeSet::asRanges) // flatten each intersection result to set of ranges
@@ -285,7 +291,7 @@ public abstract class NumberSpace<
     if (_rangeset.isEmpty()) {
       return empty();
     }
-    return newBuilder().includingAll(_rangeset.complement().subRangeSet(_rangeset.span())).build();
+    return newBuilder().including(_rangeset.complement().subRangeSet(_rangeset.span())).build();
   }
 
   /** Take the complement of this space, bounded by some other {@link NumberSpace} */

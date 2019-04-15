@@ -99,7 +99,7 @@ public final class IntegerSpace extends NumberSpace<Integer, IntegerSpace, Integ
 
   /** Create a new {@link IntegerSpace} containing the union of the given {@link Range ranges}. */
   public static IntegerSpace unionOf(Iterable<Range<Integer>> ranges) {
-    return builder().includingAll(ranges).build();
+    return builder().includingAllRanges(ranges).build();
   }
 
   /**
@@ -116,7 +116,7 @@ public final class IntegerSpace extends NumberSpace<Integer, IntegerSpace, Integ
 
   /** Create a new {@link IntegerSpace} from a {@link RangeSet} */
   public static IntegerSpace of(RangeSet<Integer> rangeSet) {
-    return builder().includingAll(rangeSet).build();
+    return builder().including(rangeSet).build();
   }
 
   /** Create a new singleton {@link IntegerSpace} from an integer value */
