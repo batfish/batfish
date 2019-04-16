@@ -867,6 +867,54 @@ public final class WorkMgrTest {
   }
 
   @Test
+  public void testGetAnswer() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+    String questionName = "question";
+    Question question = new TestQuestion();
+    Answer notAnswered = Answer.failureAnswer("Not answered", null);
+    notAnswered.setStatus(AnswerStatus.NOTFOUND);
+    String notAnsweredString = BatfishObjectMapper.writeString(notAnswered);
+
+    // Setup network, snapshot, question
+    _manager.initNetwork(network, null);
+    NetworkId networkId = _idManager.getNetworkId(network);
+    SnapshotId snapshotId = _idManager.generateSnapshotId();
+    _idManager.assignSnapshot(snapshot, networkId, snapshotId);
+    _idManager.assignQuestion(questionName, networkId, _idManager.generateQuestionId(), null);
+    QuestionId questionId = _idManager.getQuestionId(questionName, networkId, null);
+    _storage.storeQuestion(BatfishObjectMapper.writeString(question), networkId, questionId, null);
+    Answer ans1 = _manager.getAnswer(network, snapshot, questionName, null, null);
+
+    // Setup answer
+    AnswerId answerId =
+        _idManager.getBaseAnswerId(
+            networkId,
+            snapshotId,
+            questionId,
+            DEFAULT_QUESTION_SETTINGS_ID,
+            DEFAULT_NETWORK_NODE_ROLES_ID,
+            null,
+            null);
+    Answer answer = new Answer();
+    answer.addAnswerElement(new StringAnswerElement("foo1"));
+    String answerStr = BatfishObjectMapper.writeString(answer);
+    AnswerMetadata answerMetadata1 =
+        AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
+    _storage.storeAnswer(answerStr, answerId);
+    _storage.storeAnswerMetadata(answerMetadata1, answerId);
+    Answer ans2 = _manager.getAnswer(network, snapshot, questionName, null, null);
+
+    // Confirm we get a "not answered" answer before the question is actually answered
+    String ans1String = BatfishObjectMapper.writeString(ans1);
+    assertThat(ans1String, equalTo(notAnsweredString));
+
+    // Confirm the getAnswer returns the answer we setup
+    String ans2String = BatfishObjectMapper.writeString(ans2);
+    assertThat(ans2String, equalTo(answerStr));
+  }
+
+  @Test
   public void testGetAnswerAnalysis() throws IOException {
     String containerName = "container1";
     String testrigName = "testrig1";
@@ -2912,5 +2960,48 @@ public final class WorkMgrTest {
     assertThat(
         _manager.getSnapshotExtendedObjectsMetadata(network, snapshot),
         contains(new StoredObjectMetadata(fileName, content.getBytes().length)));
+  }
+
+  @Test
+  public void testCheckQuestionExists() {
+    String network = "network";
+    String question = "question";
+
+    // No network or question should result in questionExists being false
+    assertFalse(_manager.checkQuestionExists(network, question, null));
+
+    _manager.initNetwork(network, null);
+    // No question should result in questionExists being false
+    assertFalse(_manager.checkQuestionExists(network, question, null));
+
+    NetworkId networkId = _idManager.getNetworkId(network);
+    _idManager.assignQuestion(question, networkId, _idManager.generateQuestionId(), null);
+    // After creating both network and question, questionExists should be true
+    assertTrue(_manager.checkQuestionExists(network, question, null));
+  }
+
+  @Test
+  public void testCheckAnalysisQuestionExists() {
+    String network = "network";
+    String question = "question";
+    String analysis = "analysis";
+
+    // No network, question, or analysis should result in check being false
+    assertFalse(_manager.checkQuestionExists(network, question, analysis));
+
+    // No question or analysis should result in check being false
+    _manager.initNetwork(network, null);
+    assertFalse(_manager.checkQuestionExists(network, question, analysis));
+
+    // No question should result in check being false
+    _manager.configureAnalysis(
+        network, true, analysis, ImmutableMap.of(), Lists.newArrayList(), null);
+    assertFalse(_manager.checkQuestionExists(network, question, analysis));
+
+    // After creating network, analysis, and question, check should finally be true
+    NetworkId networkId = _idManager.getNetworkId(network);
+    AnalysisId analysisId = _idManager.getAnalysisId(analysis, networkId);
+    _idManager.assignQuestion(question, networkId, _idManager.generateQuestionId(), analysisId);
+    assertTrue(_manager.checkQuestionExists(network, question, analysis));
   }
 }

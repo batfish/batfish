@@ -870,7 +870,7 @@ public class WorkMgr extends AbstractCoordinator {
    * Get the answer string for the specified question. Returns {@code null} if the question is not
    * answered.
    */
-  public @Nullable String loadAnswer(
+  private @Nullable String loadAnswer(
       String network,
       String snapshot,
       String question,
@@ -1508,6 +1508,24 @@ public class WorkMgr extends AbstractCoordinator {
       return zipfile;
     }
     return null;
+  }
+
+  /** Checks if the specified question exists. */
+  public boolean checkQuestionExists(String network, String question, @Nullable String analysis) {
+    if (!_idManager.hasNetworkId(network)) {
+      return false;
+    }
+    NetworkId networkId = _idManager.getNetworkId(network);
+    AnalysisId analysisId;
+    if (analysis != null) {
+      if (!_idManager.hasAnalysisId(analysis, networkId)) {
+        return false;
+      }
+      analysisId = _idManager.getAnalysisId(analysis, networkId);
+    } else {
+      analysisId = null;
+    }
+    return _idManager.hasQuestionId(question, networkId, analysisId);
   }
 
   /**
