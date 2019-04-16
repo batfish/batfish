@@ -21,7 +21,8 @@ public class NamesTest {
           "a", "_startsUnderscore", "has_", "has-", "has1", "1", "has/", "has.", "has:", "has(");
 
   // empty strings and non-ascii characters are not allowed
-  public static List<String> REFERENCE_OBJECT_INVALID_NAMES = ImmutableList.of("", "has \u1234");
+  public static List<String> REFERENCE_OBJECT_INVALID_NAMES =
+      ImmutableList.of("", "has" + (char) 128);
 
   @Test
   public void testReferenceObjectNames() {

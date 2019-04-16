@@ -122,7 +122,7 @@ public final class ParboiledAutoComplete {
   @VisibleForTesting
   List<AutocompleteSuggestion> autoCompletePotentialMatch(PotentialMatch pm) {
     switch (pm.getAnchorType()) {
-      case ADDRESS_GROUP_AND_BOOK:
+      case ADDRESS_GROUP_NAME:
         return autoCompletePotentialMatch(pm, DEFAULT_RANK);
       case CHAR_LITERAL:
         /*
@@ -139,7 +139,7 @@ public final class ParboiledAutoComplete {
       case FILTER_NAME_REGEX:
         // can't help with regexes
         return ImmutableList.of();
-      case INTERFACE_GROUP_AND_BOOK:
+      case INTERFACE_GROUP_NAME:
         return autoCompletePotentialMatch(pm, DEFAULT_RANK);
       case INTERFACE_NAME:
         return autoCompletePotentialMatch(pm, DEFAULT_RANK);
@@ -170,11 +170,15 @@ public final class ParboiledAutoComplete {
       case NODE_NAME_REGEX:
         // can't help with regexes
         return ImmutableList.of();
-      case NODE_ROLE_NAME_AND_DIMENSION:
+      case NODE_ROLE_DIMENSION_NAME:
+        return autoCompletePotentialMatch(pm, DEFAULT_RANK);
+      case NODE_ROLE_NAME:
         return autoCompletePotentialMatch(pm, DEFAULT_RANK);
       case NODE_TYPE:
         // Relies on STRING_LITERAL completion as it appears later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
+      case REFERENCE_BOOK_NAME:
+        return autoCompletePotentialMatch(pm, DEFAULT_RANK);
       case ROUTING_POLICY_NAME:
         return autoCompletePotentialMatch(pm, DEFAULT_RANK);
       case ROUTING_POLICY_NAME_REGEX:
@@ -240,12 +244,12 @@ public final class ParboiledAutoComplete {
    */
   private static Variable.Type anchorTypeToVariableType(Anchor.Type anchorType) {
     switch (anchorType) {
-      case ADDRESS_GROUP_AND_BOOK:
-        return Variable.Type.ADDRESS_GROUP_AND_BOOK;
+      case ADDRESS_GROUP_NAME:
+        return Variable.Type.ADDRESS_GROUP_NAME;
       case FILTER_NAME:
         return Variable.Type.FILTER_NAME;
-      case INTERFACE_GROUP_AND_BOOK:
-        return Variable.Type.INTERFACE_GROUP_AND_BOOK;
+      case INTERFACE_GROUP_NAME:
+        return Variable.Type.INTERFACE_GROUP_NAME;
       case INTERFACE_NAME:
         return Type.INTERFACE_NAME;
       case INTERFACE_TYPE:
@@ -256,8 +260,12 @@ public final class ParboiledAutoComplete {
         return Variable.Type.PREFIX;
       case NODE_NAME:
         return Variable.Type.NODE_NAME;
-      case NODE_ROLE_NAME_AND_DIMENSION:
-        return Variable.Type.NODE_ROLE_AND_DIMENSION;
+      case NODE_ROLE_NAME:
+        return Variable.Type.NODE_ROLE_NAME;
+      case NODE_ROLE_DIMENSION_NAME:
+        return Variable.Type.NODE_ROLE_DIMENSION_NAME;
+      case REFERENCE_BOOK_NAME:
+        return Variable.Type.REFERENCE_BOOK_NAME;
       case ROUTING_POLICY_NAME:
         return Variable.Type.ROUTING_POLICY_NAME;
       case VRF_NAME:
