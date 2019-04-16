@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.testing.EqualsTester;
@@ -14,7 +15,6 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.dataplane.rib.RibGroup;
 import org.batfish.datamodel.dataplane.rib.RibId;
 import org.junit.Test;
-import org.parboiled.common.ImmutableList;
 
 /** Test of {@link BgpUnnumberedPeerConfig}. */
 @ParametersAreNonnullByDefault
