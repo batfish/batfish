@@ -17,6 +17,7 @@ interface tmm
 interface vlan1
 !
 router bgp 65500
+ bgp always-compare-med
  bgp graceful-restart restart-time 123
  bgp router-id 192.0.2.100
  max-paths ebgp 12

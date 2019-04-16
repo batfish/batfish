@@ -14,7 +14,9 @@ public final class BgpProcess implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
+  private boolean _alwaysCompareMed;
   private final @Nonnull BgpIpv4AddressFamily _ipv4AddressFamily;
+
   private final @Nonnull BgpIpv6AddressFamily _ipv6AddressFamily;
   private @Nullable Long _localAs;
   private final @Nonnull String _name;
@@ -28,6 +30,10 @@ public final class BgpProcess implements Serializable {
     _ipv4AddressFamily = new BgpIpv4AddressFamily();
     _ipv6AddressFamily = new BgpIpv6AddressFamily();
     _peerGroups = new HashMap<>();
+  }
+
+  public boolean getAlwaysCompareMed() {
+    return _alwaysCompareMed;
   }
 
   public @Nonnull BgpIpv4AddressFamily getIpv4AddressFamily() {
@@ -56,6 +62,10 @@ public final class BgpProcess implements Serializable {
 
   public @Nullable Ip getRouterId() {
     return _routerId;
+  }
+
+  public void setAlwaysCompareMed(boolean alwaysCompareMed) {
+    _alwaysCompareMed = alwaysCompareMed;
   }
 
   public void setLocalAs(@Nullable Long localAs) {
