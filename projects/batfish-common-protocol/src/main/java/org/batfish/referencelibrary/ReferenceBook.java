@@ -273,7 +273,7 @@ public class ReferenceBook implements Comparable<ReferenceBook> {
                             "Group name '%s' does not exist in ReferenceBook '%s'",
                             groupName, getName())));
     allGroupNames.add(groupName);
-    for (String childName : group.getAddressGroups()) {
+    for (String childName : group.getChildGroupNames()) {
       if (!allGroupNames.contains(childName)) {
         addGroupAndDescendantNames(childName, allGroupNames);
       }

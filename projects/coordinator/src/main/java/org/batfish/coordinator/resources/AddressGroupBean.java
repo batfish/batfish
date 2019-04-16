@@ -12,14 +12,14 @@ import org.batfish.referencelibrary.AddressGroup;
 /** A bean for {@link AddressGroup} */
 public class AddressGroupBean {
 
-  /** Names of sub groups in this group */
-  public Set<String> addressGroups;
-
   /**
    * The set of address in this address group. An address can be an IP address, prefix, or
    * address:mask
    */
   public Set<String> addresses;
+
+  /** Names of sub groups in this group */
+  public Set<String> childGroupNames;
 
   /** The name of this address group */
   public String name;
@@ -30,7 +30,7 @@ public class AddressGroupBean {
   public AddressGroupBean(AddressGroup addressGroup) {
     name = addressGroup.getName();
     addresses = ImmutableSet.copyOf(addressGroup.getAddresses());
-    addressGroups = ImmutableSet.copyOf(addressGroup.getAddressGroups());
+    childGroupNames = ImmutableSet.copyOf(addressGroup.getChildGroupNames());
   }
 
   @Override
@@ -38,20 +38,20 @@ public class AddressGroupBean {
     if (!(o instanceof AddressGroupBean)) {
       return false;
     }
-    return Objects.equals(addressGroups, ((AddressGroupBean) o).addressGroups)
-        && Objects.equals(addresses, ((AddressGroupBean) o).addresses)
+    return Objects.equals(addresses, ((AddressGroupBean) o).addresses)
+        && Objects.equals(childGroupNames, ((AddressGroupBean) o).childGroupNames)
         && Objects.equals(name, ((AddressGroupBean) o).name);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(addressGroups, addresses, name);
+    return Objects.hash(childGroupNames, addresses, name);
   }
 
   public AddressGroup toAddressGroup() {
     return new AddressGroup(
         name,
         ImmutableSortedSet.copyOf(firstNonNull(addresses, ImmutableSet.of())),
-        ImmutableSortedSet.copyOf(firstNonNull(addressGroups, ImmutableSet.of())));
+        ImmutableSortedSet.copyOf(firstNonNull(childGroupNames, ImmutableSet.of())));
   }
 }

@@ -18,17 +18,17 @@ import org.batfish.datamodel.Names.Type;
 @ParametersAreNonnullByDefault
 public class AddressGroup implements Comparable<AddressGroup> {
 
-  private static final String PROP_ADDRESS_GROUPS = "addressGroups";
   private static final String PROP_ADDRESSES = "addresses";
+  private static final String PROP_CHILD_GROUP_NAMES = "childGroupNames";
   private static final String PROP_NAME = "name";
 
   @Nonnull private SortedSet<String> _addresses;
-  @Nonnull private SortedSet<String> _addressGroups;
+  @Nonnull private SortedSet<String> _childGroupNames;
   @Nonnull private String _name;
 
   @JsonCreator
   private static AddressGroup create(
-      @Nullable @JsonProperty(PROP_ADDRESS_GROUPS) SortedSet<String> addressGroups,
+      @Nullable @JsonProperty(PROP_CHILD_GROUP_NAMES) SortedSet<String> addressGroups,
       @Nullable @JsonProperty(PROP_ADDRESSES) SortedSet<String> addresses,
       @Nullable @JsonProperty(PROP_NAME) String name) {
     checkArgument(name != null, "Address group name cannot not be null");
@@ -43,12 +43,12 @@ public class AddressGroup implements Comparable<AddressGroup> {
   public AddressGroup(
       String name,
       @Nullable SortedSet<String> addresses,
-      @Nullable SortedSet<String> addressGroups) {
+      @Nullable SortedSet<String> childGroupNames) {
     Names.checkName(name, "address group", Type.REFERENCE_OBJECT);
 
     _name = name;
-    _addressGroups = firstNonNull(addressGroups, new TreeSet<>());
     _addresses = firstNonNull(addresses, new TreeSet<>());
+    _childGroupNames = firstNonNull(childGroupNames, new TreeSet<>());
 
     // check if all the input address strings can be mapped to an IpWildCard
     _addresses.forEach(IpWildcard::new);
@@ -59,16 +59,16 @@ public class AddressGroup implements Comparable<AddressGroup> {
     return _name.compareTo(o._name);
   }
 
-  @JsonProperty(PROP_ADDRESS_GROUPS)
-  @Nonnull
-  public SortedSet<String> getAddressGroups() {
-    return _addressGroups;
-  }
-
   @JsonProperty(PROP_ADDRESSES)
   @Nonnull
   public SortedSet<String> getAddresses() {
     return _addresses;
+  }
+
+  @JsonProperty(PROP_CHILD_GROUP_NAMES)
+  @Nonnull
+  public SortedSet<String> getChildGroupNames() {
+    return _childGroupNames;
   }
 
   @JsonProperty(PROP_NAME)
