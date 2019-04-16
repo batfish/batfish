@@ -2417,78 +2417,97 @@ public class CiscoGrammarTest {
   @Test
   public void testIosOspfDistributeListPrefixList() throws IOException {
     Configuration c = parseConfig("iosOspfDistributeListPrefixList");
+    String distListPolicyName0 = "~OSPF_DIST_LIST_default_1_GigabitEthernet0/0~";
+    String distListPolicyName1 = "~OSPF_DIST_LIST_default_1_GigabitEthernet1/0~";
 
-    assertThat(c.getRoutingPolicies(), hasKey("~OSPF_DIST_LIST_default_1_GigabitEthernet0/0~"));
+    assertThat(c.getRoutingPolicies(), hasKey(distListPolicyName0));
 
     assertThat(
         c.getAllInterfaces().get("GigabitEthernet0/0").getOspfInboundDistributeListPolicy(),
-        equalTo("~OSPF_DIST_LIST_default_1_GigabitEthernet0/0~"));
-
-    RoutingPolicy routingPolicy =
-        c.getRoutingPolicies().get("~OSPF_DIST_LIST_default_1_GigabitEthernet0/0~");
-    List<org.batfish.datamodel.routing_policy.statement.Statement> statements =
-        routingPolicy.getStatements();
-
-    assertThat(statements, hasSize(1));
+        equalTo(distListPolicyName0));
     assertThat(
-        statements.iterator().next(),
+        c.getAllInterfaces().get("GigabitEthernet1/0").getOspfInboundDistributeListPolicy(),
+        equalTo(distListPolicyName1));
+
+    RoutingPolicy routingPolicy0 = c.getRoutingPolicies().get(distListPolicyName0);
+    List<org.batfish.datamodel.routing_policy.statement.Statement> statements =
+        routingPolicy0.getStatements();
+
+    assertThat(
+        statements,
         equalTo(
-            new If(
-                new Conjunction(
-                    ImmutableList.of(
-                        new MatchPrefixSet(
-                            DestinationNetwork.instance(), new NamedPrefixSet("filter_2")),
-                        new MatchPrefixSet(
-                            DestinationNetwork.instance(), new NamedPrefixSet("filter_1")))),
-                ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
-                ImmutableList.of(Statements.ExitReject.toStaticStatement()))));
+            ImmutableList.of(
+                new If(
+                    new Conjunction(
+                        ImmutableList.of(
+                            new MatchPrefixSet(
+                                DestinationNetwork.instance(), new NamedPrefixSet("filter_2")),
+                            new MatchPrefixSet(
+                                DestinationNetwork.instance(), new NamedPrefixSet("filter_1")))),
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
 
     assertFalse(
-        routingPolicy.process(
+        routingPolicy0.process(
             OspfIntraAreaRoute.builder().setNetwork(Prefix.parse("1.1.1.0/24")).setArea(1L).build(),
             OspfIntraAreaRoute.builder(),
             null,
             "default",
             Direction.IN));
     assertFalse(
-        routingPolicy.process(
+        routingPolicy0.process(
             OspfIntraAreaRoute.builder().setNetwork(Prefix.parse("2.2.2.0/24")).setArea(1L).build(),
             OspfIntraAreaRoute.builder(),
             null,
             "default",
             Direction.IN));
     assertTrue(
-        routingPolicy.process(
+        routingPolicy0.process(
             OspfIntraAreaRoute.builder().setNetwork(Prefix.parse("3.3.3.0/24")).setArea(1L).build(),
             OspfIntraAreaRoute.builder(),
             null,
             "default",
             Direction.IN));
+
+    assertThat(
+        c.getRoutingPolicies().get(distListPolicyName1).getStatements(),
+        equalTo(
+            ImmutableList.of(
+                new If(
+                    new Conjunction(
+                        ImmutableList.of(
+                            new MatchPrefixSet(
+                                DestinationNetwork.instance(), new NamedPrefixSet("filter_2")),
+                            new MatchPrefixSet(
+                                DestinationNetwork.instance(), new NamedPrefixSet("filter_1")))),
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
   }
 
   @Test
   public void testIosOspfDistributeListPrefixListInterface() throws IOException {
     Configuration c = parseConfig("iosOspfDistributeListPrefixListInterface");
+    String distListPolicyName = "~OSPF_DIST_LIST_default_1_GigabitEthernet0/0~";
 
-    assertThat(c.getRoutingPolicies(), hasKey("~OSPF_DIST_LIST_default_1_GigabitEthernet0/0~"));
+    assertThat(c.getRoutingPolicies(), hasKey(distListPolicyName));
 
     assertThat(
         c.getAllInterfaces().get("GigabitEthernet0/0").getOspfInboundDistributeListPolicy(),
-        equalTo("~OSPF_DIST_LIST_default_1_GigabitEthernet0/0~"));
+        equalTo(distListPolicyName));
 
-    RoutingPolicy routingPolicy =
-        c.getRoutingPolicies().get("~OSPF_DIST_LIST_default_1_GigabitEthernet0/0~");
+    RoutingPolicy routingPolicy = c.getRoutingPolicies().get(distListPolicyName);
     List<org.batfish.datamodel.routing_policy.statement.Statement> statements =
         routingPolicy.getStatements();
 
-    assertThat(statements, hasSize(1));
     assertThat(
-        statements.iterator().next(),
+        statements,
         equalTo(
-            new If(
-                new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet("filter_1")),
-                ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
-                ImmutableList.of(Statements.ExitReject.toStaticStatement()))));
+            ImmutableList.of(
+                new If(
+                    new MatchPrefixSet(
+                        DestinationNetwork.instance(), new NamedPrefixSet("filter_1")),
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
 
     assertFalse(
         routingPolicy.process(
@@ -2509,26 +2528,27 @@ public class CiscoGrammarTest {
   @Test
   public void testIosOspfDistributeListPrefixListGlobal() throws IOException {
     Configuration c = parseConfig("iosOspfDistributeListPrefixListGlobal");
+    String distListPoicyName = "~OSPF_DIST_LIST_default_1_GigabitEthernet0/0~";
 
-    assertThat(c.getRoutingPolicies(), hasKey("~OSPF_DIST_LIST_default_1_GigabitEthernet0/0~"));
+    assertThat(c.getRoutingPolicies(), hasKey(distListPoicyName));
 
     assertThat(
         c.getAllInterfaces().get("GigabitEthernet0/0").getOspfInboundDistributeListPolicy(),
-        equalTo("~OSPF_DIST_LIST_default_1_GigabitEthernet0/0~"));
+        equalTo(distListPoicyName));
 
-    RoutingPolicy routingPolicy =
-        c.getRoutingPolicies().get("~OSPF_DIST_LIST_default_1_GigabitEthernet0/0~");
+    RoutingPolicy routingPolicy = c.getRoutingPolicies().get(distListPoicyName);
     List<org.batfish.datamodel.routing_policy.statement.Statement> statements =
         routingPolicy.getStatements();
 
-    assertThat(statements, hasSize(1));
     assertThat(
-        statements.iterator().next(),
+        statements,
         equalTo(
-            new If(
-                new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet("filter_2")),
-                ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
-                ImmutableList.of(Statements.ExitReject.toStaticStatement()))));
+            ImmutableList.of(
+                new If(
+                    new MatchPrefixSet(
+                        DestinationNetwork.instance(), new NamedPrefixSet("filter_2")),
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
 
     assertTrue(
         routingPolicy.process(
