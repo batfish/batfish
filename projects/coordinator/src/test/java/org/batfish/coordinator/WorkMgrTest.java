@@ -57,6 +57,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.UUID;
+import javax.annotation.Nullable;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.batfish.common.AnswerRowsOptions;
@@ -866,52 +867,119 @@ public final class WorkMgrTest {
             snapshotBaseName, snapshotNewName, null, null, null, null, null, null, null));
   }
 
+  /** Setup network, snapshot, question, and optionally answer */
+  private void setupQuestionAndAnswer(
+      String network,
+      String snapshot,
+      String questionName,
+      @Nullable String analysis,
+      @Nullable Answer answer)
+      throws IOException {
+    Question question = new TestQuestion();
+    _manager.initNetwork(network, null);
+    NetworkId networkId = _idManager.getNetworkId(network);
+    SnapshotId snapshotId = _idManager.generateSnapshotId();
+    _idManager.assignSnapshot(snapshot, networkId, snapshotId);
+    AnalysisId analysisId = null;
+    if (analysis != null) {
+      _manager.configureAnalysis(
+          network,
+          true,
+          analysis,
+          ImmutableMap.of(questionName, BatfishObjectMapper.writeString(question)),
+          Lists.newArrayList(),
+          null);
+      analysisId = _idManager.getAnalysisId(analysis, networkId);
+    } else {
+      _idManager.assignQuestion(questionName, networkId, _idManager.generateQuestionId(), null);
+    }
+    QuestionId questionId = _idManager.getQuestionId(questionName, networkId, analysisId);
+    _storage.storeQuestion(
+        BatfishObjectMapper.writeString(question), networkId, questionId, analysisId);
+
+    // Setup answer iff one was passed in
+    if (answer != null) {
+      AnswerId answerId =
+          _idManager.getBaseAnswerId(
+              networkId,
+              snapshotId,
+              questionId,
+              DEFAULT_QUESTION_SETTINGS_ID,
+              DEFAULT_NETWORK_NODE_ROLES_ID,
+              null,
+              analysisId);
+      String answerStr = BatfishObjectMapper.writeString(answer);
+      AnswerMetadata answerMetadata =
+          AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
+      _storage.storeAnswer(answerStr, answerId);
+      _storage.storeAnswerMetadata(answerMetadata, answerId);
+    }
+  }
+
+  @Test
+  public void testAnalysisGetAnswer() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+    String questionName = "question";
+    String analysis = "analysis";
+
+    Answer expectedAnswer = new Answer();
+    expectedAnswer.addAnswerElement(new StringAnswerElement("foo1"));
+    String expectedAnswerString = BatfishObjectMapper.writeString(expectedAnswer);
+    setupQuestionAndAnswer(network, snapshot, questionName, analysis, expectedAnswer);
+    Answer ans = _manager.getAnswer(network, snapshot, questionName, null, analysis);
+
+    // Confirm the getAnswer returns the answer we setup
+    String ansString = BatfishObjectMapper.writeString(ans);
+    assertThat(ansString, equalTo(expectedAnswerString));
+  }
+
+  @Test
+  public void testAnalysisGetAnswerNotFound() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+    String questionName = "question";
+    String analysis = "analysis";
+
+    setupQuestionAndAnswer(network, snapshot, questionName, analysis, null);
+
+    // Confirm we get a not found exception calling getAnswer before the question is answered
+    _thrown.expect(FileNotFoundException.class);
+    _thrown.expectMessage(
+        startsWith(String.format("Answer not found for question %s", questionName)));
+    _manager.getAnswer(network, snapshot, questionName, null, analysis);
+  }
+
   @Test
   public void testGetAnswer() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
     String questionName = "question";
-    Question question = new TestQuestion();
-    Answer notAnswered = Answer.failureAnswer("Not answered", null);
-    notAnswered.setStatus(AnswerStatus.NOTFOUND);
-    String notAnsweredString = BatfishObjectMapper.writeString(notAnswered);
 
-    // Setup network, snapshot, question
-    _manager.initNetwork(network, null);
-    NetworkId networkId = _idManager.getNetworkId(network);
-    SnapshotId snapshotId = _idManager.generateSnapshotId();
-    _idManager.assignSnapshot(snapshot, networkId, snapshotId);
-    _idManager.assignQuestion(questionName, networkId, _idManager.generateQuestionId(), null);
-    QuestionId questionId = _idManager.getQuestionId(questionName, networkId, null);
-    _storage.storeQuestion(BatfishObjectMapper.writeString(question), networkId, questionId, null);
-    Answer ans1 = _manager.getAnswer(network, snapshot, questionName, null, null);
-
-    // Setup answer
-    AnswerId answerId =
-        _idManager.getBaseAnswerId(
-            networkId,
-            snapshotId,
-            questionId,
-            DEFAULT_QUESTION_SETTINGS_ID,
-            DEFAULT_NETWORK_NODE_ROLES_ID,
-            null,
-            null);
-    Answer answer = new Answer();
-    answer.addAnswerElement(new StringAnswerElement("foo1"));
-    String answerStr = BatfishObjectMapper.writeString(answer);
-    AnswerMetadata answerMetadata1 =
-        AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
-    _storage.storeAnswer(answerStr, answerId);
-    _storage.storeAnswerMetadata(answerMetadata1, answerId);
-    Answer ans2 = _manager.getAnswer(network, snapshot, questionName, null, null);
-
-    // Confirm we get a "not answered" answer before the question is actually answered
-    String ans1String = BatfishObjectMapper.writeString(ans1);
-    assertThat(ans1String, equalTo(notAnsweredString));
+    Answer expectedAnswer = new Answer();
+    expectedAnswer.addAnswerElement(new StringAnswerElement("foo1"));
+    String expectedAnswerString = BatfishObjectMapper.writeString(expectedAnswer);
+    setupQuestionAndAnswer(network, snapshot, questionName, null, expectedAnswer);
+    Answer ans = _manager.getAnswer(network, snapshot, questionName, null, null);
 
     // Confirm the getAnswer returns the answer we setup
-    String ans2String = BatfishObjectMapper.writeString(ans2);
-    assertThat(ans2String, equalTo(answerStr));
+    String ansString = BatfishObjectMapper.writeString(ans);
+    assertThat(ansString, equalTo(expectedAnswerString));
+  }
+
+  @Test
+  public void testGetAnswerNotFound() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+    String questionName = "question";
+
+    setupQuestionAndAnswer(network, snapshot, questionName, null, null);
+
+    // Confirm we get a not found exception calling getAnswer before the question is answered
+    _thrown.expect(FileNotFoundException.class);
+    _thrown.expectMessage(
+        startsWith(String.format("Answer not found for question %s", questionName)));
+    _manager.getAnswer(network, snapshot, questionName, null, null);
   }
 
   @Test
