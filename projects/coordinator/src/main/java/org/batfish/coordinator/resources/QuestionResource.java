@@ -11,7 +11,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.batfish.coordinator.Main;
 
-/** Resource for handling requests about specific ad-hoc or analysis questions */
+/** Resource for handling requests about a specific ad-hoc or analysis question */
 @ParametersAreNonnullByDefault
 public final class QuestionResource {
 
