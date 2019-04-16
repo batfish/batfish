@@ -1,9 +1,5 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.datamodel.NamesTest.NODE_ROLE_INVALID_NAMES;
-import static org.batfish.datamodel.NamesTest.NODE_ROLE_VALID_NAMES;
-import static org.batfish.datamodel.NamesTest.REFERENCE_OBJECT_INVALID_NAMES;
-import static org.batfish.datamodel.NamesTest.REFERENCE_OBJECT_VALID_NAMES;
 import static org.batfish.specifier.parboiled.CommonParser.nameNeedsEscaping;
 import static org.batfish.specifier.parboiled.Parser.initAnchors;
 import static org.hamcrest.Matchers.equalTo;
@@ -84,34 +80,6 @@ public class CommonParserTest {
     assertFalse(matches("1startDigit", rule));
     assertFalse(matches("/startSlash", rule));
     assertFalse(matches("@startAt", rule));
-  }
-
-  @Test
-  public void testNodeRoleNameLiteral() {
-    CommonParser parser = CommonParser.instance();
-    Rule rule = parser.input(parser.NodeRoleNameLiteral());
-
-    for (String name : NODE_ROLE_VALID_NAMES) {
-      assertTrue(name, matches(name, rule));
-    }
-
-    for (String name : NODE_ROLE_INVALID_NAMES) {
-      assertFalse(name, matches(name, rule));
-    }
-  }
-
-  @Test
-  public void testReferenceObjectNameLiteral() {
-    CommonParser parser = CommonParser.instance();
-    Rule rule = parser.input(parser.ReferenceObjectNameLiteral());
-
-    for (String name : REFERENCE_OBJECT_VALID_NAMES) {
-      assertTrue(name, matches(name, rule));
-    }
-
-    for (String name : REFERENCE_OBJECT_INVALID_NAMES) {
-      assertFalse(name, matches(name, rule));
-    }
   }
 
   @Test

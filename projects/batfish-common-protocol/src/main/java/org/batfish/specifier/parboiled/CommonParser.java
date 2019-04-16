@@ -211,23 +211,9 @@ public class CommonParser extends BaseParser<AstNode> {
             '"'));
   }
 
-  /** Keep in sync with {@link org.batfish.datamodel.Names.Type#NODE_ROLE} */
-  public Rule NodeRoleNameLiteral() {
-    return Sequence(
-        FirstOf(AlphabetChar(), Digit(), Underscore()),
-        ZeroOrMore(FirstOf(AlphabetChar(), Digit(), Underscore(), Dash())));
-  }
-
   /** [0-9]+ */
   public Rule Number() {
     return OneOrMore(Digit());
-  }
-
-  /** Keep in sync with {@link org.batfish.datamodel.Names.Type#REFERENCE_OBJECT} */
-  public Rule ReferenceObjectNameLiteral() {
-    return Sequence(
-        FirstOf(AlphabetChar(), Underscore()),
-        ZeroOrMore(FirstOf(AlphabetChar(), Underscore(), Digit(), Dash())));
   }
 
   /**

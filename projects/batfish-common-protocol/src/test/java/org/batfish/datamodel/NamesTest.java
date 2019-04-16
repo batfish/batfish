@@ -1,6 +1,5 @@
 package org.batfish.datamodel;
 
-import static org.batfish.datamodel.Names.Type.NODE_ROLE;
 import static org.batfish.datamodel.Names.Type.REFERENCE_OBJECT;
 import static org.batfish.datamodel.Names.Type.TABLE_COLUMN;
 import static org.batfish.datamodel.Names.VALID_PATTERNS;
@@ -17,28 +16,12 @@ import org.junit.Test;
 /** Tests of {@link Names}. */
 public class NamesTest {
 
-  public static List<String> NODE_ROLE_VALID_NAMES =
-      ImmutableList.of("a", "_startsUnderscore", "has_", "has-", "has1", "1startsDigit");
-
-  public static List<String> NODE_ROLE_INVALID_NAMES =
-      ImmutableList.of("has/", "has.", "has:", "has\\", "");
-
   public static List<String> REFERENCE_OBJECT_VALID_NAMES =
-      ImmutableList.of("a", "_startsUnderscore", "has_", "has-", "has1");
+      ImmutableList.of(
+          "a", "_startsUnderscore", "has_", "has-", "has1", "1", "has/", "has.", "has:", "has(");
 
-  public static List<String> REFERENCE_OBJECT_INVALID_NAMES =
-      ImmutableList.of("1", "has/", "has.", "has:", "");
-
-  @Test
-  public void testNodeRoleNames() {
-    for (String name : NODE_ROLE_VALID_NAMES) {
-      assertThat(name, matchesPattern(VALID_PATTERNS.get(NODE_ROLE)));
-    }
-
-    for (String name : NODE_ROLE_INVALID_NAMES) {
-      assertThat(name, not(matchesPattern(VALID_PATTERNS.get(NODE_ROLE))));
-    }
-  }
+  // empty strings and non-ascii characters are not allowed
+  public static List<String> REFERENCE_OBJECT_INVALID_NAMES = ImmutableList.of("", "has \u1234");
 
   @Test
   public void testReferenceObjectNames() {

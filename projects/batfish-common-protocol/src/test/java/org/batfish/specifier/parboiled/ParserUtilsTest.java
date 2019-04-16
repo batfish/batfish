@@ -240,7 +240,10 @@ public class ParserUtilsTest {
     assertThat(
         getPotentialMatches(
             (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false),
-        equalTo(ImmutableSet.of(new PotentialMatch(ADDRESS_GROUP_AND_BOOK, "", null, 11))));
+        equalTo(
+            ImmutableSet.of(
+                new PotentialMatch(CHAR_LITERAL, "", "\"", 11),
+                new PotentialMatch(ADDRESS_GROUP_AND_BOOK, "", null, 11))));
   }
 
   @Test

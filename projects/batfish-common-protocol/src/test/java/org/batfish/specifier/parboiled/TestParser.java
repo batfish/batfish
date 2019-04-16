@@ -73,12 +73,7 @@ class TestParser extends CommonParser {
 
   @Anchor(Type.ADDRESS_GROUP_AND_BOOK)
   public Rule TestSpecifierInput() {
-    return Sequence(
-        ReferenceObjectNameLiteral(),
-        WhiteSpace(),
-        ", ",
-        ReferenceObjectNameLiteral(),
-        WhiteSpace());
+    return Sequence(NameLiteral(), WhiteSpace(), ", ", NameLiteral(), WhiteSpace());
   }
 
   /** An instance of base dynamic value */

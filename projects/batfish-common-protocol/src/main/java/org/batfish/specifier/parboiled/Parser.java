@@ -374,14 +374,7 @@ public class Parser extends CommonParser {
   /** Matches AddressGroup, ReferenceBook pair. Puts two values on stack */
   @Anchor(INTERFACE_GROUP_AND_BOOK)
   public Rule InterfaceGroupAndBook() {
-    return Sequence(
-        ReferenceObjectNameLiteral(),
-        push(new StringAstNode(match())),
-        WhiteSpace(),
-        ", ",
-        ReferenceObjectNameLiteral(),
-        push(new StringAstNode(match())),
-        WhiteSpace());
+    return Sequence(NameLiteral(), WhiteSpace(), ", ", NameLiteral(), WhiteSpace());
   }
 
   public Rule InterfaceType() {
@@ -612,14 +605,7 @@ public class Parser extends CommonParser {
   /** Matches AddressGroup, ReferenceBook pair. Puts two values on stack */
   @Anchor(ADDRESS_GROUP_AND_BOOK)
   public Rule AddressGroupAndBook() {
-    return Sequence(
-        ReferenceObjectNameLiteral(),
-        push(new StringAstNode(match())),
-        WhiteSpace(),
-        ", ",
-        ReferenceObjectNameLiteral(),
-        push(new StringAstNode(match())),
-        WhiteSpace());
+    return Sequence(NameLiteral(), WhiteSpace(), ", ", NameLiteral(), WhiteSpace());
   }
 
   public Rule IpSpaceLocation() {
@@ -861,14 +847,7 @@ public class Parser extends CommonParser {
   /** Matches RoleName, DimensionName pair. Puts two values on stack */
   @Anchor(NODE_ROLE_NAME_AND_DIMENSION)
   public Rule NodeRoleNameAndDimension() {
-    return Sequence(
-        NodeRoleNameLiteral(),
-        push(new StringAstNode(match())),
-        WhiteSpace(),
-        ", ",
-        ReferenceObjectNameLiteral(),
-        push(new StringAstNode(match())),
-        WhiteSpace());
+    return Sequence(NameLiteral(), WhiteSpace(), ", ", NameLiteral(), WhiteSpace());
   }
 
   public Rule NodeType() {

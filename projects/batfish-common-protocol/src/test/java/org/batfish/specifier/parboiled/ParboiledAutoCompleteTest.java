@@ -199,6 +199,7 @@ public class ParboiledAutoCompleteTest {
         ImmutableSet.copyOf(getTestPAC("@specifier(", library).run()),
         equalTo(
             ImmutableSet.of(
+                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, 11),
                 new AutocompleteSuggestion(
                     "g1,b1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 11),
                 new AutocompleteSuggestion(
@@ -210,6 +211,7 @@ public class ParboiledAutoCompleteTest {
         ImmutableSet.copyOf(getTestPAC("@specifier(g1,", library).run()),
         equalTo(
             ImmutableSet.of(
+                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, 14),
                 new AutocompleteSuggestion(
                     "g1,b1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 11))));
   }
