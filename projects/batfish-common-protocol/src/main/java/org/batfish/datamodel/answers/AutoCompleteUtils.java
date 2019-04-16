@@ -74,6 +74,10 @@ public final class AutoCompleteUtils {
     List<AutocompleteSuggestion> suggestions;
 
     switch (completionType) {
+        // deprecated -- left for now for backward compatibility
+      case ADDRESS_GROUP_AND_BOOK:
+        suggestions = ImmutableList.of();
+        break;
       case ADDRESS_GROUP_NAME:
         {
           checkReferenceLibrary(referenceLibrary, network);
@@ -184,6 +188,10 @@ public final class AutoCompleteUtils {
                       .collect(ImmutableSet.toImmutableSet()));
           break;
         }
+        // deprecated -- left for now for backward compatibility
+      case INTERFACE_GROUP_AND_BOOK:
+        suggestions = ImmutableList.of();
+        break;
       case INTERFACE_GROUP_NAME:
         {
           checkReferenceLibrary(referenceLibrary, network);
@@ -308,6 +316,10 @@ public final class AutoCompleteUtils {
           suggestions = baseAutoComplete(query, NodePropertySpecifier.JAVA_MAP.keySet());
           break;
         }
+        // deprecated -- left for now for backward compatibility
+      case NODE_ROLE_AND_DIMENSION:
+        suggestions = ImmutableList.of();
+        break;
       case NODE_ROLE_DIMENSION_NAME:
         {
           checkNodeRolesData(nodeRolesData, network);

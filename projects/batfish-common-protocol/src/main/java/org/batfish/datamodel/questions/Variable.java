@@ -23,6 +23,8 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 public class Variable {
 
   public enum Type {
+    // deprecated -- left for now for backward compatibility
+    ADDRESS_GROUP_AND_BOOK("addressGroupAndBook", true),
     ADDRESS_GROUP_NAME("addressGroup", true),
     ANSWER_ELEMENT("answerElement", true),
     APPLICATION_SPEC("applicationSpec", true),
@@ -44,6 +46,8 @@ public class Variable {
     INTEGER("integer", false),
     INTEGER_SPACE("integerSpace", true),
     INTERFACE("interface", true),
+    // deprecated -- left for now for backward compatibility
+    INTERFACE_GROUP_AND_BOOK("interfaceGroupAndBook", true),
     INTERFACE_GROUP_NAME("interfaceGroupAndBook", true),
     INTERFACE_NAME("interfaceName", true),
     INTERFACE_PROPERTY_SPEC("interfacePropertySpec", true),
@@ -63,6 +67,8 @@ public class Variable {
     NAMED_STRUCTURE_SPEC("namedStructureSpec", true),
     NODE_PROPERTY_SPEC("nodePropertySpec", true),
     NODE_NAME("nodeName", true),
+    // deprecated -- left for now for backward compatibility
+    NODE_ROLE_AND_DIMENSION("nodeRoleAndDimension", true),
     NODE_ROLE_DIMENSION_NAME("nodeRoleDimension", true),
     NODE_ROLE_NAME("nodeRoleName", true),
     NODE_SPEC("nodeSpec", true),
