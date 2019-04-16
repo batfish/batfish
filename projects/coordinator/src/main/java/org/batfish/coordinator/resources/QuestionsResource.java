@@ -27,7 +27,7 @@ public final class QuestionsResource {
    * Question resource for a given network and analysis. If analysis is {@code null}, resource is
    * for interacting with ad-hoc questions for the network.
    */
-  public @Nonnull QuestionsResource(String network, @Nullable String analysis) {
+  public QuestionsResource(String network, @Nullable String analysis) {
     _network = network;
     _analysis = analysis;
   }
