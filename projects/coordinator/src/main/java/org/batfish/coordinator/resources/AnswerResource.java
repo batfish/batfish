@@ -36,13 +36,12 @@ public final class AnswerResource {
   public Response getAnswer(
       @Nullable @QueryParam("snapshot") String snapshot,
       @Nullable @QueryParam("referenceSnapshot") String referenceSnapshot) {
-    // return Response.ok("got answer " + snapshot).build();
     try {
       checkArgument(snapshot != null, "Snapshot must be specified to fetch question answer");
       Answer ans =
           Main.getWorkMgr()
               .getAnswer(_network, snapshot, _questionName, referenceSnapshot, _analysis);
-      return Response.ok().entity(ans).type(MediaType.APPLICATION_JSON).build();
+      return Response.ok().entity(ans).build();
     } catch (FileNotFoundException e) {
       return Response.status(Status.NOT_FOUND).entity(e.getMessage()).build();
     } catch (IllegalArgumentException e) {
