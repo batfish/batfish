@@ -275,10 +275,11 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             (vrfName, bgpVrf) ->
                 _c.getVrfs().get(vrfName).setBgpProcess(toBgpProcess(vrfName, bgpVrf)));
     // All interfaces involved in BGP unnumbered should reply to ARP for BGP_UNNUMBERED_IP
-    _bgpProcess.getVrfs().values().stream()
-        .flatMap(vrf -> vrf.getInterfaceNeighbors().keySet().stream())
-        .collect(ImmutableSet.toImmutableSet())
-        .stream()
+    Streams.concat(
+            _bgpProcess.getDefaultVrf().getInterfaceNeighbors().keySet().stream(),
+            _bgpProcess.getVrfs().values().stream()
+                .flatMap(vrf -> vrf.getInterfaceNeighbors().keySet().stream()))
+        .collect(ImmutableSet.toImmutableSet()).stream()
         .map(_c.getAllInterfaces()::get)
         .forEach(
             iface ->
