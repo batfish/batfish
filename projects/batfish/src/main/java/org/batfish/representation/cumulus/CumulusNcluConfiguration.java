@@ -164,7 +164,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     localOrCommonOrigination
         .getDisjuncts()
         .add(new CallExpr(computeBgpCommonExportPolicyName(vrfName)));
-    LongSpace remoteAsns = computeRemoteAsns(bgpVrf, neighbor, localAs);
 
     BgpUnnumberedPeerConfig.Builder builder =
         BgpUnnumberedPeerConfig.builder()
@@ -173,7 +172,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setLocalAs(localAs)
             .setLocalIp(updateSource)
             .setPeerInterface(peerInterface)
-            .setRemoteAsns(remoteAsns);
+            .setRemoteAsns(computeRemoteAsns(neighbor, localAs));
     builder.build();
   }
 
@@ -248,8 +247,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             });
   }
 
-  private @Nonnull LongSpace computeRemoteAsns(
-      BgpVrf bgpVrf, BgpInterfaceNeighbor neighbor, long localAs) {
+  private @Nonnull LongSpace computeRemoteAsns(BgpInterfaceNeighbor neighbor, long localAs) {
     switch (neighbor.getRemoteAsType()) {
       case EXPLICIT:
         return LongSpace.of(neighbor.getRemoteAs());
