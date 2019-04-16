@@ -88,7 +88,6 @@ import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
-import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
@@ -1209,6 +1208,36 @@ class CiscoConversions {
     return newRouteFilterList;
   }
 
+  @VisibleForTesting
+  static boolean sanityCheckDistributeList(
+      @Nonnull DistributeList distributeList,
+      @Nonnull Configuration c,
+      @Nonnull CiscoConfiguration oldConfig,
+      String vrfName,
+      String ospfProcessId) {
+    // only prefix-lists are supported in distribute-list
+    if (distributeList.getFilterType() != DistributeListFilterType.PREFIX_LIST) {
+      oldConfig
+          .getWarnings()
+          .redFlag(
+              String.format(
+                  "OSPF process %s:%s in %s uses distribute-list of type %s, only prefix-lists are supported in dist-lists by Batfish",
+                  vrfName, ospfProcessId, oldConfig.getHostname(), distributeList.getFilterType()));
+      return false;
+    }
+    // if referred prefix-list is not defined, all prefixes will be allowed
+    else if (!c.getRouteFilterLists().containsKey(distributeList.getFilterName())) {
+      oldConfig
+          .getWarnings()
+          .redFlag(
+              String.format(
+                  "dist-list in OSPF process %s:%s uses a prefix-list which is not defined, this dist-list will allow everything",
+                  vrfName, ospfProcessId));
+      return false;
+    }
+    return true;
+  }
+
   /**
    * Populates the {@link RoutingPolicy}s for inbound {@link DistributeList}s which use {@link
    * PrefixList} as the {@link DistributeList#_filterType}. {@link
@@ -1220,81 +1249,52 @@ class CiscoConversions {
    * @param vrf Id of the {@link Vrf} containing the {@link OspfProcess}
    * @param ospfProcessId {@link OspfProcess}'s Id
    */
-  static void populateDistributeListPolicies(
+  static void computeDistributeListPolicies(
       @Nonnull OspfProcess ospfProcess,
       @Nonnull Configuration c,
       @Nonnull String vrf,
-      @Nonnull String ospfProcessId) {
-    DistributeList globalDistributeList = ospfProcess.getInboundGlobalDistributeList();
+      @Nonnull String ospfProcessId,
+      @Nonnull CiscoConfiguration oldConfig) {
+    ArrayList<BooleanExpr> conjunctConditions = new ArrayList<>();
 
-    String globalPolicyName = String.format("~OSPF_DIST_LIST_%s_%s~", vrf, ospfProcessId);
-    BooleanExpr globalCondition = BooleanExprs.TRUE;
+    DistributeList globalDistributeList = ospfProcess.getInboundGlobalDistributeList();
     if (globalDistributeList != null
-        && globalDistributeList.getFilterType() == DistributeListFilterType.PREFIX_LIST
-        && c.getRouteFilterLists().containsKey(globalDistributeList.getFilterName())) {
-      globalCondition =
+        && sanityCheckDistributeList(globalDistributeList, c, oldConfig, vrf, ospfProcessId)) {
+      conjunctConditions.add(
           new MatchPrefixSet(
               DestinationNetwork.instance(),
-              new NamedPrefixSet(globalDistributeList.getFilterName()));
-      RoutingPolicy globalPolicy = new RoutingPolicy(globalPolicyName, c);
-      globalPolicy
-          .getStatements()
-          .add(
-              new If(
-                  globalCondition,
-                  ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
-                  ImmutableList.of(Statements.ExitReject.toStaticStatement())));
-      c.getRoutingPolicies().put(globalPolicyName, globalPolicy);
+              new NamedPrefixSet(globalDistributeList.getFilterName())));
     }
 
     Map<String, DistributeList> interfaceDistributeLists =
         ospfProcess.getInboundInterfaceDistributeLists();
-    if (!c.getVrfs().containsKey(vrf)) {
-      return;
-    }
+
     for (Entry<String, org.batfish.datamodel.Interface> entry :
         c.getVrfs().get(vrf).getInterfaces().entrySet()) {
       DistributeList ifaceDistributeList = interfaceDistributeLists.get(entry.getKey());
 
-      BooleanExpr interfaceCondition = BooleanExprs.TRUE;
       if (ifaceDistributeList != null
-          && ifaceDistributeList.getFilterType() == DistributeListFilterType.PREFIX_LIST
-          && c.getRouteFilterLists().containsKey(ifaceDistributeList.getFilterName())) {
-        interfaceCondition =
+          && sanityCheckDistributeList(ifaceDistributeList, c, oldConfig, vrf, ospfProcessId)) {
+        conjunctConditions.add(
             new MatchPrefixSet(
                 DestinationNetwork.instance(),
-                new NamedPrefixSet(ifaceDistributeList.getFilterName()));
+                new NamedPrefixSet(ifaceDistributeList.getFilterName())));
       }
-      String ifacePolicyName =
-          String.format("~OSPF_DIST_LIST_%s_%s_%s~", vrf, ospfProcessId, entry.getKey());
-      RoutingPolicy ifacePolicy = new RoutingPolicy(ifacePolicyName, c);
-      if (globalCondition != BooleanExprs.TRUE && interfaceCondition != BooleanExprs.TRUE) {
-        // conjunction needed only when both global and interface distribute lists are present
-        ifacePolicy
+
+      if (!conjunctConditions.isEmpty()) {
+        String policyName =
+            String.format("~OSPF_DIST_LIST_%s_%s_%s~", vrf, ospfProcessId, entry.getKey());
+        RoutingPolicy routingPolicy = new RoutingPolicy(policyName, c);
+        routingPolicy
             .getStatements()
             .add(
                 new If(
-                    new Conjunction(ImmutableList.of(globalCondition, interfaceCondition)),
+                    new Conjunction(conjunctConditions),
                     ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
                     ImmutableList.of(Statements.ExitReject.toStaticStatement())));
-        c.getRoutingPolicies().put(ifacePolicyName, ifacePolicy);
-        entry.getValue().setOspfInboundDistributeListPolicy(ifacePolicyName);
-      } else if (globalCondition != BooleanExprs.TRUE) {
-        // only global dist list is present
-        entry.getValue().setOspfInboundDistributeListPolicy(globalPolicyName);
-      } else if (interfaceCondition != BooleanExprs.TRUE) {
-        // only interface dist list is present
-        ifacePolicy
-            .getStatements()
-            .add(
-                new If(
-                    interfaceCondition,
-                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
-                    ImmutableList.of(Statements.ExitReject.toStaticStatement())));
-        c.getRoutingPolicies().put(ifacePolicyName, ifacePolicy);
-        entry.getValue().setOspfInboundDistributeListPolicy(ifacePolicyName);
+        c.getRoutingPolicies().put(routingPolicy.getName(), routingPolicy);
+        entry.getValue().setOspfInboundDistributeListPolicy(policyName);
       }
-      // do nothing if both global and interface dist lists are not present
     }
   }
 

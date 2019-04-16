@@ -1339,9 +1339,11 @@ public final class Interface extends ComparableStructure<String> {
     return _ospfHelloMultiplier;
   }
 
+  /**
+   * "Returns name of the routing policy which is generated from the Global and Interface level
+   * inbound distribute-lists for OSPF"
+   */
   @JsonProperty(PROP_OSPF_INBOUND_DISTRIBUTE_LIST_POLICY)
-  @JsonPropertyDescription(
-      "Name of the routing policy which is generated from the Global and Interface level inbound distribute lists for OSPF")
   @Nullable
   public String getOspfInboundDistributeListPolicy() {
     return _ospfInboundDistributeListPolicy;
@@ -1745,7 +1747,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_OSPF_INBOUND_DISTRIBUTE_LIST_POLICY)
-  public void setOspfInboundDistributeListPolicy(@Nonnull String ospfInboundDistributeListPolicy) {
+  public void setOspfInboundDistributeListPolicy(@Nullable String ospfInboundDistributeListPolicy) {
     _ospfInboundDistributeListPolicy = ospfInboundDistributeListPolicy;
   }
 

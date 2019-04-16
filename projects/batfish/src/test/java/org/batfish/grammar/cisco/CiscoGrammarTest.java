@@ -2419,7 +2419,6 @@ public class CiscoGrammarTest {
     Configuration c = parseConfig("iosOspfDistributeListPrefixList");
 
     assertThat(c.getRoutingPolicies(), hasKey("~OSPF_DIST_LIST_default_1_GigabitEthernet0/0~"));
-    assertThat(c.getRoutingPolicies(), hasKey("~OSPF_DIST_LIST_default_1~"));
 
     assertThat(
         c.getAllInterfaces().get("GigabitEthernet0/0").getOspfInboundDistributeListPolicy(),
@@ -2472,7 +2471,6 @@ public class CiscoGrammarTest {
     Configuration c = parseConfig("iosOspfDistributeListPrefixListInterface");
 
     assertThat(c.getRoutingPolicies(), hasKey("~OSPF_DIST_LIST_default_1_GigabitEthernet0/0~"));
-    assertThat(c.getRoutingPolicies(), not(hasKey("~OSPF_DIST_LIST_default_1~")));
 
     assertThat(
         c.getAllInterfaces().get("GigabitEthernet0/0").getOspfInboundDistributeListPolicy(),
@@ -2512,15 +2510,14 @@ public class CiscoGrammarTest {
   public void testIosOspfDistributeListPrefixListGlobal() throws IOException {
     Configuration c = parseConfig("iosOspfDistributeListPrefixListGlobal");
 
-    assertThat(
-        c.getRoutingPolicies(), not(hasKey("~OSPF_DIST_LIST_default_1_GigabitEthernet0/0~")));
-    assertThat(c.getRoutingPolicies(), hasKey("~OSPF_DIST_LIST_default_1~"));
+    assertThat(c.getRoutingPolicies(), hasKey("~OSPF_DIST_LIST_default_1_GigabitEthernet0/0~"));
 
     assertThat(
         c.getAllInterfaces().get("GigabitEthernet0/0").getOspfInboundDistributeListPolicy(),
-        equalTo("~OSPF_DIST_LIST_default_1~"));
+        equalTo("~OSPF_DIST_LIST_default_1_GigabitEthernet0/0~"));
 
-    RoutingPolicy routingPolicy = c.getRoutingPolicies().get("~OSPF_DIST_LIST_default_1~");
+    RoutingPolicy routingPolicy =
+        c.getRoutingPolicies().get("~OSPF_DIST_LIST_default_1_GigabitEthernet0/0~");
     List<org.batfish.datamodel.routing_policy.statement.Statement> statements =
         routingPolicy.getStatements();
 
