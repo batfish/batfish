@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
@@ -109,6 +110,7 @@ import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.visitors.HeaderSpaceConverter;
+import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
 
 /** Utilities that convert Cisco-specific representations to vendor-independent model. */
 @ParametersAreNonnullByDefault
@@ -1204,6 +1206,101 @@ class CiscoConversions {
             .collect(ImmutableList.toImmutableList());
     newRouteFilterList.setLines(newLines);
     return newRouteFilterList;
+  }
+
+  @VisibleForTesting
+  static boolean sanityCheckDistributeList(
+      @Nonnull DistributeList distributeList,
+      @Nonnull Configuration c,
+      @Nonnull CiscoConfiguration oldConfig,
+      String vrfName,
+      String ospfProcessId) {
+    if (distributeList.getFilterType() != DistributeListFilterType.PREFIX_LIST) {
+      // only prefix-lists are supported in distribute-list
+      oldConfig
+          .getWarnings()
+          .redFlag(
+              String.format(
+                  "OSPF process %s:%s in %s uses distribute-list of type %s, only prefix-lists are supported in dist-lists by Batfish",
+                  vrfName, ospfProcessId, oldConfig.getHostname(), distributeList.getFilterType()));
+      return false;
+    } else if (!c.getRouteFilterLists().containsKey(distributeList.getFilterName())) {
+      // if referred prefix-list is not defined, all prefixes will be allowed
+      oldConfig
+          .getWarnings()
+          .redFlag(
+              String.format(
+                  "dist-list in OSPF process %s:%s uses a prefix-list which is not defined, this dist-list will allow everything",
+                  vrfName, ospfProcessId));
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Populates the {@link RoutingPolicy}s for inbound {@link DistributeList}s which use {@link
+   * PrefixList} as the {@link DistributeList#_filterType}. {@link
+   * DistributeListFilterType#ROUTE_MAP} and {@link DistributeListFilterType#ACCESS_LIST} are not
+   * supported currently.
+   *
+   * @param ospfProcess {@link OspfProcess} for which {@link DistributeList}s are to be processed
+   * @param c {@link Configuration} containing the Vendor Independent representation
+   * @param vrf Id of the {@link Vrf} containing the {@link OspfProcess}
+   * @param ospfProcessId {@link OspfProcess}'s Id
+   */
+  static void computeDistributeListPolicies(
+      @Nonnull OspfProcess ospfProcess,
+      @Nonnull Configuration c,
+      @Nonnull String vrf,
+      @Nonnull String ospfProcessId,
+      @Nonnull CiscoConfiguration oldConfig) {
+    DistributeList globalDistributeList = ospfProcess.getInboundGlobalDistributeList();
+
+    BooleanExpr globalCondition = null;
+    if (globalDistributeList != null
+        && sanityCheckDistributeList(globalDistributeList, c, oldConfig, vrf, ospfProcessId)) {
+      globalCondition =
+          new MatchPrefixSet(
+              DestinationNetwork.instance(),
+              new NamedPrefixSet(globalDistributeList.getFilterName()));
+    }
+
+    Map<String, DistributeList> interfaceDistributeLists =
+        ospfProcess.getInboundInterfaceDistributeLists();
+
+    for (Entry<String, org.batfish.datamodel.Interface> entry :
+        c.getVrfs().get(vrf).getInterfaces().entrySet()) {
+      DistributeList ifaceDistributeList = interfaceDistributeLists.get(entry.getKey());
+      BooleanExpr ifaceCondition = null;
+      if (ifaceDistributeList != null
+          && sanityCheckDistributeList(ifaceDistributeList, c, oldConfig, vrf, ospfProcessId)) {
+        ifaceCondition =
+            new MatchPrefixSet(
+                DestinationNetwork.instance(),
+                new NamedPrefixSet(ifaceDistributeList.getFilterName()));
+      }
+
+      if (globalCondition == null && ifaceCondition == null) {
+        // doing nothing if both global and interface conditions are empty
+        continue;
+      }
+
+      String policyName =
+          String.format("~OSPF_DIST_LIST_%s_%s_%s~", vrf, ospfProcessId, entry.getKey());
+      RoutingPolicy routingPolicy = new RoutingPolicy(policyName, c);
+      routingPolicy
+          .getStatements()
+          .add(
+              new If(
+                  new Conjunction(
+                      Stream.of(globalCondition, ifaceCondition)
+                          .filter(Objects::nonNull)
+                          .collect(ImmutableList.toImmutableList())),
+                  ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                  ImmutableList.of(Statements.ExitReject.toStaticStatement())));
+      c.getRoutingPolicies().put(routingPolicy.getName(), routingPolicy);
+      entry.getValue().setOspfInboundDistributeListPolicy(policyName);
+    }
   }
 
   static org.batfish.datamodel.StaticRoute toStaticRoute(Configuration c, StaticRoute staticRoute) {
