@@ -26805,6 +26805,9 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "allPrefixes" : [
+              "1.2.3.4/24"
+            ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
@@ -26817,6 +26820,7 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
+            "prefix" : "1.2.3.4/24",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,

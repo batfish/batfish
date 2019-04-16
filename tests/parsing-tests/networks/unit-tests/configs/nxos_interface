@@ -3,6 +3,7 @@ hostname nxos_interface
 feature privilege
 !
 interface Ethernet0/0
+ ip address 1.2.3.4/24 route-preference 10 tag 12345
  link debounce link-up time 0
  linkdebounce time 100
  mdix auto

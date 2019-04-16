@@ -6056,6 +6056,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         currentInterface.setStandbyAddress(standbyAddress);
       }
     }
+    if (ctx.ROUTE_PREFERENCE() != null) {
+      todo(ctx, "Unsupported: route-preference declared in interface IP address");
+    }
+    if (ctx.TAG() != null) {
+      todo(ctx, "Unsupported: tag declared in interface IP address");
+    }
   }
 
   @Override
