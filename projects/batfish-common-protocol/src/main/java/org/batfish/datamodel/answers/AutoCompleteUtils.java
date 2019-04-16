@@ -320,6 +320,9 @@ public final class AutoCompleteUtils {
       case NODE_ROLE_AND_DIMENSION:
         suggestions = ImmutableList.of();
         break;
+      case NODE_ROLE_DIMENSION:
+        suggestions = ImmutableList.of();
+        break;
       case NODE_ROLE_DIMENSION_NAME:
         {
           checkNodeRolesData(nodeRolesData, network);

@@ -70,7 +70,7 @@ public class Variable {
     // deprecated -- left for now for backward compatibility
     NODE_ROLE_AND_DIMENSION("nodeRoleAndDimension", true),
     // deprecated -- left for now for backward compatibility
-    NODE_ROLE_DIMENSION("nodeRoleAndDimension", true),
+    NODE_ROLE_DIMENSION("nodeRoleDimension", true),
     NODE_ROLE_DIMENSION_NAME("nodeRoleDimensionName", true),
     NODE_ROLE_NAME("nodeRoleName", true),
     NODE_SPEC("nodeSpec", true),
