@@ -48,7 +48,11 @@ public final class BgpUnnumberedPeerConfigTest {
         .addEqualityGroup(
             builder
                 .setAppliedRibGroup(
-                    new RibGroup("blah", ImmutableList.of(), "blah1", new RibId("a", "b", "c")))
+                    new RibGroup(
+                        "blah",
+                        ImmutableList.of(new RibId("d", "e", "f")),
+                        "blah1",
+                        new RibId("a", "b", "c")))
                 .build())
         .addEqualityGroup(builder.setAuthenticationSettings(BGP_AUTHENTICATION_SETTINGS).build())
         .addEqualityGroup(builder.setClusterId(5L).build())
@@ -88,7 +92,11 @@ public final class BgpUnnumberedPeerConfigTest {
             .setAllowLocalAsIn(true)
             .setAllowRemoteAsOut(true)
             .setAppliedRibGroup(
-                new RibGroup("blah", ImmutableList.of(), "blah1", new RibId("a", "b", "c")))
+                new RibGroup(
+                    "blah",
+                    ImmutableList.of(new RibId("d", "e", "f")),
+                    "blah1",
+                    new RibId("a", "b", "c")))
             .setAuthenticationSettings(BGP_AUTHENTICATION_SETTINGS)
             .setClusterId(5L)
             .setDefaultMetric(5)
@@ -128,7 +136,11 @@ public final class BgpUnnumberedPeerConfigTest {
             .setAllowLocalAsIn(true)
             .setAllowRemoteAsOut(true)
             .setAppliedRibGroup(
-                new RibGroup("blah", ImmutableList.of(), "blah1", new RibId("a", "b", "c")))
+                new RibGroup(
+                    "blah",
+                    ImmutableList.of(new RibId("d", "e", "f")),
+                    "blah1",
+                    new RibId("a", "b", "c")))
             .setAuthenticationSettings(BGP_AUTHENTICATION_SETTINGS)
             .setClusterId(5L)
             .setDefaultMetric(5)
