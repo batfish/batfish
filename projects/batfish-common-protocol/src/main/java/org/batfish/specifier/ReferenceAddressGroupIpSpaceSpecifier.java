@@ -51,25 +51,22 @@ public final class ReferenceAddressGroupIpSpaceSpecifier implements IpSpaceSpeci
     return IpSpaceAssignment.builder().assign(locations, ipSpace).build();
   }
 
-  /* Returns the IpSpace in the address group. Returns the empty space if the addressgroup is empty */
+  /**
+   * Computes the IpSpace in the address group. Returns {@link EmptyIpSpace} if the addressgroup is
+   * empty.
+   *
+   * @throws NoSuchElementException if {@code bookName} does not exist or if {@code
+   *     addressGroupName} or one of its descendants do not exist in the Reference Book.
+   */
   @Nonnull
   public static IpSpace computeIpSpace(
       String addressGroupName, String bookName, SpecifierContext ctxt) {
-    AddressGroup addressGroup =
-        ctxt.getReferenceBook(bookName)
-            .orElseThrow(
-                () -> new NoSuchElementException("ReferenceBook '" + bookName + "' not found"))
-            .getAddressGroup(addressGroupName)
-            .orElseThrow(
-                () ->
-                    new NoSuchElementException(
-                        String.format(
-                            "AddressGroup '%s' not found in ReferenceBook '%s'",
-                            addressGroupName, bookName)));
-
     return firstNonNull(
         AclIpSpace.union(
-            addressGroup.getAddresses().stream()
+            ctxt.getReferenceBook(bookName)
+                .orElseThrow(
+                    () -> new NoSuchElementException("ReferenceBook '" + bookName + "' not found"))
+                .getAddressesRecursive(addressGroupName).stream()
                 .map(add -> new IpWildcard(add).toIpSpace())
                 .collect(Collectors.toList())),
         EmptyIpSpace.INSTANCE);

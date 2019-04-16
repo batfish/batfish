@@ -5,11 +5,16 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import java.util.HashSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -238,5 +243,40 @@ public class ReferenceBook implements Comparable<ReferenceBook> {
         _serviceEndpoints,
         _serviceObjectGroups,
         _serviceObjects);
+  }
+
+  /**
+   * Get the set of addresses contained in {@code addressGroupName} after recursively resolving the
+   * sub groups.
+   *
+   * <p>The implementation is robust to cycles among groups.
+   *
+   * @throws NoSuchElementException if any of group names do not appear in the reference book.
+   */
+  public Set<String> getAddressesRecursive(String addressGroupName) {
+    Set<String> allGroupNames = new HashSet<>();
+    addGroupAndDescendantNames(addressGroupName, allGroupNames);
+    return allGroupNames.stream()
+        .flatMap(groupName -> getAddressGroup(groupName).get().getAddresses().stream())
+        .collect(ImmutableSet.toImmutableSet());
+  }
+
+  /** Collects all group names in {@code descendantGroupNames} */
+  @VisibleForTesting
+  void addGroupAndDescendantNames(String groupName, Set<String> allGroupNames) {
+    AddressGroup group =
+        getAddressGroup(groupName)
+            .orElseThrow(
+                () ->
+                    new NoSuchElementException(
+                        String.format(
+                            "Group name '%s' does not exist in ReferenceBook '%s'",
+                            groupName, getName())));
+    allGroupNames.add(groupName);
+    for (String childName : group.getAddressGroups()) {
+      if (!allGroupNames.contains(childName)) {
+        addGroupAndDescendantNames(childName, allGroupNames);
+      }
+    }
   }
 }

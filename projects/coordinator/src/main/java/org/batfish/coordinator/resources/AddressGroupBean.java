@@ -9,7 +9,11 @@ import java.util.Objects;
 import java.util.Set;
 import org.batfish.referencelibrary.AddressGroup;
 
+/** A bean for {@link AddressGroup} */
 public class AddressGroupBean {
+
+  /** Names of sub groups in this group */
+  public Set<String> addressGroups;
 
   /**
    * The set of address in this address group. An address can be an IP address, prefix, or
@@ -26,6 +30,7 @@ public class AddressGroupBean {
   public AddressGroupBean(AddressGroup addressGroup) {
     name = addressGroup.getName();
     addresses = ImmutableSet.copyOf(addressGroup.getAddresses());
+    addressGroups = ImmutableSet.copyOf(addressGroup.getAddressGroups());
   }
 
   @Override
@@ -33,17 +38,20 @@ public class AddressGroupBean {
     if (!(o instanceof AddressGroupBean)) {
       return false;
     }
-    return Objects.equals(addresses, ((AddressGroupBean) o).addresses)
+    return Objects.equals(addressGroups, ((AddressGroupBean) o).addressGroups)
+        && Objects.equals(addresses, ((AddressGroupBean) o).addresses)
         && Objects.equals(name, ((AddressGroupBean) o).name);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(addresses, name);
+    return Objects.hash(addressGroups, addresses, name);
   }
 
   public AddressGroup toAddressGroup() {
     return new AddressGroup(
-        ImmutableSortedSet.copyOf(firstNonNull(addresses, ImmutableSet.of())), name);
+        name,
+        ImmutableSortedSet.copyOf(firstNonNull(addresses, ImmutableSet.of())),
+        ImmutableSortedSet.copyOf(firstNonNull(addressGroups, ImmutableSet.of())));
   }
 }
