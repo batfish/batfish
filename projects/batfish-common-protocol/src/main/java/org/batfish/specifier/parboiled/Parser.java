@@ -846,7 +846,7 @@ public class Parser extends CommonParser {
         "( ",
         NodeRoleName(),
         ", ",
-        NodeRoleDimension(),
+        NodeRoleDimensionName(),
         ") ",
         push(new RoleNodeAstNode(pop(1), pop())));
   }
@@ -859,18 +859,18 @@ public class Parser extends CommonParser {
         "( ",
         NodeRoleName(),
         ", ",
-        NodeRoleDimension(),
+        NodeRoleDimensionName(),
         ") ",
         push(new RoleNodeAstNode(pop(1), pop())));
   }
 
-  /** Matches Node Role name */
+  /** Matches Node Role Dimension name */
   @Anchor(NODE_ROLE_DIMENSION_NAME)
-  public Rule NodeRoleDimension() {
+  public Rule NodeRoleDimensionName() {
     return Sequence(NameLiteral(), WhiteSpace());
   }
 
-  /** Matches Node Role Dimension name */
+  /** Matches Node Role name */
   @Anchor(NODE_ROLE_NAME)
   public Rule NodeRoleName() {
     return Sequence(NameLiteral(), WhiteSpace());
