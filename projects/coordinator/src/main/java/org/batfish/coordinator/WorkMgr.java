@@ -816,50 +816,40 @@ public class WorkMgr extends AbstractCoordinator {
     return true;
   }
 
-  public String getAnswer(
+  /** Get the answer for the specified question. */
+  public @Nonnull Answer getAnswer(
       String network,
       String snapshot,
       String question,
       @Nullable String referenceSnapshot,
       @Nullable String analysis)
-      throws JsonProcessingException, FileNotFoundException {
-    String answer = "unknown";
+      throws IOException {
+    String ansString = loadAnswer(network, snapshot, question, referenceSnapshot, analysis);
+    if (ansString == null) {
+      Answer ans = Answer.failureAnswer("Not answered", null);
+      ans.setStatus(AnswerStatus.NOTFOUND);
+      return ans;
+    } else {
+      return BatfishObjectMapper.mapper().readValue(ansString, Answer.class);
+    }
+  }
+
+  /** Get the answer string for the specified question. */
+  public @Nonnull String getAnswerString(
+      String network,
+      String snapshot,
+      String question,
+      @Nullable String referenceSnapshot,
+      @Nullable String analysis)
+      throws JsonProcessingException {
     try {
-      NetworkId networkId = _idManager.getNetworkId(network);
-      AnalysisId analysisId =
-          analysis != null ? _idManager.getAnalysisId(analysis, networkId) : null;
-      QuestionId questionId = _idManager.getQuestionId(question, networkId, analysisId);
-      SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
-      SnapshotId referenceSnapshotId =
-          referenceSnapshot != null ? _idManager.getSnapshotId(referenceSnapshot, networkId) : null;
-      QuestionSettingsId questionSettingsId =
-          getOrDefaultQuestionSettingsId(networkId, questionId, analysisId);
-      NodeRolesId networkNodeRolesId = getOrDefaultNodeRolesId(networkId);
-      AnswerId baseAnswerId =
-          _idManager.getBaseAnswerId(
-              networkId,
-              snapshotId,
-              questionId,
-              questionSettingsId,
-              networkNodeRolesId,
-              referenceSnapshotId,
-              analysisId);
-      if (!_storage.hasAnswerMetadata(baseAnswerId)) {
+      String answer = loadAnswer(network, snapshot, question, referenceSnapshot, analysis);
+      if (answer == null) {
         Answer ans = Answer.failureAnswer("Not answered", null);
         ans.setStatus(AnswerStatus.NOTFOUND);
         return BatfishObjectMapper.writeString(ans);
       }
-      AnswerMetadata baseAnswerMetadata = _storage.loadAnswerMetadata(baseAnswerId);
-      AnswerId finalAnswerId =
-          computeFinalAnswerAndId(
-              baseAnswerMetadata,
-              networkId,
-              snapshotId,
-              questionId,
-              baseAnswerId,
-              referenceSnapshotId,
-              analysisId);
-      return _storage.loadAnswer(finalAnswerId);
+      return answer;
     } catch (IOException e) {
       String message =
           String.format(
@@ -872,9 +862,54 @@ public class WorkMgr extends AbstractCoordinator {
               Throwables.getStackTraceAsString(e));
       Answer ans = Answer.failureAnswer(message, null);
       ans.setStatus(AnswerStatus.FAILURE);
-      answer = BatfishObjectMapper.writeString(ans);
-      return answer;
+      return BatfishObjectMapper.writeString(ans);
     }
+  }
+
+  /**
+   * Get the answer string for the specified question. Returns {@code null} if the question is not
+   * answered.
+   */
+  public @Nullable String loadAnswer(
+      String network,
+      String snapshot,
+      String question,
+      @Nullable String referenceSnapshot,
+      @Nullable String analysis)
+      throws IOException {
+    NetworkId networkId = _idManager.getNetworkId(network);
+    AnalysisId analysisId = analysis != null ? _idManager.getAnalysisId(analysis, networkId) : null;
+    QuestionId questionId = _idManager.getQuestionId(question, networkId, analysisId);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    SnapshotId referenceSnapshotId =
+        referenceSnapshot != null ? _idManager.getSnapshotId(referenceSnapshot, networkId) : null;
+    QuestionSettingsId questionSettingsId =
+        getOrDefaultQuestionSettingsId(networkId, questionId, analysisId);
+    NodeRolesId networkNodeRolesId = getOrDefaultNodeRolesId(networkId);
+    AnswerId baseAnswerId =
+        _idManager.getBaseAnswerId(
+            networkId,
+            snapshotId,
+            questionId,
+            questionSettingsId,
+            networkNodeRolesId,
+            referenceSnapshotId,
+            analysisId);
+    // No metadata means the question has not been answered
+    if (!_storage.hasAnswerMetadata(baseAnswerId)) {
+      return null;
+    }
+    AnswerMetadata baseAnswerMetadata = _storage.loadAnswerMetadata(baseAnswerId);
+    AnswerId finalAnswerId =
+        computeFinalAnswerAndId(
+            baseAnswerMetadata,
+            networkId,
+            snapshotId,
+            questionId,
+            baseAnswerId,
+            referenceSnapshotId,
+            analysisId);
+    return _storage.loadAnswer(finalAnswerId);
   }
 
   /**
@@ -1024,7 +1059,8 @@ public class WorkMgr extends AbstractCoordinator {
     for (String questionName : questions) {
       try {
         result.put(
-            questionName, getAnswer(network, snapshot, questionName, referenceSnapshot, analysis));
+            questionName,
+            getAnswerString(network, snapshot, questionName, referenceSnapshot, analysis));
       } catch (Exception e) {
         _logger.errorf(
             "Got exception in getAnalysisAnswers: %s\n", Throwables.getStackTraceAsString(e));

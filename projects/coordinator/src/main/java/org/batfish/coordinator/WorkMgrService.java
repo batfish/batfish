@@ -564,7 +564,8 @@ public class WorkMgrService {
 
       String answer =
           Main.getWorkMgr()
-              .getAnswer(networkName, snapshotName, questionName, referenceSnapshot, analysisName);
+              .getAnswerString(
+                  networkName, snapshotName, questionName, referenceSnapshot, analysisName);
 
       String answerStr = BatfishObjectMapper.writeString(answer);
 
@@ -891,7 +892,7 @@ public class WorkMgrService {
 
       String answer =
           Main.getWorkMgr()
-              .getAnswer(networkName, snapshotName, questionName, referenceSnapshot, null);
+              .getAnswerString(networkName, snapshotName, questionName, referenceSnapshot, null);
 
       return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_ANSWER, answer));
     } catch (IllegalArgumentException | AccessControlException e) {
@@ -979,7 +980,7 @@ public class WorkMgrService {
 
       String rawAnswer =
           Main.getWorkMgr()
-              .getAnswer(
+              .getAnswerString(
                   networkName, snapshotName, questionName, referenceSnapshotName, analysisName);
 
       Answer answer = Main.getWorkMgr().processAnswerRows(rawAnswer, answersRowsOptions);
@@ -1078,7 +1079,7 @@ public class WorkMgrService {
 
       String rawAnswer =
           Main.getWorkMgr()
-              .getAnswer(
+              .getAnswerString(
                   networkName, snapshotName, questionName, referenceSnapshotName, analysisName);
 
       Answer answer = Main.getWorkMgr().processAnswerRows2(rawAnswer, answersRowsOptions);

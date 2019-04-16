@@ -932,11 +932,11 @@ public final class WorkMgrTest {
     _storage.storeAnswerMetadata(answerMetadata2, baseAnswerId2);
 
     String answer1Output =
-        _manager.getAnswer(containerName, testrigName, question1Name, null, analysisName);
+        _manager.getAnswerString(containerName, testrigName, question1Name, null, analysisName);
     String answer2Output =
-        _manager.getAnswer(containerName, testrigName, question2Name, null, analysisName);
+        _manager.getAnswerString(containerName, testrigName, question2Name, null, analysisName);
     String answer3Output =
-        _manager.getAnswer(containerName, testrigName, question3Name, null, analysisName);
+        _manager.getAnswerString(containerName, testrigName, question3Name, null, analysisName);
 
     Answer failedAnswer = Answer.failureAnswer("Not answered", null);
     failedAnswer.setStatus(AnswerStatus.NOTFOUND);
@@ -2745,7 +2745,7 @@ public final class WorkMgrTest {
     Answer answerBeforeUpdate =
         BatfishObjectMapper.mapper()
             .readValue(
-                _manager.getAnswer(networkName, snapshotName, questionName, null, null),
+                _manager.getAnswerString(networkName, snapshotName, questionName, null, null),
                 Answer.class);
 
     // answer should be found at first
@@ -2765,7 +2765,7 @@ public final class WorkMgrTest {
     Answer answerAfterUpdate =
         BatfishObjectMapper.mapper()
             .readValue(
-                _manager.getAnswer(networkName, snapshotName, questionName, null, null),
+                _manager.getAnswerString(networkName, snapshotName, questionName, null, null),
                 Answer.class);
 
     // answer should no longer be available since node roles input id changed
