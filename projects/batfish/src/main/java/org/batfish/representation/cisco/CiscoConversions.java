@@ -1215,8 +1215,8 @@ class CiscoConversions {
       @Nonnull CiscoConfiguration oldConfig,
       String vrfName,
       String ospfProcessId) {
-    // only prefix-lists are supported in distribute-list
     if (distributeList.getFilterType() != DistributeListFilterType.PREFIX_LIST) {
+      // only prefix-lists are supported in distribute-list
       oldConfig
           .getWarnings()
           .redFlag(
@@ -1224,9 +1224,8 @@ class CiscoConversions {
                   "OSPF process %s:%s in %s uses distribute-list of type %s, only prefix-lists are supported in dist-lists by Batfish",
                   vrfName, ospfProcessId, oldConfig.getHostname(), distributeList.getFilterType()));
       return false;
-    }
-    // if referred prefix-list is not defined, all prefixes will be allowed
-    else if (!c.getRouteFilterLists().containsKey(distributeList.getFilterName())) {
+    } else if (!c.getRouteFilterLists().containsKey(distributeList.getFilterName())) {
+      // if referred prefix-list is not defined, all prefixes will be allowed
       oldConfig
           .getWarnings()
           .redFlag(
