@@ -31,14 +31,6 @@ public final class TestrigSettings {
     return _basePath;
   }
 
-  public Path getCompressedDataPlaneAnswerPath() {
-    return getOutputPath().resolve(BfConsts.RELPATH_COMPRESSED_DATA_PLANE_ANSWER);
-  }
-
-  public Path getCompressedDataPlanePath() {
-    return getOutputPath().resolve(BfConsts.RELPATH_COMPRESSED_DATA_PLANE);
-  }
-
   @Nonnull
   public Path getDataPlanePath() {
     return getOutputPath().resolve(BfConsts.RELPATH_DATA_PLANE);

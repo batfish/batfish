@@ -1,14 +1,11 @@
 package org.batfish.coordinator.resources;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import java.util.SortedSet;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -36,26 +33,12 @@ public final class QuestionsResource {
   }
 
   @Path("/{question}")
-  @DELETE
-  public Response deleteQuestion(@PathParam("question") String question) {
-    if (!Main.getWorkMgr().delQuestion(_network, question, _analysis)) {
-      return Response.status(Status.NOT_FOUND).build();
-    }
-    return Response.ok().build();
-  }
-
-  @Path("/{question}")
-  @GET
-  public Response getQuestion(@PathParam("question") String question) {
-    String result = Main.getWorkMgr().getQuestion(_network, question, _analysis);
-    if (result == null) {
-      return Response.status(Status.NOT_FOUND).build();
-    }
-    return Response.ok().entity(result).build();
+  public @Nonnull QuestionResource question(@PathParam("question") String question) {
+    return new QuestionResource(_network, _analysis, question);
   }
 
   @GET
-  public Response getQuestions() {
+  public @Nonnull Response getQuestions() {
     SortedSet<String> result =
         _analysis != null
             ? Main.getWorkMgr().listAnalysisQuestions(_network, _analysis)
@@ -64,23 +47,5 @@ public final class QuestionsResource {
       return Response.status(Status.NOT_FOUND).build();
     }
     return Response.ok().entity(result).build();
-  }
-
-  @Path("/{question}")
-  @PUT
-  public Response putQuestion(@PathParam("question") String question, String questionJson) {
-    if (_analysis != null) {
-      Main.getWorkMgr()
-          .configureAnalysis(
-              _network,
-              false,
-              _analysis,
-              ImmutableMap.of(question, questionJson),
-              ImmutableList.of(),
-              false);
-    } else if (!Main.getWorkMgr().uploadQuestion(_network, question, questionJson)) {
-      return Response.status(Status.NOT_FOUND).build();
-    }
-    return Response.ok().build();
   }
 }

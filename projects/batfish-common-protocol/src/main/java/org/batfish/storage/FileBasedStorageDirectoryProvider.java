@@ -48,11 +48,6 @@ public class FileBasedStorageDirectoryProvider {
     return _baseDir.resolve(BfConsts.RELPATH_ANSWERS_DIR).resolve(answerId.getId());
   }
 
-  public @Nonnull Path getCompressedConfigDir(NetworkId network, SnapshotId snapshot) {
-    return getSnapshotDir(network, snapshot)
-        .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_COMPRESSED_CONFIG_DIR));
-  }
-
   public @Nonnull Path getMajorIssueConfigDir(NetworkId network, IssueSettingsId majorIssueType) {
     return getNetworkSettingsDir(network)
         .resolve(BfConsts.RELPATH_CONTAINER_SETTINGS_ISSUES)

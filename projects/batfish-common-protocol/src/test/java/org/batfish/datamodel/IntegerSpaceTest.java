@@ -17,6 +17,7 @@ import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.IntegerSpace.Builder;
 import org.junit.Before;
@@ -28,7 +29,7 @@ import org.junit.runners.JUnit4;
 
 /** Tests for {@link IntegerSpace}. */
 @RunWith(JUnit4.class)
-public class IntegerSpaceTest {
+public final class IntegerSpaceTest {
   private IntegerSpace.Builder _b;
 
   @Rule public ExpectedException _expected = ExpectedException.none();
@@ -207,11 +208,15 @@ public class IntegerSpaceTest {
   }
 
   @Test
-  public void testSerialization() throws IOException {
-    String serialized = BatfishObjectMapper.writeString(IntegerSpace.PORTS);
+  public void testJacksonSerialization() throws IOException {
     assertThat(
-        BatfishObjectMapper.mapper().readValue(serialized, IntegerSpace.class),
+        BatfishObjectMapper.clone(IntegerSpace.PORTS, IntegerSpace.class),
         equalTo(IntegerSpace.PORTS));
+  }
+
+  @Test
+  public void testJavaSerialization() throws IOException {
+    assertThat(SerializationUtils.clone(IntegerSpace.PORTS), equalTo(IntegerSpace.PORTS));
   }
 
   @Test
@@ -397,7 +402,7 @@ public class IntegerSpaceTest {
   @Test
   public void testStream() {
     IntegerSpace space = IntegerSpace.unionOf(new SubRange(1, 5), new SubRange(-3, -1));
-    List<Integer> streamed = space.stream().boxed().collect(ImmutableList.toImmutableList());
+    List<Integer> streamed = space.stream().collect(ImmutableList.toImmutableList());
     assertThat(streamed, equalTo(ImmutableList.of(-3, -2, -1, 1, 2, 3, 4, 5)));
   }
 

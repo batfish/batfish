@@ -9,6 +9,7 @@ import java.util.Map;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpSessionProperties;
+import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.dataplane.ibdp.IncrementalDataPlaneSettings;
 import org.batfish.dataplane.ibdp.Node;
 import org.batfish.dataplane.ibdp.schedule.NodeColoredSchedule.Coloring;
@@ -73,6 +74,7 @@ public abstract class IbdpSchedule implements Iterator<Map<String, Node>> {
    * @param schedule {@link Schedule} to use
    * @param allNodes map of all nodes in the network
    * @param bgpTopology the bgp peering relationships
+   * @param ospfTopology the OSPF topology
    * @return a new {@link IbdpSchedule}
    * @throws BatfishException if the schedule type specified is unsupported
    */
@@ -80,7 +82,8 @@ public abstract class IbdpSchedule implements Iterator<Map<String, Node>> {
       IncrementalDataPlaneSettings settings,
       Schedule schedule,
       Map<String, Node> allNodes,
-      ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology) {
+      ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
+      OspfTopology ospfTopology) {
     switch (schedule) {
       case ALL:
         return new MaxParallelSchedule(allNodes);
@@ -88,7 +91,7 @@ public abstract class IbdpSchedule implements Iterator<Map<String, Node>> {
         return new NodeSerializedSchedule(allNodes);
       case NODE_COLORED:
         Coloring coloring = settings.getColoringType();
-        return new NodeColoredSchedule(allNodes, coloring, bgpTopology);
+        return new NodeColoredSchedule(allNodes, coloring, bgpTopology, ospfTopology);
       default:
         throw new BatfishException(String.format("Unsupported ibdp schedule: %s", schedule));
     }

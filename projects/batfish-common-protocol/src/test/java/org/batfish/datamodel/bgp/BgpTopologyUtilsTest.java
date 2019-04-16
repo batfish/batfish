@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -94,7 +93,7 @@ public class BgpTopologyUtilsTest {
         BgpPassivePeerConfig.builder()
             .setLocalIp(Ip.AUTO)
             .setLocalAs(2L)
-            .setRemoteAs(ImmutableList.of(1L))
+            .setRemoteAs(1L)
             .setPeerPrefix(peer2PeerPrefix)
             .build();
     _node2BgpProcess.setPassiveNeighbors(ImmutableSortedMap.of(peer2PeerPrefix, peer2));
@@ -136,7 +135,7 @@ public class BgpTopologyUtilsTest {
         BgpPassivePeerConfig.builder()
             .setLocalIp(Ip.AUTO)
             .setLocalAs(2L)
-            .setRemoteAs(ImmutableList.of(1L))
+            .setRemoteAs(1L)
             .setPeerPrefix(prefixForPeer1);
 
     BgpPassivePeerConfig peer2 = passivePeerBuilder.build();

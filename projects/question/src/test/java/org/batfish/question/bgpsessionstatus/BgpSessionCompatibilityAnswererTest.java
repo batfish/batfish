@@ -34,6 +34,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
@@ -72,7 +73,7 @@ public class BgpSessionCompatibilityAnswererTest {
           .put(COL_LOCAL_IP, IP1)
           .put(COL_LOCAL_AS, 1L)
           .put(COL_NODE, new Node("node1"))
-          .put(COL_REMOTE_AS, new SelfDescribingObject(Schema.LONG, 2L))
+          .put(COL_REMOTE_AS, LongSpace.of(2L).toString())
           .put(COL_REMOTE_NODE, new Node("node2"))
           .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, IP2))
           .put(COL_SESSION_TYPE, SessionType.EBGP_SINGLEHOP)
@@ -86,7 +87,7 @@ public class BgpSessionCompatibilityAnswererTest {
           .put(COL_LOCAL_IP, IP2)
           .put(COL_LOCAL_AS, 2L)
           .put(COL_NODE, new Node("node2"))
-          .put(COL_REMOTE_AS, new SelfDescribingObject(Schema.LONG, 1L))
+          .put(COL_REMOTE_AS, LongSpace.of(1L).toString())
           .put(COL_REMOTE_NODE, new Node("node1"))
           .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, IP1))
           .put(COL_SESSION_TYPE, SessionType.EBGP_SINGLEHOP)
@@ -100,7 +101,7 @@ public class BgpSessionCompatibilityAnswererTest {
           .put(COL_LOCAL_IP, IP3)
           .put(COL_LOCAL_AS, 3L)
           .put(COL_NODE, new Node("node3"))
-          .put(COL_REMOTE_AS, new SelfDescribingObject(Schema.LONG, 3L))
+          .put(COL_REMOTE_AS, LongSpace.of(3L).toString())
           .put(COL_REMOTE_NODE, new Node("node4"))
           .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, IP4))
           .put(COL_SESSION_TYPE, SessionType.IBGP)
@@ -114,7 +115,7 @@ public class BgpSessionCompatibilityAnswererTest {
           .put(COL_LOCAL_IP, IP4)
           .put(COL_LOCAL_AS, 3L)
           .put(COL_NODE, new Node("node4"))
-          .put(COL_REMOTE_AS, new SelfDescribingObject(Schema.LONG, 3L))
+          .put(COL_REMOTE_AS, LongSpace.of(3L).toString())
           .put(COL_REMOTE_NODE, new Node("node3"))
           .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, IP3))
           .put(COL_SESSION_TYPE, SessionType.IBGP)
@@ -193,7 +194,7 @@ public class BgpSessionCompatibilityAnswererTest {
     BgpPassivePeerConfig peerConfig =
         BgpPassivePeerConfig.builder()
             .setLocalAs(3L)
-            .setRemoteAs(remoteAsList)
+            .setRemoteAsns(LongSpace.builder().includingAll(remoteAsList).build())
             .setLocalIp(localIp)
             .setPeerPrefix(remotePrefix)
             .build();

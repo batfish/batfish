@@ -22,6 +22,7 @@ public class BgpRouteTest {
     BgpRoute br =
         BgpRoute.builder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setNextHopInterface("blah")
             .setOriginatorIp(Ip.parse("1.1.1.1"))
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
@@ -34,6 +35,7 @@ public class BgpRouteTest {
     BgpRoute br =
         BgpRoute.builder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setNextHopInterface("blah")
             .setOriginatorIp(Ip.parse("1.1.1.1"))
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
@@ -46,6 +48,7 @@ public class BgpRouteTest {
     BgpRoute br =
         BgpRoute.builder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setNextHopInterface("blah")
             .setOriginatorIp(Ip.parse("1.1.1.1"))
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
@@ -73,6 +76,7 @@ public class BgpRouteTest {
         .addEqualityGroup(brb.setDiscard(true).build())
         .addEqualityGroup(brb.setLocalPreference(10).build())
         .addEqualityGroup(brb.setMetric(10).build())
+        .addEqualityGroup(brb.setNextHopInterface("blah").build())
         .addEqualityGroup(brb.setNextHopIp(Ip.parse("2.2.2.2")).build())
         .addEqualityGroup(brb.setOriginatorIp(Ip.parse("2.2.2.2")).build())
         .addEqualityGroup(brb.setOriginType(OriginType.INCOMPLETE).build())

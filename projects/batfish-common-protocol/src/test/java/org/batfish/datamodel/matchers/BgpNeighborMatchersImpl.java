@@ -1,11 +1,9 @@
 package org.batfish.datamodel.matchers;
 
-import java.util.List;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.BgpActivePeerConfig;
-import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LongSpace;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
@@ -98,25 +96,14 @@ final class BgpNeighborMatchersImpl {
     }
   }
 
-  static final class HasRemoteAs extends FeatureMatcher<BgpActivePeerConfig, Long> {
-    HasRemoteAs(@Nonnull Matcher<? super Long> subMatcher) {
+  static final class HasRemoteAs extends FeatureMatcher<BgpPeerConfig, LongSpace> {
+    HasRemoteAs(@Nonnull Matcher<? super LongSpace> subMatcher) {
       super(subMatcher, "A BgpPeerConfig with remoteAs:", "remoteAs");
     }
 
     @Override
-    protected Long featureValueOf(BgpActivePeerConfig actual) {
-      return actual.getRemoteAs();
-    }
-  }
-
-  static final class HasRemoteAses extends FeatureMatcher<BgpPassivePeerConfig, List<Long>> {
-    HasRemoteAses(@Nonnull Matcher<? super List<Long>> subMatcher) {
-      super(subMatcher, "A BgpPeerConfig with remoteAs:", "remoteAs");
-    }
-
-    @Override
-    protected List<Long> featureValueOf(BgpPassivePeerConfig actual) {
-      return actual.getRemoteAs();
+    protected LongSpace featureValueOf(BgpPeerConfig actual) {
+      return actual.getRemoteAsns();
     }
   }
 }

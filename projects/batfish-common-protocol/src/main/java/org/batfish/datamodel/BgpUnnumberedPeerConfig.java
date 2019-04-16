@@ -1,10 +1,10 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
@@ -12,18 +12,78 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.dataplane.rib.RibGroup;
 
-/** Represent a BGP config which allows peering with a single remote peer. */
-public final class BgpActivePeerConfig extends BgpPeerConfig {
+/**
+ * Represents a BGP unnumbered config, which allows peering over a layer-3-capable interface without
+ * IP configuration.
+ */
+public final class BgpUnnumberedPeerConfig extends BgpPeerConfig {
 
-  private static final String PROP_PEER_ADDRESS = "peerAddress";
+  public static class Builder extends BgpPeerConfig.Builder<Builder, BgpUnnumberedPeerConfig> {
+    @Nullable private String _peerInterface;
 
-  static final long serialVersionUID = 1L;
+    protected Builder() {
+      super();
+    }
 
-  /** The remote peer's IP address */
-  @Nullable private final Ip _peerAddress;
+    @Override
+    @Nonnull
+    public BgpUnnumberedPeerConfig build() {
+      checkArgument(_peerInterface != null, "Missing %s", PROP_PEER_INTERFACE);
+      BgpUnnumberedPeerConfig bgpPeerConfig =
+          new BgpUnnumberedPeerConfig(
+              _additionalPathsReceive,
+              _additionalPathsSelectAll,
+              _additionalPathsSend,
+              _advertiseExternal,
+              _advertiseInactive,
+              _allowLocalAsIn,
+              _allowRemoteAsOut,
+              _appliedRibGroup,
+              _authenticationSettings,
+              _clusterId,
+              _defaultMetric,
+              _description,
+              _ebgpMultihop,
+              _enforceFirstAs,
+              _exportPolicy,
+              _exportPolicySources,
+              _generatedRoutes,
+              _group,
+              _importPolicy,
+              _importPolicySources,
+              _localAs,
+              _localIp,
+              _peerInterface,
+              _remoteAsns,
+              _routeReflectorClient,
+              _sendCommunity);
+      if (_bgpProcess != null) {
+        _bgpProcess.getInterfaceNeighbors().put(_peerInterface, bgpPeerConfig);
+      }
+      return bgpPeerConfig;
+    }
+
+    @Override
+    protected Builder getThis() {
+      return this;
+    }
+
+    public Builder setPeerInterface(String peerInterface) {
+      _peerInterface = peerInterface;
+      return this;
+    }
+  }
+
+  private static final String PROP_PEER_INTERFACE = "peerInterface";
+
+  private static final long serialVersionUID = 1L;
+
+  public static Builder builder() {
+    return new Builder();
+  }
 
   @JsonCreator
-  private static @Nonnull BgpActivePeerConfig create(
+  private static @Nonnull BgpUnnumberedPeerConfig create(
       @JsonProperty(PROP_ADDITIONAL_PATHS_RECEIVE) boolean additionalPathsReceive,
       @JsonProperty(PROP_ADDITIONAL_PATHS_SELECT_ALL) boolean additionalPathsSelectAll,
       @JsonProperty(PROP_ADDITIONAL_PATHS_SEND) boolean additionalPathsSend,
@@ -47,11 +107,12 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
       @JsonProperty(PROP_IMPORT_POLICY_SOURCES) @Nullable SortedSet<String> importPolicySources,
       @JsonProperty(PROP_LOCAL_AS) @Nullable Long localAs,
       @JsonProperty(PROP_LOCAL_IP) @Nullable Ip localIp,
-      @JsonProperty(PROP_PEER_ADDRESS) @Nullable Ip peerAddress,
+      @JsonProperty(PROP_PEER_INTERFACE) @Nullable String peerInterface,
       @JsonProperty(PROP_REMOTE_ASNS) @Nullable LongSpace remoteAsns,
       @JsonProperty(PROP_ROUTE_REFLECTOR) boolean routeReflectorClient,
       @JsonProperty(PROP_SEND_COMMUNITY) boolean sendCommunity) {
-    return new BgpActivePeerConfig(
+    checkArgument(peerInterface != null, "Missing %s", PROP_PEER_INTERFACE);
+    return new BgpUnnumberedPeerConfig(
         additionalPathsReceive,
         additionalPathsSelectAll,
         additionalPathsSend,
@@ -74,13 +135,15 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
         importPolicySources,
         localAs,
         localIp,
-        peerAddress,
+        peerInterface,
         firstNonNull(remoteAsns, LongSpace.EMPTY),
         routeReflectorClient,
         sendCommunity);
   }
 
-  private BgpActivePeerConfig(
+  @Nonnull private final String _peerInterface;
+
+  private BgpUnnumberedPeerConfig(
       boolean additionalPathsReceive,
       boolean additionalPathsSelectAll,
       boolean additionalPathsSend,
@@ -103,7 +166,7 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
       @Nullable SortedSet<String> importPolicySources,
       @Nullable Long localAs,
       @Nullable Ip localIp,
-      @Nullable Ip peerAddress,
+      @Nonnull String peerInterface,
       @Nullable LongSpace remoteAsns,
       boolean routeReflectorClient,
       boolean sendCommunity) {
@@ -133,14 +196,13 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
         remoteAsns,
         routeReflectorClient,
         sendCommunity);
-    _peerAddress = peerAddress;
+    _peerInterface = peerInterface;
   }
 
-  @Nullable
-  @JsonProperty(PROP_PEER_ADDRESS)
-  @JsonPropertyDescription("The IPV4 address of the remote peer")
-  public Ip getPeerAddress() {
-    return _peerAddress;
+  /** Returns the interface on which a peering may occur. */
+  @JsonProperty(PROP_PEER_INTERFACE)
+  public String getPeerInterface() {
+    return _peerInterface;
   }
 
   @Override
@@ -148,78 +210,15 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof BgpActivePeerConfig)) {
+    if (!(o instanceof BgpUnnumberedPeerConfig)) {
       return false;
     }
-    BgpActivePeerConfig that = (BgpActivePeerConfig) o;
-    return Objects.equals(_peerAddress, that._peerAddress) && super.equals(o);
+    BgpUnnumberedPeerConfig that = (BgpUnnumberedPeerConfig) o;
+    return _peerInterface.equals(that._peerInterface) && super.equals(o);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), _peerAddress);
-  }
-
-  public static class Builder extends BgpPeerConfig.Builder<Builder, BgpActivePeerConfig> {
-    @Nullable private Ip _peerAddress;
-
-    protected Builder() {
-      super();
-    }
-
-    @Override
-    protected Builder getThis() {
-      return this;
-    }
-
-    @Override
-    @Nonnull
-    public BgpActivePeerConfig build() {
-      BgpActivePeerConfig bgpPeerConfig =
-          new BgpActivePeerConfig(
-              _additionalPathsReceive,
-              _additionalPathsSelectAll,
-              _additionalPathsSend,
-              _advertiseExternal,
-              _advertiseInactive,
-              _allowLocalAsIn,
-              _allowRemoteAsOut,
-              _appliedRibGroup,
-              _authenticationSettings,
-              _clusterId,
-              _defaultMetric,
-              _description,
-              _ebgpMultihop,
-              _enforceFirstAs,
-              _exportPolicy,
-              _exportPolicySources,
-              _generatedRoutes,
-              _group,
-              _importPolicy,
-              _importPolicySources,
-              _localAs,
-              _localIp,
-              _peerAddress,
-              _remoteAsns,
-              _routeReflectorClient,
-              _sendCommunity);
-      if (_bgpProcess != null) {
-        _bgpProcess
-            .getActiveNeighbors()
-            .put(
-                Prefix.create(Objects.requireNonNull(_peerAddress), Prefix.MAX_PREFIX_LENGTH),
-                bgpPeerConfig);
-      }
-      return bgpPeerConfig;
-    }
-
-    public Builder setPeerAddress(@Nullable Ip peerAddress) {
-      _peerAddress = peerAddress;
-      return this;
-    }
-  }
-
-  public static Builder builder() {
-    return new Builder();
+    return Objects.hash(super.hashCode(), _peerInterface);
   }
 }

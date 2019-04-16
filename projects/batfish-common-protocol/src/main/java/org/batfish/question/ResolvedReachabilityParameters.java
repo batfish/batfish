@@ -44,8 +44,6 @@ public final class ResolvedReachabilityParameters {
 
     private Set<String> _requiredTransitNodes;
 
-    private boolean _useCompression;
-
     public ResolvedReachabilityParameters build() throws InvalidReachabilityParametersException {
       return new ResolvedReachabilityParameters(this);
     }
@@ -109,11 +107,6 @@ public final class ResolvedReachabilityParameters {
       _specialize = specialize;
       return this;
     }
-
-    public Builder setUseCompression(boolean useCompression) {
-      _useCompression = useCompression;
-      return this;
-    }
   }
 
   private final SortedSet<FlowDisposition> _actions;
@@ -140,8 +133,6 @@ public final class ResolvedReachabilityParameters {
 
   private final Set<String> _requiredTransitNodes;
 
-  private final boolean _useCompression;
-
   private ResolvedReachabilityParameters(Builder builder) {
     _actions = builder._actions;
     _configurations = builder._configurations;
@@ -155,7 +146,6 @@ public final class ResolvedReachabilityParameters {
     _srcNatted = builder._srcNatted;
     _specialize = builder._specialize;
     _requiredTransitNodes = builder._requiredTransitNodes;
-    _useCompression = builder._useCompression;
   }
 
   public static Builder builder() {
@@ -208,9 +198,5 @@ public final class ResolvedReachabilityParameters {
 
   public Set<String> getRequiredTransitNodes() {
     return _requiredTransitNodes;
-  }
-
-  public boolean getUseCompression() {
-    return _useCompression;
   }
 }

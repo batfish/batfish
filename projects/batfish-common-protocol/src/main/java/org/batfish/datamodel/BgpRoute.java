@@ -36,6 +36,7 @@ public final class BgpRoute extends AbstractRoute {
     @Nonnull private SortedSet<Long> _communities;
     private boolean _discard;
     private long _localPreference;
+    @Nullable String _nextHopInterface;
     @Nullable private Ip _originatorIp;
     @Nullable private OriginType _originType;
     @Nullable private RoutingProtocol _protocol;
@@ -64,6 +65,7 @@ public final class BgpRoute extends AbstractRoute {
           _discard,
           _localPreference,
           getMetric(),
+          firstNonNull(_nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE),
           _originatorIp,
           _clusterList.build(),
           _receivedFromRouteReflectorClient,
@@ -179,6 +181,11 @@ public final class BgpRoute extends AbstractRoute {
       return getThis();
     }
 
+    public @Nonnull Builder setNextHopInterface(String nextHopInterface) {
+      _nextHopInterface = nextHopInterface;
+      return getThis();
+    }
+
     public Builder setOriginatorIp(Ip originatorIp) {
       _originatorIp = originatorIp;
       return getThis();
@@ -247,6 +254,7 @@ public final class BgpRoute extends AbstractRoute {
           .thenComparing(BgpRoute::getCommunities, Comparators.lexicographical(Ordering.natural()))
           .thenComparing(BgpRoute::getDiscard)
           .thenComparing(BgpRoute::getLocalPreference)
+          .thenComparing(BgpRoute::getNextHopInterface)
           .thenComparing(BgpRoute::getOriginType)
           .thenComparing(BgpRoute::getOriginatorIp)
           .thenComparing(BgpRoute::getReceivedFromIp)
@@ -262,6 +270,7 @@ public final class BgpRoute extends AbstractRoute {
   private final boolean _discard;
   private final long _localPreference;
   private final long _med;
+  @Nonnull private final String _nextHopInterface;
   @Nonnull private final Ip _nextHopIp;
   @Nonnull private final Ip _originatorIp;
   @Nonnull private final OriginType _originType;
@@ -284,6 +293,7 @@ public final class BgpRoute extends AbstractRoute {
       @JsonProperty(PROP_DISCARD) boolean discard,
       @JsonProperty(PROP_LOCAL_PREFERENCE) long localPreference,
       @JsonProperty(PROP_METRIC) long med,
+      @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
       @Nullable @JsonProperty(PROP_ORIGINATOR_IP) Ip originatorIp,
       @Nullable @JsonProperty(PROP_CLUSTER_LIST) SortedSet<Long> clusterList,
       @JsonProperty(PROP_RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT)
@@ -305,6 +315,7 @@ public final class BgpRoute extends AbstractRoute {
         discard,
         localPreference,
         med,
+        firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE),
         originatorIp,
         clusterList,
         receivedFromRouteReflectorClient,
@@ -326,6 +337,7 @@ public final class BgpRoute extends AbstractRoute {
       boolean discard,
       long localPreference,
       long med,
+      String nextHopInterface,
       Ip originatorIp,
       @Nullable SortedSet<Long> clusterList,
       boolean receivedFromRouteReflectorClient,
@@ -350,6 +362,7 @@ public final class BgpRoute extends AbstractRoute {
     _discard = discard;
     _localPreference = localPreference;
     _med = med;
+    _nextHopInterface = nextHopInterface;
     _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
     _originatorIp = originatorIp;
     _originType = originType;
@@ -385,6 +398,7 @@ public final class BgpRoute extends AbstractRoute {
         && Objects.equals(_asPath, other._asPath)
         && Objects.equals(_clusterList, other._clusterList)
         && Objects.equals(_communities, other._communities)
+        && _nextHopInterface.equals(other._nextHopInterface)
         && Objects.equals(_nextHopIp, other._nextHopIp)
         && Objects.equals(_originatorIp, other._originatorIp)
         && _originType == other._originType
@@ -408,6 +422,7 @@ public final class BgpRoute extends AbstractRoute {
             _localPreference,
             _med,
             _network,
+            _nextHopInterface,
             _nextHopIp,
             _originatorIp,
             _originType.ordinal(),
@@ -454,10 +469,12 @@ public final class BgpRoute extends AbstractRoute {
     return _med;
   }
 
+  @JsonIgnore(false)
+  @JsonProperty(PROP_NEXT_HOP_INTERFACE)
   @Nonnull
   @Override
   public String getNextHopInterface() {
-    return Route.UNSET_NEXT_HOP_INTERFACE;
+    return _nextHopInterface;
   }
 
   @Nonnull
@@ -536,6 +553,7 @@ public final class BgpRoute extends AbstractRoute {
         .setDiscard(_discard)
         .setLocalPreference(_localPreference)
         .setMetric(_med)
+        .setNextHopInterface(_nextHopInterface)
         .setNextHopIp(_nextHopIp)
         .setOriginatorIp(_originatorIp)
         .setOriginType(_originType)
