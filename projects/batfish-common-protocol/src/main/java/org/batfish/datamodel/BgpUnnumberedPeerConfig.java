@@ -13,8 +13,8 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.dataplane.rib.RibGroup;
 
 /**
- * Represents a passive BGP config, which allows peering with multiple remote peers, but cannot
- * initiate connections.
+ * Represents a BGP unnumbered config, which allows peering over a layer-3-capable interface without
+ * IP configuration.
  */
 public final class BgpUnnumberedPeerConfig extends BgpPeerConfig {
 
