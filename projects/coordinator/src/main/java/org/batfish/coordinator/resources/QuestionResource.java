@@ -2,6 +2,7 @@ package org.batfish.coordinator.resources;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.ws.rs.DELETE;
@@ -28,7 +29,7 @@ public final class QuestionResource {
   }
 
   @DELETE
-  public Response deleteQuestion() {
+  public @Nonnull Response deleteQuestion() {
     if (!Main.getWorkMgr().delQuestion(_network, _questionName, _analysis)) {
       return Response.status(Status.NOT_FOUND).build();
     }
@@ -36,7 +37,7 @@ public final class QuestionResource {
   }
 
   @GET
-  public Response getQuestion() {
+  public @Nonnull Response getQuestion() {
     String result = Main.getWorkMgr().getQuestion(_network, _questionName, _analysis);
     if (result == null) {
       return Response.status(Status.NOT_FOUND).build();
@@ -45,7 +46,7 @@ public final class QuestionResource {
   }
 
   @PUT
-  public Response putQuestion(String questionJson) {
+  public @Nonnull Response putQuestion(String questionJson) {
     if (_analysis != null) {
       Main.getWorkMgr()
           .configureAnalysis(

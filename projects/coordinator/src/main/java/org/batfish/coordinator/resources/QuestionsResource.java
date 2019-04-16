@@ -1,6 +1,7 @@
 package org.batfish.coordinator.resources;
 
 import java.util.SortedSet;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.ws.rs.Consumes;
@@ -26,18 +27,18 @@ public final class QuestionsResource {
    * Question resource for a given network and analysis. If analysis is {@code null}, resource is
    * for interacting with ad-hoc questions for the network.
    */
-  public QuestionsResource(String network, @Nullable String analysis) {
+  public @Nonnull QuestionsResource(String network, @Nullable String analysis) {
     _network = network;
     _analysis = analysis;
   }
 
   @Path("/{question}")
-  public QuestionResource question(@PathParam("question") String question) {
+  public @Nonnull QuestionResource question(@PathParam("question") String question) {
     return new QuestionResource(_network, _analysis, question);
   }
 
   @GET
-  public Response getQuestions() {
+  public @Nonnull Response getQuestions() {
     SortedSet<String> result =
         _analysis != null
             ? Main.getWorkMgr().listAnalysisQuestions(_network, _analysis)
