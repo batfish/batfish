@@ -13,8 +13,6 @@ import com.google.common.graph.ValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -102,7 +100,6 @@ public final class BgpTopologyUtils {
        * First pass: identify all addresses "owned" by BgpNeighbors,
        * add neighbor ids as vertices to the graph
        */
-      Map<Ip, Set<BgpPeerConfigId>> localAddresses = new HashMap<>();
       MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> graph =
           ValueGraphBuilder.directed().allowsSelfLoops(false).build();
       for (Configuration node : configurations.values()) {
@@ -119,7 +116,7 @@ public final class BgpTopologyUtils {
             Prefix prefix = entry.getKey();
             BgpPeerConfig bgpPeerConfig = entry.getValue();
 
-            if (!bgpConfigPassesSanityChecks(bgpPeerConfig, hostname, ipOwners) && !keepInvalid) {
+            if (!keepInvalid && !bgpConfigPassesSanityChecks(bgpPeerConfig, hostname, ipOwners)) {
               continue;
             }
 
@@ -127,11 +124,6 @@ public final class BgpTopologyUtils {
                 new BgpPeerConfigId(
                     hostname, vrf.getName(), prefix, bgpPeerConfig instanceof BgpPassivePeerConfig);
             graph.addNode(neighborID);
-
-            // Add this neighbor as owner of its local address
-            localAddresses
-                .computeIfAbsent(bgpPeerConfig.getLocalIp(), k -> new HashSet<>())
-                .add(neighborID);
           }
         }
       }
@@ -156,44 +148,32 @@ public final class BgpTopologyUtils {
         if (possibleHostnames == null) {
           continue;
         }
-        Set<BgpPeerConfigId> candidates = localAddresses.get(neighbor.getPeerAddress());
-        if (candidates == null) {
-          // Check maybe it's trying to reach a dynamic neighbor
-          candidates = localAddresses.get(Ip.AUTO);
-          if (candidates == null) {
-            continue;
-          }
-        }
-        for (BgpPeerConfigId candidateNeighborId : candidates) {
-          if (!bgpCandidatePassesSanityChecks(
-              neighbor, candidateNeighborId, possibleHostnames, networkConfigurations)) {
-            // Short-circuit if there is no way the remote end will accept our connection
-            continue;
-          }
-          /*
-           * Perform reachability checks.
-           */
-          if (checkReachability) {
-            if (isReachableBgpNeighbor(
-                neighborId, candidateNeighborId, neighbor, tracerouteEngine)) {
-              graph.putEdgeValue(
-                  neighborId,
-                  candidateNeighborId,
-                  BgpSessionProperties.from(
-                      neighbor,
-                      Objects.requireNonNull(
-                          networkConfigurations.getBgpPeerConfig(candidateNeighborId))));
-            }
-          } else {
-            graph.putEdgeValue(
-                neighborId,
-                candidateNeighborId,
-                BgpSessionProperties.from(
-                    neighbor,
-                    Objects.requireNonNull(
-                        networkConfigurations.getBgpPeerConfig(candidateNeighborId))));
-          }
-        }
+
+        Set<BgpPeerConfigId> alreadyEstablished = graph.adjacentNodes(neighborId);
+        graph.nodes().stream()
+            .filter(
+                candidateId ->
+                    // Don't bother checking reachability if edge is already in place
+                    !alreadyEstablished.contains(candidateId)
+                        // Ensure candidate has compatible local/remote IP, AS, & hostname
+                        && bgpCandidatePassesSanityChecks(
+                            neighbor, candidateId, possibleHostnames, networkConfigurations)
+                        // If checking reachability, ensure candidate is reachable
+                        && (!checkReachability
+                            || isReachableBgpNeighbor(
+                                neighborId, candidateId, neighbor, tracerouteEngine)))
+            .forEach(
+                remoteId -> {
+                  // Session will be established. Add edges between neighbor and remote peer.
+                  BgpPeerConfig remotePeer =
+                      Objects.requireNonNull(networkConfigurations.getBgpPeerConfig(remoteId));
+                  BgpSessionProperties edgeToCandidate =
+                      BgpSessionProperties.from(neighbor, remotePeer, false);
+                  BgpSessionProperties edgeFromCandidate =
+                      BgpSessionProperties.from(neighbor, remotePeer, true);
+                  graph.putEdgeValue(neighborId, remoteId, edgeToCandidate);
+                  graph.putEdgeValue(remoteId, neighborId, edgeFromCandidate);
+                });
       }
       return ImmutableValueGraph.copyOf(graph);
     }

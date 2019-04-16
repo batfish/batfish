@@ -2225,19 +2225,10 @@ public class VirtualRouter implements Serializable {
 
   private static BgpSessionProperties getBgpSessionProperties(
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology, BgpEdgeId edge) {
-    /*
-    BGP topology edges not guaranteed to be symmetrical (in case of dynamic neighbors).
-    So to get session properties, we might need to flip the src/dst edge
-     */
+    // BGP topology edge guaranteed to exist since the session is established
     Optional<BgpSessionProperties> session = bgpTopology.edgeValue(edge.src(), edge.dst());
-    return session.orElseGet(
-        () ->
-            bgpTopology
-                .edgeValue(edge.dst(), edge.src())
-                .orElseThrow(
-                    () ->
-                        new IllegalArgumentException(
-                            String.format("No BGP edge %s in BGP topology", edge))));
+    return session.orElseThrow(
+        () -> new IllegalArgumentException(String.format("No BGP edge %s in BGP topology", edge)));
   }
 
   private void queueOutgoingIsisRoutes(

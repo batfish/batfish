@@ -63,6 +63,16 @@ public final class BgpSessionProperties {
     return from(initiator, listener, getSessionType(initiator));
   }
 
+  public static BgpSessionProperties from(
+      @Nonnull BgpActivePeerConfig initiator,
+      @Nonnull BgpPeerConfig listener,
+      boolean reverseDirection) {
+    if (reverseDirection) {
+      return from(listener, initiator, getSessionType(initiator));
+    }
+    return from(initiator, listener, getSessionType(initiator));
+  }
+
   /**
    * Determine what type of session the peer is configured to establish.
    *
