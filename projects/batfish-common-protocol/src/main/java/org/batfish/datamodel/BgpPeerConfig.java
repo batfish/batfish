@@ -397,6 +397,7 @@ public abstract class BgpPeerConfig implements Serializable {
         && _enforceFirstAs == that._enforceFirstAs
         && _routeReflectorClient == that._routeReflectorClient
         && _sendCommunity == that._sendCommunity
+        && Objects.equals(_appliedRibGroup, that._appliedRibGroup)
         && Objects.equals(_authenticationSettings, that._authenticationSettings)
         && Objects.equals(_clusterId, that._clusterId)
         && Objects.equals(_description, that._description)
@@ -421,6 +422,7 @@ public abstract class BgpPeerConfig implements Serializable {
         _advertiseInactive,
         _allowLocalAsIn,
         _allowRemoteAsOut,
+        _appliedRibGroup,
         _authenticationSettings,
         _clusterId,
         _defaultMetric,

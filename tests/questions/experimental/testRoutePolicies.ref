@@ -10,6 +10,7 @@
       "localPreference" : 0,
       "metric" : 0,
       "network" : "0.0.0.0/0",
+      "nextHopInterface" : "dynamic",
       "nextHopIp" : "AUTO/NONE(-1l)",
       "originType" : "igp",
       "originatorIp" : "1.1.1.1",
