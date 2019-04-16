@@ -5,6 +5,7 @@ import static org.batfish.coordinator.WorkMgr.addToSerializedList;
 import static org.batfish.coordinator.WorkMgr.generateFileDateString;
 import static org.batfish.coordinator.WorkMgr.removeFromSerializedList;
 import static org.batfish.coordinator.WorkMgrTestUtils.createSnapshot;
+import static org.batfish.coordinator.WorkMgrTestUtils.setupQuestionAndAnswer;
 import static org.batfish.identifiers.NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID;
 import static org.batfish.identifiers.QuestionSettingsId.DEFAULT_QUESTION_SETTINGS_ID;
 import static org.hamcrest.Matchers.contains;
@@ -57,7 +58,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.batfish.common.AnswerRowsOptions;
@@ -867,55 +867,6 @@ public final class WorkMgrTest {
             snapshotBaseName, snapshotNewName, null, null, null, null, null, null, null));
   }
 
-  /** Setup network, snapshot, question, and optionally answer */
-  private void setupQuestionAndAnswer(
-      String network,
-      String snapshot,
-      String questionName,
-      @Nullable String analysis,
-      @Nullable Answer answer)
-      throws IOException {
-    Question question = new TestQuestion();
-    _manager.initNetwork(network, null);
-    NetworkId networkId = _idManager.getNetworkId(network);
-    SnapshotId snapshotId = _idManager.generateSnapshotId();
-    _idManager.assignSnapshot(snapshot, networkId, snapshotId);
-    AnalysisId analysisId = null;
-    if (analysis != null) {
-      _manager.configureAnalysis(
-          network,
-          true,
-          analysis,
-          ImmutableMap.of(questionName, BatfishObjectMapper.writeString(question)),
-          Lists.newArrayList(),
-          null);
-      analysisId = _idManager.getAnalysisId(analysis, networkId);
-    } else {
-      _idManager.assignQuestion(questionName, networkId, _idManager.generateQuestionId(), null);
-    }
-    QuestionId questionId = _idManager.getQuestionId(questionName, networkId, analysisId);
-    _storage.storeQuestion(
-        BatfishObjectMapper.writeString(question), networkId, questionId, analysisId);
-
-    // Setup answer iff one was passed in
-    if (answer != null) {
-      AnswerId answerId =
-          _idManager.getBaseAnswerId(
-              networkId,
-              snapshotId,
-              questionId,
-              DEFAULT_QUESTION_SETTINGS_ID,
-              DEFAULT_NETWORK_NODE_ROLES_ID,
-              null,
-              analysisId);
-      String answerStr = BatfishObjectMapper.writeString(answer);
-      AnswerMetadata answerMetadata =
-          AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
-      _storage.storeAnswer(answerStr, answerId);
-      _storage.storeAnswerMetadata(answerMetadata, answerId);
-    }
-  }
-
   @Test
   public void testAnalysisGetAnswer() throws IOException {
     String network = "network";
@@ -926,6 +877,9 @@ public final class WorkMgrTest {
     Answer expectedAnswer = new Answer();
     expectedAnswer.addAnswerElement(new StringAnswerElement("foo1"));
     String expectedAnswerString = BatfishObjectMapper.writeString(expectedAnswer);
+
+    _manager.initNetwork(network, null);
+    uploadTestSnapshot(network, snapshot);
     setupQuestionAndAnswer(network, snapshot, questionName, analysis, expectedAnswer);
     Answer ans = _manager.getAnswer(network, snapshot, questionName, null, analysis);
 
@@ -941,6 +895,8 @@ public final class WorkMgrTest {
     String questionName = "question";
     String analysis = "analysis";
 
+    _manager.initNetwork(network, null);
+    uploadTestSnapshot(network, snapshot);
     setupQuestionAndAnswer(network, snapshot, questionName, analysis, null);
 
     // Confirm we get a not found exception calling getAnswer before the question is answered
@@ -959,6 +915,8 @@ public final class WorkMgrTest {
     Answer expectedAnswer = new Answer();
     expectedAnswer.addAnswerElement(new StringAnswerElement("foo1"));
     String expectedAnswerString = BatfishObjectMapper.writeString(expectedAnswer);
+    _manager.initNetwork(network, null);
+    uploadTestSnapshot(network, snapshot);
     setupQuestionAndAnswer(network, snapshot, questionName, null, expectedAnswer);
     Answer ans = _manager.getAnswer(network, snapshot, questionName, null, null);
 
@@ -973,6 +931,8 @@ public final class WorkMgrTest {
     String snapshot = "snapshot";
     String questionName = "question";
 
+    _manager.initNetwork(network, null);
+    uploadTestSnapshot(network, snapshot);
     setupQuestionAndAnswer(network, snapshot, questionName, null, null);
 
     // Confirm we get a not found exception calling getAnswer before the question is answered
