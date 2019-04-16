@@ -87152,6 +87152,14 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Interface: 'Ethernet1/0' contains OSPF settings, but there is no OSPF process"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "OSPF process default:1 in cisco_ospf uses distribute-list of type ROUTE_MAP, only prefix-lists are supported in dist-lists by Batfish"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "OSPF process default:1 in cisco_ospf uses distribute-list of type ACCESS_LIST, only prefix-lists are supported in dist-lists by Batfish"
             }
           ]
         },
