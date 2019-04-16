@@ -25,7 +25,7 @@ public class Variable {
   public enum Type {
     // deprecated -- left for now for backward compatibility
     ADDRESS_GROUP_AND_BOOK("addressGroupAndBook", true),
-    ADDRESS_GROUP_NAME("addressGroup", true),
+    ADDRESS_GROUP_NAME("addressGroupName", true),
     ANSWER_ELEMENT("answerElement", true),
     APPLICATION_SPEC("applicationSpec", true),
     BGP_PEER_PROPERTY_SPEC("bgpPeerPropertySpec", true),
@@ -48,7 +48,7 @@ public class Variable {
     INTERFACE("interface", true),
     // deprecated -- left for now for backward compatibility
     INTERFACE_GROUP_AND_BOOK("interfaceGroupAndBook", true),
-    INTERFACE_GROUP_NAME("interfaceGroupAndBook", true),
+    INTERFACE_GROUP_NAME("interfaceGroupName", true),
     INTERFACE_NAME("interfaceName", true),
     INTERFACE_PROPERTY_SPEC("interfacePropertySpec", true),
     INTERFACES_SPEC("interfacesSpec", true),
@@ -69,7 +69,9 @@ public class Variable {
     NODE_NAME("nodeName", true),
     // deprecated -- left for now for backward compatibility
     NODE_ROLE_AND_DIMENSION("nodeRoleAndDimension", true),
-    NODE_ROLE_DIMENSION_NAME("nodeRoleDimension", true),
+    // deprecated -- left for now for backward compatibility
+    NODE_ROLE_DIMENSION("nodeRoleAndDimension", true),
+    NODE_ROLE_DIMENSION_NAME("nodeRoleDimensionName", true),
     NODE_ROLE_NAME("nodeRoleName", true),
     NODE_SPEC("nodeSpec", true),
     OSPF_PROPERTY_SPEC("ospfPropertySpec", true),
