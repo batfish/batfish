@@ -1,10 +1,12 @@
 package org.batfish.datamodel.matchers;
 
 import java.util.Map;
+import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Prefix;
@@ -12,6 +14,39 @@ import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 final class BgpProcessMatchersImpl {
+
+  static final class HasInterfaceNeighbor
+      extends FeatureMatcher<BgpProcess, BgpUnnumberedPeerConfig> {
+    private final @Nonnull String _peerInterface;
+
+    HasInterfaceNeighbor(
+        @Nonnull String peerInterface,
+        @Nonnull Matcher<? super BgpUnnumberedPeerConfig> subMatcher) {
+      super(
+          subMatcher,
+          String.format("A BGP process with interfaceNeighbor %s:", peerInterface),
+          String.format("interfaceNeighbor %s:", peerInterface));
+      _peerInterface = peerInterface;
+    }
+
+    @Override
+    protected BgpUnnumberedPeerConfig featureValueOf(BgpProcess actual) {
+      return actual.getInterfaceNeighbors().get(_peerInterface);
+    }
+  }
+
+  static final class HasInterfaceNeighbors
+      extends FeatureMatcher<BgpProcess, SortedMap<String, BgpUnnumberedPeerConfig>> {
+    HasInterfaceNeighbors(
+        @Nonnull Matcher<? super SortedMap<String, BgpUnnumberedPeerConfig>> subMatcher) {
+      super(subMatcher, "A BGP process with interfaceNeighbors:", "interfaceNeighbors:");
+    }
+
+    @Override
+    protected SortedMap<String, BgpUnnumberedPeerConfig> featureValueOf(BgpProcess actual) {
+      return actual.getInterfaceNeighbors();
+    }
+  }
 
   static final class HasMultipathEbgp extends FeatureMatcher<BgpProcess, Boolean> {
     HasMultipathEbgp(@Nonnull Matcher<? super Boolean> subMatcher) {
