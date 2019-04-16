@@ -9,9 +9,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Sets;
 import java.util.HashSet;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -19,6 +19,7 @@ import java.util.SortedSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Names;
 import org.batfish.datamodel.Names.Type;
 
@@ -145,6 +146,20 @@ public class ReferenceBook implements Comparable<ReferenceBook> {
     ReferenceLibrary.checkDuplicates("service objects", serviceObjectNames);
     ReferenceLibrary.checkDuplicates("service object or group", allServiceNames);
 
+    // check that address group children do not have dangling pointers
+    Set<String> extraNames =
+        Sets.difference(
+            nnAddressGroups.stream()
+                .flatMap(g -> g.getChildGroupNames().stream())
+                .collect(ImmutableSet.toImmutableSet()),
+            nnAddressGroups.stream()
+                .map(AddressGroup::getName)
+                .collect(ImmutableSet.toImmutableSet()));
+    checkArgument(
+        extraNames.isEmpty(),
+        "Following child address group names are not defined: %s",
+        extraNames);
+
     // check that there are no dangling pointers to non-existent names
     nnServiceEndpoints.forEach(s -> s.checkUndefinedReferences(addressGroupNames, allServiceNames));
     nnServiceObjectGroups.forEach(s -> s.checkUndefinedReferences(allServiceNames));
@@ -250,30 +265,23 @@ public class ReferenceBook implements Comparable<ReferenceBook> {
    * sub groups.
    *
    * <p>The implementation is robust to cycles among groups.
-   *
-   * @throws NoSuchElementException if any of group names do not appear in the reference book.
    */
-  public Set<String> getAddressesRecursive(String addressGroupName) {
+  public Set<IpWildcard> getAddressesRecursive(String addressGroupName) {
     Set<String> allGroupNames = new HashSet<>();
     addGroupAndDescendantNames(addressGroupName, allGroupNames);
     return allGroupNames.stream()
+        // get() is safe because we got names from the book itself
         .flatMap(groupName -> getAddressGroup(groupName).get().getAddresses().stream())
+        .map(IpWildcard::new)
         .collect(ImmutableSet.toImmutableSet());
   }
 
-  /** Collects all group names in {@code descendantGroupNames} */
+  /** Collects all group names in {@code allGroupNames} */
   @VisibleForTesting
   void addGroupAndDescendantNames(String groupName, Set<String> allGroupNames) {
-    AddressGroup group =
-        getAddressGroup(groupName)
-            .orElseThrow(
-                () ->
-                    new NoSuchElementException(
-                        String.format(
-                            "Group name '%s' does not exist in ReferenceBook '%s'",
-                            groupName, getName())));
     allGroupNames.add(groupName);
-    for (String childName : group.getChildGroupNames()) {
+    // get() is safe because the constructor checks for dangling names
+    for (String childName : getAddressGroup(groupName).get().getChildGroupNames()) {
       if (!allGroupNames.contains(childName)) {
         addGroupAndDescendantNames(childName, allGroupNames);
       }

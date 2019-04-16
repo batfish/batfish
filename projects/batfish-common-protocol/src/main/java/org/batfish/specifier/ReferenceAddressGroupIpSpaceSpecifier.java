@@ -67,7 +67,7 @@ public final class ReferenceAddressGroupIpSpaceSpecifier implements IpSpaceSpeci
                 .orElseThrow(
                     () -> new NoSuchElementException("ReferenceBook '" + bookName + "' not found"))
                 .getAddressesRecursive(addressGroupName).stream()
-                .map(add -> new IpWildcard(add).toIpSpace())
+                .map(IpWildcard::toIpSpace)
                 .collect(Collectors.toList())),
         EmptyIpSpace.INSTANCE);
   }

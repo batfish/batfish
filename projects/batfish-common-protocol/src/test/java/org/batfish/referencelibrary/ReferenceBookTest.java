@@ -14,6 +14,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.IpWildcard;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -150,6 +151,8 @@ public class ReferenceBookTest {
                     new AddressGroup("c", null, null)))
             .build();
     // should include addresses from a and b; no addresses in c shouldn't matter
-    assertThat(book.getAddressesRecursive("a"), equalTo(ImmutableSet.of("1.1.1.1", "2.2.2.2")));
+    assertThat(
+        book.getAddressesRecursive("a"),
+        equalTo(ImmutableSet.of(new IpWildcard("1.1.1.1"), new IpWildcard("2.2.2.2"))));
   }
 }
