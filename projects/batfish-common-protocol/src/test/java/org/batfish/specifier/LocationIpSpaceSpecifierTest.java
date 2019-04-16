@@ -1,6 +1,12 @@
 package org.batfish.specifier;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
+
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import org.batfish.datamodel.EmptyIpSpace;
+import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -13,8 +19,10 @@ public class LocationIpSpaceSpecifierTest {
     MockSpecifierContext ctxt = MockSpecifierContext.builder().build();
     IpSpaceSpecifier specifier =
         new LocationIpSpaceSpecifier(new MockLocationSpecifier(ImmutableSet.of()));
-    _expectedException.expect(IllegalArgumentException.class);
-    _expectedException.expectMessage("No such locations");
-    specifier.resolve(ImmutableSet.of(), ctxt);
+    assertThat(
+        specifier.resolve(ImmutableSet.of(), ctxt),
+        equalTo(
+            IpSpaceAssignment.of(
+                ImmutableList.of(new Entry(EmptyIpSpace.INSTANCE, ImmutableSet.of())))));
   }
 }
