@@ -339,10 +339,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       Builder<?, ?> neighbor;
       Long remoteAs = ig.getType() == BgpGroupType.INTERNAL ? ig.getLocalAs() : ig.getPeerAs();
       if (ig.getDynamic()) {
-        neighbor =
-            BgpPassivePeerConfig.builder()
-                .setPeerPrefix(prefix)
-                .setRemoteAs(ImmutableList.of(remoteAs));
+        neighbor = BgpPassivePeerConfig.builder().setPeerPrefix(prefix).setRemoteAs(remoteAs);
       } else {
         neighbor =
             BgpActivePeerConfig.builder().setPeerAddress(prefix.getStartIp()).setRemoteAs(remoteAs);

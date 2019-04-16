@@ -204,7 +204,7 @@
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.3.4~",
                   "localAs" : 1,
                   "peerAddress" : "1.2.3.4",
-                  "remoteAs" : 1,
+                  "remoteAsns" : "1",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 }
@@ -2955,9 +2955,7 @@
                   "localAs" : 1,
                   "localIp" : "1.1.1.1",
                   "peerPrefix" : "10.1.1.0/24",
-                  "remoteAs" : [
-                    2
-                  ],
+                  "remoteAsns" : "2",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 }
@@ -3269,7 +3267,7 @@
                   "importPolicy" : "~PEER_IMPORT_POLICY:1.1.1.1/32~",
                   "localAs" : 1,
                   "peerAddress" : "1.1.1.1",
-                  "remoteAs" : 2,
+                  "remoteAsns" : "2",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 }
@@ -3542,7 +3540,7 @@
                   "group" : "as1",
                   "localAs" : 1,
                   "peerAddress" : "1.10.1.1",
-                  "remoteAs" : 1,
+                  "remoteAsns" : "1",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 },
@@ -3563,7 +3561,7 @@
                   "group" : "as2",
                   "localAs" : 1,
                   "peerAddress" : "10.12.11.2",
-                  "remoteAs" : 2,
+                  "remoteAsns" : "2",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 }
@@ -3973,7 +3971,7 @@
                   "group" : "EBGP-PEER-SVL-PNI",
                   "localAs" : 2152,
                   "peerAddress" : "64.57.21.1",
-                  "remoteAs" : 11164,
+                  "remoteAsns" : "11164",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 }
@@ -6840,7 +6838,7 @@
                   ],
                   "localAs" : 1,
                   "peerAddress" : "10.0.1.2",
-                  "remoteAs" : 65001,
+                  "remoteAsns" : "65001",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 }
@@ -8797,13 +8795,7 @@
                   "localAs" : 12076,
                   "localIp" : "AUTO/NONE(-1l)",
                   "peerPrefix" : "10.10.20.0/24",
-                  "remoteAs" : [
-                    65001,
-                    65002,
-                    65003,
-                    65004,
-                    65005
-                  ],
+                  "remoteAsns" : "65001-65005",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 }
@@ -10656,7 +10648,7 @@
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.2.2.2~",
                   "localAs" : 65500,
                   "peerAddress" : "2.2.2.2",
-                  "remoteAs" : 6600,
+                  "remoteAsns" : "6600",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 }
@@ -14604,7 +14596,7 @@
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:1:3.3.3.3~",
                   "localAs" : 1,
                   "peerAddress" : "3.3.3.3",
-                  "remoteAs" : 2,
+                  "remoteAsns" : "2",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 }
@@ -14951,7 +14943,7 @@
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:/Common/my_bgp:192.0.2.1~",
                   "localAs" : 123,
                   "peerAddress" : "192.0.2.1",
-                  "remoteAs" : 456,
+                  "remoteAsns" : "456",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 }
@@ -15372,7 +15364,7 @@
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:65500:10.0.0.1~",
                   "localAs" : 65500,
                   "peerAddress" : "10.0.0.1",
-                  "remoteAs" : 65501,
+                  "remoteAsns" : "65501",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 }
@@ -17835,7 +17827,7 @@
                   "group" : "foobar-iBGP_ipv4",
                   "localAs" : 5555,
                   "peerAddress" : "1.2.1.1",
-                  "remoteAs" : 5555,
+                  "remoteAsns" : "5555",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 },
@@ -17857,7 +17849,7 @@
                   "group" : "foobar-iBGP_ipv4",
                   "localAs" : 5555,
                   "peerAddress" : "1.2.1.2",
-                  "remoteAs" : 5555,
+                  "remoteAsns" : "5555",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 },
@@ -17879,7 +17871,7 @@
                   "group" : "foobar-iBGP_border_ipv4",
                   "localAs" : 5555,
                   "peerAddress" : "1.2.1.3",
-                  "remoteAs" : 5555,
+                  "remoteAsns" : "5555",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 }
@@ -19819,7 +19811,7 @@
                   "importPolicy" : "~PEER_IMPORT_POLICY:3.4.5.7/32~",
                   "localAs" : 1,
                   "peerAddress" : "3.4.5.7",
-                  "remoteAs" : 12345,
+                  "remoteAsns" : "12345",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 }
@@ -20203,7 +20195,7 @@
                   "importPolicy" : "~PEER_IMPORT_POLICY:172.16.2.1/32~",
                   "localAs" : 65533,
                   "peerAddress" : "172.16.2.1",
-                  "remoteAs" : 65530,
+                  "remoteAsns" : "65530",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 },
@@ -20229,7 +20221,7 @@
                   "importPolicy" : "~PEER_IMPORT_POLICY:172.16.2.2/32~",
                   "localAs" : 65533,
                   "peerAddress" : "172.16.2.2",
-                  "remoteAs" : 65530,
+                  "remoteAsns" : "65530",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 }
@@ -25861,7 +25853,7 @@
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~",
                   "localAs" : 1,
                   "peerAddress" : "1.1.1.1",
-                  "remoteAs" : 1,
+                  "remoteAsns" : "1",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 },
@@ -25882,7 +25874,7 @@
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:3.3.3.3~",
                   "localAs" : 1,
                   "peerAddress" : "3.3.3.3",
-                  "remoteAs" : 3,
+                  "remoteAsns" : "3",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 },
@@ -25903,7 +25895,7 @@
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:4.4.4.4~",
                   "localAs" : 1,
                   "peerAddress" : "4.4.4.4",
-                  "remoteAs" : 4,
+                  "remoteAsns" : "4",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 }
@@ -26672,7 +26664,7 @@
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.0.0.0~",
                   "localAs" : 2,
                   "peerAddress" : "10.0.0.0",
-                  "remoteAs" : 1,
+                  "remoteAsns" : "1",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 }
@@ -28828,9 +28820,7 @@
                   "group" : "RAAS",
                   "localAs" : 64601,
                   "peerPrefix" : "10.98.25.0/25",
-                  "remoteAs" : [
-                    65511
-                  ],
+                  "remoteAsns" : "65511",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 }
@@ -28857,7 +28847,7 @@
                   "group" : "SPINE",
                   "localAs" : 64601,
                   "peerAddress" : "100.93.100.16",
-                  "remoteAs" : 64802,
+                  "remoteAsns" : "64802",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 }
@@ -29284,7 +29274,7 @@
                   ],
                   "localAs" : 1,
                   "peerAddress" : "1.1.1.1",
-                  "remoteAs" : 2,
+                  "remoteAsns" : "2",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 }
@@ -34633,7 +34623,7 @@
                   "localAs" : 65002,
                   "localIp" : "172.16.3.1",
                   "peerAddress" : "172.16.3.2",
-                  "remoteAs" : 65003,
+                  "remoteAsns" : "65003",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 },
@@ -34662,7 +34652,7 @@
                   "localAs" : 65002,
                   "localIp" : "172.16.5.1",
                   "peerAddress" : "172.16.5.2",
-                  "remoteAs" : 65004,
+                  "remoteAsns" : "65004",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 },
@@ -34691,7 +34681,7 @@
                   "localAs" : 65002,
                   "localIp" : "172.16.7.1",
                   "peerAddress" : "172.16.7.2",
-                  "remoteAs" : 65005,
+                  "remoteAsns" : "65005",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 },
@@ -34717,7 +34707,7 @@
                   "localAs" : 65500,
                   "localIp" : "192.168.1.2",
                   "peerAddress" : "192.168.1.1",
-                  "remoteAs" : 65500,
+                  "remoteAsns" : "65500",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 },
@@ -34743,7 +34733,7 @@
                   "localAs" : 65500,
                   "localIp" : "192.168.1.2",
                   "peerAddress" : "192.168.1.3",
-                  "remoteAs" : 65500,
+                  "remoteAsns" : "65500",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 },
@@ -34769,7 +34759,7 @@
                   "localAs" : 65500,
                   "localIp" : "192.168.1.2",
                   "peerAddress" : "192.168.1.5",
-                  "remoteAs" : 65500,
+                  "remoteAsns" : "65500",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 },
@@ -34795,7 +34785,7 @@
                   "localAs" : 65500,
                   "localIp" : "192.168.1.2",
                   "peerAddress" : "192.168.1.44",
-                  "remoteAs" : 65500,
+                  "remoteAsns" : "65500",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 }

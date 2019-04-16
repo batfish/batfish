@@ -25,14 +25,13 @@ public final class QuestionResource {
   private final String _questionName;
 
   public QuestionResource(String network, @Nullable String analysis, String questionName) {
-    checkQuestionExists(network, analysis, questionName);
     _analysis = analysis;
     _network = network;
     _questionName = questionName;
   }
 
   static void checkQuestionExists(String network, @Nullable String analysis, String question) {
-    if (Main.getWorkMgr().getQuestion(network, question, analysis) == null) {
+    if (!Main.getWorkMgr().checkQuestionExists(network, question, analysis)) {
       throw new NotFoundException(
           String.format(
               "Question '%s' does not exist for network: %s and analysis: %s",
@@ -50,6 +49,7 @@ public final class QuestionResource {
 
   @Path("/answer")
   public AnswerResource getAnswer() {
+    checkQuestionExists(_network, _analysis, _questionName);
     return new AnswerResource(_network, _analysis, _questionName);
   }
 

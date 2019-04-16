@@ -115,16 +115,18 @@ public final class TracerouteAnswererHelper {
               .filter(e -> !e.getIpSpace().equals(EmptyIpSpace.INSTANCE))
               .collect(ImmutableList.toImmutableList());
       checkArgument(
-          !nonEmptyIpSpaces.isEmpty(), "At least one source IP is required, could not resolve any");
+          !nonEmptyIpSpaces.isEmpty(),
+          "Specified source '%s' could not be resolved to any IP.",
+          headerSrcIp);
       checkArgument(
           nonEmptyIpSpaces.size() == 1,
-          "Specified source IP %s resolves to more than one location/IP: %s",
+          "Specified source '%s' resolves to more than one location/IP: %s",
           headerSrcIp,
           nonEmptyIpSpaces);
       IpSpace space = srcIps.getEntries().iterator().next().getIpSpace();
       Optional<Ip> srcIp = _ipSpaceRepresentative.getRepresentative(space);
       // Extra check to ensure that we actually got an IP
-      checkArgument(srcIp.isPresent(), "At least one source IP is required, could not resolve any");
+      checkArgument(srcIp.isPresent(), "Specified source '%s' has no IPs", headerSrcIp);
       builder.setSrcIp(srcIp.get());
     } else {
       // Use from source location to determine header Src IP
@@ -156,11 +158,11 @@ public final class TracerouteAnswererHelper {
     IpSpaceAssignment dstIps = dstIpSpecifier.resolve(ImmutableSet.of(), _specifierContext);
     checkArgument(
         dstIps.getEntries().size() == 1,
-        "Specified destination: %s, resolves to more than one IP",
+        "Specified destination '%s' resolves to more than one IP",
         headerDstIp);
     IpSpace space = dstIps.getEntries().iterator().next().getIpSpace();
     Optional<Ip> dstIp = _ipSpaceRepresentative.getRepresentative(space);
-    checkArgument(dstIp.isPresent(), "At least one destination IP is required");
+    checkArgument(dstIp.isPresent(), "Specified destination '%s' has no IPs.", headerDstIp);
     builder.setDstIp(dstIp.get());
   }
 

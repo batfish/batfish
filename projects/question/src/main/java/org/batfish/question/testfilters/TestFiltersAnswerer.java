@@ -283,14 +283,16 @@ public class TestFiltersAnswerer extends Answerer {
               .collect(ImmutableList.toImmutableList());
       checkArgument(
           nonEmptyIpSpaces.size() > 0,
-          "At least one destination IP is required, could not resolve any");
+          "Specified destination '%s' could not be resolved to any IP.",
+          headerDstIp);
       checkArgument(
           nonEmptyIpSpaces.size() == 1,
-          "Specified destination: %s, resolves to more than one IP",
-          headerDstIp);
+          "Specified destination '%s' resolves to more than one location/IP: %s",
+          headerDstIp,
+          nonEmptyIpSpaces);
       IpSpace space = nonEmptyIpSpaces.iterator().next().getIpSpace();
       Optional<Ip> dstIp = _ipSpaceRepresentative.getRepresentative(space);
-      checkArgument(dstIp.isPresent(), "Specified destination: %s has no IPs", headerDstIp);
+      checkArgument(dstIp.isPresent(), "Specified destination '%s' has no IPs", headerDstIp);
       builder.setDstIp(dstIp.get());
     } else {
       builder.setDstIp(DEFAULT_IP_ADDRESS);
@@ -315,16 +317,18 @@ public class TestFiltersAnswerer extends Answerer {
               .filter(e -> !e.getIpSpace().equals(EmptyIpSpace.INSTANCE))
               .collect(ImmutableList.toImmutableList());
       checkArgument(
-          nonEmptyIpSpaces.size() > 0, "At least one source IP is required, could not resolve any");
+          nonEmptyIpSpaces.size() > 0,
+          "Specified source '%s' could not be resolve to any IP.",
+          headerSrcIp);
       checkArgument(
           nonEmptyIpSpaces.size() == 1,
-          "Specified source IP %s resolves to more than one location/IP: %s",
+          "Specified source '%s' resolves to more than one location/IP: %s",
           headerSrcIp,
           nonEmptyIpSpaces);
       // Pick a representative from the remaining space
       IpSpace space = nonEmptyIpSpaces.iterator().next().getIpSpace();
       Optional<Ip> srcIp = _ipSpaceRepresentative.getRepresentative(space);
-      checkArgument(srcIp.isPresent(), "Specified source: %s has no IPs", headerSrcIp);
+      checkArgument(srcIp.isPresent(), "Specified source '%s' has no IPs", headerSrcIp);
       builder.setSrcIp(srcIp.get());
     } else if (srcLocation == null) {
       builder.setSrcIp(DEFAULT_IP_ADDRESS);

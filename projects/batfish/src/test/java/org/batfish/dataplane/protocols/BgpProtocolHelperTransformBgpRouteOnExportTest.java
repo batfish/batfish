@@ -166,7 +166,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
           _nf.bgpNeighborBuilder()
               .setSendCommunity(true)
               .setLocalAs(AS1)
-              .setRemoteAs(_fromNeighbor.getRemoteAs())
+              .setRemoteAsns(_fromNeighbor.getRemoteAsns())
               .build();
       transformedAggregateRoute = runTransformBgpRoutePreExport(aggRoute);
       transformedBgpRoute = runTransformBgpRoutePreExport(bgpRoute);
