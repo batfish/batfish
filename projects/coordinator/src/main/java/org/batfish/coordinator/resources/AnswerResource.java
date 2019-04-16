@@ -1,20 +1,17 @@
 package org.batfish.coordinator.resources;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
-import com.google.common.base.Throwables;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.GET;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import org.batfish.coordinator.Main;
 import org.batfish.datamodel.answers.Answer;
 
@@ -39,32 +36,21 @@ public final class AnswerResource {
   public Response getAnswer(
       @Nullable @QueryParam("snapshot") String snapshot,
       @Nullable @QueryParam("referenceSnapshot") String referenceSnapshot) {
-    checkNotNull(snapshot, "Snapshot must be specified to fetch answer");
     // return Response.ok("got answer " + snapshot).build();
     try {
+      checkArgument(snapshot != null, "Snapshot must be specified to fetch question answer");
       Answer ans =
           Main.getWorkMgr()
               .getAnswer(_network, snapshot, _questionName, referenceSnapshot, _analysis);
       return Response.ok().entity(ans).type(MediaType.APPLICATION_JSON).build();
     } catch (FileNotFoundException e) {
-      throw new NotFoundException(
-          String.format(
-              "Answer not found for question %s on network: %s, snapshot: %s, referenceSnapshot: %s, analysis: %s\n%s",
-              _questionName,
-              _network,
-              snapshot,
-              referenceSnapshot,
-              _analysis,
-              Throwables.getStackTraceAsString(e)));
+      return Response.status(Status.NOT_FOUND).entity(e.getMessage()).build();
     } catch (IllegalArgumentException e) {
-      throw new BadRequestException(
-          String.format(
-              "Bad snapshot or referenceSnapshot: snapshot: %s, referenceSnapshot: %s\n%s",
-              snapshot, referenceSnapshot, Throwables.getStackTraceAsString(e)));
+      return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
     } catch (IOException e) {
       // Other inputs should be validated by this point, don't expect to run into this exception
       // under normal circumstances
-      throw new InternalServerErrorException(Throwables.getStackTraceAsString(e));
+      return Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
     }
   }
 }

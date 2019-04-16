@@ -826,7 +826,10 @@ public class WorkMgr extends AbstractCoordinator {
       throws IOException {
     String ansString = loadAnswer(network, snapshot, question, referenceSnapshot, analysis);
     if (ansString == null) {
-      throw new FileNotFoundException(String.format("Answer not found for question %s", question));
+      throw new FileNotFoundException(
+          String.format(
+              "Answer not found for question %s on network: %s, snapshot: %s, referenceSnapshot: %s, analysis: %s",
+              question, network, snapshot, referenceSnapshot, analysis));
     } else {
       return BatfishObjectMapper.mapper().readValue(ansString, Answer.class);
     }

@@ -57,7 +57,7 @@ public final class QuestionResource {
   public @Nonnull Response getQuestion() {
     String result = Main.getWorkMgr().getQuestion(_network, _questionName, _analysis);
     if (result == null) {
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND).entity("question not found").build();
     }
     return Response.ok().entity(result).build();
   }
