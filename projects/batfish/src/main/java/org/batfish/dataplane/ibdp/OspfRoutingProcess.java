@@ -10,6 +10,7 @@ import com.google.common.collect.Streams;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -118,6 +119,12 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    */
   @Nonnull private RibDelta<OspfExternalRoute> _activatedGeneratedRoutes;
 
+  /**
+   * If this router is an ABR, keep track neighbors into which a default route was injected, since
+   * the default route needs to be injected only once
+   */
+  @Nonnull private Set<OspfNeighborConfigId> _neighborsWhereDefaultIARouteWasInjected;
+
   OspfRoutingProcess(
       OspfProcess process, String vrfName, Configuration configuration, OspfTopology topology) {
     _c = configuration;
@@ -154,6 +161,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     _initializationDelta = RibDelta.empty();
     _queuedForRedistribution = new ExternalDelta();
     _activatedGeneratedRoutes = RibDelta.empty();
+    _neighborsWhereDefaultIARouteWasInjected = new HashSet<>(0);
   }
 
   @Override
@@ -786,9 +794,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                     filterList,
                     nextHopIp,
                     _process.getMaxMetricSummaryNetworks()),
-                computeDefaultInterAreaRouteToInject(areaConfig, nextHopIp)
-                    .map(Stream::of)
-                    .orElse(Stream.empty()))
+                computeDefaultInterAreaRouteToInject(edgeId, areaConfig, nextHopIp))
             .collect(ImmutableList.toImmutableList()));
   }
 
@@ -877,6 +883,30 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   /**
    * Return a default route if one needs to be injected from an ABR to a neighbor.
    *
+   * <p>Keeps track of default routes already injected (per neighbor) to avoid cyclic computation
+   *
+   * @param edge the edge whose tail node is the neighbor in question
+   * @param areaConfig {@link OspfArea} for which the ABR should consider injecting a route into
+   * @param nextHopIp the next hop IP to use for the generated route
+   * @return an Optional containing the default route. May be empty if no route needs to be injected
+   *     into the given area.
+   */
+  @VisibleForTesting
+  Stream<RouteAdvertisement<OspfInterAreaRoute>> computeDefaultInterAreaRouteToInject(
+      OspfTopology.EdgeId edge, OspfArea areaConfig, Ip nextHopIp) {
+    if (_neighborsWhereDefaultIARouteWasInjected.contains(edge.getTail())) {
+      return Stream.empty();
+    }
+    _neighborsWhereDefaultIARouteWasInjected.add(edge.getTail());
+    return computeDefaultInterAreaRouteToInject(areaConfig, nextHopIp)
+        .map(Stream::of)
+        .orElse(Stream.empty());
+  }
+
+  /**
+   * Return a default route if one can be injected from an ABR into a given area, based on area
+   * settings
+   *
    * @param areaConfig {@link OspfArea} for which the ABR should consider injecting a route into
    * @param nextHopIp the next hop IP to use for the generated route
    * @return an Optional containing the default route. May be empty if no route needs to be injected
@@ -886,24 +916,27 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   @VisibleForTesting
   static Optional<RouteAdvertisement<OspfInterAreaRoute>> computeDefaultInterAreaRouteToInject(
       OspfArea areaConfig, Ip nextHopIp) {
-    return areaConfig.getStubType() == StubType.STUB
-            || (areaConfig.getStubType() == StubType.NSSA
-                && areaConfig.getNssa().getDefaultOriginateType()
-                    == OspfDefaultOriginateType.INTER_AREA)
-        ? Optional.of(
-            RouteAdvertisement.<OspfInterAreaRoute>builder()
-                .setReason(Reason.ADD)
-                .setRoute(
-                    OspfInterAreaRoute.builder()
-                        .setNetwork(Prefix.ZERO)
-                        .setNextHopIp(nextHopIp)
-                        // Intentionally large. Must be correctly set on the receiver's side
-                        .setAdmin(Integer.MAX_VALUE)
-                        .setMetric(areaConfig.getMetricOfDefaultRoute())
-                        .setArea(areaConfig.getAreaNumber())
-                        .build())
-                .build())
-        : Optional.empty();
+
+    if (areaConfig.getStubType() != StubType.STUB
+        && (areaConfig.getStubType() != StubType.NSSA
+            || areaConfig.getNssa().getDefaultOriginateType()
+                != OspfDefaultOriginateType.INTER_AREA)) {
+      return Optional.empty();
+    }
+
+    return Optional.of(
+        RouteAdvertisement.<OspfInterAreaRoute>builder()
+            .setReason(Reason.ADD)
+            .setRoute(
+                OspfInterAreaRoute.builder()
+                    .setNetwork(Prefix.ZERO)
+                    .setNextHopIp(nextHopIp)
+                    // Intentionally large. Must be correctly set on the receiver's side
+                    .setAdmin(Integer.MAX_VALUE)
+                    .setMetric(areaConfig.getMetricOfDefaultRoute())
+                    .setArea(areaConfig.getAreaNumber())
+                    .build())
+            .build());
   }
 
   /**

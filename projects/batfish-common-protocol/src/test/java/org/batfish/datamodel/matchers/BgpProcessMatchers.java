@@ -3,14 +3,18 @@ package org.batfish.datamodel.matchers;
 import static org.hamcrest.Matchers.equalTo;
 
 import java.util.Map;
+import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasActiveNeighbor;
+import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasInterfaceNeighbor;
+import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasInterfaceNeighbors;
 import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasMultipathEbgp;
 import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasMultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasMultipathIbgp;
@@ -21,6 +25,24 @@ import org.hamcrest.Matcher;
 
 /** {@link Matcher Hamcrest matchers} for {@link BgpProcess}. */
 public class BgpProcessMatchers {
+
+  /**
+   * Provides a matcher that matches if the BGP process's interfaceNeighbor with the specified
+   * {@code peerInterface} is matched by the provided {@code subMatcher}.
+   */
+  public static Matcher<BgpProcess> hasInterfaceNeighbor(
+      @Nonnull String peerInterface, @Nonnull Matcher<? super BgpUnnumberedPeerConfig> subMatcher) {
+    return new HasInterfaceNeighbor(peerInterface, subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the BGP process's interfaceNeighbors are matched by the
+   * provided {@code subMatcher}.
+   */
+  public static Matcher<BgpProcess> hasInterfaceNeighbors(
+      @Nonnull Matcher<? super SortedMap<String, BgpUnnumberedPeerConfig>> subMatcher) {
+    return new HasInterfaceNeighbors(subMatcher);
+  }
 
   /**
    * Provides a matcher that matches if the provided {@code value} matches whether the BGP process
