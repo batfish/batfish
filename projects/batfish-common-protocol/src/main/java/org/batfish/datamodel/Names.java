@@ -24,17 +24,12 @@ public final class Names {
    * org.batfish.specifier.parboiled.CommonParser are also updated
    */
   public enum Type {
-    /** {@link org.batfish.role.NodeRole} */
-    NODE_ROLE(
-        "^[0-9a-zA-Z_][-\\w]*$",
-        "start with an alphanumeric letter or underscore, and additionally only have '-'"),
     /**
      * All names inside {@link org.batfish.referencelibrary.ReferenceLibrary} and {@link
-     * org.batfish.role.NodeRolesData} except {@link org.batfish.role.NodeRole}
+     * org.batfish.role.NodeRolesData}.
      */
     REFERENCE_OBJECT(
-        "^[a-zA-Z_][-\\w]*$",
-        "start with an alphabetic letter or underscore, and only have digits or '-'"),
+        "^\\p{ASCII}+$", "be non-empty and contain only (non-extended) ASCII characters"),
     /** Column names in {@link org.batfish.datamodel.table.ColumnMetadata} */
     TABLE_COLUMN(
         "^[a-zA-Z0-9_~][-/\\w\\.:~@]*$",

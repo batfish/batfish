@@ -42,7 +42,7 @@ import static org.batfish.client.Command.SHOW_SNAPSHOT;
 import static org.batfish.client.Command.TEST;
 import static org.batfish.client.Command.UPLOAD_CUSTOM_OBJECT;
 import static org.batfish.common.CoordConsts.DEFAULT_API_KEY;
-import static org.batfish.datamodel.questions.Variable.Type.ADDRESS_GROUP_AND_BOOK;
+import static org.batfish.datamodel.questions.Variable.Type.ADDRESS_GROUP_NAME;
 import static org.batfish.datamodel.questions.Variable.Type.APPLICATION_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.BGP_SESSION_STATUS;
 import static org.batfish.datamodel.questions.Variable.Type.BGP_SESSION_TYPE;
@@ -57,7 +57,7 @@ import static org.batfish.datamodel.questions.Variable.Type.FLOW_STATE;
 import static org.batfish.datamodel.questions.Variable.Type.INTEGER;
 import static org.batfish.datamodel.questions.Variable.Type.INTERFACE;
 import static org.batfish.datamodel.questions.Variable.Type.INTERFACES_SPEC;
-import static org.batfish.datamodel.questions.Variable.Type.INTERFACE_GROUP_AND_BOOK;
+import static org.batfish.datamodel.questions.Variable.Type.INTERFACE_GROUP_NAME;
 import static org.batfish.datamodel.questions.Variable.Type.INTERFACE_NAME;
 import static org.batfish.datamodel.questions.Variable.Type.INTERFACE_TYPE;
 import static org.batfish.datamodel.questions.Variable.Type.IP;
@@ -70,7 +70,7 @@ import static org.batfish.datamodel.questions.Variable.Type.JSON_PATH;
 import static org.batfish.datamodel.questions.Variable.Type.JSON_PATH_REGEX;
 import static org.batfish.datamodel.questions.Variable.Type.LOCATION_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.LONG;
-import static org.batfish.datamodel.questions.Variable.Type.NODE_ROLE_DIMENSION;
+import static org.batfish.datamodel.questions.Variable.Type.NODE_ROLE_DIMENSION_NAME;
 import static org.batfish.datamodel.questions.Variable.Type.PREFIX;
 import static org.batfish.datamodel.questions.Variable.Type.PREFIX_RANGE;
 import static org.batfish.datamodel.questions.Variable.Type.PROTOCOL;
@@ -444,9 +444,9 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidAddressGroupAndBook() throws IOException {
+  public void testInvalidAddressGroupName() throws IOException {
     String input = "\"addressGroup\""; // no book name
-    Type expectedType = ADDRESS_GROUP_AND_BOOK;
+    Type expectedType = ADDRESS_GROUP_NAME;
     String expectedMessage =
         String.format(
             "A Batfish %s must be a JSON string with two comma-separated values",
@@ -573,9 +573,9 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidInterfaceGroupAndBook() throws IOException {
+  public void testInvalidInterfaceName() throws IOException {
     String input = "\"interfaceGroup\""; // no book name
-    Type expectedType = INTERFACE_GROUP_AND_BOOK;
+    Type expectedType = INTERFACE_GROUP_NAME;
     String expectedMessage =
         String.format(
             "A Batfish %s must be a JSON string with two comma-separated values",
@@ -736,7 +736,7 @@ public final class ClientTest {
   @Test
   public void testInvalidNodeRoleDimensionValue() throws IOException {
     String input = "5";
-    Type expectedType = NODE_ROLE_DIMENSION;
+    Type expectedType = NODE_ROLE_DIMENSION_NAME;
     String expectedMessage =
         String.format("A Batfish %s must be a JSON string", expectedType.getName());
     validateTypeWithInvalidInput(input, expectedMessage, expectedType);
@@ -1541,10 +1541,10 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidAddressGroupAndBook() throws IOException {
+  public void testValidAddressGroupName() throws IOException {
     JsonNode addressGroupNode = _mapper.readTree("\"addressGroup, referenceBook\"");
     Variable variable = new Variable();
-    variable.setType(ADDRESS_GROUP_AND_BOOK);
+    variable.setType(ADDRESS_GROUP_NAME);
     Client.validateType(addressGroupNode, variable);
   }
 
@@ -1646,10 +1646,10 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidInterfaceGroupAndBook() throws IOException {
+  public void testValidInterfaceGroupName() throws IOException {
     JsonNode interfaceGroupNode = _mapper.readTree("\"interfaceGroup, referenceBook\"");
     Variable variable = new Variable();
-    variable.setType(INTERFACE_GROUP_AND_BOOK);
+    variable.setType(INTERFACE_GROUP_NAME);
     Client.validateType(interfaceGroupNode, variable);
   }
 
@@ -1776,7 +1776,7 @@ public final class ClientTest {
   public void testValidNodeRoleDimensionValue() throws IOException {
     JsonNode nodeRoleDimensionNode = _mapper.readTree("\"roleDimension\"");
     Variable variable = new Variable();
-    variable.setType(NODE_ROLE_DIMENSION);
+    variable.setType(NODE_ROLE_DIMENSION_NAME);
     Client.validateType(nodeRoleDimensionNode, variable);
   }
 

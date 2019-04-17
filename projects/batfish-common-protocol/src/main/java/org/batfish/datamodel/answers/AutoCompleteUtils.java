@@ -32,6 +32,7 @@ import org.batfish.datamodel.questions.NamedStructureSpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.OspfPropertySpecifier;
 import org.batfish.datamodel.questions.Variable;
+import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
@@ -74,18 +75,22 @@ public final class AutoCompleteUtils {
 
     switch (completionType) {
       case ADDRESS_GROUP_AND_BOOK:
+        // deprecated -- left for now for backward compatibility
+        suggestions = ImmutableList.of();
+        break;
+      case ADDRESS_GROUP_NAME:
         {
           checkReferenceLibrary(referenceLibrary, network);
-          ImmutableSet<StringPair> pairs =
+          ImmutableSet<String> groups =
               referenceLibrary.getReferenceBooks().stream()
                   .map(
                       b ->
                           b.getAddressGroups().stream()
-                              .map(ag -> new StringPair(ag.getName(), b.getName()))
+                              .map(ag -> ag.getName())
                               .collect(ImmutableSet.toImmutableSet()))
                   .flatMap(Collection::stream)
                   .collect(ImmutableSet.toImmutableSet());
-          suggestions = stringPairAutoComplete(query, pairs);
+          suggestions = stringAutoComplete(query, groups);
           break;
         }
       case APPLICATION_SPEC:
@@ -184,16 +189,17 @@ public final class AutoCompleteUtils {
           break;
         }
       case INTERFACE_GROUP_AND_BOOK:
+        // deprecated -- left for now for backward compatibility
+        suggestions = ImmutableList.of();
+        break;
+      case INTERFACE_GROUP_NAME:
         {
           checkReferenceLibrary(referenceLibrary, network);
-          ImmutableSet<StringPair> pairs =
+          ImmutableSet<String> groups =
               referenceLibrary.getReferenceBooks().stream()
-                  .flatMap(
-                      b ->
-                          b.getInterfaceGroups().stream()
-                              .map(ag -> new StringPair(ag.getName(), b.getName())))
+                  .flatMap(b -> b.getInterfaceGroups().stream().map(g -> g.getName()))
                   .collect(ImmutableSet.toImmutableSet());
-          suggestions = stringPairAutoComplete(query, pairs);
+          suggestions = stringAutoComplete(query, groups);
           break;
         }
       case INTERFACE_NAME:
@@ -311,25 +317,32 @@ public final class AutoCompleteUtils {
           break;
         }
       case NODE_ROLE_AND_DIMENSION:
-        {
-          checkNodeRolesData(nodeRolesData, network);
-          ImmutableSet<StringPair> pairs =
-              nodeRolesData.getNodeRoleDimensions().stream()
-                  .flatMap(
-                      d -> d.getRoles().stream().map(r -> new StringPair(r.getName(), d.getName())))
-                  .collect(ImmutableSet.toImmutableSet());
-          suggestions = stringPairAutoComplete(query, pairs);
-          break;
-        }
+        // deprecated -- left for now for backward compatibility
+        suggestions = ImmutableList.of();
+        break;
       case NODE_ROLE_DIMENSION:
+        // deprecated -- left for now for backward compatibility
+        suggestions = ImmutableList.of();
+        break;
+      case NODE_ROLE_DIMENSION_NAME:
         {
           checkNodeRolesData(nodeRolesData, network);
           suggestions =
-              baseAutoComplete(
+              stringAutoComplete(
                   query,
                   nodeRolesData.getNodeRoleDimensions().stream()
                       .map(NodeRoleDimension::getName)
                       .collect(Collectors.toSet()));
+          break;
+        }
+      case NODE_ROLE_NAME:
+        {
+          checkNodeRolesData(nodeRolesData, network);
+          ImmutableSet<String> roles =
+              nodeRolesData.getNodeRoleDimensions().stream()
+                  .flatMap(d -> d.getRoles().stream().map(r -> r.getName()))
+                  .collect(ImmutableSet.toImmutableSet());
+          suggestions = stringAutoComplete(query, roles);
           break;
         }
       case NODE_SPEC:
@@ -363,6 +376,17 @@ public final class AutoCompleteUtils {
               baseAutoComplete(
                   query,
                   Stream.of(Protocol.values()).map(Protocol::name).collect(Collectors.toSet()));
+          break;
+        }
+      case REFERENCE_BOOK_NAME:
+        {
+          checkReferenceLibrary(referenceLibrary, network);
+          suggestions =
+              stringAutoComplete(
+                  query,
+                  referenceLibrary.getReferenceBooks().stream()
+                      .map(ReferenceBook::getName)
+                      .collect(Collectors.toSet()));
           break;
         }
       case ROUTING_POLICY_NAME:
@@ -457,27 +481,6 @@ public final class AutoCompleteUtils {
     return strings.stream()
         .filter(s -> s.toLowerCase().contains(testQuery))
         .map(s -> new AutocompleteSuggestion(s, false))
-        .collect(ImmutableList.toImmutableList());
-  }
-
-  /**
-   * Returns a list of suggestions based on query over pairs of names (strings).
-   *
-   * <p>The pairs are converted to "a,b" lowercase strings and the query is considered to be a
-   * substring over those strings. We assume that neither "a" not "b" contain whitespace, consistent
-   * with valid names per {@link org.batfish.datamodel.Names.Type#REFERENCE_OBJECT}.
-   */
-  @Nonnull
-  static List<AutocompleteSuggestion> stringPairAutoComplete(
-      @Nullable String query, Set<StringPair> pairs) {
-
-    // remove whitespace from the query
-    String testQuery = query == null ? "" : query.replaceAll("\\s+", "").toLowerCase();
-
-    return pairs.stream()
-        .map(p -> String.join(",", p.s1, p.s2).toLowerCase())
-        .filter(p -> p.contains(testQuery))
-        .map(p -> new AutocompleteSuggestion(p, false))
         .collect(ImmutableList.toImmutableList());
   }
 
