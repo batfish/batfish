@@ -360,12 +360,11 @@ public class OspfRoutingProcessTest {
                 hasReason(ADD))));
 
     // Any subsequent calls for the same edge -- no need to inject default route
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 10; i++) {
       assertThat(
-          _routingProcess
-              .computeDefaultInterAreaRouteToInject(edge, area, nextHopIp)
-              .collect(ImmutableList.toImmutableList()),
-          empty());
+          "No default route to inject",
+          _routingProcess.computeDefaultInterAreaRouteToInject(edge, area, nextHopIp).count(),
+          equalTo(0));
     }
 
     // For a edge with a different tail node, we still get a default route
