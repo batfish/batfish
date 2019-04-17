@@ -293,6 +293,9 @@ public final class F5BigipImishGrammarTest {
         "Ensure next-hop-self is extracted for peer-group",
         vc.getBgpProcesses().get("65501").getPeerGroups().get("pg1").getNextHopSelf());
     assertFalse(
+        "Ensure next-hop-self is non-inherited in VS for ip neighbor",
+        vc.getBgpProcesses().get("65501").getNeighbors().get("192.0.2.2").getNextHopSelf());
+    assertFalse(
         "Ensure next-hop-self is false by default",
         vc.getBgpProcesses().get("65501").getNeighbors().get("192.0.2.3").getNextHopSelf());
   }
