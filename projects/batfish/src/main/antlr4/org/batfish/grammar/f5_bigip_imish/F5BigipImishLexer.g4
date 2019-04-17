@@ -150,6 +150,11 @@ NEIGHBOR
   'neighbor'
 ;
 
+NEXT_HOP_SELF
+:
+  'next-hop-self'
+;
+
 NO
 :
   'no'

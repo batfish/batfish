@@ -47,6 +47,7 @@ rbn_common
 :
   (
     rbn_description
+    | rbn_next_hop_self
     | rbn_null
     | rbn_remote_as
     | rbn_route_map_out
@@ -56,6 +57,11 @@ rbn_common
 rbn_description
 :
   DESCRIPTION text = DESCRIPTION_LINE NEWLINE
+;
+
+rbn_next_hop_self
+:
+  NEXT_HOP_SELF NEWLINE
 ;
 
 rbn_peer_group

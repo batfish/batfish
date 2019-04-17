@@ -28,6 +28,7 @@ import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_neighbor_ipv6Con
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_neighbor_peer_groupContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_redistribute_kernelContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_descriptionContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_next_hop_selfContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_peer_groupContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_peer_group_assignContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_remote_asContext;
@@ -247,6 +248,18 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
       return;
     }
     _currentAbstractNeighbor.setDescription(ctx.text.getText());
+  }
+
+  @Override
+  public void exitRbn_next_hop_self(Rbn_next_hop_selfContext ctx) {
+    if (_currentAbstractNeighbor == null) {
+      _w.redFlag(
+          String.format(
+              "Cannot apply next-hop-self to non-existent neighbor: '%s' in: '%s'",
+              _currentNeighborName, getFullText(ctx.getParent().getParent())));
+      return;
+    }
+    _currentAbstractNeighbor.setNextHopSelf(true);
   }
 
   @Override

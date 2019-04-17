@@ -270,6 +270,21 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
+  public void testBgpNextHopSelfExtraction() {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_bgp_next_hop_self");
+
+    assertTrue(
+        "Ensure next-hop-self is extracted for ip neighbor",
+        vc.getBgpProcesses().get("65501").getNeighbors().get("192.0.2.1").getNextHopSelf());
+    assertTrue(
+        "Ensure next-hop-self is extracted for peer-group",
+        vc.getBgpProcesses().get("65501").getPeerGroups().get("pg1").getNextHopSelf());
+    assertFalse(
+        "Ensure next-hop-self is false by default",
+        vc.getBgpProcesses().get("65501").getNeighbors().get("192.0.2.3").getNextHopSelf());
+  }
+
+  @Test
   public void testBgpProcessConversion() throws IOException {
     String hostname = "f5_bigip_imish_bgp";
     Configuration c = parseConfig(hostname);
