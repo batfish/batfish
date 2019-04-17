@@ -17,13 +17,13 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLi
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.KernelRouteMatchers.isKernelRouteThat;
+import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.representation.f5_bigip.F5BigipConfiguration.computeAccessListRouteFilterName;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_PROCESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.ROUTE_MAP;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -284,14 +284,17 @@ public final class F5BigipImishGrammarTest {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_bgp_next_hop_self");
 
     assertThat(
-        vc.getBgpProcesses().get("65501").getNeighbors().keySet(),
-        containsInAnyOrder("192.0.2.1", "192.0.2.3"));
+        vc.getBgpProcesses().get("65501").getNeighbors(),
+        hasKeys("192.0.2.1", "192.0.2.2", "192.0.2.3"));
     assertTrue(
         "Ensure next-hop-self is extracted for ip neighbor",
         vc.getBgpProcesses().get("65501").getNeighbors().get("192.0.2.1").getNextHopSelf());
     assertTrue(
         "Ensure next-hop-self is extracted for peer-group",
         vc.getBgpProcesses().get("65501").getPeerGroups().get("pg1").getNextHopSelf());
+    assertFalse(
+        "Ensure next-hop-self is non-inherited in VS for ip neighbor",
+        vc.getBgpProcesses().get("65501").getNeighbors().get("192.0.2.2").getNextHopSelf());
     assertFalse(
         "Ensure next-hop-self is false by default",
         vc.getBgpProcesses().get("65501").getNeighbors().get("192.0.2.3").getNextHopSelf());

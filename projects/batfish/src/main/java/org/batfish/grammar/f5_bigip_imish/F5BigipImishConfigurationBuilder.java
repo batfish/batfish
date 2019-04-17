@@ -65,7 +65,15 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   private @Nullable AbstractBgpNeighbor _currentAbstractNeighbor;
   private @Nullable BgpProcess _currentBgpProcess;
   private @Nullable BgpNeighbor _currentNeighbor;
+
+  /**
+   * When entering a bgp neighbor statement, {@code _currentNeighborName} is set to a non-null
+   * value. Iff it refers to a neighbor that already exists, then {@code _currentAbstractNeighbor}
+   * and one of {@code _currentNeighbor} or {@code _currentPeerGroup} are set to that existing
+   * neighbor.
+   */
   private @Nullable String _currentNeighborName;
+
   private @Nullable BgpPeerGroup _currentPeerGroup;
   private @Nullable RouteMapEntry _currentRouteMapEntry;
 
@@ -285,11 +293,18 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
         peerGroupName,
         F5BigipStructureUsage.BGP_NEIGHBOR_PEER_GROUP,
         ctx.name.getStart().getLine());
-    if (_currentNeighbor == null) {
+    boolean ipv4 = false;
+    boolean ipv6 = false;
+    if (Ip.tryParse(_currentNeighborName).isPresent()) {
+      ipv4 = true;
+    } else if (Ip6.tryParse(_currentNeighborName).isPresent()) {
+      ipv6 = true;
+    } else {
+      // should not be possible
       _w.redFlag(
           String.format(
-              "Cannot assign peer-group to non-existent neighbor: '%s' in: '%s'",
-              _currentNeighborName, getFullText(ctx.getParent())));
+              "Unsupported neighbor id: '%s' in: '%s'",
+              _currentNeighborName, getFullText(ctx.getParent().getParent())));
       return;
     }
     if (!_currentBgpProcess.getPeerGroups().containsKey(peerGroupName)) {
@@ -298,6 +313,18 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
               "Cannot assign bgp neighbor to non-existent peer-group: '%s' in: '%s'",
               peerGroupName, getFullText(ctx.getParent())));
       return;
+    }
+    if (_currentNeighbor == null) {
+      _currentNeighbor =
+          _currentBgpProcess.getNeighbors().computeIfAbsent(_currentNeighborName, BgpNeighbor::new);
+      defineStructure(F5BigipStructureType.BGP_NEIGHBOR, _currentNeighborName, ctx.parent);
+      _c.referenceStructure(
+          F5BigipStructureType.BGP_NEIGHBOR,
+          _currentNeighborName,
+          F5BigipStructureUsage.BGP_NEIGHBOR_SELF_REFERENCE,
+          ctx.getStart().getLine());
+      _currentNeighbor.getIpv4AddressFamily().setActivate(ipv4);
+      _currentNeighbor.getIpv6AddressFamily().setActivate(ipv6);
     }
     _currentNeighbor.setPeerGroup(peerGroupName);
   }
