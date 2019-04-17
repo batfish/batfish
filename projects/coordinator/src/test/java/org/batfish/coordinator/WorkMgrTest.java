@@ -996,6 +996,7 @@ public final class WorkMgrTest {
 
     _manager.initNetwork(network, null);
     uploadTestSnapshot(network, snapshot);
+    uploadTestSnapshot(network, referenceSnapshot);
     setupQuestionAndAnswer(network, snapshot, questionName, null, null, referenceSnapshot);
 
     // Confirm we get a not found exception calling getAnswer before the question is answered
