@@ -1465,7 +1465,8 @@ public class VirtualRouter implements Serializable {
       BgpSessionProperties sessionProperties =
           getBgpSessionProperties(bgpTopology, new BgpEdgeId(remoteConfigId, ourConfigId));
       BgpPeerConfig ourBgpConfig = requireNonNull(nc.getBgpPeerConfig(e.getKey().dst()));
-      BgpPeerConfig remoteBgpConfig = requireNonNull(nc.getBgpPeerConfig(e.getKey().src()));
+      // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
+      Ip remoteIp = sessionProperties.getTailIp();
 
       BgpRib targetRib = sessionProperties.isEbgp() ? _ebgpStagingRib : _ibgpStagingRib;
       Builder<AnnotatedRoute<AbstractRoute>> perNeighborDeltaForRibGroups = RibDelta.builder();
@@ -1494,7 +1495,7 @@ public class VirtualRouter implements Serializable {
                 importPolicy.process(
                     remoteRoute,
                     transformedIncomingRouteBuilder,
-                    remoteBgpConfig.getLocalIp(),
+                    remoteIp,
                     ourConfigId.getRemotePeerPrefix(),
                     _name,
                     IN);
@@ -1505,7 +1506,7 @@ public class VirtualRouter implements Serializable {
           _prefixTracer.filtered(
               remoteRoute.getNetwork(),
               ourConfigId.getHostname(),
-              remoteBgpConfig.getLocalIp(),
+              remoteIp,
               remoteConfigId.getVrfName(),
               importPolicyName,
               IN);
@@ -1530,7 +1531,7 @@ public class VirtualRouter implements Serializable {
           _prefixTracer.installed(
               transformedIncomingRoute.getNetwork(),
               remoteConfigId.getHostname(),
-              remoteBgpConfig.getLocalIp(),
+              remoteIp,
               remoteConfigId.getVrfName(),
               importPolicyName);
         }
@@ -2713,6 +2714,8 @@ public class VirtualRouter implements Serializable {
    * @param ourConfig {@link BgpPeerConfig} that sends the route
    * @param remoteConfig {@link BgpPeerConfig} that will be receiving the route
    * @param allNodes all nodes in the network
+   * @param sessionProperties {@link BgpSessionProperties} representing the <em>incoming</em> edge:
+   *     i.e. the edge from {@code remoteConfig} to {@code ourConfig}
    * @return The transformed route as a {@link BgpRoute}, or {@code null} if the route should not be
    *     exported.
    */
@@ -2746,12 +2749,15 @@ public class VirtualRouter implements Serializable {
       return null;
     }
 
+    // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
+    Ip remoteIp = sessionProperties.getTailIp();
+
     // Process transformed outgoing route by the export policy
     boolean shouldExport =
         exportPolicy.process(
             exportCandidate,
             transformedOutgoingRouteBuilder,
-            remoteConfig.getLocalIp(),
+            remoteIp,
             ourConfigId.getRemotePeerPrefix(),
             ourConfigId.getVrfName(),
             Direction.OUT);
@@ -2762,7 +2768,7 @@ public class VirtualRouter implements Serializable {
       _prefixTracer.filtered(
           exportCandidate.getNetwork(),
           requireNonNull(remoteVr).getHostname(),
-          remoteConfig.getLocalIp(),
+          remoteIp,
           remoteConfigId.getVrfName(),
           ourConfig.getExportPolicy(),
           Direction.OUT);
@@ -2778,7 +2784,7 @@ public class VirtualRouter implements Serializable {
     _prefixTracer.sentTo(
         transformedOutgoingRoute.getNetwork(),
         requireNonNull(remoteVr).getHostname(),
-        remoteConfig.getLocalIp(),
+        remoteIp,
         remoteConfigId.getVrfName(),
         ourConfig.getExportPolicy());
 
