@@ -1,5 +1,6 @@
 package org.batfish.grammar;
 
+import static org.batfish.datamodel.ConfigurationFormat.ARISTA;
 import static org.batfish.datamodel.ConfigurationFormat.CADANT;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS_XR;
@@ -20,8 +21,19 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+/** Tests of {@link VendorConfigurationFormatDetector}. */
 @RunWith(JUnit4.class)
 public class VendorConfigurationFormatDetectorTest {
+  @Test
+  public void testArista() {
+    String eosFlash = "! boot system flash:/vEOS-lab.swi\n";
+    String aristaRancid = "!RANCID-CONTENT-TYPE: arista\n";
+
+    for (String fileText : ImmutableList.of(eosFlash, aristaRancid)) {
+      assertThat(identifyConfigurationFormat(fileText), equalTo(ARISTA));
+    }
+  }
+
   @Test
   public void testCadant() {
     String fileText =
