@@ -9,22 +9,22 @@ public final class BgpSessionProperties {
   private final boolean _additionalPaths;
   private final boolean _advertiseExternal;
   private final boolean _advertiseInactive;
-  @Nonnull private final Ip _initiatorIp;
-  @Nonnull private final Ip _listenerIp;
+  @Nonnull private final Ip _tailIp;
+  @Nonnull private final Ip _headIp;
   private final SessionType _sessionType;
 
   private BgpSessionProperties(
       boolean additionalPaths,
       boolean advertiseExternal,
       boolean advertiseInactive,
-      @Nonnull Ip initiatorIp,
-      @Nonnull Ip listenerIp,
+      @Nonnull Ip tailIp,
+      @Nonnull Ip headIp,
       SessionType sessionType) {
     _additionalPaths = additionalPaths;
     _advertiseExternal = advertiseExternal;
     _advertiseInactive = advertiseInactive;
-    _initiatorIp = initiatorIp;
-    _listenerIp = listenerIp;
+    _tailIp = tailIp;
+    _headIp = headIp;
     _sessionType = sessionType;
   }
 
@@ -55,13 +55,13 @@ public final class BgpSessionProperties {
   }
 
   @Nonnull
-  public Ip getInitiatorIp() {
-    return _initiatorIp;
+  public Ip getTailIp() {
+    return _tailIp;
   }
 
   @Nonnull
-  public Ip getListenerIp() {
-    return _listenerIp;
+  public Ip getHeadIp() {
+    return _headIp;
   }
 
   /** Return this session's {@link SessionType}. */

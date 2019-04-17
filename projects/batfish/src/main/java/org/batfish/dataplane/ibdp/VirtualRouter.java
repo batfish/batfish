@@ -1465,8 +1465,8 @@ public class VirtualRouter implements Serializable {
       BgpSessionProperties sessionProperties =
           getBgpSessionProperties(bgpTopology, new BgpEdgeId(remoteConfigId, ourConfigId));
       BgpPeerConfig ourBgpConfig = requireNonNull(nc.getBgpPeerConfig(e.getKey().dst()));
-      // sessionProperties represents the incoming edge, so its fromIp is the remote peer's IP
-      Ip remoteIp = sessionProperties.getFromIp();
+      // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
+      Ip remoteIp = sessionProperties.getTailIp();
 
       BgpRib targetRib = sessionProperties.isEbgp() ? _ebgpStagingRib : _ibgpStagingRib;
       Builder<AnnotatedRoute<AbstractRoute>> perNeighborDeltaForRibGroups = RibDelta.builder();
@@ -2749,8 +2749,8 @@ public class VirtualRouter implements Serializable {
       return null;
     }
 
-    // sessionProperties represents the incoming edge, so its fromIp is the remote peer's IP
-    Ip remoteIp = sessionProperties.getFromIp();
+    // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
+    Ip remoteIp = sessionProperties.getTailIp();
 
     // Process transformed outgoing route by the export policy
     boolean shouldExport =

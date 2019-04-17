@@ -51,8 +51,8 @@ public class BgpProtocolHelper {
 
     BgpRoute.Builder transformedOutgoingRouteBuilder = new BgpRoute.Builder();
 
-    // sessionProperties represents incoming edge, so fromNeighbor's IP is its toIp
-    Ip fromNeighborIp = sessionProperties.getToIp();
+    // sessionProperties represents incoming edge, so fromNeighbor's IP is its headIp
+    Ip fromNeighborIp = sessionProperties.getHeadIp();
 
     // Set the tag
     transformedOutgoingRouteBuilder.setTag(route.getTag());
