@@ -112,6 +112,21 @@ public class BDDReachabilityAnalysis {
     }
   }
 
+  Map<StateExpr, BDD> computeForwardReachableStates(Map<StateExpr, BDD> initialHS) {
+    try (ActiveSpan span =
+        GlobalTracer.get()
+            .buildSpan("BDDReachabilityAnalysis.computeForwardReachableStates")
+            .startActive()) {
+      assert span != null; // avoid unused warning
+      Map<StateExpr, BDD> forwardReachableStates = new LinkedHashMap<>();
+      BDD one = _bddPacket.getFactory().one();
+      _ingressLocationStates.forEach(
+          state -> forwardReachableStates.put(state, initialHS.getOrDefault(state, one)));
+      forwardFixpoint(forwardReachableStates);
+      return ImmutableMap.copyOf(forwardReachableStates);
+    }
+  }
+
   private void backwardFixpoint(Map<StateExpr, BDD> reverseReachable) {
     fixpoint(reverseReachable, Tables.transpose(_forwardEdgeTable), Edge::traverseBackward);
   }
