@@ -2714,8 +2714,8 @@ public class VirtualRouter implements Serializable {
    * @param ourConfig {@link BgpPeerConfig} that sends the route
    * @param remoteConfig {@link BgpPeerConfig} that will be receiving the route
    * @param allNodes all nodes in the network
-   * @param sessionProperties {@link BgpSessionProperties} representing the <em>incoming</em> edge
-   *     on which this route arrived
+   * @param sessionProperties {@link BgpSessionProperties} representing the <em>incoming</em> edge:
+   *     i.e. the edge from {@code remoteConfig} to {@code ourConfig}
    * @return The transformed route as a {@link BgpRoute}, or {@code null} if the route should not be
    *     exported.
    */
