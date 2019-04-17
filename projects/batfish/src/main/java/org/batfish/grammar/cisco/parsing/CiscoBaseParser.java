@@ -2,11 +2,9 @@ package org.batfish.grammar.cisco.parsing;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
-import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.grammar.BatfishParser;
 
 /** Cisco parser base class providing validation functionality on top of {@link BatfishParser}. */
@@ -24,17 +22,17 @@ public abstract class CiscoBaseParser extends BatfishParser {
     return true;
   }
 
-  private @Nullable ConfigurationFormat _format;
+  private boolean _asa;
 
   public CiscoBaseParser(TokenStream input) {
     super(input);
   }
 
   protected boolean isAsa() {
-    return ConfigurationFormat.CISCO_ASA.equals(_format);
+    return _asa;
   }
 
-  public void setFormat(ConfigurationFormat format) {
-    _format = format;
+  public void setAsa(boolean asa) {
+    _asa = asa;
   }
 }
