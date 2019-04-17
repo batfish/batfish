@@ -7,7 +7,8 @@ import org.antlr.v4.runtime.TokenStream;
 import org.batfish.grammar.BatfishParser;
 
 /**
- * Cumulus NCLU parse base class providing validation functionality on top of {@link BatfishParser}.
+ * Cumulus NCLU parser base class providing validation functionality on top of {@link
+ * BatfishParser}.
  */
 public abstract class CumulusNcluBaseParser extends BatfishParser {
   /**
