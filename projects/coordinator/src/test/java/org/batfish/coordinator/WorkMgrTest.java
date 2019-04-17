@@ -943,6 +943,69 @@ public final class WorkMgrTest {
   }
 
   @Test
+  public void testReferenceGetAnswer() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+    String referenceSnapshot = "referenceSnapshot";
+    String questionName = "question";
+
+    Answer expectedAnswer = new Answer();
+    expectedAnswer.addAnswerElement(new StringAnswerElement("foo1"));
+    String expectedAnswerString = BatfishObjectMapper.writeString(expectedAnswer);
+    _manager.initNetwork(network, null);
+    uploadTestSnapshot(network, snapshot);
+    uploadTestSnapshot(network, referenceSnapshot);
+    setupQuestionAndAnswer(
+        network, snapshot, questionName, null, expectedAnswer, referenceSnapshot);
+    Answer ans = _manager.getAnswer(network, snapshot, questionName, referenceSnapshot, null);
+
+    // Confirm the getAnswer returns the answer we setup
+    String ansString = BatfishObjectMapper.writeString(ans);
+    assertThat(ansString, equalTo(expectedAnswerString));
+  }
+
+  @Test
+  public void testReferenceGetAnswerBadRef() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+    String referenceSnapshot = "referenceSnapshot";
+    String bogusReferenceSnapshot = "bogusReferenceSnapshot";
+    String questionName = "question";
+
+    Answer expectedAnswer = new Answer();
+    expectedAnswer.addAnswerElement(new StringAnswerElement("foo1"));
+    _manager.initNetwork(network, null);
+    uploadTestSnapshot(network, snapshot);
+    uploadTestSnapshot(network, referenceSnapshot);
+    setupQuestionAndAnswer(
+        network, snapshot, questionName, null, expectedAnswer, referenceSnapshot);
+
+    // Confirm we get an illegal arg exception calling getAnswer with a bad reference snapshot
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage(
+        containsString(String.format("non-existent snapshot '%s'", bogusReferenceSnapshot)));
+    _manager.getAnswer(network, snapshot, questionName, bogusReferenceSnapshot, null);
+  }
+
+  @Test
+  public void testReferenceGetAnswerNotFound() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+    String referenceSnapshot = "referenceSnapshot";
+    String questionName = "question";
+
+    _manager.initNetwork(network, null);
+    uploadTestSnapshot(network, snapshot);
+    setupQuestionAndAnswer(network, snapshot, questionName, null, null, referenceSnapshot);
+
+    // Confirm we get a not found exception calling getAnswer before the question is answered
+    _thrown.expect(FileNotFoundException.class);
+    _thrown.expectMessage(
+        startsWith(String.format("Answer not found for question %s", questionName)));
+    _manager.getAnswer(network, snapshot, questionName, referenceSnapshot, null);
+  }
+
+  @Test
   public void testGetAnswerAnalysis() throws IOException {
     String containerName = "container1";
     String testrigName = "testrig1";

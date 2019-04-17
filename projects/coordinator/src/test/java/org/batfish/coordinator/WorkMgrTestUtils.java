@@ -137,13 +137,23 @@ public final class WorkMgrTestUtils {
     return tmpSnapshotZip;
   }
 
+  public static void setupQuestionAndAnswer(
+      String network,
+      String snapshot,
+      String questionName,
+      @Nullable String analysis,
+      @Nullable Answer answer) {
+    setupQuestionAndAnswer(network, snapshot, questionName, analysis, answer);
+  }
+
   /** Setup question and optionally answer on specified network and snapshot */
   public static void setupQuestionAndAnswer(
       String network,
       String snapshot,
       String questionName,
       @Nullable String analysis,
-      @Nullable Answer answer)
+      @Nullable Answer answer,
+      @Nullable String referenceSnapshot)
       throws IOException {
     WorkMgr manager = Main.getWorkMgr();
     IdManager idManager = manager.getIdManager();
@@ -172,6 +182,8 @@ public final class WorkMgrTestUtils {
 
     // Setup answer iff one was passed in
     if (answer != null) {
+      SnapshotId referenceSnapshotId =
+          referenceSnapshot == null ? null : idManager.getSnapshotId(referenceSnapshot, networkId);
       AnswerId answerId =
           idManager.getBaseAnswerId(
               networkId,
@@ -179,7 +191,7 @@ public final class WorkMgrTestUtils {
               questionId,
               DEFAULT_QUESTION_SETTINGS_ID,
               DEFAULT_NETWORK_NODE_ROLES_ID,
-              null,
+              referenceSnapshotId,
               analysisId);
       String answerStr = BatfishObjectMapper.writeString(answer);
       AnswerMetadata answerMetadata =
