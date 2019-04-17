@@ -267,6 +267,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     }
     _c.getDefaultVrf()
         .setBgpProcess(toBgpProcess(Configuration.DEFAULT_VRF_NAME, _bgpProcess.getDefaultVrf()));
+    // We make one VI process per VRF because our current datamodel requires it
     _bgpProcess
         .getVrfs()
         .forEach(
@@ -569,7 +570,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Returns {@link org.batfish.datamodel.BgpProcess} for named {@code vgpVrf} if valid, or else
+   * Returns {@link org.batfish.datamodel.BgpProcess} for named {@code bgpVrf} if valid, or else
    * {@code null}.
    */
   private @Nullable org.batfish.datamodel.BgpProcess toBgpProcess(String vrfName, BgpVrf bgpVrf) {
