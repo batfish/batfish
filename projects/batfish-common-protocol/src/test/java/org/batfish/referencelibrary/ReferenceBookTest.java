@@ -26,7 +26,7 @@ public class ReferenceBookTest {
 
   /** check that we deserialize a basic object correctly */
   @Test
-  public void bookDeserializationBasic() throws IOException {
+  public void testBookDeserializationBasic() throws IOException {
     ReferenceBook book =
         BatfishObjectMapper.mapper()
             .readValue(
@@ -43,7 +43,7 @@ public class ReferenceBookTest {
 
   /** check that we throw an error for duplicate address groups */
   @Test
-  public void bookDeserializationDupAddressGroup() throws IOException {
+  public void testBookDeserializationDupAddressGroup() throws IOException {
     _thrown.expect(InvalidDefinitionException.class);
     _thrown.expectMessage("Duplicate");
 
@@ -53,9 +53,21 @@ public class ReferenceBookTest {
             ReferenceBook.class);
   }
 
+  /** check that we throw an error for a non-existent child address group name */
+  @Test
+  public void testBookUndefChildAddressGroup() throws IOException {
+    _thrown.expect(InvalidDefinitionException.class);
+    _thrown.expectMessage("Following child address group names are not defined: [ag3]");
+
+    BatfishObjectMapper.mapper()
+        .readValue(
+            CommonUtil.readResource("org/batfish/referencelibrary/bookUndefChildAddressGroup.json"),
+            ReferenceBook.class);
+  }
+
   /** check that we throw an error when the same name is used in a service object and group */
   @Test
-  public void bookDeserializationDupServiceName() throws IOException {
+  public void testBookDeserializationDupServiceName() throws IOException {
     _thrown.expect(InvalidDefinitionException.class);
     _thrown.expectMessage("Duplicate");
 
@@ -67,7 +79,7 @@ public class ReferenceBookTest {
 
   /** check that we throw an error for undefined address groups */
   @Test
-  public void bookDeserializationUndefAddressGroup() throws IOException {
+  public void testBookDeserializationUndefAddressGroup() throws IOException {
     _thrown.expect(InvalidDefinitionException.class);
     _thrown.expectMessage("Undefined");
 
@@ -79,7 +91,7 @@ public class ReferenceBookTest {
 
   /** check that we throw an error for undefined service name */
   @Test
-  public void bookDeserializationUndefServiceName() throws IOException {
+  public void testBookDeserializationUndefServiceName() throws IOException {
     _thrown.expect(InvalidDefinitionException.class);
     _thrown.expectMessage("Undefined");
 
