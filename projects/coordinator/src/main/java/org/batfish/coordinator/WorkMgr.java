@@ -821,7 +821,7 @@ public class WorkMgr extends AbstractCoordinator {
    *
    * @throws IllegalArgumentException if the network, question, analysis, or snapshots cannot be
    *     found
-   * @throws IOException if there are errors reading any resources
+   * @throws IOException if there are any other errors
    */
   public @Nullable Answer getAnswer(
       String network,
