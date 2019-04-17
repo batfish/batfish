@@ -80,6 +80,11 @@ DESCRIPTION
   'description' -> pushMode ( M_Description )
 ;
 
+DETERMINISTIC_MED
+:
+  'deterministic-med'
+;
+
 EBGP
 :
   'ebgp'

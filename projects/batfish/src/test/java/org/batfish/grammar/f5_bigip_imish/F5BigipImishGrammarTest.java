@@ -246,6 +246,15 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
+  public void testBgpDeterministicMedExtraction() {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_bgp_deterministic_med");
+
+    assertTrue(
+        "Ensure deterministic-med is extracted",
+        vc.getBgpProcesses().get("123").getDeterministicMed());
+  }
+
+  @Test
   public void testBgpKernelRouteRedistribution() throws IOException {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
