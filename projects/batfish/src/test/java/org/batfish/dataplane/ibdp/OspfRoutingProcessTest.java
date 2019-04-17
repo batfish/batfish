@@ -364,7 +364,7 @@ public class OspfRoutingProcessTest {
       assertThat(
           "No default route to inject",
           _routingProcess.computeDefaultInterAreaRouteToInject(edge, area, nextHopIp).count(),
-          equalTo(0));
+          equalTo(0L));
     }
 
     // For a edge with a different tail node, we still get a default route
