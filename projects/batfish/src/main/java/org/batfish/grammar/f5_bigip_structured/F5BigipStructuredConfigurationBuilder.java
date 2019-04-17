@@ -73,6 +73,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -245,6 +246,14 @@ import org.batfish.vendor.StructureType;
 
 @ParametersAreNonnullByDefault
 public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredParserBaseListener {
+
+  private static @Nonnull String getUnrecognizedLeadText(UnrecognizedContext ctx) {
+    if (ctx.IF() != null) {
+      return ctx.IF().getText();
+    } else {
+      return ctx.u_word().stream().map(ParserRuleContext::getText).collect(Collectors.joining(" "));
+    }
+  }
 
   private static int toInteger(ParserRuleContext ctx) {
     return Integer.parseUnsignedInt(ctx.getText(), 10);
@@ -1532,7 +1541,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
         .add(
             new ParseWarning(
                 line,
-                start.getText(),
+                getUnrecognizedLeadText(ctx),
                 ctx.toString(Arrays.asList(_parser.getParser().getRuleNames())),
                 "This syntax is unrecognized"));
   }
