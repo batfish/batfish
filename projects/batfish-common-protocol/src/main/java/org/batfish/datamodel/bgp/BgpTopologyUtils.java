@@ -153,7 +153,8 @@ public final class BgpTopologyUtils {
         graph.nodes().stream()
             .filter(
                 candidateId ->
-                    // Don't bother checking reachability if edge is already in place
+                    // If edge is already established (i.e., we already found that candidate can
+                    // initiate the session), don't bother checking in this direction
                     !alreadyEstablished.contains(candidateId)
                         // Ensure candidate has compatible local/remote IP, AS, & hostname
                         && bgpCandidatePassesSanityChecks(
