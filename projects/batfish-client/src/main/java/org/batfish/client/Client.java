@@ -574,6 +574,12 @@ public class Client extends AbstractClient implements IClient {
         }
         new NodePropertySpecifier(value.textValue());
         break;
+      case NODE_ROLE_DIMENSION:
+        if (!value.isTextual()) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        break;
       case NODE_ROLE_DIMENSION_NAME:
         if (!value.isTextual()) {
           throw new BatfishException(
