@@ -54,11 +54,13 @@ public final class BgpSessionProperties {
     return SessionType.isEbgp(_sessionType);
   }
 
+  /** IP of local peer for this session */
   @Nonnull
   public Ip getTailIp() {
     return _tailIp;
   }
 
+  /** IP of remote peer for this session */
   @Nonnull
   public Ip getHeadIp() {
     return _headIp;
