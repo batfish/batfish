@@ -27,6 +27,8 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -39,12 +41,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.batfish.common.BatfishLogger;
+import org.batfish.common.ParseTreeSentences;
+import org.batfish.common.Warnings;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDPrefix;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BgpRoute;
@@ -69,10 +76,13 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredCombinedParser;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredControlPlaneExtractor;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.f5_bigip.F5BigipConfiguration;
+import org.batfish.vendor.VendorConfiguration;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -117,6 +127,34 @@ public final class F5BigipImishGrammarTest {
     String[] names =
         Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
     return BatfishTestUtils.parseTextConfigs(_folder, names);
+  }
+
+  private @Nonnull F5BigipConfiguration parseVendorConfig(String hostname) {
+    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
+    Settings settings = new Settings();
+    settings.setDisableUnrecognized(true);
+    settings.setThrowOnLexerError(true);
+    settings.setThrowOnParserError(true);
+    F5BigipStructuredCombinedParser parser = new F5BigipStructuredCombinedParser(src, settings);
+    ParseTreeSentences pts = new ParseTreeSentences();
+    F5BigipStructuredControlPlaneExtractor extractor =
+        new F5BigipStructuredControlPlaneExtractor(
+            src,
+            parser,
+            new Warnings(),
+            String.format("configs/%s", hostname),
+            () -> pts,
+            settings.getPrintParseTreeLineNums());
+    ParserRuleContext tree =
+        Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
+    extractor.processParseTree(tree);
+    assertThat(
+        String.format("Ensure '%s' was successfully parsed", hostname),
+        extractor.getVendorConfiguration(),
+        notNullValue());
+    VendorConfiguration vc = extractor.getVendorConfiguration();
+    assertThat(vc, instanceOf(F5BigipConfiguration.class));
+    return (F5BigipConfiguration) vc;
   }
 
   @Test
@@ -196,6 +234,15 @@ public final class F5BigipImishGrammarTest {
                                 Prefix.strict("192.0.2.128/32"),
                                 new SubRange(Prefix.MAX_PREFIX_LENGTH, Prefix.MAX_PREFIX_LENGTH)))
                         .not())));
+  }
+
+  @Test
+  public void testBgpAlwaysCompareMedExtraction() {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_bgp_always_compare_med");
+
+    assertTrue(
+        "Ensure always-compare-med is extracted",
+        vc.getBgpProcesses().get("123").getAlwaysCompareMed());
   }
 
   @Test
