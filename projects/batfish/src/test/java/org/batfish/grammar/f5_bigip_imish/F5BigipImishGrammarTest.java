@@ -173,7 +173,7 @@ public final class F5BigipImishGrammarTest {
     return (F5BigipConfiguration) vc;
   }
 
-  private @Nonnull BgpRoute processBgpRoute(Configuration c, RoutingPolicy rp1, Ip peerAddress) {
+  private @Nonnull BgpRoute processBgpRoute(RoutingPolicy rp1, Ip peerAddress) {
     BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
     assertTrue(
         rp1.process(
@@ -333,13 +333,13 @@ public final class F5BigipImishGrammarTest {
         c.getRoutingPolicies().get(computeBgpPeerExportPolicyName("65501", peer3Ip));
 
     // 192.0.2.1 with next-hop-self should use next-hop-ip of interface
-    assertThat(processBgpRoute(c, rp1, peer1Ip), hasNextHopIp(equalTo(localIp)));
+    assertThat(processBgpRoute(rp1, peer1Ip), hasNextHopIp(equalTo(localIp)));
 
     // 192.0.2.2 with next-hop-self inherited from pg1 should use next-hop-ip of interface
-    assertThat(processBgpRoute(c, rp2, peer2Ip), hasNextHopIp(equalTo(localIp)));
+    assertThat(processBgpRoute(rp2, peer2Ip), hasNextHopIp(equalTo(localIp)));
 
     // 192.0.2.3 without next-hop-self should leave next-hop-ip unset for dp engine to handle
-    assertThat(processBgpRoute(c, rp3, peer3Ip), hasNextHopIp(equalTo(UNSET_ROUTE_NEXT_HOP_IP)));
+    assertThat(processBgpRoute(rp3, peer3Ip), hasNextHopIp(equalTo(UNSET_ROUTE_NEXT_HOP_IP)));
   }
 
   @Test
