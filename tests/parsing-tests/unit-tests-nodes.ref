@@ -15593,6 +15593,13 @@
             "name" : "~BGP_PEER_EXPORT_POLICY:65500:10.0.0.1~",
             "statements" : [
               {
+                "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
+                "destinationVrf" : false,
+                "expr" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.SelfNextHop"
+                }
+              },
+              {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "comment" : "peer-export policy main conditional: exitAccept if true / exitReject if false",
                 "falseStatements" : [
