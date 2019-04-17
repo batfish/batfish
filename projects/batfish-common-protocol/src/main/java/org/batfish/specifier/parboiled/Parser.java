@@ -1,10 +1,10 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_AND_BOOK;
+import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.IGNORE;
-import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_AND_BOOK;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_TYPE;
@@ -16,8 +16,10 @@ import static org.batfish.specifier.parboiled.Anchor.Type.IP_RANGE;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_WILDCARD;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME_REGEX;
-import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_NAME_AND_DIMENSION;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_DIMENSION_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_TYPE;
+import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_NAME_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.VRF_NAME;
@@ -89,6 +91,12 @@ public class Parser extends CommonParser {
         throw new IllegalArgumentException(
             "Main grammar rule not defined for " + grammar.getFriendlyName());
     }
+  }
+
+  /** Matches Reference Book name. */
+  @Anchor(REFERENCE_BOOK_NAME)
+  public Rule ReferenceBook() {
+    return Sequence(NameLiteral(), WhiteSpace());
   }
 
   /**
@@ -355,7 +363,9 @@ public class Parser extends CommonParser {
         IgnoreCase("@interfaceGroup"),
         WhiteSpace(),
         "( ",
-        InterfaceGroupAndBook(),
+        InterfaceGroup(),
+        ", ",
+        ReferenceBook(),
         ") ",
         push(new InterfaceGroupInterfaceAstNode(pop(1), pop())));
   }
@@ -366,22 +376,17 @@ public class Parser extends CommonParser {
         IgnoreCase("ref.interfaceGroup"),
         WhiteSpace(),
         "( ",
-        InterfaceGroupAndBook(),
+        InterfaceGroup(),
+        ", ",
+        ReferenceBook(),
         ") ",
         push(new InterfaceGroupInterfaceAstNode(pop(1), pop())));
   }
 
-  /** Matches AddressGroup, ReferenceBook pair. Puts two values on stack */
-  @Anchor(INTERFACE_GROUP_AND_BOOK)
-  public Rule InterfaceGroupAndBook() {
-    return Sequence(
-        ReferenceObjectNameLiteral(),
-        push(new StringAstNode(match())),
-        WhiteSpace(),
-        ", ",
-        ReferenceObjectNameLiteral(),
-        push(new StringAstNode(match())),
-        WhiteSpace());
+  /** Matches Interface Group name */
+  @Anchor(INTERFACE_GROUP_NAME)
+  public Rule InterfaceGroup() {
+    return Sequence(NameLiteral(), WhiteSpace());
   }
 
   public Rule InterfaceType() {
@@ -593,7 +598,9 @@ public class Parser extends CommonParser {
         IgnoreCase("@addressgroup"),
         WhiteSpace(),
         "( ",
-        AddressGroupAndBook(),
+        AddressGroup(),
+        ", ",
+        ReferenceBook(),
         ") ",
         push(new AddressGroupIpSpaceAstNode(pop(1), pop())));
   }
@@ -604,22 +611,17 @@ public class Parser extends CommonParser {
         IgnoreCase("ref.addressgroup"),
         WhiteSpace(),
         "( ",
-        AddressGroupAndBook(),
+        AddressGroup(),
+        ", ",
+        ReferenceBook(),
         ") ",
         push(new AddressGroupIpSpaceAstNode(pop(1), pop())));
   }
 
-  /** Matches AddressGroup, ReferenceBook pair. Puts two values on stack */
-  @Anchor(ADDRESS_GROUP_AND_BOOK)
-  public Rule AddressGroupAndBook() {
-    return Sequence(
-        ReferenceObjectNameLiteral(),
-        push(new StringAstNode(match())),
-        WhiteSpace(),
-        ", ",
-        ReferenceObjectNameLiteral(),
-        push(new StringAstNode(match())),
-        WhiteSpace());
+  /** Matches AddressGroup name */
+  @Anchor(ADDRESS_GROUP_NAME)
+  public Rule AddressGroup() {
+    return Sequence(NameLiteral(), WhiteSpace());
   }
 
   public Rule IpSpaceLocation() {
@@ -842,7 +844,9 @@ public class Parser extends CommonParser {
         IgnoreCase("@role"),
         WhiteSpace(),
         "( ",
-        NodeRoleNameAndDimension(),
+        NodeRoleName(),
+        ", ",
+        NodeRoleDimensionName(),
         ") ",
         push(new RoleNodeAstNode(pop(1), pop())));
   }
@@ -853,22 +857,23 @@ public class Parser extends CommonParser {
         IgnoreCase("ref.noderole"),
         WhiteSpace(),
         "( ",
-        NodeRoleNameAndDimension(),
+        NodeRoleName(),
+        ", ",
+        NodeRoleDimensionName(),
         ") ",
         push(new RoleNodeAstNode(pop(1), pop())));
   }
 
-  /** Matches RoleName, DimensionName pair. Puts two values on stack */
-  @Anchor(NODE_ROLE_NAME_AND_DIMENSION)
-  public Rule NodeRoleNameAndDimension() {
-    return Sequence(
-        NodeRoleNameLiteral(),
-        push(new StringAstNode(match())),
-        WhiteSpace(),
-        ", ",
-        ReferenceObjectNameLiteral(),
-        push(new StringAstNode(match())),
-        WhiteSpace());
+  /** Matches Node Role Dimension name */
+  @Anchor(NODE_ROLE_DIMENSION_NAME)
+  public Rule NodeRoleDimensionName() {
+    return Sequence(NameLiteral(), WhiteSpace());
+  }
+
+  /** Matches Node Role name */
+  @Anchor(NODE_ROLE_NAME)
+  public Rule NodeRoleName() {
+    return Sequence(NameLiteral(), WhiteSpace());
   }
 
   public Rule NodeType() {

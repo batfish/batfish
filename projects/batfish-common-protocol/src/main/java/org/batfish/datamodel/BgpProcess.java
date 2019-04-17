@@ -61,6 +61,7 @@ public class BgpProcess implements Serializable {
     }
   }
 
+  private static final String PROP_INTERFACE_NEIGHBORS = "interfaceNeighbors";
   private static final String PROP_PASSIVE_NEIGHBORS = "dynamicNeighbors";
   private static final String PROP_MULTIPATH_EBGP = "multipathEbgp";
   private static final String PROP_MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE =
@@ -73,13 +74,14 @@ public class BgpProcess implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private Supplier<Set<Long>> _clusterIds;
+  @Nonnull private SortedMap<String, BgpUnnumberedPeerConfig> _interfaceNeighbors;
   private boolean _multipathEbgp;
   private MultipathEquivalentAsPathMatchMode _multipathEquivalentAsPathMatchMode;
   private boolean _multipathIbgp;
 
   /**
    * A map of all non-dynamic bgp neighbors with which the router owning this process is configured
-   * to peer, keyed unique ID.
+   * to peer, keyed by unique ID.
    */
   @Nonnull private SortedMap<Prefix, BgpActivePeerConfig> _activeNeighbors;
 
@@ -99,10 +101,10 @@ public class BgpProcess implements Serializable {
   /** Constructs a BgpProcess */
   public BgpProcess() {
     _activeNeighbors = new TreeMap<>();
+    _interfaceNeighbors = new TreeMap<>();
     _tieBreaker = BgpTieBreaker.ARRIVAL_ORDER;
     _clusterIds = new ClusterIdsSupplier();
     _originationSpace = new PrefixSpace();
-    _activeNeighbors = new TreeMap<>();
     _passiveNeighbors = new TreeMap<>();
   }
 
@@ -130,6 +132,13 @@ public class BgpProcess implements Serializable {
   @Nonnull
   public SortedMap<Prefix, BgpActivePeerConfig> getActiveNeighbors() {
     return _activeNeighbors;
+  }
+
+  /** Returns BGP unnumbered peer configurations keyed by peer-interface */
+  @JsonProperty(PROP_INTERFACE_NEIGHBORS)
+  @Nonnull
+  public SortedMap<String, BgpUnnumberedPeerConfig> getInterfaceNeighbors() {
+    return _interfaceNeighbors;
   }
 
   @JsonProperty(PROP_MULTIPATH_EBGP)
@@ -171,6 +180,11 @@ public class BgpProcess implements Serializable {
   @JsonProperty(PROP_TIE_BREAKER)
   public BgpTieBreaker getTieBreaker() {
     return _tieBreaker;
+  }
+
+  @JsonProperty(PROP_INTERFACE_NEIGHBORS)
+  public void setInterfaceNeighbors(SortedMap<String, BgpUnnumberedPeerConfig> interfaceNeighbors) {
+    _interfaceNeighbors = interfaceNeighbors;
   }
 
   @JsonProperty(PROP_MULTIPATH_EBGP)

@@ -46470,7 +46470,7 @@
             "        BRACE_RIGHT:'}'",
             "        NEWLINE:'\\n\\n')))",
             "  (imish_chunk",
-            "    IMISH_CHUNK:'!\\naccess-list acl1 permit any\\naccess-list acl2 permit 192.0.2.0/24\\n!\\nbfd gtsm enable\\n!\\ninterface lo\\n!\\ninterface tmm\\n!\\ninterface vlan1\\n!\\nrouter bgp 65500\\n bgp graceful-restart restart-time 123\\n bgp router-id 192.0.2.100\\n max-paths ebgp 12\\n neighbor pg1 peer-group\\n no neighbor pg1 capability graceful-restart\\n neighbor pg1 fall-over pfd\\n neighbor pg1 maximum-prefix 12345\\n neighbor 1:2:3:: remote-as 555\\n neighbor 1:2:3::4:5:6 remote-as 555\\n neighbor 1:2:3:4:5:6:7:: remote-as 555\\n neighbor ::1:2:3:4:5:6 remote-as 555\\n neighbor ::1:2:3:4:5:6:7 remote-as 555\\n neighbor 1:2::3:4.5.6.7 remote-as 555\\n neighbor 1:2:3:4:5:6:9.8.7.6 remote-as 555\\n neighbor 10.0.0.1 remote-as 65501\\n neighbor 10.0.0.1 description desc1\\n neighbor 10.0.0.1 peer-group pg1\\n neighbor 10.0.0.1 update-source us1\\n redistribute kernel route-map rm1\\n!\\nno service password-encryption\\n!\\nroute-map rm1 permit 1\\n match ip address acl1\\n set community 1:2 3:4\\n!\\nroute-map rm1 deny 2\\n!\\nline con 0\\n login\\nline vty 0 39\\n login\\n!\\nend\\n\\n\\n')",
+            "    IMISH_CHUNK:'!\\naccess-list acl1 permit any\\naccess-list acl2 permit 192.0.2.0/24\\n!\\nbfd gtsm enable\\n!\\ninterface lo\\n!\\ninterface tmm\\n!\\ninterface vlan1\\n!\\nrouter bgp 65500\\n bgp always-compare-med\\n bgp deterministic-med\\n bgp graceful-restart restart-time 123\\n bgp router-id 192.0.2.100\\n max-paths ebgp 12\\n neighbor pg1 peer-group\\n no neighbor pg1 capability graceful-restart\\n neighbor pg1 fall-over pfd\\n neighbor pg1 maximum-prefix 12345\\n neighbor 1:2:3:: remote-as 555\\n neighbor 1:2:3::4:5:6 remote-as 555\\n neighbor 1:2:3:4:5:6:7:: remote-as 555\\n neighbor ::1:2:3:4:5:6 remote-as 555\\n neighbor ::1:2:3:4:5:6:7 remote-as 555\\n neighbor 1:2::3:4.5.6.7 remote-as 555\\n neighbor 1:2:3:4:5:6:9.8.7.6 remote-as 555\\n neighbor 10.0.0.1 remote-as 65501\\n neighbor 10.0.0.1 description desc1\\n neighbor 10.0.0.1 peer-group pg1\\n neighbor 10.0.0.1 update-source us1\\n redistribute kernel route-map rm1\\n!\\nno service password-encryption\\n!\\nroute-map rm1 permit 1\\n match ip address acl1\\n set community 1:2 3:4\\n!\\nroute-map rm1 deny 2\\n!\\nline con 0\\n login\\nline vty 0 39\\n login\\n!\\nend\\n\\n\\n')",
             "  EOF:<EOF>)",
             "(f5_bigip_imish_configuration",
             "  (statement",
@@ -46525,6 +46525,14 @@
             "      localas = (uint64",
             "        DEC:'65500')",
             "      NEWLINE:'\\n'",
+            "      (rb_bgp_always_compare_med",
+            "        BGP:'bgp'",
+            "        ALWAYS_COMPARE_MED:'always-compare-med'",
+            "        NEWLINE:'\\n')",
+            "      (rb_bgp_deterministic_med",
+            "        BGP:'bgp'",
+            "        DETERMINISTIC_MED:'deterministic-med'",
+            "        NEWLINE:'\\n')",
             "      (rb_null",
             "        BGP:'bgp'",
             "        GRACEFUL_RESTART:'graceful-restart'",
@@ -67942,6 +67950,16 @@
             "            low = DEC:'0'  <== mode:M_Interface)))",
             "      NEWLINE:'\\n'  <== mode:M_Interface",
             "      (if_inner",
+            "        (if_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          prefix = IP_PREFIX:'1.2.3.4/24'",
+            "          ROUTE_PREFERENCE:'route-preference'",
+            "          pref = DEC:'10'",
+            "          TAG:'tag'",
+            "          tag = DEC:'12345'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
             "        (if_null_block",
             "          LINK:'link'",
             "          VARIABLE:'debounce'",
@@ -73934,6 +73952,22 @@
             }
           ]
         },
+        "configs/nxos_interface" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "Unsupported: route-preference declared in interface IP address",
+              "Line" : 6,
+              "Parser_Context" : "[if_ip_address if_inner s_interface stanza cisco_configuration]",
+              "Text" : "ip address 1.2.3.4/24 route-preference 10 tag 12345"
+            },
+            {
+              "Comment" : "Unsupported: tag declared in interface IP address",
+              "Line" : 6,
+              "Parser_Context" : "[if_ip_address if_inner s_interface stanza cisco_configuration]",
+              "Text" : "ip address 1.2.3.4/24 route-preference 10 tag 12345"
+            }
+          ]
+        },
         "configs/peer_template" : {
           "Parse warnings" : [
             {
@@ -77811,49 +77845,49 @@
           "bgp neighbor" : {
             "10.0.0.1" : {
               "definitionLines" : [
-                34
+                36
               ],
               "numReferrers" : 1
             },
             "1:2:3:4:5:6:7::" : {
               "definitionLines" : [
-                29
+                31
               ],
               "numReferrers" : 1
             },
             "1:2:3:4:5:6:9.8.7.6" : {
               "definitionLines" : [
-                33
+                35
               ],
               "numReferrers" : 1
             },
             "1:2:3::" : {
               "definitionLines" : [
-                27
+                29
               ],
               "numReferrers" : 1
             },
             "1:2:3::4:5:6" : {
               "definitionLines" : [
-                28
+                30
               ],
               "numReferrers" : 1
             },
             "1:2::3:4.5.6.7" : {
               "definitionLines" : [
-                32
+                34
               ],
               "numReferrers" : 1
             },
             "::1:2:3:4:5:6" : {
               "definitionLines" : [
-                30
+                32
               ],
               "numReferrers" : 1
             },
             "::1:2:3:4:5:6:7" : {
               "definitionLines" : [
-                31
+                33
               ],
               "numReferrers" : 1
             }
@@ -77880,7 +77914,9 @@
                 35,
                 36,
                 37,
-                38
+                38,
+                39,
+                40
               ],
               "numReferrers" : 1
             }
@@ -77888,7 +77924,7 @@
           "peer-group" : {
             "pg1" : {
               "definitionLines" : [
-                23
+                25
               ],
               "numReferrers" : 0
             }
@@ -77896,10 +77932,10 @@
           "route-map" : {
             "rm1" : {
               "definitionLines" : [
-                42,
-                43,
                 44,
-                46
+                45,
+                46,
+                48
               ],
               "numReferrers" : 1
             }
@@ -80032,14 +80068,15 @@
                 5,
                 6,
                 7,
-                8
+                8,
+                9
               ],
               "numReferrers" : 1
             },
             "nve1" : {
               "definitionLines" : [
-                10,
-                11
+                11,
+                12
               ],
               "numReferrers" : 1
             }
@@ -83127,49 +83164,49 @@
           "access-list" : {
             "acl1" : {
               "route-map match ip address" : [
-                43
+                45
               ]
             }
           },
           "bgp neighbor" : {
             "10.0.0.1" : {
               "bgp neighbor self-reference" : [
-                34
+                36
               ]
             },
             "1:2:3:4:5:6:7::" : {
               "bgp neighbor self-reference" : [
-                29
+                31
               ]
             },
             "1:2:3:4:5:6:9.8.7.6" : {
               "bgp neighbor self-reference" : [
-                33
+                35
               ]
             },
             "1:2:3::" : {
               "bgp neighbor self-reference" : [
-                27
+                29
               ]
             },
             "1:2:3::4:5:6" : {
               "bgp neighbor self-reference" : [
-                28
+                30
               ]
             },
             "1:2::3:4.5.6.7" : {
               "bgp neighbor self-reference" : [
-                32
+                34
               ]
             },
             "::1:2:3:4:5:6" : {
               "bgp neighbor self-reference" : [
-                30
+                32
               ]
             },
             "::1:2:3:4:5:6:7" : {
               "bgp neighbor self-reference" : [
-                31
+                33
               ]
             }
           },
@@ -83183,14 +83220,14 @@
           "peer-group" : {
             "pg1" : {
               "neighbor peer-group" : [
-                36
+                38
               ]
             }
           },
           "route-map" : {
             "rm1" : {
               "router bgp redistribute kernel route-map" : [
-                38
+                40
               ]
             }
           }
@@ -84598,7 +84635,7 @@
             },
             "nve1" : {
               "interface" : [
-                10
+                11
               ]
             }
           }
@@ -87152,6 +87189,14 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Interface: 'Ethernet1/0' contains OSPF settings, but there is no OSPF process"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "OSPF process default:1 in cisco_ospf uses distribute-list of type ROUTE_MAP, only prefix-lists are supported in dist-lists by Batfish"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "OSPF process default:1 in cisco_ospf uses distribute-list of type ACCESS_LIST, only prefix-lists are supported in dist-lists by Batfish"
             }
           ]
         },

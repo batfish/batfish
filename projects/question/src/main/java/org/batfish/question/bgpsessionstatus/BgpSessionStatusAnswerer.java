@@ -1,5 +1,6 @@
 package org.batfish.question.bgpsessionstatus;
 
+import static org.batfish.datamodel.questions.ConfiguredSessionStatus.LOCAL_IP_UNKNOWN_STATICALLY;
 import static org.batfish.datamodel.questions.ConfiguredSessionStatus.UNIQUE_MATCH;
 import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.SessionStatus.ESTABLISHED;
 import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.SessionStatus.NOT_COMPATIBLE;
@@ -25,6 +26,7 @@ import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.SelfDescribingObject;
@@ -103,10 +105,17 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
                   if (establishedBgpTopology.nodes().contains(neighbor)
                       && establishedBgpTopology.outDegree(neighbor) == 1) {
                     status = ESTABLISHED;
-                  } else if (getConfiguredStatus(
-                          neighbor, activePeer, type, allInterfaceIps, configuredBgpTopology)
-                      == UNIQUE_MATCH) {
-                    status = NOT_ESTABLISHED;
+                  } else {
+                    ConfiguredSessionStatus configuredStatus =
+                        getConfiguredStatus(
+                            neighbor, activePeer, type, allInterfaceIps, configuredBgpTopology);
+                    if (configuredStatus == UNIQUE_MATCH) {
+                      status = NOT_ESTABLISHED;
+                    } else if (configuredStatus == LOCAL_IP_UNKNOWN_STATICALLY
+                        && establishedBgpTopology.inDegree(neighbor) == 1) {
+                      // Missing local IP, but another peer initiated a session
+                      status = ESTABLISHED;
+                    }
                   }
 
                   return buildActivePeerRow(
@@ -195,7 +204,7 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
                 COL_LOCAL_IP, Schema.IP, "The local IP of the session", false, false),
             new ColumnMetadata(
                 COL_REMOTE_AS,
-                Schema.SELF_DESCRIBING,
+                Schema.STRING,
                 "The remote AS or list of ASes of the session",
                 false,
                 false),
@@ -248,7 +257,7 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
         .put(COL_LOCAL_AS, activePeer.getLocalAs())
         .put(COL_LOCAL_IP, activePeer.getLocalIp())
         .put(COL_NODE, new Node(activeId.getHostname()))
-        .put(COL_REMOTE_AS, new SelfDescribingObject(Schema.LONG, activePeer.getRemoteAs()))
+        .put(COL_REMOTE_AS, activePeer.getRemoteAsns().toString())
         .put(COL_REMOTE_NODE, remoteNode)
         .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, activePeer.getPeerAddress()))
         .put(COL_SESSION_TYPE, type)
@@ -268,9 +277,7 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
         .put(COL_LOCAL_AS, passivePeer.getLocalAs())
         .put(COL_LOCAL_IP, passivePeer.getLocalIp())
         .put(COL_NODE, new Node(passiveId.getHostname()))
-        .put(
-            COL_REMOTE_AS,
-            new SelfDescribingObject(Schema.list(Schema.LONG), passivePeer.getRemoteAs()))
+        .put(COL_REMOTE_AS, passivePeer.getRemoteAsns().toString())
         .put(COL_REMOTE_NODE, null)
         .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.PREFIX, passivePeer.getPeerPrefix()))
         .put(COL_SESSION_TYPE, SessionType.UNSET)
@@ -298,7 +305,7 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
         .put(COL_LOCAL_AS, passivePeer.getLocalAs())
         .put(COL_LOCAL_IP, localIp)
         .put(COL_NODE, new Node(passiveId.getHostname()))
-        .put(COL_REMOTE_AS, new SelfDescribingObject(Schema.LONG, activePeer.getLocalAs()))
+        .put(COL_REMOTE_AS, LongSpace.of(activePeer.getLocalAs()).toString())
         .put(COL_REMOTE_NODE, new Node(activeId.getHostname()))
         .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, activePeer.getLocalIp()))
         .put(COL_SESSION_TYPE, type)

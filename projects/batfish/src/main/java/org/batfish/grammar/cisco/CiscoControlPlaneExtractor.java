@@ -6056,6 +6056,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         currentInterface.setStandbyAddress(standbyAddress);
       }
     }
+    if (ctx.ROUTE_PREFERENCE() != null) {
+      todo(ctx, "Unsupported: route-preference declared in interface IP address");
+    }
+    if (ctx.TAG() != null) {
+      todo(ctx, "Unsupported: tag declared in interface IP address");
+    }
   }
 
   @Override
@@ -6525,7 +6531,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIf_switchport_trunk_allowed(If_switchport_trunk_allowedContext ctx) {
     List<SubRange> ranges = toRange(ctx.r);
-    IntegerSpace allowed = IntegerSpace.builder().includingAll(ranges).build();
+    IntegerSpace allowed = IntegerSpace.builder().includingAllSubRanges(ranges).build();
     for (Interface currentInterface : _currentInterfaces) {
       if (ctx.ADD() != null) {
         IntegerSpace current = firstNonNull(currentInterface.getAllowedVlans(), IntegerSpace.EMPTY);

@@ -34,6 +34,7 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEquivalentAsPathMatchMode;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasWeight;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpRouteThat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkePhase1Policy;
@@ -266,6 +267,7 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
+import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
@@ -307,6 +309,7 @@ import org.batfish.datamodel.LineType;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
@@ -349,14 +352,21 @@ import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.CommunityHalvesExpr;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
+import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityHalf;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.RangeCommunityHalf;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.dataplane.ibdp.IncrementalDataPlane;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -1309,6 +1319,41 @@ public class CiscoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "pl4out", 1));
     assertThat(ccae, hasNumReferrers(filename, PREFIX6_LIST, "pl6in", 1));
     assertThat(ccae, hasNumReferrers(filename, PREFIX6_LIST, "pl6out", 1));
+  }
+
+  @Test
+  public void testIosIbgpMissingUpdateSource() throws IOException {
+    /*
+    r1 is missing update-source, but session should still be established between r1 and r2. Both
+    redistribute static routes, so should see BGP routes on both for the other's static route.
+    */
+    String testrigName = "ibgp-no-update-source";
+    List<String> configurationNames = ImmutableList.of("r1", "r2");
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+
+    // Confirm that BGP peer on r1 is missing its local IP, as expected
+    Prefix r1NeighborPeerAddress = Prefix.parse("2.2.2.2/32");
+    Configuration r1 = batfish.loadConfigurations().get("r1");
+    SortedMap<Prefix, BgpActivePeerConfig> r1Peers =
+        r1.getVrfs().get(DEFAULT_VRF_NAME).getBgpProcess().getActiveNeighbors();
+    assertTrue(r1Peers.containsKey(r1NeighborPeerAddress));
+    assertThat(r1Peers.get(r1NeighborPeerAddress).getLocalIp(), nullValue());
+
+    /*
+    r1 has a static route to 7.7.7.7/32; r2 has a static route to 8.8.8.8/32. Confirm that both
+    received a BGP route to the other's static route.
+    */
+    batfish.computeDataPlane();
+    IncrementalDataPlane dp = (IncrementalDataPlane) batfish.loadDataPlane();
+    Set<AbstractRoute> r1Routes = dp.getRibs().get("r1").get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r2Routes = dp.getRibs().get("r2").get(DEFAULT_VRF_NAME).getRoutes();
+    assertThat(r1Routes, hasItem(isBgpRouteThat(hasPrefix(Prefix.parse("8.8.8.8/32")))));
+    assertThat(r2Routes, hasItem(isBgpRouteThat(hasPrefix(Prefix.parse("7.7.7.7/32")))));
   }
 
   /**
@@ -2406,6 +2451,158 @@ public class CiscoGrammarTest {
     assertThat(
         ospfProcessAcl.getOutboundInterfaceDistributeLists(),
         equalTo(ImmutableMap.of("GigabitEthernet0/0", dlGig1OutAcl)));
+  }
+
+  @Test
+  public void testIosOspfDistributeListPrefixList() throws IOException {
+    Configuration c = parseConfig("iosOspfDistributeListPrefixList");
+    String distListPolicyName0 = "~OSPF_DIST_LIST_default_1_GigabitEthernet0/0~";
+    String distListPolicyName1 = "~OSPF_DIST_LIST_default_1_GigabitEthernet1/0~";
+
+    assertThat(c.getRoutingPolicies(), hasKey(distListPolicyName0));
+
+    assertThat(
+        c.getAllInterfaces().get("GigabitEthernet0/0").getOspfInboundDistributeListPolicy(),
+        equalTo(distListPolicyName0));
+    assertThat(
+        c.getAllInterfaces().get("GigabitEthernet1/0").getOspfInboundDistributeListPolicy(),
+        equalTo(distListPolicyName1));
+
+    RoutingPolicy routingPolicy0 = c.getRoutingPolicies().get(distListPolicyName0);
+    List<org.batfish.datamodel.routing_policy.statement.Statement> statements =
+        routingPolicy0.getStatements();
+
+    assertThat(
+        statements,
+        equalTo(
+            ImmutableList.of(
+                new If(
+                    new Conjunction(
+                        ImmutableList.of(
+                            new MatchPrefixSet(
+                                DestinationNetwork.instance(), new NamedPrefixSet("filter_2")),
+                            new MatchPrefixSet(
+                                DestinationNetwork.instance(), new NamedPrefixSet("filter_1")))),
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
+
+    assertFalse(
+        routingPolicy0.process(
+            OspfIntraAreaRoute.builder().setNetwork(Prefix.parse("1.1.1.0/24")).setArea(1L).build(),
+            OspfIntraAreaRoute.builder(),
+            null,
+            "default",
+            Direction.IN));
+    assertFalse(
+        routingPolicy0.process(
+            OspfIntraAreaRoute.builder().setNetwork(Prefix.parse("2.2.2.0/24")).setArea(1L).build(),
+            OspfIntraAreaRoute.builder(),
+            null,
+            "default",
+            Direction.IN));
+    assertTrue(
+        routingPolicy0.process(
+            OspfIntraAreaRoute.builder().setNetwork(Prefix.parse("3.3.3.0/24")).setArea(1L).build(),
+            OspfIntraAreaRoute.builder(),
+            null,
+            "default",
+            Direction.IN));
+
+    assertThat(
+        c.getRoutingPolicies().get(distListPolicyName1).getStatements(),
+        equalTo(
+            ImmutableList.of(
+                new If(
+                    new Conjunction(
+                        ImmutableList.of(
+                            new MatchPrefixSet(
+                                DestinationNetwork.instance(), new NamedPrefixSet("filter_2")),
+                            new MatchPrefixSet(
+                                DestinationNetwork.instance(), new NamedPrefixSet("filter_1")))),
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
+  }
+
+  @Test
+  public void testIosOspfDistributeListPrefixListInterface() throws IOException {
+    Configuration c = parseConfig("iosOspfDistributeListPrefixListInterface");
+    String distListPolicyName = "~OSPF_DIST_LIST_default_1_GigabitEthernet0/0~";
+
+    assertThat(c.getRoutingPolicies(), hasKey(distListPolicyName));
+
+    assertThat(
+        c.getAllInterfaces().get("GigabitEthernet0/0").getOspfInboundDistributeListPolicy(),
+        equalTo(distListPolicyName));
+
+    RoutingPolicy routingPolicy = c.getRoutingPolicies().get(distListPolicyName);
+    List<org.batfish.datamodel.routing_policy.statement.Statement> statements =
+        routingPolicy.getStatements();
+
+    assertThat(
+        statements,
+        equalTo(
+            ImmutableList.of(
+                new If(
+                    new MatchPrefixSet(
+                        DestinationNetwork.instance(), new NamedPrefixSet("filter_1")),
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
+
+    assertFalse(
+        routingPolicy.process(
+            OspfIntraAreaRoute.builder().setNetwork(Prefix.parse("1.1.1.0/24")).setArea(1L).build(),
+            OspfIntraAreaRoute.builder(),
+            null,
+            "default",
+            Direction.IN));
+    assertTrue(
+        routingPolicy.process(
+            OspfIntraAreaRoute.builder().setNetwork(Prefix.parse("2.2.2.0/24")).setArea(1L).build(),
+            OspfIntraAreaRoute.builder(),
+            null,
+            "default",
+            Direction.IN));
+  }
+
+  @Test
+  public void testIosOspfDistributeListPrefixListGlobal() throws IOException {
+    Configuration c = parseConfig("iosOspfDistributeListPrefixListGlobal");
+    String distListPoicyName = "~OSPF_DIST_LIST_default_1_GigabitEthernet0/0~";
+
+    assertThat(c.getRoutingPolicies(), hasKey(distListPoicyName));
+
+    assertThat(
+        c.getAllInterfaces().get("GigabitEthernet0/0").getOspfInboundDistributeListPolicy(),
+        equalTo(distListPoicyName));
+
+    RoutingPolicy routingPolicy = c.getRoutingPolicies().get(distListPoicyName);
+    List<org.batfish.datamodel.routing_policy.statement.Statement> statements =
+        routingPolicy.getStatements();
+
+    assertThat(
+        statements,
+        equalTo(
+            ImmutableList.of(
+                new If(
+                    new MatchPrefixSet(
+                        DestinationNetwork.instance(), new NamedPrefixSet("filter_2")),
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
+
+    assertTrue(
+        routingPolicy.process(
+            OspfIntraAreaRoute.builder().setNetwork(Prefix.parse("1.1.1.0/24")).setArea(1L).build(),
+            OspfIntraAreaRoute.builder(),
+            null,
+            "default",
+            Direction.IN));
+    assertFalse(
+        routingPolicy.process(
+            OspfIntraAreaRoute.builder().setNetwork(Prefix.parse("2.2.2.0/24")).setArea(1L).build(),
+            OspfIntraAreaRoute.builder(),
+            null,
+            "default",
+            Direction.IN));
   }
 
   @Test
@@ -5360,5 +5557,41 @@ public class CiscoGrammarTest {
         ccae, not(hasUndefinedReference(filename, NETWORK_OBJECT_GROUP, "source-real-group")));
     assertThat(ccae, hasUndefinedReference(filename, NETWORK_OBJECT, "undef-source-mapped"));
     assertThat(ccae, hasUndefinedReference(filename, NETWORK_OBJECT, "undef-source-real"));
+  }
+
+  /**
+   * Ensure that Arista redistributes a static default route even though default-originate is not
+   * explicitly specified in the config
+   */
+  @Test
+  public void testAristaDefaultRouteRedistribution() throws IOException {
+    final String receiver = "ios_receiver";
+    final String advertiser = "arista_advertiser";
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(
+                    TESTRIGS_PREFIX + "arista-redistribute-default-route",
+                    ImmutableList.of(advertiser, receiver))
+                .build(),
+            _folder);
+
+    batfish.computeDataPlane();
+    Set<AbstractRoute> routes =
+        batfish.loadDataPlane().getRibs().get(receiver).get(DEFAULT_VRF_NAME).getRoutes();
+
+    assertThat(
+        routes,
+        hasItem(
+            OspfExternalType2Route.builder()
+                .setNetwork(Prefix.ZERO)
+                .setNextHopIp(Ip.parse("1.2.3.5"))
+                .setArea(1)
+                .setCostToAdvertiser(1)
+                .setAdvertiser(advertiser)
+                .setAdmin(110)
+                .setMetric(1)
+                .setLsaMetric(1)
+                .build()));
   }
 }

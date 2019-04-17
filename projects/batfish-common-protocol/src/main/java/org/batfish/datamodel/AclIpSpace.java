@@ -218,6 +218,26 @@ public class AclIpSpace extends IpSpace {
   }
 
   /**
+   * When an {@link AclIpSpace} is a pure union (list of only permit lines), flattens it into the
+   * permitted spaces.
+   *
+   * <p>This function makes {@code union(union(a, b), c)} equivalent to {@code union(a, b, c)}.
+   */
+  private static Stream<IpSpace> flattenAclIpSpacesForUnion(IpSpace space) {
+    if (!(space instanceof AclIpSpace)) {
+      return Stream.of(space);
+    }
+    AclIpSpace aclSpace = (AclIpSpace) space;
+    List<AclIpSpaceLine> lines = aclSpace.getLines();
+    if (lines.stream().allMatch(l -> l.getAction() == LineAction.PERMIT)) {
+      // This is just a big union, flatten it into the list of spaces it unions.
+      return lines.stream().map(AclIpSpaceLine::getIpSpace);
+    }
+    // Not a pure union, so don't flatten.
+    return Stream.of(aclSpace);
+  }
+
+  /**
    * Set-theoretic union of multiple {@link IpSpace IP spaces}.<br>
    * {@code null} ipSpaces are ignored. If all arguments are {@code null}, returns {@code null}.
    */
@@ -225,6 +245,7 @@ public class AclIpSpace extends IpSpace {
     IpSpace[] nonNullSpaces =
         StreamSupport.stream(ipSpaces.spliterator(), false)
             .filter(Objects::nonNull)
+            .flatMap(AclIpSpace::flattenAclIpSpacesForUnion)
             .toArray(IpSpace[]::new);
     if (nonNullSpaces.length == 0) {
       // no constraint

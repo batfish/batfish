@@ -204,7 +204,7 @@
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.3.4~",
                   "localAs" : 1,
                   "peerAddress" : "1.2.3.4",
-                  "remoteAs" : 1,
+                  "remoteAsns" : "1",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 }
@@ -2955,9 +2955,7 @@
                   "localAs" : 1,
                   "localIp" : "1.1.1.1",
                   "peerPrefix" : "10.1.1.0/24",
-                  "remoteAs" : [
-                    2
-                  ],
+                  "remoteAsns" : "2",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 }
@@ -3269,7 +3267,7 @@
                   "importPolicy" : "~PEER_IMPORT_POLICY:1.1.1.1/32~",
                   "localAs" : 1,
                   "peerAddress" : "1.1.1.1",
-                  "remoteAs" : 2,
+                  "remoteAsns" : "2",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 }
@@ -3542,7 +3540,7 @@
                   "group" : "as1",
                   "localAs" : 1,
                   "peerAddress" : "1.10.1.1",
-                  "remoteAs" : 1,
+                  "remoteAsns" : "1",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 },
@@ -3563,7 +3561,7 @@
                   "group" : "as2",
                   "localAs" : 1,
                   "peerAddress" : "10.12.11.2",
-                  "remoteAs" : 2,
+                  "remoteAsns" : "2",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 }
@@ -3973,7 +3971,7 @@
                   "group" : "EBGP-PEER-SVL-PNI",
                   "localAs" : 2152,
                   "peerAddress" : "64.57.21.1",
-                  "remoteAs" : 11164,
+                  "remoteAsns" : "11164",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 }
@@ -6840,7 +6838,7 @@
                   ],
                   "localAs" : 1,
                   "peerAddress" : "10.0.1.2",
-                  "remoteAs" : 65001,
+                  "remoteAsns" : "65001",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 }
@@ -8797,13 +8795,7 @@
                   "localAs" : 12076,
                   "localIp" : "AUTO/NONE(-1l)",
                   "peerPrefix" : "10.10.20.0/24",
-                  "remoteAs" : [
-                    65001,
-                    65002,
-                    65003,
-                    65004,
-                    65005
-                  ],
+                  "remoteAsns" : "65001-65005",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 }
@@ -10656,7 +10648,7 @@
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.2.2.2~",
                   "localAs" : 65500,
                   "peerAddress" : "2.2.2.2",
-                  "remoteAs" : 6600,
+                  "remoteAsns" : "6600",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 }
@@ -13196,7 +13188,7 @@
         "name" : "cumulus_nclu",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
-        "deviceType" : "SWITCH",
+        "deviceType" : "ROUTER",
         "dnsServers" : [
           "192.0.2.3"
         ],
@@ -13376,7 +13368,8 @@
             "name" : "swp1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.datamodel.IpIpSpace",
+              "ip" : "169.254.0.1"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -13678,6 +13671,257 @@
                 "type" : "ReturnFalse"
               }
             ]
+          },
+          "~BGP_COMMON_EXPORT_POLICY:default~" : {
+            "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                      "comment" : "Redistribute connected routes into BGP",
+                      "conjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                          "protocol" : "connected"
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                            "calledPolicyName" : "rm1"
+                          },
+                          "postStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "UnsetWriteIntermediateBgpAttributes"
+                            }
+                          ],
+                          "postTrueStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetReadIntermediateBgpAttributes"
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                              "originType" : {
+                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                                "originType" : "incomplete"
+                              }
+                            }
+                          ],
+                          "preStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetWriteIntermediateBgpAttributes"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                      "conjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                          "prefix" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                          },
+                          "prefixSet" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                            "prefixSpace" : [
+                              "192.0.2.1/32"
+                            ]
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                            "protocol" : "bgp"
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                            "protocol" : "ibgp"
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                            "protocol" : "aggregate"
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                            "type" : "True"
+                          },
+                          "postStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "UnsetWriteIntermediateBgpAttributes"
+                            }
+                          ],
+                          "postTrueStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetReadIntermediateBgpAttributes"
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                              "originType" : {
+                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                                "originType" : "igp"
+                              }
+                            }
+                          ],
+                          "preStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetWriteIntermediateBgpAttributes"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "bgp"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "ibgp"
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ReturnFalse"
+              }
+            ]
+          },
+          "~BGP_COMMON_EXPORT_POLICY:vrf1~" : {
+            "name" : "~BGP_COMMON_EXPORT_POLICY:vrf1~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                      "comment" : "Redistribute connected routes into BGP",
+                      "conjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                          "protocol" : "connected"
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                            "type" : "True"
+                          },
+                          "postStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "UnsetWriteIntermediateBgpAttributes"
+                            }
+                          ],
+                          "postTrueStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetReadIntermediateBgpAttributes"
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                              "originType" : {
+                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                                "originType" : "incomplete"
+                              }
+                            }
+                          ],
+                          "preStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetWriteIntermediateBgpAttributes"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "bgp"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "ibgp"
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ReturnFalse"
+              }
+            ]
+          },
+          "~BGP_PEER_EXPORT_POLICY:default:swp1~" : {
+            "name" : "~BGP_PEER_EXPORT_POLICY:default:swp1~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "peer-export policy main conditional: exitAccept if true / exitReject if false",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                      "disjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                          "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:default~"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -13700,6 +13944,35 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "bgpProcess" : {
+              "interfaceNeighbors" : {
+                "swp1" : {
+                  "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
+                  "additionalPathsReceive" : false,
+                  "additionalPathsSelectAll" : false,
+                  "additionalPathsSend" : false,
+                  "advertiseExternal" : false,
+                  "advertiseInactive" : false,
+                  "allowLocalAsIn" : false,
+                  "allowRemoteAsOut" : false,
+                  "defaultMetric" : 0,
+                  "ebgpMultihop" : false,
+                  "enforceFirstAs" : false,
+                  "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:swp1~",
+                  "localAs" : 65500,
+                  "localIp" : "169.254.0.1",
+                  "peerInterface" : "swp1",
+                  "remoteAsns" : "1-65499,65501-4294967295",
+                  "routeReflectorClient" : false,
+                  "sendCommunity" : false
+                }
+              },
+              "multipathEbgp" : false,
+              "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
+              "multipathIbgp" : false,
+              "routerId" : "192.0.2.2",
+              "tieBreaker" : "ARRIVAL_ORDER"
+            },
             "interfaces" : [
               "bond1",
               "bond1.4094",
@@ -13735,6 +14008,13 @@
           },
           "vrf1" : {
             "name" : "vrf1",
+            "bgpProcess" : {
+              "multipathEbgp" : false,
+              "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
+              "multipathIbgp" : false,
+              "routerId" : "192.0.2.3",
+              "tieBreaker" : "ARRIVAL_ORDER"
+            },
             "interfaces" : [
               "vlan4",
               "vrf1"
@@ -14604,7 +14884,7 @@
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:1:3.3.3.3~",
                   "localAs" : 1,
                   "peerAddress" : "3.3.3.3",
-                  "remoteAs" : 2,
+                  "remoteAsns" : "2",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 }
@@ -14951,7 +15231,7 @@
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:/Common/my_bgp:192.0.2.1~",
                   "localAs" : 123,
                   "peerAddress" : "192.0.2.1",
-                  "remoteAs" : 456,
+                  "remoteAsns" : "456",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 }
@@ -15372,7 +15652,7 @@
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:65500:10.0.0.1~",
                   "localAs" : 65500,
                   "peerAddress" : "10.0.0.1",
-                  "remoteAs" : 65501,
+                  "remoteAsns" : "65501",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 }
@@ -17835,7 +18115,7 @@
                   "group" : "foobar-iBGP_ipv4",
                   "localAs" : 5555,
                   "peerAddress" : "1.2.1.1",
-                  "remoteAs" : 5555,
+                  "remoteAsns" : "5555",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 },
@@ -17857,7 +18137,7 @@
                   "group" : "foobar-iBGP_ipv4",
                   "localAs" : 5555,
                   "peerAddress" : "1.2.1.2",
-                  "remoteAs" : 5555,
+                  "remoteAsns" : "5555",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 },
@@ -17879,7 +18159,7 @@
                   "group" : "foobar-iBGP_border_ipv4",
                   "localAs" : 5555,
                   "peerAddress" : "1.2.1.3",
-                  "remoteAs" : 5555,
+                  "remoteAsns" : "5555",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 }
@@ -19819,7 +20099,7 @@
                   "importPolicy" : "~PEER_IMPORT_POLICY:3.4.5.7/32~",
                   "localAs" : 1,
                   "peerAddress" : "3.4.5.7",
-                  "remoteAs" : 12345,
+                  "remoteAsns" : "12345",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 }
@@ -20203,7 +20483,7 @@
                   "importPolicy" : "~PEER_IMPORT_POLICY:172.16.2.1/32~",
                   "localAs" : 65533,
                   "peerAddress" : "172.16.2.1",
-                  "remoteAs" : 65530,
+                  "remoteAsns" : "65530",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 },
@@ -20229,7 +20509,7 @@
                   "importPolicy" : "~PEER_IMPORT_POLICY:172.16.2.2/32~",
                   "localAs" : 65533,
                   "peerAddress" : "172.16.2.2",
-                  "remoteAs" : 65530,
+                  "remoteAsns" : "65530",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 }
@@ -20491,23 +20771,15 @@
                         {
                           "action" : "PERMIT",
                           "ipSpace" : {
-                            "class" : "org.batfish.datamodel.AclIpSpace",
-                            "lines" : [
-                              {
-                                "action" : "PERMIT",
-                                "ipSpace" : {
-                                  "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                                  "ipWildcard" : "1.2.3.4"
-                                }
-                              },
-                              {
-                                "action" : "PERMIT",
-                                "ipSpace" : {
-                                  "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                                  "ipWildcard" : "1.2.3.5"
-                                }
-                              }
-                            ]
+                            "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                            "ipWildcard" : "1.2.3.4"
+                          }
+                        },
+                        {
+                          "action" : "PERMIT",
+                          "ipSpace" : {
+                            "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                            "ipWildcard" : "1.2.3.5"
                           }
                         },
                         {
@@ -20597,23 +20869,15 @@
                           {
                             "action" : "PERMIT",
                             "ipSpace" : {
-                              "class" : "org.batfish.datamodel.AclIpSpace",
-                              "lines" : [
-                                {
-                                  "action" : "PERMIT",
-                                  "ipSpace" : {
-                                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                                    "ipWildcard" : "1.2.3.4"
-                                  }
-                                },
-                                {
-                                  "action" : "PERMIT",
-                                  "ipSpace" : {
-                                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                                    "ipWildcard" : "1.2.3.5"
-                                  }
-                                }
-                              ]
+                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                              "ipWildcard" : "1.2.3.4"
+                            }
+                          },
+                          {
+                            "action" : "PERMIT",
+                            "ipSpace" : {
+                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                              "ipWildcard" : "1.2.3.5"
                             }
                           },
                           {
@@ -25877,7 +26141,7 @@
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~",
                   "localAs" : 1,
                   "peerAddress" : "1.1.1.1",
-                  "remoteAs" : 1,
+                  "remoteAsns" : "1",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 },
@@ -25898,7 +26162,7 @@
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:3.3.3.3~",
                   "localAs" : 1,
                   "peerAddress" : "3.3.3.3",
-                  "remoteAs" : 3,
+                  "remoteAsns" : "3",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 },
@@ -25919,7 +26183,7 @@
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:4.4.4.4~",
                   "localAs" : 1,
                   "peerAddress" : "4.4.4.4",
-                  "remoteAs" : 4,
+                  "remoteAsns" : "4",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 }
@@ -26688,7 +26952,7 @@
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.0.0.0~",
                   "localAs" : 2,
                   "peerAddress" : "10.0.0.0",
-                  "remoteAs" : 1,
+                  "remoteAsns" : "1",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 }
@@ -26829,6 +27093,9 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
+            "allPrefixes" : [
+              "1.2.3.4/24"
+            ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
@@ -26841,6 +27108,7 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
+            "prefix" : "1.2.3.4/24",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -28844,9 +29112,7 @@
                   "group" : "RAAS",
                   "localAs" : 64601,
                   "peerPrefix" : "10.98.25.0/25",
-                  "remoteAs" : [
-                    65511
-                  ],
+                  "remoteAsns" : "65511",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 }
@@ -28873,7 +29139,7 @@
                   "group" : "SPINE",
                   "localAs" : 64601,
                   "peerAddress" : "100.93.100.16",
-                  "remoteAs" : 64802,
+                  "remoteAsns" : "64802",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false
                 }
@@ -29300,7 +29566,7 @@
                   ],
                   "localAs" : 1,
                   "peerAddress" : "1.1.1.1",
-                  "remoteAs" : 2,
+                  "remoteAsns" : "2",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 }
@@ -34649,7 +34915,7 @@
                   "localAs" : 65002,
                   "localIp" : "172.16.3.1",
                   "peerAddress" : "172.16.3.2",
-                  "remoteAs" : 65003,
+                  "remoteAsns" : "65003",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 },
@@ -34678,7 +34944,7 @@
                   "localAs" : 65002,
                   "localIp" : "172.16.5.1",
                   "peerAddress" : "172.16.5.2",
-                  "remoteAs" : 65004,
+                  "remoteAsns" : "65004",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 },
@@ -34707,7 +34973,7 @@
                   "localAs" : 65002,
                   "localIp" : "172.16.7.1",
                   "peerAddress" : "172.16.7.2",
-                  "remoteAs" : 65005,
+                  "remoteAsns" : "65005",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 },
@@ -34733,7 +34999,7 @@
                   "localAs" : 65500,
                   "localIp" : "192.168.1.2",
                   "peerAddress" : "192.168.1.1",
-                  "remoteAs" : 65500,
+                  "remoteAsns" : "65500",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 },
@@ -34759,7 +35025,7 @@
                   "localAs" : 65500,
                   "localIp" : "192.168.1.2",
                   "peerAddress" : "192.168.1.3",
-                  "remoteAs" : 65500,
+                  "remoteAsns" : "65500",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 },
@@ -34785,7 +35051,7 @@
                   "localAs" : 65500,
                   "localIp" : "192.168.1.2",
                   "peerAddress" : "192.168.1.5",
-                  "remoteAs" : 65500,
+                  "remoteAsns" : "65500",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 },
@@ -34811,7 +35077,7 @@
                   "localAs" : 65500,
                   "localIp" : "192.168.1.2",
                   "peerAddress" : "192.168.1.44",
-                  "remoteAs" : 65500,
+                  "remoteAsns" : "65500",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 }

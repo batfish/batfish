@@ -19,7 +19,6 @@ import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.answers.SelfDescribingObject;
 
 /**
  * Enables specification a set of BGP peer properties.
@@ -49,9 +48,7 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
           .put(LOCAL_AS, new PropertyDescriptor<>(BgpPeerConfig::getLocalAs, Schema.LONG))
           .put(LOCAL_IP, new PropertyDescriptor<>(BgpPeerConfig::getLocalIp, Schema.IP))
           .put(IS_PASSIVE, new PropertyDescriptor<>((peer) -> getIsPassive(peer), Schema.BOOLEAN))
-          .put(
-              REMOTE_AS,
-              new PropertyDescriptor<>((peer) -> getRemoteAs(peer), Schema.SELF_DESCRIBING))
+          .put(REMOTE_AS, new PropertyDescriptor<>(BgpPeerConfig::getRemoteAsns, Schema.STRING))
           .put(
               ROUTE_REFLECTOR_CLIENT,
               new PropertyDescriptor<>(BgpPeerConfig::getRouteReflectorClient, Schema.BOOLEAN))
@@ -112,19 +109,6 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
     }
     if (peer instanceof BgpPassivePeerConfig) {
       return true;
-    }
-    throw new IllegalArgumentException(
-        String.format("Peer is neither Active nor Passive: %s", peer));
-  }
-
-  @VisibleForTesting
-  static SelfDescribingObject getRemoteAs(@Nonnull BgpPeerConfig peer) {
-    if (peer instanceof BgpActivePeerConfig) {
-      return new SelfDescribingObject(Schema.LONG, ((BgpActivePeerConfig) peer).getRemoteAs());
-    }
-    if (peer instanceof BgpPassivePeerConfig) {
-      return new SelfDescribingObject(
-          Schema.list(Schema.LONG), ((BgpPassivePeerConfig) peer).getRemoteAs());
     }
     throw new IllegalArgumentException(
         String.format("Peer is neither Active nor Passive: %s", peer));

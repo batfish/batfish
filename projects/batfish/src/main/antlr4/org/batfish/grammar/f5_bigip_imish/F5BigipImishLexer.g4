@@ -35,6 +35,11 @@ ADDRESS
   'address'
 ;
 
+ALWAYS_COMPARE_MED
+:
+  'always-compare-med'
+;
+
 ANY
 :
   'any'
@@ -73,6 +78,11 @@ DENY
 DESCRIPTION
 :
   'description' -> pushMode ( M_Description )
+;
+
+DETERMINISTIC_MED
+:
+  'deterministic-med'
 ;
 
 EBGP

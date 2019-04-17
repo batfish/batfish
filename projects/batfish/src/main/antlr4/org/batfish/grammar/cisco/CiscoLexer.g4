@@ -10896,6 +10896,11 @@ ROUTE_POLICY
    'route-policy'
 ;
 
+ROUTE_PREFERENCE
+:
+   'route-preference'
+;
+
 ROUTE_REFLECTOR_CLIENT
 :
    'route-reflector-client'
