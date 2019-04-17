@@ -17,13 +17,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+/** Tests for {@link ReferenceLibrary} */
 public class ReferenceLibraryTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   /** check that we barf on duplicates */
   @Test
-  public void checkDuplicatesDups() {
+  public void testCheckDuplicatesDups() {
     _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage("Duplicate");
 
@@ -32,7 +33,7 @@ public class ReferenceLibraryTest {
 
   /** check that we do NOT barf on duplicates */
   @Test
-  public void checkDuplicatesNoDups() {
+  public void testCheckDuplicatesNoDups() {
     checkDuplicates("test", ImmutableList.of(""));
     checkDuplicates("test", ImmutableList.of("a"));
     checkDuplicates("test", ImmutableList.of("a", "b", "c"));
@@ -40,7 +41,7 @@ public class ReferenceLibraryTest {
 
   /** check that we deserialize successfully and into two books */
   @Test
-  public void libraryDeserialization() throws IOException {
+  public void testLibraryDeserialization() throws IOException {
     ReferenceLibrary library =
         BatfishObjectMapper.mapper()
             .readValue(
@@ -52,7 +53,7 @@ public class ReferenceLibraryTest {
 
   /** check that we barf on duplicate book names */
   @Test
-  public void libraryDeserializationDuplicateBooks() throws IOException {
+  public void testLibraryDeserializationDuplicateBooks() throws IOException {
     _thrown.expect(InvalidDefinitionException.class);
     _thrown.expectMessage("Duplicate");
 
@@ -62,9 +63,9 @@ public class ReferenceLibraryTest {
             ReferenceLibrary.class);
   }
 
-  /** check that merger of address books is proper */
+  /** check that merger of reference books is proper */
   @Test
-  public void mergeAddressBooks() throws IOException {
+  public void testMergeReferenceBooks() throws IOException {
     Path tempPath = CommonUtil.createTempFile("referencelibrary", "tmp");
     ReferenceLibrary library =
         new ReferenceLibrary(
