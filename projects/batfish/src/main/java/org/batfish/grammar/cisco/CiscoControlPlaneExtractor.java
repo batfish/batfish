@@ -686,6 +686,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_switchport_trunk_allowedContext;
 import org.batfish.grammar.cisco.CiscoParser.If_switchport_trunk_encapsulationContext;
 import org.batfish.grammar.cisco.CiscoParser.If_switchport_trunk_group_eosContext;
 import org.batfish.grammar.cisco.CiscoParser.If_switchport_trunk_nativeContext;
+import org.batfish.grammar.cisco.CiscoParser.If_vlanContext;
 import org.batfish.grammar.cisco.CiscoParser.If_vrf_memberContext;
 import org.batfish.grammar.cisco.CiscoParser.If_vrrpContext;
 import org.batfish.grammar.cisco.CiscoParser.If_zone_memberContext;
@@ -1140,6 +1141,7 @@ import org.batfish.grammar.cisco.CiscoParser.Viaf_vrrpContext;
 import org.batfish.grammar.cisco.CiscoParser.Viafv_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.Viafv_preemptContext;
 import org.batfish.grammar.cisco.CiscoParser.Viafv_priorityContext;
+import org.batfish.grammar.cisco.CiscoParser.Vlan_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrf_block_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfd_descriptionContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrrp_interfaceContext;
@@ -1403,6 +1405,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private static int toInteger(Token t) {
     return Integer.parseInt(t.getText());
+  }
+
+  private static int toInteger(Vlan_idContext ctx) {
+    return Integer.parseInt(ctx.getText(), 10);
   }
 
   private static String toInterfaceName(Interface_nameContext ctx) {
@@ -6566,6 +6572,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     for (Interface currentInterface : _currentInterfaces) {
       currentInterface.setNativeVlan(vlan);
     }
+  }
+
+  @Override
+  public void exitIf_vlan(If_vlanContext ctx) {
+    int vlan = toInteger(ctx.vlan);
+    _currentInterfaces.forEach(iface -> iface.setEncapsulationVlan(vlan));
   }
 
   @Override

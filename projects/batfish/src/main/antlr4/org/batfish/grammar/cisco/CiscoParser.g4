@@ -5,7 +5,7 @@ Cisco_common, Arista_mlag, Arista_vlan, Cisco_aaa, Cisco_acl, Cisco_bgp, Cisco_c
 
 
 options {
-   superClass = 'org.batfish.grammar.BatfishParser';
+   superClass = 'org.batfish.grammar.cisco.parsing.CiscoBaseParser';
    tokenVocab = CiscoLexer;
 }
 
