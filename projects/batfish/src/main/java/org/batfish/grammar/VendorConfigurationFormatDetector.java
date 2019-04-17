@@ -36,6 +36,8 @@ public final class VendorConfigurationFormatDetector {
   private static final Pattern MRV_HOSTNAME_PATTERN =
       Pattern.compile("(?m)^configuration hostname .*$");
   private static final Pattern MSS_PATTERN = Pattern.compile("(?m)^set system name");
+  private static final Pattern RANCID_ARISTA_PATTERN =
+      Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: arista$");
   private static final Pattern RANCID_CISCO_NX_PATTERN =
       Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: cisco-nx$");
   private static final Pattern RANCID_CISCO_PATTERN =
@@ -297,7 +299,9 @@ public final class VendorConfigurationFormatDetector {
 
   @Nullable
   private ConfigurationFormat checkRancid() {
-    if (fileTextMatches(RANCID_CISCO_PATTERN)) {
+    if (fileTextMatches(RANCID_ARISTA_PATTERN)) {
+      return ConfigurationFormat.ARISTA;
+    } else if (fileTextMatches(RANCID_CISCO_PATTERN)) {
       return checkCisco(); // unfortunately, old RANCID cannot distinguish
       // subtypes
     } else if (fileTextMatches(RANCID_CISCO_NX_PATTERN)) {
