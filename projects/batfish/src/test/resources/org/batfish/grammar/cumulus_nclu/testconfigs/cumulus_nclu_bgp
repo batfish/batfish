@@ -16,5 +16,7 @@ net add bgp vrf vrf1 ipv4 unicast redistribute connected
 net add bgp vrf vrf1 ipv4 unicast redistribute static
 net add bgp vrf vrf1 l2vpn evpn  advertise ipv4 unicast
 net add bgp vrf vrf1 router-id 192.0.2.3
+net add loopback lo ip address 10.0.0.1/32
+net add routing route-map rm1 permit 1 match interface lo
 #
 net commit

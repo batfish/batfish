@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
-import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -138,7 +137,7 @@ public class BgpProcess implements Serializable {
   /** Returns BGP unnumbered peer configurations keyed by peer-interface */
   @JsonProperty(PROP_INTERFACE_NEIGHBORS)
   @Nonnull
-  public Map<String, BgpUnnumberedPeerConfig> getInterfaceNeighbors() {
+  public SortedMap<String, BgpUnnumberedPeerConfig> getInterfaceNeighbors() {
     return _interfaceNeighbors;
   }
 

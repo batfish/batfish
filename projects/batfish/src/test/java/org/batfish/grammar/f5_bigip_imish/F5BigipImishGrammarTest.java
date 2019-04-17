@@ -23,6 +23,7 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_NEIGH
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_PROCESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.ROUTE_MAP;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -276,6 +277,24 @@ public final class F5BigipImishGrammarTest {
     // kernel routes should be redistributed
     assertThat(routes1, hasItem(isBgpRouteThat(hasPrefix(Prefix.strict("10.0.0.2/32")))));
     assertThat(routes2, hasItem(isBgpRouteThat(hasPrefix(Prefix.strict("10.0.0.1/32")))));
+  }
+
+  @Test
+  public void testBgpNextHopSelfExtraction() {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_bgp_next_hop_self");
+
+    assertThat(
+        vc.getBgpProcesses().get("65501").getNeighbors().keySet(),
+        containsInAnyOrder("192.0.2.1", "192.0.2.3"));
+    assertTrue(
+        "Ensure next-hop-self is extracted for ip neighbor",
+        vc.getBgpProcesses().get("65501").getNeighbors().get("192.0.2.1").getNextHopSelf());
+    assertTrue(
+        "Ensure next-hop-self is extracted for peer-group",
+        vc.getBgpProcesses().get("65501").getPeerGroups().get("pg1").getNextHopSelf());
+    assertFalse(
+        "Ensure next-hop-self is false by default",
+        vc.getBgpProcesses().get("65501").getNeighbors().get("192.0.2.3").getNextHopSelf());
   }
 
   @Test

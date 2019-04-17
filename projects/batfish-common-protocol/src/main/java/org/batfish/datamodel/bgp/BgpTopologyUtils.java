@@ -207,13 +207,15 @@ public final class BgpTopologyUtils {
       @Nonnull BgpPeerConfigId candidateId,
       @Nonnull Set<String> possibleHostnames,
       @Nonnull NetworkConfigurations nc) {
+    if (!possibleHostnames.contains(candidateId.getHostname())) {
+      return false;
+    }
     if (candidateId.isDynamic()) {
       BgpPassivePeerConfig candidate = nc.getBgpDynamicPeerConfig(candidateId);
       return candidate != null
           && candidate.canConnect(neighbor.getLocalAs())
           && neighbor.getRemoteAsns().contains(candidate.getLocalAs())
-          && candidate.canConnect(neighbor.getLocalIp())
-          && possibleHostnames.contains(candidateId.getHostname());
+          && candidate.canConnect(neighbor.getLocalIp());
     } else {
       BgpActivePeerConfig candidate = nc.getBgpPointToPointPeerConfig(candidateId);
       return candidate != null
