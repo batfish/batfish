@@ -57,10 +57,23 @@ public final class BgpSessionProperties {
    * Create a set of new parameters based on session initiator and listener. <b>Note</b> that some
    * parameters (such as {@link #isEbgp()} will be determined based on the configuration of the
    * initiator only.
+   *
+   * @param reverseDirection Whether to create the session properties for reverse direction
+   *     (listener to initiator) rather than forwards direction (initiator to listener)
    */
   public static BgpSessionProperties from(
-      @Nonnull BgpActivePeerConfig initiator, @Nonnull BgpPeerConfig listener) {
-    return from(initiator, listener, getSessionType(initiator));
+      @Nonnull BgpActivePeerConfig initiator,
+      @Nonnull BgpPeerConfig listener,
+      boolean reverseDirection) {
+    SessionType sessionType = getSessionType(initiator);
+    return new BgpSessionProperties(
+        !SessionType.isEbgp(sessionType)
+            && listener.getAdditionalPathsReceive()
+            && initiator.getAdditionalPathsSend()
+            && initiator.getAdditionalPathsSelectAll(),
+        SessionType.isEbgp(sessionType) && initiator.getAdvertiseInactive(),
+        !SessionType.isEbgp(sessionType) && initiator.getAdvertiseExternal(),
+        sessionType);
   }
 
   /**
@@ -81,19 +94,6 @@ public final class BgpSessionProperties {
       }
     }
     return sessionType;
-  }
-
-  private static BgpSessionProperties from(
-      @Nonnull BgpPeerConfig initiator, @Nonnull BgpPeerConfig listener, SessionType sessionType) {
-
-    return new BgpSessionProperties(
-        !SessionType.isEbgp(sessionType)
-            && listener.getAdditionalPathsReceive()
-            && initiator.getAdditionalPathsSend()
-            && initiator.getAdditionalPathsSelectAll(),
-        SessionType.isEbgp(sessionType) && initiator.getAdvertiseInactive(),
-        !SessionType.isEbgp(sessionType) && initiator.getAdvertiseExternal(),
-        sessionType);
   }
 
   @Override
