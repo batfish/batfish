@@ -73,7 +73,7 @@ public class BgpTopologyUtilsTest {
   public void testInitTopologyRemotePrefixNotMatchingLocalIp() {
     // Peer 1 on node1 with IP 1.1.1.1 is active, set up to peer with 2.2.2.2
     // Peer 2 on node2 with IP 2.2.2.2 is passive, with remote prefix 1.1.1.0/24
-    // Should see one edge in BGP topology: peer 1 to peer 2
+    // Should see one session come up in BGP topology: peer 1 to peer 2
 
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");
@@ -103,7 +103,7 @@ public class BgpTopologyUtilsTest {
 
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
         initBgpTopology(_configs, ipOwners, true, false, null);
-    assertThat(bgpTopology.edges(), hasSize(1));
+    assertThat(bgpTopology.edges(), hasSize(2));
     EndpointPair<BgpPeerConfigId> edge = bgpTopology.edges().iterator().next();
     assertThat(edge.source().getHostname(), equalTo("node1"));
     assertThat(edge.target().getHostname(), equalTo("node2"));
@@ -114,7 +114,7 @@ public class BgpTopologyUtilsTest {
     // Peer 1 on node1 with IP 1.1.1.1 is active, set up to peer with 1.1.1.2
     // Peer 2 on node2 with IP 1.1.1.2 is passive, able to peer with peer 1
     // Peer 3 has the same configuration as peer 2, but on node3 with IP 1.1.1.3
-    // Should see one edge in BGP topology: peer 1 to peer 2
+    // Should see one session come up in BGP topology: peer 1 to peer 2
 
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("1.1.1.2");
@@ -154,7 +154,7 @@ public class BgpTopologyUtilsTest {
 
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
         initBgpTopology(_configs, ipOwners, true, false, null);
-    assertThat(bgpTopology.edges(), hasSize(1));
+    assertThat(bgpTopology.edges(), hasSize(2));
     EndpointPair<BgpPeerConfigId> edge = bgpTopology.edges().iterator().next();
     assertThat(edge.source().getHostname(), equalTo("node1"));
     assertThat(edge.target().getHostname(), equalTo("node2"));

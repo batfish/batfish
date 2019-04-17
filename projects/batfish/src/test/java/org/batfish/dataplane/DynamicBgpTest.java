@@ -58,11 +58,8 @@ public class DynamicBgpTest {
     DataPlane dp = batfish.loadDataPlane();
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology = dp.getBgpTopology();
 
-    /*
-     * Check peering edges. r1 <---> r2 has two edges, one in each direction. r2<--r3 and r2<--r4
-     * are unidirectional connections, since dynamic neighbor cannot initiate connections.
-     */
-    assertThat(bgpTopology.edges(), hasSize(4));
+    // Three sessions are established, so should see 6 directed edges.
+    assertThat(bgpTopology.edges(), hasSize(6));
 
     // Ensure routing info has been exchanged, and routes from r3/r4 exist on r1
     GenericRib<AnnotatedRoute<AbstractRoute>> r1Rib =
@@ -91,11 +88,8 @@ public class DynamicBgpTest {
     DataPlane dp = batfish.loadDataPlane();
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology = dp.getBgpTopology();
 
-    /*
-     * Check peering edges. r1 <---> r2 has two edges, one in each direction. r2<--r3 and r2<--r4
-     * are unidirectional connections, since dynamic neighbor cannot initiate connections.
-     */
-    assertThat(bgpTopology.edges(), hasSize(4));
+    // Three sessions are established, so should see 6 directed edges.
+    assertThat(bgpTopology.edges(), hasSize(6));
 
     // Ensure routing info has been exchanged, and routes from r3/r4 exist on r1
     GenericRib<AnnotatedRoute<AbstractRoute>> r1Rib =
@@ -135,11 +129,8 @@ public class DynamicBgpTest {
     DataPlane dp = batfish.loadDataPlane();
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology = dp.getBgpTopology();
 
-    /*
-     * Check peering edges. r1 <---> r2 has two edges, one in each direction. r2<--r3 valid
-     * are unidirectional connections, since dynamic neighbor cannot initiate connections.
-     */
-    assertThat(bgpTopology.edges(), hasSize(3));
+    // Only two sessions are established (not r2 <--> r4), so should see 4 directed edges.
+    assertThat(bgpTopology.edges(), hasSize(4));
 
     // Ensure routing info has been exchanged, and routes from r3/r4 exist on r1
     GenericRib<AnnotatedRoute<AbstractRoute>> r1Rib =
