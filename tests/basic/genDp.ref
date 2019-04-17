@@ -23,15 +23,15 @@
       "dependentRoutesIterations" : 7,
       "eigrpInternalIterations" : 1,
       "mainRibRoutesByIteration" : {
-        "1" : 207,
-        "2" : 271,
-        "3" : 319,
+        "1" : 211,
+        "2" : 307,
+        "3" : 321,
         "4" : 338,
         "5" : 339,
         "6" : 339,
         "7" : 339
       },
-      "ospfInternalIterations" : 4,
+      "ospfInternalIterations" : 3,
       "version" : "0.36.0",
       "warnings" : { }
     }
