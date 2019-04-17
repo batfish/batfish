@@ -46470,7 +46470,7 @@
             "        BRACE_RIGHT:'}'",
             "        NEWLINE:'\\n\\n')))",
             "  (imish_chunk",
-            "    IMISH_CHUNK:'!\\naccess-list acl1 permit any\\naccess-list acl2 permit 192.0.2.0/24\\n!\\nbfd gtsm enable\\n!\\ninterface lo\\n!\\ninterface tmm\\n!\\ninterface vlan1\\n!\\nrouter bgp 65500\\n bgp graceful-restart restart-time 123\\n bgp router-id 192.0.2.100\\n max-paths ebgp 12\\n neighbor pg1 peer-group\\n no neighbor pg1 capability graceful-restart\\n neighbor pg1 fall-over pfd\\n neighbor pg1 maximum-prefix 12345\\n neighbor 1:2:3:: remote-as 555\\n neighbor 1:2:3::4:5:6 remote-as 555\\n neighbor 1:2:3:4:5:6:7:: remote-as 555\\n neighbor ::1:2:3:4:5:6 remote-as 555\\n neighbor ::1:2:3:4:5:6:7 remote-as 555\\n neighbor 1:2::3:4.5.6.7 remote-as 555\\n neighbor 1:2:3:4:5:6:9.8.7.6 remote-as 555\\n neighbor 10.0.0.1 remote-as 65501\\n neighbor 10.0.0.1 description desc1\\n neighbor 10.0.0.1 peer-group pg1\\n neighbor 10.0.0.1 update-source us1\\n redistribute kernel route-map rm1\\n!\\nno service password-encryption\\n!\\nroute-map rm1 permit 1\\n match ip address acl1\\n set community 1:2 3:4\\n!\\nroute-map rm1 deny 2\\n!\\nline con 0\\n login\\nline vty 0 39\\n login\\n!\\nend\\n\\n\\n')",
+            "    IMISH_CHUNK:'!\\naccess-list acl1 permit any\\naccess-list acl2 permit 192.0.2.0/24\\n!\\nbfd gtsm enable\\n!\\ninterface lo\\n!\\ninterface tmm\\n!\\ninterface vlan1\\n!\\nrouter bgp 65500\\n bgp always-compare-med\\n bgp graceful-restart restart-time 123\\n bgp router-id 192.0.2.100\\n max-paths ebgp 12\\n neighbor pg1 peer-group\\n no neighbor pg1 capability graceful-restart\\n neighbor pg1 fall-over pfd\\n neighbor pg1 maximum-prefix 12345\\n neighbor 1:2:3:: remote-as 555\\n neighbor 1:2:3::4:5:6 remote-as 555\\n neighbor 1:2:3:4:5:6:7:: remote-as 555\\n neighbor ::1:2:3:4:5:6 remote-as 555\\n neighbor ::1:2:3:4:5:6:7 remote-as 555\\n neighbor 1:2::3:4.5.6.7 remote-as 555\\n neighbor 1:2:3:4:5:6:9.8.7.6 remote-as 555\\n neighbor 10.0.0.1 remote-as 65501\\n neighbor 10.0.0.1 description desc1\\n neighbor 10.0.0.1 peer-group pg1\\n neighbor 10.0.0.1 update-source us1\\n redistribute kernel route-map rm1\\n!\\nno service password-encryption\\n!\\nroute-map rm1 permit 1\\n match ip address acl1\\n set community 1:2 3:4\\n!\\nroute-map rm1 deny 2\\n!\\nline con 0\\n login\\nline vty 0 39\\n login\\n!\\nend\\n\\n\\n')",
             "  EOF:<EOF>)",
             "(f5_bigip_imish_configuration",
             "  (statement",
@@ -46525,6 +46525,10 @@
             "      localas = (uint64",
             "        DEC:'65500')",
             "      NEWLINE:'\\n'",
+            "      (rb_bgp_always_compare_med",
+            "        BGP:'bgp'",
+            "        ALWAYS_COMPARE_MED:'always-compare-med'",
+            "        NEWLINE:'\\n')",
             "      (rb_null",
             "        BGP:'bgp'",
             "        GRACEFUL_RESTART:'graceful-restart'",
@@ -77811,49 +77815,49 @@
           "bgp neighbor" : {
             "10.0.0.1" : {
               "definitionLines" : [
-                34
+                35
               ],
               "numReferrers" : 1
             },
             "1:2:3:4:5:6:7::" : {
               "definitionLines" : [
-                29
+                30
               ],
               "numReferrers" : 1
             },
             "1:2:3:4:5:6:9.8.7.6" : {
               "definitionLines" : [
-                33
+                34
               ],
               "numReferrers" : 1
             },
             "1:2:3::" : {
               "definitionLines" : [
-                27
+                28
               ],
               "numReferrers" : 1
             },
             "1:2:3::4:5:6" : {
               "definitionLines" : [
-                28
+                29
               ],
               "numReferrers" : 1
             },
             "1:2::3:4.5.6.7" : {
               "definitionLines" : [
-                32
+                33
               ],
               "numReferrers" : 1
             },
             "::1:2:3:4:5:6" : {
               "definitionLines" : [
-                30
+                31
               ],
               "numReferrers" : 1
             },
             "::1:2:3:4:5:6:7" : {
               "definitionLines" : [
-                31
+                32
               ],
               "numReferrers" : 1
             }
@@ -77880,7 +77884,8 @@
                 35,
                 36,
                 37,
-                38
+                38,
+                39
               ],
               "numReferrers" : 1
             }
@@ -77888,7 +77893,7 @@
           "peer-group" : {
             "pg1" : {
               "definitionLines" : [
-                23
+                24
               ],
               "numReferrers" : 0
             }
@@ -77896,10 +77901,10 @@
           "route-map" : {
             "rm1" : {
               "definitionLines" : [
-                42,
                 43,
                 44,
-                46
+                45,
+                47
               ],
               "numReferrers" : 1
             }
@@ -83127,49 +83132,49 @@
           "access-list" : {
             "acl1" : {
               "route-map match ip address" : [
-                43
+                44
               ]
             }
           },
           "bgp neighbor" : {
             "10.0.0.1" : {
               "bgp neighbor self-reference" : [
-                34
+                35
               ]
             },
             "1:2:3:4:5:6:7::" : {
               "bgp neighbor self-reference" : [
-                29
+                30
               ]
             },
             "1:2:3:4:5:6:9.8.7.6" : {
               "bgp neighbor self-reference" : [
-                33
+                34
               ]
             },
             "1:2:3::" : {
               "bgp neighbor self-reference" : [
-                27
+                28
               ]
             },
             "1:2:3::4:5:6" : {
               "bgp neighbor self-reference" : [
-                28
+                29
               ]
             },
             "1:2::3:4.5.6.7" : {
               "bgp neighbor self-reference" : [
-                32
+                33
               ]
             },
             "::1:2:3:4:5:6" : {
               "bgp neighbor self-reference" : [
-                30
+                31
               ]
             },
             "::1:2:3:4:5:6:7" : {
               "bgp neighbor self-reference" : [
-                31
+                32
               ]
             }
           },
@@ -83183,14 +83188,14 @@
           "peer-group" : {
             "pg1" : {
               "neighbor peer-group" : [
-                36
+                37
               ]
             }
           },
           "route-map" : {
             "rm1" : {
               "router bgp redistribute kernel route-map" : [
-                38
+                39
               ]
             }
           }
