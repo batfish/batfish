@@ -48,6 +48,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -245,6 +246,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
                 "Ignoring reference to missing outbound route-map: %s", outboundRouteMapName));
       }
     }
+    LongSpace remoteAsns =
+        Optional.ofNullable(neighbor.getRemoteAs()).map(LongSpace::of).orElse(LongSpace.EMPTY);
 
     BgpActivePeerConfig.Builder builder =
         BgpActivePeerConfig.builder()
@@ -255,7 +258,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
             .setLocalAs(proc.getLocalAs())
             .setLocalIp(updateSource)
             .setPeerAddress(neighbor.getAddress())
-            .setRemoteAs(neighbor.getRemoteAs());
+            .setRemoteAsns(remoteAsns);
     builder.build();
   }
 
