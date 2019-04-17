@@ -73,7 +73,7 @@
             },
             "roleDimension": {
                 "description": "Role dimension to run the question on",
-                "type": "nodeRoleDimension",
+                "type": "nodeRoleDimensionName",
                 "optional": true,
                 "displayName": "Role Dimension"
             }
