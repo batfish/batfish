@@ -22,6 +22,7 @@ import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.F5_bigip_imish_conf
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Ip_specContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Line_actionContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_bgp_always_compare_medContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_bgp_deterministic_medContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_bgp_router_idContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_neighbor_ipv4Context;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_neighbor_ipv6Context;
@@ -191,6 +192,11 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   @Override
   public void exitRb_bgp_always_compare_med(Rb_bgp_always_compare_medContext ctx) {
     _currentBgpProcess.setAlwaysCompareMed(true);
+  }
+
+  @Override
+  public void exitRb_bgp_deterministic_med(Rb_bgp_deterministic_medContext ctx) {
+    _currentBgpProcess.setDeterministicMed(true);
   }
 
   @Override
