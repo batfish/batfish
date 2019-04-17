@@ -142,8 +142,9 @@ public final class WorkMgrTestUtils {
       String snapshot,
       String questionName,
       @Nullable String analysis,
-      @Nullable Answer answer) {
-    setupQuestionAndAnswer(network, snapshot, questionName, analysis, answer);
+      @Nullable Answer answer)
+      throws IOException {
+    setupQuestionAndAnswer(network, snapshot, questionName, analysis, answer, null);
   }
 
   /** Setup question and optionally answer on specified network and snapshot */
