@@ -231,9 +231,11 @@ public class OspfRoutingProcessTest {
     _routingProcess.initialize();
     // Empty map in this particular case just means no valid neighbors.
     _routingProcess.executeIteration(ImmutableMap.of());
+    assertTrue("Still have updates to main RIB", _routingProcess.isDirty());
+    _routingProcess.getUpdatesForMainRib();
 
     // Initialization delta should have been cleared
-    assertFalse(_routingProcess.isDirty());
+    assertFalse("All dirty state is cleared", _routingProcess.isDirty());
   }
 
   @Test
