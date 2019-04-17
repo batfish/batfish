@@ -21,7 +21,7 @@ public final class MapMatchers {
    */
   @SafeVarargs
   @SuppressWarnings("varargs")
-  public static @Nonnull <K, V, M extends Map<K, V>> Matcher<M> hasKeys(K... expectedKeys) {
+  public static @Nonnull <K, V> Matcher<Map<K, V>> hasKeys(K... expectedKeys) {
     return new HasKeys<>(containsInAnyOrder(expectedKeys));
   }
 
@@ -29,8 +29,7 @@ public final class MapMatchers {
    * Returns a matcher that matches a {@link Map} whose keySet is matched by the provided {@code
    * subMatcher}.
    */
-  public static @Nonnull <K, V, M extends Map<K, V>> Matcher<M> hasKeys(
-      Matcher<? super Set<K>> subMatcher) {
+  public static @Nonnull <K, V> Matcher<Map<K, V>> hasKeys(Matcher<? super Set<K>> subMatcher) {
     return new HasKeys<>(subMatcher);
   }
 
@@ -38,7 +37,7 @@ public final class MapMatchers {
    * Returns a matcher that matches a {@link Map} whose values are matched by the provided {@code
    * subMatcher}.
    */
-  public static @Nonnull <K, V, M extends Map<K, V>> Matcher<M> hasValues(
+  public static @Nonnull <K, V> Matcher<Map<K, V>> hasValues(
       Matcher<? super Collection<V>> subMatcher) {
     return new HasValues<>(subMatcher);
   }
@@ -49,7 +48,7 @@ public final class MapMatchers {
    */
   @SafeVarargs
   @SuppressWarnings("varargs")
-  public static @Nonnull <K, V, M extends Map<K, V>> Matcher<M> hasValues(V... expectedValues) {
+  public static @Nonnull <K, V> Matcher<Map<K, V>> hasValues(V... expectedValues) {
     return new HasValues<>(containsInAnyOrder(expectedValues));
   }
 

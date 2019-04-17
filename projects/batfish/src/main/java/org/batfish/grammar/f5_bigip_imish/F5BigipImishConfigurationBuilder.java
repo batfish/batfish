@@ -65,7 +65,15 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   private @Nullable AbstractBgpNeighbor _currentAbstractNeighbor;
   private @Nullable BgpProcess _currentBgpProcess;
   private @Nullable BgpNeighbor _currentNeighbor;
+
+  /**
+   * When entering a bgp neighbor statement, {@code _currentNeighborName} is set to a non-null
+   * value. Iff it refers to a neighbor that already exists, then {@code _currentAbstractNeighbor}
+   * and one of {@code _currentNeighbor} or {@code _currentPeerGroup} are set to that existing
+   * neighbor.
+   */
   private @Nullable String _currentNeighborName;
+
   private @Nullable BgpPeerGroup _currentPeerGroup;
   private @Nullable RouteMapEntry _currentRouteMapEntry;
 
