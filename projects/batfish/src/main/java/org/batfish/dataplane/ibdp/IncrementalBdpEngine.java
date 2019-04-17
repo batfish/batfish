@@ -937,16 +937,22 @@ class IncrementalBdpEngine {
 
         while (schedule.hasNext()) {
           Map<String, Node> scheduleNodes = schedule.next();
-          scheduleNodes.values().stream()
+          scheduleNodes
+              .values()
+              .parallelStream()
               .flatMap(n -> n.getVirtualRouters().values().stream())
               .forEach(virtualRouter -> virtualRouter.ospfIteration(allNodes));
 
-          scheduleNodes.values().stream()
+          scheduleNodes
+              .values()
+              .parallelStream()
               .flatMap(n -> n.getVirtualRouters().values().stream())
               .forEach(VirtualRouter::mergeOspfRoutesToMainRib);
         }
         dirty =
-            allNodes.values().stream()
+            allNodes
+                .values()
+                .parallelStream()
                 .flatMap(n -> n.getVirtualRouters().values().stream())
                 .flatMap(vr -> vr.getOspfProcesses().values().stream())
                 .anyMatch(OspfRoutingProcess::isDirty);
