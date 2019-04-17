@@ -50,6 +50,7 @@ public class CiscoCombinedParser extends BatfishCombinedParser<CiscoParser, Cisc
     _parser.setEos(format == ConfigurationFormat.ARISTA);
     _parser.setCadant(cadant);
     _parser.setNxos(format == ConfigurationFormat.CISCO_NX);
+    _parser.setFormat(format);
     _parser.setMultilineBgpNeighbors(multilineBgpNeighbors);
   }
 
