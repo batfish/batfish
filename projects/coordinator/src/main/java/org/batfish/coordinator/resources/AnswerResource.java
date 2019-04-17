@@ -31,6 +31,10 @@ public final class AnswerResource {
     _questionName = questionName;
   }
 
+  /**
+   * Get the answer for the specified question, regarding the specified {@code snapshot} and
+   * optionally {@code referenceSnapshot}.
+   */
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public Response getAnswer(
