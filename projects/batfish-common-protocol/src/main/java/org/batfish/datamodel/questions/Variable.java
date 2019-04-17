@@ -23,7 +23,9 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 public class Variable {
 
   public enum Type {
+    // deprecated -- left for now for backward compatibility
     ADDRESS_GROUP_AND_BOOK("addressGroupAndBook", true),
+    ADDRESS_GROUP_NAME("addressGroupName", true),
     ANSWER_ELEMENT("answerElement", true),
     APPLICATION_SPEC("applicationSpec", true),
     BGP_PEER_PROPERTY_SPEC("bgpPeerPropertySpec", true),
@@ -44,7 +46,9 @@ public class Variable {
     INTEGER("integer", false),
     INTEGER_SPACE("integerSpace", true),
     INTERFACE("interface", true),
+    // deprecated -- left for now for backward compatibility
     INTERFACE_GROUP_AND_BOOK("interfaceGroupAndBook", true),
+    INTERFACE_GROUP_NAME("interfaceGroupName", true),
     INTERFACE_NAME("interfaceName", true),
     INTERFACE_PROPERTY_SPEC("interfacePropertySpec", true),
     INTERFACES_SPEC("interfacesSpec", true),
@@ -63,8 +67,12 @@ public class Variable {
     NAMED_STRUCTURE_SPEC("namedStructureSpec", true),
     NODE_PROPERTY_SPEC("nodePropertySpec", true),
     NODE_NAME("nodeName", true),
+    // deprecated -- left for now for backward compatibility
     NODE_ROLE_AND_DIMENSION("nodeRoleAndDimension", true),
+    // deprecated -- left for now for backward compatibility
     NODE_ROLE_DIMENSION("nodeRoleDimension", true),
+    NODE_ROLE_DIMENSION_NAME("nodeRoleDimensionName", true),
+    NODE_ROLE_NAME("nodeRoleName", true),
     NODE_SPEC("nodeSpec", true),
     OSPF_PROPERTY_SPEC("ospfPropertySpec", true),
     PATH_CONSTRAINT("pathConstraint", true),
@@ -72,6 +80,7 @@ public class Variable {
     PREFIX_RANGE("prefixRange", true),
     PROTOCOL("protocol", true),
     QUESTION("question", true),
+    REFERENCE_BOOK_NAME("referenceBookName", true),
     ROUTING_POLICY_NAME("routingPolicyName", true),
     ROUTING_POLICY_SPEC("routingPolicySpec", true),
     ROUTING_PROTOCOL_SPEC("routingProtocolSpec", true),
