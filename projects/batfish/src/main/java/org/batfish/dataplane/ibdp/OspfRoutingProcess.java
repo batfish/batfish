@@ -1,7 +1,6 @@
 package org.batfish.dataplane.ibdp;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static org.batfish.common.util.CommonUtil.toOrderedHashCode;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -152,7 +151,6 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       _exportPolicy =
           RoutingPolicy.builder()
               .setName(String.format("~Drop_All_OSPF_External_%s~", _process.getProcessId()))
-              .setOwner(_c)
               .setStatements(ImmutableList.of(Statements.ExitReject.toStaticStatement()))
               .build();
     } else {
@@ -1441,24 +1439,6 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       EdgeId edge, Collection<RouteAdvertisement<OspfExternalType2Route>> routes) {
     assert _type2IncomingRoutes.keySet().contains(edge);
     _type2IncomingRoutes.get(edge).addAll(routes);
-  }
-
-  int iterationHashCode() {
-    return Stream.of(
-            // Message queues
-            Stream.of(
-                    _intraAreaIncomingRoutes,
-                    _interAreaIncomingRoutes,
-                    _type1IncomingRoutes,
-                    _type2IncomingRoutes)
-                .flatMap(m -> m.values().stream())
-                .flatMap(Queue::stream),
-            // Deltas
-            Stream.of(_activatedGeneratedRoutes).map(RibDelta::getActions),
-            // RIB state
-            Stream.of(_intraAreaRib, _interAreaRib, _type1Rib, _type2Rib)
-                .map(AbstractRib::getTypedRoutes))
-        .collect(toOrderedHashCode());
   }
 
   /** Wrapper around intra- and inter-area RIB deltas */
