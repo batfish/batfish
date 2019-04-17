@@ -2,7 +2,7 @@ package org.batfish.coordinator.resources;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.io.FileNotFoundException;
+import com.google.common.base.Throwables;
 import java.io.IOException;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -45,15 +45,23 @@ public final class AnswerResource {
       Answer ans =
           Main.getWorkMgr()
               .getAnswer(_network, snapshot, _questionName, referenceSnapshot, _analysis);
+      if (ans == null) {
+        return Response.status(Status.NOT_FOUND)
+            .entity(
+                String.format(
+                    "Answer not found for question %s on network: %s, snapshot: %s, referenceSnapshot: %s, analysis: %s",
+                    _questionName, _network, snapshot, referenceSnapshot, _analysis))
+            .build();
+      }
       return Response.ok().entity(ans).build();
-    } catch (FileNotFoundException e) {
-      return Response.status(Status.NOT_FOUND).entity(e.getMessage()).build();
     } catch (IllegalArgumentException e) {
       return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
     } catch (IOException e) {
       // Other inputs should be validated by this point, don't expect to run into this exception
       // under normal circumstances
-      return Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
+      return Response.status(Status.INTERNAL_SERVER_ERROR)
+          .entity(Throwables.getStackTraceAsString(e))
+          .build();
     }
   }
 }

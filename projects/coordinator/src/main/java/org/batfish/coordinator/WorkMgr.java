@@ -816,8 +816,14 @@ public class WorkMgr extends AbstractCoordinator {
     return true;
   }
 
-  /** Get the answer for the specified question. */
-  public @Nonnull Answer getAnswer(
+  /**
+   * Get the answer for the specified question.
+   *
+   * @throws IllegalArgumentException if the network, question, analysis, or snapshots cannot be
+   *     found
+   * @throws IOException if there are errors reading any resources
+   */
+  public @Nullable Answer getAnswer(
       String network,
       String snapshot,
       String question,
@@ -825,14 +831,9 @@ public class WorkMgr extends AbstractCoordinator {
       @Nullable String analysis)
       throws IOException {
     String ansString = loadAnswer(network, snapshot, question, referenceSnapshot, analysis);
-    if (ansString == null) {
-      throw new FileNotFoundException(
-          String.format(
-              "Answer not found for question %s on network: %s, snapshot: %s, referenceSnapshot: %s, analysis: %s",
-              question, network, snapshot, referenceSnapshot, analysis));
-    } else {
-      return BatfishObjectMapper.mapper().readValue(ansString, Answer.class);
-    }
+    return ansString == null
+        ? null
+        : BatfishObjectMapper.mapper().readValue(ansString, Answer.class);
   }
 
   /** Get the answer string for the specified question. */

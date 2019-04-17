@@ -868,7 +868,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testAnalysisGetAnswer() throws IOException {
+  public void testGetAnswerAnalysis() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
     String questionName = "question";
@@ -889,7 +889,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testAnalysisGetAnswerNotFound() throws IOException {
+  public void testGetAnswerAnalysisNotFound() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
     String questionName = "question";
@@ -899,11 +899,8 @@ public final class WorkMgrTest {
     uploadTestSnapshot(network, snapshot);
     setupQuestionAndAnswer(network, snapshot, questionName, analysis, null);
 
-    // Confirm we get a not found exception calling getAnswer before the question is answered
-    _thrown.expect(FileNotFoundException.class);
-    _thrown.expectMessage(
-        startsWith(String.format("Answer not found for question %s", questionName)));
-    _manager.getAnswer(network, snapshot, questionName, null, analysis);
+    // Confirm we get null calling getAnswer before the question is answered
+    assertThat(_manager.getAnswer(network, snapshot, questionName, null, analysis), nullValue());
   }
 
   @Test
@@ -935,15 +932,12 @@ public final class WorkMgrTest {
     uploadTestSnapshot(network, snapshot);
     setupQuestionAndAnswer(network, snapshot, questionName, null, null);
 
-    // Confirm we get a not found exception calling getAnswer before the question is answered
-    _thrown.expect(FileNotFoundException.class);
-    _thrown.expectMessage(
-        startsWith(String.format("Answer not found for question %s", questionName)));
-    _manager.getAnswer(network, snapshot, questionName, null, null);
+    // Confirm we get null calling getAnswer before the question is answered
+    assertThat(_manager.getAnswer(network, snapshot, questionName, null, null), nullValue());
   }
 
   @Test
-  public void testReferenceGetAnswer() throws IOException {
+  public void testGetAnswerReferenceSnapshot() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
     String referenceSnapshot = "referenceSnapshot";
@@ -965,7 +959,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testReferenceGetAnswerBadRef() throws IOException {
+  public void testGetAnswerReferenceSnapshotBadRef() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
     String referenceSnapshot = "referenceSnapshot";
@@ -988,7 +982,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testReferenceGetAnswerNotFound() throws IOException {
+  public void testGetAnswerReferenceSnapshotNotFound() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
     String referenceSnapshot = "referenceSnapshot";
@@ -999,15 +993,13 @@ public final class WorkMgrTest {
     uploadTestSnapshot(network, referenceSnapshot);
     setupQuestionAndAnswer(network, snapshot, questionName, null, null, referenceSnapshot);
 
-    // Confirm we get a not found exception calling getAnswer before the question is answered
-    _thrown.expect(FileNotFoundException.class);
-    _thrown.expectMessage(
-        startsWith(String.format("Answer not found for question %s", questionName)));
-    _manager.getAnswer(network, snapshot, questionName, referenceSnapshot, null);
+    // Confirm we get null calling getAnswer before the question is answered
+    assertThat(
+        _manager.getAnswer(network, snapshot, questionName, referenceSnapshot, null), nullValue());
   }
 
   @Test
-  public void testGetAnswerAnalysis() throws IOException {
+  public void testGetAnswerStringAnalysis() throws IOException {
     String containerName = "container1";
     String testrigName = "testrig1";
     String analysisName = "analysis1";
@@ -2853,7 +2845,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetAnswerNotFoundAfterNodeRolesUpdate() throws IOException {
+  public void testGetAnswerStringNotFoundAfterNodeRolesUpdate() throws IOException {
     String networkName = "network1";
     String snapshotName = "snapshot1";
     Question question = new TestQuestion();

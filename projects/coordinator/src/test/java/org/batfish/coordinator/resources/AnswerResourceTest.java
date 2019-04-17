@@ -10,6 +10,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.client.WebTarget;
@@ -32,27 +33,38 @@ import org.junit.rules.TemporaryFolder;
 public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
-  private WebTarget getAnswerTarget(String network, String question) {
-    return target(CoordConsts.SVC_CFG_WORK_MGR2)
-        .path(CoordConstsV2.RSC_NETWORKS)
-        .path(network)
-        .path(CoordConstsV2.RSC_QUESTIONS)
-        .path(question)
-        .path(CoordConstsV2.RSC_ANSWER);
+  private Builder getAnswerTarget(String network, String question, @Nullable String snapshot) {
+    return addHeader(
+        addSnapshotQuery(
+            target(CoordConsts.SVC_CFG_WORK_MGR2)
+                .path(CoordConstsV2.RSC_NETWORKS)
+                .path(network)
+                .path(CoordConstsV2.RSC_QUESTIONS)
+                .path(question)
+                .path(CoordConstsV2.RSC_ANSWER),
+            snapshot));
   }
 
-  private WebTarget getAnalysisAnswerTarget(String network, String question, String analysis) {
-    return target(CoordConsts.SVC_CFG_WORK_MGR2)
-        .path(CoordConstsV2.RSC_NETWORKS)
-        .path(network)
-        .path(CoordConstsV2.RSC_ANALYSES)
-        .path(analysis)
-        .path(CoordConstsV2.RSC_QUESTIONS)
-        .path(question)
-        .path(CoordConstsV2.RSC_ANSWER);
+  private Builder getAnalysisAnswerTarget(
+      String network, String question, String analysis, @Nullable String snapshot) {
+    return addHeader(
+        addSnapshotQuery(
+            target(CoordConsts.SVC_CFG_WORK_MGR2)
+                .path(CoordConstsV2.RSC_NETWORKS)
+                .path(network)
+                .path(CoordConstsV2.RSC_ANALYSES)
+                .path(analysis)
+                .path(CoordConstsV2.RSC_QUESTIONS)
+                .path(question)
+                .path(CoordConstsV2.RSC_ANSWER),
+            snapshot));
   }
 
-  private Builder addHeader(WebTarget target) {
+  private static WebTarget addSnapshotQuery(WebTarget webTarget, @Nullable String snapshot) {
+    return snapshot == null ? webTarget : webTarget.queryParam("snapshot", snapshot);
+  }
+
+  private static Builder addHeader(WebTarget target) {
     return target
         .request()
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
@@ -77,8 +89,7 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
     String expectedAnswerString = BatfishObjectMapper.writeString(expectedAnswer);
     setupQuestionAndAnswer(network, snapshot, question, null, expectedAnswer);
 
-    Response response =
-        addHeader(getAnswerTarget(network, question).queryParam("snapshot", snapshot)).get();
+    Response response = getAnswerTarget(network, question, snapshot).get();
 
     // Confirm the existing answer is successfully fetched
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
@@ -101,11 +112,7 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
     String expectedAnswerString = BatfishObjectMapper.writeString(expectedAnswer);
     setupQuestionAndAnswer(network, snapshot, question, analysis, expectedAnswer);
 
-    Response response =
-        addHeader(
-                getAnalysisAnswerTarget(network, question, analysis)
-                    .queryParam("snapshot", snapshot))
-            .get();
+    Response response = getAnalysisAnswerTarget(network, question, analysis, snapshot).get();
 
     // Confirm the existing analysis answer is successfully fetched
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
@@ -125,9 +132,8 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
     uploadTestSnapshot(network, snapshot, _folder);
     setupQuestionAndAnswer(network, snapshot, question, null, null);
 
-    Response responseNoSnapshot = addHeader(getAnswerTarget(network, question)).get();
-    Response responseBadSnap =
-        addHeader(getAnswerTarget(network, question).queryParam("snapshot", bogusSnapshot)).get();
+    Response responseNoSnapshot = getAnswerTarget(network, question, null).get();
+    Response responseBadSnap = getAnswerTarget(network, question, bogusSnapshot).get();
 
     // Missing snapshot name should result in bad request
     assertThat(responseNoSnapshot.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
@@ -144,15 +150,14 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
     String network = "network";
     String snapshot = "snapshot";
     String question = "question";
-    Response responseNoNetwork = addHeader(getAnswerTarget(network, question)).get();
+    Response responseNoNetwork = getAnswerTarget(network, question, null).get();
 
     Main.getWorkMgr().initNetwork(network, null);
-    Response responseNoQuestion = addHeader(getAnswerTarget(network, question)).get();
+    Response responseNoQuestion = getAnswerTarget(network, question, null).get();
 
     uploadTestSnapshot(network, snapshot, _folder);
     setupQuestionAndAnswer(network, snapshot, question, null, null);
-    Response responseNoAns =
-        addHeader(getAnswerTarget(network, question).queryParam("snapshot", snapshot)).get();
+    Response responseNoAns = getAnswerTarget(network, question, snapshot).get();
 
     // No network should result in 404
     assertThat(responseNoNetwork.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
