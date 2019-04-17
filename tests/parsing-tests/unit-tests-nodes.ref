@@ -13368,7 +13368,8 @@
             "name" : "swp1",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.datamodel.IpIpSpace",
+              "ip" : "169.254.0.1"
             },
             "allowedVlans" : "",
             "autostate" : true,
