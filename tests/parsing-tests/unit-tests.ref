@@ -67946,6 +67946,16 @@
             "            low = DEC:'0'  <== mode:M_Interface)))",
             "      NEWLINE:'\\n'  <== mode:M_Interface",
             "      (if_inner",
+            "        (if_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          prefix = IP_PREFIX:'1.2.3.4/24'",
+            "          ROUTE_PREFERENCE:'route-preference'",
+            "          pref = DEC:'10'",
+            "          TAG:'tag'",
+            "          tag = DEC:'12345'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
             "        (if_null_block",
             "          LINK:'link'",
             "          VARIABLE:'debounce'",
@@ -73935,6 +73945,22 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "apply-groups statement at path: 'system tacplus-server 1.2.3.4' refers to non-existent group: 'bippety'\n"
+            }
+          ]
+        },
+        "configs/nxos_interface" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "Unsupported: route-preference declared in interface IP address",
+              "Line" : 6,
+              "Parser_Context" : "[if_ip_address if_inner s_interface stanza cisco_configuration]",
+              "Text" : "ip address 1.2.3.4/24 route-preference 10 tag 12345"
+            },
+            {
+              "Comment" : "Unsupported: tag declared in interface IP address",
+              "Line" : 6,
+              "Parser_Context" : "[if_ip_address if_inner s_interface stanza cisco_configuration]",
+              "Text" : "ip address 1.2.3.4/24 route-preference 10 tag 12345"
             }
           ]
         },
@@ -80037,14 +80063,15 @@
                 5,
                 6,
                 7,
-                8
+                8,
+                9
               ],
               "numReferrers" : 1
             },
             "nve1" : {
               "definitionLines" : [
-                10,
-                11
+                11,
+                12
               ],
               "numReferrers" : 1
             }
@@ -84603,7 +84630,7 @@
             },
             "nve1" : {
               "interface" : [
-                10
+                11
               ]
             }
           }
