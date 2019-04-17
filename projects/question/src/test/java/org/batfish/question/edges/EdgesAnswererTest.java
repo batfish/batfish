@@ -254,7 +254,8 @@ public class EdgesAnswererTest {
 
     MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
-    bgpTopology.putEdgeValue(neighborId1, neighborId2, BgpSessionProperties.from(peer1, peer2));
+    bgpTopology.putEdgeValue(
+        neighborId1, neighborId2, BgpSessionProperties.from(peer1, peer2, false));
 
     Multiset<Row> rows =
         getBgpEdges(_configurations, _includeNodes, _includeRemoteNodes, bgpTopology);
