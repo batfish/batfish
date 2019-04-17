@@ -9,16 +9,22 @@ public final class BgpSessionProperties {
   private final boolean _additionalPaths;
   private final boolean _advertiseExternal;
   private final boolean _advertiseInactive;
+  @Nonnull private final Ip _tailIp;
+  @Nonnull private final Ip _headIp;
   private final SessionType _sessionType;
 
   private BgpSessionProperties(
       boolean additionalPaths,
       boolean advertiseExternal,
       boolean advertiseInactive,
+      @Nonnull Ip tailIp,
+      @Nonnull Ip headIp,
       SessionType sessionType) {
     _additionalPaths = additionalPaths;
     _advertiseExternal = advertiseExternal;
     _advertiseInactive = advertiseInactive;
+    _tailIp = tailIp;
+    _headIp = headIp;
     _sessionType = sessionType;
   }
 
@@ -48,6 +54,18 @@ public final class BgpSessionProperties {
     return SessionType.isEbgp(_sessionType);
   }
 
+  /** IP of local peer for this session */
+  @Nonnull
+  public Ip getTailIp() {
+    return _tailIp;
+  }
+
+  /** IP of remote peer for this session */
+  @Nonnull
+  public Ip getHeadIp() {
+    return _headIp;
+  }
+
   /** Return this session's {@link SessionType}. */
   public SessionType getSessionType() {
     return _sessionType;
@@ -57,35 +75,24 @@ public final class BgpSessionProperties {
    * Create a set of new parameters based on session initiator and listener. <b>Note</b> that some
    * parameters (such as {@link #isEbgp()} will be determined based on the configuration of the
    * initiator only.
+   *
+   * @param reverseDirection Whether to create the session properties for reverse direction
+   *     (listener to initiator) rather than forwards direction (initiator to listener)
    */
   public static BgpSessionProperties from(
-      @Nonnull BgpActivePeerConfig initiator, @Nonnull BgpPeerConfig listener) {
-    return from(initiator, listener, getSessionType(initiator));
-  }
-
-  /**
-   * Determine what type of session the peer is configured to establish.
-   *
-   * @param initiator the configuration of connection initiator.
-   * @return a {@link SessionType} the initiator is configured to establish.
-   */
-  public static @Nonnull SessionType getSessionType(BgpActivePeerConfig initiator) {
-    SessionType sessionType = SessionType.UNSET;
-    if (initiator.getLocalAs() != null && !initiator.getRemoteAsns().isEmpty()) {
-      if (initiator.getRemoteAsns().equals(LongSpace.of(initiator.getLocalAs()))) {
-        sessionType = SessionType.IBGP;
-      } else if (initiator.getEbgpMultihop()) {
-        sessionType = SessionType.EBGP_MULTIHOP;
-      } else {
-        sessionType = SessionType.EBGP_SINGLEHOP;
-      }
+      @Nonnull BgpActivePeerConfig initiator,
+      @Nonnull BgpPeerConfig listener,
+      boolean reverseDirection) {
+    Ip initiatorIp = initiator.getLocalIp();
+    Ip listenerIp = listener.getLocalIp();
+    if (listenerIp == null || listenerIp == Ip.AUTO) {
+      // Initiator must be active; determine listener's IP from initiator
+      listenerIp = initiator.getPeerAddress();
     }
-    return sessionType;
-  }
+    assert initiatorIp != null;
+    assert listenerIp != null;
 
-  private static BgpSessionProperties from(
-      @Nonnull BgpPeerConfig initiator, @Nonnull BgpPeerConfig listener, SessionType sessionType) {
-
+    SessionType sessionType = getSessionType(initiator);
     return new BgpSessionProperties(
         !SessionType.isEbgp(sessionType)
             && listener.getAdditionalPathsReceive()
@@ -93,7 +100,24 @@ public final class BgpSessionProperties {
             && initiator.getAdditionalPathsSelectAll(),
         SessionType.isEbgp(sessionType) && initiator.getAdvertiseInactive(),
         !SessionType.isEbgp(sessionType) && initiator.getAdvertiseExternal(),
+        reverseDirection ? listenerIp : initiatorIp,
+        reverseDirection ? initiatorIp : listenerIp,
         sessionType);
+  }
+
+  /**
+   * Determine what type of session {@code initiator} is configured to establish.
+   *
+   * @param initiator the {@link BgpActivePeerConfig} representing the connection initiator.
+   * @return a {@link SessionType} the initiator is configured to establish.
+   */
+  public static @Nonnull SessionType getSessionType(BgpActivePeerConfig initiator) {
+    if (initiator.getLocalAs() == null || initiator.getRemoteAsns().isEmpty()) {
+      return SessionType.UNSET;
+    }
+    return initiator.getRemoteAsns().equals(LongSpace.of(initiator.getLocalAs()))
+        ? SessionType.IBGP
+        : initiator.getEbgpMultihop() ? SessionType.EBGP_MULTIHOP : SessionType.EBGP_SINGLEHOP;
   }
 
   @Override

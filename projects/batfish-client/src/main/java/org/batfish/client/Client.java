@@ -322,7 +322,7 @@ public class Client extends AbstractClient implements IClient {
     }
     Variable.Type expectedType = variable.getType();
     switch (expectedType) {
-      case ADDRESS_GROUP_AND_BOOK:
+      case ADDRESS_GROUP_NAME:
         if (!value.isTextual() || value.asText().split(",").length != 2) {
           throw new BatfishException(
               String.format(
@@ -453,7 +453,7 @@ public class Client extends AbstractClient implements IClient {
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
         break;
-      case INTERFACE_GROUP_AND_BOOK:
+      case INTERFACE_GROUP_NAME:
         if (!value.isTextual() || value.asText().split(",").length != 2) {
           throw new BatfishException(
               String.format(
@@ -580,6 +580,18 @@ public class Client extends AbstractClient implements IClient {
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
         break;
+      case NODE_ROLE_DIMENSION_NAME:
+        if (!value.isTextual()) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        break;
+      case NODE_ROLE_NAME:
+        if (!value.isTextual()) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        break;
       case NODE_SPEC:
         if (!(value.isTextual())) {
           throw new BatfishException(
@@ -624,6 +636,12 @@ public class Client extends AbstractClient implements IClient {
         break;
       case QUESTION:
         // TODO: Implement
+        break;
+      case REFERENCE_BOOK_NAME:
+        if (!value.isTextual()) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
         break;
       case ROUTING_PROTOCOL_SPEC:
         if (!value.isTextual()) {

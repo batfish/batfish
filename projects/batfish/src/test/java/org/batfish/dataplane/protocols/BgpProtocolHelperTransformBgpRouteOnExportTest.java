@@ -86,9 +86,19 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
         _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
     Configuration c2 =
         _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
-    _fromNeighbor = _nf.bgpNeighborBuilder().setLocalAs(AS1).setRemoteAs(ibgp ? AS1 : AS2).build();
-    _toNeighbor = _nf.bgpNeighborBuilder().setLocalAs(ibgp ? AS1 : AS2).setRemoteAs(AS1).build();
-    _sessionProperties = BgpSessionProperties.from(_fromNeighbor, _toNeighbor);
+    _fromNeighbor =
+        _nf.bgpNeighborBuilder()
+            .setLocalAs(AS1)
+            .setRemoteAs(ibgp ? AS1 : AS2)
+            .setLocalIp(SOURCE_IP)
+            .build();
+    _toNeighbor =
+        _nf.bgpNeighborBuilder()
+            .setLocalAs(ibgp ? AS1 : AS2)
+            .setRemoteAs(AS1)
+            .setLocalIp(DEST_IP)
+            .build();
+    _sessionProperties = BgpSessionProperties.from(_fromNeighbor, _toNeighbor, false);
     _fromVrf = _nf.vrfBuilder().setOwner(c1).build();
     _nf.bgpProcessBuilder().setVrf(_fromVrf).setRouterId(SOURCE_IP).build();
     _toVrf = _nf.vrfBuilder().setOwner(c2).build();

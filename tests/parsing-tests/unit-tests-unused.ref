@@ -1738,7 +1738,11 @@
         "Source_Lines" : {
           "filename" : "configs/f5_bigip_structured_with_imish",
           "lines" : [
+<<<<<<< HEAD
             24
+=======
+            25
+>>>>>>> master
           ]
         }
       },

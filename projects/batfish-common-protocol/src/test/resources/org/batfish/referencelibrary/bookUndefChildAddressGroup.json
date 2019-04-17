@@ -1,0 +1,15 @@
+{
+  "name": "book",
+  "addressGroups": [
+    {
+      "name": "ag1",
+      "childGroupNames": [
+        "ag2",
+        "ag3"
+      ]
+    },
+    {
+      "name": "ag2"
+    }
+  ]
+}

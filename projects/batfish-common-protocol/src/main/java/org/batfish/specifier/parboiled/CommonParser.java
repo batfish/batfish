@@ -67,19 +67,22 @@ public class CommonParser extends BaseParser<AstNode> {
    */
   static boolean isEscapableNameAnchor(Anchor.Type anchorType) {
     switch (anchorType) {
+      case ADDRESS_GROUP_NAME:
       case FILTER_NAME:
+      case INTERFACE_GROUP_NAME:
       case INTERFACE_NAME:
       case NODE_NAME:
+      case NODE_ROLE_NAME:
+      case NODE_ROLE_DIMENSION_NAME:
+      case REFERENCE_BOOK_NAME:
       case ROUTING_POLICY_NAME:
       case VRF_NAME:
       case ZONE_NAME:
         return true;
-      case ADDRESS_GROUP_AND_BOOK:
       case CHAR_LITERAL:
       case EOI:
       case FILTER_NAME_REGEX:
       case IGNORE:
-      case INTERFACE_GROUP_AND_BOOK:
       case INTERFACE_NAME_REGEX:
       case INTERFACE_TYPE:
       case IP_ADDRESS:
@@ -89,7 +92,6 @@ public class CommonParser extends BaseParser<AstNode> {
       case IP_RANGE:
       case IP_WILDCARD:
       case NODE_NAME_REGEX:
-      case NODE_ROLE_NAME_AND_DIMENSION:
       case NODE_TYPE:
       case ROUTING_POLICY_NAME_REGEX:
       case STRING_LITERAL:
@@ -211,23 +213,9 @@ public class CommonParser extends BaseParser<AstNode> {
             '"'));
   }
 
-  /** Keep in sync with {@link org.batfish.datamodel.Names.Type#NODE_ROLE} */
-  public Rule NodeRoleNameLiteral() {
-    return Sequence(
-        FirstOf(AlphabetChar(), Digit(), Underscore()),
-        ZeroOrMore(FirstOf(AlphabetChar(), Digit(), Underscore(), Dash())));
-  }
-
   /** [0-9]+ */
   public Rule Number() {
     return OneOrMore(Digit());
-  }
-
-  /** Keep in sync with {@link org.batfish.datamodel.Names.Type#REFERENCE_OBJECT} */
-  public Rule ReferenceObjectNameLiteral() {
-    return Sequence(
-        FirstOf(AlphabetChar(), Underscore()),
-        ZeroOrMore(FirstOf(AlphabetChar(), Underscore(), Digit(), Dash())));
   }
 
   /**

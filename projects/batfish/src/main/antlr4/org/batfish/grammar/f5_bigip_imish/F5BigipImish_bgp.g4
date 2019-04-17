@@ -11,6 +11,11 @@ rb_bgp_always_compare_med
   BGP ALWAYS_COMPARE_MED NEWLINE
 ;
 
+rb_bgp_deterministic_med
+:
+  BGP DETERMINISTIC_MED NEWLINE
+;
+
 rb_bgp_router_id
 :
   BGP ROUTER_ID id = IP_ADDRESS NEWLINE
@@ -115,6 +120,7 @@ s_router_bgp
   ROUTER BGP localas = uint64 NEWLINE
   (
     rb_bgp_always_compare_med
+    | rb_bgp_deterministic_med
     | rb_bgp_router_id
     | rb_neighbor_ipv4
     | rb_neighbor_ipv6

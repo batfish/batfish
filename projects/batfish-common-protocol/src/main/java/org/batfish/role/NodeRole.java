@@ -47,7 +47,7 @@ public class NodeRole implements Comparable<NodeRole> {
   }
 
   public NodeRole(String name, String regex, boolean caseSensitive) {
-    Names.checkName(name, "role", Type.NODE_ROLE);
+    Names.checkName(name, "role", Type.REFERENCE_OBJECT);
     _name = name;
     _regex = regex;
     _caseSensitive = caseSensitive;

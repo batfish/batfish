@@ -34,6 +34,7 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEquivalentAsPathMatchMode;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasWeight;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpRouteThat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkePhase1Policy;
@@ -266,6 +267,7 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
+import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
@@ -364,6 +366,7 @@ import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.dataplane.ibdp.IncrementalDataPlane;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -1316,6 +1319,41 @@ public class CiscoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "pl4out", 1));
     assertThat(ccae, hasNumReferrers(filename, PREFIX6_LIST, "pl6in", 1));
     assertThat(ccae, hasNumReferrers(filename, PREFIX6_LIST, "pl6out", 1));
+  }
+
+  @Test
+  public void testIosIbgpMissingUpdateSource() throws IOException {
+    /*
+    r1 is missing update-source, but session should still be established between r1 and r2. Both
+    redistribute static routes, so should see BGP routes on both for the other's static route.
+    */
+    String testrigName = "ibgp-no-update-source";
+    List<String> configurationNames = ImmutableList.of("r1", "r2");
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+
+    // Confirm that BGP peer on r1 is missing its local IP, as expected
+    Prefix r1NeighborPeerAddress = Prefix.parse("2.2.2.2/32");
+    Configuration r1 = batfish.loadConfigurations().get("r1");
+    SortedMap<Prefix, BgpActivePeerConfig> r1Peers =
+        r1.getVrfs().get(DEFAULT_VRF_NAME).getBgpProcess().getActiveNeighbors();
+    assertTrue(r1Peers.containsKey(r1NeighborPeerAddress));
+    assertThat(r1Peers.get(r1NeighborPeerAddress).getLocalIp(), nullValue());
+
+    /*
+    r1 has a static route to 7.7.7.7/32; r2 has a static route to 8.8.8.8/32. Confirm that both
+    received a BGP route to the other's static route.
+    */
+    batfish.computeDataPlane();
+    IncrementalDataPlane dp = (IncrementalDataPlane) batfish.loadDataPlane();
+    Set<AbstractRoute> r1Routes = dp.getRibs().get("r1").get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r2Routes = dp.getRibs().get("r2").get(DEFAULT_VRF_NAME).getRoutes();
+    assertThat(r1Routes, hasItem(isBgpRouteThat(hasPrefix(Prefix.parse("8.8.8.8/32")))));
+    assertThat(r2Routes, hasItem(isBgpRouteThat(hasPrefix(Prefix.parse("7.7.7.7/32")))));
   }
 
   /**
