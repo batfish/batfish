@@ -16,6 +16,7 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEqui
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasOriginType;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpRouteThat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLists;
@@ -97,6 +98,7 @@ import org.batfish.representation.f5_bigip.PrefixListEntry;
 import org.batfish.representation.f5_bigip.RouteMap;
 import org.batfish.representation.f5_bigip.RouteMapEntry;
 import org.batfish.representation.f5_bigip.RouteMapSetMetric;
+import org.batfish.representation.f5_bigip.RouteMapSetOrigin;
 import org.batfish.vendor.VendorConfiguration;
 import org.junit.Rule;
 import org.junit.Test;
@@ -828,6 +830,38 @@ public final class F5BigipImishGrammarTest {
 
     assertThat(set, notNullValue());
     assertThat(set.getMetric(), equalTo(50L));
+    assertThat(entry.getSets().collect(ImmutableList.toImmutableList()), contains(set));
+  }
+
+  @Test
+  public void testRouteMapSetOriginConversion() throws IOException {
+    Configuration c = parseConfig("f5_bigip_imish_route_map_set_origin");
+    String rpName = "rm1";
+
+    assertThat(c.getRoutingPolicies(), hasKeys(rpName));
+
+    assertThat(
+        processBgpRoute(c.getRoutingPolicies().get(rpName), Ip.ZERO),
+        hasOriginType(OriginType.IGP));
+  }
+
+  @Test
+  public void testRouteMapSetOriginExtraction() throws IOException {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_route_map_set_origin");
+    String rmName = "rm1";
+
+    assertThat(vc.getRouteMaps(), hasKeys(rmName));
+
+    RouteMap rm = vc.getRouteMaps().get(rmName);
+
+    assertThat(rm.getEntries(), hasKeys(10L));
+
+    RouteMapEntry entry = rm.getEntries().get(10L);
+
+    RouteMapSetOrigin set = entry.getSetOrigin();
+
+    assertThat(set, notNullValue());
+    assertThat(set.getOrigin(), equalTo(OriginType.IGP));
     assertThat(entry.getSets().collect(ImmutableList.toImmutableList()), contains(set));
   }
 

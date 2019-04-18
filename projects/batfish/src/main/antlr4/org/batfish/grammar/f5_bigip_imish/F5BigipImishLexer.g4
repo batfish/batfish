@@ -90,6 +90,11 @@ EBGP
   'ebgp'
 ;
 
+EGP
+:
+  'egp'
+;
+
 END
 :
   'end'
@@ -110,9 +115,19 @@ GRACEFUL_RESTART
   'graceful-restart'
 ;
 
+IGP
+:
+  'igp'
+;
+
 IN
 :
   'in'
+;
+
+INCOMPLETE
+:
+  'incomplete'
 ;
 
 INTERFACE
@@ -178,6 +193,11 @@ NEXT_HOP_SELF
 NO
 :
   'no'
+;
+
+ORIGIN
+:
+  'origin'
 ;
 
 OUT

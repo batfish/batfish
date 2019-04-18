@@ -16,6 +16,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.grammar.UnrecognizedLineToken;
@@ -24,6 +25,7 @@ import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Ip_prefixContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Ip_prefix_lengthContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Ip_specContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Line_actionContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Origin_typeContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_bgp_always_compare_medContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_bgp_deterministic_medContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_bgp_router_idContext;
@@ -40,6 +42,7 @@ import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_route_map_outCo
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rmm_ip_addressContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rms_communityContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rms_metricContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rms_originContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.S_access_listContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.S_ip_prefix_listContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.S_route_mapContext;
@@ -64,6 +67,7 @@ import org.batfish.representation.f5_bigip.RouteMap;
 import org.batfish.representation.f5_bigip.RouteMapEntry;
 import org.batfish.representation.f5_bigip.RouteMapSetCommunity;
 import org.batfish.representation.f5_bigip.RouteMapSetMetric;
+import org.batfish.representation.f5_bigip.RouteMapSetOrigin;
 import org.batfish.vendor.StructureType;
 
 public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseListener {
@@ -78,6 +82,16 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
 
   private static long toLong(Uint32Context ctx) {
     return Long.parseLong(ctx.getText(), 10);
+  }
+
+  private static @Nonnull OriginType toOriginType(Origin_typeContext ctx) {
+    if (ctx.EGP() != null) {
+      return OriginType.EGP;
+    } else if (ctx.IGP() != null) {
+      return OriginType.IGP;
+    } else {
+      return OriginType.INCOMPLETE;
+    }
   }
 
   private static @Nonnull Prefix toPrefix(Ip_prefixContext ctx) {
@@ -431,6 +445,11 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   @Override
   public void exitRms_metric(Rms_metricContext ctx) {
     _currentRouteMapEntry.setSetMetric(new RouteMapSetMetric(toLong(ctx.metric)));
+  }
+
+  @Override
+  public void exitRms_origin(Rms_originContext ctx) {
+    _currentRouteMapEntry.setSetOrigin(new RouteMapSetOrigin(toOriginType(ctx.origin)));
   }
 
   @Override
