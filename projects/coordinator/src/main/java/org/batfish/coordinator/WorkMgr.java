@@ -2410,20 +2410,25 @@ public class WorkMgr extends AbstractCoordinator {
       if (rawAnswer.getStatus() != AnswerStatus.SUCCESS) {
         return rawAnswer;
       }
-      AnswerElement answerElement = rawAnswer.getAnswerElements().get(0);
-      if (!(answerElement instanceof TableAnswerElement)) {
-        return rawAnswer;
-      }
-      TableAnswerElement rawTable = (TableAnswerElement) answerElement;
-      Answer answer = new Answer();
-      answer.setStatus(rawAnswer.getStatus());
-      answer.addAnswerElement(processAnswerTable2(rawTable, options));
-      return answer;
+      return filterAnswer(rawAnswer, options);
     } catch (Exception e) {
       _logger.errorf(
           "Failed to convert answer string to Answer: %s\n", Throwables.getStackTraceAsString(e));
       return Answer.failureAnswer(e.getMessage(), null);
     }
+  }
+
+  /** Filter the supplied rawAnswer based on the options provided. */
+  public Answer filterAnswer(Answer rawAnswer, AnswerRowsOptions options) {
+    AnswerElement answerElement = rawAnswer.getAnswerElements().get(0);
+    if (!(answerElement instanceof TableAnswerElement)) {
+      return rawAnswer;
+    }
+    TableAnswerElement rawTable = (TableAnswerElement) answerElement;
+    Answer answer = new Answer();
+    answer.setStatus(rawAnswer.getStatus());
+    answer.addAnswerElement(processAnswerTable2(rawTable, options));
+    return answer;
   }
 
   @VisibleForTesting
