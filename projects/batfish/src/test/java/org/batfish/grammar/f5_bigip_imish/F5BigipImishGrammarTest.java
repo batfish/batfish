@@ -2,6 +2,9 @@ package org.batfish.grammar.f5_bigip_imish;
 
 import static org.batfish.common.util.CommonUtil.communityStringToLong;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
+import static org.batfish.datamodel.Prefix.MAX_PREFIX_LENGTH;
+import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
@@ -9,6 +12,7 @@ import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalIp;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEquivalentAsPathMatchMode;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpRouteThat;
@@ -20,6 +24,7 @@ import static org.batfish.datamodel.matchers.KernelRouteMatchers.isKernelRouteTh
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.representation.f5_bigip.F5BigipConfiguration.computeAccessListRouteFilterName;
+import static org.batfish.representation.f5_bigip.F5BigipConfiguration.computeBgpPeerExportPolicyName;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_PROCESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.ROUTE_MAP;
@@ -30,6 +35,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -119,6 +125,15 @@ public final class F5BigipImishGrammarTest {
         .setProtocol(RoutingProtocol.BGP);
   }
 
+  private @Nonnull BgpRoute makeBgpRoute(Prefix prefix) {
+    return BgpRoute.builder()
+        .setNetwork(prefix)
+        .setOriginType(OriginType.INCOMPLETE)
+        .setOriginatorIp(Ip.ZERO)
+        .setProtocol(RoutingProtocol.BGP)
+        .build();
+  }
+
   private Configuration parseConfig(String hostname) throws IOException {
     return parseTextConfigs(hostname).get(hostname.toLowerCase());
   }
@@ -156,6 +171,19 @@ public final class F5BigipImishGrammarTest {
     VendorConfiguration vc = extractor.getVendorConfiguration();
     assertThat(vc, instanceOf(F5BigipConfiguration.class));
     return (F5BigipConfiguration) vc;
+  }
+
+  private @Nonnull BgpRoute processBgpRoute(RoutingPolicy rp1, Ip peerAddress) {
+    BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+    assertTrue(
+        rp1.process(
+            makeBgpRoute(Prefix.ZERO),
+            outputBuilder,
+            peerAddress,
+            Prefix.create(peerAddress, Prefix.MAX_PREFIX_LENGTH),
+            Configuration.DEFAULT_VRF_NAME,
+            Direction.OUT));
+    return outputBuilder.build();
   }
 
   @Test
@@ -280,6 +308,41 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
+  public void testBgpNextHopSelfConversion() throws IOException {
+    Configuration c = parseConfig("f5_bigip_imish_bgp_next_hop_self");
+
+    Ip localIp = Ip.parse("192.0.2.254");
+    String peer1 = "192.0.2.1";
+    String peer2 = "192.0.2.2";
+    String peer3 = "192.0.2.3";
+    Ip peer1Ip = Ip.parse(peer1);
+    Ip peer2Ip = Ip.parse(peer2);
+    Ip peer3Ip = Ip.parse(peer3);
+    Prefix peer1Prefix = Prefix.create(peer1Ip, MAX_PREFIX_LENGTH);
+    Prefix peer2Prefix = Prefix.create(peer2Ip, MAX_PREFIX_LENGTH);
+    Prefix peer3Prefix = Prefix.create(peer3Ip, MAX_PREFIX_LENGTH);
+
+    assertThat(
+        c,
+        hasDefaultVrf(hasBgpProcess(hasNeighbors(hasKeys(peer1Prefix, peer2Prefix, peer3Prefix)))));
+    RoutingPolicy rp1 =
+        c.getRoutingPolicies().get(computeBgpPeerExportPolicyName("65501", peer1Ip));
+    RoutingPolicy rp2 =
+        c.getRoutingPolicies().get(computeBgpPeerExportPolicyName("65501", peer2Ip));
+    RoutingPolicy rp3 =
+        c.getRoutingPolicies().get(computeBgpPeerExportPolicyName("65501", peer3Ip));
+
+    // 192.0.2.1 with next-hop-self should use next-hop-ip of interface
+    assertThat(processBgpRoute(rp1, peer1Ip), hasNextHopIp(equalTo(localIp)));
+
+    // 192.0.2.2 with next-hop-self inherited from pg1 should use next-hop-ip of interface
+    assertThat(processBgpRoute(rp2, peer2Ip), hasNextHopIp(equalTo(localIp)));
+
+    // 192.0.2.3 without next-hop-self should leave next-hop-ip unset for dp engine to handle
+    assertThat(processBgpRoute(rp3, peer3Ip), hasNextHopIp(equalTo(UNSET_ROUTE_NEXT_HOP_IP)));
+  }
+
+  @Test
   public void testBgpNextHopSelfExtraction() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_bgp_next_hop_self");
 
@@ -292,12 +355,14 @@ public final class F5BigipImishGrammarTest {
     assertTrue(
         "Ensure next-hop-self is extracted for peer-group",
         vc.getBgpProcesses().get("65501").getPeerGroups().get("pg1").getNextHopSelf());
-    assertFalse(
+    assertThat(
         "Ensure next-hop-self is non-inherited in VS for ip neighbor",
-        vc.getBgpProcesses().get("65501").getNeighbors().get("192.0.2.2").getNextHopSelf());
-    assertFalse(
-        "Ensure next-hop-self is false by default",
-        vc.getBgpProcesses().get("65501").getNeighbors().get("192.0.2.3").getNextHopSelf());
+        vc.getBgpProcesses().get("65501").getNeighbors().get("192.0.2.2").getNextHopSelf(),
+        nullValue());
+    assertThat(
+        "Ensure next-hop-self is unset",
+        vc.getBgpProcesses().get("65501").getNeighbors().get("192.0.2.3").getNextHopSelf(),
+        nullValue());
   }
 
   @Test
