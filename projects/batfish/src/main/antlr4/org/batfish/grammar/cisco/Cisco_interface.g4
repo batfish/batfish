@@ -1417,6 +1417,11 @@ if_tunnel
    )
 ;
 
+if_vlan
+:
+  VLAN vlan = vlan_id NEWLINE
+;
+
 if_vrf
 :
    VRF name = variable NEWLINE
@@ -1782,6 +1787,7 @@ if_inner
    | if_switchport_trunk_group_eos
    | if_switchport_trunk_native
    | if_tunnel
+   | if_vlan
    | if_vrf
    | if_vrf_member
    | if_vrrp

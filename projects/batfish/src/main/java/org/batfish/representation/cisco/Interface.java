@@ -174,6 +174,8 @@ public class Interface implements Serializable {
 
   private boolean _dhcpRelayClient;
 
+  private @Nullable Integer _encapsulationVlan;
+
   private Map<Integer, HsrpGroup> _hsrpGroups;
 
   private String _hsrpVersion;
@@ -411,6 +413,10 @@ public class Interface implements Serializable {
     return _dhcpRelayClient;
   }
 
+  public @Nullable Integer getEncapsulationVlan() {
+    return _encapsulationVlan;
+  }
+
   public Map<Integer, HsrpGroup> getHsrpGroups() {
     return _hsrpGroups;
   }
@@ -606,6 +612,10 @@ public class Interface implements Serializable {
 
   public void setDhcpRelayClient(boolean dhcpRelayClient) {
     _dhcpRelayClient = dhcpRelayClient;
+  }
+
+  public void setEncapsulationVlan(@Nullable Integer encapsulationVlan) {
+    _encapsulationVlan = encapsulationVlan;
   }
 
   public void setIncomingFilter(String accessListName) {

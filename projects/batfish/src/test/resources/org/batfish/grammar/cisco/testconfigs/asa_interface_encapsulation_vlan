@@ -1,0 +1,12 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname asa_interface_encapsulation_vlan
+!
+interface GigabitEthernet0/1.100
+  vlan 100
+  nameif ifname
+  security-level 100
+  ip address 192.0.2.1 255.255.255.0 standby 192.0.2.2
+!
+!
