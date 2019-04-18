@@ -29,11 +29,14 @@ list
 unrecognized
 :
   (
-    (
-      IF u_word_list
-    )
+    u_if
     | u_word+
   ) list? NEWLINE
+;
+
+u_if
+:
+  IF u_word_list
 ;
 
 u_list
