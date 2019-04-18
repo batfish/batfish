@@ -52,6 +52,9 @@ route-map rm1 permit 1
  match ip address acl1
  set community 1:2 3:4
  set metric 50
+ set origin egp
+ set origin igp
+ set origin incomplete
 !
 route-map rm1 deny 2
 !

@@ -6,6 +6,13 @@ options {
   tokenVocab = F5BigipImishLexer;
 }
 
+origin_type
+:
+  EGP
+  | IGP
+  | INCOMPLETE
+;
+
 rm_match
 :
   MATCH rmm_ip_address
@@ -22,6 +29,7 @@ rm_set
   (
     rms_community
     | rms_metric
+    | rms_origin
   )
 ;
 
@@ -33,6 +41,11 @@ rms_community
 rms_metric
 :
   METRIC metric = uint32 NEWLINE
+;
+
+rms_origin
+:
+  ORIGIN origin = origin_type NEWLINE
 ;
 
 standard_community
