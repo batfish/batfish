@@ -71,8 +71,10 @@ import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
@@ -221,6 +223,11 @@ public class F5BigipConfiguration extends VendorConfiguration {
         RoutingPolicy.builder()
             .setOwner(_c)
             .setName(computeBgpPeerExportPolicyName(proc.getName(), neighbor.getAddress()));
+
+    // next-hop-self
+    if (Boolean.TRUE.equals(neighbor.getNextHopSelf())) {
+      peerExportPolicy.addStatement(new SetNextHop(SelfNextHop.getInstance(), false));
+    }
 
     Conjunction peerExportConditions = new Conjunction();
     If peerExportConditional =
