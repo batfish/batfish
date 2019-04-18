@@ -9,6 +9,13 @@ ip_prefix
   IP_PREFIX
 ;
 
+ip_prefix_length
+:
+  d = DEC
+  {isIpPrefixLength($d)}?
+
+;
+
 line_action
 :
   DENY
