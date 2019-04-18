@@ -572,7 +572,7 @@ class IncrementalBdpEngine {
           .forEach(
               n -> {
                 for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                  vr.initForIgpComputation(nodes, ospfTopology);
+                  vr.initForIgpComputation(ospfTopology);
                 }
                 initialCompleted.incrementAndGet();
               });
@@ -650,7 +650,7 @@ class IncrementalBdpEngine {
                 n -> {
                   for (VirtualRouter vr : n.getVirtualRouters().values()) {
                     vr.initForEgpComputation(
-                        nodes, bgpTopology, eigrpTopology, isisTopology, ospfTopology);
+                        bgpTopology, eigrpTopology, isisTopology, ospfTopology);
                   }
                   setupCompleted.incrementAndGet();
                 });
