@@ -173,9 +173,6 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
 
   @Override
   public void executeIteration(Map<String, Node> allNodes) {
-    // Clear changeset from previous iteration
-    _changeset = RibDelta.builder();
-
     if (!_initializationDelta.isEmpty()) {
       // If we haven't sent out the first round of updates after initialization, do so now. Then
       // clear the initialization delta
@@ -268,7 +265,10 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   @Nonnull
   @Override
   public RibDelta<OspfRoute> getUpdatesForMainRib() {
-    return _changeset.build();
+    RibDelta<OspfRoute> result = _changeset.build();
+    // Clear state
+    _changeset = RibDelta.builder();
+    return result;
   }
 
   @Override

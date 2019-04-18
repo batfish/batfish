@@ -11,6 +11,7 @@ import static org.batfish.dataplane.rib.AbstractRib.importRib;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.Network;
 import com.google.common.graph.ValueGraph;
+import com.google.common.graph.ValueGraphBuilder;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.util.HashMap;
@@ -581,7 +582,7 @@ class IncrementalBdpEngine {
           initEigrpInternalRoutes(nodes, eigrpTopology, networkConfigurations);
 
       // OSPF internal routes
-      numOspfInternalIterations = initOspfInternalRoutes(nodes);
+      numOspfInternalIterations = initOspfInternalRoutes(nodes, ospfTopology);
 
       // RIP internal routes
       initRipInternalRoutes(nodes, topology);
@@ -909,12 +910,14 @@ class IncrementalBdpEngine {
   /**
    * Run the IGP OSPF computation until convergence.
    *
-   * @param nodes list of nodes for which to initialize the OSPF routes
+   * @param allNodes list of nodes for which to initialize the OSPF routes
+   * @param ospfTopology graph of OSPF adjacencies
    * @return the number of iterations it took for internal OSPF routes to converge
    */
-  private int initOspfInternalRoutes(Map<String, Node> nodes) {
+  private int initOspfInternalRoutes(Map<String, Node> allNodes, OspfTopology ospfTopology) {
     int ospfInternalIterations = 0;
     boolean dirty = true;
+
     while (dirty) {
       ospfInternalIterations++;
 
@@ -923,20 +926,31 @@ class IncrementalBdpEngine {
               .buildSpan("OSPF internal: iteration " + ospfInternalIterations)
               .startActive()) {
         assert span != null; // avoid unused warning
-        nodes
-            .values()
-            .parallelStream()
-            .flatMap(n -> n.getVirtualRouters().values().stream())
-            .forEach(virtualRouter -> virtualRouter.ospfIteration(nodes));
+        // Compute node schedule
+        IbdpSchedule schedule =
+            IbdpSchedule.getSchedule(
+                _settings,
+                _settings.getScheduleName(),
+                allNodes,
+                ValueGraphBuilder.directed().build(),
+                ospfTopology);
 
-        nodes
-            .values()
-            .parallelStream()
-            .flatMap(n -> n.getVirtualRouters().values().stream())
-            .forEach(VirtualRouter::mergeOspfRoutesToMainRib);
+        while (schedule.hasNext()) {
+          Map<String, Node> scheduleNodes = schedule.next();
+          scheduleNodes
+              .values()
+              .parallelStream()
+              .flatMap(n -> n.getVirtualRouters().values().stream())
+              .forEach(virtualRouter -> virtualRouter.ospfIteration(allNodes));
 
+          scheduleNodes
+              .values()
+              .parallelStream()
+              .flatMap(n -> n.getVirtualRouters().values().stream())
+              .forEach(VirtualRouter::mergeOspfRoutesToMainRib);
+        }
         dirty =
-            nodes
+            allNodes
                 .values()
                 .parallelStream()
                 .flatMap(n -> n.getVirtualRouters().values().stream())
