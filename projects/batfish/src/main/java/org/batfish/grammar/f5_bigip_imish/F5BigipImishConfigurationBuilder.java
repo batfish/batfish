@@ -238,12 +238,15 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
 
   @Override
   public void exitRb_redistribute_kernel(Rb_redistribute_kernelContext ctx) {
-    String routeMapName = ctx.rm.getText();
-    _c.referenceStructure(
-        F5BigipStructureType.ROUTE_MAP,
-        routeMapName,
-        F5BigipStructureUsage.BGP_REDISTRIBUTE_KERNEL_ROUTE_MAP,
-        ctx.rm.getStart().getLine());
+    String routeMapName = null;
+    if (ctx.rm != null) {
+      routeMapName = ctx.rm.getText();
+      _c.referenceStructure(
+          F5BigipStructureType.ROUTE_MAP,
+          routeMapName,
+          F5BigipStructureUsage.BGP_REDISTRIBUTE_KERNEL_ROUTE_MAP,
+          ctx.rm.getStart().getLine());
+    }
     _currentBgpProcess
         .getIpv4AddressFamily()
         .getRedistributionPolicies()
