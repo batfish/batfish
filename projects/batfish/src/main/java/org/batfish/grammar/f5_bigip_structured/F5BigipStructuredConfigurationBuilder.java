@@ -248,8 +248,8 @@ import org.batfish.vendor.StructureType;
 public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredParserBaseListener {
 
   private static @Nonnull String getUnrecognizedLeadText(UnrecognizedContext ctx) {
-    if (ctx.IF() != null) {
-      return ctx.IF().getText();
+    if (ctx.u_if() != null) {
+      return ctx.u_if().getText();
     } else {
       return ctx.u_word().stream().map(ParserRuleContext::getText).collect(Collectors.joining(" "));
     }
