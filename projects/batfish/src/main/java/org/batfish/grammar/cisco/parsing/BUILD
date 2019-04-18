@@ -9,5 +9,6 @@ java_library(
         "//projects/batfish-common-protocol:parser_common",
         "@antlr4_runtime//:compile",
         "@com_google_guava_guava//jar",
+        "@jsr305//:compile",
     ],
 )
