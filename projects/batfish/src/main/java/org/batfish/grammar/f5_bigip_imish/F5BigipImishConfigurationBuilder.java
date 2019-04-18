@@ -17,9 +17,11 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.F5_bigip_imish_configurationContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Ip_prefixContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Ip_prefix_lengthContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Ip_specContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Line_actionContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_bgp_always_compare_medContext;
@@ -38,6 +40,7 @@ import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_route_map_outCo
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rmm_ip_addressContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rms_communityContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.S_access_listContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.S_ip_prefix_listContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.S_route_mapContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.S_router_bgpContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Standard_communityContext;
@@ -54,12 +57,18 @@ import org.batfish.representation.f5_bigip.F5BigipRoutingProtocol;
 import org.batfish.representation.f5_bigip.F5BigipStructureType;
 import org.batfish.representation.f5_bigip.F5BigipStructureUsage;
 import org.batfish.representation.f5_bigip.MatchAccessList;
+import org.batfish.representation.f5_bigip.PrefixList;
+import org.batfish.representation.f5_bigip.PrefixListEntry;
 import org.batfish.representation.f5_bigip.RouteMap;
 import org.batfish.representation.f5_bigip.RouteMapEntry;
 import org.batfish.representation.f5_bigip.RouteMapSetCommunity;
 import org.batfish.vendor.StructureType;
 
 public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseListener {
+
+  private static int toInteger(Ip_prefix_lengthContext ctx) {
+    return Integer.parseInt(ctx.getText(), 10);
+  }
 
   private static @Nonnull LineAction toLineAction(Line_actionContext ctx) {
     return ctx.PERMIT() != null ? LineAction.PERMIT : LineAction.DENY;
@@ -430,6 +439,53 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
         .computeIfAbsent(name, AccessList::new)
         .getLines()
         .add(new AccessListLine(toLineAction(ctx.action), prefix, getFullText(ctx)));
+  }
+
+  @Override
+  public void exitS_ip_prefix_list(S_ip_prefix_listContext ctx) {
+    String name = ctx.name.getText();
+    long num = toLong(ctx.num);
+    Prefix prefix = toPrefix(ctx.prefix);
+    int prefixLength = prefix.getPrefixLength();
+    Integer ge = ctx.ge != null ? toInteger(ctx.ge) : null;
+    Integer le = ctx.le != null ? toInteger(ctx.le) : null;
+    int low = prefixLength;
+    int high = Prefix.MAX_PREFIX_LENGTH;
+    if (ge != null) {
+      if (ge < prefixLength) {
+        // Ineffectual, so warn
+        _w.redFlag(
+            String.format(
+                "ge (min) arg '%d' less than prefix-length '%d' in: %s",
+                ge, prefixLength, getFullText(ctx)));
+      } else {
+        low = ge;
+      }
+    }
+    if (le != null) {
+      if (le < prefixLength) {
+        // Invalid and cannot match anything, so warn and do not add
+        _w.redFlag(
+            String.format(
+                "le (max) arg '%d' less than prefix-length '%d' in: %s",
+                le, prefixLength, getFullText(ctx)));
+        return;
+      } else if (ge != null && le < ge) {
+        // Invalid and cannot match anything, so warn and do not add
+        _w.redFlag(
+            String.format(
+                "le (max) arg '%d' less than ge (min) arg '%d' in: %s", le, ge, getFullText(ctx)));
+        return;
+      } else {
+        high = le;
+      }
+    }
+    defineStructure(F5BigipStructureType.PREFIX_LIST, name, ctx);
+    PrefixListEntry entry = new PrefixListEntry(num);
+    entry.setAction(toLineAction(ctx.action));
+    entry.setPrefix(prefix);
+    entry.setLengthRange(new SubRange(low, high));
+    _c.getPrefixLists().computeIfAbsent(name, PrefixList::new).getEntries().put(num, entry);
   }
 
   @Override

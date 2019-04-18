@@ -100,6 +100,11 @@ FALL_OVER
   'fall-over'
 ;
 
+GE
+:
+  'ge'
+;
+
 GRACEFUL_RESTART
 :
   'graceful-restart'
@@ -123,6 +128,11 @@ IP
 KERNEL
 :
   'kernel'
+;
+
+LE
+:
+  'le'
 ;
 
 LINE
@@ -180,6 +190,11 @@ PERMIT
   'permit'
 ;
 
+PREFIX_LIST
+:
+  'prefix-list'
+;
+
 REDISTRIBUTE
 :
   'redistribute'
@@ -203,6 +218,11 @@ ROUTER
 ROUTER_ID
 :
   'router-id'
+;
+
+SEQ
+:
+  'seq'
 ;
 
 SERVICE

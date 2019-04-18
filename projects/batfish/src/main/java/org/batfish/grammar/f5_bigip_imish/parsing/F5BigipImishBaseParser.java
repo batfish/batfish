@@ -14,8 +14,15 @@ import org.batfish.grammar.BatfishParser;
 @ParametersAreNonnullByDefault
 public abstract class F5BigipImishBaseParser extends BatfishParser {
 
-  public F5BigipImishBaseParser(TokenStream input) {
-    super(input);
+  /** Return {@code true} iff {@code t}'s text represents a valid IPv4 prefix-length in base 10. */
+  protected static boolean isIpPrefixLength(Token t) {
+    try {
+      Integer val = Integer.parseInt(t.getText(), 10);
+      checkArgument(0 <= val && val <= 32);
+    } catch (IllegalArgumentException e) {
+      return false;
+    }
+    return true;
   }
 
   /**
@@ -30,5 +37,9 @@ public abstract class F5BigipImishBaseParser extends BatfishParser {
       return false;
     }
     return true;
+  }
+
+  public F5BigipImishBaseParser(TokenStream input) {
+    super(input);
   }
 }
