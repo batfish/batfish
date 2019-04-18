@@ -9,12 +9,16 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
+import org.batfish.common.AnswerRowsOptions;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
 import org.batfish.common.Version;
@@ -23,7 +27,15 @@ import org.batfish.coordinator.Main;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerSummary;
+import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.StringAnswerElement;
+import org.batfish.datamodel.table.ColumnMetadata;
+import org.batfish.datamodel.table.Row;
+import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.datamodel.table.TableView;
+import org.batfish.datamodel.table.TableViewRow;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -42,6 +54,19 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
                 .path(CoordConstsV2.RSC_QUESTIONS)
                 .path(question)
                 .path(CoordConstsV2.RSC_ANSWER),
+            snapshot));
+  }
+
+  private Builder filterAnswerTarget(String network, String question, @Nullable String snapshot) {
+    return addHeader(
+        addSnapshotQuery(
+            target(CoordConsts.SVC_CFG_WORK_MGR2)
+                .path(CoordConstsV2.RSC_NETWORKS)
+                .path(network)
+                .path(CoordConstsV2.RSC_QUESTIONS)
+                .path(question)
+                .path(CoordConstsV2.RSC_ANSWER)
+                .path(CoordConstsV2.RSC_FILTER),
             snapshot));
   }
 
@@ -174,5 +199,45 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
     // No answer should result in 404
     assertThat(responseNoAns.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
     assertThat(responseNoAns.readEntity(String.class), containsString("Answer not found"));
+  }
+
+  @Test
+  public void testFilterAnswer() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+    String question = "question";
+
+    AnswerRowsOptions filterOptions =
+        new AnswerRowsOptions(
+            ImmutableSet.of(), ImmutableList.of(), 1, 0, ImmutableList.of(), false);
+    FilterAnswerBean filter = new FilterAnswerBean(snapshot, null, filterOptions);
+
+    TableMetadata baseTableMetadata =
+        new TableMetadata(
+            ImmutableList.of(new ColumnMetadata("colName", Schema.STRING, "col description")));
+    TableAnswerElement baseTableAnswerElement = new TableAnswerElement(baseTableMetadata);
+    baseTableAnswerElement.addRow(Row.of("colName", "value1"));
+    baseTableAnswerElement.addRow(Row.of("colName", "value2"));
+    Answer baseAnswer = new Answer();
+    baseAnswer.addAnswerElement(baseTableAnswerElement);
+    Main.getWorkMgr().initNetwork(network, null);
+    uploadTestSnapshot(network, snapshot, _folder);
+    setupQuestionAndAnswer(network, snapshot, question, null, baseAnswer);
+
+    // expectedAnswer is same as baseAnswer but only the first row and summaries indicating there
+    // were originally 2 rows
+    TableViewRow expectedRow = new TableViewRow(0, Row.of("colName", "value1"));
+    TableView expectedTableView =
+        new TableView(filterOptions, ImmutableList.of(expectedRow), baseTableMetadata);
+    expectedTableView.setSummary(new AnswerSummary("", 0, 0, 2));
+    String expectedAnswerString = BatfishObjectMapper.writeString(expectedTableView);
+
+    Response response = filterAnswerTarget(network, question, snapshot).post(Entity.json(filter));
+    // Confirm the filtered answer is successfully fetched
+    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    assertThat(
+        BatfishObjectMapper.writeString(
+            response.readEntity(Answer.class).getAnswerElements().get(0)),
+        equalTo(expectedAnswerString));
   }
 }

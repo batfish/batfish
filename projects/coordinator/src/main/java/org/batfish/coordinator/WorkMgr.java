@@ -2418,7 +2418,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
-  /** Filter the supplied rawAnswer based on the options provided. */
+  /** Filter the supplied rawAnswer based on the options provided */
   public Answer filterAnswer(Answer rawAnswer, AnswerRowsOptions options) {
     AnswerElement answerElement = rawAnswer.getAnswerElements().get(0);
     if (!(answerElement instanceof TableAnswerElement)) {

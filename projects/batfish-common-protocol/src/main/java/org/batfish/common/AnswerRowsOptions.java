@@ -32,6 +32,10 @@ public final class AnswerRowsOptions {
         firstNonNull(uniqueRows, false));
   }
 
+  /** Filter which returns all answer rows and columns */
+  public static @Nonnull AnswerRowsOptions NO_FILTER =
+      AnswerRowsOptions.create(null, null, null, null, null, null);
+
   private final Set<String> _columns;
 
   private final List<ColumnFilter> _filters;
