@@ -2138,6 +2138,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newIface.setIsis(isisInterfaceSettingsBuilder.build());
     }
 
+    // subinterface settings
+    newIface.setEncapsulationVlan(iface.getEncapsulationVlan());
+
     // switch settings
     newIface.setAccessVlan(iface.getAccessVlan());
 

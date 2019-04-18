@@ -81,10 +81,12 @@ import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasLocalInt
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasRemoteIdentity;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasSelfIdentity;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEigrp;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpGroup;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpVersion;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasIsis;
@@ -216,6 +218,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MAT
 import static org.batfish.representation.cisco.OspfProcess.getReferenceOspfBandwidth;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
+import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -4812,6 +4815,20 @@ public class CiscoGrammarTest {
 
     // Confirm interface definition is tracked for the alias name
     assertThat(ccae, hasDefinedStructure(filename, INTERFACE, "ifname"));
+  }
+
+  @Test
+  public void testAsaInterfaceEncapsulationVlan() throws IOException {
+    String hostname = "asa_interface_encapsulation_vlan";
+    Configuration c = parseConfig(hostname);
+
+    // encapsulation vlan should be read in s_interface context, and so later IP address should be
+    // correctly extracted
+    assertThat(
+        c,
+        hasInterface(
+            "ifname",
+            both(hasEncapsulationVlan(100)).and(hasAddress(new InterfaceAddress("192.0.2.1/24")))));
   }
 
   @Test
