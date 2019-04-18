@@ -47,6 +47,7 @@ public class CiscoCombinedParser extends BatfishCombinedParser<CiscoParser, Cisc
     boolean cadant = format == ConfigurationFormat.CADANT;
     _lexer.setCadant(cadant);
     _lexer.setFoundry(format == ConfigurationFormat.FOUNDRY);
+    _parser.setAsa(format == ConfigurationFormat.CISCO_ASA);
     _parser.setEos(format == ConfigurationFormat.ARISTA);
     _parser.setCadant(cadant);
     _parser.setNxos(format == ConfigurationFormat.CISCO_NX);

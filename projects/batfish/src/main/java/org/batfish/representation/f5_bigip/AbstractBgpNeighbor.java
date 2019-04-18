@@ -15,6 +15,7 @@ public abstract class AbstractBgpNeighbor implements Serializable {
   private final @Nonnull BgpNeighborIpv4AddressFamily _ipv4AddressFamily;
   private final @Nonnull BgpNeighborIpv6AddressFamily _ipv6AddressFamily;
   private final @Nonnull String _name;
+  private boolean _nextHopSelf;
   private @Nullable Long _remoteAs;
   private @Nullable String _updateSource;
 
@@ -40,6 +41,10 @@ public abstract class AbstractBgpNeighbor implements Serializable {
     return _name;
   }
 
+  public boolean getNextHopSelf() {
+    return _nextHopSelf;
+  }
+
   public final @Nullable Long getRemoteAs() {
     return _remoteAs;
   }
@@ -50,6 +55,10 @@ public abstract class AbstractBgpNeighbor implements Serializable {
 
   public final void setDescription(@Nullable String description) {
     _description = description;
+  }
+
+  public void setNextHopSelf(boolean nextHopSelf) {
+    _nextHopSelf = nextHopSelf;
   }
 
   public final void setRemoteAs(@Nullable Long remoteAs) {

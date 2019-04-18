@@ -6,6 +6,16 @@ options {
   tokenVocab = F5BigipImishLexer;
 }
 
+rb_bgp_always_compare_med
+:
+  BGP ALWAYS_COMPARE_MED NEWLINE
+;
+
+rb_bgp_deterministic_med
+:
+  BGP DETERMINISTIC_MED NEWLINE
+;
+
 rb_bgp_router_id
 :
   BGP ROUTER_ID id = IP_ADDRESS NEWLINE
@@ -42,6 +52,7 @@ rbn_common
 :
   (
     rbn_description
+    | rbn_next_hop_self
     | rbn_null
     | rbn_remote_as
     | rbn_route_map_out
@@ -51,6 +62,11 @@ rbn_common
 rbn_description
 :
   DESCRIPTION text = DESCRIPTION_LINE NEWLINE
+;
+
+rbn_next_hop_self
+:
+  NEXT_HOP_SELF NEWLINE
 ;
 
 rbn_peer_group
@@ -103,7 +119,9 @@ s_router_bgp
 :
   ROUTER BGP localas = uint64 NEWLINE
   (
-    rb_bgp_router_id
+    rb_bgp_always_compare_med
+    | rb_bgp_deterministic_med
+    | rb_bgp_router_id
     | rb_neighbor_ipv4
     | rb_neighbor_ipv6
     | rb_neighbor_peer_group

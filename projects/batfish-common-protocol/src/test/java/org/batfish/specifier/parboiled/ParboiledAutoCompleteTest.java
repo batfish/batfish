@@ -180,7 +180,7 @@ public class ParboiledAutoCompleteTest {
                     "\"node 1\"", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0))));
   }
 
-  /** Test that we produce auto complete snapshot-based dynamic values like IP addresses */
+  /** Test that we produce auto complete snapshot-based dynamic values like address groups */
   @Test
   public void testRunSpecifierInput() {
     ReferenceLibrary library =
@@ -199,19 +199,24 @@ public class ParboiledAutoCompleteTest {
         ImmutableSet.copyOf(getTestPAC("@specifier(", library).run()),
         equalTo(
             ImmutableSet.of(
+                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, 11),
                 new AutocompleteSuggestion(
-                    "g1,b1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 11),
+                    "g1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 11),
                 new AutocompleteSuggestion(
-                    "a1,b1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 11),
+                    "a1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 11),
                 new AutocompleteSuggestion(
-                    "g2,b2", true, null, AutocompleteSuggestion.DEFAULT_RANK, 11))));
+                    "g2", true, null, AutocompleteSuggestion.DEFAULT_RANK, 11))));
 
+    // both books will be reported until we get context sensitive about auto complete
     assertThat(
         ImmutableSet.copyOf(getTestPAC("@specifier(g1,", library).run()),
         equalTo(
             ImmutableSet.of(
+                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, 14),
                 new AutocompleteSuggestion(
-                    "g1,b1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 11))));
+                    "b1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 14),
+                new AutocompleteSuggestion(
+                    "b2", true, null, AutocompleteSuggestion.DEFAULT_RANK, 14))));
   }
 
   /** Test that String literals are inserted before dynamic values */

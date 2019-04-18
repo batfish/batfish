@@ -14,7 +14,6 @@ import static org.batfish.datamodel.Protocol.HTTP;
 import static org.batfish.datamodel.Protocol.HTTPS;
 import static org.batfish.datamodel.Protocol.SSH;
 import static org.batfish.datamodel.answers.AutoCompleteUtils.stringAutoComplete;
-import static org.batfish.datamodel.answers.AutoCompleteUtils.stringPairAutoComplete;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.IS_PASSIVE;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.LOCAL_AS;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.REMOTE_AS;
@@ -52,13 +51,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.common.CompletionMetadata;
-import org.batfish.datamodel.answers.AutoCompleteUtils.StringPair;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.Variable.Type;
 import org.batfish.referencelibrary.AddressGroup;
+import org.batfish.referencelibrary.InterfaceGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
+import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.junit.Rule;
@@ -98,7 +98,7 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
-  public void testAddressGroupAndBookAutocomplete() throws IOException {
+  public void testAddressGroupAutocomplete() throws IOException {
     ReferenceLibrary library =
         new ReferenceLibrary(
             ImmutableList.of(
@@ -114,36 +114,29 @@ public class AutoCompleteUtilsTest {
     // empty matches all possibilities
     assertThat(
         AutoCompleteUtils.autoComplete(
-                "network", "snapshot", Type.ADDRESS_GROUP_AND_BOOK, " ", 5, null, null, library)
+                "network", "snapshot", Type.ADDRESS_GROUP_NAME, "", 5, null, null, library)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
-        equalTo(ImmutableSet.of("g1,b1", "a1,b1", "g2,b2")));
+        equalTo(ImmutableSet.of("g1", "a1", "g2")));
 
-    // 'g' matches two pairs
+    // 'g' matches two groups
     assertThat(
         AutoCompleteUtils.autoComplete(
-                "network", "snapshot", Type.ADDRESS_GROUP_AND_BOOK, " G ", 5, null, null, library)
+                "network", "snapshot", Type.ADDRESS_GROUP_NAME, "G", 5, null, null, library)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
-        equalTo(ImmutableSet.of("g1,b1", "g2,b2")));
+        equalTo(ImmutableSet.of("g1", "g2")));
 
-    // 'g1' matches one pair
+    // 'g1' matches one group
     assertThat(
         AutoCompleteUtils.autoComplete(
-                "network",
-                "snapshot",
-                Type.ADDRESS_GROUP_AND_BOOK,
-                " G1 , ",
-                5,
-                null,
-                null,
-                library)
+                "network", "snapshot", Type.ADDRESS_GROUP_NAME, "g1", 5, null, null, library)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
-        equalTo(ImmutableSet.of("g1,b1")));
+        equalTo(ImmutableSet.of("g1")));
   }
 
   @Test
@@ -256,6 +249,50 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
+  public void testInterfaceGroupAutocomplete() throws IOException {
+    ReferenceLibrary library =
+        new ReferenceLibrary(
+            ImmutableList.of(
+                ReferenceBook.builder("b1")
+                    .setInterfaceGroups(
+                        ImmutableList.of(
+                            new InterfaceGroup(ImmutableSortedSet.of(), "g1"),
+                            new InterfaceGroup(ImmutableSortedSet.of(), "a1")))
+                    .build(),
+                ReferenceBook.builder("b2")
+                    .setInterfaceGroups(
+                        ImmutableList.of(new InterfaceGroup(ImmutableSortedSet.of(), "g2")))
+                    .build()));
+
+    // empty matches all possibilities
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network", "snapshot", Type.INTERFACE_GROUP_NAME, "", 5, null, null, library)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of("g1", "a1", "g2")));
+
+    // 'g' matches two groups
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network", "snapshot", Type.INTERFACE_GROUP_NAME, "G", 5, null, null, library)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of("g1", "g2")));
+
+    // 'g1' matches one group
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network", "snapshot", Type.INTERFACE_GROUP_NAME, "g1", 5, null, null, library)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of("g1")));
+  }
+
+  @Test
   public void testInterfacePropertySpecAutocomplete() throws IOException {
     assertThat(
         AutoCompleteUtils.autoComplete(Type.INTERFACE_PROPERTY_SPEC, "vlan", 5).stream()
@@ -338,11 +375,47 @@ public class AutoCompleteUtilsTest {
 
     assertThat(
         AutoCompleteUtils.autoComplete(
-                network, "snapshot", Type.NODE_ROLE_DIMENSION, "dim", 5, null, nodeRolesData, null)
+                network,
+                "snapshot",
+                Type.NODE_ROLE_DIMENSION_NAME,
+                "dim",
+                5,
+                null,
+                nodeRolesData,
+                null)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(suggested.getName())));
+  }
+
+  @Test
+  public void testNodeRoleNameAutocomplete() throws IOException {
+    String network = "network";
+
+    NodeRolesData nodeRolesData =
+        NodeRolesData.builder()
+            .setRoleDimensions(
+                ImmutableSortedSet.of(
+                    NodeRoleDimension.builder()
+                        .setName("someDimension")
+                        .setRoles(
+                            ImmutableSortedSet.of(
+                                new NodeRole("r1", ".*"), new NodeRole("s2", ".*")))
+                        .build(),
+                    NodeRoleDimension.builder()
+                        .setName("someDimension")
+                        .setRoles(ImmutableSortedSet.of(new NodeRole("r2", ".*")))
+                        .build()))
+            .build();
+
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                network, "snapshot", Type.NODE_ROLE_NAME, "r", 5, null, nodeRolesData, null)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of("r1", "r2")));
   }
 
   @Test
@@ -402,6 +475,43 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
+  public void testReferenceBookAutocomplete() throws IOException {
+    ReferenceLibrary library =
+        new ReferenceLibrary(
+            ImmutableList.of(
+                ReferenceBook.builder("b1").build(),
+                ReferenceBook.builder("b2").build(),
+                ReferenceBook.builder("c1").build()));
+
+    // empty matches all possibilities
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network", "snapshot", Type.REFERENCE_BOOK_NAME, "", 5, null, null, library)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of("b1", "b2", "c1")));
+
+    // 'g' matches two books
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network", "snapshot", Type.REFERENCE_BOOK_NAME, "B", 5, null, null, library)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of("b1", "b2")));
+
+    // 'g1' matches one book
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network", "snapshot", Type.REFERENCE_BOOK_NAME, "b1", 5, null, null, library)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of("b1")));
+  }
+
+  @Test
   public void testRoutingPolicyNameAutocomplete() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
@@ -449,22 +559,6 @@ public class AutoCompleteUtilsTest {
     assertThat(
         getSuggestionsTextSet(stringAutoComplete("aBCd", strings)),
         equalTo(ImmutableSet.of("abcd")));
-  }
-
-  @Test
-  public void testStringPairAutocomplete() {
-    Set<StringPair> stringPairs =
-        ImmutableSet.of(new StringPair("ab", "cd"), new StringPair("de", "fg"));
-    assertThat(
-        getSuggestionsTextSet(stringPairAutoComplete("d", stringPairs)),
-        equalTo(ImmutableSet.of("ab,cd", "de,fg")));
-    assertThat(
-        getSuggestionsTextSet(stringPairAutoComplete("b, c", stringPairs)),
-        equalTo(ImmutableSet.of("ab,cd")));
-    // full match and case-insensitive
-    assertThat(
-        getSuggestionsTextSet(stringPairAutoComplete("ab,    CD", stringPairs)),
-        equalTo(ImmutableSet.of("ab,cd")));
   }
 
   @Test

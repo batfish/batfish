@@ -21,12 +21,15 @@ import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.F5_bigip_imish_configurationContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Ip_specContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Line_actionContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_bgp_always_compare_medContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_bgp_deterministic_medContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_bgp_router_idContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_neighbor_ipv4Context;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_neighbor_ipv6Context;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_neighbor_peer_groupContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_redistribute_kernelContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_descriptionContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_next_hop_selfContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_peer_groupContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_peer_group_assignContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_remote_asContext;
@@ -62,7 +65,15 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   private @Nullable AbstractBgpNeighbor _currentAbstractNeighbor;
   private @Nullable BgpProcess _currentBgpProcess;
   private @Nullable BgpNeighbor _currentNeighbor;
+
+  /**
+   * When entering a bgp neighbor statement, {@code _currentNeighborName} is set to a non-null
+   * value. Iff it refers to a neighbor that already exists, then {@code _currentAbstractNeighbor}
+   * and one of {@code _currentNeighbor} or {@code _currentPeerGroup} are set to that existing
+   * neighbor.
+   */
   private @Nullable String _currentNeighborName;
+
   private @Nullable BgpPeerGroup _currentPeerGroup;
   private @Nullable RouteMapEntry _currentRouteMapEntry;
 
@@ -188,6 +199,16 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   }
 
   @Override
+  public void exitRb_bgp_always_compare_med(Rb_bgp_always_compare_medContext ctx) {
+    _currentBgpProcess.setAlwaysCompareMed(true);
+  }
+
+  @Override
+  public void exitRb_bgp_deterministic_med(Rb_bgp_deterministic_medContext ctx) {
+    _currentBgpProcess.setDeterministicMed(true);
+  }
+
+  @Override
   public void exitRb_bgp_router_id(Rb_bgp_router_idContext ctx) {
     _currentBgpProcess.setRouterId(Ip.parse(ctx.id.getText()));
   }
@@ -244,6 +265,18 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   }
 
   @Override
+  public void exitRbn_next_hop_self(Rbn_next_hop_selfContext ctx) {
+    if (_currentAbstractNeighbor == null) {
+      _w.redFlag(
+          String.format(
+              "Cannot apply next-hop-self to non-existent neighbor: '%s' in: '%s'",
+              _currentNeighborName, getFullText(ctx.getParent().getParent())));
+      return;
+    }
+    _currentAbstractNeighbor.setNextHopSelf(true);
+  }
+
+  @Override
   public void exitRbn_peer_group(Rbn_peer_groupContext ctx) {
     BgpPeerGroup pg =
         _currentBgpProcess.getPeerGroups().computeIfAbsent(_currentNeighborName, BgpPeerGroup::new);
@@ -260,11 +293,18 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
         peerGroupName,
         F5BigipStructureUsage.BGP_NEIGHBOR_PEER_GROUP,
         ctx.name.getStart().getLine());
-    if (_currentNeighbor == null) {
+    boolean ipv4 = false;
+    boolean ipv6 = false;
+    if (Ip.tryParse(_currentNeighborName).isPresent()) {
+      ipv4 = true;
+    } else if (Ip6.tryParse(_currentNeighborName).isPresent()) {
+      ipv6 = true;
+    } else {
+      // should not be possible
       _w.redFlag(
           String.format(
-              "Cannot assign peer-group to non-existent neighbor: '%s' in: '%s'",
-              _currentNeighborName, getFullText(ctx.getParent())));
+              "Unsupported neighbor id: '%s' in: '%s'",
+              _currentNeighborName, getFullText(ctx.getParent().getParent())));
       return;
     }
     if (!_currentBgpProcess.getPeerGroups().containsKey(peerGroupName)) {
@@ -273,6 +313,18 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
               "Cannot assign bgp neighbor to non-existent peer-group: '%s' in: '%s'",
               peerGroupName, getFullText(ctx.getParent())));
       return;
+    }
+    if (_currentNeighbor == null) {
+      _currentNeighbor =
+          _currentBgpProcess.getNeighbors().computeIfAbsent(_currentNeighborName, BgpNeighbor::new);
+      defineStructure(F5BigipStructureType.BGP_NEIGHBOR, _currentNeighborName, ctx.parent);
+      _c.referenceStructure(
+          F5BigipStructureType.BGP_NEIGHBOR,
+          _currentNeighborName,
+          F5BigipStructureUsage.BGP_NEIGHBOR_SELF_REFERENCE,
+          ctx.getStart().getLine());
+      _currentNeighbor.getIpv4AddressFamily().setActivate(ipv4);
+      _currentNeighbor.getIpv6AddressFamily().setActivate(ipv6);
     }
     _currentNeighbor.setPeerGroup(peerGroupName);
   }

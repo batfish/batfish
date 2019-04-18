@@ -69,6 +69,7 @@ import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.OspfProcess.Builder;
 import org.batfish.datamodel.ospf.OspfSessionProperties;
 import org.batfish.datamodel.ospf.OspfTopology;
+import org.batfish.datamodel.ospf.OspfTopology.EdgeId;
 import org.batfish.datamodel.ospf.StubSettings;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -230,9 +231,11 @@ public class OspfRoutingProcessTest {
     _routingProcess.initialize();
     // Empty map in this particular case just means no valid neighbors.
     _routingProcess.executeIteration(ImmutableMap.of());
+    assertTrue("Still have updates to main RIB", _routingProcess.isDirty());
+    _routingProcess.getUpdatesForMainRib();
 
     // Initialization delta should have been cleared
-    assertFalse(_routingProcess.isDirty());
+    assertFalse("All dirty state is cleared", _routingProcess.isDirty());
   }
 
   @Test
@@ -333,6 +336,50 @@ public class OspfRoutingProcessTest {
         allOf(
             hasRoute(allOf(hasPrefix(Prefix.ZERO), hasNextHopIp(equalTo(nextHopIp)))),
             hasReason(ADD)));
+  }
+
+  @Test
+  public void testComputeDefaultInterAreaRouteToInjectRepeatedCalls() {
+    OspfArea area =
+        OspfArea.builder()
+            .setNumber(1L)
+            .setStubType(StubType.STUB)
+            .setStubSettings(StubSettings.builder().build())
+            .build();
+    Ip nextHopIp = Ip.parse("1.1.1.1");
+    OspfNeighborConfigId n1 = new OspfNeighborConfigId(HOSTNAME, VRF_NAME, "1", ACTIVE_IFACE_NAME);
+    OspfNeighborConfigId n2 = new OspfNeighborConfigId("r2", VRF_NAME, "1", "someIface");
+    EdgeId edge = OspfTopology.makeEdge(n1, n2);
+
+    // First call allows injection of default route
+    assertThat(
+        _routingProcess
+            .computeDefaultInterAreaRouteToInject(edge, area, nextHopIp)
+            .collect(ImmutableList.toImmutableList()),
+        contains(
+            allOf(
+                hasRoute(allOf(hasPrefix(Prefix.ZERO), hasNextHopIp(equalTo(nextHopIp)))),
+                hasReason(ADD))));
+
+    // Any subsequent calls for the same edge -- no need to inject default route
+    for (int i = 0; i < 10; i++) {
+      assertThat(
+          "No default route to inject",
+          _routingProcess.computeDefaultInterAreaRouteToInject(edge, area, nextHopIp).count(),
+          equalTo(0L));
+    }
+
+    // For a edge with a different tail node, we still get a default route
+    OspfNeighborConfigId n3 = new OspfNeighborConfigId("r3", VRF_NAME, "1", "someIface");
+    edge = OspfTopology.makeEdge(n3, n2);
+    assertThat(
+        _routingProcess
+            .computeDefaultInterAreaRouteToInject(edge, area, nextHopIp)
+            .collect(ImmutableList.toImmutableList()),
+        contains(
+            allOf(
+                hasRoute(allOf(hasPrefix(Prefix.ZERO), hasNextHopIp(equalTo(nextHopIp)))),
+                hasReason(ADD))));
   }
 
   @Test

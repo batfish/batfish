@@ -10,8 +10,17 @@ import org.junit.Test;
 public class AddressGroupBeanTest {
 
   @Test
-  public void conversionToAndFrom() {
+  public void conversionToAndFromAddresses() {
     AddressGroup group = new AddressGroup(ImmutableSortedSet.of("1.1.1.1:255.255.255.1"), "ag1");
+    AddressGroupBean bean = new AddressGroupBean(group);
+    assertThat(new AddressGroupBean(bean.toAddressGroup()), equalTo(bean));
+  }
+
+  @Test
+  public void conversionToAndFromAddressesAndGroups() {
+    AddressGroup group =
+        new AddressGroup(
+            "ag1", ImmutableSortedSet.of("1.1.1.1:255.255.255.1"), ImmutableSortedSet.of("sub"));
     AddressGroupBean bean = new AddressGroupBean(group);
     assertThat(new AddressGroupBean(bean.toAddressGroup()), equalTo(bean));
   }

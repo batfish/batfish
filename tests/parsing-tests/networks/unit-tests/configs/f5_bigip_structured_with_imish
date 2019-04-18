@@ -17,6 +17,8 @@ interface tmm
 interface vlan1
 !
 router bgp 65500
+ bgp always-compare-med
+ bgp deterministic-med
  bgp graceful-restart restart-time 123
  bgp router-id 192.0.2.100
  max-paths ebgp 12
@@ -24,6 +26,7 @@ router bgp 65500
  no neighbor pg1 capability graceful-restart
  neighbor pg1 fall-over pfd
  neighbor pg1 maximum-prefix 12345
+ neighbor pg1 next-hop-self
  neighbor 1:2:3:: remote-as 555
  neighbor 1:2:3::4:5:6 remote-as 555
  neighbor 1:2:3:4:5:6:7:: remote-as 555
@@ -33,6 +36,7 @@ router bgp 65500
  neighbor 1:2:3:4:5:6:9.8.7.6 remote-as 555
  neighbor 10.0.0.1 remote-as 65501
  neighbor 10.0.0.1 description desc1
+ neighbor 10.0.0.1 next-hop-self
  neighbor 10.0.0.1 peer-group pg1
  neighbor 10.0.0.1 update-source us1
  redistribute kernel route-map rm1

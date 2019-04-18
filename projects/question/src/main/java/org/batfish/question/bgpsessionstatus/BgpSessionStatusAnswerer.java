@@ -144,6 +144,13 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
                   Set<BgpPeerConfigId> compatibleRemotes =
                       configuredBgpTopology.adjacentNodes(neighbor);
 
+                  // If no compatible neighbors exist, generate one NOT_ESTABLISHED row
+                  if (compatibleRemotes.isEmpty()) {
+                    return Stream.of(
+                        buildPassivePeerWithoutRemoteRow(
+                            metadataMap, neighbor, passivePeer, NOT_ESTABLISHED));
+                  }
+
                   // Find all remote peers that established a session with this peer. Node will not
                   // be in establishedBgpTopology at all if peer was not valid according to
                   // BgpTopologyUtils.bgpConfigPassesSanityChecks()
@@ -151,13 +158,6 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
                       establishedBgpTopology.nodes().contains(neighbor)
                           ? establishedBgpTopology.adjacentNodes(neighbor)
                           : ImmutableSet.of();
-
-                  // If no compatible neighbors exist, generate one NOT_ESTABLISHED row
-                  if (compatibleRemotes.isEmpty()) {
-                    return Stream.of(
-                        buildPassivePeerWithoutRemoteRow(
-                            metadataMap, neighbor, passivePeer, NOT_ESTABLISHED));
-                  }
 
                   // Compatible remotes exist. Generate a row for each.
                   return compatibleRemotes.stream()

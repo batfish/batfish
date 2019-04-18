@@ -17,6 +17,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLi
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.KernelRouteMatchers.isKernelRouteThat;
+import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.representation.f5_bigip.F5BigipConfiguration.computeAccessListRouteFilterName;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_NEIGHBOR;
@@ -27,6 +28,8 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -39,12 +42,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.batfish.common.BatfishLogger;
+import org.batfish.common.ParseTreeSentences;
+import org.batfish.common.Warnings;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDPrefix;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BgpRoute;
@@ -69,10 +77,13 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredCombinedParser;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredControlPlaneExtractor;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.f5_bigip.F5BigipConfiguration;
+import org.batfish.vendor.VendorConfiguration;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -117,6 +128,34 @@ public final class F5BigipImishGrammarTest {
     String[] names =
         Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
     return BatfishTestUtils.parseTextConfigs(_folder, names);
+  }
+
+  private @Nonnull F5BigipConfiguration parseVendorConfig(String hostname) {
+    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
+    Settings settings = new Settings();
+    settings.setDisableUnrecognized(true);
+    settings.setThrowOnLexerError(true);
+    settings.setThrowOnParserError(true);
+    F5BigipStructuredCombinedParser parser = new F5BigipStructuredCombinedParser(src, settings);
+    ParseTreeSentences pts = new ParseTreeSentences();
+    F5BigipStructuredControlPlaneExtractor extractor =
+        new F5BigipStructuredControlPlaneExtractor(
+            src,
+            parser,
+            new Warnings(),
+            String.format("configs/%s", hostname),
+            () -> pts,
+            settings.getPrintParseTreeLineNums());
+    ParserRuleContext tree =
+        Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
+    extractor.processParseTree(tree);
+    assertThat(
+        String.format("Ensure '%s' was successfully parsed", hostname),
+        extractor.getVendorConfiguration(),
+        notNullValue());
+    VendorConfiguration vc = extractor.getVendorConfiguration();
+    assertThat(vc, instanceOf(F5BigipConfiguration.class));
+    return (F5BigipConfiguration) vc;
   }
 
   @Test
@@ -199,6 +238,24 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
+  public void testBgpAlwaysCompareMedExtraction() {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_bgp_always_compare_med");
+
+    assertTrue(
+        "Ensure always-compare-med is extracted",
+        vc.getBgpProcesses().get("123").getAlwaysCompareMed());
+  }
+
+  @Test
+  public void testBgpDeterministicMedExtraction() {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_bgp_deterministic_med");
+
+    assertTrue(
+        "Ensure deterministic-med is extracted",
+        vc.getBgpProcesses().get("123").getDeterministicMed());
+  }
+
+  @Test
   public void testBgpKernelRouteRedistribution() throws IOException {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
@@ -220,6 +277,27 @@ public final class F5BigipImishGrammarTest {
     // kernel routes should be redistributed
     assertThat(routes1, hasItem(isBgpRouteThat(hasPrefix(Prefix.strict("10.0.0.2/32")))));
     assertThat(routes2, hasItem(isBgpRouteThat(hasPrefix(Prefix.strict("10.0.0.1/32")))));
+  }
+
+  @Test
+  public void testBgpNextHopSelfExtraction() {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_bgp_next_hop_self");
+
+    assertThat(
+        vc.getBgpProcesses().get("65501").getNeighbors(),
+        hasKeys("192.0.2.1", "192.0.2.2", "192.0.2.3"));
+    assertTrue(
+        "Ensure next-hop-self is extracted for ip neighbor",
+        vc.getBgpProcesses().get("65501").getNeighbors().get("192.0.2.1").getNextHopSelf());
+    assertTrue(
+        "Ensure next-hop-self is extracted for peer-group",
+        vc.getBgpProcesses().get("65501").getPeerGroups().get("pg1").getNextHopSelf());
+    assertFalse(
+        "Ensure next-hop-self is non-inherited in VS for ip neighbor",
+        vc.getBgpProcesses().get("65501").getNeighbors().get("192.0.2.2").getNextHopSelf());
+    assertFalse(
+        "Ensure next-hop-self is false by default",
+        vc.getBgpProcesses().get("65501").getNeighbors().get("192.0.2.3").getNextHopSelf());
   }
 
   @Test
