@@ -633,6 +633,14 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
+  public void testBgpRouterIdManual() throws IOException {
+    Configuration c = parseConfig("f5_bigip_imish_bgp_router_id_manual");
+
+    // BGP Router-ID manually set
+    assertThat(c, hasDefaultVrf(hasBgpProcess(hasRouterId(Ip.parse("192.0.2.1")))));
+  }
+
+  @Test
   public void testPrefixListExtraction() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_prefix_list");
 
@@ -685,14 +693,6 @@ public final class F5BigipImishGrammarTest {
     assertThat(plGeLe10.getLengthRange(), equalTo(new SubRange(24, 28)));
     assertThat(plDeny10.getLengthRange(), equalTo(new SubRange(32, 32)));
     assertThat(plDeny20.getLengthRange(), equalTo(new SubRange(16, 32)));
-  }
-
-  @Test
-  public void testBgpRouterIdManual() throws IOException {
-    Configuration c = parseConfig("f5_bigip_imish_bgp_router_id_manual");
-
-    // BGP Router-ID manually set
-    assertThat(c, hasDefaultVrf(hasBgpProcess(hasRouterId(Ip.parse("192.0.2.1")))));
   }
 
   @Test
@@ -802,6 +802,16 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
+  public void testRouteMapSetMetricConversion() throws IOException {
+    Configuration c = parseConfig("f5_bigip_imish_route_map_set_metric");
+    String rpName = "rm1";
+
+    assertThat(c.getRoutingPolicies(), hasKeys(rpName));
+
+    assertThat(processBgpRoute(c.getRoutingPolicies().get(rpName), Ip.ZERO), hasMetric(50L));
+  }
+
+  @Test
   public void testRouteMapSetMetricExtraction() throws IOException {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_route_map_set_metric");
     String rmName = "rm1";
@@ -819,16 +829,6 @@ public final class F5BigipImishGrammarTest {
     assertThat(set, notNullValue());
     assertThat(set.getMetric(), equalTo(50L));
     assertThat(entry.getSets().collect(ImmutableList.toImmutableList()), contains(set));
-  }
-
-  @Test
-  public void testRouteMapSetMetricConversion() throws IOException {
-    Configuration c = parseConfig("f5_bigip_imish_route_map_set_metric");
-    String rpName = "rm1";
-
-    assertThat(c.getRoutingPolicies(), hasKeys(rpName));
-
-    assertThat(processBgpRoute(c.getRoutingPolicies().get(rpName), Ip.ZERO), hasMetric(50L));
   }
 
   private @Nonnull IpAccessListToBdd toBDD() {

@@ -46490,13 +46490,7 @@
             "        BRACE_RIGHT:'}'",
             "        NEWLINE:'\\n\\n')))",
             "  (imish_chunk",
-<<<<<<< HEAD
-            "    IMISH_CHUNK:'!\\naccess-list acl1 permit any\\naccess-list acl2 permit 192.0.2.0/24\\n!\\nbfd gtsm enable\\n!\\ninterface lo\\n!\\ninterface tmm\\n!\\ninterface vlan1\\n!\\nrouter bgp 65500\\n bgp always-compare-med\\n bgp deterministic-med\\n bgp graceful-restart restart-time 123\\n bgp router-id 192.0.2.100\\n max-paths ebgp 12\\n neighbor pg1 peer-group\\n no neighbor pg1 capability graceful-restart\\n neighbor pg1 fall-over pfd\\n neighbor pg1 maximum-prefix 12345\\n neighbor pg1 next-hop-self\\n neighbor 1:2:3:: remote-as 555\\n neighbor 1:2:3::4:5:6 remote-as 555\\n neighbor 1:2:3:4:5:6:7:: remote-as 555\\n neighbor ::1:2:3:4:5:6 remote-as 555\\n neighbor ::1:2:3:4:5:6:7 remote-as 555\\n neighbor 1:2::3:4.5.6.7 remote-as 555\\n neighbor 1:2:3:4:5:6:9.8.7.6 remote-as 555\\n neighbor 10.0.0.1 remote-as 65501\\n neighbor 10.0.0.1 description desc1\\n neighbor 10.0.0.1 next-hop-self\\n neighbor 10.0.0.1 peer-group pg1\\n neighbor 10.0.0.1 update-source us1\\n redistribute kernel\\n redistribute kernel route-map rm1\\n!\\nno service password-encryption\\n!\\nroute-map rm1 permit 1\\n match ip address acl1\\n set community 1:2 3:4\\n set metric 50\\n!\\nroute-map rm1 deny 2\\n!\\nline con 0\\n login\\nline vty 0 39\\n login\\n!\\nend\\n\\n\\n')",
-||||||| merged common ancestors
-            "    IMISH_CHUNK:'!\\naccess-list acl1 permit any\\naccess-list acl2 permit 192.0.2.0/24\\n!\\nbfd gtsm enable\\n!\\ninterface lo\\n!\\ninterface tmm\\n!\\ninterface vlan1\\n!\\nrouter bgp 65500\\n bgp always-compare-med\\n bgp deterministic-med\\n bgp graceful-restart restart-time 123\\n bgp router-id 192.0.2.100\\n max-paths ebgp 12\\n neighbor pg1 peer-group\\n no neighbor pg1 capability graceful-restart\\n neighbor pg1 fall-over pfd\\n neighbor pg1 maximum-prefix 12345\\n neighbor pg1 next-hop-self\\n neighbor 1:2:3:: remote-as 555\\n neighbor 1:2:3::4:5:6 remote-as 555\\n neighbor 1:2:3:4:5:6:7:: remote-as 555\\n neighbor ::1:2:3:4:5:6 remote-as 555\\n neighbor ::1:2:3:4:5:6:7 remote-as 555\\n neighbor 1:2::3:4.5.6.7 remote-as 555\\n neighbor 1:2:3:4:5:6:9.8.7.6 remote-as 555\\n neighbor 10.0.0.1 remote-as 65501\\n neighbor 10.0.0.1 description desc1\\n neighbor 10.0.0.1 next-hop-self\\n neighbor 10.0.0.1 peer-group pg1\\n neighbor 10.0.0.1 update-source us1\\n redistribute kernel\\n redistribute kernel route-map rm1\\n!\\nno service password-encryption\\n!\\nroute-map rm1 permit 1\\n match ip address acl1\\n set community 1:2 3:4\\n!\\nroute-map rm1 deny 2\\n!\\nline con 0\\n login\\nline vty 0 39\\n login\\n!\\nend\\n\\n\\n')",
-=======
-            "    IMISH_CHUNK:'!\\naccess-list acl1 permit any\\naccess-list acl2 permit 192.0.2.0/24\\n!\\nbfd gtsm enable\\n!\\ninterface lo\\n!\\ninterface tmm\\n!\\ninterface vlan1\\n!\\nip prefix-list pl1 seq 10 permit 192.0.2.0/24\\nip prefix-list pl1 seq 20 permit 172.16.0.0/24 le 26\\nip prefix-list pl1 seq 30 permit 10.0.0.0/24 ge 26 le 28\\n!\\nrouter bgp 65500\\n bgp always-compare-med\\n bgp deterministic-med\\n bgp graceful-restart restart-time 123\\n bgp router-id 192.0.2.100\\n max-paths ebgp 12\\n neighbor pg1 peer-group\\n no neighbor pg1 capability graceful-restart\\n neighbor pg1 fall-over pfd\\n neighbor pg1 maximum-prefix 12345\\n neighbor pg1 next-hop-self\\n neighbor 1:2:3:: remote-as 555\\n neighbor 1:2:3::4:5:6 remote-as 555\\n neighbor 1:2:3:4:5:6:7:: remote-as 555\\n neighbor ::1:2:3:4:5:6 remote-as 555\\n neighbor ::1:2:3:4:5:6:7 remote-as 555\\n neighbor 1:2::3:4.5.6.7 remote-as 555\\n neighbor 1:2:3:4:5:6:9.8.7.6 remote-as 555\\n neighbor 10.0.0.1 remote-as 65501\\n neighbor 10.0.0.1 description desc1\\n neighbor 10.0.0.1 next-hop-self\\n neighbor 10.0.0.1 peer-group pg1\\n neighbor 10.0.0.1 update-source us1\\n redistribute kernel\\n redistribute kernel route-map rm1\\n!\\nno service password-encryption\\n!\\nroute-map rm1 permit 1\\n match ip address acl1\\n set community 1:2 3:4\\n!\\nroute-map rm1 deny 2\\n!\\nline con 0\\n login\\nline vty 0 39\\n login\\n!\\nend\\n\\n\\n')",
->>>>>>> master
+            "    IMISH_CHUNK:'!\\naccess-list acl1 permit any\\naccess-list acl2 permit 192.0.2.0/24\\n!\\nbfd gtsm enable\\n!\\ninterface lo\\n!\\ninterface tmm\\n!\\ninterface vlan1\\n!\\nip prefix-list pl1 seq 10 permit 192.0.2.0/24\\nip prefix-list pl1 seq 20 permit 172.16.0.0/24 le 26\\nip prefix-list pl1 seq 30 permit 10.0.0.0/24 ge 26 le 28\\n!\\nrouter bgp 65500\\n bgp always-compare-med\\n bgp deterministic-med\\n bgp graceful-restart restart-time 123\\n bgp router-id 192.0.2.100\\n max-paths ebgp 12\\n neighbor pg1 peer-group\\n no neighbor pg1 capability graceful-restart\\n neighbor pg1 fall-over pfd\\n neighbor pg1 maximum-prefix 12345\\n neighbor pg1 next-hop-self\\n neighbor 1:2:3:: remote-as 555\\n neighbor 1:2:3::4:5:6 remote-as 555\\n neighbor 1:2:3:4:5:6:7:: remote-as 555\\n neighbor ::1:2:3:4:5:6 remote-as 555\\n neighbor ::1:2:3:4:5:6:7 remote-as 555\\n neighbor 1:2::3:4.5.6.7 remote-as 555\\n neighbor 1:2:3:4:5:6:9.8.7.6 remote-as 555\\n neighbor 10.0.0.1 remote-as 65501\\n neighbor 10.0.0.1 description desc1\\n neighbor 10.0.0.1 next-hop-self\\n neighbor 10.0.0.1 peer-group pg1\\n neighbor 10.0.0.1 update-source us1\\n redistribute kernel\\n redistribute kernel route-map rm1\\n!\\nno service password-encryption\\n!\\nroute-map rm1 permit 1\\n match ip address acl1\\n set community 1:2 3:4\\n set metric 50\\n!\\nroute-map rm1 deny 2\\n!\\nline con 0\\n login\\nline vty 0 39\\n login\\n!\\nend\\n\\n\\n')",
             "  EOF:<EOF>)",
             "(f5_bigip_imish_configuration",
             "  (statement",
@@ -78038,23 +78032,11 @@
           "route-map" : {
             "rm1" : {
               "definitionLines" : [
-<<<<<<< HEAD
-                47,
-                48,
-                49,
-                50,
-                52
-||||||| merged common ancestors
-                47,
-                48,
-                49,
-                51
-=======
                 51,
                 52,
                 53,
-                55
->>>>>>> master
+                54,
+                56
               ],
               "numReferrers" : 1
             }
