@@ -109,6 +109,30 @@ public final class F5BigipImishGrammarTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
+  private void assertAcceptsKernelRoute(RoutingPolicy rp, Ip peerAddress) {
+    BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+    assertTrue(
+        rp.process(
+            new KernelRoute(Prefix.ZERO),
+            outputBuilder,
+            peerAddress,
+            Prefix.create(peerAddress, Prefix.MAX_PREFIX_LENGTH),
+            Configuration.DEFAULT_VRF_NAME,
+            Direction.OUT));
+  }
+
+  private void assertRejectsKernelRoute(RoutingPolicy rp, Ip peerAddress) {
+    BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+    assertFalse(
+        rp.process(
+            new KernelRoute(Prefix.ZERO),
+            outputBuilder,
+            peerAddress,
+            Prefix.create(peerAddress, Prefix.MAX_PREFIX_LENGTH),
+            Configuration.DEFAULT_VRF_NAME,
+            Direction.OUT));
+  }
+
   private Batfish getBatfishForConfigurationNames(String... configurationNames) throws IOException {
     String[] names =
         Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
@@ -308,6 +332,45 @@ public final class F5BigipImishGrammarTest {
     // kernel routes should be redistributed
     assertThat(routes1, hasItem(isBgpRouteThat(hasPrefix(Prefix.strict("10.0.0.2/32")))));
     assertThat(routes2, hasItem(isBgpRouteThat(hasPrefix(Prefix.strict("10.0.0.1/32")))));
+  }
+
+  @Test
+  public void testBgpKernelRouteRedistributionNoRouteMap() throws IOException {
+    Configuration c = parseConfig("f5_bigip_imish_bgp_redistribute_kernel_no_route_map");
+    Ip peerAddress = Ip.parse("192.0.2.2");
+    String rpName = computeBgpPeerExportPolicyName("1", peerAddress);
+
+    assertThat(c.getRoutingPolicies(), hasKey(rpName));
+
+    RoutingPolicy rp = c.getRoutingPolicies().get(rpName);
+
+    assertAcceptsKernelRoute(rp, peerAddress);
+  }
+
+  @Test
+  public void testBgpKernelRouteRedistributionRouteMapAccept() throws IOException {
+    Configuration c = parseConfig("f5_bigip_imish_bgp_redistribute_kernel_route_map_accept");
+    Ip peerAddress = Ip.parse("192.0.2.2");
+    String rpName = computeBgpPeerExportPolicyName("1", peerAddress);
+
+    assertThat(c.getRoutingPolicies(), hasKey(rpName));
+
+    RoutingPolicy rp = c.getRoutingPolicies().get(rpName);
+
+    assertAcceptsKernelRoute(rp, peerAddress);
+  }
+
+  @Test
+  public void testBgpKernelRouteRedistributionRouteMapReject() throws IOException {
+    Configuration c = parseConfig("f5_bigip_imish_bgp_redistribute_kernel_route_map_reject");
+    Ip peerAddress = Ip.parse("192.0.2.2");
+    String rpName = computeBgpPeerExportPolicyName("1", peerAddress);
+
+    assertThat(c.getRoutingPolicies(), hasKey(rpName));
+
+    RoutingPolicy rp = c.getRoutingPolicies().get(rpName);
+
+    assertRejectsKernelRoute(rp, peerAddress);
   }
 
   @Test

@@ -43,6 +43,7 @@ router bgp 65500
  neighbor 10.0.0.1 next-hop-self
  neighbor 10.0.0.1 peer-group pg1
  neighbor 10.0.0.1 update-source us1
+ redistribute kernel
  redistribute kernel route-map rm1
 !
 no service password-encryption
