@@ -22,8 +22,6 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
 
   static final long serialVersionUID = 1L;
 
-  public static final Long ANY_AS = -1L;
-
   /** The prefix from which remote peers can connect. */
   @Nullable private Prefix _peerPrefix;
 
