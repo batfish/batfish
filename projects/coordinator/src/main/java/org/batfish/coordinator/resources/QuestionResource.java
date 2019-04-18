@@ -7,7 +7,9 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.batfish.coordinator.Main;
@@ -28,12 +30,27 @@ public final class QuestionResource {
     _questionName = questionName;
   }
 
+  static void checkQuestionExists(String network, @Nullable String analysis, String question) {
+    if (!Main.getWorkMgr().checkQuestionExists(network, question, analysis)) {
+      throw new NotFoundException(
+          String.format(
+              "Question '%s' does not exist for network: %s and analysis: %s",
+              question, network, analysis));
+    }
+  }
+
   @DELETE
   public @Nonnull Response deleteQuestion() {
     if (!Main.getWorkMgr().delQuestion(_network, _questionName, _analysis)) {
       return Response.status(Status.NOT_FOUND).build();
     }
     return Response.ok().build();
+  }
+
+  @Path("/answer")
+  public AnswerResource getAnswer() {
+    checkQuestionExists(_network, _analysis, _questionName);
+    return new AnswerResource(_network, _analysis, _questionName);
   }
 
   @GET

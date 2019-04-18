@@ -5,6 +5,7 @@ import static org.batfish.coordinator.WorkMgr.addToSerializedList;
 import static org.batfish.coordinator.WorkMgr.generateFileDateString;
 import static org.batfish.coordinator.WorkMgr.removeFromSerializedList;
 import static org.batfish.coordinator.WorkMgrTestUtils.createSnapshot;
+import static org.batfish.coordinator.WorkMgrTestUtils.setupQuestionAndAnswer;
 import static org.batfish.identifiers.NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID;
 import static org.batfish.identifiers.QuestionSettingsId.DEFAULT_QUESTION_SETTINGS_ID;
 import static org.hamcrest.Matchers.contains;
@@ -868,6 +869,137 @@ public final class WorkMgrTest {
 
   @Test
   public void testGetAnswerAnalysis() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+    String questionName = "question";
+    String analysis = "analysis";
+
+    Answer expectedAnswer = new Answer();
+    expectedAnswer.addAnswerElement(new StringAnswerElement("foo1"));
+    String expectedAnswerString = BatfishObjectMapper.writeString(expectedAnswer);
+
+    _manager.initNetwork(network, null);
+    uploadTestSnapshot(network, snapshot);
+    setupQuestionAndAnswer(network, snapshot, questionName, analysis, expectedAnswer);
+    Answer ans = _manager.getAnswer(network, snapshot, questionName, null, analysis);
+
+    // Confirm the getAnswer returns the answer we setup
+    String ansString = BatfishObjectMapper.writeString(ans);
+    assertThat(ansString, equalTo(expectedAnswerString));
+  }
+
+  @Test
+  public void testGetAnswerAnalysisNotFound() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+    String questionName = "question";
+    String analysis = "analysis";
+
+    _manager.initNetwork(network, null);
+    uploadTestSnapshot(network, snapshot);
+    setupQuestionAndAnswer(network, snapshot, questionName, analysis, null);
+
+    // Confirm we get null calling getAnswer before the question is answered
+    assertThat(_manager.getAnswer(network, snapshot, questionName, null, analysis), nullValue());
+  }
+
+  @Test
+  public void testGetAnswer() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+    String questionName = "question";
+
+    Answer expectedAnswer = new Answer();
+    expectedAnswer.addAnswerElement(new StringAnswerElement("foo1"));
+    String expectedAnswerString = BatfishObjectMapper.writeString(expectedAnswer);
+    _manager.initNetwork(network, null);
+    uploadTestSnapshot(network, snapshot);
+    setupQuestionAndAnswer(network, snapshot, questionName, null, expectedAnswer);
+    Answer ans = _manager.getAnswer(network, snapshot, questionName, null, null);
+
+    // Confirm the getAnswer returns the answer we setup
+    String ansString = BatfishObjectMapper.writeString(ans);
+    assertThat(ansString, equalTo(expectedAnswerString));
+  }
+
+  @Test
+  public void testGetAnswerNotFound() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+    String questionName = "question";
+
+    _manager.initNetwork(network, null);
+    uploadTestSnapshot(network, snapshot);
+    setupQuestionAndAnswer(network, snapshot, questionName, null, null);
+
+    // Confirm we get null calling getAnswer before the question is answered
+    assertThat(_manager.getAnswer(network, snapshot, questionName, null, null), nullValue());
+  }
+
+  @Test
+  public void testGetAnswerReferenceSnapshot() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+    String referenceSnapshot = "referenceSnapshot";
+    String questionName = "question";
+
+    Answer expectedAnswer = new Answer();
+    expectedAnswer.addAnswerElement(new StringAnswerElement("foo1"));
+    String expectedAnswerString = BatfishObjectMapper.writeString(expectedAnswer);
+    _manager.initNetwork(network, null);
+    uploadTestSnapshot(network, snapshot);
+    uploadTestSnapshot(network, referenceSnapshot);
+    setupQuestionAndAnswer(
+        network, snapshot, questionName, null, expectedAnswer, referenceSnapshot);
+    Answer ans = _manager.getAnswer(network, snapshot, questionName, referenceSnapshot, null);
+
+    // Confirm the getAnswer returns the answer we setup
+    String ansString = BatfishObjectMapper.writeString(ans);
+    assertThat(ansString, equalTo(expectedAnswerString));
+  }
+
+  @Test
+  public void testGetAnswerReferenceSnapshotBadRef() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+    String referenceSnapshot = "referenceSnapshot";
+    String bogusReferenceSnapshot = "bogusReferenceSnapshot";
+    String questionName = "question";
+
+    Answer expectedAnswer = new Answer();
+    expectedAnswer.addAnswerElement(new StringAnswerElement("foo1"));
+    _manager.initNetwork(network, null);
+    uploadTestSnapshot(network, snapshot);
+    uploadTestSnapshot(network, referenceSnapshot);
+    setupQuestionAndAnswer(
+        network, snapshot, questionName, null, expectedAnswer, referenceSnapshot);
+
+    // Confirm we get an illegal arg exception calling getAnswer with a bad reference snapshot
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage(
+        containsString(String.format("non-existent snapshot '%s'", bogusReferenceSnapshot)));
+    _manager.getAnswer(network, snapshot, questionName, bogusReferenceSnapshot, null);
+  }
+
+  @Test
+  public void testGetAnswerReferenceSnapshotNotFound() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+    String referenceSnapshot = "referenceSnapshot";
+    String questionName = "question";
+
+    _manager.initNetwork(network, null);
+    uploadTestSnapshot(network, snapshot);
+    uploadTestSnapshot(network, referenceSnapshot);
+    setupQuestionAndAnswer(network, snapshot, questionName, null, null, referenceSnapshot);
+
+    // Confirm we get null calling getAnswer before the question is answered
+    assertThat(
+        _manager.getAnswer(network, snapshot, questionName, referenceSnapshot, null), nullValue());
+  }
+
+  @Test
+  public void testGetAnswerStringAnalysis() throws IOException {
     String containerName = "container1";
     String testrigName = "testrig1";
     String analysisName = "analysis1";
@@ -932,11 +1064,11 @@ public final class WorkMgrTest {
     _storage.storeAnswerMetadata(answerMetadata2, baseAnswerId2);
 
     String answer1Output =
-        _manager.getAnswer(containerName, testrigName, question1Name, null, analysisName);
+        _manager.getAnswerString(containerName, testrigName, question1Name, null, analysisName);
     String answer2Output =
-        _manager.getAnswer(containerName, testrigName, question2Name, null, analysisName);
+        _manager.getAnswerString(containerName, testrigName, question2Name, null, analysisName);
     String answer3Output =
-        _manager.getAnswer(containerName, testrigName, question3Name, null, analysisName);
+        _manager.getAnswerString(containerName, testrigName, question3Name, null, analysisName);
 
     Answer failedAnswer = Answer.failureAnswer("Not answered", null);
     failedAnswer.setStatus(AnswerStatus.NOTFOUND);
@@ -2713,7 +2845,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetAnswerNotFoundAfterNodeRolesUpdate() throws IOException {
+  public void testGetAnswerStringNotFoundAfterNodeRolesUpdate() throws IOException {
     String networkName = "network1";
     String snapshotName = "snapshot1";
     Question question = new TestQuestion();
@@ -2745,7 +2877,7 @@ public final class WorkMgrTest {
     Answer answerBeforeUpdate =
         BatfishObjectMapper.mapper()
             .readValue(
-                _manager.getAnswer(networkName, snapshotName, questionName, null, null),
+                _manager.getAnswerString(networkName, snapshotName, questionName, null, null),
                 Answer.class);
 
     // answer should be found at first
@@ -2765,7 +2897,7 @@ public final class WorkMgrTest {
     Answer answerAfterUpdate =
         BatfishObjectMapper.mapper()
             .readValue(
-                _manager.getAnswer(networkName, snapshotName, questionName, null, null),
+                _manager.getAnswerString(networkName, snapshotName, questionName, null, null),
                 Answer.class);
 
     // answer should no longer be available since node roles input id changed
@@ -2912,5 +3044,48 @@ public final class WorkMgrTest {
     assertThat(
         _manager.getSnapshotExtendedObjectsMetadata(network, snapshot),
         contains(new StoredObjectMetadata(fileName, content.getBytes().length)));
+  }
+
+  @Test
+  public void testCheckQuestionExists() {
+    String network = "network";
+    String question = "question";
+
+    // No network or question should result in questionExists being false
+    assertFalse(_manager.checkQuestionExists(network, question, null));
+
+    _manager.initNetwork(network, null);
+    // No question should result in questionExists being false
+    assertFalse(_manager.checkQuestionExists(network, question, null));
+
+    NetworkId networkId = _idManager.getNetworkId(network);
+    _idManager.assignQuestion(question, networkId, _idManager.generateQuestionId(), null);
+    // After creating both network and question, questionExists should be true
+    assertTrue(_manager.checkQuestionExists(network, question, null));
+  }
+
+  @Test
+  public void testCheckAnalysisQuestionExists() {
+    String network = "network";
+    String question = "question";
+    String analysis = "analysis";
+
+    // No network, question, or analysis should result in check being false
+    assertFalse(_manager.checkQuestionExists(network, question, analysis));
+
+    // No question or analysis should result in check being false
+    _manager.initNetwork(network, null);
+    assertFalse(_manager.checkQuestionExists(network, question, analysis));
+
+    // No question should result in check being false
+    _manager.configureAnalysis(
+        network, true, analysis, ImmutableMap.of(), Lists.newArrayList(), null);
+    assertFalse(_manager.checkQuestionExists(network, question, analysis));
+
+    // After creating network, analysis, and question, check should finally be true
+    NetworkId networkId = _idManager.getNetworkId(network);
+    AnalysisId analysisId = _idManager.getAnalysisId(analysis, networkId);
+    _idManager.assignQuestion(question, networkId, _idManager.generateQuestionId(), analysisId);
+    assertTrue(_manager.checkQuestionExists(network, question, analysis));
   }
 }
