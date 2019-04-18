@@ -15510,6 +15510,16 @@
                         "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                         "name" : "~access-list~acl1~"
                       }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                      "prefix" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                      },
+                      "prefixSet" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                        "name" : "pl1"
+                      }
                     }
                   ]
                 },

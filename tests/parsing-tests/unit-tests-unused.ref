@@ -1753,18 +1753,6 @@
         }
       },
       {
-        "Structure_Type" : "prefix-list",
-        "Structure_Name" : "pl1",
-        "Source_Lines" : {
-          "filename" : "configs/f5_bigip_structured_with_imish",
-          "lines" : [
-            19,
-            20,
-            21
-          ]
-        }
-      },
-      {
         "Structure_Type" : "extended ipv6 access-list",
         "Structure_Name" : "RT404888-Caltech",
         "Source_Lines" : {
@@ -3481,10 +3469,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 233 results",
+      "notes" : "Found 232 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 233
+      "numResults" : 232
     }
   }
 ]

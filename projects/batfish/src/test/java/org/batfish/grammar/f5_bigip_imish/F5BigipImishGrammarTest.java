@@ -97,6 +97,7 @@ import org.batfish.representation.f5_bigip.PrefixList;
 import org.batfish.representation.f5_bigip.PrefixListEntry;
 import org.batfish.representation.f5_bigip.RouteMap;
 import org.batfish.representation.f5_bigip.RouteMapEntry;
+import org.batfish.representation.f5_bigip.RouteMapMatchPrefixList;
 import org.batfish.representation.f5_bigip.RouteMapSetMetric;
 import org.batfish.representation.f5_bigip.RouteMapSetOrigin;
 import org.batfish.vendor.VendorConfiguration;
@@ -780,6 +781,49 @@ public final class F5BigipImishGrammarTest {
                         new ConnectedRoute(Prefix.strict("10.0.2.0/24"), "/Common/outint"))
                     .build())
             .getBooleanValue());
+  }
+
+  @Test
+  public void testRouteMapMatchIpAddressPrefixListConversion() throws IOException {
+    Configuration c = parseConfig("f5_bigip_imish_route_map_match_ip_address_prefix_list");
+    String rp1Name = "rm1";
+    String rp2Name = "rm2";
+
+    assertThat(c.getRoutingPolicies(), hasKeys(rp1Name, rp2Name));
+
+    // (default route) accepted
+    assertAcceptsKernelRoute(c.getRoutingPolicies().get(rp1Name), Ip.ZERO);
+    // (default route) rejected
+    assertRejectsKernelRoute(c.getRoutingPolicies().get(rp2Name), Ip.ZERO);
+  }
+
+  @Test
+  public void testRouteMapMatchIpAddressPrefixListExtraction() {
+    F5BigipConfiguration vc =
+        parseVendorConfig("f5_bigip_imish_route_map_match_ip_address_prefix_list");
+    String rm1Name = "rm1";
+    String rm2Name = "rm2";
+
+    assertThat(vc.getRouteMaps(), hasKeys(rm1Name, rm2Name));
+
+    RouteMap rm1 = vc.getRouteMaps().get(rm1Name);
+    RouteMap rm2 = vc.getRouteMaps().get(rm2Name);
+
+    assertThat(rm1.getEntries(), hasKeys(10L));
+    assertThat(rm2.getEntries(), hasKeys(10L));
+
+    RouteMapEntry entry1 = rm1.getEntries().get(10L);
+    RouteMapEntry entry2 = rm2.getEntries().get(10L);
+
+    RouteMapMatchPrefixList match1 = entry1.getMatchPrefixList();
+    RouteMapMatchPrefixList match2 = entry2.getMatchPrefixList();
+
+    assertThat(match1, notNullValue());
+    assertThat(match1.getPrefixList(), equalTo("pl1"));
+    assertThat(entry1.getMatches().collect(ImmutableList.toImmutableList()), contains(match1));
+    assertThat(match2, notNullValue());
+    assertThat(match2.getPrefixList(), equalTo("pl2"));
+    assertThat(entry2.getMatches().collect(ImmutableList.toImmutableList()), contains(match2));
   }
 
   @Test
