@@ -22,6 +22,10 @@ public final class RouteMapMatchPrefixList implements RouteMapMatch {
     _prefixList = prefixList;
   }
 
+  public @Nonnull String getPrefixList() {
+    return _prefixList;
+  }
+
   @Override
   public @Nonnull BooleanExpr toBooleanExpr(Configuration c, F5BigipConfiguration vc, Warnings w) {
     return vc.getPrefixLists().containsKey(_prefixList)

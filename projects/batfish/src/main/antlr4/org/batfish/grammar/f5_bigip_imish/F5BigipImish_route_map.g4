@@ -15,12 +15,21 @@ origin_type
 
 rm_match
 :
-  MATCH rmm_ip_address
+  MATCH
+  (
+    rmm_ip_address
+    | rmm_ip_address_prefix_list
+  )
 ;
 
 rmm_ip_address
 :
   IP ADDRESS name = word NEWLINE
+;
+
+rmm_ip_address_prefix_list
+:
+  IP ADDRESS PREFIX_LIST name = word NEWLINE
 ;
 
 rm_set

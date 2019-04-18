@@ -50,6 +50,7 @@ no service password-encryption
 !
 route-map rm1 permit 1
  match ip address acl1
+ match ip address prefix-list pl1
  set community 1:2 3:4
  set metric 50
  set origin egp
