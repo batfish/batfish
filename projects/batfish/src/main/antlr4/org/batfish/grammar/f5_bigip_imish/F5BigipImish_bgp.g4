@@ -91,7 +91,7 @@ rbn_null
 
 rbn_remote_as
 :
-  REMOTE_AS remoteas = uint64 NEWLINE
+  REMOTE_AS remoteas = uint32 NEWLINE
 ;
 
 rbn_route_map_out
@@ -117,7 +117,7 @@ rb_redistribute_kernel
 
 s_router_bgp
 :
-  ROUTER BGP localas = uint64 NEWLINE
+  ROUTER BGP localas = uint32 NEWLINE
   (
     rb_bgp_always_compare_med
     | rb_bgp_deterministic_med
