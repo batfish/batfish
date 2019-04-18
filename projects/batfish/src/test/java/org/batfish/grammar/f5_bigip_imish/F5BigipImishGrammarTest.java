@@ -71,6 +71,7 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.KernelRoute;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
@@ -91,6 +92,8 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.f5_bigip.F5BigipConfiguration;
+import org.batfish.representation.f5_bigip.PrefixList;
+import org.batfish.representation.f5_bigip.PrefixListEntry;
 import org.batfish.representation.f5_bigip.RouteMap;
 import org.batfish.representation.f5_bigip.RouteMapEntry;
 import org.batfish.representation.f5_bigip.RouteMapSetMetric;
@@ -627,6 +630,61 @@ public final class F5BigipImishGrammarTest {
 
     // BGP Router-ID automatically chosen from highest IP address
     assertThat(c, hasDefaultVrf(hasBgpProcess(hasRouterId(Ip.parse("192.0.2.1")))));
+  }
+
+  @Test
+  public void testPrefixListExtraction() {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_prefix_list");
+
+    // check all lists are extracted
+    assertThat(vc.getPrefixLists(), hasKeys("pl_simple", "pl_le", "pl_ge", "pl_ge_le", "pl_deny"));
+    // check lists know their own names
+    vc.getPrefixLists()
+        .forEach((name, prefixList) -> assertThat(prefixList.getName(), equalTo(name)));
+
+    PrefixList plSimple = vc.getPrefixLists().get("pl_simple");
+    PrefixList plLe = vc.getPrefixLists().get("pl_le");
+    PrefixList plGe = vc.getPrefixLists().get("pl_ge");
+    PrefixList plGeLe = vc.getPrefixLists().get("pl_ge_le");
+    PrefixList plDeny = vc.getPrefixLists().get("pl_deny");
+
+    // check presence of entries
+    assertThat(plSimple.getEntries(), hasKeys(10L));
+    assertThat(plLe.getEntries(), hasKeys(10L));
+    assertThat(plGe.getEntries(), hasKeys(10L));
+    assertThat(plGeLe.getEntries(), hasKeys(10L));
+    assertThat(plDeny.getEntries(), hasKeys(10L, 20L));
+
+    PrefixListEntry plSimple10 = plSimple.getEntries().get(10L);
+    PrefixListEntry plLe10 = plLe.getEntries().get(10L);
+    PrefixListEntry plGe10 = plGe.getEntries().get(10L);
+    PrefixListEntry plGeLe10 = plGeLe.getEntries().get(10L);
+    PrefixListEntry plDeny10 = plDeny.getEntries().get(10L);
+    PrefixListEntry plDeny20 = plDeny.getEntries().get(20L);
+
+    // check entry actions
+    assertThat(plSimple10.getAction(), equalTo(LineAction.PERMIT));
+    assertThat(plLe10.getAction(), equalTo(LineAction.PERMIT));
+    assertThat(plGe10.getAction(), equalTo(LineAction.PERMIT));
+    assertThat(plGeLe10.getAction(), equalTo(LineAction.PERMIT));
+    assertThat(plDeny10.getAction(), equalTo(LineAction.DENY));
+    assertThat(plDeny20.getAction(), equalTo(LineAction.PERMIT));
+
+    // check entry prefixes
+    assertThat(plSimple10.getPrefix(), equalTo(Prefix.parse("10.0.0.0/24")));
+    assertThat(plLe10.getPrefix(), equalTo(Prefix.parse("10.0.0.0/16")));
+    assertThat(plGe10.getPrefix(), equalTo(Prefix.parse("10.0.0.0/16")));
+    assertThat(plGeLe10.getPrefix(), equalTo(Prefix.parse("10.0.0.0/16")));
+    assertThat(plDeny10.getPrefix(), equalTo(Prefix.parse("10.0.0.0/32")));
+    assertThat(plDeny20.getPrefix(), equalTo(Prefix.parse("10.0.0.0/16")));
+
+    // check entry length-ranges
+    assertThat(plSimple10.getLengthRange(), equalTo(new SubRange(24, 32)));
+    assertThat(plLe10.getLengthRange(), equalTo(new SubRange(16, 24)));
+    assertThat(plGe10.getLengthRange(), equalTo(new SubRange(24, 32)));
+    assertThat(plGeLe10.getLengthRange(), equalTo(new SubRange(24, 28)));
+    assertThat(plDeny10.getLengthRange(), equalTo(new SubRange(32, 32)));
+    assertThat(plDeny20.getLengthRange(), equalTo(new SubRange(16, 32)));
   }
 
   @Test

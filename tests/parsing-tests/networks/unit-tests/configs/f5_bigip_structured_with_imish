@@ -16,6 +16,10 @@ interface tmm
 !
 interface vlan1
 !
+ip prefix-list pl1 seq 10 permit 192.0.2.0/24
+ip prefix-list pl1 seq 20 permit 172.16.0.0/24 le 26
+ip prefix-list pl1 seq 30 permit 10.0.0.0/24 ge 26 le 28
+!
 router bgp 65500
  bgp always-compare-med
  bgp deterministic-med

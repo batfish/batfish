@@ -14790,6 +14790,18 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
+        "routeFilterLists" : {
+          "pl1" : {
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "ipWildcard" : "10.0.0.0/24",
+                "lengthRange" : "24-32"
+              }
+            ],
+            "name" : "pl1"
+          }
+        },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:1~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:1~",
@@ -15449,6 +15461,26 @@
           }
         },
         "routeFilterLists" : {
+          "pl1" : {
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "ipWildcard" : "192.0.2.0/24",
+                "lengthRange" : "24-32"
+              },
+              {
+                "action" : "PERMIT",
+                "ipWildcard" : "172.16.0.0/24",
+                "lengthRange" : "24-26"
+              },
+              {
+                "action" : "PERMIT",
+                "ipWildcard" : "10.0.0.0/24",
+                "lengthRange" : "26-28"
+              }
+            ],
+            "name" : "pl1"
+          },
           "~access-list~acl1~" : {
             "lines" : [
               {
