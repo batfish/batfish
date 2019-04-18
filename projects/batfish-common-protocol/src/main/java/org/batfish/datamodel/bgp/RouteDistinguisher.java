@@ -131,7 +131,7 @@ public final class RouteDistinguisher implements Serializable, Comparable<RouteD
   @Override
   public int compareTo(RouteDistinguisher o) {
     // Only compare long values. Main use case: order determinism in JSON
-    return Long.compare(getValue(), o.getValue());
+    return Long.compare(_value, o._value);
   }
 
   @Override
@@ -141,13 +141,13 @@ public final class RouteDistinguisher implements Serializable, Comparable<RouteD
     switch (_type) {
       case TYPE0:
         // Administrator (2 bytes):AssignedNumber (4 bytes)
-        return String.format("%d:%d", _value >> 32, _value & 0xFFFFFFFFL);
+        return (_value >> 32) + ":" + (_value & 0xFFFFFFFFL);
       case TYPE1:
         // Administrator (4 bytes, IP address):AssignedNumber (2 bytes)
-        return String.format("%s:%d", Ip.create(_value >> 16).toString(), _value & 0xFFFFL);
+        return Ip.create(_value >> 16).toString() + ":" + (_value & 0xFFFFL);
       case TYPE2:
         // Administrator (4 bytes, IP address):AssignedNumber (2 bytes)
-        return String.format("%d:%d", _value >> 16, _value & 0xFFFFL);
+        return (_value >> 16) + ":" + (_value & 0xFFFFL);
       default:
         return Long.toString(_value);
     }
