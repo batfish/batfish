@@ -4,6 +4,11 @@ options {
   tokenVocab = F5BigipImishLexer;
 }
 
+ip_prefix
+:
+  IP_PREFIX
+;
+
 line_action
 :
   DENY
@@ -17,12 +22,9 @@ null_rest_of_line
 
 uint32
 :
-  DEC
-;
+  d = DEC
+  {isUint32($d)}?
 
-uint64
-:
-  DEC
 ;
 
 word

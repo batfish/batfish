@@ -597,13 +597,13 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void enterNrpe_entry(Nrpe_entryContext ctx) {
     _currentPrefixListEntry =
-        _currentPrefixList.getEntries().computeIfAbsent(toInteger(ctx.num), PrefixListEntry::new);
+        _currentPrefixList.getEntries().computeIfAbsent(toLong(ctx.num), PrefixListEntry::new);
   }
 
   @Override
   public void enterNrre_entry(Nrre_entryContext ctx) {
     _currentRouteMapEntry =
-        _currentRouteMap.getEntries().computeIfAbsent(toInteger(ctx.num), RouteMapEntry::new);
+        _currentRouteMap.getEntries().computeIfAbsent(toLong(ctx.num), RouteMapEntry::new);
   }
 
   @Override
