@@ -1,6 +1,11 @@
 package org.batfish.coordinator;
 
+import static org.batfish.identifiers.NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID;
+import static org.batfish.identifiers.QuestionSettingsId.DEFAULT_QUESTION_SETTINGS_ID;
+
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -8,17 +13,27 @@ import java.nio.file.Path;
 import java.util.Date;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.coordinator.id.FileBasedIdManager;
 import org.batfish.coordinator.id.IdManager;
 import org.batfish.datamodel.SnapshotMetadata;
+import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerMetadata;
+import org.batfish.datamodel.answers.AnswerMetadataUtil;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
+import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.questions.TestQuestion;
+import org.batfish.identifiers.AnalysisId;
+import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.NodeRolesId;
+import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.role.NodeRolesData;
 import org.batfish.storage.FileBasedStorage;
@@ -120,5 +135,70 @@ public final class WorkMgrTestUtils {
     Path tmpSnapshotZip = tmpSnapshotSrcDir.resolve(String.format("%s.zip", snapshot));
     ZipUtility.zipFiles(tmpSnapshotSrcDir.resolve(snapshot), tmpSnapshotZip);
     return tmpSnapshotZip;
+  }
+
+  public static void setupQuestionAndAnswer(
+      String network,
+      String snapshot,
+      String questionName,
+      @Nullable String analysis,
+      @Nullable Answer answer)
+      throws IOException {
+    setupQuestionAndAnswer(network, snapshot, questionName, analysis, answer, null);
+  }
+
+  /** Setup question and optionally answer on specified network and snapshot */
+  public static void setupQuestionAndAnswer(
+      String network,
+      String snapshot,
+      String questionName,
+      @Nullable String analysis,
+      @Nullable Answer answer,
+      @Nullable String referenceSnapshot)
+      throws IOException {
+    WorkMgr manager = Main.getWorkMgr();
+    IdManager idManager = manager.getIdManager();
+    StorageProvider storage = manager.getStorage();
+    Question question = new TestQuestion();
+    NetworkId networkId = idManager.getNetworkId(network);
+    SnapshotId snapshotId = idManager.getSnapshotId(snapshot, networkId);
+    AnalysisId analysisId = null;
+
+    // Setup question
+    if (analysis != null) {
+      manager.configureAnalysis(
+          network,
+          true,
+          analysis,
+          ImmutableMap.of(questionName, BatfishObjectMapper.writeString(question)),
+          Lists.newArrayList(),
+          null);
+      analysisId = idManager.getAnalysisId(analysis, networkId);
+    } else {
+      idManager.assignQuestion(questionName, networkId, idManager.generateQuestionId(), null);
+    }
+    QuestionId questionId = idManager.getQuestionId(questionName, networkId, analysisId);
+    storage.storeQuestion(
+        BatfishObjectMapper.writeString(question), networkId, questionId, analysisId);
+
+    // Setup answer iff one was passed in
+    if (answer != null) {
+      SnapshotId referenceSnapshotId =
+          referenceSnapshot == null ? null : idManager.getSnapshotId(referenceSnapshot, networkId);
+      AnswerId answerId =
+          idManager.getBaseAnswerId(
+              networkId,
+              snapshotId,
+              questionId,
+              DEFAULT_QUESTION_SETTINGS_ID,
+              DEFAULT_NETWORK_NODE_ROLES_ID,
+              referenceSnapshotId,
+              analysisId);
+      String answerStr = BatfishObjectMapper.writeString(answer);
+      AnswerMetadata answerMetadata =
+          AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
+      storage.storeAnswer(answerStr, answerId);
+      storage.storeAnswerMetadata(answerMetadata, answerId);
+    }
   }
 }
