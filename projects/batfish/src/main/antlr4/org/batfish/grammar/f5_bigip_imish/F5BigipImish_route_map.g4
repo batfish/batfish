@@ -18,12 +18,21 @@ rmm_ip_address
 
 rm_set
 :
-  SET rms_community
+  SET
+  (
+    rms_community
+    | rms_metric
+  )
 ;
 
 rms_community
 :
   COMMUNITY communities += standard_community+ NEWLINE
+;
+
+rms_metric
+:
+  METRIC metric = uint32 NEWLINE
 ;
 
 standard_community
