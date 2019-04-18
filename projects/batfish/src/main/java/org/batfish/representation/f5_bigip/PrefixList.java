@@ -12,7 +12,7 @@ public final class PrefixList implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private final @Nonnull SortedMap<Integer, PrefixListEntry> _entries;
+  private final @Nonnull SortedMap<Long, PrefixListEntry> _entries;
 
   private final @Nonnull String _name;
 
@@ -21,7 +21,7 @@ public final class PrefixList implements Serializable {
     _entries = new TreeMap<>();
   }
 
-  public @Nonnull SortedMap<Integer, PrefixListEntry> getEntries() {
+  public @Nonnull SortedMap<Long, PrefixListEntry> getEntries() {
     return _entries;
   }
 

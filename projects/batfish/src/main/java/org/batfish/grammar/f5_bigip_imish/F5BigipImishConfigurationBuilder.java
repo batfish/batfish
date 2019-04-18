@@ -19,6 +19,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.F5_bigip_imish_configurationContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Ip_prefixContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Ip_specContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Line_actionContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rb_bgp_always_compare_medContext;
@@ -41,7 +42,6 @@ import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.S_route_mapContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.S_router_bgpContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Standard_communityContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Uint32Context;
-import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Uint64Context;
 import org.batfish.representation.f5_bigip.AbstractBgpNeighbor;
 import org.batfish.representation.f5_bigip.AccessList;
 import org.batfish.representation.f5_bigip.AccessListLine;
@@ -60,6 +60,18 @@ import org.batfish.representation.f5_bigip.RouteMapSetCommunity;
 import org.batfish.vendor.StructureType;
 
 public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseListener {
+
+  private static @Nonnull LineAction toLineAction(Line_actionContext ctx) {
+    return ctx.PERMIT() != null ? LineAction.PERMIT : LineAction.DENY;
+  }
+
+  private static long toLong(Uint32Context ctx) {
+    return Long.parseLong(ctx.getText(), 10);
+  }
+
+  private static @Nonnull Prefix toPrefix(Ip_prefixContext ctx) {
+    return Prefix.parse(ctx.getText());
+  }
 
   private final @Nonnull F5BigipConfiguration _c;
   private @Nullable AbstractBgpNeighbor _currentAbstractNeighbor;
@@ -163,37 +175,24 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   @Override
   public void enterS_route_map(S_route_mapContext ctx) {
     String name = ctx.name.getText();
-    Integer num = toInteger(ctx.num);
-    if (num == null) {
-      _w.redFlag(
-          String.format("Invalid entry number: '%s' in: '%s", ctx.num.getText(), getFullText(ctx)));
-      return;
-    }
     defineStructure(F5BigipStructureType.ROUTE_MAP, name, ctx);
     _currentRouteMapEntry =
         _c.getRouteMaps()
             .computeIfAbsent(name, RouteMap::new)
             .getEntries()
-            .computeIfAbsent(num, RouteMapEntry::new);
+            .computeIfAbsent(toLong(ctx.num), RouteMapEntry::new);
     _currentRouteMapEntry.setAction(toLineAction(ctx.action));
   }
 
   @Override
   public void enterS_router_bgp(S_router_bgpContext ctx) {
-    String localAsStr = ctx.localas.getText();
-    Long localAs = toLong(ctx.localas);
-    if (localAs == null) {
-      _w.redFlag(String.format("Invalid local-as: '%s' in: '%s", localAsStr, getFullText(ctx)));
-      // assign transient dummy BGP process to avoid NPEs deeper in the tree
-      _currentBgpProcess = new BgpProcess("dummy");
-      return;
-    }
-    _currentBgpProcess = _c.getBgpProcesses().computeIfAbsent(localAsStr, BgpProcess::new);
-    _currentBgpProcess.setLocalAs(localAs);
-    defineStructure(F5BigipStructureType.BGP_PROCESS, localAsStr, ctx);
+    String name = ctx.localas.getText();
+    _currentBgpProcess = _c.getBgpProcesses().computeIfAbsent(name, BgpProcess::new);
+    _currentBgpProcess.setLocalAs(toLong(ctx.localas));
+    defineStructure(F5BigipStructureType.BGP_PROCESS, name, ctx);
     _c.referenceStructure(
         F5BigipStructureType.BGP_PROCESS,
-        localAsStr,
+        name,
         F5BigipStructureUsage.BGP_PROCESS_SELF_REFERENCE,
         ctx.localas.getStart().getLine());
   }
@@ -331,14 +330,6 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
 
   @Override
   public void exitRbn_remote_as(Rbn_remote_asContext ctx) {
-    Long remoteAs = toLong(ctx.remoteas);
-    if (remoteAs == null) {
-      _w.redFlag(
-          String.format(
-              "Invalid remote-as: '%s' in: '%s",
-              ctx.remoteas.getText(), getFullText(ctx.getParent())));
-      return;
-    }
     boolean ipv4 = false;
     boolean ipv6 = false;
     if (Ip.tryParse(_currentNeighborName).isPresent()) {
@@ -364,7 +355,7 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
       _currentAbstractNeighbor.getIpv4AddressFamily().setActivate(ipv4);
       _currentAbstractNeighbor.getIpv6AddressFamily().setActivate(ipv6);
     }
-    _currentAbstractNeighbor.setRemoteAs(remoteAs);
+    _currentAbstractNeighbor.setRemoteAs(toLong(ctx.remoteas));
   }
 
   @Override
@@ -418,7 +409,7 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
     _currentRouteMapEntry.setSetCommunity(
         new RouteMapSetCommunity(
             ctx.communities.stream()
-                .map(this::toCommunity)
+                .map(this::toLong)
                 .filter(Objects::nonNull)
                 .collect(ImmutableSet.toImmutableSet())));
   }
@@ -458,30 +449,10 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
     return text;
   }
 
-  private @Nullable Long toCommunity(Standard_communityContext ctx) {
+  private @Nullable Long toLong(Standard_communityContext ctx) {
     if (ctx.STANDARD_COMMUNITY() != null) {
       return CommonUtil.communityStringToLong(ctx.getText());
     } else {
-      return convProblem(Long.class, ctx, null);
-    }
-  }
-
-  private @Nullable Integer toInteger(Uint32Context ctx) {
-    try {
-      return Integer.parseInt(ctx.getText(), 10);
-    } catch (IllegalArgumentException e) {
-      return convProblem(Integer.class, ctx, null);
-    }
-  }
-
-  private @Nonnull LineAction toLineAction(Line_actionContext ctx) {
-    return ctx.PERMIT() != null ? LineAction.PERMIT : LineAction.DENY;
-  }
-
-  private @Nullable Long toLong(Uint64Context ctx) {
-    try {
-      return Long.parseLong(ctx.getText(), 10);
-    } catch (IllegalArgumentException e) {
       return convProblem(Long.class, ctx, null);
     }
   }
@@ -490,7 +461,7 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
     if (ctx.ANY() != null) {
       return Prefix.ZERO;
     } else if (ctx.prefix != null) {
-      return Prefix.parse(ctx.getText());
+      return toPrefix(ctx.prefix);
     } else {
       return convProblem(Prefix.class, ctx, null);
     }

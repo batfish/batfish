@@ -12,7 +12,7 @@ public final class RouteMap implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private SortedMap<Integer, RouteMapEntry> _entries;
+  private SortedMap<Long, RouteMapEntry> _entries;
 
   private final @Nonnull String _name;
 
@@ -21,7 +21,7 @@ public final class RouteMap implements Serializable {
     _name = name;
   }
 
-  public SortedMap<Integer, RouteMapEntry> getEntries() {
+  public SortedMap<Long, RouteMapEntry> getEntries() {
     return _entries;
   }
 

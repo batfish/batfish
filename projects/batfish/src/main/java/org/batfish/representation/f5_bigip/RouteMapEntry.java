@@ -17,10 +17,10 @@ public final class RouteMapEntry implements Serializable {
   private @Nullable LineAction _action;
   private @Nullable MatchAccessList _matchAccessList;
   private @Nullable RouteMapMatchPrefixList _matchPrefixList;
-  private final int _num;
+  private final long _num;
   private @Nullable RouteMapSetCommunity _setCommunity;
 
-  public RouteMapEntry(int num) {
+  public RouteMapEntry(long num) {
     _num = num;
   }
 
@@ -41,7 +41,7 @@ public final class RouteMapEntry implements Serializable {
     return _matchPrefixList;
   }
 
-  public int getNum() {
+  public long getNum() {
     return _num;
   }
 

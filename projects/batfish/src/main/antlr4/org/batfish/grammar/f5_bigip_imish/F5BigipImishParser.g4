@@ -5,7 +5,7 @@ import
 F5BigipImish_common, F5BigipImish_access_list, F5BigipImish_bgp, F5BigipImish_route_map;
 
 options {
-  superClass = 'org.batfish.grammar.BatfishParser';
+  superClass = 'org.batfish.grammar.f5_bigip_imish.parsing.F5BigipImishBaseParser';
   tokenVocab = F5BigipImishLexer;
 }
 

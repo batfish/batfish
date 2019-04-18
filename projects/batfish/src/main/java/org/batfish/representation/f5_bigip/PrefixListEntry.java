@@ -21,13 +21,13 @@ public final class PrefixListEntry implements Serializable {
 
   private @Nullable SubRange _lengthRange;
 
-  private final int _num;
+  private final long _num;
 
   private @Nullable Prefix _prefix;
 
   private @Nullable Prefix6 _prefix6;
 
-  public PrefixListEntry(int num) {
+  public PrefixListEntry(long num) {
     _num = num;
   }
 
@@ -67,7 +67,7 @@ public final class PrefixListEntry implements Serializable {
     return _lengthRange;
   }
 
-  public int getNum() {
+  public long getNum() {
     return _num;
   }
 
