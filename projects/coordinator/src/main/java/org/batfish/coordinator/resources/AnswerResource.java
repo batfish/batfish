@@ -42,19 +42,31 @@ public final class AnswerResource {
   }
 
   /**
-   * Get the answer for the specified question, regarding the specified {@code snapshot} and
-   * optionally {@code referenceSnapshot}.
+   * Get the answer for the question, regarding the specified {@code snapshot} and optionally {@code
+   * referenceSnapshot}.
+   *
+   * @param snapshot Name of the snapshot the question was run on
+   * @param referenceSnapshot Optional name of the reference snapshot for the differential question
+   * @param columns Optional set of column names to return, if {@code null}, all answer columns are
+   *     returned
+   * @param filters Optional list of {@link ColumnFilter} to be applied to the answer rows
+   * @param maxRows Optional number of rows to include in the answer
+   * @param rowOffset Optional first row to include in the answer
+   * @param sortOrder Optional list of {@link ColumnSortOption}, priority-ordered list of columns to
+   *     sort
+   * @param uniqueRows Optional boolean whether or not to only include unique rows, duplicate rows
+   *     are included by default
    */
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public Response getAnswer(
       @Nullable @QueryParam("snapshot") String snapshot,
       @Nullable @QueryParam("referenceSnapshot") String referenceSnapshot,
-      @Nullable @QueryParam("columns") String columnsString,
-      @Nullable @QueryParam("filters") String filtersString,
+      @Nullable @QueryParam("columns") String columns,
+      @Nullable @QueryParam("filters") String filters,
       @Nullable @QueryParam("maxRows") Integer maxRows,
       @Nullable @QueryParam("rowOffset") Integer rowOffset,
-      @Nullable @QueryParam("sortOrder") String sortOrderString,
+      @Nullable @QueryParam("sortOrder") String sortOrder,
       @Nullable @QueryParam("uniqueRows") Boolean uniqueRows) {
     try {
       checkArgument(snapshot != null, "Snapshot must be specified to fetch question answer");
@@ -71,22 +83,24 @@ public final class AnswerResource {
       }
 
       // Filter the resulting answer, if applicable
-      Set<String> columns =
-          columnsString == null
-              ? ImmutableSet.of()
-              : BatfishObjectMapper.mapper()
-                  .readValue(sortOrderString, new TypeReference<Set<String>>() {});
-      List<ColumnFilter> filters =
-          filtersString == null
-              ? ImmutableList.of()
-              : BatfishObjectMapper.mapper()
-                  .readValue(sortOrderString, new TypeReference<List<ColumnFilter>>() {});
-      List<ColumnSortOption> sortOrder =
-          sortOrderString == null
-              ? ImmutableList.of()
-              : BatfishObjectMapper.mapper()
-                  .readValue(sortOrderString, new TypeReference<List<ColumnSortOption>>() {});
-      ans = filterAnswer(ans, columns, filters, maxRows, rowOffset, sortOrder, uniqueRows);
+      ans =
+          filterAnswer(
+              ans,
+              columns == null
+                  ? ImmutableSet.of()
+                  : BatfishObjectMapper.mapper()
+                      .readValue(columns, new TypeReference<Set<String>>() {}),
+              filters == null
+                  ? ImmutableList.of()
+                  : BatfishObjectMapper.mapper()
+                      .readValue(filters, new TypeReference<List<ColumnFilter>>() {}),
+              maxRows,
+              rowOffset,
+              sortOrder == null
+                  ? ImmutableList.of()
+                  : BatfishObjectMapper.mapper()
+                      .readValue(sortOrder, new TypeReference<List<ColumnSortOption>>() {}),
+              uniqueRows);
 
       return Response.ok().entity(ans).build();
     } catch (IllegalArgumentException e) {
