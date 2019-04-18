@@ -40,6 +40,7 @@ import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_peer_group_assi
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_remote_asContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_route_map_outContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rmm_ip_addressContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rmm_ip_address_prefix_listContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rms_communityContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rms_metricContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rms_originContext;
@@ -65,6 +66,7 @@ import org.batfish.representation.f5_bigip.PrefixList;
 import org.batfish.representation.f5_bigip.PrefixListEntry;
 import org.batfish.representation.f5_bigip.RouteMap;
 import org.batfish.representation.f5_bigip.RouteMapEntry;
+import org.batfish.representation.f5_bigip.RouteMapMatchPrefixList;
 import org.batfish.representation.f5_bigip.RouteMapSetCommunity;
 import org.batfish.representation.f5_bigip.RouteMapSetMetric;
 import org.batfish.representation.f5_bigip.RouteMapSetOrigin;
@@ -184,17 +186,6 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
     _currentNeighborName = ctx.name.getText();
     _currentPeerGroup = _currentBgpProcess.getPeerGroups().get(_currentNeighborName);
     _currentAbstractNeighbor = _currentNeighbor != null ? _currentNeighbor : _currentPeerGroup;
-  }
-
-  @Override
-  public void enterRmm_ip_address(Rmm_ip_addressContext ctx) {
-    String name = ctx.name.getText();
-    _c.referenceStructure(
-        F5BigipStructureType.ACCESS_LIST,
-        name,
-        F5BigipStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS,
-        ctx.name.getStart().getLine());
-    _currentRouteMapEntry.setMatchAccessList(new MatchAccessList(name));
   }
 
   @Override
@@ -430,6 +421,28 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
     if (ipv6) {
       _currentAbstractNeighbor.getIpv6AddressFamily().setRouteMapOut(routeMapName);
     }
+  }
+
+  @Override
+  public void exitRmm_ip_address(Rmm_ip_addressContext ctx) {
+    String name = ctx.name.getText();
+    _c.referenceStructure(
+        F5BigipStructureType.ACCESS_LIST,
+        name,
+        F5BigipStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS,
+        ctx.name.getStart().getLine());
+    _currentRouteMapEntry.setMatchAccessList(new MatchAccessList(name));
+  }
+
+  @Override
+  public void exitRmm_ip_address_prefix_list(Rmm_ip_address_prefix_listContext ctx) {
+    String name = ctx.name.getText();
+    _c.referenceStructure(
+        F5BigipStructureType.PREFIX_LIST,
+        name,
+        F5BigipStructureUsage.ROUTE_MAP_MATCH_IPV4_ADDRESS_PREFIX_LIST,
+        ctx.name.getStart().getLine());
+    _currentRouteMapEntry.setMatchPrefixList(new RouteMapMatchPrefixList(name));
   }
 
   @Override
