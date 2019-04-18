@@ -15525,6 +15525,13 @@
                     }
                   },
                   {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
+                    "metric" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
+                      "value" : 50
+                    }
+                  },
+                  {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
                     "type" : "ReturnTrue"
                   }

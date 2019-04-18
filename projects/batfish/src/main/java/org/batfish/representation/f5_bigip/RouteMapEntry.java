@@ -19,6 +19,7 @@ public final class RouteMapEntry implements Serializable {
   private @Nullable RouteMapMatchPrefixList _matchPrefixList;
   private final long _num;
   private @Nullable RouteMapSetCommunity _setCommunity;
+  private @Nullable RouteMapSetMetric _setMetric;
 
   public RouteMapEntry(long num) {
     _num = num;
@@ -49,9 +50,13 @@ public final class RouteMapEntry implements Serializable {
     return _setCommunity;
   }
 
+  public @Nullable RouteMapSetMetric getSetMetric() {
+    return _setMetric;
+  }
+
   /** Return stream of set statements for this entry. */
   public @Nonnull Stream<RouteMapSet> getSets() {
-    return Stream.<RouteMapSet>of(_setCommunity).filter(Objects::nonNull);
+    return Stream.<RouteMapSet>of(_setCommunity, _setMetric).filter(Objects::nonNull);
   }
 
   public void setAction(@Nullable LineAction action) {
@@ -68,5 +73,9 @@ public final class RouteMapEntry implements Serializable {
 
   public void setSetCommunity(@Nullable RouteMapSetCommunity setCommunity) {
     _setCommunity = setCommunity;
+  }
+
+  public void setSetMetric(@Nullable RouteMapSetMetric setMetric) {
+    _setMetric = setMetric;
   }
 }

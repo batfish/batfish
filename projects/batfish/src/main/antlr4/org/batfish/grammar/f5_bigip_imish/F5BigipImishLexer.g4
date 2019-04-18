@@ -160,6 +160,11 @@ MAXIMUM_PREFIX
   'maximum-prefix'
 ;
 
+METRIC
+:
+  'metric'
+;
+
 NEIGHBOR
 :
   'neighbor'
