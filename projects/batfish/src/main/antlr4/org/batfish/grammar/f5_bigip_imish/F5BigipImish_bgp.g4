@@ -112,7 +112,10 @@ rb_null
 
 rb_redistribute_kernel
 :
-  REDISTRIBUTE KERNEL ROUTE_MAP rm = word NEWLINE
+  REDISTRIBUTE KERNEL
+  (
+    ROUTE_MAP rm = word
+  )? NEWLINE
 ;
 
 s_router_bgp
