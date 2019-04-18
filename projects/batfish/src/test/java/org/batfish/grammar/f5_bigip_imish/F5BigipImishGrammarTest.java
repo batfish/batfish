@@ -4,6 +4,7 @@ import static org.batfish.common.util.CommonUtil.communityStringToLong;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.Prefix.MAX_PREFIX_LENGTH;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasDescription;
@@ -40,6 +41,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
@@ -92,6 +94,9 @@ import org.batfish.main.TestrigText;
 import org.batfish.representation.f5_bigip.F5BigipConfiguration;
 import org.batfish.representation.f5_bigip.PrefixList;
 import org.batfish.representation.f5_bigip.PrefixListEntry;
+import org.batfish.representation.f5_bigip.RouteMap;
+import org.batfish.representation.f5_bigip.RouteMapEntry;
+import org.batfish.representation.f5_bigip.RouteMapSetMetric;
 import org.batfish.vendor.VendorConfiguration;
 import org.junit.Rule;
 import org.junit.Test;
@@ -628,6 +633,14 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
+  public void testBgpRouterIdManual() throws IOException {
+    Configuration c = parseConfig("f5_bigip_imish_bgp_router_id_manual");
+
+    // BGP Router-ID manually set
+    assertThat(c, hasDefaultVrf(hasBgpProcess(hasRouterId(Ip.parse("192.0.2.1")))));
+  }
+
+  @Test
   public void testPrefixListExtraction() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_prefix_list");
 
@@ -680,14 +693,6 @@ public final class F5BigipImishGrammarTest {
     assertThat(plGeLe10.getLengthRange(), equalTo(new SubRange(24, 28)));
     assertThat(plDeny10.getLengthRange(), equalTo(new SubRange(32, 32)));
     assertThat(plDeny20.getLengthRange(), equalTo(new SubRange(16, 32)));
-  }
-
-  @Test
-  public void testBgpRouterIdManual() throws IOException {
-    Configuration c = parseConfig("f5_bigip_imish_bgp_router_id_manual");
-
-    // BGP Router-ID manually set
-    assertThat(c, hasDefaultVrf(hasBgpProcess(hasRouterId(Ip.parse("192.0.2.1")))));
   }
 
   @Test
@@ -794,6 +799,36 @@ public final class F5BigipImishGrammarTest {
 
     // detect all structure references
     assertThat(ans, hasNumReferrers(file, ROUTE_MAP, used, 2));
+  }
+
+  @Test
+  public void testRouteMapSetMetricConversion() throws IOException {
+    Configuration c = parseConfig("f5_bigip_imish_route_map_set_metric");
+    String rpName = "rm1";
+
+    assertThat(c.getRoutingPolicies(), hasKeys(rpName));
+
+    assertThat(processBgpRoute(c.getRoutingPolicies().get(rpName), Ip.ZERO), hasMetric(50L));
+  }
+
+  @Test
+  public void testRouteMapSetMetricExtraction() throws IOException {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_route_map_set_metric");
+    String rmName = "rm1";
+
+    assertThat(vc.getRouteMaps(), hasKeys(rmName));
+
+    RouteMap rm = vc.getRouteMaps().get(rmName);
+
+    assertThat(rm.getEntries(), hasKeys(10L));
+
+    RouteMapEntry entry = rm.getEntries().get(10L);
+
+    RouteMapSetMetric set = entry.getSetMetric();
+
+    assertThat(set, notNullValue());
+    assertThat(set.getMetric(), equalTo(50L));
+    assertThat(entry.getSets().collect(ImmutableList.toImmutableList()), contains(set));
   }
 
   private @Nonnull IpAccessListToBdd toBDD() {

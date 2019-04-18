@@ -39,6 +39,7 @@ import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_remote_asContex
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rbn_route_map_outContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rmm_ip_addressContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rms_communityContext;
+import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Rms_metricContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.S_access_listContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.S_ip_prefix_listContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.S_route_mapContext;
@@ -62,6 +63,7 @@ import org.batfish.representation.f5_bigip.PrefixListEntry;
 import org.batfish.representation.f5_bigip.RouteMap;
 import org.batfish.representation.f5_bigip.RouteMapEntry;
 import org.batfish.representation.f5_bigip.RouteMapSetCommunity;
+import org.batfish.representation.f5_bigip.RouteMapSetMetric;
 import org.batfish.vendor.StructureType;
 
 public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseListener {
@@ -424,6 +426,11 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
                 .map(this::toLong)
                 .filter(Objects::nonNull)
                 .collect(ImmutableSet.toImmutableSet())));
+  }
+
+  @Override
+  public void exitRms_metric(Rms_metricContext ctx) {
+    _currentRouteMapEntry.setSetMetric(new RouteMapSetMetric(toLong(ctx.metric)));
   }
 
   @Override
