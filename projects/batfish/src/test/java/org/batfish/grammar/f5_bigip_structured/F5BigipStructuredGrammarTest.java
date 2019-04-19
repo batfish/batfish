@@ -1600,8 +1600,8 @@ public final class F5BigipStructuredGrammarTest {
     VirtualAddress vaEnabled = vc.getVirtualAddresses().get(vaEnabledName);
     VirtualAddress vaImplicitlyEnabled = vc.getVirtualAddresses().get(vaImplicitlyEnabledName);
 
-    assertThat(vaDisabled.getArpDisabled(), equalTo(true));
-    assertThat(vaEnabled.getArpDisabled(), equalTo(false));
+    assertTrue(vaDisabled.getArpDisabled());
+    assertFalse(vaEnabled.getArpDisabled());
     assertThat(vaImplicitlyEnabled.getArpDisabled(), nullValue());
   }
 
