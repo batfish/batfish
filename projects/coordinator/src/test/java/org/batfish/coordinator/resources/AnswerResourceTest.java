@@ -300,12 +300,10 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
     String snapshot = "snapshot";
     String bogusSnapshot = "bogusSnapshot";
     String question = "question";
-    String bogusQuestion = "bogusQuestion";
 
     AnswerRowsOptions filterOptions =
         new AnswerRowsOptions(
             ImmutableSet.of(), ImmutableList.of(), 1, 0, ImmutableList.of(), false);
-    FilterAnswerBean filterAnswer = new FilterAnswerBean(snapshot, null, filterOptions);
     FilterAnswerBean filterBadSnapshot = new FilterAnswerBean(bogusSnapshot, null, filterOptions);
 
     Main.getWorkMgr().initNetwork(network, null);
@@ -314,8 +312,6 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
 
     Response responseBadSnapshot =
         filterAnswerTarget(network, question, null).post(Entity.json(filterBadSnapshot));
-    Response responseBadQuestion =
-        filterAnswerTarget(network, bogusQuestion, null).post(Entity.json(filterAnswer));
     // Post arbitrary item that is not an AnswerRowsOptions object
     Response responseBadFilter =
         filterAnswerTarget(network, question, null).post(Entity.json(true));
@@ -325,15 +321,43 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
     assertThat(
         responseBadSnapshot.readEntity(String.class), containsString("non-existent snapshot"));
 
-    // Bogus question should result in not found
-    assertThat(responseBadQuestion.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
-    assertThat(
-        responseBadQuestion.readEntity(String.class),
-        containsString(String.format("Question '%s' does not exist", bogusQuestion)));
-
     // Bogus filterAnswer should result in bad request
     assertThat(responseBadFilter.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
     assertThat(
         responseBadFilter.readEntity(String.class), containsString("Cannot construct instance"));
+  }
+
+  @Test
+  public void testFilterAnswerMissing() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+    String question = "question";
+    String bogusQuestion = "bogusQuestion";
+
+    AnswerRowsOptions filterOptions =
+        new AnswerRowsOptions(
+            ImmutableSet.of(), ImmutableList.of(), 1, 0, ImmutableList.of(), false);
+    FilterAnswerBean filterAnswer = new FilterAnswerBean(snapshot, null, filterOptions);
+
+    Main.getWorkMgr().initNetwork(network, null);
+    uploadTestSnapshot(network, snapshot, _folder);
+    setupQuestionAndAnswer(network, snapshot, question, null, null);
+
+    Response responseMissingQuestion =
+        filterAnswerTarget(network, bogusQuestion, null).post(Entity.json(filterAnswer));
+    Response responseMissingAnswer =
+        filterAnswerTarget(network, question, null).post(Entity.json(filterAnswer));
+
+    // Bogus question should result in not found
+    assertThat(responseMissingQuestion.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    assertThat(
+        responseMissingQuestion.readEntity(String.class),
+        containsString(String.format("Question '%s' does not exist", bogusQuestion)));
+
+    // Filtering non existent question should result in not found
+    assertThat(responseMissingAnswer.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    assertThat(
+        responseMissingAnswer.readEntity(String.class),
+        containsString(String.format("Answer not found for question %s", question)));
   }
 }
