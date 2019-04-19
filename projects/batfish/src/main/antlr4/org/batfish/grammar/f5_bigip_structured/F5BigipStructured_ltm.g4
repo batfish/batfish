@@ -138,7 +138,11 @@ lpm_member
 :
   name = word BRACE_LEFT
   (
-    NEWLINE lpmm_address*
+    NEWLINE
+    (
+      lpmm_address
+      | unrecognized
+    )*
   )? BRACE_RIGHT NEWLINE
 ;
 
