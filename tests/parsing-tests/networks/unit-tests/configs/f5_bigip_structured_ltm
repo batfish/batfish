@@ -17,15 +17,19 @@ ltm node /Common/SOME_LTM_NODE {
     address 192.0.2.1
 }
 ltm pool /Common/SOME_LTM_POOL {
+    description "foo"
     load-balancing-mode least-connections-member
     members {
         /Common/foo:80 {
             address 192.0.2.2
+            description bar.baz
+            priority-group 2
         }
         /Common/bar:80 {
             address 192.0.2.3
         }
     }
+    min-active-members 1
     monitor /Common/SOME_MONITOR
     service-down-action reset
     slow-ramp-time 123
