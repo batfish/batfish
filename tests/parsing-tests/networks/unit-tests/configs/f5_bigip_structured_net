@@ -15,10 +15,6 @@ net interface 1.0 {
 net lldp-globals {
     enabled
 }
-net route /Common/route1 {
-    gw 192.0.2.1
-    network 10.200.100.1/32
-}
 net route-domain /Common/0 {
     id 0
     vlans {
@@ -31,6 +27,10 @@ net self /Common/MYSELF {
     allow-service all
     traffic-group /Common/traffic-group-local-only
     vlan /Common/MYVLAN
+}
+net route /Common/route1 {
+    gw 10.0.0.2
+    network 10.200.100.1/32
 }
 net self /Common/MYSELF6 {
     address 1::1/64

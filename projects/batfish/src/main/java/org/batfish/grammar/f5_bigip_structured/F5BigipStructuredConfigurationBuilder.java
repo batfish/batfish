@@ -1297,9 +1297,22 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void exitNroute_gw(Nroute_gwContext ctx) {
     String text = ctx.gw.getText();
-    Optional<Ip> ip = Ip.tryParse(text);
-    if (ip.isPresent()) {
-      _currentRoute.setGw(ip.get());
+    Optional<Ip> ipOpt = Ip.tryParse(text);
+    if (ipOpt.isPresent()) {
+      Ip ip = ipOpt.get();
+      // Gateway IP is valid iff it is on a directly-connected network
+      if (_c.getSelves().values().stream()
+          .map(Self::getAddress)
+          .filter(Objects::nonNull)
+          .map(InterfaceAddress::getPrefix)
+          .anyMatch(directlyConnectedNetwork -> directlyConnectedNetwork.containsIp(ip))) {
+        _currentRoute.setGw(ip);
+      } else {
+        _w.redFlag(
+            String.format(
+                "Cannot set gateway IP '%s' for route '%s' that is not on a directly-connected network in: %s",
+                ip, _currentRoute.getName(), getFullText(ctx)));
+      }
       return;
     }
     Optional<Ip6> ip6 = Ip6.tryParse(text);

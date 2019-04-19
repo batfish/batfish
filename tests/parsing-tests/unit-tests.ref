@@ -44574,6 +44574,22 @@
             "  (statement",
             "    (s_net",
             "      NET:'net'",
+            "      (net_self",
+            "        SELF:'self'",
+            "        name = (word",
+            "          WORD:'/Common/self1')",
+            "        BRACE_LEFT:'{'",
+            "        NEWLINE:'\\n'",
+            "        (ns_address",
+            "          ADDRESS:'address'",
+            "          interface_address = (word",
+            "            WORD:'10.0.0.2/24')",
+            "          NEWLINE:'\\n')",
+            "        BRACE_RIGHT:'}'",
+            "        NEWLINE:'\\n\\n')))",
+            "  (statement",
+            "    (s_net",
+            "      NET:'net'",
             "      (net_route",
             "        ROUTE:'route'",
             "        name = (word",
@@ -44586,7 +44602,70 @@
             "            WORD:'192.0.2.1/32')",
             "          NEWLINE:'\\n')",
             "        BRACE_RIGHT:'}'",
-            "        NEWLINE:'\\n')))",
+            "        NEWLINE:'\\n\\n')))",
+            "  (statement",
+            "    (s_net",
+            "      NET:'net'",
+            "      (net_route",
+            "        ROUTE:'route'",
+            "        name = (word",
+            "          WORD:'/Common/bad_gw')",
+            "        BRACE_LEFT:'{'",
+            "        NEWLINE:'\\n'",
+            "        (nroute_network",
+            "          NETWORK:'network'",
+            "          network = (word",
+            "            WORD:'192.0.2.2/32')",
+            "          NEWLINE:'\\n')",
+            "        (nroute_gw",
+            "          GW:'gw'",
+            "          gw = (word",
+            "            WORD:'172.16.0.1')",
+            "          NEWLINE:'\\n')",
+            "        BRACE_RIGHT:'}'",
+            "        NEWLINE:'\\n\\n')))",
+            "  (statement",
+            "    (s_net",
+            "      NET:'net'",
+            "      (net_route",
+            "        ROUTE:'route'",
+            "        name = (word",
+            "          WORD:'/Common/mixed_protocols1')",
+            "        BRACE_LEFT:'{'",
+            "        NEWLINE:'\\n'",
+            "        (nroute_network",
+            "          NETWORK:'network'",
+            "          network = (word",
+            "            WORD:'192.0.2.2/32')",
+            "          NEWLINE:'\\n')",
+            "        (nroute_gw",
+            "          GW:'gw'",
+            "          gw = (word",
+            "            WORD:'deaf:beef::1')",
+            "          NEWLINE:'\\n')",
+            "        BRACE_RIGHT:'}'",
+            "        NEWLINE:'\\n\\n')))",
+            "  (statement",
+            "    (s_net",
+            "      NET:'net'",
+            "      (net_route",
+            "        ROUTE:'route'",
+            "        name = (word",
+            "          WORD:'/Common/mixed_protocols2')",
+            "        BRACE_LEFT:'{'",
+            "        NEWLINE:'\\n'",
+            "        (nroute_network",
+            "          NETWORK:'network'",
+            "          network = (word",
+            "            WORD:'dead:beef::/64')",
+            "          NEWLINE:'\\n')",
+            "        (nroute_gw",
+            "          GW:'gw'",
+            "          gw = (word",
+            "            WORD:'10.0.0.5')",
+            "          NEWLINE:'\\n')",
+            "        BRACE_RIGHT:'}'",
+            "        NEWLINE:'\\n\\n')))",
             "  (statement",
             "    (s_net",
             "      NET:'net'",
@@ -44724,27 +44803,6 @@
             "  (statement",
             "    (s_net",
             "      NET:'net'",
-            "      (net_route",
-            "        ROUTE:'route'",
-            "        name = (word",
-            "          WORD:'/Common/route1')",
-            "        BRACE_LEFT:'{'",
-            "        NEWLINE:'\\n'",
-            "        (nroute_gw",
-            "          GW:'gw'",
-            "          gw = (word",
-            "            WORD:'192.0.2.1')",
-            "          NEWLINE:'\\n')",
-            "        (nroute_network",
-            "          NETWORK:'network'",
-            "          network = (word",
-            "            WORD:'10.200.100.1/32')",
-            "          NEWLINE:'\\n')",
-            "        BRACE_RIGHT:'}'",
-            "        NEWLINE:'\\n')))",
-            "  (statement",
-            "    (s_net",
-            "      NET:'net'",
             "      (unrecognized",
             "        (u_word",
             "          (word",
@@ -44813,6 +44871,27 @@
             "          VLAN:'vlan'",
             "          name = (word",
             "            WORD:'/Common/MYVLAN')",
+            "          NEWLINE:'\\n')",
+            "        BRACE_RIGHT:'}'",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net",
+            "      NET:'net'",
+            "      (net_route",
+            "        ROUTE:'route'",
+            "        name = (word",
+            "          WORD:'/Common/route1')",
+            "        BRACE_LEFT:'{'",
+            "        NEWLINE:'\\n'",
+            "        (nroute_gw",
+            "          GW:'gw'",
+            "          gw = (word",
+            "            WORD:'10.0.0.2')",
+            "          NEWLINE:'\\n')",
+            "        (nroute_network",
+            "          NETWORK:'network'",
+            "          network = (word",
+            "            WORD:'10.200.100.1/32')",
             "          NEWLINE:'\\n')",
             "        BRACE_RIGHT:'}'",
             "        NEWLINE:'\\n')))",
@@ -73559,6 +73638,14 @@
             }
           ]
         },
+        "configs/f5_bigip_structured_malformed" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot set gateway IP '172.16.0.1' for route '/Common/bad_gw' that is not on a directly-connected network in: gw 172.16.0.1\n"
+            }
+          ]
+        },
         "configs/f5_bigip_structured_net" : {
           "Parse warnings" : [
             {
@@ -73605,19 +73692,19 @@
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 22,
+              "Line" : 18,
               "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
               "Text" : "route-domain /Common/0"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 31,
+              "Line" : 27,
               "Parser_Context" : "[ns_allow_service net_self s_net statement f5_bigip_structured_configuration]",
               "Text" : "allow-service all"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 32,
+              "Line" : 28,
               "Parser_Context" : "[ns_traffic_group net_self s_net statement f5_bigip_structured_configuration]",
               "Text" : "traffic-group /Common/traffic-group-local-only"
             },
@@ -77736,19 +77823,56 @@
         },
         "configs/f5_bigip_structured_malformed" : {
           "route" : {
+            "/Common/bad_gw" : {
+              "definitionLines" : [
+                15,
+                16,
+                17,
+                18
+              ],
+              "numReferrers" : 1
+            },
             "/Common/missing_gw" : {
               "definitionLines" : [
-                7,
-                8,
-                9
+                11,
+                12,
+                13
               ],
               "numReferrers" : 1
             },
             "/Common/missing_network" : {
               "definitionLines" : [
-                10,
-                11,
-                12
+                30,
+                31,
+                32
+              ],
+              "numReferrers" : 1
+            },
+            "/Common/mixed_protocols1" : {
+              "definitionLines" : [
+                20,
+                21,
+                22,
+                23
+              ],
+              "numReferrers" : 1
+            },
+            "/Common/mixed_protocols2" : {
+              "definitionLines" : [
+                25,
+                26,
+                27,
+                28
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "self" : {
+            "/Common/self1" : {
+              "definitionLines" : [
+                7,
+                8,
+                9
               ],
               "numReferrers" : 1
             }
@@ -77772,10 +77896,10 @@
           "route" : {
             "/Common/route1" : {
               "definitionLines" : [
-                18,
-                19,
-                20,
-                21
+                31,
+                32,
+                33,
+                34
               ],
               "numReferrers" : 1
             }
@@ -77783,12 +77907,12 @@
           "self" : {
             "/Common/MYSELF" : {
               "definitionLines" : [
+                25,
+                26,
+                27,
+                28,
                 29,
-                30,
-                31,
-                32,
-                33,
-                34
+                30
               ],
               "numReferrers" : 1
             },
@@ -83295,14 +83419,36 @@
         },
         "configs/f5_bigip_structured_malformed" : {
           "route" : {
+            "/Common/bad_gw" : {
+              "route self-reference" : [
+                15
+              ]
+            },
             "/Common/missing_gw" : {
               "route self-reference" : [
-                7
+                11
               ]
             },
             "/Common/missing_network" : {
               "route self-reference" : [
-                10
+                30
+              ]
+            },
+            "/Common/mixed_protocols1" : {
+              "route self-reference" : [
+                20
+              ]
+            },
+            "/Common/mixed_protocols2" : {
+              "route self-reference" : [
+                25
+              ]
+            }
+          },
+          "self" : {
+            "/Common/self1" : {
+              "self self-reference" : [
+                7
               ]
             }
           }
@@ -83328,14 +83474,14 @@
           "route" : {
             "/Common/route1" : {
               "route self-reference" : [
-                18
+                31
               ]
             }
           },
           "self" : {
             "/Common/MYSELF" : {
               "self self-reference" : [
-                29
+                25
               ]
             },
             "/Common/MYSELF6" : {
@@ -83347,7 +83493,7 @@
           "vlan" : {
             "/Common/MYVLAN" : {
               "self vlan" : [
-                33,
+                29,
                 37
               ]
             }
@@ -87519,11 +87665,23 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
+              "text" : "Cannot convert /Common/mixed_protocols1 to static route because it has mixed IPv4 and IPv6 information"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
               "text" : "Cannot convert /Common/missing_gw to static route because it is missing default gateway"
             },
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Cannot convert /Common/missing_network to static route because it is missing network"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot convert /Common/mixed_protocols2 to static route because it has mixed IPv4 and IPv6 information"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot convert /Common/bad_gw to static route because it is missing default gateway"
             }
           ]
         },

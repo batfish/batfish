@@ -1773,21 +1773,21 @@
       },
       {
         "Filename" : "configs/f5_bigip_structured_net",
-        "Line" : 22,
+        "Line" : 18,
         "Text" : "route-domain /Common/0",
         "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "configs/f5_bigip_structured_net",
-        "Line" : 31,
+        "Line" : 27,
         "Text" : "allow-service all",
         "Parser_Context" : "[ns_allow_service net_self s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/f5_bigip_structured_net",
-        "Line" : 32,
+        "Line" : 28,
         "Text" : "traffic-group /Common/traffic-group-local-only",
         "Parser_Context" : "[ns_traffic_group net_self s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This feature is not currently supported"
