@@ -230,6 +230,7 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
     TableViewRow expectedRow = new TableViewRow(0, Row.of("colName", "value1"));
     TableView expectedTableView =
         new TableView(filterOptions, ImmutableList.of(expectedRow), baseTableMetadata);
+    // Original answer had two results, so the view needs to have two results
     expectedTableView.setSummary(new AnswerSummary("", 0, 0, 2));
     String expectedAnswerString = BatfishObjectMapper.writeString(expectedTableView);
 

@@ -12,7 +12,7 @@ import org.batfish.common.AnswerRowsOptions;
 
 /** Bean holding filter-answer request options */
 @ParametersAreNonnullByDefault
-public class FilterAnswerBean {
+public final class FilterAnswerBean {
   private static final String PROP_SNAPSHOT = "snapshot";
   private static final String PROP_REFERENCE_SNAPSHOT = "referenceSnapshot";
   private static final String PROP_FILTER_OPTIONS = "filterOptions";
