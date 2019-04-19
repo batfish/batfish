@@ -3115,6 +3115,7 @@ public final class WorkMgrTest {
         ((TableView) _manager.filterAnswer(answer, options).getAnswerElements().get(0))
             .getInnerRows();
 
+    // Confirm filter options were applied correctly
     assertThat(processedRows, equalTo(table.getRowsList()));
   }
 }

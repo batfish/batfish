@@ -84,8 +84,8 @@ public final class AnswerResource {
   }
 
   /**
-   * Get the answer for the question, regarding the specified {@code snapshot} and optionally {@code
-   * referenceSnapshot}.
+   * Get the answer for the specified question, regarding the specified {@code snapshot} and
+   * optionally {@code referenceSnapshot}.
    */
   @GET
   @Produces(MediaType.APPLICATION_JSON)

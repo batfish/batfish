@@ -212,6 +212,7 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
             ImmutableSet.of(), ImmutableList.of(), 1, 0, ImmutableList.of(), false);
     FilterAnswerBean filter = new FilterAnswerBean(snapshot, null, filterOptions);
 
+    // Build the baseAnswer we will be filtering
     TableMetadata baseTableMetadata =
         new TableMetadata(
             ImmutableList.of(new ColumnMetadata("colName", Schema.STRING, "col description")));
@@ -220,12 +221,12 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
     baseTableAnswerElement.addRow(Row.of("colName", "value2"));
     Answer baseAnswer = new Answer();
     baseAnswer.addAnswerElement(baseTableAnswerElement);
+    // Setup infrastructure + answer
     Main.getWorkMgr().initNetwork(network, null);
     uploadTestSnapshot(network, snapshot, _folder);
     setupQuestionAndAnswer(network, snapshot, question, null, baseAnswer);
 
-    // expectedAnswer is same as baseAnswer but only the first row and summaries indicating there
-    // were originally 2 rows
+    // expectedAnswer is same as baseAnswer but only contains the first row
     TableViewRow expectedRow = new TableViewRow(0, Row.of("colName", "value1"));
     TableView expectedTableView =
         new TableView(filterOptions, ImmutableList.of(expectedRow), baseTableMetadata);
@@ -239,5 +240,48 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
         BatfishObjectMapper.writeString(
             response.readEntity(Answer.class).getAnswerElements().get(0)),
         equalTo(expectedAnswerString));
+  }
+
+  @Test
+  public void testFilterAnswerBadRequest() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+    String bogusSnapshot = "bogusSnapshot";
+    String question = "question";
+    String bogusQuestion = "bogusQuestion";
+
+    AnswerRowsOptions filterOptions =
+        new AnswerRowsOptions(
+            ImmutableSet.of(), ImmutableList.of(), 1, 0, ImmutableList.of(), false);
+    FilterAnswerBean filter = new FilterAnswerBean(snapshot, null, filterOptions);
+    FilterAnswerBean filterBadSnapshot = new FilterAnswerBean(bogusSnapshot, null, filterOptions);
+
+    Main.getWorkMgr().initNetwork(network, null);
+    uploadTestSnapshot(network, snapshot, _folder);
+    setupQuestionAndAnswer(network, snapshot, question, null, new Answer());
+
+    Response responseBadSnapshot =
+        filterAnswerTarget(network, question, null).post(Entity.json(filterBadSnapshot));
+    Response responseBadQuestion =
+        filterAnswerTarget(network, bogusQuestion, null).post(Entity.json(filter));
+    // Post arbitrary item that is not an AnswerRowsOptions object
+    Response responseBadFilter =
+        filterAnswerTarget(network, question, null).post(Entity.json(true));
+
+    // Bogus snapshot should result in bad request
+    assertThat(responseBadSnapshot.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+    assertThat(
+        responseBadSnapshot.readEntity(String.class), containsString("non-existent snapshot"));
+
+    // Bogus question should result in not found
+    assertThat(responseBadQuestion.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    assertThat(
+        responseBadQuestion.readEntity(String.class),
+        containsString(String.format("Question '%s' does not exist", bogusQuestion)));
+
+    // Bogus filter should result in bad request
+    assertThat(responseBadFilter.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+    assertThat(
+        responseBadFilter.readEntity(String.class), containsString("Cannot construct instance"));
   }
 }

@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.AnswerRowsOptions;
 
-/** Bean holding answer filter options */
+/** Bean holding filter-answer request options */
 @ParametersAreNonnullByDefault
 public class FilterAnswerBean {
   private static final String PROP_SNAPSHOT = "snapshot";
