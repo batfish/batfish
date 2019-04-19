@@ -122,6 +122,7 @@ ltm virtual /Common/SOME_VIRTUAL {
 }
 ltm virtual-address /Common/192.0.2.8 {
     address 192.0.2.9
+    arp disabled
     arp enabled
     mask 255.255.255.255
     route-advertisement selective
