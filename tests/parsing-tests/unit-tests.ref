@@ -42735,6 +42735,14 @@
             "        (unrecognized",
             "          (u_word",
             "            (word",
+            "              DESCRIPTION:'description'))",
+            "          (u_word",
+            "            (word",
+            "              DOUBLE_QUOTED_STRING:'\"foo\"'))",
+            "          NEWLINE:'\\n')",
+            "        (unrecognized",
+            "          (u_word",
+            "            (word",
             "              WORD:'load-balancing-mode'))",
             "          (u_word",
             "            (word",
@@ -42754,6 +42762,22 @@
             "              address = (word",
             "                WORD:'192.0.2.2')",
             "              NEWLINE:'\\n')",
+            "            (unrecognized",
+            "              (u_word",
+            "                (word",
+            "                  DESCRIPTION:'description'))",
+            "              (u_word",
+            "                (word",
+            "                  WORD:'bar.baz'))",
+            "              NEWLINE:'\\n')",
+            "            (unrecognized",
+            "              (u_word",
+            "                (word",
+            "                  WORD:'priority-group'))",
+            "              (u_word",
+            "                (word",
+            "                  WORD:'2'))",
+            "              NEWLINE:'\\n')",
             "            BRACE_RIGHT:'}'",
             "            NEWLINE:'\\n')",
             "          (lpm_member",
@@ -42769,6 +42793,14 @@
             "            BRACE_RIGHT:'}'",
             "            NEWLINE:'\\n')",
             "          BRACE_RIGHT:'}'",
+            "          NEWLINE:'\\n')",
+            "        (unrecognized",
+            "          (u_word",
+            "            (word",
+            "              WORD:'min-active-members'))",
+            "          (u_word",
+            "            (word",
+            "              WORD:'1'))",
             "          NEWLINE:'\\n')",
             "        (lp_monitor",
             "          MONITOR:'monitor'",
@@ -72632,833 +72664,857 @@
               "Comment" : "This syntax is unrecognized",
               "Line" : 20,
               "Parser_Context" : "[unrecognized l_pool s_ltm statement f5_bigip_structured_configuration]",
+              "Text" : "description \"foo\""
+            },
+            {
+              "Comment" : "This syntax is unrecognized",
+              "Line" : 21,
+              "Parser_Context" : "[unrecognized l_pool s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "load-balancing-mode least-connections-member"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 30,
+              "Line" : 25,
+              "Parser_Context" : "[unrecognized lpm_member lp_members l_pool s_ltm statement f5_bigip_structured_configuration]",
+              "Text" : "description bar.baz"
+            },
+            {
+              "Comment" : "This syntax is unrecognized",
+              "Line" : 26,
+              "Parser_Context" : "[unrecognized lpm_member lp_members l_pool s_ltm statement f5_bigip_structured_configuration]",
+              "Text" : "priority-group 2"
+            },
+            {
+              "Comment" : "This syntax is unrecognized",
+              "Line" : 32,
+              "Parser_Context" : "[unrecognized l_pool s_ltm statement f5_bigip_structured_configuration]",
+              "Text" : "min-active-members 1"
+            },
+            {
+              "Comment" : "This syntax is unrecognized",
+              "Line" : 34,
               "Parser_Context" : "[unrecognized l_pool s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "service-down-action reset"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 31,
+              "Line" : 35,
               "Parser_Context" : "[unrecognized l_pool s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "slow-ramp-time 123"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 34,
+              "Line" : 38,
               "Parser_Context" : "[unrecognized l_rule s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "when HTTP_REQUEST priority 10"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 40,
+              "Line" : 44,
               "Parser_Context" : "[unrecognized l_rule s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "when HTTP_REQUEST priority 10"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 46,
+              "Line" : 50,
               "Parser_Context" : "[unrecognized l_rule s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "when HTTP_REQUEST priority 20"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 53,
+              "Line" : 57,
               "Parser_Context" : "[unrecognized l_rule s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "when CLIENT_ACCEPTED"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 57,
+              "Line" : 61,
               "Parser_Context" : "[unrecognized l_rule s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "when CLIENTSSL_HANDSHAKE"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 92,
+              "Line" : 96,
               "Parser_Context" : "[unrecognized lvp_persistence lv_persist l_virtual s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "default yes"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 91,
+              "Line" : 95,
               "Parser_Context" : "[lvp_persistence lv_persist l_virtual s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "/Common/SOME_PROFILE {\n            default yes\n        }"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 97,
+              "Line" : 101,
               "Parser_Context" : "[lv_profiles_profile lv_profiles l_virtual s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "/Common/P1 { }"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 98,
+              "Line" : 102,
               "Parser_Context" : "[lv_profiles_profile lv_profiles l_virtual s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "/Common/P2 { }"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 99,
+              "Line" : 103,
               "Parser_Context" : "[lv_profiles_profile lv_profiles l_virtual s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "/Common/P3 { }"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 127,
+              "Line" : 131,
               "Parser_Context" : "[unrecognized lm_http l_monitor s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "adaptive disabled"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 128,
+              "Line" : 132,
               "Parser_Context" : "[lmh_defaults_from lm_http l_monitor s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "defaults-from /Common/http"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 129,
+              "Line" : 133,
               "Parser_Context" : "[unrecognized lm_http l_monitor s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "destination *:80"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 130,
+              "Line" : 134,
               "Parser_Context" : "[unrecognized lm_http l_monitor s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "interval 5"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 131,
+              "Line" : 135,
               "Parser_Context" : "[unrecognized lm_http l_monitor s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "ip-dscp 0"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 132,
+              "Line" : 136,
               "Parser_Context" : "[unrecognized lm_http l_monitor s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "recv somerecvup"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 133,
+              "Line" : 137,
               "Parser_Context" : "[unrecognized lm_http l_monitor s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "recv-disable none"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 134,
+              "Line" : 138,
               "Parser_Context" : "[unrecognized lm_http l_monitor s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "send \"GET /some/path HTTP/1.1\nHost: somehost.example.com\nConnection: Close\n\n\""
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 139,
+              "Line" : 143,
               "Parser_Context" : "[unrecognized lm_http l_monitor s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "time-until-up 0"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 140,
+              "Line" : 144,
               "Parser_Context" : "[unrecognized lm_http l_monitor s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "timeout 12"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 143,
+              "Line" : 147,
               "Parser_Context" : "[unrecognized lm_https l_monitor s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "adaptive disabled"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 144,
+              "Line" : 148,
               "Parser_Context" : "[unrecognized lm_https l_monitor s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "cipherlist DEFAULT:+SHA:+3DES:+kEDH"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 145,
+              "Line" : 149,
               "Parser_Context" : "[unrecognized lm_https l_monitor s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "compatibility enabled"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 146,
+              "Line" : 150,
               "Parser_Context" : "[lmhs_defaults_from lm_https l_monitor s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "defaults-from /Common/https"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 147,
+              "Line" : 151,
               "Parser_Context" : "[unrecognized lm_https l_monitor s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "destination *:443"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 148,
+              "Line" : 152,
               "Parser_Context" : "[unrecognized lm_https l_monitor s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "interval 5"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 149,
+              "Line" : 153,
               "Parser_Context" : "[unrecognized lm_https l_monitor s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "ip-dscp 0"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 150,
+              "Line" : 154,
               "Parser_Context" : "[unrecognized lm_https l_monitor s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "recv somerecvup"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 151,
+              "Line" : 155,
               "Parser_Context" : "[unrecognized lm_https l_monitor s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "recv-disable none"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 152,
+              "Line" : 156,
               "Parser_Context" : "[unrecognized lm_https l_monitor s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "send \"GET /some/path HTTP/1.1\nHost: somehost.example.com\nConnection: Close\n\n\""
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 157,
+              "Line" : 161,
               "Parser_Context" : "[lmhs_ssl_profile lm_https l_monitor s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "ssl-profile /Common/SOME_SSL_PROFILE"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 158,
+              "Line" : 162,
               "Parser_Context" : "[unrecognized lm_https l_monitor s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "time-until-up 0"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 159,
+              "Line" : 163,
               "Parser_Context" : "[unrecognized lm_https l_monitor s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "timeout 16"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 162,
+              "Line" : 166,
               "Parser_Context" : "[unrecognized lper_source_addr l_persistence s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "app-service none"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 163,
+              "Line" : 167,
               "Parser_Context" : "[lpersa_defaults_from lper_source_addr l_persistence s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "defaults-from /Common/source_addr"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 164,
+              "Line" : 168,
               "Parser_Context" : "[unrecognized lper_source_addr l_persistence s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "timeout 60"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 167,
+              "Line" : 171,
               "Parser_Context" : "[unrecognized lper_ssl l_persistence s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "app-service none"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 168,
+              "Line" : 172,
               "Parser_Context" : "[lperss_defaults_from lper_ssl l_persistence s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "defaults-from /Common/ssl"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 169,
+              "Line" : 173,
               "Parser_Context" : "[unrecognized lper_ssl l_persistence s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "match-across-pools disabled"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 170,
+              "Line" : 174,
               "Parser_Context" : "[unrecognized lper_ssl l_persistence s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "match-across-services disabled"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 171,
+              "Line" : 175,
               "Parser_Context" : "[unrecognized lper_ssl l_persistence s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "match-across-virtuals disabled"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 172,
+              "Line" : 176,
               "Parser_Context" : "[unrecognized lper_ssl l_persistence s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "override-connection-limit disabled"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 173,
+              "Line" : 177,
               "Parser_Context" : "[unrecognized lper_ssl l_persistence s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "timeout 300"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 176,
-              "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "alert-timeout indefinite"
-            },
-            {
-              "Comment" : "This syntax is unrecognized",
-              "Line" : 177,
-              "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "allow-dynamic-record-sizing disabled"
-            },
-            {
-              "Comment" : "This syntax is unrecognized",
-              "Line" : 178,
-              "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "allow-non-ssl disabled"
-            },
-            {
-              "Comment" : "This syntax is unrecognized",
-              "Line" : 179,
-              "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "app-service none"
-            },
-            {
-              "Comment" : "This syntax is unrecognized",
               "Line" : 180,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "cache-size 262144"
+              "Text" : "alert-timeout indefinite"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 181,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "cache-timeout 3600"
+              "Text" : "allow-dynamic-record-sizing disabled"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 182,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "cert /Common/example1.crt"
+              "Text" : "allow-non-ssl disabled"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 183,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "cert-extension-includes"
+              "Text" : "app-service none"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 184,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
+              "Text" : "cache-size 262144"
+            },
+            {
+              "Comment" : "This syntax is unrecognized",
+              "Line" : 185,
+              "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
+              "Text" : "cache-timeout 3600"
+            },
+            {
+              "Comment" : "This syntax is unrecognized",
+              "Line" : 186,
+              "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
+              "Text" : "cert /Common/example1.crt"
+            },
+            {
+              "Comment" : "This syntax is unrecognized",
+              "Line" : 187,
+              "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
+              "Text" : "cert-extension-includes"
+            },
+            {
+              "Comment" : "This syntax is unrecognized",
+              "Line" : 188,
+              "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "cert-key-chain"
-            },
-            {
-              "Comment" : "This syntax is unrecognized",
-              "Line" : 192,
-              "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "cert-lifespan 30"
-            },
-            {
-              "Comment" : "This syntax is unrecognized",
-              "Line" : 193,
-              "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "cert-lookup-by-ipaddr-port disabled"
-            },
-            {
-              "Comment" : "This syntax is unrecognized",
-              "Line" : 194,
-              "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "chain /Common/example4.crt"
-            },
-            {
-              "Comment" : "This syntax is unrecognized",
-              "Line" : 195,
-              "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "cipher-group none"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 196,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "ciphers !SSLv2:!EXPORT:!DHE+AES-GCM:!DHE+AES:!DHE+3DES:ECDHE+AES-GCM:ECDHE+AES:RSA+AES-GCM:RSA+AES:ECDHE+3DES:RSA+3DES:-MD5:DES-CBC3-SHA:-SSLv3:-RC4"
+              "Text" : "cert-lifespan 30"
             },
             {
-              "Comment" : "This feature is not currently supported",
+              "Comment" : "This syntax is unrecognized",
               "Line" : 197,
-              "Parser_Context" : "[lprofcs_defaults_from lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "defaults-from /Common/clientssl"
+              "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
+              "Text" : "cert-lookup-by-ipaddr-port disabled"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 198,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "generic-alert enabled"
+              "Text" : "chain /Common/example4.crt"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 199,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "handshake-timeout 10"
+              "Text" : "cipher-group none"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 200,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "inherit-certkeychain false"
+              "Text" : "ciphers !SSLv2:!EXPORT:!DHE+AES-GCM:!DHE+AES:!DHE+3DES:ECDHE+AES-GCM:ECDHE+AES:RSA+AES-GCM:RSA+AES:ECDHE+3DES:RSA+3DES:-MD5:DES-CBC3-SHA:-SSLv3:-RC4"
             },
             {
-              "Comment" : "This syntax is unrecognized",
+              "Comment" : "This feature is not currently supported",
               "Line" : 201,
-              "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "key foobar"
+              "Parser_Context" : "[lprofcs_defaults_from lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
+              "Text" : "defaults-from /Common/clientssl"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 202,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "max-active-handshakes indefinite"
+              "Text" : "generic-alert enabled"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 203,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "max-aggregate-renegotiation-per-minute indefinite"
+              "Text" : "handshake-timeout 10"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 204,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "max-renegotiations-per-minute 5"
+              "Text" : "inherit-certkeychain false"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 205,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "maximum-record-size 16384"
+              "Text" : "key foobar"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 206,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "mod-ssl-methods disabled"
+              "Text" : "max-active-handshakes indefinite"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 207,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "mode enabled"
+              "Text" : "max-aggregate-renegotiation-per-minute indefinite"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 208,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "ocsp-stapling enabled"
+              "Text" : "max-renegotiations-per-minute 5"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 209,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "options"
+              "Text" : "maximum-record-size 16384"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 210,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "passphrase $M$TheQuickBrownFoxJumpsOverTheLazyDogTheQuickBro="
+              "Text" : "mod-ssl-methods disabled"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 211,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "peer-no-renegotiate-timeout 10"
+              "Text" : "mode enabled"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 212,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "proxy-ca-cert /Common/example5.crt"
+              "Text" : "ocsp-stapling enabled"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 213,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "proxy-ca-key /Common/example5.key"
+              "Text" : "options"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 214,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "proxy-ssl disabled"
+              "Text" : "passphrase $M$TheQuickBrownFoxJumpsOverTheLazyDogTheQuickBro="
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 215,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "proxy-ssl-passthrough disabled"
+              "Text" : "peer-no-renegotiate-timeout 10"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 216,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "renegotiate-max-record-delay indefinite"
+              "Text" : "proxy-ca-cert /Common/example5.crt"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 217,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "renegotiate-period indefinite"
+              "Text" : "proxy-ca-key /Common/example5.key"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 218,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "renegotiate-size indefinite"
+              "Text" : "proxy-ssl disabled"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 219,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "renegotiation enabled"
+              "Text" : "proxy-ssl-passthrough disabled"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 220,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "secure-renegotiation require"
+              "Text" : "renegotiate-max-record-delay indefinite"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 221,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "server-name none"
+              "Text" : "renegotiate-period indefinite"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 222,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "session-mirroring disabled"
+              "Text" : "renegotiate-size indefinite"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 223,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "session-ticket disabled"
+              "Text" : "renegotiation enabled"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 224,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "session-ticket-timeout 0"
+              "Text" : "secure-renegotiation require"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 225,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "sni-default false"
+              "Text" : "server-name none"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 226,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "sni-require false"
+              "Text" : "session-mirroring disabled"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 227,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "ssl-forward-proxy disabled"
+              "Text" : "session-ticket disabled"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 228,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "ssl-forward-proxy-bypass disabled"
+              "Text" : "session-ticket-timeout 0"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 229,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "ssl-sign-hash any"
+              "Text" : "sni-default false"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 230,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "strict-resume disabled"
+              "Text" : "sni-require false"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 231,
               "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "unclean-shutdown enabled"
+              "Text" : "ssl-forward-proxy disabled"
+            },
+            {
+              "Comment" : "This syntax is unrecognized",
+              "Line" : 232,
+              "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
+              "Text" : "ssl-forward-proxy-bypass disabled"
+            },
+            {
+              "Comment" : "This syntax is unrecognized",
+              "Line" : 233,
+              "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
+              "Text" : "ssl-sign-hash any"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 234,
-              "Parser_Context" : "[unrecognized lprof_ocsp_stapling_params l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "dns-resolver /Common/SOME_DNS_RESOLVER"
+              "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
+              "Text" : "strict-resume disabled"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 235,
-              "Parser_Context" : "[unrecognized lprof_ocsp_stapling_params l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "responder-url http://ocsp.example.com"
-            },
-            {
-              "Comment" : "This syntax is unrecognized",
-              "Line" : 236,
-              "Parser_Context" : "[unrecognized lprof_ocsp_stapling_params l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "sign-hash sha1"
-            },
-            {
-              "Comment" : "This syntax is unrecognized",
-              "Line" : 237,
-              "Parser_Context" : "[unrecognized lprof_ocsp_stapling_params l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "status-age 86400"
+              "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
+              "Text" : "unclean-shutdown enabled"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 238,
               "Parser_Context" : "[unrecognized lprof_ocsp_stapling_params l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "trusted-responders /Common/example6.crt"
+              "Text" : "dns-resolver /Common/SOME_DNS_RESOLVER"
+            },
+            {
+              "Comment" : "This syntax is unrecognized",
+              "Line" : 239,
+              "Parser_Context" : "[unrecognized lprof_ocsp_stapling_params l_profile s_ltm statement f5_bigip_structured_configuration]",
+              "Text" : "responder-url http://ocsp.example.com"
+            },
+            {
+              "Comment" : "This syntax is unrecognized",
+              "Line" : 240,
+              "Parser_Context" : "[unrecognized lprof_ocsp_stapling_params l_profile s_ltm statement f5_bigip_structured_configuration]",
+              "Text" : "sign-hash sha1"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 241,
-              "Parser_Context" : "[unrecognized lprof_one_connect l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "app-service none"
+              "Parser_Context" : "[unrecognized lprof_ocsp_stapling_params l_profile s_ltm statement f5_bigip_structured_configuration]",
+              "Text" : "status-age 86400"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 242,
-              "Parser_Context" : "[unrecognized lprof_one_connect l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "idle-timeout-override disabled"
-            },
-            {
-              "Comment" : "This syntax is unrecognized",
-              "Line" : 243,
-              "Parser_Context" : "[unrecognized lprof_one_connect l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "limit-type none"
-            },
-            {
-              "Comment" : "This syntax is unrecognized",
-              "Line" : 244,
-              "Parser_Context" : "[unrecognized lprof_one_connect l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "max-age 86400"
+              "Parser_Context" : "[unrecognized lprof_ocsp_stapling_params l_profile s_ltm statement f5_bigip_structured_configuration]",
+              "Text" : "trusted-responders /Common/example6.crt"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 245,
               "Parser_Context" : "[unrecognized lprof_one_connect l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "max-reuse 12345"
+              "Text" : "app-service none"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 246,
               "Parser_Context" : "[unrecognized lprof_one_connect l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "max-size 123456"
+              "Text" : "idle-timeout-override disabled"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 247,
               "Parser_Context" : "[unrecognized lprof_one_connect l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "source-mask any"
+              "Text" : "limit-type none"
+            },
+            {
+              "Comment" : "This syntax is unrecognized",
+              "Line" : 248,
+              "Parser_Context" : "[unrecognized lprof_one_connect l_profile s_ltm statement f5_bigip_structured_configuration]",
+              "Text" : "max-age 86400"
+            },
+            {
+              "Comment" : "This syntax is unrecognized",
+              "Line" : 249,
+              "Parser_Context" : "[unrecognized lprof_one_connect l_profile s_ltm statement f5_bigip_structured_configuration]",
+              "Text" : "max-reuse 12345"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 250,
-              "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "alert-timeout indefinite"
+              "Parser_Context" : "[unrecognized lprof_one_connect l_profile s_ltm statement f5_bigip_structured_configuration]",
+              "Text" : "max-size 123456"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 251,
-              "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "app-service none"
-            },
-            {
-              "Comment" : "This syntax is unrecognized",
-              "Line" : 252,
-              "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "cache-size 262144"
-            },
-            {
-              "Comment" : "This syntax is unrecognized",
-              "Line" : 253,
-              "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "cache-timeout 3600"
+              "Parser_Context" : "[unrecognized lprof_one_connect l_profile s_ltm statement f5_bigip_structured_configuration]",
+              "Text" : "source-mask any"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 254,
               "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "cert /Common/example7.crt"
+              "Text" : "alert-timeout indefinite"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 255,
               "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "chain none"
+              "Text" : "app-service none"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 256,
               "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "cipher-group none"
+              "Text" : "cache-size 262144"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 257,
               "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "ciphers !SSLv2:!EXPORT:!DHE+AES-GCM:!DHE+AES:!DHE+3DES:ECDHE+AES-GCM:ECDHE+AES:RSA+AES-GCM:RSA+AES:ECDHE+3DES:RSA+3DES:-MD5:DES-CBC3-SHA:-SSLv3:-RC4"
+              "Text" : "cache-timeout 3600"
             },
             {
-              "Comment" : "This feature is not currently supported",
+              "Comment" : "This syntax is unrecognized",
               "Line" : 258,
-              "Parser_Context" : "[lprofss_defaults_from lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "defaults-from /Common/serverssl"
+              "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
+              "Text" : "cert /Common/example7.crt"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 259,
               "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "generic-alert enabled"
+              "Text" : "chain none"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 260,
               "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "handshake-timeout 10"
+              "Text" : "cipher-group none"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 261,
               "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "key foobar"
+              "Text" : "ciphers !SSLv2:!EXPORT:!DHE+AES-GCM:!DHE+AES:!DHE+3DES:ECDHE+AES-GCM:ECDHE+AES:RSA+AES-GCM:RSA+AES:ECDHE+3DES:RSA+3DES:-MD5:DES-CBC3-SHA:-SSLv3:-RC4"
             },
             {
-              "Comment" : "This syntax is unrecognized",
+              "Comment" : "This feature is not currently supported",
               "Line" : 262,
-              "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "max-active-handshakes indefinite"
+              "Parser_Context" : "[lprofss_defaults_from lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
+              "Text" : "defaults-from /Common/serverssl"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 263,
               "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "mod-ssl-methods disabled"
+              "Text" : "generic-alert enabled"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 264,
               "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "mode enabled"
+              "Text" : "handshake-timeout 10"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 265,
               "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "options"
+              "Text" : "key foobar"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 266,
               "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "proxy-ssl disabled"
+              "Text" : "max-active-handshakes indefinite"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 267,
               "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "proxy-ssl-passthrough disabled"
+              "Text" : "mod-ssl-methods disabled"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 268,
               "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "renegotiate-period indefinite"
+              "Text" : "mode enabled"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 269,
               "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "renegotiate-size indefinite"
+              "Text" : "options"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 270,
               "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "renegotiation enabled"
+              "Text" : "proxy-ssl disabled"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 271,
               "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "secure-renegotiation require-strict"
+              "Text" : "proxy-ssl-passthrough disabled"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 272,
               "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "server-name none"
+              "Text" : "renegotiate-period indefinite"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 273,
               "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "session-mirroring disabled"
+              "Text" : "renegotiate-size indefinite"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 274,
               "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "session-ticket disabled"
+              "Text" : "renegotiation enabled"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 275,
               "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "sni-default false"
+              "Text" : "secure-renegotiation require-strict"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 276,
               "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "sni-require false"
+              "Text" : "server-name none"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 277,
               "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "ssl-forward-proxy disabled"
+              "Text" : "session-mirroring disabled"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 278,
               "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "ssl-forward-proxy-bypass disabled"
+              "Text" : "session-ticket disabled"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 279,
               "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "ssl-sign-hash any"
+              "Text" : "sni-default false"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 280,
               "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "strict-resume disabled"
+              "Text" : "sni-require false"
             },
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 281,
+              "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
+              "Text" : "ssl-forward-proxy disabled"
+            },
+            {
+              "Comment" : "This syntax is unrecognized",
+              "Line" : 282,
+              "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
+              "Text" : "ssl-forward-proxy-bypass disabled"
+            },
+            {
+              "Comment" : "This syntax is unrecognized",
+              "Line" : 283,
+              "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
+              "Text" : "ssl-sign-hash any"
+            },
+            {
+              "Comment" : "This syntax is unrecognized",
+              "Line" : 284,
+              "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
+              "Text" : "strict-resume disabled"
+            },
+            {
+              "Comment" : "This syntax is unrecognized",
+              "Line" : 285,
               "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "unclean-shutdown enabled"
             }
@@ -77271,19 +77327,19 @@
           "monitor http" : {
             "/Common/SOME_MONITOR1" : {
               "definitionLines" : [
-                126,
-                127,
-                128,
-                129,
                 130,
                 131,
                 132,
                 133,
                 134,
+                135,
+                136,
+                137,
                 138,
-                139,
-                140,
-                141
+                142,
+                143,
+                144,
+                145
               ],
               "numReferrers" : 0
             }
@@ -77291,10 +77347,6 @@
           "monitor https" : {
             "/Common/SOME_MONITOR2" : {
               "definitionLines" : [
-                142,
-                143,
-                144,
-                145,
                 146,
                 147,
                 148,
@@ -77302,11 +77354,15 @@
                 150,
                 151,
                 152,
+                153,
+                154,
+                155,
                 156,
-                157,
-                158,
-                159,
-                160
+                160,
+                161,
+                162,
+                163,
+                164
               ],
               "numReferrers" : 0
             }
@@ -77324,11 +77380,11 @@
           "persistence source-addr" : {
             "/Common/SOME_PERSISTENCE_SOURCE_ADDR" : {
               "definitionLines" : [
-                161,
-                162,
-                163,
-                164,
-                165
+                165,
+                166,
+                167,
+                168,
+                169
               ],
               "numReferrers" : 0
             }
@@ -77336,15 +77392,15 @@
           "persistence ssl" : {
             "/Common/SOME_PERSISTENCE_SSL" : {
               "definitionLines" : [
-                166,
-                167,
-                168,
-                169,
                 170,
                 171,
                 172,
                 173,
-                174
+                174,
+                175,
+                176,
+                177,
+                178
               ],
               "numReferrers" : 0
             }
@@ -77365,7 +77421,11 @@
                 29,
                 30,
                 31,
-                32
+                32,
+                33,
+                34,
+                35,
+                36
               ],
               "numReferrers" : 0
             }
@@ -77373,10 +77433,6 @@
           "profile client-ssl" : {
             "/Common/SOME_PROFILE_CLIENT_SSL" : {
               "definitionLines" : [
-                175,
-                176,
-                177,
-                178,
                 179,
                 180,
                 181,
@@ -77430,7 +77486,11 @@
                 229,
                 230,
                 231,
-                232
+                232,
+                233,
+                234,
+                235,
+                236
               ],
               "numReferrers" : 0
             }
@@ -77438,13 +77498,13 @@
           "profile ocsp-stapling-params" : {
             "/Common/SOME_PROFILE_OCSP_STAPLING_PARAMS" : {
               "definitionLines" : [
-                233,
-                234,
-                235,
-                236,
                 237,
                 238,
-                239
+                239,
+                240,
+                241,
+                242,
+                243
               ],
               "numReferrers" : 0
             }
@@ -77452,15 +77512,15 @@
           "profile one-connect" : {
             "/Common/oneconnect" : {
               "definitionLines" : [
-                240,
-                241,
-                242,
-                243,
                 244,
                 245,
                 246,
                 247,
-                248
+                248,
+                249,
+                250,
+                251,
+                252
               ],
               "numReferrers" : 0
             }
@@ -77468,10 +77528,6 @@
           "profile server-ssl" : {
             "/Common/SOME_PROFILE_SERVER_SSL" : {
               "definitionLines" : [
-                249,
-                250,
-                251,
-                252,
                 253,
                 254,
                 255,
@@ -77501,7 +77557,11 @@
                 279,
                 280,
                 281,
-                282
+                282,
+                283,
+                284,
+                285,
+                286
               ],
               "numReferrers" : 0
             }
@@ -77509,50 +77569,50 @@
           "rule" : {
             "/Common/SOME_RULE1" : {
               "definitionLines" : [
-                33,
-                34,
-                35,
-                36,
                 37,
-                38
+                38,
+                39,
+                40,
+                41,
+                42
               ],
               "numReferrers" : 1
             },
             "/Common/SOME_RULE2" : {
               "definitionLines" : [
-                39,
-                40,
-                41,
-                42,
                 43,
-                44
+                44,
+                45,
+                46,
+                47,
+                48
               ],
               "numReferrers" : 0
             },
             "/Common/SOME_RULE3" : {
               "definitionLines" : [
-                45,
-                46,
-                47,
-                48,
                 49,
                 50,
-                51
+                51,
+                52,
+                53,
+                54,
+                55
               ],
               "numReferrers" : 0
             },
             "/Common/SOME_RULE4" : {
               "definitionLines" : [
-                52,
-                53,
-                54,
-                55,
+                56,
                 57,
                 58,
                 59,
-                60,
                 61,
-                62
+                62,
+                63,
+                64,
+                65,
+                66
               ],
               "numReferrers" : 0
             }
@@ -77560,10 +77620,6 @@
           "snat" : {
             "/Common/SOME_SNAT" : {
               "definitionLines" : [
-                63,
-                64,
-                65,
-                66,
                 67,
                 68,
                 69,
@@ -77571,7 +77627,11 @@
                 71,
                 72,
                 73,
-                74
+                74,
+                75,
+                76,
+                77,
+                78
               ],
               "numReferrers" : 1
             }
@@ -77579,10 +77639,10 @@
           "snat-translation" : {
             "/Common/192.0.2.4" : {
               "definitionLines" : [
-                75,
-                76,
-                77,
-                78
+                79,
+                80,
+                81,
+                82
               ],
               "numReferrers" : 0
             }
@@ -77590,12 +77650,12 @@
           "snatpool" : {
             "/Common/SOME_SNATPOOL" : {
               "definitionLines" : [
-                79,
-                80,
-                81,
-                82,
                 83,
-                84
+                84,
+                85,
+                86,
+                87,
+                88
               ],
               "numReferrers" : 2
             }
@@ -77603,10 +77663,6 @@
           "virtual" : {
             "/Common/SOME_VIRTUAL" : {
               "definitionLines" : [
-                85,
-                86,
-                87,
-                88,
                 89,
                 90,
                 91,
@@ -77636,7 +77692,11 @@
                 115,
                 116,
                 117,
-                118
+                118,
+                119,
+                120,
+                121,
+                122
               ],
               "numReferrers" : 1
             }
@@ -77644,13 +77704,13 @@
           "virtual-address" : {
             "/Common/192.0.2.8" : {
               "definitionLines" : [
-                119,
-                120,
-                121,
-                122,
                 123,
                 124,
-                125
+                125,
+                126,
+                127,
+                128,
+                129
               ],
               "numReferrers" : 0
             }
@@ -83067,119 +83127,119 @@
           "monitor" : {
             "/Common/SOME_MONITOR" : {
               "pool monitor" : [
-                29
+                33
               ]
             }
           },
           "node" : {
             "/Common/bar" : {
               "pool member" : [
-                25
+                28
               ]
             },
             "/Common/foo" : {
               "pool member" : [
-                22
+                23
               ]
             }
           },
           "persistence" : {
             "/Common/SOME_PROFILE" : {
               "virtual persist persistence" : [
-                91
+                95
               ]
             }
           },
           "pool" : {
             "/Common/SOME_POOL" : {
               "virtual pool" : [
-                95
+                99
               ]
             }
           },
           "profile" : {
             "/Common/P1" : {
               "virtual profile" : [
-                97
+                101
               ]
             },
             "/Common/P2" : {
               "virtual profile" : [
-                98
+                102
               ]
             },
             "/Common/P3" : {
               "virtual profile" : [
-                99
+                103
               ]
             }
           },
           "profile server-ssl" : {
             "/Common/SOME_SSL_PROFILE" : {
               "monitor https ssl-profile" : [
-                157
+                161
               ]
             }
           },
           "rule" : {
             "/Common/SOME_RULE1" : {
               "virtual rules rule" : [
-                103
+                107
               ]
             }
           },
           "snat" : {
             "/Common/SOME_SNAT" : {
               "snat self-reference" : [
-                63
+                67
               ]
             }
           },
           "snat-translation" : {
             "/Common/192.0.2.5" : {
               "snatpool members member" : [
-                81
+                85
               ]
             },
             "/Common/192.0.2.6" : {
               "snatpool members member" : [
-                82
+                86
               ]
             }
           },
           "snatpool" : {
             "/Common/SOME_SNATPOOL" : {
               "snat snatpool" : [
-                67
+                71
               ],
               "virtual source-address-translation pool" : [
-                107
+                111
               ]
             }
           },
           "virtual" : {
             "/Common/SOME_VIRTUAL" : {
               "virtual self-reference" : [
-                85
+                89
               ]
             }
           },
           "virtual-address" : {
             "/Common/192.0.2.7" : {
               "virtual destination" : [
-                86
+                90
               ]
             }
           },
           "vlan" : {
             "/Common/MY_VLAN" : {
               "virtual vlans vlan" : [
-                114
+                118
               ]
             },
             "/Common/SOME_VLAN" : {
               "snat vlans vlan" : [
-                70
+                74
               ]
             }
           }
@@ -86248,88 +86308,88 @@
           "monitor" : {
             "/Common/SOME_MONITOR" : {
               "pool monitor" : [
-                29
+                33
               ]
             }
           },
           "node" : {
             "/Common/bar" : {
               "pool member" : [
-                25
+                28
               ]
             },
             "/Common/foo" : {
               "pool member" : [
-                22
+                23
               ]
             }
           },
           "persistence" : {
             "/Common/SOME_PROFILE" : {
               "virtual persist persistence" : [
-                91
+                95
               ]
             }
           },
           "pool" : {
             "/Common/SOME_POOL" : {
               "virtual pool" : [
-                95
+                99
               ]
             }
           },
           "profile" : {
             "/Common/P1" : {
               "virtual profile" : [
-                97
+                101
               ]
             },
             "/Common/P2" : {
               "virtual profile" : [
-                98
+                102
               ]
             },
             "/Common/P3" : {
               "virtual profile" : [
-                99
+                103
               ]
             }
           },
           "profile server-ssl" : {
             "/Common/SOME_SSL_PROFILE" : {
               "monitor https ssl-profile" : [
-                157
+                161
               ]
             }
           },
           "snat-translation" : {
             "/Common/192.0.2.5" : {
               "snatpool members member" : [
-                81
+                85
               ]
             },
             "/Common/192.0.2.6" : {
               "snatpool members member" : [
-                82
+                86
               ]
             }
           },
           "virtual-address" : {
             "/Common/192.0.2.7" : {
               "virtual destination" : [
-                86
+                90
               ]
             }
           },
           "vlan" : {
             "/Common/MY_VLAN" : {
               "virtual vlans vlan" : [
-                114
+                118
               ]
             },
             "/Common/SOME_VLAN" : {
               "snat vlans vlan" : [
-                70
+                74
               ]
             }
           }
