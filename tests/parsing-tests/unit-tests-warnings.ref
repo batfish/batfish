@@ -1794,84 +1794,84 @@
       },
       {
         "Filename" : "configs/f5_bigip_structured_net",
-        "Line" : 11,
+        "Line" : 13,
         "Text" : "forward-error-correction auto",
         "Parser_Context" : "[unrecognized net_interface s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "configs/f5_bigip_structured_net",
-        "Line" : 12,
+        "Line" : 14,
         "Text" : "lldp-admin txrx",
         "Parser_Context" : "[unrecognized net_interface s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "configs/f5_bigip_structured_net",
-        "Line" : 13,
+        "Line" : 15,
         "Text" : "lldp-tlvmap 12304",
         "Parser_Context" : "[unrecognized net_interface s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "configs/f5_bigip_structured_net",
-        "Line" : 15,
+        "Line" : 17,
         "Text" : "lldp-globals",
         "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "configs/f5_bigip_structured_net",
-        "Line" : 18,
+        "Line" : 20,
         "Text" : "route-domain /Common/0",
         "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "configs/f5_bigip_structured_net",
-        "Line" : 27,
+        "Line" : 29,
         "Text" : "allow-service all",
         "Parser_Context" : "[ns_allow_service net_self s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/f5_bigip_structured_net",
-        "Line" : 28,
+        "Line" : 30,
         "Text" : "traffic-group /Common/traffic-group-local-only",
         "Parser_Context" : "[ns_traffic_group net_self s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/f5_bigip_structured_net",
-        "Line" : 36,
+        "Line" : 38,
         "Text" : "address 1::1/64",
         "Parser_Context" : "[ns_address net_self s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/f5_bigip_structured_net",
-        "Line" : 39,
+        "Line" : 41,
         "Text" : "self-allow",
         "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "configs/f5_bigip_structured_net",
-        "Line" : 48,
+        "Line" : 50,
         "Text" : "stp /Common/MYSTP",
         "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "configs/f5_bigip_structured_net",
-        "Line" : 59,
+        "Line" : 61,
         "Text" : "stp-globals",
         "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "configs/f5_bigip_structured_net",
-        "Line" : 69,
+        "Line" : 71,
         "Text" : "tunnels tunnel /Common/MYTUNNEL",
         "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"

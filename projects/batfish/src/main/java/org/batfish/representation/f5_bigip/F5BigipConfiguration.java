@@ -1107,6 +1107,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     org.batfish.datamodel.Interface newIface =
         new org.batfish.datamodel.Interface(iface.getName(), _c);
     Double speed = iface.getSpeed();
+    newIface.setActive(!Boolean.TRUE.equals(iface.getDisabled()));
     newIface.setSpeed(speed);
     newIface.setBandwidth(firstNonNull(iface.getBandwidth(), speed, Interface.DEFAULT_BANDWIDTH));
     // Assume all interfaces are in default VRF for now

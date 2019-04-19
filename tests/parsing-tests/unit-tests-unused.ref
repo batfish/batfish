@@ -1632,13 +1632,13 @@
         "Source_Lines" : {
           "filename" : "configs/f5_bigip_structured_net",
           "lines" : [
-            62,
-            63,
             64,
             65,
             66,
             67,
-            68
+            68,
+            69,
+            70
           ]
         }
       },

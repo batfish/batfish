@@ -44796,6 +44796,12 @@
             "          (bundle_speed",
             "            FORTY_G:'40G')",
             "          NEWLINE:'\\n')",
+            "        (ni_disabled",
+            "          DISABLED:'disabled'",
+            "          NEWLINE:'\\n')",
+            "        (ni_enabled",
+            "          ENABLED:'enabled'",
+            "          NEWLINE:'\\n')",
             "        (unrecognized",
             "          (u_word",
             "            (word",
@@ -73776,73 +73782,73 @@
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 11,
+              "Line" : 13,
               "Parser_Context" : "[unrecognized net_interface s_net statement f5_bigip_structured_configuration]",
               "Text" : "forward-error-correction auto"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 12,
+              "Line" : 14,
               "Parser_Context" : "[unrecognized net_interface s_net statement f5_bigip_structured_configuration]",
               "Text" : "lldp-admin txrx"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 13,
+              "Line" : 15,
               "Parser_Context" : "[unrecognized net_interface s_net statement f5_bigip_structured_configuration]",
               "Text" : "lldp-tlvmap 12304"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 15,
+              "Line" : 17,
               "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
               "Text" : "lldp-globals"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 18,
+              "Line" : 20,
               "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
               "Text" : "route-domain /Common/0"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 27,
+              "Line" : 29,
               "Parser_Context" : "[ns_allow_service net_self s_net statement f5_bigip_structured_configuration]",
               "Text" : "allow-service all"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 28,
+              "Line" : 30,
               "Parser_Context" : "[ns_traffic_group net_self s_net statement f5_bigip_structured_configuration]",
               "Text" : "traffic-group /Common/traffic-group-local-only"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 36,
+              "Line" : 38,
               "Parser_Context" : "[ns_address net_self s_net statement f5_bigip_structured_configuration]",
               "Text" : "address 1::1/64"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 39,
+              "Line" : 41,
               "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
               "Text" : "self-allow"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 48,
+              "Line" : 50,
               "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
               "Text" : "stp /Common/MYSTP"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 59,
+              "Line" : 61,
               "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
               "Text" : "stp-globals"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 69,
+              "Line" : 71,
               "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
               "Text" : "tunnels tunnel /Common/MYTUNNEL"
             }
@@ -78002,7 +78008,9 @@
                 11,
                 12,
                 13,
-                14
+                14,
+                15,
+                16
               ],
               "numReferrers" : 2
             }
@@ -78010,10 +78018,10 @@
           "route" : {
             "/Common/route1" : {
               "definitionLines" : [
-                31,
-                32,
                 33,
-                34
+                34,
+                35,
+                36
               ],
               "numReferrers" : 1
             }
@@ -78021,21 +78029,21 @@
           "self" : {
             "/Common/MYSELF" : {
               "definitionLines" : [
-                25,
-                26,
                 27,
                 28,
                 29,
-                30
+                30,
+                31,
+                32
               ],
               "numReferrers" : 1
             },
             "/Common/MYSELF6" : {
               "definitionLines" : [
-                35,
-                36,
                 37,
-                38
+                38,
+                39,
+                40
               ],
               "numReferrers" : 1
             }
@@ -78043,13 +78051,13 @@
           "trunk" : {
             "trunk1" : {
               "definitionLines" : [
-                62,
-                63,
                 64,
                 65,
                 66,
                 67,
-                68
+                68,
+                69,
+                70
               ],
               "numReferrers" : 0
             }
@@ -78057,12 +78065,12 @@
           "vlan" : {
             "/Common/MYVLAN" : {
               "definitionLines" : [
-                73,
-                74,
                 75,
                 76,
                 77,
-                78
+                78,
+                79,
+                80
               ],
               "numReferrers" : 2
             }
@@ -83577,46 +83585,46 @@
             },
             "2.0" : {
               "trunk interfaces interface" : [
-                64
+                66
               ]
             },
             "3.0" : {
               "trunk interfaces interface" : [
-                65
+                67
               ]
             }
           },
           "route" : {
             "/Common/route1" : {
               "route self-reference" : [
-                31
+                33
               ]
             }
           },
           "self" : {
             "/Common/MYSELF" : {
               "self self-reference" : [
-                25
+                27
               ]
             },
             "/Common/MYSELF6" : {
               "self self-reference" : [
-                35
+                37
               ]
             }
           },
           "vlan" : {
             "/Common/MYVLAN" : {
               "self vlan" : [
-                29,
-                37
+                31,
+                39
               ]
             }
           },
           "vlan member interface" : {
             "1.0" : {
               "vlan interface" : [
-                75
+                77
               ]
             }
           }

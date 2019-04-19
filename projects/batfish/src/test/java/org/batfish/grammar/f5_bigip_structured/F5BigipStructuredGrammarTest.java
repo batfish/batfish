@@ -744,6 +744,36 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
+  public void testInterfaceDisabledConversion() throws IOException {
+    Configuration c = parseConfig("f5_bigip_structured_net_interface_disabled");
+
+    assertThat(
+        c.getAllInterfaces(),
+        hasKeys("1.0", "2.0", "3.0", "11.0", "12.0", "13.0", "trunk1", "/Common/vlan1"));
+
+    assertFalse(c.getAllInterfaces().get("1.0").getActive());
+    assertTrue(c.getAllInterfaces().get("2.0").getActive());
+    assertTrue(c.getAllInterfaces().get("3.0").getActive());
+    assertFalse(c.getAllInterfaces().get("11.0").getActive());
+    assertTrue(c.getAllInterfaces().get("12.0").getActive());
+    assertTrue(c.getAllInterfaces().get("13.0").getActive());
+  }
+
+  @Test
+  public void testInterfaceDisabledExtraction() {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_structured_net_interface_disabled");
+
+    assertThat(vc.getInterfaces(), hasKeys("1.0", "2.0", "3.0", "11.0", "12.0", "13.0"));
+
+    assertTrue(vc.getInterfaces().get("1.0").getDisabled());
+    assertFalse(vc.getInterfaces().get("2.0").getDisabled());
+    assertThat(vc.getInterfaces().get("3.0").getDisabled(), nullValue());
+    assertTrue(vc.getInterfaces().get("11.0").getDisabled());
+    assertFalse(vc.getInterfaces().get("12.0").getDisabled());
+    assertThat(vc.getInterfaces().get("13.0").getDisabled(), nullValue());
+  }
+
+  @Test
   public void testInterfaceReferences() throws IOException {
     String hostname = "f5_bigip_structured_interface_references";
     String file = "configs/" + hostname;
