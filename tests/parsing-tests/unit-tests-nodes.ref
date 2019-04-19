@@ -25515,6 +25515,51 @@
           }
         }
       },
+      "juniper_trailing_space" : {
+        "configurationFormat" : "FLAT_JUNIPER",
+        "name" : "juniper_trailing_space",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
       "juniper_vlan" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper_vlan",
