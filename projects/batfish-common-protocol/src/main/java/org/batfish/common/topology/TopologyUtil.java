@@ -1,5 +1,6 @@
 package org.batfish.common.topology;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -40,7 +41,6 @@ import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
-import org.batfish.datamodel.Vrf;
 
 public final class TopologyUtil {
 
@@ -181,10 +181,12 @@ public final class TopologyUtil {
     edges.add(new Layer2Edge(node1, null, node2, null, i1Tag));
   }
 
-  private static void computeLayer2SelfEdges(
-      @Nonnull String hostname, @Nonnull Vrf vrf, @Nonnull ImmutableSet.Builder<Layer2Edge> edges) {
+  @VisibleForTesting
+  static void computeLayer2SelfEdges(
+      @Nonnull Configuration config, @Nonnull ImmutableSet.Builder<Layer2Edge> edges) {
+    String hostname = config.getHostname();
     Map<Integer, ImmutableList.Builder<String>> switchportsByVlanBuilder = new HashMap<>();
-    vrf.getInterfaces().values().stream()
+    config.getAllInterfaces().values().stream()
         .filter(Interface::getActive)
         .forEach(
             i -> {
@@ -219,7 +221,8 @@ public final class TopologyUtil {
                 }
               });
         });
-    vrf.getInterfaces().values().stream()
+    config.getAllInterfaces().values().stream()
+        .filter(Interface::getActive)
         .filter(i -> i.getInterfaceType() == InterfaceType.VLAN && i.getVlan() != null)
         .forEach(
             irbInterface -> {
@@ -261,13 +264,7 @@ public final class TopologyUtil {
                     layer1Edge, configurations, edges, parentChildrenMap));
 
     // Then add edges within each node to connect switchports on the same VLAN(s).
-    configurations
-        .values()
-        .forEach(
-            c ->
-                c.getVrfs()
-                    .values()
-                    .forEach(vrf -> computeLayer2SelfEdges(c.getHostname(), vrf, edges)));
+    configurations.values().forEach(c -> computeLayer2SelfEdges(c, edges));
 
     return Layer2Topology.fromEdges(edges.build());
   }
