@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -57,6 +58,7 @@ public class BgpProcess implements Serializable {
     public Set<Long> get() {
       return _activeNeighbors.values().stream()
           .map(BgpPeerConfig::getClusterId)
+          .filter(Objects::nonNull)
           .collect(ImmutableSet.toImmutableSet());
     }
   }
