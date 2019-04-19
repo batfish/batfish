@@ -34,6 +34,7 @@ net_route
     (
       nroute_gw
       | nroute_network
+      | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
 ;
