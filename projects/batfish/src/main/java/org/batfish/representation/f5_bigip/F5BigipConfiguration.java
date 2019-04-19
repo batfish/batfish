@@ -8,6 +8,7 @@ import static org.batfish.representation.f5_bigip.F5NatUtil.orElseChain;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -163,6 +164,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private final Map<String, AccessList> _accessLists;
   private final @Nonnull Map<String, BgpProcess> _bgpProcesses;
   private transient Configuration _c;
+  private transient Map<String, Virtual> _enabledVirtuals;
   private ConfigurationFormat _format;
   private String _hostname;
   private boolean _imish;
@@ -297,7 +299,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   private IpSpace computeAdditionalArpIps(String vlanName) {
     Stream<IpSpace> virtualDnatIps =
-        _virtuals.values().stream()
+        _enabledVirtuals.values().stream()
             .filter(
                 virtual ->
                     !virtual.getVlansEnabled()
@@ -305,7 +307,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
                         || virtual.getVlans().contains(vlanName))
             .flatMap(virtual -> _virtualAdditionalDnatArpIps.get(virtual.getName()).stream());
     Stream<IpSpace> virtualSnatIps =
-        _virtuals.values().stream()
+        _enabledVirtuals.values().stream()
             .flatMap(virtual -> _virtualAdditionalSnatArpIps.get(virtual.getName()).stream());
     Stream<IpSpace> snatIps =
         _snats.values().stream()
@@ -338,7 +340,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     ImmutableList.Builder<SimpleTransformation> applicableTransformations = ImmutableList.builder();
     _virtualIncomingTransformations.forEach(
         (virtualName, transformation) -> {
-          if (appliesToVlan(_virtuals.get(virtualName), vlanName)) {
+          if (appliesToVlan(_enabledVirtuals.get(virtualName), vlanName)) {
             applicableTransformations.add(transformation);
           }
         });
@@ -795,7 +797,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     _interfaceIncomingFilterLines = new HashMap<>();
     _virtualMatchedHeaders.forEach(
         (virtualName, matchedHeaders) -> {
-          Virtual virtual = _virtuals.get(virtualName);
+          Virtual virtual = _enabledVirtuals.get(virtualName);
           IpAccessListLine line =
               toIpAccessListLine(virtualName, matchedHeaders, virtual.getReject());
           _vlans.keySet().stream()
@@ -835,7 +837,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // incoming transformations
     ImmutableSortedMap.Builder<String, HeaderSpace> virtualMatchedHeaders =
         ImmutableSortedMap.naturalOrder();
-    _virtuals.forEach(
+    _enabledVirtuals.forEach(
         (virtualName, virtual) ->
             computeVirtualMatchedHeaders(virtual)
                 .ifPresent(
@@ -850,7 +852,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // incoming transformations
     ImmutableSortedMap.Builder<String, SimpleTransformation> virtualIncomingTransformations =
         ImmutableSortedMap.reverseOrder();
-    _virtuals.forEach(
+    _enabledVirtuals.forEach(
         (virtualName, virtual) ->
             computeVirtualIncomingTransformation(virtual)
                 .ifPresent(
@@ -1273,6 +1275,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
     _c.setDefaultCrossZoneAction(LineAction.PERMIT);
     _c.setDefaultInboundAction(LineAction.PERMIT);
 
+    // initialize maps of enabled structures
+    initEnabledVirtuals();
+
     // Add default VRF
     _c.getVrfs().computeIfAbsent(DEFAULT_VRF_NAME, Vrf::new);
 
@@ -1396,6 +1401,13 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return _c;
   }
 
+  private void initEnabledVirtuals() {
+    _enabledVirtuals =
+        _virtuals.entrySet().stream()
+            .filter(virtualEntry -> !Boolean.TRUE.equals(virtualEntry.getValue().getDisabled()))
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+  }
+
   @Override
   public @Nonnull List<Configuration> toVendorIndependentConfigurations()
       throws VendorConversionException {
@@ -1404,12 +1416,14 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   private @Nonnull Optional<KernelRoute> tryAddKernelRoute(VirtualAddress virtualAddress) {
     if (virtualAddress.getRouteAdvertisementMode() == RouteAdvertisementMode.DISABLED
-        || virtualAddress.getAddress() == null
-        || virtualAddress.getMask() == null) {
+        || virtualAddress.getAddress() == null) {
       return Optional.empty();
     }
     return Optional.of(
-        new KernelRoute(Prefix.create(virtualAddress.getAddress(), virtualAddress.getMask())));
+        new KernelRoute(
+            Prefix.create(
+                virtualAddress.getAddress(),
+                Optional.ofNullable(virtualAddress.getMask()).orElse(Ip.MAX))));
   }
 
   private void warnIfInvalidRoute(Route route) {
