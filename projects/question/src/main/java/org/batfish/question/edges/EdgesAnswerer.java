@@ -281,7 +281,10 @@ public class EdgesAnswerer extends Answerer {
             node ->
                 domains.asMap().get(layer2Topology.getBroadcastDomainRepresentative(node).get())
                     .stream()
-                    .filter(remoteNode -> includeRemoteNodes.contains(node.getHostname()))
+                    .filter(
+                        remoteNode ->
+                            !node.equals(remoteNode)
+                                && includeRemoteNodes.contains(remoteNode.getHostname()))
                     .map(remoteNode -> layer2EdgeToRow(new Layer2Edge(node, remoteNode, null))))
         .collect(Collectors.toCollection(HashMultiset::create));
   }

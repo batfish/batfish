@@ -94,7 +94,6 @@ import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
-import org.hamcrest.MatcherAssert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -451,7 +450,7 @@ public class EdgesAnswererTest {
             ImmutableSet.of("host2"),
             Layer2Topology.fromEdges(
                 ImmutableSortedSet.of(new Layer2Edge(layer1Node1, 1, layer1Node2, 2, 12))));
-    MatcherAssert.assertThat(
+    assertThat(
         rows,
         contains(
             allOf(
