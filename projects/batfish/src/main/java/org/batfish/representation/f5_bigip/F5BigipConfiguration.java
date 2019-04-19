@@ -56,6 +56,7 @@ import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
@@ -173,6 +174,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, Pool> _pools;
   private final @Nonnull Map<String, PrefixList> _prefixLists;
   private final @Nonnull Map<String, RouteMap> _routeMaps;
+  private final @Nonnull Map<String, Route> _routes;
   private final @Nonnull Map<String, Self> _selves;
   private transient Map<String, Set<IpSpace>> _snatAdditionalArpIps;
   private final @Nonnull Map<String, SnatPool> _snatPools;
@@ -198,6 +200,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     _pools = new HashMap<>();
     _prefixLists = new HashMap<>();
     _routeMaps = new HashMap<>();
+    _routes = new HashMap<>();
     _selves = new HashMap<>();
     _snats = new HashMap<>();
     _snatPools = new HashMap<>();
@@ -711,6 +714,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return _routeMaps;
   }
 
+  public @Nonnull Map<String, Route> getRoutes() {
+    return _routes;
+  }
+
   public @Nonnull Map<String, Self> getSelves() {
     return _selves;
   }
@@ -932,6 +939,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
         F5BigipStructureUsage.PROFILE_SERVER_SSL_DEFAULTS_FROM);
     markConcreteStructure(
         F5BigipStructureType.PROFILE_TCP, F5BigipStructureUsage.PROFILE_TCP_DEFAULTS_FROM);
+    markConcreteStructure(F5BigipStructureType.ROUTE, F5BigipStructureUsage.ROUTE_SELF_REFERENCE);
     markConcreteStructure(
         F5BigipStructureType.ROUTE_MAP,
         F5BigipStructureUsage.BGP_ADDRESS_FAMILY_REDISTRIBUTE_KERNEL_ROUTE_MAP,
@@ -1228,6 +1236,24 @@ public class F5BigipConfiguration extends VendorConfiguration {
     }
   }
 
+  /** Returns a {@link StaticRoute} if {code route} is valid, or else {@code null}. */
+  private @Nullable StaticRoute toStaticRoute(Route route) {
+    if (route.getGw() == null) {
+      return null;
+    }
+    if (route.getNetwork() == null) {
+      return null;
+    }
+    return StaticRoute.builder()
+        .setAdministrativeCost(
+            RoutingProtocol.STATIC.getDefaultAdministrativeCost(
+                ConfigurationFormat.F5_BIGIP_STRUCTURED))
+        .setMetric(Route.METRIC)
+        .setNetwork(route.getNetwork())
+        .setNextHopIp(route.getGw())
+        .build();
+  }
+
   private @Nonnull Configuration toVendorIndependentConfiguration() {
     _c = new Configuration(_hostname, _format);
 
@@ -1353,6 +1379,15 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // NTP servers
     _c.setNtpServers(ImmutableSortedSet.copyOf(_ntpServers));
 
+    // Static Routes
+    _c.getDefaultVrf()
+        .setStaticRoutes(
+            _routes.values().stream()
+                .map(this::toStaticRoute)
+                .filter(Objects::nonNull)
+                .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
+    _routes.values().forEach(this::warnIfInvalidRoute);
+
     markStructures();
 
     return _c;
@@ -1372,6 +1407,32 @@ public class F5BigipConfiguration extends VendorConfiguration {
     }
     return Optional.of(
         new KernelRoute(Prefix.create(virtualAddress.getAddress(), virtualAddress.getMask())));
+  }
+
+  private void warnIfInvalidRoute(Route route) {
+    boolean ipv4Gw = route.getGw() != null;
+    boolean ipv6Gw = route.getGw6() != null;
+    boolean ipv4Network = route.getNetwork() != null;
+    boolean ipv6Network = route.getNetwork6() != null;
+    boolean ipv4 = ipv4Gw || ipv4Network;
+    boolean ipv6 = ipv6Gw || ipv6Network;
+    if (!ipv4Gw && !ipv6Gw) {
+      _w.redFlag(
+          String.format(
+              "Cannot convert %s to static route because it is missing default gateway",
+              route.getName()));
+    }
+    if (!ipv4Network && !ipv6Network) {
+      _w.redFlag(
+          String.format(
+              "Cannot convert %s to static route because it is missing network", route.getName()));
+    }
+    if (ipv4 && ipv6) {
+      _w.redFlag(
+          String.format(
+              "Cannot convert %s to static route because it has mixed IPv4 and IPv6 information",
+              route.getName()));
+    }
   }
 
   private void warnInvalidPrefixList(PrefixList prefixList) {
