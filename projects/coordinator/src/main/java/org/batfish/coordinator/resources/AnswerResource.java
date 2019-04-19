@@ -40,6 +40,7 @@ public final class AnswerResource {
    *
    * @param filterAnswerBean The {@link FilterAnswerBean} containing parameters to fetch and filter
    *     the answer
+   * @return Response containing JSON serialized {@link Answer} object
    */
   @POST
   @Path(RSC_FILTER)

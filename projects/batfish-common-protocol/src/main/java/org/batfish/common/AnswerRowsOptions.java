@@ -5,6 +5,7 @@ import static com.google.common.base.MoreObjects.toStringHelper;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
@@ -16,7 +17,8 @@ import javax.annotation.Nullable;
 public final class AnswerRowsOptions {
 
   @JsonCreator
-  private static @Nonnull AnswerRowsOptions create(
+  @VisibleForTesting
+  static @Nonnull AnswerRowsOptions create(
       @JsonProperty(BfConsts.PROP_COLUMNS) Set<String> columns,
       @JsonProperty(BfConsts.PROP_FILTERS) List<ColumnFilter> filters,
       @JsonProperty(BfConsts.PROP_MAX_ROWS) Integer maxRows,

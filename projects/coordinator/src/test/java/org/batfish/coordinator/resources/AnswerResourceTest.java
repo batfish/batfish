@@ -6,6 +6,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static org.batfish.coordinator.WorkMgrTestUtils.setupQuestionAndAnswer;
 import static org.batfish.coordinator.WorkMgrTestUtils.uploadTestSnapshot;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -210,7 +211,7 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
     AnswerRowsOptions filterOptions =
         new AnswerRowsOptions(
             ImmutableSet.of(), ImmutableList.of(), 1, 0, ImmutableList.of(), false);
-    FilterAnswerBean filter = new FilterAnswerBean(snapshot, null, filterOptions);
+    FilterAnswerBean filterAnswer = new FilterAnswerBean(snapshot, null, filterOptions);
 
     // Build the baseAnswer we will be filtering
     TableMetadata baseTableMetadata =
@@ -232,14 +233,64 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
         new TableView(filterOptions, ImmutableList.of(expectedRow), baseTableMetadata);
     // Original answer had two results, so the view needs to have two results
     expectedTableView.setSummary(new AnswerSummary("", 0, 0, 2));
-    String expectedAnswerString = BatfishObjectMapper.writeString(expectedTableView);
+    String expectedTableViewString = BatfishObjectMapper.writeString(expectedTableView);
 
-    Response response = filterAnswerTarget(network, question, snapshot).post(Entity.json(filter));
+    Response response =
+        filterAnswerTarget(network, question, snapshot).post(Entity.json(filterAnswer));
     // Confirm the filtered answer is successfully fetched
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    Answer actual = response.readEntity(Answer.class);
+    // Confirm the filtered answer contains one answer element, matching the expected table view
+    assertThat(actual.getAnswerElements(), iterableWithSize(1));
     assertThat(
-        BatfishObjectMapper.writeString(
-            response.readEntity(Answer.class).getAnswerElements().get(0)),
+        BatfishObjectMapper.writeString(actual.getAnswerElements().get(0)),
+        equalTo(expectedTableViewString));
+  }
+
+  @Test
+  public void testFilterAnswerNoFilter() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+    String question = "question";
+
+    AnswerRowsOptions filterOptions = AnswerRowsOptions.NO_FILTER;
+    FilterAnswerBean filterAnswer = FilterAnswerBean.create(snapshot, null, null);
+
+    // Build the baseAnswer
+    TableMetadata baseTableMetadata =
+        new TableMetadata(
+            ImmutableList.of(new ColumnMetadata("colName", Schema.STRING, "col description")));
+    TableAnswerElement baseTableAnswerElement = new TableAnswerElement(baseTableMetadata);
+    Row row1 = Row.of("colName", "value1");
+    Row row2 = Row.of("colName", "value2");
+    baseTableAnswerElement.addRow(row1);
+    baseTableAnswerElement.addRow(row2);
+    Answer baseAnswer = new Answer();
+    baseAnswer.addAnswerElement(baseTableAnswerElement);
+    // Setup infrastructure + answer
+    Main.getWorkMgr().initNetwork(network, null);
+    uploadTestSnapshot(network, snapshot, _folder);
+    setupQuestionAndAnswer(network, snapshot, question, null, baseAnswer);
+
+    // expectedAnswer just contains a TableView with the same rows as baseAnswer
+    TableView expectedTableView =
+        new TableView(
+            filterOptions,
+            ImmutableList.of(new TableViewRow(0, row1), new TableViewRow(1, row2)),
+            baseTableMetadata);
+    // Original answer had two results, so the view needs to have two results
+    expectedTableView.setSummary(new AnswerSummary("", 0, 0, 2));
+    String expectedAnswerString = BatfishObjectMapper.writeString(expectedTableView);
+
+    Response response =
+        filterAnswerTarget(network, question, snapshot).post(Entity.json(filterAnswer));
+    // Confirm the (un)filtered answer is successfully fetched
+    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    Answer actual = response.readEntity(Answer.class);
+    // Confirm the (un)filtered answer contains one answer element, matching the expected table view
+    assertThat(actual.getAnswerElements(), iterableWithSize(1));
+    assertThat(
+        BatfishObjectMapper.writeString(actual.getAnswerElements().get(0)),
         equalTo(expectedAnswerString));
   }
 
@@ -254,7 +305,7 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
     AnswerRowsOptions filterOptions =
         new AnswerRowsOptions(
             ImmutableSet.of(), ImmutableList.of(), 1, 0, ImmutableList.of(), false);
-    FilterAnswerBean filter = new FilterAnswerBean(snapshot, null, filterOptions);
+    FilterAnswerBean filterAnswer = new FilterAnswerBean(snapshot, null, filterOptions);
     FilterAnswerBean filterBadSnapshot = new FilterAnswerBean(bogusSnapshot, null, filterOptions);
 
     Main.getWorkMgr().initNetwork(network, null);
@@ -264,7 +315,7 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
     Response responseBadSnapshot =
         filterAnswerTarget(network, question, null).post(Entity.json(filterBadSnapshot));
     Response responseBadQuestion =
-        filterAnswerTarget(network, bogusQuestion, null).post(Entity.json(filter));
+        filterAnswerTarget(network, bogusQuestion, null).post(Entity.json(filterAnswer));
     // Post arbitrary item that is not an AnswerRowsOptions object
     Response responseBadFilter =
         filterAnswerTarget(network, question, null).post(Entity.json(true));
@@ -280,7 +331,7 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
         responseBadQuestion.readEntity(String.class),
         containsString(String.format("Question '%s' does not exist", bogusQuestion)));
 
-    // Bogus filter should result in bad request
+    // Bogus filterAnswer should result in bad request
     assertThat(responseBadFilter.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
     assertThat(
         responseBadFilter.readEntity(String.class), containsString("Cannot construct instance"));

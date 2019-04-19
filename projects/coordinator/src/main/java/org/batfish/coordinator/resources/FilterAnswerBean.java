@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -33,7 +34,8 @@ public final class FilterAnswerBean {
   public final AnswerRowsOptions filterOptions;
 
   @JsonCreator
-  private static FilterAnswerBean create(
+  @VisibleForTesting
+  static FilterAnswerBean create(
       @Nullable @JsonProperty(PROP_SNAPSHOT) String snapshot,
       @Nullable @JsonProperty(PROP_REFERENCE_SNAPSHOT) String referenceSnapshot,
       @Nullable @JsonProperty(PROP_FILTER_OPTIONS) AnswerRowsOptions answerRowsOptions) {
