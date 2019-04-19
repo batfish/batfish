@@ -483,6 +483,9 @@
         "f5_bigip_structured_ltm" : [
           "configs/f5_bigip_structured_ltm"
         ],
+        "f5_bigip_structured_malformed" : [
+          "configs/f5_bigip_structured_malformed"
+        ],
         "f5_bigip_structured_net" : [
           "configs/f5_bigip_structured_net"
         ],
@@ -1030,6 +1033,7 @@
         "configs/eos_trunk_group" : "PASSED",
         "configs/f5_bigip_imish_malformed" : "PASSED",
         "configs/f5_bigip_structured_ltm" : "PARTIALLY_UNRECOGNIZED",
+        "configs/f5_bigip_structured_malformed" : "PASSED",
         "configs/f5_bigip_structured_net" : "PARTIALLY_UNRECOGNIZED",
         "configs/f5_bigip_structured_net_routing_bgp" : "PARTIALLY_UNRECOGNIZED",
         "configs/f5_bigip_structured_net_routing_prefix_list" : "PASSED",
@@ -44550,6 +44554,58 @@
             "  EOF:<EOF>)"
           ]
         },
+        "configs/f5_bigip_structured_malformed" : {
+          "sentences" : [
+            "(f5_bigip_structured_configuration",
+            "  (statement",
+            "    (s_sys",
+            "      SYS:'sys'",
+            "      (sys_global_settings",
+            "        GLOBAL_SETTINGS:'global-settings'",
+            "        BRACE_LEFT:'{'",
+            "        NEWLINE:'\\n'",
+            "        (sgs_hostname",
+            "          HOSTNAME:'hostname'",
+            "          hostname = (word",
+            "            WORD:'f5_bigip_structured_malformed')",
+            "          NEWLINE:'\\n')",
+            "        BRACE_RIGHT:'}'",
+            "        NEWLINE:'\\n\\n')))",
+            "  (statement",
+            "    (s_net",
+            "      NET:'net'",
+            "      (net_route",
+            "        ROUTE:'route'",
+            "        name = (word",
+            "          WORD:'/Common/missing_gw')",
+            "        BRACE_LEFT:'{'",
+            "        NEWLINE:'\\n'",
+            "        (nroute_network",
+            "          NETWORK:'network'",
+            "          network = (word",
+            "            WORD:'192.0.2.1/32')",
+            "          NEWLINE:'\\n')",
+            "        BRACE_RIGHT:'}'",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net",
+            "      NET:'net'",
+            "      (net_route",
+            "        ROUTE:'route'",
+            "        name = (word",
+            "          WORD:'/Common/missing_network')",
+            "        BRACE_LEFT:'{'",
+            "        NEWLINE:'\\n'",
+            "        (nroute_gw",
+            "          GW:'gw'",
+            "          gw = (word",
+            "            WORD:'10.0.0.1')",
+            "          NEWLINE:'\\n')",
+            "        BRACE_RIGHT:'}'",
+            "        NEWLINE:'\\n\\n\\n')))",
+            "  EOF:<EOF>)"
+          ]
+        },
         "configs/f5_bigip_structured_net" : {
           "sentences" : [
             "(f5_bigip_structured_configuration",
@@ -44664,6 +44720,27 @@
             "                  ENABLED:'enabled'))",
             "              NEWLINE:'\\n')",
             "            BRACE_RIGHT:'}'))",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net",
+            "      NET:'net'",
+            "      (net_route",
+            "        ROUTE:'route'",
+            "        name = (word",
+            "          WORD:'/Common/route1')",
+            "        BRACE_LEFT:'{'",
+            "        NEWLINE:'\\n'",
+            "        (nroute_gw",
+            "          GW:'gw'",
+            "          gw = (word",
+            "            WORD:'192.0.2.1')",
+            "          NEWLINE:'\\n')",
+            "        (nroute_network",
+            "          NETWORK:'network'",
+            "          network = (word",
+            "            WORD:'10.200.100.1/32')",
+            "          NEWLINE:'\\n')",
+            "        BRACE_RIGHT:'}'",
             "        NEWLINE:'\\n')))",
             "  (statement",
             "    (s_net",
@@ -46001,7 +46078,7 @@
             "            (unrecognized",
             "              (u_word",
             "                (word",
-            "                  WORD:'network'))",
+            "                  NETWORK:'network'))",
             "              (u_word",
             "                (word",
             "                  WORD:'default'))",
@@ -73528,49 +73605,49 @@
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 18,
+              "Line" : 22,
               "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
               "Text" : "route-domain /Common/0"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 27,
+              "Line" : 31,
               "Parser_Context" : "[ns_allow_service net_self s_net statement f5_bigip_structured_configuration]",
               "Text" : "allow-service all"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 28,
+              "Line" : 32,
               "Parser_Context" : "[ns_traffic_group net_self s_net statement f5_bigip_structured_configuration]",
               "Text" : "traffic-group /Common/traffic-group-local-only"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 32,
+              "Line" : 36,
               "Parser_Context" : "[ns_address net_self s_net statement f5_bigip_structured_configuration]",
               "Text" : "address 1::1/64"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 35,
+              "Line" : 39,
               "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
               "Text" : "self-allow"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 44,
+              "Line" : 48,
               "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
               "Text" : "stp /Common/MYSTP"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 55,
+              "Line" : 59,
               "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
               "Text" : "stp-globals"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 65,
+              "Line" : 69,
               "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
               "Text" : "tunnels tunnel /Common/MYTUNNEL"
             }
@@ -74293,6 +74370,7 @@
         "eos_trunk_group" : "PASSED",
         "f5_bigip_imish_malformed" : "WARNINGS",
         "f5_bigip_structured_ltm" : "WARNINGS",
+        "f5_bigip_structured_malformed" : "WARNINGS",
         "f5_bigip_structured_net" : "PASSED",
         "f5_bigip_structured_net_routing_bgp" : "WARNINGS",
         "f5_bigip_structured_net_routing_prefix_list" : "PASSED",
@@ -77656,6 +77734,26 @@
             }
           }
         },
+        "configs/f5_bigip_structured_malformed" : {
+          "route" : {
+            "/Common/missing_gw" : {
+              "definitionLines" : [
+                7,
+                8,
+                9
+              ],
+              "numReferrers" : 1
+            },
+            "/Common/missing_network" : {
+              "definitionLines" : [
+                10,
+                11,
+                12
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/f5_bigip_structured_net" : {
           "interface" : {
             "1.0" : {
@@ -77671,24 +77769,35 @@
               "numReferrers" : 2
             }
           },
+          "route" : {
+            "/Common/route1" : {
+              "definitionLines" : [
+                18,
+                19,
+                20,
+                21
+              ],
+              "numReferrers" : 1
+            }
+          },
           "self" : {
             "/Common/MYSELF" : {
               "definitionLines" : [
-                25,
-                26,
-                27,
-                28,
                 29,
-                30
+                30,
+                31,
+                32,
+                33,
+                34
               ],
               "numReferrers" : 1
             },
             "/Common/MYSELF6" : {
               "definitionLines" : [
-                31,
-                32,
-                33,
-                34
+                35,
+                36,
+                37,
+                38
               ],
               "numReferrers" : 1
             }
@@ -77696,13 +77805,13 @@
           "trunk" : {
             "trunk1" : {
               "definitionLines" : [
-                58,
-                59,
-                60,
-                61,
                 62,
                 63,
-                64
+                64,
+                65,
+                66,
+                67,
+                68
               ],
               "numReferrers" : 0
             }
@@ -77710,12 +77819,12 @@
           "vlan" : {
             "/Common/MYVLAN" : {
               "definitionLines" : [
-                69,
-                70,
-                71,
-                72,
                 73,
-                74
+                74,
+                75,
+                76,
+                77,
+                78
               ],
               "numReferrers" : 2
             }
@@ -83184,6 +83293,20 @@
             }
           }
         },
+        "configs/f5_bigip_structured_malformed" : {
+          "route" : {
+            "/Common/missing_gw" : {
+              "route self-reference" : [
+                7
+              ]
+            },
+            "/Common/missing_network" : {
+              "route self-reference" : [
+                10
+              ]
+            }
+          }
+        },
         "configs/f5_bigip_structured_net" : {
           "interface" : {
             "1.0" : {
@@ -83193,39 +83316,46 @@
             },
             "2.0" : {
               "trunk interfaces interface" : [
-                60
+                64
               ]
             },
             "3.0" : {
               "trunk interfaces interface" : [
-                61
+                65
+              ]
+            }
+          },
+          "route" : {
+            "/Common/route1" : {
+              "route self-reference" : [
+                18
               ]
             }
           },
           "self" : {
             "/Common/MYSELF" : {
               "self self-reference" : [
-                25
+                29
               ]
             },
             "/Common/MYSELF6" : {
               "self self-reference" : [
-                31
+                35
               ]
             }
           },
           "vlan" : {
             "/Common/MYVLAN" : {
               "self vlan" : [
-                29,
-                33
+                33,
+                37
               ]
             }
           },
           "vlan member interface" : {
             "1.0" : {
               "vlan interface" : [
-                71
+                75
               ]
             }
           }
@@ -87385,6 +87515,18 @@
             }
           ]
         },
+        "f5_bigip_structured_malformed" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot convert /Common/missing_gw to static route because it is missing default gateway"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot convert /Common/missing_network to static route because it is missing network"
+            }
+          ]
+        },
         "f5_bigip_structured_net_routing_bgp" : {
           "Red flags" : [
             {
@@ -87831,6 +87973,7 @@
         "configs/eos_trunk_group" : "PASSED",
         "configs/f5_bigip_imish_malformed" : "PASSED",
         "configs/f5_bigip_structured_ltm" : "PARTIALLY_UNRECOGNIZED",
+        "configs/f5_bigip_structured_malformed" : "PASSED",
         "configs/f5_bigip_structured_net" : "PARTIALLY_UNRECOGNIZED",
         "configs/f5_bigip_structured_net_routing_bgp" : "PARTIALLY_UNRECOGNIZED",
         "configs/f5_bigip_structured_net_routing_prefix_list" : "PASSED",

@@ -1,0 +1,13 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+    hostname f5_bigip_structured_malformed
+}
+
+net route /Common/missing_gw {
+    network 192.0.2.1/32
+}
+net route /Common/missing_network {
+    gw 10.0.0.1
+}
+

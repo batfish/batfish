@@ -28,6 +28,7 @@ public enum F5BigipStructureType implements StructureType {
   PROFILE_ONE_CONNECT("profile one-connect"),
   PROFILE_SERVER_SSL("profile server-ssl"),
   PROFILE_TCP("profile tcp"),
+  ROUTE("route"),
   ROUTE_MAP("route-map"),
   RULE("rule"),
   SELF("self"),

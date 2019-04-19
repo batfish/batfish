@@ -15,6 +15,10 @@ net interface 1.0 {
 net lldp-globals {
     enabled
 }
+net route /Common/route1 {
+    gw 192.0.2.1
+    network 10.200.100.1/32
+}
 net route-domain /Common/0 {
     id 0
     vlans {
