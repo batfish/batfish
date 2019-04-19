@@ -10,7 +10,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
  * Represents a large BGP community, as described in <a
- * href=https://tools.ietf.org/html/rfc8092">RFC8092</a>
+ * href="https://tools.ietf.org/html/rfc8092">RFC8092</a>
  */
 @ParametersAreNonnullByDefault
 public final class LargeCommunity implements Community {
@@ -42,7 +42,7 @@ public final class LargeCommunity implements Community {
         parts.length == 3 || parts.length == 4, "Invalid large BGP community string %s", value);
     if (parts.length == 3) {
       return of(getLongValue(parts[0]), getLongValue(parts[1]), getLongValue(parts[2]));
-    } else if (parts[0].toLowerCase().equals("large")) {
+    } else if (parts[0].equalsIgnoreCase("large")) {
       return of(getLongValue(parts[1]), getLongValue(parts[2]), getLongValue(parts[3]));
     } else {
       throw new IllegalArgumentException(

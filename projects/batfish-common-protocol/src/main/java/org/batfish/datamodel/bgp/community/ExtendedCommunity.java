@@ -14,7 +14,7 @@ import org.batfish.datamodel.Ip;
 
 /**
  * Represents an extended BGP community, as described in <a
- * href=https://tools.ietf.org/html/rfc4360">RFC4360</a>
+ * href="https://tools.ietf.org/html/rfc4360">RFC4360</a>
  */
 @ParametersAreNonnullByDefault
 public final class ExtendedCommunity implements Community {
