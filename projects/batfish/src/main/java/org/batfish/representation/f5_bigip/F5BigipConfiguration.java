@@ -860,12 +860,12 @@ public class F5BigipConfiguration extends VendorConfiguration {
                         virtualIncomingTransformations.put(virtualName, transformation)));
     _virtualIncomingTransformations = virtualIncomingTransformations.build();
     _virtualAdditionalDnatArpIps =
-        toImmutableMap(_virtuals, Entry::getKey, e -> computeVirtualDnatIps(e.getValue()));
+        toImmutableMap(_enabledVirtuals, Entry::getKey, e -> computeVirtualDnatIps(e.getValue()));
 
     // outgoing transformations
     ImmutableSortedMap.Builder<String, SimpleTransformation> virtualOutgoingTransformations =
         ImmutableSortedMap.reverseOrder();
-    _virtuals.forEach(
+    _enabledVirtuals.forEach(
         (virtualName, virtual) ->
             computeVirtualOutgoingTransformation(virtual)
                 .ifPresent(
@@ -873,7 +873,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
                         virtualOutgoingTransformations.put(virtualName, transformation)));
     _virtualOutgoingTransformations = virtualOutgoingTransformations.build();
     _virtualAdditionalSnatArpIps =
-        toImmutableMap(_virtuals, Entry::getKey, e -> computeVirtualSnatIps(e.getValue()));
+        toImmutableMap(_enabledVirtuals, Entry::getKey, e -> computeVirtualSnatIps(e.getValue()));
   }
 
   private boolean isReferencedByRouteMap(String aclName) {

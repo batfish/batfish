@@ -1753,7 +1753,7 @@ public final class F5BigipStructuredGrammarTest {
         "The incoming filter should have specific handling for flows to an enabled virtual",
         matchesNonTrivially(incomingFilter, createHttpFlow(hostname, ipEnabled)));
     assertTrue(
-        "The incoming filter should have specific handling for flows to an enabled virtual",
+        "The incoming filter should have specific handling for flows to an implicitly-enabled virtual",
         matchesNonTrivially(incomingFilter, createHttpFlow(hostname, ipImplicitlyEnabled)));
 
     assertThat(arpIps, not(containsIp(ipDisabled)));
