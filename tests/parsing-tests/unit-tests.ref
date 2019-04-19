@@ -703,6 +703,9 @@
         "juniper_tacplus" : [
           "configs/juniper_tacplus"
         ],
+        "juniper_trailing_space" : [
+          "configs/juniper_trailing_space"
+        ],
         "juniper_vlan" : [
           "configs/juniper_vlan"
         ],
@@ -1112,6 +1115,7 @@
         "configs/juniper_syslog" : "PASSED",
         "configs/juniper_system" : "PASSED",
         "configs/juniper_tacplus" : "PASSED",
+        "configs/juniper_trailing_space" : "PASSED",
         "configs/juniper_vlan" : "PASSED",
         "configs/local_v6_addr" : "PASSED",
         "configs/mac_access_list" : "PASSED",
@@ -66726,6 +66730,50 @@
             "  EOF:<EOF>)"
           ]
         },
+        "configs/juniper_trailing_space" : {
+          "sentences" : [
+            "(flat_juniper_configuration",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_system",
+            "            SYSTEM:'system'",
+            "            (sy_host_name",
+            "              HOST_NAME:'host-name'",
+            "              (variable",
+            "                text = VARIABLE:'juniper_trailing_space'))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_routing_options",
+            "            ROUTING_OPTIONS:'routing-options'",
+            "            (ro_router_id",
+            "              ROUTER_ID:'router-id'",
+            "              id = IP_ADDRESS:'1.1.1.1')))))",
+            "    NEWLINE:'\\n')",
+            "  (newline",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_routing_options",
+            "            ROUTING_OPTIONS:'routing-options'",
+            "            (ro_autonomous_system",
+            "              AUTONOMOUS_SYSTEM:'autonomous-system'",
+            "              asn = (bgp_asn",
+            "                asn = DEC:'1')",
+            "              (apply))))))",
+            "    NEWLINE:'\\n\\n')",
+            "  EOF:<EOF>)"
+          ]
+        },
         "configs/juniper_vlan" : {
           "sentences" : [
             "(flat_juniper_configuration",
@@ -74364,6 +74412,7 @@
         "juniper_syslog" : "PASSED",
         "juniper_system" : "PASSED",
         "juniper_tacplus" : "PASSED",
+        "juniper_trailing_space" : "PASSED",
         "juniper_vlan" : "PASSED",
         "l2vpn" : "PASSED",
         "local_v6_addr" : "PASSED",
@@ -80012,6 +80061,7 @@
           }
         },
         "configs/juniper_tacplus" : { },
+        "configs/juniper_trailing_space" : { },
         "configs/juniper_vlan" : {
           "interface" : {
             "xe-0/0/0" : {
@@ -87913,6 +87963,7 @@
         "configs/juniper_syslog" : "PASSED",
         "configs/juniper_system" : "PASSED",
         "configs/juniper_tacplus" : "PASSED",
+        "configs/juniper_trailing_space" : "PASSED",
         "configs/juniper_vlan" : "PASSED",
         "configs/local_v6_addr" : "PASSED",
         "configs/mac_access_list" : "PASSED",
