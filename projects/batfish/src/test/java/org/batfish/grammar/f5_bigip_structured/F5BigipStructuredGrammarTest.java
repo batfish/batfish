@@ -4,6 +4,9 @@ import static org.batfish.common.util.CommonUtil.communityStringToLong;
 import static org.batfish.datamodel.Interface.DependencyType.AGGREGATE;
 import static org.batfish.datamodel.InterfaceType.AGGREGATED;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasMetric;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
@@ -38,10 +41,12 @@ import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.KernelRouteMatchers.isKernelRouteThat;
+import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.permits;
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.rejects;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasKernelRoutes;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.datamodel.transformation.TransformationEvaluator.eval;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_NEIGHBOR;
@@ -63,6 +68,7 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_O
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_ONE_CONNECT;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_SERVER_SSL;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_TCP;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.ROUTE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.ROUTE_MAP;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.RULE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.SELF;
@@ -131,6 +137,7 @@ import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
@@ -162,6 +169,7 @@ import org.batfish.representation.f5_bigip.BuiltinPersistence;
 import org.batfish.representation.f5_bigip.BuiltinProfile;
 import org.batfish.representation.f5_bigip.F5BigipConfiguration;
 import org.batfish.representation.f5_bigip.F5BigipStructureType;
+import org.batfish.representation.f5_bigip.Route;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -1122,6 +1130,48 @@ public final class F5BigipStructuredGrammarTest {
             PROFILE_SERVER_SSL,
             PROFILE_TCP),
         BuiltinProfile::getBuiltinProfile);
+  }
+
+  @Test
+  public void testRouteConversion() throws IOException {
+    Configuration c = parseConfig("f5_bigip_structured_net_route");
+
+    assertThat(c, hasDefaultVrf(hasStaticRoutes(hasSize(1))));
+
+    StaticRoute sr = c.getDefaultVrf().getStaticRoutes().iterator().next();
+
+    assertThat(sr, hasAdministrativeCost(1));
+    assertThat(sr, hasMetric(0L));
+    assertThat(sr, hasNextHopIp(Ip.parse("192.0.2.1")));
+    assertThat(sr, hasPrefix(Prefix.strict("10.0.0.0/8")));
+  }
+
+  @Test
+  public void testRouteExtraction() {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_structured_net_route");
+
+    String routeName = "/Common/route1";
+
+    assertThat(vc.getRoutes(), hasKeys(routeName));
+
+    Route route = vc.getRoutes().get(routeName);
+
+    assertThat(route.getName(), equalTo(routeName));
+    assertThat(route.getGw(), equalTo(Ip.parse("192.0.2.1")));
+    assertThat(route.getNetwork(), equalTo(Prefix.parse("10.0.0.0/8")));
+  }
+
+  @Test
+  public void testRouteReferences() throws IOException {
+    String hostname = "f5_bigip_structured_net_route";
+    String file = "configs/" + hostname;
+    String used = "/Common/route1";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // detect all structure references
+    assertThat(ans, hasNumReferrers(file, ROUTE, used, 1));
   }
 
   @Test

@@ -14977,6 +14977,21 @@
           }
         }
       },
+      "f5_bigip_structured_malformed" : {
+        "configurationFormat" : "F5_BIGIP_STRUCTURED",
+        "name" : "f5_bigip_structured_malformed",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "f5Bigip" : { }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
       "f5_bigip_structured_net" : {
         "configurationFormat" : "F5_BIGIP_STRUCTURED",
         "name" : "f5_bigip_structured_net",
@@ -15096,6 +15111,17 @@
               "/Common/MYVLAN",
               "1.0",
               "trunk1"
+            ],
+            "staticRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "10.200.100.1/32",
+                "nextHopInterface" : "dynamic",
+                "nextHopIp" : "10.0.0.2",
+                "tag" : -1
+              }
             ]
           }
         }

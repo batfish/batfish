@@ -28,6 +28,10 @@ net self /Common/MYSELF {
     traffic-group /Common/traffic-group-local-only
     vlan /Common/MYVLAN
 }
+net route /Common/route1 {
+    gw 10.0.0.2
+    network 10.200.100.1/32
+}
 net self /Common/MYSELF6 {
     address 1::1/64
     vlan /Common/MYVLAN

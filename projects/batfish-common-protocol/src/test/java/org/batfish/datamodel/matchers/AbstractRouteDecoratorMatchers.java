@@ -3,6 +3,7 @@ package org.batfish.datamodel.matchers;
 import static org.hamcrest.Matchers.equalTo;
 
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
@@ -17,6 +18,15 @@ import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.IsNonRo
 import org.hamcrest.Matcher;
 
 public final class AbstractRouteDecoratorMatchers {
+
+  /**
+   * Provides a matcher that matches when the {@link AbstractRouteDecorator}'s administrative cost
+   * is {@code expectedAdministrativeCost}.
+   */
+  public static @Nonnull Matcher<AbstractRouteDecorator> hasAdministrativeCost(
+      int expectedAdministrativeCost) {
+    return new HasAdministrativeCost(equalTo(expectedAdministrativeCost));
+  }
 
   /**
    * Provides a matcher that matches when the supplied {@code subMatcher} matches the {@link
@@ -50,6 +60,15 @@ public final class AbstractRouteDecoratorMatchers {
   public static @Nonnull HasNextHopInterface hasNextHopInterface(
       @Nonnull Matcher<? super String> subMatcher) {
     return new HasNextHopInterface(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches when the {@link AbstractRouteDecorator}'s nextHopIp is {@code
+   * expectedNextHopIp}.
+   */
+  public static @Nonnull Matcher<AbstractRouteDecorator> hasNextHopIp(
+      @Nonnull Ip expectedNextHopIp) {
+    return new HasNextHopIp(equalTo(expectedNextHopIp));
   }
 
   /**
