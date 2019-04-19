@@ -158,6 +158,7 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_transl
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_vlans_disabledContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_vlans_enabledContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lva_addressContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lva_arpContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lva_maskContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lva_route_advertisementContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lvp_persistenceContext;
@@ -1078,6 +1079,11 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     }
     _w.redFlag(
         String.format("'%s' is neither IPv4 nor IPv6 address in: %s", text, getFullText(ctx)));
+  }
+
+  @Override
+  public void exitLva_arp(Lva_arpContext ctx) {
+    _currentVirtualAddress.setArpDisabled(ctx.DISABLED() != null);
   }
 
   @Override

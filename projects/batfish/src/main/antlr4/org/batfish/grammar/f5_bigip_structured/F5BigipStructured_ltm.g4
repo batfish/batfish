@@ -581,7 +581,11 @@ lva_address
 
 lva_arp
 :
-  ARP ENABLED NEWLINE
+  ARP
+  (
+    DISABLED
+    | ENABLED
+  ) NEWLINE
 ;
 
 lva_mask

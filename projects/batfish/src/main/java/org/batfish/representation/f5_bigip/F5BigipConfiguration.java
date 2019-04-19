@@ -455,6 +455,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // No need to verify presence of destination, virtual-address, etc. since all this must have
     // been present for incoming transformation to have been populated.
     VirtualAddress virtualAddress = _virtualAddresses.get(virtual.getDestination());
+    if (Boolean.TRUE.equals(virtualAddress.getArpDisabled())) {
+      return ImmutableSet.of();
+    }
     Ip destinationIp = virtualAddress.getAddress();
     Ip mask = firstNonNull(virtualAddress.getMask(), Ip.MAX);
     return ImmutableSet.of(Prefix.create(destinationIp, mask).toIpSpace());

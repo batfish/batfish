@@ -38,6 +38,7 @@ import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.KernelRouteMatchers.isKernelRouteThat;
+import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.permits;
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.rejects;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
@@ -153,6 +154,7 @@ import org.batfish.datamodel.transformation.PortField;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationEvaluator.TransformationResult;
 import org.batfish.datamodel.vendor_family.f5_bigip.Virtual;
+import org.batfish.datamodel.vendor_family.f5_bigip.VirtualAddress;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -1567,6 +1569,40 @@ public final class F5BigipStructuredGrammarTest {
     assertThat(c, hasInterfaces(hasKey("1.0")));
     InitInfoAnswerElement initAns = batfish.initInfo(false, true);
     assertThat(initAns.getParseStatus().get(filename), equalTo(ParseStatus.PARTIALLY_UNRECOGNIZED));
+  }
+
+  @Test
+  public void testVirtualAddressArpDisabledConversion() throws IOException {
+    Configuration c = parseConfig("f5_bigip_structured_ltm_virtual_address_arp_disabled");
+
+    IpSpace arpIps = c.getAllInterfaces().get("/Common/vlan1").getAdditionalArpIps();
+
+    // disabled
+    assertThat(arpIps, not(containsIp(Ip.parse("192.0.2.1"))));
+    // enabled
+    assertThat(arpIps, containsIp(Ip.parse("192.0.2.2")));
+    // implicitly enabled
+    assertThat(arpIps, containsIp(Ip.parse("192.0.2.3")));
+  }
+
+  @Test
+  public void testVirtualAddressArpDisabledExtraction() {
+    F5BigipConfiguration vc =
+        parseVendorConfig("f5_bigip_structured_ltm_virtual_address_arp_disabled");
+    String vaDisabledName = "/Common/192.0.2.1";
+    String vaEnabledName = "/Common/192.0.2.2";
+    String vaImplicitlyEnabledName = "/Common/192.0.2.3";
+
+    assertThat(
+        vc.getVirtualAddresses(), hasKeys(vaDisabledName, vaEnabledName, vaImplicitlyEnabledName));
+
+    VirtualAddress vaDisabled = vc.getVirtualAddresses().get(vaDisabledName);
+    VirtualAddress vaEnabled = vc.getVirtualAddresses().get(vaEnabledName);
+    VirtualAddress vaImplicitlyEnabled = vc.getVirtualAddresses().get(vaImplicitlyEnabledName);
+
+    assertThat(vaDisabled.getArpDisabled(), equalTo(true));
+    assertThat(vaEnabled.getArpDisabled(), equalTo(false));
+    assertThat(vaImplicitlyEnabled.getArpDisabled(), nullValue());
   }
 
   @Test
