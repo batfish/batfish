@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultiset;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.Network;
@@ -19,6 +20,8 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Edge;
+import org.batfish.common.topology.Layer2Node;
+import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.IpsecUtil;
 import org.batfish.datamodel.BgpPeerConfig;
@@ -161,8 +164,8 @@ public class EdgesAnswerer extends Answerer {
                     getLayer1Edges(includeNodes, includeRemoteNodes, layer1LogicalTopology))
             .orElse(ImmutableMultiset.of());
       case LAYER2:
-        // Unsupported until we decide how to present layer2 topology.
-        return ImmutableMultiset.of();
+        Layer2Topology layer2Topology = _batfish.getLayer2Topology();
+        return getLayer2Edges(includeNodes, includeRemoteNodes, layer2Topology);
       case LAYER3:
       default:
         return getLayer3Edges(configurations, includeNodes, includeRemoteNodes, topology);
@@ -258,6 +261,28 @@ public class EdgesAnswerer extends Answerer {
                 includeNodes.contains(layer1Edge.getNode1().getHostname())
                     && includeRemoteNodes.contains(layer1Edge.getNode2().getHostname()))
         .map(EdgesAnswerer::layer1EdgeToRow)
+        .collect(Collectors.toCollection(HashMultiset::create));
+  }
+
+  @VisibleForTesting
+  static Multiset<Row> getLayer2Edges(
+      Set<String> includeNodes,
+      Set<String> includeRemoteNodes,
+      @Nullable Layer2Topology layer2Topology) {
+    if (layer2Topology == null) {
+      return HashMultiset.create();
+    }
+
+    Multimap<Layer2Node, Layer2Node> domains = layer2Topology.broadcastDomainsByRepresentative();
+
+    return layer2Topology.getNodes().stream()
+        .filter(node -> includeNodes.contains(node.getHostname()))
+        .flatMap(
+            node ->
+                domains.asMap().get(layer2Topology.getBroadcastDomainRepresentative(node).get())
+                    .stream()
+                    .filter(remoteNode -> includeRemoteNodes.contains(node.getHostname()))
+                    .map(remoteNode -> layer2EdgeToRow(new Layer2Edge(node, remoteNode, null))))
         .collect(Collectors.toCollection(HashMultiset::create));
   }
 
@@ -487,19 +512,16 @@ public class EdgesAnswerer extends Answerer {
 
   @VisibleForTesting
   static Row layer2EdgeToRow(Layer2Edge layer2Edge) {
-    RowBuilder row = Row.builder();
-    row.put(
-            COL_INTERFACE,
-            new NodeInterfacePair(
-                layer2Edge.getNode1().getHostname(), layer2Edge.getNode1().getInterfaceName()))
-        .put(COL_VLAN, layer2Edge.getNode1().getSwitchportVlanId())
+    Layer2Node node1 = layer2Edge.getNode1();
+    Layer2Node node2 = layer2Edge.getNode2();
+    return Row.builder()
+        .put(COL_INTERFACE, new NodeInterfacePair(node1.getHostname(), node1.getInterfaceName()))
+        .put(COL_VLAN, node1.getSwitchportVlanId())
         .put(
             COL_REMOTE_INTERFACE,
-            new NodeInterfacePair(
-                layer2Edge.getNode2().getHostname(), layer2Edge.getNode2().getInterfaceName()))
-        .put(COL_REMOTE_VLAN, layer2Edge.getNode2().getSwitchportVlanId());
-
-    return row.build();
+            new NodeInterfacePair(node2.getHostname(), node2.getInterfaceName()))
+        .put(COL_REMOTE_VLAN, node2.getSwitchportVlanId())
+        .build();
   }
 
   @VisibleForTesting

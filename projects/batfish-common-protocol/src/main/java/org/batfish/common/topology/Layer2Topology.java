@@ -1,6 +1,8 @@
 package org.batfish.common.topology;
 
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Optional;
@@ -17,11 +19,17 @@ public final class Layer2Topology {
 
   private final UnionFind<Layer2Node> _unionFind;
 
-  private Layer2Topology(UnionFind<Layer2Node> unionFind) {
+  // UnionFind doesn't let us access the nodes, so we have to track them separately.
+  private final Set<Layer2Node> _nodes;
+
+  private Layer2Topology(UnionFind<Layer2Node> unionFind, Set<Layer2Node> nodes) {
     _unionFind = unionFind;
+    _nodes = ImmutableSet.copyOf(nodes);
   }
 
   public static @Nonnull Layer2Topology fromDomains(Collection<Set<Layer2Node>> domains) {
+    Set<Layer2Node> nodes =
+        domains.stream().flatMap(Set::stream).collect(ImmutableSet.toImmutableSet());
     UnionFind<Layer2Node> unionFind =
         new UnionFind<>(
             domains.stream().flatMap(Set::stream).collect(ImmutableSet.toImmutableSet()));
@@ -36,17 +44,21 @@ public final class Layer2Topology {
             unionFind.union(node, it.next());
           }
         });
-    return new Layer2Topology(unionFind);
+    return new Layer2Topology(unionFind, nodes);
   }
 
   public static @Nonnull Layer2Topology fromEdges(Set<Layer2Edge> edges) {
+    Set<Layer2Node> nodes =
+        edges.stream()
+            .flatMap(edge -> Stream.of(edge.getNode1(), edge.getNode2()))
+            .collect(ImmutableSet.toImmutableSet());
     UnionFind<Layer2Node> unionFind =
         new UnionFind<>(
             edges.stream()
                 .flatMap(e -> Stream.of(e.getNode1(), e.getNode2()))
                 .collect(ImmutableSet.toImmutableSet()));
     edges.forEach(e -> unionFind.union(e.getNode1(), e.getNode2()));
-    return new Layer2Topology(unionFind);
+    return new Layer2Topology(unionFind, nodes);
   }
 
   /**
@@ -54,11 +66,9 @@ public final class Layer2Topology {
    * Optional#empty} if not represented in the layer-2 topology.
    */
   public @Nonnull Optional<Layer2Node> getBroadcastDomainRepresentative(Layer2Node layer2Node) {
-    try {
-      return Optional.of(_unionFind.find(layer2Node));
-    } catch (IllegalArgumentException e) {
-      return Optional.empty();
-    }
+    return _nodes.contains(layer2Node)
+        ? Optional.of(_unionFind.find(layer2Node))
+        : Optional.empty();
   }
 
   /**
@@ -106,5 +116,15 @@ public final class Layer2Topology {
   /** Return whether two non-switchport interfaces are in the same broadcast domain. */
   public boolean inSameBroadcastDomain(String host1, String iface1, String host2, String iface2) {
     return inSameBroadcastDomain(layer2Node(host1, iface1), layer2Node(host2, iface2));
+  }
+
+  public Set<Layer2Node> getNodes() {
+    return _nodes;
+  }
+
+  public Multimap<Layer2Node, Layer2Node> broadcastDomainsByRepresentative() {
+    ImmutableMultimap.Builder<Layer2Node, Layer2Node> builder = ImmutableMultimap.builder();
+    _nodes.forEach(node -> builder.put(_unionFind.find(node), node));
+    return builder.build();
   }
 }
