@@ -17,6 +17,7 @@ public final class VirtualAddress implements Serializable {
 
   private static final String PROP_ADDRESS = "address";
   private static final String PROP_ADDRESS6 = "address6";
+  private static final String PROP_ARP_DISABLED = "arpDisabled";
   private static final String PROP_MASK = "mask";
   private static final String PROP_MASK6 = "mask6";
   private static final String PROP_NAME = "name";
@@ -31,6 +32,7 @@ public final class VirtualAddress implements Serializable {
 
   private @Nullable Ip _address;
   private @Nullable Ip6 _address6;
+  private @Nullable Boolean _arpDisabled;
   private @Nullable Ip _mask;
   private @Nullable Ip6 _mask6;
   private final @Nonnull String _name;
@@ -48,6 +50,11 @@ public final class VirtualAddress implements Serializable {
   @JsonProperty(PROP_ADDRESS6)
   public @Nullable Ip6 getAddress6() {
     return _address6;
+  }
+
+  @JsonProperty(PROP_ARP_DISABLED)
+  public @Nullable Boolean getArpDisabled() {
+    return _arpDisabled;
   }
 
   @JsonProperty(PROP_MASK)
@@ -78,6 +85,11 @@ public final class VirtualAddress implements Serializable {
   @JsonProperty(PROP_ADDRESS6)
   public void setAddress6(@Nullable Ip6 address6) {
     _address6 = address6;
+  }
+
+  @JsonProperty(PROP_ARP_DISABLED)
+  public void setArpDisabled(@Nullable Boolean arpDisabled) {
+    _arpDisabled = arpDisabled;
   }
 
   @JsonProperty(PROP_MASK)
