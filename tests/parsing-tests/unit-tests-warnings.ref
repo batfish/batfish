@@ -744,6 +744,13 @@
       },
       {
         "Filename" : "configs/f5_bigip_structured_ltm",
+<<<<<<< HEAD
+        "Line" : 6,
+        "Text" : "ltm global-settings connection",
+||||||| merged common ancestors
+        "Line" : 10,
+        "Text" : "ltm default-node-monitor",
+=======
         "Line" : 6,
         "Text" : "ltm global-settings connection",
         "Parser_Context" : "[unrecognized statement f5_bigip_structured_configuration]",
@@ -760,11 +767,30 @@
         "Filename" : "configs/f5_bigip_structured_ltm",
         "Line" : 10,
         "Text" : "ltm default-node-monitor",
+>>>>>>> master
         "Parser_Context" : "[unrecognized statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "configs/f5_bigip_structured_ltm",
+<<<<<<< HEAD
+        "Line" : 9,
+        "Text" : "ltm global-settings rule",
+        "Parser_Context" : "[unrecognized statement f5_bigip_structured_configuration]",
+        "Comment" : "This syntax is unrecognized"
+||||||| merged common ancestors
+        "Line" : 101,
+        "Text" : "/Common/P1 { }",
+        "Parser_Context" : "[lv_profiles_profile lv_profiles l_virtual s_ltm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip_structured_ltm",
+        "Line" : 102,
+        "Text" : "/Common/P2 { }",
+        "Parser_Context" : "[lv_profiles_profile lv_profiles l_virtual s_ltm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+=======
         "Line" : 13,
         "Text" : "ltm ifile /Common/SOME_FILE",
         "Parser_Context" : "[unrecognized statement f5_bigip_structured_configuration]",
@@ -775,6 +801,150 @@
         "Line" : 20,
         "Text" : "description \"foo\"",
         "Parser_Context" : "[unrecognized l_pool s_ltm statement f5_bigip_structured_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/f5_bigip_structured_ltm",
+        "Line" : 21,
+        "Text" : "load-balancing-mode least-connections-member",
+        "Parser_Context" : "[unrecognized l_pool s_ltm statement f5_bigip_structured_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/f5_bigip_structured_ltm",
+        "Line" : 25,
+        "Text" : "description bar.baz",
+        "Parser_Context" : "[unrecognized lpm_member lp_members l_pool s_ltm statement f5_bigip_structured_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/f5_bigip_structured_ltm",
+        "Line" : 26,
+        "Text" : "priority-group 2",
+        "Parser_Context" : "[unrecognized lpm_member lp_members l_pool s_ltm statement f5_bigip_structured_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/f5_bigip_structured_ltm",
+        "Line" : 32,
+        "Text" : "min-active-members 1",
+        "Parser_Context" : "[unrecognized l_pool s_ltm statement f5_bigip_structured_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/f5_bigip_structured_ltm",
+        "Line" : 34,
+        "Text" : "service-down-action reset",
+        "Parser_Context" : "[unrecognized l_pool s_ltm statement f5_bigip_structured_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/f5_bigip_structured_ltm",
+        "Line" : 35,
+        "Text" : "slow-ramp-time 123",
+        "Parser_Context" : "[unrecognized l_pool s_ltm statement f5_bigip_structured_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/f5_bigip_structured_ltm",
+        "Line" : 38,
+        "Text" : "when HTTP_REQUEST priority 10",
+        "Parser_Context" : "[unrecognized l_rule s_ltm statement f5_bigip_structured_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/f5_bigip_structured_ltm",
+        "Line" : 44,
+        "Text" : "when HTTP_REQUEST priority 10",
+        "Parser_Context" : "[unrecognized l_rule s_ltm statement f5_bigip_structured_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/f5_bigip_structured_ltm",
+        "Line" : 50,
+        "Text" : "when HTTP_REQUEST priority 20",
+        "Parser_Context" : "[unrecognized l_rule s_ltm statement f5_bigip_structured_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/f5_bigip_structured_ltm",
+        "Line" : 57,
+        "Text" : "when CLIENT_ACCEPTED",
+        "Parser_Context" : "[unrecognized l_rule s_ltm statement f5_bigip_structured_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/f5_bigip_structured_ltm",
+        "Line" : 61,
+        "Text" : "when CLIENTSSL_HANDSHAKE",
+        "Parser_Context" : "[unrecognized l_rule s_ltm statement f5_bigip_structured_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/f5_bigip_structured_ltm",
+        "Line" : 96,
+        "Text" : "default yes",
+        "Parser_Context" : "[unrecognized lvp_persistence lv_persist l_virtual s_ltm statement f5_bigip_structured_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/f5_bigip_structured_ltm",
+        "Line" : 95,
+        "Text" : "/Common/SOME_PROFILE {\n            default yes\n        }",
+        "Parser_Context" : "[lvp_persistence lv_persist l_virtual s_ltm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip_structured_ltm",
+        "Line" : 101,
+        "Text" : "/Common/P1 { }",
+        "Parser_Context" : "[lv_profiles_profile lv_profiles l_virtual s_ltm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip_structured_ltm",
+        "Line" : 102,
+        "Text" : "/Common/P2 { }",
+        "Parser_Context" : "[lv_profiles_profile lv_profiles l_virtual s_ltm statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+>>>>>>> master
+      },
+      {
+        "Filename" : "configs/f5_bigip_structured_ltm",
+        "Line" : 10,
+        "Text" : "ltm default-node-monitor",
+        "Parser_Context" : "[unrecognized statement f5_bigip_structured_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/f5_bigip_structured_ltm",
+<<<<<<< HEAD
+        "Line" : 13,
+        "Text" : "ltm ifile /Common/SOME_FILE",
+        "Parser_Context" : "[unrecognized statement f5_bigip_structured_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/f5_bigip_structured_ltm",
+        "Line" : 20,
+        "Text" : "description \"foo\"",
+        "Parser_Context" : "[unrecognized l_pool s_ltm statement f5_bigip_structured_configuration]",
+||||||| merged common ancestors
+        "Line" : 13,
+        "Text" : "ltm ifile /Common/SOME_FILE",
+        "Parser_Context" : "[unrecognized statement f5_bigip_structured_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/f5_bigip_structured_ltm",
+        "Line" : 132,
+        "Text" : "adaptive disabled",
+        "Parser_Context" : "[unrecognized lm_http l_monitor s_ltm statement f5_bigip_structured_configuration]",
+=======
+        "Line" : 132,
+        "Text" : "adaptive disabled",
+        "Parser_Context" : "[unrecognized lm_http l_monitor s_ltm statement f5_bigip_structured_configuration]",
+>>>>>>> master
         "Comment" : "This syntax is unrecognized"
       },
       {
@@ -1206,7 +1376,20 @@
       },
       {
         "Filename" : "configs/f5_bigip_structured_ltm",
+<<<<<<< HEAD
         "Line" : 202,
+||||||| merged common ancestors
+        "Line" : 20,
+        "Text" : "description \"foo\"",
+        "Parser_Context" : "[unrecognized l_pool s_ltm statement f5_bigip_structured_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/f5_bigip_structured_ltm",
+        "Line" : 200,
+=======
+        "Line" : 200,
+>>>>>>> master
         "Text" : "cipher-group none",
         "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
@@ -1276,7 +1459,20 @@
       },
       {
         "Filename" : "configs/f5_bigip_structured_ltm",
+<<<<<<< HEAD
         "Line" : 212,
+||||||| merged common ancestors
+        "Line" : 21,
+        "Text" : "load-balancing-mode least-connections-member",
+        "Parser_Context" : "[unrecognized l_pool s_ltm statement f5_bigip_structured_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/f5_bigip_structured_ltm",
+        "Line" : 210,
+=======
+        "Line" : 210,
+>>>>>>> master
         "Text" : "maximum-record-size 16384",
         "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
@@ -1528,7 +1724,20 @@
       },
       {
         "Filename" : "configs/f5_bigip_structured_ltm",
+<<<<<<< HEAD
         "Line" : 252,
+||||||| merged common ancestors
+        "Line" : 25,
+        "Text" : "description bar.baz",
+        "Parser_Context" : "[unrecognized lpm_member lp_members l_pool s_ltm statement f5_bigip_structured_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/f5_bigip_structured_ltm",
+        "Line" : 250,
+=======
+        "Line" : 250,
+>>>>>>> master
         "Text" : "max-reuse 12345",
         "Parser_Context" : "[unrecognized lprof_one_connect l_profile s_ltm statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
@@ -1584,7 +1793,20 @@
       },
       {
         "Filename" : "configs/f5_bigip_structured_ltm",
+<<<<<<< HEAD
         "Line" : 262,
+||||||| merged common ancestors
+        "Line" : 26,
+        "Text" : "priority-group 2",
+        "Parser_Context" : "[unrecognized lpm_member lp_members l_pool s_ltm statement f5_bigip_structured_configuration]",
+        "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "configs/f5_bigip_structured_ltm",
+        "Line" : 260,
+=======
+        "Line" : 260,
+>>>>>>> master
         "Text" : "chain none",
         "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
