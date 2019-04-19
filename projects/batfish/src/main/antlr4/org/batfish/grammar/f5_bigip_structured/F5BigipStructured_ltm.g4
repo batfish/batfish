@@ -566,6 +566,7 @@ l_virtual_address
     (
       lva_address
       | lva_arp
+      | lva_icmp_echo
       | lva_mask
       | lva_route_advertisement
       | lva_traffic_group
@@ -582,6 +583,15 @@ lva_address
 lva_arp
 :
   ARP
+  (
+    DISABLED
+    | ENABLED
+  ) NEWLINE
+;
+
+lva_icmp_echo
+:
+  ICMP_ECHO
   (
     DISABLED
     | ENABLED
