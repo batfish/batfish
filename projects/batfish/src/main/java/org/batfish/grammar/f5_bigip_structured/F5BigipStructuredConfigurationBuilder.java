@@ -1304,7 +1304,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     }
     Optional<Ip6> ip6 = Ip6.tryParse(text);
     if (ip6.isPresent()) {
-      todo(ctx);
+      _currentRoute.setGw6(ip6.get());
       return;
     }
     _w.redFlag(
@@ -1321,7 +1321,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     }
     Optional<Prefix6> prefix6 = Prefix6.tryParse(text);
     if (prefix6.isPresent()) {
-      todo(ctx);
+      _currentRoute.setNetwork6(prefix6.get());
       return;
     }
     _w.redFlag(

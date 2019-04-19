@@ -1239,16 +1239,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
   /** Returns a {@link StaticRoute} if {code route} is valid, or else {@code null}. */
   private @Nullable StaticRoute toStaticRoute(Route route) {
     if (route.getGw() == null) {
-      _w.redFlag(
-          String.format(
-              "Cannot convert %s to static route because it is missing default gateway",
-              route.getName()));
       return null;
     }
     if (route.getNetwork() == null) {
-      _w.redFlag(
-          String.format(
-              "Cannot convert %s to static route because it is missing network", route.getName()));
       return null;
     }
     return StaticRoute.builder()
@@ -1393,6 +1386,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
                 .map(this::toStaticRoute)
                 .filter(Objects::nonNull)
                 .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
+    _routes.values().forEach(this::warnIfInvalidRoute);
 
     markStructures();
 
@@ -1413,6 +1407,32 @@ public class F5BigipConfiguration extends VendorConfiguration {
     }
     return Optional.of(
         new KernelRoute(Prefix.create(virtualAddress.getAddress(), virtualAddress.getMask())));
+  }
+
+  private void warnIfInvalidRoute(Route route) {
+    boolean ipv4Gw = route.getGw() != null;
+    boolean ipv6Gw = route.getGw6() != null;
+    boolean ipv4Network = route.getNetwork() != null;
+    boolean ipv6Network = route.getNetwork6() != null;
+    boolean ipv4 = ipv4Gw || ipv4Network;
+    boolean ipv6 = ipv6Gw || ipv6Network;
+    if (!ipv4Gw && !ipv6Gw) {
+      _w.redFlag(
+          String.format(
+              "Cannot convert %s to static route because it is missing default gateway",
+              route.getName()));
+    }
+    if (!ipv4Network && !ipv6Network) {
+      _w.redFlag(
+          String.format(
+              "Cannot convert %s to static route because it is missing network", route.getName()));
+    }
+    if (ipv4 && ipv6) {
+      _w.redFlag(
+          String.format(
+              "Cannot convert %s to static route because it has mixed IPv4 and IPv6 information",
+              route.getName()));
+    }
   }
 
   private void warnInvalidPrefixList(PrefixList prefixList) {
