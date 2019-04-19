@@ -26,6 +26,29 @@ net_interface
   )? BRACE_RIGHT NEWLINE
 ;
 
+net_route
+:
+  ROUTE name = word BRACE_LEFT
+  (
+    NEWLINE
+    (
+      nroute_gw
+      | nroute_network
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+nroute_gw
+:
+  GW gw = word NEWLINE
+;
+
+nroute_network
+:
+  NETWORK network = word NEWLINE
+;
+
 net_routing
 :
   ROUTING
@@ -152,6 +175,7 @@ s_net
   NET
   (
     net_interface
+    | net_route
     | net_routing
     | net_self
     | net_trunk

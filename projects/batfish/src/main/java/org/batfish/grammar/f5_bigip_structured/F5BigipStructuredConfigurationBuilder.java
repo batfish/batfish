@@ -20,6 +20,7 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_O
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_ONE_CONNECT;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_SERVER_SSL;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_TCP;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.ROUTE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.ROUTE_MAP;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.RULE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.SELF;
@@ -51,6 +52,7 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.PROFILE_
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.PROFILE_SERVER_SSL_DEFAULTS_FROM;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.PROFILE_TCP_DEFAULTS_FROM;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.ROUTE_MAP_MATCH_IPV4_ADDRESS_PREFIX_LIST;
+import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.ROUTE_SELF_REFERENCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.SELF_SELF_REFERENCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.SELF_VLAN;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.SNATPOOL_MEMBERS_MEMBER;
@@ -165,6 +167,7 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lvr_ruleC
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lvsat_poolContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lvv_vlanContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Net_interfaceContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Net_routeContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Net_selfContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Net_trunkContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Net_vlanContext;
@@ -189,6 +192,8 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbnnafc_
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbnnafcr_outContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nreem4a_prefix_listContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nreesc_valueContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nroute_gwContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nroute_networkContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrp_route_domainContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrpe_entryContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrpee_actionContext;
@@ -231,6 +236,7 @@ import org.batfish.representation.f5_bigip.Ipv6Origin;
 import org.batfish.representation.f5_bigip.Node;
 import org.batfish.representation.f5_bigip.PrefixList;
 import org.batfish.representation.f5_bigip.PrefixListEntry;
+import org.batfish.representation.f5_bigip.Route;
 import org.batfish.representation.f5_bigip.RouteMap;
 import org.batfish.representation.f5_bigip.RouteMapEntry;
 import org.batfish.representation.f5_bigip.RouteMapMatchPrefixList;
@@ -288,6 +294,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   private @Nullable PoolMember _currentPoolMember;
   private @Nullable PrefixList _currentPrefixList;
   private @Nullable PrefixListEntry _currentPrefixListEntry;
+  private @Nullable Route _currentRoute;
   private @Nullable RouteMap _currentRouteMap;
   private @Nullable RouteMapEntry _currentRouteMapEntry;
   private @Nullable Self _currentSelf;
@@ -519,6 +526,14 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     defineStructure(INTERFACE, name, ctx);
     _c.referenceStructure(INTERFACE, name, INTERFACE_SELF_REFERENCE, ctx.name.getStart().getLine());
     _currentInterface = _c.getInterfaces().computeIfAbsent(name, Interface::new);
+  }
+
+  @Override
+  public void enterNet_route(Net_routeContext ctx) {
+    String name = ctx.name.getText();
+    defineStructure(ROUTE, name, ctx);
+    _c.referenceStructure(ROUTE, name, ROUTE_SELF_REFERENCE, ctx.name.getStart().getLine());
+    _currentRoute = _c.getRoutes().computeIfAbsent(name, Route::new);
   }
 
   @Override
@@ -1277,6 +1292,53 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
                 .map(this::toCommunity)
                 .filter(Objects::nonNull)
                 .collect(ImmutableSet.toImmutableSet())));
+  }
+
+  @Override
+  public void exitNroute_gw(Nroute_gwContext ctx) {
+    String text = ctx.gw.getText();
+    Optional<Ip> ipOpt = Ip.tryParse(text);
+    if (ipOpt.isPresent()) {
+      Ip ip = ipOpt.get();
+      // Gateway IP is valid iff it is on a directly-connected network
+      if (_c.getSelves().values().stream()
+          .map(Self::getAddress)
+          .filter(Objects::nonNull)
+          .map(InterfaceAddress::getPrefix)
+          .anyMatch(directlyConnectedNetwork -> directlyConnectedNetwork.containsIp(ip))) {
+        _currentRoute.setGw(ip);
+      } else {
+        _w.redFlag(
+            String.format(
+                "Cannot set gateway IP '%s' for route '%s' that is not on a directly-connected network in: %s",
+                ip, _currentRoute.getName(), getFullText(ctx)));
+      }
+      return;
+    }
+    Optional<Ip6> ip6 = Ip6.tryParse(text);
+    if (ip6.isPresent()) {
+      _currentRoute.setGw6(ip6.get());
+      return;
+    }
+    _w.redFlag(
+        String.format("'%s' is neither IPv4 nor IPv6 address in: %s", text, getFullText(ctx)));
+  }
+
+  @Override
+  public void exitNroute_network(Nroute_networkContext ctx) {
+    String text = ctx.network.getText();
+    Optional<Prefix> prefix = Prefix.tryParse(text);
+    if (prefix.isPresent()) {
+      _currentRoute.setNetwork(prefix.get());
+      return;
+    }
+    Optional<Prefix6> prefix6 = Prefix6.tryParse(text);
+    if (prefix6.isPresent()) {
+      _currentRoute.setNetwork6(prefix6.get());
+      return;
+    }
+    _w.redFlag(
+        String.format("'%s' is neither IPv4 nor IPv6 prefix in: %s", text, getFullText(ctx)));
   }
 
   @Override
