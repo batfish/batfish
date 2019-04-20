@@ -7,6 +7,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 import com.google.common.collect.Streams;
 import java.util.Collection;
 import java.util.Comparator;
@@ -125,6 +127,10 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    * the default route needs to be injected only once
    */
   @Nonnull private Set<OspfNeighborConfigId> _neighborsWhereDefaultIARouteWasInjected;
+
+  /** Static cache for interning intraArea route advertisements */
+  private static final Interner<RouteAdvertisement<OspfIntraAreaRoute>> _intraAreaRaInterner =
+      Interners.newWeakInterner();
 
   OspfRoutingProcess(
       OspfProcess process, String vrfName, Configuration configuration, OspfTopology topology) {
@@ -528,18 +534,19 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       RouteAdvertisement<OspfIntraAreaRoute> routeAdvertisement, long incrementalCost) {
     OspfIntraAreaRoute route = routeAdvertisement.getRoute();
     // Transform the route
-    return routeAdvertisement
-        .toBuilder()
-        .setRoute(
-            route
-                .toBuilder()
-                .setMetric(route.getMetric() + incrementalCost)
-                .setAdmin(_process.getAdminCosts().get(route.getProtocol()))
-                // Clear any non-routing or non-forwarding bit
-                .setNonRouting(false)
-                .setNonForwarding(false)
-                .build())
-        .build();
+    return _intraAreaRaInterner.intern(
+        routeAdvertisement
+            .toBuilder()
+            .setRoute(
+                route
+                    .toBuilder()
+                    .setMetric(route.getMetric() + incrementalCost)
+                    .setAdmin(_process.getAdminCosts().get(route.getProtocol()))
+                    // Clear any non-routing or non-forwarding bit
+                    .setNonRouting(false)
+                    .setNonForwarding(false)
+                    .build())
+            .build());
   }
 
   /**
@@ -699,9 +706,10 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
         .filter(r -> r.getRoute().getArea() == areaConfig.getAreaNumber())
         .map(
             r ->
-                r.toBuilder()
-                    .setRoute(r.getRoute().toBuilder().setNextHopIp(nextHopIp).build())
-                    .build())
+                _intraAreaRaInterner.intern(
+                    r.toBuilder()
+                        .setRoute(r.getRoute().toBuilder().setNextHopIp(nextHopIp).build())
+                        .build()))
         .collect(ImmutableList.toImmutableList());
   }
 
