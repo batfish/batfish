@@ -46,42 +46,39 @@ public final class AnswerResource {
   @Path(RSC_FILTER)
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response filterAnswer(FilterAnswerBean filterAnswerBean) {
-    try {
-      Answer ans =
-          Main.getWorkMgr()
-              .getAnswer(
-                  _network,
-                  filterAnswerBean.snapshot,
-                  _questionName,
-                  filterAnswerBean.referenceSnapshot,
-                  _analysis);
-      if (ans == null) {
-        return Response.status(Status.NOT_FOUND)
-            .entity(
-                String.format(
-                    "Answer not found for question %s on network: %s, snapshot: %s, referenceSnapshot: %s, analysis: %s",
-                    _questionName,
-                    _network,
-                    filterAnswerBean.snapshot,
-                    filterAnswerBean.referenceSnapshot,
-                    _analysis))
-            .build();
-      }
-
-      // Filter the resulting answer
-      return Response.ok()
-          .entity(Main.getWorkMgr().filterAnswer(ans, filterAnswerBean.filterOptions))
-          .build();
-    } catch (IllegalArgumentException e) {
-      return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
-    } catch (IOException e) {
-      // Other inputs should be validated by this point, don't expect to run into this exception
-      // under normal circumstances
-      return Response.status(Status.INTERNAL_SERVER_ERROR)
-          .entity(Throwables.getStackTraceAsString(e))
+  public Response filterAnswer(FilterAnswerBean filterAnswerBean) throws IOException {
+    if (!Main.getWorkMgr().checkSnapshotExists(_network, filterAnswerBean.snapshot)) {
+      return Response.status(Status.NOT_FOUND)
+          .entity(
+              String.format(
+                  "Snapshot %s not found in network %s", filterAnswerBean.snapshot, _network))
           .build();
     }
+    Answer ans =
+        Main.getWorkMgr()
+            .getAnswer(
+                _network,
+                filterAnswerBean.snapshot,
+                _questionName,
+                filterAnswerBean.referenceSnapshot,
+                _analysis);
+    if (ans == null) {
+      return Response.status(Status.NOT_FOUND)
+          .entity(
+              String.format(
+                  "Answer not found for question %s on network: %s, snapshot: %s, referenceSnapshot: %s, analysis: %s",
+                  _questionName,
+                  _network,
+                  filterAnswerBean.snapshot,
+                  filterAnswerBean.referenceSnapshot,
+                  _analysis))
+          .build();
+    }
+
+    // Filter the resulting answer
+    return Response.ok()
+        .entity(Main.getWorkMgr().filterAnswer(ans, filterAnswerBean.filterOptions))
+        .build();
   }
 
   /**

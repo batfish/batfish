@@ -1512,6 +1512,15 @@ public class WorkMgr extends AbstractCoordinator {
     return null;
   }
 
+  /** Checks if the specified snapshot exists. */
+  public boolean checkSnapshotExists(String network, String snapshot) {
+    if (!_idManager.hasNetworkId(network)) {
+      return false;
+    }
+    NetworkId networkId = _idManager.getNetworkId(network);
+    return _idManager.hasSnapshotId(snapshot, networkId);
+  }
+
   /** Checks if the specified question exists. */
   public boolean checkQuestionExists(String network, String question, @Nullable String analysis) {
     if (!_idManager.hasNetworkId(network)) {
