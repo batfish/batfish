@@ -116,6 +116,10 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
+import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.BDDSourceManager;
+import org.batfish.common.bdd.IpAccessListToBdd;
+import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
@@ -123,6 +127,7 @@ import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDiff;
 import org.batfish.datamodel.IcmpType;
@@ -133,6 +138,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.KernelRoute;
+import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
@@ -221,6 +227,18 @@ public final class F5BigipStructuredGrammarTest {
                                 })));
   }
 
+  private static @Nonnull Flow createHttpFlow(String ingressNode, Ip dstIp) {
+    return Flow.builder()
+        .setDstIp(dstIp)
+        .setDstPort(NamedPort.HTTP.number())
+        .setIngressNode(ingressNode)
+        .setIpProtocol(IpProtocol.TCP)
+        .setSrcIp(Ip.ZERO)
+        .setSrcPort(50000)
+        .setTag("")
+        .build();
+  }
+
   private static @Nonnull Flow createIcmpFlow(String ingressNode, Ip dstIp) {
     return Flow.builder()
         .setSrcIp(Ip.ZERO)
@@ -231,6 +249,15 @@ public final class F5BigipStructuredGrammarTest {
         .setIcmpType(IcmpType.ECHO_REQUEST)
         .setIcmpCode(0)
         .build();
+  }
+
+  private static boolean matchesNonTrivially(IpAccessList acl, Flow flow) {
+    FilterResult result = acl.filter(flow, null, ImmutableMap.of(), ImmutableMap.of());
+    Integer matchLine = result.getMatchLine();
+    if (matchLine == null) {
+      return false;
+    }
+    return !toBDD().toBdd(acl.getLines().get(matchLine).getMatchCondition()).isOne();
   }
 
   private static F5BigipConfiguration parseVendorConfig(String filename) {
@@ -248,6 +275,12 @@ public final class F5BigipStructuredGrammarTest {
         (F5BigipConfiguration) extractor.getVendorConfiguration();
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + filename);
     return vendorConfiguration;
+  }
+
+  private static @Nonnull IpAccessListToBdd toBDD() {
+    BDDPacket pkt = new BDDPacket();
+    BDDSourceManager mgr = BDDSourceManager.forInterfaces(pkt, ImmutableSet.of("dummy"));
+    return new IpAccessListToBddImpl(pkt, mgr, ImmutableMap.of(), ImmutableMap.of());
   }
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
@@ -755,6 +788,36 @@ public final class F5BigipStructuredGrammarTest {
     assertTrue(
         "Configuration contains an imish component",
         parseVendorConfig("f5_bigip_structured_with_imish").getImish());
+  }
+
+  @Test
+  public void testInterfaceDisabledConversion() throws IOException {
+    Configuration c = parseConfig("f5_bigip_structured_net_interface_disabled");
+
+    assertThat(
+        c.getAllInterfaces(),
+        hasKeys("1.0", "2.0", "3.0", "11.0", "12.0", "13.0", "trunk1", "/Common/vlan1"));
+
+    assertFalse(c.getAllInterfaces().get("1.0").getActive());
+    assertTrue(c.getAllInterfaces().get("2.0").getActive());
+    assertTrue(c.getAllInterfaces().get("3.0").getActive());
+    assertFalse(c.getAllInterfaces().get("11.0").getActive());
+    assertTrue(c.getAllInterfaces().get("12.0").getActive());
+    assertTrue(c.getAllInterfaces().get("13.0").getActive());
+  }
+
+  @Test
+  public void testInterfaceDisabledExtraction() {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_structured_net_interface_disabled");
+
+    assertThat(vc.getInterfaces(), hasKeys("1.0", "2.0", "3.0", "11.0", "12.0", "13.0"));
+
+    assertTrue(vc.getInterfaces().get("1.0").getDisabled());
+    assertFalse(vc.getInterfaces().get("2.0").getDisabled());
+    assertThat(vc.getInterfaces().get("3.0").getDisabled(), nullValue());
+    assertTrue(vc.getInterfaces().get("11.0").getDisabled());
+    assertFalse(vc.getInterfaces().get("12.0").getDisabled());
+    assertThat(vc.getInterfaces().get("13.0").getDisabled(), nullValue());
   }
 
   @Test
@@ -1755,6 +1818,49 @@ public final class F5BigipStructuredGrammarTest {
     assertThat(vlan2AdditionalArpIps, containsIp(Ip.parse("192.0.2.3")));
     // vlans
     assertThat(vlan2AdditionalArpIps, not(containsIp(Ip.parse("192.0.2.4"))));
+  }
+
+  @Test
+  public void testVirtualDisabledConversion() throws IOException {
+    String hostname = "f5_bigip_structured_ltm_virtual_disabled";
+    Configuration c = parseConfig(hostname);
+
+    Ip ipDisabled = Ip.parse("192.0.2.1");
+    Ip ipEnabled = Ip.parse("192.0.2.2");
+    Ip ipImplicitlyEnabled = Ip.parse("192.0.2.3");
+    String vlanName = "/Common/vlan1";
+
+    org.batfish.datamodel.Interface vlan1 = c.getAllInterfaces().get(vlanName);
+    IpAccessList incomingFilter = vlan1.getIncomingFilter();
+    IpSpace arpIps = vlan1.getAdditionalArpIps();
+
+    assertFalse(
+        "The incoming filter should not have specific handling for flows to a disabled virtual",
+        matchesNonTrivially(incomingFilter, createHttpFlow(hostname, ipDisabled)));
+    assertTrue(
+        "The incoming filter should have specific handling for flows to an enabled virtual",
+        matchesNonTrivially(incomingFilter, createHttpFlow(hostname, ipEnabled)));
+    assertTrue(
+        "The incoming filter should have specific handling for flows to an implicitly-enabled virtual",
+        matchesNonTrivially(incomingFilter, createHttpFlow(hostname, ipImplicitlyEnabled)));
+
+    assertThat(arpIps, not(containsIp(ipDisabled)));
+    assertThat(arpIps, containsIp(ipEnabled));
+    assertThat(arpIps, containsIp(ipImplicitlyEnabled));
+  }
+
+  @Test
+  public void testVirtualDisabledExtraction() {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_structured_ltm_virtual_disabled");
+    String vDisabledName = "/Common/virtual_disabled";
+    String vEnabledName = "/Common/virtual_enabled";
+    String vImplicitlyEnabledName = "/Common/virtual_implicitly_enabled";
+
+    assertThat(vc.getVirtuals(), hasKeys(vDisabledName, vEnabledName, vImplicitlyEnabledName));
+
+    assertTrue(vc.getVirtuals().get(vDisabledName).getDisabled());
+    assertFalse(vc.getVirtuals().get(vEnabledName).getDisabled());
+    assertThat(vc.getVirtuals().get(vImplicitlyEnabledName).getDisabled(), nullValue());
   }
 
   @Test

@@ -88,6 +88,8 @@ ltm snatpool /Common/SOME_SNATPOOL {
 }
 ltm virtual /Common/SOME_VIRTUAL {
     destination /Common/192.0.2.7:80
+    disabled
+    enabled
     ip-forward
     ip-protocol tcp
     mask 255.255.255.255
