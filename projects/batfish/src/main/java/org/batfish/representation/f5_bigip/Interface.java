@@ -14,9 +14,8 @@ public final class Interface implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private @Nullable Double _bandwidth;
-
+  private @Nullable Boolean _disabled;
   private final @Nonnull String _name;
-
   private @Nullable Double _speed;
 
   public Interface(String name) {
@@ -25,6 +24,10 @@ public final class Interface implements Serializable {
 
   public @Nullable Double getBandwidth() {
     return _bandwidth;
+  }
+
+  public @Nullable Boolean getDisabled() {
+    return _disabled;
   }
 
   public @Nonnull String getName() {
@@ -37,6 +40,10 @@ public final class Interface implements Serializable {
 
   public void setBandwidth(@Nullable Double bandwidth) {
     _bandwidth = bandwidth;
+  }
+
+  public void setDisabled(@Nullable Boolean disabled) {
+    _disabled = disabled;
   }
 
   public void setSpeed(@Nullable Double speed) {
