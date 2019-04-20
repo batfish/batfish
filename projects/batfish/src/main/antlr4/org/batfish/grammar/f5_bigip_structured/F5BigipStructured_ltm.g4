@@ -394,6 +394,8 @@ l_virtual
     NEWLINE
     (
       lv_destination
+      | lv_disabled
+      | lv_enabled
       | lv_ip_forward
       | lv_ip_protocol
       | lv_mask
@@ -417,6 +419,16 @@ l_virtual
 lv_destination
 :
   DESTINATION name = word NEWLINE
+;
+
+lv_disabled
+:
+  DISABLED NEWLINE
+;
+
+lv_enabled
+:
+  ENABLED NEWLINE
 ;
 
 lv_ip_forward
