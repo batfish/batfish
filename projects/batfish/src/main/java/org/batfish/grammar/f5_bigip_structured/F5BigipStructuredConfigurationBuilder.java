@@ -175,6 +175,8 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Net_selfC
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Net_trunkContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Net_vlanContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ni_bundleContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ni_disabledContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ni_enabledContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nr_bgpContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nr_prefix_listContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nr_route_mapContext;
@@ -1176,6 +1178,16 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void exitNi_bundle(Ni_bundleContext ctx) {
     todo(ctx);
+  }
+
+  @Override
+  public void exitNi_disabled(Ni_disabledContext ctx) {
+    _currentInterface.setDisabled(true);
+  }
+
+  @Override
+  public void exitNi_enabled(Ni_enabledContext ctx) {
+    _currentInterface.setDisabled(false);
   }
 
   @Override
