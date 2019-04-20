@@ -4,6 +4,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -13,6 +15,7 @@ import org.batfish.datamodel.ospf.OspfMetricType;
 /** Base class for OSPF external routes */
 @ParametersAreNonnullByDefault
 public abstract class OspfExternalRoute extends OspfRoute {
+  private static final Interner<OspfExternalRoute> _cache = Interners.newWeakInterner();
 
   public static final class Builder extends AbstractRouteBuilder<Builder, OspfExternalRoute> {
 
@@ -33,29 +36,31 @@ public abstract class OspfExternalRoute extends OspfRoute {
       RoutingProtocol protocol = _ospfMetricType.toRoutingProtocol();
       switch (protocol) {
         case OSPF_E1:
-          return new OspfExternalType1Route(
-              getNetwork(),
-              getNextHopIp(),
-              getAdmin(),
-              getMetric(),
-              _lsaMetric,
-              _area,
-              _costToAdvertiser,
-              _advertiser,
-              getNonForwarding(),
-              getNonRouting());
+          return _cache.intern(
+              new OspfExternalType1Route(
+                  getNetwork(),
+                  getNextHopIp(),
+                  getAdmin(),
+                  getMetric(),
+                  _lsaMetric,
+                  _area,
+                  _costToAdvertiser,
+                  _advertiser,
+                  getNonForwarding(),
+                  getNonRouting()));
         case OSPF_E2:
-          return new OspfExternalType2Route(
-              getNetwork(),
-              getNextHopIp(),
-              getAdmin(),
-              getMetric(),
-              _lsaMetric,
-              _area,
-              _costToAdvertiser,
-              _advertiser,
-              getNonForwarding(),
-              getNonRouting());
+          return _cache.intern(
+              new OspfExternalType2Route(
+                  getNetwork(),
+                  getNextHopIp(),
+                  getAdmin(),
+                  getMetric(),
+                  _lsaMetric,
+                  _area,
+                  _costToAdvertiser,
+                  _advertiser,
+                  getNonForwarding(),
+                  getNonRouting()));
         default:
           throw new IllegalArgumentException(
               String.format("Invalid OSPF external protocol %s", protocol));
