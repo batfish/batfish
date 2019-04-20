@@ -704,7 +704,7 @@ class FlowTracer {
     if (filterStep.getAction() == DENIED) {
       _hops.add(new Hop(_currentNode, _steps));
       Trace trace = new Trace(filterType.deniedDisposition(), _hops);
-      _flowTraces.accept(new TraceAndReverseFlow(trace, null));
+      _flowTraces.accept(new TraceAndReverseFlow(trace, null, _newSessions));
     }
     return filterStep.getAction();
   }
