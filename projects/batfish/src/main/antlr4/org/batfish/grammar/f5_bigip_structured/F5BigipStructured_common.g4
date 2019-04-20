@@ -57,14 +57,7 @@ list
 
 structure_name
 :
-  partition = PARTITION?
-  (
-    ip_address
-    | ip_address_port
-    | ipv6_address
-    | ipv6_address_port
-    | word_id
-  )
+  partition = PARTITION? word_id
 ;
 
 structure_name_or_address

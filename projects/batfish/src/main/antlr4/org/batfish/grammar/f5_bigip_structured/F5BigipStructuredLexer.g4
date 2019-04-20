@@ -982,10 +982,7 @@ F_WordChar
 fragment
 F_WordPort
 :
-  F_WordId
-  (
-    ':' F_WordId
-  )* ':' F_Uint16
+  F_WordId ':' F_Uint16
 ;
 
 fragment
