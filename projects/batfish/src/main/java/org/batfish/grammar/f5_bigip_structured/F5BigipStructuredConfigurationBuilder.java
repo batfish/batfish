@@ -148,6 +148,8 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lspm_memb
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lst_addressContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lsv_vlanContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_destinationContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_disabledContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_enabledContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_ip_forwardContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_ip_protocolContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_maskContext;
@@ -920,6 +922,16 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
         VIRTUAL_ADDRESS, name, VIRTUAL_DESTINATION, ctx.name.getStart().getLine());
     _currentVirtual.setDestination(name);
     _currentVirtual.setDestinationPort(port);
+  }
+
+  @Override
+  public void exitLv_disabled(Lv_disabledContext ctx) {
+    _currentVirtual.setDisabled(true);
+  }
+
+  @Override
+  public void exitLv_enabled(Lv_enabledContext ctx) {
+    _currentVirtual.setDisabled(false);
   }
 
   @Override
