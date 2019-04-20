@@ -21,6 +21,8 @@ net_interface
     (
       ni_bundle
       | ni_bundle_speed
+      | ni_disabled
+      | ni_enabled
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
@@ -127,6 +129,16 @@ ni_bundle
 ni_bundle_speed
 :
   BUNDLE_SPEED bundle_speed NEWLINE
+;
+
+ni_disabled
+:
+  DISABLED NEWLINE
+;
+
+ni_enabled
+:
+  ENABLED NEWLINE
 ;
 
 ns_address
