@@ -421,6 +421,7 @@ public class OspfRoutingProcessTest {
             .setNetwork(Prefix.parse("1.1.1.1/29"))
             .setMetric(1)
             .setNonRouting(true)
+            .setNonForwarding(true)
             .setNextHopIp(Ip.parse("8.8.8.8"));
     RouteAdvertisement<OspfIntraAreaRoute> transformed =
         _routingProcess.transformIntraAreaRouteOnImport(
@@ -429,7 +430,13 @@ public class OspfRoutingProcessTest {
     // Update metric, admin, clear non-routing bit
     assertThat(
         transformed.getRoute(),
-        equalTo(builder.setMetric(11L).setAdmin(100).setNonRouting(false).build()));
+        equalTo(
+            builder
+                .setMetric(11L)
+                .setAdmin(100)
+                .setNonRouting(false)
+                .setNonForwarding(false)
+                .build()));
   }
 
   @Test
@@ -440,6 +447,7 @@ public class OspfRoutingProcessTest {
             .setNetwork(Prefix.ZERO)
             .setMetric(1)
             .setNonRouting(true)
+            .setNonForwarding(true)
             .setNextHopIp(Ip.parse("8.8.8.8"));
 
     Optional<RouteAdvertisement<OspfInterAreaRoute>> transformed =
@@ -455,7 +463,13 @@ public class OspfRoutingProcessTest {
     // Update metric, admin, clear non-routing bit
     assertThat(
         transformed.get().getRoute(),
-        equalTo(builder.setMetric(11L).setAdmin(200).setNonRouting(false).build()));
+        equalTo(
+            builder
+                .setMetric(11L)
+                .setAdmin(200)
+                .setNonRouting(false)
+                .setNonForwarding(false)
+                .build()));
   }
 
   @Test
