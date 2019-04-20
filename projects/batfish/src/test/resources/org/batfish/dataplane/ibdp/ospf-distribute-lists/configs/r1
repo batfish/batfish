@@ -1,0 +1,29 @@
+hostname r1
+!
+interface GigabitEthernet0/0
+ ip address 192.168.12.1 255.255.255.0
+!
+interface Ethernet0/0
+ ip address 1.1.1.1 255.255.255.0
+!
+interface Ethernet1/0
+ ip address 2.2.2.2 255.255.255.0
+!
+router ospf 1
+ redistribute static route-map static_to_ospf metric-type 1
+ network 1.1.1.0 0.0.0.255 area 0
+ network 2.2.2.0 0.0.0.255 area 0
+ network 192.168.12.0 0.0.0.255 area 0
+!
+ip route 192.168.15.0 255.255.255.0 172.22.1.5
+ip route 192.168.16.0 255.255.255.0 172.22.1.5
+ip route 0.0.0.0 0.0.0.0 GigabitEthernet0/0
+!
+route-map static_to_ospf permit 10
+ match ip address prefix-list permit_15_16
+!
+ip prefix-list permit_15_16 seq 5 permit 192.168.15.0/24
+ip prefix-list permit_15_16 seq 5 permit 192.168.16.0/24
+
+
+

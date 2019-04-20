@@ -1,0 +1,22 @@
+hostname r3
+!
+interface GigabitEthernet0/0
+ ip address 192.168.13.2 255.255.255.0
+!
+router ospf 1
+ redistribute static route-map static_to_ospf metric-type 2
+ network 192.168.13.0 0.0.0.255 area 1
+ distribute-list prefix filter_2 in
+!
+ip route 192.168.10.0 255.255.255.0 172.22.1.4
+ip route 192.168.9.0 255.255.255.0 172.22.1.4
+ip route 0.0.0.0 0.0.0.0 GigabitEthernet0/0
+!
+route-map static_to_ospf permit 10
+ match ip address prefix-list permit_9_10
+!
+ip prefix-list permit_9_10 seq 5 permit 192.168.10.0/24
+ip prefix-list permit_9_10 seq 5 permit 192.168.9.0/24
+!
+ip prefix-list filter_2 seq 5 deny 2.2.2.0/24
+ip prefix-list filter_2 seq 10 permit 0.0.0.0/0 le 32
