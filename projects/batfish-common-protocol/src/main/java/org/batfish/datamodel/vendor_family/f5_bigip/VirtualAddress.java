@@ -18,6 +18,7 @@ public final class VirtualAddress implements Serializable {
   private static final String PROP_ADDRESS = "address";
   private static final String PROP_ADDRESS6 = "address6";
   private static final String PROP_ARP_DISABLED = "arpDisabled";
+  private static final String PROP_ICMP_ECHO_DISABLED = "icmpEchoDisabled";
   private static final String PROP_MASK = "mask";
   private static final String PROP_MASK6 = "mask6";
   private static final String PROP_NAME = "name";
@@ -33,6 +34,7 @@ public final class VirtualAddress implements Serializable {
   private @Nullable Ip _address;
   private @Nullable Ip6 _address6;
   private @Nullable Boolean _arpDisabled;
+  private @Nullable Boolean _icmpEchoDisabled;
   private @Nullable Ip _mask;
   private @Nullable Ip6 _mask6;
   private final @Nonnull String _name;
@@ -55,6 +57,11 @@ public final class VirtualAddress implements Serializable {
   @JsonProperty(PROP_ARP_DISABLED)
   public @Nullable Boolean getArpDisabled() {
     return _arpDisabled;
+  }
+
+  @JsonProperty(PROP_ICMP_ECHO_DISABLED)
+  public @Nullable Boolean getIcmpEchoDisabled() {
+    return _icmpEchoDisabled;
   }
 
   @JsonProperty(PROP_MASK)
@@ -90,6 +97,10 @@ public final class VirtualAddress implements Serializable {
   @JsonProperty(PROP_ARP_DISABLED)
   public void setArpDisabled(@Nullable Boolean arpDisabled) {
     _arpDisabled = arpDisabled;
+  }
+
+  public void setIcmpEchoDisabled(@Nullable Boolean icmpEchoDisabled) {
+    _icmpEchoDisabled = icmpEchoDisabled;
   }
 
   @JsonProperty(PROP_MASK)
