@@ -66,7 +66,8 @@ public final class BidirectionalTracerouteAnswererTest {
   @Test
   public void testNoReverseFlow() {
     Trace forwardTrace = new Trace(NO_ROUTE, ImmutableList.of());
-    TraceAndReverseFlow traceAndReverseFlow = new TraceAndReverseFlow(forwardTrace, null);
+    TraceAndReverseFlow traceAndReverseFlow =
+        new TraceAndReverseFlow(forwardTrace, null, ImmutableSet.of());
 
     TracerouteEngine tracerouteEngine =
         forFlow(FORWARD_FLOW, ImmutableList.of(traceAndReverseFlow));
@@ -83,9 +84,11 @@ public final class BidirectionalTracerouteAnswererTest {
   @Test
   public void testReverseFlow() {
     Trace forwardTrace = new Trace(ACCEPTED, ImmutableList.of());
-    TraceAndReverseFlow forwardTarf = new TraceAndReverseFlow(forwardTrace, REVERSE_FLOW);
+    TraceAndReverseFlow forwardTarf =
+        new TraceAndReverseFlow(forwardTrace, REVERSE_FLOW, ImmutableSet.of());
     Trace reverseTrace = new Trace(DENIED_IN, ImmutableList.of());
-    TraceAndReverseFlow reverseTarf = new TraceAndReverseFlow(reverseTrace, null);
+    TraceAndReverseFlow reverseTarf =
+        new TraceAndReverseFlow(reverseTrace, null, ImmutableSet.of());
 
     TracerouteEngine tracerouteEngine =
         forFlows(
@@ -110,13 +113,18 @@ public final class BidirectionalTracerouteAnswererTest {
     Trace forwardTrace1 = new Trace(ACCEPTED, ImmutableList.of());
     Trace forwardTrace2 = new Trace(DENIED_IN, ImmutableList.of());
     Trace forwardTrace3 = new Trace(DELIVERED_TO_SUBNET, ImmutableList.of());
-    TraceAndReverseFlow forwardTarf1 = new TraceAndReverseFlow(forwardTrace1, REVERSE_FLOW);
-    TraceAndReverseFlow forwardTarf2 = new TraceAndReverseFlow(forwardTrace2, null);
-    TraceAndReverseFlow forwardTarf3 = new TraceAndReverseFlow(forwardTrace3, REVERSE_FLOW);
+    TraceAndReverseFlow forwardTarf1 =
+        new TraceAndReverseFlow(forwardTrace1, REVERSE_FLOW, ImmutableSet.of());
+    TraceAndReverseFlow forwardTarf2 =
+        new TraceAndReverseFlow(forwardTrace2, null, ImmutableSet.of());
+    TraceAndReverseFlow forwardTarf3 =
+        new TraceAndReverseFlow(forwardTrace3, REVERSE_FLOW, ImmutableSet.of());
     Trace reverseTrace1 = new Trace(DENIED_IN, ImmutableList.of());
     Trace reverseTrace2 = new Trace(EXITS_NETWORK, ImmutableList.of());
-    TraceAndReverseFlow reverseTarf1 = new TraceAndReverseFlow(reverseTrace1, null);
-    TraceAndReverseFlow reverseTarf2 = new TraceAndReverseFlow(reverseTrace2, FORWARD_FLOW);
+    TraceAndReverseFlow reverseTarf1 =
+        new TraceAndReverseFlow(reverseTrace1, null, ImmutableSet.of());
+    TraceAndReverseFlow reverseTarf2 =
+        new TraceAndReverseFlow(reverseTrace2, FORWARD_FLOW, ImmutableSet.of());
 
     TracerouteEngine tracerouteEngine =
         forFlows(
