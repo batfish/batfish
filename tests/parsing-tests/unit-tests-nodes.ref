@@ -14940,6 +14940,7 @@
                 "name" : "/Common/192.0.2.8",
                 "address" : "192.0.2.9",
                 "arpDisabled" : false,
+                "icmpEchoDisabled" : false,
                 "mask" : "255.255.255.255",
                 "routeAdvertisementMode" : "SELECTIVE"
               }
@@ -14990,7 +14991,18 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "staticRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "192.0.2.2/32",
+                "nextHopInterface" : "dynamic",
+                "nextHopIp" : "172.16.0.1",
+                "tag" : -1
+              }
+            ]
           }
         }
       },

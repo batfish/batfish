@@ -30,12 +30,14 @@ net_interface
 
 net_route
 :
-  ROUTE name = word BRACE_LEFT
+  ROUTE name = structure_name BRACE_LEFT
   (
     NEWLINE
     (
       nroute_gw
+      | nroute_gw6
       | nroute_network
+      | nroute_network6
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
@@ -43,12 +45,26 @@ net_route
 
 nroute_gw
 :
-  GW gw = word NEWLINE
+  GW gw = ip_address NEWLINE
+;
+
+nroute_gw6
+:
+  GW gw6 = ipv6_address NEWLINE
 ;
 
 nroute_network
 :
-  NETWORK network = word NEWLINE
+  NETWORK
+  (
+    network = ip_prefix
+    | DEFAULT
+  ) NEWLINE
+;
+
+nroute_network6
+:
+  NETWORK network6 = ipv6_prefix NEWLINE
 ;
 
 net_routing
@@ -64,11 +80,12 @@ net_routing
 
 net_self
 :
-  SELF name = word BRACE_LEFT
+  SELF name = structure_name BRACE_LEFT
   (
     NEWLINE
     (
       ns_address
+      | ns_address6
       | ns_allow_service
       | ns_traffic_group
       | ns_vlan
@@ -77,9 +94,34 @@ net_self
   )? BRACE_RIGHT NEWLINE
 ;
 
+ns_address
+:
+  ADDRESS interface_address = ip_prefix NEWLINE
+;
+
+ns_address6
+:
+  ADDRESS interface_address = ipv6_prefix NEWLINE
+;
+
+ns_allow_service
+:
+  ALLOW_SERVICE ALL NEWLINE
+;
+
+ns_traffic_group
+:
+  TRAFFIC_GROUP name = structure_name NEWLINE
+;
+
+ns_vlan
+:
+  VLAN name = structure_name NEWLINE
+;
+
 net_trunk
 :
-  TRUNK name = word BRACE_LEFT
+  TRUNK name = structure_name BRACE_LEFT
   (
     NEWLINE
     (
@@ -110,7 +152,7 @@ nt_lacp
 
 net_vlan
 :
-  VLAN name = word BRACE_LEFT
+  VLAN name = structure_name BRACE_LEFT
   (
     NEWLINE
     (
@@ -141,26 +183,6 @@ ni_enabled
   ENABLED NEWLINE
 ;
 
-ns_address
-:
-  ADDRESS interface_address = word NEWLINE
-;
-
-ns_allow_service
-:
-  ALLOW_SERVICE ALL NEWLINE
-;
-
-ns_traffic_group
-:
-  TRAFFIC_GROUP name = word NEWLINE
-;
-
-ns_vlan
-:
-  VLAN name = word NEWLINE
-;
-
 nv_interfaces
 :
   INTERFACES BRACE_LEFT
@@ -174,12 +196,12 @@ nv_interfaces
 
 nv_tag
 :
-  TAG tag = word NEWLINE
+  TAG tag = vlan_id NEWLINE
 ;
 
 nvi_interface
 :
-  name = word BRACE_LEFT NEWLINE? BRACE_RIGHT NEWLINE
+  name = structure_name BRACE_LEFT NEWLINE? BRACE_RIGHT NEWLINE
 ;
 
 s_net

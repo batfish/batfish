@@ -8,13 +8,12 @@ options {
 
 nr_prefix_list
 :
-  PREFIX_LIST name = word BRACE_LEFT
+  PREFIX_LIST name = structure_name BRACE_LEFT
   (
     NEWLINE
     (
       nrp_entries
-      | nrp_route_domain
-      | unrecognized
+      | nrp_common
     )*
   )? BRACE_RIGHT NEWLINE
 ;
@@ -27,20 +26,17 @@ nrp_entries
   )? BRACE_RIGHT NEWLINE
 ;
 
-nrp_route_domain
-:
-  ROUTE_DOMAIN name = word NEWLINE
-;
-
 nrpe_entry
 :
-  num = word BRACE_LEFT
+  num = uint32 BRACE_LEFT
   (
     NEWLINE
     (
       nrpee_action
       | nrpee_prefix
+      | nrpee_prefix6
       | nrpee_prefix_len_range
+      | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
 ;
@@ -52,12 +48,34 @@ nrpee_action
 
 nrpee_prefix
 :
-  PREFIX prefix = word NEWLINE
+  PREFIX prefix = ip_prefix NEWLINE
+;
+
+nrpee_prefix6
+:
+  PREFIX prefix6 = ipv6_prefix NEWLINE
 ;
 
 nrpee_prefix_len_range
 :
-  PREFIX_LEN_RANGE range = word NEWLINE
+  PREFIX_LEN_RANGE range = prefix_len_range NEWLINE
+;
+
+prefix_len_range
+:
+// need to validate when bounds known during extraction
+  STANDARD_COMMUNITY
+;
+
+nrp_common
+:
+  nrp_route_domain
+  | unrecognized
+;
+
+nrp_route_domain
+:
+  ROUTE_DOMAIN name = word NEWLINE
 ;
 
 prefix_list_action

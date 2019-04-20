@@ -126,6 +126,8 @@ ltm virtual-address /Common/192.0.2.8 {
     address 192.0.2.9
     arp disabled
     arp enabled
+    icmp-echo disabled
+    icmp-echo enabled
     mask 255.255.255.255
     route-advertisement selective
     traffic-group /Common/traffic-group-1

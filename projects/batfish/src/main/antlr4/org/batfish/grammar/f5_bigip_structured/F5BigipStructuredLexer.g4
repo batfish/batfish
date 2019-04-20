@@ -91,6 +91,11 @@ COMMUNITY
   'community'
 ;
 
+DEFAULT
+:
+  'default'
+;
+
 DEFAULTS_FROM
 :
   'defaults-from'
@@ -159,6 +164,11 @@ HTTP
 HTTPS
 :
   'https'
+;
+
+ICMP_ECHO
+:
+  'icmp-echo'
 ;
 
 IF
@@ -573,6 +583,11 @@ COMMENT_TAIL
   '#' F_NonNewlineChar* -> channel ( HIDDEN )
 ;
 
+DEC
+:
+  F_Digit+
+;
+
 DOUBLE_QUOTED_STRING
 :
   '"' ~'"'* '"'
@@ -586,9 +601,44 @@ IMISH_CHUNK
   F_NonNewlineChar* F_Newline+ F_Anything*
 ;
 
+IP_ADDRESS
+:
+  F_IpAddress
+;
+
+IP_ADDRESS_PORT
+:
+  F_IpAddressPort
+;
+
+IP_PREFIX
+:
+  F_IpPrefix
+;
+
+IPV6_ADDRESS
+:
+  F_Ipv6Address
+;
+
+IPV6_ADDRESS_PORT
+:
+  F_Ipv6AddressPort
+;
+
+IPV6_PREFIX
+:
+  F_Ipv6Prefix
+;
+
 NEWLINE
 :
   F_Newline+
+;
+
+PARTITION
+:
+  F_Partition
 ;
 
 SEMICOLON
@@ -596,9 +646,24 @@ SEMICOLON
   ';' -> channel ( HIDDEN )
 ;
 
+STANDARD_COMMUNITY
+:
+  F_StandardCommunity
+;
+
+WORD_PORT
+:
+  F_WordPort
+;
+
+WORD_ID
+:
+  F_WordId
+;
+
 WORD
 :
-  F_WordChar+
+  F_Word
 ;
 
 WS
@@ -616,6 +681,222 @@ F_Anything
 ;
 
 fragment
+F_DecByte
+:
+  F_Digit
+  | F_PositiveDigit F_Digit
+  | '1' F_Digit F_Digit
+  | '2' [0-4] F_Digit
+  | '25' [0-5]
+;
+
+fragment
+F_Digit
+:
+  [0-9]
+;
+
+fragment
+F_HexDigit
+:
+  [0-9A-Fa-f]
+;
+
+fragment
+F_HexWord
+:
+  F_HexDigit F_HexDigit? F_HexDigit? F_HexDigit?
+;
+
+fragment
+F_HexWord2
+:
+  F_HexWord ':' F_HexWord
+;
+
+fragment
+F_HexWord3
+:
+  F_HexWord2 ':' F_HexWord
+;
+
+fragment
+F_HexWord4
+:
+  F_HexWord3 ':' F_HexWord
+;
+
+fragment
+F_HexWord5
+:
+  F_HexWord4 ':' F_HexWord
+;
+
+fragment
+F_HexWord6
+:
+  F_HexWord5 ':' F_HexWord
+;
+
+fragment
+F_HexWord7
+:
+  F_HexWord6 ':' F_HexWord
+;
+
+fragment
+F_HexWord8
+:
+  F_HexWord6 ':' F_HexWordFinal2
+;
+
+fragment
+F_HexWordFinal2
+:
+  F_HexWord2
+  | F_IpAddress
+;
+
+fragment
+F_HexWordFinal3
+:
+  F_HexWord ':' F_HexWordFinal2
+;
+
+fragment
+F_HexWordFinal4
+:
+  F_HexWord ':' F_HexWordFinal3
+;
+
+fragment
+F_HexWordFinal5
+:
+  F_HexWord ':' F_HexWordFinal4
+;
+
+fragment
+F_HexWordFinal6
+:
+  F_HexWord ':' F_HexWordFinal5
+;
+
+fragment
+F_HexWordFinal7
+:
+  F_HexWord ':' F_HexWordFinal6
+;
+
+fragment
+F_HexWordLE1
+:
+  F_HexWord?
+;
+
+fragment
+F_HexWordLE2
+:
+  F_HexWordLE1
+  | F_HexWordFinal2
+;
+
+fragment
+F_HexWordLE3
+:
+  F_HexWordLE2
+  | F_HexWordFinal3
+;
+
+fragment
+F_HexWordLE4
+:
+  F_HexWordLE3
+  | F_HexWordFinal4
+;
+
+fragment
+F_HexWordLE5
+:
+  F_HexWordLE4
+  | F_HexWordFinal5
+;
+
+fragment
+F_HexWordLE6
+:
+  F_HexWordLE5
+  | F_HexWordFinal6
+;
+
+fragment
+F_HexWordLE7
+:
+  F_HexWordLE6
+  | F_HexWordFinal7
+;
+
+fragment
+F_IpAddress
+:
+  F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
+;
+
+fragment
+F_IpAddressPort
+:
+  F_IpAddress ':' F_Uint16
+;
+
+fragment
+F_IpPrefix
+:
+  F_IpAddress '/' F_IpPrefixLength
+;
+
+fragment
+F_IpPrefixLength
+:
+  F_Digit
+  | [12] F_Digit
+  | [3] [012]
+;
+
+fragment
+F_Ipv6Address
+:
+  '::' F_HexWordLE7
+  | F_HexWord '::' F_HexWordLE6
+  | F_HexWord2 '::' F_HexWordLE5
+  | F_HexWord3 '::' F_HexWordLE4
+  | F_HexWord4 '::' F_HexWordLE3
+  | F_HexWord5 '::' F_HexWordLE2
+  | F_HexWord6 '::' F_HexWordLE1
+  | F_HexWord7 '::'
+  | F_HexWord8
+;
+
+fragment
+F_Ipv6AddressPort
+:
+  F_Ipv6Address '.' F_Uint16
+;
+
+fragment
+F_Ipv6Prefix
+:
+  F_Ipv6Address '/' F_Ipv6PrefixLength
+;
+
+fragment
+F_Ipv6PrefixLength
+:
+  F_Digit
+  | F_PositiveDigit F_Digit
+  | '1' [01] F_Digit
+  | '12' [0-8]
+;
+
+fragment
 F_Newline
 :
   [\r\n] // carriage return or line feed
@@ -630,6 +911,46 @@ F_NonNewlineChar
 ;
 
 fragment
+F_Partition
+:
+  '/'
+  (
+    F_PartitionChar+ '/'
+  )*
+;
+
+fragment
+F_PartitionChar
+:
+  F_WordCharCommon
+  | [:]
+;
+
+fragment
+F_PositiveDigit
+:
+  '1' .. '9'
+;
+
+fragment
+F_StandardCommunity
+:
+  F_Uint16 ':' F_Uint16
+;
+
+fragment
+F_Uint16
+:
+  F_Digit
+  | F_PositiveDigit F_Digit F_Digit? F_Digit?
+  | [1-5] F_Digit F_Digit F_Digit F_Digit
+  | '6' [0-4] F_Digit F_Digit F_Digit
+  | '65' [0-4] F_Digit F_Digit
+  | '655' [0-2] F_Digit
+  | '6553' [0-5]
+;
+
+fragment
 F_Whitespace
 :
   [ \t\u000C] // tab or space or unicode 0x000C
@@ -637,7 +958,38 @@ F_Whitespace
 ;
 
 fragment
+F_Word
+:
+  F_WordCharCommon
+  (
+    F_WordChar* F_WordCharCommon
+  )?
+;
+
+fragment
+F_WordCharCommon
+:
+  ~[ \t\n\r{}[\]/:]
+;
+
+fragment
 F_WordChar
 :
-  ~[ \t\n\r{}[\]]
+  F_WordCharCommon
+  | [:/]
+;
+
+fragment
+F_WordPort
+:
+  F_WordId
+  (
+    ':' F_WordId
+  )* ':' F_Uint16
+;
+
+fragment
+F_WordId
+:
+  F_WordCharCommon+
 ;

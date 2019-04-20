@@ -18,11 +18,73 @@ empty_list
   BRACE_LEFT BRACE_RIGHT
 ;
 
+ip_address
+:
+  IP_ADDRESS
+;
+
+ip_address_port
+:
+  IP_ADDRESS_PORT
+;
+
+ip_prefix
+:
+  IP_PREFIX
+;
+
+ipv6_address
+:
+  IPV6_ADDRESS
+;
+
+ipv6_address_port
+:
+  IPV6_ADDRESS_PORT
+;
+
+ipv6_prefix
+:
+  IPV6_PREFIX
+;
+
 list
 :
   empty_list
   | word_list
   | u_list
+;
+
+structure_name
+:
+  partition = PARTITION?
+  (
+    ip_address
+    | ip_address_port
+    | ipv6_address
+    | ipv6_address_port
+    | word_id
+  )
+;
+
+structure_name_or_address
+:
+  partition = PARTITION?
+  (
+    address = ip_address
+    | address6 = ipv6_address
+    | w = word_id
+  )
+;
+
+structure_name_with_port
+:
+  partition = PARTITION?
+  (
+    ipp = ip_address_port
+    | ip6p = ipv6_address_port
+    | wp = word_port
+  )
 ;
 
 /* An unrecognized fragment of syntax. When used, MUST be LAST alternative */
@@ -55,9 +117,42 @@ u_word_list
   BRACE_LEFT u_word+ BRACE_RIGHT
 ;
 
+uint16
+:
+  d = DEC
+  {isUint16($d)}?
+
+;
+
+uint32
+:
+  d = DEC
+  {isUint32($d)}?
+
+;
+
+vlan_id
+:
+  d = DEC
+  {isVlanId($d)}?
+
+;
+
 word
 :
-  ~( BRACE_LEFT | BRACE_RIGHT | BRACKET_LEFT | BRACKET_RIGHT | IMISH_CHUNK | NEWLINE )
+  ~( BRACE_LEFT | BRACE_RIGHT | BRACKET_LEFT | BRACKET_RIGHT | IMISH_CHUNK |
+  NEWLINE )
+;
+
+word_id
+:
+  ~( BRACE_LEFT | BRACE_RIGHT | BRACKET_LEFT | BRACKET_RIGHT |
+  DOUBLE_QUOTED_STRING | IMISH_CHUNK | NEWLINE | WORD )
+;
+
+word_port
+:
+  WORD_PORT
 ;
 
 word_list
