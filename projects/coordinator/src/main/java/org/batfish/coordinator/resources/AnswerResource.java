@@ -103,7 +103,6 @@ public final class AnswerResource {
                     _questionName, _network, snapshot, referenceSnapshot, _analysis))
             .build();
       }
-
       return Response.ok().entity(ans).build();
     } catch (IllegalArgumentException e) {
       return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
