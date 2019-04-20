@@ -37,6 +37,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
@@ -157,6 +158,26 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return String.format("~incoming_filter:%s~", vlanName);
   }
 
+  private static @Nonnull Optional<HeaderSpace> computeVirtualAddressRejectIcmpHeaders(
+      VirtualAddress virtualAddress) {
+    Ip address = virtualAddress.getAddress();
+    if (address == null) {
+      // not IPv4
+      return Optional.empty();
+    }
+    if (!Boolean.TRUE.equals(virtualAddress.getIcmpEchoDisabled())) {
+      // nothing to reject
+      return Optional.empty();
+    }
+    return Optional.of(
+        HeaderSpace.builder()
+            .setDstIps(address.toIpSpace())
+            .setIcmpTypes(
+                ImmutableList.of(new SubRange(IcmpType.ECHO_REQUEST, IcmpType.ECHO_REQUEST)))
+            .setIcmpCodes(ImmutableList.of(new SubRange(0, 0)))
+            .build());
+  }
+
   private static boolean isEbgpSingleHop(BgpProcess proc, BgpNeighbor neighbor) {
     return !proc.getLocalAs().equals(neighbor.getRemoteAs()) && neighbor.getEbgpMultihop() == null;
   }
@@ -187,6 +208,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private transient Map<String, Set<IpSpace>> _virtualAdditionalDnatArpIps;
   private transient Map<String, Set<IpSpace>> _virtualAdditionalSnatArpIps;
   private final @Nonnull Map<String, VirtualAddress> _virtualAddresses;
+  private transient SortedMap<String, HeaderSpace> _virtualAddressRejectIcmpHeaders;
   private transient SortedMap<String, SimpleTransformation> _virtualIncomingTransformations;
   private transient Map<String, HeaderSpace> _virtualMatchedHeaders;
   private transient SortedMap<String, SimpleTransformation> _virtualOutgoingTransformations;
@@ -795,6 +817,22 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   private void initInterfaceIncomingFilterLines() {
     _interfaceIncomingFilterLines = new HashMap<>();
+    _virtualAddressRejectIcmpHeaders.forEach(
+        (virtualAddressName, matchedHeaders) -> {
+          IpAccessListLine line =
+              IpAccessListLine.rejecting()
+                  .setMatchCondition(new MatchHeaderSpace(matchedHeaders))
+                  .setName(
+                      String.format(
+                          "virtual-address %s { icmp-echo disabled }", virtualAddressName))
+                  .build();
+          _vlans.keySet().stream()
+              .forEach(
+                  vlanName ->
+                      _interfaceIncomingFilterLines
+                          .computeIfAbsent(vlanName, n -> ImmutableList.builder())
+                          .add(line));
+        });
     _virtualMatchedHeaders.forEach(
         (virtualName, matchedHeaders) -> {
           Virtual virtual = _enabledVirtuals.get(virtualName);
@@ -843,6 +881,19 @@ public class F5BigipConfiguration extends VendorConfiguration {
                 .ifPresent(
                     matchedHeaders -> virtualMatchedHeaders.put(virtualName, matchedHeaders)));
     _virtualMatchedHeaders = virtualMatchedHeaders.build();
+  }
+
+  private void initVirtualAddressRejectIcmpHeaders() {
+    // incoming transformations
+    ImmutableSortedMap.Builder<String, HeaderSpace> virtualAddressRejectIcmpHeaders =
+        ImmutableSortedMap.naturalOrder();
+    _virtualAddresses.forEach(
+        (virtualAddressName, virtualAddress) ->
+            computeVirtualAddressRejectIcmpHeaders(virtualAddress)
+                .ifPresent(
+                    matchedHeaders ->
+                        virtualAddressRejectIcmpHeaders.put(virtualAddressName, matchedHeaders)));
+    _virtualAddressRejectIcmpHeaders = virtualAddressRejectIcmpHeaders.build();
   }
 
   private void initVirtualTransformations() {
@@ -1377,6 +1428,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
     // Create interface filters
     initVirtualMatchedHeaders();
+    initVirtualAddressRejectIcmpHeaders();
     initInterfaceIncomingFilterLines();
     _vlans.keySet().stream().map(_c.getAllInterfaces()::get).forEach(this::addIncomingFilter);
 

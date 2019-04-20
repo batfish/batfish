@@ -161,6 +161,11 @@ HTTPS
   'https'
 ;
 
+ICMP_ECHO
+:
+  'icmp-echo'
+;
+
 IF
 :
   'if'

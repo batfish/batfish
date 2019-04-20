@@ -130,6 +130,7 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDiff;
+import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Ip;
@@ -235,6 +236,18 @@ public final class F5BigipStructuredGrammarTest {
         .setSrcIp(Ip.ZERO)
         .setSrcPort(50000)
         .setTag("")
+        .build();
+  }
+
+  private static @Nonnull Flow createIcmpFlow(String ingressNode, Ip dstIp) {
+    return Flow.builder()
+        .setSrcIp(Ip.ZERO)
+        .setDstIp(dstIp)
+        .setTag("")
+        .setIngressNode(ingressNode)
+        .setIpProtocol(IpProtocol.ICMP)
+        .setIcmpType(IcmpType.ECHO_REQUEST)
+        .setIcmpCode(0)
         .build();
   }
 
@@ -1716,6 +1729,51 @@ public final class F5BigipStructuredGrammarTest {
     assertTrue(vaDisabled.getArpDisabled());
     assertFalse(vaEnabled.getArpDisabled());
     assertThat(vaImplicitlyEnabled.getArpDisabled(), nullValue());
+  }
+
+  @Test
+  public void testVirtualAddressIcmpEchoDisabledConversion() throws IOException {
+    String hostname = "f5_bigip_structured_ltm_virtual_address_icmp_echo_disabled";
+    Configuration c = parseConfig(hostname);
+    String ifaceName = "/Common/vlan1";
+
+    IpAccessList inFilter = c.getAllInterfaces().get(ifaceName).getIncomingFilter();
+
+    // disabled
+    assertThat(
+        inFilter,
+        IpAccessListMatchers.rejects(
+            createIcmpFlow(hostname, Ip.parse("192.0.2.1")), ifaceName, c));
+    // enabled
+    assertThat(
+        inFilter,
+        IpAccessListMatchers.accepts(
+            createIcmpFlow(hostname, Ip.parse("192.0.2.2")), ifaceName, c));
+    // implicitly enabled
+    assertThat(
+        inFilter,
+        IpAccessListMatchers.accepts(
+            createIcmpFlow(hostname, Ip.parse("192.0.2.3")), ifaceName, c));
+  }
+
+  @Test
+  public void testVirtualAddressIcmpEchoDisabledExtraction() {
+    F5BigipConfiguration vc =
+        parseVendorConfig("f5_bigip_structured_ltm_virtual_address_icmp_echo_disabled");
+    String vaDisabledName = "/Common/192.0.2.1";
+    String vaEnabledName = "/Common/192.0.2.2";
+    String vaImplicitlyEnabledName = "/Common/192.0.2.3";
+
+    assertThat(
+        vc.getVirtualAddresses(), hasKeys(vaDisabledName, vaEnabledName, vaImplicitlyEnabledName));
+
+    VirtualAddress vaDisabled = vc.getVirtualAddresses().get(vaDisabledName);
+    VirtualAddress vaEnabled = vc.getVirtualAddresses().get(vaEnabledName);
+    VirtualAddress vaImplicitlyEnabled = vc.getVirtualAddresses().get(vaImplicitlyEnabledName);
+
+    assertThat(vaDisabled.getIcmpEchoDisabled(), equalTo(true));
+    assertThat(vaEnabled.getIcmpEchoDisabled(), equalTo(false));
+    assertThat(vaImplicitlyEnabled.getIcmpEchoDisabled(), nullValue());
   }
 
   @Test

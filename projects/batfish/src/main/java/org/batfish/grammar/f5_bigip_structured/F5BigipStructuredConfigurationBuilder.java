@@ -163,6 +163,7 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_vlans_
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_vlans_enabledContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lva_addressContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lva_arpContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lva_icmp_echoContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lva_maskContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lva_route_advertisementContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lvp_persistenceContext;
@@ -1113,6 +1114,11 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void exitLva_arp(Lva_arpContext ctx) {
     _currentVirtualAddress.setArpDisabled(ctx.DISABLED() != null);
+  }
+
+  @Override
+  public void exitLva_icmp_echo(Lva_icmp_echoContext ctx) {
+    _currentVirtualAddress.setIcmpEchoDisabled(ctx.DISABLED() != null);
   }
 
   @Override
