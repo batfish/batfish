@@ -1165,7 +1165,11 @@
       {
         "Filename" : "configs/f5_bigip_structured_ltm",
         "Line" : 191,
+<<<<<<< HEAD
         "Text" : "cert /Common/ example1.crt",
+=======
+        "Text" : "cert /Common/example1.crt",
+>>>>>>> master
         "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
@@ -1200,7 +1204,11 @@
       {
         "Filename" : "configs/f5_bigip_structured_ltm",
         "Line" : 203,
+<<<<<<< HEAD
         "Text" : "chain /Common/ example4.crt",
+=======
+        "Text" : "chain /Common/example4.crt",
+>>>>>>> master
         "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
@@ -1326,14 +1334,22 @@
       {
         "Filename" : "configs/f5_bigip_structured_ltm",
         "Line" : 221,
+<<<<<<< HEAD
         "Text" : "proxy-ca-cert /Common/ example5.crt",
+=======
+        "Text" : "proxy-ca-cert /Common/example5.crt",
+>>>>>>> master
         "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "configs/f5_bigip_structured_ltm",
         "Line" : 222,
+<<<<<<< HEAD
         "Text" : "proxy-ca-key /Common/ example5.key",
+=======
+        "Text" : "proxy-ca-key /Common/example5.key",
+>>>>>>> master
         "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
@@ -1466,7 +1482,11 @@
       {
         "Filename" : "configs/f5_bigip_structured_ltm",
         "Line" : 243,
+<<<<<<< HEAD
         "Text" : "dns-resolver /Common/ SOME_DNS_RESOLVER",
+=======
+        "Text" : "dns-resolver /Common/SOME_DNS_RESOLVER",
+>>>>>>> master
         "Parser_Context" : "[unrecognized lprof_ocsp_stapling_params l_profile s_ltm statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
@@ -1494,7 +1514,11 @@
       {
         "Filename" : "configs/f5_bigip_structured_ltm",
         "Line" : 247,
+<<<<<<< HEAD
         "Text" : "trusted-responders /Common/ example6.crt",
+=======
+        "Text" : "trusted-responders /Common/example6.crt",
+>>>>>>> master
         "Parser_Context" : "[unrecognized lprof_ocsp_stapling_params l_profile s_ltm statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
@@ -1578,7 +1602,11 @@
       {
         "Filename" : "configs/f5_bigip_structured_ltm",
         "Line" : 263,
+<<<<<<< HEAD
         "Text" : "cert /Common/ example7.crt",
+=======
+        "Text" : "cert /Common/example7.crt",
+>>>>>>> master
         "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
