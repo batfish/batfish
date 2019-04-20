@@ -6232,9 +6232,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIf_ip_policy(If_ip_policyContext ctx) {
     String policyName = ctx.name.getText();
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setRoutingPolicy(policyName);
-    }
+    todo(ctx, "PBR is not supported");
+    //    for (Interface currentInterface : _currentInterfaces) {
+    //      currentInterface.setRoutingPolicy(policyName);
+    //    }
     _configuration.referenceStructure(
         ROUTE_MAP, policyName, INTERFACE_POLICY_ROUTING_MAP, ctx.name.getLine());
   }

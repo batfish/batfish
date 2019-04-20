@@ -23,12 +23,17 @@ deactivate_line_tail
 
 flat_juniper_configuration
 :
-   NEWLINE?
    (
       deactivate_line
       | protect_line
       | set_line
-   )+ NEWLINE? EOF
+      | newline
+   )+ EOF
+;
+
+newline
+:
+   NEWLINE
 ;
 
 protect_line

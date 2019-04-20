@@ -90,6 +90,11 @@ EBGP
   'ebgp'
 ;
 
+EGP
+:
+  'egp'
+;
+
 END
 :
   'end'
@@ -100,14 +105,29 @@ FALL_OVER
   'fall-over'
 ;
 
+GE
+:
+  'ge'
+;
+
 GRACEFUL_RESTART
 :
   'graceful-restart'
 ;
 
+IGP
+:
+  'igp'
+;
+
 IN
 :
   'in'
+;
+
+INCOMPLETE
+:
+  'incomplete'
 ;
 
 INTERFACE
@@ -123,6 +143,11 @@ IP
 KERNEL
 :
   'kernel'
+;
+
+LE
+:
+  'le'
 ;
 
 LINE
@@ -150,6 +175,11 @@ MAXIMUM_PREFIX
   'maximum-prefix'
 ;
 
+METRIC
+:
+  'metric'
+;
+
 NEIGHBOR
 :
   'neighbor'
@@ -165,6 +195,11 @@ NO
   'no'
 ;
 
+ORIGIN
+:
+  'origin'
+;
+
 OUT
 :
   'out'
@@ -178,6 +213,11 @@ PEER_GROUP
 PERMIT
 :
   'permit'
+;
+
+PREFIX_LIST
+:
+  'prefix-list'
 ;
 
 REDISTRIBUTE
@@ -203,6 +243,11 @@ ROUTER
 ROUTER_ID
 :
   'router-id'
+;
+
+SEQ
+:
+  'seq'
 ;
 
 SERVICE

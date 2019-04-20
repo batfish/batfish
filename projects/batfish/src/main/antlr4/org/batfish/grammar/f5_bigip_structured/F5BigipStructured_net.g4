@@ -21,9 +21,34 @@ net_interface
     (
       ni_bundle
       | ni_bundle_speed
+      | ni_disabled
+      | ni_enabled
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
+;
+
+net_route
+:
+  ROUTE name = word BRACE_LEFT
+  (
+    NEWLINE
+    (
+      nroute_gw
+      | nroute_network
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+nroute_gw
+:
+  GW gw = word NEWLINE
+;
+
+nroute_network
+:
+  NETWORK network = word NEWLINE
 ;
 
 net_routing
@@ -106,6 +131,16 @@ ni_bundle_speed
   BUNDLE_SPEED bundle_speed NEWLINE
 ;
 
+ni_disabled
+:
+  DISABLED NEWLINE
+;
+
+ni_enabled
+:
+  ENABLED NEWLINE
+;
+
 ns_address
 :
   ADDRESS interface_address = word NEWLINE
@@ -152,6 +187,7 @@ s_net
   NET
   (
     net_interface
+    | net_route
     | net_routing
     | net_self
     | net_trunk

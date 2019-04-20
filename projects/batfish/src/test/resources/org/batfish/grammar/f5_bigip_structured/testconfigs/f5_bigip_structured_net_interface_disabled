@@ -1,0 +1,36 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+    hostname f5_bigip_structured_net_interface_disabled
+}
+
+net interface 1.0 {
+    disabled
+}
+net interface 2.0 {
+    enabled
+}
+net interface 3.0 { }
+net interface 11.0 {
+    disabled
+}
+net interface 12.0 {
+    enabled
+}
+net interface 13.0 { }
+
+net vlan /Common/vlan1 {
+    interfaces {
+        1.0 { }
+        2.0 { }
+        3.0 { }
+    }
+}
+
+net trunk trunk1 {
+    interfaces {
+        11.0
+        12.0
+        13.0
+    }
+}

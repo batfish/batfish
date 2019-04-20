@@ -33,6 +33,7 @@ public enum F5BigipStructureUsage implements StructureUsage {
   PROFILE_TCP_DEFAULTS_FROM("profile tcp defaults-from"),
   ROUTE_MAP_MATCH_IP_ADDRESS("route-map match ip address"),
   ROUTE_MAP_MATCH_IPV4_ADDRESS_PREFIX_LIST("route-map match ipv4 address prefix-list"),
+  ROUTE_SELF_REFERENCE("route self-reference"),
   SELF_SELF_REFERENCE("self self-reference"),
   SELF_VLAN("self vlan"),
   SNAT_SELF_REFERENCE("snat self-reference"),

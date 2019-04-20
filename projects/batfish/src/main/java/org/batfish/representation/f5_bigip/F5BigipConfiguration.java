@@ -8,6 +8,7 @@ import static org.batfish.representation.f5_bigip.F5NatUtil.orElseChain;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -56,6 +57,7 @@ import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
@@ -71,8 +73,10 @@ import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
@@ -160,6 +164,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private final Map<String, AccessList> _accessLists;
   private final @Nonnull Map<String, BgpProcess> _bgpProcesses;
   private transient Configuration _c;
+  private transient Map<String, Virtual> _enabledVirtuals;
   private ConfigurationFormat _format;
   private String _hostname;
   private boolean _imish;
@@ -171,6 +176,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, Pool> _pools;
   private final @Nonnull Map<String, PrefixList> _prefixLists;
   private final @Nonnull Map<String, RouteMap> _routeMaps;
+  private final @Nonnull Map<String, Route> _routes;
   private final @Nonnull Map<String, Self> _selves;
   private transient Map<String, Set<IpSpace>> _snatAdditionalArpIps;
   private final @Nonnull Map<String, SnatPool> _snatPools;
@@ -196,6 +202,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     _pools = new HashMap<>();
     _prefixLists = new HashMap<>();
     _routeMaps = new HashMap<>();
+    _routes = new HashMap<>();
     _selves = new HashMap<>();
     _snats = new HashMap<>();
     _snatPools = new HashMap<>();
@@ -221,6 +228,11 @@ public class F5BigipConfiguration extends VendorConfiguration {
         RoutingPolicy.builder()
             .setOwner(_c)
             .setName(computeBgpPeerExportPolicyName(proc.getName(), neighbor.getAddress()));
+
+    // next-hop-self
+    if (Boolean.TRUE.equals(neighbor.getNextHopSelf())) {
+      peerExportPolicy.addStatement(new SetNextHop(SelfNextHop.getInstance(), false));
+    }
 
     Conjunction peerExportConditions = new Conjunction();
     If peerExportConditional =
@@ -287,7 +299,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   private IpSpace computeAdditionalArpIps(String vlanName) {
     Stream<IpSpace> virtualDnatIps =
-        _virtuals.values().stream()
+        _enabledVirtuals.values().stream()
             .filter(
                 virtual ->
                     !virtual.getVlansEnabled()
@@ -295,7 +307,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
                         || virtual.getVlans().contains(vlanName))
             .flatMap(virtual -> _virtualAdditionalDnatArpIps.get(virtual.getName()).stream());
     Stream<IpSpace> virtualSnatIps =
-        _virtuals.values().stream()
+        _enabledVirtuals.values().stream()
             .flatMap(virtual -> _virtualAdditionalSnatArpIps.get(virtual.getName()).stream());
     Stream<IpSpace> snatIps =
         _snats.values().stream()
@@ -328,7 +340,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     ImmutableList.Builder<SimpleTransformation> applicableTransformations = ImmutableList.builder();
     _virtualIncomingTransformations.forEach(
         (virtualName, transformation) -> {
-          if (appliesToVlan(_virtuals.get(virtualName), vlanName)) {
+          if (appliesToVlan(_enabledVirtuals.get(virtualName), vlanName)) {
             applicableTransformations.add(transformation);
           }
         });
@@ -448,6 +460,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // No need to verify presence of destination, virtual-address, etc. since all this must have
     // been present for incoming transformation to have been populated.
     VirtualAddress virtualAddress = _virtualAddresses.get(virtual.getDestination());
+    if (Boolean.TRUE.equals(virtualAddress.getArpDisabled())) {
+      return ImmutableSet.of();
+    }
     Ip destinationIp = virtualAddress.getAddress();
     Ip mask = firstNonNull(virtualAddress.getMask(), Ip.MAX);
     return ImmutableSet.of(Prefix.create(destinationIp, mask).toIpSpace());
@@ -704,6 +719,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return _routeMaps;
   }
 
+  public @Nonnull Map<String, Route> getRoutes() {
+    return _routes;
+  }
+
   public @Nonnull Map<String, Self> getSelves() {
     return _selves;
   }
@@ -778,7 +797,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     _interfaceIncomingFilterLines = new HashMap<>();
     _virtualMatchedHeaders.forEach(
         (virtualName, matchedHeaders) -> {
-          Virtual virtual = _virtuals.get(virtualName);
+          Virtual virtual = _enabledVirtuals.get(virtualName);
           IpAccessListLine line =
               toIpAccessListLine(virtualName, matchedHeaders, virtual.getReject());
           _vlans.keySet().stream()
@@ -818,7 +837,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // incoming transformations
     ImmutableSortedMap.Builder<String, HeaderSpace> virtualMatchedHeaders =
         ImmutableSortedMap.naturalOrder();
-    _virtuals.forEach(
+    _enabledVirtuals.forEach(
         (virtualName, virtual) ->
             computeVirtualMatchedHeaders(virtual)
                 .ifPresent(
@@ -833,7 +852,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // incoming transformations
     ImmutableSortedMap.Builder<String, SimpleTransformation> virtualIncomingTransformations =
         ImmutableSortedMap.reverseOrder();
-    _virtuals.forEach(
+    _enabledVirtuals.forEach(
         (virtualName, virtual) ->
             computeVirtualIncomingTransformation(virtual)
                 .ifPresent(
@@ -841,12 +860,12 @@ public class F5BigipConfiguration extends VendorConfiguration {
                         virtualIncomingTransformations.put(virtualName, transformation)));
     _virtualIncomingTransformations = virtualIncomingTransformations.build();
     _virtualAdditionalDnatArpIps =
-        toImmutableMap(_virtuals, Entry::getKey, e -> computeVirtualDnatIps(e.getValue()));
+        toImmutableMap(_enabledVirtuals, Entry::getKey, e -> computeVirtualDnatIps(e.getValue()));
 
     // outgoing transformations
     ImmutableSortedMap.Builder<String, SimpleTransformation> virtualOutgoingTransformations =
         ImmutableSortedMap.reverseOrder();
-    _virtuals.forEach(
+    _enabledVirtuals.forEach(
         (virtualName, virtual) ->
             computeVirtualOutgoingTransformation(virtual)
                 .ifPresent(
@@ -854,7 +873,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
                         virtualOutgoingTransformations.put(virtualName, transformation)));
     _virtualOutgoingTransformations = virtualOutgoingTransformations.build();
     _virtualAdditionalSnatArpIps =
-        toImmutableMap(_virtuals, Entry::getKey, e -> computeVirtualSnatIps(e.getValue()));
+        toImmutableMap(_enabledVirtuals, Entry::getKey, e -> computeVirtualSnatIps(e.getValue()));
   }
 
   private boolean isReferencedByRouteMap(String aclName) {
@@ -925,6 +944,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
         F5BigipStructureUsage.PROFILE_SERVER_SSL_DEFAULTS_FROM);
     markConcreteStructure(
         F5BigipStructureType.PROFILE_TCP, F5BigipStructureUsage.PROFILE_TCP_DEFAULTS_FROM);
+    markConcreteStructure(F5BigipStructureType.ROUTE, F5BigipStructureUsage.ROUTE_SELF_REFERENCE);
     markConcreteStructure(
         F5BigipStructureType.ROUTE_MAP,
         F5BigipStructureUsage.BGP_ADDRESS_FAMILY_REDISTRIBUTE_KERNEL_ROUTE_MAP,
@@ -1089,6 +1109,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     org.batfish.datamodel.Interface newIface =
         new org.batfish.datamodel.Interface(iface.getName(), _c);
     Double speed = iface.getSpeed();
+    newIface.setActive(!Boolean.TRUE.equals(iface.getDisabled()));
     newIface.setSpeed(speed);
     newIface.setBandwidth(firstNonNull(iface.getBandwidth(), speed, Interface.DEFAULT_BANDWIDTH));
     // Assume all interfaces are in default VRF for now
@@ -1221,6 +1242,24 @@ public class F5BigipConfiguration extends VendorConfiguration {
     }
   }
 
+  /** Returns a {@link StaticRoute} if {code route} is valid, or else {@code null}. */
+  private @Nullable StaticRoute toStaticRoute(Route route) {
+    if (route.getGw() == null) {
+      return null;
+    }
+    if (route.getNetwork() == null) {
+      return null;
+    }
+    return StaticRoute.builder()
+        .setAdministrativeCost(
+            RoutingProtocol.STATIC.getDefaultAdministrativeCost(
+                ConfigurationFormat.F5_BIGIP_STRUCTURED))
+        .setMetric(Route.METRIC)
+        .setNetwork(route.getNetwork())
+        .setNextHopIp(route.getGw())
+        .build();
+  }
+
   private @Nonnull Configuration toVendorIndependentConfiguration() {
     _c = new Configuration(_hostname, _format);
 
@@ -1236,6 +1275,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // TODO: alter as behavior fleshed out
     _c.setDefaultCrossZoneAction(LineAction.PERMIT);
     _c.setDefaultInboundAction(LineAction.PERMIT);
+
+    // initialize maps of enabled structures
+    initEnabledVirtuals();
 
     // Add default VRF
     _c.getVrfs().computeIfAbsent(DEFAULT_VRF_NAME, Vrf::new);
@@ -1346,9 +1388,25 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // NTP servers
     _c.setNtpServers(ImmutableSortedSet.copyOf(_ntpServers));
 
+    // Static Routes
+    _c.getDefaultVrf()
+        .setStaticRoutes(
+            _routes.values().stream()
+                .map(this::toStaticRoute)
+                .filter(Objects::nonNull)
+                .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
+    _routes.values().forEach(this::warnIfInvalidRoute);
+
     markStructures();
 
     return _c;
+  }
+
+  private void initEnabledVirtuals() {
+    _enabledVirtuals =
+        _virtuals.entrySet().stream()
+            .filter(virtualEntry -> !Boolean.TRUE.equals(virtualEntry.getValue().getDisabled()))
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
   }
 
   @Override
@@ -1359,12 +1417,40 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   private @Nonnull Optional<KernelRoute> tryAddKernelRoute(VirtualAddress virtualAddress) {
     if (virtualAddress.getRouteAdvertisementMode() == RouteAdvertisementMode.DISABLED
-        || virtualAddress.getAddress() == null
-        || virtualAddress.getMask() == null) {
+        || virtualAddress.getAddress() == null) {
       return Optional.empty();
     }
     return Optional.of(
-        new KernelRoute(Prefix.create(virtualAddress.getAddress(), virtualAddress.getMask())));
+        new KernelRoute(
+            Prefix.create(
+                virtualAddress.getAddress(),
+                Optional.ofNullable(virtualAddress.getMask()).orElse(Ip.MAX))));
+  }
+
+  private void warnIfInvalidRoute(Route route) {
+    boolean ipv4Gw = route.getGw() != null;
+    boolean ipv6Gw = route.getGw6() != null;
+    boolean ipv4Network = route.getNetwork() != null;
+    boolean ipv6Network = route.getNetwork6() != null;
+    boolean ipv4 = ipv4Gw || ipv4Network;
+    boolean ipv6 = ipv6Gw || ipv6Network;
+    if (!ipv4Gw && !ipv6Gw) {
+      _w.redFlag(
+          String.format(
+              "Cannot convert %s to static route because it is missing default gateway",
+              route.getName()));
+    }
+    if (!ipv4Network && !ipv6Network) {
+      _w.redFlag(
+          String.format(
+              "Cannot convert %s to static route because it is missing network", route.getName()));
+    }
+    if (ipv4 && ipv6) {
+      _w.redFlag(
+          String.format(
+              "Cannot convert %s to static route because it has mixed IPv4 and IPv6 information",
+              route.getName()));
+    }
   }
 
   private void warnInvalidPrefixList(PrefixList prefixList) {

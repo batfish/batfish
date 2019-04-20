@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.topology.TopologyUtil.computeIpInterfaceOwners;
 import static org.batfish.common.topology.TopologyUtil.computeLayer1LogicalTopology;
 import static org.batfish.common.topology.TopologyUtil.computeLayer1PhysicalTopology;
+import static org.batfish.common.topology.TopologyUtil.computeLayer2SelfEdges;
 import static org.batfish.common.topology.TopologyUtil.computeLayer2Topology;
 import static org.batfish.common.topology.TopologyUtil.computeLayer3Topology;
 import static org.batfish.datamodel.matchers.EdgeMatchers.hasHead;
@@ -438,6 +439,37 @@ public final class TopologyUtilTest {
           "c1:i1 and c2:i1 are not in the same broadcast domain",
           layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
     }
+  }
+
+  @Test
+  public void testComputeLayer2SelfEdges() {
+    String c1Name = "c1";
+
+    String i1Name = "i1";
+    String i2Name = "i2";
+    Configuration c1 = _cb.setHostname(c1Name).build();
+    Vrf v1 = _vb.setOwner(c1).build();
+    _ib.setOwner(c1).setVrf(v1).setActive(true);
+    Interface i1 = _ib.setName(i1Name).build();
+    i1.setSwitchport(true);
+    i1.setSwitchportMode(SwitchportMode.ACCESS);
+    i1.setAccessVlan(2);
+
+    Vrf v2 = _vb.setOwner(c1).build();
+    Interface i2 = _ib.setVrf(v2).setName(i2Name).build();
+    i2.setSwitchport(true);
+    i2.setSwitchportMode(SwitchportMode.ACCESS);
+    i2.setAccessVlan(2);
+
+    ImmutableSet.Builder<Layer2Edge> builder = ImmutableSet.builder();
+    computeLayer2SelfEdges(c1, builder);
+
+    assertThat(
+        builder.build(),
+        equalTo(
+            ImmutableSet.of(
+                new Layer2Edge(c1Name, i1Name, 2, c1Name, i2Name, 2, null),
+                new Layer2Edge(c1Name, i2Name, 2, c1Name, i1Name, 2, null))));
   }
 
   @Test

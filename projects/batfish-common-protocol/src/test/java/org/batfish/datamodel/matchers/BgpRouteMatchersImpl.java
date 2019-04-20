@@ -5,6 +5,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.OriginType;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
@@ -18,6 +19,17 @@ final class BgpRouteMatchersImpl {
     @Override
     protected Set<Long> featureValueOf(BgpRoute actual) {
       return actual.getCommunities();
+    }
+  }
+
+  static final class HasOriginType extends FeatureMatcher<BgpRoute, OriginType> {
+    HasOriginType(@Nonnull Matcher<? super OriginType> subMatcher) {
+      super(subMatcher, "A BgpRoute with originType:", "originType");
+    }
+
+    @Override
+    protected OriginType featureValueOf(BgpRoute actual) {
+      return actual.getOriginType();
     }
   }
 

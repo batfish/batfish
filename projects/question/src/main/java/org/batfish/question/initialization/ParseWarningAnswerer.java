@@ -19,7 +19,6 @@ import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.FileLines;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
-import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.question.initialization.IssueAggregation.ParseWarningTriplet;
@@ -38,7 +37,7 @@ class ParseWarningAnswerer extends Answerer {
 
     Map<String, Warnings> fileWarnings = pvcae.getWarnings();
 
-    Rows rows = new Rows();
+    ImmutableList.Builder<Row> rows = ImmutableList.builder();
 
     if (question.getAggregateDuplicates()) {
       aggregateDuplicateParseWarnings(fileWarnings)
@@ -56,7 +55,7 @@ class ParseWarningAnswerer extends Answerer {
     }
 
     TableAnswerElement answerElement = new TableAnswerElement(createMetadata(question));
-    answerElement.postProcessAnswer(_question, rows.getData());
+    answerElement.postProcessAnswer(_question, rows.build());
     return answerElement;
   }
 

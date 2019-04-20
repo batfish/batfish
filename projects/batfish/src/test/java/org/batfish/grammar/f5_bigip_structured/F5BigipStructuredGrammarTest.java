@@ -4,6 +4,9 @@ import static org.batfish.common.util.CommonUtil.communityStringToLong;
 import static org.batfish.datamodel.Interface.DependencyType.AGGREGATE;
 import static org.batfish.datamodel.InterfaceType.AGGREGATED;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasMetric;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
@@ -38,10 +41,12 @@ import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.KernelRouteMatchers.isKernelRouteThat;
+import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.permits;
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.rejects;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasKernelRoutes;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.datamodel.transformation.TransformationEvaluator.eval;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_NEIGHBOR;
@@ -63,6 +68,7 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_O
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_ONE_CONNECT;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_SERVER_SSL;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_TCP;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.ROUTE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.ROUTE_MAP;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.RULE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.SELF;
@@ -105,10 +111,15 @@ import java.util.SortedMap;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
+import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.BDDSourceManager;
+import org.batfish.common.bdd.IpAccessListToBdd;
+import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
@@ -116,6 +127,7 @@ import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDiff;
 import org.batfish.datamodel.IntegerSpace;
@@ -125,12 +137,14 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.KernelRoute;
+import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
@@ -153,6 +167,7 @@ import org.batfish.datamodel.transformation.PortField;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationEvaluator.TransformationResult;
 import org.batfish.datamodel.vendor_family.f5_bigip.Virtual;
+import org.batfish.datamodel.vendor_family.f5_bigip.VirtualAddress;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -162,6 +177,7 @@ import org.batfish.representation.f5_bigip.BuiltinPersistence;
 import org.batfish.representation.f5_bigip.BuiltinProfile;
 import org.batfish.representation.f5_bigip.F5BigipConfiguration;
 import org.batfish.representation.f5_bigip.F5BigipStructureType;
+import org.batfish.representation.f5_bigip.Route;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -210,6 +226,27 @@ public final class F5BigipStructuredGrammarTest {
                                 })));
   }
 
+  private static @Nonnull Flow createHttpFlow(String ingressNode, Ip dstIp) {
+    return Flow.builder()
+        .setDstIp(dstIp)
+        .setDstPort(NamedPort.HTTP.number())
+        .setIngressNode(ingressNode)
+        .setIpProtocol(IpProtocol.TCP)
+        .setSrcIp(Ip.ZERO)
+        .setSrcPort(50000)
+        .setTag("")
+        .build();
+  }
+
+  private static boolean matchesNonTrivially(IpAccessList acl, Flow flow) {
+    FilterResult result = acl.filter(flow, null, ImmutableMap.of(), ImmutableMap.of());
+    Integer matchLine = result.getMatchLine();
+    if (matchLine == null) {
+      return false;
+    }
+    return !toBDD().toBdd(acl.getLines().get(matchLine).getMatchCondition()).isOne();
+  }
+
   private static F5BigipConfiguration parseVendorConfig(String filename) {
     String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + filename);
     Settings settings = new Settings();
@@ -225,6 +262,12 @@ public final class F5BigipStructuredGrammarTest {
         (F5BigipConfiguration) extractor.getVendorConfiguration();
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + filename);
     return vendorConfiguration;
+  }
+
+  private static @Nonnull IpAccessListToBdd toBDD() {
+    BDDPacket pkt = new BDDPacket();
+    BDDSourceManager mgr = BDDSourceManager.forInterfaces(pkt, ImmutableSet.of("dummy"));
+    return new IpAccessListToBddImpl(pkt, mgr, ImmutableMap.of(), ImmutableMap.of());
   }
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
@@ -735,6 +778,36 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
+  public void testInterfaceDisabledConversion() throws IOException {
+    Configuration c = parseConfig("f5_bigip_structured_net_interface_disabled");
+
+    assertThat(
+        c.getAllInterfaces(),
+        hasKeys("1.0", "2.0", "3.0", "11.0", "12.0", "13.0", "trunk1", "/Common/vlan1"));
+
+    assertFalse(c.getAllInterfaces().get("1.0").getActive());
+    assertTrue(c.getAllInterfaces().get("2.0").getActive());
+    assertTrue(c.getAllInterfaces().get("3.0").getActive());
+    assertFalse(c.getAllInterfaces().get("11.0").getActive());
+    assertTrue(c.getAllInterfaces().get("12.0").getActive());
+    assertTrue(c.getAllInterfaces().get("13.0").getActive());
+  }
+
+  @Test
+  public void testInterfaceDisabledExtraction() {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_structured_net_interface_disabled");
+
+    assertThat(vc.getInterfaces(), hasKeys("1.0", "2.0", "3.0", "11.0", "12.0", "13.0"));
+
+    assertTrue(vc.getInterfaces().get("1.0").getDisabled());
+    assertFalse(vc.getInterfaces().get("2.0").getDisabled());
+    assertThat(vc.getInterfaces().get("3.0").getDisabled(), nullValue());
+    assertTrue(vc.getInterfaces().get("11.0").getDisabled());
+    assertFalse(vc.getInterfaces().get("12.0").getDisabled());
+    assertThat(vc.getInterfaces().get("13.0").getDisabled(), nullValue());
+  }
+
+  @Test
   public void testInterfaceReferences() throws IOException {
     String hostname = "f5_bigip_structured_interface_references";
     String file = "configs/" + hostname;
@@ -1122,6 +1195,48 @@ public final class F5BigipStructuredGrammarTest {
             PROFILE_SERVER_SSL,
             PROFILE_TCP),
         BuiltinProfile::getBuiltinProfile);
+  }
+
+  @Test
+  public void testRouteConversion() throws IOException {
+    Configuration c = parseConfig("f5_bigip_structured_net_route");
+
+    assertThat(c, hasDefaultVrf(hasStaticRoutes(hasSize(1))));
+
+    StaticRoute sr = c.getDefaultVrf().getStaticRoutes().iterator().next();
+
+    assertThat(sr, hasAdministrativeCost(1));
+    assertThat(sr, hasMetric(0L));
+    assertThat(sr, hasNextHopIp(Ip.parse("192.0.2.1")));
+    assertThat(sr, hasPrefix(Prefix.strict("10.0.0.0/8")));
+  }
+
+  @Test
+  public void testRouteExtraction() {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_structured_net_route");
+
+    String routeName = "/Common/route1";
+
+    assertThat(vc.getRoutes(), hasKeys(routeName));
+
+    Route route = vc.getRoutes().get(routeName);
+
+    assertThat(route.getName(), equalTo(routeName));
+    assertThat(route.getGw(), equalTo(Ip.parse("192.0.2.1")));
+    assertThat(route.getNetwork(), equalTo(Prefix.parse("10.0.0.0/8")));
+  }
+
+  @Test
+  public void testRouteReferences() throws IOException {
+    String hostname = "f5_bigip_structured_net_route";
+    String file = "configs/" + hostname;
+    String used = "/Common/route1";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // detect all structure references
+    assertThat(ans, hasNumReferrers(file, ROUTE, used, 1));
   }
 
   @Test
@@ -1570,6 +1685,40 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
+  public void testVirtualAddressArpDisabledConversion() throws IOException {
+    Configuration c = parseConfig("f5_bigip_structured_ltm_virtual_address_arp_disabled");
+
+    IpSpace arpIps = c.getAllInterfaces().get("/Common/vlan1").getAdditionalArpIps();
+
+    // disabled
+    assertThat(arpIps, not(containsIp(Ip.parse("192.0.2.1"))));
+    // enabled
+    assertThat(arpIps, containsIp(Ip.parse("192.0.2.2")));
+    // implicitly enabled
+    assertThat(arpIps, containsIp(Ip.parse("192.0.2.3")));
+  }
+
+  @Test
+  public void testVirtualAddressArpDisabledExtraction() {
+    F5BigipConfiguration vc =
+        parseVendorConfig("f5_bigip_structured_ltm_virtual_address_arp_disabled");
+    String vaDisabledName = "/Common/192.0.2.1";
+    String vaEnabledName = "/Common/192.0.2.2";
+    String vaImplicitlyEnabledName = "/Common/192.0.2.3";
+
+    assertThat(
+        vc.getVirtualAddresses(), hasKeys(vaDisabledName, vaEnabledName, vaImplicitlyEnabledName));
+
+    VirtualAddress vaDisabled = vc.getVirtualAddresses().get(vaDisabledName);
+    VirtualAddress vaEnabled = vc.getVirtualAddresses().get(vaEnabledName);
+    VirtualAddress vaImplicitlyEnabled = vc.getVirtualAddresses().get(vaImplicitlyEnabledName);
+
+    assertTrue(vaDisabled.getArpDisabled());
+    assertFalse(vaEnabled.getArpDisabled());
+    assertThat(vaImplicitlyEnabled.getArpDisabled(), nullValue());
+  }
+
+  @Test
   public void testVirtualAddressReferences() throws IOException {
     String hostname = "f5_bigip_structured_ltm_references";
     String file = "configs/" + hostname;
@@ -1611,6 +1760,49 @@ public final class F5BigipStructuredGrammarTest {
     assertThat(vlan2AdditionalArpIps, containsIp(Ip.parse("192.0.2.3")));
     // vlans
     assertThat(vlan2AdditionalArpIps, not(containsIp(Ip.parse("192.0.2.4"))));
+  }
+
+  @Test
+  public void testVirtualDisabledConversion() throws IOException {
+    String hostname = "f5_bigip_structured_ltm_virtual_disabled";
+    Configuration c = parseConfig(hostname);
+
+    Ip ipDisabled = Ip.parse("192.0.2.1");
+    Ip ipEnabled = Ip.parse("192.0.2.2");
+    Ip ipImplicitlyEnabled = Ip.parse("192.0.2.3");
+    String vlanName = "/Common/vlan1";
+
+    org.batfish.datamodel.Interface vlan1 = c.getAllInterfaces().get(vlanName);
+    IpAccessList incomingFilter = vlan1.getIncomingFilter();
+    IpSpace arpIps = vlan1.getAdditionalArpIps();
+
+    assertFalse(
+        "The incoming filter should not have specific handling for flows to a disabled virtual",
+        matchesNonTrivially(incomingFilter, createHttpFlow(hostname, ipDisabled)));
+    assertTrue(
+        "The incoming filter should have specific handling for flows to an enabled virtual",
+        matchesNonTrivially(incomingFilter, createHttpFlow(hostname, ipEnabled)));
+    assertTrue(
+        "The incoming filter should have specific handling for flows to an implicitly-enabled virtual",
+        matchesNonTrivially(incomingFilter, createHttpFlow(hostname, ipImplicitlyEnabled)));
+
+    assertThat(arpIps, not(containsIp(ipDisabled)));
+    assertThat(arpIps, containsIp(ipEnabled));
+    assertThat(arpIps, containsIp(ipImplicitlyEnabled));
+  }
+
+  @Test
+  public void testVirtualDisabledExtraction() {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_structured_ltm_virtual_disabled");
+    String vDisabledName = "/Common/virtual_disabled";
+    String vEnabledName = "/Common/virtual_enabled";
+    String vImplicitlyEnabledName = "/Common/virtual_implicitly_enabled";
+
+    assertThat(vc.getVirtuals(), hasKeys(vDisabledName, vEnabledName, vImplicitlyEnabledName));
+
+    assertTrue(vc.getVirtuals().get(vDisabledName).getDisabled());
+    assertFalse(vc.getVirtuals().get(vEnabledName).getDisabled());
+    assertThat(vc.getVirtuals().get(vImplicitlyEnabledName).getDisabled(), nullValue());
   }
 
   @Test

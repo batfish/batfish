@@ -14790,6 +14790,18 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
+        "routeFilterLists" : {
+          "pl1" : {
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "ipWildcard" : "10.0.0.0/24",
+                "lengthRange" : "24-32"
+              }
+            ],
+            "name" : "pl1"
+          }
+        },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:1~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:1~",
@@ -14927,6 +14939,7 @@
               "/Common/192.0.2.8" : {
                 "name" : "/Common/192.0.2.8",
                 "address" : "192.0.2.9",
+                "arpDisabled" : false,
                 "mask" : "255.255.255.255",
                 "routeAdvertisementMode" : "SELECTIVE"
               }
@@ -14939,6 +14952,7 @@
                 ],
                 "destination" : "/Common/192.0.2.7",
                 "destinationPort" : 80,
+                "disabled" : false,
                 "ipForward" : true,
                 "ipProtocol" : "TCP",
                 "mask" : "255.255.255.255",
@@ -14962,6 +14976,21 @@
                 "network" : "192.0.2.9/32"
               }
             ]
+          }
+        }
+      },
+      "f5_bigip_structured_malformed" : {
+        "configurationFormat" : "F5_BIGIP_STRUCTURED",
+        "name" : "f5_bigip_structured_malformed",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "f5Bigip" : { }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
           }
         }
       },
@@ -15084,6 +15113,17 @@
               "/Common/MYVLAN",
               "1.0",
               "trunk1"
+            ],
+            "staticRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "10.200.100.1/32",
+                "nextHopInterface" : "dynamic",
+                "nextHopIp" : "10.0.0.2",
+                "tag" : -1
+              }
             ]
           }
         }
@@ -15449,6 +15489,26 @@
           }
         },
         "routeFilterLists" : {
+          "pl1" : {
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "ipWildcard" : "192.0.2.0/24",
+                "lengthRange" : "24-32"
+              },
+              {
+                "action" : "PERMIT",
+                "ipWildcard" : "172.16.0.0/24",
+                "lengthRange" : "24-26"
+              },
+              {
+                "action" : "PERMIT",
+                "ipWildcard" : "10.0.0.0/24",
+                "lengthRange" : "26-28"
+              }
+            ],
+            "name" : "pl1"
+          },
           "~access-list~acl1~" : {
             "lines" : [
               {
@@ -15478,6 +15538,16 @@
                         "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                         "name" : "~access-list~acl1~"
                       }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                      "prefix" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                      },
+                      "prefixSet" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                        "name" : "pl1"
+                      }
                     }
                   ]
                 },
@@ -15490,6 +15560,20 @@
                         65538,
                         196612
                       ]
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
+                    "metric" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
+                      "value" : 50
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                    "originType" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                      "originType" : "incomplete"
                     }
                   },
                   {
@@ -15592,6 +15676,13 @@
           "~BGP_PEER_EXPORT_POLICY:65500:10.0.0.1~" : {
             "name" : "~BGP_PEER_EXPORT_POLICY:65500:10.0.0.1~",
             "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
+                "destinationVrf" : false,
+                "expr" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.SelfNextHop"
+                }
+              },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "comment" : "peer-export policy main conditional: exitAccept if true / exitReject if false",
@@ -25417,6 +25508,51 @@
                 "secret" : "9f69effa159caf78ac2c0d3b3b4189a50917b71f4d89993f41e0f4175f276b91",
                 "sourceAddress" : "8.7.6.5"
               }
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
+      "juniper_trailing_space" : {
+        "configurationFormat" : "FLAT_JUNIPER",
+        "name" : "juniper_trailing_space",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
             }
           }
         },

@@ -16,6 +16,10 @@ interface tmm
 !
 interface vlan1
 !
+ip prefix-list pl1 seq 10 permit 192.0.2.0/24
+ip prefix-list pl1 seq 20 permit 172.16.0.0/24 le 26
+ip prefix-list pl1 seq 30 permit 10.0.0.0/24 ge 26 le 28
+!
 router bgp 65500
  bgp always-compare-med
  bgp deterministic-med
@@ -39,13 +43,19 @@ router bgp 65500
  neighbor 10.0.0.1 next-hop-self
  neighbor 10.0.0.1 peer-group pg1
  neighbor 10.0.0.1 update-source us1
+ redistribute kernel
  redistribute kernel route-map rm1
 !
 no service password-encryption
 !
 route-map rm1 permit 1
  match ip address acl1
+ match ip address prefix-list pl1
  set community 1:2 3:4
+ set metric 50
+ set origin egp
+ set origin igp
+ set origin incomplete
 !
 route-map rm1 deny 2
 !

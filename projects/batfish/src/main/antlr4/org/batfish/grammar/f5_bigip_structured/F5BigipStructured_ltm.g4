@@ -138,7 +138,11 @@ lpm_member
 :
   name = word BRACE_LEFT
   (
-    NEWLINE lpmm_address*
+    NEWLINE
+    (
+      lpmm_address
+      | unrecognized
+    )*
   )? BRACE_RIGHT NEWLINE
 ;
 
@@ -390,6 +394,8 @@ l_virtual
     NEWLINE
     (
       lv_destination
+      | lv_disabled
+      | lv_enabled
       | lv_ip_forward
       | lv_ip_protocol
       | lv_mask
@@ -413,6 +419,16 @@ l_virtual
 lv_destination
 :
   DESTINATION name = word NEWLINE
+;
+
+lv_disabled
+:
+  DISABLED NEWLINE
+;
+
+lv_enabled
+:
+  ENABLED NEWLINE
 ;
 
 lv_ip_forward
@@ -577,7 +593,11 @@ lva_address
 
 lva_arp
 :
-  ARP ENABLED NEWLINE
+  ARP
+  (
+    DISABLED
+    | ENABLED
+  ) NEWLINE
 ;
 
 lva_mask

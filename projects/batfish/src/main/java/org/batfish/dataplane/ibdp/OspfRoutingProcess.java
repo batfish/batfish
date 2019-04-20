@@ -513,7 +513,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                     .setAdmin(_process.getAdminCosts().get(route.getProtocol()))
                     // Clear any non-routing or non-forwarding bit
                     .setNonRouting(false)
-                    .setNonRouting(false)
+                    .setNonForwarding(false)
                     .build())
             .build());
   }
@@ -570,7 +570,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                 .setAdmin(_process.getAdminCosts().get(route.getProtocol()))
                 // Clear any non-routing or non-forwarding bit
                 .setNonRouting(false)
-                .setNonRouting(false)
+                .setNonForwarding(false)
                 .build())
         .build();
   }

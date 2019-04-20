@@ -141,6 +141,11 @@ GLOBAL_SETTINGS
   'global-settings'
 ;
 
+GW
+:
+  'gw'
+;
+
 HOSTNAME
 :
   'hostname'
@@ -241,6 +246,11 @@ NET
   'net'
 ;
 
+NETWORK
+:
+  'network'
+;
+
 NODE
 :
   'node'
@@ -334,6 +344,11 @@ REJECT
 REMOTE_AS
 :
   'remote-as'
+;
+
+ROUTE
+:
+  'route'
 ;
 
 ROUTE_ADVERTISEMENT
