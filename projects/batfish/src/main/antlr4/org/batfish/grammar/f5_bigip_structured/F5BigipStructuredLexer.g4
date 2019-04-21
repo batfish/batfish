@@ -583,6 +583,21 @@ COMMENT_TAIL
   '#' F_NonNewlineChar* -> channel ( HIDDEN )
 ;
 
+VLAN_ID
+:
+  F_VlanId
+;
+
+UINT16
+:
+  F_Uint16
+;
+
+UINT32
+:
+  F_Uint32
+;
+
 DEC
 :
   F_Digit+
@@ -941,6 +956,7 @@ F_StandardCommunity
 fragment
 F_Uint16
 :
+// 0-65535
   F_Digit
   | F_PositiveDigit F_Digit F_Digit? F_Digit?
   | [1-5] F_Digit F_Digit F_Digit F_Digit
@@ -948,6 +964,36 @@ F_Uint16
   | '65' [0-4] F_Digit F_Digit
   | '655' [0-2] F_Digit
   | '6553' [0-5]
+;
+
+fragment
+F_Uint32
+:
+// 0-4294967295
+  F_Digit
+  | F_PositiveDigit F_Digit F_Digit? F_Digit? F_Digit? F_Digit? F_Digit?
+  F_Digit? F_Digit? F_Digit?
+  | [1-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  F_Digit
+  | '4' [0-1] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '42' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '429' [0-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '4294' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '42949' [0-5] F_Digit F_Digit F_Digit F_Digit
+  | '429496' [0-6] F_Digit F_Digit F_Digit
+  | '4294967' [0-1] F_Digit F_Digit
+  | '42949672' [0-8] F_Digit
+  | '429496729' [0-5]
+;
+
+fragment
+F_VlanId
+:
+// 1-4094
+  F_PositiveDigit F_Digit? F_Digit?
+  | [1-3] F_Digit F_Digit F_Digit
+  | '40' [0-8] F_Digit
+  | '409' [0-4]
 ;
 
 fragment

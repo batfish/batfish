@@ -112,23 +112,20 @@ u_word_list
 
 uint16
 :
-  d = DEC
-  {isUint16($d)}?
-
+  UINT16
+  | VLAN_ID
 ;
 
 uint32
 :
-  d = DEC
-  {isUint32($d)}?
-
+  UINT16
+  | UINT32
+  | VLAN_ID
 ;
 
 vlan_id
 :
-  d = DEC
-  {isVlanId($d)}?
-
+  VLAN_ID
 ;
 
 word
