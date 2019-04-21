@@ -5,8 +5,7 @@ import
 F5BigipStructured_common, F5BigipStructured_ltm, F5BigipStructured_net, F5BigipStructured_sys;
 
 options {
-  superClass =
-  'org.batfish.grammar.f5_bigip_structured.parsing.F5BigipStructuredBaseParser';
+  superClass = 'org.batfish.grammar.BatfishParser';
   tokenVocab = F5BigipStructuredLexer;
 }
 
