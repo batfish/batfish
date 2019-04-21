@@ -702,7 +702,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                 r.toBuilder()
                     .setRoute(r.getRoute().toBuilder().setNextHopIp(nextHopIp).build())
                     .build())
-        .collect(ImmutableList.toImmutableList());
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   /** Send out inter-area routes from a regular (non-ABR) router to a neighbor */
@@ -751,7 +751,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                             .setNextHopIp(nextHopIp)
                             .build())
                     .build())
-        .collect(ImmutableList.toImmutableList());
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   /** Send out inter-area routes from an ABR to a neighbor */
@@ -797,7 +797,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                     nextHopIp,
                     _process.getMaxMetricSummaryNetworks()),
                 computeDefaultInterAreaRouteToInject(edgeId, areaConfig, nextHopIp))
-            .collect(ImmutableList.toImmutableList()));
+            .collect(ImmutableSet.toImmutableSet()));
   }
 
   /**
@@ -1195,7 +1195,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                               .build())
                   .build();
             })
-        .collect(ImmutableList.toImmutableList());
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   /**
@@ -1226,7 +1226,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                               .build())
                   .build();
             })
-        .collect(ImmutableList.toImmutableList());
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   /**
@@ -1388,7 +1388,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
             r -> areaConfig.getStubType() == StubType.NONE || !r.getNetwork().equals(Prefix.ZERO))
         .filter(clazz::isInstance)
         .map(r -> new RouteAdvertisement<>(clazz.cast(r)))
-        .collect(ImmutableList.toImmutableList());
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   /**
