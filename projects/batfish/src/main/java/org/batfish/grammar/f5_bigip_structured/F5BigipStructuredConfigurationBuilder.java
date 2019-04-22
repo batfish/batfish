@@ -1466,6 +1466,10 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void exitNti_interface(Nti_interfaceContext ctx) {
     String name = unquote(ctx.name.getText());
+    if (!_c.getInterfaces().containsKey(name)) {
+      _c.getInterfaces().put(name, new Interface(name));
+      defineStructure(INTERFACE, name, ctx);
+    }
     _c.referenceStructure(INTERFACE, name, TRUNK_INTERFACE, ctx.name.getStart().getLine());
     _currentTrunk.getInterfaces().add(name);
   }

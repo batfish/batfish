@@ -944,7 +944,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
     markConcreteStructure(
         F5BigipStructureType.BGP_PROCESS, F5BigipStructureUsage.BGP_PROCESS_SELF_REFERENCE);
     markConcreteStructure(
-        F5BigipStructureType.INTERFACE, F5BigipStructureUsage.INTERFACE_SELF_REFERENCE);
+        F5BigipStructureType.INTERFACE,
+        F5BigipStructureUsage.INTERFACE_SELF_REFERENCE,
+        F5BigipStructureUsage.TRUNK_INTERFACE);
     markAbstractStructure(
         F5BigipStructureType.MONITOR,
         F5BigipStructureUsage.POOL_MONITOR,
