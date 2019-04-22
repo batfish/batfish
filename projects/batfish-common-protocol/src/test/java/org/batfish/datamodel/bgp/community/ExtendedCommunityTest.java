@@ -20,16 +20,14 @@ public final class ExtendedCommunityTest {
 
   @Test
   public void testEquals() {
-    ExtendedCommunity ec = ExtendedCommunity.of(1, 2L, 123L);
+    ExtendedCommunity ec = ExtendedCommunity.of(0, 2L, 123L);
     new EqualsTester()
+        .addEqualityGroup(ec, ec, ExtendedCommunity.of(0, 2L, 123L))
         .addEqualityGroup(
-            ec,
-            ec,
-            ExtendedCommunity.of(1, 2L, 123L),
-            ExtendedCommunity.of(1, Ip.parse("0.0.0.2"), 123L))
-        .addEqualityGroup(ExtendedCommunity.of(2, 2L, 123L))
-        .addEqualityGroup(ExtendedCommunity.of(1, 3L, 123L))
-        .addEqualityGroup(ExtendedCommunity.of(1, 2L, 124L))
+            ExtendedCommunity.of(1 << 8, 2L, 123L),
+            ExtendedCommunity.of(1 << 8, Ip.parse("0.0.0.2"), 123L))
+        .addEqualityGroup(ExtendedCommunity.of(0, 3L, 123L))
+        .addEqualityGroup(ExtendedCommunity.of(0, 2L, 124L))
         .addEqualityGroup(new Object())
         .testEquals();
   }
@@ -52,9 +50,22 @@ public final class ExtendedCommunityTest {
     assertThat(ExtendedCommunity.parse("1:65535:1"), equalTo(ExtendedCommunity.of(1, 65535L, 1L)));
     assertThat(ExtendedCommunity.parse("1:656L:1"), equalTo(ExtendedCommunity.of(1, 656L, 1L)));
     assertThat(ExtendedCommunity.parse("1:0.0.0.1:1"), equalTo(ExtendedCommunity.of(1, 1L, 1L)));
-    assertThat(ExtendedCommunity.parse("1:1.1:1"), equalTo(ExtendedCommunity.of(1, 65537, 1L)));
+    assertThat(
+        ExtendedCommunity.parse("512:1.1:1"), equalTo(ExtendedCommunity.of(0x02 << 8, 65537, 1L)));
     assertThat(ExtendedCommunity.parse("target:1L:1"), equalTo(ExtendedCommunity.of(514, 1L, 1L)));
     assertThat(ExtendedCommunity.parse("origin:1L:1"), equalTo(ExtendedCommunity.of(515, 1L, 1L)));
+  }
+
+  @Test
+  public void testOfWithInvalidType() {
+    thrown.expect(IllegalArgumentException.class);
+    ExtendedCommunity.of(4 << 8, 1, 1);
+  }
+
+  @Test
+  public void testOfWithInvalidTypeAdminCombo() {
+    thrown.expect(IllegalArgumentException.class);
+    ExtendedCommunity.of(0, 1 << 16, 1);
   }
 
   @Test
@@ -79,6 +90,13 @@ public final class ExtendedCommunityTest {
   public void testParseLargeType() {
     thrown.expect(IllegalArgumentException.class);
     ExtendedCommunity.parse("65536:1:1");
+  }
+
+  @Test
+  public void testInvalidType() {
+    thrown.expect(IllegalArgumentException.class);
+    // this will make typeByte 0x04
+    ExtendedCommunity.parse("1024:1:1");
   }
 
   @Test
@@ -108,7 +126,7 @@ public final class ExtendedCommunityTest {
   @Test
   public void testParseLargeGlobalAdminBecauseLsuffix() {
     thrown.expect(IllegalArgumentException.class);
-    ExtendedCommunity.parse("1:656L:65536");
+    ExtendedCommunity.parse("origin:656L:65536");
   }
 
   @Test

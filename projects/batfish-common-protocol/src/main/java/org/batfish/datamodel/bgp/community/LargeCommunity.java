@@ -3,7 +3,6 @@ package org.batfish.datamodel.bgp.community;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.google.common.primitives.Longs;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -41,19 +40,19 @@ public final class LargeCommunity implements Community {
     checkArgument(
         parts.length == 3 || parts.length == 4, "Invalid large BGP community string %s", value);
     if (parts.length == 3) {
-      return of(getLongValue(parts[0]), getLongValue(parts[1]), getLongValue(parts[2]));
+      return of(
+          Long.parseUnsignedLong(parts[0]),
+          Long.parseUnsignedLong(parts[1]),
+          Long.parseUnsignedLong(parts[2]));
     } else if (parts[0].equalsIgnoreCase("large")) {
-      return of(getLongValue(parts[1]), getLongValue(parts[2]), getLongValue(parts[3]));
+      return of(
+          Long.parseUnsignedLong(parts[1]),
+          Long.parseUnsignedLong(parts[2]),
+          Long.parseUnsignedLong(parts[3]));
     } else {
       throw new IllegalArgumentException(
-          String.format("Invalid large community string: %s", value));
+          String.format("Invalid large BGP community string: %s", value));
     }
-  }
-
-  private static long getLongValue(String s) {
-    Long val = Longs.tryParse(s);
-    checkArgument(val != null && val >= 0 && val <= 0xFFFFFFFFL, "Invalid identifier: %s", s);
-    return val;
   }
 
   public static LargeCommunity of(long globalAdministrator, long localData1, long localData2) {
@@ -63,12 +62,12 @@ public final class LargeCommunity implements Community {
         globalAdministrator);
     checkArgument(
         localData1 >= 0 && localData1 <= 0xFFFFFFFFL,
-        "Invalid global administrator value: %d",
-        globalAdministrator);
+        "Invalid local administrator value: %d",
+        localData1);
     checkArgument(
         localData2 >= 0 && localData2 <= 0xFFFFFFFFL,
-        "Invalid global administrator value: %d",
-        globalAdministrator);
+        "Invalid local administrator value: %d",
+        localData2);
     return new LargeCommunity(globalAdministrator, localData1, localData2);
   }
 

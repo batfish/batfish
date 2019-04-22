@@ -5,8 +5,10 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Ints;
 import java.util.Objects;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -20,6 +22,16 @@ import org.batfish.datamodel.Ip;
 public final class ExtendedCommunity implements Community {
 
   private static final long serialVersionUID = 1L;
+
+  private static final Set<Byte> _validTypes =
+      ImmutableSet.of(
+          (byte) 0x00,
+          (byte) 0x01,
+          (byte) 0x02,
+          (byte) 0x03,
+          (byte) 0x40,
+          (byte) 0x41,
+          (byte) 0x43);
 
   private final byte _type;
   private final byte _subType;
@@ -65,7 +77,7 @@ public final class ExtendedCommunity implements Community {
     } else {
       // They type/subtype is a literal integer
       Integer intVal = Ints.tryParse(subType);
-      if (intVal != null && intVal < 0xFFFF && intVal > 0) {
+      if (intVal != null && intVal <= 0xFFFF && intVal >= 0) {
         subTypeByte = (byte) (intVal & 0xFF);
         typeByte = (byte) ((intVal & 0xFF00) >> 8);
       } else {
@@ -75,7 +87,7 @@ public final class ExtendedCommunity implements Community {
     }
     // Local administrator, can only be a number
     laLong = Long.parseUnsignedLong(localAdministrator);
-    // Gloval administrator, is complicated. Try a bunch of combinations
+    // Global administrator, is complicated. Try a bunch of combinations
     String[] gaParts = globalAdministrator.split("\\.");
     if (gaParts.length == 4) { // Dotted IP address notation
       // type 0x01, 1-byte subtype, 4-byte ip address, 2-byte number la
@@ -117,6 +129,8 @@ public final class ExtendedCommunity implements Community {
         } else {
           // type 0x02, 1-byte subtype, 4-byte number ga, 2-byte number la
           checkArgument(
+              gaLong <= 0xFFFFFFFFL, "Invalid global administrator value %s", globalAdministrator);
+          checkArgument(
               laLong <= 0xFFFFL, "Invalid local administrator value %s", localAdministrator);
           typeByte = firstNonNull(typeByte, (byte) 0x02);
         }
@@ -130,26 +144,30 @@ public final class ExtendedCommunity implements Community {
         type >= 0 && type <= 0xFFFF,
         "Extended community type %d is not within the allowed range",
         type);
+    byte typeByte = (byte) (type >> 8);
+    checkArgument(
+        _validTypes.contains(typeByte), "Not a valid BGP extended community type: %d", type);
     checkArgument(
         globalAdministrator >= 0 && localAdministrator >= 0,
         "Administrator values must be positive");
-    checkArgument(
-        (globalAdministrator <= 0xFFFFFFFFL && localAdministrator <= 0xFFFFL)
-            || (globalAdministrator <= 0xFFFFL && localAdministrator <= 0xFFFFFFFFL),
-        "Extended community administrator values are not within the allowed range");
+    if (typeByte == 0x00 || typeByte == 0x40) {
+      checkArgument(
+          globalAdministrator <= 0xFFFFL && localAdministrator <= 0xFFFFFFFFL,
+          "Extended community administrator values are not within the allowed range");
+    } else {
+      checkArgument(
+          globalAdministrator <= 0xFFFFFFFFL && localAdministrator <= 0xFFFFL,
+          "Extended community administrator values are not within the allowed range");
+    }
     return new ExtendedCommunity(
-        (byte) (type >> 8), (byte) (type & 0xFF), globalAdministrator, localAdministrator);
+        typeByte, (byte) (type & 0xFF), globalAdministrator, localAdministrator);
   }
 
   public static ExtendedCommunity of(int type, Ip globalAdministrator, long localAdministrator) {
+    byte typeByte = (byte) (type >> 8);
     checkArgument(
-        localAdministrator >= 0 && localAdministrator <= 0xFFFF,
-        "Local admin value %d is not within allowed range",
-        localAdministrator);
-    checkArgument(
-        globalAdministrator.asLong() >= 0,
-        "Invalid IP for global admin value: %s",
-        globalAdministrator);
+        typeByte == 0x01 || typeByte == 0x41,
+        "Invalid type value for IPv4 address specific community");
     return of(type, globalAdministrator.asLong(), localAdministrator);
   }
 

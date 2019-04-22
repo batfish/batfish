@@ -46,8 +46,8 @@ public final class StandardCommunity implements Community {
 
   @Nonnull
   public static StandardCommunity of(int high, int low) {
-    checkArgument(low >= 0 & low <= 0xFFFF, "Invalid low value: %d", low);
-    checkArgument(high >= 0 & high <= 0xFFFF, "Invalid high value: %d", low);
+    checkArgument(low >= 0 && low <= 0xFFFF, "Invalid low value: %d", low);
+    checkArgument(high >= 0 && high <= 0xFFFF, "Invalid high value: %d", low);
     return new StandardCommunity(high << 16 | low);
   }
 
