@@ -77,11 +77,8 @@ public abstract class BgpSessionQuestion extends Question {
     return status != null && _status.matcher(status.toString()).matches();
   }
 
-  boolean matchesType(SessionType type) {
-    if (_type.pattern().equals(MATCH_ALL)) {
-      return true;
-    }
-    return type != null && _type.matcher(type.toString()).matches();
+  boolean matchesType(@Nullable String type) {
+    return _type.pattern().equals(MATCH_ALL) || (type != null && _type.matcher(type).matches());
   }
 
   @Nullable
