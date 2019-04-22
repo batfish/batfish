@@ -44,7 +44,7 @@ public final class BgpAdvertisementGroupTest {
         BgpAdvertisementGroup.builder()
             .setAsPath(AsPath.ofSingletonAsSets(2L))
             .setDescription("hello")
-            .setExtendedCommunities(ImmutableSet.of(ExtendedCommunity.of(1, 6555L, 123456L)))
+            .setExtendedCommunities(ImmutableSet.of(ExtendedCommunity.of(0, 6555L, 123456L)))
             .setLocalPreference(123L)
             .setMed(456L)
             .setOriginator(Ip.parse("1.1.1.1"))
@@ -77,7 +77,7 @@ public final class BgpAdvertisementGroupTest {
         .addEqualityGroup(builder.setDescription("hello").build())
         .addEqualityGroup(
             builder
-                .setExtendedCommunities(ImmutableSet.of(ExtendedCommunity.of(1, 65554L, 1L)))
+                .setExtendedCommunities(ImmutableSet.of(ExtendedCommunity.of(0, 6555L, 1L)))
                 .build())
         .addEqualityGroup(builder.setLocalPreference(1L).build())
         .addEqualityGroup(builder.setMed(1L).build())
