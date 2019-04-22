@@ -1,9 +1,7 @@
 package org.batfish.coordinator.resources;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.CoordConstsV2.RSC_FILTER;
 
-import com.google.common.base.Throwables;
 import java.io.IOException;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -89,29 +87,29 @@ public final class AnswerResource {
   @Produces(MediaType.APPLICATION_JSON)
   public Response getAnswer(
       @Nullable @QueryParam("snapshot") String snapshot,
-      @Nullable @QueryParam("referenceSnapshot") String referenceSnapshot) {
-    try {
-      checkArgument(snapshot != null, "Snapshot must be specified to fetch question answer");
-      Answer ans =
-          Main.getWorkMgr()
-              .getAnswer(_network, snapshot, _questionName, referenceSnapshot, _analysis);
-      if (ans == null) {
-        return Response.status(Status.NOT_FOUND)
-            .entity(
-                String.format(
-                    "Answer not found for question %s on network: %s, snapshot: %s, referenceSnapshot: %s, analysis: %s",
-                    _questionName, _network, snapshot, referenceSnapshot, _analysis))
-            .build();
-      }
-      return Response.ok().entity(ans).build();
-    } catch (IllegalArgumentException e) {
-      return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
-    } catch (IOException e) {
-      // Other inputs should be validated by this point, don't expect to run into this exception
-      // under normal circumstances
-      return Response.status(Status.INTERNAL_SERVER_ERROR)
-          .entity(Throwables.getStackTraceAsString(e))
+      @Nullable @QueryParam("referenceSnapshot") String referenceSnapshot)
+      throws IOException {
+    if (snapshot == null || snapshot.isEmpty()) {
+      return Response.status(Status.BAD_REQUEST)
+          .entity("Snapshot must be specified to fetch question answer")
           .build();
     }
+    if (!Main.getWorkMgr().checkSnapshotExists(_network, snapshot)) {
+      return Response.status(Status.NOT_FOUND)
+          .entity(String.format("Snapshot %s not found in network %s", snapshot, _network))
+          .build();
+    }
+    Answer ans =
+        Main.getWorkMgr()
+            .getAnswer(_network, snapshot, _questionName, referenceSnapshot, _analysis);
+    if (ans == null) {
+      return Response.status(Status.NOT_FOUND)
+          .entity(
+              String.format(
+                  "Answer not found for question %s on network: %s, snapshot: %s, referenceSnapshot: %s, analysis: %s",
+                  _questionName, _network, snapshot, referenceSnapshot, _analysis))
+          .build();
+    }
+    return Response.ok().entity(ans).build();
   }
 }
