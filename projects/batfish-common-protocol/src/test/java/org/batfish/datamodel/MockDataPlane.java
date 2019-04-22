@@ -46,6 +46,11 @@ public class MockDataPlane implements DataPlane {
       return new MockDataPlane(this);
     }
 
+    public Builder setConfigs(Map<String, Configuration> configs) {
+      _configurations = ImmutableMap.copyOf(configs);
+      return this;
+    }
+
     public Builder setBgpTopology(ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology) {
       _bgpTopology = bgpTopology;
       return this;
