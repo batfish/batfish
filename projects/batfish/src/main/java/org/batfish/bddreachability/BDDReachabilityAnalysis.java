@@ -64,6 +64,10 @@ public class BDDReachabilityAnalysis {
 
   private final BDD _queryHeaderSpaceBdd;
 
+  public ImmutableSet<StateExpr> getIngressLocationStates() {
+    return _ingressLocationStates;
+  }
+
   BDDReachabilityAnalysis(
       BDDPacket packet,
       Set<StateExpr> ingressLocationStates,
