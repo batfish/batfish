@@ -38,20 +38,19 @@ public final class LargeCommunity implements Community {
   public static LargeCommunity parse(String value) {
     String[] parts = value.split(":");
     checkArgument(
-        parts.length == 3 || parts.length == 4, "Invalid large BGP community string %s", value);
+        parts.length == 3 || (parts.length == 4 && parts[0].equalsIgnoreCase("large")),
+        "Invalid large BGP community string %s",
+        value);
     if (parts.length == 3) {
       return of(
           Long.parseUnsignedLong(parts[0]),
           Long.parseUnsignedLong(parts[1]),
           Long.parseUnsignedLong(parts[2]));
-    } else if (parts[0].equalsIgnoreCase("large")) {
+    } else {
       return of(
           Long.parseUnsignedLong(parts[1]),
           Long.parseUnsignedLong(parts[2]),
           Long.parseUnsignedLong(parts[3]));
-    } else {
-      throw new IllegalArgumentException(
-          String.format("Invalid large BGP community string: %s", value));
     }
   }
 

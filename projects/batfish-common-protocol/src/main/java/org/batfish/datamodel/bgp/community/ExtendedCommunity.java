@@ -104,7 +104,7 @@ public final class ExtendedCommunity implements Community {
           hi <= 0xFFFF && lo <= 0xFFFF,
           "Invalid global administrator value %s",
           globalAdministrator);
-      gaLong = hi << 16 | lo;
+      gaLong = ((long) hi) << 16 | lo;
       checkArgument(laLong <= 0xFFFFL, "Invalid local administrator value %s", localAdministrator);
     } else { // Regular numbers, almost
       if (globalAdministrator.endsWith("l")) { // e.g., 123L, a shorthand for forcing 4-byte GA.
