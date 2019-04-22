@@ -13,7 +13,8 @@ nr_prefix_list
     NEWLINE
     (
       nrp_entries
-      | nrp_common
+      | nrp_route_domain
+      | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
 ;
@@ -46,6 +47,12 @@ nrpee_action
   ACTION action = prefix_list_action NEWLINE
 ;
 
+prefix_list_action
+:
+  PERMIT
+  | DENY
+;
+
 nrpee_prefix
 :
   PREFIX prefix = ip_prefix NEWLINE
@@ -67,19 +74,7 @@ prefix_len_range
   STANDARD_COMMUNITY
 ;
 
-nrp_common
-:
-  nrp_route_domain
-  | unrecognized
-;
-
 nrp_route_domain
 :
   ROUTE_DOMAIN name = word NEWLINE
-;
-
-prefix_list_action
-:
-  PERMIT
-  | DENY
 ;

@@ -139,10 +139,7 @@ lp_members
 :
   MEMBERS BRACE_LEFT
   (
-    NEWLINE
-    (
-      lpm_member
-    )*
+    NEWLINE lpm_member*
   )? BRACE_RIGHT NEWLINE
 ;
 
