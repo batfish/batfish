@@ -3088,4 +3088,34 @@ public final class WorkMgrTest {
     _idManager.assignQuestion(question, networkId, _idManager.generateQuestionId(), analysisId);
     assertTrue(_manager.checkQuestionExists(network, question, analysis));
   }
+
+  @Test
+  public void testFilterAnswer() {
+    String columnName = "issue";
+    int maxRows = 1;
+    int rowOffset = 0;
+    TableAnswerElement table =
+        new TableAnswerElement(
+            new TableMetadata(
+                ImmutableList.of(new ColumnMetadata(columnName, Schema.ISSUE, "foobar"))));
+    table.addRow(Row.of(columnName, new Issue("blah", 5, new Issue.Type("m", "n"))));
+    Answer answer = new Answer();
+    answer.addAnswerElement(table);
+    answer.setStatus(AnswerStatus.SUCCESS);
+    AnswerRowsOptions options =
+        new AnswerRowsOptions(
+            ImmutableSet.of(columnName),
+            ImmutableList.of(),
+            maxRows,
+            rowOffset,
+            ImmutableList.of(new ColumnSortOption(columnName, true)),
+            false);
+
+    List<Row> processedRows =
+        ((TableView) _manager.filterAnswer(answer, options).getAnswerElements().get(0))
+            .getInnerRows();
+
+    // Confirm filter options were applied correctly
+    assertThat(processedRows, equalTo(table.getRowsList()));
+  }
 }
