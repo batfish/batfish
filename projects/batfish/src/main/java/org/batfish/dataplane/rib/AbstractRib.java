@@ -1,7 +1,6 @@
 package org.batfish.dataplane.rib;
 
 import com.google.common.collect.ImmutableSet;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -31,15 +30,6 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
 
   private static final long serialVersionUID = 1L;
 
-  /**
-   * This logical clock helps us keep track when routes were merged into the RIB to determine their
-   * age. It's incremented each time a route is merged into the RIB.
-   */
-  protected long _logicalClock;
-
-  /** Map to keep track when routes were merged in. */
-  protected Map<R, Long> _logicalArrivalTime;
-
   /** Root of our prefix trie */
   private RibTree<R> _tree;
 
@@ -54,8 +44,6 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
   public AbstractRib(@Nullable Map<Prefix, SortedSet<R>> backupRoutes) {
     _allRoutes = ImmutableSet.of();
     _backupRoutes = backupRoutes;
-    _logicalArrivalTime = new HashMap<>();
-    _logicalClock = 0;
     _tree = new RibTree<>(this);
   }
 
@@ -196,8 +184,6 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
     if (!delta.isEmpty()) {
       // A change to routes has been made
       _allRoutes = null;
-      _logicalArrivalTime.put(route, _logicalClock);
-      _logicalClock++;
     }
     return delta;
   }
@@ -228,14 +214,6 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
     if (!delta.isEmpty()) {
       // A change to routes has been made
       _allRoutes = null;
-      delta
-          .getActions()
-          .forEach(
-              a -> {
-                if (a.isWithdrawn()) {
-                  _logicalArrivalTime.remove(a.getRoute());
-                }
-              });
     }
     return delta;
   }

@@ -13,6 +13,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 
+/** An IPv4 address */
 public class Ip implements Comparable<Ip>, Serializable {
 
   // Soft values: let it be garbage collected in times of pressure.
@@ -132,6 +133,7 @@ public class Ip implements Comparable<Ip>, Serializable {
   }
 
   public static Ip create(long ipAsLong) {
+    checkArgument(ipAsLong <= 0xFFFFFFFFL, "Invalid IP value: %d", ipAsLong);
     try {
       return CACHE.get(ipAsLong, () -> new Ip(ipAsLong));
     } catch (ExecutionException e) {
