@@ -534,12 +534,12 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void enterLpm_member(Lpm_memberContext ctx) {
-    Structure_name_with_portContext sn = ctx.name;
-    String name = toName(ctx.name);
-    int port = toPort(ctx.name);
-    _c.referenceStructure(NODE, name, POOL_MEMBER, ctx.name.getStart().getLine());
+    Structure_name_with_portContext np = ctx.name_with_port;
+    String name = toName(np);
+    int port = toPort(np);
+    _c.referenceStructure(NODE, name, POOL_MEMBER, np.getStart().getLine());
     _currentPoolMember =
-        _currentPool.getMembers().computeIfAbsent(sn.getText(), n -> new PoolMember(n, name, port));
+        _currentPool.getMembers().computeIfAbsent(np.getText(), n -> new PoolMember(n, name, port));
   }
 
   @Override
@@ -694,12 +694,6 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void enterNrbnnaf_ipv6(Nrbnnaf_ipv6Context ctx) {
     _currentBgpNeighborAddressFamily = _currentBgpNeighbor.getIpv6AddressFamily();
-  }
-
-  @Override
-  public void enterNroute_network6(Nroute_network6Context ctx) {
-    _currentRoute.setNetwork6(toPrefix6(ctx.network6));
-    todo(ctx);
   }
 
   @Override
@@ -982,10 +976,10 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitLv_destination(Lv_destinationContext ctx) {
-    String name = toName(ctx.name);
-    int port = toPort(ctx.name);
-    _c.referenceStructure(
-        VIRTUAL_ADDRESS, name, VIRTUAL_DESTINATION, ctx.name.getStart().getLine());
+    Structure_name_with_portContext np = ctx.name_with_port;
+    String name = toName(np);
+    int port = toPort(np);
+    _c.referenceStructure(VIRTUAL_ADDRESS, name, VIRTUAL_DESTINATION, np.getStart().getLine());
     _currentVirtual.setDestination(name);
     _currentVirtual.setDestinationPort(port);
   }
@@ -1386,6 +1380,12 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void exitNroute_network(Nroute_networkContext ctx) {
     _currentRoute.setNetwork(ctx.network != null ? toPrefix(ctx.network) : Prefix.ZERO);
+  }
+
+  @Override
+  public void exitNroute_network6(Nroute_network6Context ctx) {
+    _currentRoute.setNetwork6(toPrefix6(ctx.network6));
+    todo(ctx);
   }
 
   @Override

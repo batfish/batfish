@@ -145,7 +145,7 @@ lp_members
 
 lpm_member
 :
-  name = structure_name_with_port BRACE_LEFT
+  name_with_port = structure_name_with_port BRACE_LEFT
   (
     NEWLINE
     (
@@ -453,7 +453,7 @@ l_virtual
 
 lv_destination
 :
-  DESTINATION name = structure_name_with_port NEWLINE
+  DESTINATION name_with_port = structure_name_with_port NEWLINE
 ;
 
 lv_disabled
