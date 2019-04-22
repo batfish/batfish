@@ -129,15 +129,10 @@ l_pool
     NEWLINE
     (
       lp_members
-      | lp_common
+      | lp_monitor
+      | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
-;
-
-lp_common
-:
-  lp_monitor
-  | unrecognized
 ;
 
 lp_members
