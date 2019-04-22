@@ -1635,6 +1635,22 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
+  public void testTrunkInterfaceImplicitConversion() throws IOException {
+    Configuration c = parseConfig("f5_bigip_structured_net_trunk_interface_implicit");
+
+    assertThat(c, hasInterface("1.0", isActive()));
+  }
+
+  @Test
+  public void testTrunkInterfaceImplicitExtraction() {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_structured_net_trunk_interface_implicit");
+    String ifaceName = "1.0";
+
+    assertThat(vc.getInterfaces(), hasKey(ifaceName));
+    assertThat(vc.getInterfaces().get(ifaceName).getDisabled(), nullValue());
+  }
+
+  @Test
   public void testTrunk() throws IOException {
     Configuration c = parseConfig("f5_bigip_structured_trunk");
     String trunk1Name = "trunk1";

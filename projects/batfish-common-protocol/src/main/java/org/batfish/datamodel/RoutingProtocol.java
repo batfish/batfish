@@ -120,9 +120,9 @@ public enum RoutingProtocol {
           case CISCO_IOS:
           case CISCO_IOS_XR:
           case CISCO_NX:
+          case CUMULUS_NCLU:
           case FORCE10:
           case FOUNDRY:
-            return 20;
           case F5:
           case F5_BIGIP_STRUCTURED:
             return 20;
@@ -247,9 +247,9 @@ public enum RoutingProtocol {
           case CISCO_IOS:
           case CISCO_IOS_XR:
           case CISCO_NX:
+          case CUMULUS_NCLU:
           case FORCE10:
           case FOUNDRY:
-            return 200;
           case F5:
           case F5_BIGIP_STRUCTURED:
             return 200;

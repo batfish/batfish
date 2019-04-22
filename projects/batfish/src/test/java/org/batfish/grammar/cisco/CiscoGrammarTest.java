@@ -89,6 +89,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEigrp;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpGroup;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpVersion;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasIsis;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMlagId;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
@@ -296,6 +297,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -5610,5 +5612,15 @@ public class CiscoGrammarTest {
                 .setMetric(1)
                 .setLsaMetric(1)
                 .build()));
+  }
+
+  @Test
+  public void testPortchannelSubinterfaceIsUp() throws IOException {
+    Configuration config = parseConfig("ios-portchannel-subinterface");
+    assertThat(
+        config,
+        hasInterface(
+            "Port-Channel1.1",
+            allOf(hasInterfaceType(InterfaceType.AGGREGATE_CHILD), isActive(true))));
   }
 }

@@ -16,6 +16,7 @@ public class CoordConstsV2 {
   public static final String RSC_COMPLETED_WORK = "completed_work";
   public static final String RSC_CONTAINER = "container";
   public static final String RSC_CONTAINERS = "containers";
+  public static final String RSC_FILTER = "filter";
   public static final String RSC_FORK = "fork";
   public static final String RSC_INFERRED_NODE_ROLES = "inferred_node_roles";
   public static final String RSC_INPUT = "input";
