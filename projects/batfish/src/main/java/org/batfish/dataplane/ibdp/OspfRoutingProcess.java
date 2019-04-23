@@ -263,18 +263,32 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
 
   }
 
-  @VisibleForTesting
-  static void applyDistributeList(
-      Configuration c, String vrfName, String ifaceName, AbstractRouteBuilder<?, ?> routeBuilder) {
+  /**
+   * Applies distribute list on a {@link AbstractRouteBuilder} based on the configuration and interface on which the route arrives. If the distribute list denies the route, it is declared as non-routing
+   *
+   * @param c            {@link Configuration} on which the route arrives
+   * @param vrfName      name of the {@link org.batfish.datamodel.Vrf} on which the route arrives
+   * @param ifaceName    name of the {@link Interface} on which the route arrives
+   * @param routeBuilder {@link AbstractRouteBuilder} representing the route
+   */
+  @VisibleForTesting static void applyDistributeList(Configuration c, String vrfName,
+      String ifaceName, AbstractRouteBuilder<?, ?> routeBuilder) {
     Interface iface = c.getAllInterfaces().get(ifaceName);
     assert iface != null;
-    if (iface.getOspfInboundDistributeListPolicy() != null) {
-      RoutingPolicy routingPolicy =
-          c.getRoutingPolicies().get(iface.getOspfInboundDistributeListPolicy());
-      assert routingPolicy != null;
-      routeBuilder.setNonRouting(
-          !routingPolicy.process(routeBuilder.build(), routeBuilder, null, vrfName, Direction.IN));
+    if (iface.getOspfInboundDistributeListPolicy() == null) {
+      return;
     }
+    RoutingPolicy routingPolicy = c.getRoutingPolicies()
+        .get(iface.getOspfInboundDistributeListPolicy());
+    assert routingPolicy != null;
+    // if routingPolicy denies the input route, set the route as non-routing to prevent it from going in the main RIB
+    routeBuilder.setNonRouting(!routingPolicy.process(
+        routeBuilder.build(),
+        routeBuilder,
+        null,
+        vrfName,
+        Direction.IN));
+
   }
 
   @Nonnull
@@ -465,8 +479,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     Builder<OspfInterAreaRoute> interAreaDelta = RibDelta.builder();
     _interAreaIncomingRoutes.forEach(
         (edgeId, queue) -> {
-          String headIfaceName = edgeId.getHead().getInterfaceName();
-          long incrementalCost = getIncrementalCost(headIfaceName, false);
+          String ifaceName = edgeId.getHead().getInterfaceName();
+          long incrementalCost = getIncrementalCost(ifaceName, false);
           while (!queue.isEmpty()) {
             RouteAdvertisement<OspfInterAreaRoute> routeAdvertisement = queue.remove();
 
@@ -474,7 +488,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                 .ifPresent(
                     ra -> {
                       OspfInterAreaRoute.Builder ospfRouteBuilder = ra.getRoute().toBuilder();
-                      applyDistributeList(_c, _vrfName, headIfaceName, ospfRouteBuilder);
+                      applyDistributeList(_c, _vrfName, ifaceName, ospfRouteBuilder);
                       interAreaDelta.from(
                           processRouteAdvertisement(
                               ra.toBuilder().setRoute(ospfRouteBuilder.build()).build(),
@@ -528,8 +542,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     Builder<OspfIntraAreaRoute> intraAreaDelta = RibDelta.builder();
     _intraAreaIncomingRoutes.forEach(
         (edgeId, queue) -> {
-          String headIfaceName = edgeId.getHead().getInterfaceName();
-          long incrementalCost = getIncrementalCost(headIfaceName, false);
+          String ifaceName = edgeId.getHead().getInterfaceName();
+          long incrementalCost = getIncrementalCost(ifaceName, false);
           while (!queue.isEmpty()) {
             RouteAdvertisement<OspfIntraAreaRoute> routeAdvertisement = queue.remove();
             OspfIntraAreaRoute.Builder ospfRouteBuilder =
@@ -537,7 +551,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                     .getRoute()
                     .toBuilder();
 
-            applyDistributeList(_c, _vrfName, headIfaceName, ospfRouteBuilder);
+            applyDistributeList(_c, _vrfName, ifaceName, ospfRouteBuilder);
 
             intraAreaDelta.from(
                 processRouteAdvertisement(
@@ -1011,10 +1025,10 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     Builder<OspfExternalType1Route> type1deltaBuilder = RibDelta.builder();
     _type1IncomingRoutes.forEach(
         (edgeId, queue) -> {
-          String headIfaceName = edgeId.getHead().getInterfaceName();
+          String ifaceName = edgeId.getHead().getInterfaceName();
           OspfSessionProperties session = _topology.getSession(edgeId).orElse(null);
           assert session != null; // Invariant of the edge existing
-          long incrementalCost = getIncrementalCost(headIfaceName, false);
+          long incrementalCost = getIncrementalCost(ifaceName, false);
           while (!queue.isEmpty()) {
             RouteAdvertisement<OspfExternalType1Route> routeAdvertisement = queue.remove();
             OspfExternalType1Route.Builder ospfRouteBuilder =
@@ -1023,7 +1037,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                         routeAdvertisement, session.getIpLink().getIp1(), incrementalCost)
                     .getRoute()
                     .toBuilder();
-            applyDistributeList(_c, _vrfName, headIfaceName, ospfRouteBuilder);
+            applyDistributeList(_c, _vrfName, ifaceName, ospfRouteBuilder);
             type1deltaBuilder.from(
                 processRouteAdvertisement(
                     routeAdvertisement
