@@ -150,6 +150,12 @@ public abstract class BgpPeerConfig implements Serializable {
     _sendCommunity = sendCommunity;
   }
 
+  /** Check whether the given AS number matches this peer's remote AS numbers. */
+  public boolean hasCompatibleRemoteAsns(@Nullable Long asNumber) {
+    return _remoteAsns.equals(ALL_AS_NUMBERS)
+        || (asNumber != null && _remoteAsns.contains(asNumber));
+  }
+
   @JsonProperty(PROP_ADDITIONAL_PATHS_RECEIVE)
   public boolean getAdditionalPathsReceive() {
     return _additionalPathsReceive;

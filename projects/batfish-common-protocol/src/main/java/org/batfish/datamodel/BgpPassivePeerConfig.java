@@ -139,13 +139,8 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
     _peerPrefix = peerPrefix;
   }
 
-  /** Check whether a connection from a peer with a given AS number will be accepted. */
-  public boolean canConnect(@Nullable Long asNumber) {
-    return _remoteAsns.equals(ALL_AS_NUMBERS)
-        || (asNumber != null && _remoteAsns.contains(asNumber));
-  }
-
-  public boolean canConnect(@Nonnull Ip address) {
+  /** Check whether this peer's remote prefix contains the given IP. */
+  public boolean hasCompatibleRemotePrefix(@Nonnull Ip address) {
     return _peerPrefix != null && _peerPrefix.containsIp(address);
   }
 
