@@ -32,7 +32,7 @@ import org.junit.Test;
 /** Tests for {@link FlowTracer}. */
 public final class FlowTracerTest {
   @Test
-  public void testBuildDeniedTrace() {
+  public void testBuildDeniedTraceNoNewSessions() {
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
@@ -46,58 +46,67 @@ public final class FlowTracerTest {
             .setTag("tag")
             .build();
 
-    // no new sessions
-    {
-      List<TraceAndReverseFlow> traces = new ArrayList<>();
+    List<TraceAndReverseFlow> traces = new ArrayList<>();
 
-      TracerouteEngineImplContext ctxt =
-          new TracerouteEngineImplContext(
-              MockDataPlane.builder().setConfigs(ImmutableMap.of(c.getHostname(), c)).build(),
-              ImmutableSet.of(),
-              ImmutableSet.of(),
-              ImmutableMap.of(),
-              false);
-      FlowTracer flowTracer = new FlowTracer(ctxt, c.getHostname(), null, flow, traces::add);
-      flowTracer.buildDeniedTrace(DENIED_IN);
-      assertThat(
-          traces,
-          contains(allOf(hasTrace(hasDisposition(DENIED_IN)), hasNewFirewallSessions(empty()))));
-    }
+    TracerouteEngineImplContext ctxt =
+        new TracerouteEngineImplContext(
+            MockDataPlane.builder().setConfigs(ImmutableMap.of(c.getHostname(), c)).build(),
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            ImmutableMap.of(),
+            false);
+    FlowTracer flowTracer = new FlowTracer(ctxt, c.getHostname(), null, flow, traces::add);
+    flowTracer.buildDeniedTrace(DENIED_IN);
+    assertThat(
+        traces,
+        contains(allOf(hasTrace(hasDisposition(DENIED_IN)), hasNewFirewallSessions(empty()))));
+  }
 
-    // 1 new session
-    {
-      List<TraceAndReverseFlow> traces = new ArrayList<>();
+  @Test
+  public void testBuildDeniedTraceNewSessions() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    Vrf vrf = nf.vrfBuilder().setOwner(c).build();
 
-      FirewallSessionTraceInfo sessionInfo =
-          new FirewallSessionTraceInfo("hostname", null, null, ImmutableSet.of(), TRUE, null);
-      TracerouteEngineImplContext ctxt =
-          new TracerouteEngineImplContext(
-              MockDataPlane.builder().setConfigs(ImmutableMap.of(c.getHostname(), c)).build(),
-              ImmutableSet.of(),
-              ImmutableSet.of(),
-              ImmutableMap.of(),
-              false);
-      FlowTracer flowTracer =
-          new FlowTracer(
-              ctxt,
-              new Node(c.getHostname()),
-              null,
-              new Stack<>(),
-              ImmutableList.of(),
-              ImmutableList.of(),
-              new NodeInterfacePair("node", "iface"),
-              ImmutableSet.of(sessionInfo),
-              flow,
-              flow,
-              traces::add);
+    Flow flow =
+        Flow.builder()
+            .setDstIp(Ip.parse("1.1.1.1"))
+            .setIngressNode(c.getHostname())
+            .setIngressVrf(vrf.getName())
+            .setTag("tag")
+            .build();
+    List<TraceAndReverseFlow> traces = new ArrayList<>();
 
-      flowTracer.buildDeniedTrace(DENIED_IN);
-      assertThat(
-          traces,
-          contains(
-              allOf(
-                  hasTrace(hasDisposition(DENIED_IN)),
-                  hasNewFirewallSessions(contains(sessionInfo)))));
-    }
+    FirewallSessionTraceInfo sessionInfo =
+        new FirewallSessionTraceInfo("hostname", null, null, ImmutableSet.of(), TRUE, null);
+    TracerouteEngineImplContext ctxt =
+        new TracerouteEngineImplContext(
+            MockDataPlane.builder().setConfigs(ImmutableMap.of(c.getHostname(), c)).build(),
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            ImmutableMap.of(),
+            false);
+    FlowTracer flowTracer =
+        new FlowTracer(
+            ctxt,
+            new Node(c.getHostname()),
+            null,
+            new Stack<>(),
+            ImmutableList.of(),
+            ImmutableList.of(),
+            new NodeInterfacePair("node", "iface"),
+            ImmutableSet.of(sessionInfo),
+            flow,
+            flow,
+            traces::add);
+
+    flowTracer.buildDeniedTrace(DENIED_IN);
+    assertThat(
+        traces,
+        contains(
+            allOf(
+                hasTrace(hasDisposition(DENIED_IN)),
+                hasNewFirewallSessions(contains(sessionInfo)))));
   }
 }

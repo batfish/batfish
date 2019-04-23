@@ -118,6 +118,7 @@ class FlowTracer {
   // The current flow can change as we process the packet.
   private Flow _currentFlow;
 
+  @VisibleForTesting
   FlowTracer(
       TracerouteEngineImplContext tracerouteContext,
       String node,

@@ -47,7 +47,7 @@ public class MockDataPlane implements DataPlane {
     }
 
     public Builder setConfigs(Map<String, Configuration> configs) {
-      _configurations = ImmutableMap.copyOf(configs);
+      _configurations = configs;
       return this;
     }
 
