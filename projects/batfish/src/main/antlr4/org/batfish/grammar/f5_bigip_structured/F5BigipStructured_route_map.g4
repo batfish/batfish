@@ -8,7 +8,7 @@ options {
 
 nr_route_map
 :
-  ROUTE_MAP name = word BRACE_LEFT
+  ROUTE_MAP name = structure_name BRACE_LEFT
   (
     NEWLINE
     (
@@ -29,7 +29,7 @@ nrr_entries
 
 nrre_entry
 :
-  num = word BRACE_LEFT
+  num = uint32 BRACE_LEFT
   (
     NEWLINE
     (
@@ -83,7 +83,7 @@ nreem4_address
 
 nreem4a_prefix_list
 :
-  PREFIX_LIST name = word NEWLINE
+  PREFIX_LIST name = structure_name NEWLINE
 ;
 
 nrree_set
@@ -117,7 +117,7 @@ nreesc_value
 
 nrr_route_domain
 :
-  ROUTE_DOMAIN name = word NEWLINE
+  ROUTE_DOMAIN name = structure_name NEWLINE
 ;
 
 route_map_action
@@ -128,5 +128,5 @@ route_map_action
 
 standard_community
 :
-  word
+  STANDARD_COMMUNITY
 ;
