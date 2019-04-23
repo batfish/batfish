@@ -33,6 +33,7 @@ import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.vendor_family.VendorFamily;
+import org.batfish.referencelibrary.ReferenceBook;
 
 /**
  * A Configuration represents an autonomous network device, such as a router, host, switch, or
@@ -118,6 +119,8 @@ public final class Configuration implements Serializable {
 
   private static final String PROP_DOMAIN_NAME = "domainName";
 
+  private static final String PROP_GENERATED_REFERENCE_BOOKS = "generatedReferenceBooks";
+
   private static final String PROP_IKE_PHASE1_KEYS = "ikePhase1Keys";
 
   private static final String PROP_IKE_PHASE1_POLICIES = "ikePhase1Policies";
@@ -202,6 +205,8 @@ public final class Configuration implements Serializable {
 
   private String _domainName;
 
+  private NavigableMap<String, ReferenceBook> _generatedReferenceBooks;
+
   private @Nonnull NavigableMap<String, IkePhase1Key> _ikePhase1keys;
 
   private NavigableMap<String, IkePhase1Proposal> _ikePhase1Proposals;
@@ -281,6 +286,7 @@ public final class Configuration implements Serializable {
     _configurationFormat = configurationFormat;
     _dnsServers = new TreeSet<>();
     _domainName = null;
+    _generatedReferenceBooks = new TreeMap<>();
     _ikePhase1keys = ImmutableSortedMap.of();
     _ikePhase1Policies = new TreeMap<>();
     _ikePhase1Proposals = new TreeMap<>();
@@ -433,6 +439,12 @@ public final class Configuration implements Serializable {
   @JsonPropertyDescription("Hostname of this node.")
   public String getHostname() {
     return _name;
+  }
+
+  @JsonProperty(PROP_GENERATED_REFERENCE_BOOKS)
+  @JsonPropertyDescription("Dictionary of auto-generated Reference Books.")
+  public NavigableMap<String, ReferenceBook> getReferenceBooks() {
+    return _generatedReferenceBooks;
   }
 
   @JsonProperty(PROP_IKE_PHASE1_KEYS)

@@ -42,15 +42,23 @@ public final class CompletionMetadataUtils {
     configurations
         .values()
         .forEach(
-            configuration ->
-                configuration
-                    .getAllInterfaces()
-                    .values()
-                    .forEach(
-                        iface ->
-                            iface.getAllAddresses().stream()
-                                .map(interfaceAddress -> interfaceAddress.getIp().toString())
-                                .forEach(ips::add)));
+            configuration -> {
+              configuration
+                  .getAllInterfaces()
+                  .values()
+                  .forEach(
+                      iface ->
+                          iface.getAllAddresses().stream()
+                              .map(interfaceAddress -> interfaceAddress.getIp().toString())
+                              .forEach(ips::add));
+              configuration
+                  .getReferenceBooks()
+                  .values()
+                  .forEach(
+                      book ->
+                          book.getAddressGroups()
+                              .forEach(ag -> ag.getAddresses().forEach(ips::add)));
+            });
 
     return ips.build();
   }

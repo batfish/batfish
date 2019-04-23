@@ -3,13 +3,16 @@ package org.batfish.referencelibrary;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Names;
 import org.batfish.datamodel.Names.Type;
 import org.batfish.datamodel.SubRange;
 
-public class ServiceObject implements Comparable<ServiceObject> {
+public class ServiceObject implements Comparable<ServiceObject>, Serializable {
+
+  private static final long serialVersionUID = 1L;
 
   private static final String PROP_IP_PROTOCOL = "ipProtocol";
   private static final String PROP_NAME = "name";

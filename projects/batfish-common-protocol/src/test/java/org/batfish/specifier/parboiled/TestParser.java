@@ -77,7 +77,7 @@ class TestParser extends CommonParser {
 
   @Anchor(Type.ADDRESS_GROUP_NAME)
   public Rule TestAddressGroupName() {
-    return Sequence(NameLiteral(), WhiteSpace());
+    return Sequence(NameLiteral(), push(new StringAstNode(match())), WhiteSpace());
   }
 
   @Anchor(Type.REFERENCE_BOOK_NAME)

@@ -6,6 +6,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.Serializable;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -15,7 +16,9 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /** Represents a group of interfaces in {@link ReferenceBook} */
 @ParametersAreNonnullByDefault
-public class InterfaceGroup implements Comparable<InterfaceGroup> {
+public class InterfaceGroup implements Comparable<InterfaceGroup>, Serializable {
+
+  private static final long serialVersionUID = 1L;
 
   private static final String PROP_INTERFACES = "interfaces";
   private static final String PROP_NAME = "name";

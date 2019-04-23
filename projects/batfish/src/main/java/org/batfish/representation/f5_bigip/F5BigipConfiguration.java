@@ -52,6 +52,7 @@ import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
+import org.batfish.datamodel.Names;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route6FilterList;
@@ -96,6 +97,8 @@ import org.batfish.datamodel.vendor_family.f5_bigip.PoolMember;
 import org.batfish.datamodel.vendor_family.f5_bigip.RouteAdvertisementMode;
 import org.batfish.datamodel.vendor_family.f5_bigip.Virtual;
 import org.batfish.datamodel.vendor_family.f5_bigip.VirtualAddress;
+import org.batfish.referencelibrary.AddressGroup;
+import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.vendor.VendorConfiguration;
 
 /** Vendor-specific configuration for F5 BIG-IP device */
@@ -1323,6 +1326,34 @@ public class F5BigipConfiguration extends VendorConfiguration {
                 .setPools(_pools)
                 .setVirtuals(_virtuals)
                 .setVirtualAddresses(_virtualAddresses)
+                .build());
+
+    // add a reference book for virtual addresses
+    String virtualAddressesBookname = Names.generatedReferenceBook(_hostname, "virtualAddresses");
+    List<AddressGroup> virtualAddressesGroups =
+        _virtualAddresses.values().stream()
+            .map(VirtualAddress::toAddressGroup)
+            .filter(g -> !g.getAddresses().isEmpty())
+            .collect(ImmutableList.toImmutableList());
+    _c.getReferenceBooks()
+        .put(
+            virtualAddressesBookname,
+            ReferenceBook.builder(virtualAddressesBookname)
+                .setAddressGroups(virtualAddressesGroups)
+                .build());
+
+    // add a reference book for pools
+    String poolAddressBookname = Names.generatedReferenceBook(_hostname, "pools");
+    List<AddressGroup> poolAddressesGroups =
+        _pools.values().stream()
+            .map(Pool::toAddressGroup)
+            .filter(g -> !g.getAddresses().isEmpty())
+            .collect(ImmutableList.toImmutableList());
+    _c.getReferenceBooks()
+        .put(
+            poolAddressBookname,
+            ReferenceBook.builder(poolAddressBookname)
+                .setAddressGroups(poolAddressesGroups)
                 .build());
 
     // TODO: alter as behavior fleshed out

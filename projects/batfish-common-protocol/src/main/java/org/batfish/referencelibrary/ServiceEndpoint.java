@@ -3,12 +3,15 @@ package org.batfish.referencelibrary;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 import java.util.List;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Names;
 import org.batfish.datamodel.Names.Type;
 
-public class ServiceEndpoint implements Comparable<ServiceEndpoint> {
+public class ServiceEndpoint implements Comparable<ServiceEndpoint>, Serializable {
+
+  private static final long serialVersionUID = 1L;
 
   private static final String PROP_ADDRESS = "address";
   private static final String PROP_NAME = "name";

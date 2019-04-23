@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
@@ -16,7 +17,9 @@ import org.batfish.datamodel.Names.Type;
 
 /** Represent an address group within a {@link ReferenceBook} */
 @ParametersAreNonnullByDefault
-public class AddressGroup implements Comparable<AddressGroup> {
+public class AddressGroup implements Comparable<AddressGroup>, Serializable {
+
+  private static final long serialVersionUID = 1L;
 
   private static final String PROP_ADDRESSES = "addresses";
   private static final String PROP_CHILD_GROUP_NAMES = "childGroupNames";
