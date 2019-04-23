@@ -264,31 +264,30 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   }
 
   /**
-   * Applies distribute list on a {@link AbstractRouteBuilder} based on the configuration and interface on which the route arrives. If the distribute list denies the route, it is declared as non-routing
+   * Applies distribute list on a {@link AbstractRouteBuilder} based on the configuration and
+   * interface on which the route arrives. If the distribute list denies the route, it is declared
+   * as non-routing
    *
-   * @param c            {@link Configuration} on which the route arrives
-   * @param vrfName      name of the {@link org.batfish.datamodel.Vrf} on which the route arrives
-   * @param ifaceName    name of the {@link Interface} on which the route arrives
+   * @param c {@link Configuration} on which the route arrives
+   * @param vrfName name of the {@link org.batfish.datamodel.Vrf} on which the route arrives
+   * @param ifaceName name of the {@link Interface} on which the route arrives
    * @param routeBuilder {@link AbstractRouteBuilder} representing the route
    */
-  @VisibleForTesting static void applyDistributeList(Configuration c, String vrfName,
-      String ifaceName, AbstractRouteBuilder<?, ?> routeBuilder) {
+  @VisibleForTesting
+  static void applyDistributeList(
+      Configuration c, String vrfName, String ifaceName, AbstractRouteBuilder<?, ?> routeBuilder) {
     Interface iface = c.getAllInterfaces().get(ifaceName);
     assert iface != null;
     if (iface.getOspfInboundDistributeListPolicy() == null) {
       return;
     }
-    RoutingPolicy routingPolicy = c.getRoutingPolicies()
-        .get(iface.getOspfInboundDistributeListPolicy());
+    RoutingPolicy routingPolicy =
+        c.getRoutingPolicies().get(iface.getOspfInboundDistributeListPolicy());
     assert routingPolicy != null;
-    // if routingPolicy denies the input route, set the route as non-routing to prevent it from going in the main RIB
-    routeBuilder.setNonRouting(!routingPolicy.process(
-        routeBuilder.build(),
-        routeBuilder,
-        null,
-        vrfName,
-        Direction.IN));
-
+    // if routingPolicy denies the input route, set the route as non-routing to prevent it from
+    // going in the main RIB
+    routeBuilder.setNonRouting(
+        !routingPolicy.process(routeBuilder.build(), routeBuilder, null, vrfName, Direction.IN));
   }
 
   @Nonnull
@@ -484,14 +483,13 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
           while (!queue.isEmpty()) {
             RouteAdvertisement<OspfInterAreaRoute> routeAdvertisement = queue.remove();
 
-            transformInterAreaRouteOnImport(routeAdvertisement, incrementalCost)
+            transformInterAreaRouteOnImport(routeAdvertisement.getRoute(), incrementalCost)
                 .ifPresent(
-                    ra -> {
-                      OspfInterAreaRoute.Builder ospfRouteBuilder = ra.getRoute().toBuilder();
-                      applyDistributeList(_c, _vrfName, ifaceName, ospfRouteBuilder);
+                    routeBuilder -> {
+                      applyDistributeList(_c, _vrfName, ifaceName, routeBuilder);
                       interAreaDelta.from(
                           processRouteAdvertisement(
-                              ra.toBuilder().setRoute(ospfRouteBuilder.build()).build(),
+                              routeAdvertisement.toBuilder().setRoute(routeBuilder.build()).build(),
                               _interAreaRib));
                     });
           }
@@ -500,36 +498,30 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   }
 
   /**
-   * Filter and transform inter-area route advertisement on import.
+   * Filter and transform inter-area route on import.
    *
-   * @param routeAdvertisement the {@link RouteAdvertisement} to transform
+   * @param route the {@link OspfInterAreaRoute} to transform
    * @param incrementalCost incremental cost of the OSPF link to be added to the route.
    * @return {@link Optional#empty()} if the route should be filtered out, otherwise a {@link
    *     RouteAdvertisement} containing the transformed route.
    */
   @Nonnull
   @VisibleForTesting
-  Optional<RouteAdvertisement<OspfInterAreaRoute>> transformInterAreaRouteOnImport(
-      RouteAdvertisement<OspfInterAreaRoute> routeAdvertisement, long incrementalCost) {
-    OspfInterAreaRoute route = routeAdvertisement.getRoute();
+  Optional<OspfInterAreaRoute.Builder> transformInterAreaRouteOnImport(
+      OspfInterAreaRoute route, long incrementalCost) {
     if (isABR() && route.getNetwork().equals(Prefix.ZERO)) {
       // ABR should not accept default inter-area routes, as it is the one that originates them
       return Optional.empty();
     }
     // Transform the route
     return Optional.of(
-        routeAdvertisement
+        route
             .toBuilder()
-            .setRoute(
-                route
-                    .toBuilder()
-                    .setMetric(route.getMetric() + incrementalCost)
-                    .setAdmin(_process.getAdminCosts().get(route.getProtocol()))
-                    // Clear any non-routing or non-forwarding bit
-                    .setNonRouting(false)
-                    .setNonForwarding(false)
-                    .build())
-            .build());
+            .setMetric(route.getMetric() + incrementalCost)
+            .setAdmin(_process.getAdminCosts().get(route.getProtocol()))
+            // Clear any non-routing or non-forwarding bit
+            .setNonRouting(false)
+            .setNonForwarding(false));
   }
 
   /**
@@ -547,9 +539,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
           while (!queue.isEmpty()) {
             RouteAdvertisement<OspfIntraAreaRoute> routeAdvertisement = queue.remove();
             OspfIntraAreaRoute.Builder ospfRouteBuilder =
-                transformIntraAreaRouteOnImport(routeAdvertisement, incrementalCost)
-                    .getRoute()
-                    .toBuilder();
+                transformIntraAreaRouteOnImport(routeAdvertisement.getRoute(), incrementalCost);
 
             applyDistributeList(_c, _vrfName, ifaceName, ospfRouteBuilder);
 
@@ -563,30 +553,23 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   }
 
   /**
-   * Transform intra-area route advertisement on import.
+   * Transform intra-area routes on import.
    *
-   * @param routeAdvertisement the {@link RouteAdvertisement} to transform
+   * @param route the {@link OspfIntraAreaRoute} to transform
    * @param incrementalCost incremental cost of the OSPF link to be added to the route.
    * @return A {@link RouteAdvertisement} containing the transformed route.
    */
   @Nonnull
   @VisibleForTesting
-  RouteAdvertisement<OspfIntraAreaRoute> transformIntraAreaRouteOnImport(
-      RouteAdvertisement<OspfIntraAreaRoute> routeAdvertisement, long incrementalCost) {
-    OspfIntraAreaRoute route = routeAdvertisement.getRoute();
-    // Transform the route
-    return routeAdvertisement
+  OspfIntraAreaRoute.Builder transformIntraAreaRouteOnImport(
+      OspfIntraAreaRoute route, long incrementalCost) {
+    return route
         .toBuilder()
-        .setRoute(
-            route
-                .toBuilder()
-                .setMetric(route.getMetric() + incrementalCost)
-                .setAdmin(_process.getAdminCosts().get(route.getProtocol()))
-                // Clear any non-routing or non-forwarding bit
-                .setNonRouting(false)
-                .setNonForwarding(false)
-                .build())
-        .build();
+        .setMetric(route.getMetric() + incrementalCost)
+        .setAdmin(_process.getAdminCosts().get(route.getProtocol()))
+        // Clear any non-routing or non-forwarding bit
+        .setNonRouting(false)
+        .setNonForwarding(false);
   }
 
   /**
@@ -1033,10 +1016,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
             RouteAdvertisement<OspfExternalType1Route> routeAdvertisement = queue.remove();
             OspfExternalType1Route.Builder ospfRouteBuilder =
                 transformType1RouteOnImport(
-                        // Neighbor IP is the IP of tail node which means Ip1
-                        routeAdvertisement, session.getIpLink().getIp1(), incrementalCost)
-                    .getRoute()
-                    .toBuilder();
+                    // Neighbor IP is the IP of tail node which means Ip1
+                    routeAdvertisement.getRoute(), session.getIpLink().getIp1(), incrementalCost);
             applyDistributeList(_c, _vrfName, ifaceName, ospfRouteBuilder);
             type1deltaBuilder.from(
                 processRouteAdvertisement(
@@ -1053,21 +1034,12 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   /** Transform type1 routes on import */
   @Nonnull
   @VisibleForTesting
-  RouteAdvertisement<OspfExternalType1Route> transformType1RouteOnImport(
-      RouteAdvertisement<OspfExternalType1Route> routeAdvertisement,
-      Ip nextHopIp,
-      long incrementalCost) {
-    OspfExternalType1Route r = routeAdvertisement.getRoute();
-    return routeAdvertisement
-        .toBuilder()
-        .setRoute(
-            (OspfExternalType1Route)
-                transformType1and2CommonOnImport(r, nextHopIp)
-                    // For type 1 routes both cost to advertiser and metric get incremented
-                    .setCostToAdvertiser(r.getCostToAdvertiser() + incrementalCost)
-                    .setMetric(r.getMetric() + incrementalCost)
-                    .build())
-        .build();
+  OspfExternalType1Route.Builder transformType1RouteOnImport(
+      OspfExternalType1Route route, Ip nextHopIp, long incrementalCost) {
+    return transformType1and2CommonOnImport(route, nextHopIp)
+        // For type 1 routes both cost to advertiser and metric get incremented
+        .setCostToAdvertiser(route.getCostToAdvertiser() + incrementalCost)
+        .setMetric(route.getMetric() + incrementalCost);
   }
 
   /** Process type 2 routes from all message queues */
@@ -1084,10 +1056,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
             RouteAdvertisement<OspfExternalType2Route> routeAdvertisement = queue.remove();
             OspfExternalType2Route.Builder ospfRouteBuilder =
                 transformType2RouteOnImport(
-                        // Neighbor IP is the IP of tail node which means Ip1
-                        routeAdvertisement, session.getIpLink().getIp1(), incrementalCost)
-                    .getRoute()
-                    .toBuilder();
+                    // Neighbor IP is the IP of tail node which means Ip1
+                    routeAdvertisement.getRoute(), session.getIpLink().getIp1(), incrementalCost);
             applyDistributeList(_c, _vrfName, headIfaceName, ospfRouteBuilder);
             type2deltaBuilder.from(
                 processRouteAdvertisement(
@@ -1104,23 +1074,14 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   /** Transform type2 routes on import */
   @Nonnull
   @VisibleForTesting
-  RouteAdvertisement<OspfExternalType2Route> transformType2RouteOnImport(
-      RouteAdvertisement<OspfExternalType2Route> routeAdvertisement,
-      Ip nextHopIp,
-      long incrementalCost) {
-    OspfExternalType2Route r = routeAdvertisement.getRoute();
-    return routeAdvertisement
-        .toBuilder()
-        .setRoute(
-            (OspfExternalType2Route)
-                transformType1and2CommonOnImport(r, nextHopIp)
-                    /*
-                     * For type 2 routes the metric remains constant, but we must keep track of
-                     * cost to advertiser as a tie-breaker.
-                     */
-                    .setCostToAdvertiser(r.getCostToAdvertiser() + incrementalCost)
-                    .build())
-        .build();
+  OspfExternalType2Route.Builder transformType2RouteOnImport(
+      OspfExternalType2Route route, Ip nextHopIp, long incrementalCost) {
+    return transformType1and2CommonOnImport(route, nextHopIp)
+        /*
+         * For type 2 routes the metric remains constant, but we must keep track of
+         * cost to advertiser as a tie-breaker.
+         */
+        .setCostToAdvertiser(route.getCostToAdvertiser() + incrementalCost);
   }
 
   /** Common transformations for type 1 and type 2 routes on import (e.g., nextHopIp, admin cost) */
