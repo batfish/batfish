@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.AbstractRoute;
@@ -145,8 +144,7 @@ public class IsisTest {
     IncrementalBdpEngine engine =
         new IncrementalBdpEngine(
             new IncrementalDataPlaneSettings(),
-            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
-            (s, i) -> new AtomicInteger());
+            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false));
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
     return (IncrementalDataPlane)
         engine.computeDataPlane(
@@ -422,8 +420,7 @@ public class IsisTest {
     IncrementalBdpEngine engine =
         new IncrementalBdpEngine(
             new IncrementalDataPlaneSettings(),
-            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
-            (s, i) -> new AtomicInteger());
+            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false));
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
     IncrementalDataPlane dp =
         (IncrementalDataPlane)
@@ -589,8 +586,7 @@ public class IsisTest {
     IncrementalBdpEngine engine =
         new IncrementalBdpEngine(
             new IncrementalDataPlaneSettings(),
-            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
-            (s, i) -> new AtomicInteger());
+            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false));
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
     return (IncrementalDataPlane)
         engine.computeDataPlane(

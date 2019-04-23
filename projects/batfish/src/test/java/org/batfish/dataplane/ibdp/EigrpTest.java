@@ -18,7 +18,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.topology.TopologyUtil;
@@ -400,8 +399,7 @@ public class EigrpTest {
     IncrementalBdpEngine engine =
         new IncrementalBdpEngine(
             new IncrementalDataPlaneSettings(),
-            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
-            (s, i) -> new AtomicInteger());
+            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false));
     OspfTopologyUtils.initNeighborConfigs(NetworkConfigurations.of(configurations));
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
     return (IncrementalDataPlane)

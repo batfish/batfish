@@ -75,8 +75,7 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
     _engine =
         new IncrementalBdpEngine(
             new IncrementalDataPlaneSettings(_batfish.getSettingsConfiguration()),
-            _batfish.getLogger(),
-            _batfish::newBatch);
+            _batfish.getLogger());
   }
 
   @Override
