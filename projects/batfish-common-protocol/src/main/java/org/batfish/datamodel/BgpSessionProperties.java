@@ -80,14 +80,12 @@ public final class BgpSessionProperties {
    *     (listener to initiator) rather than forwards direction (initiator to listener)
    */
   public static BgpSessionProperties from(
-      @Nonnull BgpActivePeerConfig initiator,
-      @Nonnull BgpPeerConfig listener,
-      boolean reverseDirection) {
+      @Nonnull BgpPeerConfig initiator, @Nonnull BgpPeerConfig listener, boolean reverseDirection) {
     Ip initiatorIp = initiator.getLocalIp();
     Ip listenerIp = listener.getLocalIp();
     if (listenerIp == null || listenerIp == Ip.AUTO) {
       // Initiator must be active; determine listener's IP from initiator
-      listenerIp = initiator.getPeerAddress();
+      listenerIp = ((BgpActivePeerConfig) initiator).getPeerAddress();
     }
     assert initiatorIp != null;
     assert listenerIp != null;
@@ -108,10 +106,10 @@ public final class BgpSessionProperties {
   /**
    * Determine what type of session {@code initiator} is configured to establish.
    *
-   * @param initiator the {@link BgpActivePeerConfig} representing the connection initiator.
+   * @param initiator the {@link BgpPeerConfig} representing the connection initiator.
    * @return a {@link SessionType} the initiator is configured to establish.
    */
-  public static @Nonnull SessionType getSessionType(BgpActivePeerConfig initiator) {
+  public static @Nonnull SessionType getSessionType(BgpPeerConfig initiator) {
     if (initiator.getLocalAs() == null || initiator.getRemoteAsns().isEmpty()) {
       return SessionType.UNSET;
     }

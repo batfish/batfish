@@ -46,6 +46,7 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
         _engine.computeDataPlane(
             configurations,
             topology,
+            _batfish.getLayer2Topology(),
             _batfish.getTopologyProvider().getOspfTopology(_batfish.getNetworkSnapshot()),
             externalAdverts);
     double averageRoutes =

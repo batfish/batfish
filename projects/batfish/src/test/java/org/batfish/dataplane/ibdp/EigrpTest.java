@@ -408,6 +408,7 @@ public class EigrpTest {
         engine.computeDataPlane(
                 configurations,
                 topology,
+                null,
                 computeOspfTopology(NetworkConfigurations.of(configurations), topology),
                 Collections.emptySet())
             ._dataPlane;

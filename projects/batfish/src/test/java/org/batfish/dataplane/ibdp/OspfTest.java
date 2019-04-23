@@ -269,6 +269,7 @@ public class OspfTest {
             engine.computeDataPlane(
                     configurations,
                     topology,
+                    null,
                     computeOspfTopology(NetworkConfigurations.of(configurations), topology),
                     Collections.emptySet())
                 ._dataPlane;
@@ -466,6 +467,7 @@ public class OspfTest {
             engine.computeDataPlane(
                     configurations,
                     topology,
+                    null,
                     computeOspfTopology(NetworkConfigurations.of(configurations), topology),
                     Collections.emptySet())
                 ._dataPlane;

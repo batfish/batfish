@@ -23,6 +23,7 @@ import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
+import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
@@ -84,7 +85,8 @@ public class BgpSessionCompatibilityAnswerer extends BgpSessionAnswerer {
             .map(
                 neighbor -> {
                   BgpPeerConfig bpc = getBgpPeerConfig(configurations, neighbor);
-                  if (bpc instanceof BgpPassivePeerConfig) {
+                  if (bpc instanceof BgpPassivePeerConfig
+                      || bpc instanceof BgpUnnumberedPeerConfig) {
                     return null;
                   } else if (!(bpc instanceof BgpActivePeerConfig)) {
                     throw new BatfishException(
