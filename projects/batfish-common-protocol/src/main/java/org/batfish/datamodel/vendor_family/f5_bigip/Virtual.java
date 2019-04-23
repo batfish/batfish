@@ -22,6 +22,7 @@ import org.batfish.datamodel.Prefix6;
 @ParametersAreNonnullByDefault
 public final class Virtual implements Serializable {
 
+  private static final String PROP_DESCRIPTION = "description";
   private static final String PROP_DESTINATION = "destination";
   private static final String PROP_DESTINATION_PORT = "destinationPort";
   private static final String PROP_DISABLED = "disabled";
@@ -49,6 +50,7 @@ public final class Virtual implements Serializable {
     return new Virtual(name, ImmutableSet.copyOf(firstNonNull(vlans, ImmutableSet.of())));
   }
 
+  private @Nullable String _description;
   private @Nullable String _destination;
   private @Nullable Integer _destinationPort;
   private @Nullable Boolean _disabled;
@@ -75,6 +77,11 @@ public final class Virtual implements Serializable {
   private Virtual(String name, Set<String> vlans) {
     _name = name;
     _vlans = vlans;
+  }
+
+  @JsonProperty(PROP_DESCRIPTION)
+  public @Nullable String getDescription() {
+    return _description;
   }
 
   @JsonProperty(PROP_DESTINATION)
@@ -160,6 +167,11 @@ public final class Virtual implements Serializable {
   @JsonProperty(PROP_VLANS_ENABLED)
   public boolean getVlansEnabled() {
     return _vlansEnabled;
+  }
+
+  @JsonProperty(PROP_DESCRIPTION)
+  public void setDescription(@Nullable String description) {
+    _description = description;
   }
 
   @JsonProperty(PROP_DESTINATION)

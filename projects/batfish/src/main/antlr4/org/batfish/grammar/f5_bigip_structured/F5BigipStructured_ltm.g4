@@ -119,11 +119,17 @@ l_pool
   (
     NEWLINE
     (
-      lp_members
+      lp_description
+      | lp_members
       | lp_monitor
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
+;
+
+lp_description
+:
+  DESCRIPTION text = word NEWLINE
 ;
 
 lp_members
@@ -141,6 +147,7 @@ lpm_member
     NEWLINE
     (
       lpmm_address
+      | lpmm_description
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
@@ -154,6 +161,11 @@ lp_monitor
 lpmm_address
 :
   ADDRESS address = word NEWLINE
+;
+
+lpmm_description
+:
+  DESCRIPTION text = word NEWLINE
 ;
 
 l_profile
@@ -393,7 +405,8 @@ l_virtual
   (
     NEWLINE
     (
-      lv_destination
+      lv_description
+      | lv_destination
       | lv_disabled
       | lv_enabled
       | lv_ip_forward
@@ -414,6 +427,11 @@ l_virtual
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
+;
+
+lv_description
+:
+  DESCRIPTION text = word NEWLINE
 ;
 
 lv_destination
