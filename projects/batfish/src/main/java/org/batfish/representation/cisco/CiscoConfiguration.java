@@ -1880,11 +1880,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
       Ip updateSource = getUpdateSource(c, vrfName, lpg, updateSourceInterface, ipv4);
 
       // Get default-originate generation policy (if Cisco) or export policy (if Arista)
-      String defaultRouteExportMap = null;
+      String defaultOriginateExportMap = null;
       String defaultOriginateGenerationMap = null;
       if (lpg.getDefaultOriginate()) {
         if (c.getConfigurationFormat() == ConfigurationFormat.ARISTA) {
-          defaultRouteExportMap = lpg.getDefaultOriginateMap();
+          defaultOriginateExportMap = lpg.getDefaultOriginateMap();
         } else {
           defaultOriginateGenerationMap = lpg.getDefaultOriginateMap();
         }
@@ -1892,7 +1892,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
       // Generate import and export policies
       String peerImportPolicyName = generateBgpImportPolicy(lpg, vrfName, c, _w);
-      generateBgpExportPolicy(lpg, vrfName, ipv4, defaultRouteExportMap, c, _w);
+      generateBgpExportPolicy(lpg, vrfName, ipv4, defaultOriginateExportMap, c, _w);
 
       // If defaultOriginate is set, create default route for this peer group
       GeneratedRoute.Builder defaultRoute = null;

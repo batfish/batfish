@@ -103,6 +103,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchProcessAsn;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
+import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
@@ -426,7 +427,7 @@ class CiscoConversions {
       defaultRouteExportStatements =
           ImmutableList.of(
               setOrigin,
-              new If(new CallExpr(defaultOriginateExportMapName), ImmutableList.of()),
+              new CallStatement(defaultOriginateExportMapName),
               Statements.ReturnTrue.toStaticStatement());
     }
 
