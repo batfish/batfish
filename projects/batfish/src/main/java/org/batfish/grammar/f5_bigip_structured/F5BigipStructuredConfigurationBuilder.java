@@ -381,7 +381,6 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   private @Nullable F5BigipConfiguration _c;
-
   private @Nullable BgpAddressFamily _currentBgpAddressFamily;
   private @Nullable BgpNeighbor _currentBgpNeighbor;
   private @Nullable BgpNeighborAddressFamily _currentBgpNeighborAddressFamily;
