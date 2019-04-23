@@ -151,7 +151,6 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
   public void testGetAnswerBadQuery() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
-    String bogusSnapshot = "bogusSnapshot";
     String question = "question";
 
     Main.getWorkMgr().initNetwork(network, null);
@@ -159,22 +158,18 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
     setupQuestionAndAnswer(network, snapshot, question, null, null);
 
     Response responseNoSnapshot = getAnswerTarget(network, question, null).get();
-    Response responseBadSnap = getAnswerTarget(network, question, bogusSnapshot).get();
 
     // Missing snapshot name should result in bad request
     assertThat(responseNoSnapshot.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
     assertThat(
         responseNoSnapshot.readEntity(String.class), containsString("Snapshot must be specified"));
-
-    // Invalid snapshot name should result bad request
-    assertThat(responseBadSnap.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
-    assertThat(responseBadSnap.readEntity(String.class), containsString("non-existent snapshot"));
   }
 
   @Test
   public void testGetAnswerNotFound() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
+    String bogusSnapshot = "bogusSnapshot";
     String question = "question";
     Response responseNoNetwork = getAnswerTarget(network, question, null).get();
 
@@ -183,6 +178,7 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
 
     uploadTestSnapshot(network, snapshot, _folder);
     setupQuestionAndAnswer(network, snapshot, question, null, null);
+    Response responseBadSnap = getAnswerTarget(network, question, bogusSnapshot).get();
     Response responseNoAns = getAnswerTarget(network, question, snapshot).get();
 
     // No network should result in 404
@@ -190,6 +186,12 @@ public class AnswerResourceTest extends WorkMgrServiceV2TestBase {
     assertThat(
         responseNoNetwork.readEntity(String.class),
         containsString(String.format("Network '%s' does not exist", network)));
+
+    // Invalid snapshot name should result in 404
+    assertThat(responseBadSnap.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    assertThat(
+        responseBadSnap.readEntity(String.class),
+        containsString(String.format("Snapshot %s not found", bogusSnapshot)));
 
     // No question should result in 404
     assertThat(responseNoQuestion.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
