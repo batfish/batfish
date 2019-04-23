@@ -10,6 +10,7 @@ router ospf 1
 !
 ip route 192.168.10.0 255.255.255.0 172.22.1.4
 ip route 192.168.9.0 255.255.255.0 172.22.1.4
+! default route needed to get the static routes to install
 ip route 0.0.0.0 0.0.0.0 GigabitEthernet0/0
 !
 route-map static_to_ospf permit 10
