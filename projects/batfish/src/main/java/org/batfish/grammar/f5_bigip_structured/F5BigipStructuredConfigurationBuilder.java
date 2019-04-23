@@ -121,6 +121,7 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lmh_defau
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lmhs_defaults_fromContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lmhs_ssl_profileContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ln_addressContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lp_descriptionContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lp_monitorContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lper_source_addrContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lper_sslContext;
@@ -128,6 +129,7 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lpersa_de
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lperss_defaults_fromContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lpm_memberContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lpmm_addressContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lpmm_descriptionContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lprof_client_sslContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lprof_httpContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lprof_ocsp_stapling_paramsContext;
@@ -147,6 +149,7 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lso_origi
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lspm_memberContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lst_addressContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lsv_vlanContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_descriptionContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_destinationContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_disabledContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_enabledContext;
@@ -739,6 +742,11 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   @Override
+  public void exitLp_description(Lp_descriptionContext ctx) {
+    _currentPool.setDescription(unquote(ctx.text.getText()));
+  }
+
+  @Override
   public void exitLp_monitor(Lp_monitorContext ctx) {
     String name = unquote(ctx.name.getText());
     if (BuiltinMonitor.getBuiltinMonitor(name) == null) {
@@ -790,6 +798,11 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     }
     _w.redFlag(
         String.format("'%s' is neither IPv4 nor IPv6 address in: %s", text, getFullText(ctx)));
+  }
+
+  @Override
+  public void exitLpmm_description(Lpmm_descriptionContext ctx) {
+    _currentPoolMember.setDescription(unquote(ctx.text.getText()));
   }
 
   @Override
@@ -911,6 +924,11 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     String name = ctx.name.getText();
     _c.referenceStructure(VLAN, name, SNAT_VLANS_VLAN, ctx.name.getStart().getLine());
     _currentSnat.getVlans().add(name);
+  }
+
+  @Override
+  public void exitLv_description(Lv_descriptionContext ctx) {
+    _currentVirtual.setDescription(unquote(ctx.text.getText()));
   }
 
   @Override

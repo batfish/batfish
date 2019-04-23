@@ -1,29 +1,24 @@
 #TMSH-VERSION: 13.1.1
 
 sys global-settings {
-  hostname f5_bigip_vip_configuration
+  hostname f5_bigip_structured_vip_description
 }
-ltm node /Common/node1a {
-    address 172.16.0.1
-}
-ltm node /Common/node1b {
-    address 172.16.0.2
+
+ltm node /Common/node1 {
+    address 10.0.0.1
 }
 ltm pool /Common/pool1 {
     description "pool1 is cool"
     members {
-        /Common/node1a:80 {
-            address 172.16.0.1
-            description "node1a_is_cool"
-        }
-        /Common/node1a:8080 {
-            address 172.16.0.2
+        /Common/node1:80 {
+            address 10.0.0.1
+            description node1_is_cool
         }
     }
 }
 ltm virtual /Common/virtual1 {
     description "virtual1 is cool"
-    destination /Common/10.0.0.1:80
+    destination /Common/192.0.2.1:80
     ip-protocol tcp
     mask 255.255.255.255
     pool /Common/pool1
@@ -31,8 +26,8 @@ ltm virtual /Common/virtual1 {
     translate-address enabled
     translate-port enabled
 }
-ltm virtual-address /Common/10.0.0.1 {
-    address 10.0.0.1
+ltm virtual-address /Common/192.0.2.1 {
+    address 192.0.2.1
     arp enabled
     mask 255.255.255.255
     route-advertisement selective

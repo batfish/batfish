@@ -1,5 +1,7 @@
 package org.batfish.question.f5_bigip;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
@@ -9,6 +11,7 @@ import com.google.common.collect.Multiset;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -34,11 +37,13 @@ import org.batfish.datamodel.vendor_family.f5_bigip.VirtualAddress;
 public class F5BigipVipConfigurationAnswerer extends Answerer {
 
   public static final String COL_NODE = "Node";
+  public static final String COL_DESCRIPTION = "Description";
   public static final String COL_SERVERS = "Servers";
   public static final String COL_VIRTUAL_ENDPOINT = "VIP_Endpoint";
   public static final String COL_VIRTUAL_NAME = "VIP_Name";
   private static final List<String> COLUMN_ORDER =
-      ImmutableList.of(COL_NODE, COL_VIRTUAL_NAME, COL_VIRTUAL_ENDPOINT, COL_SERVERS);
+      ImmutableList.of(
+          COL_NODE, COL_VIRTUAL_NAME, COL_VIRTUAL_ENDPOINT, COL_SERVERS, COL_DESCRIPTION);
 
   /**
    * Creates {@link ColumnMetadata}s that the answer should have.
@@ -49,6 +54,9 @@ public class F5BigipVipConfigurationAnswerer extends Answerer {
     Map<String, ColumnMetadata> columnMetadataMap =
         ImmutableMap.<String, ColumnMetadata>builder()
             .put(COL_NODE, new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false))
+            .put(
+                COL_DESCRIPTION,
+                new ColumnMetadata(COL_DESCRIPTION, Schema.STRING, "Description", true, false))
             .put(
                 COL_SERVERS,
                 new ColumnMetadata(COL_SERVERS, Schema.set(Schema.STRING), "Servers", false, false))
@@ -117,8 +125,15 @@ public class F5BigipVipConfigurationAnswerer extends Answerer {
         }
         String virtualEndpointStr =
             String.format("%s:%d %s", destinationAddress, destinationPort, protocol.name());
-        Set<String> servers = toServers(f5.getPools().get(virtual.getPool()));
-        rows.add(getRow(node, virtual.getName(), virtualEndpointStr, servers, columnMetadata));
+        Pool pool = f5.getPools().get(virtual.getPool());
+        Set<String> servers = toServers(pool);
+        String description =
+            firstNonNull(
+                virtual.getDescription(),
+                Optional.ofNullable(pool).map(Pool::getDescription).orElse(""));
+        rows.add(
+            getRow(
+                node, virtual.getName(), virtualEndpointStr, servers, description, columnMetadata));
       }
     }
     return rows;
@@ -129,12 +144,14 @@ public class F5BigipVipConfigurationAnswerer extends Answerer {
       String virtualName,
       String virtualEndpoint,
       Set<String> servers,
+      String description,
       Map<String, ColumnMetadata> columnMetadata) {
     return Row.builder(columnMetadata)
         .put(COL_NODE, node)
         .put(COL_VIRTUAL_NAME, virtualName)
         .put(COL_VIRTUAL_ENDPOINT, virtualEndpoint)
         .put(COL_SERVERS, servers)
+        .put(COL_DESCRIPTION, description)
         .build();
   }
 
