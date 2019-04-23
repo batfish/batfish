@@ -3,7 +3,7 @@
     "differential": false,
     "headers": "${headers}",
     "pathConstraints": "${pathConstraints}",
-    "returnFlowType": "${returnFlowType}",   
+    "returnFlowType": "${returnFlowType}",
     "instance": {
         "description": "Search for successfully delivered flows that can successfully receive a response.",
         "instanceName": "bidirectionalReachability",
@@ -12,7 +12,7 @@
             "dataPlane",
             "reachability"
         ],
-      "orderedVariableNames": ["headers", "pathConstraints", "returnFlowType"],
+        "orderedVariableNames": ["headers", "pathConstraints", "returnFlowType"],
         "variables": {
             "headers": {
                 "description": "Packet header constraints",
@@ -20,18 +20,18 @@
                 "type": "headerConstraint",
                 "displayName": "Headers",
                 "fields": {
-                    "applications": { "optional": true },
+                    "applications": { "optional": true, "type": "applicationSpec"},
                     "dscps": { "optional": true },
-                    "dstIps": { "optional": false },
+                    "dstIps": { "optional": true, "type": "ipSpaceSpec" },
                     "dstPorts": { "optional": true },
                     "ecns": { "optional": true },
                     "flowStates": { "optional": true },
                     "fragmentOffsets": { "optional": true },
                     "icmpCodes": { "optional": true },
                     "icmpTypes": { "optional": true },
-                    "ipProtocols": { "optional": true },
+                    "ipProtocols": { "optional": true, "type": "ipProtocolSpec" },
                     "packetLengths": { "optional": true },
-                    "srcIps": { "optional": true },
+                    "srcIps": { "optional": true, "type": "ipSpaceSpec" },
                     "srcPorts": { "optional": true },
                     "tcpFlags": { "optional": true }
                 }
@@ -48,12 +48,12 @@
                     "forbiddenLocations": { "optional": true }
                 }
             },
-          "returnFlowType": {
-            "description": "Specifies whether to search for return flows that are successful (SUCCESS), that fail (FAILURE), or that can either succeed or fail depending on the path taken (MULTIPATH_INCONSISTENT). The default is SUCCESS.",
-            "optional": true,
-            "type": "string",
-            "displayName": "Return Flow Type"
-          }
+            "returnFlowType": {
+                "description": "Specifies whether to search for return flows that are successful (SUCCESS), that fail (FAILURE), or that can either succeed or fail depending on the path taken (MULTIPATH_INCONSISTENT). The default is SUCCESS.",
+                "optional": true,
+                "type": "string",
+                "displayName": "Return Flow Type"
+            }
         }
     }
 }

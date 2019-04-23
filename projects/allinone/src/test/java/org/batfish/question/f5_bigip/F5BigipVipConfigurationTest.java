@@ -3,12 +3,13 @@ package org.batfish.question.f5_bigip;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.matchers.RowsMatchers.hasSize;
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
+import static org.batfish.question.f5_bigip.F5BigipVipConfigurationAnswerer.COL_DESCRIPTION;
 import static org.batfish.question.f5_bigip.F5BigipVipConfigurationAnswerer.COL_NODE;
 import static org.batfish.question.f5_bigip.F5BigipVipConfigurationAnswerer.COL_SERVERS;
 import static org.batfish.question.f5_bigip.F5BigipVipConfigurationAnswerer.COL_VIRTUAL_ENDPOINT;
 import static org.batfish.question.f5_bigip.F5BigipVipConfigurationAnswerer.COL_VIRTUAL_NAME;
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -48,13 +49,13 @@ public final class F5BigipVipConfigurationTest {
         new F5BigipVipConfigurationAnswerer(question, batfish);
     TableAnswerElement answer = answerer.answer();
 
-    // answer should have exactly one row
-    assertThat(answer.getRows(), hasSize(1));
+    // answer should have one row per virtual
+    assertThat(answer.getRows(), hasSize(3));
 
     assertThat(
         answer,
         hasRows(
-            contains(
+            containsInAnyOrder(
                 allOf(
                     hasColumn(COL_NODE, equalTo(new Node(hostname1.toLowerCase())), Schema.NODE),
                     hasColumn(COL_VIRTUAL_NAME, equalTo("/Common/virtual1"), Schema.STRING),
@@ -62,6 +63,25 @@ public final class F5BigipVipConfigurationTest {
                     hasColumn(
                         COL_SERVERS,
                         equalTo(ImmutableSet.of("172.16.0.1:80", "172.16.0.2:8080")),
-                        Schema.set(Schema.STRING))))));
+                        Schema.set(Schema.STRING)),
+                    hasColumn(COL_DESCRIPTION, equalTo("virtual1 is cool"), Schema.STRING)),
+                allOf(
+                    hasColumn(COL_NODE, equalTo(new Node(hostname1.toLowerCase())), Schema.NODE),
+                    hasColumn(COL_VIRTUAL_NAME, equalTo("/Common/virtual2"), Schema.STRING),
+                    hasColumn(COL_VIRTUAL_ENDPOINT, equalTo("192.0.2.2:80 TCP"), Schema.STRING),
+                    hasColumn(
+                        COL_SERVERS,
+                        equalTo(ImmutableSet.of("10.0.0.2:80")),
+                        Schema.set(Schema.STRING)),
+                    hasColumn(COL_DESCRIPTION, equalTo("pool2 is lame"), Schema.STRING)),
+                allOf(
+                    hasColumn(COL_NODE, equalTo(new Node(hostname1.toLowerCase())), Schema.NODE),
+                    hasColumn(COL_VIRTUAL_NAME, equalTo("/Common/virtual3"), Schema.STRING),
+                    hasColumn(COL_VIRTUAL_ENDPOINT, equalTo("192.0.2.3:80 TCP"), Schema.STRING),
+                    hasColumn(
+                        COL_SERVERS,
+                        equalTo(ImmutableSet.of("10.0.0.3:80")),
+                        Schema.set(Schema.STRING)),
+                    hasColumn(COL_DESCRIPTION, equalTo(""), Schema.STRING)))));
   }
 }

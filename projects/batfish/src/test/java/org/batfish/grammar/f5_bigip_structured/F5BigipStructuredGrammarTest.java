@@ -167,6 +167,7 @@ import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.PortField;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationEvaluator.TransformationResult;
+import org.batfish.datamodel.vendor_family.f5_bigip.F5BigipFamily;
 import org.batfish.datamodel.vendor_family.f5_bigip.Virtual;
 import org.batfish.datamodel.vendor_family.f5_bigip.VirtualAddress;
 import org.batfish.main.Batfish;
@@ -1711,6 +1712,80 @@ public final class F5BigipStructuredGrammarTest {
     assertThat(c, hasInterfaces(hasKey("1.0")));
     InitInfoAnswerElement initAns = batfish.initInfo(false, true);
     assertThat(initAns.getParseStatus().get(filename), equalTo(ParseStatus.PARTIALLY_UNRECOGNIZED));
+  }
+
+  @Test
+  public void testVipDescriptionConversion() throws IOException {
+    Configuration c = parseConfig("f5_bigip_structured_vip_description");
+    F5BigipFamily f = c.getVendorFamily().getF5Bigip();
+
+    // check structure presence
+    assertThat(f.getPools(), hasKeys("/Common/pool1", "/Common/pool2", "/Common/pool3"));
+    assertThat(
+        f.getVirtuals(), hasKeys("/Common/virtual1", "/Common/virtual2", "/Common/virtual3"));
+    assertThat(
+        f.getVirtualAddresses(),
+        hasKeys("/Common/192.0.2.1", "/Common/192.0.2.2", "/Common/192.0.2.3"));
+    assertThat(f.getPools().get("/Common/pool1").getMembers(), hasKeys("/Common/node1:80"));
+    assertThat(f.getPools().get("/Common/pool2").getMembers(), hasKeys("/Common/node2:80"));
+    assertThat(f.getPools().get("/Common/pool3").getMembers(), hasKeys("/Common/node3:80"));
+
+    // check descriptions
+    assertThat(f.getPools().get("/Common/pool1").getDescription(), equalTo("pool1 is cool"));
+    assertThat(f.getPools().get("/Common/pool2").getDescription(), equalTo("pool2 is lame"));
+    assertThat(f.getPools().get("/Common/pool3").getDescription(), nullValue());
+
+    assertThat(
+        f.getVirtuals().get("/Common/virtual1").getDescription(), equalTo("virtual1 is cool"));
+    assertThat(f.getVirtuals().get("/Common/virtual2").getDescription(), nullValue());
+    assertThat(f.getVirtuals().get("/Common/virtual3").getDescription(), nullValue());
+
+    assertThat(
+        f.getPools().get("/Common/pool1").getMembers().get("/Common/node1:80").getDescription(),
+        equalTo("node1_is_cool"));
+    assertThat(
+        f.getPools().get("/Common/pool2").getMembers().get("/Common/node2:80").getDescription(),
+        equalTo("node2_is_lame"));
+    assertThat(
+        f.getPools().get("/Common/pool3").getMembers().get("/Common/node3:80").getDescription(),
+        equalTo("node3_is_ok"));
+  }
+
+  @Test
+  public void testVipDescriptionExtraction() {
+    F5BigipConfiguration vc = parseVendorConfig("f5_bigip_structured_vip_description");
+
+    // check structure presence
+    assertThat(vc.getNodes(), hasKeys("/Common/node1", "/Common/node2", "/Common/node3"));
+    assertThat(vc.getPools(), hasKeys("/Common/pool1", "/Common/pool2", "/Common/pool3"));
+    assertThat(
+        vc.getVirtuals(), hasKeys("/Common/virtual1", "/Common/virtual2", "/Common/virtual3"));
+    assertThat(
+        vc.getVirtualAddresses(),
+        hasKeys("/Common/192.0.2.1", "/Common/192.0.2.2", "/Common/192.0.2.3"));
+    assertThat(vc.getPools().get("/Common/pool1").getMembers(), hasKeys("/Common/node1:80"));
+    assertThat(vc.getPools().get("/Common/pool2").getMembers(), hasKeys("/Common/node2:80"));
+    assertThat(vc.getPools().get("/Common/pool3").getMembers(), hasKeys("/Common/node3:80"));
+
+    // check descriptions
+    assertThat(vc.getPools().get("/Common/pool1").getDescription(), equalTo("pool1 is cool"));
+    assertThat(vc.getPools().get("/Common/pool2").getDescription(), equalTo("pool2 is lame"));
+    assertThat(vc.getPools().get("/Common/pool3").getDescription(), nullValue());
+
+    assertThat(
+        vc.getVirtuals().get("/Common/virtual1").getDescription(), equalTo("virtual1 is cool"));
+    assertThat(vc.getVirtuals().get("/Common/virtual2").getDescription(), nullValue());
+    assertThat(vc.getVirtuals().get("/Common/virtual3").getDescription(), nullValue());
+
+    assertThat(
+        vc.getPools().get("/Common/pool1").getMembers().get("/Common/node1:80").getDescription(),
+        equalTo("node1_is_cool"));
+    assertThat(
+        vc.getPools().get("/Common/pool2").getMembers().get("/Common/node2:80").getDescription(),
+        equalTo("node2_is_lame"));
+    assertThat(
+        vc.getPools().get("/Common/pool3").getMembers().get("/Common/node3:80").getDescription(),
+        equalTo("node3_is_ok"));
   }
 
   @Test

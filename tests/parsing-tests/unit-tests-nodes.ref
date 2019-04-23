@@ -14928,10 +14928,12 @@
                     "name" : "/Common/foo:80",
                     "node" : "/Common/foo",
                     "port" : 80,
-                    "address" : "192.0.2.2"
+                    "address" : "192.0.2.2",
+                    "description" : "bar.baz"
                   }
                 },
                 "name" : "/Common/SOME_LTM_POOL",
+                "description" : "foo",
                 "monitor" : "/Common/SOME_MONITOR"
               }
             },
