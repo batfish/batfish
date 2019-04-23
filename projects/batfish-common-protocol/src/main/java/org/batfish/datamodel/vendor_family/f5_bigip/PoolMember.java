@@ -17,6 +17,7 @@ public final class PoolMember implements Serializable {
 
   private static final String PROP_ADDRESS = "address";
   private static final String PROP_ADDRESS6 = "address6";
+  private static final String PROP_DESCRIPTION = "description";
   private static final String PROP_NAME = "name";
   private static final String PROP_NODE = "node";
   private static final String PROP_PORT = "port";
@@ -35,6 +36,7 @@ public final class PoolMember implements Serializable {
 
   private @Nullable Ip _address;
   private @Nullable Ip6 _address6;
+  private @Nullable String _description;
   private final @Nonnull String _name;
   private final @Nonnull String _node;
   private final int _port;
@@ -53,6 +55,11 @@ public final class PoolMember implements Serializable {
   @JsonProperty(PROP_ADDRESS6)
   public @Nullable Ip6 getAddress6() {
     return _address6;
+  }
+
+  @JsonProperty(PROP_DESCRIPTION)
+  public @Nullable String getDescription() {
+    return _description;
   }
 
   @JsonProperty(PROP_NAME)
@@ -78,5 +85,10 @@ public final class PoolMember implements Serializable {
   @JsonProperty(PROP_ADDRESS6)
   public void setAddress6(@Nullable Ip6 address6) {
     _address6 = address6;
+  }
+
+  @JsonProperty(PROP_DESCRIPTION)
+  public void setDescription(@Nullable String description) {
+    _description = description;
   }
 }

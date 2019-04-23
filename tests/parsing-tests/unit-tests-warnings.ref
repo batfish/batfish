@@ -772,23 +772,9 @@
       },
       {
         "Filename" : "configs/f5_bigip_structured_ltm",
-        "Line" : 20,
-        "Text" : "description \"foo\"",
-        "Parser_Context" : "[unrecognized l_pool s_ltm statement f5_bigip_structured_configuration]",
-        "Comment" : "This syntax is unrecognized"
-      },
-      {
-        "Filename" : "configs/f5_bigip_structured_ltm",
         "Line" : 21,
         "Text" : "load-balancing-mode least-connections-member",
         "Parser_Context" : "[unrecognized l_pool s_ltm statement f5_bigip_structured_configuration]",
-        "Comment" : "This syntax is unrecognized"
-      },
-      {
-        "Filename" : "configs/f5_bigip_structured_ltm",
-        "Line" : 25,
-        "Text" : "description bar.baz",
-        "Parser_Context" : "[unrecognized lpm_member lp_members l_pool s_ltm statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
@@ -2291,10 +2277,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 321 results",
+      "notes" : "Found 319 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 321
+      "numResults" : 319
     }
   }
 ]
