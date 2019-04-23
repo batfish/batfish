@@ -74,7 +74,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -282,14 +281,6 @@ import org.batfish.vendor.StructureType;
 @ParametersAreNonnullByDefault
 public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredParserBaseListener {
 
-  private static @Nonnull String getUnrecognizedLeadText(UnrecognizedContext ctx) {
-    if (ctx.u_if() != null) {
-      return ctx.u_if().getText();
-    } else {
-      return ctx.u_word().stream().map(ParserRuleContext::getText).collect(Collectors.joining(" "));
-    }
-  }
-
   private static int toInteger(Ip_address_portContext ctx) {
     return Integer.parseInt(ctx.getText().split(":")[1]);
   }
@@ -387,6 +378,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   private @Nullable F5BigipConfiguration _c;
+
   private @Nullable BgpAddressFamily _currentBgpAddressFamily;
   private @Nullable BgpNeighbor _currentBgpNeighbor;
   private @Nullable BgpNeighborAddressFamily _currentBgpNeighborAddressFamily;
@@ -1524,6 +1516,15 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Nullable
   Integer getImishConfigurationOffset() {
     return _imishConfigurationOffset;
+  }
+
+  private @Nonnull String getUnrecognizedLeadText(UnrecognizedContext ctx) {
+    if (ctx.u_if() != null) {
+      return ctx.u_if().getText();
+    } else {
+      return _text.substring(
+          ctx.getStart().getStartIndex(), ctx.last_word.getStop().getStopIndex() + 1);
+    }
   }
 
   private @Nullable Long toCommunity(Standard_communityContext ctx) {

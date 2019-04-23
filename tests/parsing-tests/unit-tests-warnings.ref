@@ -766,7 +766,7 @@
       {
         "Filename" : "configs/f5_bigip_structured_ltm",
         "Line" : 13,
-        "Text" : "ltm ifile /Common/ SOME_FILE",
+        "Text" : "ltm ifile /Common/SOME_FILE",
         "Parser_Context" : "[unrecognized statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
@@ -1165,7 +1165,7 @@
       {
         "Filename" : "configs/f5_bigip_structured_ltm",
         "Line" : 191,
-        "Text" : "cert /Common/ example1.crt",
+        "Text" : "cert /Common/example1.crt",
         "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
@@ -1200,7 +1200,7 @@
       {
         "Filename" : "configs/f5_bigip_structured_ltm",
         "Line" : 203,
-        "Text" : "chain /Common/ example4.crt",
+        "Text" : "chain /Common/example4.crt",
         "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
@@ -1326,14 +1326,14 @@
       {
         "Filename" : "configs/f5_bigip_structured_ltm",
         "Line" : 221,
-        "Text" : "proxy-ca-cert /Common/ example5.crt",
+        "Text" : "proxy-ca-cert /Common/example5.crt",
         "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "configs/f5_bigip_structured_ltm",
         "Line" : 222,
-        "Text" : "proxy-ca-key /Common/ example5.key",
+        "Text" : "proxy-ca-key /Common/example5.key",
         "Parser_Context" : "[unrecognized lprof_client_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
@@ -1466,7 +1466,7 @@
       {
         "Filename" : "configs/f5_bigip_structured_ltm",
         "Line" : 243,
-        "Text" : "dns-resolver /Common/ SOME_DNS_RESOLVER",
+        "Text" : "dns-resolver /Common/SOME_DNS_RESOLVER",
         "Parser_Context" : "[unrecognized lprof_ocsp_stapling_params l_profile s_ltm statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
@@ -1494,7 +1494,7 @@
       {
         "Filename" : "configs/f5_bigip_structured_ltm",
         "Line" : 247,
-        "Text" : "trusted-responders /Common/ example6.crt",
+        "Text" : "trusted-responders /Common/example6.crt",
         "Parser_Context" : "[unrecognized lprof_ocsp_stapling_params l_profile s_ltm statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
@@ -1578,7 +1578,7 @@
       {
         "Filename" : "configs/f5_bigip_structured_ltm",
         "Line" : 263,
-        "Text" : "cert /Common/ example7.crt",
+        "Text" : "cert /Common/example7.crt",
         "Parser_Context" : "[unrecognized lprof_server_ssl l_profile s_ltm statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
@@ -1788,14 +1788,14 @@
       {
         "Filename" : "configs/f5_bigip_structured_net",
         "Line" : 6,
-        "Text" : "fdb tunnel /Common/ MYTUNNEL",
+        "Text" : "fdb tunnel /Common/MYTUNNEL",
         "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "configs/f5_bigip_structured_net",
         "Line" : 7,
-        "Text" : "fdb tunnel /Common/ MYVLAN",
+        "Text" : "fdb tunnel /Common/MYVLAN",
         "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
@@ -1837,7 +1837,7 @@
       {
         "Filename" : "configs/f5_bigip_structured_net",
         "Line" : 20,
-        "Text" : "route-domain /Common/ 0",
+        "Text" : "route-domain /Common/0",
         "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
@@ -1872,7 +1872,7 @@
       {
         "Filename" : "configs/f5_bigip_structured_net",
         "Line" : 50,
-        "Text" : "stp /Common/ MYSTP",
+        "Text" : "stp /Common/MYSTP",
         "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
@@ -1886,7 +1886,7 @@
       {
         "Filename" : "configs/f5_bigip_structured_net",
         "Line" : 71,
-        "Text" : "tunnels tunnel /Common/ MYTUNNEL",
+        "Text" : "tunnels tunnel /Common/MYTUNNEL",
         "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
@@ -1935,14 +1935,14 @@
       {
         "Filename" : "configs/f5_bigip_structured_net_routing_bgp",
         "Line" : 66,
-        "Text" : "profile /Common/ bgp",
+        "Text" : "profile /Common/bgp",
         "Parser_Context" : "[unrecognized nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "configs/f5_bigip_structured_net_routing_bgp",
         "Line" : 67,
-        "Text" : "route-domain /Common/ 0",
+        "Text" : "route-domain /Common/0",
         "Parser_Context" : "[unrecognized nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
@@ -1963,14 +1963,14 @@
       {
         "Filename" : "configs/f5_bigip_structured_net_routing_prefix_list",
         "Line" : 20,
-        "Text" : "route-domain /Common/ 0",
+        "Text" : "route-domain /Common/0",
         "Parser_Context" : "[unrecognized nr_prefix_list net_routing s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "configs/f5_bigip_structured_net_routing_prefix_list",
         "Line" : 35,
-        "Text" : "route-domain /Common/ 0",
+        "Text" : "route-domain /Common/0",
         "Parser_Context" : "[unrecognized nr_prefix_list net_routing s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
@@ -2005,14 +2005,14 @@
       {
         "Filename" : "configs/f5_bigip_structured_sys",
         "Line" : 17,
-        "Text" : "folder / Common",
+        "Text" : "folder /Common",
         "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "configs/f5_bigip_structured_sys",
         "Line" : 24,
-        "Text" : "folder /Common/ Drafts",
+        "Text" : "folder /Common/Drafts",
         "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
@@ -2040,7 +2040,7 @@
       {
         "Filename" : "configs/f5_bigip_structured_sys",
         "Line" : 40,
-        "Text" : "management-dhcp /Common/ sys-mgmt-dhcp-config",
+        "Text" : "management-dhcp /Common/sys-mgmt-dhcp-config",
         "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
@@ -2054,7 +2054,7 @@
       {
         "Filename" : "configs/f5_bigip_structured_sys",
         "Line" : 44,
-        "Text" : "management-route /Common/ default",
+        "Text" : "management-route /Common/default",
         "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },

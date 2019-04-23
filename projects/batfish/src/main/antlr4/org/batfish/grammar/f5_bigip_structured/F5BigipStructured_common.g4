@@ -85,7 +85,7 @@ unrecognized
 :
   (
     u_if
-    | u_word+
+    | last_word = u_word+
   ) list? NEWLINE
 ;
 
