@@ -373,7 +373,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   private static @Nonnull String unquote(String text) {
-    if (text.length() == 0 || text.charAt(0) != '"' || text.charAt(text.length() - 1) != '"') {
+    if (text.length() < 2 || text.charAt(0) != '"' || text.charAt(text.length() - 1) != '"') {
       return text;
     } else {
       return text.substring(1, text.length() - 1);
