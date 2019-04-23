@@ -144,6 +144,7 @@ class FlowTracer {
     _vrfName = initVrfName();
   }
 
+  @VisibleForTesting
   FlowTracer(
       TracerouteEngineImplContext tracerouteContext,
       Node currentNode,
