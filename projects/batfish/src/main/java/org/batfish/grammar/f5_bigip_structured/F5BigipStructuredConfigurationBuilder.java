@@ -285,12 +285,13 @@ import org.batfish.vendor.StructureType;
 public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredParserBaseListener {
 
   private static int toInteger(Ip_address_portContext ctx) {
-    return Integer.parseInt(ctx.getText().split(":")[1]);
+    String text = ctx.getText();
+    return Integer.parseInt(text.substring(text.indexOf(":") + 1));
   }
 
   private static int toInteger(Ipv6_address_portContext ctx) {
-    String[] parts = ctx.getText().split("\\.", -1);
-    return Integer.parseInt(parts[parts.length - 1]);
+    String text = ctx.getText();
+    return Integer.parseInt(text.substring(text.lastIndexOf(".") + 1));
   }
 
   private static int toInteger(Uint16Context ctx) {
@@ -302,8 +303,8 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   private static int toInteger(Word_portContext ctx) {
-    String[] parts = ctx.getText().split(":", -1);
-    return Integer.parseInt(parts[parts.length - 1]);
+    String text = ctx.getText();
+    return Integer.parseInt(text.substring(text.lastIndexOf(":") + 1));
   }
 
   private static @Nonnull InterfaceAddress toInterfaceAddress(Ip_prefixContext ctx) {
@@ -311,7 +312,8 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   private static @Nonnull Ip toIp(Ip_address_portContext ctx) {
-    return Ip.parse(ctx.getText().split(":", 2)[0]);
+    String text = ctx.getText();
+    return Ip.parse(text.substring(0, text.indexOf(":")));
   }
 
   private static @Nonnull Ip toIp(Ip_addressContext ctx) {
@@ -319,8 +321,8 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   private static @Nonnull Ip6 toIp6(Ipv6_address_portContext ctx) {
-    String[] parts = ctx.getText().split("\\.", -1);
-    return Ip6.parse(String.join(".", Arrays.copyOf(parts, parts.length - 1)));
+    String text = ctx.getText();
+    return Ip6.parse(text.substring(0, text.lastIndexOf(".")));
   }
 
   private static @Nonnull Ip6 toIp6(Ipv6_addressContext ctx) {
@@ -350,8 +352,8 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   private static @Nonnull String toName(Word_portContext ctx) {
-    String[] parts = ctx.getText().split(":", -1);
-    return String.join(":", Arrays.copyOf(parts, parts.length - 1));
+    String text = ctx.getText();
+    return text.substring(0, text.lastIndexOf(":"));
   }
 
   private static int toPort(Structure_name_with_portContext ctx) {
