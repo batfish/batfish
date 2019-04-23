@@ -3,6 +3,10 @@ package org.batfish.grammar.juniper;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.grammar.juniper.JuniperParser.Bracketed_clauseContext;
@@ -13,25 +17,18 @@ import org.batfish.grammar.juniper.JuniperParser.WordContext;
 
 public class JuniperFlattener extends JuniperParserBaseListener implements Flattener {
 
+  private List<String> _allSetStatements;
   private List<WordContext> _currentBracketedWords;
-
+  private LineTree.Node _currentNode;
   private List<WordContext> _currentStatement;
-
   private String _flattenedConfigurationText;
-
   private final String _header;
-
   private final Integer _headerLineCount;
-
   private StatementContext _inactiveStatement;
-
   private boolean _inBrackets;
-
   private FlattenerLineMap _lineMap;
-
-  private List<String> _setStatements;
-
   private List<List<WordContext>> _stack;
+  private LineTree _tree;
 
   public JuniperFlattener(String header) {
     _header = header;
@@ -39,7 +36,8 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
     _headerLineCount = header.split("\n", -1).length;
     _lineMap = new FlattenerLineMap();
     _stack = new ArrayList<>();
-    _setStatements = new ArrayList<>();
+    _tree = new LineTree();
+    _allSetStatements = new ArrayList<>();
   }
 
   @Override
@@ -51,11 +49,25 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
   }
 
   @Override
+  public void enterJuniper_configuration(Juniper_configurationContext ctx) {
+    _currentNode = _tree.getRoot();
+  }
+
+  @Override
   public void enterStatement(StatementContext ctx) {
     if (_inactiveStatement == null) {
       if (ctx.INACTIVE() != null) {
         _inactiveStatement = ctx;
       } else {
+        String nodeKey =
+            ctx.words.stream().map(ParserRuleContext::getText).collect(Collectors.joining(" "));
+        if (ctx.REPLACE() != null) {
+          _currentNode.getChildren().remove(nodeKey);
+        }
+        _currentNode =
+            _currentNode
+                .getChildren()
+                .computeIfAbsent(nodeKey, k -> new LineTree.Node(_currentNode));
         _currentStatement = new ArrayList<>();
         _stack.add(_currentStatement);
       }
@@ -73,10 +85,15 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
   public void exitJuniper_configuration(Juniper_configurationContext ctx) {
     StringBuilder sb = new StringBuilder();
     sb.append(_header);
-    for (String setStatement : _setStatements) {
-      sb.append(setStatement);
-      sb.append("\n");
-    }
+    Set<Integer> remainingSetStatements = _tree.getSetStatements();
+    CommonUtil.forEachWithIndex(
+        _allSetStatements,
+        (i, setStatement) -> {
+          if (!remainingSetStatements.contains(i)) {
+            return;
+          }
+          sb.append(setStatement).append("\n");
+        });
     _flattenedConfigurationText = sb.toString();
   }
 
@@ -84,6 +101,7 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
   public void exitStatement(StatementContext ctx) {
     if (_inactiveStatement == null) {
       _stack.remove(_stack.size() - 1);
+      _currentNode = _currentNode.getParent();
     } else if (_inactiveStatement == ctx) {
       _inactiveStatement = null;
     }
@@ -98,13 +116,15 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
         sb.append(" ");
         // Offset new line number by header line count
         _lineMap.setOriginalLine(
-            _setStatements.size() + _headerLineCount,
+            _allSetStatements.size() + _headerLineCount,
             sb.length(),
             wordCtx.WORD().getSymbol().getLine());
         sb.append(wordCtx.getText());
       }
     }
-    _setStatements.add(sb.toString());
+    String setStatementText = sb.toString();
+    _currentNode.getLines().add(_allSetStatements.size());
+    _allSetStatements.add(setStatementText);
   }
 
   @Override
