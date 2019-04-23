@@ -124,9 +124,9 @@ public class EdgesAnswerer extends Answerer {
     Map<Ip, Set<String>> ipOwners = TopologyUtil.computeIpNodeOwners(configurations, true);
     switch (edgeType) {
       case BGP:
+        // TODO Include layer 2 topology and test BGP unnumbered edges
         ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-            BgpTopologyUtils.initBgpTopology(
-                configurations, ipOwners, false, false, null, _batfish.getLayer2Topology());
+            BgpTopologyUtils.initBgpTopology(configurations, ipOwners, false, false, null, null);
         return getBgpEdges(configurations, includeNodes, includeRemoteNodes, bgpTopology);
       case EIGRP:
         Network<EigrpInterface, EigrpEdge> eigrpTopology =

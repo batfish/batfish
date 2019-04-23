@@ -220,15 +220,14 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
       Topology topology = _batfish.getEnvironmentTopology();
       Map<Ip, Set<String>> ipOwners = TopologyUtil.computeIpNodeOwners(configs, true);
       _batfish.initRemoteRipNeighbors(configs, ipOwners, topology);
-      Layer2Topology layer2Topology = _batfish.getLayer2Topology();
 
       return new VIModelAnswerElement(
           configs,
-          getBgpEdges(configs, ipOwners, layer2Topology),
+          getBgpEdges(configs, ipOwners),
           getEigrpEdges(configs, topology),
           getIsisEdges(configs, topology),
           _batfish.getLayer1Topology(),
-          layer2Topology,
+          _batfish.getLayer2Topology(),
           getLayer3Edges(configs, topology),
           getOspfEdges(
               _batfish.getTopologyProvider().getOspfTopology(_batfish.getNetworkSnapshot())),
@@ -236,11 +235,9 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
     }
 
     private static SortedSet<VerboseBgpEdge> getBgpEdges(
-        Map<String, Configuration> configs,
-        Map<Ip, Set<String>> ipOwners,
-        Layer2Topology layer2Topology) {
+        Map<String, Configuration> configs, Map<Ip, Set<String>> ipOwners) {
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-          BgpTopologyUtils.initBgpTopology(configs, ipOwners, false, false, null, layer2Topology);
+          BgpTopologyUtils.initBgpTopology(configs, ipOwners, false, false, null, null);
       SortedSet<VerboseBgpEdge> bgpEdges = new TreeSet<>(VERBOSE_BGP_EDGE_COMPARATOR);
       for (EndpointPair<BgpPeerConfigId> session : bgpTopology.edges()) {
         BgpPeerConfigId bgpPeerConfigId = session.source();
