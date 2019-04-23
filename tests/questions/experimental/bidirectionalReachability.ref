@@ -28,13 +28,15 @@
         "displayName" : "Headers",
         "fields" : {
           "applications" : {
-            "optional" : true
+            "optional" : true,
+            "type" : "applicationSpec"
           },
           "dscps" : {
             "optional" : true
           },
           "dstIps" : {
-            "optional" : false
+            "optional" : true,
+            "type" : "ipSpaceSpec"
           },
           "dstPorts" : {
             "optional" : true
@@ -55,13 +57,15 @@
             "optional" : true
           },
           "ipProtocols" : {
-            "optional" : true
+            "optional" : true,
+            "type" : "ipProtocolSpec"
           },
           "packetLengths" : {
             "optional" : true
           },
           "srcIps" : {
-            "optional" : true
+            "optional" : true,
+            "type" : "ipSpaceSpec"
           },
           "srcPorts" : {
             "optional" : true
