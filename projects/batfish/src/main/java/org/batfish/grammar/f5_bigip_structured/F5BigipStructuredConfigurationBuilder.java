@@ -74,8 +74,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -85,7 +83,6 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
-import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.util.CommonUtil;
@@ -106,7 +103,13 @@ import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Bundle_speedContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.F5_bigip_structured_configurationContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Imish_chunkContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ip_addressContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ip_address_portContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ip_prefixContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ip_protocolContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ipv6_addressContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ipv6_address_portContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ipv6_prefixContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.L_nodeContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.L_poolContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.L_ruleContext;
@@ -120,6 +123,7 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lm_httpsC
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lmh_defaults_fromContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lmhs_defaults_fromContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lmhs_ssl_profileContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ln_address6Context;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ln_addressContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lp_descriptionContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lp_monitorContext;
@@ -128,6 +132,7 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lper_sslC
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lpersa_defaults_fromContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lperss_defaults_fromContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lpm_memberContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lpmm_address6Context;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lpmm_addressContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lpmm_descriptionContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lprof_client_sslContext;
@@ -145,8 +150,10 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lproft_de
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ls_snatpoolContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ls_vlans_disabledContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ls_vlans_enabledContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lso_origin6Context;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lso_originContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lspm_memberContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lst_address6Context;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lst_addressContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lsv_vlanContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_descriptionContext;
@@ -155,18 +162,22 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_disabl
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_enabledContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_ip_forwardContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_ip_protocolContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_mask6Context;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_maskContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_poolContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_profiles_profileContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_rejectContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_source6Context;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_sourceContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_translate_addressContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_translate_portContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_vlans_disabledContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_vlans_enabledContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lva_address6Context;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lva_addressContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lva_arpContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lva_icmp_echoContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lva_mask6Context;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lva_maskContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lva_route_advertisementContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lvp_persistenceContext;
@@ -185,6 +196,7 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nr_bgpCon
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nr_prefix_listContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nr_route_mapContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrb_local_asContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrb_router_id6Context;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrb_router_idContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbaf_ipv4Context;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbaf_ipv6Context;
@@ -201,16 +213,20 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbnnafc_
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbnnafcr_outContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nreem4a_prefix_listContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nreesc_valueContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nroute_gw6Context;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nroute_gwContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nroute_network6Context;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nroute_networkContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrp_route_domainContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrpe_entryContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrpee_actionContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrpee_prefix6Context;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrpee_prefixContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrpee_prefix_len_rangeContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrr_route_domainContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrre_entryContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrree_actionContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ns_address6Context;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ns_addressContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ns_allow_serviceContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ns_traffic_groupContext;
@@ -219,13 +235,19 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nti_inter
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ntp_serversContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nv_tagContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nvi_interfaceContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Prefix_len_rangeContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Prefix_list_actionContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Route_advertisement_modeContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Route_map_actionContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Sgs_hostnameContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Standard_communityContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Structure_nameContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Structure_name_with_portContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Uint16Context;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.UnrecognizedContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Vlan_idContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.WordContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Word_portContext;
 import org.batfish.representation.f5_bigip.BgpAddressFamily;
 import org.batfish.representation.f5_bigip.BgpIpv4AddressFamily;
 import org.batfish.representation.f5_bigip.BgpNeighbor;
@@ -262,30 +284,99 @@ import org.batfish.vendor.StructureType;
 @ParametersAreNonnullByDefault
 public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredParserBaseListener {
 
-  private static @Nonnull String getUnrecognizedLeadText(UnrecognizedContext ctx) {
-    if (ctx.u_if() != null) {
-      return ctx.u_if().getText();
-    } else {
-      return ctx.u_word().stream().map(ParserRuleContext::getText).collect(Collectors.joining(" "));
-    }
+  private static int toInteger(Ip_address_portContext ctx) {
+    String text = ctx.getText();
+    return Integer.parseInt(text.substring(text.indexOf(":") + 1));
   }
 
-  private static int toInteger(ParserRuleContext ctx) {
-    return Integer.parseUnsignedInt(ctx.getText(), 10);
+  private static int toInteger(Ipv6_address_portContext ctx) {
+    String text = ctx.getText();
+    return Integer.parseInt(text.substring(text.lastIndexOf(".") + 1));
+  }
+
+  private static int toInteger(Uint16Context ctx) {
+    return Integer.parseInt(ctx.getText());
+  }
+
+  private static int toInteger(Vlan_idContext ctx) {
+    return Integer.parseInt(ctx.getText());
+  }
+
+  private static int toInteger(Word_portContext ctx) {
+    String text = ctx.getText();
+    return Integer.parseInt(text.substring(text.lastIndexOf(":") + 1));
+  }
+
+  private static @Nonnull InterfaceAddress toInterfaceAddress(Ip_prefixContext ctx) {
+    return new InterfaceAddress(ctx.getText());
+  }
+
+  private static @Nonnull Ip toIp(Ip_address_portContext ctx) {
+    String text = ctx.getText();
+    return Ip.parse(text.substring(0, text.indexOf(":")));
+  }
+
+  private static @Nonnull Ip toIp(Ip_addressContext ctx) {
+    return Ip.parse(ctx.getText());
+  }
+
+  private static @Nonnull Ip6 toIp6(Ipv6_address_portContext ctx) {
+    String text = ctx.getText();
+    return Ip6.parse(text.substring(0, text.lastIndexOf(".")));
+  }
+
+  private static @Nonnull Ip6 toIp6(Ipv6_addressContext ctx) {
+    return Ip6.parse(ctx.getText());
   }
 
   private static long toLong(ParserRuleContext ctx) {
     return Long.parseUnsignedLong(ctx.getText(), 10);
   }
 
-  static String unquote(String text) {
-    if (text.length() == 0) {
-      return text;
+  private static @Nonnull String toName(Structure_name_with_portContext ctx) {
+    String unqualifiedName;
+    if (ctx.ipp != null) {
+      unqualifiedName = toIp(ctx.ipp).toString();
+    } else if (ctx.ip6p != null) {
+      unqualifiedName = toIp6(ctx.ip6p).toString();
+    } else {
+      unqualifiedName = toName(ctx.wp);
     }
-    if (text.charAt(0) != '"') {
+    return ctx.partition != null
+        ? String.format("%s%s", ctx.partition.getText(), unqualifiedName)
+        : unqualifiedName;
+  }
+
+  private static @Nonnull String toName(Structure_nameContext ctx) {
+    return ctx.getText();
+  }
+
+  private static @Nonnull String toName(Word_portContext ctx) {
+    String text = ctx.getText();
+    return text.substring(0, text.lastIndexOf(":"));
+  }
+
+  private static int toPort(Structure_name_with_portContext ctx) {
+    if (ctx.ipp != null) {
+      return toInteger(ctx.ipp);
+    } else if (ctx.ip6p != null) {
+      return toInteger(ctx.ip6p);
+    } else {
+      return toInteger(ctx.wp);
+    }
+  }
+
+  private static @Nonnull Prefix toPrefix(Ip_prefixContext ctx) {
+    return Prefix.parse(ctx.getText());
+  }
+
+  private static @Nonnull Prefix6 toPrefix6(Ipv6_prefixContext ctx) {
+    return new Prefix6(ctx.getText());
+  }
+
+  private static @Nonnull String unquote(String text) {
+    if (text.length() < 2 || text.charAt(0) != '"' || text.charAt(text.length() - 1) != '"') {
       return text;
-    } else if (text.charAt(text.length() - 1) != '"') {
-      throw new BatfishException("Improperly-quoted string");
     } else {
       return text.substring(1, text.length() - 1);
     }
@@ -328,13 +419,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     _w = w;
   }
 
-  @Override
-  public void exitNtp_servers(Ntp_serversContext ctx) {
-    _c.setNtpServers(
-        ctx.servers.stream().map(WordContext::getText).collect(ImmutableList.toImmutableList()));
-  }
-
-  private String convErrorMessage(Class<?> type, ParserRuleContext ctx) {
+  private @Nonnull String convErrorMessage(Class<?> type, ParserRuleContext ctx) {
     return String.format("Could not convert to %s: %s", type.getSimpleName(), getFullText(ctx));
   }
 
@@ -364,27 +449,27 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void enterL_node(L_nodeContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     defineStructure(NODE, name, ctx);
     _currentNode = _c.getNodes().computeIfAbsent(name, Node::new);
   }
 
   @Override
   public void enterL_pool(L_poolContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     defineStructure(POOL, name, ctx);
     _currentPool = _c.getPools().computeIfAbsent(name, Pool::new);
   }
 
   @Override
   public void enterL_rule(L_ruleContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     defineStructure(RULE, name, ctx);
   }
 
   @Override
   public void enterL_snat(L_snatContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     defineStructure(SNAT, name, ctx);
     _c.referenceStructure(SNAT, name, SNAT_SELF_REFERENCE, ctx.name.getStart().getLine());
     _currentSnat = _c.getSnats().computeIfAbsent(name, Snat::new);
@@ -392,21 +477,21 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void enterL_snat_translation(L_snat_translationContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     defineStructure(SNAT_TRANSLATION, name, ctx);
     _currentSnatTranslation = _c.getSnatTranslations().computeIfAbsent(name, SnatTranslation::new);
   }
 
   @Override
   public void enterL_snatpool(L_snatpoolContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     defineStructure(SNATPOOL, name, ctx);
     _currentSnatPool = _c.getSnatPools().computeIfAbsent(name, SnatPool::new);
   }
 
   @Override
   public void enterL_virtual(L_virtualContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     defineStructure(VIRTUAL, name, ctx);
     _c.referenceStructure(VIRTUAL, name, VIRTUAL_SELF_REFERENCE, ctx.name.getStart().getLine());
     _currentVirtual = _c.getVirtuals().computeIfAbsent(name, Virtual::new);
@@ -414,103 +499,84 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void enterL_virtual_address(L_virtual_addressContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     defineStructure(VIRTUAL_ADDRESS, name, ctx);
     _currentVirtualAddress = _c.getVirtualAddresses().computeIfAbsent(name, VirtualAddress::new);
   }
 
   @Override
   public void enterLm_http(Lm_httpContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     defineStructure(MONITOR_HTTP, name, ctx);
   }
 
   @Override
   public void enterLm_https(Lm_httpsContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     defineStructure(MONITOR_HTTPS, name, ctx);
   }
 
   @Override
   public void enterLper_source_addr(Lper_source_addrContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     defineStructure(PERSISTENCE_SOURCE_ADDR, name, ctx);
   }
 
   @Override
   public void enterLper_ssl(Lper_sslContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     defineStructure(PERSISTENCE_SSL, name, ctx);
   }
 
   @Override
   public void enterLpm_member(Lpm_memberContext ctx) {
-    String combinedName = unquote(ctx.name.getText());
-    String node = toName(unquote(combinedName), ctx);
-    Integer port = toPort(unquote(combinedName), ctx);
-    if (node != null && port != null) {
-      _c.referenceStructure(NODE, node, POOL_MEMBER, ctx.name.getStart().getLine());
-    }
+    Structure_name_with_portContext np = ctx.name_with_port;
+    String name = toName(np);
+    int port = toPort(np);
+    _c.referenceStructure(NODE, name, POOL_MEMBER, np.getStart().getLine());
     _currentPoolMember =
-        _currentPool.getMembers().computeIfAbsent(combinedName, n -> new PoolMember(n, node, port));
+        _currentPool.getMembers().computeIfAbsent(np.getText(), n -> new PoolMember(n, name, port));
   }
 
   @Override
   public void enterLprof_client_ssl(Lprof_client_sslContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     defineStructure(PROFILE_CLIENT_SSL, name, ctx);
   }
 
   @Override
   public void enterLprof_http(Lprof_httpContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     defineStructure(PROFILE_HTTP, name, ctx);
   }
 
   @Override
   public void enterLprof_ocsp_stapling_params(Lprof_ocsp_stapling_paramsContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     defineStructure(PROFILE_OCSP_STAPLING_PARAMS, name, ctx);
   }
 
   @Override
   public void enterLprof_one_connect(Lprof_one_connectContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     defineStructure(PROFILE_ONE_CONNECT, name, ctx);
   }
 
   @Override
   public void enterLprof_server_ssl(Lprof_server_sslContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     defineStructure(PROFILE_SERVER_SSL, name, ctx);
   }
 
   @Override
   public void enterLprof_tcp(Lprof_tcpContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     defineStructure(PROFILE_TCP, name, ctx);
   }
 
   @Override
-  public void enterLst_address(Lst_addressContext ctx) {
-    String text = ctx.address.getText();
-    Optional<Ip> ip = Ip.tryParse(text);
-    if (ip.isPresent()) {
-      _currentSnatTranslation.setAddress(ip.get());
-      return;
-    }
-    Optional<Ip6> ip6 = Ip6.tryParse(text);
-    if (ip6.isPresent()) {
-      _currentSnatTranslation.setAddress6(ip6.get());
-      return;
-    }
-    _w.redFlag(
-        String.format("'%s' is neither IPv4 nor IPv6 address in: %s", text, getFullText(ctx)));
-  }
-
-  @Override
   public void enterLv_profiles_profile(Lv_profiles_profileContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     if (BuiltinProfile.getBuiltinProfile(name) == null) {
       _c.referenceStructure(PROFILE, name, VIRTUAL_PROFILE, ctx.name.getStart().getLine());
     }
@@ -531,7 +597,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void enterNet_interface(Net_interfaceContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = ctx.name.getText();
     defineStructure(INTERFACE, name, ctx);
     _c.referenceStructure(INTERFACE, name, INTERFACE_SELF_REFERENCE, ctx.name.getStart().getLine());
     _currentInterface = _c.getInterfaces().computeIfAbsent(name, Interface::new);
@@ -547,7 +613,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void enterNet_self(Net_selfContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     defineStructure(SELF, name, ctx);
     _c.referenceStructure(SELF, name, SELF_SELF_REFERENCE, ctx.name.getStart().getLine());
     _currentSelf = _c.getSelves().computeIfAbsent(name, Self::new);
@@ -555,21 +621,21 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void enterNet_trunk(Net_trunkContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     defineStructure(F5BigipStructureType.TRUNK, name, ctx);
     _currentTrunk = _c.getTrunks().computeIfAbsent(name, Trunk::new);
   }
 
   @Override
   public void enterNet_vlan(Net_vlanContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     defineStructure(VLAN, name, ctx);
     _currentVlan = _c.getVlans().computeIfAbsent(name, Vlan::new);
   }
 
   @Override
   public void enterNr_bgp(Nr_bgpContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     defineStructure(BGP_PROCESS, name, ctx);
     _c.referenceStructure(
         BGP_PROCESS, name, BGP_PROCESS_SELF_REFERENCE, ctx.name.getStart().getLine());
@@ -578,14 +644,14 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void enterNr_prefix_list(Nr_prefix_listContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     defineStructure(PREFIX_LIST, name, ctx);
     _currentPrefixList = _c.getPrefixLists().computeIfAbsent(name, PrefixList::new);
   }
 
   @Override
   public void enterNr_route_map(Nr_route_mapContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     defineStructure(ROUTE_MAP, name, ctx);
     _currentRouteMap = _c.getRouteMaps().computeIfAbsent(name, RouteMap::new);
   }
@@ -610,10 +676,9 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void enterNrbn_name(Nrbn_nameContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = ctx.name.getText();
     defineStructure(BGP_NEIGHBOR, name, ctx);
-    _c.referenceStructure(
-        BGP_NEIGHBOR, name, BGP_NEIGHBOR_SELF_REFERENCE, ctx.name.getStart().getLine());
+    _c.referenceStructure(BGP_NEIGHBOR, name, BGP_NEIGHBOR_SELF_REFERENCE, ctx.name.getLine());
     _currentBgpNeighbor = _currentBgpProcess.getNeighbors().computeIfAbsent(name, BgpNeighbor::new);
   }
 
@@ -696,7 +761,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitLmh_defaults_from(Lmh_defaults_fromContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     if (BuiltinMonitor.getBuiltinMonitor(name) == null) {
       _c.referenceStructure(
           MONITOR_HTTP, name, MONITOR_HTTP_DEFAULTS_FROM, ctx.name.getStart().getLine());
@@ -706,7 +771,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitLmhs_defaults_from(Lmhs_defaults_fromContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     if (BuiltinMonitor.getBuiltinMonitor(name) == null) {
       _c.referenceStructure(
           MONITOR_HTTPS, name, MONITOR_HTTPS_DEFAULTS_FROM, ctx.name.getStart().getLine());
@@ -716,7 +781,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitLmhs_ssl_profile(Lmhs_ssl_profileContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     if (BuiltinProfile.getBuiltinProfile(name) == null) {
       _c.referenceStructure(
           PROFILE_SERVER_SSL, name, MONITOR_HTTPS_SSL_PROFILE, ctx.name.getStart().getLine());
@@ -726,19 +791,12 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitLn_address(Ln_addressContext ctx) {
-    String text = ctx.address.getText();
-    Optional<Ip> ip = Ip.tryParse(text);
-    if (ip.isPresent()) {
-      _currentNode.setAddress(ip.get());
-      return;
-    }
-    Optional<Ip6> ip6 = Ip6.tryParse(text);
-    if (ip6.isPresent()) {
-      _currentNode.setAddress6(ip6.get());
-      return;
-    }
-    _w.redFlag(
-        String.format("'%s' is neither IPv4 nor IPv6 address in: %s", text, getFullText(ctx)));
+    _currentNode.setAddress(toIp(ctx.address));
+  }
+
+  @Override
+  public void exitLn_address6(Ln_address6Context ctx) {
+    _currentNode.setAddress6(toIp6(ctx.address));
   }
 
   @Override
@@ -748,7 +806,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitLp_monitor(Lp_monitorContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     if (BuiltinMonitor.getBuiltinMonitor(name) == null) {
       _c.referenceStructure(MONITOR, name, POOL_MONITOR, ctx.name.getStart().getLine());
     }
@@ -757,7 +815,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitLpersa_defaults_from(Lpersa_defaults_fromContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     if (BuiltinPersistence.getBuiltinPersistence(name) == null) {
       _c.referenceStructure(
           PERSISTENCE_SOURCE_ADDR,
@@ -770,7 +828,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitLperss_defaults_from(Lperss_defaults_fromContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     if (BuiltinPersistence.getBuiltinPersistence(name) == null) {
       _c.referenceStructure(
           PERSISTENCE_SSL, name, PERSISTENCE_SSL_DEFAULTS_FROM, ctx.name.getStart().getLine());
@@ -785,19 +843,12 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitLpmm_address(Lpmm_addressContext ctx) {
-    String text = ctx.address.getText();
-    Optional<Ip> ip = Ip.tryParse(text);
-    if (ip.isPresent()) {
-      _currentPoolMember.setAddress(ip.get());
-      return;
-    }
-    Optional<Ip6> ip6 = Ip6.tryParse(text);
-    if (ip6.isPresent()) {
-      _currentPoolMember.setAddress6(ip6.get());
-      return;
-    }
-    _w.redFlag(
-        String.format("'%s' is neither IPv4 nor IPv6 address in: %s", text, getFullText(ctx)));
+    _currentPoolMember.setAddress(toIp(ctx.address));
+  }
+
+  @Override
+  public void exitLpmm_address6(Lpmm_address6Context ctx) {
+    _currentPoolMember.setAddress6(toIp6(ctx.address6));
   }
 
   @Override
@@ -807,7 +858,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitLprofcs_defaults_from(Lprofcs_defaults_fromContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     if (BuiltinProfile.getBuiltinProfile(name) == null) {
       _c.referenceStructure(
           PROFILE_CLIENT_SSL,
@@ -820,7 +871,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitLprofh_defaults_from(Lprofh_defaults_fromContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     if (BuiltinProfile.getBuiltinProfile(name) == null) {
       _c.referenceStructure(
           PROFILE_HTTP, name, PROFILE_HTTP_DEFAULTS_FROM, ctx.name.getStart().getLine());
@@ -830,7 +881,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitLprofoc_defaults_from(Lprofoc_defaults_fromContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     if (BuiltinProfile.getBuiltinProfile(name) == null) {
       _c.referenceStructure(
           PROFILE_OCSP_STAPLING_PARAMS,
@@ -843,7 +894,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitLprofon_defaults_from(Lprofon_defaults_fromContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     if (BuiltinProfile.getBuiltinProfile(name) == null) {
       _c.referenceStructure(
           PROFILE_ONE_CONNECT,
@@ -856,7 +907,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitLprofss_defaults_from(Lprofss_defaults_fromContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     if (BuiltinProfile.getBuiltinProfile(name) == null) {
       _c.referenceStructure(
           PROFILE_SERVER_SSL,
@@ -869,7 +920,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitLproft_defaults_from(Lproft_defaults_fromContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     if (BuiltinProfile.getBuiltinProfile(name) == null) {
       _c.referenceStructure(
           PROFILE_TCP, name, PROFILE_TCP_DEFAULTS_FROM, ctx.name.getStart().getLine());
@@ -879,7 +930,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitLs_snatpool(Ls_snatpoolContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     _c.referenceStructure(SNATPOOL, name, SNAT_SNATPOOL, ctx.name.getStart().getLine());
     _currentSnat.setSnatpool(name);
   }
@@ -896,27 +947,30 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitLso_origin(Lso_originContext ctx) {
-    String text = ctx.origin.getText();
-    Optional<Prefix> prefix = Prefix.tryParse(text);
-    if (prefix.isPresent()) {
-      _currentSnat.getIpv4Origins().computeIfAbsent(prefix.get(), Ipv4Origin::new);
-      return;
-    }
-    Optional<Prefix6> prefix6 = Prefix6.tryParse(text);
-    if (prefix6.isPresent()) {
-      _currentSnat.getIpv6Origins().computeIfAbsent(prefix6.get(), Ipv6Origin::new);
-      return;
-    }
-    _w.redFlag(
-        String.format("'%s' is neither IPv4 nor IPv6 prefix in: %s", text, getFullText(ctx)));
+    _currentSnat.getIpv4Origins().computeIfAbsent(toPrefix(ctx.origin), Ipv4Origin::new);
+  }
+
+  @Override
+  public void exitLso_origin6(Lso_origin6Context ctx) {
+    _currentSnat.getIpv6Origins().computeIfAbsent(toPrefix6(ctx.origin6), Ipv6Origin::new);
   }
 
   @Override
   public void exitLspm_member(Lspm_memberContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     _c.referenceStructure(
         SNAT_TRANSLATION, name, SNATPOOL_MEMBERS_MEMBER, ctx.name.getStart().getLine());
     _currentSnatPool.getMembers().add(name);
+  }
+
+  @Override
+  public void exitLst_address(Lst_addressContext ctx) {
+    _currentSnatTranslation.setAddress(toIp(ctx.address));
+  }
+
+  @Override
+  public void exitLst_address6(Lst_address6Context ctx) {
+    _currentSnatTranslation.setAddress6(toIp6(ctx.address6));
   }
 
   @Override
@@ -933,14 +987,10 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitLv_destination(Lv_destinationContext ctx) {
-    String nameWithPort = unquote(ctx.name.getText());
-    String name = toName(nameWithPort, ctx);
-    Integer port = toPort(nameWithPort, ctx);
-    if (name == null || port == null) {
-      return;
-    }
-    _c.referenceStructure(
-        VIRTUAL_ADDRESS, name, VIRTUAL_DESTINATION, ctx.name.getStart().getLine());
+    Structure_name_with_portContext np = ctx.name_with_port;
+    String name = toName(np);
+    int port = toPort(np);
+    _c.referenceStructure(VIRTUAL_ADDRESS, name, VIRTUAL_DESTINATION, np.getStart().getLine());
     _currentVirtual.setDestination(name);
     _currentVirtual.setDestinationPort(port);
   }
@@ -983,23 +1033,17 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitLv_mask(Lv_maskContext ctx) {
-    String text = ctx.mask.getText();
-    Optional<Ip> ip = Ip.tryParse(text);
-    if (ip.isPresent()) {
-      _currentVirtual.setMask(ip.get());
-      return;
-    }
-    Optional<Ip6> ip6 = Ip6.tryParse(text);
-    if (ip6.isPresent()) {
-      _currentVirtual.setMask6(ip6.get());
-      return;
-    }
-    _w.redFlag(String.format("'%s' is neither IPv4 nor IPv6 mask in: %s", text, getFullText(ctx)));
+    _currentVirtual.setMask(toIp(ctx.mask));
+  }
+
+  @Override
+  public void exitLv_mask6(Lv_mask6Context ctx) {
+    _currentVirtual.setMask6(toIp6(ctx.mask6));
   }
 
   @Override
   public void exitLv_pool(Lv_poolContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     _c.referenceStructure(POOL, name, VIRTUAL_POOL, ctx.name.getStart().getLine());
     if (_currentVirtual.getIpForward()) {
       _w.redFlag(
@@ -1047,19 +1091,12 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitLv_source(Lv_sourceContext ctx) {
-    String text = ctx.source.getText();
-    Optional<Prefix> prefix = Prefix.tryParse(text);
-    if (prefix.isPresent()) {
-      _currentVirtual.setSource(prefix.get());
-      return;
-    }
-    Optional<Prefix6> prefix6 = Prefix6.tryParse(text);
-    if (prefix6.isPresent()) {
-      _currentVirtual.setSource6(prefix6.get());
-      return;
-    }
-    _w.redFlag(
-        String.format("'%s' is neither IPv4 nor IPv6 prefix in: %s", text, getFullText(ctx)));
+    _currentVirtual.setSource(toPrefix(ctx.source));
+  }
+
+  @Override
+  public void exitLv_source6(Lv_source6Context ctx) {
+    _currentVirtual.setSource6(toPrefix6(ctx.source6));
   }
 
   @Override
@@ -1114,19 +1151,12 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitLva_address(Lva_addressContext ctx) {
-    String text = ctx.address.getText();
-    Optional<Ip> ip = Ip.tryParse(text);
-    if (ip.isPresent()) {
-      _currentVirtualAddress.setAddress(ip.get());
-      return;
-    }
-    Optional<Ip6> ip6 = Ip6.tryParse(text);
-    if (ip6.isPresent()) {
-      _currentVirtualAddress.setAddress6(ip6.get());
-      return;
-    }
-    _w.redFlag(
-        String.format("'%s' is neither IPv4 nor IPv6 address in: %s", text, getFullText(ctx)));
+    _currentVirtualAddress.setAddress(toIp(ctx.address));
+  }
+
+  @Override
+  public void exitLva_address6(Lva_address6Context ctx) {
+    _currentVirtualAddress.setAddress6(toIp6(ctx.address));
   }
 
   @Override
@@ -1141,23 +1171,17 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitLva_mask(Lva_maskContext ctx) {
-    String text = ctx.mask.getText();
-    Optional<Ip> ip = Ip.tryParse(text);
-    if (ip.isPresent()) {
-      _currentVirtualAddress.setMask(ip.get());
-      return;
-    }
-    Optional<Ip6> ip6 = Ip6.tryParse(text);
-    if (ip6.isPresent()) {
-      _currentVirtualAddress.setMask6(ip6.get());
-      return;
-    }
-    _w.redFlag(String.format("'%s' is neither IPv4 nor IPv6 mask in: %s", text, getFullText(ctx)));
+    _currentVirtualAddress.setMask(toIp(ctx.mask));
+  }
+
+  @Override
+  public void exitLva_mask6(Lva_mask6Context ctx) {
+    _currentVirtualAddress.setMask6(toIp6(ctx.mask6));
   }
 
   @Override
   public void exitLvp_persistence(Lvp_persistenceContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     if (BuiltinPersistence.getBuiltinPersistence(name) == null) {
       _c.referenceStructure(
           PERSISTENCE, name, VIRTUAL_PERSIST_PERSISTENCE, ctx.name.getStart().getLine());
@@ -1167,13 +1191,13 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitLvr_rule(Lvr_ruleContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     _c.referenceStructure(RULE, name, VIRTUAL_RULES_RULE, ctx.name.getStart().getLine());
   }
 
   @Override
   public void exitLvsat_pool(Lvsat_poolContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     _c.referenceStructure(
         SNATPOOL, name, VIRTUAL_SOURCE_ADDRESS_TRANSLATION_POOL, ctx.name.getStart().getLine());
     _currentVirtual.setSourceAddressTranslationPool(name);
@@ -1236,19 +1260,12 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitNrb_router_id(Nrb_router_idContext ctx) {
-    String text = ctx.id.getText();
-    Optional<Ip> ip = Ip.tryParse(text);
-    if (ip.isPresent()) {
-      _currentBgpProcess.setRouterId(ip.get());
-      return;
-    }
-    Optional<Ip6> ip6 = Ip6.tryParse(text);
-    if (ip6.isPresent()) {
-      todo(ctx);
-      return;
-    }
-    _w.redFlag(
-        String.format("'%s' is neither IPv4 nor IPv6 address in: %s", text, getFullText(ctx)));
+    _currentBgpProcess.setRouterId(toIp(ctx.id));
+  }
+
+  @Override
+  public void exitNrb_router_id6(Nrb_router_id6Context ctx) {
+    todo(ctx);
   }
 
   @Override
@@ -1268,7 +1285,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitNrbafcrk_route_map(Nrbafcrk_route_mapContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     _c.referenceStructure(
         ROUTE_MAP,
         name,
@@ -1299,7 +1316,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitNrbnn_update_source(Nrbnn_update_sourceContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     _c.referenceStructure(VLAN, name, BGP_NEIGHBOR_UPDATE_SOURCE, ctx.name.getStart().getLine());
     _currentBgpNeighbor.setUpdateSource(name);
   }
@@ -1321,7 +1338,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitNrbnnafcr_out(Nrbnnafcr_outContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     F5BigipStructureUsage usage =
         _currentBgpAddressFamily instanceof BgpIpv4AddressFamily
             ? BGP_NEIGHBOR_IPV4_ROUTE_MAP_OUT
@@ -1332,7 +1349,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitNreem4a_prefix_list(Nreem4a_prefix_listContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     _c.referenceStructure(
         PREFIX_LIST, name, ROUTE_MAP_MATCH_IPV4_ADDRESS_PREFIX_LIST, ctx.name.getStart().getLine());
     _currentRouteMapEntry.setMatchPrefixList(new RouteMapMatchPrefixList(name));
@@ -1350,49 +1367,36 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitNroute_gw(Nroute_gwContext ctx) {
-    String text = ctx.gw.getText();
-    Optional<Ip> ipOpt = Ip.tryParse(text);
-    if (ipOpt.isPresent()) {
-      Ip ip = ipOpt.get();
-      // Gateway IP is valid iff it is on a directly-connected network
-      if (_c.getSelves().values().stream()
-          .map(Self::getAddress)
-          .filter(Objects::nonNull)
-          .map(InterfaceAddress::getPrefix)
-          .anyMatch(directlyConnectedNetwork -> directlyConnectedNetwork.containsIp(ip))) {
-        _currentRoute.setGw(ip);
-      } else {
-        _w.redFlag(
-            String.format(
-                "Cannot set gateway IP '%s' for route '%s' that is not on a directly-connected network in: %s",
-                ip, _currentRoute.getName(), getFullText(ctx)));
-      }
-      return;
+    Ip ip = toIp(ctx.gw);
+    // Gateway IP is valid iff it is on a directly-connected network
+    if (_c.getSelves().values().stream()
+        .map(Self::getAddress)
+        .filter(Objects::nonNull)
+        .map(InterfaceAddress::getPrefix)
+        .anyMatch(directlyConnectedNetwork -> directlyConnectedNetwork.containsIp(ip))) {
+      _w.redFlag(
+          String.format(
+              "Cannot set gateway IP '%s' for route '%s' that is not on a directly-connected network in: %s",
+              ip, _currentRoute.getName(), getFullText(ctx)));
     }
-    Optional<Ip6> ip6 = Ip6.tryParse(text);
-    if (ip6.isPresent()) {
-      _currentRoute.setGw6(ip6.get());
-      return;
-    }
-    _w.redFlag(
-        String.format("'%s' is neither IPv4 nor IPv6 address in: %s", text, getFullText(ctx)));
+    _currentRoute.setGw(ip);
+  }
+
+  @Override
+  public void exitNroute_gw6(Nroute_gw6Context ctx) {
+    _currentRoute.setGw6(toIp6(ctx.gw6));
+    todo(ctx);
   }
 
   @Override
   public void exitNroute_network(Nroute_networkContext ctx) {
-    String text = ctx.network.getText();
-    Optional<Prefix> prefix = Prefix.tryParse(text);
-    if (prefix.isPresent()) {
-      _currentRoute.setNetwork(prefix.get());
-      return;
-    }
-    Optional<Prefix6> prefix6 = Prefix6.tryParse(text);
-    if (prefix6.isPresent()) {
-      _currentRoute.setNetwork6(prefix6.get());
-      return;
-    }
-    _w.redFlag(
-        String.format("'%s' is neither IPv4 nor IPv6 prefix in: %s", text, getFullText(ctx)));
+    _currentRoute.setNetwork(ctx.network != null ? toPrefix(ctx.network) : Prefix.ZERO);
+  }
+
+  @Override
+  public void exitNroute_network6(Nroute_network6Context ctx) {
+    _currentRoute.setNetwork6(toPrefix6(ctx.network6));
+    todo(ctx);
   }
 
   @Override
@@ -1412,24 +1416,17 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitNrpee_prefix(Nrpee_prefixContext ctx) {
-    String text = ctx.prefix.getText();
-    Optional<Prefix> prefix = Prefix.tryParse(text);
-    if (prefix.isPresent()) {
-      _currentPrefixListEntry.setPrefix(prefix.get());
-      return;
-    }
-    Optional<Prefix6> prefix6 = Prefix6.tryParse(text);
-    if (prefix6.isPresent()) {
-      _currentPrefixListEntry.setPrefix6(prefix6.get());
-      return;
-    }
-    _w.redFlag(
-        String.format("'%s' is neither IPv4 nor IPv6 prefix in: %s", text, getFullText(ctx)));
+    _currentPrefixListEntry.setPrefix(toPrefix(ctx.prefix));
   }
 
   @Override
   public void exitNrpee_prefix_len_range(Nrpee_prefix_len_rangeContext ctx) {
     _currentPrefixListEntry.setLengthRange(toSubRange(ctx.range));
+  }
+
+  @Override
+  public void exitNrpee_prefix6(Nrpee_prefix6Context ctx) {
+    _currentPrefixListEntry.setPrefix6(toPrefix6(ctx.prefix6));
   }
 
   @Override
@@ -1449,19 +1446,13 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitNs_address(Ns_addressContext ctx) {
-    String text = ctx.interface_address.getText();
-    if (Prefix.tryParse(text).isPresent()) {
-      _currentSelf.setAddress(new InterfaceAddress(text));
-      return;
-    }
-    if (Prefix6.tryParse(text).isPresent()) {
-      // TODO: implement IPv6 interface address
-      todo(ctx);
-      return;
-    }
-    _w.redFlag(
-        String.format(
-            "'%s' is neither IPv4 nor IPv6 interface address in: %s", text, getFullText(ctx)));
+    _currentSelf.setAddress(toInterfaceAddress(ctx.interface_address));
+  }
+
+  @Override
+  public void exitNs_address6(Ns_address6Context ctx) {
+    // TODO: implement IPv6 interface address
+    todo(ctx);
   }
 
   @Override
@@ -1476,14 +1467,14 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitNs_vlan(Ns_vlanContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     _c.referenceStructure(VLAN, name, SELF_VLAN, ctx.name.getStart().getLine());
     _currentSelf.setVlan(name);
   }
 
   @Override
   public void exitNti_interface(Nti_interfaceContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = ctx.name.getText();
     if (!_c.getInterfaces().containsKey(name)) {
       _c.getInterfaces().put(name, new Interface(name));
       defineStructure(INTERFACE, name, ctx);
@@ -1493,13 +1484,19 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   @Override
+  public void exitNtp_servers(Ntp_serversContext ctx) {
+    _c.setNtpServers(
+        ctx.servers.stream().map(WordContext::getText).collect(ImmutableList.toImmutableList()));
+  }
+
+  @Override
   public void exitNv_tag(Nv_tagContext ctx) {
     _currentVlan.setTag(toInteger(ctx.tag));
   }
 
   @Override
   public void exitNvi_interface(Nvi_interfaceContext ctx) {
-    String name = unquote(ctx.name.getText());
+    String name = toName(ctx.name);
     _c.referenceStructure(
         VLAN_MEMBER_INTERFACE, name, VLAN_INTERFACE, ctx.name.getStart().getLine());
     _currentVlan.getInterfaces().computeIfAbsent(name, VlanInterface::new);
@@ -1540,8 +1537,17 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     return _imishConfigurationOffset;
   }
 
+  private @Nonnull String getUnrecognizedLeadText(UnrecognizedContext ctx) {
+    if (ctx.u_if() != null) {
+      return ctx.u_if().getText();
+    } else {
+      return _text.substring(
+          ctx.getStart().getStartIndex(), ctx.last_word.getStop().getStopIndex() + 1);
+    }
+  }
+
   private @Nullable Long toCommunity(Standard_communityContext ctx) {
-    if (ctx.word() != null) {
+    if (ctx.STANDARD_COMMUNITY() != null) {
       return CommonUtil.communityStringToLong(ctx.getText());
     } else {
       return convProblem(Long.class, ctx, null);
@@ -1582,37 +1588,6 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     }
   }
 
-  private @Nullable String toName(String nameWithPort, ParserRuleContext ctx) {
-    String[] parts = nameWithPort.split(":", -1);
-    if (parts.length != 2) {
-      _w.redFlag(
-          String.format(
-              "Expected node name with :port suffix but got '%s' in: %s",
-              nameWithPort, getFullText(ctx)));
-      return null;
-    }
-    return parts[0];
-  }
-
-  private @Nullable Integer toPort(String nameWithPort, ParserRuleContext ctx) {
-    String[] parts = nameWithPort.split(":", -1);
-    if (parts.length != 2) {
-      _w.redFlag(
-          String.format(
-              "Expected node name with :port suffix but got '%s' in: %s",
-              nameWithPort, getFullText(ctx)));
-      return null;
-    }
-    try {
-      int port = Integer.parseInt(parts[1], 10);
-      checkArgument(0 <= port && port <= 0xFFFF);
-      return port;
-    } catch (IllegalArgumentException e) {
-      _w.redFlag(String.format("Expected port but got '%s' in: %s", parts[1], getFullText(ctx)));
-      return null;
-    }
-  }
-
   private @Nullable RouteAdvertisementMode toRouteAdvertisementMode(
       Route_advertisement_modeContext ctx) {
     if (ctx.ALL() != null) {
@@ -1642,7 +1617,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     }
   }
 
-  private @Nullable SubRange toSubRange(WordContext ctx) {
+  private @Nullable SubRange toSubRange(Prefix_len_rangeContext ctx) {
     String[] parts = ctx.getText().split(":", -1);
     try {
       checkArgument(parts.length == 2);

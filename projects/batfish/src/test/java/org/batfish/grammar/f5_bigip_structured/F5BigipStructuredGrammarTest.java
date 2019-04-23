@@ -1241,19 +1241,6 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testRouteReferences() throws IOException {
-    String hostname = "f5_bigip_structured_net_route";
-    String file = "configs/" + hostname;
-    String used = "/Common/route1";
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
-    ConvertConfigurationAnswerElement ans =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
-
-    // detect all structure references
-    assertThat(ans, hasNumReferrers(file, ROUTE, used, 1));
-  }
-
-  @Test
   public void testRouteMap() throws IOException {
     Configuration c = parseConfig("f5_bigip_structured_net_routing_route_map");
     String acceptAllName = "/Common/ACCEPT_ALL";
@@ -1346,6 +1333,19 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
+  public void testRouteReferences() throws IOException {
+    String hostname = "f5_bigip_structured_net_route";
+    String file = "configs/" + hostname;
+    String used = "/Common/route1";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // detect all structure references
+    assertThat(ans, hasNumReferrers(file, ROUTE, used, 1));
+  }
+
+  @Test
   public void testRuleReferences() throws IOException {
     String hostname = "f5_bigip_structured_ltm_references";
     String file = "configs/" + hostname;
@@ -1377,6 +1377,79 @@ public final class F5BigipStructuredGrammarTest {
 
     // detect all structure references
     assertThat(ans, hasNumReferrers(file, SELF, used, 1));
+  }
+
+  @Test
+  public void testSnatBidirectionalTraceroute() throws IOException {
+    String hostname = "f5_bigip_structured_snat";
+    String tag = "tag";
+
+    parseConfig(hostname);
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.computeDataPlane();
+
+    // SNAT via snat /Common/snat1
+    Flow flow =
+        Flow.builder()
+            .setTag(tag)
+            .setDstIp(Ip.parse("192.0.2.1"))
+            .setDstPort(80)
+            .setIngressInterface("/Common/vlan1")
+            .setIngressNode(hostname)
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcIp(Ip.parse("8.8.8.8"))
+            .setSrcPort(50000)
+            .build();
+    SortedMap<Flow, List<TraceAndReverseFlow>> flowTraces =
+        batfish.getTracerouteEngine().computeTracesAndReverseFlows(ImmutableSet.of(flow), false);
+    List<TraceAndReverseFlow> traces = flowTraces.get(flow);
+
+    assertThat(traces, hasSize(1));
+
+    Flow reverseFlow = traces.get(0).getReverseFlow();
+    assertThat(
+        reverseFlow,
+        equalTo(
+            Flow.builder()
+                .setTag(tag)
+                .setSrcIp(Ip.parse("192.0.2.1"))
+                .setSrcPort(80)
+                .setIngressInterface("/Common/vlan1")
+                .setIngressNode(hostname)
+                .setIpProtocol(IpProtocol.TCP)
+                .setDstIp(Ip.parse("10.200.1.2"))
+                .setDstPort(1024)
+                .build()));
+
+    Set<FirewallSessionTraceInfo> sessions = traces.get(0).getNewFirewallSessions();
+    SortedMap<Flow, List<TraceAndReverseFlow>> reverseFlowTraces =
+        batfish
+            .getTracerouteEngine()
+            .computeTracesAndReverseFlows(ImmutableSet.of(reverseFlow), sessions, false);
+
+    Optional<TransformationStepDetail> stepDetailOptional =
+        reverseFlowTraces.get(reverseFlow).stream()
+            .map(TraceAndReverseFlow::getTrace)
+            .map(Trace::getHops)
+            .flatMap(Collection::stream)
+            .map(Hop::getSteps)
+            .flatMap(Collection::stream)
+            .map(Step::getDetail)
+            .filter(Predicates.instanceOf(TransformationStepDetail.class))
+            .map(TransformationStepDetail.class::cast)
+            .filter(d -> d.getTransformationType() == TransformationType.DEST_NAT)
+            .findFirst();
+
+    assertTrue("There is a DNAT transformation step.", stepDetailOptional.isPresent());
+
+    TransformationStepDetail detail = stepDetailOptional.get();
+
+    assertThat(
+        detail.getFlowDiffs(),
+        contains(
+            FlowDiff.flowDiff(IpField.DESTINATION, Ip.parse("10.200.1.2"), Ip.parse("8.8.8.8")),
+            FlowDiff.flowDiff(PortField.DESTINATION, 1024, 50000)));
   }
 
   @Test
@@ -1560,79 +1633,6 @@ public final class F5BigipStructuredGrammarTest {
 
     // detect all structure references
     assertThat(ans, hasNumReferrers(file, SNAT_TRANSLATION, used, 1));
-  }
-
-  @Test
-  public void testSnatBidirectionalTraceroute() throws IOException {
-    String hostname = "f5_bigip_structured_snat";
-    String tag = "tag";
-
-    parseConfig(hostname);
-
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
-    batfish.computeDataPlane();
-
-    // SNAT via snat /Common/snat1
-    Flow flow =
-        Flow.builder()
-            .setTag(tag)
-            .setDstIp(Ip.parse("192.0.2.1"))
-            .setDstPort(80)
-            .setIngressInterface("/Common/vlan1")
-            .setIngressNode(hostname)
-            .setIpProtocol(IpProtocol.TCP)
-            .setSrcIp(Ip.parse("8.8.8.8"))
-            .setSrcPort(50000)
-            .build();
-    SortedMap<Flow, List<TraceAndReverseFlow>> flowTraces =
-        batfish.getTracerouteEngine().computeTracesAndReverseFlows(ImmutableSet.of(flow), false);
-    List<TraceAndReverseFlow> traces = flowTraces.get(flow);
-
-    assertThat(traces, hasSize(1));
-
-    Flow reverseFlow = traces.get(0).getReverseFlow();
-    assertThat(
-        reverseFlow,
-        equalTo(
-            Flow.builder()
-                .setTag(tag)
-                .setSrcIp(Ip.parse("192.0.2.1"))
-                .setSrcPort(80)
-                .setIngressInterface("/Common/vlan1")
-                .setIngressNode(hostname)
-                .setIpProtocol(IpProtocol.TCP)
-                .setDstIp(Ip.parse("10.200.1.2"))
-                .setDstPort(1024)
-                .build()));
-
-    Set<FirewallSessionTraceInfo> sessions = traces.get(0).getNewFirewallSessions();
-    SortedMap<Flow, List<TraceAndReverseFlow>> reverseFlowTraces =
-        batfish
-            .getTracerouteEngine()
-            .computeTracesAndReverseFlows(ImmutableSet.of(reverseFlow), sessions, false);
-
-    Optional<TransformationStepDetail> stepDetailOptional =
-        reverseFlowTraces.get(reverseFlow).stream()
-            .map(TraceAndReverseFlow::getTrace)
-            .map(Trace::getHops)
-            .flatMap(Collection::stream)
-            .map(Hop::getSteps)
-            .flatMap(Collection::stream)
-            .map(Step::getDetail)
-            .filter(Predicates.instanceOf(TransformationStepDetail.class))
-            .map(TransformationStepDetail.class::cast)
-            .filter(d -> d.getTransformationType() == TransformationType.DEST_NAT)
-            .findFirst();
-
-    assertTrue("There is a DNAT transformation step.", stepDetailOptional.isPresent());
-
-    TransformationStepDetail detail = stepDetailOptional.get();
-
-    assertThat(
-        detail.getFlowDiffs(),
-        contains(
-            FlowDiff.flowDiff(IpField.DESTINATION, Ip.parse("10.200.1.2"), Ip.parse("8.8.8.8")),
-            FlowDiff.flowDiff(PortField.DESTINATION, 1024, 50000)));
   }
 
   @Test

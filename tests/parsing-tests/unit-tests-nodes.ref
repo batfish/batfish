@@ -14993,7 +14993,18 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "staticRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "192.0.2.2/32",
+                "nextHopInterface" : "dynamic",
+                "nextHopIp" : "172.16.0.1",
+                "tag" : -1
+              }
+            ]
           }
         }
       },
