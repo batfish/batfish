@@ -119,7 +119,6 @@ import org.batfish.datamodel.AuthenticationMethod;
 import org.batfish.datamodel.BgpAuthenticationAlgorithm;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
-import org.batfish.datamodel.ExtendedCommunity;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
@@ -148,6 +147,7 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.VrrpGroup;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.isis.IsisAuthenticationAlgorithm;
 import org.batfish.datamodel.isis.IsisHelloAuthenticationType;
 import org.batfish.datamodel.isis.IsisOption;
@@ -199,8 +199,6 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_privateContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bpa_asContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Dh_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.DirectionContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ec_literalContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ec_namedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Encryption_algorithmContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eo8023ad_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Eo_redundant_parentContext;
@@ -4614,9 +4612,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       String communityStr = CommonUtil.longToCommunity(communityVal);
       _currentCommunityList.getLines().add(new CommunityListLine(communityStr));
     } else if (ctx.extended_community() != null) {
-      long communityVal = toCommunityLong(ctx.extended_community());
-      String communityStr = CommonUtil.longToCommunity(communityVal);
-      _currentCommunityList.getLines().add(new CommunityListLine(communityStr));
+      _currentCommunityList
+          .getLines()
+          .add(new CommunityListLine(toExtendedCommunity(ctx.extended_community()).matchString()));
     } else if (ctx.invalid_community_regex() != null) {
       String text = ctx.invalid_community_regex().getText();
       _currentCommunityList.getLines().add(new CommunityListLine(text));
@@ -6119,28 +6117,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     return AsPath.of(asPath);
   }
 
-  private long toCommunityLong(Ec_literalContext ctx) {
-    String[] parts = ctx.getText().split(":");
-    long part1 = Long.parseLong(parts[0]);
-    long part2 = Long.parseLong(parts[1]);
-    long part3 = Long.parseLong(parts[2]);
-    ExtendedCommunity c = new ExtendedCommunity(part1, part2, part3);
-    return c.asLong();
-  }
-
-  private long toCommunityLong(Ec_namedContext ctx) {
-    ExtendedCommunity ec = new ExtendedCommunity(ctx.getText());
-    return ec.asLong();
-  }
-
-  private long toCommunityLong(Extended_communityContext ctx) {
-    if (ctx.ec_literal() != null) {
-      return toCommunityLong(ctx.ec_literal());
-    } else if (ctx.ec_named() != null) {
-      return toCommunityLong(ctx.ec_named());
-    } else {
-      throw new BatfishException("invalid extended community");
-    }
+  private ExtendedCommunity toExtendedCommunity(Extended_communityContext ctx) {
+    return ExtendedCommunity.parse(ctx.getText());
   }
 
   private String toComplexPolicyStatement(

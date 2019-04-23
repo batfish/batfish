@@ -33640,7 +33640,7 @@
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.RegexCommunitySet",
-                  "regex" : "65537:512"
+                  "regex" : "1:1"
                 }
               }
             ],
@@ -33654,7 +33654,7 @@
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.RegexCommunitySet",
-                  "regex" : "6553700:512"
+                  "regex" : "100:100"
                 }
               }
             ],
@@ -33668,7 +33668,7 @@
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.RegexCommunitySet",
-                  "regex" : "6619237:512"
+                  "regex" : "101:101"
                 }
               }
             ],
