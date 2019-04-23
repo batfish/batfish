@@ -6118,13 +6118,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   private ExtendedCommunity toExtendedCommunity(Extended_communityContext ctx) {
-    if (ctx.ec_literal() != null) {
-      return ExtendedCommunity.parse(ctx.ec_literal().getText());
-    } else if (ctx.ec_named() != null) {
-      return ExtendedCommunity.parse(ctx.ec_named().getText());
-    } else {
-      throw new BatfishException("invalid extended community");
-    }
+    return ExtendedCommunity.parse(ctx.getText());
   }
 
   private String toComplexPolicyStatement(
