@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.TreeMultimap;
 import java.io.Serializable;
 import java.util.Set;
 import java.util.SortedMap;
@@ -34,6 +36,7 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
   private static final String PROP_DEFINED_STRUCTURES = "definedStructures";
   private static final String PROP_CONVERT_STATUS = "convertStatus";
   private static final String PROP_ERRORS = "errors";
+  private static final String PROP_FILE_MAP = "fileMap";
   private static final String PROP_REFERENCED_STRUCTURES = "referencedStructures";
   private static final String PROP_UNDEFINED_REFERENCES = "undefinedReferences";
   private static final String PROP_VERSION = "version";
@@ -46,6 +49,9 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
   @Nonnull
   private SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
       _definedStructures;
+
+  /* Map of source filename to generated nodes (e.g. "configs/j1.cfg" -> ["j1_master", "j1_logical_system1"]) */
+  @Nonnull private Multimap<String, String> _fileMap;
 
   // filename -> structType -> structName -> usage -> lines
   @Nonnull
@@ -71,7 +77,7 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
   @Nonnull private SortedMap<String, Warnings> _warnings;
 
   public ConvertConfigurationAnswerElement() {
-    this(null, null, null, null, null, null, null, null);
+    this(null, null, null, null, null, null, null, null, null);
   }
 
   @VisibleForTesting
@@ -94,10 +100,12 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
                   SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
               undefinedReferences,
       @JsonProperty(PROP_VERSION) String version,
-      @JsonProperty(PROP_WARNINGS) SortedMap<String, Warnings> warnings) {
+      @JsonProperty(PROP_WARNINGS) SortedMap<String, Warnings> warnings,
+      @JsonProperty(PROP_FILE_MAP) @Nullable Multimap<String, String> fileMap) {
     _definedStructures = firstNonNull(definedStructures, new TreeMap<>());
     _errors = firstNonNull(errors, new TreeMap<>());
     _errorDetails = firstNonNull(errorDetails, new TreeMap<>());
+    _fileMap = firstNonNull(fileMap, TreeMultimap.create());
     _convertStatus = firstNonNull(convertStatus, new TreeMap<>());
 
     _referencedStructures = firstNonNull(referencedstructures, new TreeMap<>());
@@ -144,6 +152,12 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
   @Nonnull
   public SortedMap<String, ErrorDetails> getErrorDetails() {
     return _errorDetails;
+  }
+
+  @JsonProperty(PROP_FILE_MAP)
+  @Nonnull
+  public Multimap<String, String> getFileMap() {
+    return _fileMap;
   }
 
   @JsonProperty(PROP_REFERENCED_STRUCTURES)

@@ -79,6 +79,7 @@ public class ConvertConfigurationResult
           answerElement.getDefinedStructures().putAll(_answerElement.getDefinedStructures());
           answerElement.getUndefinedReferences().putAll(_answerElement.getUndefinedReferences());
           answerElement.getReferencedStructures().putAll(_answerElement.getReferencedStructures());
+          answerElement.getFileMap().putAll(_answerElement.getFileMap());
         }
       }
     } else {
