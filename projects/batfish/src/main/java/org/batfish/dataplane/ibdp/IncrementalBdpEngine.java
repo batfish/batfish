@@ -316,7 +316,6 @@ class IncrementalBdpEngine {
         int eigrpExternalSubIterations = 0;
         while (eigrpExternalChanged.get()) {
           eigrpExternalSubIterations++;
-          eigrpExternalChanged.set(false);
           try (ActiveSpan eigrpSpan =
               GlobalTracer.get()
                   .buildSpan(
@@ -324,7 +323,8 @@ class IncrementalBdpEngine {
                           + ": Recompute EIGRP external routes: "
                           + eigrpExternalSubIterations)
                   .startActive()) {
-            assert eigrpSpan != null; // avoid unused warnink
+            assert eigrpSpan != null; // avoid unused warning
+            eigrpExternalChanged.set(false);
             nodes
                 .values()
                 .parallelStream()
@@ -813,7 +813,7 @@ class IncrementalBdpEngine {
 
       try (ActiveSpan span =
           GlobalTracer.get()
-              .buildSpan("Compute EIGRP internal routes: iteration" + eigrpInternalIterations)
+              .buildSpan("Compute EIGRP internal routes: iteration " + eigrpInternalIterations)
               .startActive()) {
         assert span != null; // avoid unused warning
         nodes
@@ -830,7 +830,7 @@ class IncrementalBdpEngine {
       }
       try (ActiveSpan span =
           GlobalTracer.get()
-              .buildSpan("Unstage EIGRP internal routes: iteration" + eigrpInternalIterations)
+              .buildSpan("Unstage EIGRP internal routes: iteration " + eigrpInternalIterations)
               .startActive()) {
         assert span != null; // avoid unused warning
         nodes
