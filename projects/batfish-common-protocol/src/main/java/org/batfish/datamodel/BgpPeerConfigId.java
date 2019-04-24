@@ -85,9 +85,9 @@ public final class BgpPeerConfigId implements Comparable<BgpPeerConfigId> {
   }
 
   /**
-   * The interface of this peer ID, or null if it does not represent a {@link
-   * BgpUnnumberedPeerConfig}. By contract, exactly one of _peerInterface and {@link
-   * #_remotePeerPrefix} is defined.
+   * The interface of this peer ID, or {@code null} iff it does not represent a {@link
+   * BgpUnnumberedPeerConfig}. Exactly one of {@link #getPeerInterface()} and {@link
+   * #getRemotePeerPrefix()} is nonnull.
    */
   @Nullable
   @JsonProperty(PROP_INTERFACE)
@@ -96,8 +96,9 @@ public final class BgpPeerConfigId implements Comparable<BgpPeerConfigId> {
   }
 
   /**
-   * The remote prefix of this peer ID, or null if it represents a {@link BgpUnnumberedPeerConfig}.
-   * By contract, exactly one of {@link #_peerInterface} and _remotePeerPrefix is defined.
+   * The remote prefix of this peer ID, or {@code null} iff it represents a {@link
+   * BgpUnnumberedPeerConfig}. Exactly one of {@link #getPeerInterface()} and {@link
+   * #getRemotePeerPrefix()} is nonnull.
    */
   @Nullable
   @JsonProperty(PROP_PREFIX)
