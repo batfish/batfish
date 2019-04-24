@@ -3,6 +3,10 @@ package org.batfish.grammar.juniper;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.grammar.juniper.JuniperParser.Bracketed_clauseContext;
@@ -13,24 +17,19 @@ import org.batfish.grammar.juniper.JuniperParser.WordContext;
 
 public class JuniperFlattener extends JuniperParserBaseListener implements Flattener {
 
+  /** An ordered list of all produced set statements, including those not to be retained */
+  private List<String> _allSetStatements;
+
   private List<WordContext> _currentBracketedWords;
-
   private List<WordContext> _currentStatement;
-
+  private SetStatementTree _currentTree;
   private String _flattenedConfigurationText;
-
   private final String _header;
-
   private final Integer _headerLineCount;
-
   private StatementContext _inactiveStatement;
-
   private boolean _inBrackets;
-
   private FlattenerLineMap _lineMap;
-
-  private List<String> _setStatements;
-
+  private SetStatementTree _root;
   private List<List<WordContext>> _stack;
 
   public JuniperFlattener(String header) {
@@ -39,7 +38,8 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
     _headerLineCount = header.split("\n", -1).length;
     _lineMap = new FlattenerLineMap();
     _stack = new ArrayList<>();
-    _setStatements = new ArrayList<>();
+    _root = new SetStatementTree();
+    _allSetStatements = new ArrayList<>();
   }
 
   @Override
@@ -51,11 +51,26 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
   }
 
   @Override
+  public void enterJuniper_configuration(Juniper_configurationContext ctx) {
+    _currentTree = _root;
+  }
+
+  @Override
   public void enterStatement(StatementContext ctx) {
     if (_inactiveStatement == null) {
       if (ctx.INACTIVE() != null) {
         _inactiveStatement = ctx;
       } else {
+        String statementTextAtCurrentDepth =
+            ctx.words.stream().map(ParserRuleContext::getText).collect(Collectors.joining(" "));
+        if (ctx.REPLACE() != null) {
+          // Since the statement begins with 'replace:', all previous lines for this key should be
+          // removed.
+          _currentTree = _currentTree.replaceSubtree(statementTextAtCurrentDepth);
+        } else {
+          // Grab or add child at the current tree node for the node key for this statement
+          _currentTree = _currentTree.getOrAddSubtree(statementTextAtCurrentDepth);
+        }
         _currentStatement = new ArrayList<>();
         _stack.add(_currentStatement);
       }
@@ -73,10 +88,15 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
   public void exitJuniper_configuration(Juniper_configurationContext ctx) {
     StringBuilder sb = new StringBuilder();
     sb.append(_header);
-    for (String setStatement : _setStatements) {
-      sb.append(setStatement);
-      sb.append("\n");
-    }
+    Set<Integer> remainingSetStatements = _root.getSetStatementIndices();
+    CommonUtil.forEachWithIndex(
+        _allSetStatements,
+        (i, setStatement) -> {
+          if (!remainingSetStatements.contains(i)) {
+            return;
+          }
+          sb.append(setStatement).append("\n");
+        });
     _flattenedConfigurationText = sb.toString();
   }
 
@@ -84,6 +104,8 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
   public void exitStatement(StatementContext ctx) {
     if (_inactiveStatement == null) {
       _stack.remove(_stack.size() - 1);
+      // Finished recording set lines for this node key, so pop up
+      _currentTree = _currentTree.getParent();
     } else if (_inactiveStatement == ctx) {
       _inactiveStatement = null;
     }
@@ -98,13 +120,16 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
         sb.append(" ");
         // Offset new line number by header line count
         _lineMap.setOriginalLine(
-            _setStatements.size() + _headerLineCount,
+            _allSetStatements.size() + _headerLineCount,
             sb.length(),
             wordCtx.WORD().getSymbol().getLine());
         sb.append(wordCtx.getText());
       }
     }
-    _setStatements.add(sb.toString());
+    String setStatementText = sb.toString();
+    // Record index of new statement in the current subtree
+    _currentTree.addSetStatementIndex(_allSetStatements.size());
+    _allSetStatements.add(setStatementText);
   }
 
   @Override
