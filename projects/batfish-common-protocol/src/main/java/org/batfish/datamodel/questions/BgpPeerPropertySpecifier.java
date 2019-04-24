@@ -17,6 +17,7 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
+import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.Schema;
 
@@ -104,14 +105,13 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
 
   @VisibleForTesting
   static boolean getIsPassive(@Nonnull BgpPeerConfig peer) {
-    if (peer instanceof BgpActivePeerConfig) {
+    if (peer instanceof BgpActivePeerConfig || peer instanceof BgpUnnumberedPeerConfig) {
       return false;
     }
     if (peer instanceof BgpPassivePeerConfig) {
       return true;
     }
-    throw new IllegalArgumentException(
-        String.format("Peer is neither Active nor Passive: %s", peer));
+    throw new IllegalArgumentException(String.format("Unrecognized peer type: %s", peer));
   }
 
   @Override

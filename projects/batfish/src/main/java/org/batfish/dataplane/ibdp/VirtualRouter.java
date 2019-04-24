@@ -403,7 +403,7 @@ public class VirtualRouter implements Serializable {
       _bgpIncomingRoutes = ImmutableSortedMap.of();
     } else {
       _bgpIncomingRoutes =
-          Stream.concat(
+          Streams.concat(
                   _vrf.getBgpProcess().getActiveNeighbors().entrySet().stream()
                       .map(
                           e ->
@@ -412,7 +412,9 @@ public class VirtualRouter implements Serializable {
                   _vrf.getBgpProcess().getPassiveNeighbors().entrySet().stream()
                       .map(
                           e ->
-                              new BgpPeerConfigId(getHostname(), _vrf.getName(), e.getKey(), true)))
+                              new BgpPeerConfigId(getHostname(), _vrf.getName(), e.getKey(), true)),
+                  _vrf.getBgpProcess().getInterfaceNeighbors().keySet().stream()
+                      .map(iface -> new BgpPeerConfigId(getHostname(), _vrf.getName(), iface)))
               .filter(bgpTopology.nodes()::contains)
               .flatMap(
                   dst ->
@@ -578,7 +580,7 @@ public class VirtualRouter implements Serializable {
       }
 
       Ip srcIp = advert.getSrcIp();
-      // TODO: support passive bgp connections
+      // TODO: support passive and unnumbered bgp connections
       Prefix srcPrefix = Prefix.create(srcIp, Prefix.MAX_PREFIX_LENGTH);
       BgpPeerConfig neighbor = _vrf.getBgpProcess().getActiveNeighbors().get(srcPrefix);
       if (neighbor == null) {

@@ -225,6 +225,7 @@ public class RouteReflectionTest {
         engine.computeDataPlane(
             configurations,
             topology,
+            null,
             OspfTopology.empty(),
             ImmutableSet.of(
                 _ab.setAsPath(AsPath.ofSingletonAsSets(1L))
@@ -353,6 +354,7 @@ public class RouteReflectionTest {
             engine.computeDataPlane(
                     configurations,
                     topology,
+                    null,
                     OspfTopology.empty(),
                     ImmutableSet.of(
                         _ab.setAsPath(AsPath.ofSingletonAsSets(1L))

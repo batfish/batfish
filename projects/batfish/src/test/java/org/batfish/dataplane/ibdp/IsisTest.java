@@ -150,7 +150,7 @@ public class IsisTest {
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
     return (IncrementalDataPlane)
         engine.computeDataPlane(
-                configurations, topology, OspfTopology.empty(), Collections.emptySet())
+                configurations, topology, null, OspfTopology.empty(), Collections.emptySet())
             ._dataPlane;
   }
 
@@ -428,7 +428,7 @@ public class IsisTest {
     IncrementalDataPlane dp =
         (IncrementalDataPlane)
             engine.computeDataPlane(
-                    configurations, topology, OspfTopology.empty(), Collections.emptySet())
+                    configurations, topology, null, OspfTopology.empty(), Collections.emptySet())
                 ._dataPlane;
     return dp;
   }
@@ -594,7 +594,7 @@ public class IsisTest {
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
     return (IncrementalDataPlane)
         engine.computeDataPlane(
-                configurations, topology, OspfTopology.empty(), Collections.emptySet())
+                configurations, topology, null, OspfTopology.empty(), Collections.emptySet())
             ._dataPlane;
   }
 
