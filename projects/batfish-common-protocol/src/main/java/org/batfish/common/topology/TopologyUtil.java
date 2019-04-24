@@ -619,7 +619,7 @@ public final class TopologyUtil {
     configurations.forEach(
         (nodeName, node) -> {
           for (Interface iface : node.getAllInterfaces().values()) {
-            if (iface.isLoopback(node.getConfigurationFormat()) || !iface.getActive()) {
+            if (iface.isLoopback(node.getConfigurationFormat())) {
               continue;
             }
             for (InterfaceAddress address : iface.getAllAddresses()) {
