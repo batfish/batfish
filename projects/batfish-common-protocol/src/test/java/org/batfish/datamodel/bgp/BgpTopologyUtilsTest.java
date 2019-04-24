@@ -173,7 +173,7 @@ public class BgpTopologyUtilsTest {
     /*
          AS 1          AS 2
            N1 ---------- N2
-      Peers on N1 and N2 are compatible. Session should come up iff they share a layer 2 edge.
+      Peers on N1 and N2 are compatible. Session should come up iff in the same broadcast domain.
     */
 
     String iface1 = "iface1";
@@ -188,9 +188,7 @@ public class BgpTopologyUtilsTest {
     _node1BgpProcess.setInterfaceNeighbors(ImmutableSortedMap.of(iface1, peer1));
     _node2BgpProcess.setInterfaceNeighbors(ImmutableSortedMap.of(iface2, peer2));
 
-    Layer2Edge edge = new Layer2Edge(NODE1, iface1, null, NODE2, iface2, null, null);
     Layer2Topology emptyLayer2Topology = Layer2Topology.fromEdges(ImmutableSet.of());
-    Layer2Topology connectedLayer2Topology = Layer2Topology.fromEdges(ImmutableSet.of(edge));
 
     // Shouldn't see session come up if nodes are not connected in layer 2
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
@@ -199,6 +197,8 @@ public class BgpTopologyUtilsTest {
     assertThat(bgpTopology.edges(), empty());
 
     // Should see session if they're connected
+    Layer2Edge edge = new Layer2Edge(NODE1, iface1, null, NODE2, iface2, null, null);
+    Layer2Topology connectedLayer2Topology = Layer2Topology.fromEdges(ImmutableSet.of(edge));
     bgpTopology =
         initBgpTopology(_configs, ImmutableMap.of(), true, false, null, connectedLayer2Topology);
     BgpPeerConfigId peer1Id = new BgpPeerConfigId(NODE1, DEFAULT_VRF_NAME, iface1);
@@ -208,6 +208,14 @@ public class BgpTopologyUtilsTest {
         bgpTopology.edges(),
         containsInAnyOrder(
             EndpointPair.ordered(peer1Id, peer2To1Id), EndpointPair.ordered(peer2To1Id, peer1Id)));
+
+    // Node 1 and 2 both have layer 2 edges but are not connected to any common node
+    Layer2Edge edge1To3 = new Layer2Edge(NODE2, iface2, null, "node3", "iface3", null, null);
+    Layer2Edge edge2To4 = new Layer2Edge(NODE2, iface2, null, "node4", "iface4", null, null);
+    Layer2Topology disconnected = Layer2Topology.fromEdges(ImmutableSet.of(edge1To3, edge2To4));
+    bgpTopology = initBgpTopology(_configs, ImmutableMap.of(), true, false, null, disconnected);
+    assertThat(bgpTopology.nodes(), hasSize(2));
+    assertThat(bgpTopology.edges(), empty());
   }
 
   @Test

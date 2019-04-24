@@ -282,7 +282,7 @@ public final class BgpTopologyUtils {
 
   /**
    * Check if {@code candidateId} represents a candidate with a valid configuration and compatible
-   * local/remote AS and local/remote IP to peer with {@code neighbor}.
+   * local/remote AS and local/remote IP to peer with active peer {@code neighbor}.
    */
   private static boolean bgpCandidatePassesSanityChecks(
       @Nonnull BgpActivePeerConfig neighbor,
@@ -320,7 +320,7 @@ public final class BgpTopologyUtils {
 
   /**
    * Check if {@code candidateId} represents a BGP unnumbered peer with a valid configuration and
-   * compatible local/remote AS to peer with {@code neighbor}.
+   * compatible local/remote AS to peer with BGP unnumbered peer {@code neighbor}.
    */
   private static boolean bgpCandidatePassesSanityChecks(
       @Nonnull BgpUnnumberedPeerConfig neighbor,
