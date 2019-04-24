@@ -47,7 +47,7 @@ public final class AddCommunity extends Statement {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_expr);
+    return _expr.hashCode();
   }
 
   @Override
