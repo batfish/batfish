@@ -6688,8 +6688,8 @@
               }
             ]
           },
-          "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv4~" : {
-            "name" : "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv4~",
+          "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv4:aVrfWithInnerStatements:10.0.1.2~" : {
+            "name" : "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv4:aVrfWithInnerStatements:10.0.1.2~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -6743,7 +6743,7 @@
                 "comment" : "Export default route from peer with default-originate configured",
                 "guard" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
-                  "calledPolicyName" : "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv4~"
+                  "calledPolicyName" : "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv4:aVrfWithInnerStatements:10.0.1.2~"
                 },
                 "trueStatements" : [
                   {
