@@ -110,6 +110,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
       new AssignPortFromPool(TransformationType.SOURCE_NAT, PortField.SOURCE, 1024, 65535);
 
   private static final long serialVersionUID = 1L;
+  static final String REFBOOK_SOURCE_VIRTUAL_ADDRESSES = "virtualAddresses";
+  static final String REFBOOK_SOURCE_POOLS = "pools";
 
   private static boolean appliesToVlan(Snat snat, String vlanName) {
     return !snat.getVlansEnabled()
@@ -1329,13 +1331,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
                 .build());
 
     // add a reference book for virtual addresses
-    String virtualAddressesBookname = Names.generatedReferenceBook(_hostname, "virtualAddresses");
-    List<AddressGroup> virtualAddressesGroups =
-        _virtualAddresses.values().stream()
-            .map(VirtualAddress::toAddressGroup)
-            .filter(g -> !g.getAddresses().isEmpty())
-            .collect(ImmutableList.toImmutableList());
-    _c.getReferenceBooks()
+    String virtualAddressesBookname =
+        Names.generatedReferenceBook(_hostname, REFBOOK_SOURCE_VIRTUAL_ADDRESSES);
+    List<AddressGroup> virtualAddressesGroups = getAddressGroupsFromVirtuals(_virtualAddresses);
+    _c.getGeneratedReferenceBooks()
         .put(
             virtualAddressesBookname,
             ReferenceBook.builder(virtualAddressesBookname)
@@ -1343,13 +1342,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
                 .build());
 
     // add a reference book for pools
-    String poolAddressBookname = Names.generatedReferenceBook(_hostname, "pools");
-    List<AddressGroup> poolAddressesGroups =
-        _pools.values().stream()
-            .map(Pool::toAddressGroup)
-            .filter(g -> !g.getAddresses().isEmpty())
-            .collect(ImmutableList.toImmutableList());
-    _c.getReferenceBooks()
+    String poolAddressBookname = Names.generatedReferenceBook(_hostname, REFBOOK_SOURCE_POOLS);
+    List<AddressGroup> poolAddressesGroups = getAddressGroupsFromPools(_pools);
+    _c.getGeneratedReferenceBooks()
         .put(
             poolAddressBookname,
             ReferenceBook.builder(poolAddressBookname)
@@ -1485,6 +1480,35 @@ public class F5BigipConfiguration extends VendorConfiguration {
     markStructures();
 
     return _c;
+  }
+
+  private static List<AddressGroup> getAddressGroupsFromPools(Map<String, Pool> pools) {
+    return pools.values().stream()
+        .map(
+            p ->
+                new AddressGroup(
+                    p.getMembers().values().stream()
+                        .map(PoolMember::getAddress)
+                        .filter(Objects::nonNull)
+                        .map(Objects::toString)
+                        .collect(
+                            ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())),
+                    p.getName()))
+        .filter(g -> !g.getAddresses().isEmpty())
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  private static List<AddressGroup> getAddressGroupsFromVirtuals(
+      Map<String, VirtualAddress> virtualAddresses) {
+    return virtualAddresses.values().stream()
+        .map(
+            v ->
+                v.getAddress() == null
+                    ? null
+                    : new AddressGroup(
+                        ImmutableSortedSet.of(v.getAddress().toString()), v.getName()))
+        .filter(Objects::nonNull)
+        .collect(ImmutableList.toImmutableList());
   }
 
   private void initEnabledVirtuals() {

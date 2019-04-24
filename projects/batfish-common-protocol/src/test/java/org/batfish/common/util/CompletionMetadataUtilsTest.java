@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.HashMap;
 import java.util.Map;
 import org.batfish.datamodel.AsPathAccessList;
@@ -39,6 +40,8 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.referencelibrary.AddressGroup;
+import org.batfish.referencelibrary.ReferenceBook;
 import org.junit.Test;
 
 public final class CompletionMetadataUtilsTest {
@@ -120,6 +123,36 @@ public final class CompletionMetadataUtilsTest {
     configs.put(nodeName, config);
 
     assertThat(getIps(configs), equalTo(ImmutableSet.of(ip1, ip2, ip3)));
+  }
+
+  @Test
+  public void testGetIpsGeneratedReferenceBooks() {
+
+    ReferenceBook book1 =
+        ReferenceBook.builder("book1")
+            .setAddressGroups(
+                ImmutableList.of(
+                    new AddressGroup(ImmutableSortedSet.of("1.1.1.1", "2.2.2.2"), "ag1"),
+                    new AddressGroup(ImmutableSortedSet.of("3.3.3.3"), "ag2")))
+            .build();
+
+    ReferenceBook book2 =
+        ReferenceBook.builder("book2")
+            .setAddressGroups(
+                ImmutableList.of(
+                    new AddressGroup(ImmutableSortedSet.of("3.3.3.3", "4.4.4.4"), "ag1")))
+            .build();
+
+    Map<String, Configuration> configs = new HashMap<>();
+    Configuration config = createTestConfiguration("node", ConfigurationFormat.HOST);
+
+    config.getGeneratedReferenceBooks().put(book1.getName(), book1);
+    config.getGeneratedReferenceBooks().put(book2.getName(), book2);
+
+    configs.put("node", config);
+
+    assertThat(
+        getIps(configs), equalTo(ImmutableSet.of("1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4")));
   }
 
   @Test

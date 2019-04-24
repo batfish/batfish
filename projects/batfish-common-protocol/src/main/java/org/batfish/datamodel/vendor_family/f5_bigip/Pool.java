@@ -6,16 +6,12 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.referencelibrary.AddressGroup;
 
 /** Configuration for a pool of nodes. */
 @ParametersAreNonnullByDefault
@@ -78,16 +74,5 @@ public final class Pool implements Serializable {
   @JsonProperty(PROP_MONITOR)
   public void setMonitor(@Nullable String monitor) {
     _monitor = monitor;
-  }
-
-  @Nullable
-  public AddressGroup toAddressGroup() {
-    return new AddressGroup(
-        _members.values().stream()
-            .map(PoolMember::getAddress)
-            .filter(Objects::nonNull)
-            .map(Object::toString)
-            .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())),
-        _name);
   }
 }

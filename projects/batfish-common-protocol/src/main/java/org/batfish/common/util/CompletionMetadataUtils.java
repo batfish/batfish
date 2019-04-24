@@ -52,7 +52,7 @@ public final class CompletionMetadataUtils {
                               .map(interfaceAddress -> interfaceAddress.getIp().toString())
                               .forEach(ips::add));
               configuration
-                  .getReferenceBooks()
+                  .getGeneratedReferenceBooks()
                   .values()
                   .forEach(
                       book ->

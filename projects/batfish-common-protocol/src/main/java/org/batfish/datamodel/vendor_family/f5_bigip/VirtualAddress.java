@@ -4,14 +4,12 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
-import org.batfish.referencelibrary.AddressGroup;
 
 /** Configuration for a virtual-address. */
 @ParametersAreNonnullByDefault
@@ -118,12 +116,5 @@ public final class VirtualAddress implements Serializable {
   @JsonProperty(PROP_ROUTE_ADVERTISEMENT_MODE)
   public void setRouteAdvertisementMode(@Nullable RouteAdvertisementMode routeAdvertisementMode) {
     _routeAdvertisementMode = routeAdvertisementMode;
-  }
-
-  public AddressGroup toAddressGroup() {
-    // TODO: Should mask considered here?
-    return new AddressGroup(
-        (_address == null) ? ImmutableSortedSet.of() : ImmutableSortedSet.of(_address.toString()),
-        _name);
   }
 }
