@@ -210,12 +210,12 @@ public final class CumulusNcluGrammarTest {
     BGP routes on both to the other's static network.
      */
     String testrigName = "bgp-unnumbered";
-    String NODE1 = "node1";
-    String NODE2 = "node2";
+    String node1 = "node1";
+    String node2 = "node2";
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, ImmutableSet.of(NODE1, NODE2))
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, ImmutableSet.of(node1, node2))
                 .setLayer1TopologyText(TESTRIGS_PREFIX + testrigName)
                 .build(),
             _folder);
@@ -242,17 +242,17 @@ public final class CumulusNcluGrammarTest {
                 .setRemoteAsns(BgpPeerConfig.ALL_AS_NUMBERS.difference(LongSpace.of(65101L)))
                 .build());
     assertThat(
-        configs.get(NODE1),
+        configs.get(node1),
         hasVrf(DEFAULT_VRF_NAME, hasBgpProcess(hasInterfaceNeighbors(equalTo(expectedPeers1)))));
     assertThat(
-        configs.get(NODE2),
+        configs.get(node2),
         hasVrf(DEFAULT_VRF_NAME, hasBgpProcess(hasInterfaceNeighbors(equalTo(expectedPeers2)))));
 
     // Ensure reachability between nodes
     batfish.computeDataPlane();
     IncrementalDataPlane dp = (IncrementalDataPlane) batfish.loadDataPlane();
-    Set<AbstractRoute> n1Routes = dp.getRibs().get(NODE1).get(DEFAULT_VRF_NAME).getRoutes();
-    Set<AbstractRoute> n2Routes = dp.getRibs().get(NODE2).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> n1Routes = dp.getRibs().get(node1).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> n2Routes = dp.getRibs().get(node2).get(DEFAULT_VRF_NAME).getRoutes();
 
     BgpRoute.Builder routeBuilder =
         BgpRoute.builder()

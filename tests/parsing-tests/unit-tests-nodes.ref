@@ -13682,7 +13682,7 @@
                   "disjuncts" : [
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                      "comment" : "Redistribute connected routes into BGP",
+                      "comment" : "Redistribute CONNECTED routes into BGP",
                       "conjuncts" : [
                         {
                           "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
@@ -13825,11 +13825,53 @@
                   "disjuncts" : [
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                      "comment" : "Redistribute connected routes into BGP",
+                      "comment" : "Redistribute CONNECTED routes into BGP",
                       "conjuncts" : [
                         {
                           "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
                           "protocol" : "connected"
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                            "type" : "True"
+                          },
+                          "postStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "UnsetWriteIntermediateBgpAttributes"
+                            }
+                          ],
+                          "postTrueStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetReadIntermediateBgpAttributes"
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                              "originType" : {
+                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                                "originType" : "incomplete"
+                              }
+                            }
+                          ],
+                          "preStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetWriteIntermediateBgpAttributes"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                      "comment" : "Redistribute STATIC routes into BGP",
+                      "conjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                          "protocol" : "static"
                         },
                         {
                           "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
