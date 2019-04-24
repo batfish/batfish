@@ -127,7 +127,6 @@ public final class CompletionMetadataUtilsTest {
 
   @Test
   public void testGetIpsGeneratedReferenceBooks() {
-
     ReferenceBook book1 =
         ReferenceBook.builder("book1")
             .setAddressGroups(

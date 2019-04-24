@@ -110,8 +110,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
       new AssignPortFromPool(TransformationType.SOURCE_NAT, PortField.SOURCE, 1024, 65535);
 
   private static final long serialVersionUID = 1L;
-  static final String REFBOOK_SOURCE_VIRTUAL_ADDRESSES = "virtualAddresses";
+
   static final String REFBOOK_SOURCE_POOLS = "pools";
+  static final String REFBOOK_SOURCE_VIRTUAL_ADDRESSES = "virtualAddresses";
 
   private static boolean appliesToVlan(Snat snat, String vlanName) {
     return !snat.getVlansEnabled()
@@ -1333,22 +1334,26 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // add a reference book for virtual addresses
     String virtualAddressesBookname =
         Names.generatedReferenceBook(_hostname, REFBOOK_SOURCE_VIRTUAL_ADDRESSES);
-    List<AddressGroup> virtualAddressesGroups = getAddressGroupsFromVirtuals(_virtualAddresses);
     _c.getGeneratedReferenceBooks()
         .put(
             virtualAddressesBookname,
             ReferenceBook.builder(virtualAddressesBookname)
-                .setAddressGroups(virtualAddressesGroups)
+                .setAddressGroups(
+                    _virtualAddresses.values().stream()
+                        .map(F5BigipConfiguration::toAddressGroup)
+                        .collect(ImmutableList.toImmutableList()))
                 .build());
 
     // add a reference book for pools
     String poolAddressBookname = Names.generatedReferenceBook(_hostname, REFBOOK_SOURCE_POOLS);
-    List<AddressGroup> poolAddressesGroups = getAddressGroupsFromPools(_pools);
     _c.getGeneratedReferenceBooks()
         .put(
             poolAddressBookname,
             ReferenceBook.builder(poolAddressBookname)
-                .setAddressGroups(poolAddressesGroups)
+                .setAddressGroups(
+                    _pools.values().stream()
+                        .map(F5BigipConfiguration::toAddressGroup)
+                        .collect(ImmutableList.toImmutableList()))
                 .build());
 
     // TODO: alter as behavior fleshed out
@@ -1482,34 +1487,25 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return _c;
   }
 
-  private static List<AddressGroup> getAddressGroupsFromPools(Map<String, Pool> pools) {
-    return pools.values().stream()
-        .map(
-            p ->
-                new AddressGroup(
-                    p.getMembers().values().stream()
-                        .map(PoolMember::getAddress)
-                        .filter(Objects::nonNull)
-                        .map(Objects::toString)
-                        .collect(
-                            ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())),
-                    p.getName()))
-        .filter(g -> !g.getAddresses().isEmpty())
-        .collect(ImmutableList.toImmutableList());
+  @VisibleForTesting
+  static AddressGroup toAddressGroup(Pool pool) {
+    return new AddressGroup(
+        pool.getMembers().values().stream()
+            .map(PoolMember::getAddress)
+            .filter(Objects::nonNull)
+            .map(Objects::toString)
+            .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())),
+        pool.getName());
   }
 
-  private static List<AddressGroup> getAddressGroupsFromVirtuals(
-      Map<String, VirtualAddress> virtualAddresses) {
-    // TODO: Consider masks as well
-    return virtualAddresses.values().stream()
-        .map(
-            v ->
-                v.getAddress() == null
-                    ? null
-                    : new AddressGroup(
-                        ImmutableSortedSet.of(v.getAddress().toString()), v.getName()))
-        .filter(Objects::nonNull)
-        .collect(ImmutableList.toImmutableList());
+  @VisibleForTesting
+  static AddressGroup toAddressGroup(VirtualAddress virtualAddress) {
+    // TODO: Consider masks as well?
+    return new AddressGroup(
+        virtualAddress.getAddress() == null
+            ? ImmutableSortedSet.of()
+            : ImmutableSortedSet.of(virtualAddress.getAddress().toString()),
+        virtualAddress.getName());
   }
 
   private void initEnabledVirtuals() {

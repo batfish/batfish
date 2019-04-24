@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.NamedStructureSpecifier;
 
@@ -51,13 +52,25 @@ public final class CompletionMetadataUtils {
                           iface.getAllAddresses().stream()
                               .map(interfaceAddress -> interfaceAddress.getIp().toString())
                               .forEach(ips::add));
+
               configuration
                   .getGeneratedReferenceBooks()
                   .values()
                   .forEach(
                       book ->
                           book.getAddressGroups()
-                              .forEach(ag -> ag.getAddresses().forEach(ips::add)));
+                              .forEach(
+                                  ag ->
+                                      ag.getAddresses()
+                                          .forEach(
+                                              a -> {
+                                                // we are just putting IPs in here at the moment
+                                                try {
+                                                  Ip.parse(a);
+                                                  ips.add(a);
+                                                } catch (IllegalArgumentException ignored) {
+                                                }
+                                              })));
             });
 
     return ips.build();

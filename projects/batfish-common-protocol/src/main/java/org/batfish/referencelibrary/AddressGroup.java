@@ -5,7 +5,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
@@ -62,6 +64,16 @@ public class AddressGroup implements Comparable<AddressGroup>, Serializable {
     return _name.compareTo(o._name);
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof AddressGroup)) {
+      return false;
+    }
+    return Objects.equals(_name, ((AddressGroup) o)._name)
+        && Objects.equals(_addresses, ((AddressGroup) o)._addresses)
+        && Objects.equals(_childGroupNames, ((AddressGroup) o)._childGroupNames);
+  }
+
   @JsonProperty(PROP_ADDRESSES)
   @Nonnull
   public SortedSet<String> getAddresses() {
@@ -78,5 +90,19 @@ public class AddressGroup implements Comparable<AddressGroup>, Serializable {
   @Nonnull
   public String getName() {
     return _name;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_name, _addresses, _childGroupNames);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(getClass())
+        .add(PROP_NAME, _name)
+        .add(PROP_ADDRESSES, _addresses)
+        .add(PROP_CHILD_GROUP_NAMES, _childGroupNames)
+        .toString();
   }
 }

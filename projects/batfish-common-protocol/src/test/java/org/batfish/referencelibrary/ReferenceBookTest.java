@@ -8,7 +8,9 @@ import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -166,5 +168,11 @@ public class ReferenceBookTest {
     assertThat(
         book.getAddressesRecursive("a"),
         equalTo(ImmutableSet.of(new IpWildcard("1.1.1.1"), new IpWildcard("2.2.2.2"))));
+  }
+
+  @Test
+  public void testJavaSerialization() throws IOException {
+    ReferenceBook book = ReferenceBook.builder("book").build();
+    new ObjectOutputStream(new ByteArrayOutputStream()).writeObject(book);
   }
 }

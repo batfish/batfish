@@ -2,6 +2,7 @@ package org.batfish.representation.f5_bigip;
 
 import static org.batfish.representation.f5_bigip.F5BigipConfiguration.REFBOOK_SOURCE_POOLS;
 import static org.batfish.representation.f5_bigip.F5BigipConfiguration.REFBOOK_SOURCE_VIRTUAL_ADDRESSES;
+import static org.batfish.representation.f5_bigip.F5BigipConfiguration.toAddressGroup;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -18,56 +19,50 @@ import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.junit.Test;
 
+/** Tests for {@link F5BigipConfiguration} */
 public class F5BigipConfigurationTest {
 
-  /** Check that virtual addresses are mapped to address groups in a reference book */
+  /**
+   * Tests if {@link F5BigipConfiguration#toVendorIndependentConfigurations()} includes reference
+   * book for its pools
+   */
   @Test
-  public void testGeneratedReferenceBooksVirtualAddresses() {
+  public void testPoolReferenceBooks() {
+    Pool p1 = new Pool("p1");
     F5BigipConfiguration f5Config = new F5BigipConfiguration();
     f5Config.setHostname("node");
-
-    VirtualAddress v1 = new VirtualAddress("v1");
-    v1.setAddress(Ip.parse("1.1.1.1"));
-
-    // null address
-    VirtualAddress v2 = new VirtualAddress("v2");
-
-    f5Config.getVirtualAddresses().put(v1.getName(), v1);
-    f5Config.getVirtualAddresses().put(v2.getName(), v2);
+    f5Config.getPools().put(p1.getName(), p1);
 
     Configuration configuration =
         Iterables.getOnlyElement(f5Config.toVendorIndependentConfigurations());
 
-    String refbookName = Names.generatedReferenceBook("node", REFBOOK_SOURCE_VIRTUAL_ADDRESSES);
+    String refbookName = Names.generatedReferenceBook("node", REFBOOK_SOURCE_POOLS);
     assertThat(
         configuration.getGeneratedReferenceBooks().get(refbookName),
         equalTo(
             ReferenceBook.builder(refbookName)
-                .setAddressGroups(
-                    ImmutableList.of(
-                        new AddressGroup(ImmutableSortedSet.of("1.1.1.1"), v1.getName())))
+                .setAddressGroups(ImmutableList.of(toAddressGroup(p1)))
                 .build()));
   }
 
   @Test
-  public void testGeneratedReferenceBooksVirtualAddressesEmpty() {
-    F5BigipConfiguration f5Config = new F5BigipConfiguration();
-    f5Config.setHostname("node");
-    Configuration configuration =
-        Iterables.getOnlyElement(f5Config.toVendorIndependentConfigurations());
-
-    String refbookName = Names.generatedReferenceBook("node", REFBOOK_SOURCE_VIRTUAL_ADDRESSES);
+  public void testToAddressGroupVirtualAddress() {
+    VirtualAddress v1 = new VirtualAddress("v1");
+    v1.setAddress(Ip.parse("1.1.1.1"));
     assertThat(
-        configuration.getGeneratedReferenceBooks().get(refbookName),
-        equalTo(ReferenceBook.builder(refbookName).build()));
+        toAddressGroup(v1),
+        equalTo(new AddressGroup(ImmutableSortedSet.of("1.1.1.1"), v1.getName())));
   }
 
-  /** Check that pools are mapped to address groups in a reference book */
   @Test
-  public void testGeneratedReferenceBooksPools() {
-    F5BigipConfiguration f5Config = new F5BigipConfiguration();
-    f5Config.setHostname("node");
+  public void testToAddressGroupVirtualAddressNullAddress() {
+    VirtualAddress v1 = new VirtualAddress("v1");
+    assertThat(
+        toAddressGroup(v1), equalTo(new AddressGroup(ImmutableSortedSet.of(), v1.getName())));
+  }
 
+  @Test
+  public void testToAddressGroupPool() {
     PoolMember m1 = new PoolMember("m1", null, 0);
     m1.setAddress(Ip.parse("1.1.1.1"));
 
@@ -78,40 +73,49 @@ public class F5BigipConfigurationTest {
     p1.getMembers().put(m1.getName(), m1);
     p1.getMembers().put(m2.getName(), m2);
 
-    PoolMember m3 = new PoolMember("m3", null, 0);
-    m3.setAddress(Ip.parse("2.2.2.2"));
+    assertThat(
+        toAddressGroup(p1),
+        equalTo(new AddressGroup(ImmutableSortedSet.of("1.1.1.1"), p1.getName())));
+  }
 
-    Pool p2 = new Pool("p2");
-    p2.getMembers().put(m3.getName(), m3);
+  @Test
+  public void testToAddressGroupPoolNoMember() {
+    Pool p1 = new Pool("p1");
+    assertThat(
+        toAddressGroup(p1), equalTo(new AddressGroup(ImmutableSortedSet.of(), p1.getName())));
+  }
 
-    f5Config.getPools().put(p1.getName(), p1);
-    f5Config.getPools().put(p2.getName(), p2);
+  @Test
+  public void testToAddressGroupPoolNoAddresses() {
+    PoolMember m1 = new PoolMember("m1", null, 0);
+    Pool p1 = new Pool("p1");
+    p1.getMembers().put(m1.getName(), m1);
+
+    assertThat(
+        toAddressGroup(p1), equalTo(new AddressGroup(ImmutableSortedSet.of(), p1.getName())));
+  }
+
+  /**
+   * Tests if {@link F5BigipConfiguration#toVendorIndependentConfigurations()} includes reference
+   * book for its virtual addresses
+   */
+  @Test
+  public void testVirtualAddressReferenceBooks() {
+    VirtualAddress v1 = new VirtualAddress("v1");
+
+    F5BigipConfiguration f5Config = new F5BigipConfiguration();
+    f5Config.setHostname("node");
+    f5Config.getVirtualAddresses().put(v1.getName(), v1);
 
     Configuration configuration =
         Iterables.getOnlyElement(f5Config.toVendorIndependentConfigurations());
 
-    String refbookName = Names.generatedReferenceBook("node", REFBOOK_SOURCE_POOLS);
+    String refbookName = Names.generatedReferenceBook("node", REFBOOK_SOURCE_VIRTUAL_ADDRESSES);
     assertThat(
         configuration.getGeneratedReferenceBooks().get(refbookName),
         equalTo(
             ReferenceBook.builder(refbookName)
-                .setAddressGroups(
-                    ImmutableList.of(
-                        new AddressGroup(ImmutableSortedSet.of("1.1.1.1"), p1.getName()),
-                        new AddressGroup(ImmutableSortedSet.of("2.2.2.2"), p2.getName())))
+                .setAddressGroups(ImmutableList.of(toAddressGroup(v1)))
                 .build()));
-  }
-
-  @Test
-  public void testGeneratedReferenceBooksPoolsEmpty() {
-    F5BigipConfiguration f5Config = new F5BigipConfiguration();
-    f5Config.setHostname("node");
-    Configuration configuration =
-        Iterables.getOnlyElement(f5Config.toVendorIndependentConfigurations());
-
-    String refbookName = Names.generatedReferenceBook("node", REFBOOK_SOURCE_POOLS);
-    assertThat(
-        configuration.getGeneratedReferenceBooks().get(refbookName),
-        equalTo(ReferenceBook.builder(refbookName).build()));
   }
 }

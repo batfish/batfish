@@ -442,7 +442,8 @@ public final class Configuration implements Serializable {
   }
 
   @JsonProperty(PROP_GENERATED_REFERENCE_BOOKS)
-  @JsonPropertyDescription("Dictionary of auto-generated Reference Books.")
+  @JsonPropertyDescription(
+      "Dictionary of Reference Books generated from device configurations (e.g., F5 Pools)")
   public NavigableMap<String, ReferenceBook> getGeneratedReferenceBooks() {
     return _generatedReferenceBooks;
   }
