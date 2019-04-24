@@ -1,0 +1,10 @@
+# Ignore BUILD files copied over to target directory by Eclipse
+projects/allinone/target
+projects/coordinator/target
+projects/batfish/target
+projects/batfish-client/target
+projects/batfish-common-protocol/target
+projects/bdd/target
+projects/build-tools/target
+projects/question/target
+
