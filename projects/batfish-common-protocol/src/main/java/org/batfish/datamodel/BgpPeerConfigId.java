@@ -116,15 +116,14 @@ public final class BgpPeerConfigId implements Comparable<BgpPeerConfigId> {
 
   @Override
   public int compareTo(@Nonnull BgpPeerConfigId o) {
-    Comparator<BgpPeerConfigId> baseComparator =
-        Comparator.comparing(BgpPeerConfigId::getHostname)
-            .thenComparing(BgpPeerConfigId::getVrfName)
-            .thenComparing(BgpPeerConfigId::getType);
-
-    // Need to compare whichever is nonnull of peer interface or remote prefix.
-    return _remotePeerPrefix != null
-        ? baseComparator.thenComparing(BgpPeerConfigId::getRemotePeerPrefix).compare(this, o)
-        : baseComparator.thenComparing(BgpPeerConfigId::getPeerInterface).compare(this, o);
+    return Comparator.comparing(BgpPeerConfigId::getHostname)
+        .thenComparing(BgpPeerConfigId::getVrfName)
+        .thenComparing(BgpPeerConfigId::getType)
+        .thenComparing(
+            BgpPeerConfigId::getRemotePeerPrefix, Comparator.nullsLast(Prefix::compareTo))
+        .thenComparing(
+            BgpPeerConfigId::getPeerInterface, Comparator.nullsLast(Comparator.naturalOrder()))
+        .compare(this, o);
   }
 
   @Override

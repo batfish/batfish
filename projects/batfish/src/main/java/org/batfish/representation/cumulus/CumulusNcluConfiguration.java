@@ -3,7 +3,7 @@ package org.batfish.representation.cumulus;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Comparator.naturalOrder;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
-import static org.batfish.representation.cumulus.CumulusRoutingProtocol.toViProtocol;
+import static org.batfish.representation.cumulus.CumulusRoutingProtocol.VI_PROTOCOLS_MAP;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
@@ -616,7 +616,11 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
 
       // Get a match expression for the protocol to be redistributed
       CumulusRoutingProtocol protocol = redistributeProtocolPolicy.getProtocol();
-      MatchProtocol matchProtocol = new MatchProtocol(toViProtocol(protocol));
+      Disjunction matchProtocol =
+          new Disjunction(
+              VI_PROTOCOLS_MAP.get(protocol).stream()
+                  .map(MatchProtocol::new)
+                  .collect(ImmutableList.toImmutableList()));
 
       // Create a WithEnvironmentExpr with the redistribution route-map, if one is defined
       BooleanExpr weInterior = BooleanExprs.TRUE;
@@ -667,12 +671,12 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     exportConditions.add(new MatchProtocol(RoutingProtocol.BGP));
     exportConditions.add(new MatchProtocol(RoutingProtocol.IBGP));
 
+    Long localAs = bgpVrf.getAutonomousSystem();
     bgpVrf
         .getInterfaceNeighbors()
         .forEach(
             (peerInterface, neighbor) ->
-                addInterfaceNeighbor(
-                    peerInterface, neighbor, bgpVrf.getAutonomousSystem(), bgpVrf, newProc));
+                addInterfaceNeighbor(peerInterface, neighbor, localAs, bgpVrf, newProc));
 
     return newProc;
   }
