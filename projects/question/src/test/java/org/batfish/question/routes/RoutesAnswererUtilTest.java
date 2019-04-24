@@ -62,6 +62,7 @@ import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.Row;
@@ -213,7 +214,7 @@ public class RoutesAnswererUtilTest {
         Bgpv4Route.builder()
             .setNetwork(prefix)
             .setOriginType(OriginType.IGP)
-            .setCommunities(ImmutableSortedSet.of(65537L))
+            .setCommunities(ImmutableSortedSet.of(StandardCommunity.of(65537L)))
             .setProtocol(RoutingProtocol.BGP)
             .setOriginatorIp(Ip.parse("1.1.1.2"))
             .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)));
@@ -273,7 +274,7 @@ public class RoutesAnswererUtilTest {
                 .setOriginType(OriginType.IGP)
                 .setOriginatorIp(ip)
                 .setReceivedFromIp(ip)
-                .setCommunities(ImmutableSortedSet.of(65537L))
+                .setCommunities(ImmutableSortedSet.of(StandardCommunity.of(65537L)))
                 .setProtocol(RoutingProtocol.BGP)
                 .build()));
     Multiset<Row> rows =

@@ -631,7 +631,7 @@
                   "expr" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet",
                     "communities" : [
-                      196073
+                      "2:65001"
                     ]
                   }
                 },
@@ -1173,7 +1173,7 @@
               "expr" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet",
                 "communities" : [
-                  65540
+                  "1:4"
                 ]
               }
             },
@@ -1327,7 +1327,7 @@
                   "expr" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet",
                     "communities" : [
-                      4259905538
+                      "65001:2"
                     ]
                   }
                 },
@@ -1667,7 +1667,7 @@
                   "expr" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet",
                     "communities" : [
-                      65538
+                      "1:2"
                     ]
                   }
                 },
@@ -1731,7 +1731,7 @@
                       "expr" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet",
                         "communities" : [
-                          65539
+                          "1:3"
                         ]
                       }
                     },
@@ -1765,7 +1765,7 @@
                   "expr" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet",
                     "communities" : [
-                      65539
+                      "1:3"
                     ]
                   }
                 },
@@ -1877,7 +1877,7 @@
                       "expr" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet",
                         "communities" : [
-                          131075
+                          "2:3"
                         ]
                       }
                     },
@@ -1911,7 +1911,7 @@
                   "expr" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet",
                     "communities" : [
-                      131075
+                      "2:3"
                     ]
                   }
                 },
@@ -2016,7 +2016,7 @@
                   "expr" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet",
                     "communities" : [
-                      196610
+                      "3:2"
                     ]
                   }
                 },

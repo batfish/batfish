@@ -9,6 +9,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.bgp.community.Community;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.visitors.CommunitySetExprVisitor;
 import org.batfish.datamodel.visitors.VoidCommunitySetExprVisitor;
@@ -32,7 +34,6 @@ public class CommunityHalvesExpr extends CommunitySetExpr {
   }
 
   private final CommunityHalfExpr _left;
-
   private final CommunityHalfExpr _right;
 
   public CommunityHalvesExpr(@Nonnull CommunityHalfExpr left, @Nonnull CommunityHalfExpr right) {
@@ -50,8 +51,9 @@ public class CommunityHalvesExpr extends CommunitySetExpr {
     visitor.visitCommunityHalvesExpr(this);
   }
 
+  @Nonnull
   @Override
-  public SortedSet<Long> asLiteralCommunities(Environment environment) {
+  public SortedSet<Community> asLiteralCommunities(@Nonnull Environment environment) {
     throw new UnsupportedOperationException(
         "Cannot be represented as a list of literal communities");
   }
@@ -89,14 +91,18 @@ public class CommunityHalvesExpr extends CommunitySetExpr {
   }
 
   @Override
-  public boolean matchCommunities(Environment environment, Set<Long> communitySetCandidate) {
+  public boolean matchCommunities(Environment environment, Set<Community> communitySetCandidate) {
     return communitySetCandidate.stream()
         .anyMatch(communityCandidate -> matchCommunity(environment, communityCandidate));
   }
 
   @Override
-  public boolean matchCommunity(Environment environment, long community) {
-    return _left.matches((int) (community >> 16)) && _right.matches((int) (community & 0xFFFFL));
+  public boolean matchCommunity(Environment environment, Community community) {
+    if (!(community instanceof StandardCommunity)) {
+      return false;
+    }
+    return _left.matches(((StandardCommunity) community).high())
+        && _right.matches(((StandardCommunity) community).low());
   }
 
   @Override
