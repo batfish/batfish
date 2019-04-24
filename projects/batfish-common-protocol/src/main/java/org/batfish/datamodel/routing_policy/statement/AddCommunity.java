@@ -1,78 +1,70 @@
 package org.batfish.datamodel.routing_policy.statement;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import java.util.SortedSet;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 
-public class AddCommunity extends Statement {
+/** Add communities specified by a {@link CommunitySetExpr} to a BGP route */
+@ParametersAreNonnullByDefault
+public final class AddCommunity extends Statement {
 
   private static final String PROP_EXPR = "expr";
-
-  /** */
   private static final long serialVersionUID = 1L;
 
-  private CommunitySetExpr _expr;
+  private final CommunitySetExpr _expr;
 
   @JsonCreator
-  private AddCommunity() {}
+  private static AddCommunity create(
+      @Nullable @JsonProperty(PROP_EXPR) CommunitySetExpr expression) {
+    checkArgument(expression != null);
+    return new AddCommunity(expression);
+  }
 
   public AddCommunity(CommunitySetExpr expr) {
     _expr = expr;
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals(@Nullable Object o) {
+    if (this == o) {
       return true;
     }
-    if (obj == null) {
+    if (!(o instanceof AddCommunity)) {
       return false;
     }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    AddCommunity other = (AddCommunity) obj;
-    if (_expr == null) {
-      if (other._expr != null) {
-        return false;
-      }
-    } else if (!_expr.equals(other._expr)) {
-      return false;
-    }
-    return true;
+    AddCommunity that = (AddCommunity) o;
+    return Objects.equals(_expr, that._expr);
+  }
+
+  @Override
+  public int hashCode() {
+    return _expr.hashCode();
   }
 
   @Override
   public Result execute(Environment environment) {
-    BgpRoute.Builder bgpRoute = (BgpRoute.Builder) environment.getOutputRoute();
-    SortedSet<Long> communities = _expr.asLiteralCommunities(environment);
-    bgpRoute.addCommunities(communities);
-    if (environment.getWriteToIntermediateBgpAttributes()) {
-      environment.getIntermediateBgpAttributes().addCommunities(communities);
+    if (environment.getOutputRoute() instanceof BgpRoute.Builder) {
+      BgpRoute.Builder bgpRoute = (BgpRoute.Builder) environment.getOutputRoute();
+      SortedSet<Long> communities = _expr.asLiteralCommunities(environment);
+      bgpRoute.addCommunities(communities);
+      if (environment.getWriteToIntermediateBgpAttributes()) {
+        environment.getIntermediateBgpAttributes().addCommunities(communities);
+      }
     }
-    Result result = new Result();
-    return result;
+    return new Result();
   }
 
   @JsonProperty(PROP_EXPR)
   public CommunitySetExpr getExpr() {
     return _expr;
-  }
-
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((_expr == null) ? 0 : _expr.hashCode());
-    return result;
-  }
-
-  @JsonProperty(PROP_EXPR)
-  public void setExpr(CommunitySetExpr expr) {
-    _expr = expr;
   }
 }
