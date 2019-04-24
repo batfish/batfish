@@ -1312,8 +1312,55 @@
               }
             ]
           },
-          "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv4~" : {
-            "name" : "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv4~",
+          "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv4:default:169.254.13.237~" : {
+            "name" : "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv4:default:169.254.13.237~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                      "comment" : "match default route",
+                      "prefix" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                      },
+                      "prefixSet" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                        "prefixSpace" : [
+                          "0.0.0.0/0"
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "aggregate"
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                    "originType" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                      "originType" : "igp"
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ReturnFalse"
+              }
+            ]
+          },
+          "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv4:default:169.254.15.193~" : {
+            "name" : "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv4:default:169.254.15.193~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -1474,7 +1521,7 @@
                 "comment" : "Export default route from peer with default-originate configured",
                 "guard" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
-                  "calledPolicyName" : "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv4~"
+                  "calledPolicyName" : "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv4:default:169.254.13.237~"
                 },
                 "trueStatements" : [
                   {
@@ -1513,7 +1560,7 @@
                 "comment" : "Export default route from peer with default-originate configured",
                 "guard" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
-                  "calledPolicyName" : "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv4~"
+                  "calledPolicyName" : "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv4:default:169.254.15.193~"
                 },
                 "trueStatements" : [
                   {
