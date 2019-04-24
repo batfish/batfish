@@ -3,6 +3,7 @@ package org.batfish.representation.cumulus;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Prefix;
 
@@ -17,7 +18,7 @@ public class BgpIpv4UnicastAddressFamily implements Serializable {
 
   public BgpIpv4UnicastAddressFamily() {
     _networks = new HashMap<>();
-    _redistributionPolicies = new HashMap<>();
+    _redistributionPolicies = new TreeMap<>();
   }
 
   public @Nonnull Map<Prefix, BgpNetwork> getNetworks() {

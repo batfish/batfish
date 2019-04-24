@@ -13830,14 +13830,14 @@
                   "disjuncts" : [
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                      "comment" : "Redistribute STATIC routes into BGP",
+                      "comment" : "Redistribute CONNECTED routes into BGP",
                       "conjuncts" : [
                         {
                           "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
                           "disjuncts" : [
                             {
                               "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                              "protocol" : "static"
+                              "protocol" : "connected"
                             }
                           ]
                         },
@@ -13877,14 +13877,14 @@
                     },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                      "comment" : "Redistribute CONNECTED routes into BGP",
+                      "comment" : "Redistribute STATIC routes into BGP",
                       "conjuncts" : [
                         {
                           "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
                           "disjuncts" : [
                             {
                               "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                              "protocol" : "connected"
+                              "protocol" : "static"
                             }
                           ]
                         },
