@@ -17,18 +17,20 @@ import org.batfish.grammar.juniper.JuniperParser.WordContext;
 
 public class JuniperFlattener extends JuniperParserBaseListener implements Flattener {
 
+  /** An ordered list of all produced set statements, including those not to be retained */
   private List<String> _allSetStatements;
+
   private List<WordContext> _currentBracketedWords;
-  private LineTree.Node _currentNode;
   private List<WordContext> _currentStatement;
+  private SetStatementTree _currentTree;
   private String _flattenedConfigurationText;
   private final String _header;
   private final Integer _headerLineCount;
   private StatementContext _inactiveStatement;
   private boolean _inBrackets;
   private FlattenerLineMap _lineMap;
+  private SetStatementTree _root;
   private List<List<WordContext>> _stack;
-  private LineTree _tree;
 
   public JuniperFlattener(String header) {
     _header = header;
@@ -36,7 +38,7 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
     _headerLineCount = header.split("\n", -1).length;
     _lineMap = new FlattenerLineMap();
     _stack = new ArrayList<>();
-    _tree = new LineTree();
+    _root = new SetStatementTree();
     _allSetStatements = new ArrayList<>();
   }
 
@@ -50,7 +52,7 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
 
   @Override
   public void enterJuniper_configuration(Juniper_configurationContext ctx) {
-    _currentNode = _tree.getRoot();
+    _currentTree = _root;
   }
 
   @Override
@@ -59,15 +61,16 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
       if (ctx.INACTIVE() != null) {
         _inactiveStatement = ctx;
       } else {
-        String nodeKey =
+        String statementTextAtCurrentDepth =
             ctx.words.stream().map(ParserRuleContext::getText).collect(Collectors.joining(" "));
         if (ctx.REPLACE() != null) {
-          _currentNode.getChildren().remove(nodeKey);
+          // Since the statement begins with 'replace:', all previous lines for this key should be
+          // removed.
+          _currentTree = _currentTree.replaceSubtree(statementTextAtCurrentDepth);
+        } else {
+          // Grab or add child at the current tree node for the node key for this statement
+          _currentTree = _currentTree.getOrAddSubtree(statementTextAtCurrentDepth);
         }
-        _currentNode =
-            _currentNode
-                .getChildren()
-                .computeIfAbsent(nodeKey, k -> new LineTree.Node(_currentNode));
         _currentStatement = new ArrayList<>();
         _stack.add(_currentStatement);
       }
@@ -85,7 +88,7 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
   public void exitJuniper_configuration(Juniper_configurationContext ctx) {
     StringBuilder sb = new StringBuilder();
     sb.append(_header);
-    Set<Integer> remainingSetStatements = _tree.getSetStatements();
+    Set<Integer> remainingSetStatements = _root.getSetStatementIndices();
     CommonUtil.forEachWithIndex(
         _allSetStatements,
         (i, setStatement) -> {
@@ -101,7 +104,8 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
   public void exitStatement(StatementContext ctx) {
     if (_inactiveStatement == null) {
       _stack.remove(_stack.size() - 1);
-      _currentNode = _currentNode.getParent();
+      // Finished recording set lines for this node key, so pop up
+      _currentTree = _currentTree.getParent();
     } else if (_inactiveStatement == ctx) {
       _inactiveStatement = null;
     }
@@ -123,7 +127,8 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
       }
     }
     String setStatementText = sb.toString();
-    _currentNode.getLines().add(_allSetStatements.size());
+    // Record index of new statement in the current subtree
+    _currentTree.addSetStatementIndex(_allSetStatements.size());
     _allSetStatements.add(setStatementText);
   }
 
