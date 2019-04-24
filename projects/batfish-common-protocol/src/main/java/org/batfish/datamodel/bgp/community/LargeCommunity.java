@@ -3,7 +3,9 @@ package org.batfish.datamodel.bgp.community;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import java.math.BigInteger;
 import java.util.Objects;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -14,7 +16,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class LargeCommunity implements Community {
 
-  private static final long serialVersionUID = -1;
+  private static final long serialVersionUID = 1L;
 
   private final long _globalAdministrator;
   private final long _localData1;
@@ -76,6 +78,7 @@ public final class LargeCommunity implements Community {
     return false;
   }
 
+  @Nonnull
   @Override
   public String matchString() {
     return toString();
@@ -100,11 +103,26 @@ public final class LargeCommunity implements Community {
     return Objects.hash(_globalAdministrator, _localData1, _localData2);
   }
 
+  @Nonnull
   @Override
   public String toString() {
     if (_str == null) {
       _str = _globalAdministrator + ":" + _localData1 + ":" + _localData2;
     }
     return _str;
+  }
+
+  @Nonnull
+  @Override
+  public BigInteger asBigInt() {
+    return BigInteger.valueOf(_globalAdministrator)
+        .shiftLeft(64)
+        .or(BigInteger.valueOf(_localData1).shiftLeft(32))
+        .or(BigInteger.valueOf(_localData2));
+  }
+
+  @Override
+  public int compareTo(Community o) {
+    return asBigInt().compareTo(o.asBigInt());
   }
 }
