@@ -14,7 +14,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * href="https://tools.ietf.org/html/rfc8092">RFC8092</a>
  */
 @ParametersAreNonnullByDefault
-public final class LargeCommunity implements Community {
+public final class LargeCommunity extends Community {
 
   private static final long serialVersionUID = 1L;
 
@@ -119,10 +119,5 @@ public final class LargeCommunity implements Community {
         .shiftLeft(64)
         .or(BigInteger.valueOf(_localData1).shiftLeft(32))
         .or(BigInteger.valueOf(_localData2));
-  }
-
-  @Override
-  public int compareTo(Community o) {
-    return asBigInt().compareTo(o.asBigInt());
   }
 }

@@ -14,7 +14,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * A standard BGP community, as defined in <a href="https://tools.ietf.org/html/rfc1997">RFC1197</a>
  */
 @ParametersAreNonnullByDefault
-public final class StandardCommunity implements Community {
+public final class StandardCommunity extends Community {
   private static final long serialVersionUID = 1L;
 
   private long _value;
@@ -128,10 +128,5 @@ public final class StandardCommunity implements Community {
   @Override
   public BigInteger asBigInt() {
     return BigInteger.valueOf(_value);
-  }
-
-  @Override
-  public int compareTo(Community o) {
-    return asBigInt().compareTo(o.asBigInt());
   }
 }

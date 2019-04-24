@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 
 import com.google.common.testing.EqualsTester;
+import java.math.BigInteger;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -102,5 +103,16 @@ public class LargeCommunityTest {
     LargeCommunity lc = LargeCommunity.parse("large:1:2:3");
     assertThat(lc.toString(), equalTo("1:2:3"));
     assertThat(lc.matchString(), equalTo(lc.toString()));
+  }
+
+  @Test
+  public void testToBigInt() {
+    assertThat(
+        LargeCommunity.of(4294967295L, 4294967294L, 4294967293L).asBigInt(),
+        equalTo(
+            BigInteger.valueOf(4294967295L)
+                .shiftLeft(64)
+                .or(BigInteger.valueOf(4294967294L).shiftLeft(32))
+                .or(BigInteger.valueOf(4294967293L))));
   }
 }
