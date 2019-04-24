@@ -1500,6 +1500,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   private static List<AddressGroup> getAddressGroupsFromVirtuals(
       Map<String, VirtualAddress> virtualAddresses) {
+    // TODO: Consider masks as well
     return virtualAddresses.values().stream()
         .map(
             v ->

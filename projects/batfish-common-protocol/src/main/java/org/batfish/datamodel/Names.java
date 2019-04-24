@@ -78,7 +78,7 @@ public final class Names {
   }
 
   public static String generatedReferenceBook(String hostname, String source) {
-    return String.format("generated~refbook~%s~on~%s", source, hostname);
+    return String.format("%s~on~%s", source, hostname);
   }
 
   /**

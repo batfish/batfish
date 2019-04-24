@@ -14790,6 +14790,14 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
+        "generatedReferenceBooks" : {
+          "pools~on~f5_bigip_imish_malformed" : {
+            "name" : "pools~on~f5_bigip_imish_malformed"
+          },
+          "virtualAddresses~on~f5_bigip_imish_malformed" : {
+            "name" : "virtualAddresses~on~f5_bigip_imish_malformed"
+          }
+        },
         "routeFilterLists" : {
           "pl1" : {
             "lines" : [
@@ -14913,6 +14921,31 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
+        "generatedReferenceBooks" : {
+          "pools~on~f5_bigip_structured_ltm" : {
+            "addressGroups" : [
+              {
+                "addresses" : [
+                  "192.0.2.2",
+                  "192.0.2.3"
+                ],
+                "name" : "/Common/SOME_LTM_POOL"
+              }
+            ],
+            "name" : "pools~on~f5_bigip_structured_ltm"
+          },
+          "virtualAddresses~on~f5_bigip_structured_ltm" : {
+            "addressGroups" : [
+              {
+                "addresses" : [
+                  "192.0.2.9"
+                ],
+                "name" : "/Common/192.0.2.8"
+              }
+            ],
+            "name" : "virtualAddresses~on~f5_bigip_structured_ltm"
+          }
+        },
         "vendorFamily" : {
           "f5Bigip" : {
             "pools" : {
@@ -14988,6 +15021,14 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
+        "generatedReferenceBooks" : {
+          "pools~on~f5_bigip_structured_malformed" : {
+            "name" : "pools~on~f5_bigip_structured_malformed"
+          },
+          "virtualAddresses~on~f5_bigip_structured_malformed" : {
+            "name" : "virtualAddresses~on~f5_bigip_structured_malformed"
+          }
+        },
         "vendorFamily" : {
           "f5Bigip" : { }
         },
@@ -15003,6 +15044,14 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
+        "generatedReferenceBooks" : {
+          "pools~on~f5_bigip_structured_net" : {
+            "name" : "pools~on~f5_bigip_structured_net"
+          },
+          "virtualAddresses~on~f5_bigip_structured_net" : {
+            "name" : "virtualAddresses~on~f5_bigip_structured_net"
+          }
+        },
         "interfaces" : {
           "/Common/MYVLAN" : {
             "name" : "/Common/MYVLAN",
@@ -15189,6 +15238,14 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
+        "generatedReferenceBooks" : {
+          "pools~on~f5_bigip_structured_net_routing_bgp" : {
+            "name" : "pools~on~f5_bigip_structured_net_routing_bgp"
+          },
+          "virtualAddresses~on~f5_bigip_structured_net_routing_bgp" : {
+            "name" : "virtualAddresses~on~f5_bigip_structured_net_routing_bgp"
+          }
+        },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:/Common/my_bgp~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:/Common/my_bgp~",
@@ -15343,6 +15400,14 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
+        "generatedReferenceBooks" : {
+          "pools~on~f5_bigip_structured_net_routing_prefix_list" : {
+            "name" : "pools~on~f5_bigip_structured_net_routing_prefix_list"
+          },
+          "virtualAddresses~on~f5_bigip_structured_net_routing_prefix_list" : {
+            "name" : "virtualAddresses~on~f5_bigip_structured_net_routing_prefix_list"
+          }
+        },
         "route6FilterLists" : {
           "/Common/MY_IPV6_PREFIX_LIST" : {
             "lines" : [
@@ -15392,6 +15457,14 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
+        "generatedReferenceBooks" : {
+          "pools~on~f5_bigip_structured_net_routing_route_map" : {
+            "name" : "pools~on~f5_bigip_structured_net_routing_route_map"
+          },
+          "virtualAddresses~on~f5_bigip_structured_net_routing_route_map" : {
+            "name" : "virtualAddresses~on~f5_bigip_structured_net_routing_route_map"
+          }
+        },
         "routingPolicies" : {
           "/Common/MY_ROUTE_MAP" : {
             "name" : "/Common/MY_ROUTE_MAP",
@@ -15485,6 +15558,14 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
+        "generatedReferenceBooks" : {
+          "pools~on~f5_bigip_structured_sys" : {
+            "name" : "pools~on~f5_bigip_structured_sys"
+          },
+          "virtualAddresses~on~f5_bigip_structured_sys" : {
+            "name" : "virtualAddresses~on~f5_bigip_structured_sys"
+          }
+        },
         "ntpServers" : [
           "192.0.2.3",
           "my.example.com"
@@ -15504,6 +15585,14 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
+        "generatedReferenceBooks" : {
+          "pools~on~f5_bigip_structured_with_imish" : {
+            "name" : "pools~on~f5_bigip_structured_with_imish"
+          },
+          "virtualAddresses~on~f5_bigip_structured_with_imish" : {
+            "name" : "virtualAddresses~on~f5_bigip_structured_with_imish"
+          }
+        },
         "ipAccessLists" : {
           "acl1" : {
             "name" : "acl1",
