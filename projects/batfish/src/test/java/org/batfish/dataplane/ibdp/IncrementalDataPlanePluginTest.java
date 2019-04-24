@@ -379,6 +379,7 @@ public class IncrementalDataPlanePluginTest {
         engine.computeDataPlane(
             ImmutableMap.of(c.getHostname(), c),
             topology,
+            null,
             OspfTopology.empty(),
             Collections.emptySet());
 

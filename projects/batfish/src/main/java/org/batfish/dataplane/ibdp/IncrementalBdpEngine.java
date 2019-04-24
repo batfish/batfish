@@ -31,6 +31,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BdpOscillationException;
 import org.batfish.common.Version;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
+import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpPeerConfigId;
@@ -131,6 +132,7 @@ class IncrementalBdpEngine {
   ComputeDataPlaneResult computeDataPlane(
       Map<String, Configuration> configurations,
       Topology topology,
+      @Nullable Layer2Topology layer2Topology,
       OspfTopology ospfTopology,
       Set<BgpAdvertisement> externalAdverts) {
     try (ActiveSpan span = GlobalTracer.get().buildSpan("Compute Data Plane").startActive()) {
@@ -191,7 +193,8 @@ class IncrementalBdpEngine {
                   ipOwners,
                   false,
                   true,
-                  new TracerouteEngineImpl(partialDataplane));
+                  new TracerouteEngineImpl(partialDataplane),
+                  layer2Topology);
 
           boolean isOscillating =
               computeNonMonotonicPortionOfDataPlane(
