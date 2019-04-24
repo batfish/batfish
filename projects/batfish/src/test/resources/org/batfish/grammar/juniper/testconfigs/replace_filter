@@ -1,0 +1,61 @@
+#RANCID-CONTENT-TYPE: juniper
+system {
+  host-name replace_filter;
+}
+firewall {
+    family inet {
+        filter example-filter {
+            term term-1 {
+                from {
+                    source-address {
+                        10.0.0.0/8;
+                    }
+                }
+                then {
+                    accept;
+                }
+            }
+        }
+        filter example-filter2 {
+            term term-1 {
+                from {
+                    source-address {
+                        10.0.0.0/8;
+                    }
+                }
+                then {
+                    accept;
+                }
+            }
+        }
+    }
+}
+firewall {
+    family inet {
+        replace:
+        filter example-filter {
+            term term-1 {
+                from {
+                    destination-address {
+                        10.0.0.0/8;
+                    }
+                }
+                then {
+                    accept;
+                }
+            }
+        }
+        filter example-filter2 {
+            term term-1 {
+                from {
+                    destination-address {
+                        10.0.0.0/8;
+                    }
+                }
+                then {
+                    accept;
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,2 @@
+####BATFISH FLATTENED JUNIPER CONFIG####
+set system host-name replace_only
