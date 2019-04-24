@@ -3,6 +3,7 @@ package org.batfish.dataplane.ibdp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.dataplane.ibdp.OspfRoutingProcess.applyDistributeList;
 import static org.batfish.dataplane.ibdp.OspfRoutingProcess.computeDefaultInterAreaRouteToInject;
 import static org.batfish.dataplane.ibdp.OspfRoutingProcess.convertAndFilterIntraAreaRoutesToPropagate;
 import static org.batfish.dataplane.ibdp.OspfRoutingProcess.filterInterAreaRoutesToPropagateAtABR;
@@ -76,6 +77,7 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statements;
@@ -208,6 +210,61 @@ public class OspfRoutingProcessTest {
         new OspfSessionProperties(
             0L, new IpLink(Ip.create(ACTIVE_ADDR_1.getIp().asLong() + 1), ACTIVE_ADDR_1.getIp())));
     return new OspfTopology(graph);
+  }
+
+  @Test
+  public void testApplyDistributeList() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder()
+            .setHostname("conf")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    Vrf vrf = nf.vrfBuilder().setOwner(c).build();
+
+    Interface i1 =
+        nf.interfaceBuilder()
+            .setOwner(c)
+            .setVrf(vrf)
+            .setAddress(new InterfaceAddress(Ip.parse("1.1.1.1"), 24))
+            .build();
+    i1.setOspfInboundDistributeListPolicy("policy");
+
+    RouteFilterList prefixList =
+        new RouteFilterList(
+            "prefix_list",
+            ImmutableList.of(
+                new RouteFilterLine(
+                    LineAction.PERMIT, PrefixRange.fromPrefix(Prefix.parse("2.2.2.0/24"))),
+                new RouteFilterLine(
+                    LineAction.DENY, PrefixRange.fromPrefix(Prefix.parse("1.1.1.0/24")))));
+    c.getRouteFilterLists().put(prefixList.getName(), prefixList);
+
+    nf.routingPolicyBuilder()
+        .setName("policy")
+        .setOwner(c)
+        .setStatements(
+            ImmutableList.of(
+                new If(
+                    new MatchPrefixSet(
+                        DestinationNetwork.instance(), new NamedPrefixSet("prefix_list")),
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement()))))
+        .build();
+
+    OspfIntraAreaRoute.Builder allowedRouteBuilder =
+        OspfIntraAreaRoute.builder().setNetwork(Prefix.parse("2.2.2.0/24")).setArea(1L);
+
+    OspfIntraAreaRoute.Builder deniedRouteBuilder =
+        OspfIntraAreaRoute.builder().setNetwork(Prefix.parse("1.1.1.0/24")).setArea(1L);
+
+    applyDistributeList(c, vrf.getName(), i1.getName(), allowedRouteBuilder);
+
+    assertFalse(allowedRouteBuilder.getNonRouting());
+
+    applyDistributeList(c, vrf.getName(), i1.getName(), deniedRouteBuilder);
+
+    assertTrue(deniedRouteBuilder.getNonRouting());
   }
 
   /** Check that a new (but un-initialized) process is not dirty */
@@ -423,13 +480,13 @@ public class OspfRoutingProcessTest {
             .setNonRouting(true)
             .setNonForwarding(true)
             .setNextHopIp(Ip.parse("8.8.8.8"));
-    RouteAdvertisement<OspfIntraAreaRoute> transformed =
-        _routingProcess.transformIntraAreaRouteOnImport(
-            new RouteAdvertisement<>(builder.build()), 10);
+
+    OspfIntraAreaRoute.Builder transformedBuilder =
+        _routingProcess.transformIntraAreaRouteOnImport(builder.build(), 10);
 
     // Update metric, admin, clear non-routing bit
     assertThat(
-        transformed.getRoute(),
+        transformedBuilder.build(),
         equalTo(
             builder
                 .setMetric(11L)
@@ -450,19 +507,17 @@ public class OspfRoutingProcessTest {
             .setNonForwarding(true)
             .setNextHopIp(Ip.parse("8.8.8.8"));
 
-    Optional<RouteAdvertisement<OspfInterAreaRoute>> transformed =
-        _routingProcess.transformInterAreaRouteOnImport(
-            new RouteAdvertisement<>(builder.build()), 10);
-    assertFalse("Default route rejected by ABR", transformed.isPresent());
+    Optional<OspfInterAreaRoute.Builder> transformedBuilder =
+        _routingProcess.transformInterAreaRouteOnImport(builder.build(), 10);
+    assertFalse("Default route rejected by ABR", transformedBuilder.isPresent());
 
     // Non-default route
     builder.setNetwork(Prefix.parse("1.1.1.1/29"));
-    transformed =
-        _routingProcess.transformInterAreaRouteOnImport(
-            new RouteAdvertisement<>(builder.build()), 10);
+    transformedBuilder = _routingProcess.transformInterAreaRouteOnImport(builder.build(), 10);
     // Update metric, admin, clear non-routing bit
+    assertTrue(transformedBuilder.isPresent());
     assertThat(
-        transformed.get().getRoute(),
+        transformedBuilder.get().build(),
         equalTo(
             builder
                 .setMetric(11L)
@@ -744,19 +799,19 @@ public class OspfRoutingProcessTest {
             .setArea(1L)
             .setAdmin(0)
             .setNextHopIp(Ip.parse("1.1.1.1"));
-    RouteAdvertisement<OspfExternalType1Route> ra =
-        new RouteAdvertisement<>((OspfExternalType1Route) builder.build());
     final Ip nextHopIp = Ip.parse("9.9.9.9");
+
     assertThat(
-        _routingProcess.transformType1RouteOnImport(ra, nextHopIp, 10),
+        _routingProcess
+            .transformType1RouteOnImport((OspfExternalType1Route) builder.build(), nextHopIp, 10)
+            .build(),
         equalTo(
-            new RouteAdvertisement<>(
-                builder
-                    .setCostToAdvertiser(10)
-                    .setMetric(10)
-                    .setNextHopIp(nextHopIp)
-                    .setAdmin(300)
-                    .build())));
+            builder
+                .setCostToAdvertiser(10)
+                .setMetric(10)
+                .setNextHopIp(nextHopIp)
+                .setAdmin(300)
+                .build()));
   }
 
   @Test
@@ -770,14 +825,13 @@ public class OspfRoutingProcessTest {
             .setArea(1L)
             .setAdmin(0)
             .setNextHopIp(Ip.parse("1.1.1.1"));
-    RouteAdvertisement<OspfExternalType2Route> ra =
-        new RouteAdvertisement<>((OspfExternalType2Route) builder.build());
+
     final Ip nextHopIp = Ip.parse("9.9.9.9");
     assertThat(
-        _routingProcess.transformType2RouteOnImport(ra, nextHopIp, 10),
-        equalTo(
-            new RouteAdvertisement<>(
-                builder.setCostToAdvertiser(10).setNextHopIp(nextHopIp).setAdmin(400).build())));
+        _routingProcess
+            .transformType2RouteOnImport((OspfExternalType2Route) builder.build(), nextHopIp, 10)
+            .build(),
+        equalTo(builder.setCostToAdvertiser(10).setNextHopIp(nextHopIp).setAdmin(400).build()));
   }
 
   @Test

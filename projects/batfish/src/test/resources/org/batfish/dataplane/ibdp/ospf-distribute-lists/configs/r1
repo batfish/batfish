@@ -1,0 +1,22 @@
+hostname r1
+!
+interface GigabitEthernet0/0
+ ip address 192.168.12.1 255.255.255.0
+!
+interface Ethernet0/0
+ ip address 1.1.1.1 255.255.255.0
+!
+interface Ethernet1/0
+ ip address 2.2.2.2 255.255.255.0
+!
+router ospf 1
+ redistribute static metric-type 1
+ network 1.1.1.0 0.0.0.255 area 0
+ network 2.2.2.0 0.0.0.255 area 0
+ network 192.168.12.0 0.0.0.255 area 0
+!
+ip route 192.168.15.0 255.255.255.0 Null0
+ip route 192.168.16.0 255.255.255.0 Null0
+
+
+
