@@ -11,8 +11,5 @@ router ospf 1
 ip route 192.168.10.0 255.255.255.0 Null0
 ip route 192.168.9.0 255.255.255.0 Null0
 !
-ip prefix-list permit_9_10 seq 5 permit 192.168.10.0/24
-ip prefix-list permit_9_10 seq 5 permit 192.168.9.0/24
-!
 ip prefix-list filter_2 seq 5 deny 2.2.2.0/24
 ip prefix-list filter_2 seq 10 permit 0.0.0.0/0 le 32
