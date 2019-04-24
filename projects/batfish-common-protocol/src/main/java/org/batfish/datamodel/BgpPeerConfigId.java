@@ -1,6 +1,6 @@
 package org.batfish.datamodel;
 
-import static java.util.Objects.requireNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -19,17 +19,8 @@ public final class BgpPeerConfigId implements Comparable<BgpPeerConfigId> {
   private static final String PROP_DYNAMIC = "dynamic";
   private final String _hostname;
   private final String _vrfName;
-  /**
-   * The peer's local interface for IDs that represent {@link BgpUnnumberedPeerConfig}s. By
-   * contract, exactly one of _peerInterface and {@link #_remotePeerPrefix} is defined.
-   */
   @Nullable private final String _peerInterface;
-  /**
-   * The peer's remote prefix for IDs that don't represent {@link BgpUnnumberedPeerConfig}s. By
-   * contract, exactly one of {@link #_peerInterface} and _remotePeerPrefix is defined.
-   */
   @Nullable private final Prefix _remotePeerPrefix;
-
   @Nonnull private final BgpPeerConfigType _type;
 
   /** Create a new ID. */
@@ -63,17 +54,22 @@ public final class BgpPeerConfigId implements Comparable<BgpPeerConfigId> {
       @JsonProperty(PROP_PREFIX) @Nullable Prefix remotePeerPrefix,
       @JsonProperty(PROP_TYPE) @Nullable BgpPeerConfigType type,
       @JsonProperty(PROP_DYNAMIC) boolean dynamic) {
+    checkArgument(hostname != null, "%s must be provided", PROP_HOSTNAME);
+    checkArgument(vrfName != null, "%s must be provided", PROP_VRF_NAME);
     if (type != BgpPeerConfigType.UNNUMBERED) {
       // Includes case where type is null (for backwards compatibility)
+      checkArgument(
+          remotePeerPrefix != null, "%s must be provided for non-unnumbered peers", PROP_PREFIX);
+      checkArgument(
+          peerInterface == null, "%s must be null for non-unnumbered peers", PROP_INTERFACE);
       return new BgpPeerConfigId(
-          requireNonNull(hostname),
-          requireNonNull(vrfName),
-          requireNonNull(remotePeerPrefix),
-          dynamic || type == BgpPeerConfigType.DYNAMIC);
+          hostname, vrfName, remotePeerPrefix, dynamic || type == BgpPeerConfigType.DYNAMIC);
     }
     // BGP unnumbered peer
-    return new BgpPeerConfigId(
-        requireNonNull(hostname), requireNonNull(vrfName), requireNonNull(peerInterface));
+    checkArgument(remotePeerPrefix == null, "%s must be null for unnumbered peers", PROP_PREFIX);
+    checkArgument(
+        peerInterface != null, "%s must not be null for unnumbered peers", PROP_INTERFACE);
+    return new BgpPeerConfigId(hostname, vrfName, peerInterface);
   }
 
   @Nonnull
@@ -90,7 +86,8 @@ public final class BgpPeerConfigId implements Comparable<BgpPeerConfigId> {
 
   /**
    * The interface of this peer ID, or null if it does not represent a {@link
-   * BgpUnnumberedPeerConfig}
+   * BgpUnnumberedPeerConfig}. By contract, exactly one of _peerInterface and {@link
+   * #_remotePeerPrefix} is defined.
    */
   @Nullable
   @JsonProperty(PROP_INTERFACE)
@@ -99,7 +96,8 @@ public final class BgpPeerConfigId implements Comparable<BgpPeerConfigId> {
   }
 
   /**
-   * The remote prefix of this peer ID, or null if it represents a {@link BgpUnnumberedPeerConfig}
+   * The remote prefix of this peer ID, or null if it represents a {@link BgpUnnumberedPeerConfig}.
+   * By contract, exactly one of {@link #_peerInterface} and _remotePeerPrefix is defined.
    */
   @Nullable
   @JsonProperty(PROP_PREFIX)

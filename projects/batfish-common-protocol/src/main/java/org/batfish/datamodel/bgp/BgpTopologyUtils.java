@@ -268,8 +268,6 @@ public final class BgpTopologyUtils {
    */
   private static boolean bgpConfigPassesSanityChecks(
       BgpPeerConfig config, String hostname, Map<Ip, Set<String>> ipOwners) {
-
-    // TODO:
     if (config instanceof BgpUnnumberedPeerConfig) {
       return true;
     }

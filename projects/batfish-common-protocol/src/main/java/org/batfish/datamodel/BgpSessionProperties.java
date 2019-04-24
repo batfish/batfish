@@ -84,7 +84,10 @@ public final class BgpSessionProperties {
     Ip initiatorIp = initiator.getLocalIp();
     Ip listenerIp = listener.getLocalIp();
     if (listenerIp == null || listenerIp == Ip.AUTO) {
-      // Initiator must be active; determine listener's IP from initiator
+      // Determine listener's IP from initiator.
+      // Listener must be active or dynamic, because unnumbered peers always have localIP defined.
+      // Therefore initiator must be active since unnumbered peers only peer with each other.
+      assert initiator instanceof BgpActivePeerConfig;
       listenerIp = ((BgpActivePeerConfig) initiator).getPeerAddress();
     }
     assert initiatorIp != null;

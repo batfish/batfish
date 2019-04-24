@@ -41,6 +41,10 @@ public final class NetworkConfigurations {
     return Optional.ofNullable(_configurations.get(hostname));
   }
 
+  /**
+   * Returns a {@link BgpPeerConfig} matching the given {@code id} if one exists, otherwise {@code
+   * null}.
+   */
   @Nullable
   public BgpPeerConfig getBgpPeerConfig(BgpPeerConfigId id) {
     switch (id.getType()) {
@@ -55,6 +59,10 @@ public final class NetworkConfigurations {
     }
   }
 
+  /**
+   * Returns a {@link BgpPassivePeerConfig} matching the given {@code id} if one exists, otherwise
+   * {@code null}.
+   */
   @Nullable
   public BgpPassivePeerConfig getBgpDynamicPeerConfig(BgpPeerConfigId id) {
     if (id.getRemotePeerPrefix() == null) {
@@ -67,6 +75,10 @@ public final class NetworkConfigurations {
         .orElse(null);
   }
 
+  /**
+   * Returns a {@link BgpActivePeerConfig} matching the given {@code id} if one exists, otherwise
+   * {@code null}.
+   */
   @Nullable
   public BgpActivePeerConfig getBgpPointToPointPeerConfig(BgpPeerConfigId id) {
     if (id.getRemotePeerPrefix() == null) {
@@ -79,6 +91,10 @@ public final class NetworkConfigurations {
         .orElse(null);
   }
 
+  /**
+   * Returns a {@link BgpUnnumberedPeerConfig} matching the given {@code id} if one exists,
+   * otherwise {@code null}.
+   */
   @Nullable
   public BgpUnnumberedPeerConfig getBgpUnnumberedPeerConfig(BgpPeerConfigId id) {
     if (id.getPeerInterface() == null) {
