@@ -692,6 +692,45 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testAristaBgpDefaultOriginatePolicy() throws IOException {
+    /*
+     Arista originator has: neighbor 10.1.1.2 default-originate route-map ROUTE_MAP
+     Because this is an Arista device, the route-map should be applied to the default route before
+     it is exported rather than used as a default route generation policy.
+    */
+    String testrigName = "arista-bgp-default-originate";
+    List<String> configurationNames = ImmutableList.of("arista-originator", "ios-listener");
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+
+    batfish.computeDataPlane();
+    IncrementalDataPlane dp = (IncrementalDataPlane) batfish.loadDataPlane();
+    Set<AbstractRoute> listenerRoutes =
+        dp.getRibs().get("ios-listener").get(DEFAULT_VRF_NAME).getRoutes();
+
+    // ROUTE_MAP adds two communities to default route. Make sure listener's default route has them.
+    BgpRoute expectedDefaultRoute =
+        BgpRoute.builder()
+            .setCommunities(ImmutableSet.of(7274718L, 21823932L))
+            .setNetwork(Prefix.ZERO)
+            .setNextHopIp(Ip.parse("10.1.1.1"))
+            .setReceivedFromIp(Ip.parse("10.1.1.1"))
+            .setOriginatorIp(Ip.parse("1.1.1.1"))
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setSrcProtocol(RoutingProtocol.BGP)
+            .setAsPath(AsPath.ofSingletonAsSets(1L))
+            .setAdmin(20)
+            .setLocalPreference(100)
+            .build();
+    assertThat(listenerRoutes, hasItem(equalTo(expectedDefaultRoute)));
+  }
+
+  @Test
   public void testArubaConfigurationFormat() throws IOException {
     Configuration arubaConfig = parseConfig("arubaConfiguration");
 

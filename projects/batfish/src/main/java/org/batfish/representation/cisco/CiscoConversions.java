@@ -103,6 +103,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchProcessAsn;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
+import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
@@ -322,7 +323,12 @@ class CiscoConversions {
    * LeafBgpPeerGroup}. The generated policy is added to the given configuration's routing policies.
    */
   static void generateBgpExportPolicy(
-      LeafBgpPeerGroup lpg, String vrfName, boolean ipv4, Configuration c, Warnings w) {
+      LeafBgpPeerGroup lpg,
+      String vrfName,
+      boolean ipv4,
+      @Nullable String defaultOriginateExportRouteMapName,
+      Configuration c,
+      Warnings w) {
     List<Statement> exportPolicyStatements = new ArrayList<>();
     if (lpg.getNextHopSelf() != null && lpg.getNextHopSelf()) {
       exportPolicyStatements.add(new SetNextHop(SelfNextHop.getInstance(), false));
@@ -335,11 +341,12 @@ class CiscoConversions {
     // this policy and get exported without going through the rest of the export policy.
     // TODO Verify that nextHopSelf and removePrivateAs settings apply to default-originate route.
     if (lpg.getDefaultOriginate()) {
-      initBgpDefaultRouteExportPolicy(ipv4, c);
+      initBgpDefaultRouteExportPolicy(
+          vrfName, lpg.getName(), ipv4, defaultOriginateExportRouteMapName, c);
       exportPolicyStatements.add(
           new If(
               "Export default route from peer with default-originate configured",
-              new CallExpr(computeBgpDefaultRouteExportPolicyName(ipv4)),
+              new CallExpr(computeBgpDefaultRouteExportPolicyName(ipv4, vrfName, lpg.getName())),
               singletonList(Statements.ReturnTrue.toStaticStatement()),
               ImmutableList.of()));
     }
@@ -392,30 +399,50 @@ class CiscoConversions {
    * policy is the same across BGP processes, so only one is created for each configuration.
    *
    * @param ipv4 Whether to initialize the IPv4 or IPv6 default route export policy
+   * @param defaultOriginateExportMapName Name of route-map to apply to generated route before
+   *     export. This is an Arista-specific concept and <a
+   *     href=https://www.arista.com/en/um-eos/eos-section-32-4-bgp-commands#ww1116958>does not
+   *     affect whether the route will be exported</a>.
    */
-  static void initBgpDefaultRouteExportPolicy(boolean ipv4, Configuration c) {
-    String defaultRouteExportPolicyName = computeBgpDefaultRouteExportPolicyName(ipv4);
-    if (!c.getRoutingPolicies().containsKey(defaultRouteExportPolicyName)) {
-      RoutingPolicy.builder()
-          .setOwner(c)
-          .setName(defaultRouteExportPolicyName)
-          .addStatement(
-              new If(
-                  new Conjunction(
-                      ImmutableList.of(
-                          ipv4 ? MATCH_DEFAULT_ROUTE : MATCH_DEFAULT_ROUTE6,
-                          new MatchProtocol(RoutingProtocol.AGGREGATE))),
-                  ImmutableList.of(
-                      new SetOrigin(
-                          new LiteralOrigin(
-                              c.getConfigurationFormat() == ConfigurationFormat.CISCO_IOS
-                                  ? OriginType.IGP
-                                  : OriginType.INCOMPLETE,
-                              null)),
-                      Statements.ReturnTrue.toStaticStatement())))
-          .addStatement(Statements.ReturnFalse.toStaticStatement())
-          .build();
+  static void initBgpDefaultRouteExportPolicy(
+      String vrfName,
+      String peerName,
+      boolean ipv4,
+      @Nullable String defaultOriginateExportMapName,
+      Configuration c) {
+    SetOrigin setOrigin =
+        new SetOrigin(
+            new LiteralOrigin(
+                c.getConfigurationFormat() == ConfigurationFormat.CISCO_IOS
+                    ? OriginType.IGP
+                    : OriginType.INCOMPLETE,
+                null));
+    List<Statement> defaultRouteExportStatements;
+    if (defaultOriginateExportMapName == null
+        // TODO Test behavior if route-map is undefined
+        || !c.getRoutingPolicies().keySet().contains(defaultOriginateExportMapName)) {
+      defaultRouteExportStatements =
+          ImmutableList.of(setOrigin, Statements.ReturnTrue.toStaticStatement());
+    } else {
+      defaultRouteExportStatements =
+          ImmutableList.of(
+              setOrigin,
+              new CallStatement(defaultOriginateExportMapName),
+              Statements.ReturnTrue.toStaticStatement());
     }
+
+    RoutingPolicy.builder()
+        .setOwner(c)
+        .setName(computeBgpDefaultRouteExportPolicyName(ipv4, vrfName, peerName))
+        .addStatement(
+            new If(
+                new Conjunction(
+                    ImmutableList.of(
+                        ipv4 ? MATCH_DEFAULT_ROUTE : MATCH_DEFAULT_ROUTE6,
+                        new MatchProtocol(RoutingProtocol.AGGREGATE))),
+                defaultRouteExportStatements))
+        .addStatement(Statements.ReturnFalse.toStaticStatement())
+        .build();
   }
 
   /**
