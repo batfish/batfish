@@ -459,6 +459,9 @@
         "cumulus_nclu" : [
           "configs/cumulus_nclu"
         ],
+        "cumulus_nclu_bgp_no_address_family" : [
+          "configs/cumulus_nclu_bgp_no_address_family"
+        ],
         "cumulus_nclu_invalid_bonds" : [
           "configs/cumulus_nclu_invalid_bonds"
         ],
@@ -1028,6 +1031,7 @@
         "configs/community_name_numbers_dos" : "PASSED",
         "configs/community_set" : "PASSED",
         "configs/cumulus_nclu" : "PASSED",
+        "configs/cumulus_nclu_bgp_no_address_family" : "PASSED",
         "configs/cumulus_nclu_invalid_bonds" : "PASSED",
         "configs/cumulus_nclu_invalid_interfaces" : "PASSED",
         "configs/cumulus_nclu_invalid_vrfs" : "PASSED",
@@ -41438,6 +41442,58 @@
             "  EOF:<EOF>)"
           ]
         },
+        "configs/cumulus_nclu_bgp_no_address_family" : {
+          "sentences" : [
+            "(cumulus_nclu_configuration",
+            "  (statement",
+            "    (s_null",
+            "      NET:'net'",
+            "      (null_rest_of_line",
+            "        DEL:'del'",
+            "        WORD:'all'",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_hostname",
+            "        HOSTNAME:'hostname'",
+            "        hostname = (word",
+            "          WORD:'cumulus_nclu_bgp_no_address_family')",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bgp",
+            "        BGP:'bgp'",
+            "        (b_common",
+            "          (b_autonomous_system",
+            "            AUTONOMOUS_SYSTEM:'autonomous-system'",
+            "            as = (uint32",
+            "              d = DEC:'65500')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bgp",
+            "        BGP:'bgp'",
+            "        (b_common",
+            "          (b_router_id",
+            "            ROUTER_ID:'router-id'",
+            "            id = (ip_address",
+            "              IP_ADDRESS:'192.0.2.2')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_null",
+            "      NET:'net'",
+            "      (null_rest_of_line",
+            "        COMMIT:'commit'",
+            "        NEWLINE:'\\n\\n')))",
+            "  EOF:<EOF>)"
+          ]
+        },
         "configs/cumulus_nclu_invalid_bonds" : {
           "sentences" : [
             "(cumulus_nclu_configuration",
@@ -74848,6 +74904,7 @@
         "community_list_named" : "PASSED",
         "community_set" : "PASSED",
         "cumulus_nclu" : "WARNINGS",
+        "cumulus_nclu_bgp_no_address_family" : "PASSED",
         "cumulus_nclu_invalid_bonds" : "PASSED",
         "cumulus_nclu_invalid_interfaces" : "PASSED",
         "cumulus_nclu_invalid_vrfs" : "PASSED",
@@ -77620,6 +77677,7 @@
             }
           }
         },
+        "configs/cumulus_nclu_bgp_no_address_family" : { },
         "configs/cumulus_nclu_invalid_bonds" : {
           "interface" : {
             "swp1" : {
@@ -88543,6 +88601,7 @@
         "configs/community_name_numbers_dos" : "PASSED",
         "configs/community_set" : "PASSED",
         "configs/cumulus_nclu" : "PASSED",
+        "configs/cumulus_nclu_bgp_no_address_family" : "PASSED",
         "configs/cumulus_nclu_invalid_bonds" : "PASSED",
         "configs/cumulus_nclu_invalid_interfaces" : "PASSED",
         "configs/cumulus_nclu_invalid_vrfs" : "PASSED",
