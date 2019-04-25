@@ -137,9 +137,8 @@ public class BgpProcess implements Serializable {
     return _clusterIds.get();
   }
 
-  /** @return {@link #_activeNeighbors} */
+  /** Neighbor relationships configured for this BGP process. */
   @JsonProperty(PROP_ACTIVE_NEIGHBORS)
-  @JsonPropertyDescription("Neighbor relationships configured for this BGP process")
   @Nonnull
   public SortedMap<Prefix, BgpActivePeerConfig> getActiveNeighbors() {
     return _activeNeighbors;
@@ -167,9 +166,8 @@ public class BgpProcess implements Serializable {
     return _multipathIbgp;
   }
 
-  /** @return {@link #_passiveNeighbors} */
+  /** Neighbor relationships configured for this BGP process. */
   @JsonProperty(PROP_PASSIVE_NEIGHBORS)
-  @JsonPropertyDescription("Neighbor relationships configured for this BGP process")
   @Nonnull
   public SortedMap<Prefix, BgpPassivePeerConfig> getPassiveNeighbors() {
     return _passiveNeighbors;
@@ -194,7 +192,8 @@ public class BgpProcess implements Serializable {
   }
 
   @JsonProperty(PROP_INTERFACE_NEIGHBORS)
-  public void setInterfaceNeighbors(SortedMap<String, BgpUnnumberedPeerConfig> interfaceNeighbors) {
+  public void setInterfaceNeighbors(
+      @Nonnull SortedMap<String, BgpUnnumberedPeerConfig> interfaceNeighbors) {
     _interfaceNeighbors = interfaceNeighbors;
   }
 
