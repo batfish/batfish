@@ -62,6 +62,16 @@ public class F5BigipConfigurationTest {
   }
 
   @Test
+  public void testToAddressGroupVirtualAddressMask() {
+    VirtualAddress v1 = new VirtualAddress("v1");
+    v1.setAddress(Ip.parse("1.1.1.1"));
+    v1.setMask(Ip.parse("255.255.255.254"));
+    assertThat(
+        toAddressGroup(v1),
+        equalTo(new AddressGroup(ImmutableSortedSet.of("1.1.1.1", "1.1.1.0/31"), v1.getName())));
+  }
+
+  @Test
   public void testToAddressGroupPool() {
     PoolMember m1 = new PoolMember("m1", null, 0);
     m1.setAddress(Ip.parse("1.1.1.1"));

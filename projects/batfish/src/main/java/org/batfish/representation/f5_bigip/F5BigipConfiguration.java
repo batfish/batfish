@@ -1500,11 +1500,15 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   @VisibleForTesting
   static AddressGroup toAddressGroup(VirtualAddress virtualAddress) {
-    // TODO: Consider masks as well?
     return new AddressGroup(
         virtualAddress.getAddress() == null
             ? ImmutableSortedSet.of()
-            : ImmutableSortedSet.of(virtualAddress.getAddress().toString()),
+            : virtualAddress.getMask() == null
+                ? ImmutableSortedSet.of(virtualAddress.getAddress().toString())
+                : ImmutableSortedSet.of(
+                    virtualAddress.getAddress().toString(),
+                    Prefix.create(virtualAddress.getAddress(), virtualAddress.getMask())
+                        .toString()),
         virtualAddress.getName());
   }
 

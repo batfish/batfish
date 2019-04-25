@@ -132,7 +132,8 @@ public final class CompletionMetadataUtilsTest {
             .setAddressGroups(
                 ImmutableList.of(
                     new AddressGroup(ImmutableSortedSet.of("1.1.1.1", "2.2.2.2"), "ag1"),
-                    new AddressGroup(ImmutableSortedSet.of("3.3.3.3"), "ag2")))
+                    new AddressGroup(
+                        ImmutableSortedSet.of("3.3.3.3", "1.1.1.1/24", "1.1.1.1:0.0.0.8"), "ag2")))
             .build();
 
     ReferenceBook book2 =
@@ -203,6 +204,35 @@ public final class CompletionMetadataUtilsTest {
                 interfaceAddress1.getPrefix().toString(),
                 interfaceAddress2.getPrefix().toString(),
                 interfaceAddress3.getPrefix().toString())));
+  }
+
+  @Test
+  public void testGetPrefixesGeneratedReferenceBooks() {
+    ReferenceBook book1 =
+        ReferenceBook.builder("book1")
+            .setAddressGroups(
+                ImmutableList.of(
+                    new AddressGroup(ImmutableSortedSet.of("1.1.1.1/1", "2.2.2.2/2"), "ag1"),
+                    new AddressGroup(ImmutableSortedSet.of("3.3.3.3", "1.1.1.1:0.0.0.8"), "ag2")))
+            .build();
+
+    ReferenceBook book2 =
+        ReferenceBook.builder("book2")
+            .setAddressGroups(
+                ImmutableList.of(
+                    new AddressGroup(ImmutableSortedSet.of("3.3.3.3/3", "4.4.4.4"), "ag1")))
+            .build();
+
+    Map<String, Configuration> configs = new HashMap<>();
+    Configuration config = createTestConfiguration("node", ConfigurationFormat.HOST);
+
+    config.getGeneratedReferenceBooks().put(book1.getName(), book1);
+    config.getGeneratedReferenceBooks().put(book2.getName(), book2);
+
+    configs.put("node", config);
+
+    assertThat(
+        getPrefixes(configs), equalTo(ImmutableSet.of("1.1.1.1/1", "2.2.2.2/2", "3.3.3.3/3")));
   }
 
   @Test

@@ -7,6 +7,7 @@ import java.util.Set;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.NamedStructureSpecifier;
 
@@ -62,15 +63,10 @@ public final class CompletionMetadataUtils {
                               .forEach(
                                   ag ->
                                       ag.getAddresses()
+                                          // we are ignoring child groups; their IPs will be caught
+                                          // when we process that group itself
                                           .forEach(
-                                              a -> {
-                                                // we are just putting IPs in here at the moment
-                                                try {
-                                                  Ip.parse(a);
-                                                  ips.add(a);
-                                                } catch (IllegalArgumentException ignored) {
-                                                }
-                                              })));
+                                              a -> Ip.tryParse(a).ifPresent(ip -> ips.add(a)))));
             });
 
     return ips.build();
@@ -87,15 +83,33 @@ public final class CompletionMetadataUtils {
     configurations
         .values()
         .forEach(
-            configuration ->
-                configuration
-                    .getAllInterfaces()
-                    .values()
-                    .forEach(
-                        iface ->
-                            iface.getAllAddresses().stream()
-                                .map(interfaceAddress -> interfaceAddress.getPrefix().toString())
-                                .forEach(prefixes::add)));
+            configuration -> {
+              configuration
+                  .getAllInterfaces()
+                  .values()
+                  .forEach(
+                      iface ->
+                          iface.getAllAddresses().stream()
+                              .map(interfaceAddress -> interfaceAddress.getPrefix().toString())
+                              .forEach(prefixes::add));
+
+              configuration
+                  .getGeneratedReferenceBooks()
+                  .values()
+                  .forEach(
+                      book ->
+                          book.getAddressGroups()
+                              .forEach(
+                                  ag ->
+                                      ag.getAddresses()
+                                          // we are ignoring child groups; their prefixes will be
+                                          // caught
+                                          // when we process that group itself
+                                          .forEach(
+                                              a ->
+                                                  Prefix.tryParse(a)
+                                                      .ifPresent(ip -> prefixes.add(a)))));
+            });
     return prefixes.build();
   }
 
