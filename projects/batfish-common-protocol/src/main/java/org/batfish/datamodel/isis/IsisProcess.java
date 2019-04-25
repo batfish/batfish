@@ -212,7 +212,7 @@ public class IsisProcess implements Serializable {
     return _level2;
   }
 
-  @JsonPropertyDescription("The net address is an ISO address representing the IS-IS router ID.")
+  /** The net address is an ISO address representing the IS-IS router ID.. */
   @JsonProperty(PROP_NET_ADDRESS)
   @Nonnull
   public IsoAddress getNetAddress() {

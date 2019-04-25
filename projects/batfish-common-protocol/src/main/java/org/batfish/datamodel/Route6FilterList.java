@@ -4,7 +4,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import java.io.Serializable;
@@ -67,8 +66,8 @@ public class Route6FilterList extends ComparableStructure<String> {
     return other._lines.equals(_lines);
   }
 
+  /** The lines against which to check an IPV6 route. */
   @JsonProperty(PROP_LINES)
-  @JsonPropertyDescription("The lines against which to check an IPV6 route")
   public List<Route6FilterLine> getLines() {
     return _lines;
   }

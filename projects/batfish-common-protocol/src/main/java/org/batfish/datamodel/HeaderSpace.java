@@ -660,20 +660,23 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
         && _tcpFlags.equals(other._tcpFlags);
   }
 
-  @JsonPropertyDescription("A set of acceptable DSCP values for a packet")
+  /** A set of acceptable DSCP values for a packet. */
   @JsonProperty(PROP_DSCPS)
   public SortedSet<Integer> getDscps() {
     return _dscps;
   }
 
-  /** The empty set of dstIps is interpreted as no constraint, or all IPs */
-  @JsonPropertyDescription("A space of acceptable destination IP addresses for a packet")
+  /**
+   * A space of acceptable destination IP addresses for a packet.
+   *
+   * <p>The empty set of dstIps is interpreted as no constraint, or all IPs
+   */
   @JsonProperty(PROP_DST_IPS)
   public IpSpace getDstIps() {
     return _dstIps;
   }
 
-  @JsonPropertyDescription("A set of acceptable destination port ranges for a TCP/UDP packet")
+  /** A set of acceptable destination port ranges for a TCP/UDP packet. */
   @JsonProperty(PROP_DST_PORTS)
   public SortedSet<SubRange> getDstPorts() {
     return _dstPorts;
@@ -684,31 +687,31 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     return _dstProtocols;
   }
 
-  @JsonPropertyDescription("A set of acceptable ECN values for a packet")
+  /** A set of acceptable ECN values for a packet. */
   @JsonProperty(PROP_ECNS)
   public SortedSet<Integer> getEcns() {
     return _ecns;
   }
 
-  @JsonPropertyDescription("A set of acceptable fragment offsets for a UDP packet")
+  /** A set of acceptable fragment offsets for a UDP packet. */
   @JsonProperty(PROP_FRAGMENT_OFFSETS)
   public SortedSet<SubRange> getFragmentOffsets() {
     return _fragmentOffsets;
   }
 
-  @JsonPropertyDescription("A set of acceptable ICMP code ranges for an ICMP packet")
+  /** A set of acceptable ICMP code ranges for an ICMP packet. */
   @JsonProperty(PROP_ICMP_CODES)
   public SortedSet<SubRange> getIcmpCodes() {
     return _icmpCodes;
   }
 
-  @JsonPropertyDescription("A set of acceptable ICMP type ranges for an ICMP packet")
+  /** A set of acceptable ICMP type ranges for an ICMP packet. */
   @JsonProperty(PROP_ICMP_TYPES)
   public SortedSet<SubRange> getIcmpTypes() {
     return _icmpTypes;
   }
 
-  @JsonPropertyDescription("A set of acceptable IP protocols for a packet")
+  /** A set of acceptable IP protocols for a packet. */
   @JsonProperty(PROP_IP_PROTOCOLS)
   public SortedSet<IpProtocol> getIpProtocols() {
     return _ipProtocols;
@@ -721,19 +724,19 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     return _negate;
   }
 
-  @JsonPropertyDescription("A set of unacceptable DSCP values for a packet")
+  /** A set of unacceptable DSCP values for a packet. */
   @JsonProperty(PROP_NOT_DSCPS)
   public SortedSet<Integer> getNotDscps() {
     return _notDscps;
   }
 
-  @JsonPropertyDescription("A space of unacceptable destination IP addresses for a packet")
+  /** A space of unacceptable destination IP addresses for a packet. */
   @JsonProperty(PROP_NOT_DST_IPS)
   public IpSpace getNotDstIps() {
     return _notDstIps;
   }
 
-  @JsonPropertyDescription("A set of unacceptable destination port ranges for a TCP/UDP packet")
+  /** A set of unacceptable destination port ranges for a TCP/UDP packet. */
   @JsonProperty(PROP_NOT_DST_PORTS)
   public SortedSet<SubRange> getNotDstPorts() {
     return _notDstPorts;
@@ -744,31 +747,31 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     return _notDstProtocols;
   }
 
-  @JsonPropertyDescription("A set of unacceptable ECN values for a packet")
+  /** A set of unacceptable ECN values for a packet. */
   @JsonProperty(PROP_NOT_ECNS)
   public SortedSet<Integer> getNotEcns() {
     return _notEcns;
   }
 
-  @JsonPropertyDescription("A set of unacceptable fragment offsets for a UDP packet")
+  /** A set of unacceptable fragment offsets for a UDP packet. */
   @JsonProperty(PROP_NOT_FRAGMENT_OFFSETS)
   public SortedSet<SubRange> getNotFragmentOffsets() {
     return _notFragmentOffsets;
   }
 
-  @JsonPropertyDescription("A set of unacceptable ICMP code ranges for an ICMP packet")
+  /** A set of unacceptable ICMP code ranges for an ICMP packet. */
   @JsonProperty(PROP_NOT_ICMP_CODES)
   public SortedSet<SubRange> getNotIcmpCodes() {
     return _notIcmpCodes;
   }
 
-  @JsonPropertyDescription("A set of unacceptable ICMP type ranges for an ICMP packet")
+  /** A set of unacceptable ICMP type ranges for an ICMP packet. */
   @JsonProperty(PROP_NOT_ICMP_TYPES)
   public SortedSet<SubRange> getNotIcmpTypes() {
     return _notIcmpTypes;
   }
 
-  @JsonPropertyDescription("A set of unacceptable IP protocols for a packet")
+  /** A set of unacceptable IP protocols for a packet. */
   @JsonProperty(PROP_NOT_IP_PROTOCOLS)
   public SortedSet<IpProtocol> getNotIpProtocols() {
     return _notIpProtocols;
@@ -779,13 +782,13 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     return _notPacketLengths;
   }
 
-  @JsonPropertyDescription("A space of unacceptable source IP addresses for a packet")
+  /** A space of unacceptable source IP addresses for a packet. */
   @JsonProperty(PROP_NOT_SRC_IPS)
   public IpSpace getNotSrcIps() {
     return _notSrcIps;
   }
 
-  @JsonPropertyDescription("A set of unacceptable source port ranges for a TCP/UDP packet")
+  /** A set of unacceptable source port ranges for a TCP/UDP packet. */
   @JsonProperty(PROP_NOT_SRC_PORTS)
   public SortedSet<SubRange> getNotSrcPorts() {
     return _notSrcPorts;
@@ -801,7 +804,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     return _packetLengths;
   }
 
-  @JsonPropertyDescription("A space of acceptable source IP addresses for a packet")
+  /** A space of acceptable source IP addresses for a packet. */
   @JsonProperty(PROP_SRC_IPS)
   public IpSpace getSrcIps() {
     return _srcIps;
@@ -828,7 +831,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     return _srcOrDstProtocols;
   }
 
-  @JsonPropertyDescription("A set of acceptable source port ranges for a TCP/UDP packet")
+  /** A set of acceptable source port ranges for a TCP/UDP packet. */
   @JsonProperty(PROP_SRC_PORTS)
   public SortedSet<SubRange> getSrcPorts() {
     return _srcPorts;
@@ -839,13 +842,13 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     return _srcProtocols;
   }
 
-  @JsonPropertyDescription("A set of acceptable abstract firewall states for a packet to match")
+  /** A set of acceptable abstract firewall states for a packet to match. */
   @JsonProperty(PROP_STATES)
   public SortedSet<FlowState> getStates() {
     return _states;
   }
 
-  @JsonPropertyDescription("A set of acceptable TCP flag bitmasks for a TCP packet to match")
+  /** A set of acceptable TCP flag bitmasks for a TCP packet to match. */
   @JsonProperty(PROP_TCP_FLAGS_MATCH_CONDITIONS)
   public List<TcpFlagsMatchConditions> getTcpFlags() {
     return _tcpFlags;

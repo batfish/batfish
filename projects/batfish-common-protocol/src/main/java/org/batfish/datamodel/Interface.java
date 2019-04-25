@@ -1093,8 +1093,8 @@ public final class Interface extends ComparableStructure<String> {
     return true;
   }
 
+  /** Number of access VLAN when switchport mode is ACCESS. */
   @JsonProperty(PROP_ACCESS_VLAN)
-  @JsonPropertyDescription("Number of access VLAN when switchport mode is ACCESS")
   @Nullable
   public Integer getAccessVlan() {
     return _accessVlan;
@@ -1112,14 +1112,14 @@ public final class Interface extends ComparableStructure<String> {
     return _additionalArpIps;
   }
 
+  /** Ranges of allowed VLANs when switchport mode is TRUNK. */
   @JsonProperty(PROP_ALLOWED_VLANS)
-  @JsonPropertyDescription("Ranges of allowed VLANs when switchport mode is TRUNK")
   public IntegerSpace getAllowedVlans() {
     return _allowedVlans;
   }
 
+  /** All IPV4 address/network assignments on this interface. */
   @JsonProperty(PROP_ALL_PREFIXES)
-  @JsonPropertyDescription("All IPV4 address/network assignments on this interface")
   public Set<InterfaceAddress> getAllAddresses() {
     return _allAddresses;
   }
@@ -1172,8 +1172,8 @@ public final class Interface extends ComparableStructure<String> {
     return _dependencies;
   }
 
+  /** Description of this interface. */
   @JsonProperty(PROP_DESCRIPTION)
-  @JsonPropertyDescription("Description of this interface")
   public String getDescription() {
     return _description;
   }
@@ -1247,8 +1247,8 @@ public final class Interface extends ComparableStructure<String> {
     return _incomingTransformation;
   }
 
+  /** The type of this interface. */
   @JsonProperty(PROP_INTERFACE_TYPE)
-  @JsonPropertyDescription("The type of this interface")
   public InterfaceType getInterfaceType() {
     return _interfaceType;
   }
@@ -1258,8 +1258,8 @@ public final class Interface extends ComparableStructure<String> {
     return _isis;
   }
 
+  /** The IS-IS cost of this interface. */
   @JsonProperty(PROP_ISIS_COST)
-  @JsonPropertyDescription("The IS-IS cost of this interface")
   @Deprecated
   public Integer getIsisCost() {
     return null;
@@ -1290,14 +1290,14 @@ public final class Interface extends ComparableStructure<String> {
     return _mlagId;
   }
 
+  /** The maximum transmission unit (MTU) of this interface in bytes. */
   @JsonProperty(PROP_MTU)
-  @JsonPropertyDescription("The maximum transmission unit (MTU) of this interface in bytes")
   public int getMtu() {
     return _mtu;
   }
 
+  /** The native VLAN of this interface when switchport mode is TRUNK. */
   @JsonProperty(PROP_NATIVE_VLAN)
-  @JsonPropertyDescription("The native VLAN of this interface when switchport mode is TRUNK")
   @Nullable
   public Integer getNativeVlan() {
     return _nativeVlan;
@@ -1311,8 +1311,8 @@ public final class Interface extends ComparableStructure<String> {
     return _vrf.getOspfProcess().getAreas().get(_ospfAreaName);
   }
 
+  /** The OSPF area to which this interface belongs.. */
   @JsonProperty(PROP_OSPF_AREA)
-  @JsonPropertyDescription("The OSPF area to which this interface belongs.")
   public Long getOspfAreaName() {
     return _ospfAreaName;
   }
@@ -1324,8 +1324,8 @@ public final class Interface extends ComparableStructure<String> {
     return _ospfCost;
   }
 
+  /** Dead-interval in seconds for OSPF updates. */
   @JsonProperty(PROP_OSPF_DEAD_INTERVAL)
-  @JsonPropertyDescription("Dead-interval in seconds for OSPF updates")
   public int getOspfDeadInterval() {
     return _ospfDeadInterval;
   }
@@ -1399,8 +1399,8 @@ public final class Interface extends ComparableStructure<String> {
     return _owner;
   }
 
+  /** The primary IPV4 address/network of this interface. */
   @JsonProperty(PROP_PREFIX)
-  @JsonPropertyDescription("The primary IPV4 address/network of this interface")
   public InterfaceAddress getAddress() {
     return _address;
   }
@@ -1442,7 +1442,7 @@ public final class Interface extends ComparableStructure<String> {
     return _address != null ? _address.getPrefix() : null;
   }
 
-  @JsonPropertyDescription("Whether or not proxy-ARP is enabled on this interface.")
+  /** Whether or not proxy-ARP is enabled on this interface.. */
   @JsonProperty(PROP_PROXY_ARP)
   public boolean getProxyArp() {
     return _proxyArp;
@@ -1467,8 +1467,8 @@ public final class Interface extends ComparableStructure<String> {
     return _routingPolicyName;
   }
 
+  /** Whether or not spanning-tree portfast feature is enabled. */
   @JsonProperty(PROP_SPANNING_TREE_PORTFAST)
-  @JsonPropertyDescription("Whether or not spanning-tree portfast feature is enabled")
   public boolean getSpanningTreePortfast() {
     return _spanningTreePortfast;
   }
@@ -1478,14 +1478,14 @@ public final class Interface extends ComparableStructure<String> {
     return _speed;
   }
 
+  /** Whether this interface is configured as a switchport.. */
   @JsonProperty(PROP_SWITCHPORT)
-  @JsonPropertyDescription("Whether this interface is configured as a switchport.")
   public boolean getSwitchport() {
     return _switchport;
   }
 
+  /** The switchport mode (if any) of this interface. */
   @JsonProperty(PROP_SWITCHPORT_MODE)
-  @JsonPropertyDescription("The switchport mode (if any) of this interface")
   public SwitchportMode getSwitchportMode() {
     return _switchportMode;
   }
@@ -1508,8 +1508,8 @@ public final class Interface extends ComparableStructure<String> {
     return _vrf;
   }
 
+  /** The name of the VRF to which this interface belongs. */
   @JsonProperty(PROP_VRF)
-  @JsonPropertyDescription("The name of the VRF to which this interface belongs")
   public String getVrfName() {
     if (_vrf != null) {
       return _vrf.getName();
@@ -1523,8 +1523,8 @@ public final class Interface extends ComparableStructure<String> {
     return _vrrpGroups;
   }
 
+  /** The firewall zone to which this interface belongs.. */
   @JsonProperty(PROP_ZONE)
-  @JsonPropertyDescription("The firewall zone to which this interface belongs.")
   public String getZoneName() {
     return _zoneName;
   }

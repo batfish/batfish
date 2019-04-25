@@ -61,7 +61,7 @@ public final class AsPathAccessListLine implements Serializable, Comparable<AsPa
     return _action;
   }
 
-  @JsonPropertyDescription("The regex against which a route's AS-path will be compared")
+  /** The regex against which a route's AS-path will be compared. */
   @JsonProperty(PROP_REGEX)
   @Nonnull
   public String getRegex() {

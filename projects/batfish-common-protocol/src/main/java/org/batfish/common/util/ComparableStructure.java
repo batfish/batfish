@@ -2,7 +2,6 @@ package org.batfish.common.util;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import java.io.Serializable;
 import org.batfish.common.BatfishException;
 
@@ -38,8 +37,8 @@ public abstract class ComparableStructure<KeyT extends Comparable<? super KeyT>>
     }
   }
 
+  /** The name of this structure. */
   @JsonProperty(PROP_NAME)
-  @JsonPropertyDescription("The name of this structure")
   public KeyT getName() {
     return _key;
   }

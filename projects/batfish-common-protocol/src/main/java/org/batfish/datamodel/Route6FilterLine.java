@@ -64,8 +64,8 @@ public class Route6FilterLine implements Serializable {
     return _action;
   }
 
+  /** The range of acceptable prefix-lengths for a route.. */
   @JsonProperty(PROP_LENGTH_RANGE)
-  @JsonPropertyDescription("The range of acceptable prefix-lengths for a route.")
   public SubRange getLengthRange() {
     return _lengthRange;
   }

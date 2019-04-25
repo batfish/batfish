@@ -40,13 +40,14 @@ public class IkePhase1Policy extends ComparableStructure<String> {
     _ikePhase1Proposals = ImmutableList.of();
   }
 
-  @JsonPropertyDescription("IKE phase 1 proposals to be used with this IKE phase 1 policy")
+  /** IKE phase 1 proposals to be used with this IKE phase 1 policy. */
   @JsonProperty(PROP_IKE_PHASE1_PROPOSALS)
+  @Nonnull
   public List<String> getIkePhase1Proposals() {
     return _ikePhase1Proposals;
   }
 
-  @JsonPropertyDescription("Key to be used with this IKE phase 1 policy")
+  /** Key to be used with this IKE phase 1 policy. */
   @JsonProperty(PROP_IKE_PHASE1_KEY)
   public IkePhase1Key getIkePhase1Key() {
     return _ikePhase1Key;
@@ -66,7 +67,7 @@ public class IkePhase1Policy extends ComparableStructure<String> {
     return _selfIdentity;
   }
 
-  @JsonPropertyDescription("Local interface on which this IKE phase 1 policy can be used")
+  /** Local interface on which this IKE phase 1 policy can be used. */
   @JsonProperty(PROP_LOCAL_INTERFACE)
   public String getLocalInterface() {
     return _localInterface;

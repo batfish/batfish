@@ -5,7 +5,6 @@ import static com.google.common.base.MoreObjects.toStringHelper;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.cache.CacheBuilder;
@@ -180,8 +179,8 @@ public class CommunityList extends CommunitySetExpr {
     return _lines;
   }
 
+  /** The name of this community list. */
   @JsonProperty(PROP_NAME)
-  @JsonPropertyDescription("The name of this community list")
   @Nonnull
   public String getName() {
     return _name;

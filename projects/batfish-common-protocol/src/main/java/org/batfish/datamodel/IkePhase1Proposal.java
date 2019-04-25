@@ -36,7 +36,7 @@ public class IkePhase1Proposal extends ComparableStructure<String> {
     super(name);
   }
 
-  @JsonPropertyDescription("Authentication method to use for this IKE phase 1 proposal")
+  /** Authentication method to use for this IKE phase 1 proposal. */
   @JsonProperty(PROP_AUTHENTICATION_METHOD)
   public IkeAuthenticationMethod getAuthenticationMethod() {
     return _authenticationMethod;
@@ -49,19 +49,19 @@ public class IkePhase1Proposal extends ComparableStructure<String> {
     return _diffieHellmanGroup;
   }
 
-  @JsonPropertyDescription("Encryption algorithm to use for this IKE phase 1 proposal")
+  /** Encryption algorithm to use for this IKE phase 1 proposal. */
   @JsonProperty(PROP_ENCRYPTION_ALGORITHM)
   public EncryptionAlgorithm getEncryptionAlgorithm() {
     return _encryptionAlgorithm;
   }
 
-  @JsonPropertyDescription("Hashing algorithm to be used for this IKE phase 1 proposal")
+  /** Hashing algorithm to be used for this IKE phase 1 proposal. */
   @JsonProperty(PROP_HASHING_ALGORITHM)
   public IkeHashingAlgorithm getHashingAlgorithm() {
     return _hashingAlgorithm;
   }
 
-  @JsonPropertyDescription("Lifetime in seconds to use for this IKE phase 1 proposal")
+  /** Lifetime in seconds to use for this IKE phase 1 proposal. */
   @JsonProperty(PROP_LIFETIME_SECONDS)
   public Integer getLifetimeSeconds() {
     return _lifetimeSeconds;

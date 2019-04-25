@@ -351,14 +351,14 @@ public final class Configuration implements Serializable {
     }
   }
 
+  /** Dictionary of all AS-path access-lists for this node.. */
   @JsonProperty(PROP_AS_PATH_ACCESS_LISTS)
-  @JsonPropertyDescription("Dictionary of all AS-path access-lists for this node.")
   public NavigableMap<String, AsPathAccessList> getAsPathAccessLists() {
     return _asPathAccessLists;
   }
 
+  /** Dictionary of all authentication key chains for this node.. */
   @JsonProperty(PROP_AUTHENTICATION_KEY_CHAINS)
-  @JsonPropertyDescription("Dictionary of all authentication key chains for this node.")
   public NavigableMap<String, AuthenticationKeyChain> getAuthenticationKeyChains() {
     return _authenticationKeyChains;
   }
@@ -382,8 +382,8 @@ public final class Configuration implements Serializable {
         .collect(ImmutableSet.toImmutableSet());
   }
 
+  /** Dictionary of all community-lists for this node.. */
   @JsonProperty(PROP_COMMUNITY_LISTS)
-  @JsonPropertyDescription("Dictionary of all community-lists for this node.")
   public NavigableMap<String, CommunityList> getCommunityLists() {
     return _communityLists;
   }
@@ -429,14 +429,14 @@ public final class Configuration implements Serializable {
     return _dnsSourceInterface;
   }
 
+  /** Domain name of this node.. */
   @JsonProperty(PROP_DOMAIN_NAME)
-  @JsonPropertyDescription("Domain name of this node.")
   public String getDomainName() {
     return _domainName;
   }
 
+  /** Hostname of this node.. */
   @JsonProperty(PROP_NAME)
-  @JsonPropertyDescription("Hostname of this node.")
   public String getHostname() {
     return _name;
   }
@@ -448,25 +448,25 @@ public final class Configuration implements Serializable {
     return _generatedReferenceBooks;
   }
 
+  /** Dictionary of all IKE phase1 keys for this node.. */
   @JsonProperty(PROP_IKE_PHASE1_KEYS)
-  @JsonPropertyDescription("Dictionary of all IKE phase1 keys for this node.")
   public NavigableMap<String, IkePhase1Key> getIkePhase1Keys() {
     return _ikePhase1keys;
   }
 
+  /** Dictionary of all IKE phase1 policies for this node.. */
   @JsonProperty(PROP_IKE_PHASE1_POLICIES)
-  @JsonPropertyDescription("Dictionary of all IKE phase1 policies for this node.")
   public NavigableMap<String, IkePhase1Policy> getIkePhase1Policies() {
     return _ikePhase1Policies;
   }
 
+  /** Dictionary of all IKE phase1 proposals for this node.. */
   @JsonProperty(PROP_IKE_PHASE1_PROPOSALS)
-  @JsonPropertyDescription("Dictionary of all IKE phase1 proposals for this node.")
   public NavigableMap<String, IkePhase1Proposal> getIkePhase1Proposals() {
     return _ikePhase1Proposals;
   }
 
-  @JsonPropertyDescription("Dictionary of all interfaces across all VRFs for this node.")
+  /** Dictionary of all interfaces across all VRFs for this node.. */
   @JsonProperty(PROP_INTERFACES)
   public NavigableMap<String, Interface> getAllInterfaces() {
     return _interfaces;
@@ -485,19 +485,19 @@ public final class Configuration implements Serializable {
     return getAllInterfaces();
   }
 
-  @JsonPropertyDescription("Dictionary of all IPV6 access-lists for this node.")
+  /** Dictionary of all IPV6 access-lists for this node.. */
   @JsonProperty(PROP_IP6_ACCESS_LISTS)
   public NavigableMap<String, Ip6AccessList> getIp6AccessLists() {
     return _ip6AccessLists;
   }
 
+  /** Dictionary of all IPV4 access-lists for this node.. */
   @JsonProperty(PROP_IP_ACCESS_LISTS)
-  @JsonPropertyDescription("Dictionary of all IPV4 access-lists for this node.")
   public NavigableMap<String, IpAccessList> getIpAccessLists() {
     return _ipAccessLists;
   }
 
-  @JsonPropertyDescription("Dictionary of all IPSec peer configs for this node")
+  /** Dictionary of all IPSec peer configs for this node. */
   @JsonProperty(PROP_IPSEC_PEER_CONFIGS)
   public NavigableMap<String, IpsecPeerConfig> getIpsecPeerConfigs() {
     return _ipsecPeerConfigs;
@@ -513,14 +513,14 @@ public final class Configuration implements Serializable {
     return _ipSpaceMetadata;
   }
 
+  /** Dictionary of all IPSec phase 2 policies for this node.. */
   @JsonProperty(PROP_IPSEC_PHASE2_POLICIES)
-  @JsonPropertyDescription("Dictionary of all IPSec phase 2 policies for this node.")
   public NavigableMap<String, IpsecPhase2Policy> getIpsecPhase2Policies() {
     return _ipsecPhase2Policies;
   }
 
+  /** Dictionary of all IPSec phase 2 proposals for this node.. */
   @JsonProperty(PROP_IPSEC_PHASE2_PROPOSALS)
-  @JsonPropertyDescription("Dictionary of all IPSec phase 2 proposals for this node.")
   public NavigableMap<String, IpsecPhase2Proposal> getIpsecPhase2Proposals() {
     return _ipsecPhase2Proposals;
   }
@@ -562,20 +562,20 @@ public final class Configuration implements Serializable {
     return _packetPolicies;
   }
 
-  @JsonPropertyDescription("Dictionary of all IPV6 route filter lists for this node.")
+  /** Dictionary of all IPV6 route filter lists for this node.. */
   @JsonProperty(PROP_ROUTE6_FILTER_LISTS)
   public NavigableMap<String, Route6FilterList> getRoute6FilterLists() {
     return _route6FilterLists;
   }
 
+  /** Dictionary of all IPV4 route filter lists for this node.. */
   @JsonProperty(PROP_ROUTE_FILTER_LISTS)
-  @JsonPropertyDescription("Dictionary of all IPV4 route filter lists for this node.")
   public NavigableMap<String, RouteFilterList> getRouteFilterLists() {
     return _routeFilterLists;
   }
 
+  /** Dictionary of all routing policies for this node.. */
   @JsonProperty(PROP_ROUTING_POLICIES)
-  @JsonPropertyDescription("Dictionary of all routing policies for this node.")
   public NavigableMap<String, RoutingPolicy> getRoutingPolicies() {
     return _routingPolicies;
   }
@@ -619,20 +619,20 @@ public final class Configuration implements Serializable {
     return _trackingGroups;
   }
 
-  @JsonPropertyDescription("Object containing vendor-specific information for this node.")
+  /** Object containing vendor-specific information for this node.. */
   @JsonProperty(PROP_VENDOR_FAMILY)
   public VendorFamily getVendorFamily() {
     return _vendorFamily;
   }
 
-  @JsonPropertyDescription("Dictionary of all VRFs for this node.")
+  /** Dictionary of all VRFs for this node.. */
   @JsonProperty(PROP_VRFS)
   public Map<String, Vrf> getVrfs() {
     return _vrfs;
   }
 
+  /** Dictionary of all firewall zones for this node.. */
   @JsonProperty(PROP_ZONES)
-  @JsonPropertyDescription("Dictionary of all firewall zones for this node.")
   public NavigableMap<String, Zone> getZones() {
     return _zones;
   }

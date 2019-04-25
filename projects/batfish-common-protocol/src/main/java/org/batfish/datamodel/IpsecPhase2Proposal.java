@@ -4,7 +4,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.Objects;
@@ -39,25 +38,25 @@ public class IpsecPhase2Proposal implements Serializable {
     _ipsecEncapsulationMode = IpsecEncapsulationMode.TUNNEL;
   }
 
-  @JsonPropertyDescription("Authentication algorithm to be used with this IPSec Proposal")
+  /** Authentication algorithm to be used with this IPSec Proposal. */
   @JsonProperty(PROP_AUTHENTICATION_ALGORITHM)
   public IpsecAuthenticationAlgorithm getAuthenticationAlgorithm() {
     return _authenticationAlgorithm;
   }
 
-  @JsonPropertyDescription("Encryption algorithm to be used with this IPSec Proposal")
+  /** Encryption algorithm to be used with this IPSec Proposal. */
   @JsonProperty(PROP_ENCRYPTION_ALGORITHM)
   public EncryptionAlgorithm getEncryptionAlgorithm() {
     return _encryptionAlgorithm;
   }
 
-  @JsonPropertyDescription("IPSec encapsulation mode to be used with this IPSec Proposal")
+  /** IPSec encapsulation mode to be used with this IPSec Proposal. */
   @JsonProperty(PROP_IPSEC_ENCAPSULATION_MODE)
   public IpsecEncapsulationMode getIpsecEncapsulationMode() {
     return _ipsecEncapsulationMode;
   }
 
-  @JsonPropertyDescription("IPSec protocols to be used with this IPSec Proposal")
+  /** IPSec protocols to be used with this IPSec Proposal. */
   @JsonProperty(PROP_PROTOCOLS)
   public SortedSet<IpsecProtocol> getProtocols() {
     return _protocols;
