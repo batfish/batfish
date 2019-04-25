@@ -2,7 +2,6 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -53,15 +52,13 @@ public class IkePhase1Policy extends ComparableStructure<String> {
     return _ikePhase1Key;
   }
 
-  @JsonPropertyDescription(
-      "Identity of the remote peer that can match with this IKE phase 1 policy")
+  /** Identity of the remote peer that can match with this IKE phase 1 policy. */
   @JsonProperty(PROP_REMOTE_IDENTITY)
   public IpSpace getRemoteIdentity() {
     return _remoteIdentity;
   }
 
-  @JsonPropertyDescription(
-      "Self identity to be used with a remote peer while using this IKE phase 1 policy")
+  /** Self identity to be used with a remote peer while using this IKE phase 1 policy. */
   @JsonProperty(PROP_SELF_IDENTITY)
   public Ip getSelfIdentity() {
     return _selfIdentity;

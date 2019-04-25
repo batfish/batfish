@@ -70,9 +70,8 @@ public final class Zone extends ComparableStructure<String> {
         && Objects.equals(_toZonePoliciesNames, other._toZonePoliciesNames);
   }
 
+  /** Filter applied against packets originating from an interface in this zone on this node. */
   @JsonProperty(PROP_FROM_HOST_FILTER)
-  @JsonPropertyDescription(
-      "Filter applied against packets originating from an interface in this zone on this node")
   @Nullable
   public String getFromHostFilterName() {
     return _fromHostFilterName;

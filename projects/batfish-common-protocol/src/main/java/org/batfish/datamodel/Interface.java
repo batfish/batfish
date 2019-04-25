@@ -1100,9 +1100,8 @@ public final class Interface extends ComparableStructure<String> {
     return _accessVlan;
   }
 
+  /** Whether this interface is administratively active (true) or disabled (false). */
   @JsonProperty(PROP_ACTIVE)
-  @JsonPropertyDescription(
-      "Whether this interface is administratively active (true) or disabled (false)")
   public boolean getActive() {
     return _active;
   }
@@ -1133,8 +1132,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_BANDWIDTH)
-  @JsonPropertyDescription(
-      "The nominal bandwidth of this interface in bits/sec for use in protocol cost calculations")
+  /** The nominal bandwidth of this interface in bits/sec for use in protocol cost calculations. */
   @Nullable
   public Double getBandwidth() {
     return _bandwidth;
@@ -1216,8 +1214,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_INBOUND_FILTER)
-  @JsonPropertyDescription(
-      "The IPV4 access-list used to filter traffic destined for this device on this interface.")
+  /** The IPV4 access-list used to filter traffic destined for this device on this interface.. */
   public String getInboundFilterName() {
     if (_inboundFilter != null) {
       return _inboundFilter.getName();
@@ -1232,8 +1229,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_INCOMING_FILTER)
-  @JsonPropertyDescription(
-      "The IPV4 access-list used to filter traffic that arrives on this interface.")
+  /** The IPV4 access-list used to filter traffic that arrives on this interface.. */
   public String getIncomingFilterName() {
     if (_incomingFilter != null) {
       return _incomingFilter.getName();
@@ -1318,8 +1314,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_OSPF_COST)
-  @JsonPropertyDescription(
-      "The explicit OSPF cost of this interface. If unset, the cost is automatically calculated.")
+  /** The explicit OSPF cost of this interface. If unset, the cost is automatically calculated.. */
   public Integer getOspfCost() {
     return _ospfCost;
   }
@@ -1331,15 +1326,13 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_OSPF_ENABLED)
-  @JsonPropertyDescription(
-      "Whether or not OSPF is enabled at all on this interface (either actively or passively)")
+  /** Whether or not OSPF is enabled at all on this interface (either actively or passively). */
   public boolean getOspfEnabled() {
     return _ospfEnabled;
   }
 
   @JsonProperty(PROP_OSPF_HELLO_MULTIPLIER)
-  @JsonPropertyDescription(
-      "Number of OSPF packets to send out during dead-interval period for fast OSPF updates")
+  /** Number of OSPF packets to send out during dead-interval period for fast OSPF updates. */
   public int getOspfHelloMultiplier() {
     return _ospfHelloMultiplier;
   }
@@ -1379,8 +1372,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_OUTGOING_FILTER)
-  @JsonPropertyDescription(
-      "The IPV4 access-list used to filter traffic that is sent out this interface. Stored as @id")
+  /** The IPV4 access-list used to filter traffic that is sent out this interface. Stored as @id. */
   public String getOutgoingFilterName() {
     if (_outgoingFilter != null) {
       return _outgoingFilter.getName();
@@ -1411,8 +1403,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_POST_TRANSFORMATION_INCOMING_FILTER)
-  @JsonPropertyDescription(
-      "The IPV4 access-list used to filter incoming traffic after applying destination NAT.")
+  /** The IPV4 access-list used to filter incoming traffic after applying destination NAT.. */
   public String getPostTransformationIncomingFilterName() {
     if (_postTransformationIncomingFilter != null) {
       return _postTransformationIncomingFilter.getName();
@@ -1427,8 +1418,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_PRE_TRANSFORMATION_OUTGOING_FILTER)
-  @JsonPropertyDescription(
-      "The IPV4 access-list used to filter outgoing traffic before applying source NAT.")
+  /** The IPV4 access-list used to filter outgoing traffic before applying source NAT.. */
   public String getPreTransformationOutgoingFilterName() {
     if (_preTransformationOutgoingFilter != null) {
       return _preTransformationOutgoingFilter.getName();

@@ -57,9 +57,8 @@ public class Route6FilterLine implements Serializable {
         && _ipWildcard.equals(other._ipWildcard);
   }
 
+  /** The action the underlying access-list will take when this line matches an IPV6 route.. */
   @JsonProperty(PROP_ACTION)
-  @JsonPropertyDescription(
-      "The action the underlying access-list will take when this line matches an IPV6 route.")
   public LineAction getAction() {
     return _action;
   }

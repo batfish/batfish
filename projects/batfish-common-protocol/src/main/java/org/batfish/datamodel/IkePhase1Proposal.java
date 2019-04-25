@@ -2,7 +2,6 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import java.util.Objects;
 import org.batfish.common.util.ComparableStructure;
 
@@ -42,8 +41,7 @@ public class IkePhase1Proposal extends ComparableStructure<String> {
     return _authenticationMethod;
   }
 
-  @JsonPropertyDescription(
-      "Diffie-Hellman group to use for key exchange for this IKE phase 1 proposal")
+  /** Diffie-Hellman group to use for key exchange for this IKE phase 1 proposal. */
   @JsonProperty(PROP_DIFFIE_HELLMAN_GROUP)
   public DiffieHellmanGroup getDiffieHellmanGroup() {
     return _diffieHellmanGroup;

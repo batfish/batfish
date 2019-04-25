@@ -4,7 +4,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -60,9 +59,8 @@ public final class AsPathAccessList implements Serializable {
     return Objects.hash(_name, _lines);
   }
 
+  /** The list of lines against which a route's AS-path will be checked in order.. */
   @JsonProperty(PROP_LINES)
-  @JsonPropertyDescription(
-      "The list of lines against which a route's AS-path will be checked in order.")
   @Nonnull
   public List<AsPathAccessListLine> getLines() {
     return _lines;

@@ -396,16 +396,14 @@ public final class Configuration implements Serializable {
     return _configurationFormat;
   }
 
+  /** Default forwarding action to take for traffic that crosses firewall zones.. */
   @JsonProperty(PROP_DEFAULT_CROSS_ZONE_ACTION)
-  @JsonPropertyDescription(
-      "Default forwarding action to take for traffic that crosses firewall zones.")
   public LineAction getDefaultCrossZoneAction() {
     return _defaultCrossZoneAction;
   }
 
+  /** Default forwarding action to take for traffic destined for this device.. */
   @JsonProperty(PROP_DEFAULT_INBOUND_ACTION)
-  @JsonPropertyDescription(
-      "Default forwarding action to take for traffic destined for this device.")
   public LineAction getDefaultInboundAction() {
     return _defaultInboundAction;
   }
@@ -435,17 +433,16 @@ public final class Configuration implements Serializable {
     return _domainName;
   }
 
+  /** Dictionary of Reference Books generated from device configurations (e.g., F5 Pools). */
+  @JsonProperty(PROP_GENERATED_REFERENCE_BOOKS)
+  public NavigableMap<String, ReferenceBook> getGeneratedReferenceBooks() {
+    return _generatedReferenceBooks;
+  }
+
   /** Hostname of this node.. */
   @JsonProperty(PROP_NAME)
   public String getHostname() {
     return _name;
-  }
-
-  @JsonProperty(PROP_GENERATED_REFERENCE_BOOKS)
-  @JsonPropertyDescription(
-      "Dictionary of Reference Books generated from device configurations (e.g., F5 Pools)")
-  public NavigableMap<String, ReferenceBook> getGeneratedReferenceBooks() {
-    return _generatedReferenceBooks;
   }
 
   /** Dictionary of all IKE phase1 keys for this node.. */

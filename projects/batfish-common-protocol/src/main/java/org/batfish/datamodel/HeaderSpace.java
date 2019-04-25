@@ -717,8 +717,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     return _ipProtocols;
   }
 
-  @JsonPropertyDescription(
-      "Determines whether to match the complement of the stated criteria of this header space")
+  /** Determines whether to match the complement of the stated criteria of this header space. */
   @JsonProperty(PROP_NEGATE)
   public boolean getNegate() {
     return _negate;
