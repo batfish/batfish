@@ -631,7 +631,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     exportConditions.add(new MatchProtocol(RoutingProtocol.BGP));
     exportConditions.add(new MatchProtocol(RoutingProtocol.IBGP));
 
-    // If no IPv4 address family is defined, nothing else should be exported
+    // If no IPv4 address family is not defined, there is no capability to explicitly advertise v4
+    // networks or redistribute protocols, so no non-BGP routes can be exported.
     if (bgpVrf.getIpv4Unicast() == null) {
       return exportConditions;
     }
