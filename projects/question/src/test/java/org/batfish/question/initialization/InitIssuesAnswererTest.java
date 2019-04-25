@@ -223,6 +223,7 @@ public class InitIssuesAnswererTest {
     ImmutableMultiset.Builder<Row> expectedRows = ImmutableMultiset.builder();
     for (ParseStatus status : ParseStatus.values()) {
       if (status != ParseStatus.FAILED
+          && status != ParseStatus.IGNORED
           && status != ParseStatus.PARTIALLY_UNRECOGNIZED
           && status != ParseStatus.PASSED) {
         String statusStr = status.toString();
@@ -235,7 +236,7 @@ public class InitIssuesAnswererTest {
                 COL_TYPE,
                 IssueType.ParseStatus.toString(),
                 COL_DETAILS,
-                String.format("File(s) not parsed successfully, parse status: %s", statusStr),
+                ParseStatus.explanation(status),
                 COL_LINE_TEXT,
                 null,
                 COL_PARSER_CONTEXT,

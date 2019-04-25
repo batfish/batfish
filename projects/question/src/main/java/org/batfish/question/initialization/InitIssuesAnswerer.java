@@ -76,17 +76,25 @@ public class InitIssuesAnswerer extends Answerer {
         aggregateParseStatuses(pvcae.getParseStatus()).entrySet()) {
       // We're already adding issues for FAILED and PARTIALLY_UNRECOGNIZED, so skip those
       ParseStatus status = entry.getKey();
-      if (status != ParseStatus.FAILED
-          && status != ParseStatus.PARTIALLY_UNRECOGNIZED
-          && status != ParseStatus.PASSED) {
-        rows.add(
-            getRow(
-                null,
-                entry.getValue().stream()
-                    .map(s -> new FileLines(s, ImmutableSortedSet.of()))
-                    .collect(ImmutableList.toImmutableList()),
-                IssueType.ParseStatus,
-                String.format("File(s) not parsed successfully, parse status: %s", status)));
+      switch (status) {
+        case PASSED:
+        case IGNORED:
+          // No issue needed for files that passed or were explicitly ignored by user
+          continue;
+          // fall through
+        case FAILED:
+        case PARTIALLY_UNRECOGNIZED:
+          // Other issues are already in the table for these files (e.g. stack trace, parse warn)
+          continue;
+        default:
+          rows.add(
+              getRow(
+                  null,
+                  entry.getValue().stream()
+                      .map(s -> new FileLines(s, ImmutableSortedSet.of()))
+                      .collect(ImmutableList.toImmutableList()),
+                  IssueType.ParseStatus,
+                  ParseStatus.explanation(status)));
       }
     }
 
