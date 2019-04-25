@@ -64,10 +64,6 @@ public class BDDReachabilityAnalysis {
 
   private final BDD _queryHeaderSpaceBdd;
 
-  public ImmutableSet<StateExpr> getIngressLocationStates() {
-    return _ingressLocationStates;
-  }
-
   BDDReachabilityAnalysis(
       BDDPacket packet,
       Set<StateExpr> ingressLocationStates,
@@ -103,17 +99,7 @@ public class BDDReachabilityAnalysis {
   }
 
   Map<StateExpr, BDD> computeForwardReachableStates() {
-    try (ActiveSpan span =
-        GlobalTracer.get()
-            .buildSpan("BDDReachabilityAnalysis.computeForwardReachableStates")
-            .startActive()) {
-      assert span != null; // avoid unused warning
-      Map<StateExpr, BDD> forwardReachableStates = new LinkedHashMap<>();
-      BDD one = _bddPacket.getFactory().one();
-      _ingressLocationStates.forEach(state -> forwardReachableStates.put(state, one));
-      forwardFixpoint(forwardReachableStates);
-      return ImmutableMap.copyOf(forwardReachableStates);
-    }
+    return computeForwardReachableStates(ImmutableMap.of());
   }
 
   Map<StateExpr, BDD> computeForwardReachableStates(Map<StateExpr, BDD> initialHS) {
