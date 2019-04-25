@@ -1,10 +1,11 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_AND_BOOK;
+import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.CHAR_LITERAL;
 import static org.batfish.specifier.parboiled.Anchor.Type.IGNORE;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_ADDRESS;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.STRING_LITERAL;
 import static org.batfish.specifier.parboiled.ParserUtils.findPathAnchorFromBottom;
 import static org.batfish.specifier.parboiled.ParserUtils.getErrorString;
@@ -240,7 +241,22 @@ public class ParserUtilsTest {
     assertThat(
         getPotentialMatches(
             (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false),
-        equalTo(ImmutableSet.of(new PotentialMatch(ADDRESS_GROUP_AND_BOOK, "", null, 11))));
+        equalTo(
+            ImmutableSet.of(
+                new PotentialMatch(CHAR_LITERAL, "", "\"", 11),
+                new PotentialMatch(ADDRESS_GROUP_NAME, "", null, 11))));
+  }
+
+  @Test
+  public void testGetPartialMatchesSpecifierOneOfPair() {
+    ParsingResult<?> result = getRunner().run("@specifier(a,");
+    assertThat(
+        getPotentialMatches(
+            (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false),
+        equalTo(
+            ImmutableSet.of(
+                new PotentialMatch(CHAR_LITERAL, "", "\"", 13),
+                new PotentialMatch(REFERENCE_BOOK_NAME, "", null, 13))));
   }
 
   @Test

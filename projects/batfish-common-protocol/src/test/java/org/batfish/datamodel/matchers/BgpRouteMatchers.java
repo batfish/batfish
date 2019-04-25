@@ -7,7 +7,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.HasCommunities;
+import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.HasOriginType;
 import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.HasWeight;
 import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.IsBgpRouteThat;
 import org.hamcrest.Matcher;
@@ -21,6 +23,14 @@ public final class BgpRouteMatchers {
    */
   public static @Nonnull Matcher<BgpRoute> hasCommunities(Matcher<? super Set<Long>> subMatcher) {
     return new HasCommunities(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches when the supplied {@code expectedOriginType} is equal to the
+   * {@link BgpRoute}'s originType.
+   */
+  public static @Nonnull Matcher<BgpRoute> hasOriginType(OriginType expectedOriginType) {
+    return new HasOriginType(equalTo(expectedOriginType));
   }
 
   /**

@@ -20,6 +20,7 @@ public final class MatchSourceVrf extends BooleanExpr {
 
   private static final String PROP_SOURCE_VRF = "sourceVrf";
 
+  @JsonProperty(PROP_SOURCE_VRF)
   private final String _sourceVrf;
 
   @JsonCreator

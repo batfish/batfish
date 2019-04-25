@@ -11,6 +11,7 @@ import static org.batfish.dataplane.rib.AbstractRib.importRib;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.Network;
 import com.google.common.graph.ValueGraph;
+import com.google.common.graph.ValueGraphBuilder;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.util.HashMap;
@@ -22,14 +23,13 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiFunction;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BdpOscillationException;
 import org.batfish.common.Version;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
+import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpPeerConfigId;
@@ -39,8 +39,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.NetworkConfigurations;
-import org.batfish.datamodel.OspfExternalType1Route;
-import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.IncrementalBdpAnswerElement;
 import org.batfish.datamodel.eigrp.EigrpEdge;
@@ -62,7 +60,6 @@ class IncrementalBdpEngine {
 
   private int _numIterations;
   private final BatfishLogger _bfLogger;
-  private final BiFunction<String, Integer, AtomicInteger> _newBatch;
   private final IncrementalDataPlaneSettings _settings;
 
   /**
@@ -120,18 +117,15 @@ class IncrementalBdpEngine {
     }
   }
 
-  IncrementalBdpEngine(
-      IncrementalDataPlaneSettings settings,
-      BatfishLogger logger,
-      BiFunction<String, Integer, AtomicInteger> newBatch) {
+  IncrementalBdpEngine(IncrementalDataPlaneSettings settings, BatfishLogger logger) {
     _settings = settings;
     _bfLogger = logger;
-    _newBatch = newBatch;
   }
 
   ComputeDataPlaneResult computeDataPlane(
       Map<String, Configuration> configurations,
       Topology topology,
+      @Nullable Layer2Topology layer2Topology,
       OspfTopology ospfTopology,
       Set<BgpAdvertisement> externalAdverts) {
     try (ActiveSpan span = GlobalTracer.get().buildSpan("Compute Data Plane").startActive()) {
@@ -164,7 +158,8 @@ class IncrementalBdpEngine {
        */
       IncrementalBdpAnswerElement answerElement = new IncrementalBdpAnswerElement();
       // TODO: eventually, IGP needs to be part of fixed-point below, because tunnels.
-      computeIgpDataPlane(nodes, topology, eigrpTopology, answerElement, networkConfigurations);
+      computeIgpDataPlane(
+          nodes, topology, eigrpTopology, answerElement, networkConfigurations, ospfTopology);
 
       /*
        * Perform a fixed-point computation.
@@ -191,7 +186,8 @@ class IncrementalBdpEngine {
                   ipOwners,
                   false,
                   true,
-                  new TracerouteEngineImpl(partialDataplane));
+                  new TracerouteEngineImpl(partialDataplane),
+                  layer2Topology);
 
           boolean isOscillating =
               computeNonMonotonicPortionOfDataPlane(
@@ -252,14 +248,12 @@ class IncrementalBdpEngine {
    * @param iterationLabel iteration label (for stats tracking)
    * @param allNodes all nodes in the network (for correct neighbor referencing)
    * @param bgpTopology the bgp peering relationships
-   * @param ospfTopology the OSPF topology to use
    */
-  private void computeDependentRoutesIteration(
+  private static void computeDependentRoutesIteration(
       Map<String, Node> nodes,
       String iterationLabel,
       Map<String, Node> allNodes,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
-      OspfTopology ospfTopology,
       NetworkConfigurations networkConfigurations) {
     try (ActiveSpan overallSpan =
         GlobalTracer.get().buildSpan(iterationLabel + ": Compute dependent routes").startActive()) {
@@ -268,7 +262,6 @@ class IncrementalBdpEngine {
       try (ActiveSpan span =
           GlobalTracer.get().buildSpan(iterationLabel + ": Init dependent routes").startActive()) {
         assert span != null; // avoid unused warning
-
         // (Re)initialization of dependent route calculation
         nodes
             .values()
@@ -278,119 +271,108 @@ class IncrementalBdpEngine {
       }
 
       // Static nextHopIp routes
-      AtomicInteger recomputeStaticCompleted =
-          _newBatch.apply(
-              iterationLabel + ": Recompute static routes with next-hop IP", nodes.size());
       try (ActiveSpan span =
-          GlobalTracer.get().buildSpan("Recompute static routes with next-hop IP").startActive()) {
+          GlobalTracer.get()
+              .buildSpan(iterationLabel + ": Recompute static routes with next-hop IP")
+              .startActive()) {
         assert span != null; // avoid unused warning
-
         nodes
             .values()
             .parallelStream()
-            .forEach(
-                n -> {
-                  for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                    vr.activateStaticRoutes();
-                  }
-                  recomputeStaticCompleted.incrementAndGet();
-                });
+            .flatMap(n -> n.getVirtualRouters().values().stream())
+            .forEach(VirtualRouter::activateStaticRoutes);
       }
 
+      // Generated/aggregate routes
       try (ActiveSpan span =
           GlobalTracer.get()
               .buildSpan(iterationLabel + ": Recompute aggregate/generated routes")
               .startActive()) {
         assert span != null; // avoid unused warning
-        // Generated/aggregate routes
-        AtomicInteger recomputeAggregateCompleted =
-            _newBatch.apply(
-                iterationLabel + ": Recompute aggregate/generated routes", nodes.size());
         nodes
             .values()
             .parallelStream()
-            .forEach(
-                n -> {
-                  for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                    vr.recomputeGeneratedRoutes();
-                  }
-                  recomputeAggregateCompleted.incrementAndGet();
-                });
+            .flatMap(n -> n.getVirtualRouters().values().stream())
+            .forEach(VirtualRouter::recomputeGeneratedRoutes);
       }
 
+      // EIGRP external routes: recompute exports
       try (ActiveSpan span =
           GlobalTracer.get()
               .buildSpan(iterationLabel + ": Recompute EIGRP exports")
               .startActive()) {
         assert span != null; // avoid unused warning
-        // EIGRP external routes
-        AtomicInteger recomputeAggregateCompleted =
-            _newBatch.apply(iterationLabel + ": Recompute EIGRP exports", nodes.size());
-        // recompute exports
         nodes
             .values()
             .parallelStream()
-            .forEach(
-                n -> {
-                  for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                    vr.initEigrpExports(allNodes);
-                  }
-                  recomputeAggregateCompleted.incrementAndGet();
-                });
+            .flatMap(n -> n.getVirtualRouters().values().stream())
+            .forEach(vr -> vr.initEigrpExports(allNodes));
       }
 
       // Re-propagate EIGRP exports
-      AtomicBoolean eigrpExternalChanged = new AtomicBoolean(true);
-      int eigrpExternalSubIterations = 0;
-      while (eigrpExternalChanged.get()) {
-        eigrpExternalSubIterations++;
-        AtomicInteger propagateEigrpExternalCompleted =
-            _newBatch.apply(
-                iterationLabel
-                    + ": Propagate EIGRP external routes: subIteration: "
-                    + eigrpExternalSubIterations,
-                nodes.size());
-        eigrpExternalChanged.set(false);
-        nodes
-            .values()
-            .parallelStream()
-            .forEach(
-                n -> {
-                  for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                    if (vr.propagateEigrpExternalRoutes(allNodes, networkConfigurations)) {
-                      eigrpExternalChanged.set(true);
-                    }
-                  }
-                  propagateEigrpExternalCompleted.incrementAndGet();
-                });
+      try (ActiveSpan span =
+          GlobalTracer.get()
+              .buildSpan(iterationLabel + ": Recompute EIGRP external routes")
+              .startActive()) {
+        assert span != null; // avoid unused warning
+        AtomicBoolean eigrpExternalChanged = new AtomicBoolean(true);
+        int eigrpExternalSubIterations = 0;
+        while (eigrpExternalChanged.get()) {
+          eigrpExternalSubIterations++;
+          try (ActiveSpan eigrpSpan =
+              GlobalTracer.get()
+                  .buildSpan(
+                      iterationLabel
+                          + ": Recompute EIGRP external routes: "
+                          + eigrpExternalSubIterations)
+                  .startActive()) {
+            assert eigrpSpan != null; // avoid unused warning
+            eigrpExternalChanged.set(false);
+            nodes
+                .values()
+                .parallelStream()
+                .flatMap(n -> n.getVirtualRouters().values().stream())
+                .forEach(
+                    vr -> {
+                      if (vr.propagateEigrpExternalRoutes(allNodes, networkConfigurations)) {
+                        eigrpExternalChanged.set(true);
+                      }
+                    });
+          }
+        }
       }
 
       // Re-initialize IS-IS exports.
-      nodes
-          .values()
-          .parallelStream()
-          .forEach(
-              n -> {
-                for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                  vr.initIsisExports(allNodes, networkConfigurations);
-                }
-              });
+      try (ActiveSpan span =
+          GlobalTracer.get()
+              .buildSpan(iterationLabel + ": Recompute IS-IS exports")
+              .startActive()) {
+        assert span != null; // avoid unused warning
+        nodes
+            .values()
+            .parallelStream()
+            .flatMap(n -> n.getVirtualRouters().values().stream())
+            .forEach(vr -> vr.initIsisExports(allNodes, networkConfigurations));
+      }
+
       // IS-IS route propagation
       AtomicBoolean isisChanged = new AtomicBoolean(true);
       int isisSubIterations = 0;
       while (isisChanged.get()) {
         isisSubIterations++;
-        AtomicInteger propagateIsisCompleted =
-            _newBatch.apply(
-                iterationLabel + ": Propagate IS-IS routes: subIteration: " + isisSubIterations,
-                nodes.size());
-        isisChanged.set(false);
-        nodes
-            .values()
-            .parallelStream()
-            .forEach(
-                n -> {
-                  for (VirtualRouter vr : n.getVirtualRouters().values()) {
+        try (ActiveSpan isisSpan =
+            GlobalTracer.get()
+                .buildSpan(
+                    iterationLabel + ": Recompute IS-IS routes: subIteration: " + isisSubIterations)
+                .startActive()) {
+          assert isisSpan != null; // avoid unused warning
+          isisChanged.set(false);
+          nodes
+              .values()
+              .parallelStream()
+              .flatMap(n -> n.getVirtualRouters().values().stream())
+              .forEach(
+                  vr -> {
                     Entry<RibDelta<IsisRoute>, RibDelta<IsisRoute>> p =
                         vr.propagateIsisRoutes(networkConfigurations);
                     if (p != null
@@ -398,80 +380,44 @@ class IncrementalBdpEngine {
                             allNodes, networkConfigurations, p.getKey(), p.getValue())) {
                       isisChanged.set(true);
                     }
-                  }
-                  propagateIsisCompleted.incrementAndGet();
-                });
-      }
-
-      try (ActiveSpan span =
-          GlobalTracer.get().buildSpan(iterationLabel + ": Recompute OSPF exports").startActive()) {
-        assert span != null; // avoid unused warning
-        // OSPF external routes
-        // recompute exports
-        nodes
-            .values()
-            .parallelStream()
-            .forEach(
-                n -> {
-                  for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                    vr.initOspfExports(allNodes);
-                  }
-                });
+                  });
+        }
       }
 
       try (ActiveSpan span =
           GlobalTracer.get()
-              .buildSpan(iterationLabel + ": Re-propagate OSPF exports")
+              .buildSpan(iterationLabel + ": propagate OSPF external")
               .startActive()) {
         assert span != null; // avoid unused warning
-        // Re-propagate OSPF exports
-        AtomicBoolean ospfExternalChanged = new AtomicBoolean(true);
-        int ospfExternalSubIterations = 0;
-        while (ospfExternalChanged.get()) {
-          try (ActiveSpan innerSpan =
-              GlobalTracer.get()
-                  .buildSpan(
-                      iterationLabel
-                          + ": Propagate OSPF external routes: subIteration: "
-                          + ospfExternalSubIterations)
-                  .startActive()) {
-            assert innerSpan != null; // avoid unused warning
-            ospfExternalSubIterations++;
-            AtomicInteger propagateOspfExternalCompleted =
-                _newBatch.apply(
-                    iterationLabel
-                        + ": Propagate OSPF external routes: subIteration: "
-                        + ospfExternalSubIterations,
-                    nodes.size());
-            ospfExternalChanged.set(false);
-            nodes
-                .values()
-                .parallelStream()
-                .forEach(
-                    n -> {
-                      for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                        Entry<RibDelta<OspfExternalType1Route>, RibDelta<OspfExternalType2Route>>
-                            p = vr.propagateOspfExternalRoutes(allNodes, ospfTopology);
-                        if (p != null
-                            && vr.unstageOspfExternalRoutes(allNodes, p.getKey(), p.getValue())) {
-                          ospfExternalChanged.set(true);
-                        }
-                      }
-                      propagateOspfExternalCompleted.incrementAndGet();
-                    });
-          }
-        }
+        nodes
+            .values()
+            .parallelStream()
+            .flatMap(n -> n.getVirtualRouters().values().stream())
+            .forEach(vr -> vr.ospfIteration(allNodes));
+        nodes
+            .values()
+            .parallelStream()
+            .flatMap(n -> n.getVirtualRouters().values().stream())
+            .forEach(VirtualRouter::mergeOspfRoutesToMainRib);
       }
 
       computeIterationOfBgpRoutes(
           nodes, iterationLabel, allNodes, bgpTopology, networkConfigurations);
+
+      try (ActiveSpan span =
+          GlobalTracer.get().buildSpan(iterationLabel + ": Redistribute").startActive()) {
+        assert span != null; // avoid unused warning
+        nodes.values().stream()
+            .flatMap(n -> n.getVirtualRouters().values().stream())
+            .forEach(VirtualRouter::redistribute);
+      }
 
       queueRoutesForCrossVrfLeaking(nodes, iterationLabel);
       leakAcrossVrfs(nodes, iterationLabel);
     }
   }
 
-  private void computeIterationOfBgpRoutes(
+  private static void computeIterationOfBgpRoutes(
       Map<String, Node> nodes,
       String iterationLabel,
       Map<String, Node> allNodes,
@@ -493,61 +439,47 @@ class IncrementalBdpEngine {
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan(iterationLabel + ": Propagate BGP routes").startActive()) {
       assert span != null; // avoid unused warning
-      AtomicInteger propagateBgpCompleted =
-          _newBatch.apply(iterationLabel + ": Propagate BGP routes", nodes.size());
       nodes
           .values()
           .parallelStream()
+          .flatMap(n -> n.getVirtualRouters().values().stream())
           .forEach(
-              n -> {
-                for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                  Map<BgpRib, RibDelta<BgpRoute>> deltas =
-                      vr.processBgpMessages(bgpTopology, networkConfigurations, nodes);
-                  vr.finalizeBgpRoutesAndQueueOutgoingMessages(
-                      deltas, allNodes, bgpTopology, networkConfigurations);
-                }
-                propagateBgpCompleted.incrementAndGet();
+              vr -> {
+                Map<BgpRib, RibDelta<BgpRoute>> deltas =
+                    vr.processBgpMessages(bgpTopology, networkConfigurations, nodes);
+                vr.finalizeBgpRoutesAndQueueOutgoingMessages(
+                    deltas, allNodes, bgpTopology, networkConfigurations);
               });
     }
   }
 
-  private void queueRoutesForCrossVrfLeaking(Map<String, Node> nodes, String iterationLabel) {
+  private static void queueRoutesForCrossVrfLeaking(
+      Map<String, Node> nodes, String iterationLabel) {
     try (ActiveSpan span =
         GlobalTracer.get()
             .buildSpan(iterationLabel + ": Queueing routes to leak across VRFs")
             .startActive()) {
       assert span != null; // avoid unused warning
 
-      AtomicInteger enqueueCrossVrf =
-          _newBatch.apply(iterationLabel + ": Queueing routes to leak across VRFs", nodes.size());
       nodes
           .values()
           .parallelStream()
-          .forEach(
-              n -> {
-                n.getVirtualRouters().values().forEach(VirtualRouter::queueCrossVrfImports);
-                enqueueCrossVrf.incrementAndGet();
-              });
+          .flatMap(n -> n.getVirtualRouters().values().stream())
+          .forEach(VirtualRouter::queueCrossVrfImports);
     }
   }
 
-  private void leakAcrossVrfs(Map<String, Node> nodes, String iterationLabel) {
+  private static void leakAcrossVrfs(Map<String, Node> nodes, String iterationLabel) {
     try (ActiveSpan span =
         GlobalTracer.get()
             .buildSpan(iterationLabel + ": Leaking routes across VRFs")
             .startActive()) {
       assert span != null; // avoid unused warning
-
-      AtomicInteger propagateCrossVRF =
-          _newBatch.apply(iterationLabel + ": Leaking routes across VRFs", nodes.size());
       nodes
           .values()
           .parallelStream()
-          .forEach(
-              n -> {
-                n.getVirtualRouters().values().forEach(VirtualRouter::processCrossVrfRoutes);
-                propagateCrossVRF.incrementAndGet();
-              });
+          .flatMap(n -> n.getVirtualRouters().values().stream())
+          .forEach(VirtualRouter::processCrossVrfRoutes);
     }
   }
 
@@ -559,15 +491,11 @@ class IncrementalBdpEngine {
   private void computeFibs(Map<String, Node> nodes) {
     try (ActiveSpan span = GlobalTracer.get().buildSpan("Compute FIBs").startActive()) {
       assert span != null; // avoid unused warning
-      AtomicInteger completed = _newBatch.apply("Computing FIBs", nodes.size());
       nodes
           .values()
           .parallelStream()
-          .forEach(
-              n -> {
-                n.getVirtualRouters().values().forEach(VirtualRouter::computeFib);
-                completed.incrementAndGet();
-              });
+          .flatMap(n -> n.getVirtualRouters().values().stream())
+          .forEach(VirtualRouter::computeFib);
     }
   }
 
@@ -580,13 +508,15 @@ class IncrementalBdpEngine {
    * @param ae The output answer element in which to store a report of the computation. Also
    *     contains the current recovery iteration.
    * @param networkConfigurations All configurations in the network
+   * @param ospfTopology the OSPF topology
    */
   private void computeIgpDataPlane(
       SortedMap<String, Node> nodes,
       Topology topology,
       Network<EigrpInterface, EigrpEdge> eigrpTopology,
       IncrementalBdpAnswerElement ae,
-      NetworkConfigurations networkConfigurations) {
+      NetworkConfigurations networkConfigurations,
+      OspfTopology ospfTopology) {
     try (ActiveSpan span = GlobalTracer.get().buildSpan("Compute IGP").startActive()) {
       assert span != null; // avoid unused warning
 
@@ -597,45 +527,45 @@ class IncrementalBdpEngine {
        * For each virtual router, setup the initial easy-to-do routes, init protocol-based RIBs,
        * queue outgoing messages to neighbors
        */
-      AtomicInteger initialCompleted =
-          _newBatch.apply(
-              "Compute initial connected and static routes, eigrp setup, ospf setup, bgp setup",
-              nodes.size());
-      nodes
-          .values()
-          .parallelStream()
-          .forEach(
-              n -> {
-                for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                  vr.initForIgpComputation();
-                }
-                initialCompleted.incrementAndGet();
-              });
+      try (ActiveSpan initializeSpan =
+          GlobalTracer.get().buildSpan("Initialize for IGP computation").startActive()) {
+        assert initializeSpan != null; // avoid unused warning
+        nodes
+            .values()
+            .parallelStream()
+            .flatMap(n -> n.getVirtualRouters().values().stream())
+            .forEach(
+                vr -> {
+                  vr.initForIgpComputation(ospfTopology);
+                });
+      }
 
       // EIGRP internal routes
       numEigrpInternalIterations =
           initEigrpInternalRoutes(nodes, eigrpTopology, networkConfigurations);
 
       // OSPF internal routes
-      numOspfInternalIterations = initOspfInternalRoutes(nodes, topology);
+      numOspfInternalIterations = initOspfInternalRoutes(nodes, ospfTopology);
 
       // RIP internal routes
       initRipInternalRoutes(nodes, topology);
 
       // Activate static routes
-      AtomicInteger staticRoutesAfterIgp =
-          _newBatch.apply("Compute static routes after IGP protocol convergence", nodes.size());
-      nodes
-          .values()
-          .parallelStream()
-          .forEach(
-              n -> {
-                for (VirtualRouter vr : n.getVirtualRouters().values()) {
+      try (ActiveSpan staticSpan =
+          GlobalTracer.get()
+              .buildSpan("Compute static routes post IGP convergence")
+              .startActive()) {
+        assert staticSpan != null; // avoid unused warning
+        nodes
+            .values()
+            .parallelStream()
+            .flatMap(n -> n.getVirtualRouters().values().stream())
+            .forEach(
+                vr -> {
                   importRib(vr._mainRib, vr._independentRib);
                   vr.activateStaticRoutes();
-                }
-                staticRoutesAfterIgp.incrementAndGet();
-              });
+                });
+      }
 
       // Set iteration stats in the answer
       ae.setOspfInternalIterations(numOspfInternalIterations);
@@ -671,8 +601,6 @@ class IncrementalBdpEngine {
       /*
        * Initialize all routers and their message queues (can be done as parallel as possible)
        */
-      AtomicInteger setupCompleted =
-          _newBatch.apply("Initialize virtual routers for iBDP-external", nodes.size());
       try (ActiveSpan innerSpan =
           GlobalTracer.get()
               .buildSpan("Initialize virtual routers for iBDP-external")
@@ -681,47 +609,36 @@ class IncrementalBdpEngine {
         nodes
             .values()
             .parallelStream()
+            .flatMap(n -> n.getVirtualRouters().values().stream())
             .forEach(
-                n -> {
-                  for (VirtualRouter vr : n.getVirtualRouters().values()) {
+                vr ->
                     vr.initForEgpComputation(
-                        nodes, bgpTopology, eigrpTopology, isisTopology, ospfTopology);
-                  }
-                  setupCompleted.incrementAndGet();
-                });
+                        bgpTopology, eigrpTopology, isisTopology, ospfTopology));
       }
 
       try (ActiveSpan innerSpan =
           GlobalTracer.get().buildSpan("Queue initial cross-VRF leaking").startActive()) {
         assert innerSpan != null; // avoid unused warning
-        AtomicInteger queueInitialRouteLeaking =
-            _newBatch.apply("Queue initial cross-VRF leaking", nodes.size());
         nodes
             .values()
             .parallelStream()
-            .forEach(
-                n -> {
-                  n.getVirtualRouters().values().forEach(VirtualRouter::initCrossVrfImports);
-                  queueInitialRouteLeaking.incrementAndGet();
-                });
+            .flatMap(n -> n.getVirtualRouters().values().stream())
+            .forEach(VirtualRouter::initCrossVrfImports);
       }
 
       try (ActiveSpan innerSpan =
           GlobalTracer.get().buildSpan("Queue initial bgp messages").startActive()) {
         assert innerSpan != null; // avoid unused warning
         // Queue initial outgoing messages
-        AtomicInteger queueInitial = _newBatch.apply("Queue initial bgp messages", nodes.size());
         nodes
             .values()
             .parallelStream()
+            .flatMap(n -> n.getVirtualRouters().values().stream())
             .forEach(
-                n -> {
-                  for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                    vr.initBaseBgpRibs(
-                        externalAdverts, ipOwners, nodes, bgpTopology, networkConfigurations);
-                    vr.queueInitialBgpMessages(bgpTopology, nodes, networkConfigurations);
-                  }
-                  queueInitial.incrementAndGet();
+                vr -> {
+                  vr.initBaseBgpRibs(
+                      externalAdverts, ipOwners, nodes, bgpTopology, networkConfigurations);
+                  vr.queueInitialBgpMessages(bgpTopology, nodes, networkConfigurations);
                 });
       }
 
@@ -759,12 +676,7 @@ class IncrementalBdpEngine {
             String iterationlabel =
                 String.format("Iteration %d Schedule %d", _numIterations, nodeSet);
             computeDependentRoutesIteration(
-                iterationNodes,
-                iterationlabel,
-                nodes,
-                bgpTopology,
-                ospfTopology,
-                networkConfigurations);
+                iterationNodes, iterationlabel, nodes, bgpTopology, networkConfigurations);
             ++nodeSet;
           }
 
@@ -892,7 +804,7 @@ class IncrementalBdpEngine {
    * @param networkConfigurations All configurations in the network
    * @return the number of iterations it took for internal EIGRP routes to converge
    */
-  private int initEigrpInternalRoutes(
+  private static int initEigrpInternalRoutes(
       Map<String, Node> nodes,
       Network<EigrpInterface, EigrpEdge> eigrpTopology,
       NetworkConfigurations networkConfigurations) {
@@ -902,122 +814,98 @@ class IncrementalBdpEngine {
       eigrpInternalIterations++;
       eigrpInternalChanged.set(false);
 
-      AtomicInteger eigrpInternalCompleted =
-          _newBatch.apply(
-              "Compute EIGRP Internal routes: iteration " + eigrpInternalIterations, nodes.size());
-      nodes
-          .values()
-          .parallelStream()
-          .forEach(
-              n -> {
-                for (VirtualRouter vr : n.getVirtualRouters().values()) {
+      try (ActiveSpan span =
+          GlobalTracer.get()
+              .buildSpan("Compute EIGRP internal routes: iteration " + eigrpInternalIterations)
+              .startActive()) {
+        assert span != null; // avoid unused warning
+        nodes
+            .values()
+            .parallelStream()
+            .flatMap(n -> n.getVirtualRouters().values().stream())
+            .forEach(
+                vr -> {
                   if (vr.propagateEigrpInternalRoutes(
                       nodes, eigrpTopology, networkConfigurations)) {
                     eigrpInternalChanged.set(true);
                   }
-                }
-                eigrpInternalCompleted.incrementAndGet();
-              });
-      AtomicInteger eigrpInternalUnstageCompleted =
-          _newBatch.apply(
-              "Unstage EIGRP Internal routes: iteration " + eigrpInternalIterations, nodes.size());
+                });
+      }
+      try (ActiveSpan span =
+          GlobalTracer.get()
+              .buildSpan("Unstage EIGRP internal routes: iteration " + eigrpInternalIterations)
+              .startActive()) {
+        assert span != null; // avoid unused warning
+        nodes
+            .values()
+            .parallelStream()
+            .flatMap(n -> n.getVirtualRouters().values().stream())
+            .forEach(VirtualRouter::unstageEigrpInternalRoutes);
+      }
+    }
+    try (ActiveSpan span =
+        GlobalTracer.get().buildSpan("Import EIGRP internal routes").startActive()) {
+      assert span != null; // avoid unused warning
       nodes
           .values()
           .parallelStream()
-          .forEach(
-              n -> {
-                for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                  vr.unstageEigrpInternalRoutes();
-                }
-                eigrpInternalUnstageCompleted.incrementAndGet();
-              });
+          .flatMap(n -> n.getVirtualRouters().values().stream())
+          .forEach(VirtualRouter::importEigrpInternalRoutes);
     }
-    AtomicInteger eigrpInternalImportCompleted =
-        _newBatch.apply("Import EIGRP Internal routes", nodes.size());
-    nodes
-        .values()
-        .parallelStream()
-        .forEach(
-            n -> {
-              for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                vr.importEigrpInternalRoutes();
-              }
-              eigrpInternalImportCompleted.incrementAndGet();
-            });
     return eigrpInternalIterations;
   }
 
   /**
    * Run the IGP OSPF computation until convergence.
    *
-   * @param nodes list of nodes for which to initialize the OSPF routes
-   * @param topology the network topology
+   * @param allNodes list of nodes for which to initialize the OSPF routes
+   * @param ospfTopology graph of OSPF adjacencies
    * @return the number of iterations it took for internal OSPF routes to converge
    */
-  private int initOspfInternalRoutes(Map<String, Node> nodes, Topology topology) {
-    AtomicBoolean ospfInternalChanged = new AtomicBoolean(true);
+  private int initOspfInternalRoutes(Map<String, Node> allNodes, OspfTopology ospfTopology) {
     int ospfInternalIterations = 0;
-    while (ospfInternalChanged.get()) {
-      ospfInternalIterations++;
-      ospfInternalChanged.set(false);
+    boolean dirty = true;
 
-      AtomicInteger ospfInterAreaSummaryCompleted =
-          _newBatch.apply(
-              "Compute OSPF Inter-area summaries: iteration " + ospfInternalIterations,
-              nodes.size());
-      nodes
-          .values()
-          .parallelStream()
-          .forEach(
-              n -> {
-                for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                  if (vr.computeInterAreaSummaries()) {
-                    ospfInternalChanged.set(true);
-                  }
-                }
-                ospfInterAreaSummaryCompleted.incrementAndGet();
-              });
-      AtomicInteger ospfInternalCompleted =
-          _newBatch.apply(
-              "Compute OSPF Internal routes: iteration " + ospfInternalIterations, nodes.size());
-      nodes
-          .values()
-          .parallelStream()
-          .forEach(
-              n -> {
-                for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                  if (vr.propagateOspfInternalRoutes(nodes, topology)) {
-                    ospfInternalChanged.set(true);
-                  }
-                }
-                ospfInternalCompleted.incrementAndGet();
-              });
-      AtomicInteger ospfInternalUnstageCompleted =
-          _newBatch.apply(
-              "Unstage OSPF Internal routes: iteration " + ospfInternalIterations, nodes.size());
-      nodes
-          .values()
-          .parallelStream()
-          .forEach(
-              n -> {
-                for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                  vr.unstageOspfInternalRoutes();
-                }
-                ospfInternalUnstageCompleted.incrementAndGet();
-              });
+    while (dirty) {
+      ospfInternalIterations++;
+
+      try (ActiveSpan span =
+          GlobalTracer.get()
+              .buildSpan("OSPF internal: iteration " + ospfInternalIterations)
+              .startActive()) {
+        assert span != null; // avoid unused warning
+        // Compute node schedule
+        IbdpSchedule schedule =
+            IbdpSchedule.getSchedule(
+                _settings,
+                _settings.getScheduleName(),
+                allNodes,
+                ValueGraphBuilder.directed().build(),
+                ospfTopology);
+
+        while (schedule.hasNext()) {
+          Map<String, Node> scheduleNodes = schedule.next();
+          scheduleNodes
+              .values()
+              .parallelStream()
+              .flatMap(n -> n.getVirtualRouters().values().stream())
+              .forEach(virtualRouter -> virtualRouter.ospfIteration(allNodes));
+
+          scheduleNodes
+              .values()
+              .parallelStream()
+              .flatMap(n -> n.getVirtualRouters().values().stream())
+              .forEach(VirtualRouter::mergeOspfRoutesToMainRib);
+        }
+        dirty =
+            allNodes
+                .values()
+                .parallelStream()
+                .flatMap(n -> n.getVirtualRouters().values().stream())
+                .flatMap(vr -> vr.getOspfProcesses().values().stream())
+                .anyMatch(OspfRoutingProcess::isDirty);
+      }
     }
-    AtomicInteger ospfInternalImportCompleted =
-        _newBatch.apply("Import OSPF Internal routes", nodes.size());
-    nodes
-        .values()
-        .parallelStream()
-        .forEach(
-            n -> {
-              for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                vr.importOspfInternalRoutes();
-              }
-              ospfInternalImportCompleted.incrementAndGet();
-            });
     return ospfInternalIterations;
   }
 
@@ -1026,9 +914,8 @@ class IncrementalBdpEngine {
    *
    * @param nodes nodes for which to initialize the routes, keyed by name
    * @param topology network topology
-   * @return number of iterations it took to complete the initialization
    */
-  private int initRipInternalRoutes(SortedMap<String, Node> nodes, Topology topology) {
+  private static void initRipInternalRoutes(SortedMap<String, Node> nodes, Topology topology) {
     /*
      * Consider this method to be a simulation within a simulation. Since RIP routes are not
      * affected by other protocols, we propagate all RIP routes amongst the nodes prior to
@@ -1039,48 +926,48 @@ class IncrementalBdpEngine {
     while (ripInternalChanged.get()) {
       ripInternalIterations++;
       ripInternalChanged.set(false);
-      AtomicInteger ripInternalCompleted =
-          _newBatch.apply(
-              "Compute RIP Internal routes: iteration " + ripInternalIterations, nodes.size());
-      nodes
-          .values()
-          .parallelStream()
-          .forEach(
-              n -> {
-                for (VirtualRouter vr : n.getVirtualRouters().values()) {
+      try (ActiveSpan span =
+          GlobalTracer.get()
+              .buildSpan("RIP internal: iteration " + ripInternalIterations)
+              .startActive()) {
+        assert span != null; // avoid unused warning
+        nodes
+            .values()
+            .parallelStream()
+            .flatMap(n -> n.getVirtualRouters().values().stream())
+            .forEach(
+                vr -> {
                   if (vr.propagateRipInternalRoutes(nodes, topology)) {
                     ripInternalChanged.set(true);
                   }
-                }
-                ripInternalCompleted.incrementAndGet();
-              });
-      AtomicInteger ripInternalUnstageCompleted =
-          _newBatch.apply(
-              "Unstage RIP Internal routes: iteration " + ripInternalIterations, nodes.size());
-      nodes
-          .values()
-          .parallelStream()
-          .forEach(
-              n -> {
-                for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                  vr.unstageRipInternalRoutes();
-                }
-                ripInternalUnstageCompleted.incrementAndGet();
-              });
+                });
+      }
+      try (ActiveSpan span =
+          GlobalTracer.get()
+              .buildSpan("Unstage RIP internal: iteration " + ripInternalIterations)
+              .startActive()) {
+        assert span != null; // avoid unused warning
+        nodes
+            .values()
+            .parallelStream()
+            .flatMap(n -> n.getVirtualRouters().values().stream())
+            .forEach(VirtualRouter::unstageRipInternalRoutes);
+      }
+      try (ActiveSpan span =
+          GlobalTracer.get()
+              .buildSpan("Import RIP internal: iteration " + ripInternalIterations)
+              .startActive()) {
+        assert span != null; // avoid unused warning
+        nodes
+            .values()
+            .parallelStream()
+            .flatMap(n -> n.getVirtualRouters().values().stream())
+            .forEach(
+                vr -> {
+                  importRib(vr._ripRib, vr._ripInternalRib);
+                  importRib(vr._independentRib, vr._ripRib, vr._name);
+                });
+      }
     }
-    AtomicInteger ripInternalImportCompleted =
-        _newBatch.apply("Import RIP Internal routes", nodes.size());
-    nodes
-        .values()
-        .parallelStream()
-        .forEach(
-            n -> {
-              for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                importRib(vr._ripRib, vr._ripInternalRib);
-                importRib(vr._independentRib, vr._ripRib, vr._name);
-              }
-              ripInternalImportCompleted.incrementAndGet();
-            });
-    return ripInternalIterations;
   }
 }

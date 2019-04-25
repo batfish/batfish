@@ -1275,24 +1275,34 @@
         }
       },
       {
+        "Structure_Type" : "prefix-list",
+        "Structure_Name" : "pl1",
+        "Source_Lines" : {
+          "filename" : "configs/f5_bigip_imish_malformed",
+          "lines" : [
+            9
+          ]
+        }
+      },
+      {
         "Structure_Type" : "monitor http",
         "Structure_Name" : "/Common/SOME_MONITOR1",
         "Source_Lines" : {
           "filename" : "configs/f5_bigip_structured_ltm",
           "lines" : [
-            126,
-            127,
-            128,
-            129,
-            130,
-            131,
-            132,
-            133,
-            134,
+            135,
+            136,
+            137,
             138,
             139,
             140,
-            141
+            141,
+            142,
+            143,
+            147,
+            148,
+            149,
+            150
           ]
         }
       },
@@ -1302,22 +1312,22 @@
         "Source_Lines" : {
           "filename" : "configs/f5_bigip_structured_ltm",
           "lines" : [
-            142,
-            143,
-            144,
-            145,
-            146,
-            147,
-            148,
-            149,
-            150,
             151,
             152,
+            153,
+            154,
+            155,
             156,
             157,
             158,
             159,
-            160
+            160,
+            161,
+            165,
+            166,
+            167,
+            168,
+            169
           ]
         }
       },
@@ -1339,11 +1349,11 @@
         "Source_Lines" : {
           "filename" : "configs/f5_bigip_structured_ltm",
           "lines" : [
-            161,
-            162,
-            163,
-            164,
-            165
+            170,
+            171,
+            172,
+            173,
+            174
           ]
         }
       },
@@ -1353,15 +1363,15 @@
         "Source_Lines" : {
           "filename" : "configs/f5_bigip_structured_ltm",
           "lines" : [
-            166,
-            167,
-            168,
-            169,
-            170,
-            171,
-            172,
-            173,
-            174
+            175,
+            176,
+            177,
+            178,
+            179,
+            180,
+            181,
+            182,
+            183
           ]
         }
       },
@@ -1384,7 +1394,11 @@
             29,
             30,
             31,
-            32
+            32,
+            33,
+            34,
+            35,
+            36
           ]
         }
       },
@@ -1394,15 +1408,6 @@
         "Source_Lines" : {
           "filename" : "configs/f5_bigip_structured_ltm",
           "lines" : [
-            175,
-            176,
-            177,
-            178,
-            179,
-            180,
-            181,
-            182,
-            183,
             184,
             185,
             186,
@@ -1451,7 +1456,16 @@
             229,
             230,
             231,
-            232
+            232,
+            233,
+            234,
+            235,
+            236,
+            237,
+            238,
+            239,
+            240,
+            241
           ]
         }
       },
@@ -1461,24 +1475,6 @@
         "Source_Lines" : {
           "filename" : "configs/f5_bigip_structured_ltm",
           "lines" : [
-            233,
-            234,
-            235,
-            236,
-            237,
-            238,
-            239
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "profile one-connect",
-        "Structure_Name" : "/Common/oneconnect",
-        "Source_Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
-          "lines" : [
-            240,
-            241,
             242,
             243,
             244,
@@ -1490,8 +1486,8 @@
         }
       },
       {
-        "Structure_Type" : "profile server-ssl",
-        "Structure_Name" : "/Common/SOME_PROFILE_SERVER_SSL",
+        "Structure_Type" : "profile one-connect",
+        "Structure_Name" : "/Common/oneconnect",
         "Source_Lines" : {
           "filename" : "configs/f5_bigip_structured_ltm",
           "lines" : [
@@ -1503,7 +1499,16 @@
             254,
             255,
             256,
-            257,
+            257
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "profile server-ssl",
+        "Structure_Name" : "/Common/SOME_PROFILE_SERVER_SSL",
+        "Source_Lines" : {
+          "filename" : "configs/f5_bigip_structured_ltm",
+          "lines" : [
             258,
             259,
             260,
@@ -1528,7 +1533,16 @@
             279,
             280,
             281,
-            282
+            282,
+            283,
+            284,
+            285,
+            286,
+            287,
+            288,
+            289,
+            290,
+            291
           ]
         }
       },
@@ -1538,12 +1552,12 @@
         "Source_Lines" : {
           "filename" : "configs/f5_bigip_structured_ltm",
           "lines" : [
-            39,
-            40,
-            41,
-            42,
             43,
-            44
+            44,
+            45,
+            46,
+            47,
+            48
           ]
         }
       },
@@ -1553,13 +1567,13 @@
         "Source_Lines" : {
           "filename" : "configs/f5_bigip_structured_ltm",
           "lines" : [
-            45,
-            46,
-            47,
-            48,
             49,
             50,
-            51
+            51,
+            52,
+            53,
+            54,
+            55
           ]
         }
       },
@@ -1569,16 +1583,16 @@
         "Source_Lines" : {
           "filename" : "configs/f5_bigip_structured_ltm",
           "lines" : [
-            52,
-            53,
-            54,
-            55,
+            56,
             57,
             58,
             59,
-            60,
             61,
-            62
+            62,
+            63,
+            64,
+            65,
+            66
           ]
         }
       },
@@ -1588,10 +1602,10 @@
         "Source_Lines" : {
           "filename" : "configs/f5_bigip_structured_ltm",
           "lines" : [
-            75,
-            76,
-            77,
-            78
+            79,
+            80,
+            81,
+            82
           ]
         }
       },
@@ -1601,13 +1615,16 @@
         "Source_Lines" : {
           "filename" : "configs/f5_bigip_structured_ltm",
           "lines" : [
-            119,
-            120,
-            121,
-            122,
-            123,
-            124,
-            125
+            125,
+            126,
+            127,
+            128,
+            129,
+            130,
+            131,
+            132,
+            133,
+            134
           ]
         }
       },
@@ -1617,13 +1634,13 @@
         "Source_Lines" : {
           "filename" : "configs/f5_bigip_structured_net",
           "lines" : [
-            58,
-            59,
-            60,
-            61,
-            62,
-            63,
-            64
+            64,
+            65,
+            66,
+            67,
+            68,
+            69,
+            70
           ]
         }
       },
@@ -1738,7 +1755,7 @@
         "Source_Lines" : {
           "filename" : "configs/f5_bigip_structured_with_imish",
           "lines" : [
-            23
+            29
           ]
         }
       },
@@ -3459,10 +3476,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 231 results",
+      "notes" : "Found 232 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 231
+      "numResults" : 232
     }
   }
 ]

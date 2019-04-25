@@ -2,6 +2,8 @@ package org.batfish.representation.cumulus;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Comparator.naturalOrder;
+import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
+import static org.batfish.representation.cumulus.CumulusRoutingProtocol.VI_PROTOCOLS_MAP;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
@@ -24,6 +26,9 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
+import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.BgpPeerConfig;
+import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IntegerSpace;
@@ -34,12 +39,27 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Mlag;
+import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
+import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
+import org.batfish.datamodel.routing_policy.expr.Disjunction;
+import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.expr.Not;
+import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vendor_family.cumulus.CumulusFamily;
@@ -61,6 +81,31 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   public static final String LOOPBACK_INTERFACE_NAME = "lo";
   private static final long serialVersionUID = 1L;
 
+  private static WithEnvironmentExpr bgpRedistributeWithEnvironmentExpr(
+      BooleanExpr expr, OriginType originType) {
+    WithEnvironmentExpr we = new WithEnvironmentExpr();
+    we.setExpr(expr);
+    we.setPreStatements(
+        ImmutableList.of(Statements.SetWriteIntermediateBgpAttributes.toStaticStatement()));
+    we.setPostStatements(
+        ImmutableList.of(Statements.UnsetWriteIntermediateBgpAttributes.toStaticStatement()));
+    we.setPostTrueStatements(
+        ImmutableList.of(
+            Statements.SetReadIntermediateBgpAttributes.toStaticStatement(),
+            new SetOrigin(new LiteralOrigin(originType, null))));
+    return we;
+  }
+
+  public static @Nonnull String computeBgpCommonExportPolicyName(String vrfName) {
+    return String.format("~BGP_COMMON_EXPORT_POLICY:%s~", vrfName);
+  }
+
+  @VisibleForTesting
+  public static @Nonnull String computeBgpPeerExportPolicyName(
+      String vrfName, String peerInterface) {
+    return String.format("~BGP_PEER_EXPORT_POLICY:%s:%s~", vrfName, peerInterface);
+  }
+
   private @Nullable BgpProcess _bgpProcess;
   private final @Nonnull Map<String, Bond> _bonds;
   private final @Nonnull Bridge _bridge;
@@ -72,8 +117,11 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private final @Nonnull Loopback _loopback;
   private final @Nonnull Map<String, RouteMap> _routeMaps;
   private final @Nonnull Set<StaticRoute> _staticRoutes;
+
   private final @Nonnull Map<String, Vlan> _vlans;
+
   private final @Nonnull Map<String, Vrf> _vrfs;
+
   private final @Nonnull Map<String, Vxlan> _vxlans;
 
   public CumulusNcluConfiguration() {
@@ -88,6 +136,44 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     _vlans = new HashMap<>();
     _vrfs = new HashMap<>();
     _vxlans = new HashMap<>();
+  }
+
+  private void addInterfaceNeighbor(
+      String peerInterface,
+      BgpInterfaceNeighbor neighbor,
+      @Nullable Long localAs,
+      BgpVrf bgpVrf,
+      org.batfish.datamodel.BgpProcess newProc) {
+    String vrfName = bgpVrf.getVrfName();
+
+    RoutingPolicy.Builder peerExportPolicy =
+        RoutingPolicy.builder()
+            .setOwner(_c)
+            .setName(computeBgpPeerExportPolicyName(vrfName, peerInterface));
+
+    Conjunction peerExportConditions = new Conjunction();
+    If peerExportConditional =
+        new If(
+            "peer-export policy main conditional: exitAccept if true / exitReject if false",
+            peerExportConditions,
+            ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+            ImmutableList.of(Statements.ExitReject.toStaticStatement()));
+    peerExportPolicy.addStatement(peerExportConditional);
+    Disjunction localOrCommonOrigination = new Disjunction();
+    peerExportConditions.getConjuncts().add(localOrCommonOrigination);
+    localOrCommonOrigination
+        .getDisjuncts()
+        .add(new CallExpr(computeBgpCommonExportPolicyName(vrfName)));
+
+    BgpUnnumberedPeerConfig.Builder builder =
+        BgpUnnumberedPeerConfig.builder()
+            .setBgpProcess(newProc)
+            .setExportPolicy(peerExportPolicy.build().getName())
+            .setLocalAs(localAs)
+            .setLocalIp(BgpProcess.BGP_UNNUMBERED_IP)
+            .setPeerInterface(peerInterface)
+            .setRemoteAsns(computeRemoteAsns(neighbor, localAs));
+    builder.build();
   }
 
   private void applyBridgeSettings(
@@ -159,6 +245,48 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
               iface.setVrf(vrf);
               vrf.getInterfaces().put(iface.getName(), iface);
             });
+  }
+
+  private @Nonnull LongSpace computeRemoteAsns(
+      BgpInterfaceNeighbor neighbor, @Nullable Long localAs) {
+    if (neighbor.getRemoteAsType() == RemoteAsType.EXPLICIT) {
+      Long remoteAs = neighbor.getRemoteAs();
+      return remoteAs == null ? LongSpace.EMPTY : LongSpace.of(remoteAs);
+    } else if (localAs == null) {
+      return LongSpace.EMPTY;
+    } else if (neighbor.getRemoteAsType() == RemoteAsType.EXTERNAL) {
+      return BgpPeerConfig.ALL_AS_NUMBERS.difference(LongSpace.of(localAs));
+    } else if (neighbor.getRemoteAsType() == RemoteAsType.INTERNAL) {
+      return LongSpace.of(localAs);
+    }
+    throw new IllegalArgumentException(
+        String.format("Invalid remote-as type: %s", neighbor.getRemoteAsType()));
+  }
+
+  private void convertBgpProcess() {
+    if (_bgpProcess == null) {
+      return;
+    }
+    _c.getDefaultVrf()
+        .setBgpProcess(toBgpProcess(Configuration.DEFAULT_VRF_NAME, _bgpProcess.getDefaultVrf()));
+    // We make one VI process per VRF because our current datamodel requires it
+    _bgpProcess
+        .getVrfs()
+        .forEach(
+            (vrfName, bgpVrf) ->
+                _c.getVrfs().get(vrfName).setBgpProcess(toBgpProcess(vrfName, bgpVrf)));
+    // All interfaces involved in BGP unnumbered should reply to ARP for BGP_UNNUMBERED_IP
+    Streams.concat(
+            _bgpProcess.getDefaultVrf().getInterfaceNeighbors().keySet().stream(),
+            _bgpProcess.getVrfs().values().stream()
+                .flatMap(vrf -> vrf.getInterfaceNeighbors().keySet().stream()))
+        .collect(ImmutableSet.toImmutableSet()).stream()
+        .map(_c.getAllInterfaces()::get)
+        .forEach(
+            iface ->
+                iface.setAdditionalArpIps(
+                    AclIpSpace.union(
+                        iface.getAdditionalArpIps(), BgpProcess.BGP_UNNUMBERED_IP.toIpSpace())));
   }
 
   private void convertBondInterfaces() {
@@ -443,6 +571,116 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     return builder.add(toStatement(entry.getAction())).build();
   }
 
+  /**
+   * Returns {@link org.batfish.datamodel.BgpProcess} for named {@code bgpVrf} if valid, or else
+   * {@code null}.
+   */
+  private @Nullable org.batfish.datamodel.BgpProcess toBgpProcess(String vrfName, BgpVrf bgpVrf) {
+    org.batfish.datamodel.BgpProcess newProc = new org.batfish.datamodel.BgpProcess();
+    Ip routerId = bgpVrf.getRouterId();
+    if (routerId == null) {
+      _w.redFlag(
+          String.format(
+              "Cannot configure BGP session for vrf '%s' because router-id is missing", vrfName));
+      return null;
+    }
+    newProc.setRouterId(routerId);
+    newProc.setMultipathEquivalentAsPathMatchMode(EXACT_PATH);
+    newProc.setMultipathEbgp(false);
+    newProc.setMultipathIbgp(false);
+
+    /*
+     * Create common BGP export policy. This policy encompasses:
+     * - network statements
+     * - redistribution from other protocols
+     */
+    RoutingPolicy.Builder bgpCommonExportPolicy =
+        RoutingPolicy.builder().setOwner(_c).setName(computeBgpCommonExportPolicyName(vrfName));
+
+    // The body of the export policy is a huge disjunction over many reasons routes may be exported.
+    Disjunction routesShouldBeExported = new Disjunction();
+    bgpCommonExportPolicy.addStatement(
+        new If(
+            routesShouldBeExported,
+            ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
+            ImmutableList.of()));
+    // This list of reasons to export a route will be built up over the remainder of this function.
+    List<BooleanExpr> exportConditions = routesShouldBeExported.getDisjuncts();
+
+    // Finally, the export policy ends with returning false: do not export unmatched routes.
+    bgpCommonExportPolicy.addStatement(Statements.ReturnFalse.toStaticStatement()).build();
+
+    // Export routes that should be redistributed.
+    for (BgpRedistributionPolicy redistributeProtocolPolicy :
+        bgpVrf.getIpv4Unicast().getRedistributionPolicies().values()) {
+
+      // Get a match expression for the protocol to be redistributed
+      CumulusRoutingProtocol protocol = redistributeProtocolPolicy.getProtocol();
+      Disjunction matchProtocol =
+          new Disjunction(
+              VI_PROTOCOLS_MAP.get(protocol).stream()
+                  .map(MatchProtocol::new)
+                  .collect(ImmutableList.toImmutableList()));
+
+      // Create a WithEnvironmentExpr with the redistribution route-map, if one is defined
+      BooleanExpr weInterior = BooleanExprs.TRUE;
+      String mapName = redistributeProtocolPolicy.getRouteMap();
+      if (mapName != null && _routeMaps.keySet().contains(mapName)) {
+        weInterior = new CallExpr(mapName);
+      }
+      BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
+
+      // Export routes that match the protocol and WithEnvironmentExpr
+      Conjunction exportProtocolConditions = new Conjunction(ImmutableList.of(matchProtocol, we));
+      exportProtocolConditions.setComment(
+          String.format("Redistribute %s routes into BGP", protocol));
+      exportConditions.add(exportProtocolConditions);
+    }
+
+    // create origination prefilter from listed advertised networks
+    bgpVrf
+        .getIpv4Unicast()
+        .getNetworks()
+        .forEach(
+            (prefix, bgpNetwork) -> {
+              BooleanExpr weExpr = BooleanExprs.TRUE;
+              BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weExpr, OriginType.IGP);
+              Conjunction exportNetworkConditions = new Conjunction();
+              PrefixSpace space = new PrefixSpace();
+              space.addPrefix(prefix);
+              newProc.addToOriginationSpace(space);
+              exportNetworkConditions
+                  .getConjuncts()
+                  .add(
+                      new MatchPrefixSet(
+                          DestinationNetwork.instance(), new ExplicitPrefixSet(space)));
+              exportNetworkConditions
+                  .getConjuncts()
+                  .add(new Not(new MatchProtocol(RoutingProtocol.BGP)));
+              exportNetworkConditions
+                  .getConjuncts()
+                  .add(new Not(new MatchProtocol(RoutingProtocol.IBGP)));
+              exportNetworkConditions
+                  .getConjuncts()
+                  .add(new Not(new MatchProtocol(RoutingProtocol.AGGREGATE)));
+              exportNetworkConditions.getConjuncts().add(we);
+              exportConditions.add(exportNetworkConditions);
+            });
+
+    // Export BGP and IBGP routes.
+    exportConditions.add(new MatchProtocol(RoutingProtocol.BGP));
+    exportConditions.add(new MatchProtocol(RoutingProtocol.IBGP));
+
+    Long localAs = bgpVrf.getAutonomousSystem();
+    bgpVrf
+        .getInterfaceNeighbors()
+        .forEach(
+            (peerInterface, neighbor) ->
+                addInterfaceNeighbor(peerInterface, neighbor, localAs, bgpVrf, newProc));
+
+    return newProc;
+  }
+
   private @Nonnull BooleanExpr toGuard(RouteMapEntry entry) {
     return new Conjunction(
         entry
@@ -560,6 +798,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     convertRouteMaps();
     convertDnsServers();
     convertClags();
+    convertBgpProcess();
 
     initVendorFamily();
 

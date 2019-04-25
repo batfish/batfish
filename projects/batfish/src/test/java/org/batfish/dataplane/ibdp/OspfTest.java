@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.AbstractRoute;
@@ -260,8 +259,7 @@ public class OspfTest {
     IncrementalBdpEngine engine =
         new IncrementalBdpEngine(
             new IncrementalDataPlaneSettings(),
-            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
-            (s, i) -> new AtomicInteger());
+            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false));
     OspfTopologyUtils.initNeighborConfigs(NetworkConfigurations.of(configurations));
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
     IncrementalDataPlane dp =
@@ -269,6 +267,7 @@ public class OspfTest {
             engine.computeDataPlane(
                     configurations,
                     topology,
+                    null,
                     computeOspfTopology(NetworkConfigurations.of(configurations), topology),
                     Collections.emptySet())
                 ._dataPlane;
@@ -457,8 +456,7 @@ public class OspfTest {
     IncrementalBdpEngine engine =
         new IncrementalBdpEngine(
             new IncrementalDataPlaneSettings(),
-            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
-            (s, i) -> new AtomicInteger());
+            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false));
     OspfTopologyUtils.initNeighborConfigs(NetworkConfigurations.of(configurations));
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
     IncrementalDataPlane dp =
@@ -466,6 +464,7 @@ public class OspfTest {
             engine.computeDataPlane(
                     configurations,
                     topology,
+                    null,
                     computeOspfTopology(NetworkConfigurations.of(configurations), topology),
                     Collections.emptySet())
                 ._dataPlane;
@@ -895,5 +894,37 @@ public class OspfTest {
     assertRoute(routes, OSPF_E2, "a2", Prefix.ZERO, 1, Ip.parse("10.1.1.4"));
     assertRoute(routes, OSPF, "fwl", Prefix.parse("11.1.1.0/31"), 2, Ip.parse("10.1.1.1"));
     assertRoute(routes, OSPF, "fwl", Prefix.parse("11.1.1.0/31"), 2, Ip.parse("10.1.1.2"));
+  }
+
+  @Test
+  public void testOspfDistributeList() throws IOException {
+    // the network will result in two routes of each OSPF type on r2 and r3, and we will block one
+    // of them by using distribute-list
+    // r2 will have ospf, ospf e1 and ospf e2. r3 will have ospf IA
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(
+                    "org/batfish/dataplane/ibdp/ospf-distribute-lists", "r1", "r2", "r3")
+                .build(),
+            _folder);
+    batfish.computeDataPlane();
+    IncrementalDataPlane dataplane = (IncrementalDataPlane) batfish.loadDataPlane();
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+        IncrementalBdpEngine.getRoutes(dataplane);
+
+    // routes of each type not matched by the distribute-list's prefix-list are allowed
+    assertRoute(routes, OSPF, "r2", Prefix.parse("2.2.2.0/24"), 11, Ip.parse("192.168.12.1"));
+    assertRoute(routes, OSPF_IA, "r3", Prefix.parse("1.1.1.0/24"), 12, Ip.parse("192.168.13.1"));
+    assertRoute(
+        routes, OSPF_E1, "r2", Prefix.parse("192.168.16.0/24"), 21, Ip.parse("192.168.12.1"));
+    assertRoute(
+        routes, OSPF_E2, "r2", Prefix.parse("192.168.9.0/24"), 20, Ip.parse("192.168.13.2"));
+
+    // routes of each type matched by the distribute-list's prefix-list are filtered
+    assertNoRoute(routes, "r2", Prefix.parse("1.1.1.0/24"));
+    assertNoRoute(routes, "r2", Prefix.parse("192.168.15.0/24"));
+    assertNoRoute(routes, "r2", Prefix.parse("192.168.10.0/24"));
+    assertNoRoute(routes, "r3", Prefix.parse("2.2.2.0/24"));
   }
 }

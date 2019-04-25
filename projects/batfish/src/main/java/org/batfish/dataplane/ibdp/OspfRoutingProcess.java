@@ -1,6 +1,7 @@
 package org.batfish.dataplane.ibdp;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.common.util.CommonUtil.toOrderedHashCode;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -10,6 +11,7 @@ import com.google.common.collect.Streams;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -22,6 +24,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Configuration;
@@ -118,6 +121,12 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    */
   @Nonnull private RibDelta<OspfExternalRoute> _activatedGeneratedRoutes;
 
+  /**
+   * If this router is an ABR, keep track neighbors into which a default route was injected, since
+   * the default route needs to be injected only once
+   */
+  @Nonnull private Set<OspfNeighborConfigId> _neighborsWhereDefaultIARouteWasInjected;
+
   OspfRoutingProcess(
       OspfProcess process, String vrfName, Configuration configuration, OspfTopology topology) {
     _c = configuration;
@@ -144,6 +153,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       _exportPolicy =
           RoutingPolicy.builder()
               .setName(String.format("~Drop_All_OSPF_External_%s~", _process.getProcessId()))
+              .setOwner(_c)
               .setStatements(ImmutableList.of(Statements.ExitReject.toStaticStatement()))
               .build();
     } else {
@@ -154,6 +164,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     _initializationDelta = RibDelta.empty();
     _queuedForRedistribution = new ExternalDelta();
     _activatedGeneratedRoutes = RibDelta.empty();
+    _neighborsWhereDefaultIARouteWasInjected = new HashSet<>(0);
   }
 
   @Override
@@ -163,9 +174,6 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
 
   @Override
   public void executeIteration(Map<String, Node> allNodes) {
-    // Clear changeset from previous iteration
-    _changeset = RibDelta.builder();
-
     if (!_initializationDelta.isEmpty()) {
       // If we haven't sent out the first round of updates after initialization, do so now. Then
       // clear the initialization delta
@@ -255,10 +263,40 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
 
   }
 
+  /**
+   * Applies distribute list on a {@link AbstractRouteBuilder} based on the configuration and
+   * interface on which the route arrives. If the distribute list denies the route, it is declared
+   * as non-routing
+   *
+   * @param c {@link Configuration} on which the route arrives
+   * @param vrfName name of the {@link org.batfish.datamodel.Vrf} on which the route arrives
+   * @param ifaceName name of the {@link Interface} on which the route arrives
+   * @param routeBuilder {@link AbstractRouteBuilder} representing the route
+   */
+  @VisibleForTesting
+  static void applyDistributeList(
+      Configuration c, String vrfName, String ifaceName, AbstractRouteBuilder<?, ?> routeBuilder) {
+    Interface iface = c.getAllInterfaces().get(ifaceName);
+    assert iface != null;
+    if (iface.getOspfInboundDistributeListPolicy() == null) {
+      return;
+    }
+    RoutingPolicy routingPolicy =
+        c.getRoutingPolicies().get(iface.getOspfInboundDistributeListPolicy());
+    assert routingPolicy != null;
+    // if routingPolicy denies the input route, set the route as non-routing to prevent it from
+    // going in the main RIB
+    routeBuilder.setNonRouting(
+        !routingPolicy.process(routeBuilder.build(), routeBuilder, null, vrfName, Direction.IN));
+  }
+
   @Nonnull
   @Override
   public RibDelta<OspfRoute> getUpdatesForMainRib() {
-    return _changeset.build();
+    RibDelta<OspfRoute> result = _changeset.build();
+    // Clear state
+    _changeset = RibDelta.builder();
+    return result;
   }
 
   @Override
@@ -440,47 +478,50 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     Builder<OspfInterAreaRoute> interAreaDelta = RibDelta.builder();
     _interAreaIncomingRoutes.forEach(
         (edgeId, queue) -> {
-          long incrementalCost = getIncrementalCost(edgeId.getHead().getInterfaceName(), false);
+          String ifaceName = edgeId.getHead().getInterfaceName();
+          long incrementalCost = getIncrementalCost(ifaceName, false);
           while (!queue.isEmpty()) {
             RouteAdvertisement<OspfInterAreaRoute> routeAdvertisement = queue.remove();
-            transformInterAreaRouteOnImport(routeAdvertisement, incrementalCost)
-                .ifPresent(r -> interAreaDelta.from(processRouteAdvertisement(r, _interAreaRib)));
+
+            transformInterAreaRouteOnImport(routeAdvertisement.getRoute(), incrementalCost)
+                .ifPresent(
+                    routeBuilder -> {
+                      applyDistributeList(_c, _vrfName, ifaceName, routeBuilder);
+                      interAreaDelta.from(
+                          processRouteAdvertisement(
+                              routeAdvertisement.toBuilder().setRoute(routeBuilder.build()).build(),
+                              _interAreaRib));
+                    });
           }
         });
     return interAreaDelta;
   }
 
   /**
-   * Filter and transform inter-area route advertisement on import.
+   * Filter and transform inter-area route on import.
    *
-   * @param routeAdvertisement the {@link RouteAdvertisement} to transform
+   * @param route the {@link OspfInterAreaRoute} to transform
    * @param incrementalCost incremental cost of the OSPF link to be added to the route.
    * @return {@link Optional#empty()} if the route should be filtered out, otherwise a {@link
    *     RouteAdvertisement} containing the transformed route.
    */
   @Nonnull
   @VisibleForTesting
-  Optional<RouteAdvertisement<OspfInterAreaRoute>> transformInterAreaRouteOnImport(
-      RouteAdvertisement<OspfInterAreaRoute> routeAdvertisement, long incrementalCost) {
-    OspfInterAreaRoute route = routeAdvertisement.getRoute();
+  Optional<OspfInterAreaRoute.Builder> transformInterAreaRouteOnImport(
+      OspfInterAreaRoute route, long incrementalCost) {
     if (isABR() && route.getNetwork().equals(Prefix.ZERO)) {
       // ABR should not accept default inter-area routes, as it is the one that originates them
       return Optional.empty();
     }
     // Transform the route
     return Optional.of(
-        routeAdvertisement
+        route
             .toBuilder()
-            .setRoute(
-                route
-                    .toBuilder()
-                    .setMetric(route.getMetric() + incrementalCost)
-                    .setAdmin(_process.getAdminCosts().get(route.getProtocol()))
-                    // Clear any non-routing or non-forwarding bit
-                    .setNonRouting(false)
-                    .setNonRouting(false)
-                    .build())
-            .build());
+            .setMetric(route.getMetric() + incrementalCost)
+            .setAdmin(_process.getAdminCosts().get(route.getProtocol()))
+            // Clear any non-routing or non-forwarding bit
+            .setNonRouting(false)
+            .setNonForwarding(false));
   }
 
   /**
@@ -493,12 +534,18 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     Builder<OspfIntraAreaRoute> intraAreaDelta = RibDelta.builder();
     _intraAreaIncomingRoutes.forEach(
         (edgeId, queue) -> {
-          long incrementalCost = getIncrementalCost(edgeId.getHead().getInterfaceName(), false);
+          String ifaceName = edgeId.getHead().getInterfaceName();
+          long incrementalCost = getIncrementalCost(ifaceName, false);
           while (!queue.isEmpty()) {
             RouteAdvertisement<OspfIntraAreaRoute> routeAdvertisement = queue.remove();
+            OspfIntraAreaRoute.Builder ospfRouteBuilder =
+                transformIntraAreaRouteOnImport(routeAdvertisement.getRoute(), incrementalCost);
+
+            applyDistributeList(_c, _vrfName, ifaceName, ospfRouteBuilder);
+
             intraAreaDelta.from(
                 processRouteAdvertisement(
-                    transformIntraAreaRouteOnImport(routeAdvertisement, incrementalCost),
+                    routeAdvertisement.toBuilder().setRoute(ospfRouteBuilder.build()).build(),
                     _intraAreaRib));
           }
         });
@@ -506,30 +553,23 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   }
 
   /**
-   * Transform intra-area route advertisement on import.
+   * Transform intra-area routes on import.
    *
-   * @param routeAdvertisement the {@link RouteAdvertisement} to transform
+   * @param route the {@link OspfIntraAreaRoute} to transform
    * @param incrementalCost incremental cost of the OSPF link to be added to the route.
    * @return A {@link RouteAdvertisement} containing the transformed route.
    */
   @Nonnull
   @VisibleForTesting
-  RouteAdvertisement<OspfIntraAreaRoute> transformIntraAreaRouteOnImport(
-      RouteAdvertisement<OspfIntraAreaRoute> routeAdvertisement, long incrementalCost) {
-    OspfIntraAreaRoute route = routeAdvertisement.getRoute();
-    // Transform the route
-    return routeAdvertisement
+  OspfIntraAreaRoute.Builder transformIntraAreaRouteOnImport(
+      OspfIntraAreaRoute route, long incrementalCost) {
+    return route
         .toBuilder()
-        .setRoute(
-            route
-                .toBuilder()
-                .setMetric(route.getMetric() + incrementalCost)
-                .setAdmin(_process.getAdminCosts().get(route.getProtocol()))
-                // Clear any non-routing or non-forwarding bit
-                .setNonRouting(false)
-                .setNonRouting(false)
-                .build())
-        .build();
+        .setMetric(route.getMetric() + incrementalCost)
+        .setAdmin(_process.getAdminCosts().get(route.getProtocol()))
+        // Clear any non-routing or non-forwarding bit
+        .setNonRouting(false)
+        .setNonForwarding(false);
   }
 
   /**
@@ -692,7 +732,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                 r.toBuilder()
                     .setRoute(r.getRoute().toBuilder().setNextHopIp(nextHopIp).build())
                     .build())
-        .collect(ImmutableList.toImmutableList());
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   /** Send out inter-area routes from a regular (non-ABR) router to a neighbor */
@@ -741,7 +781,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                             .setNextHopIp(nextHopIp)
                             .build())
                     .build())
-        .collect(ImmutableList.toImmutableList());
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   /** Send out inter-area routes from an ABR to a neighbor */
@@ -786,10 +826,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                     filterList,
                     nextHopIp,
                     _process.getMaxMetricSummaryNetworks()),
-                computeDefaultInterAreaRouteToInject(areaConfig, nextHopIp)
-                    .map(Stream::of)
-                    .orElse(Stream.empty()))
-            .collect(ImmutableList.toImmutableList()));
+                computeDefaultInterAreaRouteToInject(edgeId, areaConfig, nextHopIp))
+            .collect(ImmutableSet.toImmutableSet()));
   }
 
   /**
@@ -877,6 +915,30 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   /**
    * Return a default route if one needs to be injected from an ABR to a neighbor.
    *
+   * <p>Keeps track of default routes already injected (per neighbor) to avoid cyclic computation
+   *
+   * @param edge the edge whose tail node is the neighbor in question
+   * @param areaConfig {@link OspfArea} for which the ABR should consider injecting a route into
+   * @param nextHopIp the next hop IP to use for the generated route
+   * @return an Optional containing the default route. May be empty if no route needs to be injected
+   *     into the given area.
+   */
+  @VisibleForTesting
+  Stream<RouteAdvertisement<OspfInterAreaRoute>> computeDefaultInterAreaRouteToInject(
+      OspfTopology.EdgeId edge, OspfArea areaConfig, Ip nextHopIp) {
+    if (_neighborsWhereDefaultIARouteWasInjected.contains(edge.getTail())) {
+      return Stream.empty();
+    }
+    _neighborsWhereDefaultIARouteWasInjected.add(edge.getTail());
+    return computeDefaultInterAreaRouteToInject(areaConfig, nextHopIp)
+        .map(Stream::of)
+        .orElse(Stream.empty());
+  }
+
+  /**
+   * Return a default route if one can be injected from an ABR into a given area, based on area
+   * settings
+   *
    * @param areaConfig {@link OspfArea} for which the ABR should consider injecting a route into
    * @param nextHopIp the next hop IP to use for the generated route
    * @return an Optional containing the default route. May be empty if no route needs to be injected
@@ -886,24 +948,27 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   @VisibleForTesting
   static Optional<RouteAdvertisement<OspfInterAreaRoute>> computeDefaultInterAreaRouteToInject(
       OspfArea areaConfig, Ip nextHopIp) {
-    return areaConfig.getStubType() == StubType.STUB
-            || (areaConfig.getStubType() == StubType.NSSA
-                && areaConfig.getNssa().getDefaultOriginateType()
-                    == OspfDefaultOriginateType.INTER_AREA)
-        ? Optional.of(
-            RouteAdvertisement.<OspfInterAreaRoute>builder()
-                .setReason(Reason.ADD)
-                .setRoute(
-                    OspfInterAreaRoute.builder()
-                        .setNetwork(Prefix.ZERO)
-                        .setNextHopIp(nextHopIp)
-                        // Intentionally large. Must be correctly set on the receiver's side
-                        .setAdmin(Integer.MAX_VALUE)
-                        .setMetric(areaConfig.getMetricOfDefaultRoute())
-                        .setArea(areaConfig.getAreaNumber())
-                        .build())
-                .build())
-        : Optional.empty();
+
+    if (areaConfig.getStubType() != StubType.STUB
+        && (areaConfig.getStubType() != StubType.NSSA
+            || areaConfig.getNssa().getDefaultOriginateType()
+                != OspfDefaultOriginateType.INTER_AREA)) {
+      return Optional.empty();
+    }
+
+    return Optional.of(
+        RouteAdvertisement.<OspfInterAreaRoute>builder()
+            .setReason(Reason.ADD)
+            .setRoute(
+                OspfInterAreaRoute.builder()
+                    .setNetwork(Prefix.ZERO)
+                    .setNextHopIp(nextHopIp)
+                    // Intentionally large. Must be correctly set on the receiver's side
+                    .setAdmin(Integer.MAX_VALUE)
+                    .setMetric(areaConfig.getMetricOfDefaultRoute())
+                    .setArea(areaConfig.getAreaNumber())
+                    .build())
+            .build());
   }
 
   /**
@@ -943,16 +1008,23 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     Builder<OspfExternalType1Route> type1deltaBuilder = RibDelta.builder();
     _type1IncomingRoutes.forEach(
         (edgeId, queue) -> {
+          String ifaceName = edgeId.getHead().getInterfaceName();
           OspfSessionProperties session = _topology.getSession(edgeId).orElse(null);
           assert session != null; // Invariant of the edge existing
-          long incrementalCost = getIncrementalCost(edgeId.getHead().getInterfaceName(), false);
+          long incrementalCost = getIncrementalCost(ifaceName, false);
           while (!queue.isEmpty()) {
             RouteAdvertisement<OspfExternalType1Route> routeAdvertisement = queue.remove();
+            OspfExternalType1Route.Builder ospfRouteBuilder =
+                transformType1RouteOnImport(
+                    // Neighbor IP is the IP of tail node which means Ip1
+                    routeAdvertisement.getRoute(), session.getIpLink().getIp1(), incrementalCost);
+            applyDistributeList(_c, _vrfName, ifaceName, ospfRouteBuilder);
             type1deltaBuilder.from(
                 processRouteAdvertisement(
-                    transformType1RouteOnImport(
-                        // Neighbor IP is the IP of tail node which means Ip1
-                        routeAdvertisement, session.getIpLink().getIp1(), incrementalCost),
+                    routeAdvertisement
+                        .toBuilder()
+                        .setRoute((OspfExternalType1Route) ospfRouteBuilder.build())
+                        .build(),
                     _type1Rib));
           }
         });
@@ -962,21 +1034,12 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   /** Transform type1 routes on import */
   @Nonnull
   @VisibleForTesting
-  RouteAdvertisement<OspfExternalType1Route> transformType1RouteOnImport(
-      RouteAdvertisement<OspfExternalType1Route> routeAdvertisement,
-      Ip nextHopIp,
-      long incrementalCost) {
-    OspfExternalType1Route r = routeAdvertisement.getRoute();
-    return routeAdvertisement
-        .toBuilder()
-        .setRoute(
-            (OspfExternalType1Route)
-                transformType1and2CommonOnImport(r, nextHopIp)
-                    // For type 1 routes both cost to advertiser and metric get incremented
-                    .setCostToAdvertiser(r.getCostToAdvertiser() + incrementalCost)
-                    .setMetric(r.getMetric() + incrementalCost)
-                    .build())
-        .build();
+  OspfExternalType1Route.Builder transformType1RouteOnImport(
+      OspfExternalType1Route route, Ip nextHopIp, long incrementalCost) {
+    return transformType1and2CommonOnImport(route, nextHopIp)
+        // For type 1 routes both cost to advertiser and metric get incremented
+        .setCostToAdvertiser(route.getCostToAdvertiser() + incrementalCost)
+        .setMetric(route.getMetric() + incrementalCost);
   }
 
   /** Process type 2 routes from all message queues */
@@ -985,16 +1048,23 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     Builder<OspfExternalType2Route> type2deltaBuilder = RibDelta.builder();
     _type2IncomingRoutes.forEach(
         (edgeId, queue) -> {
+          String headIfaceName = edgeId.getHead().getInterfaceName();
           OspfSessionProperties session = _topology.getSession(edgeId).orElse(null);
           assert session != null; // Invariant of the edge existing
           long incrementalCost = getIncrementalCost(edgeId.getHead().getInterfaceName(), false);
           while (!queue.isEmpty()) {
             RouteAdvertisement<OspfExternalType2Route> routeAdvertisement = queue.remove();
+            OspfExternalType2Route.Builder ospfRouteBuilder =
+                transformType2RouteOnImport(
+                    // Neighbor IP is the IP of tail node which means Ip1
+                    routeAdvertisement.getRoute(), session.getIpLink().getIp1(), incrementalCost);
+            applyDistributeList(_c, _vrfName, headIfaceName, ospfRouteBuilder);
             type2deltaBuilder.from(
                 processRouteAdvertisement(
-                    transformType2RouteOnImport(
-                        // Neighbor IP is the IP of tail node which means Ip1
-                        routeAdvertisement, session.getIpLink().getIp1(), incrementalCost),
+                    routeAdvertisement
+                        .toBuilder()
+                        .setRoute((OspfExternalType2Route) ospfRouteBuilder.build())
+                        .build(),
                     _type2Rib));
           }
         });
@@ -1004,23 +1074,14 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   /** Transform type2 routes on import */
   @Nonnull
   @VisibleForTesting
-  RouteAdvertisement<OspfExternalType2Route> transformType2RouteOnImport(
-      RouteAdvertisement<OspfExternalType2Route> routeAdvertisement,
-      Ip nextHopIp,
-      long incrementalCost) {
-    OspfExternalType2Route r = routeAdvertisement.getRoute();
-    return routeAdvertisement
-        .toBuilder()
-        .setRoute(
-            (OspfExternalType2Route)
-                transformType1and2CommonOnImport(r, nextHopIp)
-                    /*
-                     * For type 2 routes the metric remains constant, but we must keep track of
-                     * cost to advertiser as a tie-breaker.
-                     */
-                    .setCostToAdvertiser(r.getCostToAdvertiser() + incrementalCost)
-                    .build())
-        .build();
+  OspfExternalType2Route.Builder transformType2RouteOnImport(
+      OspfExternalType2Route route, Ip nextHopIp, long incrementalCost) {
+    return transformType1and2CommonOnImport(route, nextHopIp)
+        /*
+         * For type 2 routes the metric remains constant, but we must keep track of
+         * cost to advertiser as a tie-breaker.
+         */
+        .setCostToAdvertiser(route.getCostToAdvertiser() + incrementalCost);
   }
 
   /** Common transformations for type 1 and type 2 routes on import (e.g., nextHopIp, admin cost) */
@@ -1160,7 +1221,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                               .build())
                   .build();
             })
-        .collect(ImmutableList.toImmutableList());
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   /**
@@ -1191,7 +1252,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                               .build())
                   .build();
             })
-        .collect(ImmutableList.toImmutableList());
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   /**
@@ -1353,7 +1414,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
             r -> areaConfig.getStubType() == StubType.NONE || !r.getNetwork().equals(Prefix.ZERO))
         .filter(clazz::isInstance)
         .map(r -> new RouteAdvertisement<>(clazz.cast(r)))
-        .collect(ImmutableList.toImmutableList());
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   /**
@@ -1406,6 +1467,24 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       EdgeId edge, Collection<RouteAdvertisement<OspfExternalType2Route>> routes) {
     assert _type2IncomingRoutes.keySet().contains(edge);
     _type2IncomingRoutes.get(edge).addAll(routes);
+  }
+
+  int iterationHashCode() {
+    return Stream.of(
+            // Message queues
+            Stream.of(
+                    _intraAreaIncomingRoutes,
+                    _interAreaIncomingRoutes,
+                    _type1IncomingRoutes,
+                    _type2IncomingRoutes)
+                .flatMap(m -> m.values().stream())
+                .flatMap(Queue::stream),
+            // Deltas
+            Stream.of(_activatedGeneratedRoutes).map(RibDelta::getActions),
+            // RIB state
+            Stream.of(_intraAreaRib, _interAreaRib, _type1Rib, _type2Rib)
+                .map(AbstractRib::getTypedRoutes))
+        .collect(toOrderedHashCode());
   }
 
   /** Wrapper around intra- and inter-area RIB deltas */

@@ -71,14 +71,18 @@ class TestParser extends CommonParser {
     return Sequence("! ", TestNot("! "), TestTerm());
   }
 
-  @Anchor(Type.ADDRESS_GROUP_AND_BOOK)
   public Rule TestSpecifierInput() {
-    return Sequence(
-        ReferenceObjectNameLiteral(),
-        WhiteSpace(),
-        ", ",
-        ReferenceObjectNameLiteral(),
-        WhiteSpace());
+    return Sequence(TestAddressGroupName(), ", ", TestReferenceBookName());
+  }
+
+  @Anchor(Type.ADDRESS_GROUP_NAME)
+  public Rule TestAddressGroupName() {
+    return Sequence(NameLiteral(), WhiteSpace());
+  }
+
+  @Anchor(Type.REFERENCE_BOOK_NAME)
+  public Rule TestReferenceBookName() {
+    return Sequence(NameLiteral(), WhiteSpace());
   }
 
   /** An instance of base dynamic value */

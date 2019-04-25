@@ -6588,6 +6588,17 @@
           }
         }
       },
+      "fileMap" : {
+        "configs/junos-srx-1.cfg" : [
+          "junos-srx-1"
+        ],
+        "configs/junos-srx-2.cfg" : [
+          "junos-srx-2"
+        ],
+        "configs/junos-srx-3.cfg" : [
+          "junos-srx-3"
+        ]
+      },
       "referencedStructures" : {
         "configs/junos-srx-1.cfg" : {
           "bgp group" : {

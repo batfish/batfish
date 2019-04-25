@@ -7,7 +7,6 @@ import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
 import static org.batfish.datamodel.eigrp.EigrpTopology.initEigrpTopology;
 import static org.batfish.datamodel.isis.IsisTopology.initIsisTopology;
 import static org.hamcrest.Matchers.anEmptyMap;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItem;
@@ -29,7 +28,6 @@ import com.google.common.graph.ValueGraphBuilder;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.SortedSet;
@@ -54,7 +52,6 @@ import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.LocalRoute;
-import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalType1Route;
@@ -82,7 +79,6 @@ import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.ospf.OspfMetricType;
-import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -390,18 +386,6 @@ public class VirtualRouterTest {
     assertThat(vr._ripInternalStagingRib.getRoutes(), empty());
     assertThat(vr._ripRib.getRoutes(), empty());
 
-    // OSPF RIBs
-    assertThat(vr._ospfRib.getRoutes(), empty());
-    assertThat(vr._ospfExternalType1Rib.getRoutes(), empty());
-    assertThat(vr._ospfExternalType1StagingRib.getRoutes(), empty());
-    assertThat(vr._ospfExternalType2Rib.getRoutes(), empty());
-    assertThat(vr._ospfExternalType2StagingRib.getRoutes(), empty());
-    assertThat(vr._ospfInterAreaRib.getRoutes(), empty());
-    assertThat(vr._ospfInterAreaStagingRib.getRoutes(), empty());
-    assertThat(vr._ospfIntraAreaRib.getRoutes(), empty());
-    assertThat(vr._ospfIntraAreaStagingRib.getRoutes(), empty());
-    assertThat(vr._ospfRib.getRoutes(), empty());
-
     // BGP ribs
     // Ibgp
     assertThat(vr._ibgpRib.getRoutes(), empty());
@@ -414,81 +398,6 @@ public class VirtualRouterTest {
 
     // Main RIB
     assertThat(vr._mainRib.getRoutes(), empty());
-  }
-
-  /** Ensure no route propagation when the interfaces are disabled or passive */
-  @Test
-  public void testOSPFPassiveInterfaceRejection() {
-    // Setup
-    String testRouterName = "R1";
-    String exportingRouterName = "R2";
-    String exportingRouterInterfaceName = "Ethernet1";
-    Map<String, Node> nodes = makeIosRouters(testRouterName, exportingRouterName);
-    Map<String, VirtualRouter> routers =
-        nodes.entrySet().stream()
-            .collect(
-                ImmutableMap.toImmutableMap(
-                    Entry::getKey, e -> e.getValue().getVirtualRouters().get(DEFAULT_VRF_NAME)));
-    VirtualRouter testRouter = routers.get(testRouterName);
-    VirtualRouter exportingRouter = routers.get(exportingRouterName);
-    testRouter.initRibs();
-    exportingRouter.initRibs();
-    addInterfaces(testRouter.getConfiguration(), exampleInterfaceAddresses);
-    addInterfaces(
-        exportingRouter.getConfiguration(),
-        ImmutableMap.of(exportingRouterInterfaceName, new InterfaceAddress("10.4.0.0/16")));
-    int adminCost =
-        RoutingProtocol.OSPF.getDefaultAdministrativeCost(
-            testRouter.getConfiguration().getConfigurationFormat());
-
-    Prefix prefix = Prefix.parse("7.7.7.0/24");
-    OspfIntraAreaRoute route =
-        OspfIntraAreaRoute.builder()
-            .setNetwork(prefix)
-            .setNextHopIp(Ip.parse("7.7.1.1"))
-            .setAdmin(adminCost)
-            .setMetric(20)
-            .setArea(1L)
-            .build();
-    exportingRouter._ospfIntraAreaRib.mergeRoute(route);
-
-    // Set interaces on router 1 to be OSPF passive
-    testRouter
-        .getConfiguration()
-        .getAllInterfaces()
-        .forEach((name, iface) -> iface.setActive(false));
-
-    // Test 1
-    testRouter.propagateOspfInternalRoutesFromNeighbor(
-        testRouter._vrf.getOspfProcess(),
-        nodes.get("R2"),
-        testRouter.getConfiguration().getAllInterfaces().firstEntry().getValue(),
-        exportingRouter.getConfiguration().getAllInterfaces().get(exportingRouterInterfaceName),
-        adminCost);
-
-    assertThat(testRouter._ospfInterAreaStagingRib.getRoutes(), empty());
-    assertThat(testRouter._ospfIntraAreaStagingRib.getRoutes(), empty());
-
-    // Flip interfaces on router 2 to be passive now
-    testRouter
-        .getConfiguration()
-        .getAllInterfaces()
-        .forEach((name, iface) -> iface.setActive(true));
-    exportingRouter
-        .getConfiguration()
-        .getAllInterfaces()
-        .forEach((name, iface) -> iface.setActive(false));
-
-    // Test 2
-    testRouter.propagateOspfInternalRoutesFromNeighbor(
-        testRouter._vrf.getOspfProcess(),
-        nodes.get("R2"),
-        testRouter.getConfiguration().getAllInterfaces().firstEntry().getValue(),
-        exportingRouter.getConfiguration().getAllInterfaces().get(exportingRouterInterfaceName),
-        adminCost);
-
-    assertThat(testRouter._ospfInterAreaStagingRib.getRoutes(), empty());
-    assertThat(testRouter._ospfIntraAreaStagingRib.getRoutes(), empty());
   }
 
   /** Check that initialization of RIP internal routes happens correctly */
@@ -523,100 +432,6 @@ public class VirtualRouterTest {
                                 vr.getConfiguration().getConfigurationFormat()),
                             RipProcess.DEFAULT_RIP_COST))
                 .collect(ImmutableSet.toImmutableSet())));
-  }
-
-  /** Test that staging of a single OSPF Inter-Area route works as expected */
-  @Test
-  public void testStageOSPFInterAreaRoute() {
-    VirtualRouter vr = makeIosVirtualRouter(null);
-    vr.initRibs();
-
-    int admin = 50;
-    int metric = 100;
-    long area = 1L;
-    Prefix prefix = Prefix.parse("7.7.7.0/24");
-    OspfInterAreaRoute iaroute =
-        OspfInterAreaRoute.builder()
-            .setNetwork(prefix)
-            .setNextHopIp(Ip.parse("7.7.1.1"))
-            .setAdmin(admin)
-            .setMetric(metric)
-            .setArea(area)
-            .build();
-
-    // Test
-    Ip newNextHop = Ip.parse("10.2.1.1");
-    vr.stageOspfInterAreaRoute(iaroute, null, newNextHop, 10, admin, area);
-
-    // Check what's in the RIB is correct.
-    // Note the new nextHopIP and the increased metric on the new route.
-    OspfInterAreaRoute expected =
-        OspfInterAreaRoute.builder()
-            .setNetwork(prefix)
-            .setNextHopIp(newNextHop)
-            .setAdmin(admin)
-            .setMetric(metric + 10)
-            .setArea(area)
-            .build();
-    assertThat(vr._ospfInterAreaStagingRib.getTypedRoutes(), contains(expected));
-  }
-
-  /** Test unstaging external routes when better a route arrives in second IBDP iteration */
-  @Test
-  public void testUnstageOspfExternalRoutes() {
-    NetworkFactory nf = new NetworkFactory();
-    String c1Name = "r1";
-    Configuration.Builder cb =
-        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    Configuration c1 = cb.setHostname(c1Name).build();
-    nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(c1).build();
-
-    Map<String, Node> nodes = ImmutableMap.of(c1.getHostname(), new Node(c1));
-    VirtualRouter vr = nodes.get(c1Name).getVirtualRouters().get(DEFAULT_VRF_NAME);
-    vr.initRibs();
-
-    int initialCostToAdvertiser = 20;
-    OspfExternalType2Route route =
-        (OspfExternalType2Route)
-            OspfExternalType2Route.builder()
-                .setNetwork(Prefix.ZERO)
-                .setNextHopIp(Ip.parse("1.1.1.1"))
-                .setAdmin(50)
-                .setCostToAdvertiser(initialCostToAdvertiser)
-                .setLsaMetric(1L)
-                .setMetric(100)
-                .setOspfMetricType(OspfMetricType.E2)
-                .setArea(1L)
-                .setAdvertiser("someNode")
-                .build();
-
-    RibDelta<OspfExternalType1Route> emptyType1Delta =
-        RibDelta.<OspfExternalType1Route>builder().build();
-    RibDelta<OspfExternalType2Route> firstRibDeltaToUnstage =
-        RibDelta.<OspfExternalType2Route>builder().add(route).build();
-    vr.unstageOspfExternalRoutes(nodes, emptyType1Delta, firstRibDeltaToUnstage);
-
-    // Route should have been unstaged into external type 2 RIB, OSPF RIB, and main RIB
-    assertThat(vr._ospfExternalType2Rib.getTypedRoutes(), contains(route));
-    assertThat(vr._ospfRib.getTypedRoutes(), contains(route));
-    assertThat(
-        vr._mainRib.getTypedRoutes(), contains(new AnnotatedRoute<>(route, DEFAULT_VRF_NAME)));
-
-    // Reinit for a new iteration, then unstage a better route and ensure it replaces the old one
-    vr.reinitForNewIteration();
-    OspfExternalType2Route improvedRoute =
-        (OspfExternalType2Route)
-            route.toBuilder().setCostToAdvertiser(initialCostToAdvertiser - 10).build();
-    RibDelta<OspfExternalType2Route> secondRibDeltaToUnstage =
-        RibDelta.<OspfExternalType2Route>builder().add(improvedRoute).build();
-    vr.unstageOspfExternalRoutes(nodes, emptyType1Delta, secondRibDeltaToUnstage);
-
-    // All RIBs should have improved route and not old route
-    assertThat(vr._ospfExternalType2Rib.getTypedRoutes(), contains(improvedRoute));
-    assertThat(vr._ospfRib.getTypedRoutes(), contains(improvedRoute));
-    assertThat(
-        vr._mainRib.getTypedRoutes(),
-        contains(new AnnotatedRoute<>(improvedRoute, DEFAULT_VRF_NAME)));
   }
 
   /** Test that the static RIB correctly pulls static routes from the VRF */
@@ -759,13 +574,7 @@ public class VirtualRouterTest {
     Network<EigrpInterface, EigrpEdge> eigrpTopology = initEigrpTopology(configs, topology);
     vrs.values()
         .forEach(
-            vr ->
-                vr.initQueuesAndDeltaBuilders(
-                    bgpTopology,
-                    eigrpTopology,
-                    initialIsisTopology,
-                    OspfTopologyUtils.computeOspfTopology(
-                        NetworkConfigurations.of(configs), topology)));
+            vr -> vr.initQueuesAndDeltaBuilders(bgpTopology, eigrpTopology, initialIsisTopology));
 
     // Assert that queues are empty as there are no OSPF, BGP, EIGRP, nor IS-IS processes
     vrs.values()
@@ -776,7 +585,6 @@ public class VirtualRouterTest {
                   .values()
                   .forEach(process -> assertThat(process._incomingRoutes, anEmptyMap()));
               assertThat(vr._isisIncomingRoutes, anEmptyMap());
-              assertThat(vr._ospfExternalIncomingRoutes, anEmptyMap());
             });
 
     // Set bgp processes and neighbors
@@ -803,11 +611,7 @@ public class VirtualRouterTest {
     for (Node n : nodes.values()) {
       n.getVirtualRouters()
           .get(DEFAULT_VRF_NAME)
-          .initQueuesAndDeltaBuilders(
-              bgpTopology2,
-              eigrpTopology,
-              isisTopology,
-              OspfTopologyUtils.computeOspfTopology(NetworkConfigurations.of(configs), topology));
+          .initQueuesAndDeltaBuilders(bgpTopology2, eigrpTopology, isisTopology);
     }
     // Assert that queues are initialized
     vrs.values()
@@ -868,13 +672,7 @@ public class VirtualRouterTest {
     Network<EigrpInterface, EigrpEdge> eigrpTopology = initEigrpTopology(configs, topology);
     vrs.values()
         .forEach(
-            vr ->
-                vr.initQueuesAndDeltaBuilders(
-                    bgpTopology,
-                    eigrpTopology,
-                    initialIsisTopology,
-                    OspfTopologyUtils.computeOspfTopology(
-                        NetworkConfigurations.of(configs), topology)));
+            vr -> vr.initQueuesAndDeltaBuilders(bgpTopology, eigrpTopology, initialIsisTopology));
 
     // Assert that queues are empty as there are no OSPF, BGP, nor IS-IS processes
     vrs.values()
@@ -891,13 +689,7 @@ public class VirtualRouterTest {
     // Re-run
     vrs.values()
         .forEach(
-            vr ->
-                vr.initQueuesAndDeltaBuilders(
-                    bgpTopology,
-                    eigrpTopology,
-                    updatedIsisTopology,
-                    OspfTopologyUtils.computeOspfTopology(
-                        NetworkConfigurations.of(configs), topology)));
+            vr -> vr.initQueuesAndDeltaBuilders(bgpTopology, eigrpTopology, updatedIsisTopology));
 
     // Assert that queues are initialized
     assertThat(

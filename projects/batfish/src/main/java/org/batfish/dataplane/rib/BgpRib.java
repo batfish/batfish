@@ -49,6 +49,13 @@ public class BgpRib extends AbstractRib<BgpRoute> {
   // Best BGP paths. Invariant: must be re-evaluated (per prefix) each time a route is added or
   // evicted
   @Nonnull private final Map<Prefix, BgpRoute> _bestPaths;
+  /**
+   * This logical clock helps us keep track when routes were merged into the RIB to determine their
+   * age. It's incremented each time a route is merged into the RIB.
+   */
+  protected long _logicalClock;
+  /** Map to keep track when routes were merged in. */
+  protected Map<BgpRoute, Long> _logicalArrivalTime;
 
   public BgpRib(
       @Nullable Map<Prefix, SortedSet<BgpRoute>> backupRoutes,
@@ -74,6 +81,8 @@ public class BgpRib extends AbstractRib<BgpRoute> {
         "Multipath AS-Path-Match-mode must be specified for a multipath BGP RIB");
     _multipathEquivalentAsPathMatchMode = multipathEquivalentAsPathMatchMode;
     _bestPaths = new HashMap<>(0);
+    _logicalArrivalTime = new HashMap<>(0);
+    _logicalClock = 0;
   }
 
   /*
@@ -128,6 +137,8 @@ public class BgpRib extends AbstractRib<BgpRoute> {
   @Override
   public RibDelta<BgpRoute> mergeRouteGetDelta(BgpRoute route) {
     RibDelta<BgpRoute> delta = super.mergeRouteGetDelta(route);
+    _logicalArrivalTime.put(route, _logicalClock);
+    _logicalClock++;
     if (!delta.isEmpty()) {
       delta.getPrefixes().forEach(this::selectBestPath);
     }
@@ -140,6 +151,14 @@ public class BgpRib extends AbstractRib<BgpRoute> {
     RibDelta<BgpRoute> delta = super.removeRouteGetDelta(route, reason);
     if (!delta.isEmpty()) {
       delta.getPrefixes().forEach(this::selectBestPath);
+      delta
+          .getActions()
+          .forEach(
+              a -> {
+                if (a.isWithdrawn()) {
+                  _logicalArrivalTime.remove(a.getRoute());
+                }
+              });
     }
     return delta;
   }

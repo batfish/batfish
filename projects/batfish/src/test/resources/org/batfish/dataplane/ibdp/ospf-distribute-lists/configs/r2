@@ -1,0 +1,19 @@
+hostname r2
+!
+interface GigabitEthernet0/0
+ ip address 192.168.12.2 255.255.255.0
+!
+interface GigabitEthernet2/0
+ ip address 192.168.13.1 255.255.255.0
+!
+router ospf 1
+  network 192.168.12.0 0.0.0.255 area 0
+  network 192.168.13.0 0.0.0.255 area 1
+  distribute-list prefix filter_1_10_15 in
+!
+ip prefix-list filter_1_10_15 seq 5 deny 1.1.1.0/24
+ip prefix-list filter_1_10_15 seq 10 deny 192.168.10.0/24
+ip prefix-list filter_1_10_15 seq 15 deny 192.168.15.0/24
+ip prefix-list filter_1_10_15 seq 20 permit 0.0.0.0/0 le 32
+
+

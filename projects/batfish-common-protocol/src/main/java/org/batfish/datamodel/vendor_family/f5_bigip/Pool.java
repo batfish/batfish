@@ -17,6 +17,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class Pool implements Serializable {
 
+  private static final String PROP_DESCRIPTION = "description";
   private static final String PROP_MEMBERS = "members";
   private static final String PROP_MONITOR = "monitor";
   private static final String PROP_NAME = "name";
@@ -30,10 +31,9 @@ public final class Pool implements Serializable {
     return new Pool(ImmutableMap.copyOf(firstNonNull(members, ImmutableMap.of())), name);
   }
 
+  private @Nullable String _description;
   private final @Nonnull Map<String, PoolMember> _members;
-
   private @Nullable String _monitor;
-
   private final @Nonnull String _name;
 
   private Pool(Map<String, PoolMember> members, String name) {
@@ -44,6 +44,11 @@ public final class Pool implements Serializable {
   public Pool(String name) {
     _name = name;
     _members = new HashMap<>();
+  }
+
+  @JsonProperty(PROP_DESCRIPTION)
+  public @Nullable String getDescription() {
+    return _description;
   }
 
   @JsonProperty(PROP_MEMBERS)
@@ -59,6 +64,11 @@ public final class Pool implements Serializable {
   @JsonProperty(PROP_NAME)
   public @Nonnull String getName() {
     return _name;
+  }
+
+  @JsonProperty(PROP_DESCRIPTION)
+  public void setDescription(@Nullable String description) {
+    _description = description;
   }
 
   @JsonProperty(PROP_MONITOR)

@@ -72,13 +72,6 @@ import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.OriginType;
-import org.batfish.datamodel.OspfExternalRoute;
-import org.batfish.datamodel.OspfExternalType1Route;
-import org.batfish.datamodel.OspfExternalType2Route;
-import org.batfish.datamodel.OspfInterAreaRoute;
-import org.batfish.datamodel.OspfInternalRoute;
-import org.batfish.datamodel.OspfIntraAreaRoute;
-import org.batfish.datamodel.OspfRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.RipProcess;
@@ -99,22 +92,12 @@ import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.isis.IsisProcess;
-import org.batfish.datamodel.ospf.OspfArea;
-import org.batfish.datamodel.ospf.OspfAreaSummary;
-import org.batfish.datamodel.ospf.OspfMetricType;
-import org.batfish.datamodel.ospf.OspfNeighborConfigId;
-import org.batfish.datamodel.ospf.OspfProcess;
-import org.batfish.datamodel.ospf.OspfSessionProperties;
 import org.batfish.datamodel.ospf.OspfTopology;
-import org.batfish.datamodel.ospf.OspfTopology.EdgeId;
-import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.dataplane.exceptions.BgpRoutePropagationException;
 import org.batfish.dataplane.protocols.BgpProtocolHelper;
 import org.batfish.dataplane.protocols.GeneratedRouteHelper;
-import org.batfish.dataplane.protocols.OspfProtocolHelper;
-import org.batfish.dataplane.rib.AbstractRib;
 import org.batfish.dataplane.rib.AnnotatedRib;
 import org.batfish.dataplane.rib.BgpRib;
 import org.batfish.dataplane.rib.ConnectedRib;
@@ -122,11 +105,6 @@ import org.batfish.dataplane.rib.IsisLevelRib;
 import org.batfish.dataplane.rib.IsisRib;
 import org.batfish.dataplane.rib.KernelRib;
 import org.batfish.dataplane.rib.LocalRib;
-import org.batfish.dataplane.rib.OspfExternalType1Rib;
-import org.batfish.dataplane.rib.OspfExternalType2Rib;
-import org.batfish.dataplane.rib.OspfInterAreaRib;
-import org.batfish.dataplane.rib.OspfIntraAreaRib;
-import org.batfish.dataplane.rib.OspfRib;
 import org.batfish.dataplane.rib.Rib;
 import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.dataplane.rib.RibDelta.Builder;
@@ -212,22 +190,8 @@ public class VirtualRouter implements Serializable {
 
   @Nonnull final String _name;
   @Nonnull private final Node _node;
-  transient OspfExternalType1Rib _ospfExternalType1Rib;
-  transient OspfExternalType1Rib _ospfExternalType1StagingRib;
-  transient OspfExternalType2Rib _ospfExternalType2Rib;
-  transient OspfExternalType2Rib _ospfExternalType2StagingRib;
+  private transient Map<String, OspfRoutingProcess> _ospfProcesses;
 
-  transient Map<String, OspfRoutingProcess> _ospfProcesses;
-
-  @VisibleForTesting
-  transient SortedMap<OspfTopology.EdgeId, Queue<RouteAdvertisement<OspfExternalRoute>>>
-      _ospfExternalIncomingRoutes;
-
-  transient OspfInterAreaRib _ospfInterAreaRib;
-  transient OspfInterAreaRib _ospfInterAreaStagingRib;
-  transient OspfIntraAreaRib _ospfIntraAreaRib;
-  transient OspfIntraAreaRib _ospfIntraAreaStagingRib;
-  transient OspfRib _ospfRib;
   transient RipInternalRib _ripInternalRib;
   transient RipInternalRib _ripInternalStagingRib;
   transient RipRib _ripRib;
@@ -239,8 +203,6 @@ public class VirtualRouter implements Serializable {
 
   /** RIB containing generated routes */
   private transient Rib _generatedRib;
-
-  private transient RibDelta.Builder<OspfExternalRoute> _ospfExternalDeltaBuilder;
 
   /** Metadata about propagated prefixes to/from neighbors */
   private PrefixTracer _prefixTracer;
@@ -311,7 +273,7 @@ public class VirtualRouter implements Serializable {
    * iterations (e.g., static route RIB, connected route RIB, etc.)
    */
   @VisibleForTesting
-  void initForIgpComputation() {
+  void initForIgpComputation(OspfTopology ospfTopology) {
     initConnectedRib();
     initKernelRib();
     initLocalRib();
@@ -333,7 +295,15 @@ public class VirtualRouter implements Serializable {
     if (localRibGroup != null) {
       applyRibGroup(localRibGroup, _localRib);
     }
-    initIntraAreaOspfRoutes();
+
+    if (_vrf.getOspfProcess() != null) {
+      _ospfProcesses =
+          ImmutableMap.of(
+              _vrf.getOspfProcess().getProcessId(),
+              new OspfRoutingProcess(_vrf.getOspfProcess(), _name, _c, ospfTopology));
+    }
+    _ospfProcesses.values().forEach(OspfRoutingProcess::initialize);
+
     initEigrp();
     initBaseRipRoutes();
   }
@@ -368,18 +338,16 @@ public class VirtualRouter implements Serializable {
   /**
    * Prep for the Egp part of the computation
    *
-   * @param allNodes map of all network nodes, keyed by hostname
    * @param bgpTopology the bgp peering relationships
    * @param eigrpTopology The topology representing EIGRP adjacencies
    * @param ospfTopology The OSPF adjacency
    */
   void initForEgpComputation(
-      final Map<String, Node> allNodes,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
       Network<EigrpInterface, EigrpEdge> eigrpTopology,
       Network<IsisNode, IsisEdge> isisTopology,
       OspfTopology ospfTopology) {
-    initQueuesAndDeltaBuilders(bgpTopology, eigrpTopology, isisTopology, ospfTopology);
+    initQueuesAndDeltaBuilders(bgpTopology, eigrpTopology, isisTopology);
   }
 
   /**
@@ -387,14 +355,12 @@ public class VirtualRouter implements Serializable {
    *
    * @param bgpTopology the bgp peering relationships
    * @param eigrpTopology The topology representing EIGRP adjacencies
-   * @param ospfTopology Layer 3 network topology
    */
   @VisibleForTesting
   void initQueuesAndDeltaBuilders(
       final ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
       final Network<EigrpInterface, EigrpEdge> eigrpTopology,
-      final Network<IsisNode, IsisEdge> isisTopology,
-      final OspfTopology ospfTopology) {
+      final Network<IsisNode, IsisEdge> isisTopology) {
 
     // Initialize message queues for each BGP neighbor
     initBgpQueues(bgpTopology);
@@ -402,8 +368,6 @@ public class VirtualRouter implements Serializable {
     initEigrpQueues(eigrpTopology);
     // Initialize message queues for each IS-IS neighbor
     initIsisQueues(isisTopology);
-    // Initialize message queues for each OSPF neighbor
-    initOspfQueues(ospfTopology);
     // Initalize message queues for all neighboring VRFs/VirtualRouters
     initCrossVrfQueues();
   }
@@ -429,32 +393,6 @@ public class VirtualRouter implements Serializable {
     }
   }
 
-  private void initOspfQueues(OspfTopology topology) {
-    OspfProcess proc = _vrf.getOspfProcess();
-
-    if (proc == null) {
-      // No OSPF process, nothing to do
-      _ospfExternalIncomingRoutes = ImmutableSortedMap.of();
-      return;
-    }
-
-    _ospfExternalIncomingRoutes =
-        proc.getOspfNeighborConfigs().keySet().stream()
-            .flatMap(
-                interfaceName ->
-                    topology
-                        .incomingEdges(
-                            new OspfNeighborConfigId(
-                                _node.getConfiguration().getHostname(),
-                                _name,
-                                proc.getProcessId(),
-                                interfaceName))
-                        .stream())
-            .collect(
-                ImmutableSortedMap.toImmutableSortedMap(
-                    Ordering.natural(), Function.identity(), v -> new ConcurrentLinkedQueue<>()));
-  }
-
   /**
    * Initialize incoming BGP message queues.
    *
@@ -465,7 +403,7 @@ public class VirtualRouter implements Serializable {
       _bgpIncomingRoutes = ImmutableSortedMap.of();
     } else {
       _bgpIncomingRoutes =
-          Stream.concat(
+          Streams.concat(
                   _vrf.getBgpProcess().getActiveNeighbors().entrySet().stream()
                       .map(
                           e ->
@@ -474,7 +412,9 @@ public class VirtualRouter implements Serializable {
                   _vrf.getBgpProcess().getPassiveNeighbors().entrySet().stream()
                       .map(
                           e ->
-                              new BgpPeerConfigId(getHostname(), _vrf.getName(), e.getKey(), true)))
+                              new BgpPeerConfigId(getHostname(), _vrf.getName(), e.getKey(), true)),
+                  _vrf.getBgpProcess().getInterfaceNeighbors().keySet().stream()
+                      .map(iface -> new BgpPeerConfigId(getHostname(), _vrf.getName(), iface)))
               .filter(bgpTopology.nodes()::contains)
               .flatMap(
                   dst ->
@@ -592,72 +532,6 @@ public class VirtualRouter implements Serializable {
     _fib = new FibImpl(_mainRib);
   }
 
-  boolean computeInterAreaSummaries() {
-    OspfProcess proc = _vrf.getOspfProcess();
-    boolean changed = false;
-    // Ensure we have a running OSPF process on the VRF, otherwise bail.
-    if (proc == null) {
-      return false;
-    }
-    // Admin cost for the given protocol
-    int admin = RoutingProtocol.OSPF_IA.getSummaryAdministrativeCost(_c.getConfigurationFormat());
-
-    // Determine whether to use min metric by default, based on RFC1583 compatibility setting.
-    // Routers (at least Cisco and Juniper) default to min metric unless using RFC2328 with
-    // RFC1583 compatibility explicitly disabled, in which case they default to max.
-    boolean useMin = firstNonNull(proc.getRfc1583Compatible(), Boolean.TRUE);
-
-    // Compute summaries for each area
-    for (Entry<Long, OspfArea> e : proc.getAreas().entrySet()) {
-      long areaNum = e.getKey();
-      OspfArea area = e.getValue();
-      for (Entry<Prefix, OspfAreaSummary> e2 : area.getSummaries().entrySet()) {
-        Prefix prefix = e2.getKey();
-        OspfAreaSummary summary = e2.getValue();
-
-        // Only advertised summaries can contribute
-        if (!summary.getAdvertised()) {
-          continue;
-        }
-
-        Long metric = summary.getMetric();
-        if (summary.getMetric() == null) {
-          // No metric was configured; compute it from any possible contributing routes.
-          for (OspfIntraAreaRoute contributingRoute : _ospfIntraAreaRib.getTypedRoutes()) {
-            metric =
-                OspfProtocolHelper.computeUpdatedOspfSummaryMetric(
-                    contributingRoute, prefix, metric, areaNum, useMin);
-          }
-          for (OspfInterAreaRoute contributingRoute : _ospfInterAreaRib.getTypedRoutes()) {
-            metric =
-                OspfProtocolHelper.computeUpdatedOspfSummaryMetric(
-                    contributingRoute, prefix, metric, areaNum, useMin);
-          }
-        }
-
-        // No routes contributed to the summary, nothing to construct
-        if (metric == null) {
-          continue;
-        }
-
-        // Non-null metric means we generate a new summary and put it in the RIB
-        OspfInterAreaRoute summaryRoute =
-            OspfInterAreaRoute.builder()
-                .setNetwork(prefix)
-                .setNextHopIp(Ip.ZERO)
-                .setAdmin(admin)
-                .setMetric(metric)
-                .setArea(areaNum)
-                .setNonRouting(true)
-                .build();
-        if (!_ospfInterAreaStagingRib.mergeRouteGetDelta(summaryRoute).isEmpty()) {
-          changed = true;
-        }
-      }
-    }
-    return changed;
-  }
-
   /**
    * Initializes BGP RIBs prior to any dataplane iterations based on the external BGP advertisements
    * coming into the network
@@ -706,7 +580,7 @@ public class VirtualRouter implements Serializable {
       }
 
       Ip srcIp = advert.getSrcIp();
-      // TODO: support passive bgp connections
+      // TODO: support passive and unnumbered bgp connections
       Prefix srcPrefix = Prefix.create(srcIp, Prefix.MAX_PREFIX_LENGTH);
       BgpPeerConfig neighbor = _vrf.getBgpProcess().getActiveNeighbors().get(srcPrefix);
       if (neighbor == null) {
@@ -891,55 +765,6 @@ public class VirtualRouter implements Serializable {
     finalizeBgpRoutesAndQueueOutgoingMessages(deltas, allNodes, bgpTopology, networkConfigurations);
   }
 
-  /** Initialize Intra-area OSPF routes from the interface prefixes */
-  private void initIntraAreaOspfRoutes() {
-    OspfProcess proc = _vrf.getOspfProcess();
-    if (proc == null) {
-      return; // nothing to do
-    }
-    /*
-     * Initialize intra-area routes from connected routes.
-     * For each interface in an OSPF area and each interface prefix,
-     * construct a new OSPF intra-area route. Put it in the intra-area rib.
-     */
-    proc.getAreas()
-        .forEach(
-            (areaNum, area) -> {
-              for (String ifaceName : area.getInterfaces()) {
-                Interface iface = _c.getAllInterfaces().get(ifaceName);
-                if (iface.getActive()) {
-                  Set<Prefix> allNetworkPrefixes =
-                      iface.getAllAddresses().stream()
-                          .map(InterfaceAddress::getPrefix)
-                          .collect(Collectors.toSet());
-                  int interfaceOspfCost = iface.getOspfCost();
-                  for (Prefix prefix : allNetworkPrefixes) {
-                    long cost = interfaceOspfCost;
-                    boolean stubNetwork = iface.getOspfPassive() || iface.getOspfPointToPoint();
-                    if (stubNetwork) {
-                      if (proc.getMaxMetricStubNetworks() != null) {
-                        cost = proc.getMaxMetricStubNetworks();
-                      }
-                    } else if (proc.getMaxMetricTransitLinks() != null) {
-                      cost = proc.getMaxMetricTransitLinks();
-                    }
-                    OspfIntraAreaRoute route =
-                        OspfIntraAreaRoute.builder()
-                            .setNetwork(prefix)
-                            .setNextHopIp(null)
-                            .setAdmin(
-                                RoutingProtocol.OSPF.getDefaultAdministrativeCost(
-                                    _c.getConfigurationFormat()))
-                            .setMetric(cost)
-                            .setArea(areaNum)
-                            .build();
-                    _ospfIntraAreaRib.mergeRoute(route);
-                  }
-                }
-              }
-            });
-  }
-
   /** Initialize RIP routes from the interface prefixes */
   @VisibleForTesting
   void initBaseRipRoutes() {
@@ -1047,44 +872,6 @@ public class VirtualRouter implements Serializable {
         }
       }
     }
-  }
-
-  @Nullable
-  @VisibleForTesting
-  OspfExternalRoute computeOspfExportRoute(
-      AnnotatedRoute<AbstractRoute> potentialExportRoute,
-      RoutingPolicy exportPolicy,
-      OspfProcess proc) {
-    OspfExternalRoute.Builder outputRouteBuilder = OspfExternalRoute.builder();
-    // Export based on the policy result of processing the potentialExportRoute
-    boolean accept =
-        exportPolicy.process(potentialExportRoute, outputRouteBuilder, null, _name, Direction.OUT);
-    if (!accept) {
-      return null;
-    }
-    OspfMetricType metricType = outputRouteBuilder.getOspfMetricType();
-    outputRouteBuilder.setAdmin(
-        outputRouteBuilder
-            .getOspfMetricType()
-            .toRoutingProtocol()
-            .getDefaultAdministrativeCost(_c.getConfigurationFormat()));
-    outputRouteBuilder.setNetwork(potentialExportRoute.getNetwork());
-    Long maxMetricExternalNetworks = proc.getMaxMetricExternalNetworks();
-    long costToAdvertiser;
-    if (maxMetricExternalNetworks != null) {
-      if (metricType == OspfMetricType.E1) {
-        outputRouteBuilder.setMetric(maxMetricExternalNetworks);
-      }
-      costToAdvertiser = maxMetricExternalNetworks;
-    } else {
-      costToAdvertiser = 0L;
-    }
-    outputRouteBuilder.setCostToAdvertiser(costToAdvertiser);
-    outputRouteBuilder.setAdvertiser(_c.getHostname());
-    outputRouteBuilder.setArea(OspfRoute.NO_AREA);
-    outputRouteBuilder.setLsaMetric(outputRouteBuilder.getMetric());
-    outputRouteBuilder.setNonRouting(true);
-    return outputRouteBuilder.build();
   }
 
   /**
@@ -1197,124 +984,6 @@ public class VirtualRouter implements Serializable {
     return _virtualEigrpProcesses.get(asn);
   }
 
-  void initOspfExports(@Nonnull Map<String, Node> allNodes) {
-    OspfProcess proc = _vrf.getOspfProcess();
-    // Nothing to do
-    if (proc == null) {
-      return;
-    }
-
-    // get OSPF export policy name
-    String exportPolicyName = _vrf.getOspfProcess().getExportPolicy();
-    if (exportPolicyName == null) {
-      return; // nothing to export
-    }
-
-    RoutingPolicy exportPolicy = _c.getRoutingPolicies().get(exportPolicyName);
-    if (exportPolicy == null) {
-      return; // nothing to export
-    }
-
-    // Export process-level generated routes.
-    initOspfGeneratedRouteExports(proc, exportPolicy, allNodes);
-
-    // For each route in the previous RIB, compute an export route and add it to the appropriate
-    // RIB.
-    RibDelta.Builder<OspfExternalType1Route> d1 = RibDelta.builder();
-    RibDelta.Builder<OspfExternalType2Route> d2 = RibDelta.builder();
-    for (AnnotatedRoute<AbstractRoute> potentialExport : _mainRib.getTypedRoutes()) {
-      OspfExternalRoute outputRoute = computeOspfExportRoute(potentialExport, exportPolicy, proc);
-      if (outputRoute == null) {
-        continue; // no need to export
-      }
-      if (outputRoute.getOspfMetricType() == OspfMetricType.E1) {
-        d1.from(_ospfExternalType1Rib.mergeRouteGetDelta((OspfExternalType1Route) outputRoute));
-      } else { // assuming here that MetricType exists. Or E2 is the default
-        d2.from(_ospfExternalType2Rib.mergeRouteGetDelta((OspfExternalType2Route) outputRoute));
-      }
-    }
-    queueOutgoingOspfExternalRoutes(allNodes, d1.build(), d2.build());
-  }
-
-  /**
-   * Queues the given {@link OspfProcess}'s generated routes on the neighbors that should receive
-   * them.
-   */
-  private void initOspfGeneratedRouteExports(
-      @Nonnull OspfProcess proc,
-      @Nonnull RoutingPolicy exportPolicy,
-      @Nonnull Map<String, Node> allNodes) {
-    RibDelta.Builder<OspfExternalType1Route> type1RoutesForEveryone = RibDelta.builder();
-    RibDelta.Builder<OspfExternalType2Route> type2RoutesForEveryone = RibDelta.builder();
-    RibDelta.Builder<OspfExternalType1Route> type1RoutesForNormalAreas = RibDelta.builder();
-    RibDelta.Builder<OspfExternalType2Route> type2RoutesForNormalAreas = RibDelta.builder();
-
-    // Run each generated route through its own generation policy if present, then run the resulting
-    // activated routes through the standard OSPF export policy.
-    proc.getGeneratedRoutes().stream()
-        .map(
-            r -> {
-              String generationPolicyName = r.getGenerationPolicy();
-              if (generationPolicyName == null) {
-                // This route should be generated unconditionally
-                return r;
-              }
-              RoutingPolicy generationPolicy = _c.getRoutingPolicies().get(generationPolicyName);
-              if (generationPolicy == null) {
-                // Ignore route; its generation is supposed to depend on some undefined policy
-                return null;
-              }
-              GeneratedRoute.Builder activatedRoute =
-                  GeneratedRouteHelper.activateGeneratedRoute(
-                      r, generationPolicy, _mainRib.getTypedRoutes(), _name);
-              return activatedRoute == null ? null : activatedRoute.build();
-            })
-        .filter(Objects::nonNull)
-        .map(r -> computeOspfExportRoute(annotateRoute(r), exportPolicy, proc))
-        .filter(Objects::nonNull)
-        .forEach(
-            r -> {
-              // Don't propagate default generated routes to stubby or NSSA areas
-              if (r.getOspfMetricType() == OspfMetricType.E1) {
-                if (r.getNetwork().equals(Prefix.ZERO)) {
-                  type1RoutesForNormalAreas.from(
-                      _ospfExternalType1Rib.mergeRouteGetDelta((OspfExternalType1Route) r));
-                } else {
-                  type1RoutesForEveryone.from(
-                      _ospfExternalType1Rib.mergeRouteGetDelta((OspfExternalType1Route) r));
-                }
-              } else { // assuming here that MetricType exists or E2 is the default
-                if (r.getNetwork().equals(Prefix.ZERO)) {
-                  type2RoutesForNormalAreas.from(
-                      _ospfExternalType2Rib.mergeRouteGetDelta((OspfExternalType2Route) r));
-                } else {
-                  type2RoutesForEveryone.from(
-                      _ospfExternalType2Rib.mergeRouteGetDelta((OspfExternalType2Route) r));
-                }
-              }
-            });
-
-    for (EdgeId ospfEdge : _ospfExternalIncomingRoutes.keySet()) {
-      OspfArea localArea =
-          _vrf.getInterfaces().get(ospfEdge.getHead().getInterfaceName()).getOspfArea();
-      assert localArea != null; // otherwise the edge would not be built.
-
-      // Get remote VirtualRouter
-      VirtualRouter remoteVr =
-          allNodes
-              .get(ospfEdge.getTail().getHostname())
-              .getVirtualRouters()
-              .get(ospfEdge.getTail().getVrfName());
-      OspfTopology.EdgeId reversedEdge = ospfEdge.reverse();
-      remoteVr.enqueueOspfExternalRoutes(reversedEdge, type1RoutesForEveryone.build());
-      remoteVr.enqueueOspfExternalRoutes(reversedEdge, type2RoutesForEveryone.build());
-      if (localArea.getStubType() == StubType.NONE) {
-        remoteVr.enqueueOspfExternalRoutes(reversedEdge, type1RoutesForNormalAreas.build());
-        remoteVr.enqueueOspfExternalRoutes(reversedEdge, type2RoutesForNormalAreas.build());
-      }
-    }
-  }
-
   /** Initialize all ribs on this router. All RIBs will be empty */
   @VisibleForTesting
   final void initRibs() {
@@ -1361,17 +1030,6 @@ public class VirtualRouter implements Serializable {
     _isisL2Rib = new IsisLevelRib(new TreeMap<>());
     _isisL1StagingRib = new IsisLevelRib(null);
     _isisL2StagingRib = new IsisLevelRib(null);
-
-    // OSPF
-    _ospfExternalType1Rib = new OspfExternalType1Rib(getHostname(), new TreeMap<>());
-    _ospfExternalType2Rib = new OspfExternalType2Rib(getHostname(), new TreeMap<>());
-    _ospfExternalType1StagingRib = new OspfExternalType1Rib(getHostname(), null);
-    _ospfExternalType2StagingRib = new OspfExternalType2Rib(getHostname(), null);
-    _ospfInterAreaRib = new OspfInterAreaRib();
-    _ospfInterAreaStagingRib = new OspfInterAreaRib();
-    _ospfIntraAreaRib = new OspfIntraAreaRib();
-    _ospfIntraAreaStagingRib = new OspfIntraAreaRib();
-    _ospfRib = new OspfRib();
 
     // RIP
     _ripInternalRib = new RipInternalRib();
@@ -1465,7 +1123,8 @@ public class VirtualRouter implements Serializable {
       BgpSessionProperties sessionProperties =
           getBgpSessionProperties(bgpTopology, new BgpEdgeId(remoteConfigId, ourConfigId));
       BgpPeerConfig ourBgpConfig = requireNonNull(nc.getBgpPeerConfig(e.getKey().dst()));
-      BgpPeerConfig remoteBgpConfig = requireNonNull(nc.getBgpPeerConfig(e.getKey().src()));
+      // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
+      Ip remoteIp = sessionProperties.getTailIp();
 
       BgpRib targetRib = sessionProperties.isEbgp() ? _ebgpStagingRib : _ibgpStagingRib;
       Builder<AnnotatedRoute<AbstractRoute>> perNeighborDeltaForRibGroups = RibDelta.builder();
@@ -1494,7 +1153,7 @@ public class VirtualRouter implements Serializable {
                 importPolicy.process(
                     remoteRoute,
                     transformedIncomingRouteBuilder,
-                    remoteBgpConfig.getLocalIp(),
+                    remoteIp,
                     ourConfigId.getRemotePeerPrefix(),
                     _name,
                     IN);
@@ -1505,7 +1164,7 @@ public class VirtualRouter implements Serializable {
           _prefixTracer.filtered(
               remoteRoute.getNetwork(),
               ourConfigId.getHostname(),
-              remoteBgpConfig.getLocalIp(),
+              remoteIp,
               remoteConfigId.getVrfName(),
               importPolicyName,
               IN);
@@ -1530,7 +1189,7 @@ public class VirtualRouter implements Serializable {
           _prefixTracer.installed(
               transformedIncomingRoute.getNetwork(),
               remoteConfigId.getHostname(),
-              remoteBgpConfig.getLocalIp(),
+              remoteIp,
               remoteConfigId.getVrfName(),
               importPolicyName);
         }
@@ -1616,360 +1275,6 @@ public class VirtualRouter implements Serializable {
   }
 
   /**
-   * Propagate OSPF external routes from our neighbors by reading OSPF route "advertisements" from
-   * our queues.
-   *
-   * @param allNodes map of all nodes, keyed by hostname
-   * @param ospfTopology the OSPF topology to use
-   * @return a pair of {@link RibDelta}s, for Type1 and Type2 routes
-   */
-  @Nullable
-  public Entry<RibDelta<OspfExternalType1Route>, RibDelta<OspfExternalType2Route>>
-      propagateOspfExternalRoutes(final Map<String, Node> allNodes, OspfTopology ospfTopology) {
-    String node = _c.getHostname();
-    OspfProcess proc = _vrf.getOspfProcess();
-    if (proc == null) {
-      return null;
-    }
-
-    RibDelta.Builder<OspfExternalType1Route> builderType1 = RibDelta.builder();
-    RibDelta.Builder<OspfExternalType2Route> builderType2 = RibDelta.builder();
-
-    _ospfExternalIncomingRoutes.forEach(
-        (ospfEdge, queue) -> {
-          if (queue.isEmpty()) {
-            // Exit early if no routes to process.
-            return;
-          }
-
-          OspfNeighborConfigId localNode = ospfEdge.getHead();
-          OspfNeighborConfigId neighborNode = ospfEdge.getTail();
-          // Invariant: edge value (session properties) must exist for each edge
-          OspfSessionProperties session =
-              ospfTopology
-                  .getSession(ospfEdge)
-                  .orElseThrow(() -> new IllegalStateException("No OSPF edge"));
-          assert localNode.getHostname().equals(node); // queue invariant of how we built the queue.
-
-          Interface localInterface = _vrf.getInterfaces().get(localNode.getInterfaceName());
-          assert localInterface != null; // invariant of how routes are pushed into the queue.
-          assert localInterface.getOspfArea() != null; // ^^.
-          long localArea = localInterface.getOspfArea().getAreaNumber();
-
-          Node neighbor = allNodes.get(neighborNode.getHostname());
-          Interface neighborInterface =
-              neighbor.getConfiguration().getAllInterfaces().get(neighborNode.getInterfaceName());
-          OspfProcess neighborProc = neighborInterface.getVrf().getOspfProcess();
-          assert neighborProc != null; // invariant of edge existing.
-
-          /*
-           * We have an ospf neighbor relationship on this edge. So we
-           * should add all ospf external type 1(2) routes from this
-           * neighbor into our ospf external type 1(2) staging rib. For
-           * type 1, the cost of the route increases each time. For type 2,
-           * the cost remains constant, but we must keep track of cost to
-           * advertiser as a tie-breaker.
-           */
-          long incrementalCost =
-              proc.getMaxMetricTransitLinks() != null
-                  ? proc.getMaxMetricTransitLinks()
-                  : localInterface.getOspfCost().longValue();
-
-          while (queue.peek() != null) {
-            RouteAdvertisement<OspfExternalRoute> routeAdvert = queue.remove();
-            boolean withdraw = routeAdvert.isWithdrawn();
-            OspfExternalRoute neighborRoute = routeAdvert.getRoute();
-            long areaInRoute = neighborRoute.getArea();
-            OspfExternalRoute.Builder newRouteB =
-                OspfExternalRoute.builder()
-                    .setNetwork(neighborRoute.getNetwork())
-                    // Neighbor IP is the IP of tail node which means Ip1
-                    .setNextHopIp(session.getIpLink().getIp1())
-                    .setLsaMetric(neighborRoute.getLsaMetric())
-                    .setAdvertiser(neighborRoute.getAdvertiser())
-                    .setOspfMetricType(neighborRoute.getOspfMetricType())
-                    .setAdmin(
-                        neighborRoute
-                            .getOspfMetricType()
-                            .toRoutingProtocol()
-                            .getDefaultAdministrativeCost(_c.getConfigurationFormat()));
-
-            if (neighborRoute instanceof OspfExternalType1Route) {
-              long baseMetric = neighborRoute.getMetric();
-              long baseCostToAdvertiser = neighborRoute.getCostToAdvertiser();
-              if (areaInRoute != OspfRoute.NO_AREA && localArea != areaInRoute) {
-                if (localArea != 0L && areaInRoute != 0L) {
-                  continue;
-                }
-                Long maxMetricSummaryNetworks = neighborProc.getMaxMetricSummaryNetworks();
-                if (maxMetricSummaryNetworks != null) {
-                  baseMetric = maxMetricSummaryNetworks + neighborRoute.getLsaMetric();
-                  baseCostToAdvertiser = maxMetricSummaryNetworks;
-                }
-              }
-              long newMetric = baseMetric + incrementalCost;
-              long newCostToAdvertiser = baseCostToAdvertiser + incrementalCost;
-              OspfExternalType1Route newRoute =
-                  (OspfExternalType1Route)
-                      newRouteB
-                          .setMetric(newMetric)
-                          .setArea(localArea)
-                          .setCostToAdvertiser(newCostToAdvertiser)
-                          .build();
-              if (withdraw) {
-                builderType1.remove(newRoute, Reason.WITHDRAW);
-                _ospfExternalType1Rib.removeBackupRoute(newRoute);
-              } else {
-                builderType1.from(_ospfExternalType1StagingRib.mergeRouteGetDelta(newRoute));
-                _ospfExternalType1Rib.addBackupRoute(newRoute);
-              }
-
-            } else if (neighborRoute instanceof OspfExternalType2Route) {
-              long newArea;
-              long baseCostToAdvertiser = neighborRoute.getCostToAdvertiser();
-              if (areaInRoute == OspfRoute.NO_AREA) {
-                newArea = localArea;
-              } else {
-                newArea = areaInRoute;
-                Long maxMetricSummaryNetworks = neighborProc.getMaxMetricSummaryNetworks();
-                if (localArea != areaInRoute && maxMetricSummaryNetworks != null) {
-                  baseCostToAdvertiser = maxMetricSummaryNetworks;
-                }
-              }
-              long newCostToAdvertiser = baseCostToAdvertiser + incrementalCost;
-              OspfExternalType2Route newRoute =
-                  (OspfExternalType2Route)
-                      newRouteB
-                          .setMetric(neighborRoute.getMetric())
-                          .setArea(newArea)
-                          .setCostToAdvertiser(newCostToAdvertiser)
-                          .build();
-              if (withdraw) {
-                builderType2.remove(newRoute, Reason.WITHDRAW);
-                _ospfExternalType2Rib.addBackupRoute(newRoute);
-              } else {
-                builderType2.from(_ospfExternalType2StagingRib.mergeRouteGetDelta(newRoute));
-                _ospfExternalType2Rib.addBackupRoute(newRoute);
-              }
-            }
-          }
-        });
-    return new SimpleEntry<>(builderType1.build(), builderType2.build());
-  }
-
-  /**
-   * Construct an OSPF Inter-Area route and put into our staging rib. Note, no route validity checks
-   * are performed, (i.e., whether the route should even go into the staging rib). {@link
-   * #propagateOspfInternalRoutesFromNeighbor} takes care of such logic.
-   *
-   * @param neighborRoute the route to propagate
-   * @param nextHopIp nextHopIp for this route (the neighbor's IP)
-   * @param incrementalCost OSPF cost of the interface from which this route came (added to route
-   *     cost)
-   * @param adminCost OSPF administrative distance
-   * @param areaNum area number of the route
-   * @return True if the route was added to the inter-area staging RIB
-   */
-  @VisibleForTesting
-  boolean stageOspfInterAreaRoute(
-      OspfInternalRoute neighborRoute,
-      Long maxMetricSummaryNetworks,
-      Ip nextHopIp,
-      long incrementalCost,
-      int adminCost,
-      long areaNum) {
-    long newCost;
-    if (maxMetricSummaryNetworks != null) {
-      newCost = maxMetricSummaryNetworks + incrementalCost;
-    } else {
-      newCost = neighborRoute.getMetric() + incrementalCost;
-    }
-    OspfInterAreaRoute newRoute =
-        OspfInterAreaRoute.builder()
-            .setNetwork(neighborRoute.getNetwork())
-            .setNextHopIp(nextHopIp)
-            .setAdmin(adminCost)
-            .setMetric(newCost)
-            .setArea(areaNum)
-            .build();
-    return _ospfInterAreaStagingRib.mergeRoute(newRoute);
-  }
-
-  private boolean propagateOspfInterAreaRouteFromIntraAreaRoute(
-      Configuration neighbor,
-      OspfProcess neighborProc,
-      OspfIntraAreaRoute neighborRoute,
-      long incrementalCost,
-      Interface neighborInterface,
-      int adminCost,
-      long linkAreaNum) {
-    return OspfProtocolHelper.isOspfInterAreaFromIntraAreaPropagationAllowed(
-            linkAreaNum, neighbor, neighborProc, neighborRoute, neighborInterface.getOspfArea())
-        && stageOspfInterAreaRoute(
-            neighborRoute,
-            neighborInterface.getVrf().getOspfProcess().getMaxMetricSummaryNetworks(),
-            neighborInterface.getAddress().getIp(),
-            incrementalCost,
-            adminCost,
-            linkAreaNum);
-  }
-
-  /**
-   * Propagate OSPF Internal routes from a single neighbor (i.e., sender) by reaching into its
-   * inter- and intra-area RIBs, taking their routes, and putting them into the receiver's
-   * respective RIBs.
-   *
-   * @param receiverProc The OSPF process that will be receiving the routes
-   * @param sender the sender node
-   * @param receiverInterface interface on which the receiver is connected to the sender
-   * @param senderInterface interface that the sender uses to connect to the receiver
-   * @param adminCost the admin cost the receiver will assign to the routes that it gets.
-   * @return true if new routes have been added to our RIB
-   */
-  boolean propagateOspfInternalRoutesFromNeighbor(
-      OspfProcess receiverProc,
-      Node sender,
-      Interface receiverInterface,
-      Interface senderInterface,
-      int adminCost) {
-    OspfArea area = receiverInterface.getOspfArea();
-    OspfArea neighborArea = senderInterface.getOspfArea();
-    // Ensure that the link (i.e., both interfaces) has OSPF enabled and OSPF areas are set
-    if (!receiverInterface.getOspfEnabled()
-        || receiverInterface.getOspfPassive()
-        || !senderInterface.getOspfEnabled()
-        || senderInterface.getOspfPassive()
-        || area == null
-        || neighborArea == null
-        || area.getAreaNumber() != neighborArea.getAreaNumber()) {
-      return false;
-    }
-    /*
-     * An OSPF neighbor relationship exists on this edge. So we examine all intra- and inter-area
-     * routes belonging to the neighbor to see what should be propagated to this router. We add the
-     * incremental cost associated with our settings and the connecting interface, and use the
-     * neighborInterface's address as the next hop ip.
-     */
-    int connectingInterfaceCost = receiverInterface.getOspfCost();
-    long incrementalCost =
-        receiverProc.getMaxMetricTransitLinks() != null
-            ? receiverProc.getMaxMetricTransitLinks()
-            : connectingInterfaceCost;
-    long linkAreaNum = area.getAreaNumber();
-    Configuration senderConfiguration = sender.getConfiguration();
-    String senderVrfName = senderInterface.getVrfName();
-    OspfProcess senderProc = senderConfiguration.getVrfs().get(senderVrfName).getOspfProcess();
-    VirtualRouter senderVirtualRouter = sender.getVirtualRouters().get(senderVrfName);
-    boolean changed = false;
-    for (OspfIntraAreaRoute route : senderVirtualRouter._ospfIntraAreaRib.getTypedRoutes()) {
-      changed |=
-          propagateOspfIntraAreaRoute(
-              route, incrementalCost, senderInterface, adminCost, linkAreaNum);
-      changed |=
-          propagateOspfInterAreaRouteFromIntraAreaRoute(
-              senderConfiguration,
-              senderProc,
-              route,
-              incrementalCost,
-              senderInterface,
-              adminCost,
-              linkAreaNum);
-    }
-    for (OspfInterAreaRoute route : senderVirtualRouter._ospfInterAreaRib.getTypedRoutes()) {
-      changed |=
-          propagateOspfInterAreaRouteFromInterAreaRoute(
-              receiverProc,
-              senderConfiguration,
-              senderProc,
-              route,
-              incrementalCost,
-              senderInterface,
-              adminCost,
-              linkAreaNum);
-    }
-    changed |=
-        originateOspfStubAreaDefaultRoute(
-            senderProc, incrementalCost, senderInterface, adminCost, area);
-    return changed;
-  }
-
-  /**
-   * If neighbor is an ABR and this is a stub area link, propagate
-   *
-   * @param neighborProc The adjacent {@link OspfProcess}
-   * @param incrementalCost The cost to reach the propagator
-   * @param neighborInterface The propagator's interface on the link
-   * @param adminCost The administrative cost of the route to be installed
-   * @param area The area of the link
-   * @return whether this route changed the RIB into which we merged it
-   */
-  private boolean originateOspfStubAreaDefaultRoute(
-      OspfProcess neighborProc,
-      long incrementalCost,
-      Interface neighborInterface,
-      int adminCost,
-      OspfArea area) {
-    if (!OspfProtocolHelper.isOspfInterAreaDefaultOriginationAllowed(
-        _vrf.getOspfProcess(), neighborProc, area, neighborInterface.getOspfArea())) {
-      return false;
-    }
-    long metric = incrementalCost + area.getMetricOfDefaultRoute();
-    return _ospfInterAreaStagingRib.mergeRoute(
-        OspfInterAreaRoute.builder()
-            .setNetwork(Prefix.ZERO)
-            .setNextHopIp(neighborInterface.getAddress().getIp())
-            .setAdmin(adminCost)
-            .setMetric(metric)
-            .setArea(area.getAreaNumber())
-            .build());
-  }
-
-  boolean propagateOspfInterAreaRouteFromInterAreaRoute(
-      OspfProcess proc,
-      Configuration neighbor,
-      OspfProcess neighborProc,
-      OspfInterAreaRoute neighborRoute,
-      long incrementalCost,
-      Interface neighborInterface,
-      int adminCost,
-      long linkAreaNum) {
-    return OspfProtocolHelper.isOspfInterAreaFromInterAreaPropagationAllowed(
-            proc,
-            linkAreaNum,
-            neighbor,
-            neighborProc,
-            neighborRoute,
-            neighborInterface.getOspfArea())
-        && stageOspfInterAreaRoute(
-            neighborRoute,
-            neighborInterface.getVrf().getOspfProcess().getMaxMetricSummaryNetworks(),
-            neighborInterface.getAddress().getIp(),
-            incrementalCost,
-            adminCost,
-            linkAreaNum);
-  }
-
-  boolean propagateOspfIntraAreaRoute(
-      OspfIntraAreaRoute neighborRoute,
-      long incrementalCost,
-      Interface neighborInterface,
-      int adminCost,
-      long linkAreaNum) {
-    long newCost = neighborRoute.getMetric() + incrementalCost;
-    Ip nextHopIp = neighborInterface.getAddress().getIp();
-    OspfIntraAreaRoute newRoute =
-        OspfIntraAreaRoute.builder()
-            .setNetwork(neighborRoute.getNetwork())
-            .setNextHopIp(nextHopIp)
-            .setAdmin(adminCost)
-            .setMetric(newCost)
-            .setArea(linkAreaNum)
-            .build();
-    return neighborRoute.getArea() == linkAreaNum
-        && (_ospfIntraAreaStagingRib.mergeRoute(newRoute));
-  }
-
-  /**
    * Propagate EIGRP external routes from our neighbors by reading EIGRP route "advertisements" from
    * our queues.
    *
@@ -2006,54 +1311,6 @@ public class VirtualRouter implements Serializable {
     return _virtualEigrpProcesses.values().stream()
         .map(proc -> proc.propagateInternalRoutes(nodes, topology, nc))
         .reduce(false, (a, b) -> a || b);
-  }
-
-  /**
-   * Propagate OSPF internal routes from every valid OSPF neighbor
-   *
-   * @param nodes mapping of node names to instances.
-   * @param topology network topology
-   * @return true if new routes have been added to the staging RIB
-   */
-  boolean propagateOspfInternalRoutes(Map<String, Node> nodes, Topology topology) {
-    OspfProcess proc = _vrf.getOspfProcess();
-    if (proc == null) {
-      return false; // nothing to do
-    }
-
-    boolean changed = false;
-    String node = _c.getHostname();
-
-    // Default OSPF admin cost for constructing new routes
-    int adminCost = RoutingProtocol.OSPF.getDefaultAdministrativeCost(_c.getConfigurationFormat());
-    SortedSet<Edge> edges = topology.getNodeEdges().get(node);
-    if (edges == null) {
-      // there are no edges, so OSPF won't produce anything
-      return false;
-    }
-
-    for (Edge edge : edges) {
-      if (!edge.getNode1().equals(node)) {
-        continue;
-      }
-
-      String connectingInterfaceName = edge.getInt1();
-      Interface connectingInterface = _vrf.getInterfaces().get(connectingInterfaceName);
-      if (connectingInterface == null) {
-        // wrong vrf, so skip
-        continue;
-      }
-
-      String neighborName = edge.getNode2();
-      Node neighbor = nodes.get(neighborName);
-      Interface neighborInterface =
-          neighbor.getConfiguration().getAllInterfaces().get(edge.getInt2());
-
-      changed |=
-          propagateOspfInternalRoutesFromNeighbor(
-              proc, neighbor, connectingInterface, neighborInterface, adminCost);
-    }
-    return changed;
   }
 
   /**
@@ -2225,19 +1482,10 @@ public class VirtualRouter implements Serializable {
 
   private static BgpSessionProperties getBgpSessionProperties(
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology, BgpEdgeId edge) {
-    /*
-    BGP topology edges not guaranteed to be symmetrical (in case of dynamic neighbors).
-    So to get session properties, we might need to flip the src/dst edge
-     */
+    // BGP topology edge guaranteed to exist since the session is established
     Optional<BgpSessionProperties> session = bgpTopology.edgeValue(edge.src(), edge.dst());
-    return session.orElseGet(
-        () ->
-            bgpTopology
-                .edgeValue(edge.dst(), edge.src())
-                .orElseThrow(
-                    () ->
-                        new IllegalArgumentException(
-                            String.format("No BGP edge %s in BGP topology", edge))));
+    return session.orElseThrow(
+        () -> new IllegalArgumentException(String.format("No BGP edge %s in BGP topology", edge)));
   }
 
   private void queueOutgoingIsisRoutes(
@@ -2316,51 +1564,6 @@ public class VirtualRouter implements Serializable {
   }
 
   /**
-   * Send out OSPF External route updates to our neighbors
-   *
-   * @param allNodes all network nodes, keyed by hostname
-   * @param type1delta A {@link RibDelta} containing diffs with respect to OSPF Type1 external
-   *     routes
-   * @param type2delta A {@link RibDelta} containing diffs with respect to OSPF Type2 external
-   */
-  private void queueOutgoingOspfExternalRoutes(
-      @Nonnull Map<String, Node> allNodes,
-      @Nonnull RibDelta<OspfExternalType1Route> type1delta,
-      @Nonnull RibDelta<OspfExternalType2Route> type2delta) {
-    if (_vrf.getOspfProcess() == null) {
-      return;
-    }
-    // We can loop over incoming edges here because OSPF edges must be symmetric
-    for (EdgeId ospfEdge : _ospfExternalIncomingRoutes.keySet()) {
-      OspfArea localArea =
-          _vrf.getInterfaces().get(ospfEdge.getHead().getInterfaceName()).getOspfArea();
-      assert localArea != null; // otherwise the edge would not be built.
-
-      // No external routes can propagate out of stub area
-      if (localArea.getStubType() == StubType.STUB) {
-        continue;
-      }
-
-      // If we're in an ABR that suppresses type 7 LSAs, do not propagate external routes to NSSAs
-      if (_vrf.getOspfProcess().isAreaBorderRouter()
-          && localArea.getNssa() != null
-          && localArea.getNssa().getSuppressType7()
-          && localArea.getStubType() == StubType.NSSA) {
-        continue;
-      }
-
-      // Get remote VirtualRouter
-      VirtualRouter remoteVr =
-          allNodes
-              .get(ospfEdge.getTail().getHostname())
-              .getVirtualRouters()
-              .get(ospfEdge.getTail().getVrfName());
-      remoteVr.enqueueOspfExternalRoutes(ospfEdge.reverse(), type1delta);
-      remoteVr.enqueueOspfExternalRoutes(ospfEdge.reverse(), type2delta);
-    }
-  }
-
-  /**
    * Propagate BGP routes received from neighbours into the appropriate RIBs. As the propagation is
    * happening, queue appropriate outgoing messages to neighbors as well.
    *
@@ -2429,35 +1632,6 @@ public class VirtualRouter implements Serializable {
     return !d1.isEmpty() || !d2.isEmpty();
   }
 
-  /**
-   * Merges staged OSPF external routes into the "real" OSPF-external RIBs
-   *
-   * @param type1Delta a {@link RibDelta} indicating changes to be made to {@link
-   *     #_ospfExternalType1Rib}
-   * @param type2Delta a {@link RibDelta} indicating changes to be made to {@link
-   *     #_ospfExternalType2Rib}
-   */
-  boolean unstageOspfExternalRoutes(
-      Map<String, Node> allNodes,
-      @Nonnull RibDelta<OspfExternalType1Route> type1Delta,
-      @Nonnull RibDelta<OspfExternalType2Route> type2Delta) {
-    RibDelta<OspfExternalType1Route> d1 = importRibDelta(_ospfExternalType1Rib, type1Delta);
-    RibDelta<OspfExternalType2Route> d2 = importRibDelta(_ospfExternalType2Rib, type2Delta);
-    queueOutgoingOspfExternalRoutes(allNodes, d1, d2);
-    Builder<OspfRoute> ospfDeltaBuilder = RibDelta.builder();
-    ospfDeltaBuilder.from(importRibDelta(_ospfRib, d1));
-    ospfDeltaBuilder.from(importRibDelta(_ospfRib, d2));
-    _mainRibRouteDeltaBuilder.from(
-        RibDelta.importRibDelta(_mainRib, ospfDeltaBuilder.build(), _name));
-    return !d1.isEmpty() || !d2.isEmpty();
-  }
-
-  /** Merges staged OSPF internal routes into the "real" OSPF-internal RIBs */
-  void unstageOspfInternalRoutes() {
-    importRib(_ospfIntraAreaRib, _ospfIntraAreaStagingRib);
-    importRib(_ospfInterAreaRib, _ospfInterAreaStagingRib);
-  }
-
   /** Merges staged RIP routes into the "real" RIP RIB */
   void unstageRipInternalRoutes() {
     importRib(_ripInternalRib, _ripInternalStagingRib);
@@ -2467,12 +1641,10 @@ public class VirtualRouter implements Serializable {
   void reinitForNewIteration() {
     _mainRibRouteDeltaBuilder = RibDelta.builder();
     _bgpDeltaBuilder = RibDelta.builder();
-    _ospfExternalDeltaBuilder = RibDelta.builder();
 
     /*
      * RIBs not read from can just be re-initialized
      */
-    _ospfRib = new OspfRib();
     _ripRib = new RipRib();
 
     /*
@@ -2482,21 +1654,12 @@ public class VirtualRouter implements Serializable {
     MultipathEquivalentAsPathMatchMode mpTieBreaker = getBgpMpTieBreaker();
     _ebgpStagingRib = new BgpRib(null, _mainRib, tieBreaker, null, mpTieBreaker);
     _ibgpStagingRib = new BgpRib(null, _mainRib, tieBreaker, null, mpTieBreaker);
-    _ospfExternalType1StagingRib = new OspfExternalType1Rib(getHostname(), null);
-    _ospfExternalType2StagingRib = new OspfExternalType2Rib(getHostname(), null);
 
     /*
      * Add routes that cannot change (does not affect below computation)
      */
     _mainRibRouteDeltaBuilder.from(importRib(_mainRib, _independentRib));
 
-    /*
-     * Re-add independent OSPF routes to ospfRib for tie-breaking
-     */
-    importRib(_ospfRib, _ospfIntraAreaRib);
-    importRib(_ospfRib, _ospfInterAreaRib);
-    importRib(_ospfRib, _ospfExternalType1Rib);
-    importRib(_ospfRib, _ospfExternalType2Rib);
     /*
      * Re-add independent RIP routes to ripRib for tie-breaking
      */
@@ -2514,15 +1677,6 @@ public class VirtualRouter implements Serializable {
     _virtualEigrpProcesses
         .values()
         .forEach(process -> process.importInternalRoutes(_independentRib, _name));
-  }
-
-  /**
-   * Merge intra/inter OSPF RIBs into a general OSPF RIB, then merge that into the independent RIB
-   */
-  void importOspfInternalRoutes() {
-    importRib(_ospfRib, _ospfIntraAreaRib);
-    importRib(_ospfRib, _ospfInterAreaRib);
-    importRib(_independentRib, _ospfRib, _name);
   }
 
   /**
@@ -2683,9 +1837,9 @@ public class VirtualRouter implements Serializable {
    * following data structures:
    *
    * <ul>
-   *   <li>"external" RIBs ({@link #_mainRib}, {@link #_ospfExternalType1Rib}, {@link
-   *       #_ospfExternalType2Rib}
-   *   <li>message queues ({@link #_bgpIncomingRoutes} and {@link #_ospfExternalIncomingRoutes})
+   *   <li>"external" RIBs ({@link #_mainRib}
+   *   <li>message queues ({@link #_bgpIncomingRoutes}
+   *   <li>Routing processes
    * </ul>
    *
    * @return integer hashcode
@@ -2693,17 +1847,13 @@ public class VirtualRouter implements Serializable {
   int computeIterationHashCode() {
     return Streams.concat(
             // RIB State
-            Stream.of(_mainRib, _ospfExternalType1Rib, _ospfExternalType2Rib)
-                .map(AbstractRib::getTypedRoutes),
+            Stream.of(_mainRib.getTypedRoutes()),
             // Message queues
-            Stream.of(
-                    _bgpIncomingRoutes,
-                    _ospfExternalIncomingRoutes,
-                    _isisIncomingRoutes,
-                    _crossVrfIncomingRoutes)
+            Stream.of(_bgpIncomingRoutes, _isisIncomingRoutes, _crossVrfIncomingRoutes)
                 .flatMap(m -> m.values().stream())
                 .flatMap(Queue::stream),
             // Processes
+            Stream.of(_ospfProcesses.values().stream().map(OspfRoutingProcess::iterationHashCode)),
             Stream.of(_virtualEigrpProcesses)
                 .flatMap(m -> m.values().stream())
                 .map(VirtualEigrpProcess::computeIterationHashCode))
@@ -2722,6 +1872,8 @@ public class VirtualRouter implements Serializable {
    * @param ourConfig {@link BgpPeerConfig} that sends the route
    * @param remoteConfig {@link BgpPeerConfig} that will be receiving the route
    * @param allNodes all nodes in the network
+   * @param sessionProperties {@link BgpSessionProperties} representing the <em>incoming</em> edge:
+   *     i.e. the edge from {@code remoteConfig} to {@code ourConfig}
    * @return The transformed route as a {@link BgpRoute}, or {@code null} if the route should not be
    *     exported.
    */
@@ -2755,12 +1907,15 @@ public class VirtualRouter implements Serializable {
       return null;
     }
 
+    // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
+    Ip remoteIp = sessionProperties.getTailIp();
+
     // Process transformed outgoing route by the export policy
     boolean shouldExport =
         exportPolicy.process(
             exportCandidate,
             transformedOutgoingRouteBuilder,
-            remoteConfig.getLocalIp(),
+            remoteIp,
             ourConfigId.getRemotePeerPrefix(),
             ourConfigId.getVrfName(),
             Direction.OUT);
@@ -2771,7 +1926,7 @@ public class VirtualRouter implements Serializable {
       _prefixTracer.filtered(
           exportCandidate.getNetwork(),
           requireNonNull(remoteVr).getHostname(),
-          remoteConfig.getLocalIp(),
+          remoteIp,
           remoteConfigId.getVrfName(),
           ourConfig.getExportPolicy(),
           Direction.OUT);
@@ -2787,7 +1942,7 @@ public class VirtualRouter implements Serializable {
     _prefixTracer.sentTo(
         transformedOutgoingRoute.getNetwork(),
         requireNonNull(remoteVr).getHostname(),
-        remoteConfig.getLocalIp(),
+        remoteIp,
         remoteConfigId.getVrfName(),
         ourConfig.getExportPolicy());
 
@@ -2870,12 +2025,6 @@ public class VirtualRouter implements Serializable {
     }
   }
 
-  /** Queue OSPF external routes on this VR's incoming queues. */
-  private void enqueueOspfExternalRoutes(
-      OspfTopology.EdgeId ospfEdge, RibDelta<? extends OspfExternalRoute> ribDelta) {
-    queueDelta(_ospfExternalIncomingRoutes.get(ospfEdge), ribDelta);
-  }
-
   private <R extends AbstractRoute> AnnotatedRoute<R> annotateRoute(R route) {
     return new AnnotatedRoute<>(route, _name);
   }
@@ -2888,15 +2037,41 @@ public class VirtualRouter implements Serializable {
   boolean isDirty() {
     return
     // Route Deltas
-    !_ospfExternalDeltaBuilder.build().isEmpty()
-        || !_mainRibRouteDeltaBuilder.build().isEmpty()
+    !_mainRibRouteDeltaBuilder.build().isEmpty()
         || !_bgpDeltaBuilder.build().isEmpty()
         // Message queues
         || !_bgpIncomingRoutes.values().stream().allMatch(Queue::isEmpty)
-        || !_ospfExternalIncomingRoutes.values().stream().allMatch(Queue::isEmpty)
         || !_isisIncomingRoutes.values().stream().allMatch(Queue::isEmpty)
         || !_crossVrfIncomingRoutes.values().stream().allMatch(Queue::isEmpty)
         // Processes
         || _ospfProcesses.values().stream().anyMatch(OspfRoutingProcess::isDirty);
+  }
+
+  /** Execute one OSPF iteration, for all processes */
+  void ospfIteration(Map<String, Node> allNodes) {
+    _ospfProcesses.values().forEach(p -> p.executeIteration(allNodes));
+  }
+
+  void redistribute() {
+    // TODO: expand to processes other than OSPF
+    _ospfProcesses
+        .values()
+        .forEach(
+            p ->
+                p.redistribute(
+                    // For the time being use all main RIB routes
+                    // TODO: later switch to just the delta (after iteration 1)
+                    RibDelta.<AnnotatedRoute<AbstractRoute>>builder()
+                        .add(_mainRib.getTypedRoutes())
+                        .build()));
+  }
+
+  void mergeOspfRoutesToMainRib() {
+    _ospfProcesses
+        .values()
+        .forEach(
+            p ->
+                _mainRibRouteDeltaBuilder.from(
+                    importRibDelta(_mainRib, p.getUpdatesForMainRib(), _name)));
   }
 }

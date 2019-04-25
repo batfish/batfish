@@ -18,6 +18,7 @@ import static org.batfish.dataplane.traceroute.TracerouteUtils.getFinalActionFor
 import static org.batfish.dataplane.traceroute.TracerouteUtils.returnFlow;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.sessionTransformation;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
@@ -117,6 +118,7 @@ class FlowTracer {
   // The current flow can change as we process the packet.
   private Flow _currentFlow;
 
+  @VisibleForTesting
   FlowTracer(
       TracerouteEngineImplContext tracerouteContext,
       String node,
@@ -142,7 +144,8 @@ class FlowTracer {
     _vrfName = initVrfName();
   }
 
-  private FlowTracer(
+  @VisibleForTesting
+  FlowTracer(
       TracerouteEngineImplContext tracerouteContext,
       Node currentNode,
       @Nullable String ingressInterface,
@@ -702,11 +705,16 @@ class FlowTracer {
             _tracerouteContext.getIgnoreFilters());
     _steps.add(filterStep);
     if (filterStep.getAction() == DENIED) {
-      _hops.add(new Hop(_currentNode, _steps));
-      Trace trace = new Trace(filterType.deniedDisposition(), _hops);
-      _flowTraces.accept(new TraceAndReverseFlow(trace, null));
+      buildDeniedTrace(filterType.deniedDisposition());
     }
     return filterStep.getAction();
+  }
+
+  @VisibleForTesting
+  void buildDeniedTrace(FlowDisposition disposition) {
+    _hops.add(new Hop(_currentNode, _steps));
+    Trace trace = new Trace(disposition, _hops);
+    _flowTraces.accept(new TraceAndReverseFlow(trace, null, _newSessions));
   }
 
   private void buildArpFailureTrace(String outInterface, FlowDisposition disposition) {

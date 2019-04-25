@@ -759,3 +759,10 @@ variable_vlan
 :
    ~( NEWLINE | ACCESS_MAP | DEC )
 ;
+
+vlan_id
+:
+  v = DEC
+  {isVlanId($v)}?
+
+;

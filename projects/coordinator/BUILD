@@ -58,6 +58,7 @@ java_library(
     deps = [
         ":coordinator",
         "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol:common_testlib",
         "@grizzly_server//:compile",
         "@guava//:compile",
         "@jersey_media_jackson//:compile",

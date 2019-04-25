@@ -13,7 +13,6 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.common.topology.TopologyUtil;
@@ -218,13 +217,13 @@ public class RouteReflectionTest {
     IncrementalBdpEngine engine =
         new IncrementalBdpEngine(
             new IncrementalDataPlaneSettings(),
-            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
-            (s, i) -> new AtomicInteger());
+            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false));
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
     ComputeDataPlaneResult dpResult =
         engine.computeDataPlane(
             configurations,
             topology,
+            null,
             OspfTopology.empty(),
             ImmutableSet.of(
                 _ab.setAsPath(AsPath.ofSingletonAsSets(1L))
@@ -345,14 +344,14 @@ public class RouteReflectionTest {
     IncrementalBdpEngine engine =
         new IncrementalBdpEngine(
             new IncrementalDataPlaneSettings(),
-            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
-            (s, i) -> new AtomicInteger());
+            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false));
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
     IncrementalDataPlane dp =
         (IncrementalDataPlane)
             engine.computeDataPlane(
                     configurations,
                     topology,
+                    null,
                     OspfTopology.empty(),
                     ImmutableSet.of(
                         _ab.setAsPath(AsPath.ofSingletonAsSets(1L))

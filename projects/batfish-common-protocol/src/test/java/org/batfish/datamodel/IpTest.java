@@ -73,4 +73,10 @@ public class IpTest {
     _thrown.expectMessage("Invalid IPv4 address: 1.1.1.256. 256 is an invalid octet");
     Ip.parse("1.1.1.256");
   }
+
+  @Test
+  public void testCreateInvalidIp() {
+    _thrown.expect(IllegalArgumentException.class);
+    Ip.create(1L << 32);
+  }
 }

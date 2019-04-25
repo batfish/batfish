@@ -21,10 +21,6 @@ public final class TraceAndReverseFlow {
   private final @Nullable Flow _reverseFlow;
   private final @Nonnull Set<FirewallSessionTraceInfo> _newFirewallSessions;
 
-  public TraceAndReverseFlow(@Nonnull Trace trace, @Nullable Flow reverseFlow) {
-    this(trace, reverseFlow, ImmutableSet.of());
-  }
-
   public TraceAndReverseFlow(
       @Nonnull Trace trace,
       @Nullable Flow reverseFlow,

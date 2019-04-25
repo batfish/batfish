@@ -14,10 +14,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AsPath;
-import org.batfish.datamodel.ExtendedCommunity;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 
 /**
  * A group of BGP advertisements to be injected into the network for a given snapshot. For each

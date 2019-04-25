@@ -1,6 +1,14 @@
 package org.batfish.grammar.cumulus_nclu;
 
+import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasExportPolicy;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasInterfaceNeighbors;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpRouteThat;
+import static org.batfish.datamodel.matchers.BgpUnnumberedPeerConfigMatchers.hasPeerInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
@@ -8,6 +16,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAdditionalArpIps;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
@@ -20,9 +29,13 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isSwitchport;
+import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
+import static org.batfish.representation.cumulus.BgpProcess.BGP_UNNUMBERED_IP;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.CUMULUS_CLAG_DOMAIN_ID;
+import static org.batfish.representation.cumulus.CumulusNcluConfiguration.computeBgpPeerExportPolicyName;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.contains;
@@ -30,6 +43,8 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -44,13 +59,18 @@ import com.google.common.collect.Range;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.IntegerSpace;
@@ -60,17 +80,23 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.Mlag;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.vendor_family.cumulus.InterfaceClagSettings;
+import org.batfish.dataplane.ibdp.IncrementalDataPlane;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.main.TestrigText;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
 import org.batfish.representation.cumulus.BgpL2vpnEvpnAddressFamily;
 import org.batfish.representation.cumulus.BgpProcess;
@@ -94,6 +120,7 @@ import org.junit.rules.TemporaryFolder;
 
 public final class CumulusNcluGrammarTest {
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/cumulus_nclu/testconfigs/";
+  private static final String TESTRIGS_PREFIX = "org/batfish/grammar/cumulus_nclu/testrigs/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
   @Rule public ExpectedException _thrown = ExpectedException.none();
@@ -122,6 +149,23 @@ public final class CumulusNcluGrammarTest {
     String[] names =
         Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
     return BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
+  }
+
+  private @Nonnull BgpRoute.Builder makeBgpOutputRouteBuilder() {
+    return BgpRoute.builder()
+        .setNetwork(Prefix.ZERO)
+        .setOriginType(OriginType.INCOMPLETE)
+        .setOriginatorIp(Ip.ZERO)
+        .setProtocol(RoutingProtocol.BGP);
+  }
+
+  private @Nonnull BgpRoute makeBgpRoute(Prefix prefix) {
+    return BgpRoute.builder()
+        .setNetwork(prefix)
+        .setOriginType(OriginType.INCOMPLETE)
+        .setOriginatorIp(Ip.ZERO)
+        .setProtocol(RoutingProtocol.BGP)
+        .build();
   }
 
   private Configuration parseConfig(String hostname) throws IOException {
@@ -156,6 +200,169 @@ public final class CumulusNcluGrammarTest {
     VendorConfiguration vc = extractor.getVendorConfiguration();
     assertThat(vc, instanceOf(CumulusNcluConfiguration.class));
     return (CumulusNcluConfiguration) vc;
+  }
+
+  @Test
+  public void testEbgpUnnumbered() throws IOException {
+    /*
+    node1 and node2 should have an eBGP unnumbered session between them. Both redistribute static
+    routes. node1 has static route 5.5.5.5/32 and node2 has static route 6.6.6.6/32, so should see
+    BGP routes on both to the other's static network.
+     */
+    String testrigName = "bgp-unnumbered";
+    String node1 = "node1";
+    String node2 = "node2";
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, ImmutableSet.of(node1, node2))
+                .setLayer1TopologyText(TESTRIGS_PREFIX + testrigName)
+                .build(),
+            _folder);
+
+    // Sanity check configured peers
+    Map<String, Configuration> configs = batfish.loadConfigurations();
+    BgpUnnumberedPeerConfig.Builder peerBuilder =
+        BgpUnnumberedPeerConfig.builder()
+            .setLocalIp(BGP_UNNUMBERED_IP)
+            .setPeerInterface("swp1")
+            .setExportPolicy(computeBgpPeerExportPolicyName(DEFAULT_VRF_NAME, "swp1"));
+    Map<String, BgpUnnumberedPeerConfig> expectedPeers1 =
+        ImmutableMap.of(
+            "swp1",
+            peerBuilder
+                .setLocalAs(65100L)
+                .setRemoteAsns(BgpPeerConfig.ALL_AS_NUMBERS.difference(LongSpace.of(65100L)))
+                .build());
+    Map<String, BgpUnnumberedPeerConfig> expectedPeers2 =
+        ImmutableMap.of(
+            "swp1",
+            peerBuilder
+                .setLocalAs(65101L)
+                .setRemoteAsns(BgpPeerConfig.ALL_AS_NUMBERS.difference(LongSpace.of(65101L)))
+                .build());
+    assertThat(
+        configs.get(node1),
+        hasVrf(DEFAULT_VRF_NAME, hasBgpProcess(hasInterfaceNeighbors(equalTo(expectedPeers1)))));
+    assertThat(
+        configs.get(node2),
+        hasVrf(DEFAULT_VRF_NAME, hasBgpProcess(hasInterfaceNeighbors(equalTo(expectedPeers2)))));
+
+    // Ensure reachability between nodes
+    batfish.computeDataPlane();
+    IncrementalDataPlane dp = (IncrementalDataPlane) batfish.loadDataPlane();
+    Set<AbstractRoute> n1Routes = dp.getRibs().get(node1).get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> n2Routes = dp.getRibs().get(node2).get(DEFAULT_VRF_NAME).getRoutes();
+
+    BgpRoute.Builder routeBuilder =
+        BgpRoute.builder()
+            .setNextHopIp(BGP_UNNUMBERED_IP)
+            .setReceivedFromIp(BGP_UNNUMBERED_IP)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setSrcProtocol(RoutingProtocol.BGP)
+            .setLocalPreference(100)
+            .setAdmin(20);
+    BgpRoute expectedRoute1 =
+        routeBuilder
+            .setNetwork(Prefix.parse("6.6.6.6/32"))
+            .setAsPath(AsPath.ofSingletonAsSets(65101L))
+            .setOriginatorIp(Ip.parse("192.0.2.2"))
+            .build();
+    BgpRoute expectedRoute2 =
+        routeBuilder
+            .setNetwork(Prefix.parse("5.5.5.5/32"))
+            .setAsPath(AsPath.ofSingletonAsSets(65100L))
+            .setOriginatorIp(Ip.parse("192.0.2.1"))
+            .build();
+
+    assertThat(n1Routes, hasItem(isBgpRouteThat(equalTo(expectedRoute1))));
+    assertThat(n2Routes, hasItem(isBgpRouteThat(equalTo(expectedRoute2))));
+  }
+
+  @Test
+  public void testBgpConversion() throws IOException {
+    Configuration c = parseConfig("cumulus_nclu_bgp");
+    String peerInterface = "swp1";
+    String peerExportPolicyName = computeBgpPeerExportPolicyName(DEFAULT_VRF_NAME, peerInterface);
+    String commonExportPolicyName =
+        CumulusNcluConfiguration.computeBgpCommonExportPolicyName(DEFAULT_VRF_NAME);
+
+    assertThat(c, hasDefaultVrf(hasBgpProcess(hasRouterId(Ip.parse("192.0.2.2")))));
+    assertThat(c, hasDefaultVrf(hasBgpProcess(hasInterfaceNeighbors(hasKey(peerInterface)))));
+
+    BgpUnnumberedPeerConfig pc =
+        c.getDefaultVrf().getBgpProcess().getInterfaceNeighbors().get(peerInterface);
+
+    assertThat(pc, hasPeerInterface(peerInterface));
+    assertThat(pc, hasLocalAs(65500L));
+    assertThat(pc, hasRemoteAs(equalTo(ALL_AS_NUMBERS.difference(LongSpace.of(65500L)))));
+    assertThat(pc, hasExportPolicy(peerExportPolicyName));
+
+    // ARP response for link-local address for BGP unnumbered interface
+    assertThat(c, hasInterface(peerInterface, hasAdditionalArpIps(containsIp(BGP_UNNUMBERED_IP))));
+
+    //// generated routing policies
+
+    // common export policy
+    assertThat(c.getRoutingPolicies(), hasKey(commonExportPolicyName));
+    // TODO: tests that differentiate common and peer export policy when possibility is implemented
+
+    // peer export policy
+    assertThat(c.getRoutingPolicies(), hasKey(peerExportPolicyName));
+    RoutingPolicy peerExportPolicy = c.getRoutingPolicies().get(peerExportPolicyName);
+
+    {
+      // Redistribute connected route matching lo's interface address
+      BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+      assertTrue(
+          peerExportPolicy
+              .call(
+                  Environment.builder(c, DEFAULT_VRF_NAME)
+                      .setOriginalRoute(new ConnectedRoute(Prefix.parse("10.0.0.1/32"), "foo"))
+                      .setOutputRoute(outputBuilder)
+                      .build())
+              .getBooleanValue());
+    }
+
+    {
+      // Reject connected route not matching lo's interface address
+      BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+      assertFalse(
+          peerExportPolicy
+              .call(
+                  Environment.builder(c, DEFAULT_VRF_NAME)
+                      .setOriginalRoute(new ConnectedRoute(Prefix.parse("10.0.0.2/32"), "foo"))
+                      .setOutputRoute(outputBuilder)
+                      .build())
+              .getBooleanValue());
+    }
+
+    {
+      // Advertise route for explicitly advertised network 192.0.2.1/32
+      BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+      assertTrue(
+          peerExportPolicy
+              .call(
+                  Environment.builder(c, DEFAULT_VRF_NAME)
+                      .setOriginalRoute(new ConnectedRoute(Prefix.parse("192.0.2.1/32"), "foo"))
+                      .setOutputRoute(outputBuilder)
+                      .build())
+              .getBooleanValue());
+    }
+
+    {
+      // Forward BGP route
+      BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+      assertTrue(
+          peerExportPolicy
+              .call(
+                  Environment.builder(c, DEFAULT_VRF_NAME)
+                      .setOriginalRoute(makeBgpRoute(Prefix.parse("10.0.0.5/32")))
+                      .setOutputRoute(outputBuilder)
+                      .build())
+              .getBooleanValue());
+    }
   }
 
   @Test

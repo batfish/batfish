@@ -137,12 +137,7 @@ public abstract class BgpSessionAnswerer extends Answerer {
         return false;
       }
     }
-    String typeName = (String) row.get(COL_SESSION_TYPE, Schema.STRING);
-    SessionType type = typeName == null ? null : SessionType.valueOf(typeName);
-    if (!question.matchesType(type)) {
-      return false;
-    }
-    return true;
+    return question.matchesType((String) row.get(COL_SESSION_TYPE, Schema.STRING));
   }
 
   public abstract List<Row> getRows(BgpSessionQuestion question);

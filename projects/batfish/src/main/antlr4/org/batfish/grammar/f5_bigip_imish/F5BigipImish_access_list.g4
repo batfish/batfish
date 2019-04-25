@@ -9,7 +9,7 @@ options {
 ip_spec
 :
   ANY
-  | prefix = IP_PREFIX
+  | prefix = ip_prefix
 ;
 
 s_access_list

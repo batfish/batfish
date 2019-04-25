@@ -3,9 +3,11 @@ package org.batfish.representation.cisco;
 import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
 import static org.batfish.representation.cisco.CiscoConversions.createAclWithSymmetricalLines;
 import static org.batfish.representation.cisco.CiscoConversions.getMatchingPsk;
+import static org.batfish.representation.cisco.CiscoConversions.sanityCheckDistributeList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -13,6 +15,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeKeyType;
 import org.batfish.datamodel.IkePhase1Key;
@@ -23,6 +27,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.matchers.IkePhase1KeyMatchers;
+import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -188,5 +193,49 @@ public class CiscoConversionsTest {
         getMatchingPsk(isakmpProfile, _warnings, ImmutableMap.of(IKE_PHASE1_KEY, ikePhase1Key));
 
     assertThat(matchingKey, is(nullValue()));
+  }
+
+  @Test
+  public void testSanityCheckDistributeListFilterType() {
+    CiscoConfiguration oldConfig = new CiscoConfiguration();
+    oldConfig.setHostname("cisco_conf");
+    oldConfig.setWarnings(new Warnings(false, true, false));
+    DistributeList distributeList =
+        new DistributeList("filter", DistributeListFilterType.ACCESS_LIST);
+
+    assertFalse(
+        sanityCheckDistributeList(
+            distributeList,
+            new Configuration("conf", ConfigurationFormat.CISCO_IOS),
+            oldConfig,
+            "vrf",
+            "p1"));
+
+    assertThat(
+        oldConfig.getWarnings().getRedFlagWarnings().iterator().next().getText(),
+        equalTo(
+            "OSPF process vrf:p1 in cisco_conf uses distribute-list of type ACCESS_LIST, only prefix-lists are supported in dist-lists by Batfish"));
+  }
+
+  @Test
+  public void testSanityCheckDistributeListPrefixList() {
+    CiscoConfiguration oldConfig = new CiscoConfiguration();
+    oldConfig.setHostname("cisco_conf");
+    oldConfig.setWarnings(new Warnings(false, true, false));
+    DistributeList distributeList =
+        new DistributeList("filter", DistributeListFilterType.PREFIX_LIST);
+
+    assertFalse(
+        sanityCheckDistributeList(
+            distributeList,
+            new Configuration("conf", ConfigurationFormat.CISCO_IOS),
+            oldConfig,
+            "vrf",
+            "p1"));
+
+    assertThat(
+        oldConfig.getWarnings().getRedFlagWarnings().iterator().next().getText(),
+        equalTo(
+            "dist-list in OSPF process vrf:p1 uses a prefix-list which is not defined, this dist-list will allow everything"));
   }
 }

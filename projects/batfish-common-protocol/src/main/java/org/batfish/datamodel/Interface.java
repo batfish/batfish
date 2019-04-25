@@ -66,6 +66,8 @@ public final class Interface extends ComparableStructure<String> {
 
     private FirewallSessionInterfaceInfo _firewallSessionInterfaceInfo;
 
+    private String _ospfInboundDistributeListPolicy;
+
     private IpAccessList _incomingFilter;
 
     private Transformation _incomingTransformation;
@@ -168,6 +170,7 @@ public final class Interface extends ComparableStructure<String> {
       }
       iface.setOspfCost(_ospfCost);
       iface.setOspfEnabled(_ospfEnabled);
+      iface.setOspfInboundDistributeListPolicy(_ospfInboundDistributeListPolicy);
       iface.setOspfPassive(_ospfPassive);
       iface.setOspfPointToPoint(_ospfPointToPoint);
       iface.setOspfProcess(_ospfProcess);
@@ -285,6 +288,16 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setDependencies(@Nonnull Iterable<Dependency> dependencies) {
       _dependencies = ImmutableSet.copyOf(dependencies);
+      return this;
+    }
+
+    /**
+     * Name of the routing policy which is generated from the Global and Interface level inbound
+     * distribute lists for OSPF
+     */
+    public Builder setOspfInboundDistributeListPolicy(
+        @Nonnull String ospfInboundDistributeListPolicy) {
+      _ospfInboundDistributeListPolicy = ospfInboundDistributeListPolicy;
       return this;
     }
 
@@ -576,6 +589,9 @@ public final class Interface extends ComparableStructure<String> {
 
   private static final String PROP_OSPF_HELLO_MULTIPLIER = "ospfHelloMultiplier";
 
+  private static final String PROP_OSPF_INBOUND_DISTRIBUTE_LIST_POLICY =
+      "ospfInboundDistributeListPolicy";
+
   private static final String PROP_OSPF_PASSIVE = "ospfPassive";
 
   private static final String PROP_OSPF_POINT_TO_POINT = "ospfPointToPoint";
@@ -688,7 +704,12 @@ public final class Interface extends ComparableStructure<String> {
     } else if (name.startsWith("nve")) {
       return InterfaceType.VLAN;
     } else if (name.startsWith("Port-Channel")) {
-      return InterfaceType.AGGREGATED;
+      if (name.contains(".")) {
+        // Subinterface of a port channel
+        return InterfaceType.AGGREGATE_CHILD;
+      } else {
+        return InterfaceType.AGGREGATED;
+      }
     } else if (name.startsWith("POS")) {
       return InterfaceType.PHYSICAL;
     } else if (name.startsWith("Serial")) {
@@ -876,6 +897,8 @@ public final class Interface extends ComparableStructure<String> {
   private boolean _ospfEnabled;
 
   private int _ospfHelloMultiplier;
+
+  @Nullable private String _ospfInboundDistributeListPolicy;
 
   private boolean _ospfPassive;
 
@@ -1321,6 +1344,16 @@ public final class Interface extends ComparableStructure<String> {
     return _ospfHelloMultiplier;
   }
 
+  /**
+   * "Returns name of the routing policy which is generated from the Global and Interface level
+   * inbound distribute-lists for OSPF"
+   */
+  @JsonProperty(PROP_OSPF_INBOUND_DISTRIBUTE_LIST_POLICY)
+  @Nullable
+  public String getOspfInboundDistributeListPolicy() {
+    return _ospfInboundDistributeListPolicy;
+  }
+
   @JsonProperty(PROP_OSPF_PASSIVE)
   @JsonPropertyDescription(
       "Whether or not OSPF is enabled passively on this interface. If passive, this interface is "
@@ -1716,6 +1749,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_OSPF_HELLO_MULTIPLIER)
   public void setOspfHelloMultiplier(int multiplier) {
     _ospfHelloMultiplier = multiplier;
+  }
+
+  @JsonProperty(PROP_OSPF_INBOUND_DISTRIBUTE_LIST_POLICY)
+  public void setOspfInboundDistributeListPolicy(@Nullable String ospfInboundDistributeListPolicy) {
+    _ospfInboundDistributeListPolicy = ospfInboundDistributeListPolicy;
   }
 
   @JsonProperty(PROP_OSPF_PASSIVE)

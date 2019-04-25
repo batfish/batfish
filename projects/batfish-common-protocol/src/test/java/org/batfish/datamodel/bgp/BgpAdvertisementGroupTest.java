@@ -9,21 +9,21 @@ import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.AsPath;
-import org.batfish.datamodel.ExtendedCommunity;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.junit.Test;
 
 public final class BgpAdvertisementGroupTest {
 
   @Test
-  public void testJavaSerialization() throws IOException {
+  public void testJavaSerialization() {
     BgpAdvertisementGroup bgpAdvertisementGroup =
         BgpAdvertisementGroup.builder()
             .setAsPath(AsPath.ofSingletonAsSets(2L))
             .setDescription("hello")
-            .setExtendedCommunities(ImmutableSet.of(new ExtendedCommunity(12345678L)))
+            .setExtendedCommunities(ImmutableSet.of(ExtendedCommunity.of(1, 6555L, 123456L)))
             .setLocalPreference(123L)
             .setMed(456L)
             .setOriginator(Ip.parse("1.1.1.1"))
@@ -44,7 +44,7 @@ public final class BgpAdvertisementGroupTest {
         BgpAdvertisementGroup.builder()
             .setAsPath(AsPath.ofSingletonAsSets(2L))
             .setDescription("hello")
-            .setExtendedCommunities(ImmutableSet.of(new ExtendedCommunity(12345678L)))
+            .setExtendedCommunities(ImmutableSet.of(ExtendedCommunity.of(0, 6555L, 123456L)))
             .setLocalPreference(123L)
             .setMed(456L)
             .setOriginator(Ip.parse("1.1.1.1"))
@@ -76,7 +76,9 @@ public final class BgpAdvertisementGroupTest {
         .addEqualityGroup(builder.setAsPath(AsPath.ofSingletonAsSets(5L)).build())
         .addEqualityGroup(builder.setDescription("hello").build())
         .addEqualityGroup(
-            builder.setExtendedCommunities(ImmutableSet.of(new ExtendedCommunity(1L))).build())
+            builder
+                .setExtendedCommunities(ImmutableSet.of(ExtendedCommunity.of(0, 6555L, 1L)))
+                .build())
         .addEqualityGroup(builder.setLocalPreference(1L).build())
         .addEqualityGroup(builder.setMed(1L).build())
         .addEqualityGroup(builder.setOriginator(Ip.parse("1.1.1.1")).build())

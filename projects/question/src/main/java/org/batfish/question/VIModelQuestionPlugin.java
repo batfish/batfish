@@ -237,7 +237,7 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
     private static SortedSet<VerboseBgpEdge> getBgpEdges(
         Map<String, Configuration> configs, Map<Ip, Set<String>> ipOwners) {
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-          BgpTopologyUtils.initBgpTopology(configs, ipOwners, false, false, null);
+          BgpTopologyUtils.initBgpTopology(configs, ipOwners, false, false, null, null);
       SortedSet<VerboseBgpEdge> bgpEdges = new TreeSet<>(VERBOSE_BGP_EDGE_COMPARATOR);
       for (EndpointPair<BgpPeerConfigId> session : bgpTopology.edges()) {
         BgpPeerConfigId bgpPeerConfigId = session.source();

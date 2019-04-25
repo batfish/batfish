@@ -265,19 +265,16 @@ if_ip_access_group
 
 if_ip_address
 :
+   (IP | IPV4) ADDRESS
+   VIRTUAL?
    (
-      IP
-      | IPV4
-   ) ADDRESS VIRTUAL?
-   (
-      (
-         ip = IP_ADDRESS subnet = IP_ADDRESS
-      )
+      ip = IP_ADDRESS subnet = IP_ADDRESS
       | prefix = IP_PREFIX
    )
-   (
-      STANDBY standby_address = IP_ADDRESS
-   )? NEWLINE
+   (STANDBY standby_address = IP_ADDRESS)?
+   (ROUTE_PREFERENCE pref=DEC)?
+   (TAG tag=DEC)?
+   NEWLINE
 ;
 
 if_ip_address_dhcp
@@ -1420,6 +1417,11 @@ if_tunnel
    )
 ;
 
+if_vlan
+:
+  VLAN vlan = vlan_id NEWLINE
+;
+
 if_vrf
 :
    VRF name = variable NEWLINE
@@ -1785,6 +1787,7 @@ if_inner
    | if_switchport_trunk_group_eos
    | if_switchport_trunk_native
    | if_tunnel
+   | if_vlan
    | if_vrf
    | if_vrf_member
    | if_vrrp

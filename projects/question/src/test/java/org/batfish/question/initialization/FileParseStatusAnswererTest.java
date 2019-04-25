@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSortedMap;
 import org.batfish.common.plugin.IBatfishTestAdapter;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.pojo.Node;
@@ -61,7 +62,7 @@ public class FileParseStatusAnswererTest {
                         COL_PARSE_STATUS,
                         ParseStatus.PASSED,
                         COL_NODES,
-                        ImmutableList.of(new Node("h"))))));
+                        ImmutableList.of(new Node("h"), new Node("h1"), new Node("h2"))))));
   }
 
   private static class TestBatfish extends IBatfishTestAdapter {
@@ -71,6 +72,14 @@ public class FileParseStatusAnswererTest {
       pvcae.setFileMap(ImmutableMultimap.of("h", "f"));
       pvcae.setParseStatus(ImmutableSortedMap.of("f", ParseStatus.PASSED));
       return pvcae;
+    }
+
+    @Override
+    public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse() {
+      ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
+      ccae.getFileMap().put("f", "h1");
+      ccae.getFileMap().put("f", "h2");
+      return ccae;
     }
   }
 }

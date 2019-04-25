@@ -42,6 +42,9 @@ public final class BgpNeighbor extends AbstractBgpNeighbor {
     } else if (_address6 != null) {
       applyIpv6AddressFamily(peerGroup.getIpv6AddressFamily());
     }
+    if (getNextHopSelf() == null) {
+      setNextHopSelf(peerGroup.getNextHopSelf());
+    }
     if (getRemoteAs() == null) {
       setRemoteAs(peerGroup.getRemoteAs());
     }

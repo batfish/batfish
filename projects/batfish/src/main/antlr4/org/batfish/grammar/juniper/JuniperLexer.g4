@@ -20,6 +20,11 @@ public String printStateVariables() {
 
 }
 
+REPLACE
+:
+  'replace:'
+;
+
 CLOSE_BRACE
 :
    '}'

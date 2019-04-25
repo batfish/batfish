@@ -1749,6 +1749,53 @@
         "hosts/host1.json" : { },
         "hosts/host2.json" : { }
       },
+      "fileMap" : {
+        "configs/as1border1.cfg" : [
+          "as1border1"
+        ],
+        "configs/as1border2.cfg" : [
+          "as1border2"
+        ],
+        "configs/as1core1.cfg" : [
+          "as1core1"
+        ],
+        "configs/as2border1.cfg" : [
+          "as2border1"
+        ],
+        "configs/as2border2.cfg" : [
+          "as2border2"
+        ],
+        "configs/as2core1.cfg" : [
+          "as2core1"
+        ],
+        "configs/as2core2.cfg" : [
+          "as2core2"
+        ],
+        "configs/as2dept1.cfg" : [
+          "as2dept1"
+        ],
+        "configs/as2dist1.cfg" : [
+          "as2dist1"
+        ],
+        "configs/as2dist2.cfg" : [
+          "as2dist2"
+        ],
+        "configs/as3border1.cfg" : [
+          "as3border1"
+        ],
+        "configs/as3border2.cfg" : [
+          "as3border2"
+        ],
+        "configs/as3core1.cfg" : [
+          "as3core1"
+        ],
+        "hosts/host1.json" : [
+          "host1"
+        ],
+        "hosts/host2.json" : [
+          "host2"
+        ]
+      },
       "referencedStructures" : {
         "configs/as1border1.cfg" : {
           "bgp peer-group" : {

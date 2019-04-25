@@ -5,20 +5,32 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Sets;
+import java.io.Serializable;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Names;
 import org.batfish.datamodel.Names.Type;
 
-public class ReferenceBook implements Comparable<ReferenceBook> {
+/** Represents a reference book which contains multiple types of named constructs */
+@ParametersAreNonnullByDefault
+public class ReferenceBook implements Comparable<ReferenceBook>, Serializable {
 
+  @ParametersAreNonnullByDefault
   public static class Builder {
 
     private List<AddressGroup> _addressGroups;
@@ -35,13 +47,13 @@ public class ReferenceBook implements Comparable<ReferenceBook> {
 
     public ReferenceBook build() {
       return new ReferenceBook(
-          _addressGroups,
-          _filterGroups,
-          _interfaceGroups,
           _name,
-          _serviceEndpoints,
-          _serviceObjectGroups,
-          _serviceObjects);
+          firstNonNull(_addressGroups, ImmutableList.of()),
+          firstNonNull(_filterGroups, ImmutableList.of()),
+          firstNonNull(_interfaceGroups, ImmutableList.of()),
+          firstNonNull(_serviceEndpoints, ImmutableList.of()),
+          firstNonNull(_serviceObjectGroups, ImmutableList.of()),
+          firstNonNull(_serviceObjects, ImmutableList.of()));
     }
 
     public Builder setAddressGroups(List<AddressGroup> addressGroups) {
@@ -75,6 +87,8 @@ public class ReferenceBook implements Comparable<ReferenceBook> {
     }
   }
 
+  private static final long serialVersionUID = 1L;
+
   private static final String PROP_ADDRESS_GROUPS = "addressGroups";
   private static final String PROP_FILTER_GROUPS = "filterGroups";
   private static final String PROP_INTERFACE_GROUPS = "interfaceGroups";
@@ -92,41 +106,50 @@ public class ReferenceBook implements Comparable<ReferenceBook> {
   @Nonnull private final SortedSet<ServiceObject> _serviceObjects;
 
   @JsonCreator
-  private ReferenceBook(
-      @JsonProperty(PROP_ADDRESS_GROUPS) List<AddressGroup> addressGroups,
-      @JsonProperty(PROP_FILTER_GROUPS) List<FilterGroup> filterGroups,
-      @JsonProperty(PROP_INTERFACE_GROUPS) List<InterfaceGroup> interfaceGroups,
-      @JsonProperty(PROP_NAME) String name,
-      @JsonProperty(PROP_SERVICE_ENDPOINTS) List<ServiceEndpoint> serviceEndpoints,
-      @JsonProperty(PROP_SERVICE_OBJECT_GROUPS) List<ServiceObjectGroup> serviceObjectGroups,
-      @JsonProperty(PROP_SERVICE_OBJECTS) List<ServiceObject> serviceObjects) {
+  private static ReferenceBook create(
+      @Nullable @JsonProperty(PROP_ADDRESS_GROUPS) List<AddressGroup> addressGroups,
+      @Nullable @JsonProperty(PROP_FILTER_GROUPS) List<FilterGroup> filterGroups,
+      @Nullable @JsonProperty(PROP_INTERFACE_GROUPS) List<InterfaceGroup> interfaceGroups,
+      @Nullable @JsonProperty(PROP_NAME) String name,
+      @Nullable @JsonProperty(PROP_SERVICE_ENDPOINTS) List<ServiceEndpoint> serviceEndpoints,
+      @Nullable @JsonProperty(PROP_SERVICE_OBJECT_GROUPS)
+          List<ServiceObjectGroup> serviceObjectGroups,
+      @Nullable @JsonProperty(PROP_SERVICE_OBJECTS) List<ServiceObject> serviceObjects) {
     checkArgument(name != null, "Reference book name cannot be null");
-    Names.checkName(name, "book", Type.REFERENCE_OBJECT);
 
-    // non-null versions for easier follow on code
-    List<AddressGroup> nnAddressGroups = firstNonNull(addressGroups, ImmutableList.of());
-    List<FilterGroup> nnFilterGroups = firstNonNull(filterGroups, ImmutableList.of());
-    List<InterfaceGroup> nnInterfaceGroups = firstNonNull(interfaceGroups, ImmutableList.of());
-    List<ServiceEndpoint> nnServiceEndpoints = firstNonNull(serviceEndpoints, ImmutableList.of());
-    List<ServiceObjectGroup> nnServiceObjectGroups =
-        firstNonNull(serviceObjectGroups, ImmutableList.of());
-    List<ServiceObject> nnServiceObjects = firstNonNull(serviceObjects, ImmutableList.of());
+    return new ReferenceBook(
+        name,
+        firstNonNull(addressGroups, ImmutableList.of()),
+        firstNonNull(filterGroups, ImmutableList.of()),
+        firstNonNull(interfaceGroups, ImmutableList.of()),
+        firstNonNull(serviceEndpoints, ImmutableList.of()),
+        firstNonNull(serviceObjectGroups, ImmutableList.of()),
+        firstNonNull(serviceObjects, ImmutableList.of()));
+  }
+
+  private ReferenceBook(
+      String name,
+      List<AddressGroup> addressGroups,
+      List<FilterGroup> filterGroups,
+      List<InterfaceGroup> interfaceGroups,
+      List<ServiceEndpoint> serviceEndpoints,
+      List<ServiceObjectGroup> serviceObjectGroups,
+      List<ServiceObject> serviceObjects) {
+    Names.checkName(name, "book", Type.REFERENCE_OBJECT);
 
     // collect names for sanity checking
     List<String> addressGroupNames =
-        nnAddressGroups.stream().map(AddressGroup::getName).collect(Collectors.toList());
+        addressGroups.stream().map(AddressGroup::getName).collect(Collectors.toList());
     List<String> filterGroupNames =
-        nnFilterGroups.stream().map(FilterGroup::getName).collect(Collectors.toList());
+        filterGroups.stream().map(FilterGroup::getName).collect(Collectors.toList());
     List<String> interfaceGroupNames =
-        nnInterfaceGroups.stream().map(InterfaceGroup::getName).collect(Collectors.toList());
+        interfaceGroups.stream().map(InterfaceGroup::getName).collect(Collectors.toList());
     List<String> serviceEndpointNames =
-        nnServiceEndpoints.stream().map(ServiceEndpoint::getName).collect(Collectors.toList());
+        serviceEndpoints.stream().map(ServiceEndpoint::getName).collect(Collectors.toList());
     List<String> serviceObjectGroupNames =
-        nnServiceObjectGroups.stream()
-            .map(ServiceObjectGroup::getName)
-            .collect(Collectors.toList());
+        serviceObjectGroups.stream().map(ServiceObjectGroup::getName).collect(Collectors.toList());
     List<String> serviceObjectNames =
-        nnServiceObjects.stream().map(ServiceObject::getName).collect(Collectors.toList());
+        serviceObjects.stream().map(ServiceObject::getName).collect(Collectors.toList());
     List<String> allServiceNames =
         Stream.concat(serviceObjectNames.stream(), serviceObjectGroupNames.stream())
             .collect(Collectors.toList());
@@ -140,19 +163,33 @@ public class ReferenceBook implements Comparable<ReferenceBook> {
     ReferenceLibrary.checkDuplicates("service objects", serviceObjectNames);
     ReferenceLibrary.checkDuplicates("service object or group", allServiceNames);
 
+    // check that address group children do not have dangling pointers
+    Set<String> extraNames =
+        Sets.difference(
+            addressGroups.stream()
+                .flatMap(g -> g.getChildGroupNames().stream())
+                .collect(ImmutableSet.toImmutableSet()),
+            addressGroups.stream()
+                .map(AddressGroup::getName)
+                .collect(ImmutableSet.toImmutableSet()));
+    checkArgument(
+        extraNames.isEmpty(),
+        "Following child address group names are not defined: %s",
+        extraNames);
+
     // check that there are no dangling pointers to non-existent names
-    nnServiceEndpoints.forEach(s -> s.checkUndefinedReferences(addressGroupNames, allServiceNames));
-    nnServiceObjectGroups.forEach(s -> s.checkUndefinedReferences(allServiceNames));
+    serviceEndpoints.forEach(s -> s.checkUndefinedReferences(addressGroupNames, allServiceNames));
+    serviceObjectGroups.forEach(s -> s.checkUndefinedReferences(allServiceNames));
 
     // TODO: figure out what to do about circular pointers in service names
 
-    _addressGroups = ImmutableSortedSet.copyOf(nnAddressGroups);
-    _filterGroups = ImmutableSortedSet.copyOf(nnFilterGroups);
-    _interfaceGroups = ImmutableSortedSet.copyOf(nnInterfaceGroups);
+    _addressGroups = ImmutableSortedSet.copyOf(addressGroups);
+    _filterGroups = ImmutableSortedSet.copyOf(filterGroups);
+    _interfaceGroups = ImmutableSortedSet.copyOf(interfaceGroups);
     _name = name;
-    _serviceEndpoints = ImmutableSortedSet.copyOf(nnServiceEndpoints);
-    _serviceObjectGroups = ImmutableSortedSet.copyOf(nnServiceObjectGroups);
-    _serviceObjects = ImmutableSortedSet.copyOf(nnServiceObjects);
+    _serviceEndpoints = ImmutableSortedSet.copyOf(serviceEndpoints);
+    _serviceObjectGroups = ImmutableSortedSet.copyOf(serviceObjectGroups);
+    _serviceObjects = ImmutableSortedSet.copyOf(serviceObjects);
   }
 
   public static Builder builder(String name) {
@@ -183,6 +220,7 @@ public class ReferenceBook implements Comparable<ReferenceBook> {
     return _addressGroups.stream().filter(group -> group.getName().equals(groupName)).findAny();
   }
 
+  @Nonnull
   @JsonProperty(PROP_ADDRESS_GROUPS)
   public SortedSet<AddressGroup> getAddressGroups() {
     return _addressGroups;
@@ -193,6 +231,7 @@ public class ReferenceBook implements Comparable<ReferenceBook> {
     return _filterGroups.stream().filter(group -> group.getName().equals(groupName)).findAny();
   }
 
+  @Nonnull
   @JsonProperty(PROP_FILTER_GROUPS)
   public SortedSet<FilterGroup> getFilterGroups() {
     return _filterGroups;
@@ -203,26 +242,31 @@ public class ReferenceBook implements Comparable<ReferenceBook> {
     return _interfaceGroups.stream().filter(group -> group.getName().equals(groupName)).findAny();
   }
 
+  @Nonnull
   @JsonProperty(PROP_INTERFACE_GROUPS)
   public SortedSet<InterfaceGroup> getInterfaceGroups() {
     return _interfaceGroups;
   }
 
+  @Nonnull
   @JsonProperty(PROP_NAME)
   public String getName() {
     return _name;
   }
 
+  @Nonnull
   @JsonProperty(PROP_SERVICE_ENDPOINTS)
   public SortedSet<ServiceEndpoint> getServiceEndpoints() {
     return _serviceEndpoints;
   }
 
+  @Nonnull
   @JsonProperty(PROP_SERVICE_OBJECT_GROUPS)
   public SortedSet<ServiceObjectGroup> getServiceObjectGroups() {
     return _serviceObjectGroups;
   }
 
+  @Nonnull
   @JsonProperty(PROP_SERVICE_OBJECTS)
   public SortedSet<ServiceObject> getServiceObjects() {
     return _serviceObjects;
@@ -238,5 +282,33 @@ public class ReferenceBook implements Comparable<ReferenceBook> {
         _serviceEndpoints,
         _serviceObjectGroups,
         _serviceObjects);
+  }
+
+  /**
+   * Get the set of addresses contained in {@code addressGroupName} after recursively resolving the
+   * sub groups.
+   *
+   * <p>The implementation is robust to cycles among groups.
+   */
+  public Set<IpWildcard> getAddressesRecursive(String addressGroupName) {
+    Set<String> allGroupNames = new HashSet<>();
+    addGroupAndDescendantNames(addressGroupName, allGroupNames);
+    return allGroupNames.stream()
+        // get() is safe because we got names from the book itself
+        .flatMap(groupName -> getAddressGroup(groupName).get().getAddresses().stream())
+        .map(IpWildcard::new)
+        .collect(ImmutableSet.toImmutableSet());
+  }
+
+  /** Collects all group names in {@code allGroupNames} */
+  @VisibleForTesting
+  void addGroupAndDescendantNames(String groupName, Set<String> allGroupNames) {
+    allGroupNames.add(groupName);
+    // get() is safe because the constructor checks for dangling names
+    for (String childName : getAddressGroup(groupName).get().getChildGroupNames()) {
+      if (!allGroupNames.contains(childName)) {
+        addGroupAndDescendantNames(childName, allGroupNames);
+      }
+    }
   }
 }

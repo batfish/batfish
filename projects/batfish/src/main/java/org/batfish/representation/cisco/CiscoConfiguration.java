@@ -9,6 +9,7 @@ import static org.batfish.datamodel.Interface.computeInterfaceType;
 import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
+import static org.batfish.representation.cisco.CiscoConversions.computeDistributeListPolicies;
 import static org.batfish.representation.cisco.CiscoConversions.convertCryptoMapSet;
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpExportPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpImportPolicy;
@@ -316,7 +317,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return String.format("~BGP_COMMON_EXPORT_POLICY:%s~", vrf);
   }
 
-  public static String computeBgpDefaultRouteExportPolicyName(boolean ipv4) {
+  public static String computeBgpDefaultRouteExportPolicyName(
+      boolean ipv4, String vrf, String peer) {
+    return String.format(
+        "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv%s:%s:%s~", ipv4 ? "4" : "6", vrf, peer);
+  }
+
+  public static String computeNxosBgpDefaultRouteExportPolicyName(boolean ipv4) {
     return String.format("~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv%s~", ipv4 ? "4" : "6");
   }
 
@@ -1872,9 +1879,20 @@ public final class CiscoConfiguration extends VendorConfiguration {
       boolean ipv4 = lpg.getNeighborPrefix() != null;
       Ip updateSource = getUpdateSource(c, vrfName, lpg, updateSourceInterface, ipv4);
 
+      // Get default-originate generation policy (if Cisco) or export policy (if Arista)
+      String defaultOriginateExportMap = null;
+      String defaultOriginateGenerationMap = null;
+      if (lpg.getDefaultOriginate()) {
+        if (c.getConfigurationFormat() == ConfigurationFormat.ARISTA) {
+          defaultOriginateExportMap = lpg.getDefaultOriginateMap();
+        } else {
+          defaultOriginateGenerationMap = lpg.getDefaultOriginateMap();
+        }
+      }
+
       // Generate import and export policies
       String peerImportPolicyName = generateBgpImportPolicy(lpg, vrfName, c, _w);
-      generateBgpExportPolicy(lpg, vrfName, ipv4, c, _w);
+      generateBgpExportPolicy(lpg, vrfName, ipv4, defaultOriginateExportMap, c, _w);
 
       // If defaultOriginate is set, create default route for this peer group
       GeneratedRoute.Builder defaultRoute = null;
@@ -1887,14 +1905,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
         defaultRoute6.setNetwork(Prefix6.ZERO);
         defaultRoute6.setAdmin(MAX_ADMINISTRATIVE_COST);
 
-        String defaultOriginateMapName = lpg.getDefaultOriginateMap();
-        if (defaultOriginateMapName != null
-            && c.getRoutingPolicies().containsKey(defaultOriginateMapName)) {
+        if (defaultOriginateGenerationMap != null
+            && c.getRoutingPolicies().containsKey(defaultOriginateGenerationMap)) {
           // originate contingent on generation policy
           if (ipv4) {
-            defaultRoute.setGenerationPolicy(defaultOriginateMapName);
+            defaultRoute.setGenerationPolicy(defaultOriginateGenerationMap);
           } else {
-            defaultRoute6.setGenerationPolicy(defaultOriginateMapName);
+            defaultRoute6.setGenerationPolicy(defaultOriginateGenerationMap);
           }
         }
       }
@@ -2136,6 +2153,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
       newIface.setIsis(isisInterfaceSettingsBuilder.build());
     }
+
+    // subinterface settings
+    newIface.setEncapsulationVlan(iface.getEncapsulationVlan());
 
     // switch settings
     newIface.setAccessVlan(iface.getAccessVlan());
@@ -2678,6 +2698,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
           new Conjunction(
               ImmutableList.of(MATCH_DEFAULT_ROUTE, new MatchProtocol(RoutingProtocol.AGGREGATE))));
     }
+
+    computeDistributeListPolicies(proc, c, vrfName, proc.getName(), oldConfig);
 
     Ip routerId = proc.getRouterId();
     if (routerId == null) {

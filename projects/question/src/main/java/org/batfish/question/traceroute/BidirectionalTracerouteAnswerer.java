@@ -10,9 +10,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.Function;
@@ -93,7 +91,7 @@ public class BidirectionalTracerouteAnswerer extends Answerer {
 
     private FlowAndSessions(Flow flow, Set<FirewallSessionTraceInfo> sessions) {
       _flow = flow;
-      _sessions = sessions;
+      _sessions = ImmutableSet.copyOf(sessions);
     }
 
     @Override
@@ -120,26 +118,11 @@ public class BidirectionalTracerouteAnswerer extends Answerer {
     SortedMap<Flow, List<TraceAndReverseFlow>> forwardTraces =
         tracerouteEngine.computeTracesAndReverseFlows(flows, ignoreFilters);
 
-    Map<Flow, Set<Optional<FlowAndSessions>>> forwardFlowToReverseFlows =
-        toImmutableMap(
-            forwardTraces,
-            Entry::getKey,
-            entry -> {
-              Function<TraceAndReverseFlow, Optional<FlowAndSessions>> mapper =
-                  tarf ->
-                      tarf.getReverseFlow() == null
-                          ? Optional.empty()
-                          : Optional.of(
-                              new FlowAndSessions(
-                                  tarf.getReverseFlow(), tarf.getNewFirewallSessions()));
-              return entry.getValue().stream().map(mapper).collect(ImmutableSet.toImmutableSet());
-            });
-
     Set<FlowAndSessions> reverseFlowsAndSessions =
-        forwardFlowToReverseFlows.values().stream()
-            .flatMap(Set::stream)
-            .filter(Optional::isPresent)
-            .map(Optional::get)
+        forwardTraces.values().stream()
+            .flatMap(List::stream)
+            .filter(tarf -> tarf.getReverseFlow() != null)
+            .map(tarf -> new FlowAndSessions(tarf.getReverseFlow(), tarf.getNewFirewallSessions()))
             .collect(ImmutableSet.toImmutableSet());
 
     Map<FlowAndSessions, List<Trace>> reverseTraces =
@@ -150,18 +133,15 @@ public class BidirectionalTracerouteAnswerer extends Answerer {
         (forwardFlow, forwardTraceAndReverseFlows) ->
             forwardTraceAndReverseFlows.forEach(
                 forwardTraceAndReverseFlow -> {
-                  Flow reverseFlow = forwardTraceAndReverseFlow.getReverseFlow();
                   Trace forwardTrace = forwardTraceAndReverseFlow.getTrace();
+                  Flow reverseFlow = forwardTraceAndReverseFlow.getReverseFlow();
                   Set<FirewallSessionTraceInfo> newSessions =
                       forwardTraceAndReverseFlow.getNewFirewallSessions();
                   if (reverseFlow == null) {
                     result.add(
                         new BidirectionalTrace(forwardFlow, forwardTrace, newSessions, null, null));
                   } else {
-                    FlowAndSessions fas =
-                        new FlowAndSessions(
-                            forwardTraceAndReverseFlow.getReverseFlow(),
-                            forwardTraceAndReverseFlow.getNewFirewallSessions());
+                    FlowAndSessions fas = new FlowAndSessions(reverseFlow, newSessions);
                     reverseTraces.get(fas).stream()
                         .map(
                             reverseTrace ->

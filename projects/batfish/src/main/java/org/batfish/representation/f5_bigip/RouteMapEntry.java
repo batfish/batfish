@@ -17,10 +17,12 @@ public final class RouteMapEntry implements Serializable {
   private @Nullable LineAction _action;
   private @Nullable MatchAccessList _matchAccessList;
   private @Nullable RouteMapMatchPrefixList _matchPrefixList;
-  private final int _num;
+  private final long _num;
   private @Nullable RouteMapSetCommunity _setCommunity;
+  private @Nullable RouteMapSetMetric _setMetric;
+  private @Nullable RouteMapSetOrigin _setOrigin;
 
-  public RouteMapEntry(int num) {
+  public RouteMapEntry(long num) {
     _num = num;
   }
 
@@ -41,7 +43,7 @@ public final class RouteMapEntry implements Serializable {
     return _matchPrefixList;
   }
 
-  public int getNum() {
+  public long getNum() {
     return _num;
   }
 
@@ -49,9 +51,17 @@ public final class RouteMapEntry implements Serializable {
     return _setCommunity;
   }
 
+  public @Nullable RouteMapSetMetric getSetMetric() {
+    return _setMetric;
+  }
+
+  public @Nullable RouteMapSetOrigin getSetOrigin() {
+    return _setOrigin;
+  }
+
   /** Return stream of set statements for this entry. */
   public @Nonnull Stream<RouteMapSet> getSets() {
-    return Stream.<RouteMapSet>of(_setCommunity).filter(Objects::nonNull);
+    return Stream.<RouteMapSet>of(_setCommunity, _setMetric, _setOrigin).filter(Objects::nonNull);
   }
 
   public void setAction(@Nullable LineAction action) {
@@ -68,5 +78,13 @@ public final class RouteMapEntry implements Serializable {
 
   public void setSetCommunity(@Nullable RouteMapSetCommunity setCommunity) {
     _setCommunity = setCommunity;
+  }
+
+  public void setSetMetric(@Nullable RouteMapSetMetric setMetric) {
+    _setMetric = setMetric;
+  }
+
+  public void setSetOrigin(@Nullable RouteMapSetOrigin setOrigin) {
+    _setOrigin = setOrigin;
   }
 }

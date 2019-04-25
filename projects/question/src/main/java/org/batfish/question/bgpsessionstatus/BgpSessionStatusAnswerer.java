@@ -23,6 +23,7 @@ import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
+import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
@@ -80,17 +81,18 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredBgpTopology =
         BgpTopologyUtils.initBgpTopology(configurations, ipOwners, true);
 
-    ValueGraph<BgpPeerConfigId, BgpSessionProperties> establishedBgpTopology;
-    establishedBgpTopology =
+    // TODO Use layer 2 topology to include BGP unnumbered sessions
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> establishedBgpTopology =
         BgpTopologyUtils.initBgpTopology(
-            configurations, ipOwners, false, true, _batfish.getTracerouteEngine());
+            configurations, ipOwners, false, true, _batfish.getTracerouteEngine(), null);
 
     Stream<Row> activePeerRows =
         configuredBgpTopology.nodes().stream()
             .map(
                 neighbor -> {
                   BgpPeerConfig bpc = getBgpPeerConfig(configurations, neighbor);
-                  if (bpc instanceof BgpPassivePeerConfig) {
+                  if (bpc instanceof BgpPassivePeerConfig
+                      || bpc instanceof BgpUnnumberedPeerConfig) {
                     return null;
                   } else if (!(bpc instanceof BgpActivePeerConfig)) {
                     throw new BatfishException(
@@ -144,6 +146,13 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
                   Set<BgpPeerConfigId> compatibleRemotes =
                       configuredBgpTopology.adjacentNodes(neighbor);
 
+                  // If no compatible neighbors exist, generate one NOT_ESTABLISHED row
+                  if (compatibleRemotes.isEmpty()) {
+                    return Stream.of(
+                        buildPassivePeerWithoutRemoteRow(
+                            metadataMap, neighbor, passivePeer, NOT_ESTABLISHED));
+                  }
+
                   // Find all remote peers that established a session with this peer. Node will not
                   // be in establishedBgpTopology at all if peer was not valid according to
                   // BgpTopologyUtils.bgpConfigPassesSanityChecks()
@@ -151,13 +160,6 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
                       establishedBgpTopology.nodes().contains(neighbor)
                           ? establishedBgpTopology.adjacentNodes(neighbor)
                           : ImmutableSet.of();
-
-                  // If no compatible neighbors exist, generate one NOT_ESTABLISHED row
-                  if (compatibleRemotes.isEmpty()) {
-                    return Stream.of(
-                        buildPassivePeerWithoutRemoteRow(
-                            metadataMap, neighbor, passivePeer, NOT_ESTABLISHED));
-                  }
 
                   // Compatible remotes exist. Generate a row for each.
                   return compatibleRemotes.stream()

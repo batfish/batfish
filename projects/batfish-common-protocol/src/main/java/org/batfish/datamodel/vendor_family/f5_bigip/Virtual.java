@@ -22,8 +22,10 @@ import org.batfish.datamodel.Prefix6;
 @ParametersAreNonnullByDefault
 public final class Virtual implements Serializable {
 
+  private static final String PROP_DESCRIPTION = "description";
   private static final String PROP_DESTINATION = "destination";
   private static final String PROP_DESTINATION_PORT = "destinationPort";
+  private static final String PROP_DISABLED = "disabled";
   private static final String PROP_IP_FORWARD = "ipForward";
   private static final String PROP_IP_PROTOCOL = "ipProtocol";
   private static final String PROP_MASK = "mask";
@@ -48,8 +50,10 @@ public final class Virtual implements Serializable {
     return new Virtual(name, ImmutableSet.copyOf(firstNonNull(vlans, ImmutableSet.of())));
   }
 
+  private @Nullable String _description;
   private @Nullable String _destination;
   private @Nullable Integer _destinationPort;
+  private @Nullable Boolean _disabled;
   private boolean _ipForward;
   private @Nullable IpProtocol _ipProtocol;
   private @Nullable Ip _mask;
@@ -75,6 +79,11 @@ public final class Virtual implements Serializable {
     _vlans = vlans;
   }
 
+  @JsonProperty(PROP_DESCRIPTION)
+  public @Nullable String getDescription() {
+    return _description;
+  }
+
   @JsonProperty(PROP_DESTINATION)
   public @Nullable String getDestination() {
     return _destination;
@@ -83,6 +92,11 @@ public final class Virtual implements Serializable {
   @JsonProperty(PROP_DESTINATION_PORT)
   public @Nullable Integer getDestinationPort() {
     return _destinationPort;
+  }
+
+  @JsonProperty(PROP_DISABLED)
+  public @Nullable Boolean getDisabled() {
+    return _disabled;
   }
 
   @JsonProperty(PROP_IP_FORWARD)
@@ -155,6 +169,11 @@ public final class Virtual implements Serializable {
     return _vlansEnabled;
   }
 
+  @JsonProperty(PROP_DESCRIPTION)
+  public void setDescription(@Nullable String description) {
+    _description = description;
+  }
+
   @JsonProperty(PROP_DESTINATION)
   public void setDestination(@Nullable String destination) {
     _destination = destination;
@@ -163,6 +182,10 @@ public final class Virtual implements Serializable {
   @JsonProperty(PROP_DESTINATION_PORT)
   public void setDestinationPort(@Nullable Integer destinationPort) {
     _destinationPort = destinationPort;
+  }
+
+  public void setDisabled(@Nullable Boolean disabled) {
+    _disabled = disabled;
   }
 
   @JsonProperty(PROP_IP_FORWARD)

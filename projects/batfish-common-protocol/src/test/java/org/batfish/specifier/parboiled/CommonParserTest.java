@@ -1,9 +1,5 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.datamodel.NamesTest.NODE_ROLE_INVALID_NAMES;
-import static org.batfish.datamodel.NamesTest.NODE_ROLE_VALID_NAMES;
-import static org.batfish.datamodel.NamesTest.REFERENCE_OBJECT_INVALID_NAMES;
-import static org.batfish.datamodel.NamesTest.REFERENCE_OBJECT_VALID_NAMES;
 import static org.batfish.specifier.parboiled.CommonParser.nameNeedsEscaping;
 import static org.batfish.specifier.parboiled.Parser.initAnchors;
 import static org.hamcrest.Matchers.equalTo;
@@ -41,16 +37,17 @@ public class CommonParserTest {
         initAnchors(TestParser.class),
         equalTo(
             ImmutableMap.<String, Type>builder()
-                .put("TestSpecifierInput", Type.ADDRESS_GROUP_AND_BOOK)
                 .put("EOI", Type.EOI)
                 .put("AsciiButNot", Type.IGNORE)
                 .put("EscapedSlash", Type.IGNORE)
                 .put("EscapedQuote", Type.IGNORE)
+                .put("TestAddressGroupName", Type.ADDRESS_GROUP_NAME)
                 .put("TestIpAddress", Type.IP_ADDRESS)
                 .put("TestIpRange", Type.IP_RANGE)
                 .put("TestName", Type.NODE_NAME)
                 .put("TestNameRegex", Type.NODE_NAME_REGEX)
                 .put("TestNameRegexDeprecated", Type.IGNORE)
+                .put("TestReferenceBookName", Type.REFERENCE_BOOK_NAME)
                 .put("WhiteSpace", Type.WHITESPACE)
                 .build()));
   }
@@ -84,34 +81,6 @@ public class CommonParserTest {
     assertFalse(matches("1startDigit", rule));
     assertFalse(matches("/startSlash", rule));
     assertFalse(matches("@startAt", rule));
-  }
-
-  @Test
-  public void testNodeRoleNameLiteral() {
-    CommonParser parser = CommonParser.instance();
-    Rule rule = parser.input(parser.NodeRoleNameLiteral());
-
-    for (String name : NODE_ROLE_VALID_NAMES) {
-      assertTrue(name, matches(name, rule));
-    }
-
-    for (String name : NODE_ROLE_INVALID_NAMES) {
-      assertFalse(name, matches(name, rule));
-    }
-  }
-
-  @Test
-  public void testReferenceObjectNameLiteral() {
-    CommonParser parser = CommonParser.instance();
-    Rule rule = parser.input(parser.ReferenceObjectNameLiteral());
-
-    for (String name : REFERENCE_OBJECT_VALID_NAMES) {
-      assertTrue(name, matches(name, rule));
-    }
-
-    for (String name : REFERENCE_OBJECT_INVALID_NAMES) {
-      assertFalse(name, matches(name, rule));
-    }
   }
 
   @Test

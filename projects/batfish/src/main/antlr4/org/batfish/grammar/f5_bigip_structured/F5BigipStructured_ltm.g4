@@ -18,7 +18,7 @@ l_monitor
 
 lm_http
 :
-  HTTP name = word BRACE_LEFT
+  HTTP name = structure_name BRACE_LEFT
   (
     NEWLINE
     (
@@ -30,12 +30,12 @@ lm_http
 
 lmh_defaults_from
 :
-  DEFAULTS_FROM name = word NEWLINE
+  DEFAULTS_FROM name = structure_name NEWLINE
 ;
 
 lm_https
 :
-  HTTPS name = word BRACE_LEFT
+  HTTPS name = structure_name BRACE_LEFT
   (
     NEWLINE
     (
@@ -48,25 +48,34 @@ lm_https
 
 lmhs_defaults_from
 :
-  DEFAULTS_FROM name = word NEWLINE
+  DEFAULTS_FROM name = structure_name NEWLINE
 ;
 
 lmhs_ssl_profile
 :
-  SSL_PROFILE name = word NEWLINE
+  SSL_PROFILE name = structure_name NEWLINE
 ;
 
 l_node
 :
-  NODE name = word BRACE_LEFT
+  NODE name = structure_name BRACE_LEFT
   (
-    NEWLINE ln_address*
+    NEWLINE
+    (
+      ln_address
+      | ln_address6
+    )*
   )? BRACE_RIGHT NEWLINE
 ;
 
 ln_address
 :
-  ADDRESS address = word NEWLINE
+  ADDRESS address = ip_address NEWLINE
+;
+
+ln_address6
+:
+  ADDRESS address = ipv6_address NEWLINE
 ;
 
 l_persistence
@@ -81,7 +90,7 @@ l_persistence
 
 lper_source_addr
 :
-  SOURCE_ADDR name = word BRACE_LEFT
+  SOURCE_ADDR name = structure_name BRACE_LEFT
   (
     NEWLINE
     (
@@ -93,12 +102,12 @@ lper_source_addr
 
 lpersa_defaults_from
 :
-  DEFAULTS_FROM name = word NEWLINE
+  DEFAULTS_FROM name = structure_name NEWLINE
 ;
 
 lper_ssl
 :
-  SSL name = word BRACE_LEFT
+  SSL name = structure_name BRACE_LEFT
   (
     NEWLINE
     (
@@ -110,20 +119,26 @@ lper_ssl
 
 lperss_defaults_from
 :
-  DEFAULTS_FROM name = word NEWLINE
+  DEFAULTS_FROM name = structure_name NEWLINE
 ;
 
 l_pool
 :
-  POOL name = word BRACE_LEFT
+  POOL name = structure_name BRACE_LEFT
   (
     NEWLINE
     (
-      lp_members
+      lp_description
+      | lp_members
       | lp_monitor
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
+;
+
+lp_description
+:
+  DESCRIPTION text = word NEWLINE
 ;
 
 lp_members
@@ -136,20 +151,36 @@ lp_members
 
 lpm_member
 :
-  name = word BRACE_LEFT
+  name_with_port = structure_name_with_port BRACE_LEFT
   (
-    NEWLINE lpmm_address*
+    NEWLINE
+    (
+      lpmm_address
+      | lpmm_address6
+      | lpmm_description
+      | unrecognized
+    )*
   )? BRACE_RIGHT NEWLINE
-;
-
-lp_monitor
-:
-  MONITOR name = word NEWLINE
 ;
 
 lpmm_address
 :
-  ADDRESS address = word NEWLINE
+  ADDRESS address = ip_address NEWLINE
+;
+
+lpmm_address6
+:
+  ADDRESS address6 = ipv6_address NEWLINE
+;
+
+lp_monitor
+:
+  MONITOR name = structure_name NEWLINE
+;
+
+lpmm_description
+:
+  DESCRIPTION text = word NEWLINE
 ;
 
 l_profile
@@ -168,7 +199,7 @@ l_profile
 
 lprof_client_ssl
 :
-  CLIENT_SSL name = word BRACE_LEFT
+  CLIENT_SSL name = structure_name BRACE_LEFT
   (
     NEWLINE
     (
@@ -180,12 +211,12 @@ lprof_client_ssl
 
 lprofcs_defaults_from
 :
-  DEFAULTS_FROM name = word NEWLINE
+  DEFAULTS_FROM name = structure_name NEWLINE
 ;
 
 lprof_http
 :
-  HTTP name = word BRACE_LEFT
+  HTTP name = structure_name BRACE_LEFT
   (
     NEWLINE
     (
@@ -197,12 +228,12 @@ lprof_http
 
 lprofh_defaults_from
 :
-  DEFAULTS_FROM name = word NEWLINE
+  DEFAULTS_FROM name = structure_name NEWLINE
 ;
 
 lprof_ocsp_stapling_params
 :
-  OCSP_STAPLING_PARAMS name = word BRACE_LEFT
+  OCSP_STAPLING_PARAMS name = structure_name BRACE_LEFT
   (
     NEWLINE
     (
@@ -214,12 +245,12 @@ lprof_ocsp_stapling_params
 
 lprofoc_defaults_from
 :
-  DEFAULTS_FROM name = word NEWLINE
+  DEFAULTS_FROM name = structure_name NEWLINE
 ;
 
 lprof_one_connect
 :
-  ONE_CONNECT name = word BRACE_LEFT
+  ONE_CONNECT name = structure_name BRACE_LEFT
   (
     NEWLINE
     (
@@ -231,12 +262,12 @@ lprof_one_connect
 
 lprofon_defaults_from
 :
-  DEFAULTS_FROM name = word NEWLINE
+  DEFAULTS_FROM name = structure_name NEWLINE
 ;
 
 lprof_server_ssl
 :
-  SERVER_SSL name = word BRACE_LEFT
+  SERVER_SSL name = structure_name BRACE_LEFT
   (
     NEWLINE
     (
@@ -248,12 +279,12 @@ lprof_server_ssl
 
 lprofss_defaults_from
 :
-  DEFAULTS_FROM name = word NEWLINE
+  DEFAULTS_FROM name = structure_name NEWLINE
 ;
 
 lprof_tcp
 :
-  TCP name = word BRACE_LEFT
+  TCP name = structure_name BRACE_LEFT
   (
     NEWLINE
     (
@@ -265,12 +296,12 @@ lprof_tcp
 
 lproft_defaults_from
 :
-  DEFAULTS_FROM name = word NEWLINE
+  DEFAULTS_FROM name = structure_name NEWLINE
 ;
 
 l_rule
 :
-  RULE name = word BRACE_LEFT
+  RULE name = structure_name BRACE_LEFT
   (
     NEWLINE unrecognized*
   )? BRACE_RIGHT NEWLINE
@@ -278,7 +309,7 @@ l_rule
 
 l_snat
 :
-  SNAT name = word BRACE_LEFT
+  SNAT name = structure_name BRACE_LEFT
   (
     NEWLINE
     (
@@ -295,13 +326,25 @@ ls_origins
 :
   ORIGINS BRACE_LEFT
   (
-    NEWLINE lso_origin*
+    NEWLINE
+    (
+      lso_origin
+      | lso_origin6
+    )*
   )? BRACE_RIGHT NEWLINE
 ;
 
 lso_origin
 :
-  origin = word BRACE_LEFT
+  origin = ip_prefix BRACE_LEFT
+  (
+    NEWLINE unrecognized*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lso_origin6
+:
+  origin6 = ipv6_prefix BRACE_LEFT
   (
     NEWLINE unrecognized*
   )? BRACE_RIGHT NEWLINE
@@ -309,7 +352,7 @@ lso_origin
 
 ls_snatpool
 :
-  SNATPOOL name = word NEWLINE
+  SNATPOOL name = structure_name NEWLINE
 ;
 
 ls_vlans
@@ -322,7 +365,7 @@ ls_vlans
 
 lsv_vlan
 :
-  name = word NEWLINE
+  name = structure_name NEWLINE
 ;
 
 ls_vlans_disabled
@@ -337,11 +380,12 @@ ls_vlans_enabled
 
 l_snat_translation
 :
-  SNAT_TRANSLATION name = word BRACE_LEFT
+  SNAT_TRANSLATION name = structure_name BRACE_LEFT
   (
     NEWLINE
     (
       lst_address
+      | lst_address6
       | lst_traffic_group
       | unrecognized
     )*
@@ -350,17 +394,22 @@ l_snat_translation
 
 lst_address
 :
-  ADDRESS address = word NEWLINE
+  ADDRESS address = ip_address NEWLINE
+;
+
+lst_address6
+:
+  ADDRESS address6 = ipv6_address NEWLINE
 ;
 
 lst_traffic_group
 :
-  TRAFFIC_GROUP name = word NEWLINE
+  TRAFFIC_GROUP name = structure_name NEWLINE
 ;
 
 l_snatpool
 :
-  SNATPOOL name = word BRACE_LEFT
+  SNATPOOL name = structure_name BRACE_LEFT
   (
     NEWLINE
     (
@@ -380,25 +429,30 @@ lsp_members
 
 lspm_member
 :
-  name = word NEWLINE
+  name = structure_name NEWLINE
 ;
 
 l_virtual
 :
-  VIRTUAL name = word BRACE_LEFT
+  VIRTUAL name = structure_name BRACE_LEFT
   (
     NEWLINE
     (
-      lv_destination
+      lv_description
+      | lv_destination
+      | lv_disabled
+      | lv_enabled
       | lv_ip_forward
       | lv_ip_protocol
       | lv_mask
+      | lv_mask6
       | lv_persist
       | lv_pool
       | lv_profiles
       | lv_reject
       | lv_rules
       | lv_source
+      | lv_source6
       | lv_source_address_translation
       | lv_translate_address
       | lv_translate_port
@@ -410,9 +464,24 @@ l_virtual
   )? BRACE_RIGHT NEWLINE
 ;
 
+lv_description
+:
+  DESCRIPTION text = word NEWLINE
+;
+
 lv_destination
 :
-  DESTINATION name = word NEWLINE
+  DESTINATION name_with_port = structure_name_with_port NEWLINE
+;
+
+lv_disabled
+:
+  DISABLED NEWLINE
+;
+
+lv_enabled
+:
+  ENABLED NEWLINE
 ;
 
 lv_ip_forward
@@ -427,7 +496,12 @@ lv_ip_protocol
 
 lv_mask
 :
-  MASK mask = word NEWLINE
+  MASK mask = ip_address NEWLINE
+;
+
+lv_mask6
+:
+  MASK mask6 = ipv6_address NEWLINE
 ;
 
 lv_persist
@@ -440,7 +514,7 @@ lv_persist
 
 lvp_persistence
 :
-  name = word BRACE_LEFT
+  name = structure_name BRACE_LEFT
   (
     NEWLINE unrecognized*
   )? BRACE_RIGHT NEWLINE
@@ -448,7 +522,7 @@ lvp_persistence
 
 lv_pool
 :
-  POOL name = word NEWLINE
+  POOL name = structure_name NEWLINE
 ;
 
 lv_profiles
@@ -461,10 +535,15 @@ lv_profiles
 
 lv_profiles_profile
 :
-  name = word BRACE_LEFT
+  name = structure_name BRACE_LEFT
   (
     NEWLINE unrecognized*
   )? BRACE_RIGHT NEWLINE
+;
+
+lv_reject
+:
+  REJECT NEWLINE
 ;
 
 lv_rules
@@ -477,12 +556,17 @@ lv_rules
 
 lvr_rule
 :
-  name = word NEWLINE
+  name = structure_name NEWLINE
 ;
 
 lv_source
 :
-  SOURCE source = word NEWLINE
+  SOURCE source = ip_prefix NEWLINE
+;
+
+lv_source6
+:
+  SOURCE source6 = ipv6_prefix NEWLINE
 ;
 
 lv_source_address_translation
@@ -500,17 +584,12 @@ lv_source_address_translation
 
 lvsat_pool
 :
-  POOL name = word NEWLINE
+  POOL name = structure_name NEWLINE
 ;
 
 lvsat_type
 :
   TYPE source_address_translation_type NEWLINE
-;
-
-lv_reject
-:
-  REJECT NEWLINE
 ;
 
 lv_translate_address
@@ -541,7 +620,7 @@ lv_vlans
 
 lvv_vlan
 :
-  name = word NEWLINE
+  name = structure_name NEWLINE
 ;
 
 lv_vlans_disabled
@@ -556,13 +635,16 @@ lv_vlans_enabled
 
 l_virtual_address
 :
-  VIRTUAL_ADDRESS name = word BRACE_LEFT
+  VIRTUAL_ADDRESS name = structure_name BRACE_LEFT
   (
     NEWLINE
     (
       lva_address
+      | lva_address6
       | lva_arp
+      | lva_icmp_echo
       | lva_mask
+      | lva_mask6
       | lva_route_advertisement
       | lva_traffic_group
       | unrecognized
@@ -572,17 +654,40 @@ l_virtual_address
 
 lva_address
 :
-  ADDRESS address = word NEWLINE
+  ADDRESS address = ip_address NEWLINE
+;
+
+lva_address6
+:
+  ADDRESS address = ipv6_address NEWLINE
 ;
 
 lva_arp
 :
-  ARP ENABLED NEWLINE
+  ARP
+  (
+    DISABLED
+    | ENABLED
+  ) NEWLINE
+;
+
+lva_icmp_echo
+:
+  ICMP_ECHO
+  (
+    DISABLED
+    | ENABLED
+  ) NEWLINE
 ;
 
 lva_mask
 :
-  MASK mask = word NEWLINE
+  MASK mask = ip_address NEWLINE
+;
+
+lva_mask6
+:
+  MASK mask6 = ipv6_address NEWLINE
 ;
 
 lva_route_advertisement
@@ -592,7 +697,7 @@ lva_route_advertisement
 
 lva_traffic_group
 :
-  TRAFFIC_GROUP name = word NEWLINE
+  TRAFFIC_GROUP name = structure_name NEWLINE
 ;
 
 s_ltm

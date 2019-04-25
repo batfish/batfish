@@ -1,6 +1,7 @@
 package org.batfish.common;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -10,6 +11,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -168,7 +170,7 @@ public class Warnings implements Serializable {
   }
 
   /** A class to represent a parse warning in a file. */
-  public static class ParseWarning implements Serializable {
+  public static final class ParseWarning implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private static final String PROP_COMMENT = "Comment";
@@ -182,11 +184,19 @@ public class Warnings implements Serializable {
     @Nonnull private final String _text;
 
     @JsonCreator
-    public ParseWarning(
-        @JsonProperty(PROP_LINE) int line,
-        @JsonProperty(PROP_TEXT) @Nonnull String text,
-        @JsonProperty(PROP_PARSER_CONTEXT) @Nonnull String parserContext,
+    private static ParseWarning create(
+        @JsonProperty(PROP_LINE) @Nullable Integer line,
+        @JsonProperty(PROP_TEXT) @Nullable String text,
+        @JsonProperty(PROP_PARSER_CONTEXT) @Nullable String parserContext,
         @JsonProperty(PROP_COMMENT) @Nullable String comment) {
+      checkArgument(line != null, "Missing %s", PROP_LINE);
+      // empty strings can get serialized as nulls
+      return new ParseWarning(
+          line, firstNonNull(text, ""), firstNonNull(parserContext, ""), comment);
+    }
+
+    public ParseWarning(
+        int line, @Nonnull String text, @Nonnull String parserContext, @Nullable String comment) {
       _line = line;
       _text = requireNonNull(text, PROP_TEXT);
       _parserContext = requireNonNull(parserContext, PROP_PARSER_CONTEXT);
@@ -214,6 +224,26 @@ public class Warnings implements Serializable {
     @Nonnull
     public String getText() {
       return _text;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof ParseWarning)) {
+        return false;
+      }
+      ParseWarning that = (ParseWarning) o;
+      return _line == that._line
+          && Objects.equals(_comment, that._comment)
+          && _parserContext.equals(that._parserContext)
+          && _text.equals(that._text);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(_comment, _line, _parserContext, _text);
     }
   }
 }
