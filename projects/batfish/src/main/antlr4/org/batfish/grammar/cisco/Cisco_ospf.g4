@@ -678,8 +678,8 @@ s_router_ospf
       | ro_network
       | ro_passive_interface_default
       | ro_passive_interface
-      | ro_redistribute_bgp_arista
-      | ro_redistribute_bgp_cisco
+      | { _eos }? ro_redistribute_bgp_arista
+      | { !_eos }? ro_redistribute_bgp_cisco
       | ro_redistribute_connected
       | ro_redistribute_eigrp
       | ro_redistribute_ospf_null

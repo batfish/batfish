@@ -8802,10 +8802,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitRo_redistribute_bgp_arista(Ro_redistribute_bgp_aristaContext ctx) {
-    if (_format != ARISTA) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "This syntax is unrecognized");
-      return;
-    }
     OspfProcess proc = _currentOspfProcess;
     RoutingProtocol sourceProtocol = RoutingProtocol.BGP;
     OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
@@ -8823,10 +8819,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitRo_redistribute_bgp_cisco(Ro_redistribute_bgp_ciscoContext ctx) {
-    if (_format == ARISTA) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "This syntax is unrecognized");
-      return;
-    }
     OspfProcess proc = _currentOspfProcess;
     RoutingProtocol sourceProtocol = RoutingProtocol.BGP;
     OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
