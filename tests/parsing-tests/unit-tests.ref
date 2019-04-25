@@ -81863,6 +81863,9 @@
         "configs/cumulus_nclu" : [
           "cumulus_nclu"
         ],
+        "configs/cumulus_nclu_bgp_no_address_family" : [
+          "cumulus_nclu_bgp_no_address_family"
+        ],
         "configs/cumulus_nclu_invalid_bonds" : [
           "cumulus_nclu_invalid_bonds"
         ],
