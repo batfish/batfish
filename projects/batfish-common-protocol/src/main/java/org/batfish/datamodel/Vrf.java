@@ -5,7 +5,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
@@ -114,25 +113,25 @@ public class Vrf extends ComparableStructure<String> {
     return _appliedRibGroups;
   }
 
+  /** BGP routing process for this VRF. */
   @JsonProperty(PROP_BGP_PROCESS)
-  @JsonPropertyDescription("BGP routing process for this VRF")
   public BgpProcess getBgpProcess() {
     return _bgpProcess;
   }
 
+  /** Description for this VRF. */
   @JsonProperty(PROP_DESCRIPTION)
-  @JsonPropertyDescription("Description for this VRF")
   public String getDescription() {
     return _description;
   }
 
-  @JsonPropertyDescription("Generated IPV6 routes for this VRF")
+  /** Generated IPV6 routes for this VRF. */
   public NavigableSet<GeneratedRoute6> getGeneratedIpv6Routes() {
     return _generatedIpv6Routes;
   }
 
+  /** Generated IPV4 routes for this VRF. */
   @JsonProperty(PROP_GENERATED_ROUTES)
-  @JsonPropertyDescription("Generated IPV4 routes for this VRF")
   public NavigableSet<GeneratedRoute> getGeneratedRoutes() {
     return _generatedRoutes;
   }
@@ -157,8 +156,8 @@ public class Vrf extends ComparableStructure<String> {
     return _crossVrfImportVrfs;
   }
 
+  /** Interfaces assigned to this VRF. */
   @JsonProperty(PROP_INTERFACES)
-  @JsonPropertyDescription("Interfaces assigned to this VRF")
   public SortedSet<String> getInterfaceNames() {
     if (_interfaces != null && !_interfaces.isEmpty()) {
       return new TreeSet<>(_interfaces.keySet());
@@ -179,8 +178,8 @@ public class Vrf extends ComparableStructure<String> {
         .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
   }
 
+  /** IS-IS routing process for this VRF. */
   @JsonProperty(PROP_ISIS_PROCESS)
-  @JsonPropertyDescription("IS-IS routing process for this VRF")
   public IsisProcess getIsisProcess() {
     return _isisProcess;
   }
@@ -190,7 +189,7 @@ public class Vrf extends ComparableStructure<String> {
     return _kernelRoutes;
   }
 
-  @JsonPropertyDescription("OSPF routing process for this VRF")
+  /** OSPF routing process for this VRF. */
   @JsonProperty(PROP_OSPF_PROCESS)
   public OspfProcess getOspfProcess() {
     return _ospfProcess;
@@ -205,7 +204,7 @@ public class Vrf extends ComparableStructure<String> {
     return _snmpServer;
   }
 
-  @JsonPropertyDescription("Static routes for this VRF")
+  /** Static routes for this VRF. */
   @JsonProperty(PROP_STATIC_ROUTES)
   public SortedSet<StaticRoute> getStaticRoutes() {
     return _staticRoutes;

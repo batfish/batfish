@@ -2,7 +2,6 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import java.util.Objects;
 import org.batfish.common.util.ComparableStructure;
 
@@ -36,32 +35,31 @@ public class IkePhase1Proposal extends ComparableStructure<String> {
     super(name);
   }
 
-  @JsonPropertyDescription("Authentication method to use for this IKE phase 1 proposal")
+  /** Authentication method to use for this IKE phase 1 proposal. */
   @JsonProperty(PROP_AUTHENTICATION_METHOD)
   public IkeAuthenticationMethod getAuthenticationMethod() {
     return _authenticationMethod;
   }
 
-  @JsonPropertyDescription(
-      "Diffie-Hellman group to use for key exchange for this IKE phase 1 proposal")
+  /** Diffie-Hellman group to use for key exchange for this IKE phase 1 proposal. */
   @JsonProperty(PROP_DIFFIE_HELLMAN_GROUP)
   public DiffieHellmanGroup getDiffieHellmanGroup() {
     return _diffieHellmanGroup;
   }
 
-  @JsonPropertyDescription("Encryption algorithm to use for this IKE phase 1 proposal")
+  /** Encryption algorithm to use for this IKE phase 1 proposal. */
   @JsonProperty(PROP_ENCRYPTION_ALGORITHM)
   public EncryptionAlgorithm getEncryptionAlgorithm() {
     return _encryptionAlgorithm;
   }
 
-  @JsonPropertyDescription("Hashing algorithm to be used for this IKE phase 1 proposal")
+  /** Hashing algorithm to be used for this IKE phase 1 proposal. */
   @JsonProperty(PROP_HASHING_ALGORITHM)
   public IkeHashingAlgorithm getHashingAlgorithm() {
     return _hashingAlgorithm;
   }
 
-  @JsonPropertyDescription("Lifetime in seconds to use for this IKE phase 1 proposal")
+  /** Lifetime in seconds to use for this IKE phase 1 proposal. */
   @JsonProperty(PROP_LIFETIME_SECONDS)
   public Integer getLifetimeSeconds() {
     return _lifetimeSeconds;

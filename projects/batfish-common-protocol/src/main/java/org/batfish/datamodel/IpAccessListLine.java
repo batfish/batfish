@@ -2,7 +2,6 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
@@ -150,8 +149,7 @@ public final class IpAccessListLine implements Serializable {
         && Objects.equals(_name, other._name);
   }
 
-  @JsonPropertyDescription(
-      "The action the underlying access-list will take when this line matches an IPV4 packet.")
+  /** The action the underlying access-list will take when this line matches an IPV4 packet. */
   @JsonProperty(PROP_ACTION)
   public @Nonnull LineAction getAction() {
     return _action;

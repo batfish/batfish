@@ -10,7 +10,7 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /**
  * An {@link InterfaceSpecifier} for interfaces that belong to a Zone name. Name matching is case
- * insensitive..
+ * insensitive.
  */
 public final class ZoneNameInterfaceSpecifier implements InterfaceSpecifier {
   String _name;
