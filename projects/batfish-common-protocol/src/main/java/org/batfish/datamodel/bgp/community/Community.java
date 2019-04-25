@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.io.Serializable;
 import java.math.BigInteger;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
@@ -47,6 +48,12 @@ public abstract class Community implements Serializable, Comparable<Community> {
   @Override
   @Nonnull
   public abstract String toString();
+
+  @Override
+  public abstract boolean equals(@Nullable Object obj);
+
+  @Override
+  public abstract int hashCode();
 
   @Override
   public int compareTo(Community o) {
