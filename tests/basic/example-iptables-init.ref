@@ -238,6 +238,38 @@
         "hosts/z2-host1.json" : { },
         "hosts/z2-host2.json" : { }
       },
+      "fileMap" : {
+        "configs/r1.cfg" : [
+          "r1"
+        ],
+        "configs/r2.cfg" : [
+          "r2"
+        ],
+        "configs/r3.cfg" : [
+          "r3"
+        ],
+        "configs/z1-firewall.cfg" : [
+          "z1-firewall"
+        ],
+        "configs/z2-firewall.cfg" : [
+          "z2-firewall"
+        ],
+        "hosts/internet-host.json" : [
+          "internet-host"
+        ],
+        "hosts/z1-host1.json" : [
+          "z1-host1"
+        ],
+        "hosts/z1-host2.json" : [
+          "z1-host2"
+        ],
+        "hosts/z2-host1.json" : [
+          "z2-host1"
+        ],
+        "hosts/z2-host2.json" : [
+          "z2-host2"
+        ]
+      },
       "referencedStructures" : {
         "configs/r1.cfg" : {
           "interface" : {
