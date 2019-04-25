@@ -1,7 +1,6 @@
 package org.batfish.datamodel.bgp.community;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.io.Serializable;
 import java.math.BigInteger;
 import javax.annotation.Nonnull;
@@ -14,10 +13,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * href="https://tools.ietf.org/html/rfc4360">extended</a> or <a
  * href="https://tools.ietf.org/html/rfc8092">large</a>
  */
-@JsonTypeInfo(
-    use = JsonTypeInfo.Id.NAME,
-    // Keep backwards-compatible with previous community implementation
-    defaultImpl = StandardCommunity.class)
 @JsonSubTypes({
   @JsonSubTypes.Type(value = StandardCommunity.class, name = "standard"),
   @JsonSubTypes.Type(value = ExtendedCommunity.class, name = "extended"),
