@@ -255,8 +255,8 @@ public final class CumulusNcluGrammarTest {
     Set<AbstractRoute> n1Routes = dp.getRibs().get(node1).get(DEFAULT_VRF_NAME).getRoutes();
     Set<AbstractRoute> n2Routes = dp.getRibs().get(node2).get(DEFAULT_VRF_NAME).getRoutes();
 
-    BgpRoute.Builder routeBuilder =
-        BgpRoute.builder()
+    Bgpv4Route.Builder routeBuilder =
+        Bgpv4Route.builder()
             .setNextHopIp(BGP_UNNUMBERED_IP)
             .setReceivedFromIp(BGP_UNNUMBERED_IP)
             .setOriginType(OriginType.INCOMPLETE)

@@ -753,8 +753,8 @@ public class CiscoGrammarTest {
     Set<AbstractRoute> listenerRoutes =
         dp.getRibs().get("ios-listener").get(DEFAULT_VRF_NAME).getRoutes();
 
-    BgpRoute expectedDefaultRoute =
-        BgpRoute.builder()
+    Bgpv4Route expectedDefaultRoute =
+        Bgpv4Route.builder()
             .setNetwork(Prefix.ZERO)
             .setNextHopIp(Ip.parse("10.1.1.1"))
             .setReceivedFromIp(Ip.parse("10.1.1.1"))
