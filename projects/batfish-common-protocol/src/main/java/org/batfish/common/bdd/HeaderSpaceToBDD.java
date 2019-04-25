@@ -67,7 +67,7 @@ public final class HeaderSpaceToBDD {
       return null;
     }
 
-    return _bddOps.or(
+    return _bddOps.orAll(
         ipProtocols.stream().map(_bddPacket.getIpProtocol()::value).collect(Collectors.toList()));
   }
 
