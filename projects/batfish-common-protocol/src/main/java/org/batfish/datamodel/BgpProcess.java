@@ -120,6 +120,15 @@ public class BgpProcess implements Serializable {
   }
 
   /**
+   * Expand the origination space for this prefix
+   *
+   * @param prefix {@link Prefix} to add
+   */
+  public void addToOriginationSpace(Prefix prefix) {
+    _originationSpace.addPrefix(prefix);
+  }
+
+  /**
    * Returns set of all cluster IDs for all neighbors. The result is memoized, so this should only
    * be called after the neighbors are finalized.
    */
