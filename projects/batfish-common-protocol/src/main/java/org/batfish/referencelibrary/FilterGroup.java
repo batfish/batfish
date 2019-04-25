@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -12,7 +13,9 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.Names;
 import org.batfish.datamodel.Names.Type;
 
-public class FilterGroup implements Comparable<FilterGroup> {
+public class FilterGroup implements Comparable<FilterGroup>, Serializable {
+
+  private static final long serialVersionUID = 1L;
 
   private static final String PROP_FILTERS = "filters";
   private static final String PROP_NAME = "name";
@@ -38,6 +41,15 @@ public class FilterGroup implements Comparable<FilterGroup> {
     return _name.compareTo(o._name);
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof FilterGroup)) {
+      return false;
+    }
+    FilterGroup rhs = (FilterGroup) o;
+    return Objects.equals(_name, rhs._name) && Objects.equals(_filters, ((FilterGroup) o)._filters);
+  }
+
   @JsonProperty(PROP_FILTERS)
   @Nonnull
   public List<String> getFilters() {
@@ -48,5 +60,10 @@ public class FilterGroup implements Comparable<FilterGroup> {
   @Nonnull
   public String getName() {
     return _name;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_name, _filters);
   }
 }

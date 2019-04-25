@@ -84,6 +84,7 @@ java_library(
         "//projects/lib/z3",
         "@antlr4_runtime//:compile",
         "@commons_collections4//:compile",
+        "@commons_lang3//:compile",
         "@guava//:compile",
         "@hamcrest//:compile",
         "@jsr305//:compile",
