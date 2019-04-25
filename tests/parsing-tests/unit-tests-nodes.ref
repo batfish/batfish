@@ -13677,9 +13677,23 @@
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ],
                 "guard" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
                   "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "bgp"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "ibgp"
+                    },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
                       "comment" : "Redistribute CONNECTED routes into BGP",
@@ -13746,20 +13760,6 @@
                           "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                           "expr" : {
                             "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "bgp"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "ibgp"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
                             "protocol" : "aggregate"
                           }
                         },
@@ -13796,14 +13796,6 @@
                           ]
                         }
                       ]
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "bgp"
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "ibgp"
                     }
                   ]
                 },
@@ -13813,10 +13805,6 @@
                     "type" : "ReturnTrue"
                   }
                 ]
-              },
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "ReturnFalse"
               }
             ]
           },
@@ -13825,9 +13813,23 @@
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ],
                 "guard" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
                   "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "bgp"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "ibgp"
+                    },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
                       "comment" : "Redistribute CONNECTED routes into BGP",
@@ -13921,14 +13923,6 @@
                           ]
                         }
                       ]
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "bgp"
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "ibgp"
                     }
                   ]
                 },
@@ -13938,10 +13932,6 @@
                     "type" : "ReturnTrue"
                   }
                 ]
-              },
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "ReturnFalse"
               }
             ]
           },
