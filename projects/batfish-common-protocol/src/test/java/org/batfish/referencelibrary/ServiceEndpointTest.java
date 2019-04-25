@@ -1,8 +1,10 @@
 package org.batfish.referencelibrary;
 
-import java.io.ByteArrayOutputStream;
+import static org.junit.Assert.assertThat;
+
 import java.io.IOException;
-import java.io.ObjectOutputStream;
+import org.apache.commons.lang3.SerializationUtils;
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 /** Tests for {@link ServiceEndpoint} */
@@ -11,6 +13,6 @@ public class ServiceEndpointTest {
   @Test
   public void testJavaSerialization() throws IOException {
     ServiceEndpoint point = new ServiceEndpoint("addr", "group", "svc");
-    new ObjectOutputStream(new ByteArrayOutputStream()).writeObject(point);
+    assertThat(SerializationUtils.clone(point), CoreMatchers.equalTo(point));
   }
 }

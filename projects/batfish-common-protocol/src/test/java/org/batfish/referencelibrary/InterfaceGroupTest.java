@@ -1,9 +1,11 @@
 package org.batfish.referencelibrary;
 
+import static org.junit.Assert.assertThat;
+
 import com.google.common.collect.ImmutableSortedSet;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
+import org.apache.commons.lang3.SerializationUtils;
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 /** Tests for {@link InterfaceGroup} */
@@ -12,6 +14,6 @@ public class InterfaceGroupTest {
   @Test
   public void testJavaSerialization() throws IOException {
     InterfaceGroup group = new InterfaceGroup(ImmutableSortedSet.of(), "group");
-    new ObjectOutputStream(new ByteArrayOutputStream()).writeObject(group);
+    assertThat(SerializationUtils.clone(group), CoreMatchers.equalTo(group));
   }
 }

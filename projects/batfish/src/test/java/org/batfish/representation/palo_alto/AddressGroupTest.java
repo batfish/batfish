@@ -5,11 +5,11 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.HashSet;
 import java.util.Map;
+import org.apache.commons.lang3.SerializationUtils;
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 /** Tests for {@link AddressGroup} */
@@ -86,6 +86,6 @@ public class AddressGroupTest {
   @Test
   public void testJavaSerialization() throws IOException {
     AddressGroup group = new AddressGroup("group");
-    new ObjectOutputStream(new ByteArrayOutputStream()).writeObject(group);
+    assertThat(SerializationUtils.clone(group), CoreMatchers.equalTo(group));
   }
 }

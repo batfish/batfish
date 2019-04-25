@@ -1,8 +1,10 @@
 package org.batfish.referencelibrary;
 
-import java.io.ByteArrayOutputStream;
+import static org.junit.Assert.assertThat;
+
 import java.io.IOException;
-import java.io.ObjectOutputStream;
+import org.apache.commons.lang3.SerializationUtils;
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 /** Tests for {@link ServiceObjectGroup} */
@@ -11,6 +13,6 @@ public class ServiceObjectGroupTest {
   @Test
   public void testJavaSerialization() throws IOException {
     ServiceObjectGroup group = new ServiceObjectGroup("group", null);
-    new ObjectOutputStream(new ByteArrayOutputStream()).writeObject(group);
+    assertThat(SerializationUtils.clone(group), CoreMatchers.equalTo(group));
   }
 }

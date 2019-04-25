@@ -8,12 +8,11 @@ import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.IpWildcard;
@@ -173,6 +172,6 @@ public class ReferenceBookTest {
   @Test
   public void testJavaSerialization() throws IOException {
     ReferenceBook book = ReferenceBook.builder("book").build();
-    new ObjectOutputStream(new ByteArrayOutputStream()).writeObject(book);
+    assertThat(SerializationUtils.clone(book), equalTo(book));
   }
 }
