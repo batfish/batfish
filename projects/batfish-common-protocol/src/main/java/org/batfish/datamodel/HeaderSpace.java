@@ -4,7 +4,6 @@ import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.nullsFirst;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableList;
@@ -809,17 +808,19 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     return _srcIps;
   }
 
-  @JsonPropertyDescription(
-      "A space of IP addresses within which either the source or the destination IP of a packet"
-          + " must fall for acceptance")
+  /**
+   * A space of IP addresses within which either the source or the destination IP of a packet must
+   * fall for acceptance.
+   */
   @JsonProperty(PROP_SRC_OR_DST_IPS)
   public IpSpace getSrcOrDstIps() {
     return _srcOrDstIps;
   }
 
-  @JsonPropertyDescription(
-      "A set of ranges within which either the source or the destination port of a TCP/UDP packet"
-          + " must fall for acceptance")
+  /**
+   * A set of ranges within which either the source or the destination port of a TCP/UDP packet must
+   * fall for acceptance.
+   */
   @JsonProperty(PROP_SRC_OR_DST_PORTS)
   public SortedSet<SubRange> getSrcOrDstPorts() {
     return _srcOrDstPorts;

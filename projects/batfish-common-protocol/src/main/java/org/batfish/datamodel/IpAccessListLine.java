@@ -149,7 +149,7 @@ public final class IpAccessListLine implements Serializable {
         && Objects.equals(_name, other._name);
   }
 
-  /** The action the underlying access-list will take when this line matches an IPV4 packet.. */
+  /** The action the underlying access-list will take when this line matches an IPV4 packet. */
   @JsonProperty(PROP_ACTION)
   public @Nonnull LineAction getAction() {
     return _action;

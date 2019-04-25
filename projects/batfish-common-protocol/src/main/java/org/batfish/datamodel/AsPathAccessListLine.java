@@ -52,7 +52,7 @@ public final class AsPathAccessListLine implements Serializable, Comparable<AsPa
     return _action == other._action && _regex.equals(other._regex);
   }
 
-  /** The action the underlying access-list will take when this line matches a route.. */
+  /** The action the underlying access-list will take when this line matches a route. */
   @JsonProperty(PROP_ACTION)
   @Nonnull
   public LineAction getAction() {

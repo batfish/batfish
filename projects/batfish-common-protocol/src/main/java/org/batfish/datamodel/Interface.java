@@ -5,7 +5,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -1123,16 +1122,17 @@ public final class Interface extends ComparableStructure<String> {
     return _allAddresses;
   }
 
+  /**
+   * Whether this VLAN interface's operational status is dependent on corresponding member
+   * switchports.
+   */
   @JsonProperty(PROP_AUTOSTATE)
-  @JsonPropertyDescription(
-      "Whether this VLAN interface's operational status is dependent on corresponding member "
-          + "switchports")
   public boolean getAutoState() {
     return _autoState;
   }
 
-  @JsonProperty(PROP_BANDWIDTH)
   /** The nominal bandwidth of this interface in bits/sec for use in protocol cost calculations. */
+  @JsonProperty(PROP_BANDWIDTH)
   @Nullable
   public Double getBandwidth() {
     return _bandwidth;
@@ -1213,8 +1213,8 @@ public final class Interface extends ComparableStructure<String> {
     return _inboundFilter;
   }
 
+  /** The IPV4 access-list used to filter traffic destined for this device on this interface. */
   @JsonProperty(PROP_INBOUND_FILTER)
-  /** The IPV4 access-list used to filter traffic destined for this device on this interface.. */
   public String getInboundFilterName() {
     if (_inboundFilter != null) {
       return _inboundFilter.getName();
@@ -1228,8 +1228,8 @@ public final class Interface extends ComparableStructure<String> {
     return _incomingFilter;
   }
 
+  /** The IPV4 access-list used to filter traffic that arrives on this interface. */
   @JsonProperty(PROP_INCOMING_FILTER)
-  /** The IPV4 access-list used to filter traffic that arrives on this interface.. */
   public String getIncomingFilterName() {
     if (_incomingFilter != null) {
       return _incomingFilter.getName();
@@ -1261,19 +1261,21 @@ public final class Interface extends ComparableStructure<String> {
     return null;
   }
 
+  /**
+   * Specifies whether this interface is active, passive, or unconfigured with respect to IS-IS
+   * level 1.
+   */
   @JsonProperty(PROP_ISIS_L1_INTERFACE_MODE)
-  @JsonPropertyDescription(
-      "Specifies whether this interface is active, passive, or unconfigured with respect to IS-IS "
-          + "level 1")
   @Deprecated
   public IsisInterfaceMode getIsisL1InterfaceMode() {
     return null;
   }
 
+  /**
+   * Specifies whether this interface is active, passive, or unconfigured with respect to IS-IS
+   * level 2.
+   */
   @JsonProperty(PROP_ISIS_L2_INTERFACE_MODE)
-  @JsonPropertyDescription(
-      "Specifies whether this interface is active, passive, or unconfigured with respect to IS-IS "
-          + "level 2")
   @Deprecated
   public IsisInterfaceMode getIsisL2InterfaceMode() {
     // TODO: deprecate properly
@@ -1307,14 +1309,14 @@ public final class Interface extends ComparableStructure<String> {
     return _vrf.getOspfProcess().getAreas().get(_ospfAreaName);
   }
 
-  /** The OSPF area to which this interface belongs.. */
+  /** The OSPF area to which this interface belongs. */
   @JsonProperty(PROP_OSPF_AREA)
   public Long getOspfAreaName() {
     return _ospfAreaName;
   }
 
+  /** The explicit OSPF cost of this interface. If unset, the cost is automatically calculated. */
   @JsonProperty(PROP_OSPF_COST)
-  /** The explicit OSPF cost of this interface. If unset, the cost is automatically calculated.. */
   public Integer getOspfCost() {
     return _ospfCost;
   }
@@ -1325,14 +1327,14 @@ public final class Interface extends ComparableStructure<String> {
     return _ospfDeadInterval;
   }
 
-  @JsonProperty(PROP_OSPF_ENABLED)
   /** Whether or not OSPF is enabled at all on this interface (either actively or passively). */
+  @JsonProperty(PROP_OSPF_ENABLED)
   public boolean getOspfEnabled() {
     return _ospfEnabled;
   }
 
-  @JsonProperty(PROP_OSPF_HELLO_MULTIPLIER)
   /** Number of OSPF packets to send out during dead-interval period for fast OSPF updates. */
+  @JsonProperty(PROP_OSPF_HELLO_MULTIPLIER)
   public int getOspfHelloMultiplier() {
     return _ospfHelloMultiplier;
   }
@@ -1347,10 +1349,11 @@ public final class Interface extends ComparableStructure<String> {
     return _ospfInboundDistributeListPolicy;
   }
 
+  /**
+   * Whether or not OSPF is enabled passively on this interface. If passive, this interface is
+   * included in the OSPF RIB, but no OSPF packets are sent from it.
+   */
   @JsonProperty(PROP_OSPF_PASSIVE)
-  @JsonPropertyDescription(
-      "Whether or not OSPF is enabled passively on this interface. If passive, this interface is "
-          + "included in the OSPF RIB, but no OSPF packets are sent from it.")
   public boolean getOspfPassive() {
     return _ospfPassive;
   }
@@ -1371,8 +1374,8 @@ public final class Interface extends ComparableStructure<String> {
     return _outgoingFilter;
   }
 
-  @JsonProperty(PROP_OUTGOING_FILTER)
   /** The IPV4 access-list used to filter traffic that is sent out this interface. Stored as @id. */
+  @JsonProperty(PROP_OUTGOING_FILTER)
   public String getOutgoingFilterName() {
     if (_outgoingFilter != null) {
       return _outgoingFilter.getName();
@@ -1402,8 +1405,8 @@ public final class Interface extends ComparableStructure<String> {
     return _postTransformationIncomingFilter;
   }
 
+  /** The IPV4 access-list used to filter incoming traffic after applying destination NAT. */
   @JsonProperty(PROP_POST_TRANSFORMATION_INCOMING_FILTER)
-  /** The IPV4 access-list used to filter incoming traffic after applying destination NAT.. */
   public String getPostTransformationIncomingFilterName() {
     if (_postTransformationIncomingFilter != null) {
       return _postTransformationIncomingFilter.getName();
@@ -1417,8 +1420,8 @@ public final class Interface extends ComparableStructure<String> {
     return _preTransformationOutgoingFilter;
   }
 
+  /** The IPV4 access-list used to filter outgoing traffic before applying source NAT. */
   @JsonProperty(PROP_PRE_TRANSFORMATION_OUTGOING_FILTER)
-  /** The IPV4 access-list used to filter outgoing traffic before applying source NAT.. */
   public String getPreTransformationOutgoingFilterName() {
     if (_preTransformationOutgoingFilter != null) {
       return _preTransformationOutgoingFilter.getName();
@@ -1432,7 +1435,7 @@ public final class Interface extends ComparableStructure<String> {
     return _address != null ? _address.getPrefix() : null;
   }
 
-  /** Whether or not proxy-ARP is enabled on this interface.. */
+  /** Whether or not proxy-ARP is enabled on this interface. */
   @JsonProperty(PROP_PROXY_ARP)
   public boolean getProxyArp() {
     return _proxyArp;
@@ -1468,7 +1471,7 @@ public final class Interface extends ComparableStructure<String> {
     return _speed;
   }
 
-  /** Whether this interface is configured as a switchport.. */
+  /** Whether this interface is configured as a switchport. */
   @JsonProperty(PROP_SWITCHPORT)
   public boolean getSwitchport() {
     return _switchport;
@@ -1480,10 +1483,11 @@ public final class Interface extends ComparableStructure<String> {
     return _switchportMode;
   }
 
+  /**
+   * The switchport trunk encapsulation type of this interface. Only relevant when switchport mode
+   * is TRUNK.
+   */
   @JsonProperty(PROP_SWITCHPORT_TRUNK_ENCAPSULATION)
-  @JsonPropertyDescription(
-      "The switchport trunk encapsulation type of this interface. Only relevant when switchport "
-          + "mode is TRUNK")
   public SwitchportEncapsulationType getSwitchportTrunkEncapsulation() {
     return _switchportTrunkEncapsulation;
   }
@@ -1513,7 +1517,7 @@ public final class Interface extends ComparableStructure<String> {
     return _vrrpGroups;
   }
 
-  /** The firewall zone to which this interface belongs.. */
+  /** The firewall zone to which this interface belongs. */
   @JsonProperty(PROP_ZONE)
   public String getZoneName() {
     return _zoneName;

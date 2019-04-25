@@ -24,7 +24,7 @@ public final class Ip6AccessListLine extends Header6Space {
     return super.equals(obj) && _action == other._action;
   }
 
-  /** The action the underlying access-list will take when this line matches an IPV6 packet.. */
+  /** The action the underlying access-list will take when this line matches an IPV6 packet. */
   @JsonProperty(PROP_ACTION)
   public LineAction getAction() {
     return _action;

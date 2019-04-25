@@ -2,7 +2,6 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
 
@@ -57,22 +56,23 @@ public class Route6FilterLine implements Serializable {
         && _ipWildcard.equals(other._ipWildcard);
   }
 
-  /** The action the underlying access-list will take when this line matches an IPV6 route.. */
+  /** The action the underlying access-list will take when this line matches an IPV6 route. */
   @JsonProperty(PROP_ACTION)
   public LineAction getAction() {
     return _action;
   }
 
-  /** The range of acceptable prefix-lengths for a route.. */
+  /** The range of acceptable prefix-lengths for a route. */
   @JsonProperty(PROP_LENGTH_RANGE)
   public SubRange getLengthRange() {
     return _lengthRange;
   }
 
+  /**
+   * The bits against which to compare a route's prefix. The mask of this IP Wildcard determines
+   * which bits must match.
+   */
   @JsonProperty(PROP_IP_WILDCARD)
-  @JsonPropertyDescription(
-      "The bits against which to compare a route's prefix. The mask of this IP Wildcard determines "
-          + "which bits must match")
   public Ip6Wildcard getIpWildcard() {
     return _ipWildcard;
   }

@@ -5,7 +5,6 @@ import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.Objects;
@@ -191,9 +190,10 @@ public class IsisProcess implements Serializable {
     return _exportPolicy;
   }
 
-  @JsonPropertyDescription(
-      "Generated IPV4 routes for the purpose of export into IS-IS. These routes are not imported "
-          + "into the main RIB.")
+  /**
+   * Generated IPV4 routes for the purpose of export into IS-IS. These routes are not imported into
+   * the main RIB.
+   */
   @JsonProperty(PROP_GENERATED_ROUTES)
   @Nonnull
   public Set<GeneratedRoute> getGeneratedRoutes() {
@@ -212,7 +212,7 @@ public class IsisProcess implements Serializable {
     return _level2;
   }
 
-  /** The net address is an ISO address representing the IS-IS router ID.. */
+  /** The net address is an ISO address representing the IS-IS router ID. */
   @JsonProperty(PROP_NET_ADDRESS)
   @Nonnull
   public IsoAddress getNetAddress() {

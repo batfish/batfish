@@ -59,7 +59,7 @@ public final class AsPathAccessList implements Serializable {
     return Objects.hash(_name, _lines);
   }
 
-  /** The list of lines against which a route's AS-path will be checked in order.. */
+  /** The list of lines against which a route's AS-path will be checked in order. */
   @JsonProperty(PROP_LINES)
   @Nonnull
   public List<AsPathAccessListLine> getLines() {

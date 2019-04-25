@@ -4,7 +4,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
@@ -178,10 +177,11 @@ public class BgpProcess implements Serializable {
     return _originationSpace;
   }
 
+  /**
+   * The configured router ID for this BGP process. Note that it can be overridden for individual
+   * neighbors.
+   */
   @JsonProperty(PROP_ROUTER_ID)
-  @JsonPropertyDescription(
-      "The configured router ID for this BGP process. Note that it can be overridden for "
-          + "individual neighbors.")
   public Ip getRouterId() {
     return _routerId;
   }

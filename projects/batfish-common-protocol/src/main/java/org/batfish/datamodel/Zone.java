@@ -4,7 +4,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Collections;
@@ -16,8 +15,8 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.util.ComparableStructure;
 
-@ParametersAreNonnullByDefault
 /** An IPV4 firewall zone */
+@ParametersAreNonnullByDefault
 public final class Zone extends ComparableStructure<String> {
 
   private static final String PROP_FROM_HOST_FILTER = "fromHostFilter";
@@ -77,20 +76,21 @@ public final class Zone extends ComparableStructure<String> {
     return _fromHostFilterName;
   }
 
+  /**
+   * Filter applied against packets whose final destination is an interface in this zone that does
+   * not have its own inbound filter.
+   */
   @JsonProperty(PROP_INBOUND_FILTER)
-  @JsonPropertyDescription(
-      "Filter applied against packets whose final destination is an interface in this zone that "
-          + "does not have its own inbound filter")
   @Nullable
   public String getInboundFilterName() {
     return _inboundFilterName;
   }
 
+  /**
+   * Mapping of interfaces in this zone to their corresponding inbound filters: the filter applied
+   * against packets whose final destination is the interface whose name is the key in this mapping.
+   */
   @JsonProperty(PROP_INBOUND_INTERFACE_FILTERS)
-  @JsonPropertyDescription(
-      "Mapping of interfaces in this zone to their corresponding inbound filters: the filter "
-          + "applied against packets whose final destination is the interface whose name is the "
-          + "key in this mapping")
   @Nonnull
   public SortedMap<String, String> getInboundInterfaceFiltersNames() {
     return _inboundInterfaceFiltersNames;
@@ -102,20 +102,21 @@ public final class Zone extends ComparableStructure<String> {
     return _interfaces;
   }
 
+  /**
+   * Filter applied against packets whose final destination is an interface in this zone. If this
+   * filter exists, it is applied IN ADDITION to the interface-specific or default inbound filter.
+   */
   @JsonProperty(PROP_TO_HOST_FILTER)
-  @JsonPropertyDescription(
-      "Filter applied against packets whose final destination is an interface in this zone. If "
-          + "this filter exists, it is applied IN ADDITION to the interface-specific or default "
-          + "inbound filter.")
   @Nullable
   public String getToHostFilterName() {
     return _toHostFilterName;
   }
 
+  /**
+   * Maps names of destination zones to the corresponding filter applied against packets which are
+   * received on this zone and routed to the named zone.
+   */
   @JsonProperty(PROP_TO_ZONE_POLICIES)
-  @JsonPropertyDescription(
-      "Maps names of destination zones to the corresponding filter applied against packets which "
-          + "are received on this zone and routed to the named zone")
   @Nonnull
   public SortedMap<String, String> getToZonePoliciesNames() {
     return _toZonePoliciesNames;
