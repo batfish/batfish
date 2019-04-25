@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 import org.apache.commons.lang3.SerializationUtils;
-import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 /** Tests for {@link AddressGroup} */
@@ -86,6 +85,6 @@ public class AddressGroupTest {
   @Test
   public void testJavaSerialization() throws IOException {
     AddressGroup group = new AddressGroup("group");
-    assertThat(SerializationUtils.clone(group), CoreMatchers.equalTo(group));
+    assertThat(SerializationUtils.clone(group), equalTo(group));
   }
 }
