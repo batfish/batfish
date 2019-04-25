@@ -4,7 +4,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
@@ -144,9 +143,9 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
     return _peerPrefix != null && _peerPrefix.containsIp(address);
   }
 
+  /** The IPV4 prefix of the remote peer. */
   @Nullable
   @JsonProperty(PROP_PEER_PREFIX)
-  @JsonPropertyDescription("The IPV4 prefix of the remote peer")
   public Prefix getPeerPrefix() {
     return _peerPrefix;
   }

@@ -4,7 +4,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
@@ -137,9 +136,8 @@ public class BgpProcess implements Serializable {
     return _clusterIds.get();
   }
 
-  /** @return {@link #_activeNeighbors} */
+  /** Neighbor relationships configured for this BGP process. */
   @JsonProperty(PROP_ACTIVE_NEIGHBORS)
-  @JsonPropertyDescription("Neighbor relationships configured for this BGP process")
   @Nonnull
   public SortedMap<Prefix, BgpActivePeerConfig> getActiveNeighbors() {
     return _activeNeighbors;
@@ -167,9 +165,8 @@ public class BgpProcess implements Serializable {
     return _multipathIbgp;
   }
 
-  /** @return {@link #_passiveNeighbors} */
+  /** Neighbor relationships configured for this BGP process. */
   @JsonProperty(PROP_PASSIVE_NEIGHBORS)
-  @JsonPropertyDescription("Neighbor relationships configured for this BGP process")
   @Nonnull
   public SortedMap<Prefix, BgpPassivePeerConfig> getPassiveNeighbors() {
     return _passiveNeighbors;
@@ -180,10 +177,11 @@ public class BgpProcess implements Serializable {
     return _originationSpace;
   }
 
+  /**
+   * The configured router ID for this BGP process. Note that it can be overridden for individual
+   * neighbors.
+   */
   @JsonProperty(PROP_ROUTER_ID)
-  @JsonPropertyDescription(
-      "The configured router ID for this BGP process. Note that it can be overridden for "
-          + "individual neighbors.")
   public Ip getRouterId() {
     return _routerId;
   }
@@ -194,7 +192,8 @@ public class BgpProcess implements Serializable {
   }
 
   @JsonProperty(PROP_INTERFACE_NEIGHBORS)
-  public void setInterfaceNeighbors(SortedMap<String, BgpUnnumberedPeerConfig> interfaceNeighbors) {
+  public void setInterfaceNeighbors(
+      @Nonnull SortedMap<String, BgpUnnumberedPeerConfig> interfaceNeighbors) {
     _interfaceNeighbors = interfaceNeighbors;
   }
 
