@@ -1,5 +1,6 @@
 package org.batfish.job;
 
+import com.google.common.collect.Multimap;
 import java.util.HashMap;
 import java.util.Map;
 import org.batfish.common.BatfishException;
@@ -33,25 +34,28 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     Map<String, Configuration> configurations = new HashMap<>();
     Map<String, Warnings> warningsByHost = new HashMap<>();
     ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
+    Multimap<String, String> fileMap = answerElement.getFileMap();
     try {
       // We have only two options: AWS VPCs or router configs
       if (VendorConfiguration.class.isInstance(_configObject)) {
         Warnings warnings = Batfish.buildWarnings(_settings);
         VendorConfiguration vendorConfiguration = ((VendorConfiguration) _configObject);
+        String filename = vendorConfiguration.getFilename();
         vendorConfiguration.setWarnings(warnings);
         vendorConfiguration.setAnswerElement(answerElement);
         for (Configuration configuration :
             vendorConfiguration.toVendorIndependentConfigurations()) {
+          String hostname = configuration.getHostname();
           if (configuration.getDefaultCrossZoneAction() == null) {
             throw new BatfishException(
                 "Implementation error: missing default cross-zone action for host: '"
-                    + configuration.getHostname()
+                    + hostname
                     + "'");
           }
           if (configuration.getDefaultInboundAction() == null) {
             throw new BatfishException(
                 "Implementation error: missing default inbound action for host: '"
-                    + configuration.getHostname()
+                    + hostname
                     + "'");
           }
 
@@ -73,8 +77,9 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
             iptablesConfig.applyAsOverlay(configuration, warnings);
           }
 
-          configurations.put(configuration.getHostname(), configuration);
-          warningsByHost.put(configuration.getHostname(), warnings);
+          configurations.put(hostname, configuration);
+          warningsByHost.put(hostname, warnings);
+          fileMap.put(filename, hostname);
         }
       } else {
         configurations =

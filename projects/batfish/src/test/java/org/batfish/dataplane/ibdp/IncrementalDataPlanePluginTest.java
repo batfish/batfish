@@ -28,7 +28,6 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.plugin.DataPlanePlugin;
@@ -372,8 +371,7 @@ public class IncrementalDataPlanePluginTest {
         new IncrementalBdpEngine(
             // TODO: parametrize settings with different schedules
             new IncrementalDataPlaneSettings(),
-            new BatfishLogger(BatfishLogger.LEVELSTR_DEBUG, false),
-            (a, b) -> new AtomicInteger());
+            new BatfishLogger(BatfishLogger.LEVELSTR_DEBUG, false));
     Topology topology = new Topology(Collections.emptySortedSet());
     ComputeDataPlaneResult dp =
         engine.computeDataPlane(
