@@ -369,6 +369,11 @@
         }
       }
     },
+    "fileMap" : {
+      "configs/lhr-border-02.cfg" : [
+        "lhr-border-02"
+      ]
+    },
     "referencedStructures" : {
       "configs/lhr-border-02.cfg" : {
         "bgp peer-group" : {
