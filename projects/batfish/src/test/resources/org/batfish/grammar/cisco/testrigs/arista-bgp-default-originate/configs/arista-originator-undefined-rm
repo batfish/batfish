@@ -1,0 +1,15 @@
+boot system flash this-is-an-arista-device.swi
+!
+hostname arista-originator-undefined-rm
+!
+interface Loopback0
+ ip address 1.1.1.1/32
+!
+interface Eth0
+ ip address 10.1.1.1/24
+!
+router bgp 1
+ router-id 1.1.1.1
+ neighbor 10.1.1.2 activate
+ neighbor 10.1.1.2 remote-as 2
+ neighbor 10.1.1.2 default-originate route-map ROUTE_MAP

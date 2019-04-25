@@ -419,7 +419,6 @@ class CiscoConversions {
                 null));
     List<Statement> defaultRouteExportStatements;
     if (defaultOriginateExportMapName == null
-        // TODO Test behavior if route-map is undefined
         || !c.getRoutingPolicies().keySet().contains(defaultOriginateExportMapName)) {
       defaultRouteExportStatements =
           ImmutableList.of(setOrigin, Statements.ReturnTrue.toStaticStatement());
