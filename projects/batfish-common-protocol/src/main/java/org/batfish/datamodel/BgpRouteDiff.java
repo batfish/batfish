@@ -5,9 +5,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Ordering.natural;
 import static java.util.Comparator.comparing;
 import static org.batfish.datamodel.AbstractRoute.PROP_METRIC;
-import static org.batfish.datamodel.BgpRoute.PROP_AS_PATH;
-import static org.batfish.datamodel.BgpRoute.PROP_COMMUNITIES;
-import static org.batfish.datamodel.BgpRoute.PROP_LOCAL_PREFERENCE;
+import static org.batfish.datamodel.Bgpv4Route.PROP_AS_PATH;
+import static org.batfish.datamodel.Bgpv4Route.PROP_COMMUNITIES;
+import static org.batfish.datamodel.Bgpv4Route.PROP_LOCAL_PREFERENCE;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -96,7 +96,7 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
 
   /** Compute the differences between two routes */
   public static SortedSet<BgpRouteDiff> routeDiffs(
-      @Nullable BgpRoute route1, @Nullable BgpRoute route2) {
+      @Nullable Bgpv4Route route1, @Nullable Bgpv4Route route2) {
     if (route1 == null || route2 == null || route1.equals(route2)) {
       return ImmutableSortedSet.of();
     }
@@ -113,17 +113,17 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
         "routeDiffs only supports differences of fields: " + ROUTE_DIFF_FIELD_NAMES);
 
     return Stream.of(
-            routeDiff(route1, route2, PROP_AS_PATH, BgpRoute::getAsPath),
-            routeDiff(route1, route2, PROP_COMMUNITIES, BgpRoute::getCommunities),
-            routeDiff(route1, route2, PROP_LOCAL_PREFERENCE, BgpRoute::getLocalPreference),
-            routeDiff(route1, route2, PROP_METRIC, BgpRoute::getMetric))
+            routeDiff(route1, route2, PROP_AS_PATH, Bgpv4Route::getAsPath),
+            routeDiff(route1, route2, PROP_COMMUNITIES, Bgpv4Route::getCommunities),
+            routeDiff(route1, route2, PROP_LOCAL_PREFERENCE, Bgpv4Route::getLocalPreference),
+            routeDiff(route1, route2, PROP_METRIC, Bgpv4Route::getMetric))
         .filter(Optional::isPresent)
         .map(Optional::get)
         .collect(ImmutableSortedSet.toImmutableSortedSet(natural()));
   }
 
   private static Optional<BgpRouteDiff> routeDiff(
-      BgpRoute route1, BgpRoute route2, String name, Function<BgpRoute, Object> getter) {
+      Bgpv4Route route1, Bgpv4Route route2, String name, Function<Bgpv4Route, Object> getter) {
     Object o1 = getter.apply(route1);
     Object o2 = getter.apply(route2);
     return o1.equals(o2)

@@ -12,7 +12,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AsPath;
-import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.routing_policy.Environment;
 
 /**
@@ -71,14 +71,14 @@ public final class ExplicitAsPathSet extends AsPathSetExpr {
   public boolean matches(Environment environment) {
     AsPath asPath = null;
     if (environment.getUseOutputAttributes()
-        && environment.getOutputRoute() instanceof BgpRoute.Builder) {
-      BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment.getOutputRoute();
+        && environment.getOutputRoute() instanceof Bgpv4Route.Builder) {
+      Bgpv4Route.Builder bgpRouteBuilder = (Bgpv4Route.Builder) environment.getOutputRoute();
       asPath = bgpRouteBuilder.getAsPath();
     } else if (environment.getReadFromIntermediateBgpAttributes()) {
       asPath = environment.getIntermediateBgpAttributes().getAsPath();
-    } else if (environment.getOriginalRoute() instanceof BgpRoute) {
-      BgpRoute bgpRoute = (BgpRoute) environment.getOriginalRoute();
-      asPath = bgpRoute.getAsPath();
+    } else if (environment.getOriginalRoute() instanceof Bgpv4Route) {
+      Bgpv4Route bgpv4Route = (Bgpv4Route) environment.getOriginalRoute();
+      asPath = bgpv4Route.getAsPath();
     }
     if (asPath == null) {
       return false;

@@ -9,7 +9,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 
@@ -23,14 +23,14 @@ public final class TestRoutePoliciesQuestion extends Question {
 
   // Defaults are dummy values for now.
   private static final Direction DEFAULT_DIRECTION = Direction.IN;
-  private static final List<BgpRoute> DEFAULT_INPUT_ROUTES = ImmutableList.of();
+  private static final List<Bgpv4Route> DEFAULT_INPUT_ROUTES = ImmutableList.of();
   private static final String DEFAULT_NODE = "";
   private static final String DEFAULT_POLICY = "";
 
   private final Direction _direction;
   private final String _nodes;
   private final String _policies;
-  private final List<BgpRoute> _inputRoutes;
+  private final List<Bgpv4Route> _inputRoutes;
 
   public TestRoutePoliciesQuestion() {
     this(DEFAULT_DIRECTION, DEFAULT_INPUT_ROUTES, DEFAULT_NODE, DEFAULT_POLICY);
@@ -38,7 +38,7 @@ public final class TestRoutePoliciesQuestion extends Question {
 
   public TestRoutePoliciesQuestion(
       @JsonProperty(PROP_DIRECTION) Direction direction,
-      @JsonProperty(PROP_INPUT_ROUTES) List<BgpRoute> inputRoutes,
+      @JsonProperty(PROP_INPUT_ROUTES) List<Bgpv4Route> inputRoutes,
       @JsonProperty(PROP_NODES) String nodes,
       @JsonProperty(PROP_POLICIES) String policies) {
     _direction = direction;
@@ -50,7 +50,7 @@ public final class TestRoutePoliciesQuestion extends Question {
   @JsonCreator
   private static TestRoutePoliciesQuestion jsonCreator(
       @Nullable @JsonProperty(PROP_DIRECTION) Direction direction,
-      @Nullable @JsonProperty(PROP_INPUT_ROUTES) List<BgpRoute> inputRoute,
+      @Nullable @JsonProperty(PROP_INPUT_ROUTES) List<Bgpv4Route> inputRoute,
       @Nullable @JsonProperty(PROP_NODES) String nodes,
       @Nullable @JsonProperty(PROP_POLICIES) String policies) {
     checkNotNull(direction, "%s must not be null", PROP_DIRECTION);
@@ -72,7 +72,7 @@ public final class TestRoutePoliciesQuestion extends Question {
   }
 
   @JsonProperty(PROP_INPUT_ROUTES)
-  public List<BgpRoute> getInputRoutes() {
+  public List<Bgpv4Route> getInputRoutes() {
     return _inputRoutes;
   }
 

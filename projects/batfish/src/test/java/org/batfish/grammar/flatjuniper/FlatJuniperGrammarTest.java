@@ -183,7 +183,7 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
-import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
@@ -852,15 +852,15 @@ public final class FlatJuniperGrammarTest {
 
     // p1
     RoutingPolicy p1 = c.getRoutingPolicies().get("p1");
-    BgpRoute.Builder b1 =
-        BgpRoute.builder()
+    Bgpv4Route.Builder b1 =
+        Bgpv4Route.builder()
             .setNetwork(cr.getNetwork())
             .setCommunities(ImmutableSet.of(5L))
             .setOriginatorIp(Ip.parse("2.2.2.2"))
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP);
     p1.process(cr, b1, Ip.ZERO, DEFAULT_VRF_NAME, Direction.OUT);
-    BgpRoute br1 = b1.build();
+    Bgpv4Route br1 = b1.build();
 
     assertThat(
         br1.getCommunities(),
@@ -872,29 +872,29 @@ public final class FlatJuniperGrammarTest {
 
     // p2
     RoutingPolicy p2 = c.getRoutingPolicies().get("p2");
-    BgpRoute.Builder b2 =
-        BgpRoute.builder()
+    Bgpv4Route.Builder b2 =
+        Bgpv4Route.builder()
             .setNetwork(cr.getNetwork())
             .setCommunities(ImmutableSet.of(5L))
             .setOriginatorIp(Ip.parse("2.2.2.2"))
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP);
     p2.process(cr, b2, Ip.ZERO, DEFAULT_VRF_NAME, Direction.OUT);
-    BgpRoute br2 = b2.build();
+    Bgpv4Route br2 = b2.build();
 
     assertThat(br2.getCommunities(), equalTo(ImmutableSet.of(2L, 3L)));
 
     // p3
     RoutingPolicy p3 = c.getRoutingPolicies().get("p3");
-    BgpRoute.Builder b3 =
-        BgpRoute.builder()
+    Bgpv4Route.Builder b3 =
+        Bgpv4Route.builder()
             .setNetwork(cr.getNetwork())
             .setCommunities(ImmutableSet.of(5L))
             .setOriginatorIp(Ip.parse("2.2.2.2"))
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP);
     p3.process(cr, b3, Ip.ZERO, DEFAULT_VRF_NAME, Direction.OUT);
-    BgpRoute br3 = b3.build();
+    Bgpv4Route br3 = b3.build();
 
     assertThat(br3.getCommunities(), equalTo(ImmutableSet.of(5L)));
   }
@@ -907,15 +907,15 @@ public final class FlatJuniperGrammarTest {
 
     // p4
     RoutingPolicy p4 = c.getRoutingPolicies().get("p4");
-    BgpRoute.Builder b4 =
-        BgpRoute.builder()
+    Bgpv4Route.Builder b4 =
+        Bgpv4Route.builder()
             .setNetwork(cr.getNetwork())
             .setCommunities(ImmutableSet.of(5L))
             .setOriginatorIp(Ip.parse("2.2.2.2"))
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP);
     p4.process(cr, b4, Ip.ZERO, DEFAULT_VRF_NAME, Direction.OUT);
-    BgpRoute br4 = b4.build();
+    Bgpv4Route br4 = b4.build();
 
     assertThat(
         br4.getCommunities(),
@@ -928,29 +928,29 @@ public final class FlatJuniperGrammarTest {
 
     // p5
     RoutingPolicy p5 = c.getRoutingPolicies().get("p5");
-    BgpRoute.Builder b5 =
-        BgpRoute.builder()
+    Bgpv4Route.Builder b5 =
+        Bgpv4Route.builder()
             .setNetwork(cr.getNetwork())
             .setCommunities(ImmutableSet.of(5L))
             .setOriginatorIp(Ip.parse("2.2.2.2"))
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP);
     p5.process(cr, b5, Ip.ZERO, DEFAULT_VRF_NAME, Direction.OUT);
-    BgpRoute br5 = b5.build();
+    Bgpv4Route br5 = b5.build();
 
     assertThat(br5.getCommunities(), equalTo(ImmutableSet.of(2L, 3L, 5L)));
 
     // p6
     RoutingPolicy p6 = c.getRoutingPolicies().get("p6");
-    BgpRoute.Builder b6 =
-        BgpRoute.builder()
+    Bgpv4Route.Builder b6 =
+        Bgpv4Route.builder()
             .setNetwork(cr.getNetwork())
             .setCommunities(ImmutableSet.of(5L))
             .setOriginatorIp(Ip.parse("2.2.2.2"))
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP);
     p6.process(cr, b6, Ip.ZERO, DEFAULT_VRF_NAME, Direction.OUT);
-    BgpRoute br6 = b6.build();
+    Bgpv4Route br6 = b6.build();
 
     assertThat(br6.getCommunities(), equalTo(ImmutableSet.of(5L)));
   }
@@ -1780,10 +1780,10 @@ public final class FlatJuniperGrammarTest {
     ConnectedRoute cr31 = new ConnectedRoute(Prefix.parse("2.0.0.0/31"), "blah");
     ConnectedRoute cr32 = new ConnectedRoute(Prefix.parse("2.0.0.0/32"), "blah");
     assertThat(
-        rp2.process(cr31, BgpRoute.builder(), null, DEFAULT_VRF_NAME, Direction.OUT),
+        rp2.process(cr31, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT),
         equalTo(false));
     assertThat(
-        rp2.process(cr32, BgpRoute.builder(), null, DEFAULT_VRF_NAME, Direction.OUT),
+        rp2.process(cr32, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT),
         equalTo(true));
 
     // all should be discard routes
@@ -1797,20 +1797,22 @@ public final class FlatJuniperGrammarTest {
     RoutingPolicy rp4 = config.getRoutingPolicies().get(ar4.getGenerationPolicy());
     ConnectedRoute cr4 = new ConnectedRoute(Prefix.parse("4.0.0.0/32"), "blah");
     assertThat(
-        rp4.process(cr4, BgpRoute.builder(), null, DEFAULT_VRF_NAME, Direction.OUT), equalTo(true));
+        rp4.process(cr4, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT),
+        equalTo(true));
 
     // rejects first, so reject
     RoutingPolicy rp5 = config.getRoutingPolicies().get(ar5.getGenerationPolicy());
     ConnectedRoute cr5 = new ConnectedRoute(Prefix.parse("5.0.0.0/32"), "blah");
     assertThat(
-        rp5.process(cr5, BgpRoute.builder(), null, DEFAULT_VRF_NAME, Direction.OUT),
+        rp5.process(cr5, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT),
         equalTo(false));
 
     // accepts first, so accept
     RoutingPolicy rp6 = config.getRoutingPolicies().get(ar6.getGenerationPolicy());
     ConnectedRoute cr6 = new ConnectedRoute(Prefix.parse("6.0.0.0/32"), "blah");
     assertThat(
-        rp6.process(cr6, BgpRoute.builder(), null, DEFAULT_VRF_NAME, Direction.OUT), equalTo(true));
+        rp6.process(cr6, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT),
+        equalTo(true));
   }
 
   @Test
@@ -1915,10 +1917,10 @@ public final class FlatJuniperGrammarTest {
     ConnectedRoute cr31 = new ConnectedRoute(Prefix.parse("2.0.0.0/31"), "blah");
     ConnectedRoute cr32 = new ConnectedRoute(Prefix.parse("2.0.0.0/32"), "blah");
     assertThat(
-        rp2.process(cr31, BgpRoute.builder(), null, DEFAULT_VRF_NAME, Direction.OUT),
+        rp2.process(cr31, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT),
         equalTo(false));
     assertThat(
-        rp2.process(cr32, BgpRoute.builder(), null, DEFAULT_VRF_NAME, Direction.OUT),
+        rp2.process(cr32, Bgpv4Route.builder(), null, DEFAULT_VRF_NAME, Direction.OUT),
         equalTo(true));
 
     // none should be discard routes
@@ -2962,8 +2964,8 @@ public final class FlatJuniperGrammarTest {
       set policy-options policy-statement COMMUNITY_POLICY term T1 from community BGP2
     */
     RoutingPolicy communityPolicy = c.getRoutingPolicies().get("COMMUNITY_POLICY");
-    BgpRoute.Builder brb =
-        BgpRoute.builder()
+    Bgpv4Route.Builder brb =
+        Bgpv4Route.builder()
             .setAdmin(100)
             .setNetwork(testPrefix)
             .setOriginatorIp(Ip.parse("2.2.2.2"))
@@ -3342,48 +3344,56 @@ public final class FlatJuniperGrammarTest {
     Environment.Builder eb = Environment.builder(c, peer1Vrf).setDirection(Direction.OUT);
     assertThat(
         peer1RejectAllLocal
-            .call(eb.setOriginalRoute(localRoutePtp).setOutputRoute(new BgpRoute.Builder()).build())
+            .call(
+                eb.setOriginalRoute(localRoutePtp).setOutputRoute(new Bgpv4Route.Builder()).build())
             .getBooleanValue(),
         equalTo(false));
     assertThat(
         peer1RejectAllLocal
-            .call(eb.setOriginalRoute(localRouteLan).setOutputRoute(new BgpRoute.Builder()).build())
+            .call(
+                eb.setOriginalRoute(localRouteLan).setOutputRoute(new Bgpv4Route.Builder()).build())
             .getBooleanValue(),
         equalTo(false));
 
     eb = Environment.builder(c, peer2Vrf).setDirection(Direction.OUT);
     assertThat(
         peer2RejectPtpLocal
-            .call(eb.setOriginalRoute(localRoutePtp).setOutputRoute(new BgpRoute.Builder()).build())
+            .call(
+                eb.setOriginalRoute(localRoutePtp).setOutputRoute(new Bgpv4Route.Builder()).build())
             .getBooleanValue(),
         equalTo(false));
     assertThat(
         peer2RejectPtpLocal
-            .call(eb.setOriginalRoute(localRouteLan).setOutputRoute(new BgpRoute.Builder()).build())
+            .call(
+                eb.setOriginalRoute(localRouteLan).setOutputRoute(new Bgpv4Route.Builder()).build())
             .getBooleanValue(),
         equalTo(true));
 
     eb = Environment.builder(c, peer3Vrf).setDirection(Direction.OUT);
     assertThat(
         peer3RejectLanLocal
-            .call(eb.setOriginalRoute(localRoutePtp).setOutputRoute(new BgpRoute.Builder()).build())
+            .call(
+                eb.setOriginalRoute(localRoutePtp).setOutputRoute(new Bgpv4Route.Builder()).build())
             .getBooleanValue(),
         equalTo(true));
     assertThat(
         peer3RejectLanLocal
-            .call(eb.setOriginalRoute(localRouteLan).setOutputRoute(new BgpRoute.Builder()).build())
+            .call(
+                eb.setOriginalRoute(localRouteLan).setOutputRoute(new Bgpv4Route.Builder()).build())
             .getBooleanValue(),
         equalTo(false));
 
     eb = Environment.builder(c, peer4Vrf).setDirection(Direction.OUT);
     assertThat(
         peer4AllowAllLocal
-            .call(eb.setOriginalRoute(localRoutePtp).setOutputRoute(new BgpRoute.Builder()).build())
+            .call(
+                eb.setOriginalRoute(localRoutePtp).setOutputRoute(new Bgpv4Route.Builder()).build())
             .getBooleanValue(),
         equalTo(true));
     assertThat(
         peer4AllowAllLocal
-            .call(eb.setOriginalRoute(localRouteLan).setOutputRoute(new BgpRoute.Builder()).build())
+            .call(
+                eb.setOriginalRoute(localRouteLan).setOutputRoute(new Bgpv4Route.Builder()).build())
             .getBooleanValue(),
         equalTo(true));
   }

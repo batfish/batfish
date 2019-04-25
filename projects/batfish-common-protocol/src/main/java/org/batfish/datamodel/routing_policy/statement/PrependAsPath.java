@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
-import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.AsPathListExpr;
@@ -52,7 +52,7 @@ public final class PrependAsPath extends Statement {
     List<Long> toPrepend = _expr.evaluate(environment);
     List<AsSet> newAsPaths = toPrepend.stream().map(AsSet::of).collect(Collectors.toList());
 
-    BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment.getOutputRoute();
+    Bgpv4Route.Builder bgpRouteBuilder = (Bgpv4Route.Builder) environment.getOutputRoute();
     bgpRouteBuilder.setAsPath(
         AsPath.of(
             ImmutableList.<AsSet>builder()
@@ -61,7 +61,7 @@ public final class PrependAsPath extends Statement {
                 .build()));
 
     if (environment.getWriteToIntermediateBgpAttributes()) {
-      BgpRoute.Builder ir = environment.getIntermediateBgpAttributes();
+      Bgpv4Route.Builder ir = environment.getIntermediateBgpAttributes();
       ir.setAsPath(
           AsPath.of(
               ImmutableList.<AsSet>builder()

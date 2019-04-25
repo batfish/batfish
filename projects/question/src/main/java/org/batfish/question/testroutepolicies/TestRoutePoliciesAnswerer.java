@@ -30,8 +30,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpRouteDiffs;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -59,7 +59,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
   public static final String COL_DIFF = "Difference";
 
   private final Direction _direction;
-  private final List<BgpRoute> _inputRoutes;
+  private final List<Bgpv4Route> _inputRoutes;
   private final String _nodes;
   private final String _policies;
 
@@ -91,8 +91,8 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     return _inputRoutes.stream().map(route -> testPolicy(policy, route));
   }
 
-  private Result testPolicy(RoutingPolicy policy, BgpRoute inputRoute) {
-    BgpRoute.Builder outputRoute = inputRoute.toBuilder();
+  private Result testPolicy(RoutingPolicy policy, Bgpv4Route inputRoute) {
+    Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
 
     boolean permit =
         policy.process(
@@ -237,9 +237,9 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
   }
 
   private static Row toRow(Result result) {
-    BgpRoute inputRoute = result.getInputRoute();
+    Bgpv4Route inputRoute = result.getInputRoute();
     LineAction action = result.getAction();
-    BgpRoute outputRoute = result.getOutputRoute();
+    Bgpv4Route outputRoute = result.getOutputRoute();
     boolean permit = action == PERMIT;
     RoutingPolicyId policyId = result.getPolicyId();
     return Row.builder()
@@ -256,8 +256,8 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     checkArgument(
         baseResult.getKey().equals(deltaResult.getKey()),
         "results must be for the same policy and input route");
-    BgpRoute baseOutputRoute = baseResult.getOutputRoute();
-    BgpRoute deltaOutputRoute = deltaResult.getOutputRoute();
+    Bgpv4Route baseOutputRoute = baseResult.getOutputRoute();
+    Bgpv4Route deltaOutputRoute = deltaResult.getOutputRoute();
     boolean equalAction = baseResult.getAction() == deltaResult.getAction();
     boolean equalOutputRoutes = Objects.equals(baseOutputRoute, deltaOutputRoute);
     checkArgument(
@@ -267,7 +267,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     BgpRouteDiffs routeDiffs = new BgpRouteDiffs(routeDiffs(deltaOutputRoute, baseOutputRoute));
 
     RoutingPolicyId policyId = baseResult.getPolicyId();
-    BgpRoute inputRoute = baseResult.getInputRoute();
+    Bgpv4Route inputRoute = baseResult.getInputRoute();
     return Row.builder()
         .put(COL_NODE, new Node(policyId.getNode()))
         .put(COL_POLICY_NAME, policyId.getPolicy())

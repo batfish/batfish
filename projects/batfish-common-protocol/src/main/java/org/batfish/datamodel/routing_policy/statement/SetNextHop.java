@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
@@ -53,7 +53,7 @@ public final class SetNextHop extends Statement {
   public Result execute(Environment environment) {
     Result result = new Result();
     if (_expr.getDiscard()) {
-      BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment.getOutputRoute();
+      Bgpv4Route.Builder bgpRouteBuilder = (Bgpv4Route.Builder) environment.getOutputRoute();
       bgpRouteBuilder.setDiscard(true);
     }
     Ip nextHop = _expr.getNextHopIp(environment);

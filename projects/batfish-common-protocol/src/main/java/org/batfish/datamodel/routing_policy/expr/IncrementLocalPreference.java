@@ -1,7 +1,7 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.routing_policy.Environment;
 
 public class IncrementLocalPreference extends LongExpr {
@@ -38,7 +38,7 @@ public class IncrementLocalPreference extends LongExpr {
 
   @Override
   public long evaluate(Environment environment) {
-    BgpRoute oldRoute = (BgpRoute) environment.getOriginalRoute();
+    Bgpv4Route oldRoute = (Bgpv4Route) environment.getOriginalRoute();
     long oldLp = oldRoute.getLocalPreference();
     long newVal = oldLp + _addend;
     return newVal;

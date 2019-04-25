@@ -15,8 +15,8 @@ import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
-import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.InterfaceAddress;
@@ -40,7 +40,7 @@ public class BgpProtocolHelper {
    *     i.e. the edge from {@code toNeighbor} to {@code fromNeighbor}
    */
   @Nullable
-  public static BgpRoute.Builder transformBgpRoutePreExport(
+  public static Bgpv4Route.Builder transformBgpRoutePreExport(
       BgpPeerConfig fromNeighbor,
       BgpPeerConfig toNeighbor,
       BgpSessionProperties sessionProperties,
@@ -49,7 +49,7 @@ public class BgpProtocolHelper {
       AbstractRoute route)
       throws BgpRoutePropagationException {
 
-    BgpRoute.Builder transformedOutgoingRouteBuilder = new BgpRoute.Builder();
+    Bgpv4Route.Builder transformedOutgoingRouteBuilder = new Bgpv4Route.Builder();
 
     // sessionProperties represents incoming edge, so fromNeighbor's IP is its headIp
     Ip fromNeighborIp = sessionProperties.getHeadIp();
@@ -66,7 +66,7 @@ public class BgpProtocolHelper {
     // Set originatorIP
     Ip originatorIp;
     if (!sessionProperties.isEbgp() && remoteRouteProtocol.equals(RoutingProtocol.IBGP)) {
-      BgpRoute bgpRemoteRoute = (BgpRoute) route;
+      Bgpv4Route bgpRemoteRoute = (Bgpv4Route) route;
       originatorIp = bgpRemoteRoute.getOriginatorIp();
     } else {
       originatorIp = fromVrf.getBgpProcess().getRouterId();
@@ -80,9 +80,9 @@ public class BgpProtocolHelper {
     // Extract original route's asPath and communities if it had them
     AsPath originalAsPath = AsPath.empty();
     SortedSet<Long> originalCommunities = ImmutableSortedSet.of();
-    if (route instanceof BgpRoute) {
+    if (route instanceof Bgpv4Route) {
       // Includes all routes with protocols BGP and IBGP, plus some with protocol AGGREGATE
-      BgpRoute bgpRemoteRoute = (BgpRoute) route;
+      Bgpv4Route bgpRemoteRoute = (Bgpv4Route) route;
       originalAsPath = bgpRemoteRoute.getAsPath();
       originalCommunities = bgpRemoteRoute.getCommunities();
     } else if (route instanceof GeneratedRoute) {
@@ -107,7 +107,7 @@ public class BgpProtocolHelper {
 
     // clusterList, receivedFromRouteReflectorClient, (originType for bgp remote route)
     if (remoteRouteIsBgp) {
-      BgpRoute bgpRemoteRoute = (BgpRoute) route;
+      Bgpv4Route bgpRemoteRoute = (Bgpv4Route) route;
 
       transformedOutgoingRouteBuilder.setOriginType(bgpRemoteRoute.getOriginType());
       /*
@@ -182,10 +182,10 @@ public class BgpProtocolHelper {
     long localPreference;
     if (sessionProperties.isEbgp() || !remoteRouteIsBgp) {
       nextHopIp = fromNeighborIp;
-      localPreference = BgpRoute.DEFAULT_LOCAL_PREFERENCE;
+      localPreference = Bgpv4Route.DEFAULT_LOCAL_PREFERENCE;
     } else {
       nextHopIp = route.getNextHopIp();
-      BgpRoute remoteIbgpRoute = (BgpRoute) route;
+      Bgpv4Route remoteIbgpRoute = (Bgpv4Route) route;
       localPreference = remoteIbgpRoute.getLocalPreference();
     }
     if (Route.UNSET_ROUTE_NEXT_HOP_IP.equals(nextHopIp)) {
@@ -212,10 +212,10 @@ public class BgpProtocolHelper {
 
   /** Perform BGP import transformations on a given route after receiving an advertisement */
   @Nullable
-  public static BgpRoute.Builder transformBgpRouteOnImport(
+  public static Bgpv4Route.Builder transformBgpRouteOnImport(
       BgpPeerConfig toNeighbor,
       BgpSessionProperties sessionProperties,
-      BgpRoute route,
+      Bgpv4Route route,
       ConfigurationFormat configFormat) {
 
     if (route.getAsPath().containsAs(requireNonNull(toNeighbor.getLocalAs()))
@@ -227,7 +227,7 @@ public class BgpProtocolHelper {
     RoutingProtocol targetProtocol =
         sessionProperties.isEbgp() ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
 
-    BgpRoute.Builder transformedIncomingRouteBuilder = new BgpRoute.Builder();
+    Bgpv4Route.Builder transformedIncomingRouteBuilder = new Bgpv4Route.Builder();
     transformedIncomingRouteBuilder.setOriginatorIp(route.getOriginatorIp());
     transformedIncomingRouteBuilder.setReceivedFromIp(route.getReceivedFromIp());
     transformedIncomingRouteBuilder.addClusterList(route.getClusterList());
@@ -251,13 +251,13 @@ public class BgpProtocolHelper {
   /**
    * Convert an aggregate/generated route to a BGP route.
    *
-   * @param generatedRoute a {@link GeneratedRoute} to convert to a {@link BgpRoute}.
+   * @param generatedRoute a {@link GeneratedRoute} to convert to a {@link Bgpv4Route}.
    * @param routerId Router ID to set as the originatorIp for the resulting BGP route.
-   * @param nonRouting Whether to mark the BgpRoute as non-routing
+   * @param nonRouting Whether to mark the Bgpv4Route as non-routing
    */
-  public static BgpRoute convertGeneratedRouteToBgp(
+  public static Bgpv4Route convertGeneratedRouteToBgp(
       GeneratedRoute generatedRoute, Ip routerId, boolean nonRouting) {
-    return BgpRoute.builder()
+    return Bgpv4Route.builder()
         .setAdmin(generatedRoute.getAdministrativeCost())
         .setAsPath(generatedRoute.getAsPath())
         .setCommunities(generatedRoute.getCommunities())
@@ -265,7 +265,7 @@ public class BgpProtocolHelper {
         .setSrcProtocol(RoutingProtocol.AGGREGATE)
         .setProtocol(RoutingProtocol.AGGREGATE)
         .setNetwork(generatedRoute.getNetwork())
-        .setLocalPreference(BgpRoute.DEFAULT_LOCAL_PREFERENCE)
+        .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
         /*
          * Note: Origin type and originator IP should get overwritten by export policy,
          * but are needed initially
@@ -283,7 +283,7 @@ public class BgpProtocolHelper {
    * before route is sent onto the wire.
    */
   public static void transformBgpRoutePostExport(
-      @Nonnull BgpRoute.Builder routeBuilder,
+      @Nonnull Bgpv4Route.Builder routeBuilder,
       @Nonnull BgpPeerConfig fromNeighbor,
       @Nonnull BgpSessionProperties sessionProperties) {
     if (sessionProperties.isEbgp()) {

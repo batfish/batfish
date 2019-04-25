@@ -3,7 +3,7 @@ package org.batfish.datamodel.routing_policy.statement;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
@@ -39,7 +39,7 @@ public final class SetLocalPreference extends Statement {
   @Override
   public Result execute(Environment environment) {
     Result result = new Result();
-    BgpRoute.Builder bgpBuilder = (BgpRoute.Builder) environment.getOutputRoute();
+    Bgpv4Route.Builder bgpBuilder = (Bgpv4Route.Builder) environment.getOutputRoute();
     long localPreference = _localPreference.evaluate(environment);
     bgpBuilder.setLocalPreference(localPreference);
     if (environment.getWriteToIntermediateBgpAttributes()) {

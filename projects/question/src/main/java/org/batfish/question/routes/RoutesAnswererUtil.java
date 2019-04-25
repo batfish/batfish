@@ -47,7 +47,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteDecorator;
-import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -161,19 +161,19 @@ public class RoutesAnswererUtil {
   }
 
   /**
-   * Filters a {@link Table} of {@link BgpRoute}s to produce a {@link Multiset} of rows
+   * Filters a {@link Table} of {@link Bgpv4Route}s to produce a {@link Multiset} of rows
    *
-   * @param bgpRoutes {@link Table} of all {@link BgpRoute}s
+   * @param bgpRoutes {@link Table} of all {@link Bgpv4Route}s
    * @param ribProtocol {@link RibProtocol}, either {@link RibProtocol#BGP} or {@link
    *     RibProtocol#BGPMP}
-   * @param matchingNodes {@link Set} of nodes from which {@link BgpRoute}s are to be selected
+   * @param matchingNodes {@link Set} of nodes from which {@link Bgpv4Route}s are to be selected
    * @param network {@link Prefix} of the network used to filter the routes
-   * @param protocolSpec {@link RoutingProtocolSpecifier} used to filter the {@link BgpRoute}s
+   * @param protocolSpec {@link RoutingProtocolSpecifier} used to filter the {@link Bgpv4Route}s
    * @param vrfRegex Regex used to filter the routes based on {@link org.batfish.datamodel.Vrf}
    * @return {@link Multiset} of {@link Row}s representing the routes
    */
   static Multiset<Row> getBgpRibRoutes(
-      Table<String, String, Set<BgpRoute>> bgpRoutes,
+      Table<String, String, Set<Bgpv4Route>> bgpRoutes,
       RibProtocol ribProtocol,
       Set<String> matchingNodes,
       @Nullable Prefix network,
@@ -236,35 +236,35 @@ public class RoutesAnswererUtil {
   }
 
   /**
-   * Converts a {@link BgpRoute} to a {@link Row}
+   * Converts a {@link Bgpv4Route} to a {@link Row}
    *
-   * @param hostName {@link String} host-name of the node containing the bgpRoute
-   * @param vrfName {@link String} name of the VRF containing the bgpRoute
-   * @param bgpRoute {@link BgpRoute} BGP route to convert
+   * @param hostName {@link String} host-name of the node containing the bgpv4Route
+   * @param vrfName {@link String} name of the VRF containing the bgpv4Route
+   * @param bgpv4Route {@link Bgpv4Route} BGP route to convert
    * @param columnMetadataMap Column metadata of the columns for this {@link Row}
-   * @return {@link Row} representing the {@link BgpRoute}
+   * @return {@link Row} representing the {@link Bgpv4Route}
    */
   static Row bgpRouteToRow(
       String hostName,
       String vrfName,
-      BgpRoute bgpRoute,
+      Bgpv4Route bgpv4Route,
       Map<String, ColumnMetadata> columnMetadataMap) {
     return Row.builder(columnMetadataMap)
         .put(COL_NODE, new Node(hostName))
         .put(COL_VRF_NAME, vrfName)
-        .put(COL_NETWORK, bgpRoute.getNetwork())
-        .put(COL_NEXT_HOP_IP, bgpRoute.getNextHopIp())
-        .put(COL_PROTOCOL, bgpRoute.getProtocol())
-        .put(COL_AS_PATH, bgpRoute.getAsPath().getAsPathString())
-        .put(COL_METRIC, bgpRoute.getMetric())
-        .put(COL_LOCAL_PREF, bgpRoute.getLocalPreference())
+        .put(COL_NETWORK, bgpv4Route.getNetwork())
+        .put(COL_NEXT_HOP_IP, bgpv4Route.getNextHopIp())
+        .put(COL_PROTOCOL, bgpv4Route.getProtocol())
+        .put(COL_AS_PATH, bgpv4Route.getAsPath().getAsPathString())
+        .put(COL_METRIC, bgpv4Route.getMetric())
+        .put(COL_LOCAL_PREF, bgpv4Route.getLocalPreference())
         .put(
             COL_COMMUNITIES,
-            bgpRoute.getCommunities().stream()
+            bgpv4Route.getCommunities().stream()
                 .map(CommonUtil::longToCommunity)
                 .collect(toImmutableList()))
-        .put(COL_ORIGIN_PROTOCOL, bgpRoute.getSrcProtocol())
-        .put(COL_TAG, bgpRoute.getTag() == Route.UNSET_ROUTE_TAG ? null : bgpRoute.getTag())
+        .put(COL_ORIGIN_PROTOCOL, bgpv4Route.getSrcProtocol())
+        .put(COL_TAG, bgpv4Route.getTag() == Route.UNSET_ROUTE_TAG ? null : bgpv4Route.getTag())
         .build();
   }
 
@@ -272,7 +272,7 @@ public class RoutesAnswererUtil {
    * Converts {@link List} of {@link DiffRoutesOutput} to {@link Row}s with one row corresponding to
    * each {@link DiffRoutesOutput#_diffInAttributes} of the {@link DiffRoutesOutput}
    *
-   * @param diffRoutesList {@link List} of {@link DiffRoutesOutput} for {@link BgpRoute}s
+   * @param diffRoutesList {@link List} of {@link DiffRoutesOutput} for {@link Bgpv4Route}s
    * @return {@link Multiset} of {@link Row}s
    */
   static Multiset<Row> getBgpRouteRowsDiff(
@@ -529,7 +529,7 @@ public class RoutesAnswererUtil {
   }
 
   /**
-   * Given a {@link Table} of {@link BgpRoute}s indexed by Node name and VRF name, applies given
+   * Given a {@link Table} of {@link Bgpv4Route}s indexed by Node name and VRF name, applies given
    * filters and groups the routes by {@link RouteRowKey} and sub-groups them further by {@link
    * RouteRowSecondaryKey} and for the routes in same sub-groups, sorts them according to {@link
    * RouteRowAttribute}
@@ -544,7 +544,7 @@ public class RoutesAnswererUtil {
    *     RouteRowSecondaryKey} to {@link SortedSet} of {@link RouteRowAttribute}s
    */
   static Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>> groupBgpRoutes(
-      Table<String, String, Set<BgpRoute>> bgpRoutes,
+      Table<String, String, Set<Bgpv4Route>> bgpRoutes,
       Set<String> matchingNodes,
       String vrfRegex,
       @Nullable Prefix network,

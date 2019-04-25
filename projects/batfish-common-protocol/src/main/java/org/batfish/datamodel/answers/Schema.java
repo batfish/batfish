@@ -12,8 +12,8 @@ import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpRouteDiffs;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -43,7 +43,7 @@ public class Schema {
   private static final Map<String, String> schemaAliases =
       ImmutableMap.<String, String>builder()
           .put("AclTrace", getClassString(AclTrace.class))
-          .put("BgpRoute", getClassString(BgpRoute.class))
+          .put("Bgpv4Route", getClassString(Bgpv4Route.class))
           .put("BgpRouteDiffs", getClassString(BgpRouteDiffs.class))
           .put("Boolean", getClassString(Boolean.class))
           .put("Double", getClassString(Double.class))
@@ -64,7 +64,7 @@ public class Schema {
           .build();
 
   public static final Schema ACL_TRACE = new Schema("AclTrace");
-  public static final Schema BGP_ROUTE = new Schema("BgpRoute");
+  public static final Schema BGP_ROUTE = new Schema("Bgpv4Route");
   public static final Schema BGP_ROUTE_DIFFS = new Schema("BgpRouteDiffs");
   public static final Schema BOOLEAN = new Schema("Boolean");
   public static final Schema DOUBLE = new Schema("Double");

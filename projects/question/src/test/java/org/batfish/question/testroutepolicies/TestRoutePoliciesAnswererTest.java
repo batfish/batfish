@@ -23,9 +23,9 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpRouteDiff;
 import org.batfish.datamodel.BgpRouteDiffs;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
@@ -80,8 +80,8 @@ public class TestRoutePoliciesAnswererTest {
     RoutingPolicy policy =
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
-    BgpRoute inputRoute =
-        BgpRoute.builder()
+    Bgpv4Route inputRoute =
+        Bgpv4Route.builder()
             .setNetwork(Prefix.ZERO)
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.IGP)
@@ -116,8 +116,8 @@ public class TestRoutePoliciesAnswererTest {
     RoutingPolicy policy =
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitReject)).build();
 
-    BgpRoute inputRoute =
-        BgpRoute.builder()
+    Bgpv4Route inputRoute =
+        Bgpv4Route.builder()
             .setNetwork(Prefix.ZERO)
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.IGP)
@@ -151,17 +151,17 @@ public class TestRoutePoliciesAnswererTest {
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
 
-    BgpRoute inputRoute =
-        BgpRoute.builder()
+    Bgpv4Route inputRoute =
+        Bgpv4Route.builder()
             .setNetwork(Prefix.ZERO)
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .build();
-    BgpRoute outputRoute = inputRoute.toBuilder().setMetric(500L).build();
+    Bgpv4Route outputRoute = inputRoute.toBuilder().setMetric(500L).build();
     BgpRouteDiffs diff =
         new BgpRouteDiffs(
-            ImmutableSortedSet.of(new BgpRouteDiff(BgpRoute.PROP_METRIC, "0", "500")));
+            ImmutableSortedSet.of(new BgpRouteDiff(Bgpv4Route.PROP_METRIC, "0", "500")));
 
     TestRoutePoliciesQuestion question =
         new TestRoutePoliciesQuestion(
@@ -190,8 +190,8 @@ public class TestRoutePoliciesAnswererTest {
 
     _deltaPolicyBuilder.addStatement(new StaticStatement(Statements.ExitReject)).build();
 
-    BgpRoute inputRoute =
-        BgpRoute.builder()
+    Bgpv4Route inputRoute =
+        Bgpv4Route.builder()
             .setNetwork(Prefix.ZERO)
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.IGP)
@@ -220,8 +220,8 @@ public class TestRoutePoliciesAnswererTest {
         .addStatement(new StaticStatement(Statements.ExitAccept))
         .build();
 
-    BgpRoute inputRoute =
-        BgpRoute.builder()
+    Bgpv4Route inputRoute =
+        Bgpv4Route.builder()
             .setNetwork(Prefix.ZERO)
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.IGP)
@@ -247,15 +247,15 @@ public class TestRoutePoliciesAnswererTest {
 
     _deltaPolicyBuilder.addStatement(new StaticStatement(Statements.ExitReject)).build();
 
-    BgpRoute inputRoute =
-        BgpRoute.builder()
+    Bgpv4Route inputRoute =
+        Bgpv4Route.builder()
             .setNetwork(Prefix.ZERO)
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .build();
 
-    BgpRoute baseOutputRoute = inputRoute.toBuilder().setMetric(500).build();
+    Bgpv4Route baseOutputRoute = inputRoute.toBuilder().setMetric(500).build();
 
     TestRoutePoliciesQuestion question =
         new TestRoutePoliciesQuestion(
@@ -293,16 +293,16 @@ public class TestRoutePoliciesAnswererTest {
         .addStatement(new StaticStatement(Statements.ExitAccept))
         .build();
 
-    BgpRoute inputRoute =
-        BgpRoute.builder()
+    Bgpv4Route inputRoute =
+        Bgpv4Route.builder()
             .setNetwork(Prefix.ZERO)
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .build();
 
-    BgpRoute baseOutputRoute = inputRoute.toBuilder().setMetric(500).build();
-    BgpRoute deltaOutputRoute = inputRoute.toBuilder().setMetric(600).build();
+    Bgpv4Route baseOutputRoute = inputRoute.toBuilder().setMetric(500).build();
+    Bgpv4Route deltaOutputRoute = inputRoute.toBuilder().setMetric(600).build();
 
     TestRoutePoliciesQuestion question =
         new TestRoutePoliciesQuestion(
@@ -311,7 +311,7 @@ public class TestRoutePoliciesAnswererTest {
 
     BgpRouteDiffs diffs =
         new BgpRouteDiffs(
-            ImmutableSortedSet.of(new BgpRouteDiff(BgpRoute.PROP_METRIC, "600", "500")));
+            ImmutableSortedSet.of(new BgpRouteDiff(Bgpv4Route.PROP_METRIC, "600", "500")));
 
     // both policies permit and make the same modification, so no difference
     TableAnswerElement diffAnswer = (TableAnswerElement) answerer.answerDiff();

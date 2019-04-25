@@ -34,8 +34,8 @@ import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpPeerConfigId;
-import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsisRoute;
@@ -464,7 +464,7 @@ class IncrementalBdpEngine {
           .forEach(
               n -> {
                 for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                  Map<BgpRib, RibDelta<BgpRoute>> deltas =
+                  Map<BgpRib, RibDelta<Bgpv4Route>> deltas =
                       vr.processBgpMessages(bgpTopology, networkConfigurations, nodes);
                   vr.finalizeBgpRoutesAndQueueOutgoingMessages(
                       deltas, allNodes, bgpTopology, networkConfigurations);

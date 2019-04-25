@@ -3,7 +3,7 @@ package org.batfish.datamodel.routing_policy.statement;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
@@ -73,10 +73,10 @@ public enum Statements {
 
         case RemovePrivateAs:
           {
-            BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment.getOutputRoute();
+            Bgpv4Route.Builder bgpRouteBuilder = (Bgpv4Route.Builder) environment.getOutputRoute();
             bgpRouteBuilder.setAsPath(bgpRouteBuilder.getAsPath().removePrivateAs());
             if (environment.getWriteToIntermediateBgpAttributes()) {
-              BgpRoute.Builder ir = environment.getIntermediateBgpAttributes();
+              Bgpv4Route.Builder ir = environment.getIntermediateBgpAttributes();
               ir.setAsPath(ir.getAsPath().removePrivateAs());
             }
             break;
@@ -119,7 +119,7 @@ public enum Statements {
 
         case SetWriteIntermediateBgpAttributes:
           if (environment.getIntermediateBgpAttributes() == null) {
-            BgpRoute.Builder ir = new BgpRoute.Builder();
+            Bgpv4Route.Builder ir = new Bgpv4Route.Builder();
             environment.setIntermediateBgpAttributes(ir);
             AbstractRoute or = environment.getOriginalRoute();
             ir.setMetric(or.getMetric());

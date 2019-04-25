@@ -1,10 +1,10 @@
 package org.batfish.datamodel;
 
 import static org.batfish.datamodel.AbstractRoute.PROP_METRIC;
-import static org.batfish.datamodel.BgpRoute.PROP_AS_PATH;
-import static org.batfish.datamodel.BgpRoute.PROP_COMMUNITIES;
-import static org.batfish.datamodel.BgpRoute.PROP_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.BgpRouteDiff.routeDiffs;
+import static org.batfish.datamodel.Bgpv4Route.PROP_AS_PATH;
+import static org.batfish.datamodel.Bgpv4Route.PROP_COMMUNITIES;
+import static org.batfish.datamodel.Bgpv4Route.PROP_LOCAL_PREFERENCE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -17,7 +17,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
 /** Tests of {@link BgpRouteDiff}. */
-public class BgpRouteDiffTest {
+public class Bgpv4RouteDiffTest {
   @Test
   public void testJsonSerialization() throws IOException {
     BgpRouteDiff diff = new BgpRouteDiff(PROP_AS_PATH, "A", "B");
@@ -35,8 +35,8 @@ public class BgpRouteDiffTest {
         .testEquals();
   }
 
-  private static BgpRoute.Builder builder() {
-    return BgpRoute.builder()
+  private static Bgpv4Route.Builder builder() {
+    return Bgpv4Route.builder()
         .setNetwork(Prefix.ZERO)
         .setOriginatorIp(Ip.ZERO)
         .setOriginType(OriginType.IGP)
@@ -45,8 +45,8 @@ public class BgpRouteDiffTest {
 
   @Test
   public void testRouteDiffs() {
-    BgpRoute route1;
-    BgpRoute route2;
+    Bgpv4Route route1;
+    Bgpv4Route route2;
 
     // change AS path
     route1 = builder().setAsPath(AsPath.ofSingletonAsSets(1L, 2L)).build();

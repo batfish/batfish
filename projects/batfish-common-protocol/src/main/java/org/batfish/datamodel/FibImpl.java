@@ -216,7 +216,7 @@ public final class FibImpl implements Fib {
     }
 
     /* For BGP next-hop-discard routes, ignore next-hop-ip and exit early */
-    if (route instanceof BgpRoute && ((BgpRoute) route).getDiscard()) {
+    if (route instanceof Bgpv4Route && ((Bgpv4Route) route).getDiscard()) {
       ResolutionTreeNode.withParent(route, treeNode, Route.UNSET_ROUTE_NEXT_HOP_IP);
       return;
     }

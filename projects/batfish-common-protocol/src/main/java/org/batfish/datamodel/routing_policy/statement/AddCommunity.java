@@ -3,7 +3,7 @@ package org.batfish.datamodel.routing_policy.statement;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.SortedSet;
-import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
@@ -48,7 +48,7 @@ public class AddCommunity extends Statement {
 
   @Override
   public Result execute(Environment environment) {
-    BgpRoute.Builder bgpRoute = (BgpRoute.Builder) environment.getOutputRoute();
+    Bgpv4Route.Builder bgpRoute = (Bgpv4Route.Builder) environment.getOutputRoute();
     SortedSet<Long> communities = _expr.asLiteralCommunities(environment);
     bgpRoute.addCommunities(communities);
     if (environment.getWriteToIntermediateBgpAttributes()) {
