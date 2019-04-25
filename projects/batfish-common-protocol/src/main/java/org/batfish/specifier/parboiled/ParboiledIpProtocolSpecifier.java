@@ -3,7 +3,6 @@ package org.batfish.specifier.parboiled;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -41,9 +40,7 @@ final class ParboiledIpProtocolSpecifier implements IpProtocolSpecifier {
     }
 
     Set<IpProtocol> toIpProtocols() {
-      return Sets.difference(
-          _including.isEmpty() ? new HashSet<>(Arrays.asList(IpProtocol.values())) : _including,
-          _excluding);
+      return Sets.difference(_including.isEmpty() ? VALID_IP_PROTOCOLS : _including, _excluding);
     }
 
     static IpProtocolSets union(IpProtocolSets sets1, IpProtocolSets sets2) {
@@ -52,6 +49,11 @@ final class ParboiledIpProtocolSpecifier implements IpProtocolSpecifier {
           Sets.union(sets1._excluding, sets2._excluding));
     }
   }
+
+  static Set<IpProtocol> VALID_IP_PROTOCOLS =
+      Arrays.stream(IpProtocol.values())
+          .filter(v -> v.number() >= 0 && v.number() < 256)
+          .collect(ImmutableSet.toImmutableSet());
 
   @ParametersAreNonnullByDefault
   private final class IpProtocolAstNodeToIpProtocols
