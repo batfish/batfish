@@ -86,7 +86,7 @@ public class InitIssuesAnswerer extends Answerer {
                     .map(s -> new FileLines(s, ImmutableSortedSet.of()))
                     .collect(ImmutableList.toImmutableList()),
                 IssueType.ParseStatus,
-                String.format("File(s) not parsed successfully, with parse status: %s", status)));
+                String.format("File(s) not parsed successfully, parse status: %s", status)));
       }
     }
 

@@ -235,7 +235,7 @@ public class InitIssuesAnswererTest {
                 COL_TYPE,
                 IssueType.ParseStatus.toString(),
                 COL_DETAILS,
-                String.format("File(s) not parsed successfully, with parse status: %s", statusStr),
+                String.format("File(s) not parsed successfully, parse status: %s", statusStr),
                 COL_LINE_TEXT,
                 null,
                 COL_PARSER_CONTEXT,
