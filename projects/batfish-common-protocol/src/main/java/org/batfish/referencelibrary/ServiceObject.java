@@ -3,13 +3,17 @@ package org.batfish.referencelibrary;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Names;
 import org.batfish.datamodel.Names.Type;
 import org.batfish.datamodel.SubRange;
 
-public class ServiceObject implements Comparable<ServiceObject> {
+public class ServiceObject implements Comparable<ServiceObject>, Serializable {
+
+  private static final long serialVersionUID = 1L;
 
   private static final String PROP_IP_PROTOCOL = "ipProtocol";
   private static final String PROP_NAME = "name";
@@ -38,6 +42,16 @@ public class ServiceObject implements Comparable<ServiceObject> {
     return _name.compareTo(o._name);
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof ServiceObject)) {
+      return false;
+    }
+    return Objects.equals(_name, ((ServiceObject) o)._name)
+        && Objects.equals(_ipProtocol, ((ServiceObject) o)._ipProtocol)
+        && Objects.equals(_ports, ((ServiceObject) o)._ports);
+  }
+
   @JsonProperty(PROP_IP_PROTOCOL)
   public IpProtocol getIpProtocol() {
     return _ipProtocol;
@@ -51,5 +65,10 @@ public class ServiceObject implements Comparable<ServiceObject> {
   @JsonProperty(PROP_PORTS)
   public SubRange getPorts() {
     return _ports;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_name, _ipProtocol, _ports);
   }
 }

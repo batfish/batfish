@@ -5,13 +5,17 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Names;
 import org.batfish.datamodel.Names.Type;
 
-public class ServiceObjectGroup implements Comparable<ServiceObjectGroup> {
+public class ServiceObjectGroup implements Comparable<ServiceObjectGroup>, Serializable {
+
+  private static final long serialVersionUID = 1L;
 
   private static final String PROP_NAME = "name";
   private static final String PROP_SERVICES = "services";
@@ -44,6 +48,15 @@ public class ServiceObjectGroup implements Comparable<ServiceObjectGroup> {
     return _name.compareTo(o._name);
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof ServiceObjectGroup)) {
+      return false;
+    }
+    return Objects.equals(_name, ((ServiceObjectGroup) o)._name)
+        && Objects.equals(_services, ((ServiceObjectGroup) o)._services);
+  }
+
   @JsonProperty(PROP_NAME)
   public String getName() {
     return _name;
@@ -52,5 +65,10 @@ public class ServiceObjectGroup implements Comparable<ServiceObjectGroup> {
   @JsonProperty(PROP_SERVICES)
   public SortedSet<String> getServices() {
     return _services;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_name, _services);
   }
 }
