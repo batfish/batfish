@@ -41,6 +41,15 @@ public class FilterGroup implements Comparable<FilterGroup>, Serializable {
     return _name.compareTo(o._name);
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof FilterGroup)) {
+      return false;
+    }
+    FilterGroup rhs = (FilterGroup) o;
+    return Objects.equals(_name, rhs._name) && Objects.equals(_filters, ((FilterGroup) o)._filters);
+  }
+
   @JsonProperty(PROP_FILTERS)
   @Nonnull
   public List<String> getFilters() {
@@ -51,5 +60,10 @@ public class FilterGroup implements Comparable<FilterGroup>, Serializable {
   @Nonnull
   public String getName() {
     return _name;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_name, _filters);
   }
 }

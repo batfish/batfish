@@ -103,12 +103,11 @@ public final class CompletionMetadataUtils {
                                   ag ->
                                       ag.getAddresses()
                                           // we are ignoring child groups; their prefixes will be
-                                          // caught
-                                          // when we process that group itself
+                                          // caught when we process that group itself
                                           .forEach(
                                               a ->
                                                   Prefix.tryParse(a)
-                                                      .ifPresent(ip -> prefixes.add(a)))));
+                                                      .ifPresent(prefix -> prefixes.add(a)))));
             });
     return prefixes.build();
   }

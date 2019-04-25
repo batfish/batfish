@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Names;
@@ -47,6 +48,15 @@ public class ServiceObjectGroup implements Comparable<ServiceObjectGroup>, Seria
     return _name.compareTo(o._name);
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof ServiceObjectGroup)) {
+      return false;
+    }
+    return Objects.equals(_name, ((ServiceObjectGroup) o)._name)
+        && Objects.equals(_services, ((ServiceObjectGroup) o)._services);
+  }
+
   @JsonProperty(PROP_NAME)
   public String getName() {
     return _name;
@@ -55,5 +65,10 @@ public class ServiceObjectGroup implements Comparable<ServiceObjectGroup>, Seria
   @JsonProperty(PROP_SERVICES)
   public SortedSet<String> getServices() {
     return _services;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_name, _services);
   }
 }
