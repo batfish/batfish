@@ -77,6 +77,10 @@ public final class Names {
         type.getExplanation());
   }
 
+  public static String generatedReferenceBook(String hostname, String source) {
+    return String.format("%s~on~%s", source, hostname);
+  }
+
   /**
    * Return the Batfish canonical name for a filter between zones.
    *

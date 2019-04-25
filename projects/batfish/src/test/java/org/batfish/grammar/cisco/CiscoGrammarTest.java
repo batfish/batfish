@@ -731,6 +731,46 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testAristaBgpDefaultOriginateUndefinedRouteMap() throws IOException {
+    /*
+     Arista originator has: neighbor 10.1.1.2 default-originate route-map ROUTE_MAP
+     However, ROUTE_MAP is undefined. Since this is Arista, default route should still be exported
+     (on IOS, where ROUTE_MAP is used as a generation policy rather than an export policy in this
+     context, the default route would not be exported).
+    */
+    String testrigName = "arista-bgp-default-originate";
+    List<String> configurationNames =
+        ImmutableList.of("arista-originator-undefined-rm", "ios-listener");
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+
+    batfish.computeDataPlane();
+    IncrementalDataPlane dp = (IncrementalDataPlane) batfish.loadDataPlane();
+    Set<AbstractRoute> listenerRoutes =
+        dp.getRibs().get("ios-listener").get(DEFAULT_VRF_NAME).getRoutes();
+
+    BgpRoute expectedDefaultRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.ZERO)
+            .setNextHopIp(Ip.parse("10.1.1.1"))
+            .setReceivedFromIp(Ip.parse("10.1.1.1"))
+            .setOriginatorIp(Ip.parse("1.1.1.1"))
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setSrcProtocol(RoutingProtocol.BGP)
+            .setAsPath(AsPath.ofSingletonAsSets(1L))
+            .setCommunities(ImmutableSet.of())
+            .setAdmin(20)
+            .setLocalPreference(100)
+            .build();
+    assertThat(listenerRoutes, hasItem(equalTo(expectedDefaultRoute)));
+  }
+
+  @Test
   public void testArubaConfigurationFormat() throws IOException {
     Configuration arubaConfig = parseConfig("arubaConfiguration");
 

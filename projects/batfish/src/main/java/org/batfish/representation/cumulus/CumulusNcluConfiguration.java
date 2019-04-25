@@ -3,6 +3,7 @@ package org.batfish.representation.cumulus;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Comparator.naturalOrder;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
+import static org.batfish.representation.cumulus.CumulusRoutingProtocol.VI_PROTOCOLS_MAP;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
@@ -140,11 +141,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private void addInterfaceNeighbor(
       String peerInterface,
       BgpInterfaceNeighbor neighbor,
-      long localAs,
+      @Nullable Long localAs,
       BgpVrf bgpVrf,
       org.batfish.datamodel.BgpProcess newProc) {
     String vrfName = bgpVrf.getVrfName();
-    Ip updateSource = BgpProcess.BGP_UNNUMBERED_IP;
 
     RoutingPolicy.Builder peerExportPolicy =
         RoutingPolicy.builder()
@@ -170,7 +170,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setBgpProcess(newProc)
             .setExportPolicy(peerExportPolicy.build().getName())
             .setLocalAs(localAs)
-            .setLocalIp(updateSource)
+            .setLocalIp(BgpProcess.BGP_UNNUMBERED_IP)
             .setPeerInterface(peerInterface)
             .setRemoteAsns(computeRemoteAsns(neighbor, localAs));
     builder.build();
@@ -247,18 +247,20 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             });
   }
 
-  private @Nonnull LongSpace computeRemoteAsns(BgpInterfaceNeighbor neighbor, long localAs) {
-    switch (neighbor.getRemoteAsType()) {
-      case EXPLICIT:
-        return LongSpace.of(neighbor.getRemoteAs());
-      case EXTERNAL:
-        return BgpPeerConfig.ALL_AS_NUMBERS.difference(LongSpace.of(localAs));
-      case INTERNAL:
-        return LongSpace.of(localAs);
-      default:
-        throw new IllegalArgumentException(
-            String.format("Invalid remote-as type: %s", neighbor.getRemoteAsType()));
+  private @Nonnull LongSpace computeRemoteAsns(
+      BgpInterfaceNeighbor neighbor, @Nullable Long localAs) {
+    if (neighbor.getRemoteAsType() == RemoteAsType.EXPLICIT) {
+      Long remoteAs = neighbor.getRemoteAs();
+      return remoteAs == null ? LongSpace.EMPTY : LongSpace.of(remoteAs);
+    } else if (localAs == null) {
+      return LongSpace.EMPTY;
+    } else if (neighbor.getRemoteAsType() == RemoteAsType.EXTERNAL) {
+      return BgpPeerConfig.ALL_AS_NUMBERS.difference(LongSpace.of(localAs));
+    } else if (neighbor.getRemoteAsType() == RemoteAsType.INTERNAL) {
+      return LongSpace.of(localAs);
     }
+    throw new IllegalArgumentException(
+        String.format("Invalid remote-as type: %s", neighbor.getRemoteAsType()));
   }
 
   private void convertBgpProcess() {
@@ -575,7 +577,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
    */
   private @Nullable org.batfish.datamodel.BgpProcess toBgpProcess(String vrfName, BgpVrf bgpVrf) {
     org.batfish.datamodel.BgpProcess newProc = new org.batfish.datamodel.BgpProcess();
-    long localAs = bgpVrf.getAutonomousSystem();
     Ip routerId = bgpVrf.getRouterId();
     if (routerId == null) {
       _w.redFlag(
@@ -609,23 +610,30 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     // Finally, the export policy ends with returning false: do not export unmatched routes.
     bgpCommonExportPolicy.addStatement(Statements.ReturnFalse.toStaticStatement()).build();
 
-    // Export connected routes that should be redistributed.
-    BgpRedistributionPolicy redistributeProtocolPolicy =
-        bgpVrf.getIpv4Unicast().getRedistributionPolicies().get(CumulusRoutingProtocol.CONNECTED);
-    if (redistributeProtocolPolicy != null) {
+    // Export routes that should be redistributed.
+    for (BgpRedistributionPolicy redistributeProtocolPolicy :
+        bgpVrf.getIpv4Unicast().getRedistributionPolicies().values()) {
+
+      // Get a match expression for the protocol to be redistributed
+      CumulusRoutingProtocol protocol = redistributeProtocolPolicy.getProtocol();
+      Disjunction matchProtocol =
+          new Disjunction(
+              VI_PROTOCOLS_MAP.get(protocol).stream()
+                  .map(MatchProtocol::new)
+                  .collect(ImmutableList.toImmutableList()));
+
+      // Create a WithEnvironmentExpr with the redistribution route-map, if one is defined
       BooleanExpr weInterior = BooleanExprs.TRUE;
-      Conjunction exportProtocolConditions = new Conjunction();
-      exportProtocolConditions.setComment("Redistribute connected routes into BGP");
-      exportProtocolConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.CONNECTED));
       String mapName = redistributeProtocolPolicy.getRouteMap();
-      if (mapName != null) {
-        RouteMap redistributeProtocolRouteMap = _routeMaps.get(mapName);
-        if (redistributeProtocolRouteMap != null) {
-          weInterior = new CallExpr(mapName);
-        }
+      if (mapName != null && _routeMaps.keySet().contains(mapName)) {
+        weInterior = new CallExpr(mapName);
       }
       BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
-      exportProtocolConditions.getConjuncts().add(we);
+
+      // Export routes that match the protocol and WithEnvironmentExpr
+      Conjunction exportProtocolConditions = new Conjunction(ImmutableList.of(matchProtocol, we));
+      exportProtocolConditions.setComment(
+          String.format("Redistribute %s routes into BGP", protocol));
       exportConditions.add(exportProtocolConditions);
     }
 
@@ -663,6 +671,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     exportConditions.add(new MatchProtocol(RoutingProtocol.BGP));
     exportConditions.add(new MatchProtocol(RoutingProtocol.IBGP));
 
+    Long localAs = bgpVrf.getAutonomousSystem();
     bgpVrf
         .getInterfaceNeighbors()
         .forEach(

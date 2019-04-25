@@ -46,6 +46,10 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
         _engine.computeDataPlane(
             configurations,
             topology,
+            _batfish
+                .getTopologyProvider()
+                .getLayer2Topology(_batfish.getNetworkSnapshot())
+                .orElse(null),
             _batfish.getTopologyProvider().getOspfTopology(_batfish.getNetworkSnapshot()),
             externalAdverts);
     double averageRoutes =
@@ -75,8 +79,7 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
     _engine =
         new IncrementalBdpEngine(
             new IncrementalDataPlaneSettings(_batfish.getSettingsConfiguration()),
-            _batfish.getLogger(),
-            _batfish::newBatch);
+            _batfish.getLogger());
   }
 
   @Override

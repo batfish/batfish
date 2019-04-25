@@ -42,7 +42,7 @@
             },
             "inputRoutes": {
                 "description": "The BGP route announcements to test the policy on",
-                "type": "bgpRoutes",
+                "type": "bgpv4Routes",
                 "displayName": "Input Routes"
             }
         }

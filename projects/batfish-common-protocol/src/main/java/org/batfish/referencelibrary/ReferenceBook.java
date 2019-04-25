@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -27,7 +28,7 @@ import org.batfish.datamodel.Names.Type;
 
 /** Represents a reference book which contains multiple types of named constructs */
 @ParametersAreNonnullByDefault
-public class ReferenceBook implements Comparable<ReferenceBook> {
+public class ReferenceBook implements Comparable<ReferenceBook>, Serializable {
 
   @ParametersAreNonnullByDefault
   public static class Builder {
@@ -85,6 +86,8 @@ public class ReferenceBook implements Comparable<ReferenceBook> {
       return this;
     }
   }
+
+  private static final long serialVersionUID = 1L;
 
   private static final String PROP_ADDRESS_GROUPS = "addressGroups";
   private static final String PROP_FILTER_GROUPS = "filterGroups";

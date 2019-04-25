@@ -14,6 +14,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.Schema;
@@ -30,12 +31,20 @@ class FileParseStatusAnswerer extends Answerer {
   public TableAnswerElement answer() {
     ParseVendorConfigurationAnswerElement pvcae =
         _batfish.loadParseVendorConfigurationAnswerElement();
+    ConvertConfigurationAnswerElement ccae =
+        _batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     Map<String, ParseStatus> statusMap = pvcae.getParseStatus();
     Rows rows = new Rows();
-
+    Multimap<String, String> fileToConvertedHosts = ccae.getFileMap();
     Multimap<String, String> fileToHost = TreeMultimap.create();
-    pvcae.getFileMap().forEach((hostname, filename) -> fileToHost.put(filename, hostname));
+    pvcae
+        .getFileMap()
+        .forEach(
+            (hostname, filename) -> {
+              fileToHost.put(filename, hostname);
+              fileToHost.putAll(filename, fileToConvertedHosts.get(filename));
+            });
 
     statusMap.forEach(
         (filename, status) -> rows.add(getRow(filename, status, fileToHost.get(filename))));
@@ -86,5 +95,6 @@ class FileParseStatusAnswerer extends Answerer {
           "File ${%s} parsed with status ${%s} and produced nodes ${%s}",
           COL_FILENAME, COL_PARSE_STATUS, COL_NODES);
 
-  private static final TableMetadata TABLE_METADATA = new TableMetadata(METADATA, TEXT_DESC);
+  @VisibleForTesting
+  static final TableMetadata TABLE_METADATA = new TableMetadata(METADATA, TEXT_DESC);
 }

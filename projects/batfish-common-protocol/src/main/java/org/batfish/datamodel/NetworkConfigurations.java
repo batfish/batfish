@@ -41,14 +41,33 @@ public final class NetworkConfigurations {
     return Optional.ofNullable(_configurations.get(hostname));
   }
 
+  /**
+   * Returns a {@link BgpPeerConfig} matching the given {@code id} if one exists, otherwise {@code
+   * null}.
+   */
   @Nullable
   public BgpPeerConfig getBgpPeerConfig(BgpPeerConfigId id) {
-    BgpPeerConfig c = getBgpPointToPointPeerConfig(id);
-    return c == null ? getBgpDynamicPeerConfig(id) : c;
+    switch (id.getType()) {
+      case ACTIVE:
+        return getBgpPointToPointPeerConfig(id);
+      case DYNAMIC:
+        return getBgpDynamicPeerConfig(id);
+      case UNNUMBERED:
+        return getBgpUnnumberedPeerConfig(id);
+      default:
+        throw new IllegalArgumentException(String.format("Unrecognized peer type: %s", id));
+    }
   }
 
+  /**
+   * Returns a {@link BgpPassivePeerConfig} matching the given {@code id} if one exists, otherwise
+   * {@code null}.
+   */
   @Nullable
   public BgpPassivePeerConfig getBgpDynamicPeerConfig(BgpPeerConfigId id) {
+    if (id.getRemotePeerPrefix() == null) {
+      return null;
+    }
     return getVrf(id.getHostname(), id.getVrfName())
         .map(Vrf::getBgpProcess)
         .map(BgpProcess::getPassiveNeighbors)
@@ -56,12 +75,34 @@ public final class NetworkConfigurations {
         .orElse(null);
   }
 
+  /**
+   * Returns a {@link BgpActivePeerConfig} matching the given {@code id} if one exists, otherwise
+   * {@code null}.
+   */
   @Nullable
   public BgpActivePeerConfig getBgpPointToPointPeerConfig(BgpPeerConfigId id) {
+    if (id.getRemotePeerPrefix() == null) {
+      return null;
+    }
     return getVrf(id.getHostname(), id.getVrfName())
         .map(Vrf::getBgpProcess)
         .map(BgpProcess::getActiveNeighbors)
         .map(m -> m.get(id.getRemotePeerPrefix()))
+        .orElse(null);
+  }
+
+  /**
+   * Returns a {@link BgpUnnumberedPeerConfig} matching the given {@code id} if one exists,
+   * otherwise {@code null}.
+   */
+  @Nullable
+  public BgpUnnumberedPeerConfig getBgpUnnumberedPeerConfig(BgpPeerConfigId id) {
+    if (id.getPeerInterface() == null) {
+      return null;
+    }
+    return getVrf(id.getHostname(), id.getVrfName())
+        .map(Vrf::getBgpProcess)
+        .map(proc -> proc.getInterfaceNeighbors().get(id.getPeerInterface()))
         .orElse(null);
   }
 

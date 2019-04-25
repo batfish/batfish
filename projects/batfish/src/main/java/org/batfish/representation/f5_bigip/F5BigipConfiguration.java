@@ -52,6 +52,7 @@ import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
+import org.batfish.datamodel.Names;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route6FilterList;
@@ -96,6 +97,8 @@ import org.batfish.datamodel.vendor_family.f5_bigip.PoolMember;
 import org.batfish.datamodel.vendor_family.f5_bigip.RouteAdvertisementMode;
 import org.batfish.datamodel.vendor_family.f5_bigip.Virtual;
 import org.batfish.datamodel.vendor_family.f5_bigip.VirtualAddress;
+import org.batfish.referencelibrary.AddressGroup;
+import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.vendor.VendorConfiguration;
 
 /** Vendor-specific configuration for F5 BIG-IP device */
@@ -107,6 +110,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
       new AssignPortFromPool(TransformationType.SOURCE_NAT, PortField.SOURCE, 1024, 65535);
 
   private static final long serialVersionUID = 1L;
+
+  static final String REFBOOK_SOURCE_POOLS = "pools";
+  static final String REFBOOK_SOURCE_VIRTUAL_ADDRESSES = "virtualAddresses";
 
   private static boolean appliesToVlan(Snat snat, String vlanName) {
     return !snat.getVlansEnabled()
@@ -1325,6 +1331,31 @@ public class F5BigipConfiguration extends VendorConfiguration {
                 .setVirtualAddresses(_virtualAddresses)
                 .build());
 
+    // add a reference book for virtual addresses
+    String virtualAddressesBookname =
+        Names.generatedReferenceBook(_hostname, REFBOOK_SOURCE_VIRTUAL_ADDRESSES);
+    _c.getGeneratedReferenceBooks()
+        .put(
+            virtualAddressesBookname,
+            ReferenceBook.builder(virtualAddressesBookname)
+                .setAddressGroups(
+                    _virtualAddresses.values().stream()
+                        .map(F5BigipConfiguration::toAddressGroup)
+                        .collect(ImmutableList.toImmutableList()))
+                .build());
+
+    // add a reference book for pools
+    String poolAddressBookname = Names.generatedReferenceBook(_hostname, REFBOOK_SOURCE_POOLS);
+    _c.getGeneratedReferenceBooks()
+        .put(
+            poolAddressBookname,
+            ReferenceBook.builder(poolAddressBookname)
+                .setAddressGroups(
+                    _pools.values().stream()
+                        .map(F5BigipConfiguration::toAddressGroup)
+                        .collect(ImmutableList.toImmutableList()))
+                .build());
+
     // TODO: alter as behavior fleshed out
     _c.setDefaultCrossZoneAction(LineAction.PERMIT);
     _c.setDefaultInboundAction(LineAction.PERMIT);
@@ -1454,6 +1485,31 @@ public class F5BigipConfiguration extends VendorConfiguration {
     markStructures();
 
     return _c;
+  }
+
+  @VisibleForTesting
+  static AddressGroup toAddressGroup(Pool pool) {
+    return new AddressGroup(
+        pool.getMembers().values().stream()
+            .map(PoolMember::getAddress)
+            .filter(Objects::nonNull)
+            .map(Objects::toString)
+            .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())),
+        pool.getName());
+  }
+
+  @VisibleForTesting
+  static AddressGroup toAddressGroup(VirtualAddress virtualAddress) {
+    return new AddressGroup(
+        virtualAddress.getAddress() == null
+            ? ImmutableSortedSet.of()
+            : virtualAddress.getMask() == null
+                ? ImmutableSortedSet.of(virtualAddress.getAddress().toString())
+                : ImmutableSortedSet.of(
+                    virtualAddress.getAddress().toString(),
+                    Prefix.create(virtualAddress.getAddress(), virtualAddress.getMask())
+                        .toString()),
+        virtualAddress.getName());
   }
 
   private void initEnabledVirtuals() {

@@ -59,8 +59,6 @@ public abstract class BgpRoute extends AbstractRoute {
   @Nullable protected final RoutingProtocol _srcProtocol;
   /* NOTE: Cisco-only attribute */
   protected final int _weight;
-  /* Cache the hashcode */
-  private transient volatile int _hashCode = 0;
 
   protected BgpRoute(
       @Nullable Prefix network,
