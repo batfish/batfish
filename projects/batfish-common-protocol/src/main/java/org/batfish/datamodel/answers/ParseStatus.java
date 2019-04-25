@@ -34,7 +34,7 @@ public enum ParseStatus {
       case EMPTY:
         return "File is empty";
       case FAILED:
-        return "File contained at least one unrecognized line";
+        return "File failed to parse";
       case IGNORED:
         return "File explicitly ignored by user";
       case ORPHANED:
