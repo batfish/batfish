@@ -3,7 +3,6 @@ package org.batfish.referencelibrary;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Test;
 
@@ -11,7 +10,7 @@ import org.junit.Test;
 public class ServiceEndpointTest {
 
   @Test
-  public void testJavaSerialization() throws IOException {
+  public void testJavaSerialization() {
     ServiceEndpoint point = new ServiceEndpoint("addr", "group", "svc");
     assertThat(SerializationUtils.clone(point), equalTo(point));
   }

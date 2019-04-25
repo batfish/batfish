@@ -5,10 +5,8 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
-import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Test;
 
 /** Tests for {@link AddressGroup} */
@@ -80,11 +78,5 @@ public class AddressGroupTest {
             .get("parentGroup")
             .getDescendantObjects(addressObjects, addressGroups, new HashSet<>()),
         equalTo(ImmutableSet.of("ad1")));
-  }
-
-  @Test
-  public void testJavaSerialization() throws IOException {
-    AddressGroup group = new AddressGroup("group");
-    assertThat(SerializationUtils.clone(group), equalTo(group));
   }
 }

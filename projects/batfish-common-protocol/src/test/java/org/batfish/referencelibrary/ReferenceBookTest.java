@@ -170,7 +170,7 @@ public class ReferenceBookTest {
   }
 
   @Test
-  public void testJavaSerialization() throws IOException {
+  public void testJavaSerialization() {
     ReferenceBook book = ReferenceBook.builder("book").build();
     assertThat(SerializationUtils.clone(book), equalTo(book));
   }
