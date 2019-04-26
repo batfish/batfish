@@ -99,7 +99,11 @@ public class BDDReachabilityAnalysis {
   }
 
   Map<StateExpr, BDD> computeForwardReachableStates() {
-    return computeForwardReachableStates(ImmutableMap.of());
+    BDD one = _bddPacket.getFactory().one();
+    Map<StateExpr, BDD> initHS =
+        _ingressLocationStates.stream()
+            .collect(ImmutableMap.toImmutableMap(Function.identity(), state -> one));
+    return computeForwardReachableStates(initHS);
   }
 
   Map<StateExpr, BDD> computeForwardReachableStates(Map<StateExpr, BDD> initialHS) {
@@ -109,9 +113,9 @@ public class BDDReachabilityAnalysis {
             .startActive()) {
       assert span != null; // avoid unused warning
       Map<StateExpr, BDD> forwardReachableStates = new LinkedHashMap<>();
-      BDD one = _bddPacket.getFactory().one();
+      BDD zero = _bddPacket.getFactory().zero();
       _ingressLocationStates.forEach(
-          state -> forwardReachableStates.put(state, initialHS.getOrDefault(state, one)));
+          state -> forwardReachableStates.put(state, initialHS.getOrDefault(state, zero)));
       forwardFixpoint(forwardReachableStates);
       return ImmutableMap.copyOf(forwardReachableStates);
     }
