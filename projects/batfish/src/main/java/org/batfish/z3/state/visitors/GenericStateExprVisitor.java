@@ -2,24 +2,11 @@ package org.batfish.z3.state.visitors;
 
 import org.batfish.z3.expr.TransformationExpr;
 import org.batfish.z3.expr.TransformationStepExpr;
-import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.AclDeny;
 import org.batfish.z3.state.AclLineIndependentMatch;
 import org.batfish.z3.state.AclLineMatch;
 import org.batfish.z3.state.AclLineNoMatch;
 import org.batfish.z3.state.AclPermit;
-import org.batfish.z3.state.Debug;
-import org.batfish.z3.state.DeliveredToSubnet;
-import org.batfish.z3.state.Drop;
-import org.batfish.z3.state.DropAcl;
-import org.batfish.z3.state.DropAclIn;
-import org.batfish.z3.state.DropAclOut;
-import org.batfish.z3.state.DropNoRoute;
-import org.batfish.z3.state.DropNullRoute;
-import org.batfish.z3.state.ExitsNetwork;
-import org.batfish.z3.state.InsufficientInfo;
-import org.batfish.z3.state.NeighborUnreachable;
-import org.batfish.z3.state.NeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.NodeAccept;
 import org.batfish.z3.state.NodeDrop;
 import org.batfish.z3.state.NodeDropAcl;
@@ -48,13 +35,10 @@ import org.batfish.z3.state.PreOutInterfaceExitsNetwork;
 import org.batfish.z3.state.PreOutInterfaceInsufficientInfo;
 import org.batfish.z3.state.PreOutInterfaceNeighborUnreachable;
 import org.batfish.z3.state.PreOutVrf;
-import org.batfish.z3.state.Query;
 
 public interface GenericStateExprVisitor<R> {
 
-  R castToGenericStateExprVisitorReturnType(Object o);
-
-  R visitAccept(Accept accept);
+  R visitAccept();
 
   R visitAclDeny(AclDeny aclDeny);
 
@@ -66,30 +50,29 @@ public interface GenericStateExprVisitor<R> {
 
   R visitAclPermit(AclPermit aclPermit);
 
-  R visitDebug(Debug debug);
+  R visitDebug();
 
-  R visitDrop(Drop drop);
+  R visitDrop();
 
-  R visitDropAcl(DropAcl dropAcl);
+  R visitDropAcl();
 
-  R visitDropAclIn(DropAclIn dropAclIn);
+  R visitDropAclIn();
 
-  R visitDropAclOut(DropAclOut dropAclOut);
+  R visitDropAclOut();
 
-  R visitDropNoRoute(DropNoRoute dropNoRoute);
+  R visitDropNoRoute();
 
-  R visitDropNullRoute(DropNullRoute dropNullRoute);
+  R visitDropNullRoute();
 
-  R visitExitsNetwork(ExitsNetwork exitsNetwork);
+  R visitExitsNetwork();
 
-  R visitDeliveredToSubnet(DeliveredToSubnet deliveredToSubnet);
+  R visitDeliveredToSubnet();
 
-  R visitInsufficientInfo(InsufficientInfo insufficientInfo);
+  R visitInsufficientInfo();
 
-  R visitNeighborUnreachable(NeighborUnreachable neighborUnreachable);
+  R visitNeighborUnreachable();
 
-  R visitNeighborUnreachableOrExitsNetwork(
-      NeighborUnreachableOrExitsNetwork neighborUnreachableOrExitsNetwork);
+  R visitNeighborUnreachableOrExitsNetwork();
 
   R visitNodeAccept(NodeAccept nodeAccept);
 
@@ -158,5 +141,5 @@ public interface GenericStateExprVisitor<R> {
 
   R visitTransformationStep(TransformationStepExpr transformationStepExpr);
 
-  R visitQuery(Query query);
+  R visitQuery();
 }

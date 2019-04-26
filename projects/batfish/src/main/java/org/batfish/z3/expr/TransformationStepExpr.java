@@ -61,11 +61,6 @@ public class TransformationStepExpr extends StateExpr {
     return visitor.visitTransformationStep(this);
   }
 
-  @Override
-  public State getState() {
-    return State.INSTANCE;
-  }
-
   public String getNode1() {
     return _node1;
   }

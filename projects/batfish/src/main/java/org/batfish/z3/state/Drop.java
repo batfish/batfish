@@ -24,11 +24,6 @@ public class Drop extends StateExpr {
 
   @Override
   public <R> R accept(GenericStateExprVisitor<R> visitor) {
-    return visitor.visitDrop(this);
-  }
-
-  @Override
-  public State getState() {
-    return State.INSTANCE;
+    return visitor.visitDrop();
   }
 }

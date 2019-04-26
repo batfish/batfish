@@ -22,12 +22,6 @@ public final class PreOutInterfaceDeliveredToSubnet extends StateExpr {
     return visitor.visitPreOutInterfaceDeliveredToSubnet(this);
   }
 
-  @Override
-  public State getState() {
-    throw new UnsupportedOperationException(
-        "PreOutInterfaceDeliveredToSubnet is unused in NOD reachability");
-  }
-
   public String getHostname() {
     return _hostname;
   }

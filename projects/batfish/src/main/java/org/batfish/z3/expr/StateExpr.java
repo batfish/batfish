@@ -39,8 +39,6 @@ public abstract class StateExpr extends Expr {
     return _params.get().equals(((StateExpr) e)._params.get());
   }
 
-  public abstract State getState();
-
   @Override
   public int hashCode() {
     return _hashCode.get();

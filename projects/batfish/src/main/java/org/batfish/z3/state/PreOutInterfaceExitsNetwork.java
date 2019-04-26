@@ -22,12 +22,6 @@ public final class PreOutInterfaceExitsNetwork extends StateExpr {
     return visitor.visitPreOutInterfaceExitsNetwork(this);
   }
 
-  @Override
-  public State getState() {
-    throw new UnsupportedOperationException(
-        "PreOutInterfaceExitsNetwork is unused in NOD reachability");
-  }
-
   public String getHostname() {
     return _hostname;
   }

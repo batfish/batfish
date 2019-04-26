@@ -24,11 +24,6 @@ public class InsufficientInfo extends StateExpr {
 
   @Override
   public <R> R accept(GenericStateExprVisitor<R> visitor) {
-    return visitor.visitInsufficientInfo(this);
-  }
-
-  @Override
-  public State getState() {
-    return State.INSTANCE;
+    return visitor.visitInsufficientInfo();
   }
 }

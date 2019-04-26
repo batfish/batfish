@@ -32,9 +32,4 @@ public class NumberedQuery extends StateExpr {
   public int getLine() {
     return _line;
   }
-
-  @Override
-  public State getState() {
-    return State.INSTANCE;
-  }
 }

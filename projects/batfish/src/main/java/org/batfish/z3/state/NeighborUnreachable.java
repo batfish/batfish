@@ -24,11 +24,6 @@ public class NeighborUnreachable extends StateExpr {
 
   @Override
   public <R> R accept(GenericStateExprVisitor<R> visitor) {
-    return visitor.visitNeighborUnreachable(this);
-  }
-
-  @Override
-  public State getState() {
-    return State.INSTANCE;
+    return visitor.visitNeighborUnreachable();
   }
 }

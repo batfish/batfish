@@ -39,9 +39,4 @@ public class PreOutVrf extends StateExpr {
   public String getVrf() {
     return _vrf;
   }
-
-  @Override
-  public State getState() {
-    return State.INSTANCE;
-  }
 }

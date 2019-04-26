@@ -24,11 +24,6 @@ public class DeliveredToSubnet extends StateExpr {
 
   @Override
   public <R> R accept(GenericStateExprVisitor<R> visitor) {
-    return visitor.visitDeliveredToSubnet(this);
-  }
-
-  @Override
-  public State getState() {
-    return State.INSTANCE;
+    return visitor.visitDeliveredToSubnet();
   }
 }

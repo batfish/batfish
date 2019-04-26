@@ -24,11 +24,6 @@ public class DropNullRoute extends StateExpr {
 
   @Override
   public <R> R accept(GenericStateExprVisitor<R> visitor) {
-    return visitor.visitDropNullRoute(this);
-  }
-
-  @Override
-  public State getState() {
-    return State.INSTANCE;
+    return visitor.visitDropNullRoute();
   }
 }

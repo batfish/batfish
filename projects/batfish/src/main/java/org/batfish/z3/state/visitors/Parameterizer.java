@@ -15,24 +15,11 @@ import java.util.List;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.TransformationExpr;
 import org.batfish.z3.expr.TransformationStepExpr;
-import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.AclDeny;
 import org.batfish.z3.state.AclLineIndependentMatch;
 import org.batfish.z3.state.AclLineMatch;
 import org.batfish.z3.state.AclLineNoMatch;
 import org.batfish.z3.state.AclPermit;
-import org.batfish.z3.state.Debug;
-import org.batfish.z3.state.DeliveredToSubnet;
-import org.batfish.z3.state.Drop;
-import org.batfish.z3.state.DropAcl;
-import org.batfish.z3.state.DropAclIn;
-import org.batfish.z3.state.DropAclOut;
-import org.batfish.z3.state.DropNoRoute;
-import org.batfish.z3.state.DropNullRoute;
-import org.batfish.z3.state.ExitsNetwork;
-import org.batfish.z3.state.InsufficientInfo;
-import org.batfish.z3.state.NeighborUnreachable;
-import org.batfish.z3.state.NeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.NodeAccept;
 import org.batfish.z3.state.NodeDrop;
 import org.batfish.z3.state.NodeDropAcl;
@@ -61,7 +48,6 @@ import org.batfish.z3.state.PreOutInterfaceExitsNetwork;
 import org.batfish.z3.state.PreOutInterfaceInsufficientInfo;
 import org.batfish.z3.state.PreOutInterfaceNeighborUnreachable;
 import org.batfish.z3.state.PreOutVrf;
-import org.batfish.z3.state.Query;
 import org.batfish.z3.state.StateParameter;
 
 public class Parameterizer implements GenericStateExprVisitor<List<StateParameter>> {
@@ -74,13 +60,7 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
   private Parameterizer() {}
 
   @Override
-  public List<StateParameter> castToGenericStateExprVisitorReturnType(Object o) {
-    return ((List<?>) o)
-        .stream().map(i -> (StateParameter) i).collect(ImmutableList.toImmutableList());
-  }
-
-  @Override
-  public List<StateParameter> visitAccept(Accept accept) {
+  public List<StateParameter> visitAccept() {
     return ImmutableList.of();
   }
 
@@ -123,63 +103,62 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
   }
 
   @Override
-  public List<StateParameter> visitDebug(Debug debug) {
+  public List<StateParameter> visitDebug() {
     return ImmutableList.of();
   }
 
   @Override
-  public List<StateParameter> visitDrop(Drop drop) {
+  public List<StateParameter> visitDrop() {
     return ImmutableList.of();
   }
 
   @Override
-  public List<StateParameter> visitDropAcl(DropAcl dropAcl) {
+  public List<StateParameter> visitDropAcl() {
     return ImmutableList.of();
   }
 
   @Override
-  public List<StateParameter> visitDropAclIn(DropAclIn dropAclIn) {
+  public List<StateParameter> visitDropAclIn() {
     return ImmutableList.of();
   }
 
   @Override
-  public List<StateParameter> visitDropAclOut(DropAclOut dropAclOut) {
+  public List<StateParameter> visitDropAclOut() {
     return ImmutableList.of();
   }
 
   @Override
-  public List<StateParameter> visitDropNoRoute(DropNoRoute dropNoRoute) {
+  public List<StateParameter> visitDropNoRoute() {
     return ImmutableList.of();
   }
 
   @Override
-  public List<StateParameter> visitDropNullRoute(DropNullRoute dropNullRoute) {
+  public List<StateParameter> visitDropNullRoute() {
     return ImmutableList.of();
   }
 
   @Override
-  public List<StateParameter> visitNeighborUnreachableOrExitsNetwork(
-      NeighborUnreachableOrExitsNetwork neighborUnreachableOrExitsNetwork) {
+  public List<StateParameter> visitNeighborUnreachableOrExitsNetwork() {
     return ImmutableList.of();
   }
 
   @Override
-  public List<StateParameter> visitExitsNetwork(ExitsNetwork exitNetwork) {
+  public List<StateParameter> visitExitsNetwork() {
     return ImmutableList.of();
   }
 
   @Override
-  public List<StateParameter> visitDeliveredToSubnet(DeliveredToSubnet deliveredToSubnet) {
+  public List<StateParameter> visitDeliveredToSubnet() {
     return ImmutableList.of();
   }
 
   @Override
-  public List<StateParameter> visitInsufficientInfo(InsufficientInfo insufficientInfo) {
+  public List<StateParameter> visitInsufficientInfo() {
     return ImmutableList.of();
   }
 
   @Override
-  public List<StateParameter> visitNeighborUnreachable(NeighborUnreachable neighborUnreachable) {
+  public List<StateParameter> visitNeighborUnreachable() {
     return ImmutableList.of();
   }
 
@@ -415,7 +394,7 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
   }
 
   @Override
-  public List<StateParameter> visitQuery(Query query) {
+  public List<StateParameter> visitQuery() {
     return ImmutableList.of();
   }
 }

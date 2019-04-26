@@ -58,9 +58,4 @@ public class PostOutEdge extends StateExpr {
   public String getSrcNode() {
     return _srcNode;
   }
-
-  @Override
-  public State getState() {
-    return State.INSTANCE;
-  }
 }

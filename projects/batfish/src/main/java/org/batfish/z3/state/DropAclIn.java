@@ -24,11 +24,6 @@ public class DropAclIn extends StateExpr {
 
   @Override
   public <R> R accept(GenericStateExprVisitor<R> visitor) {
-    return visitor.visitDropAclIn(this);
-  }
-
-  @Override
-  public State getState() {
-    return State.INSTANCE;
+    return visitor.visitDropAclIn();
   }
 }

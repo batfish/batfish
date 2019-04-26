@@ -32,9 +32,4 @@ public class NodeDropAclIn extends StateExpr {
   public String getHostname() {
     return _hostname;
   }
-
-  @Override
-  public State getState() {
-    return State.INSTANCE;
-  }
 }

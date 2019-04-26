@@ -5,9 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Set;
 import org.batfish.z3.expr.AndExpr;
-import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BitVecExpr;
-import org.batfish.z3.expr.Comment;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.Expr;
 import org.batfish.z3.expr.ExtractExpr;
@@ -22,28 +20,19 @@ import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.PrefixMatchExpr;
-import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.StateExpr;
-import org.batfish.z3.expr.Statement;
 import org.batfish.z3.expr.TransformedVarIntExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
-import org.batfish.z3.expr.VoidStatementVisitor;
 import org.batfish.z3.state.StateParameter.Type;
 import org.batfish.z3.state.visitors.Parameterizer;
 
-public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
+public class ExprPrinter implements ExprVisitor {
 
   public static String print(Expr expr) {
     ExprPrinter printer = new ExprPrinter();
     expr.accept(printer);
-    return printer._sb.toString();
-  }
-
-  public static String print(Statement statement) {
-    ExprPrinter printer = new ExprPrinter();
-    statement.accept(printer);
     return printer._sb.toString();
   }
 
@@ -113,16 +102,6 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
   }
 
   @Override
-  public void visitBasicRuleStatement(BasicRuleStatement basicRuleStatement) {
-    printCollapsedComplexExpr(
-        ImmutableList.of(
-            new IdExpr("basic-rule"),
-            basicRuleStatement.getPreconditionStateIndependentConstraints(),
-            new ListExpr(ImmutableList.copyOf(basicRuleStatement.getPreconditionStates())),
-            basicRuleStatement.getPostconditionState()));
-  }
-
-  @Override
   public void visitBitVecExpr(BitVecExpr bitVecExpr) {
     List<Expr> subExpressions =
         ImmutableList.of(
@@ -130,14 +109,6 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
             new IdExpr("BitVec"),
             new IdExpr(Integer.toString(bitVecExpr.getSize())));
     printCollapsedComplexExpr(subExpressions);
-  }
-
-  @Override
-  public void visitComment(Comment comment) {
-    _sb.append("\n");
-    for (String line : comment.getLines()) {
-      _sb.append(String.format(";;; %s\n", line));
-    }
   }
 
   @Override
@@ -239,11 +210,6 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
   public void visitPrefixMatchExpr(PrefixMatchExpr prefixMatchExpr) {
     printCollapsedComplexExpr(
         ImmutableList.of(new IdExpr("prefixMatch"), prefixMatchExpr.getExpr()));
-  }
-
-  @Override
-  public void visitQueryStatement(QueryStatement queryStatement) {
-    printCollapsedComplexExpr(ImmutableList.of(new IdExpr("query"), queryStatement.getStateExpr()));
   }
 
   @Override

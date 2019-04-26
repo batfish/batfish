@@ -36,11 +36,6 @@ public class OriginateVrf extends StateExpr {
     return _hostname;
   }
 
-  @Override
-  public State getState() {
-    return State.INSTANCE;
-  }
-
   public String getVrf() {
     return _vrf;
   }

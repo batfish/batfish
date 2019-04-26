@@ -39,9 +39,4 @@ public class NodeInterfaceNeighborUnreachable extends StateExpr {
   public String getIface() {
     return _iface;
   }
-
-  @Override
-  public State getState() {
-    return State.INSTANCE;
-  }
 }

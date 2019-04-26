@@ -58,11 +58,6 @@ public class TransformationExpr extends StateExpr {
     return visitor.visitTransformation(this);
   }
 
-  @Override
-  public State getState() {
-    return State.INSTANCE;
-  }
-
   public String getNode1() {
     return _node1;
   }
