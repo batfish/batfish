@@ -31,14 +31,6 @@ public class StateParameter {
     return Objects.equals(_id, other._id) && Objects.equals(_type, other._type);
   }
 
-  public String getId() {
-    return _id;
-  }
-
-  public Type getType() {
-    return _type;
-  }
-
   @Override
   public int hashCode() {
     return Objects.hash(_id, _type);
