@@ -1,7 +1,6 @@
 package org.batfish.z3.expr;
 
 import java.util.Objects;
-import org.batfish.z3.Field;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 
 /**
@@ -9,10 +8,6 @@ import org.batfish.z3.expr.visitors.ExprVisitor;
  * of a contiguous subvector of the original.
  */
 public final class ExtractExpr extends IntExpr {
-
-  public static IntExpr newExtractExpr(Field field, int low, int high) {
-    return newExtractExpr(new VarIntExpr(field), low, high);
-  }
 
   public static IntExpr newExtractExpr(IntExpr var, int low, int high) {
     int varSize = var.numBits();

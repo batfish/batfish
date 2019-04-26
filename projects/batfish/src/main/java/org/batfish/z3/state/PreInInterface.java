@@ -7,8 +7,6 @@ public class PreInInterface extends StateExpr {
 
   public static class State {
 
-    public static final State INSTANCE = new State();
-
     private State() {}
   }
 

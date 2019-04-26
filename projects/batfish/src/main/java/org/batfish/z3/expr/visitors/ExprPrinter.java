@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Set;
 import org.batfish.z3.expr.AndExpr;
-import org.batfish.z3.expr.BitVecExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.Expr;
 import org.batfish.z3.expr.ExtractExpr;
@@ -97,16 +96,6 @@ public class ExprPrinter implements ExprVisitor {
     List<Expr> subExpressions =
         ImmutableList.<Expr>builder().add(new IdExpr("and")).addAll(andExpr.getConjuncts()).build();
     printExpandedComplexExpr(subExpressions);
-  }
-
-  @Override
-  public void visitBitVecExpr(BitVecExpr bitVecExpr) {
-    List<Expr> subExpressions =
-        ImmutableList.of(
-            new IdExpr("_"),
-            new IdExpr("BitVec"),
-            new IdExpr(Integer.toString(bitVecExpr.getSize())));
-    printCollapsedComplexExpr(subExpressions);
   }
 
   @Override

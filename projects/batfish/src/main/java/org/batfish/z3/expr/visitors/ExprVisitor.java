@@ -1,7 +1,6 @@
 package org.batfish.z3.expr.visitors;
 
 import org.batfish.z3.expr.AndExpr;
-import org.batfish.z3.expr.BitVecExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.ExtractExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
@@ -21,8 +20,6 @@ import org.batfish.z3.expr.VarIntExpr;
 
 public interface ExprVisitor {
   void visitAndExpr(AndExpr andExpr);
-
-  void visitBitVecExpr(BitVecExpr bitVecExpr);
 
   void visitEqExpr(EqExpr eqExpr);
 

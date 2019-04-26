@@ -40,10 +40,6 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
     return matchIpSpace(ipSpace, Field.DST_IP);
   }
 
-  public static BooleanExpr matchDstIp(IpSpace ipSpace, Map<String, IpSpace> namedIpSpaces) {
-    return matchIpSpace(ipSpace, Field.DST_IP, namedIpSpaces);
-  }
-
   public static BooleanExpr matchDstPort(Set<SubRange> dstPortRanges) {
     return RangeMatchExpr.fromSubRanges(Field.DST_PORT, Field.DST_PORT.getSize(), dstPortRanges);
   }
@@ -293,10 +289,6 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
   private final BooleanExpr _expr;
 
   private final Map<String, IpSpace> _namedIpSpaces;
-
-  public HeaderSpaceMatchExpr(HeaderSpace headerSpace, Map<String, IpSpace> namedIpSpaces) {
-    this(headerSpace, namedIpSpaces, false);
-  }
 
   public HeaderSpaceMatchExpr(
       HeaderSpace headerSpace, Map<String, IpSpace> namedIpSpaces, boolean orig) {

@@ -1,7 +1,6 @@
 package org.batfish.z3.expr.visitors;
 
 import org.batfish.z3.expr.AndExpr;
-import org.batfish.z3.expr.BitVecExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.Expr;
 import org.batfish.z3.expr.ExtractExpr;
@@ -32,11 +31,6 @@ public class IsComplexVisitor implements ExprVisitor {
 
   @Override
   public void visitAndExpr(AndExpr andExpr) {
-    _isComplex = true;
-  }
-
-  @Override
-  public void visitBitVecExpr(BitVecExpr bitVecExpr) {
     _isComplex = true;
   }
 

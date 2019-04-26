@@ -1,6 +1,5 @@
 package org.batfish.z3.state;
 
-import org.batfish.datamodel.Edge;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.visitors.GenericStateExprVisitor;
 
@@ -20,10 +19,6 @@ public class PostOutEdge extends StateExpr {
   private final String _srcIface;
 
   private final String _srcNode;
-
-  public PostOutEdge(Edge edge) {
-    this(edge.getNode1(), edge.getInt1(), edge.getNode2(), edge.getInt2());
-  }
 
   public PostOutEdge(String srcNode, String srcIface, String dstNode, String dstIface) {
     _srcNode = srcNode;
