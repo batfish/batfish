@@ -1,6 +1,6 @@
 package org.batfish.z3.expr.visitors;
 
-import static org.batfish.z3.expr.visitors.BoolExprTransformer.getNodName;
+import static org.batfish.z3.expr.visitors.ExprPrinter.getNodName;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -22,6 +22,7 @@ import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
+/** Tests of {@link RelationCollector}. */
 public class RelationCollectorTest {
 
   public static class TestStateExpr extends StateExpr {
@@ -95,10 +96,13 @@ public class RelationCollectorTest {
     StateExpr p1 = newStateExpr();
     StateExpr p2 = newStateExpr();
     BasicRuleStatement expr1 = new BasicRuleStatement(p1);
-    Set<String> expectedRelations1 = ImmutableSet.of(getNodName(_input, p1));
+    Set<String> expectedRelations1 =
+        ImmutableSet.of(getNodName(_input.getVectorizedParameters(), p1));
     BasicRuleStatement expr2 = new BasicRuleStatement(p1, p2);
     Set<String> expectedRelations2 =
-        ImmutableSet.of(getNodName(_input, p1), getNodName(_input, p2));
+        ImmutableSet.of(
+            getNodName(_input.getVectorizedParameters(), p1),
+            getNodName(_input.getVectorizedParameters(), p2));
 
     assertThat(collectRelations(_input, expr1), equalTo(expectedRelations1));
     assertThat(collectRelations(_input, expr2), equalTo(expectedRelations2));
@@ -109,7 +113,8 @@ public class RelationCollectorTest {
   public void testVisitQueryStatement() {
     StateExpr p1 = newStateExpr();
     QueryStatement expr = new QueryStatement(p1);
-    Set<String> expectedRelations = ImmutableSet.of(getNodName(_input, p1));
+    Set<String> expectedRelations =
+        ImmutableSet.of(getNodName(_input.getVectorizedParameters(), p1));
 
     assertThat(collectRelations(_input, expr), equalTo(expectedRelations));
   }

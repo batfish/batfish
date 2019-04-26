@@ -1,8 +1,6 @@
 package org.batfish.z3.expr;
 
-import com.microsoft.z3.Context;
 import java.util.Objects;
-import org.batfish.z3.expr.visitors.BitVecExprTransformer;
 import org.batfish.z3.expr.visitors.ExprPrinter;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.GenericIntExprVisitor;
@@ -11,8 +9,6 @@ import org.batfish.z3.expr.visitors.IsComplexVisitor;
 
 public class MockIntAtom extends IntExpr {
 
-  private final Context _ctx;
-
   private final String _name;
 
   private final int _numBits;
@@ -20,13 +16,6 @@ public class MockIntAtom extends IntExpr {
   public MockIntAtom(int i) {
     _name = String.format("BVConst%d", i);
     _numBits = 1;
-    _ctx = null;
-  }
-
-  public MockIntAtom(int i, int numBits, Context ctx) {
-    _name = String.format("BVConst%d", i);
-    _numBits = numBits;
-    _ctx = ctx;
   }
 
   @Override
@@ -42,14 +31,10 @@ public class MockIntAtom extends IntExpr {
 
   @Override
   public <R> R accept(GenericIntExprVisitor<R> visitor) {
-    if (visitor instanceof BitVecExprTransformer) {
-      return visitor.castToGenericIntExprVisitorReturnType(_ctx.mkBVConst(_name, _numBits));
-    } else {
-      throw new UnsupportedOperationException(
-          String.format(
-              "No implementation for %s: %s",
-              GenericIntExprVisitor.class.getSimpleName(), visitor.getClass().getSimpleName()));
-    }
+    throw new UnsupportedOperationException(
+        String.format(
+            "No implementation for %s: %s",
+            GenericIntExprVisitor.class.getSimpleName(), visitor.getClass().getSimpleName()));
   }
 
   @Override

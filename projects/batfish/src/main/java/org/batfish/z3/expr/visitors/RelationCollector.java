@@ -1,5 +1,7 @@
 package org.batfish.z3.expr.visitors;
 
+import static org.batfish.z3.expr.visitors.ExprPrinter.getNodName;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -49,6 +51,6 @@ public class RelationCollector implements VoidStatementVisitor {
   private void collectStateExpr(StateExpr stateExpr) {
     _relations.add(
         Maps.immutableEntry(
-            BoolExprTransformer.getNodName(_input, stateExpr), stateExpr.getState()));
+            getNodName(_input.getVectorizedParameters(), stateExpr), stateExpr.getState()));
   }
 }

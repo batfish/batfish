@@ -3,6 +3,7 @@ package org.batfish.z3.expr.visitors;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
+import java.util.Set;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BitVecExpr;
@@ -29,6 +30,8 @@ import org.batfish.z3.expr.TransformedVarIntExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.expr.VoidStatementVisitor;
+import org.batfish.z3.state.StateParameter.Type;
+import org.batfish.z3.state.visitors.Parameterizer;
 
 public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
 
@@ -248,13 +251,22 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
     printCollapsedComplexExpr(ImmutableList.of(new IdExpr("rangeMatch"), rangeMatchExpr.getExpr()));
   }
 
+  static String getNodName(Set<Type> vectorizedParameters, StateExpr stateExpr) {
+    StringBuilder name = new StringBuilder();
+    name.append(String.format("S_%s", stateExpr.getClass().getSimpleName()));
+    Parameterizer.getParameters(stateExpr).stream()
+        .filter(parameter -> !vectorizedParameters.contains(parameter.getType()))
+        .forEach(parameter -> name.append(String.format("_%s", parameter.getId())));
+    return name.toString();
+  }
+
   @Override
   public void visitStateExpr(StateExpr stateExpr) {
     /* TODO: handle vectorized state parameters as variables */
     /* TODO: handle arguments */
     printCollapsedComplexExpr(
         ImmutableList.<Expr>builder()
-            .add(new IdExpr(BoolExprTransformer.getNodName(ImmutableSet.of(), stateExpr)))
+            .add(new IdExpr(getNodName(ImmutableSet.of(), stateExpr)))
             .build());
   }
 
