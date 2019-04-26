@@ -1,16 +1,16 @@
 package org.batfish.z3.state;
 
 import org.batfish.z3.expr.StateExpr;
-import org.batfish.z3.state.visitors.GenericStateExprVisitor;
+import org.batfish.z3.state.visitors.StateExprVisitor;
 
-public class DropAclIn extends StateExpr {
+public final class DropAclIn implements StateExpr {
 
   public static final DropAclIn INSTANCE = new DropAclIn();
 
   private DropAclIn() {}
 
   @Override
-  public <R> R accept(GenericStateExprVisitor<R> visitor) {
+  public <R> R accept(StateExprVisitor<R> visitor) {
     return visitor.visitDropAclIn();
   }
 }

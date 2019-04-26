@@ -1,9 +1,12 @@
 package org.batfish.z3.state;
 
+import java.util.Objects;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.z3.expr.StateExpr;
-import org.batfish.z3.state.visitors.GenericStateExprVisitor;
+import org.batfish.z3.state.visitors.StateExprVisitor;
 
-public class PreOutEdge extends StateExpr {
+@ParametersAreNonnullByDefault
+public final class PreOutEdge implements StateExpr {
 
   private final String _dstIface;
 
@@ -21,7 +24,7 @@ public class PreOutEdge extends StateExpr {
   }
 
   @Override
-  public <R> R accept(GenericStateExprVisitor<R> visitor) {
+  public <R> R accept(StateExprVisitor<R> visitor) {
     return visitor.visitPreOutEdge(this);
   }
 
@@ -39,5 +42,25 @@ public class PreOutEdge extends StateExpr {
 
   public String getSrcNode() {
     return _srcNode;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof PreOutEdge)) {
+      return false;
+    }
+    PreOutEdge that = (PreOutEdge) o;
+    return _dstIface.equals(that._dstIface)
+        && _dstNode.equals(that._dstNode)
+        && _srcIface.equals(that._srcIface)
+        && _srcNode.equals(that._srcNode);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_dstIface, _dstNode, _srcIface, _srcNode);
   }
 }

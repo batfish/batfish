@@ -26,14 +26,13 @@ import org.batfish.z3.state.PreOutInterfaceExitsNetwork;
 import org.batfish.z3.state.PreOutInterfaceInsufficientInfo;
 import org.batfish.z3.state.PreOutInterfaceNeighborUnreachable;
 import org.batfish.z3.state.PreOutVrf;
-import org.batfish.z3.state.visitors.GenericStateExprVisitor;
+import org.batfish.z3.state.visitors.StateExprVisitor;
 
 /**
  * Convert origination states to their corresponding termination states. Returns null for
  * non-origination states.
  */
-public class OriginationStateToTerminationState
-    implements GenericStateExprVisitor<List<StateExpr>> {
+public class OriginationStateToTerminationState implements StateExprVisitor<List<StateExpr>> {
   private static final OriginationStateToTerminationState INSTANCE =
       new OriginationStateToTerminationState();
 
