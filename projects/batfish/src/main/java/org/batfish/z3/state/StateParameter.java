@@ -5,14 +5,8 @@ import java.util.Objects;
 public class StateParameter {
 
   public enum Type {
-    ACL,
-    ACL_LINE,
     INTERFACE,
     NODE,
-    QUERY_NUMBER,
-    TRANSFORMATION_ID,
-    TRANSFORMATION_TAG,
-    TRANSFORMATION_STEP_ID,
     VRF,
   }
 
@@ -35,14 +29,6 @@ public class StateParameter {
 
     StateParameter other = (StateParameter) obj;
     return Objects.equals(_id, other._id) && Objects.equals(_type, other._type);
-  }
-
-  public String getId() {
-    return _id;
-  }
-
-  public Type getType() {
-    return _type;
   }
 
   @Override
