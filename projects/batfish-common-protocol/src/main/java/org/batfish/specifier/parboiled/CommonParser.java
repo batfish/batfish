@@ -34,9 +34,9 @@ import org.parboiled.support.ValueStack;
 public class CommonParser extends BaseParser<AstNode> {
 
   /**
-   * Parboiled parser runners reset the default stack for invalid inputs. We save it externally by
-   * overriding the push function. This lets us examine what was parsed earlier, e.g., for
-   * context-sensitive auto completion.
+   * Parboiled parser runners reset the value stack for invalid inputs. We save it externally (by
+   * overriding the push function) so we can examine it later, e.g., for context-sensitive auto
+   * completion.
    */
   static class SavedStack {
     private ValueStack<AstNode> _vs;
