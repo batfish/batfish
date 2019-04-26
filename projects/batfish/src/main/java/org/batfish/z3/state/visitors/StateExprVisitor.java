@@ -23,7 +23,7 @@ import org.batfish.z3.state.PreOutInterfaceInsufficientInfo;
 import org.batfish.z3.state.PreOutInterfaceNeighborUnreachable;
 import org.batfish.z3.state.PreOutVrf;
 
-public interface GenericStateExprVisitor<R> {
+public interface StateExprVisitor<R> {
 
   R visitAccept();
 

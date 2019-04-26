@@ -1,9 +1,13 @@
 package org.batfish.z3.state;
 
 import org.batfish.z3.expr.StateExpr;
-import org.batfish.z3.state.visitors.GenericStateExprVisitor;
+import org.batfish.z3.state.visitors.StateExprVisitor;
 
-public class NodeDropAclIn extends StateExpr {
+import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.Objects;
+
+@ParametersAreNonnullByDefault
+public final class NodeDropAclIn implements StateExpr {
 
   private final String _hostname;
 
@@ -12,11 +16,28 @@ public class NodeDropAclIn extends StateExpr {
   }
 
   @Override
-  public <R> R accept(GenericStateExprVisitor<R> visitor) {
+  public <R> R accept(StateExprVisitor<R> visitor) {
     return visitor.visitNodeDropAclIn(this);
   }
 
   public String getHostname() {
     return _hostname;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof NodeDropAclIn)) {
+      return false;
+    }
+    NodeDropAclIn that = (NodeDropAclIn) o;
+    return _hostname.equals(that._hostname);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_hostname);
   }
 }

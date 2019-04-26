@@ -1,9 +1,13 @@
 package org.batfish.z3.state;
 
 import org.batfish.z3.expr.StateExpr;
-import org.batfish.z3.state.visitors.GenericStateExprVisitor;
+import org.batfish.z3.state.visitors.StateExprVisitor;
 
-public class PostInInterface extends StateExpr {
+import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.Objects;
+
+@ParametersAreNonnullByDefault
+public final class PostInInterface implements StateExpr {
 
   private final String _hostname;
 
@@ -15,7 +19,7 @@ public class PostInInterface extends StateExpr {
   }
 
   @Override
-  public <R> R accept(GenericStateExprVisitor<R> visitor) {
+  public <R> R accept(StateExprVisitor<R> visitor) {
     return visitor.visitPostInInterface(this);
   }
 
@@ -25,5 +29,24 @@ public class PostInInterface extends StateExpr {
 
   public String getIface() {
     return _iface;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof PostInInterface)) {
+      return false;
+    }
+
+    PostInInterface that = (PostInInterface) o;
+    return Objects.equals(_hostname, that._hostname) &&
+            Objects.equals(_iface, that._iface);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_hostname, _iface);
   }
 }

@@ -1,16 +1,16 @@
 package org.batfish.z3.state;
 
 import org.batfish.z3.expr.StateExpr;
-import org.batfish.z3.state.visitors.GenericStateExprVisitor;
+import org.batfish.z3.state.visitors.StateExprVisitor;
 
-public class NeighborUnreachable extends StateExpr {
+public class NeighborUnreachable implements StateExpr {
 
   public static final NeighborUnreachable INSTANCE = new NeighborUnreachable();
 
   private NeighborUnreachable() {}
 
   @Override
-  public <R> R accept(GenericStateExprVisitor<R> visitor) {
+  public <R> R accept(StateExprVisitor<R> visitor) {
     return visitor.visitNeighborUnreachable();
   }
 }
