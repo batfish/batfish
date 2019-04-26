@@ -103,6 +103,7 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.dataplane.rib.RibId;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisProcess;
@@ -572,6 +573,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         neighbor.setLocalIp(localIp);
       }
       neighbor.setBgpProcess(proc);
+      neighbor.setV4UnicastFamily(Ipv4UnicastAddressFamily.instance());
       neighbor.build();
     }
     proc.setMultipathEbgp(multipathEbgpSet);

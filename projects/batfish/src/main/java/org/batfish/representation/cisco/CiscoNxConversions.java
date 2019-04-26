@@ -38,6 +38,7 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -325,6 +326,7 @@ final class CiscoNxConversions {
       newNeighborBuilder.setRouteReflectorClient(
           firstNonNull(naf4.getRouteReflectorClient(), Boolean.FALSE));
     }
+    newNeighborBuilder.setV4UnicastFamily(Ipv4UnicastAddressFamily.instance());
 
     // Export policy
     List<Statement> exportStatements = new LinkedList<>();

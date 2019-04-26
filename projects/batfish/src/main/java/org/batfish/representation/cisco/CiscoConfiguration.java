@@ -129,6 +129,7 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
@@ -1967,6 +1968,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newNeighborBuilder.setLocalIp(updateSource);
       newNeighborBuilder.setExportPolicy(computeBgpPeerExportPolicyName(vrfName, lpg.getName()));
       newNeighborBuilder.setSendCommunity(lpg.getSendCommunity());
+      newNeighborBuilder.setV4UnicastFamily(Ipv4UnicastAddressFamily.instance());
       newNeighborBuilder.build();
     }
     return newBgpProcess;

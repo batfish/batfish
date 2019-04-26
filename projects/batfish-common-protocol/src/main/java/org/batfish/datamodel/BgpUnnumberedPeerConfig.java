@@ -10,6 +10,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.bgp.EvpnAddressFamily;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.dataplane.rib.RibGroup;
 
 /**
@@ -56,7 +58,9 @@ public final class BgpUnnumberedPeerConfig extends BgpPeerConfig {
               _peerInterface,
               _remoteAsns,
               _routeReflectorClient,
-              _sendCommunity);
+              _sendCommunity,
+              _v4UnicastFamily,
+              _evpnAddressFamily);
       if (_bgpProcess != null) {
         _bgpProcess.getInterfaceNeighbors().put(_peerInterface, bgpPeerConfig);
       }
@@ -110,7 +114,10 @@ public final class BgpUnnumberedPeerConfig extends BgpPeerConfig {
       @JsonProperty(PROP_PEER_INTERFACE) @Nullable String peerInterface,
       @JsonProperty(PROP_REMOTE_ASNS) @Nullable LongSpace remoteAsns,
       @JsonProperty(PROP_ROUTE_REFLECTOR) boolean routeReflectorClient,
-      @JsonProperty(PROP_SEND_COMMUNITY) boolean sendCommunity) {
+      @JsonProperty(PROP_SEND_COMMUNITY) boolean sendCommunity,
+      @JsonProperty(PROP_IPV4_UNICAST_ADDRESS_FAMILY) @Nullable
+          Ipv4UnicastAddressFamily ipv4unicast,
+      @JsonProperty(PROP_EVPN_ADDRESS_FAMILY) @Nullable EvpnAddressFamily evpnAddressFamily) {
     checkArgument(peerInterface != null, "Missing %s", PROP_PEER_INTERFACE);
     return new BgpUnnumberedPeerConfig(
         additionalPathsReceive,
@@ -138,7 +145,9 @@ public final class BgpUnnumberedPeerConfig extends BgpPeerConfig {
         peerInterface,
         firstNonNull(remoteAsns, LongSpace.EMPTY),
         routeReflectorClient,
-        sendCommunity);
+        sendCommunity,
+        ipv4unicast,
+        evpnAddressFamily);
   }
 
   @Nonnull private final String _peerInterface;
@@ -169,7 +178,9 @@ public final class BgpUnnumberedPeerConfig extends BgpPeerConfig {
       @Nonnull String peerInterface,
       @Nullable LongSpace remoteAsns,
       boolean routeReflectorClient,
-      boolean sendCommunity) {
+      boolean sendCommunity,
+      @Nullable Ipv4UnicastAddressFamily v4UnicastFamily,
+      @Nullable EvpnAddressFamily evpnAddressFamily) {
     super(
         additionalPathsReceive,
         additionalPathsSelectAll,
@@ -195,7 +206,9 @@ public final class BgpUnnumberedPeerConfig extends BgpPeerConfig {
         localIp,
         remoteAsns,
         routeReflectorClient,
-        sendCommunity);
+        sendCommunity,
+        v4UnicastFamily,
+        evpnAddressFamily);
     _peerInterface = peerInterface;
   }
 

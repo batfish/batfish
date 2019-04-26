@@ -405,16 +405,19 @@ public class VirtualRouter implements Serializable {
       _bgpIncomingRoutes =
           Streams.concat(
                   _vrf.getBgpProcess().getActiveNeighbors().entrySet().stream()
+                      .filter(e -> e.getValue().getV4unicastFamily() != null)
                       .map(
                           e ->
                               new BgpPeerConfigId(
                                   getHostname(), _vrf.getName(), e.getKey(), false)),
                   _vrf.getBgpProcess().getPassiveNeighbors().entrySet().stream()
+                      .filter(e -> e.getValue().getV4unicastFamily() != null)
                       .map(
                           e ->
                               new BgpPeerConfigId(getHostname(), _vrf.getName(), e.getKey(), true)),
-                  _vrf.getBgpProcess().getInterfaceNeighbors().keySet().stream()
-                      .map(iface -> new BgpPeerConfigId(getHostname(), _vrf.getName(), iface)))
+                  _vrf.getBgpProcess().getInterfaceNeighbors().entrySet().stream()
+                      .filter(e -> e.getValue().getV4unicastFamily() != null)
+                      .map(e -> new BgpPeerConfigId(getHostname(), _vrf.getName(), e.getKey())))
               .filter(bgpTopology.nodes()::contains)
               .flatMap(
                   dst ->
