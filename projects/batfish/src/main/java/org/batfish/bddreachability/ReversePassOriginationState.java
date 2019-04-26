@@ -24,7 +24,7 @@ import org.batfish.z3.state.PreOutInterfaceExitsNetwork;
 import org.batfish.z3.state.PreOutInterfaceInsufficientInfo;
 import org.batfish.z3.state.PreOutInterfaceNeighborUnreachable;
 import org.batfish.z3.state.PreOutVrf;
-import org.batfish.z3.state.visitors.GenericStateExprVisitor;
+import org.batfish.z3.state.visitors.StateExprVisitor;
 
 /**
  * Converts successful flow termination states from the forward pass of a bidirectional reachability
@@ -41,7 +41,7 @@ import org.batfish.z3.state.visitors.GenericStateExprVisitor;
  * We can either add one, or else split the packets accepted at a {@link NodeAccept} state into
  * multiple {@link OriginateVrf} states by dst IP.
  */
-public class ReversePassOriginationState implements GenericStateExprVisitor<StateExpr> {
+public class ReversePassOriginationState implements StateExprVisitor<StateExpr> {
   private static final ReversePassOriginationState INSTANCE = new ReversePassOriginationState();
 
   private ReversePassOriginationState() {}

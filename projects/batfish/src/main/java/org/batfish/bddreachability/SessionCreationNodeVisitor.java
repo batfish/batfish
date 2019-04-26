@@ -24,7 +24,7 @@ import org.batfish.z3.state.PreOutInterfaceExitsNetwork;
 import org.batfish.z3.state.PreOutInterfaceInsufficientInfo;
 import org.batfish.z3.state.PreOutInterfaceNeighborUnreachable;
 import org.batfish.z3.state.PreOutVrf;
-import org.batfish.z3.state.visitors.GenericStateExprVisitor;
+import org.batfish.z3.state.visitors.StateExprVisitor;
 
 /**
  * For {@link StateExpr StateExprs} that correspond to points where a firewall session would get
@@ -36,7 +36,7 @@ import org.batfish.z3.state.visitors.GenericStateExprVisitor;
  * {@link NodeInterfaceNeighborUnreachable} are excluded because they are failure cases (we don't
  * need to track sessions for failures).
  */
-final class SessionCreationNodeVisitor implements GenericStateExprVisitor<NodeInterfacePair> {
+final class SessionCreationNodeVisitor implements StateExprVisitor<NodeInterfacePair> {
   public static final SessionCreationNodeVisitor INSTANCE = new SessionCreationNodeVisitor();
 
   private SessionCreationNodeVisitor() {}
