@@ -149,11 +149,6 @@ public class ReversePassOriginationState implements GenericStateExprVisitor<Stat
   }
 
   @Override
-  public StateExpr visitNeighborUnreachableOrExitsNetwork() {
-    return null;
-  }
-
-  @Override
   public StateExpr visitNodeAccept(NodeAccept nodeAccept) {
     return null;
   }

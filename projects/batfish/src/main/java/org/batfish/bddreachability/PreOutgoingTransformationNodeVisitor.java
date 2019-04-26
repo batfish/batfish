@@ -136,11 +136,6 @@ public class PreOutgoingTransformationNodeVisitor
   }
 
   @Override
-  public NodeInterfacePair visitNeighborUnreachableOrExitsNetwork() {
-    return null;
-  }
-
-  @Override
   public NodeInterfacePair visitNodeAccept(NodeAccept nodeAccept) {
     return null;
   }

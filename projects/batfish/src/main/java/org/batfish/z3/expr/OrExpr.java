@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Objects;
 import org.batfish.z3.expr.visitors.ExprVisitor;
-import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 
 public final class OrExpr extends BooleanExpr {
 
@@ -20,11 +19,6 @@ public final class OrExpr extends BooleanExpr {
   @Override
   public void accept(ExprVisitor visitor) {
     visitor.visitOrExpr(this);
-  }
-
-  @Override
-  public <R> R accept(GenericBooleanExprVisitor<R> visitor) {
-    return visitor.visitOrExpr(this);
   }
 
   @Override

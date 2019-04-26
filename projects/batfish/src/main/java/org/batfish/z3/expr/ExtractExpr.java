@@ -3,8 +3,6 @@ package org.batfish.z3.expr;
 import java.util.Objects;
 import org.batfish.z3.Field;
 import org.batfish.z3.expr.visitors.ExprVisitor;
-import org.batfish.z3.expr.visitors.GenericIntExprVisitor;
-import org.batfish.z3.expr.visitors.IntExprVisitor;
 
 /**
  * Represents a projection of a bitvector to a bitvector of a lower dimension. The output consists
@@ -43,16 +41,6 @@ public final class ExtractExpr extends IntExpr {
 
   @Override
   public void accept(ExprVisitor visitor) {
-    visitor.visitExtractExpr(this);
-  }
-
-  @Override
-  public <R> R accept(GenericIntExprVisitor<R> visitor) {
-    return visitor.visitExtractExpr(this);
-  }
-
-  @Override
-  public void accept(IntExprVisitor visitor) {
     visitor.visitExtractExpr(this);
   }
 

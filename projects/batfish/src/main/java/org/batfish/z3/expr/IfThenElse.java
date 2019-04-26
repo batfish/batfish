@@ -2,7 +2,6 @@ package org.batfish.z3.expr;
 
 import java.util.Objects;
 import org.batfish.z3.expr.visitors.ExprVisitor;
-import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 
 public final class IfThenElse extends BooleanExpr {
 
@@ -16,11 +15,6 @@ public final class IfThenElse extends BooleanExpr {
     _condition = condition;
     _then = then;
     _else = els;
-  }
-
-  @Override
-  public <R> R accept(GenericBooleanExprVisitor<R> visitor) {
-    return visitor.visitIfThenElse(this);
   }
 
   @Override

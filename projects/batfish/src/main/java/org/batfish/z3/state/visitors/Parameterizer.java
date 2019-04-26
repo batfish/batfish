@@ -138,11 +138,6 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
   }
 
   @Override
-  public List<StateParameter> visitNeighborUnreachableOrExitsNetwork() {
-    return ImmutableList.of();
-  }
-
-  @Override
   public List<StateParameter> visitExitsNetwork() {
     return ImmutableList.of();
   }

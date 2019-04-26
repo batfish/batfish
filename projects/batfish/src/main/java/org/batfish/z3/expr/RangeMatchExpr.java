@@ -8,7 +8,6 @@ import java.util.Set;
 import org.batfish.datamodel.SubRange;
 import org.batfish.z3.Field;
 import org.batfish.z3.expr.visitors.ExprVisitor;
-import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 
 public final class RangeMatchExpr extends BooleanExpr {
 
@@ -124,11 +123,6 @@ public final class RangeMatchExpr extends BooleanExpr {
   @Override
   public void accept(ExprVisitor visitor) {
     visitor.visitRangeMatchExpr(this);
-  }
-
-  @Override
-  public <R> R accept(GenericBooleanExprVisitor<R> visitor) {
-    return visitor.visitRangeMatchExpr(this);
   }
 
   @Override

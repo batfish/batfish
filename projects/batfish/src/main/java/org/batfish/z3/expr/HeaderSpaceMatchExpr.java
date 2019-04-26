@@ -22,7 +22,6 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.z3.Field;
 import org.batfish.z3.expr.visitors.ExprVisitor;
-import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 import org.batfish.z3.expr.visitors.IpSpaceBooleanExprTransformer;
 
 public final class HeaderSpaceMatchExpr extends BooleanExpr {
@@ -413,11 +412,6 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
   @Override
   public void accept(ExprVisitor visitor) {
     visitor.visitHeaderSpaceMatchExpr(this);
-  }
-
-  @Override
-  public <R> R accept(GenericBooleanExprVisitor<R> visitor) {
-    return visitor.visitHeaderSpaceMatchExpr(this);
   }
 
   @Override

@@ -143,11 +143,6 @@ public class OriginationStateToTerminationState
   }
 
   @Override
-  public List<StateExpr> visitNeighborUnreachableOrExitsNetwork() {
-    return null;
-  }
-
-  @Override
   public List<StateExpr> visitNodeAccept(NodeAccept nodeAccept) {
     return null;
   }

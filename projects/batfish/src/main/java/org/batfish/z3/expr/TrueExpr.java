@@ -1,7 +1,6 @@
 package org.batfish.z3.expr;
 
 import org.batfish.z3.expr.visitors.ExprVisitor;
-import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 
 public final class TrueExpr extends BooleanExpr {
 
@@ -12,11 +11,6 @@ public final class TrueExpr extends BooleanExpr {
   @Override
   public void accept(ExprVisitor visitor) {
     visitor.visitTrueExpr();
-  }
-
-  @Override
-  public <R> R accept(GenericBooleanExprVisitor<R> visitor) {
-    return visitor.visitTrueExpr(this);
   }
 
   @Override

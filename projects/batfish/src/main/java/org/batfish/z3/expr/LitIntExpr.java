@@ -3,8 +3,6 @@ package org.batfish.z3.expr;
 import java.util.Objects;
 import org.batfish.datamodel.Ip;
 import org.batfish.z3.expr.visitors.ExprVisitor;
-import org.batfish.z3.expr.visitors.GenericIntExprVisitor;
-import org.batfish.z3.expr.visitors.IntExprVisitor;
 
 public final class LitIntExpr extends IntExpr {
 
@@ -29,16 +27,6 @@ public final class LitIntExpr extends IntExpr {
 
   @Override
   public void accept(ExprVisitor visitor) {
-    visitor.visitLitIntExpr(this);
-  }
-
-  @Override
-  public <R> R accept(GenericIntExprVisitor<R> visitor) {
-    return visitor.visitLitIntExpr(this);
-  }
-
-  @Override
-  public void accept(IntExprVisitor visitor) {
     visitor.visitLitIntExpr(this);
   }
 

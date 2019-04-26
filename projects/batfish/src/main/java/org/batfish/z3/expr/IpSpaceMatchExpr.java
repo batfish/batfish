@@ -5,7 +5,6 @@ import java.util.Objects;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.z3.Field;
 import org.batfish.z3.expr.visitors.ExprVisitor;
-import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 import org.batfish.z3.expr.visitors.IpSpaceBooleanExprTransformer;
 
 public final class IpSpaceMatchExpr extends BooleanExpr {
@@ -20,11 +19,6 @@ public final class IpSpaceMatchExpr extends BooleanExpr {
   @Override
   public void accept(ExprVisitor visitor) {
     visitor.visitIpSpaceMatchExpr(this);
-  }
-
-  @Override
-  public <R> R accept(GenericBooleanExprVisitor<R> visitor) {
-    return visitor.visitMatchIpSpaceExpr(this);
   }
 
   @Override

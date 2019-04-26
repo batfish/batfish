@@ -3,7 +3,6 @@ package org.batfish.z3.expr;
 import java.util.Objects;
 import org.batfish.datamodel.Prefix;
 import org.batfish.z3.expr.visitors.ExprVisitor;
-import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 
 public final class PrefixMatchExpr extends BooleanExpr {
 
@@ -27,11 +26,6 @@ public final class PrefixMatchExpr extends BooleanExpr {
   @Override
   public void accept(ExprVisitor visitor) {
     visitor.visitPrefixMatchExpr(this);
-  }
-
-  @Override
-  public <R> R accept(GenericBooleanExprVisitor<R> visitor) {
-    return visitor.visitPrefixMatchExpr(this);
   }
 
   @Override

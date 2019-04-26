@@ -2,7 +2,6 @@ package org.batfish.z3.expr;
 
 import java.util.Objects;
 import org.batfish.z3.expr.visitors.ExprVisitor;
-import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 
 public final class NotExpr extends BooleanExpr {
 
@@ -15,11 +14,6 @@ public final class NotExpr extends BooleanExpr {
   @Override
   public void accept(ExprVisitor visitor) {
     visitor.visitNotExpr(this);
-  }
-
-  @Override
-  public <R> R accept(GenericBooleanExprVisitor<R> visitor) {
-    return visitor.visitNotExpr(this);
   }
 
   @Override

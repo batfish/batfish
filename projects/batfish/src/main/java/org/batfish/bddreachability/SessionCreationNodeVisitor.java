@@ -141,11 +141,6 @@ final class SessionCreationNodeVisitor implements GenericStateExprVisitor<NodeIn
   }
 
   @Override
-  public NodeInterfacePair visitNeighborUnreachableOrExitsNetwork() {
-    return null;
-  }
-
-  @Override
   public NodeInterfacePair visitNodeAccept(NodeAccept nodeAccept) {
     return null;
   }

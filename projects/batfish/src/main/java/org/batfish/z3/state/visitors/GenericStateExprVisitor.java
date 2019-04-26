@@ -72,8 +72,6 @@ public interface GenericStateExprVisitor<R> {
 
   R visitNeighborUnreachable();
 
-  R visitNeighborUnreachableOrExitsNetwork();
-
   R visitNodeAccept(NodeAccept nodeAccept);
 
   R visitNodeDrop(NodeDrop nodeDrop);
