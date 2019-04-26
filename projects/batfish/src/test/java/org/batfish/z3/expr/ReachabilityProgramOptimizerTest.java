@@ -12,7 +12,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.batfish.z3.expr.visitors.RelationCollectorTest.TestStateExpr;
 import org.junit.Before;
 import org.junit.Test;
 

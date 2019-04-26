@@ -30,7 +30,6 @@ import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.VarIntExpr;
-import org.batfish.z3.state.visitors.DefaultTransitionGenerator;
 
 /** Converts {@link AclLineMatchExpr} to {@link BooleanExpr}. */
 public class AclLineMatchExprToBooleanExpr implements GenericAclLineMatchExprVisitor<BooleanExpr> {
@@ -126,9 +125,7 @@ public class AclLineMatchExprToBooleanExpr implements GenericAclLineMatchExprVis
   @Override
   public BooleanExpr visitOriginatingFromDevice(OriginatingFromDevice originatingFromDevice) {
     return new EqExpr(
-        new VarIntExpr(_sourceInterfaceField),
-        new LitIntExpr(
-            DefaultTransitionGenerator.NO_SOURCE_INTERFACE, _sourceInterfaceField.getSize()));
+        new VarIntExpr(_sourceInterfaceField), new LitIntExpr(0, _sourceInterfaceField.getSize()));
   }
 
   @Override
