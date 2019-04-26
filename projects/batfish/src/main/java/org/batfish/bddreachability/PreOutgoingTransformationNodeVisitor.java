@@ -29,8 +29,7 @@ import org.batfish.z3.state.visitors.StateExprVisitor;
  * If the input node occurs right before an outgoing transformation is applied (possibly with an
  * intermediate ACL), return the node/interface of that transformation. Otherwise, return null.
  */
-public class PreOutgoingTransformationNodeVisitor
-    implements StateExprVisitor<NodeInterfacePair> {
+public class PreOutgoingTransformationNodeVisitor implements StateExprVisitor<NodeInterfacePair> {
   public static final PreOutgoingTransformationNodeVisitor INSTANCE =
       new PreOutgoingTransformationNodeVisitor();
 

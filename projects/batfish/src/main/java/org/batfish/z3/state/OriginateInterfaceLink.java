@@ -1,10 +1,9 @@
 package org.batfish.z3.state;
 
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.visitors.StateExprVisitor;
-
-import java.util.Objects;
 
 /** A {@link StateExpr Nod program state} for traffic originating from the link of an interface. */
 public final class OriginateInterfaceLink implements StateExpr {

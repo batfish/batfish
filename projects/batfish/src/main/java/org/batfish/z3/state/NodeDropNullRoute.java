@@ -1,10 +1,8 @@
 package org.batfish.z3.state;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.visitors.StateExprVisitor;
-
-import javax.annotation.ParametersAreNonnullByDefault;
-import java.util.Objects;
 
 @ParametersAreNonnullByDefault
 public final class NodeDropNullRoute implements StateExpr {

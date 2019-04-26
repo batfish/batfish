@@ -32,8 +32,7 @@ import org.batfish.z3.state.visitors.StateExprVisitor;
  * Convert origination states to their corresponding termination states. Returns null for
  * non-origination states.
  */
-public class OriginationStateToTerminationState
-    implements StateExprVisitor<List<StateExpr>> {
+public class OriginationStateToTerminationState implements StateExprVisitor<List<StateExpr>> {
   private static final OriginationStateToTerminationState INSTANCE =
       new OriginationStateToTerminationState();
 
