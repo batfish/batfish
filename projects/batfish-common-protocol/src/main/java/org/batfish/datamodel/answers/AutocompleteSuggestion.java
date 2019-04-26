@@ -32,11 +32,28 @@ public final class AutocompleteSuggestion {
 
   public static final int DEFAULT_RANK = Integer.MAX_VALUE;
 
+  /** Some helpful text about what the suggestion specifies */
   @Nullable private final String _description;
+
+  /**
+   * Short text to show the user how to complete a partial suggestion. Should be provided for every
+   * partial suggestion.
+   */
   @Nullable private final String _hint;
+
+  /** Index in the input query string where the suggestion text should be inserted */
   private final int _insertionIndex;
+
+  /**
+   * True if the suggestion text is only partially valid and requires additional input to become
+   * valid
+   */
   private final boolean _isPartial;
+
+  /** Relevance of the suggestion relative to other suggestions */
   private int _rank;
+
+  /** Actual text of the suggestion */
   @Nonnull private final String _text;
 
   @JsonCreator
