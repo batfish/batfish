@@ -3,27 +3,8 @@ package org.batfish.z3;
 import java.util.Objects;
 
 public class Field {
-  public static final Field DSCP = new Field("DSCP", 6);
   public static final Field DST_IP = new Field("DST_IP", 32);
-  public static final Field DST_PORT = new Field("DST_PORT", 16);
-  public static final Field ECN = new Field("ECN", 2);
-  public static final Field FRAGMENT_OFFSET = new Field("FRAGMENT_OFFSET", 13);
-  public static final Field ICMP_CODE = new Field("ICMP_CODE", 8);
-  public static final Field ICMP_TYPE = new Field("ICMP_TYPE", 8);
-  public static final Field IP_PROTOCOL = new Field("IP_PROTOCOL", 8);
-  public static final Field ORIG_SRC_IP = new Field("ORIG_SRC_IP", 32);
-  public static final Field PACKET_LENGTH = new Field("PACKET_LENGTH", 16);
   public static final Field SRC_IP = new Field("SRC_IP", 32);
-  public static final Field SRC_PORT = new Field("SRC_PORT", 16);
-  public static final Field STATE = new Field("STATE", 2);
-  public static final Field TCP_FLAGS_ACK = new Field("TCP_FLAGS_ACK", 1);
-  public static final Field TCP_FLAGS_CWR = new Field("TCP_FLAGS_CWR", 1);
-  public static final Field TCP_FLAGS_ECE = new Field("TCP_FLAGS_ECE", 1);
-  public static final Field TCP_FLAGS_FIN = new Field("TCP_FLAGS_FIN", 1);
-  public static final Field TCP_FLAGS_PSH = new Field("TCP_FLAGS_PSH", 1);
-  public static final Field TCP_FLAGS_RST = new Field("TCP_FLAGS_RST", 1);
-  public static final Field TCP_FLAGS_SYN = new Field("TCP_FLAGS_SYN", 1);
-  public static final Field TCP_FLAGS_URG = new Field("TCP_FLAGS_URG", 1);
 
   private final String _name;
   private final int _size;

@@ -12,8 +12,6 @@ import org.batfish.z3.state.visitors.GenericStateExprVisitor;
 public class TransformationExpr extends StateExpr {
   public static class State {
 
-    public static final State INSTANCE = new State();
-
     private State() {}
   }
 

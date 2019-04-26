@@ -1,5 +1,6 @@
 package org.batfish.z3.expr.visitors;
 
+import static org.batfish.z3.expr.visitors.IpSpaceBooleanExprTransformer.matchSrcIp;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
@@ -19,7 +20,6 @@ import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.FalseExpr;
-import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IfThenElse;
 import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
@@ -96,9 +96,7 @@ public class IpSpaceBooleanExprTransformerTest {
   public void testVisitIpWildcard() {
     IpWildcard wildcard = new IpWildcard(Ip.parse("1.2.0.4"), Ip.create(0x0000FF00L));
     BooleanExpr matchExpr = wildcard.toIpSpace().accept(SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
-    assertThat(
-        matchExpr,
-        equalTo(HeaderSpaceMatchExpr.matchSrcIp(wildcard.toIpSpace(), ImmutableMap.of())));
+    assertThat(matchExpr, equalTo(matchSrcIp(wildcard.toIpSpace(), ImmutableMap.of())));
   }
 
   @Test

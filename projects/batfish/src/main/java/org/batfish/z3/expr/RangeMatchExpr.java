@@ -1,32 +1,12 @@
 package org.batfish.z3.expr;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import java.util.Objects;
 import java.util.Set;
-import org.batfish.datamodel.SubRange;
-import org.batfish.z3.Field;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 
 public final class RangeMatchExpr extends BooleanExpr {
-
-  public static RangeMatchExpr fromSubRanges(Field field, int bits, Set<SubRange> range) {
-    return fromSubRanges(new VarIntExpr(field), bits, range);
-  }
-
-  public static RangeMatchExpr fromSubRanges(VarIntExpr var, int bits, Set<SubRange> range) {
-    return new RangeMatchExpr(
-        var,
-        bits,
-        range.stream()
-            .map(subRange -> Range.closed((long) subRange.getStart(), (long) subRange.getEnd()))
-            .collect(ImmutableSet.toImmutableSet()));
-  }
-
-  public static BooleanExpr greaterThanOrEqualTo(Field field, long lb, int numBits) {
-    return greaterThanOrEqualTo(new VarIntExpr(field), lb, numBits);
-  }
 
   public static BooleanExpr greaterThanOrEqualTo(IntExpr bv, long lb, int numBits) {
     long remainingNumber = lb;

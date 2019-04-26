@@ -4,19 +4,15 @@ import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.Expr;
 import org.batfish.z3.expr.ExtractExpr;
-import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IdExpr;
-import org.batfish.z3.expr.IfExpr;
 import org.batfish.z3.expr.IfThenElse;
 import org.batfish.z3.expr.IpSpaceMatchExpr;
 import org.batfish.z3.expr.ListExpr;
 import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
-import org.batfish.z3.expr.PrefixMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.StateExpr;
-import org.batfish.z3.expr.TransformedVarIntExpr;
 import org.batfish.z3.expr.VarIntExpr;
 
 public class IsComplexVisitor implements ExprVisitor {
@@ -50,18 +46,8 @@ public class IsComplexVisitor implements ExprVisitor {
   }
 
   @Override
-  public void visitHeaderSpaceMatchExpr(HeaderSpaceMatchExpr headerSpaceMatchExpr) {
-    headerSpaceMatchExpr.getExpr().accept(this);
-  }
-
-  @Override
   public void visitIdExpr(IdExpr idExpr) {
     _isComplex = false;
-  }
-
-  @Override
-  public void visitIfExpr(IfExpr ifExpr) {
-    _isComplex = true;
   }
 
   @Override
@@ -95,11 +81,6 @@ public class IsComplexVisitor implements ExprVisitor {
   }
 
   @Override
-  public void visitPrefixMatchExpr(PrefixMatchExpr prefixMatchExpr) {
-    prefixMatchExpr.getExpr().accept(this);
-  }
-
-  @Override
   public void visitRangeMatchExpr(RangeMatchExpr rangeMatchExpr) {
     rangeMatchExpr.getExpr().accept(this);
   }
@@ -116,11 +97,6 @@ public class IsComplexVisitor implements ExprVisitor {
 
   @Override
   public void visitVarIntExpr(VarIntExpr varIntExpr) {
-    _isComplex = false;
-  }
-
-  @Override
-  public void visitTransformedVarIntExpr(TransformedVarIntExpr transformedVarIntExpr) {
     _isComplex = false;
   }
 }

@@ -8,19 +8,15 @@ import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.Expr;
 import org.batfish.z3.expr.ExtractExpr;
-import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IdExpr;
-import org.batfish.z3.expr.IfExpr;
 import org.batfish.z3.expr.IfThenElse;
 import org.batfish.z3.expr.IpSpaceMatchExpr;
 import org.batfish.z3.expr.ListExpr;
 import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
-import org.batfish.z3.expr.PrefixMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.StateExpr;
-import org.batfish.z3.expr.TransformedVarIntExpr;
 import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.state.StateParameter.Type;
 import org.batfish.z3.state.visitors.Parameterizer;
@@ -122,20 +118,8 @@ public class ExprPrinter implements ExprVisitor {
   }
 
   @Override
-  public void visitHeaderSpaceMatchExpr(HeaderSpaceMatchExpr headerSpaceMatchExpr) {
-    printCollapsedComplexExpr(
-        ImmutableList.of(new IdExpr("headerSpaceMatch"), headerSpaceMatchExpr.getExpr()));
-  }
-
-  @Override
   public void visitIdExpr(IdExpr idExpr) {
     _sb.append(idExpr.getId());
-  }
-
-  @Override
-  public void visitIfExpr(IfExpr ifExpr) {
-    printExpandedComplexExpr(
-        ImmutableList.of(new IdExpr("=>"), ifExpr.getAntecedent(), ifExpr.getConsequent()));
   }
 
   @Override
@@ -194,12 +178,6 @@ public class ExprPrinter implements ExprVisitor {
   }
 
   @Override
-  public void visitPrefixMatchExpr(PrefixMatchExpr prefixMatchExpr) {
-    printCollapsedComplexExpr(
-        ImmutableList.of(new IdExpr("prefixMatch"), prefixMatchExpr.getExpr()));
-  }
-
-  @Override
   public void visitRangeMatchExpr(RangeMatchExpr rangeMatchExpr) {
     printCollapsedComplexExpr(ImmutableList.of(new IdExpr("rangeMatch"), rangeMatchExpr.getExpr()));
   }
@@ -231,10 +209,5 @@ public class ExprPrinter implements ExprVisitor {
   @Override
   public void visitVarIntExpr(VarIntExpr varIntExpr) {
     _sb.append(varIntExpr.getField().getName());
-  }
-
-  @Override
-  public void visitTransformedVarIntExpr(TransformedVarIntExpr transformedVarIntExpr) {
-    _sb.append(String.format("Transformed(%s)", transformedVarIntExpr.getField().getName()));
   }
 }

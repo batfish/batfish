@@ -12,10 +12,6 @@ public final class VarIntExpr extends IntExpr {
     _field = field;
   }
 
-  public VarIntExpr(String name, Integer size) {
-    _field = new Field(name, size);
-  }
-
   @Override
   public void accept(ExprVisitor visitor) {
     visitor.visitVarIntExpr(this);
