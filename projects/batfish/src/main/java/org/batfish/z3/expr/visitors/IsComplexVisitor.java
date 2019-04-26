@@ -11,7 +11,6 @@ import org.batfish.z3.expr.ListExpr;
 import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
-import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.VarIntExpr;
 
@@ -78,11 +77,6 @@ public class IsComplexVisitor implements ExprVisitor {
   @Override
   public void visitOrExpr(OrExpr orExpr) {
     _isComplex = true;
-  }
-
-  @Override
-  public void visitRangeMatchExpr(RangeMatchExpr rangeMatchExpr) {
-    rangeMatchExpr.getExpr().accept(this);
   }
 
   @Override

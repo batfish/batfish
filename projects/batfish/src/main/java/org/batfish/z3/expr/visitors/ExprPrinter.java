@@ -15,7 +15,6 @@ import org.batfish.z3.expr.ListExpr;
 import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
-import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.state.StateParameter.Type;
@@ -175,11 +174,6 @@ public class ExprPrinter implements ExprVisitor {
   public void visitOrExpr(OrExpr orExpr) {
     printExpandedComplexExpr(
         ImmutableList.<Expr>builder().add(new IdExpr("or")).addAll(orExpr.getDisjuncts()).build());
-  }
-
-  @Override
-  public void visitRangeMatchExpr(RangeMatchExpr rangeMatchExpr) {
-    printCollapsedComplexExpr(ImmutableList.of(new IdExpr("rangeMatch"), rangeMatchExpr.getExpr()));
   }
 
   static String getNodName(Set<Type> vectorizedParameters, StateExpr stateExpr) {

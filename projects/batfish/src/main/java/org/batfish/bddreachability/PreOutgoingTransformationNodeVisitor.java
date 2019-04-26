@@ -1,7 +1,6 @@
 package org.batfish.bddreachability;
 
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.z3.expr.TransformationExpr;
 import org.batfish.z3.expr.TransformationStepExpr;
 import org.batfish.z3.state.AclDeny;
 import org.batfish.z3.state.AclLineIndependentMatch;
@@ -284,11 +283,6 @@ public class PreOutgoingTransformationNodeVisitor
   public NodeInterfacePair visitPreOutInterfaceNeighborUnreachable(
       PreOutInterfaceNeighborUnreachable state) {
     return new NodeInterfacePair(state.getHostname(), state.getInterface());
-  }
-
-  @Override
-  public NodeInterfacePair visitTransformation(TransformationExpr transformationExpr) {
-    return null;
   }
 
   @Override

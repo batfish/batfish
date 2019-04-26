@@ -2,7 +2,6 @@ package org.batfish.bddreachability;
 
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.expr.StateExpr;
-import org.batfish.z3.expr.TransformationExpr;
 import org.batfish.z3.expr.TransformationStepExpr;
 import org.batfish.z3.state.AclDeny;
 import org.batfish.z3.state.AclLineIndependentMatch;
@@ -288,11 +287,6 @@ final class SessionCreationNodeVisitor implements GenericStateExprVisitor<NodeIn
   @Override
   public NodeInterfacePair visitPreOutInterfaceNeighborUnreachable(
       PreOutInterfaceNeighborUnreachable preOutInterfaceNeighborUnreachable) {
-    return null;
-  }
-
-  @Override
-  public NodeInterfacePair visitTransformation(TransformationExpr transformationExpr) {
     return null;
   }
 

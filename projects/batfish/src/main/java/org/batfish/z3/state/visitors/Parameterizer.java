@@ -13,7 +13,6 @@ import static org.batfish.z3.state.StateParameter.Type.VRF;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import org.batfish.z3.expr.StateExpr;
-import org.batfish.z3.expr.TransformationExpr;
 import org.batfish.z3.expr.TransformationStepExpr;
 import org.batfish.z3.state.AclDeny;
 import org.batfish.z3.state.AclLineIndependentMatch;
@@ -343,17 +342,6 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
     return ImmutableList.of(
         new StateParameter(state.getHostname(), NODE),
         new StateParameter(state.getInterface(), INTERFACE));
-  }
-
-  @Override
-  public List<StateParameter> visitTransformation(TransformationExpr transformationExpr) {
-    return ImmutableList.of(
-        new StateParameter(transformationExpr.getNode1(), NODE),
-        new StateParameter(transformationExpr.getIface1(), INTERFACE),
-        new StateParameter(transformationExpr.getNode2(), NODE),
-        new StateParameter(transformationExpr.getIface2(), INTERFACE),
-        new StateParameter(transformationExpr.getTag(), TRANSFORMATION_TAG),
-        new StateParameter(Integer.toString(transformationExpr.getId()), TRANSFORMATION_ID));
   }
 
   @Override

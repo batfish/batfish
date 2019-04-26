@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.annotation.Nullable;
 import org.batfish.z3.expr.StateExpr;
-import org.batfish.z3.expr.TransformationExpr;
 import org.batfish.z3.expr.TransformationStepExpr;
 import org.batfish.z3.state.AclDeny;
 import org.batfish.z3.state.AclLineIndependentMatch;
@@ -297,11 +296,6 @@ public class OriginationStateToTerminationState
   @Override
   public List<StateExpr> visitPreOutInterfaceNeighborUnreachable(
       PreOutInterfaceNeighborUnreachable preOutInterfaceNeighborUnreachable) {
-    return null;
-  }
-
-  @Override
-  public List<StateExpr> visitTransformation(TransformationExpr transformationExpr) {
     return null;
   }
 
