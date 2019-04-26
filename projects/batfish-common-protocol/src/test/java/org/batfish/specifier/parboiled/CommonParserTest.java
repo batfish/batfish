@@ -7,11 +7,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.batfish.specifier.parboiled.Anchor.Type;
 import org.junit.Test;
 import org.parboiled.Rule;
 import org.parboiled.parserunners.BasicParseRunner;
+import org.parboiled.parserunners.ReportingParseRunner;
 
 public class CommonParserTest {
 
@@ -100,5 +102,51 @@ public class CommonParserTest {
     assertFalse(matches("/startSlash", rule));
     assertFalse(matches("has[", rule));
     assertFalse(matches("has(", rule));
+  }
+
+  @Test
+  public void testSavedStackInvalidInput1() {
+    TestParser parser = TestParser.instance();
+
+    new ReportingParseRunner<AstNode>(parser.getInputRule()).run("@specifier(g1,");
+
+    assertThat(
+        ImmutableList.copyOf(parser.getSavedStack().getValueStack()),
+        equalTo(ImmutableList.of(new StringAstNode("g1"))));
+  }
+
+  @Test
+  public void testSavedStackInvalidInput2() {
+    TestParser parser = TestParser.instance();
+
+    new ReportingParseRunner<AstNode>(parser.getInputRule()).run("@specifier(g1, b");
+
+    assertThat(
+        ImmutableList.copyOf(parser.getSavedStack().getValueStack()),
+        equalTo(ImmutableList.of(new StringAstNode("g1"), new StringAstNode("b"))));
+  }
+
+  @Test
+  public void testSavedStackValidInput() {
+    TestParser parser = TestParser.instance();
+
+    new ReportingParseRunner<AstNode>(parser.getInputRule()).run("@specifier(g1, b1)");
+
+    assertThat(
+        ImmutableList.copyOf(parser.getSavedStack().getValueStack()),
+        equalTo(ImmutableList.of(new StringAstNode("g1"), new StringAstNode("b1"))));
+  }
+
+  @Test
+  public void testSavedStackSetInput() {
+    TestParser parser = TestParser.instance();
+
+    new ReportingParseRunner<AstNode>(parser.getInputRule()).run("@specifier(g1, b1), 1.1.1.1");
+
+    assertThat(
+        ImmutableList.copyOf(parser.getSavedStack().getValueStack()),
+        equalTo(
+            ImmutableList.of(
+                new StringAstNode("g1"), new StringAstNode("b1"), new IpAstNode("1.1.1.1"))));
   }
 }

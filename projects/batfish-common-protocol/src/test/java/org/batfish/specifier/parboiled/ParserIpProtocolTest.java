@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Stream;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
@@ -42,10 +43,9 @@ public class ParserIpProtocolTest {
   public void testCompletionEmpty() {
     String query = "";
 
-    ParboiledAutoComplete pac =
-        new ParboiledAutoComplete(
-            Parser.instance().getInputRule(Grammar.IP_PROTOCOL_SPECIFIER),
-            Parser.ANCHORS,
+    List<AutocompleteSuggestion> suggestions =
+        ParboiledAutoComplete.autoComplete(
+            Grammar.IP_PROTOCOL_SPECIFIER,
             "network",
             "snapshot",
             query,
@@ -55,7 +55,7 @@ public class ParserIpProtocolTest {
             null);
 
     assertThat(
-        ImmutableSet.copyOf(pac.run()),
+        ImmutableSet.copyOf(suggestions),
         equalTo(
             // '!' and all named values
             Stream.concat(
@@ -74,10 +74,9 @@ public class ParserIpProtocolTest {
   public void testCompletionPartialName() {
     String query = "TC";
 
-    ParboiledAutoComplete pac =
-        new ParboiledAutoComplete(
-            Parser.instance().getInputRule(Grammar.IP_PROTOCOL_SPECIFIER),
-            Parser.ANCHORS,
+    List<AutocompleteSuggestion> suggestions =
+        ParboiledAutoComplete.autoComplete(
+            Grammar.IP_PROTOCOL_SPECIFIER,
             "network",
             "snapshot",
             query,
@@ -87,7 +86,7 @@ public class ParserIpProtocolTest {
             null);
 
     assertThat(
-        ImmutableSet.copyOf(pac.run()),
+        ImmutableSet.copyOf(suggestions),
         equalTo(
             ImmutableSet.of(
                 new AutocompleteSuggestion("TCF", true, null, RANK_STRING_LITERAL, 0),
@@ -98,10 +97,9 @@ public class ParserIpProtocolTest {
   public void testCompletionNumber() {
     String query = "25";
 
-    ParboiledAutoComplete pac =
-        new ParboiledAutoComplete(
-            Parser.instance().getInputRule(Grammar.IP_PROTOCOL_SPECIFIER),
-            Parser.ANCHORS,
+    List<AutocompleteSuggestion> suggestions =
+        ParboiledAutoComplete.autoComplete(
+            Grammar.IP_PROTOCOL_SPECIFIER,
             "network",
             "snapshot",
             query,
@@ -111,7 +109,7 @@ public class ParserIpProtocolTest {
             null);
 
     assertThat(
-        ImmutableSet.copyOf(pac.run()),
+        ImmutableSet.copyOf(suggestions),
         equalTo(
             ImmutableSet.of(
                 new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()))));

@@ -16,14 +16,19 @@ import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.parboiled.Anchor.Type;
 import org.junit.Test;
+import org.parboiled.Rule;
+import org.parboiled.errors.InvalidInputError;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;
 
+/** Tests for {@link ParboiledAutoComplete} */
 public class ParboiledAutoCompleteTest {
 
   private static ParboiledAutoComplete getTestPAC(String query) {
+    TestParser parser = TestParser.instance();
     return new ParboiledAutoComplete(
-        TestParser.instance().getInputRule(),
+        parser,
+        parser.getInputRule(),
         TestParser.ANCHORS,
         "network",
         "snapshot",
@@ -36,8 +41,10 @@ public class ParboiledAutoCompleteTest {
 
   private static ParboiledAutoComplete getTestPAC(
       String query, CompletionMetadata completionMetadata) {
+    TestParser parser = TestParser.instance();
     return new ParboiledAutoComplete(
-        TestParser.instance().getInputRule(),
+        parser,
+        parser.getInputRule(),
         TestParser.ANCHORS,
         "network",
         "snapshot",
@@ -49,8 +56,10 @@ public class ParboiledAutoCompleteTest {
   }
 
   private static ParboiledAutoComplete getTestPAC(String query, ReferenceLibrary referenceLibrary) {
+    TestParser parser = TestParser.instance();
     return new ParboiledAutoComplete(
-        TestParser.instance().getInputRule(),
+        parser,
+        parser.getInputRule(),
         TestParser.ANCHORS,
         "network",
         "snapshot",
@@ -217,6 +226,17 @@ public class ParboiledAutoCompleteTest {
                     "b1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 14),
                 new AutocompleteSuggestion(
                     "b2", true, null, AutocompleteSuggestion.DEFAULT_RANK, 14))));
+  }
+
+  @Test
+  public void test() {
+    TestParser parser = TestParser.instance();
+    Rule expression = parser.getInputRule();
+
+    ParsingResult<AstNode> result =
+        new ReportingParseRunner<AstNode>(expression).run("@specifier(g1,");
+
+    InvalidInputError error = (InvalidInputError) result.parseErrors.get(0);
   }
 
   /** Test that String literals are inserted before dynamic values */
