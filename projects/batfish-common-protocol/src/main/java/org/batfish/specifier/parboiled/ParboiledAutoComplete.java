@@ -34,7 +34,6 @@ public final class ParboiledAutoComplete {
 
   public static final int RANK_STRING_LITERAL = 1;
 
-  private final CommonParser _parser;
   private final Rule _expression;
   private final Map<String, Anchor.Type> _completionTypes;
 
@@ -57,7 +56,6 @@ public final class ParboiledAutoComplete {
       CompletionMetadata completionMetadata,
       NodeRolesData nodeRolesData,
       ReferenceLibrary referenceLibrary) {
-    _parser = parser;
     _expression = expression;
     _completionTypes = completionTypes;
     _network = network;
