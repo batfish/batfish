@@ -1136,7 +1136,11 @@ public class VirtualRouter implements Serializable {
 
         BgpRoute.Builder transformedIncomingRouteBuilder =
             BgpProtocolHelper.transformBgpRouteOnImport(
-                ourBgpConfig, sessionProperties, remoteRoute, _c.getConfigurationFormat());
+                ourConfigId,
+                ourBgpConfig,
+                sessionProperties,
+                remoteRoute,
+                _c.getConfigurationFormat());
         if (transformedIncomingRouteBuilder == null) {
           // Route could not be imported for core protocol reasons
           continue;

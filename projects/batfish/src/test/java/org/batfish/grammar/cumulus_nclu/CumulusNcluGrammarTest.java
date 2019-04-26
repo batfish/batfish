@@ -257,6 +257,7 @@ public final class CumulusNcluGrammarTest {
     BgpRoute.Builder routeBuilder =
         BgpRoute.builder()
             .setNextHopIp(BGP_UNNUMBERED_IP)
+            .setNextHopInterface("swp1") // both peers are configured on interfaces called swp1
             .setReceivedFromIp(BGP_UNNUMBERED_IP)
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP)

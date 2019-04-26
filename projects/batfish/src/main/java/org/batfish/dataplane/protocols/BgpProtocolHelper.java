@@ -15,6 +15,7 @@ import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
+import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -213,6 +214,7 @@ public class BgpProtocolHelper {
   /** Perform BGP import transformations on a given route after receiving an advertisement */
   @Nullable
   public static BgpRoute.Builder transformBgpRouteOnImport(
+      @Nonnull BgpPeerConfigId toConfigId,
       BgpPeerConfig toNeighbor,
       BgpSessionProperties sessionProperties,
       BgpRoute route,
@@ -237,6 +239,9 @@ public class BgpProtocolHelper {
     transformedIncomingRouteBuilder.addCommunities(route.getCommunities());
     transformedIncomingRouteBuilder.setProtocol(targetProtocol);
     transformedIncomingRouteBuilder.setNetwork(route.getNetwork());
+    if (toConfigId.getPeerInterface() != null) {
+      transformedIncomingRouteBuilder.setNextHopInterface(toConfigId.getPeerInterface());
+    }
     transformedIncomingRouteBuilder.setNextHopIp(route.getNextHopIp());
     transformedIncomingRouteBuilder.setLocalPreference(route.getLocalPreference());
     transformedIncomingRouteBuilder.setAdmin(
