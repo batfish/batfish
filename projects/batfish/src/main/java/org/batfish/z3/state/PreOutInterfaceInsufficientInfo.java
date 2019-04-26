@@ -22,12 +22,6 @@ public final class PreOutInterfaceInsufficientInfo extends StateExpr {
     return visitor.visitPreOutInterfaceInsufficientInfo(this);
   }
 
-  @Override
-  public State getState() {
-    throw new UnsupportedOperationException(
-        "PreOutInterfaceInsufficientInfo is unused in NOD reachability");
-  }
-
   public String getHostname() {
     return _hostname;
   }

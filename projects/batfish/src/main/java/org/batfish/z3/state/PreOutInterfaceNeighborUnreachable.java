@@ -22,12 +22,6 @@ public final class PreOutInterfaceNeighborUnreachable extends StateExpr {
     return visitor.visitPreOutInterfaceNeighborUnreachable(this);
   }
 
-  @Override
-  public State getState() {
-    throw new UnsupportedOperationException(
-        "PreOutInterfaceNeighborUnreachable is unused in NOD reachability");
-  }
-
   public String getHostname() {
     return _hostname;
   }

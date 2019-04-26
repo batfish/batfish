@@ -2,21 +2,8 @@ package org.batfish.z3.state;
 
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.visitors.GenericStateExprVisitor;
-import org.batfish.z3.state.visitors.StateVisitor;
 
 public class PostInInterfacePostNat extends StateExpr {
-
-  public static class State extends StateExpr.State {
-
-    public static final State INSTANCE = new State();
-
-    private State() {}
-
-    @Override
-    public void accept(StateVisitor visitor) {
-      visitor.visitPostInInterfacePostNat(this);
-    }
-  }
 
   private final String _hostname;
 
@@ -38,10 +25,5 @@ public class PostInInterfacePostNat extends StateExpr {
 
   public String getIface() {
     return _iface;
-  }
-
-  @Override
-  public State getState() {
-    return State.INSTANCE;
   }
 }

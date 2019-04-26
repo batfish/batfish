@@ -2,29 +2,7 @@ package org.batfish.bddreachability;
 
 import javax.annotation.Nullable;
 import org.batfish.z3.expr.StateExpr;
-import org.batfish.z3.expr.TransformationExpr;
-import org.batfish.z3.expr.TransformationStepExpr;
-import org.batfish.z3.state.Accept;
-import org.batfish.z3.state.AclDeny;
-import org.batfish.z3.state.AclLineIndependentMatch;
-import org.batfish.z3.state.AclLineMatch;
-import org.batfish.z3.state.AclLineNoMatch;
-import org.batfish.z3.state.AclPermit;
-import org.batfish.z3.state.Debug;
-import org.batfish.z3.state.DeliveredToSubnet;
-import org.batfish.z3.state.Drop;
-import org.batfish.z3.state.DropAcl;
-import org.batfish.z3.state.DropAclIn;
-import org.batfish.z3.state.DropAclOut;
-import org.batfish.z3.state.DropNoRoute;
-import org.batfish.z3.state.DropNullRoute;
-import org.batfish.z3.state.ExitsNetwork;
-import org.batfish.z3.state.InsufficientInfo;
-import org.batfish.z3.state.NeighborUnreachable;
-import org.batfish.z3.state.NeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.NodeAccept;
-import org.batfish.z3.state.NodeDrop;
-import org.batfish.z3.state.NodeDropAcl;
 import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeDropNoRoute;
@@ -33,15 +11,11 @@ import org.batfish.z3.state.NodeInterfaceDeliveredToSubnet;
 import org.batfish.z3.state.NodeInterfaceExitsNetwork;
 import org.batfish.z3.state.NodeInterfaceInsufficientInfo;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
-import org.batfish.z3.state.NodeInterfaceNeighborUnreachableOrExitsNetwork;
-import org.batfish.z3.state.NodeNeighborUnreachableOrExitsNetwork;
-import org.batfish.z3.state.NumberedQuery;
 import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostInInterface;
 import org.batfish.z3.state.PostInInterfacePostNat;
 import org.batfish.z3.state.PostInVrf;
-import org.batfish.z3.state.PostOutEdge;
 import org.batfish.z3.state.PreInInterface;
 import org.batfish.z3.state.PreOutEdge;
 import org.batfish.z3.state.PreOutEdgePostNat;
@@ -50,7 +24,6 @@ import org.batfish.z3.state.PreOutInterfaceExitsNetwork;
 import org.batfish.z3.state.PreOutInterfaceInsufficientInfo;
 import org.batfish.z3.state.PreOutInterfaceNeighborUnreachable;
 import org.batfish.z3.state.PreOutVrf;
-import org.batfish.z3.state.Query;
 import org.batfish.z3.state.visitors.GenericStateExprVisitor;
 
 /**
@@ -78,113 +51,52 @@ public class ReversePassOriginationState implements GenericStateExprVisitor<Stat
   }
 
   @Override
-  public StateExpr castToGenericStateExprVisitorReturnType(Object o) {
-    return (StateExpr) o;
-  }
-
-  @Override
-  public StateExpr visitAccept(Accept accept) {
+  public StateExpr visitAccept() {
     return null;
   }
 
   @Override
-  public StateExpr visitAclDeny(AclDeny aclDeny) {
+  public StateExpr visitDropAclIn() {
     return null;
   }
 
   @Override
-  public StateExpr visitAclLineIndependentMatch(AclLineIndependentMatch aclLineIndependentMatch) {
+  public StateExpr visitDropAclOut() {
     return null;
   }
 
   @Override
-  public StateExpr visitAclLineMatch(AclLineMatch aclLineMatch) {
+  public StateExpr visitDropNoRoute() {
     return null;
   }
 
   @Override
-  public StateExpr visitAclLineNoMatch(AclLineNoMatch aclLineNoMatch) {
+  public StateExpr visitDropNullRoute() {
     return null;
   }
 
   @Override
-  public StateExpr visitAclPermit(AclPermit aclPermit) {
+  public StateExpr visitExitsNetwork() {
     return null;
   }
 
   @Override
-  public StateExpr visitDebug(Debug debug) {
+  public StateExpr visitDeliveredToSubnet() {
     return null;
   }
 
   @Override
-  public StateExpr visitDrop(Drop drop) {
+  public StateExpr visitInsufficientInfo() {
     return null;
   }
 
   @Override
-  public StateExpr visitDropAcl(DropAcl dropAcl) {
-    return null;
-  }
-
-  @Override
-  public StateExpr visitDropAclIn(DropAclIn dropAclIn) {
-    return null;
-  }
-
-  @Override
-  public StateExpr visitDropAclOut(DropAclOut dropAclOut) {
-    return null;
-  }
-
-  @Override
-  public StateExpr visitDropNoRoute(DropNoRoute dropNoRoute) {
-    return null;
-  }
-
-  @Override
-  public StateExpr visitDropNullRoute(DropNullRoute dropNullRoute) {
-    return null;
-  }
-
-  @Override
-  public StateExpr visitExitsNetwork(ExitsNetwork exitsNetwork) {
-    return null;
-  }
-
-  @Override
-  public StateExpr visitDeliveredToSubnet(DeliveredToSubnet deliveredToSubnet) {
-    return null;
-  }
-
-  @Override
-  public StateExpr visitInsufficientInfo(InsufficientInfo insufficientInfo) {
-    return null;
-  }
-
-  @Override
-  public StateExpr visitNeighborUnreachable(NeighborUnreachable neighborUnreachable) {
-    return null;
-  }
-
-  @Override
-  public StateExpr visitNeighborUnreachableOrExitsNetwork(
-      NeighborUnreachableOrExitsNetwork neighborUnreachableOrExitsNetwork) {
+  public StateExpr visitNeighborUnreachable() {
     return null;
   }
 
   @Override
   public StateExpr visitNodeAccept(NodeAccept nodeAccept) {
-    return null;
-  }
-
-  @Override
-  public StateExpr visitNodeDrop(NodeDrop nodeDrop) {
-    return null;
-  }
-
-  @Override
-  public StateExpr visitNodeDropAcl(NodeDropAcl nodeDropAcl) {
     return null;
   }
 
@@ -231,23 +143,6 @@ public class ReversePassOriginationState implements GenericStateExprVisitor<Stat
   }
 
   @Override
-  public StateExpr visitNodeInterfaceNeighborUnreachableOrExitsNetwork(
-      NodeInterfaceNeighborUnreachableOrExitsNetwork nodeNeighborUnreachable) {
-    return null;
-  }
-
-  @Override
-  public StateExpr visitNodeNeighborUnreachableOrExitsNetwork(
-      NodeNeighborUnreachableOrExitsNetwork nodeNeighborUnreachableOrExitsNetwork) {
-    return null;
-  }
-
-  @Override
-  public StateExpr visitNumberedQuery(NumberedQuery numberedQuery) {
-    return null;
-  }
-
-  @Override
   public StateExpr visitOriginateInterfaceLink(OriginateInterfaceLink originateInterfaceLink) {
     return null;
   }
@@ -269,11 +164,6 @@ public class ReversePassOriginationState implements GenericStateExprVisitor<Stat
 
   @Override
   public StateExpr visitPostInVrf(PostInVrf postInVrf) {
-    return null;
-  }
-
-  @Override
-  public StateExpr visitPostOutEdge(PostOutEdge preOutInterface) {
     return null;
   }
 
@@ -322,17 +212,7 @@ public class ReversePassOriginationState implements GenericStateExprVisitor<Stat
   }
 
   @Override
-  public StateExpr visitTransformation(TransformationExpr transformationExpr) {
-    return null;
-  }
-
-  @Override
-  public StateExpr visitTransformationStep(TransformationStepExpr transformationStepExpr) {
-    return null;
-  }
-
-  @Override
-  public StateExpr visitQuery(Query query) {
+  public StateExpr visitQuery() {
     return null;
   }
 }
