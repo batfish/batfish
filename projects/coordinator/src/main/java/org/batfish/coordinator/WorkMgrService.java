@@ -49,6 +49,7 @@ import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
+import org.batfish.datamodel.answers.AutocompleteQueryMetadata;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.GetAnalysisAnswerMetricsAnswer;
 import org.batfish.datamodel.pojo.WorkStatus;
@@ -118,8 +119,13 @@ public class WorkMgrService {
               .map(BatfishObjectMapper::writeStringRuntimeError)
               .collect(Collectors.toList());
 
+      String serializedMetadata =
+          BatfishObjectMapper.writeString(new AutocompleteQueryMetadata(true, null, null));
+
       return successResponse(
-          new JSONObject().put(CoordConsts.SVC_KEY_SUGGESTIONS, serializedSuggestions));
+          new JSONObject()
+              .put(CoordConsts.SVC_KEY_SUGGESTIONS, serializedSuggestions)
+              .put(CoordConsts.SVC_KEY_QUERY_METADATA, serializedMetadata));
     } catch (IllegalArgumentException | AccessControlException e) {
       _logger.errorf("WMS:autoComplete exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
