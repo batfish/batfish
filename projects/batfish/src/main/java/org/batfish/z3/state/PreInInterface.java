@@ -5,11 +5,6 @@ import org.batfish.z3.state.visitors.GenericStateExprVisitor;
 
 public class PreInInterface extends StateExpr {
 
-  public static class State {
-
-    private State() {}
-  }
-
   private final String _hostname;
 
   private final String _iface;

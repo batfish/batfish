@@ -21,7 +21,6 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignDest
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationPort;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
-import static org.batfish.z3.expr.NodeInterfaceNeighborUnreachableMatchers.hasHostname;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -109,7 +108,6 @@ import org.batfish.z3.state.NodeInterfaceDeliveredToSubnet;
 import org.batfish.z3.state.NodeInterfaceExitsNetwork;
 import org.batfish.z3.state.NodeInterfaceInsufficientInfo;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
-import org.batfish.z3.state.NodeInterfaceNeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostInInterface;
@@ -198,13 +196,6 @@ public final class BDDReachabilityAnalysisFactoryTest {
       assertThat(
           edges,
           not(hasEntry(equalTo(new NodeDropAclOut(otherNode)), hasKey(DropAclOut.INSTANCE))));
-
-      Set<NodeInterfaceNeighborUnreachableOrExitsNetwork> neighborUnreachables =
-          edges.keySet().stream()
-              .filter(NodeInterfaceNeighborUnreachableOrExitsNetwork.class::isInstance)
-              .map(NodeInterfaceNeighborUnreachableOrExitsNetwork.class::cast)
-              .collect(Collectors.toSet());
-      neighborUnreachables.forEach(nu -> assertThat(nu, hasHostname(node)));
 
       assertThat(edges, hasEntry(equalTo(new NodeDropNoRoute(node)), hasKey(DropNoRoute.INSTANCE)));
       assertThat(

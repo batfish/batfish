@@ -5,13 +5,6 @@ import org.batfish.z3.state.visitors.GenericStateExprVisitor;
 
 public class DropNullRoute extends StateExpr {
 
-  public static class State {
-
-    public static final State INSTANCE = new State();
-
-    private State() {}
-  }
-
   public static final DropNullRoute INSTANCE = new DropNullRoute();
 
   private DropNullRoute() {}

@@ -2,15 +2,7 @@ package org.batfish.bddreachability;
 
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.expr.StateExpr;
-import org.batfish.z3.expr.TransformationStepExpr;
-import org.batfish.z3.state.AclDeny;
-import org.batfish.z3.state.AclLineIndependentMatch;
-import org.batfish.z3.state.AclLineMatch;
-import org.batfish.z3.state.AclLineNoMatch;
-import org.batfish.z3.state.AclPermit;
 import org.batfish.z3.state.NodeAccept;
-import org.batfish.z3.state.NodeDrop;
-import org.batfish.z3.state.NodeDropAcl;
 import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeDropNoRoute;
@@ -19,15 +11,11 @@ import org.batfish.z3.state.NodeInterfaceDeliveredToSubnet;
 import org.batfish.z3.state.NodeInterfaceExitsNetwork;
 import org.batfish.z3.state.NodeInterfaceInsufficientInfo;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
-import org.batfish.z3.state.NodeInterfaceNeighborUnreachableOrExitsNetwork;
-import org.batfish.z3.state.NodeNeighborUnreachableOrExitsNetwork;
-import org.batfish.z3.state.NumberedQuery;
 import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostInInterface;
 import org.batfish.z3.state.PostInInterfacePostNat;
 import org.batfish.z3.state.PostInVrf;
-import org.batfish.z3.state.PostOutEdge;
 import org.batfish.z3.state.PreInInterface;
 import org.batfish.z3.state.PreOutEdge;
 import org.batfish.z3.state.PreOutEdgePostNat;
@@ -55,47 +43,6 @@ final class SessionCreationNodeVisitor implements GenericStateExprVisitor<NodeIn
 
   @Override
   public NodeInterfacePair visitAccept() {
-    return null;
-  }
-
-  @Override
-  public NodeInterfacePair visitAclDeny(AclDeny aclDeny) {
-    return null;
-  }
-
-  @Override
-  public NodeInterfacePair visitAclLineIndependentMatch(
-      AclLineIndependentMatch aclLineIndependentMatch) {
-    return null;
-  }
-
-  @Override
-  public NodeInterfacePair visitAclLineMatch(AclLineMatch aclLineMatch) {
-    return null;
-  }
-
-  @Override
-  public NodeInterfacePair visitAclLineNoMatch(AclLineNoMatch aclLineNoMatch) {
-    return null;
-  }
-
-  @Override
-  public NodeInterfacePair visitAclPermit(AclPermit aclPermit) {
-    return null;
-  }
-
-  @Override
-  public NodeInterfacePair visitDebug() {
-    return null;
-  }
-
-  @Override
-  public NodeInterfacePair visitDrop() {
-    return null;
-  }
-
-  @Override
-  public NodeInterfacePair visitDropAcl() {
     return null;
   }
 
@@ -145,16 +92,6 @@ final class SessionCreationNodeVisitor implements GenericStateExprVisitor<NodeIn
   }
 
   @Override
-  public NodeInterfacePair visitNodeDrop(NodeDrop nodeDrop) {
-    return null;
-  }
-
-  @Override
-  public NodeInterfacePair visitNodeDropAcl(NodeDropAcl nodeDropAcl) {
-    return null;
-  }
-
-  @Override
   public NodeInterfacePair visitNodeDropAclIn(NodeDropAclIn nodeDropAclIn) {
     return null;
   }
@@ -198,23 +135,6 @@ final class SessionCreationNodeVisitor implements GenericStateExprVisitor<NodeIn
   }
 
   @Override
-  public NodeInterfacePair visitNodeInterfaceNeighborUnreachableOrExitsNetwork(
-      NodeInterfaceNeighborUnreachableOrExitsNetwork expr) {
-    return new NodeInterfacePair(expr.getHostname(), expr.getIface());
-  }
-
-  @Override
-  public NodeInterfacePair visitNodeNeighborUnreachableOrExitsNetwork(
-      NodeNeighborUnreachableOrExitsNetwork nodeNeighborUnreachableOrExitsNetwork) {
-    return null;
-  }
-
-  @Override
-  public NodeInterfacePair visitNumberedQuery(NumberedQuery numberedQuery) {
-    return null;
-  }
-
-  @Override
   public NodeInterfacePair visitOriginateInterfaceLink(
       OriginateInterfaceLink originateInterfaceLink) {
     return null;
@@ -238,11 +158,6 @@ final class SessionCreationNodeVisitor implements GenericStateExprVisitor<NodeIn
 
   @Override
   public NodeInterfacePair visitPostInVrf(PostInVrf postInVrf) {
-    return null;
-  }
-
-  @Override
-  public NodeInterfacePair visitPostOutEdge(PostOutEdge preOutInterface) {
     return null;
   }
 
@@ -287,11 +202,6 @@ final class SessionCreationNodeVisitor implements GenericStateExprVisitor<NodeIn
   @Override
   public NodeInterfacePair visitPreOutInterfaceNeighborUnreachable(
       PreOutInterfaceNeighborUnreachable preOutInterfaceNeighborUnreachable) {
-    return null;
-  }
-
-  @Override
-  public NodeInterfacePair visitTransformationStep(TransformationStepExpr transformationStepExpr) {
     return null;
   }
 

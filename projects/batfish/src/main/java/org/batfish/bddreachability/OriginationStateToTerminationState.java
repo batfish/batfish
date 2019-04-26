@@ -4,15 +4,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.annotation.Nullable;
 import org.batfish.z3.expr.StateExpr;
-import org.batfish.z3.expr.TransformationStepExpr;
-import org.batfish.z3.state.AclDeny;
-import org.batfish.z3.state.AclLineIndependentMatch;
-import org.batfish.z3.state.AclLineMatch;
-import org.batfish.z3.state.AclLineNoMatch;
-import org.batfish.z3.state.AclPermit;
 import org.batfish.z3.state.NodeAccept;
-import org.batfish.z3.state.NodeDrop;
-import org.batfish.z3.state.NodeDropAcl;
 import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeDropNoRoute;
@@ -21,15 +13,11 @@ import org.batfish.z3.state.NodeInterfaceDeliveredToSubnet;
 import org.batfish.z3.state.NodeInterfaceExitsNetwork;
 import org.batfish.z3.state.NodeInterfaceInsufficientInfo;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
-import org.batfish.z3.state.NodeInterfaceNeighborUnreachableOrExitsNetwork;
-import org.batfish.z3.state.NodeNeighborUnreachableOrExitsNetwork;
-import org.batfish.z3.state.NumberedQuery;
 import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostInInterface;
 import org.batfish.z3.state.PostInInterfacePostNat;
 import org.batfish.z3.state.PostInVrf;
-import org.batfish.z3.state.PostOutEdge;
 import org.batfish.z3.state.PreInInterface;
 import org.batfish.z3.state.PreOutEdge;
 import org.batfish.z3.state.PreOutEdgePostNat;
@@ -57,47 +45,6 @@ public class OriginationStateToTerminationState
 
   @Override
   public List<StateExpr> visitAccept() {
-    return null;
-  }
-
-  @Override
-  public List<StateExpr> visitAclDeny(AclDeny aclDeny) {
-    return null;
-  }
-
-  @Override
-  public List<StateExpr> visitAclLineIndependentMatch(
-      AclLineIndependentMatch aclLineIndependentMatch) {
-    return null;
-  }
-
-  @Override
-  public List<StateExpr> visitAclLineMatch(AclLineMatch aclLineMatch) {
-    return null;
-  }
-
-  @Override
-  public List<StateExpr> visitAclLineNoMatch(AclLineNoMatch aclLineNoMatch) {
-    return null;
-  }
-
-  @Override
-  public List<StateExpr> visitAclPermit(AclPermit aclPermit) {
-    return null;
-  }
-
-  @Override
-  public List<StateExpr> visitDebug() {
-    return null;
-  }
-
-  @Override
-  public List<StateExpr> visitDrop() {
-    return null;
-  }
-
-  @Override
-  public List<StateExpr> visitDropAcl() {
     return null;
   }
 
@@ -147,16 +94,6 @@ public class OriginationStateToTerminationState
   }
 
   @Override
-  public List<StateExpr> visitNodeDrop(NodeDrop nodeDrop) {
-    return null;
-  }
-
-  @Override
-  public List<StateExpr> visitNodeDropAcl(NodeDropAcl nodeDropAcl) {
-    return null;
-  }
-
-  @Override
   public List<StateExpr> visitNodeDropAclIn(NodeDropAclIn nodeDropAclIn) {
     return null;
   }
@@ -201,23 +138,6 @@ public class OriginationStateToTerminationState
   }
 
   @Override
-  public List<StateExpr> visitNodeInterfaceNeighborUnreachableOrExitsNetwork(
-      NodeInterfaceNeighborUnreachableOrExitsNetwork nodeNeighborUnreachable) {
-    return null;
-  }
-
-  @Override
-  public List<StateExpr> visitNodeNeighborUnreachableOrExitsNetwork(
-      NodeNeighborUnreachableOrExitsNetwork nodeNeighborUnreachableOrExitsNetwork) {
-    return null;
-  }
-
-  @Override
-  public List<StateExpr> visitNumberedQuery(NumberedQuery numberedQuery) {
-    return null;
-  }
-
-  @Override
   public List<StateExpr> visitOriginateInterfaceLink(OriginateInterfaceLink state) {
     String hostname = state.getHostname();
     String iface = state.getIface();
@@ -247,11 +167,6 @@ public class OriginationStateToTerminationState
 
   @Override
   public List<StateExpr> visitPostInVrf(PostInVrf postInVrf) {
-    return null;
-  }
-
-  @Override
-  public List<StateExpr> visitPostOutEdge(PostOutEdge preOutInterface) {
     return null;
   }
 
@@ -296,11 +211,6 @@ public class OriginationStateToTerminationState
   @Override
   public List<StateExpr> visitPreOutInterfaceNeighborUnreachable(
       PreOutInterfaceNeighborUnreachable preOutInterfaceNeighborUnreachable) {
-    return null;
-  }
-
-  @Override
-  public List<StateExpr> visitTransformationStep(TransformationStepExpr transformationStepExpr) {
     return null;
   }
 

@@ -43,7 +43,7 @@ import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.Accept;
-import org.batfish.z3.state.Drop;
+import org.batfish.z3.state.DropNoRoute;
 import org.batfish.z3.state.NodeAccept;
 import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
@@ -454,7 +454,7 @@ public final class BDDReachabilityAnalysisTest {
         new BDDReachabilityAnalysis(
             pkt,
             ImmutableSet.of(originateVrf),
-            ImmutableList.of(new Edge(originateVrf, Drop.INSTANCE, one)),
+            ImmutableList.of(new Edge(originateVrf, DropNoRoute.INSTANCE, one)),
             one);
     assertThat(
         graph.getIngressLocationReachableBDDs(),

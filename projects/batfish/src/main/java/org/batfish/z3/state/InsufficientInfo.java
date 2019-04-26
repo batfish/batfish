@@ -5,13 +5,6 @@ import org.batfish.z3.state.visitors.GenericStateExprVisitor;
 
 public class InsufficientInfo extends StateExpr {
 
-  public static class State {
-
-    public static final State INSTANCE = new State();
-
-    private State() {}
-  }
-
   public static final InsufficientInfo INSTANCE = new InsufficientInfo();
 
   private InsufficientInfo() {}

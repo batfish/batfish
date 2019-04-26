@@ -5,13 +5,6 @@ import org.batfish.z3.state.visitors.GenericStateExprVisitor;
 
 public class NeighborUnreachable extends StateExpr {
 
-  public static class State {
-
-    public static final State INSTANCE = new State();
-
-    private State() {}
-  }
-
   public static final NeighborUnreachable INSTANCE = new NeighborUnreachable();
 
   private NeighborUnreachable() {}

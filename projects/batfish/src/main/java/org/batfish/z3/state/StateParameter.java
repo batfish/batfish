@@ -5,14 +5,8 @@ import java.util.Objects;
 public class StateParameter {
 
   public enum Type {
-    ACL,
-    ACL_LINE,
     INTERFACE,
     NODE,
-    QUERY_NUMBER,
-    TRANSFORMATION_ID,
-    TRANSFORMATION_TAG,
-    TRANSFORMATION_STEP_ID,
     VRF,
   }
 
