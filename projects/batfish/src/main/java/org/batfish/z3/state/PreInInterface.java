@@ -39,9 +39,8 @@ public final class PreInInterface implements StateExpr {
     if (!(o instanceof PreInInterface)) {
       return false;
     }
-
     PreInInterface that = (PreInInterface) o;
-    return Objects.equals(_hostname, that._hostname) && Objects.equals(_iface, that._iface);
+    return _hostname.equals(that._hostname) && _iface.equals(that._iface);
   }
 
   @Override

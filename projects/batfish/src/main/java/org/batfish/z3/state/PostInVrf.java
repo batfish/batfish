@@ -39,9 +39,8 @@ public final class PostInVrf implements StateExpr {
     if (!(o instanceof PostInVrf)) {
       return false;
     }
-
     PostInVrf postInVrf = (PostInVrf) o;
-    return Objects.equals(_hostname, postInVrf._hostname) && Objects.equals(_vrf, postInVrf._vrf);
+    return _hostname.equals(postInVrf._hostname) && _vrf.equals(postInVrf._vrf);
   }
 
   @Override

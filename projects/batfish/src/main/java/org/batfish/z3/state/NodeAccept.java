@@ -3,8 +3,10 @@ package org.batfish.z3.state;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.visitors.StateExprVisitor;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Objects;
 
+@ParametersAreNonnullByDefault
 public final class NodeAccept implements StateExpr {
 
   private final String _hostname;
@@ -31,11 +33,11 @@ public final class NodeAccept implements StateExpr {
       return false;
     }
     NodeAccept that = (NodeAccept) o;
-    return Objects.equals(_hostname, that._hostname);
+    return _hostname.equals(that._hostname);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_hostname);
+    return _hostname.hashCode();
   }
 }

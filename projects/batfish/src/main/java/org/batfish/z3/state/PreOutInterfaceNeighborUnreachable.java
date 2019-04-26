@@ -40,9 +40,8 @@ public final class PreOutInterfaceNeighborUnreachable implements StateExpr {
     if (!(o instanceof PreOutInterfaceNeighborUnreachable)) {
       return false;
     }
-
     PreOutInterfaceNeighborUnreachable that = (PreOutInterfaceNeighborUnreachable) o;
-    return Objects.equals(_hostname, that._hostname) && Objects.equals(_interface, that._interface);
+    return _hostname.equals(that._hostname) && _interface.equals(that._interface);
   }
 
   @Override

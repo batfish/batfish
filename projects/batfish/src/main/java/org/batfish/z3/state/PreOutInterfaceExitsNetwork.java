@@ -40,9 +40,8 @@ public final class PreOutInterfaceExitsNetwork implements StateExpr {
     if (!(o instanceof PreOutInterfaceExitsNetwork)) {
       return false;
     }
-
     PreOutInterfaceExitsNetwork that = (PreOutInterfaceExitsNetwork) o;
-    return Objects.equals(_hostname, that._hostname) && Objects.equals(_interface, that._interface);
+    return _hostname.equals(that._hostname) && _interface.equals(that._interface);
   }
 
   @Override

@@ -33,11 +33,11 @@ public final class NodeDropNullRoute implements StateExpr {
       return false;
     }
     NodeDropNullRoute that = (NodeDropNullRoute) o;
-    return Objects.equals(_hostname, that._hostname);
+    return _hostname.equals(that._hostname);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_hostname);
+    return _hostname.hashCode();
   }
 }

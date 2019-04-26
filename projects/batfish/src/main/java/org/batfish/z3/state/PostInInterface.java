@@ -39,10 +39,8 @@ public final class PostInInterface implements StateExpr {
     if (!(o instanceof PostInInterface)) {
       return false;
     }
-
     PostInInterface that = (PostInInterface) o;
-    return Objects.equals(_hostname, that._hostname) &&
-            Objects.equals(_iface, that._iface);
+    return _hostname.equals(that._hostname) && _iface.equals(that._iface);
   }
 
   @Override

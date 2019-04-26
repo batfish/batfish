@@ -39,9 +39,8 @@ public final class OriginateVrf implements StateExpr {
     if (!(o instanceof OriginateVrf)) {
       return false;
     }
-
     OriginateVrf that = (OriginateVrf) o;
-    return Objects.equals(_hostname, that._hostname) && Objects.equals(_vrf, that._vrf);
+    return _hostname.equals(that._hostname) && _vrf.equals(that._vrf);
   }
 
   @Override

@@ -53,12 +53,11 @@ public final class PreOutEdgePostNat implements StateExpr {
     if (!(o instanceof PreOutEdgePostNat)) {
       return false;
     }
-
     PreOutEdgePostNat that = (PreOutEdgePostNat) o;
-    return Objects.equals(_dstIface, that._dstIface)
-        && Objects.equals(_dstNode, that._dstNode)
-        && Objects.equals(_srcIface, that._srcIface)
-        && Objects.equals(_srcNode, that._srcNode);
+    return _dstIface.equals(that._dstIface)
+        && _dstNode.equals(that._dstNode)
+        && _srcIface.equals(that._srcIface)
+        && _srcNode.equals(that._srcNode);
   }
 
   @Override

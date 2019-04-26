@@ -38,6 +38,6 @@ public final class NodeDropAclOut implements StateExpr {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_hostname);
+    return _hostname.hashCode();
   }
 }

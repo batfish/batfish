@@ -40,9 +40,8 @@ public final class PreOutInterfaceDeliveredToSubnet implements StateExpr {
     if (!(o instanceof PreOutInterfaceDeliveredToSubnet)) {
       return false;
     }
-
     PreOutInterfaceDeliveredToSubnet that = (PreOutInterfaceDeliveredToSubnet) o;
-    return Objects.equals(_hostname, that._hostname) && Objects.equals(_interface, that._interface);
+    return _hostname.equals(that._hostname) && _interface.equals(that._interface);
   }
 
   @Override

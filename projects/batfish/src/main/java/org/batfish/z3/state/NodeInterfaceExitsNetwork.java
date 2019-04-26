@@ -39,9 +39,8 @@ public final class NodeInterfaceExitsNetwork implements StateExpr {
     if (!(o instanceof NodeInterfaceExitsNetwork)) {
       return false;
     }
-
     NodeInterfaceExitsNetwork that = (NodeInterfaceExitsNetwork) o;
-    return Objects.equals(_hostname, that._hostname) && Objects.equals(_iface, that._iface);
+    return _hostname.equals(that._hostname) && _iface.equals(that._iface);
   }
 
   @Override

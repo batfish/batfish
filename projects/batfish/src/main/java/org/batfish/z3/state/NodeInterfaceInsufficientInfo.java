@@ -39,9 +39,8 @@ public final class NodeInterfaceInsufficientInfo implements StateExpr {
     if (!(o instanceof NodeInterfaceInsufficientInfo)) {
       return false;
     }
-
     NodeInterfaceInsufficientInfo that = (NodeInterfaceInsufficientInfo) o;
-    return Objects.equals(_hostname, that._hostname) && Objects.equals(_iface, that._iface);
+    return _hostname.equals(that._hostname) && _iface.equals(that._iface);
   }
 
   @Override

@@ -3,6 +3,7 @@ package org.batfish.z3.state;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.visitors.StateExprVisitor;
 
+import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Objects;
 
@@ -39,9 +40,8 @@ public final class NodeInterfaceNeighborUnreachable implements StateExpr {
     if (!(o instanceof NodeInterfaceNeighborUnreachable)) {
       return false;
     }
-
     NodeInterfaceNeighborUnreachable that = (NodeInterfaceNeighborUnreachable) o;
-    return Objects.equals(_hostname, that._hostname) && Objects.equals(_iface, that._iface);
+    return _hostname.equals(that._hostname) && _iface.equals(that._iface);
   }
 
   @Override

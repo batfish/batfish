@@ -39,9 +39,8 @@ public final class PreOutVrf implements StateExpr {
     if (!(o instanceof PreOutVrf)) {
       return false;
     }
-
     PreOutVrf preOutVrf = (PreOutVrf) o;
-    return Objects.equals(_hostname, preOutVrf._hostname) && Objects.equals(_vrf, preOutVrf._vrf);
+    return _hostname.equals(preOutVrf._hostname) && _vrf.equals(preOutVrf._vrf);
   }
 
   @Override
