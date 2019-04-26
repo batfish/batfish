@@ -115,7 +115,6 @@ import org.batfish.common.util.IspModelingUtils;
 import org.batfish.config.Settings;
 import org.batfish.config.TestrigSettings;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -131,7 +130,6 @@ import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.RipNeighbor;
 import org.batfish.datamodel.RipProcess;
@@ -232,8 +230,6 @@ import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.topology.TopologyProviderImpl;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.z3.IngressLocation;
-import org.batfish.z3.LocationToIngressLocation;
-import org.batfish.z3.SynthesizerInputImpl;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.jgrapht.Graph;
@@ -3456,46 +3452,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
               return Stream.of(flow.build());
             })
         .collect(ImmutableSet.toImmutableSet());
-  }
-
-  public static SynthesizerInputImpl computeSynthesizerInput(
-      Map<String, Configuration> configurations,
-      DataPlane dataPlane,
-      AclLineMatchExpr headerSpace,
-      IpSpaceAssignment ipSpaceAssignment,
-      Set<String> transitNodes,
-      Set<String> nonTransitNodes,
-      boolean simplify,
-      boolean specialize) {
-    Topology topology = new Topology(dataPlane.getTopologyEdges());
-
-    // convert Locations to IngressLocations
-    Map<IngressLocation, IpSpace> ipSpacePerLocation = new HashMap<>();
-    LocationToIngressLocation toIngressLocation = new LocationToIngressLocation(configurations);
-    ipSpaceAssignment
-        .getEntries()
-        .forEach(
-            entry ->
-                entry
-                    .getLocations()
-                    .forEach(
-                        location ->
-                            ipSpacePerLocation.merge(
-                                location.accept(toIngressLocation),
-                                entry.getIpSpace(),
-                                ((ipSpace1, ipSpace2) -> AclIpSpace.union(ipSpace1, ipSpace2)))));
-
-    return SynthesizerInputImpl.builder()
-        .setConfigurations(configurations)
-        .setForwardingAnalysis(dataPlane.getForwardingAnalysis())
-        .setHeaderSpace(headerSpace)
-        .setSrcIpConstraints(ipSpacePerLocation)
-        .setNonTransitNodes(nonTransitNodes)
-        .setSimplify(simplify)
-        .setSpecialize(specialize)
-        .setTopology(topology)
-        .setTransitNodes(transitNodes)
-        .build();
   }
 
   private void writeJsonAnswer(String structuredAnswerString) {
