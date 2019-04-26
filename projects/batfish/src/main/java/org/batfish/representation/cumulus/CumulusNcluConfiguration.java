@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -47,7 +48,12 @@ import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.bgp.Layer2VniConfig;
+import org.batfish.datamodel.bgp.Layer3VniConfig;
+import org.batfish.datamodel.bgp.RouteDistinguisher;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
@@ -120,11 +126,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private final @Nonnull Loopback _loopback;
   private final @Nonnull Map<String, RouteMap> _routeMaps;
   private final @Nonnull Set<StaticRoute> _staticRoutes;
-
   private final @Nonnull Map<String, Vlan> _vlans;
-
   private final @Nonnull Map<String, Vrf> _vrfs;
-
   private final @Nonnull Map<String, Vxlan> _vxlans;
 
   public CumulusNcluConfiguration() {
@@ -175,8 +178,34 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setLocalAs(localAs)
             .setLocalIp(BgpProcess.BGP_UNNUMBERED_IP)
             .setPeerInterface(peerInterface)
-            .setRemoteAsns(computeRemoteAsns(neighbor, localAs))
-            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
+            .setRemoteAsns(computeRemoteAsns(neighbor, localAs));
+    if (bgpVrf.getIpv4Unicast() != null) {
+      builder.setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
+    }
+
+    BgpL2vpnEvpnAddressFamily evpnConfig = bgpVrf.getL2VpnEvpn();
+    if (evpnConfig != null
+        && bgpVrf.getRouterId() != null
+        && bgpVrf.getAutonomousSystem() != null) {
+      Set<Layer2VniConfig> l2Vnis = ImmutableSet.of();
+      Set<Layer3VniConfig> l3Vnis = ImmutableSet.of();
+      if (evpnConfig.getAdvertiseAllVni()) {
+        AtomicInteger vniIndex = new AtomicInteger();
+        l2Vnis =
+            _vxlans.values().stream()
+                .filter(vxlan -> vxlan.getId() != null && vxlan.getLocalTunnelip() == null)
+                .map(
+                    vxlan ->
+                        new Layer2VniConfig(
+                            vxlan.getId(),
+                            bgpVrf.getVrfName(),
+                            RouteDistinguisher.from(
+                                bgpVrf.getRouterId(), vniIndex.getAndIncrement()),
+                            ExtendedCommunity.target(bgpVrf.getAutonomousSystem(), vxlan.getId())))
+                .collect(ImmutableSet.toImmutableSet());
+      }
+      builder.setEvpnAddressFamily(new EvpnAddressFamily(l2Vnis, l3Vnis));
+    }
     builder.build();
   }
 

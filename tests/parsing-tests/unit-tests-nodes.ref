@@ -14014,6 +14014,16 @@
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
+                  "evpnAddressFamily" : {
+                    "l2Vnis" : [
+                      {
+                        "routeDistinguisher" : "192.0.2.2:0",
+                        "routeTarget" : "2:65500:100001",
+                        "vni" : 100001,
+                        "vrf" : "default"
+                      }
+                    ]
+                  },
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:swp1~",
                   "ipv4UnicastAddressFamily" : { },
                   "localAs" : 65500,
