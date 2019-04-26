@@ -97,23 +97,27 @@ public class BDDReachabilityAnalysis {
   }
 
   Map<StateExpr, BDD> computeForwardReachableStates() {
-    BDD one = _bddPacket.getFactory().one();
-    Map<StateExpr, BDD> initHS =
-        _ingressLocationStates.stream()
-            .collect(ImmutableMap.toImmutableMap(Function.identity(), state -> one));
-    return computeForwardReachableStates(initHS);
-  }
-
-  Map<StateExpr, BDD> computeForwardReachableStates(Map<StateExpr, BDD> initialHS) {
     try (ActiveSpan span =
         GlobalTracer.get()
             .buildSpan("BDDReachabilityAnalysis.computeForwardReachableStates")
             .startActive()) {
       assert span != null; // avoid unused warning
       Map<StateExpr, BDD> forwardReachableStates = new LinkedHashMap<>();
-      BDD zero = _bddPacket.getFactory().zero();
-      _ingressLocationStates.forEach(
-          state -> forwardReachableStates.put(state, initialHS.getOrDefault(state, zero)));
+      BDD one = _bddPacket.getFactory().one();
+      _ingressLocationStates.forEach(state -> forwardReachableStates.put(state, one));
+
+      forwardFixpoint(forwardReachableStates);
+      return ImmutableMap.copyOf(forwardReachableStates);
+    }
+  }
+
+  Map<StateExpr, BDD> computeForwardReachableStates(Map<StateExpr, BDD> initialReachableStates) {
+    try (ActiveSpan span =
+        GlobalTracer.get()
+            .buildSpan("BDDReachabilityAnalysis.computeForwardReachableStates")
+            .startActive()) {
+      assert span != null; // avoid unused warning
+      Map<StateExpr, BDD> forwardReachableStates = new LinkedHashMap<>(initialReachableStates);
       forwardFixpoint(forwardReachableStates);
       return ImmutableMap.copyOf(forwardReachableStates);
     }
@@ -305,6 +309,10 @@ public class BDDReachabilityAnalysis {
 
   public BDDPacket getBDDPacket() {
     return _bddPacket;
+  }
+
+  public ImmutableSet<StateExpr> getIngressLocationStates() {
+    return _ingressLocationStates;
   }
 
   public Map<IngressLocation, BDD> getIngressLocationReachableBDDs() {
