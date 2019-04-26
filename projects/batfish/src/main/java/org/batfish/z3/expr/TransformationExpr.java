@@ -3,7 +3,6 @@ package org.batfish.z3.expr;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.z3.state.visitors.GenericStateExprVisitor;
-import org.batfish.z3.state.visitors.StateVisitor;
 
 /**
  * A {@link StateExpr} for a {@link Transformation} on an edge or interface. Outgoing
@@ -11,16 +10,11 @@ import org.batfish.z3.state.visitors.StateVisitor;
  * interface.
  */
 public class TransformationExpr extends StateExpr {
-  public static class State extends StateExpr.State {
+  public static class State {
 
     public static final State INSTANCE = new State();
 
     private State() {}
-
-    @Override
-    public void accept(StateVisitor visitor) {
-      visitor.visitTransformation(this);
-    }
   }
 
   private final String _node1;

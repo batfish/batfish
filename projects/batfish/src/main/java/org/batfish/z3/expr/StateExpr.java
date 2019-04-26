@@ -8,16 +8,11 @@ import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.state.StateParameter;
 import org.batfish.z3.state.visitors.GenericStateExprVisitor;
 import org.batfish.z3.state.visitors.Parameterizer;
-import org.batfish.z3.state.visitors.StateVisitor;
 
 /** An expression representing parameterized state. */
 public abstract class StateExpr extends Expr {
   private final Supplier<Integer> _hashCode = Suppliers.memoize(this::computeHashCode);
   private final Supplier<List<StateParameter>> _params = Suppliers.memoize(this::computeParameters);
-
-  public abstract static class State {
-    public abstract void accept(StateVisitor visitor);
-  }
 
   @Override
   public void accept(ExprVisitor visitor) {
