@@ -5,7 +5,6 @@ import org.batfish.z3.expr.visitors.ExprPrinter;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 import org.batfish.z3.expr.visitors.IsComplexVisitor;
-import org.batfish.z3.expr.visitors.Simplifier;
 
 public class MockBooleanAtom extends BooleanExpr {
 
@@ -32,14 +31,10 @@ public class MockBooleanAtom extends BooleanExpr {
 
   @Override
   public <R> R accept(GenericBooleanExprVisitor<R> visitor) {
-    if (visitor instanceof Simplifier) {
-      return visitor.castToGenericBooleanExprVisitorReturnType(this);
-    } else {
-      throw new UnsupportedOperationException(
-          String.format(
-              "No implementation for %s: %s",
-              GenericBooleanExprVisitor.class.getSimpleName(), visitor.getClass().getSimpleName()));
-    }
+    throw new UnsupportedOperationException(
+        String.format(
+            "No implementation for %s: %s",
+            GenericBooleanExprVisitor.class.getSimpleName(), visitor.getClass().getSimpleName()));
   }
 
   @Override
