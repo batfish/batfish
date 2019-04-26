@@ -33,10 +33,6 @@ public final class IngressLocation implements Comparable<IngressLocation> {
     return new IngressLocation(node, vrf, Type.VRF);
   }
 
-  public boolean isInterfaceLink() {
-    return _pointType == Type.INTERFACE_LINK;
-  }
-
   public boolean isIngressVrf() {
     return _pointType == Type.VRF;
   }

@@ -6,12 +6,18 @@ import static org.batfish.question.initialization.InitIssuesAnswerer.COL_LINE_TE
 import static org.batfish.question.initialization.InitIssuesAnswerer.COL_NODES;
 import static org.batfish.question.initialization.InitIssuesAnswerer.COL_PARSER_CONTEXT;
 import static org.batfish.question.initialization.InitIssuesAnswerer.COL_TYPE;
+import static org.batfish.question.initialization.InitIssuesAnswerer.aggregateParseStatuses;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.aMapWithSize;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.util.Set;
+import java.util.SortedMap;
 import javax.annotation.Nullable;
 import org.batfish.common.ErrorDetails;
 import org.batfish.common.ErrorDetails.ParseExceptionContext;
@@ -19,11 +25,13 @@ import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.FileLines;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
+import org.hamcrest.collection.IsMapContaining;
 import org.junit.Test;
 
 /** Tests for {@link InitIssuesAnswerer}. */
@@ -201,6 +209,45 @@ public class InitIssuesAnswererTest {
   }
 
   @Test
+  public void testAnswererParseStatus() {
+    ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
+    for (ParseStatus status : ParseStatus.values()) {
+      pvcae.getParseStatus().put(status.toString(), status);
+    }
+
+    // Answerer using TestBatfish that should produce issues for non-passed and non-failed files
+    InitIssuesAnswerer answerer =
+        new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishBase(pvcae, null));
+    TableAnswerElement answer = answerer.answer();
+
+    ImmutableMultiset.Builder<Row> expectedRows = ImmutableMultiset.builder();
+    for (ParseStatus status : ParseStatus.values()) {
+      if (status != ParseStatus.FAILED
+          && status != ParseStatus.IGNORED
+          && status != ParseStatus.PARTIALLY_UNRECOGNIZED
+          && status != ParseStatus.PASSED) {
+        String statusStr = status.toString();
+        expectedRows.add(
+            Row.of(
+                COL_NODES,
+                null,
+                COL_FILELINES,
+                ImmutableList.of(new FileLines(statusStr, ImmutableSortedSet.of())),
+                COL_TYPE,
+                IssueType.ParseStatus.toString(),
+                COL_DETAILS,
+                ParseStatus.explanation(status),
+                COL_LINE_TEXT,
+                null,
+                COL_PARSER_CONTEXT,
+                null));
+      }
+    }
+    // Make sure we only see issues for non-passed, non-partly-recognized, non-failed files
+    assertThat(answer.getRows().getData(), equalTo(expectedRows.build()));
+  }
+
+  @Test
   public void testAnswererParseWarn() {
     String node = "nodeWarn";
     String text = "line text";
@@ -236,6 +283,29 @@ public class InitIssuesAnswererTest {
                         text,
                         COL_PARSER_CONTEXT,
                         context))));
+  }
+
+  @Test
+  public void testAggregateParseStatuses() {
+    SortedMap<ParseStatus, Set<String>> aggregatedStatuses =
+        aggregateParseStatuses(
+            ImmutableSortedMap.of(
+                "empty1",
+                ParseStatus.EMPTY,
+                "empty2",
+                ParseStatus.EMPTY,
+                "unknown",
+                ParseStatus.UNKNOWN));
+
+    // Confirm common parse statuses (EMPTY) are aggregated as expected and unique status (UNKNOWN)
+    // is left alone
+    assertThat(aggregatedStatuses, aMapWithSize(2));
+    assertThat(
+        aggregatedStatuses,
+        IsMapContaining.hasEntry(equalTo(ParseStatus.EMPTY), contains("empty1", "empty2")));
+    assertThat(
+        aggregatedStatuses,
+        IsMapContaining.hasEntry(equalTo(ParseStatus.UNKNOWN), contains("unknown")));
   }
 
   private static class TestBatfishBase extends IBatfishTestAdapter {

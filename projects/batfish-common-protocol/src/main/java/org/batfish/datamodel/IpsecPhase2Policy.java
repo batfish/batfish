@@ -2,7 +2,6 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.List;
@@ -27,13 +26,13 @@ public class IpsecPhase2Policy implements Serializable {
     _proposals = ImmutableList.of();
   }
 
-  @JsonPropertyDescription("Diffie Hellman group to be used for Perfect Forward Secrecy")
+  /** Diffie Hellman group to be used for Perfect Forward Secrecy. */
   @JsonProperty(PROP_PFS_KEY_GROUP)
   public DiffieHellmanGroup getPfsKeyGroup() {
     return _pfsKeyGroup;
   }
 
-  @JsonPropertyDescription("IPSec phase 1 proposals to be used with this IPSec policy")
+  /** IPSec phase 1 proposals to be used with this IPSec policy. */
   @JsonProperty(PROP_PROPOSALS)
   public List<String> getProposals() {
     return _proposals;

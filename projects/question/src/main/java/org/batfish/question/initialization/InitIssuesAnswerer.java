@@ -5,10 +5,16 @@ import static org.batfish.question.initialization.IssueAggregation.aggregateDupl
 import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateParseWarnings;
 import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateWarnings;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.ErrorDetails;
@@ -16,6 +22,7 @@ import org.batfish.common.ErrorDetails.ParseExceptionContext;
 import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.FileLines;
@@ -65,6 +72,32 @@ public class InitIssuesAnswerer extends Answerer {
                         triplet._text,
                         triplet._parserContext)));
 
+    for (Entry<ParseStatus, Set<String>> entry :
+        aggregateParseStatuses(pvcae.getParseStatus()).entrySet()) {
+      // We're already adding issues for FAILED and PARTIALLY_UNRECOGNIZED, so skip those
+      ParseStatus status = entry.getKey();
+      switch (status) {
+        case PASSED:
+        case IGNORED:
+          // No issue needed for files that passed or were explicitly ignored by user
+          continue;
+          // fall through
+        case FAILED:
+        case PARTIALLY_UNRECOGNIZED:
+          // Other issues are already in the table for these files (e.g. stack trace, parse warn)
+          continue;
+        default:
+          rows.add(
+              getRow(
+                  null,
+                  entry.getValue().stream()
+                      .map(s -> new FileLines(s, ImmutableSortedSet.of()))
+                      .collect(ImmutableList.toImmutableList()),
+                  IssueType.ParseStatus,
+                  ParseStatus.explanation(status)));
+      }
+    }
+
     aggregateDuplicateErrors(ccae.getErrorDetails())
         .forEach(
             (errorDetails, nodeNames) ->
@@ -102,6 +135,18 @@ public class InitIssuesAnswerer extends Answerer {
 
   InitIssuesAnswerer(InitIssuesQuestion question, IBatfish batfish) {
     super(question, batfish);
+  }
+
+  @VisibleForTesting
+  static SortedMap<ParseStatus, Set<String>> aggregateParseStatuses(
+      SortedMap<String, ParseStatus> fileStatuses) {
+    SortedMap<ParseStatus, Set<String>> aggregatedStatuses = new TreeMap<>();
+    for (Entry<String, ParseStatus> entry : fileStatuses.entrySet()) {
+      Set<String> files =
+          aggregatedStatuses.computeIfAbsent(entry.getValue(), s -> new HashSet<>());
+      files.add(entry.getKey());
+    }
+    return aggregatedStatuses;
   }
 
   private static Row getRow(

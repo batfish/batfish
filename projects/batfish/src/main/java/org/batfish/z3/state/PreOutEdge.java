@@ -1,23 +1,12 @@
 package org.batfish.z3.state;
 
-import org.batfish.datamodel.Edge;
+import java.util.Objects;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.z3.expr.StateExpr;
-import org.batfish.z3.state.visitors.GenericStateExprVisitor;
-import org.batfish.z3.state.visitors.StateVisitor;
+import org.batfish.z3.state.visitors.StateExprVisitor;
 
-public class PreOutEdge extends StateExpr {
-
-  public static class State extends StateExpr.State {
-
-    public static final State INSTANCE = new State();
-
-    private State() {}
-
-    @Override
-    public void accept(StateVisitor visitor) {
-      visitor.visitPreOutEdge(this);
-    }
-  }
+@ParametersAreNonnullByDefault
+public final class PreOutEdge implements StateExpr {
 
   private final String _dstIface;
 
@@ -27,10 +16,6 @@ public class PreOutEdge extends StateExpr {
 
   private final String _srcNode;
 
-  public PreOutEdge(Edge edge) {
-    this(edge.getNode1(), edge.getInt1(), edge.getNode2(), edge.getInt2());
-  }
-
   public PreOutEdge(String srcNode, String srcIface, String dstNode, String dstIface) {
     _srcNode = srcNode;
     _srcIface = srcIface;
@@ -39,7 +24,7 @@ public class PreOutEdge extends StateExpr {
   }
 
   @Override
-  public <R> R accept(GenericStateExprVisitor<R> visitor) {
+  public <R> R accept(StateExprVisitor<R> visitor) {
     return visitor.visitPreOutEdge(this);
   }
 
@@ -60,7 +45,22 @@ public class PreOutEdge extends StateExpr {
   }
 
   @Override
-  public State getState() {
-    return State.INSTANCE;
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof PreOutEdge)) {
+      return false;
+    }
+    PreOutEdge that = (PreOutEdge) o;
+    return _dstIface.equals(that._dstIface)
+        && _dstNode.equals(that._dstNode)
+        && _srcIface.equals(that._srcIface)
+        && _srcNode.equals(that._srcNode);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_dstIface, _dstNode, _srcIface, _srcNode);
   }
 }
