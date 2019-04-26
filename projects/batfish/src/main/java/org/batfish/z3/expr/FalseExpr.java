@@ -11,7 +11,7 @@ public final class FalseExpr extends BooleanExpr {
 
   @Override
   public void accept(ExprVisitor visitor) {
-    visitor.visitFalseExpr(this);
+    visitor.visitFalseExpr();
   }
 
   @Override

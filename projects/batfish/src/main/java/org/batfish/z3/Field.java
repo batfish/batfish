@@ -1,7 +1,5 @@
 package org.batfish.z3;
 
-import com.google.common.collect.ImmutableList;
-import java.util.List;
 import java.util.Objects;
 
 public class Field {
@@ -26,30 +24,6 @@ public class Field {
   public static final Field TCP_FLAGS_RST = new Field("TCP_FLAGS_RST", 1);
   public static final Field TCP_FLAGS_SYN = new Field("TCP_FLAGS_SYN", 1);
   public static final Field TCP_FLAGS_URG = new Field("TCP_FLAGS_URG", 1);
-
-  public static final List<Field> COMMON_FIELDS =
-      ImmutableList.of(
-          DSCP,
-          DST_IP,
-          DST_PORT,
-          ECN,
-          FRAGMENT_OFFSET,
-          ICMP_CODE,
-          ICMP_TYPE,
-          IP_PROTOCOL,
-          ORIG_SRC_IP,
-          PACKET_LENGTH,
-          SRC_IP,
-          SRC_PORT,
-          STATE,
-          TCP_FLAGS_ACK,
-          TCP_FLAGS_CWR,
-          TCP_FLAGS_ECE,
-          TCP_FLAGS_FIN,
-          TCP_FLAGS_PSH,
-          TCP_FLAGS_RST,
-          TCP_FLAGS_SYN,
-          TCP_FLAGS_URG);
 
   private final String _name;
   private final int _size;

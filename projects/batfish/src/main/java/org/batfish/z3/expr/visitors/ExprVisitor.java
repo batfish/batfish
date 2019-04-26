@@ -4,7 +4,6 @@ import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BitVecExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.ExtractExpr;
-import org.batfish.z3.expr.FalseExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IdExpr;
 import org.batfish.z3.expr.IfExpr;
@@ -18,7 +17,6 @@ import org.batfish.z3.expr.PrefixMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.TransformedVarIntExpr;
-import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 
 public interface ExprVisitor {
@@ -30,7 +28,7 @@ public interface ExprVisitor {
 
   void visitExtractExpr(ExtractExpr extractExpr);
 
-  void visitFalseExpr(FalseExpr falseExpr);
+  void visitFalseExpr();
 
   void visitHeaderSpaceMatchExpr(HeaderSpaceMatchExpr headerSpaceMatchExpr);
 
@@ -56,7 +54,7 @@ public interface ExprVisitor {
 
   void visitStateExpr(StateExpr stateExpr);
 
-  void visitTrueExpr(TrueExpr trueExpr);
+  void visitTrueExpr();
 
   void visitVarIntExpr(VarIntExpr varIntExpr);
 

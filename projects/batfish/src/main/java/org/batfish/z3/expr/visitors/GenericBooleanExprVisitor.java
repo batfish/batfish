@@ -15,8 +15,6 @@ import org.batfish.z3.expr.TrueExpr;
 
 public interface GenericBooleanExprVisitor<R> {
 
-  R castToGenericBooleanExprVisitorReturnType(Object o);
-
   R visitAndExpr(AndExpr andExpr);
 
   R visitEqExpr(EqExpr eqExpr);

@@ -7,8 +7,6 @@ import org.batfish.z3.expr.VarIntExpr;
 
 public interface GenericIntExprVisitor<R> {
 
-  R castToGenericIntExprVisitorReturnType(Object o);
-
   R visitExtractExpr(ExtractExpr extractExpr);
 
   R visitLitIntExpr(LitIntExpr litIntExpr);
