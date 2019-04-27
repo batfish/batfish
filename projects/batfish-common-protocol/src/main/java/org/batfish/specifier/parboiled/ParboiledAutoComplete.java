@@ -56,6 +56,7 @@ public final class ParboiledAutoComplete {
       CompletionMetadata completionMetadata,
       NodeRolesData nodeRolesData,
       ReferenceLibrary referenceLibrary) {
+    assert parser != null; // prevent unused warning.
     _expression = expression;
     _completionTypes = completionTypes;
     _network = network;
