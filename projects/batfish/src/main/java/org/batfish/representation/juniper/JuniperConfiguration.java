@@ -573,7 +573,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         neighbor.setLocalIp(localIp);
       }
       neighbor.setBgpProcess(proc);
-      neighbor.setV4UnicastFamily(Ipv4UnicastAddressFamily.instance());
+      neighbor.setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
       neighbor.build();
     }
     proc.setMultipathEbgp(multipathEbgpSet);

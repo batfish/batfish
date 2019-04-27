@@ -326,7 +326,7 @@ final class CiscoNxConversions {
       newNeighborBuilder.setRouteReflectorClient(
           firstNonNull(naf4.getRouteReflectorClient(), Boolean.FALSE));
     }
-    newNeighborBuilder.setV4UnicastFamily(Ipv4UnicastAddressFamily.instance());
+    newNeighborBuilder.setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
 
     // Export policy
     List<Statement> exportStatements = new LinkedList<>();

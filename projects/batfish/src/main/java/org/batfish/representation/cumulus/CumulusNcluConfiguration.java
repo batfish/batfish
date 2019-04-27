@@ -176,7 +176,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setLocalIp(BgpProcess.BGP_UNNUMBERED_IP)
             .setPeerInterface(peerInterface)
             .setRemoteAsns(computeRemoteAsns(neighbor, localAs))
-            .setV4UnicastFamily(Ipv4UnicastAddressFamily.instance());
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
     builder.build();
   }
 

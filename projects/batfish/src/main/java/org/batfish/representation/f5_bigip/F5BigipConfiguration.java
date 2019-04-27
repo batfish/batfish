@@ -300,7 +300,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
             .setLocalIp(updateSource)
             .setPeerAddress(neighbor.getAddress())
             .setRemoteAsns(remoteAsns)
-            .setV4UnicastFamily(Ipv4UnicastAddressFamily.instance());
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
     builder.build();
   }
 

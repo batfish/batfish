@@ -1968,7 +1968,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newNeighborBuilder.setLocalIp(updateSource);
       newNeighborBuilder.setExportPolicy(computeBgpPeerExportPolicyName(vrfName, lpg.getName()));
       newNeighborBuilder.setSendCommunity(lpg.getSendCommunity());
-      newNeighborBuilder.setV4UnicastFamily(Ipv4UnicastAddressFamily.instance());
+      newNeighborBuilder.setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
       newNeighborBuilder.build();
     }
     return newBgpProcess;

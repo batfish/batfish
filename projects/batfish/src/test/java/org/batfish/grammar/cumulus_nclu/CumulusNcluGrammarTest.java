@@ -227,7 +227,7 @@ public final class CumulusNcluGrammarTest {
         BgpUnnumberedPeerConfig.builder()
             .setLocalIp(BGP_UNNUMBERED_IP)
             .setPeerInterface("swp1")
-            .setV4UnicastFamily(Ipv4UnicastAddressFamily.instance())
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance())
             .setExportPolicy(computeBgpPeerExportPolicyName(DEFAULT_VRF_NAME, "swp1"));
     Map<String, BgpUnnumberedPeerConfig> expectedPeers1 =
         ImmutableMap.of(

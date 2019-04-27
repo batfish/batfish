@@ -1778,7 +1778,7 @@
                   "importPolicySources" : [
                     "SET_LOCAL_PREF"
                   ],
-                  "ipv4UnicastFamily" : { },
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 65301,
                   "localIp" : "10.10.10.38",
                   "peerAddress" : "10.10.10.37",
@@ -1801,7 +1801,7 @@
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.10.10.45~",
                   "group" : "FW",
-                  "ipv4UnicastFamily" : { },
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 65301,
                   "localIp" : "10.10.10.46",
                   "peerAddress" : "10.10.10.45",
@@ -1827,7 +1827,7 @@
                   "importPolicySources" : [
                     "PROTECT_LOOPBACK"
                   ],
-                  "ipv4UnicastFamily" : { },
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 65301,
                   "localIp" : "10.10.30.1",
                   "peerAddress" : "10.10.30.2",
@@ -1849,7 +1849,7 @@
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.10.255.7~",
-                  "ipv4UnicastFamily" : { },
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 65301,
                   "localIp" : "10.10.255.8",
                   "peerAddress" : "10.10.255.7",
@@ -1886,7 +1886,7 @@
                   "importPolicySources" : [
                     "PROTECT_LOOPBACK"
                   ],
-                  "ipv4UnicastFamily" : { },
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 65301,
                   "localIp" : "169.254.13.238",
                   "peerAddress" : "169.254.13.237",
@@ -1923,7 +1923,7 @@
                   "importPolicySources" : [
                     "PROTECT_LOOPBACK"
                   ],
-                  "ipv4UnicastFamily" : { },
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 65301,
                   "localIp" : "169.254.15.194",
                   "peerAddress" : "169.254.15.193",
@@ -4256,7 +4256,7 @@
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "vpn-ba2e34a8-2_origination",
-                  "ipv4UnicastFamily" : { },
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 65401,
                   "localIp" : "169.254.13.237",
                   "peerAddress" : "169.254.13.238",
@@ -4277,7 +4277,7 @@
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "vpn-ba2e34a8-1_origination",
-                  "ipv4UnicastFamily" : { },
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 65401,
                   "localIp" : "169.254.15.193",
                   "peerAddress" : "169.254.15.194",
@@ -4299,7 +4299,7 @@
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~ACCEPT_ALL_EBGP_AND_SET_NEXT_HOP_SELF~",
                   "importPolicy" : "~REJECT_ALL~",
-                  "ipv4UnicastFamily" : { },
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 65401,
                   "localIp" : "240.0.0.6",
                   "peerAddress" : "240.0.0.7",
@@ -4412,7 +4412,7 @@
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~REJECT_ALL~",
                   "importPolicy" : "~ACCEPT_ALL~",
-                  "ipv4UnicastFamily" : { },
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 65401,
                   "localIp" : "240.0.0.7",
                   "peerAddress" : "240.0.0.6",

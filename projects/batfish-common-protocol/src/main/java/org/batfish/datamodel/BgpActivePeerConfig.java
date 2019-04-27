@@ -54,7 +54,7 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
       @JsonProperty(PROP_ROUTE_REFLECTOR) boolean routeReflectorClient,
       @JsonProperty(PROP_SEND_COMMUNITY) boolean sendCommunity,
       @JsonProperty(PROP_IPV4_UNICAST_ADDRESS_FAMILY) @Nullable
-          Ipv4UnicastAddressFamily ipv4unicast,
+          Ipv4UnicastAddressFamily ipv4UnicastAddressFamily,
       @JsonProperty(PROP_EVPN_ADDRESS_FAMILY) @Nullable EvpnAddressFamily evpnAddressFamily) {
     return new BgpActivePeerConfig(
         additionalPathsReceive,
@@ -83,7 +83,7 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
         firstNonNull(remoteAsns, LongSpace.EMPTY),
         routeReflectorClient,
         sendCommunity,
-        ipv4unicast,
+        ipv4UnicastAddressFamily,
         evpnAddressFamily);
   }
 
@@ -114,7 +114,7 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
       @Nullable LongSpace remoteAsns,
       boolean routeReflectorClient,
       boolean sendCommunity,
-      Ipv4UnicastAddressFamily ipv4unicast,
+      Ipv4UnicastAddressFamily ipv4UnicastAddressFamily,
       @Nullable EvpnAddressFamily evpnAddressFamily) {
     super(
         additionalPathsReceive,
@@ -142,7 +142,7 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
         remoteAsns,
         routeReflectorClient,
         sendCommunity,
-        ipv4unicast,
+        ipv4UnicastAddressFamily,
         evpnAddressFamily);
     _peerAddress = peerAddress;
   }
@@ -214,7 +214,7 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
               _remoteAsns,
               _routeReflectorClient,
               _sendCommunity,
-              _v4UnicastFamily,
+              _ipv4UnicastAddressFamily,
               _evpnAddressFamily);
       if (_bgpProcess != null) {
         _bgpProcess

@@ -240,7 +240,7 @@ public final class IspModelingUtils {
           .setLocalAs(ispAs)
           .setBgpProcess(ispConfiguration.getDefaultVrf().getBgpProcess())
           .setExportPolicy(EXPORT_POLICY_ON_ISP)
-          .setV4UnicastFamily(Ipv4UnicastAddressFamily.instance())
+          .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance())
           .build();
 
       BgpActivePeerConfig.builder()
@@ -250,7 +250,7 @@ public final class IspModelingUtils {
           .setLocalAs(INTERNET_AS)
           .setBgpProcess(internet.getDefaultVrf().getBgpProcess())
           .setExportPolicy(EXPORT_POLICY_ON_INTERNET)
-          .setV4UnicastFamily(Ipv4UnicastAddressFamily.instance())
+          .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance())
           .build();
 
       internetInterfaceIp = Ip.create(internetInterfaceIp.asLong() + 2);
@@ -395,7 +395,7 @@ public final class IspModelingUtils {
                     .setRemoteAsns(bgpActivePeerConfig.getRemoteAsns())
                     .setExportPolicy(bgpActivePeerConfig.getExportPolicy())
                     .setBgpProcess(bgpProcess)
-                    .setV4UnicastFamily(Ipv4UnicastAddressFamily.instance())
+                    .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance())
                     .build());
 
     return ispConfiguration;

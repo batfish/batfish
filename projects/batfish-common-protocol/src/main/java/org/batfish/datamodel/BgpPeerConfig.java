@@ -50,7 +50,7 @@ public abstract class BgpPeerConfig implements Serializable {
   static final String PROP_REMOTE_ASNS = "remoteAsns";
   static final String PROP_ROUTE_REFLECTOR = "routeReflectorClient";
   static final String PROP_SEND_COMMUNITY = "sendCommunity";
-  static final String PROP_IPV4_UNICAST_ADDRESS_FAMILY = "ipv4UnicastFamily";
+  static final String PROP_IPV4_UNICAST_ADDRESS_FAMILY = "ipv4UnicastAddressFamily";
   static final String PROP_EVPN_ADDRESS_FAMILY = "evpnAddressFamily";
 
   private final boolean _additionalPathsReceive;
@@ -96,7 +96,7 @@ public abstract class BgpPeerConfig implements Serializable {
   private final boolean _routeReflectorClient;
 
   // Address families
-  @Nullable private Ipv4UnicastAddressFamily _v4unicastFamily;
+  @Nullable private Ipv4UnicastAddressFamily _ipv4UnicastAddressFamily;
   @Nullable private EvpnAddressFamily _evpnAddressFamily;
 
   /**
@@ -131,7 +131,7 @@ public abstract class BgpPeerConfig implements Serializable {
       @Nullable LongSpace remoteAsns,
       boolean routeReflectorClient,
       boolean sendCommunity,
-      @Nullable Ipv4UnicastAddressFamily v4unicastFamily,
+      @Nullable Ipv4UnicastAddressFamily ipv4UnicastAddressFamily,
       @Nullable EvpnAddressFamily evpnAddressFamily) {
     _additionalPathsReceive = additionalPathsReceive;
     _additionalPathsSelectAll = additionalPathsSelectAll;
@@ -158,7 +158,7 @@ public abstract class BgpPeerConfig implements Serializable {
     _remoteAsns = firstNonNull(remoteAsns, ALL_AS_NUMBERS);
     _routeReflectorClient = routeReflectorClient;
     _sendCommunity = sendCommunity;
-    _v4unicastFamily = v4unicastFamily;
+    _ipv4UnicastAddressFamily = ipv4UnicastAddressFamily;
     _evpnAddressFamily = evpnAddressFamily;
   }
 
@@ -341,8 +341,8 @@ public abstract class BgpPeerConfig implements Serializable {
    */
   @JsonProperty(PROP_IPV4_UNICAST_ADDRESS_FAMILY)
   @Nullable
-  public Ipv4UnicastAddressFamily getV4unicastFamily() {
-    return _v4unicastFamily;
+  public Ipv4UnicastAddressFamily getIpv4UnicastAddressFamily() {
+    return _ipv4UnicastAddressFamily;
   }
 
   /**
@@ -397,7 +397,7 @@ public abstract class BgpPeerConfig implements Serializable {
         && Objects.equals(_localAs, that._localAs)
         && Objects.equals(_localIp, that._localIp)
         && _remoteAsns.equals(that._remoteAsns)
-        && Objects.equals(_v4unicastFamily, that._v4unicastFamily)
+        && Objects.equals(_ipv4UnicastAddressFamily, that._ipv4UnicastAddressFamily)
         && Objects.equals(_evpnAddressFamily, that._evpnAddressFamily);
   }
 
@@ -429,7 +429,7 @@ public abstract class BgpPeerConfig implements Serializable {
         _remoteAsns,
         _routeReflectorClient,
         _sendCommunity,
-        _v4unicastFamily,
+        _ipv4UnicastAddressFamily,
         _evpnAddressFamily);
   }
 
@@ -460,7 +460,7 @@ public abstract class BgpPeerConfig implements Serializable {
     @Nonnull protected LongSpace _remoteAsns;
     protected boolean _routeReflectorClient;
     protected boolean _sendCommunity;
-    @Nullable protected Ipv4UnicastAddressFamily _v4UnicastFamily;
+    @Nullable protected Ipv4UnicastAddressFamily _ipv4UnicastAddressFamily;
     @Nullable protected EvpnAddressFamily _evpnAddressFamily;
 
     // Identifying fields
@@ -617,8 +617,9 @@ public abstract class BgpPeerConfig implements Serializable {
       return getThis();
     }
 
-    public S setV4UnicastFamily(@Nullable Ipv4UnicastAddressFamily v4UnicastFamily) {
-      _v4UnicastFamily = v4UnicastFamily;
+    public S setIpv4UnicastAddressFamily(
+        @Nullable Ipv4UnicastAddressFamily ipv4UnicastAddressFamily) {
+      _ipv4UnicastAddressFamily = ipv4UnicastAddressFamily;
       return getThis();
     }
 

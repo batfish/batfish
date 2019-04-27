@@ -58,11 +58,13 @@ public class NetworkFactory {
   }
 
   public BgpActivePeerConfig.Builder bgpNeighborBuilder() {
-    return BgpActivePeerConfig.builder().setV4UnicastFamily(Ipv4UnicastAddressFamily.instance());
+    return BgpActivePeerConfig.builder()
+        .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
   }
 
   public BgpPassivePeerConfig.Builder bgpDynamicNeighborBuilder() {
-    return BgpPassivePeerConfig.builder().setV4UnicastFamily(Ipv4UnicastAddressFamily.instance());
+    return BgpPassivePeerConfig.builder()
+        .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
   }
 
   public BgpProcess.Builder bgpProcessBuilder() {

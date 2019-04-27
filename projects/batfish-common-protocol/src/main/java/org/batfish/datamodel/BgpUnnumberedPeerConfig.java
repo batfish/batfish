@@ -59,7 +59,7 @@ public final class BgpUnnumberedPeerConfig extends BgpPeerConfig {
               _remoteAsns,
               _routeReflectorClient,
               _sendCommunity,
-              _v4UnicastFamily,
+              _ipv4UnicastAddressFamily,
               _evpnAddressFamily);
       if (_bgpProcess != null) {
         _bgpProcess.getInterfaceNeighbors().put(_peerInterface, bgpPeerConfig);
@@ -116,7 +116,7 @@ public final class BgpUnnumberedPeerConfig extends BgpPeerConfig {
       @JsonProperty(PROP_ROUTE_REFLECTOR) boolean routeReflectorClient,
       @JsonProperty(PROP_SEND_COMMUNITY) boolean sendCommunity,
       @JsonProperty(PROP_IPV4_UNICAST_ADDRESS_FAMILY) @Nullable
-          Ipv4UnicastAddressFamily ipv4unicast,
+          Ipv4UnicastAddressFamily ipv4UnicastAddressFamily,
       @JsonProperty(PROP_EVPN_ADDRESS_FAMILY) @Nullable EvpnAddressFamily evpnAddressFamily) {
     checkArgument(peerInterface != null, "Missing %s", PROP_PEER_INTERFACE);
     return new BgpUnnumberedPeerConfig(
@@ -146,7 +146,7 @@ public final class BgpUnnumberedPeerConfig extends BgpPeerConfig {
         firstNonNull(remoteAsns, LongSpace.EMPTY),
         routeReflectorClient,
         sendCommunity,
-        ipv4unicast,
+        ipv4UnicastAddressFamily,
         evpnAddressFamily);
   }
 
@@ -179,7 +179,7 @@ public final class BgpUnnumberedPeerConfig extends BgpPeerConfig {
       @Nullable LongSpace remoteAsns,
       boolean routeReflectorClient,
       boolean sendCommunity,
-      @Nullable Ipv4UnicastAddressFamily v4UnicastFamily,
+      @Nullable Ipv4UnicastAddressFamily ipv4UnicastAddressFamily,
       @Nullable EvpnAddressFamily evpnAddressFamily) {
     super(
         additionalPathsReceive,
@@ -207,7 +207,7 @@ public final class BgpUnnumberedPeerConfig extends BgpPeerConfig {
         remoteAsns,
         routeReflectorClient,
         sendCommunity,
-        v4UnicastFamily,
+        ipv4UnicastAddressFamily,
         evpnAddressFamily);
     _peerInterface = peerInterface;
   }

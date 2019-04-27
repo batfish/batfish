@@ -373,7 +373,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
                 .setLocalAs(ipsecTunnel.getVgwBgpAsn())
                 .setLocalIp(ipsecTunnel.getVgwInsideAddress())
                 .setDefaultMetric(BGP_NEIGHBOR_DEFAULT_METRIC)
-                .setV4UnicastFamily(Ipv4UnicastAddressFamily.instance())
+                .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance())
                 .setSendCommunity(false);
 
         VpnGateway vpnGateway = region.getVpnGateways().get(_vpnGatewayId);
@@ -401,7 +401,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
             .setLocalAs(ipsecTunnel.getVgwBgpAsn())
             .setLocalIp(vgwToVpcIfaceAddress)
             .setDefaultMetric(BGP_NEIGHBOR_DEFAULT_METRIC)
-            .setV4UnicastFamily(Ipv4UnicastAddressFamily.instance())
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance())
             .setSendCommunity(true);
 
         // iBGP connection from VPC
@@ -417,7 +417,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
         vpcToVgwBgpPeerConfig.setLocalIp(vpcIfaceAddress);
         vpcToVgwBgpPeerConfig.setRemoteAs(ipsecTunnel.getVgwBgpAsn());
         vpcToVgwBgpPeerConfig.setDefaultMetric(BGP_NEIGHBOR_DEFAULT_METRIC);
-        vpcToVgwBgpPeerConfig.setV4UnicastFamily(Ipv4UnicastAddressFamily.instance());
+        vpcToVgwBgpPeerConfig.setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
         vpcToVgwBgpPeerConfig.setSendCommunity(true);
 
         String rpRejectAllName = "~REJECT_ALL~";
