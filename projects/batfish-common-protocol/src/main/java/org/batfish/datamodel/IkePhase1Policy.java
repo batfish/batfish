@@ -2,7 +2,6 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -40,33 +39,32 @@ public class IkePhase1Policy extends ComparableStructure<String> {
     _ikePhase1Proposals = ImmutableList.of();
   }
 
-  @JsonPropertyDescription("IKE phase 1 proposals to be used with this IKE phase 1 policy")
+  /** IKE phase 1 proposals to be used with this IKE phase 1 policy. */
   @JsonProperty(PROP_IKE_PHASE1_PROPOSALS)
+  @Nonnull
   public List<String> getIkePhase1Proposals() {
     return _ikePhase1Proposals;
   }
 
-  @JsonPropertyDescription("Key to be used with this IKE phase 1 policy")
+  /** Key to be used with this IKE phase 1 policy. */
   @JsonProperty(PROP_IKE_PHASE1_KEY)
   public IkePhase1Key getIkePhase1Key() {
     return _ikePhase1Key;
   }
 
-  @JsonPropertyDescription(
-      "Identity of the remote peer that can match with this IKE phase 1 policy")
+  /** Identity of the remote peer that can match with this IKE phase 1 policy. */
   @JsonProperty(PROP_REMOTE_IDENTITY)
   public IpSpace getRemoteIdentity() {
     return _remoteIdentity;
   }
 
-  @JsonPropertyDescription(
-      "Self identity to be used with a remote peer while using this IKE phase 1 policy")
+  /** Self identity to be used with a remote peer while using this IKE phase 1 policy. */
   @JsonProperty(PROP_SELF_IDENTITY)
   public Ip getSelfIdentity() {
     return _selfIdentity;
   }
 
-  @JsonPropertyDescription("Local interface on which this IKE phase 1 policy can be used")
+  /** Local interface on which this IKE phase 1 policy can be used. */
   @JsonProperty(PROP_LOCAL_INTERFACE)
   public String getLocalInterface() {
     return _localInterface;

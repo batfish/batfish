@@ -1,23 +1,12 @@
 package org.batfish.z3.state;
 
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import org.batfish.z3.expr.StateExpr;
-import org.batfish.z3.state.visitors.GenericStateExprVisitor;
-import org.batfish.z3.state.visitors.StateVisitor;
+import org.batfish.z3.state.visitors.StateExprVisitor;
 
 /** A {@link StateExpr Nod program state} for traffic originating from the link of an interface. */
-public final class OriginateInterfaceLink extends StateExpr {
-  public static class State extends StateExpr.State {
-
-    public static final State INSTANCE = new State();
-
-    private State() {}
-
-    @Override
-    public void accept(StateVisitor visitor) {
-      visitor.visitOriginateInterfaceLink(this);
-    }
-  }
+public final class OriginateInterfaceLink implements StateExpr {
 
   private final @Nonnull String _hostname;
 
@@ -29,7 +18,7 @@ public final class OriginateInterfaceLink extends StateExpr {
   }
 
   @Override
-  public <R> R accept(GenericStateExprVisitor<R> visitor) {
+  public <R> R accept(StateExprVisitor<R> visitor) {
     return visitor.visitOriginateInterfaceLink(this);
   }
 
@@ -44,7 +33,20 @@ public final class OriginateInterfaceLink extends StateExpr {
   }
 
   @Override
-  public State getState() {
-    return State.INSTANCE;
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof OriginateInterfaceLink)) {
+      return false;
+    }
+
+    OriginateInterfaceLink that = (OriginateInterfaceLink) o;
+    return _hostname.equals(that._hostname) && _iface.equals(that._iface);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_hostname, _iface);
   }
 }

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Ints;
+import java.math.BigInteger;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -19,7 +20,7 @@ import org.batfish.datamodel.Ip;
  * href="https://tools.ietf.org/html/rfc4360">RFC4360</a>
  */
 @ParametersAreNonnullByDefault
-public final class ExtendedCommunity implements Community {
+public final class ExtendedCommunity extends Community {
 
   private static final long serialVersionUID = 1L;
 
@@ -197,6 +198,7 @@ public final class ExtendedCommunity implements Community {
     return Objects.hash(_type, _subType, _globalAdministrator, _localAdministrator);
   }
 
+  @Nonnull
   @Override
   public String matchString() {
     if (_regexStr == null) {
@@ -222,5 +224,16 @@ public final class ExtendedCommunity implements Community {
               + _localAdministrator;
     }
     return _str;
+  }
+
+  @Nonnull
+  @Override
+  public BigInteger asBigInt() {
+    int gaOffset = _type == 0x00 || _type == 0x40 ? 32 : 16;
+    return BigInteger.valueOf(_type)
+        .shiftLeft(56)
+        .or(BigInteger.valueOf(_subType).shiftLeft(48))
+        .or(BigInteger.valueOf(_globalAdministrator).shiftLeft(gaOffset))
+        .or(BigInteger.valueOf(_localAdministrator));
   }
 }

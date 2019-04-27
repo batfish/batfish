@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -53,15 +52,14 @@ public final class AsPathAccessListLine implements Serializable, Comparable<AsPa
     return _action == other._action && _regex.equals(other._regex);
   }
 
-  @JsonPropertyDescription(
-      "The action the underlying access-list will take when this line matches a route.")
+  /** The action the underlying access-list will take when this line matches a route. */
   @JsonProperty(PROP_ACTION)
   @Nonnull
   public LineAction getAction() {
     return _action;
   }
 
-  @JsonPropertyDescription("The regex against which a route's AS-path will be compared")
+  /** The regex against which a route's AS-path will be compared. */
   @JsonProperty(PROP_REGEX)
   @Nonnull
   public String getRegex() {

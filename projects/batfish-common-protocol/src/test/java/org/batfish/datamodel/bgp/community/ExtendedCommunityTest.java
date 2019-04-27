@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
+import java.math.BigInteger;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
@@ -147,5 +148,24 @@ public final class ExtendedCommunityTest {
     assertThat(ExtendedCommunity.parse("origin:1L:1").toString(), equalTo("515:1L:1"));
     assertThat(ExtendedCommunity.parse("origin:1:1").toString(), equalTo("3:1:1"));
     assertThat(ExtendedCommunity.parse("origin:0.0.0.0:1").toString(), equalTo("259:0L:1"));
+  }
+
+  @Test
+  public void testToBigInt() {
+    assertThat(ExtendedCommunity.of(0, 0, 0).asBigInt(), equalTo(BigInteger.ZERO));
+    assertThat(
+        ExtendedCommunity.of((0x40 << 8) + 1, 65535, 4294967295L).asBigInt(),
+        equalTo(
+            BigInteger.valueOf(16385)
+                .shiftLeft(48)
+                .or(BigInteger.valueOf(65535).shiftLeft(32))
+                .or(BigInteger.valueOf(4294967295L))));
+    assertThat(
+        ExtendedCommunity.of((0x41 << 8) + 1, 4294967295L, 65535).asBigInt(),
+        equalTo(
+            BigInteger.valueOf(16641)
+                .shiftLeft(48)
+                .or(BigInteger.valueOf(4294967295L).shiftLeft(16))
+                .or(BigInteger.valueOf(65535))));
   }
 }

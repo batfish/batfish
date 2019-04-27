@@ -202,6 +202,7 @@
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.3.4~",
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 1,
                   "peerAddress" : "1.2.3.4",
                   "remoteAsns" : "1",
@@ -2952,6 +2953,7 @@
                   "exportPolicy" : "~PEER_EXPORT_POLICY:10.1.1.0/24~",
                   "group" : "GROUP",
                   "importPolicy" : "~PEER_IMPORT_POLICY:10.1.1.0/24~",
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 1,
                   "localIp" : "1.1.1.1",
                   "peerPrefix" : "10.1.1.0/24",
@@ -3265,6 +3267,7 @@
                   "exportPolicy" : "~PEER_EXPORT_POLICY:1.1.1.1/32~",
                   "group" : "MYGROUP",
                   "importPolicy" : "~PEER_IMPORT_POLICY:1.1.1.1/32~",
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 1,
                   "peerAddress" : "1.1.1.1",
                   "remoteAsns" : "2",
@@ -3538,6 +3541,7 @@
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.10.1.1~",
                   "group" : "as1",
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 1,
                   "peerAddress" : "1.10.1.1",
                   "remoteAsns" : "1",
@@ -3559,6 +3563,7 @@
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.12.11.2~",
                   "group" : "as2",
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 1,
                   "peerAddress" : "10.12.11.2",
                   "remoteAsns" : "2",
@@ -3969,6 +3974,7 @@
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:64.57.21.1~",
                   "group" : "EBGP-PEER-SVL-PNI",
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 2152,
                   "peerAddress" : "64.57.21.1",
                   "remoteAsns" : "11164",
@@ -6836,6 +6842,7 @@
                       "nextHopIp" : "AUTO/NONE(-1l)"
                     }
                   ],
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 1,
                   "peerAddress" : "10.0.1.2",
                   "remoteAsns" : "65001",
@@ -8792,6 +8799,7 @@
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.10.20.0/24~",
                   "group" : "LEAF",
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 12076,
                   "localIp" : "AUTO/NONE(-1l)",
                   "peerPrefix" : "10.10.20.0/24",
@@ -10646,6 +10654,7 @@
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.2.2.2~",
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 65500,
                   "peerAddress" : "2.2.2.2",
                   "remoteAsns" : "6600",
@@ -13677,9 +13686,23 @@
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ],
                 "guard" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
                   "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "bgp"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "ibgp"
+                    },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
                       "comment" : "Redistribute CONNECTED routes into BGP",
@@ -13746,20 +13769,6 @@
                           "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                           "expr" : {
                             "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "bgp"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                            "protocol" : "ibgp"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
                             "protocol" : "aggregate"
                           }
                         },
@@ -13796,14 +13805,6 @@
                           ]
                         }
                       ]
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "bgp"
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "ibgp"
                     }
                   ]
                 },
@@ -13813,10 +13814,6 @@
                     "type" : "ReturnTrue"
                   }
                 ]
-              },
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "ReturnFalse"
               }
             ]
           },
@@ -13825,9 +13822,23 @@
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ],
                 "guard" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
                   "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "bgp"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "ibgp"
+                    },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
                       "comment" : "Redistribute CONNECTED routes into BGP",
@@ -13921,14 +13932,6 @@
                           ]
                         }
                       ]
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "bgp"
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "ibgp"
                     }
                   ]
                 },
@@ -13938,10 +13941,6 @@
                     "type" : "ReturnTrue"
                   }
                 ]
-              },
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "ReturnFalse"
               }
             ]
           },
@@ -14016,6 +14015,7 @@
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:swp1~",
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 65500,
                   "localIp" : "169.254.0.1",
                   "peerInterface" : "swp1",
@@ -14086,6 +14086,241 @@
                 "nextHopIp" : "192.0.2.1",
                 "tag" : -1
               }
+            ]
+          }
+        }
+      },
+      "cumulus_nclu_bgp_no_address_family" : {
+        "configurationFormat" : "CUMULUS_NCLU",
+        "name" : "cumulus_nclu_bgp_no_address_family",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "ROUTER",
+        "interfaces" : {
+          "lo" : {
+            "name" : "lo",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOOPBACK",
+            "vrf" : "default"
+          }
+        },
+        "routingPolicies" : {
+          "~BGP_COMMON_EXPORT_POLICY:default~" : {
+            "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "bgp"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "ibgp"
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "vendorFamily" : {
+          "cumulus" : {
+            "bridge" : {
+              "pvid" : 1,
+              "vids" : ""
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "bgpProcess" : {
+              "multipathEbgp" : false,
+              "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
+              "multipathIbgp" : false,
+              "routerId" : "192.0.2.2",
+              "tieBreaker" : "ARRIVAL_ORDER"
+            },
+            "interfaces" : [
+              "lo"
+            ]
+          }
+        }
+      },
+      "cumulus_nclu_bgp_no_router_id" : {
+        "configurationFormat" : "CUMULUS_NCLU",
+        "name" : "cumulus_nclu_bgp_no_router_id",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "ROUTER",
+        "interfaces" : {
+          "lo" : {
+            "name" : "lo",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allPrefixes" : [
+              "192.0.2.8/32"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "192.0.2.8/32",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOOPBACK",
+            "vrf" : "default"
+          }
+        },
+        "routingPolicies" : {
+          "~BGP_COMMON_EXPORT_POLICY:default~" : {
+            "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "bgp"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "ibgp"
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "vendorFamily" : {
+          "cumulus" : {
+            "bridge" : {
+              "pvid" : 1,
+              "vids" : ""
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "bgpProcess" : {
+              "multipathEbgp" : false,
+              "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
+              "multipathIbgp" : false,
+              "routerId" : "192.0.2.8",
+              "tieBreaker" : "ARRIVAL_ORDER"
+            },
+            "interfaces" : [
+              "lo"
+            ]
+          }
+        }
+      },
+      "cumulus_nclu_bgp_no_router_id_or_loopback_ip" : {
+        "configurationFormat" : "CUMULUS_NCLU",
+        "name" : "cumulus_nclu_bgp_no_router_id_or_loopback_ip",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "interfaces" : {
+          "lo" : {
+            "name" : "lo",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOOPBACK",
+            "vrf" : "default"
+          }
+        },
+        "vendorFamily" : {
+          "cumulus" : {
+            "bridge" : {
+              "pvid" : 1,
+              "vids" : ""
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "lo"
             ]
           }
         }
@@ -14847,6 +15082,14 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
+        "generatedReferenceBooks" : {
+          "pools~on~f5_bigip_imish_malformed" : {
+            "name" : "pools~on~f5_bigip_imish_malformed"
+          },
+          "virtualAddresses~on~f5_bigip_imish_malformed" : {
+            "name" : "virtualAddresses~on~f5_bigip_imish_malformed"
+          }
+        },
         "routeFilterLists" : {
           "pl1" : {
             "lines" : [
@@ -14951,6 +15194,7 @@
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:1:3.3.3.3~",
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 1,
                   "peerAddress" : "3.3.3.3",
                   "remoteAsns" : "2",
@@ -14970,6 +15214,32 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
+        "generatedReferenceBooks" : {
+          "pools~on~f5_bigip_structured_ltm" : {
+            "addressGroups" : [
+              {
+                "addresses" : [
+                  "192.0.2.2",
+                  "192.0.2.3"
+                ],
+                "name" : "/Common/SOME_LTM_POOL"
+              }
+            ],
+            "name" : "pools~on~f5_bigip_structured_ltm"
+          },
+          "virtualAddresses~on~f5_bigip_structured_ltm" : {
+            "addressGroups" : [
+              {
+                "addresses" : [
+                  "192.0.2.9",
+                  "192.0.2.9/32"
+                ],
+                "name" : "/Common/192.0.2.8"
+              }
+            ],
+            "name" : "virtualAddresses~on~f5_bigip_structured_ltm"
+          }
+        },
         "vendorFamily" : {
           "f5Bigip" : {
             "pools" : {
@@ -15045,6 +15315,14 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
+        "generatedReferenceBooks" : {
+          "pools~on~f5_bigip_structured_malformed" : {
+            "name" : "pools~on~f5_bigip_structured_malformed"
+          },
+          "virtualAddresses~on~f5_bigip_structured_malformed" : {
+            "name" : "virtualAddresses~on~f5_bigip_structured_malformed"
+          }
+        },
         "vendorFamily" : {
           "f5Bigip" : { }
         },
@@ -15071,6 +15349,14 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
+        "generatedReferenceBooks" : {
+          "pools~on~f5_bigip_structured_net" : {
+            "name" : "pools~on~f5_bigip_structured_net"
+          },
+          "virtualAddresses~on~f5_bigip_structured_net" : {
+            "name" : "virtualAddresses~on~f5_bigip_structured_net"
+          }
+        },
         "interfaces" : {
           "/Common/MYVLAN" : {
             "name" : "/Common/MYVLAN",
@@ -15257,6 +15543,14 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
+        "generatedReferenceBooks" : {
+          "pools~on~f5_bigip_structured_net_routing_bgp" : {
+            "name" : "pools~on~f5_bigip_structured_net_routing_bgp"
+          },
+          "virtualAddresses~on~f5_bigip_structured_net_routing_bgp" : {
+            "name" : "virtualAddresses~on~f5_bigip_structured_net_routing_bgp"
+          }
+        },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:/Common/my_bgp~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:/Common/my_bgp~",
@@ -15392,6 +15686,7 @@
                   "ebgpMultihop" : true,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:/Common/my_bgp:192.0.2.1~",
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 123,
                   "peerAddress" : "192.0.2.1",
                   "remoteAsns" : "456",
@@ -15411,6 +15706,14 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
+        "generatedReferenceBooks" : {
+          "pools~on~f5_bigip_structured_net_routing_prefix_list" : {
+            "name" : "pools~on~f5_bigip_structured_net_routing_prefix_list"
+          },
+          "virtualAddresses~on~f5_bigip_structured_net_routing_prefix_list" : {
+            "name" : "virtualAddresses~on~f5_bigip_structured_net_routing_prefix_list"
+          }
+        },
         "route6FilterLists" : {
           "/Common/MY_IPV6_PREFIX_LIST" : {
             "lines" : [
@@ -15460,6 +15763,14 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
+        "generatedReferenceBooks" : {
+          "pools~on~f5_bigip_structured_net_routing_route_map" : {
+            "name" : "pools~on~f5_bigip_structured_net_routing_route_map"
+          },
+          "virtualAddresses~on~f5_bigip_structured_net_routing_route_map" : {
+            "name" : "virtualAddresses~on~f5_bigip_structured_net_routing_route_map"
+          }
+        },
         "routingPolicies" : {
           "/Common/MY_ROUTE_MAP" : {
             "name" : "/Common/MY_ROUTE_MAP",
@@ -15553,6 +15864,14 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
+        "generatedReferenceBooks" : {
+          "pools~on~f5_bigip_structured_sys" : {
+            "name" : "pools~on~f5_bigip_structured_sys"
+          },
+          "virtualAddresses~on~f5_bigip_structured_sys" : {
+            "name" : "virtualAddresses~on~f5_bigip_structured_sys"
+          }
+        },
         "ntpServers" : [
           "192.0.2.3",
           "my.example.com"
@@ -15572,6 +15891,14 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
+        "generatedReferenceBooks" : {
+          "pools~on~f5_bigip_structured_with_imish" : {
+            "name" : "pools~on~f5_bigip_structured_with_imish"
+          },
+          "virtualAddresses~on~f5_bigip_structured_with_imish" : {
+            "name" : "virtualAddresses~on~f5_bigip_structured_with_imish"
+          }
+        },
         "ipAccessLists" : {
           "acl1" : {
             "name" : "acl1",
@@ -15864,6 +16191,7 @@
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:65500:10.0.0.1~",
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 65500,
                   "peerAddress" : "10.0.0.1",
                   "remoteAsns" : "65501",
@@ -18327,6 +18655,7 @@
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.1.1~",
                   "group" : "foobar-iBGP_ipv4",
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 5555,
                   "peerAddress" : "1.2.1.1",
                   "remoteAsns" : "5555",
@@ -18349,6 +18678,7 @@
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.1.2~",
                   "group" : "foobar-iBGP_ipv4",
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 5555,
                   "peerAddress" : "1.2.1.2",
                   "remoteAsns" : "5555",
@@ -18371,6 +18701,7 @@
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.1.3~",
                   "group" : "foobar-iBGP_border_ipv4",
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 5555,
                   "peerAddress" : "1.2.1.3",
                   "remoteAsns" : "5555",
@@ -20311,6 +20642,7 @@
                   "exportPolicy" : "~PEER_EXPORT_POLICY:3.4.5.7/32~",
                   "group" : "someipv4bgpgroup",
                   "importPolicy" : "~PEER_IMPORT_POLICY:3.4.5.7/32~",
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 1,
                   "peerAddress" : "3.4.5.7",
                   "remoteAsns" : "12345",
@@ -20695,6 +21027,7 @@
                   "exportPolicy" : "~PEER_EXPORT_POLICY:172.16.2.1/32~",
                   "group" : "ext",
                   "importPolicy" : "~PEER_IMPORT_POLICY:172.16.2.1/32~",
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 65533,
                   "peerAddress" : "172.16.2.1",
                   "remoteAsns" : "65530",
@@ -20721,6 +21054,7 @@
                   "exportPolicy" : "~PEER_EXPORT_POLICY:172.16.2.2/32~",
                   "group" : "ext1",
                   "importPolicy" : "~PEER_IMPORT_POLICY:172.16.2.2/32~",
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 65533,
                   "peerAddress" : "172.16.2.2",
                   "remoteAsns" : "65530",
@@ -26398,6 +26732,7 @@
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~",
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 1,
                   "peerAddress" : "1.1.1.1",
                   "remoteAsns" : "1",
@@ -26419,6 +26754,7 @@
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:3.3.3.3~",
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 1,
                   "peerAddress" : "3.3.3.3",
                   "remoteAsns" : "3",
@@ -26440,6 +26776,7 @@
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:4.4.4.4~",
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 1,
                   "peerAddress" : "4.4.4.4",
                   "remoteAsns" : "4",
@@ -27209,6 +27546,7 @@
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.0.0.0~",
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 2,
                   "peerAddress" : "10.0.0.0",
                   "remoteAsns" : "1",
@@ -29369,6 +29707,7 @@
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.98.25.0/25~",
                   "group" : "RAAS",
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 64601,
                   "peerPrefix" : "10.98.25.0/25",
                   "remoteAsns" : "65511",
@@ -29396,6 +29735,7 @@
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:100.93.100.16~",
                   "group" : "SPINE",
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 64601,
                   "peerAddress" : "100.93.100.16",
                   "remoteAsns" : "64802",
@@ -29823,6 +30163,7 @@
                   "importPolicySources" : [
                     "FROM_ABC_V4"
                   ],
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 1,
                   "peerAddress" : "1.1.1.1",
                   "remoteAsns" : "2",
@@ -35171,6 +35512,7 @@
                   ],
                   "group" : "underlay",
                   "importPolicy" : "~PEER_IMPORT_POLICY:172.16.3.2/32~",
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 65002,
                   "localIp" : "172.16.3.1",
                   "peerAddress" : "172.16.3.2",
@@ -35200,6 +35542,7 @@
                   ],
                   "group" : "underlay",
                   "importPolicy" : "~PEER_IMPORT_POLICY:172.16.5.2/32~",
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 65002,
                   "localIp" : "172.16.5.1",
                   "peerAddress" : "172.16.5.2",
@@ -35229,6 +35572,7 @@
                   ],
                   "group" : "underlay",
                   "importPolicy" : "~PEER_IMPORT_POLICY:172.16.7.2/32~",
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 65002,
                   "localIp" : "172.16.7.1",
                   "peerAddress" : "172.16.7.2",
@@ -35255,6 +35599,7 @@
                   "exportPolicy" : "~PEER_EXPORT_POLICY:192.168.1.1/32~",
                   "group" : "overlay",
                   "importPolicy" : "~PEER_IMPORT_POLICY:192.168.1.1/32~",
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 65500,
                   "localIp" : "192.168.1.2",
                   "peerAddress" : "192.168.1.1",
@@ -35281,6 +35626,7 @@
                   "exportPolicy" : "~PEER_EXPORT_POLICY:192.168.1.3/32~",
                   "group" : "overlay",
                   "importPolicy" : "~PEER_IMPORT_POLICY:192.168.1.3/32~",
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 65500,
                   "localIp" : "192.168.1.2",
                   "peerAddress" : "192.168.1.3",
@@ -35307,6 +35653,7 @@
                   "exportPolicy" : "~PEER_EXPORT_POLICY:192.168.1.5/32~",
                   "group" : "overlay",
                   "importPolicy" : "~PEER_IMPORT_POLICY:192.168.1.5/32~",
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 65500,
                   "localIp" : "192.168.1.2",
                   "peerAddress" : "192.168.1.5",
@@ -35333,6 +35680,7 @@
                   "exportPolicy" : "~PEER_EXPORT_POLICY:192.168.1.44/32~",
                   "group" : "overlay",
                   "importPolicy" : "~PEER_IMPORT_POLICY:192.168.1.44/32~",
+                  "ipv4UnicastAddressFamily" : { },
                   "localAs" : 65500,
                   "localIp" : "192.168.1.2",
                   "peerAddress" : "192.168.1.44",

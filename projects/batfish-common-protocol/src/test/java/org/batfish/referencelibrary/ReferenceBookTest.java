@@ -1,6 +1,6 @@
 package org.batfish.referencelibrary;
 
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertThat;
 
@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.IpWildcard;
@@ -166,5 +167,11 @@ public class ReferenceBookTest {
     assertThat(
         book.getAddressesRecursive("a"),
         equalTo(ImmutableSet.of(new IpWildcard("1.1.1.1"), new IpWildcard("2.2.2.2"))));
+  }
+
+  @Test
+  public void testJavaSerialization() {
+    ReferenceBook book = ReferenceBook.builder("book").build();
+    assertThat(SerializationUtils.clone(book), equalTo(book));
   }
 }

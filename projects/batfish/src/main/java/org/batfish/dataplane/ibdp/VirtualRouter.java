@@ -405,16 +405,19 @@ public class VirtualRouter implements Serializable {
       _bgpIncomingRoutes =
           Streams.concat(
                   _vrf.getBgpProcess().getActiveNeighbors().entrySet().stream()
+                      .filter(e -> e.getValue().getIpv4UnicastAddressFamily() != null)
                       .map(
                           e ->
                               new BgpPeerConfigId(
                                   getHostname(), _vrf.getName(), e.getKey(), false)),
                   _vrf.getBgpProcess().getPassiveNeighbors().entrySet().stream()
+                      .filter(e -> e.getValue().getIpv4UnicastAddressFamily() != null)
                       .map(
                           e ->
                               new BgpPeerConfigId(getHostname(), _vrf.getName(), e.getKey(), true)),
-                  _vrf.getBgpProcess().getInterfaceNeighbors().keySet().stream()
-                      .map(iface -> new BgpPeerConfigId(getHostname(), _vrf.getName(), iface)))
+                  _vrf.getBgpProcess().getInterfaceNeighbors().entrySet().stream()
+                      .filter(e -> e.getValue().getIpv4UnicastAddressFamily() != null)
+                      .map(e -> new BgpPeerConfigId(getHostname(), _vrf.getName(), e.getKey())))
               .filter(bgpTopology.nodes()::contains)
               .flatMap(
                   dst ->
@@ -1136,7 +1139,11 @@ public class VirtualRouter implements Serializable {
 
         BgpRoute.Builder transformedIncomingRouteBuilder =
             BgpProtocolHelper.transformBgpRouteOnImport(
-                ourBgpConfig, sessionProperties, remoteRoute, _c.getConfigurationFormat());
+                ourConfigId,
+                ourBgpConfig,
+                sessionProperties,
+                remoteRoute,
+                _c.getConfigurationFormat());
         if (transformedIncomingRouteBuilder == null) {
           // Route could not be imported for core protocol reasons
           continue;

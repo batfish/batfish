@@ -89,6 +89,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -226,6 +227,7 @@ public final class CumulusNcluGrammarTest {
         BgpUnnumberedPeerConfig.builder()
             .setLocalIp(BGP_UNNUMBERED_IP)
             .setPeerInterface("swp1")
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance())
             .setExportPolicy(computeBgpPeerExportPolicyName(DEFAULT_VRF_NAME, "swp1"));
     Map<String, BgpUnnumberedPeerConfig> expectedPeers1 =
         ImmutableMap.of(
@@ -257,6 +259,7 @@ public final class CumulusNcluGrammarTest {
     BgpRoute.Builder routeBuilder =
         BgpRoute.builder()
             .setNextHopIp(BGP_UNNUMBERED_IP)
+            .setNextHopInterface("swp1") // both peers are configured on interfaces called swp1
             .setReceivedFromIp(BGP_UNNUMBERED_IP)
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP)

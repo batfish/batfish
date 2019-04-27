@@ -24,6 +24,7 @@ public final class AutocompleteSuggestion {
   }
 
   private static final String PROP_DESCRIPTION = "description";
+  private static final String PROP_HINT = "hint";
   private static final String PROP_INSERTION_INDEX = "insertionIndex";
   private static final String PROP_IS_PARTIAL = "isPartial";
   private static final String PROP_RANK = "rank";
@@ -31,10 +32,28 @@ public final class AutocompleteSuggestion {
 
   public static final int DEFAULT_RANK = Integer.MAX_VALUE;
 
+  /** Some helpful text about what the suggestion specifies */
   @Nullable private final String _description;
+
+  /**
+   * Short text to show the user how to complete a partial suggestion. Should be provided for every
+   * partial suggestion.
+   */
+  @Nullable private final String _hint;
+
+  /** Index in the input query string where the suggestion text should be inserted */
   private final int _insertionIndex;
+
+  /**
+   * True if the suggestion text is only partially valid and requires additional input to become
+   * valid
+   */
   private final boolean _isPartial;
+
+  /** Relevance of the suggestion relative to other suggestions */
   private int _rank;
+
+  /** Actual text of the suggestion */
   @Nonnull private final String _text;
 
   @JsonCreator
@@ -43,9 +62,10 @@ public final class AutocompleteSuggestion {
       @JsonProperty(PROP_IS_PARTIAL) boolean isPartial,
       @Nullable @JsonProperty(PROP_DESCRIPTION) String description,
       @JsonProperty(PROP_RANK) int rank,
-      @JsonProperty(PROP_INSERTION_INDEX) int insertionIndex) {
+      @JsonProperty(PROP_INSERTION_INDEX) int insertionIndex,
+      @Nullable @JsonProperty(PROP_HINT) String hint) {
     return new AutocompleteSuggestion(
-        firstNonNull(text, ""), isPartial, description, rank, insertionIndex);
+        firstNonNull(text, ""), isPartial, description, rank, insertionIndex, hint);
   }
 
   public AutocompleteSuggestion(String text, boolean isPartial) {
@@ -63,11 +83,22 @@ public final class AutocompleteSuggestion {
 
   public AutocompleteSuggestion(
       String text, boolean isPartial, @Nullable String description, int rank, int insertionIndex) {
+    this(text, isPartial, description, rank, insertionIndex, null);
+  }
+
+  public AutocompleteSuggestion(
+      String text,
+      boolean isPartial,
+      @Nullable String description,
+      int rank,
+      int insertionIndex,
+      @Nullable String hint) {
     _text = text;
     _isPartial = isPartial;
     _description = description;
     _rank = rank;
     _insertionIndex = insertionIndex;
+    _hint = hint;
   }
 
   @Override
@@ -78,13 +109,20 @@ public final class AutocompleteSuggestion {
     // ignore rank and description
     return Objects.equals(_isPartial, ((AutocompleteSuggestion) o)._isPartial)
         && Objects.equals(_text, ((AutocompleteSuggestion) o)._text)
-        && Objects.equals(_insertionIndex, ((AutocompleteSuggestion) o)._insertionIndex);
+        && Objects.equals(_insertionIndex, ((AutocompleteSuggestion) o)._insertionIndex)
+        && Objects.equals(_hint, ((AutocompleteSuggestion) o)._hint);
   }
 
   @JsonProperty(PROP_DESCRIPTION)
   @Nullable
   public String getDescription() {
     return _description;
+  }
+
+  @JsonProperty(PROP_HINT)
+  @Nullable
+  public String getHint() {
+    return _hint;
   }
 
   @JsonProperty(PROP_INSERTION_INDEX)
@@ -122,6 +160,7 @@ public final class AutocompleteSuggestion {
   public String toString() {
     return toStringHelper(getClass())
         .add(PROP_DESCRIPTION, _description)
+        .add(PROP_HINT, _hint)
         .add(PROP_INSERTION_INDEX, _insertionIndex)
         .add(PROP_IS_PARTIAL, _isPartial)
         .add(PROP_RANK, _rank)

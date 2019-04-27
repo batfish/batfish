@@ -30,7 +30,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import com.google.common.hash.Hashing;
@@ -71,7 +70,6 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -117,7 +115,6 @@ import org.batfish.common.util.IspModelingUtils;
 import org.batfish.config.Settings;
 import org.batfish.config.TestrigSettings;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -133,7 +130,6 @@ import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.RipNeighbor;
 import org.batfish.datamodel.RipProcess;
@@ -154,7 +150,6 @@ import org.batfish.datamodel.answers.FlattenVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.InitStepAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
-import org.batfish.datamodel.answers.NodAnswerElement;
 import org.batfish.datamodel.answers.ParseAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
@@ -235,13 +230,6 @@ import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.topology.TopologyProviderImpl;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.z3.IngressLocation;
-import org.batfish.z3.LocationToIngressLocation;
-import org.batfish.z3.NodJob;
-import org.batfish.z3.ReachabilityQuerySynthesizer;
-import org.batfish.z3.StandardReachabilityQuerySynthesizer;
-import org.batfish.z3.Synthesizer;
-import org.batfish.z3.SynthesizerInputImpl;
-import org.batfish.z3.expr.BooleanExpr;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.jgrapht.Graph;
@@ -764,16 +752,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Path outputPath = _testrigSettings.getSerializeEnvironmentRoutingTablesPath();
     Path inputPath = _testrigSettings.getEnvironmentRoutingTablesPath();
     serializeEnvironmentRoutingTables(inputPath, outputPath);
-  }
-
-  public Set<Flow> computeNodOutput(List<NodJob> jobs) {
-    _logger.info("\n*** EXECUTING NOD JOBS ***\n");
-    _logger.resetTimer();
-    Set<Flow> flows = new TreeSet<>();
-    BatfishJobExecutor.runJobsInExecutor(
-        _settings, _logger, jobs, flows, new NodAnswerElement(), true, "NOD");
-    _logger.printElapsedTime();
-    return flows;
   }
 
   @Override
@@ -3093,87 +3071,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _terminatingExceptionMessage = terminatingExceptionMessage;
   }
 
-  private AnswerElement singleReachability(
-      ReachabilityParameters reachabilityParameters,
-      ReachabilityQuerySynthesizer.Builder<?, ?> builder) {
-    Settings settings = getSettings();
-    String tag = getFlowTag(_testrigSettings);
-
-    ResolvedReachabilityParameters parameters;
-    try {
-      parameters =
-          resolveReachabilityParameters(this, reachabilityParameters, getNetworkSnapshot());
-    } catch (InvalidReachabilityParametersException e) {
-      return e.getInvalidParametersAnswer();
-    }
-
-    Set<FlowDisposition> actions = reachabilityParameters.getActions();
-
-    Map<String, Configuration> configurations = parameters.getConfigurations();
-    DataPlane dataPlane = parameters.getDataPlane();
-    Set<String> forbiddenTransitNodes = parameters.getForbiddenTransitNodes();
-    AclLineMatchExpr headerSpace = parameters.getHeaderSpace();
-    Set<String> requiredTransitNodes = parameters.getRequiredTransitNodes();
-    Synthesizer dataPlaneSynthesizer =
-        synthesizeDataPlane(
-            configurations,
-            dataPlane,
-            headerSpace,
-            forbiddenTransitNodes,
-            requiredTransitNodes,
-            parameters.getSourceIpAssignment(),
-            reachabilityParameters.getSpecialize());
-
-    Map<IngressLocation, BooleanExpr> srcIpConstraints =
-        dataPlaneSynthesizer.getInput().getSrcIpConstraints();
-
-    // chunk ingress locations
-    int chunkSize =
-        Math.max(
-            1,
-            Math.min(
-                parameters.getMaxChunkSize(),
-                srcIpConstraints.size() / _settings.getAvailableThreads()));
-
-    // partition ingress locations into chunks.
-    List<List<Entry<IngressLocation, BooleanExpr>>> partitionedIngressLocations =
-        Lists.partition(ImmutableList.copyOf(srcIpConstraints.entrySet()), chunkSize);
-
-    List<Map<IngressLocation, BooleanExpr>> chunkedSrcIpConstraints =
-        partitionedIngressLocations.stream().map(ImmutableMap::copyOf).collect(Collectors.toList());
-
-    // build query jobs
-    List<NodJob> jobs =
-        chunkedSrcIpConstraints.stream()
-            .map(
-                chunkSrcIpConstraints -> {
-                  ReachabilityQuerySynthesizer query =
-                      builder
-                          .setActions(actions)
-                          .setFinalNodes(parameters.getFinalNodes())
-                          .setForbiddenTransitNodes(forbiddenTransitNodes)
-                          .setHeaderSpace(headerSpace)
-                          .setSrcIpConstraints(chunkSrcIpConstraints)
-                          .setRequiredTransitNodes(requiredTransitNodes)
-                          .setSrcNatted(parameters.getSrcNatted())
-                          .build();
-
-                  return new NodJob(
-                      settings,
-                      dataPlaneSynthesizer,
-                      query,
-                      chunkSrcIpConstraints,
-                      tag,
-                      parameters.getSpecialize());
-                })
-            .collect(Collectors.toList());
-
-    // run jobs and get resulting flows
-    Set<Flow> flows = computeNodOutput(jobs);
-    return new TraceWrapperAsAnswerElement(
-        buildFlows(flows, reachabilityParameters.getIgnoreFilters()));
-  }
-
   @Override
   public AnswerElement smtBlackhole(HeaderQuestion q) {
     PropertyChecker p = new PropertyChecker(new BDDPacket(), this, _settings);
@@ -3278,10 +3175,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public AnswerElement standard(ReachabilityParameters reachabilityParameters) {
-    if (debugFlagEnabled("useNodReachability")) {
-      return singleReachability(
-          reachabilityParameters, StandardReachabilityQuerySynthesizer.builder());
-    }
     return bddSingleReachability(reachabilityParameters);
   }
 
@@ -3559,85 +3452,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
               return Stream.of(flow.build());
             })
         .collect(ImmutableSet.toImmutableSet());
-  }
-
-  @Nonnull
-  public Synthesizer synthesizeDataPlane(
-      Map<String, Configuration> configurations,
-      DataPlane dataPlane,
-      AclLineMatchExpr headerSpace,
-      Set<String> nonTransitNodes,
-      Set<String> transitNodes,
-      IpSpaceAssignment ipSpaceAssignment,
-      boolean specialize) {
-    _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
-    _logger.resetTimer();
-
-    _logger.info("Synthesizing Z3 logic...");
-
-    Synthesizer s =
-        new Synthesizer(
-            computeSynthesizerInput(
-                configurations,
-                dataPlane,
-                headerSpace,
-                ipSpaceAssignment,
-                transitNodes,
-                nonTransitNodes,
-                _settings.getSimplify(),
-                specialize));
-
-    List<String> warnings = s.getWarnings();
-    int numWarnings = warnings.size();
-    if (numWarnings == 0) {
-      _logger.info("OK\n");
-    } else {
-      for (String warning : warnings) {
-        _logger.warn(warning);
-      }
-    }
-    _logger.printElapsedTime();
-    return s;
-  }
-
-  public static SynthesizerInputImpl computeSynthesizerInput(
-      Map<String, Configuration> configurations,
-      DataPlane dataPlane,
-      AclLineMatchExpr headerSpace,
-      IpSpaceAssignment ipSpaceAssignment,
-      Set<String> transitNodes,
-      Set<String> nonTransitNodes,
-      boolean simplify,
-      boolean specialize) {
-    Topology topology = new Topology(dataPlane.getTopologyEdges());
-
-    // convert Locations to IngressLocations
-    Map<IngressLocation, IpSpace> ipSpacePerLocation = new HashMap<>();
-    LocationToIngressLocation toIngressLocation = new LocationToIngressLocation(configurations);
-    ipSpaceAssignment
-        .getEntries()
-        .forEach(
-            entry ->
-                entry
-                    .getLocations()
-                    .forEach(
-                        location ->
-                            ipSpacePerLocation.merge(
-                                location.accept(toIngressLocation),
-                                entry.getIpSpace(),
-                                ((ipSpace1, ipSpace2) -> AclIpSpace.union(ipSpace1, ipSpace2)))));
-
-    return SynthesizerInputImpl.builder()
-        .setConfigurations(configurations)
-        .setForwardingAnalysis(dataPlane.getForwardingAnalysis())
-        .setHeaderSpace(headerSpace)
-        .setSrcIpConstraints(ipSpacePerLocation)
-        .setNonTransitNodes(nonTransitNodes)
-        .setSimplify(simplify)
-        .setSpecialize(specialize)
-        .setTopology(topology)
-        .setTransitNodes(transitNodes)
-        .build();
   }
 
   private void writeJsonAnswer(String structuredAnswerString) {

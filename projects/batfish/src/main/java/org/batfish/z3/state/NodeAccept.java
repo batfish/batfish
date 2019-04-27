@@ -1,22 +1,11 @@
 package org.batfish.z3.state;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.z3.expr.StateExpr;
-import org.batfish.z3.state.visitors.GenericStateExprVisitor;
-import org.batfish.z3.state.visitors.StateVisitor;
+import org.batfish.z3.state.visitors.StateExprVisitor;
 
-public class NodeAccept extends StateExpr {
-
-  public static class State extends StateExpr.State {
-
-    public static final State INSTANCE = new State();
-
-    private State() {}
-
-    @Override
-    public void accept(StateVisitor visitor) {
-      visitor.visitNodeAccept(this);
-    }
-  }
+@ParametersAreNonnullByDefault
+public final class NodeAccept implements StateExpr {
 
   private final String _hostname;
 
@@ -25,7 +14,7 @@ public class NodeAccept extends StateExpr {
   }
 
   @Override
-  public <R> R accept(GenericStateExprVisitor<R> visitor) {
+  public <R> R accept(StateExprVisitor<R> visitor) {
     return visitor.visitNodeAccept(this);
   }
 
@@ -34,7 +23,19 @@ public class NodeAccept extends StateExpr {
   }
 
   @Override
-  public State getState() {
-    return State.INSTANCE;
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof NodeAccept)) {
+      return false;
+    }
+    NodeAccept that = (NodeAccept) o;
+    return _hostname.equals(that._hostname);
+  }
+
+  @Override
+  public int hashCode() {
+    return _hostname.hashCode();
   }
 }

@@ -4,7 +4,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -37,13 +36,13 @@ public final class IpsecStaticPeerConfig extends IpsecPeerConfig implements Seri
     _ikePhase1Policy = ikePhasePolicy;
   }
 
-  @JsonPropertyDescription("Destination address for IPSec peer")
+  /** Destination address for IPSec peer. */
   @JsonProperty(PROP_DESTINATION_ADDRESS)
   public Ip getDestinationAddress() {
     return _destinationAddress;
   }
 
-  @JsonPropertyDescription("IKE phase 1 policy for IPSec peer")
+  /** IKE phase 1 policy for IPSec peer. */
   @JsonProperty(PROP_IKE_PHASE1_POLICY)
   public String getIkePhase1Policy() {
     return _ikePhase1Policy;
