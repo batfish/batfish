@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkState;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -57,11 +58,13 @@ public class NetworkFactory {
   }
 
   public BgpActivePeerConfig.Builder bgpNeighborBuilder() {
-    return BgpActivePeerConfig.builder();
+    return BgpActivePeerConfig.builder()
+        .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
   }
 
   public BgpPassivePeerConfig.Builder bgpDynamicNeighborBuilder() {
-    return BgpPassivePeerConfig.builder();
+    return BgpPassivePeerConfig.builder()
+        .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
   }
 
   public BgpProcess.Builder bgpProcessBuilder() {

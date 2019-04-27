@@ -9,6 +9,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.bgp.EvpnAddressFamily;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.dataplane.rib.RibGroup;
 
 /**
@@ -52,7 +54,10 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
       @JsonProperty(PROP_PEER_PREFIX) @Nullable Prefix peerPrefix,
       @JsonProperty(PROP_REMOTE_ASNS) @Nullable LongSpace remoteAsns,
       @JsonProperty(PROP_ROUTE_REFLECTOR) boolean routeReflectorClient,
-      @JsonProperty(PROP_SEND_COMMUNITY) boolean sendCommunity) {
+      @JsonProperty(PROP_SEND_COMMUNITY) boolean sendCommunity,
+      @JsonProperty(PROP_IPV4_UNICAST_ADDRESS_FAMILY) @Nullable
+          Ipv4UnicastAddressFamily ipv4UnicastAddressFamily,
+      @JsonProperty(PROP_EVPN_ADDRESS_FAMILY) @Nullable EvpnAddressFamily evpnAddressFamily) {
     return new BgpPassivePeerConfig(
         additionalPathsReceive,
         additionalPathsSelectAll,
@@ -79,7 +84,9 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
         peerPrefix,
         firstNonNull(remoteAsns, LongSpace.EMPTY),
         routeReflectorClient,
-        sendCommunity);
+        sendCommunity,
+        ipv4UnicastAddressFamily,
+        evpnAddressFamily);
   }
 
   private BgpPassivePeerConfig(
@@ -108,7 +115,9 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
       @Nullable Prefix peerPrefix,
       @Nullable LongSpace remoteAsns,
       boolean routeReflectorClient,
-      boolean sendCommunity) {
+      boolean sendCommunity,
+      @Nullable Ipv4UnicastAddressFamily ipv4UnicastAddressFamily,
+      @Nullable EvpnAddressFamily evpnAddressFamily) {
     super(
         additionalPathsReceive,
         additionalPathsSelectAll,
@@ -134,7 +143,9 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
         localIp,
         remoteAsns,
         routeReflectorClient,
-        sendCommunity);
+        sendCommunity,
+        ipv4UnicastAddressFamily,
+        evpnAddressFamily);
     _peerPrefix = peerPrefix;
   }
 
@@ -204,7 +215,9 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
               _peerPrefix,
               _remoteAsns,
               _routeReflectorClient,
-              _sendCommunity);
+              _sendCommunity,
+              _ipv4UnicastAddressFamily,
+              _evpnAddressFamily);
       if (_bgpProcess != null) {
         _bgpProcess.getPassiveNeighbors().put(_peerPrefix, bgpPeerConfig);
       }

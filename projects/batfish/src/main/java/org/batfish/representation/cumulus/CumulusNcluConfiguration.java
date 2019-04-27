@@ -47,6 +47,7 @@ import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
@@ -174,7 +175,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setLocalAs(localAs)
             .setLocalIp(BgpProcess.BGP_UNNUMBERED_IP)
             .setPeerInterface(peerInterface)
-            .setRemoteAsns(computeRemoteAsns(neighbor, localAs));
+            .setRemoteAsns(computeRemoteAsns(neighbor, localAs))
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
     builder.build();
   }
 
