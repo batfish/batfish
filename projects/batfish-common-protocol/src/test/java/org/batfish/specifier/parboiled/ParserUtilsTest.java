@@ -38,44 +38,6 @@ public class ParserUtilsTest {
     return new ReportingParseRunner<>(TestParser.instance().getInputRule());
   }
 
-  private static PotentialMatch createSimplePotentialMatch(
-      Anchor.Type anchorType, String label, int startIndex) {
-    return createSimplePotentialMatch(anchorType, label, startIndex, "");
-  }
-
-  private static PotentialMatch createSimplePotentialMatch(
-      Anchor.Type anchorType, String label, int startIndex, String matchPrefix) {
-    return new PotentialMatch(
-        new PathElement(anchorType, label, 0, startIndex), matchPrefix, ImmutableList.of());
-  }
-
-  private static Set<PotentialMatch> simplifyPotentialMatches(
-      Set<PotentialMatch> potentialMatches) {
-    return potentialMatches.stream()
-        .map(ParserUtilsTest::simplifyPotentialMatch)
-        .collect(ImmutableSet.toImmutableSet());
-  }
-
-  private static PotentialMatch simplifyPotentialMatch(PotentialMatch pm) {
-    return createSimplePotentialMatch(
-        pm.getAnchorType(),
-        pm.getAnchor().getLabel(),
-        pm.getAnchor().getStartIndex(),
-        pm.getMatchPrefix());
-  }
-
-  /** These represent all the ways valid input can start */
-  private static Set<PotentialMatch> getValidStarts(int matchStartIndex) {
-    return ImmutableSet.of(
-        createSimplePotentialMatch(STRING_LITERAL, "\"@specifier\"", matchStartIndex),
-        createSimplePotentialMatch(CHAR_LITERAL, "'!'", matchStartIndex),
-        createSimplePotentialMatch(IP_ADDRESS, "TestIpAddress", matchStartIndex),
-        createSimplePotentialMatch(NODE_NAME, "TestName", matchStartIndex),
-        createSimplePotentialMatch(CHAR_LITERAL, "'\"'", matchStartIndex),
-        createSimplePotentialMatch(CHAR_LITERAL, "'/'", matchStartIndex),
-        createSimplePotentialMatch(CHAR_LITERAL, "'('", matchStartIndex));
-  }
-
   @Test
   public void testIsStringLiteralLabel() {
     // double quoted strings map to STRING_LITERAL
@@ -178,6 +140,50 @@ public class ParserUtilsTest {
             Parser.ANCHORS);
 
     assertThat(errorString, containsString(Grammar.IP_SPACE_SPECIFIER.getFullUrl()));
+  }
+
+  // The tests below for getPotentialMatches compare a simplified form of PotentialMatch from which
+  // the path and the related level information has been removed. This is done for test simplicity,
+  // as comparing full paths will become unwieldy. The simplification does not reduce coverage
+  // meaningfully because the path information is a direct translation of parboiled path and that
+  // translation is tested elsewhere.
+
+  private static PotentialMatch createSimplePotentialMatch(
+      Anchor.Type anchorType, String label, int startIndex) {
+    return createSimplePotentialMatch(anchorType, label, startIndex, "");
+  }
+
+  private static PotentialMatch createSimplePotentialMatch(
+      Anchor.Type anchorType, String label, int startIndex, String matchPrefix) {
+    return new PotentialMatch(
+        new PathElement(anchorType, label, 0, startIndex), matchPrefix, ImmutableList.of());
+  }
+
+  private static Set<PotentialMatch> simplifyPotentialMatches(
+      Set<PotentialMatch> potentialMatches) {
+    return potentialMatches.stream()
+        .map(ParserUtilsTest::simplifyPotentialMatch)
+        .collect(ImmutableSet.toImmutableSet());
+  }
+
+  private static PotentialMatch simplifyPotentialMatch(PotentialMatch pm) {
+    return createSimplePotentialMatch(
+        pm.getAnchorType(),
+        pm.getAnchor().getLabel(),
+        pm.getAnchor().getStartIndex(),
+        pm.getMatchPrefix());
+  }
+
+  /** These represent all the ways valid input can start */
+  private static Set<PotentialMatch> getValidStarts(int matchStartIndex) {
+    return ImmutableSet.of(
+        createSimplePotentialMatch(STRING_LITERAL, "\"@specifier\"", matchStartIndex),
+        createSimplePotentialMatch(CHAR_LITERAL, "'!'", matchStartIndex),
+        createSimplePotentialMatch(IP_ADDRESS, "TestIpAddress", matchStartIndex),
+        createSimplePotentialMatch(NODE_NAME, "TestName", matchStartIndex),
+        createSimplePotentialMatch(CHAR_LITERAL, "'\"'", matchStartIndex),
+        createSimplePotentialMatch(CHAR_LITERAL, "'/'", matchStartIndex),
+        createSimplePotentialMatch(CHAR_LITERAL, "'('", matchStartIndex));
   }
 
   @Test
