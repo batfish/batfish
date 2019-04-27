@@ -19,11 +19,14 @@ import org.junit.Test;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;
 
+/** Tests for {@link ParboiledAutoComplete} */
 public class ParboiledAutoCompleteTest {
 
   private static ParboiledAutoComplete getTestPAC(String query) {
+    TestParser parser = TestParser.instance();
     return new ParboiledAutoComplete(
-        TestParser.instance().getInputRule(),
+        parser,
+        parser.getInputRule(),
         TestParser.ANCHORS,
         "network",
         "snapshot",
@@ -36,8 +39,10 @@ public class ParboiledAutoCompleteTest {
 
   private static ParboiledAutoComplete getTestPAC(
       String query, CompletionMetadata completionMetadata) {
+    TestParser parser = TestParser.instance();
     return new ParboiledAutoComplete(
-        TestParser.instance().getInputRule(),
+        parser,
+        parser.getInputRule(),
         TestParser.ANCHORS,
         "network",
         "snapshot",
@@ -49,8 +54,10 @@ public class ParboiledAutoCompleteTest {
   }
 
   private static ParboiledAutoComplete getTestPAC(String query, ReferenceLibrary referenceLibrary) {
+    TestParser parser = TestParser.instance();
     return new ParboiledAutoComplete(
-        TestParser.instance().getInputRule(),
+        parser,
+        parser.getInputRule(),
         TestParser.ANCHORS,
         "network",
         "snapshot",
