@@ -38,12 +38,12 @@ public class CommonParser extends BaseParser<AstNode> {
    * overriding the push function) so we can examine it later, e.g., for context-sensitive auto
    * completion.
    */
-  static class SavedStack {
+  static class ShadowStack {
     private ValueStack<AstNode> _vs;
     private int _currentIndex;
     private boolean _repeatedRun;
 
-    SavedStack() {
+    ShadowStack() {
       _vs = new DefaultValueStack<>();
       _currentIndex = 0;
       _repeatedRun = false;
@@ -66,17 +66,17 @@ public class CommonParser extends BaseParser<AstNode> {
     }
   }
 
-  private SavedStack _savedStack = new SavedStack();
+  private ShadowStack _shadowStack = new ShadowStack();
 
   @Override
   public boolean push(AstNode node) {
     boolean returnValue = super.push(node);
-    _savedStack.save(getContext());
+    _shadowStack.save(getContext());
     return returnValue;
   }
 
-  public SavedStack getSavedStack() {
-    return _savedStack;
+  public ShadowStack getShadowStack() {
+    return _shadowStack;
   }
 
   /** We use double quotes to escape complex names */
