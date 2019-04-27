@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import java.util.List;
 import java.util.stream.Collectors;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.InterfaceType;
@@ -44,10 +45,9 @@ public class ParserLocationTest {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setNodes(ImmutableSet.of("node1")).build();
 
-    ParboiledAutoComplete pac =
-        new ParboiledAutoComplete(
-            Parser.instance().getInputRule(Grammar.LOCATION_SPECIFIER),
-            Parser.ANCHORS,
+    List<AutocompleteSuggestion> suggestions =
+        ParboiledAutoComplete.autoComplete(
+            Grammar.LOCATION_SPECIFIER,
             "network",
             "snapshot",
             query,
@@ -82,7 +82,7 @@ public class ParserLocationTest {
                     .collect(Collectors.toSet()))
             .build();
 
-    assertThat(ImmutableSet.copyOf(pac.run()), equalTo(expectedSet));
+    assertThat(ImmutableSet.copyOf(suggestions), equalTo(expectedSet));
   }
 
   @Test
@@ -92,10 +92,9 @@ public class ParserLocationTest {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setNodes(ImmutableSet.of("node1", "node11")).build();
 
-    ParboiledAutoComplete pac =
-        new ParboiledAutoComplete(
-            Parser.instance().getInputRule(Grammar.LOCATION_SPECIFIER),
-            Parser.ANCHORS,
+    List<AutocompleteSuggestion> suggestions =
+        ParboiledAutoComplete.autoComplete(
+            Grammar.LOCATION_SPECIFIER,
             "network",
             "snapshot",
             query,
@@ -105,7 +104,7 @@ public class ParserLocationTest {
             null);
 
     assertThat(
-        ImmutableSet.copyOf(pac.run()),
+        ImmutableSet.copyOf(suggestions),
         equalTo(
             ImmutableSet.of(
                 new AutocompleteSuggestion(

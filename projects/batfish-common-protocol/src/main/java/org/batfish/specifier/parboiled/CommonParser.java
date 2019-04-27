@@ -11,8 +11,11 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.specifier.parboiled.Anchor.Type;
 import org.parboiled.BaseParser;
+import org.parboiled.Context;
 import org.parboiled.Parboiled;
 import org.parboiled.Rule;
+import org.parboiled.support.DefaultValueStack;
+import org.parboiled.support.ValueStack;
 
 /**
  * This class contains common matchers for different types of expressions.
@@ -29,6 +32,52 @@ import org.parboiled.Rule;
 })
 @ParametersAreNonnullByDefault
 public class CommonParser extends BaseParser<AstNode> {
+
+  /**
+   * Parboiled parser runners reset the value stack for invalid inputs. We save it externally (by
+   * overriding the push function) so we can examine it later, e.g., for context-sensitive auto
+   * completion.
+   */
+  static class ShadowStack {
+    private ValueStack<AstNode> _vs;
+    private int _currentIndex;
+    private boolean _repeatedRun;
+
+    ShadowStack() {
+      _vs = new DefaultValueStack<>();
+      _currentIndex = 0;
+      _repeatedRun = false;
+    }
+
+    public void save(Context<AstNode> context) {
+      if (_repeatedRun) {
+        return;
+      }
+      if (_currentIndex > context.getCurrentIndex()) {
+        _repeatedRun = true;
+        return;
+      }
+      _vs = new DefaultValueStack<>(context.getValueStack());
+      _currentIndex = context.getCurrentIndex();
+    }
+
+    public ValueStack<AstNode> getValueStack() {
+      return _vs;
+    }
+  }
+
+  private ShadowStack _shadowStack = new ShadowStack();
+
+  @Override
+  public boolean push(AstNode node) {
+    boolean returnValue = super.push(node);
+    _shadowStack.save(getContext());
+    return returnValue;
+  }
+
+  public ShadowStack getShadowStack() {
+    return _shadowStack;
+  }
 
   /** We use double quotes to escape complex names */
   public static final String ESCAPE_CHAR = "\"";

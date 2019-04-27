@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
+import java.util.List;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
@@ -44,10 +45,9 @@ public class ParserApplicationTest {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setFilterNames(ImmutableSet.of("filter1")).build();
 
-    ParboiledAutoComplete pac =
-        new ParboiledAutoComplete(
-            Parser.instance().getInputRule(Grammar.APPLICATION_SPECIFIER),
-            Parser.ANCHORS,
+    List<AutocompleteSuggestion> suggestions =
+        ParboiledAutoComplete.autoComplete(
+            Grammar.APPLICATION_SPECIFIER,
             "network",
             "snapshot",
             query,
@@ -57,7 +57,7 @@ public class ParserApplicationTest {
             null);
 
     assertThat(
-        ImmutableSet.copyOf(pac.run()),
+        ImmutableSet.copyOf(suggestions),
         equalTo(
             Arrays.stream(Protocol.values())
                 .map(
@@ -71,10 +71,9 @@ public class ParserApplicationTest {
   public void testCompletionPartialName() {
     String query = "SS";
 
-    ParboiledAutoComplete pac =
-        new ParboiledAutoComplete(
-            Parser.instance().getInputRule(Grammar.APPLICATION_SPECIFIER),
-            Parser.ANCHORS,
+    List<AutocompleteSuggestion> suggestions =
+        ParboiledAutoComplete.autoComplete(
+            Grammar.APPLICATION_SPECIFIER,
             "network",
             "snapshot",
             query,
@@ -84,7 +83,7 @@ public class ParserApplicationTest {
             null);
 
     assertThat(
-        ImmutableSet.copyOf(pac.run()),
+        ImmutableSet.copyOf(suggestions),
         equalTo(
             ImmutableSet.of(
                 new AutocompleteSuggestion("SSH", true, null, RANK_STRING_LITERAL, 0))));

@@ -88,7 +88,7 @@ class TestParser extends CommonParser {
   /** An instance of base dynamic value */
   @Anchor(Type.IP_ADDRESS)
   public Rule TestIpAddress() {
-    return IpAddressUnchecked();
+    return Sequence(IpAddressUnchecked(), push(new IpAstNode(match())));
   }
 
   /** An instance of complex dynamic value */
