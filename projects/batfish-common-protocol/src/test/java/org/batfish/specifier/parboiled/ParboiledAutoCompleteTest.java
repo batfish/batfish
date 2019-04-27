@@ -277,7 +277,9 @@ public class ParboiledAutoCompleteTest {
 
   @Test
   public void testAutoCompletePotentialMatchStringLiteral() {
-    PotentialMatch pm = new PotentialMatch(Type.STRING_LITERAL, "pfx", "pfxcomp", 0);
+    PotentialMatch pm =
+        new PotentialMatch(
+            new PathElement(Type.STRING_LITERAL, "\"pfxcomp\"", 0, 0), "pfx", ImmutableList.of());
     assertThat(
         getTestPAC(null).autoCompletePotentialMatch(pm),
         equalTo(ImmutableList.of(new AutocompleteSuggestion("pfxcomp", true, null, -1, 0))));
@@ -286,7 +288,9 @@ public class ParboiledAutoCompleteTest {
   /** The suggestion should have the case in the grammar token independent of user input */
   @Test
   public void testAutoCompletePotentialMatchStringLiteralCasePreserve() {
-    PotentialMatch pm = new PotentialMatch(Type.STRING_LITERAL, "PfX", "pfxcomp", 0);
+    PotentialMatch pm =
+        new PotentialMatch(
+            new PathElement(Type.STRING_LITERAL, "\"pfxcomp\"", 0, 0), "PfX", ImmutableList.of());
     assertThat(
         getTestPAC(null).autoCompletePotentialMatch(pm),
         equalTo(ImmutableList.of(new AutocompleteSuggestion("pfxcomp", true, null, -1, 0))));
@@ -294,7 +298,9 @@ public class ParboiledAutoCompleteTest {
 
   @Test
   public void testAutoCompletePotentialMatchSkipLabel() {
-    PotentialMatch pm = new PotentialMatch(Type.IP_ADDRESS_MASK, "pfx", "comp", 0);
+    PotentialMatch pm =
+        new PotentialMatch(
+            new PathElement(Type.IP_ADDRESS_MASK, "label", 0, 0), "pfx", ImmutableList.of());
     assertThat(getTestPAC(null).autoCompletePotentialMatch(pm), equalTo(ImmutableList.of()));
   }
 }
