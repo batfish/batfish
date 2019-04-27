@@ -16,7 +16,7 @@ import org.parboiled.support.MatcherPath.Element;
 
 /** Captures elements of that matched the input or failed to match for invalid input */
 @ParametersAreNonnullByDefault
-class PathElement {
+final class PathElement {
 
   /** The anchor type of this element */
   @Nullable private final Anchor.Type _anchorType;
@@ -54,7 +54,7 @@ class PathElement {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof PathElement)) {
       return false;
     }
     PathElement that = (PathElement) o;
