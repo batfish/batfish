@@ -1,4 +1,4 @@
-package org.batfish.datamodel;
+package org.batfish.datamodel.questions;
 
 import static org.junit.Assert.assertEquals;
 
@@ -8,7 +8,7 @@ import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
-/** Tests for {@link BgpRouteDiffs}. */
+/** Tests for {@link org.batfish.datamodel.questions.BgpRouteDiffs}. */
 public class BgpRouteDiffsTest {
   @Test
   public void testEquals() {

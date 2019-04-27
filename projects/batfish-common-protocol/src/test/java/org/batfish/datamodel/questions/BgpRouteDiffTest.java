@@ -1,10 +1,10 @@
-package org.batfish.datamodel;
+package org.batfish.datamodel.questions;
 
 import static org.batfish.datamodel.AbstractRoute.PROP_METRIC;
 import static org.batfish.datamodel.BgpRoute.PROP_AS_PATH;
 import static org.batfish.datamodel.BgpRoute.PROP_COMMUNITIES;
 import static org.batfish.datamodel.BgpRoute.PROP_LOCAL_PREFERENCE;
-import static org.batfish.datamodel.BgpRouteDiff.routeDiffs;
+import static org.batfish.datamodel.questions.BgpRouteDiff.routeDiffs;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -14,6 +14,12 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.questions.BgpRoute.Builder;
 import org.junit.Test;
 
 /** Tests of {@link BgpRouteDiff}. */
@@ -35,7 +41,7 @@ public class BgpRouteDiffTest {
         .testEquals();
   }
 
-  private static BgpRoute.Builder builder() {
+  private static Builder builder() {
     return BgpRoute.builder()
         .setNetwork(Prefix.ZERO)
         .setOriginatorIp(Ip.ZERO)
