@@ -8,7 +8,7 @@ import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
-/** Tests for {@link org.batfish.datamodel.questions.BgpRouteDiffs}. */
+/** Tests for {@link BgpRouteDiffs}. */
 public class BgpRouteDiffsTest {
   @Test
   public void testEquals() {

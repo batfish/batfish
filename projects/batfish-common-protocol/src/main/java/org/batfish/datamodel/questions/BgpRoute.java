@@ -9,7 +9,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -20,7 +19,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 
-/** A container class for BGP routes */
+/** A user facing representation for IPv4 BGP route */
 @ParametersAreNonnullByDefault
 public final class BgpRoute {
   public static final String PROP_AS_PATH = "asPath";
@@ -171,7 +170,7 @@ public final class BgpRoute {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (o == null || !(o instanceof BgpRoute)) {
       return false;
     }
     BgpRoute bgpRoute = (BgpRoute) o;
@@ -241,7 +240,7 @@ public final class BgpRoute {
 
     public Builder() {
       _asPath = AsPath.empty();
-      _communities = new TreeSet<>();
+      _communities = ImmutableSortedSet.of();
       _nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
     }
 
@@ -271,8 +270,7 @@ public final class BgpRoute {
     }
 
     public Builder setCommunities(Set<Long> communities) {
-      _communities = new TreeSet<>();
-      _communities.addAll(communities);
+      _communities = ImmutableSortedSet.copyOf(communities);
       return this;
     }
 
