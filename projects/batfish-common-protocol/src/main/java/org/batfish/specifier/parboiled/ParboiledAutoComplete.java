@@ -125,6 +125,9 @@ public final class ParboiledAutoComplete {
   @VisibleForTesting
   List<AutocompleteSuggestion> autoCompletePotentialMatch(PotentialMatch pm) {
     switch (pm.getAnchorType()) {
+      case ADDRESS_GROUP_AND_REFERENCE_BOOK:
+        // ADDRESS_GROUP_NAME or REFERENCE_BOOK_NAME should appear later in the path
+        throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case ADDRESS_GROUP_NAME:
         return autoCompletePotentialMatch(pm, DEFAULT_RANK);
       case CHAR_LITERAL:
@@ -181,7 +184,7 @@ public final class ParboiledAutoComplete {
         // Relies on STRING_LITERAL completion as it appears later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case REFERENCE_BOOK_NAME:
-        return autoCompletePotentialMatch(pm, DEFAULT_RANK);
+        return autoCompleteReferenceBookName(pm, DEFAULT_RANK);
       case ROUTING_POLICY_NAME:
         return autoCompletePotentialMatch(pm, DEFAULT_RANK);
       case ROUTING_POLICY_NAME_REGEX:
@@ -278,5 +281,9 @@ public final class ParboiledAutoComplete {
       default:
         throw new IllegalArgumentException("No valid Variable type for Anchor type" + anchorType);
     }
+  }
+
+  private List<AutocompleteSuggestion> autoCompleteReferenceBookName(PotentialMatch pm, int rank) {
+    PathElement anchor = pm.getAnchorType();
   }
 }

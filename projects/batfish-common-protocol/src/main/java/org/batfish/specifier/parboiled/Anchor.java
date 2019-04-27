@@ -14,6 +14,7 @@ import java.lang.annotation.Target;
 @interface Anchor {
 
   enum Type {
+    ADDRESS_GROUP_AND_REFERENCE_BOOK,
     ADDRESS_GROUP_NAME,
     CHAR_LITERAL,
     EOI,
