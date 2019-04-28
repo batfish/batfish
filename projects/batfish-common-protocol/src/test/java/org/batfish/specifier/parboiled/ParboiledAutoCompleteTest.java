@@ -214,16 +214,14 @@ public class ParboiledAutoCompleteTest {
                 new AutocompleteSuggestion(
                     "g2", true, null, AutocompleteSuggestion.DEFAULT_RANK, 11))));
 
-    // both books will be reported until we get context sensitive about auto complete
+    // only b1 should be suggested
     assertThat(
         ImmutableSet.copyOf(getTestPAC("@specifier(g1,", library).run()),
         equalTo(
             ImmutableSet.of(
                 new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, 14),
                 new AutocompleteSuggestion(
-                    "b1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 14),
-                new AutocompleteSuggestion(
-                    "b2", true, null, AutocompleteSuggestion.DEFAULT_RANK, 14))));
+                    "b1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 14))));
   }
 
   /** Test that String literals are inserted before dynamic values */

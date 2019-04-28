@@ -18,12 +18,12 @@ class PotentialMatch {
   @Nonnull private final PathElement _anchor;
 
   /** What the user entered for this match */
-  @Nullable private final String _matchPrefix;
+  @Nonnull private final String _matchPrefix;
 
   /** The list of elements along the path we are analyzing */
   @Nonnull private final List<PathElement> _path;
 
-  PotentialMatch(PathElement anchor, @Nullable String matchPrefix, List<PathElement> path) {
+  PotentialMatch(PathElement anchor, String matchPrefix, List<PathElement> path) {
     _anchor = anchor;
     _matchPrefix = matchPrefix;
     _path = path;
@@ -71,6 +71,11 @@ class PotentialMatch {
 
   int getMatchStartIndex() {
     return _anchor.getStartIndex();
+  }
+
+  @Nonnull
+  List<PathElement> getPath() {
+    return _path;
   }
 
   @Override
