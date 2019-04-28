@@ -1,5 +1,6 @@
 package org.batfish.specifier.parboiled;
 
+import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_AND_REFERENCE_BOOK;
 import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME_REGEX;
@@ -597,11 +598,7 @@ public class Parser extends CommonParser {
     return Sequence(
         IgnoreCase("@addressgroup"),
         WhiteSpace(),
-        "( ",
-        AddressGroup(),
-        ", ",
-        ReferenceBook(),
-        ") ",
+        IpSpaceAddressGroupAndReferenceBook(),
         push(new AddressGroupIpSpaceAstNode(pop(1), pop())));
   }
 
@@ -610,12 +607,14 @@ public class Parser extends CommonParser {
     return Sequence(
         IgnoreCase("ref.addressgroup"),
         WhiteSpace(),
-        "( ",
-        AddressGroup(),
-        ", ",
-        ReferenceBook(),
-        ") ",
+        IpSpaceAddressGroupAndReferenceBook(),
         push(new AddressGroupIpSpaceAstNode(pop(1), pop())));
+  }
+
+  /** Matches AddressGroup and ReferenceBook pair */
+  @Anchor(ADDRESS_GROUP_AND_REFERENCE_BOOK)
+  public Rule IpSpaceAddressGroupAndReferenceBook() {
+    return Sequence("( ", AddressGroup(), ", ", ReferenceBook(), ") ");
   }
 
   /** Matches AddressGroup name */
