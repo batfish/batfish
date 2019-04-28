@@ -753,7 +753,7 @@ public final class ClientTest {
   public void testInvalidPrefixValue() throws IOException {
     String input = "\"10.168.5.5/30/20\"";
     String expectedMessage = String.format("Invalid prefix string: %s", input);
-    validateTypeWithInvalidInput(input, expectedMessage, PREFIX);
+    validateTypeWithInvalidInput(input, IllegalArgumentException.class, expectedMessage, PREFIX);
   }
 
   @Test
