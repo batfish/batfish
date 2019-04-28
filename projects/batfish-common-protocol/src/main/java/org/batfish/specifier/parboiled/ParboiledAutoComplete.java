@@ -277,7 +277,13 @@ public final class ParboiledAutoComplete {
     }
   }
 
-  private List<AutocompleteSuggestion> autoCompleteReferenceBookName(PotentialMatch pm, int rank) {
+  /**
+   * Auto completes reference book names. The completion is context sensitive if the parent {@link
+   * PathElement} exists and is one that supports such completion. Otherwise, non context-sensitive
+   * completion is used
+   */
+  @VisibleForTesting
+  List<AutocompleteSuggestion> autoCompleteReferenceBookName(PotentialMatch pm, int rank) {
     int anchorIndex = pm.getPath().indexOf(pm.getAnchor());
     checkArgument(anchorIndex != -1, "Anchor is not present in the path.");
 
@@ -295,34 +301,28 @@ public final class ParboiledAutoComplete {
                 book.getAddressGroups().stream()
                     .map(AddressGroup::getName)
                     .collect(ImmutableSet.toImmutableSet());
-        return autoCompleteReferenceBookName(
-            pm, addressGroupGetter, Anchor.Type.ADDRESS_GROUP_NAME, rank);
+        return autoCompleteReferenceBookName(pm, addressGroupGetter, rank);
       case INTERFACE_GROUP_AND_REFERENCE_BOOK:
         Function<ReferenceBook, Set<String>> interfaceGroupGetter =
             book ->
                 book.getInterfaceGroups().stream()
                     .map(InterfaceGroup::getName)
                     .collect(ImmutableSet.toImmutableSet());
-        return autoCompleteReferenceBookName(
-            pm, interfaceGroupGetter, Anchor.Type.INTERFACE_GROUP_NAME, rank);
+        return autoCompleteReferenceBookName(pm, interfaceGroupGetter, rank);
       default:
         return autoCompletePotentialMatch(pm, rank);
     }
   }
 
   private List<AutocompleteSuggestion> autoCompleteReferenceBookName(
-      PotentialMatch pm,
-      Function<ReferenceBook, Set<String>> groupNamesGetter,
-      Anchor.Type groupType,
-      int rank) {
-    String refBookMatchPrefix = pm.getMatchPrefix();
+      PotentialMatch pm, Function<ReferenceBook, Set<String>> groupNamesGetter, int rank) {
+    String matchPrefix = unescapeIfNeeded(pm.getMatchPrefix(), Anchor.Type.REFERENCE_BOOK_NAME);
     // group name is at the head if nothing about the reference book was entered;
     // otherwise, it is second from top
-    String groupOriginal =
+    String groupName =
         ((StringAstNode)
-                _parser.getShadowStack().getValueStack().peek(refBookMatchPrefix.isEmpty() ? 0 : 1))
+                _parser.getShadowStack().getValueStack().peek(matchPrefix.isEmpty() ? 0 : 1))
             .getStr();
-    String groupName = unescapeIfNeeded(groupOriginal, groupType);
     Set<String> candidateBooks =
         _referenceLibrary.getReferenceBooks().stream()
             .filter(
@@ -332,8 +332,8 @@ public final class ParboiledAutoComplete {
             .map(ReferenceBook::getName)
             .collect(ImmutableSet.toImmutableSet());
     return updateSuggestions(
-        AutoCompleteUtils.stringAutoComplete(refBookMatchPrefix, candidateBooks),
-        !groupName.equals(groupOriginal),
+        AutoCompleteUtils.stringAutoComplete(matchPrefix, candidateBooks),
+        !matchPrefix.equals(pm.getMatchPrefix()),
         Anchor.Type.REFERENCE_BOOK_NAME,
         rank,
         pm.getMatchStartIndex());

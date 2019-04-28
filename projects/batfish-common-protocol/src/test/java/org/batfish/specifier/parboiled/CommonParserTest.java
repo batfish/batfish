@@ -106,7 +106,7 @@ public class CommonParserTest {
   }
 
   @Test
-  public void testSavedStackInvalidInput1() {
+  public void testSavedStackInvalidInputAddressGroup() {
     TestParser parser = TestParser.instance();
 
     new ReportingParseRunner<AstNode>(parser.getInputRule()).run("@specifier(g1,");
@@ -117,14 +117,34 @@ public class CommonParserTest {
   }
 
   @Test
-  public void testSavedStackInvalidInput2() {
+  public void testSavedStackInvalidInputAddressGroupAndReferenceBook() {
     TestParser parser = TestParser.instance();
 
-    new ReportingParseRunner<AstNode>(parser.getInputRule()).run("@specifier(g1, b");
+    new ReportingParseRunner<AstNode>(parser.getInputRule()).run("@specifier(g1, b ");
 
     assertThat(
         ImmutableList.copyOf(parser.getShadowStack().getValueStack()),
         equalTo(ImmutableList.of(new StringAstNode("g1"), new StringAstNode("b"))));
+  }
+
+  @Test
+  public void testSavedStackInvalidInputAddressGroupAndEscapedReferenceBook() {
+    TestParser parser = TestParser.instance();
+    new ReportingParseRunner<AstNode>(parser.getInputRule()).run("@specifier(g1, \"b");
+
+    assertThat(
+        ImmutableList.copyOf(parser.getShadowStack().getValueStack()),
+        equalTo(ImmutableList.of(new StringAstNode("g1"), new StringAstNode("b"))));
+  }
+
+  @Test
+  public void testSavedStackInvalidInputAddressGroupAndEscapedReferenceBookTrailingSpace() {
+    TestParser parser = TestParser.instance();
+    new ReportingParseRunner<AstNode>(parser.getInputRule()).run("@specifier(g1, \"b ");
+
+    assertThat(
+        ImmutableList.copyOf(parser.getShadowStack().getValueStack()),
+        equalTo(ImmutableList.of(new StringAstNode("g1"), new StringAstNode("b "))));
   }
 
   @Test

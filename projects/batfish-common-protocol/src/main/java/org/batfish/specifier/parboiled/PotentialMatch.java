@@ -64,7 +64,7 @@ class PotentialMatch {
     return null;
   }
 
-  @Nullable
+  @Nonnull
   String getMatchPrefix() {
     return _matchPrefix;
   }
