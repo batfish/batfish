@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.CompletionMetadata;
@@ -21,6 +22,8 @@ import org.batfish.datamodel.answers.AutoCompleteUtils;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.questions.Variable;
 import org.batfish.datamodel.questions.Variable.Type;
+import org.batfish.referencelibrary.AddressGroup;
+import org.batfish.referencelibrary.InterfaceGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
@@ -275,10 +278,6 @@ public final class ParboiledAutoComplete {
   }
 
   private List<AutocompleteSuggestion> autoCompleteReferenceBookName(PotentialMatch pm, int rank) {
-    checkArgument(
-        _referenceLibrary != null,
-        "Reference library must be non-null for reference book autocompletion");
-
     int anchorIndex = pm.getPath().indexOf(pm.getAnchor());
     checkArgument(anchorIndex != -1, "Anchor is not present in the path.");
 
@@ -291,35 +290,53 @@ public final class ParboiledAutoComplete {
 
     switch (parentAnchorType) {
       case ADDRESS_GROUP_AND_REFERENCE_BOOK:
-        String refBookMatchPrefix = pm.getMatchPrefix();
-        // address group is at the head of the stack if nothing about the reference book was not
-        // entered; otherwise, it is second from top
-        String addressGroupOriginal =
-            ((StringAstNode)
-                    _parser
-                        .getShadowStack()
-                        .getValueStack()
-                        .peek(refBookMatchPrefix.isEmpty() ? 0 : 1))
-                .getStr();
-        String addressGroup =
-            unescapeIfNeeded(addressGroupOriginal, Anchor.Type.ADDRESS_GROUP_NAME);
-        Set<String> candidateBooks =
-            _referenceLibrary.getReferenceBooks().stream()
-                .filter(
-                    b ->
-                        b.getAddressGroups().stream()
-                            .anyMatch(g -> g.getName().equalsIgnoreCase(addressGroup)))
-                .map(ReferenceBook::getName)
-                .collect(ImmutableSet.toImmutableSet());
-        return updateSuggestions(
-            AutoCompleteUtils.stringAutoComplete(refBookMatchPrefix, candidateBooks),
-            !addressGroup.equals(addressGroupOriginal),
-            Anchor.Type.REFERENCE_BOOK_NAME,
-            rank,
-            pm.getMatchStartIndex());
+        Function<ReferenceBook, Set<String>> addressGroupGetter =
+            book ->
+                book.getAddressGroups().stream()
+                    .map(AddressGroup::getName)
+                    .collect(ImmutableSet.toImmutableSet());
+        return autoCompleteReferenceBookName(
+            pm, addressGroupGetter, Anchor.Type.ADDRESS_GROUP_NAME, rank);
+      case INTERFACE_GROUP_AND_REFERENCE_BOOK:
+        Function<ReferenceBook, Set<String>> interfaceGroupGetter =
+            book ->
+                book.getInterfaceGroups().stream()
+                    .map(InterfaceGroup::getName)
+                    .collect(ImmutableSet.toImmutableSet());
+        return autoCompleteReferenceBookName(
+            pm, interfaceGroupGetter, Anchor.Type.INTERFACE_GROUP_NAME, rank);
       default:
         return autoCompletePotentialMatch(pm, rank);
     }
+  }
+
+  private List<AutocompleteSuggestion> autoCompleteReferenceBookName(
+      PotentialMatch pm,
+      Function<ReferenceBook, Set<String>> groupNamesGetter,
+      Anchor.Type groupType,
+      int rank) {
+    String refBookMatchPrefix = pm.getMatchPrefix();
+    // group name is at the head if nothing about the reference book was entered;
+    // otherwise, it is second from top
+    String groupOriginal =
+        ((StringAstNode)
+                _parser.getShadowStack().getValueStack().peek(refBookMatchPrefix.isEmpty() ? 0 : 1))
+            .getStr();
+    String groupName = unescapeIfNeeded(groupOriginal, groupType);
+    Set<String> candidateBooks =
+        _referenceLibrary.getReferenceBooks().stream()
+            .filter(
+                b ->
+                    groupNamesGetter.apply(b).stream()
+                        .anyMatch(name -> name.equalsIgnoreCase(groupName)))
+            .map(ReferenceBook::getName)
+            .collect(ImmutableSet.toImmutableSet());
+    return updateSuggestions(
+        AutoCompleteUtils.stringAutoComplete(refBookMatchPrefix, candidateBooks),
+        !groupName.equals(groupOriginal),
+        Anchor.Type.REFERENCE_BOOK_NAME,
+        rank,
+        pm.getMatchStartIndex());
   }
 
   /**

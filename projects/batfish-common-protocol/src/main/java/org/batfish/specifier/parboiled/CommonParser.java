@@ -128,10 +128,12 @@ public class CommonParser extends BaseParser<AstNode> {
       case VRF_NAME:
       case ZONE_NAME:
         return true;
+      case ADDRESS_GROUP_AND_REFERENCE_BOOK:
       case CHAR_LITERAL:
       case EOI:
       case FILTER_NAME_REGEX:
       case IGNORE:
+      case INTERFACE_GROUP_AND_REFERENCE_BOOK:
       case INTERFACE_NAME_REGEX:
       case INTERFACE_TYPE:
       case IP_ADDRESS:
