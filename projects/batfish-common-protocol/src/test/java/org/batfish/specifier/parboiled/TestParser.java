@@ -107,7 +107,7 @@ class TestParser extends CommonParser {
     return Regex();
   }
 
-  @Anchor(Type.IGNORE)
+  @Anchor(Type.DEPRECATED)
   public Rule TestNameRegexDeprecated() {
     return RegexDeprecated();
   }

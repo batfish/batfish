@@ -16,10 +16,11 @@ import java.lang.annotation.Target;
   enum Type {
     ADDRESS_GROUP_NAME,
     CHAR_LITERAL,
+    DEPRECATED, // grammar rules that are deprecated
     EOI,
     FILTER_NAME,
     FILTER_NAME_REGEX,
-    IGNORE,
+    IGNORE, // grammar rules that shouldn't be the basis for autocompletion
     INTERFACE_GROUP_NAME,
     INTERFACE_NAME,
     INTERFACE_NAME_REGEX,

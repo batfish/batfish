@@ -129,6 +129,7 @@ public class CommonParser extends BaseParser<AstNode> {
       case ZONE_NAME:
         return true;
       case CHAR_LITERAL:
+      case DEPRECATED:
       case EOI:
       case FILTER_NAME_REGEX:
       case IGNORE:

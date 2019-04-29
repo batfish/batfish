@@ -197,6 +197,19 @@ public class ParserUtilsTest {
   }
 
   @Test
+  public void testGetPotentialMatchesDeprecated() {
+    ParsingResult<?> resultEmpty = getRunner().run("(.*");
+    assertThat(
+        simplifyPotentialMatches(
+            getPotentialMatches(
+                (InvalidInputError) resultEmpty.parseErrors.get(0), TestParser.ANCHORS, false)),
+        equalTo(
+            ImmutableSet.of(
+                createSimplePotentialMatch(CHAR_LITERAL, "\',\'", 3),
+                createSimplePotentialMatch(CHAR_LITERAL, "\')\'", 3))));
+  }
+
+  @Test
   public void testGetPotentialMatchesBadStart() {
     ParsingResult<?> resultEmpty =
         getRunner().run(new String(Character.toChars(ParboiledAutoComplete.ILLEGAL_CHAR)));
