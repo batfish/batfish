@@ -43,7 +43,6 @@ import org.batfish.datamodel.matchers.IpsecPhase2ProposalMatchers;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -106,7 +105,7 @@ public class AwsIpsecTest {
                 hasIkePhase1Proposals(equalTo(ImmutableList.of("vpn-ba2e34a8-1"))))));
 
     // test for IKE phase1 proposals
-    Assert.assertThat(
+    assertThat(
         vgwConfiguration,
         hasIkePhase1Proposal(
             "vpn-ba2e34a8-1",
