@@ -27,10 +27,12 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
  * @param <R> route type
  */
 @ParametersAreNonnullByDefault
-public final class RibDelta<R extends AbstractRouteDecorator> {
+public final class RibDelta<R> {
 
   /** Sorted for deterministic iteration order */
   private SortedMap<Prefix, List<RouteAdvertisement<R>>> _actions;
+
+  private static final RibDelta<Object> EMPTY = new RibDelta<>(ImmutableMap.of());
 
   private RibDelta(Map<Prefix, List<RouteAdvertisement<R>>> actions) {
     _actions = ImmutableSortedMap.copyOf(actions);
@@ -213,8 +215,9 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
 
   /** Return an empty RIB delta */
   @Nonnull
-  public static <T extends AbstractRouteDecorator> RibDelta<T> empty() {
-    return RibDelta.<T>builder().build();
+  @SuppressWarnings("unchecked") // Fully variant implementation, never stores any Ts
+  public static <T> RibDelta<T> empty() {
+    return (RibDelta<T>) EMPTY;
   }
 
   /**
