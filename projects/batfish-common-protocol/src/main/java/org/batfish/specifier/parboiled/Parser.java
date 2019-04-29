@@ -1,9 +1,12 @@
 package org.batfish.specifier.parboiled;
 
+import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_AND_REFERENCE_BOOK;
 import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.DEPRECATED;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.IGNORE;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_AND_REFERENCE_BOOK;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME_REGEX;
@@ -362,11 +365,7 @@ public class Parser extends CommonParser {
     return Sequence(
         IgnoreCase("@interfaceGroup"),
         WhiteSpace(),
-        "( ",
-        InterfaceGroup(),
-        ", ",
-        ReferenceBook(),
-        ") ",
+        InterfaceGroupAndReferenceBook(),
         push(new InterfaceGroupInterfaceAstNode(pop(1), pop())));
   }
 
@@ -375,12 +374,14 @@ public class Parser extends CommonParser {
     return Sequence(
         IgnoreCase("ref.interfaceGroup"),
         WhiteSpace(),
-        "( ",
-        InterfaceGroup(),
-        ", ",
-        ReferenceBook(),
-        ") ",
+        InterfaceGroupAndReferenceBook(),
         push(new InterfaceGroupInterfaceAstNode(pop(1), pop())));
+  }
+
+  /** Matches InterfaceGroup and ReferenceBook pair */
+  @Anchor(INTERFACE_GROUP_AND_REFERENCE_BOOK)
+  public Rule InterfaceGroupAndReferenceBook() {
+    return Sequence("( ", InterfaceGroup(), ", ", ReferenceBook(), ") ");
   }
 
   /** Matches Interface Group name */
@@ -597,11 +598,7 @@ public class Parser extends CommonParser {
     return Sequence(
         IgnoreCase("@addressgroup"),
         WhiteSpace(),
-        "( ",
-        AddressGroup(),
-        ", ",
-        ReferenceBook(),
-        ") ",
+        AddressGroupAndReferenceBook(),
         push(new AddressGroupIpSpaceAstNode(pop(1), pop())));
   }
 
@@ -610,12 +607,14 @@ public class Parser extends CommonParser {
     return Sequence(
         IgnoreCase("ref.addressgroup"),
         WhiteSpace(),
-        "( ",
-        AddressGroup(),
-        ", ",
-        ReferenceBook(),
-        ") ",
+        AddressGroupAndReferenceBook(),
         push(new AddressGroupIpSpaceAstNode(pop(1), pop())));
+  }
+
+  /** Matches AddressGroup and ReferenceBook pair */
+  @Anchor(ADDRESS_GROUP_AND_REFERENCE_BOOK)
+  public Rule AddressGroupAndReferenceBook() {
+    return Sequence("( ", AddressGroup(), ", ", ReferenceBook(), ") ");
   }
 
   /** Matches AddressGroup name */
