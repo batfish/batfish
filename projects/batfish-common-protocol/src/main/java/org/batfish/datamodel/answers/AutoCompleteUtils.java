@@ -473,7 +473,7 @@ public final class AutoCompleteUtils {
    * <p>The search is case-insensitive and looks for a substring match.
    */
   @Nonnull
-  static List<AutocompleteSuggestion> stringAutoComplete(
+  public static List<AutocompleteSuggestion> stringAutoComplete(
       @Nullable String query, Set<String> strings) {
 
     String testQuery = query == null ? "" : query.toLowerCase();
