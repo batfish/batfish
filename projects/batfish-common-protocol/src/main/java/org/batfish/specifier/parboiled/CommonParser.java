@@ -139,6 +139,7 @@ public class CommonParser extends BaseParser<AstNode> {
         return true;
       case ADDRESS_GROUP_AND_REFERENCE_BOOK:
       case CHAR_LITERAL:
+      case DEPRECATED:
       case EOI:
       case FILTER_NAME_REGEX:
       case IGNORE:
