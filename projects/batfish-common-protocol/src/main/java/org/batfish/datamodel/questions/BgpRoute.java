@@ -33,6 +33,7 @@ public final class BgpRoute {
   public static final String PROP_PROTOCOL = "protocol";
   public static final String PROP_SRC_PROTOCOL = "srcProtocol";
   public static final String PROP_WEIGHT = "weight";
+  public static final String PROP_CLASS = "class";
 
   @Nonnull private final AsPath _asPath;
   @Nonnull private final SortedSet<Long> _communities;
@@ -48,7 +49,7 @@ public final class BgpRoute {
 
   private BgpRoute(
       AsPath asPath,
-      SortedSet<Long> communites,
+      SortedSet<Long> communities,
       long localPreference,
       long metric,
       Prefix network,
@@ -59,7 +60,7 @@ public final class BgpRoute {
       @Nullable RoutingProtocol srcProtocol,
       int weight) {
     _asPath = asPath;
-    _communities = communites;
+    _communities = communities;
     _localPreference = localPreference;
     _metric = metric;
     _network = network;
@@ -74,7 +75,7 @@ public final class BgpRoute {
   @JsonCreator
   private static BgpRoute jsonCreator(
       @Nullable @JsonProperty(PROP_AS_PATH) AsPath asPath,
-      @Nullable @JsonProperty(PROP_COMMUNITIES) SortedSet<Long> communites,
+      @Nullable @JsonProperty(PROP_COMMUNITIES) SortedSet<Long> communities,
       @JsonProperty(PROP_LOCAL_PREFERENCE) long localPreference,
       @JsonProperty(PROP_METRIC) long metric,
       @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
@@ -83,14 +84,16 @@ public final class BgpRoute {
       @Nullable @JsonProperty(PROP_ORIGIN_TYPE) OriginType originType,
       @Nullable @JsonProperty(PROP_PROTOCOL) RoutingProtocol protocol,
       @Nullable @JsonProperty(PROP_SRC_PROTOCOL) RoutingProtocol srcProtocol,
-      @JsonProperty(PROP_WEIGHT) int weight) {
+      @JsonProperty(PROP_WEIGHT) int weight,
+      // For backwards compatibility, does nothing
+      @Nullable @JsonProperty(PROP_CLASS) String clazz) {
     checkArgument(network != null, "%s must be specified", PROP_NETWORK);
     checkArgument(originatorIp != null, "%s must be specified", PROP_ORIGINATOR_IP);
     checkArgument(originType != null, "%s must be specified", PROP_ORIGIN_TYPE);
     checkArgument(protocol != null, "%s must be specified", PROP_PROTOCOL);
     return new BgpRoute(
         firstNonNull(asPath, AsPath.empty()),
-        firstNonNull(communites, ImmutableSortedSet.of()),
+        firstNonNull(communities, ImmutableSortedSet.of()),
         localPreference,
         metric,
         network,
