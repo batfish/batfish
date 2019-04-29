@@ -170,7 +170,7 @@ public final class BgpRoute {
     if (this == o) {
       return true;
     }
-    if (o == null || !(o instanceof BgpRoute)) {
+    if (!(o instanceof BgpRoute)) {
       return false;
     }
     BgpRoute bgpRoute = (BgpRoute) o;
