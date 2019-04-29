@@ -105,13 +105,17 @@ public class BDDReachabilityAnalysis {
       Map<StateExpr, BDD> forwardReachableStates = new LinkedHashMap<>();
       BDD one = _bddPacket.getFactory().one();
       _ingressLocationStates.forEach(state -> forwardReachableStates.put(state, one));
-
       forwardFixpoint(forwardReachableStates);
       return ImmutableMap.copyOf(forwardReachableStates);
     }
   }
 
-  Map<StateExpr, BDD> computeForwardReachableStates(Map<StateExpr, BDD> initialReachableStates) {
+  /**
+   * Compute the flows (represented as BDDs) that can reach each state {@link StateExpr} in the
+   * reachability graph given the initial flows existing at some states.
+   */
+  public Map<StateExpr, BDD> computeForwardReachableStates(
+      Map<StateExpr, BDD> initialReachableStates) {
     try (ActiveSpan span =
         GlobalTracer.get()
             .buildSpan("BDDReachabilityAnalysis.computeForwardReachableStates")
