@@ -3,19 +3,14 @@
   "direction" : "IN",
   "inputRoutes" : [
     {
-      "class" : "org.batfish.datamodel.BgpRoute",
-      "administrativeCost" : 0,
       "asPath" : [ ],
-      "discard" : false,
       "localPreference" : 0,
       "metric" : 0,
       "network" : "0.0.0.0/0",
-      "nextHopInterface" : "dynamic",
       "nextHopIp" : "AUTO/NONE(-1l)",
       "originType" : "igp",
       "originatorIp" : "1.1.1.1",
       "protocol" : "bgp",
-      "receivedFromRouteReflectorClient" : false,
       "weight" : 0
     }
   ],
@@ -68,7 +63,6 @@
         "type" : "bgpRoutes",
         "value" : [
           {
-            "class" : "org.batfish.datamodel.BgpRoute",
             "network" : "0.0.0.0/0",
             "originatorIp" : "1.1.1.1",
             "originType" : "IGP",

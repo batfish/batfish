@@ -1,13 +1,13 @@
-package org.batfish.datamodel;
+package org.batfish.datamodel.questions;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Ordering.natural;
 import static java.util.Comparator.comparing;
-import static org.batfish.datamodel.AbstractRoute.PROP_METRIC;
-import static org.batfish.datamodel.BgpRoute.PROP_AS_PATH;
-import static org.batfish.datamodel.BgpRoute.PROP_COMMUNITIES;
-import static org.batfish.datamodel.BgpRoute.PROP_LOCAL_PREFERENCE;
+import static org.batfish.datamodel.questions.BgpRoute.PROP_AS_PATH;
+import static org.batfish.datamodel.questions.BgpRoute.PROP_COMMUNITIES;
+import static org.batfish.datamodel.questions.BgpRoute.PROP_LOCAL_PREFERENCE;
+import static org.batfish.datamodel.questions.BgpRoute.PROP_METRIC;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
