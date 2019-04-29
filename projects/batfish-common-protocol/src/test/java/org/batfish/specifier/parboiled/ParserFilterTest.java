@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
+import java.util.List;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.junit.Rule;
@@ -41,10 +42,9 @@ public class ParserFilterTest {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setFilterNames(ImmutableSet.of("filter1")).build();
 
-    ParboiledAutoComplete pac =
-        new ParboiledAutoComplete(
-            Parser.instance().getInputRule(Grammar.FILTER_SPECIFIER),
-            Parser.ANCHORS,
+    List<AutocompleteSuggestion> suggestions =
+        ParboiledAutoComplete.autoComplete(
+            Grammar.FILTER_SPECIFIER,
             "network",
             "snapshot",
             query,
@@ -54,7 +54,7 @@ public class ParserFilterTest {
             null);
 
     assertThat(
-        ImmutableSet.copyOf(pac.run()),
+        ImmutableSet.copyOf(suggestions),
         equalTo(
             ImmutableSet.of(
                 new AutocompleteSuggestion(
@@ -74,10 +74,9 @@ public class ParserFilterTest {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setFilterNames(ImmutableSet.of("filter1", "filter11")).build();
 
-    ParboiledAutoComplete pac =
-        new ParboiledAutoComplete(
-            Parser.instance().getInputRule(Grammar.FILTER_SPECIFIER),
-            Parser.ANCHORS,
+    List<AutocompleteSuggestion> suggestions =
+        ParboiledAutoComplete.autoComplete(
+            Grammar.FILTER_SPECIFIER,
             "network",
             "snapshot",
             query,
@@ -87,7 +86,7 @@ public class ParserFilterTest {
             null);
 
     assertThat(
-        ImmutableSet.copyOf(pac.run()),
+        ImmutableSet.copyOf(suggestions),
         equalTo(
             ImmutableSet.of(
                 new AutocompleteSuggestion(

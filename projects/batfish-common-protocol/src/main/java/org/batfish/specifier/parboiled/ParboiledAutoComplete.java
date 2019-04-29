@@ -46,6 +46,7 @@ public final class ParboiledAutoComplete {
   private final ReferenceLibrary _referenceLibrary;
 
   ParboiledAutoComplete(
+      CommonParser parser,
       Rule expression,
       Map<String, Anchor.Type> completionTypes,
       String network,
@@ -55,6 +56,7 @@ public final class ParboiledAutoComplete {
       CompletionMetadata completionMetadata,
       NodeRolesData nodeRolesData,
       ReferenceLibrary referenceLibrary) {
+    assert parser != null; // prevent unused warning.
     _expression = expression;
     _completionTypes = completionTypes;
     _network = network;
@@ -75,8 +77,10 @@ public final class ParboiledAutoComplete {
       CompletionMetadata completionMetadata,
       NodeRolesData nodeRolesData,
       ReferenceLibrary referenceLibrary) {
+    Parser parser = Parser.instance();
     return new ParboiledAutoComplete(
-            Parser.instance().getInputRule(grammar),
+            parser,
+            parser.getInputRule(grammar),
             Parser.ANCHORS,
             network,
             snapshot,

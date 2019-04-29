@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
+import java.util.List;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.junit.Rule;
@@ -44,10 +45,9 @@ public class ParserRoutingPolicyTest {
             .setRoutingPolicyNames(ImmutableSet.of("RoutingPolicy1"))
             .build();
 
-    ParboiledAutoComplete pac =
-        new ParboiledAutoComplete(
-            Parser.instance().getInputRule(Grammar.ROUTING_POLICY_SPECIFIER),
-            Parser.ANCHORS,
+    List<AutocompleteSuggestion> suggestions =
+        ParboiledAutoComplete.autoComplete(
+            Grammar.ROUTING_POLICY_SPECIFIER,
             "network",
             "snapshot",
             query,
@@ -57,7 +57,7 @@ public class ParserRoutingPolicyTest {
             null);
 
     assertThat(
-        ImmutableSet.copyOf(pac.run()),
+        ImmutableSet.copyOf(suggestions),
         equalTo(
             ImmutableSet.of(
                 new AutocompleteSuggestion(
@@ -81,10 +81,9 @@ public class ParserRoutingPolicyTest {
             .setRoutingPolicyNames(ImmutableSet.of("RoutingPolicy1", "RoutingPolicy11"))
             .build();
 
-    ParboiledAutoComplete pac =
-        new ParboiledAutoComplete(
-            Parser.instance().getInputRule(Grammar.ROUTING_POLICY_SPECIFIER),
-            Parser.ANCHORS,
+    List<AutocompleteSuggestion> suggestions =
+        ParboiledAutoComplete.autoComplete(
+            Grammar.ROUTING_POLICY_SPECIFIER,
             "network",
             "snapshot",
             query,
@@ -94,7 +93,7 @@ public class ParserRoutingPolicyTest {
             null);
 
     assertThat(
-        ImmutableSet.copyOf(pac.run()),
+        ImmutableSet.copyOf(suggestions),
         equalTo(
             ImmutableSet.of(
                 new AutocompleteSuggestion(
