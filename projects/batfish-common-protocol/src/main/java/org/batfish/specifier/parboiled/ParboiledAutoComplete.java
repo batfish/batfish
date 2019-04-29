@@ -20,6 +20,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.answers.AutoCompleteUtils;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.Variable;
 import org.batfish.datamodel.questions.Variable.Type;
 import org.batfish.referencelibrary.AddressGroup;
@@ -153,10 +154,13 @@ public final class ParboiledAutoComplete {
       case FILTER_NAME_REGEX:
         // can't help with regexes
         return ImmutableList.of();
+      case INTERFACE_AND_NODE:
+        // Node or Interface based anchors should appear later in the path
+        throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case INTERFACE_GROUP_NAME:
         return autoCompletePotentialMatch(pm, DEFAULT_RANK);
       case INTERFACE_NAME:
-        return autoCompletePotentialMatch(pm, DEFAULT_RANK);
+        return autoCompleteInterfaceName(pm, DEFAULT_RANK);
       case INTERFACE_NAME_REGEX:
         // can't help with regexes
         return ImmutableList.of();
@@ -274,6 +278,62 @@ public final class ParboiledAutoComplete {
         return Variable.Type.ZONE;
       default:
         throw new IllegalArgumentException("No valid Variable type for Anchor type" + anchorType);
+    }
+  }
+
+  private List<AutocompleteSuggestion> autoCompleteInterfaceName(PotentialMatch pm, int rank) {
+    int anchorIndex = pm.getPath().indexOf(pm.getAnchor());
+    checkArgument(anchorIndex != -1, "Anchor is not present in the path.");
+
+    Anchor.Type parentAnchorType =
+        (anchorIndex == 0) ? null : pm.getPath().get(anchorIndex - 1).getAnchorType();
+
+    if (parentAnchorType == null) {
+      return autoCompletePotentialMatch(pm, rank);
+    }
+
+    switch (parentAnchorType) {
+      case INTERFACE_AND_NODE:
+        String interfaceNamePrefix = pm.getMatchPrefix();
+        // node information is at the head if nothing about the interface name was entered;
+        // otherwise, it is second from top
+        NodeAstNode nodeAst =
+            (NodeAstNode)
+                _parser
+                    .getShadowStack()
+                    .getValueStack()
+                    .peek(interfaceNamePrefix.isEmpty() ? 0 : 1);
+
+        // do context sensitive auto completion input is a node name or regex
+        if (!(nodeAst instanceof NameNodeAstNode) && !(nodeAst instanceof NameRegexNodeAstNode)) {
+          return autoCompletePotentialMatch(pm, rank);
+        }
+
+        Set<String> candidateInterfaces =
+            _completionMetadata.getInterfaces().stream()
+                .filter(i -> nodeNameMatches(i.getHostname(), nodeAst))
+                .map(NodeInterfacePair::getInterface)
+                .collect(ImmutableSet.toImmutableSet());
+        return updateSuggestions(
+            AutoCompleteUtils.stringAutoComplete(interfaceNamePrefix, candidateInterfaces),
+            false,
+            Anchor.Type.INTERFACE_NAME,
+            rank,
+            pm.getMatchStartIndex());
+
+      default:
+        return autoCompletePotentialMatch(pm, rank);
+    }
+  }
+
+  @VisibleForTesting
+  static boolean nodeNameMatches(String nodeName, NodeAstNode nodeAst) {
+    if (nodeAst instanceof NameNodeAstNode) {
+      return nodeName.equalsIgnoreCase(((NameNodeAstNode) nodeAst).getName());
+    } else if (nodeAst instanceof NameRegexNodeAstNode) {
+      return ((NameRegexNodeAstNode) nodeAst).getPattern().matcher(nodeName).find();
+    } else {
+      throw new IllegalArgumentException("Can only match node names or regexes");
     }
   }
 

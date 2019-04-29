@@ -5,6 +5,7 @@ import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.IGNORE;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_AND_NODE;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_AND_REFERENCE_BOOK;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME;
@@ -276,6 +277,7 @@ public class Parser extends CommonParser {
     return FirstOf(InterfaceWithNode(), InterfaceWithoutNode(), InterfaceParens());
   }
 
+  @Anchor(INTERFACE_AND_NODE)
   public Rule InterfaceWithNode() {
     return Sequence(
         NodeTerm(),
