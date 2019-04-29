@@ -48,7 +48,7 @@ public class CommonParserTest {
                 .put("TestIpRange", Type.IP_RANGE)
                 .put("TestName", Type.NODE_NAME)
                 .put("TestNameRegex", Type.NODE_NAME_REGEX)
-                .put("TestNameRegexDeprecated", Type.IGNORE)
+                .put("TestNameRegexDeprecated", Type.DEPRECATED)
                 .put("TestReferenceBookName", Type.REFERENCE_BOOK_NAME)
                 .put("TestSpecifierInput", Type.ADDRESS_GROUP_AND_REFERENCE_BOOK)
                 .put("WhiteSpace", Type.WHITESPACE)
