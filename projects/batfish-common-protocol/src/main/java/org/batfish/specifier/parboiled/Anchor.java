@@ -14,12 +14,14 @@ import java.lang.annotation.Target;
 @interface Anchor {
 
   enum Type {
+    ADDRESS_GROUP_AND_REFERENCE_BOOK,
     ADDRESS_GROUP_NAME,
     CHAR_LITERAL,
     EOI,
     FILTER_NAME,
     FILTER_NAME_REGEX,
     IGNORE,
+    INTERFACE_GROUP_AND_REFERENCE_BOOK,
     INTERFACE_GROUP_NAME,
     INTERFACE_NAME,
     INTERFACE_NAME_REGEX,

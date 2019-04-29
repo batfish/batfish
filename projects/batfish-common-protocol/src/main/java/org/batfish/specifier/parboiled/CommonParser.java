@@ -44,7 +44,11 @@ public class CommonParser extends BaseParser<AstNode> {
     private boolean _repeatedRun;
 
     ShadowStack() {
-      _vs = new DefaultValueStack<>();
+      this(new DefaultValueStack<>());
+    }
+
+    ShadowStack(ValueStack<AstNode> vs) {
+      _vs = vs;
       _currentIndex = 0;
       _repeatedRun = false;
     }
@@ -77,6 +81,11 @@ public class CommonParser extends BaseParser<AstNode> {
 
   public ShadowStack getShadowStack() {
     return _shadowStack;
+  }
+
+  /** Useful for testing */
+  void setShadowStack(ShadowStack shadowStack) {
+    _shadowStack = shadowStack;
   }
 
   /** We use double quotes to escape complex names */
@@ -128,10 +137,12 @@ public class CommonParser extends BaseParser<AstNode> {
       case VRF_NAME:
       case ZONE_NAME:
         return true;
+      case ADDRESS_GROUP_AND_REFERENCE_BOOK:
       case CHAR_LITERAL:
       case EOI:
       case FILTER_NAME_REGEX:
       case IGNORE:
+      case INTERFACE_GROUP_AND_REFERENCE_BOOK:
       case INTERFACE_NAME_REGEX:
       case INTERFACE_TYPE:
       case IP_ADDRESS:
