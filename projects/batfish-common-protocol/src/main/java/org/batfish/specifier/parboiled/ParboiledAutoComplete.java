@@ -154,7 +154,7 @@ public final class ParboiledAutoComplete {
       case FILTER_NAME_REGEX:
         // can't help with regexes
         return ImmutableList.of();
-      case INTERFACE_AND_NODE:
+      case NODE_AND_INTERFACE:
         // Node or Interface based anchors should appear later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case INTERFACE_GROUP_NAME:
@@ -281,7 +281,8 @@ public final class ParboiledAutoComplete {
     }
   }
 
-  private List<AutocompleteSuggestion> autoCompleteInterfaceName(PotentialMatch pm, int rank) {
+  @VisibleForTesting
+  List<AutocompleteSuggestion> autoCompleteInterfaceName(PotentialMatch pm, int rank) {
     int anchorIndex = pm.getPath().indexOf(pm.getAnchor());
     checkArgument(anchorIndex != -1, "Anchor is not present in the path.");
 
@@ -293,7 +294,7 @@ public final class ParboiledAutoComplete {
     }
 
     switch (parentAnchorType) {
-      case INTERFACE_AND_NODE:
+      case NODE_AND_INTERFACE:
         String interfaceNamePrefix = pm.getMatchPrefix();
         // node information is at the head if nothing about the interface name was entered;
         // otherwise, it is second from top
