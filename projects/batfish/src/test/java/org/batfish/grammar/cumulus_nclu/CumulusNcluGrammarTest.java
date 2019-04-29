@@ -69,7 +69,6 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpPeerConfig;
-import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
@@ -90,6 +89,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -227,6 +227,7 @@ public final class CumulusNcluGrammarTest {
         BgpUnnumberedPeerConfig.builder()
             .setLocalIp(BGP_UNNUMBERED_IP)
             .setPeerInterface("swp1")
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance())
             .setExportPolicy(computeBgpPeerExportPolicyName(DEFAULT_VRF_NAME, "swp1"));
     Map<String, BgpUnnumberedPeerConfig> expectedPeers1 =
         ImmutableMap.of(
@@ -258,19 +259,20 @@ public final class CumulusNcluGrammarTest {
     Bgpv4Route.Builder routeBuilder =
         Bgpv4Route.builder()
             .setNextHopIp(BGP_UNNUMBERED_IP)
+            .setNextHopInterface("swp1") // both peers are configured on interfaces called swp1
             .setReceivedFromIp(BGP_UNNUMBERED_IP)
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP)
             .setSrcProtocol(RoutingProtocol.BGP)
             .setLocalPreference(100)
             .setAdmin(20);
-    BgpRoute expectedRoute1 =
+    Bgpv4Route expectedRoute1 =
         routeBuilder
             .setNetwork(Prefix.parse("6.6.6.6/32"))
             .setAsPath(AsPath.ofSingletonAsSets(65101L))
             .setOriginatorIp(Ip.parse("192.0.2.2"))
             .build();
-    BgpRoute expectedRoute2 =
+    Bgpv4Route expectedRoute2 =
         routeBuilder
             .setNetwork(Prefix.parse("5.5.5.5/32"))
             .setAsPath(AsPath.ofSingletonAsSets(65100L))

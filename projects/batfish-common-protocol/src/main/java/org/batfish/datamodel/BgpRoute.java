@@ -22,26 +22,26 @@ public abstract class BgpRoute extends AbstractRoute {
 
   public static final String PROP_AS_PATH = "asPath";
 
-  protected static final String PROP_CLUSTER_LIST = "clusterList";
+  static final String PROP_CLUSTER_LIST = "clusterList";
 
   public static final String PROP_COMMUNITIES = "communities";
 
-  protected static final String PROP_DISCARD = "discard";
+  static final String PROP_DISCARD = "discard";
 
   public static final String PROP_LOCAL_PREFERENCE = "localPreference";
 
-  protected static final String PROP_ORIGIN_TYPE = "originType";
+  static final String PROP_ORIGIN_TYPE = "originType";
 
-  protected static final String PROP_ORIGINATOR_IP = "originatorIp";
+  static final String PROP_ORIGINATOR_IP = "originatorIp";
 
-  protected static final String PROP_RECEIVED_FROM_IP = "receivedFromIp";
+  static final String PROP_RECEIVED_FROM_IP = "receivedFromIp";
 
-  protected static final String PROP_RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT =
+  static final String PROP_RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT =
       "receivedFromRouteReflectorClient";
 
-  protected static final String PROP_SRC_PROTOCOL = "srcProtocol";
+  static final String PROP_SRC_PROTOCOL = "srcProtocol";
 
-  protected static final String PROP_WEIGHT = "weight";
+  static final String PROP_WEIGHT = "weight";
 
   @Nonnull protected final AsPath _asPath;
   @Nonnull protected final SortedSet<Long> _clusterList;

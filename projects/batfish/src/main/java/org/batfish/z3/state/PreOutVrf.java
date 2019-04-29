@@ -1,22 +1,12 @@
 package org.batfish.z3.state;
 
+import java.util.Objects;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.z3.expr.StateExpr;
-import org.batfish.z3.state.visitors.GenericStateExprVisitor;
-import org.batfish.z3.state.visitors.StateVisitor;
+import org.batfish.z3.state.visitors.StateExprVisitor;
 
-public class PreOutVrf extends StateExpr {
-
-  public static class State extends StateExpr.State {
-
-    public static final State INSTANCE = new State();
-
-    private State() {}
-
-    @Override
-    public void accept(StateVisitor visitor) {
-      visitor.visitPreOutVrf(this);
-    }
-  }
+@ParametersAreNonnullByDefault
+public final class PreOutVrf implements StateExpr {
 
   private final String _hostname;
 
@@ -28,7 +18,7 @@ public class PreOutVrf extends StateExpr {
   }
 
   @Override
-  public <R> R accept(GenericStateExprVisitor<R> visitor) {
+  public <R> R accept(StateExprVisitor<R> visitor) {
     return visitor.visitPreOutVrf(this);
   }
 
@@ -41,7 +31,19 @@ public class PreOutVrf extends StateExpr {
   }
 
   @Override
-  public State getState() {
-    return State.INSTANCE;
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof PreOutVrf)) {
+      return false;
+    }
+    PreOutVrf preOutVrf = (PreOutVrf) o;
+    return _hostname.equals(preOutVrf._hostname) && _vrf.equals(preOutVrf._vrf);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_hostname, _vrf);
   }
 }

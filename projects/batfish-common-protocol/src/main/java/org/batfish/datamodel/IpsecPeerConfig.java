@@ -5,7 +5,6 @@ import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
@@ -52,31 +51,31 @@ public abstract class IpsecPeerConfig implements Serializable {
     _tunnelInterface = tunnelInterface;
   }
 
-  @JsonPropertyDescription("Local address for IPSec peer")
+  /** Local address for IPSec peer. */
   @JsonProperty(PROP_LOCAL_ADDRESS)
   public Ip getLocalAddress() {
     return _localAddress;
   }
 
-  @JsonPropertyDescription("Source interface for IPSec peer")
+  /** Source interface for IPSec peer. */
   @JsonProperty(PROP_SOURCE_INTERFACE)
   public String getSourceInterface() {
     return _sourceInterface;
   }
 
-  @JsonPropertyDescription("Tunnel interface for IPSec peer")
+  /** Tunnel interface for IPSec peer. */
   @JsonProperty(PROP_TUNNEL_INTERFACE)
   public String getTunnelInterface() {
     return _tunnelInterface;
   }
 
-  @JsonPropertyDescription("IPSec policy for IPSec peer")
+  /** IPSec policy for IPSec peer. */
   @JsonProperty(PROP_IPSEC_POLICY)
   public String getIpsecPolicy() {
     return _ipsecPolicy;
   }
 
-  @JsonPropertyDescription("Policy access list for IPSec peer")
+  /** Policy access list for IPSec peer. */
   @JsonProperty(PROP_POLICY_ACCESS_LIST)
   public IpAccessList getPolicyAccessList() {
     return _policyAccessList;

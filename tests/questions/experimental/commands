@@ -112,7 +112,7 @@ test -raw tests/questions/experimental/subnetMultipathConsistency.ref validate-t
 test -raw tests/questions/experimental/switchedVlanProperties.ref validate-template switchedVlanProperties excludeShutInterfaces=true, interfaces="i1", nodes="n1", vlans="1-5,7"
 
 # test testRoutePolicies
-test -raw tests/questions/experimental/testRoutePolicies.ref validate-template testRoutePolicies nodes="nodes", policies="policies", direction="in", inputRoutes=[{class="org.batfish.datamodel.Bgpv4Route", network="0.0.0.0/0", originatorIp="1.1.1.1", originType="IGP", protocol="BGP"}]
+test -raw tests/questions/experimental/testRoutePolicies.ref validate-template testRoutePolicies nodes="nodes", policies="policies", direction="in", inputRoutes=[{network="0.0.0.0/0", originatorIp="1.1.1.1", originType="IGP", protocol="BGP"}]
 
 # test traceroute
 test -raw tests/questions/experimental/traceroute.ref validate-template traceroute startLocation="location", ignoreFilters=false, maxTraces=0, headers={"dstIps" : "1.1.1.1/32"}

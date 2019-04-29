@@ -3,19 +3,14 @@
   "direction" : "IN",
   "inputRoutes" : [
     {
-      "class" : "org.batfish.datamodel.Bgpv4Route",
-      "administrativeCost" : 0,
       "asPath" : [ ],
-      "discard" : false,
       "localPreference" : 0,
       "metric" : 0,
       "network" : "0.0.0.0/0",
-      "nextHopInterface" : "dynamic",
       "nextHopIp" : "AUTO/NONE(-1l)",
       "originType" : "igp",
       "originatorIp" : "1.1.1.1",
       "protocol" : "bgp",
-      "receivedFromRouteReflectorClient" : false,
       "weight" : 0
     }
   ],
@@ -65,10 +60,9 @@
         "description" : "The BGP route announcements to test the policy on",
         "displayName" : "Input Routes",
         "optional" : false,
-        "type" : "bgpv4Routes",
+        "type" : "bgpRoutes",
         "value" : [
           {
-            "class" : "org.batfish.datamodel.Bgpv4Route",
             "network" : "0.0.0.0/0",
             "originatorIp" : "1.1.1.1",
             "originType" : "IGP",

@@ -6,6 +6,7 @@ import static org.junit.Assert.assertFalse;
 
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
+import java.math.BigInteger;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Rule;
@@ -131,5 +132,25 @@ public class StandardCommunityTest {
   @Test
   public void testNotTransitive() {
     assertFalse(StandardCommunity.of(1, 1).isTransitive());
+  }
+
+  @Test
+  public void testToBigInt() {
+    assertThat(StandardCommunity.of(0).asBigInt(), equalTo(BigInteger.ZERO));
+    assertThat(
+        StandardCommunity.of(65535, 65535).asBigInt(), equalTo(BigInteger.valueOf(4294967295L)));
+  }
+
+  @Test
+  public void testAsLong() {
+    StandardCommunity c = StandardCommunity.of(65535, 65534);
+    assertThat(c.asLong(), equalTo((long) 65535 << 16 | 65534));
+  }
+
+  @Test
+  public void testHighAndLow() {
+    StandardCommunity c = StandardCommunity.of(65535, 65534);
+    assertThat(c.high(), equalTo(65535));
+    assertThat(c.low(), equalTo(65534));
   }
 }

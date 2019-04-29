@@ -66,6 +66,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -298,7 +299,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
             .setLocalAs(proc.getLocalAs())
             .setLocalIp(updateSource)
             .setPeerAddress(neighbor.getAddress())
-            .setRemoteAsns(remoteAsns);
+            .setRemoteAsns(remoteAsns)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
     builder.build();
   }
 

@@ -1,6 +1,8 @@
 package org.batfish.grammar.cisco;
 
 import static java.util.Objects.requireNonNull;
+import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
+import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
 import static org.batfish.common.util.CommonUtil.sha256Digest;
 import static org.batfish.datamodel.AuthenticationMethod.ENABLE;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_RADIUS;
@@ -331,6 +333,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpProcessMode;
@@ -689,6 +692,46 @@ public class CiscoGrammarTest {
     assertThat(
         defaults.getDefaultVrf().getOspfProcess().getReferenceBandwidth(),
         equalTo(getReferenceOspfBandwidth(ConfigurationFormat.ARISTA)));
+  }
+
+  @Test
+  public void testAristaVsIosOspfRedistributeBgpSyntax() throws IOException {
+    // Both an Arista and an IOS config contain these "redistribute bgp" lines in their OSPF setups:
+    String l1 = "redistribute bgp";
+    String l2 = "redistribute bgp route-map MAP";
+    String l3 = "redistribute bgp 65100";
+    String l4 = "redistribute bgp 65100 route-map MAP";
+    String l5 = "redistribute bgp 65100 metric 10";
+    /*
+    Arista does not allow specification of an AS, while IOS requires it, and IOS allows setting
+    metric and a few other settings where Arista does not (both allow route-maps). So:
+    - First two lines should generate warnings on IOS but not Arista
+    - Remaining lines should generate warnings on Arista but not IOS
+    */
+    String testrigName = "arista-vs-ios-warnings";
+    String iosName = "ios-ospf-redistribute-bgp";
+    String aristaName = "arista-ospf-redistribute-bgp";
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(
+                    TESTRIGS_PREFIX + testrigName, ImmutableList.of(aristaName, iosName))
+                .build(),
+            _folder);
+    batfish.getSettings().setDisableUnrecognized(false);
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement();
+    assertThat(
+        pvcae.getWarnings().get("configs/" + iosName).getParseWarnings(),
+        contains(
+            allOf(hasComment("This syntax is unrecognized"), hasText(containsString(l1))),
+            allOf(hasComment("This syntax is unrecognized"), hasText(containsString(l2)))));
+    assertThat(
+        pvcae.getWarnings().get("configs/" + aristaName).getParseWarnings(),
+        contains(
+            allOf(hasComment("This syntax is unrecognized"), hasText(containsString(l3))),
+            allOf(hasComment("This syntax is unrecognized"), hasText(containsString(l4))),
+            allOf(hasComment("This syntax is unrecognized"), hasText(containsString(l5)))));
   }
 
   @Test

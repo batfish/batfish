@@ -359,7 +359,7 @@ public class Client extends AbstractClient implements IClient {
         }
         new BgpProcessPropertySpecifier(value.textValue());
         break;
-      case BGPV4_ROUTES:
+      case BGP_ROUTES:
         if (!(value.isArray())) {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON array", expectedType.getName()));

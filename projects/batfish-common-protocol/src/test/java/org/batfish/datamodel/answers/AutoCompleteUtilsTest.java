@@ -61,6 +61,7 @@ import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -73,6 +74,27 @@ public class AutoCompleteUtilsTest {
     return suggestions.stream()
         .map(AutocompleteSuggestion::getText)
         .collect(ImmutableSet.toImmutableSet());
+  }
+
+  private static CompletionMetadata getMockCompletionMetadata() {
+    return CompletionMetadata.builder()
+        .setNodes(
+            ImmutableSet.of(
+                "host1", "host2", "router1", "spine", "leaf", "\"/foo/leaf\"", "enternet1"))
+        .setInterfaces(
+            ImmutableSet.of(
+                new NodeInterfacePair("host1", "interface1"),
+                new NodeInterfacePair("host1", "ethernet1"),
+                new NodeInterfacePair("host2", "ethernet1"),
+                new NodeInterfacePair("host2", "gigEthernet1"),
+                new NodeInterfacePair("router1", "eth1"),
+                new NodeInterfacePair("router1", "ge0"),
+                new NodeInterfacePair("spine", "int1"),
+                new NodeInterfacePair("leaf", "leafInterface"),
+                new NodeInterfacePair("\"/foo/leaf\"", "fooInterface")))
+        .setIps(ImmutableSet.of("1.1.1.1", "11.2.3.4", "3.1.2.4", "1.2.3.4", "4.4.4.4"))
+        .setVrfs(ImmutableSet.of("default"))
+        .build();
   }
 
   @Test
@@ -360,6 +382,649 @@ public class AutoCompleteUtilsTest {
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(DNS_SERVERS, DNS_SOURCE_INTERFACE)));
+  }
+
+  @Ignore
+  @Test
+  public void testNodeNameAutocompleteEmptyString() throws IOException {
+    CompletionMetadata completionMetadata = getMockCompletionMetadata();
+
+    // All node names in alphabetical order with escaped names at the end
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network", "snapshot", Type.NODE_NAME, "", 10, completionMetadata, null, null)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(
+            ImmutableList.of(
+                "enternet1", "host1", "host2", "leaf", "router1", "spine", "\"/foo/leaf\"")));
+  }
+
+  @Ignore
+  @Test
+  public void testNodeNameAutocompleteNonPrefixCharacter() throws IOException {
+    CompletionMetadata completionMetadata = getMockCompletionMetadata();
+
+    // All node names containing ‘o’ in alphabetical order with escaped names at the end
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network", "snapshot", Type.NODE_NAME, "o", 10, completionMetadata, null, null)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(ImmutableList.of("host1", "host2", "router1", "\"/foo/leaf\"")));
+  }
+
+  @Ignore
+  @Test
+  public void testNodeNameAutocompleteOnePrefixCharacter() throws IOException {
+    CompletionMetadata completionMetadata = getMockCompletionMetadata();
+
+    // “Spine” suggested first because the input string is a prefix of it; “host1” and “host2” come
+    // after alphabetically because they contain the input string
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network", "snapshot", Type.NODE_NAME, "s", 10, completionMetadata, null, null)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(ImmutableList.of("spine", "host1", "host2")));
+  }
+
+  @Ignore
+  @Test
+  public void testNodeNameAutocompletePrefixQuery() throws IOException {
+    CompletionMetadata completionMetadata = getMockCompletionMetadata();
+
+    // Node names where the input string is a prefix suggested first, then node names containing the
+    // input
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network", "snapshot", Type.NODE_NAME, "lea", 10, completionMetadata, null, null)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(ImmutableList.of("leaf", "\"/foo/leaf\"")));
+  }
+
+  @Ignore
+  @Test
+  public void testNodeNameAutocompleteUnmatchableCharacterAtEnd() throws IOException {
+    CompletionMetadata completionMetadata = getMockCompletionMetadata();
+
+    // “leax” does not match any of the node names so removing characters from the end until there
+    // are suggestions would give us the same suggestions as “lea”
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network", "snapshot", Type.NODE_NAME, "leax", 10, completionMetadata, null, null)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(ImmutableList.of("leaf", "\"/foo/leaf\"")));
+  }
+
+  @Ignore
+  @Test
+  public void testNodeNameAutocompleteUnmatchableCharacter() throws IOException {
+    CompletionMetadata completionMetadata = getMockCompletionMetadata();
+
+    // None of the nodenames contain “x” so removing characters from the end of the input string
+    // until there are suggestions would give us the same suggestions as the empty string
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network", "snapshot", Type.NODE_NAME, "x", 10, completionMetadata, null, null)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(
+            ImmutableList.of(
+                "enternet1", "host1", "host2", "leaf", "router1", "spine", "\"/foo/leaf\"")));
+  }
+
+  @Ignore
+  @Test
+  public void testNodeNameAutocompleteUnmatchableCharacterInMiddle() throws IOException {
+    CompletionMetadata completionMetadata = getMockCompletionMetadata();
+
+    // ‘Leaxf’ does not result in any suggestions so removing characters off the end until there are
+    // completions gives us the same suggestions as for ‘lea’
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network", "snapshot", Type.NODE_NAME, "leaxf", 10, completionMetadata, null, null)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(ImmutableList.of("leaf", "\"/foo/leaf\"")));
+  }
+
+  @Ignore
+  @Test
+  public void testNodeNameAutocompleteEscapedPartial() throws IOException {
+    CompletionMetadata completionMetadata = getMockCompletionMetadata();
+
+    // Only one node name contains “/leaf” (escaped)
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network",
+                "snapshot",
+                Type.NODE_NAME,
+                "\"/leaf\"",
+                10,
+                completionMetadata,
+                null,
+                null)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(ImmutableList.of("\"/foo/leaf\"")));
+  }
+
+  @Ignore
+  @Test
+  public void testNodeNameAutocompleteUnescapedPartial() throws IOException {
+    CompletionMetadata completionMetadata = getMockCompletionMetadata();
+
+    // Unescaped input doesn’t match anything, adding quotes gives us one match
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network", "snapshot", Type.NODE_NAME, "/foo", 10, completionMetadata, null, null)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(ImmutableList.of("\"/foo/leaf\"")));
+  }
+
+  @Ignore
+  @Test
+  public void testNodeNameAutocompleteValidInputIncluded() throws IOException {
+    CompletionMetadata completionMetadata = getMockCompletionMetadata();
+
+    // Since the input text ‘leaf’ is valid it is included as the first suggestion
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network", "snapshot", Type.NODE_NAME, "leaf", 10, completionMetadata, null, null)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(ImmutableList.of("leaf", "\"/foo/leaf\"")));
+  }
+
+  @Ignore
+  @Test
+  public void testAlreadySpecifiedSuggestionsFilteredOut() throws IOException {
+    List<AutocompleteSuggestion> suggestions =
+        AutoCompleteUtils.autoComplete(Type.ROUTING_PROTOCOL_SPEC, "EIGRP-INT, EIGRP-", 10);
+
+    // should only suggest "EIGRP-EXT" because "EIGRP-INT" is already specified
+    assertThat(suggestions.size(), equalTo(1));
+    assertThat(suggestions.get(0).getText(), equalTo("EIGRP-EXT"));
+    assertThat(suggestions.get(0).getInsertionIndex(), equalTo(11));
+  }
+
+  @Ignore
+  @Test
+  public void testRoutingProtocolSpecifiedMultipleTimes() throws IOException {
+    List<AutocompleteSuggestion> suggestions =
+        AutoCompleteUtils.autoComplete(Type.ROUTING_PROTOCOL_SPEC, "EIGRP-INT, EIGRP-INT", 10);
+
+    // Since ‘EIGRP-INT’ has already been entered there are no valid completions here so removing
+    // characters from the end gives us the same suggestions as for ‘EIGRP-INT, EIGRP-’
+    assertThat(suggestions.size(), equalTo(1));
+    assertThat(suggestions.get(0).getText(), equalTo("EIGRP-EXT"));
+    assertThat(suggestions.get(0).getInsertionIndex(), equalTo(11));
+  }
+
+  @Ignore
+  @Test
+  public void testIpSpaceSpecEmptyString() throws IOException {
+    CompletionMetadata completionMetadata = getMockCompletionMetadata();
+
+    // Any Ips first in ascending order, then any node names in alphabetical order, then any partial
+    // suggestions in alphabetical order
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network",
+                "snapshot",
+                Type.IP_SPACE_SPEC,
+                "",
+                25,
+                completionMetadata,
+                NodeRolesData.builder().build(),
+                new ReferenceLibrary(ImmutableList.of()))
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(
+            ImmutableList.of(
+                "1.1.1.1",
+                "1.2.3.4",
+                "3.1.2.4",
+                "4.4.4.4",
+                "11.2.3.4",
+                "enternet1",
+                "host1",
+                "host2",
+                "leaf",
+                "router1",
+                "spine",
+                "\"/foo/leaf\"",
+                "@connectedTo(",
+                "@deviceType(",
+                "@enter(",
+                "@interfaceType(",
+                "@vrf")));
+  }
+
+  @Ignore
+  @Test
+  public void testIpSpeceSpecSingleDigitQuery() throws IOException {
+    CompletionMetadata completionMetadata = getMockCompletionMetadata();
+
+    // first ip addresses that begin with 1 in ascending order followed by those that contain a 1,
+    // then any node names containing a “1” in alphabetical order
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network",
+                "snapshot",
+                Type.IP_SPACE_SPEC,
+                "1",
+                15,
+                completionMetadata,
+                NodeRolesData.builder().build(),
+                new ReferenceLibrary(ImmutableList.of()))
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(
+            ImmutableList.of(
+                "1.1.1.1", "1.2.3.4", "11.2.3.4", "3.1.2.4", "enternet1", "host1", "router1")));
+  }
+
+  @Ignore
+  @Test
+  public void testIpSpaceSpecSingleDigitAndPeriod() throws IOException {
+    CompletionMetadata completionMetadata = getMockCompletionMetadata();
+
+    // First Ip addresses that begin with ‘1.’, then addresses that contain the value 1 (as in
+    // 00000001) as one of it’s octets, then addresses that contain a ‘1.’
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network",
+                "snapshot",
+                Type.IP_SPACE_SPEC,
+                "1.",
+                15,
+                completionMetadata,
+                NodeRolesData.builder().build(),
+                new ReferenceLibrary(ImmutableList.of()))
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(ImmutableList.of("1.1.1.1", "1.2.3.4", "3.1.2.4", "11.2.3.4")));
+  }
+
+  @Ignore
+  @Test
+  public void testIpSpaceSpecPartialIpQuery() throws IOException {
+    CompletionMetadata completionMetadata = getMockCompletionMetadata();
+
+    // First any Ip addresses that begin with ‘1.2’, then addresses that contain the value 1 as one
+    // of it’s octets followed by a ‘.2’, then addresses that contain a ‘1.2’
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network",
+                "snapshot",
+                Type.IP_SPACE_SPEC,
+                "1.2",
+                15,
+                completionMetadata,
+                NodeRolesData.builder().build(),
+                new ReferenceLibrary(ImmutableList.of()))
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(ImmutableList.of("1.2.3.4", "3.1.2.4", "11.2.3.4")));
+  }
+
+  @Ignore
+  @Test
+  public void testIpSpaceSpecValidIpQuery() throws IOException {
+    CompletionMetadata completionMetadata = getMockCompletionMetadata();
+
+    // Exact match first, then any addresses that contain ‘1.2.3.4’, then any operators that we can
+    // provide completions for, then operators that we can’t provide completions for (we stop giving
+    // suggestions if the user enters ‘:’ for an ip wildcard)
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network",
+                "snapshot",
+                Type.IP_SPACE_SPEC,
+                "1.2.3.4",
+                15,
+                completionMetadata,
+                NodeRolesData.builder().build(),
+                new ReferenceLibrary(ImmutableList.of()))
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(ImmutableList.of("1.2.3.4", "11.2.3.4", "-", "/", "\\", "&", ",", ":")));
+  }
+
+  @Ignore
+  @Test
+  public void testIpSpaceSpecIpRange() throws IOException {
+    CompletionMetadata completionMetadata = getMockCompletionMetadata();
+
+    // Only Ip addresses that are greater than the address at the start of the range in ascending
+    // order
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network",
+                "snapshot",
+                Type.IP_SPACE_SPEC,
+                "1.2.3.4-",
+                15,
+                completionMetadata,
+                NodeRolesData.builder().build(),
+                new ReferenceLibrary(ImmutableList.of()))
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(ImmutableList.of("3.1.2.4", "4.4.4.4", "11.2.3.4")));
+  }
+
+  @Ignore
+  @Test
+  public void testIpSpaceSpecIpRangeNoEndRange() throws IOException {
+    CompletionMetadata completionMetadata = getMockCompletionMetadata();
+
+    // None of the addresses in the network are less than 11.2.3.4 so those shouldn’t be suggested
+    // to end the range. Removing characters from the end gives us the same suggestions that would
+    // be returned for ‘11.2.3.4’
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network",
+                "snapshot",
+                Type.IP_SPACE_SPEC,
+                "11.2.3.4-",
+                15,
+                completionMetadata,
+                NodeRolesData.builder().build(),
+                new ReferenceLibrary(ImmutableList.of()))
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(ImmutableList.of("11.2.3.4", "/", "\\", "&", ",", ":")));
+  }
+
+  @Ignore
+  @Test
+  public void testIpSpaceSpecSingleLetterCharacter() throws IOException {
+    CompletionMetadata completionMetadata = getMockCompletionMetadata();
+
+    // First any node names that begin with ‘e’, then partial suggestions that begin with ‘e’
+    // (disregarding @), then any node names that contain ‘e’, then partial suggestions that contain
+    // ‘e’
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network",
+                "snapshot",
+                Type.IP_SPACE_SPEC,
+                "e",
+                15,
+                completionMetadata,
+                NodeRolesData.builder().build(),
+                new ReferenceLibrary(ImmutableList.of()))
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(
+            ImmutableList.of(
+                "enternet1",
+                "@enter(",
+                "leaf",
+                "router1",
+                "spine",
+                "\"/foo/leaf\"",
+                "@connectedTo(",
+                "@deviceType(",
+                "@interfaceType(")));
+  }
+
+  @Ignore
+  @Test
+  public void testIpSpaceSpecFunctionsOnly() throws IOException {
+    CompletionMetadata completionMetadata = getMockCompletionMetadata();
+
+    // Just the valid function names in alphabetical order
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network",
+                "snapshot",
+                Type.IP_SPACE_SPEC,
+                "@",
+                15,
+                completionMetadata,
+                NodeRolesData.builder().build(),
+                new ReferenceLibrary(ImmutableList.of()))
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(
+            ImmutableList.of(
+                "@connectedTo(", "@deviceType(", "@enter(", "@interfaceType(", "@vrf")));
+  }
+
+  @Ignore
+  @Test
+  public void testInterfacesSpecEmptyString() throws IOException {
+    CompletionMetadata completionMetadata = getMockCompletionMetadata();
+
+    // Alphabetical with interfaces first and then nodes, then functions with valid completions,
+    // then operators
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network",
+                "snapshot",
+                Type.INTERFACES_SPEC,
+                "",
+                25,
+                completionMetadata,
+                NodeRolesData.builder().build(),
+                new ReferenceLibrary(ImmutableList.of()))
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(
+            ImmutableList.of(
+                "ethernet1",
+                "eth1",
+                "fooInterface",
+                "ge0",
+                "gigEthernet1",
+                "interface1",
+                "int1",
+                "leafInterface",
+                "enternet1",
+                "host1",
+                "host2",
+                "leaf",
+                "router1",
+                "spine",
+                "\"/foo/leaf\"",
+                "@connectedTo(",
+                "@deviceType(",
+                "@interfaceType(",
+                "@vrf(",
+                "/",
+                "\"",
+                "(")));
+  }
+
+  @Ignore
+  @Test
+  public void testInterfacesSpecSingleCharacter() throws IOException {
+    CompletionMetadata completionMetadata = getMockCompletionMetadata();
+
+    // First interfaces beginning with 'e', then nodes beginning with 'e', then interfaces
+    // containing 'e', then nodes containing 'e', then functions containing 'e'
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network",
+                "snapshot",
+                Type.INTERFACES_SPEC,
+                "e",
+                25,
+                completionMetadata,
+                NodeRolesData.builder().build(),
+                new ReferenceLibrary(ImmutableList.of()))
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(
+            ImmutableList.of(
+                "ethernet1",
+                "eth1",
+                "enternet1",
+                "fooInterface",
+                "ge0",
+                "gigEthernet1",
+                "interface1",
+                "leafInterface",
+                "leaf",
+                "router1",
+                "spine",
+                "\"/foo/leaf\"",
+                "@connectedTo(",
+                "@deviceType(",
+                "@interfaceType(")));
+  }
+
+  @Ignore
+  @Test
+  public void testInterfacesSpecNodeNamePrefix() throws IOException {
+    CompletionMetadata completionMetadata = getMockCompletionMetadata();
+
+    // “Router1” first because the input text is a prefix, then interfaces, nodes, functions
+    // containing 'r'
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network",
+                "snapshot",
+                Type.INTERFACES_SPEC,
+                "r",
+                25,
+                completionMetadata,
+                NodeRolesData.builder().build(),
+                new ReferenceLibrary(ImmutableList.of()))
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(
+            ImmutableList.of(
+                "router1",
+                "ethernet1",
+                "fooInterface",
+                "gigEthernet1",
+                "interface1",
+                "leafInterface",
+                "enternet1",
+                "@interfaceType(",
+                "@vrf(")));
+  }
+
+  @Ignore
+  @Test
+  public void testInterfacesSpecExactMatch() throws IOException {
+    CompletionMetadata completionMetadata = getMockCompletionMetadata();
+
+    // Exact match first, then suggestions where input string is a prefix, then any remaining
+    // interfaces/nodes containing the input string, and finally any partial suggestions
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network",
+                "snapshot",
+                Type.INTERFACES_SPEC,
+                "leaf",
+                25,
+                completionMetadata,
+                NodeRolesData.builder().build(),
+                new ReferenceLibrary(ImmutableList.of()))
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(ImmutableList.of("leaf", "leafInterface", "\"/foo/leaf\"", "[", ",", "&", "\\")));
+  }
+
+  @Ignore
+  @Test
+  public void testInterfacesSpecInvalid() throws IOException {
+    CompletionMetadata completionMetadata = getMockCompletionMetadata();
+
+    // ‘leaxf’ does not result in any suggestions so removing characters off the end until there are
+    // completions gives us the same suggestions as for ‘lea’: first interfaces that begin with
+    // 'lea', then nodes that begin with 'lea', then interfaces, nodes that contain 'lea'
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network",
+                "snapshot",
+                Type.INTERFACES_SPEC,
+                "leaxf",
+                25,
+                completionMetadata,
+                NodeRolesData.builder().build(),
+                new ReferenceLibrary(ImmutableList.of()))
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(ImmutableList.of("leafInterface", "leaf", "\"/foo/leaf\"")));
+  }
+
+  @Ignore
+  @Test
+  public void testInterfacesSpecInterfaceWithNode() throws IOException {
+    CompletionMetadata completionMetadata = getMockCompletionMetadata();
+
+    // First any partial suggestions: first interfaces on the node, then functions, then operators
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network",
+                "snapshot",
+                Type.INTERFACES_SPEC,
+                "leaf[",
+                25,
+                completionMetadata,
+                NodeRolesData.builder().build(),
+                new ReferenceLibrary(ImmutableList.of()))
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(
+            ImmutableList.of(
+                "leafInterface", "@connectedTo(", "@interfaceType(", "@vrf(", "/", "(", "\"")));
+  }
+
+  @Ignore
+  @Test
+  public void testInterfacesSpecValidInterface() throws IOException {
+    CompletionMetadata completionMetadata = getMockCompletionMetadata();
+
+    // First any suggestions that would make a valid input, then any partial suggestions
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network",
+                "snapshot",
+                Type.INTERFACES_SPEC,
+                "leaf[leafInterface",
+                25,
+                completionMetadata,
+                NodeRolesData.builder().build(),
+                new ReferenceLibrary(ImmutableList.of()))
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(ImmutableList.of("]", "\\", "&", ",")));
   }
 
   @Test

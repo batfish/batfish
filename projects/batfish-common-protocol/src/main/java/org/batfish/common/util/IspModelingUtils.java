@@ -41,6 +41,7 @@ import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
@@ -239,6 +240,7 @@ public final class IspModelingUtils {
           .setLocalAs(ispAs)
           .setBgpProcess(ispConfiguration.getDefaultVrf().getBgpProcess())
           .setExportPolicy(EXPORT_POLICY_ON_ISP)
+          .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance())
           .build();
 
       BgpActivePeerConfig.builder()
@@ -248,6 +250,7 @@ public final class IspModelingUtils {
           .setLocalAs(INTERNET_AS)
           .setBgpProcess(internet.getDefaultVrf().getBgpProcess())
           .setExportPolicy(EXPORT_POLICY_ON_INTERNET)
+          .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance())
           .build();
 
       internetInterfaceIp = Ip.create(internetInterfaceIp.asLong() + 2);
@@ -392,6 +395,7 @@ public final class IspModelingUtils {
                     .setRemoteAsns(bgpActivePeerConfig.getRemoteAsns())
                     .setExportPolicy(bgpActivePeerConfig.getExportPolicy())
                     .setBgpProcess(bgpProcess)
+                    .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance())
                     .build());
 
     return ispConfiguration;

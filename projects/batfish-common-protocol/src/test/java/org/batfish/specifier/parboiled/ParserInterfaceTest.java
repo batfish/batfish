@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
+import java.util.List;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
@@ -46,10 +47,9 @@ public class ParserInterfaceTest {
             .setInterfaces(ImmutableSet.of(new NodeInterfacePair("node1", "iface1")))
             .build();
 
-    ParboiledAutoComplete pac =
-        new ParboiledAutoComplete(
-            Parser.instance().getInputRule(Grammar.INTERFACE_SPECIFIER),
-            Parser.ANCHORS,
+    List<AutocompleteSuggestion> suggestions =
+        ParboiledAutoComplete.autoComplete(
+            Grammar.INTERFACE_SPECIFIER,
             "network",
             "snapshot",
             query,
@@ -59,7 +59,7 @@ public class ParserInterfaceTest {
             null);
 
     assertThat(
-        ImmutableSet.copyOf(pac.run()),
+        ImmutableSet.copyOf(suggestions),
         equalTo(
             ImmutableSet.of(
                 // valid operators
@@ -102,10 +102,9 @@ public class ParserInterfaceTest {
                     new NodeInterfacePair("node1", "iface11")))
             .build();
 
-    ParboiledAutoComplete pac =
-        new ParboiledAutoComplete(
-            Parser.instance().getInputRule(Grammar.INTERFACE_SPECIFIER),
-            Parser.ANCHORS,
+    List<AutocompleteSuggestion> suggestions =
+        ParboiledAutoComplete.autoComplete(
+            Grammar.INTERFACE_SPECIFIER,
             "network",
             "snapshot",
             query,
@@ -115,7 +114,7 @@ public class ParserInterfaceTest {
             null);
 
     assertThat(
-        ImmutableSet.copyOf(pac.run()),
+        ImmutableSet.copyOf(suggestions),
         equalTo(
             ImmutableSet.of(
                 new AutocompleteSuggestion(

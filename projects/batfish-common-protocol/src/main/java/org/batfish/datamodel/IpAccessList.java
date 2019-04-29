@@ -5,7 +5,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.List;
@@ -164,8 +163,8 @@ public class IpAccessList implements Serializable {
     return _name;
   }
 
+  /** The lines against which to check an IPV4 packet. */
   @JsonProperty(PROP_LINES)
-  @JsonPropertyDescription("The lines against which to check an IPV4 packet")
   public List<IpAccessListLine> getLines() {
     return _lines;
   }

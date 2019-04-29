@@ -459,6 +459,15 @@
         "cumulus_nclu" : [
           "configs/cumulus_nclu"
         ],
+        "cumulus_nclu_bgp_no_address_family" : [
+          "configs/cumulus_nclu_bgp_no_address_family"
+        ],
+        "cumulus_nclu_bgp_no_router_id" : [
+          "configs/cumulus_nclu_bgp_no_router_id"
+        ],
+        "cumulus_nclu_bgp_no_router_id_or_loopback_ip" : [
+          "configs/cumulus_nclu_bgp_no_router_id_or_loopback_ip"
+        ],
         "cumulus_nclu_invalid_bonds" : [
           "configs/cumulus_nclu_invalid_bonds"
         ],
@@ -1028,6 +1037,9 @@
         "configs/community_name_numbers_dos" : "PASSED",
         "configs/community_set" : "PASSED",
         "configs/cumulus_nclu" : "PASSED",
+        "configs/cumulus_nclu_bgp_no_address_family" : "PASSED",
+        "configs/cumulus_nclu_bgp_no_router_id" : "PASSED",
+        "configs/cumulus_nclu_bgp_no_router_id_or_loopback_ip" : "PASSED",
         "configs/cumulus_nclu_invalid_bonds" : "PASSED",
         "configs/cumulus_nclu_invalid_interfaces" : "PASSED",
         "configs/cumulus_nclu_invalid_vrfs" : "PASSED",
@@ -41438,6 +41450,159 @@
             "  EOF:<EOF>)"
           ]
         },
+        "configs/cumulus_nclu_bgp_no_address_family" : {
+          "sentences" : [
+            "(cumulus_nclu_configuration",
+            "  (statement",
+            "    (s_null",
+            "      NET:'net'",
+            "      (null_rest_of_line",
+            "        DEL:'del'",
+            "        WORD:'all'",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_hostname",
+            "        HOSTNAME:'hostname'",
+            "        hostname = (word",
+            "          WORD:'cumulus_nclu_bgp_no_address_family')",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bgp",
+            "        BGP:'bgp'",
+            "        (b_common",
+            "          (b_autonomous_system",
+            "            AUTONOMOUS_SYSTEM:'autonomous-system'",
+            "            as = (uint32",
+            "              d = DEC:'65500')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bgp",
+            "        BGP:'bgp'",
+            "        (b_common",
+            "          (b_router_id",
+            "            ROUTER_ID:'router-id'",
+            "            id = (ip_address",
+            "              IP_ADDRESS:'192.0.2.2')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_null",
+            "      NET:'net'",
+            "      (null_rest_of_line",
+            "        COMMIT:'commit'",
+            "        NEWLINE:'\\n\\n')))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "configs/cumulus_nclu_bgp_no_router_id" : {
+          "sentences" : [
+            "(cumulus_nclu_configuration",
+            "  (statement",
+            "    (s_null",
+            "      NET:'net'",
+            "      (null_rest_of_line",
+            "        DEL:'del'",
+            "        WORD:'all'",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_hostname",
+            "        HOSTNAME:'hostname'",
+            "        hostname = (word",
+            "          WORD:'cumulus_nclu_bgp_no_router_id')",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bgp",
+            "        BGP:'bgp'",
+            "        (b_common",
+            "          (b_autonomous_system",
+            "            AUTONOMOUS_SYSTEM:'autonomous-system'",
+            "            as = (uint32",
+            "              d = DEC:'65500')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_loopback",
+            "        LOOPBACK:'loopback'",
+            "        LO:'lo'",
+            "        (l_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          address = (interface_address",
+            "            IP_PREFIX:'192.0.2.8/32')",
+            "          NEWLINE:'\\n'))))",
+            "  (statement",
+            "    (s_null",
+            "      NET:'net'",
+            "      (null_rest_of_line",
+            "        COMMIT:'commit'",
+            "        NEWLINE:'\\n\\n')))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "configs/cumulus_nclu_bgp_no_router_id_or_loopback_ip" : {
+          "sentences" : [
+            "(cumulus_nclu_configuration",
+            "  (statement",
+            "    (s_null",
+            "      NET:'net'",
+            "      (null_rest_of_line",
+            "        DEL:'del'",
+            "        WORD:'all'",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_hostname",
+            "        HOSTNAME:'hostname'",
+            "        hostname = (word",
+            "          WORD:'cumulus_nclu_bgp_no_router_id_or_loopback_ip')",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_bgp",
+            "        BGP:'bgp'",
+            "        (b_common",
+            "          (b_autonomous_system",
+            "            AUTONOMOUS_SYSTEM:'autonomous-system'",
+            "            as = (uint32",
+            "              d = DEC:'65500')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_loopback",
+            "        LOOPBACK:'loopback'",
+            "        LO:'lo'",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_null",
+            "      NET:'net'",
+            "      (null_rest_of_line",
+            "        COMMIT:'commit'",
+            "        NEWLINE:'\\n\\n')))",
+            "  EOF:<EOF>)"
+          ]
+        },
         "configs/cumulus_nclu_invalid_bonds" : {
           "sentences" : [
             "(cumulus_nclu_configuration",
@@ -74848,6 +75013,9 @@
         "community_list_named" : "PASSED",
         "community_set" : "PASSED",
         "cumulus_nclu" : "WARNINGS",
+        "cumulus_nclu_bgp_no_address_family" : "PASSED",
+        "cumulus_nclu_bgp_no_router_id" : "PASSED",
+        "cumulus_nclu_bgp_no_router_id_or_loopback_ip" : "WARNINGS",
         "cumulus_nclu_invalid_bonds" : "PASSED",
         "cumulus_nclu_invalid_interfaces" : "PASSED",
         "cumulus_nclu_invalid_vrfs" : "PASSED",
@@ -77615,6 +77783,27 @@
             "vni10001" : {
               "definitionLines" : [
                 75
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "configs/cumulus_nclu_bgp_no_address_family" : { },
+        "configs/cumulus_nclu_bgp_no_router_id" : {
+          "loopback" : {
+            "lo" : {
+              "definitionLines" : [
+                6
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "configs/cumulus_nclu_bgp_no_router_id_or_loopback_ip" : {
+          "loopback" : {
+            "lo" : {
+              "definitionLines" : [
+                6
               ],
               "numReferrers" : 1
             }
@@ -81805,6 +81994,15 @@
         "configs/cumulus_nclu" : [
           "cumulus_nclu"
         ],
+        "configs/cumulus_nclu_bgp_no_address_family" : [
+          "cumulus_nclu_bgp_no_address_family"
+        ],
+        "configs/cumulus_nclu_bgp_no_router_id" : [
+          "cumulus_nclu_bgp_no_router_id"
+        ],
+        "configs/cumulus_nclu_bgp_no_router_id_or_loopback_ip" : [
+          "cumulus_nclu_bgp_no_router_id_or_loopback_ip"
+        ],
         "configs/cumulus_nclu_invalid_bonds" : [
           "cumulus_nclu_invalid_bonds"
         ],
@@ -84392,6 +84590,24 @@
             "vni10001" : {
               "vxlan self-reference" : [
                 75
+              ]
+            }
+          }
+        },
+        "configs/cumulus_nclu_bgp_no_router_id" : {
+          "loopback" : {
+            "lo" : {
+              "loopback self-reference" : [
+                6
+              ]
+            }
+          }
+        },
+        "configs/cumulus_nclu_bgp_no_router_id_or_loopback_ip" : {
+          "loopback" : {
+            "lo" : {
+              "loopback self-reference" : [
+                6
               ]
             }
           }
@@ -88932,6 +89148,14 @@
             }
           ]
         },
+        "cumulus_nclu_bgp_no_router_id_or_loopback_ip" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot configure BGP session for vrf 'default' because router-id is missing"
+            }
+          ]
+        },
         "f5_bigip_imish_malformed" : {
           "Red flags" : [
             {
@@ -89410,6 +89634,9 @@
         "configs/community_name_numbers_dos" : "PASSED",
         "configs/community_set" : "PASSED",
         "configs/cumulus_nclu" : "PASSED",
+        "configs/cumulus_nclu_bgp_no_address_family" : "PASSED",
+        "configs/cumulus_nclu_bgp_no_router_id" : "PASSED",
+        "configs/cumulus_nclu_bgp_no_router_id_or_loopback_ip" : "PASSED",
         "configs/cumulus_nclu_invalid_bonds" : "PASSED",
         "configs/cumulus_nclu_invalid_interfaces" : "PASSED",
         "configs/cumulus_nclu_invalid_vrfs" : "PASSED",

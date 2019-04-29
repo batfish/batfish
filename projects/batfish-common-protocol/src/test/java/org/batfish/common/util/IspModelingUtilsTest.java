@@ -52,6 +52,7 @@ import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
@@ -167,6 +168,7 @@ public class IspModelingUtilsTest {
             .setRemoteAs(1L)
             .setLocalIp(Ip.parse("2.2.2.2"))
             .setLocalAs(2L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance())
             .build();
     IspInfo ispInfo = new IspInfo(ImmutableList.of(interfaceAddress), ImmutableList.of(peer));
 
@@ -435,6 +437,8 @@ public class IspModelingUtilsTest {
                                     .setLocalIp(Ip.parse("240.1.1.2"))
                                     .setLocalAs(IspModelingUtils.INTERNET_AS)
                                     .setExportPolicy(IspModelingUtils.EXPORT_POLICY_ON_INTERNET)
+                                    .setIpv4UnicastAddressFamily(
+                                        Ipv4UnicastAddressFamily.instance())
                                     .build())))))));
 
     assertThat(internetAndIsps, hasKey("isp_1"));
@@ -466,6 +470,7 @@ public class IspModelingUtilsTest {
                                 .setLocalIp(Ip.parse("1.1.1.1"))
                                 .setExportPolicy(IspModelingUtils.EXPORT_POLICY_ON_ISP)
                                 .setLocalAs(1L)
+                                .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance())
                                 .build(),
                             Prefix.parse("240.1.1.2/32"),
                             BgpActivePeerConfig.builder()
@@ -474,6 +479,7 @@ public class IspModelingUtilsTest {
                                 .setLocalIp(Ip.parse("240.1.1.3"))
                                 .setExportPolicy(IspModelingUtils.EXPORT_POLICY_ON_ISP)
                                 .setLocalAs(1L)
+                                .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance())
                                 .build()))))));
   }
 
