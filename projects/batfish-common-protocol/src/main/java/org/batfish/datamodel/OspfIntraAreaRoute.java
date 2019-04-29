@@ -4,6 +4,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -14,6 +16,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class OspfIntraAreaRoute extends OspfInternalRoute {
 
   private static final long serialVersionUID = 1L;
+  private static final Interner<OspfIntraAreaRoute> _cache = Interners.newWeakInterner();
 
   @JsonCreator
   private static OspfIntraAreaRoute jsonCreator(
@@ -102,14 +105,16 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
 
     @Override
     public OspfIntraAreaRoute build() {
-      return new OspfIntraAreaRoute(
-          getNetwork(),
-          getNextHopIp(),
-          getAdmin(),
-          getMetric(),
-          _area,
-          getNonForwarding(),
-          getNonRouting());
+      OspfIntraAreaRoute r =
+          new OspfIntraAreaRoute(
+              getNetwork(),
+              getNextHopIp(),
+              getAdmin(),
+              getMetric(),
+              _area,
+              getNonForwarding(),
+              getNonRouting());
+      return _cache.intern(r);
     }
 
     @Nonnull
