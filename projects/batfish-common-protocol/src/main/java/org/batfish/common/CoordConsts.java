@@ -96,6 +96,7 @@ public class CoordConsts {
   public static final String SVC_KEY_OBJECT_NAME = "objectname";
   public static final String SVC_KEY_PLUGIN_ID = "pluginid";
   public static final String SVC_KEY_QUERY = "query";
+  public static final String SVC_KEY_QUERY_METADATA = "querymetadata";
   public static final String SVC_KEY_QUESTION = "question";
   public static final String SVC_KEY_QUESTION_LIST = "questionlist";
   public static final String SVC_KEY_QUESTION_NAME = "questionname";
