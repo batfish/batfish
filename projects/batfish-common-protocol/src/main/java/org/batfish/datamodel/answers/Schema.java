@@ -12,8 +12,6 @@ import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.BgpRoute;
-import org.batfish.datamodel.BgpRouteDiffs;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -23,6 +21,8 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.questions.BgpRoute;
+import org.batfish.datamodel.questions.BgpRouteDiffs;
 
 public class Schema {
 
