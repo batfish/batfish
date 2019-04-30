@@ -73,7 +73,7 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
     int h = _hashCode;
     if (h == 0) {
       h = _network.hashCode();
-      h = 31 * h + Integer.hashCode(_admin);
+      h = 31 * h + ;
       h = 31 * h + Long.hashCode(_area);
       h = 31 * h + Long.hashCode(_metric);
       h = 31 * h + _nextHopIp.hashCode();

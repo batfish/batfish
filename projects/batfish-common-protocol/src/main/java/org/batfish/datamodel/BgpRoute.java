@@ -403,25 +403,24 @@ public final class BgpRoute extends AbstractRoute {
   public int hashCode() {
     int h = _hashCode;
     if (h == 0) {
-      h =
-          Objects.hash(
-              _admin,
-              _asPath,
-              _clusterList,
-              _communities,
-              _discard,
-              _localPreference,
-              _med,
-              _network,
-              _nextHopInterface,
-              _nextHopIp,
-              _originatorIp,
-              _originType.ordinal(),
-              _protocol.ordinal(),
-              _receivedFromIp,
-              _receivedFromRouteReflectorClient,
-              _srcProtocol == null ? 0 : _srcProtocol.ordinal(),
-              _weight);
+      h = _admin;
+      h = h * 31 + _asPath.hashCode();
+      h = h * 31 + _clusterList.hashCode();
+      h = h * 31 + _communities.hashCode();
+      h = h * 31 + Boolean.hashCode(_discard);
+      h = h * 31 + Long.hashCode(_localPreference);
+      h = h * 31 + Long.hashCode(_med);
+      h = h * 31 + _network.hashCode();
+      h = h * 31 + _nextHopInterface.hashCode();
+      h = h * 31 + _nextHopIp.hashCode();
+      h = h * 31 + _originatorIp.hashCode();
+      h = h * 31 + _originType.ordinal();
+      h = h * 31 + _protocol.ordinal();
+      h = h * 31 + Objects.hashCode(_receivedFromIp);
+      h = h * 31 + Boolean.hashCode(_receivedFromRouteReflectorClient);
+      h = h * 31 + (_srcProtocol == null ? 0 : _srcProtocol.ordinal());
+      h = h * 31 + _weight;
+
       _hashCode = h;
     }
     return h;

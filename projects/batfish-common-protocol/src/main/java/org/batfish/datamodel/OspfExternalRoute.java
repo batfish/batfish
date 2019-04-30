@@ -175,7 +175,7 @@ public abstract class OspfExternalRoute extends OspfRoute {
     if (h == 0) {
       // AbstractRoute Properties
       h = _network.hashCode();
-      h = 31 * h + Integer.hashCode(_admin);
+      h = 31 * h + _admin;
       h = 31 * h + Long.hashCode(_metric);
       h = 31 * h + _nextHopIp.hashCode();
       h = 31 * h + Boolean.hashCode(getNonRouting());
