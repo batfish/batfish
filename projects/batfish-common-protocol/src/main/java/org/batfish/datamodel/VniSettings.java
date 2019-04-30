@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
@@ -140,6 +141,13 @@ public final class VniSettings implements Serializable {
   public int hashCode() {
     return Objects.hash(
         _bumTransportMethod, _bumTransportIps, _sourceAddress, _udpPort, _vlan, _vni);
+  }
+
+  @JsonIgnore
+  public @Nullable Ip getMulticastGroup() {
+    return _bumTransportMethod == BumTransportMethod.MULTICAST_GROUP
+        ? _bumTransportIps.first()
+        : null;
   }
 
   @JsonProperty(PROP_BUM_TRANSPORT_IPS)

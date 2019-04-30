@@ -5,6 +5,7 @@ import static java.util.Objects.requireNonNull;
 import com.google.common.collect.ImmutableMap;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -131,6 +132,22 @@ public final class NetworkConfigurations {
         .map(Vrf::getOspfProcess)
         .map(OspfProcess::getOspfNeighborConfigs)
         .map(oc -> oc.get(ospfConfigId.getInterfaceName()));
+  }
+
+  /** Return {@link VniSettings} identificated by {@code hostname} and {@code vni} number. */
+  @Nonnull
+  public Optional<VniSettings> getVniSettings(String hostname, int vni) {
+    // implementation assumes a given VNI can be present in at most one VRF.
+    return get(hostname)
+        .map(Configuration::getVrfs)
+        .map(
+            vrfs ->
+                vrfs.values().stream()
+                    .map(Vrf::getVniSettings)
+                    .map(vniSettingsMap -> vniSettingsMap.get(vni))
+                    .filter(Objects::nonNull)
+                    .findAny()
+                    .orElse(null));
   }
 
   /** Return a VRF identified by hostname and VRF name */
