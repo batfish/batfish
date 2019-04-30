@@ -40,7 +40,6 @@ import org.batfish.specifier.SpecifierFactories;
 public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
 
   public static class UniqueIpAssignmentsAnswerElement extends AnswerElement {
-
     private static final String PROP_DUPLICATE_IPS = "duplicateIps";
 
     private SortedMap<Ip, SortedSet<NodeInterfacePair>> _duplicateIps;
@@ -139,11 +138,8 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
    */
   @ParametersAreNonnullByDefault
   public static class UniqueIpAssignmentsQuestion extends Question {
-
     private static final String PROP_ENABLED_IPS_ONLY = "enabledIpsOnly";
-
     private static final String PROP_INTERFACES = "interfaces";
-
     private static final String PROP_NODES = "nodes";
 
     private final boolean _enabledIpsOnly;

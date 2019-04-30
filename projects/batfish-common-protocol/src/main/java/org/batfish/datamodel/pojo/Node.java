@@ -9,7 +9,6 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.DeviceType;
 
 public class Node extends BfObject {
-
   private static final String PROP_NAME = "name";
   private static final String PROP_TYPE = "type";
 

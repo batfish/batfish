@@ -20,9 +20,7 @@ import javax.annotation.Nullable;
 
 /** An AsPathAccessList is used to filter e/iBGP routes according to their AS-path attribute. */
 public final class AsPathAccessList implements Serializable {
-
   private static final String PROP_LINES = "lines";
-
   private static final String PROP_NAME = "name";
 
   private static final long serialVersionUID = 1L;

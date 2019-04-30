@@ -92,19 +92,12 @@ public final class GeneratedRoute extends AbstractRoute {
   }
 
   private static final String PROP_AS_PATH = "asPath";
-
   private static final String PROP_ATTRIBUTE_POLICY = "attributePolicy";
-
   private static final String PROP_ATTRIBUTE_POLICY_SOURCES = "attributePolicySources";
-
   private static final String PROP_COMMUNITIES = "communities";
-
   private static final String PROP_DISCARD = "discard";
-
   private static final String PROP_GENERATION_POLICY = "generationPolicy";
-
   private static final String PROP_GENERATION_POLICY_SOURCES = "generationPolicySources";
-
   private static final String PROP_METRIC = "metric";
 
   private static final long serialVersionUID = 1L;

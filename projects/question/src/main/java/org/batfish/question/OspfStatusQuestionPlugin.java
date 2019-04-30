@@ -53,7 +53,6 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
     }
 
     public static class OspfInfo implements Comparable<OspfInfo> {
-
       private static final String PROP_INTERFACE = "interface";
       private static final String PROP_OSPF_STATUS = "ospfStatus";
 
@@ -227,11 +226,8 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
   /** Lists the OSPF status of interfaces. */
   @ParametersAreNonnullByDefault
   public static class OspfStatusQuestion extends Question {
-
     private static final String PROP_INTERFACES = "interfaces";
-
     private static final String PROP_NODES = "nodes";
-
     private static final String PROP_STATUS = "status";
 
     @Nullable private String _interfaces;

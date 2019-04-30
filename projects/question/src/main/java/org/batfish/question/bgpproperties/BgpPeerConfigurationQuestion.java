@@ -18,7 +18,6 @@ import org.batfish.specifier.SpecifierFactories;
  * nodes are included. The default is to include everything.
  */
 public class BgpPeerConfigurationQuestion extends Question {
-
   private static final String PROP_NODES = "nodes";
   private static final String PROP_PROPERTIES = "properties";
 

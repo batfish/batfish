@@ -12,7 +12,6 @@ import org.batfish.specifier.SpecifierFactories;
 /** A {@link Question} that returns compatible OSPF sessions */
 public class OspfSessionCompatibilityQuestion extends Question {
   private static final String PROP_NODES = "nodes";
-
   private static final String PROP_REMOTE_NODES = "remoteNodes";
 
   @Nullable private String _nodes;

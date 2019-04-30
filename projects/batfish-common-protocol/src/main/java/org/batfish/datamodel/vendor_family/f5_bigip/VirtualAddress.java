@@ -14,7 +14,6 @@ import org.batfish.datamodel.Ip6;
 /** Configuration for a virtual-address. */
 @ParametersAreNonnullByDefault
 public final class VirtualAddress implements Serializable {
-
   private static final String PROP_ADDRESS = "address";
   private static final String PROP_ADDRESS6 = "address6";
   private static final String PROP_ARP_DISABLED = "arpDisabled";

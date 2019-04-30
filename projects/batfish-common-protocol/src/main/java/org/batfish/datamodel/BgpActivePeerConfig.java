@@ -15,7 +15,6 @@ import org.batfish.datamodel.dataplane.rib.RibGroup;
 
 /** Represent a BGP config which allows peering with a single remote peer. */
 public final class BgpActivePeerConfig extends BgpPeerConfig {
-
   private static final String PROP_PEER_ADDRESS = "peerAddress";
 
   static final long serialVersionUID = 1L;

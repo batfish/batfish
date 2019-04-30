@@ -15,7 +15,6 @@ import org.batfish.datamodel.routing_policy.Result;
  * community matching a given {@link CommunitySetExpr}.
  */
 public final class MatchCommunitySet extends BooleanExpr {
-
   private static final String PROP_EXPR = "expr";
 
   private static final long serialVersionUID = 1L;

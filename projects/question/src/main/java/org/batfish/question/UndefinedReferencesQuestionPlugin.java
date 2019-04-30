@@ -142,7 +142,6 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
    * vendors.
    */
   public static class UndefinedReferencesQuestion extends Question {
-
     private static final String PROP_NODES = "nodes";
 
     @Nullable private final String _nodes;

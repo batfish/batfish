@@ -108,7 +108,6 @@ public final class CompletionMetadata implements Serializable {
   @Deprecated private static final String PROP_ADDRESS_BOOKS = "addressBooks";
 
   @Deprecated private static final String PROP_ADDRESS_GROUPS = "addressGroups";
-
   private static final String PROP_FILTER_NAMES = "filterNames";
   private static final String PROP_INTERFACES = "interfaces";
   private static final String PROP_IPS = "ips";

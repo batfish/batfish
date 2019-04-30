@@ -14,7 +14,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 /** Configuration for one end of an OSPF adjacency */
 @ParametersAreNonnullByDefault
 public final class OspfNeighborConfig implements Serializable {
-
   private static final String PROP_AREA = "area";
   private static final String PROP_HOSTNAME = "hostname";
   private static final String PROP_INTERFACE = "interface";

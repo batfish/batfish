@@ -47,11 +47,8 @@ public class AclIpSpaceLine implements Comparable<AclIpSpaceLine>, Serializable 
   public static final AclIpSpaceLine DENY_ALL = AclIpSpaceLine.reject(UniverseIpSpace.INSTANCE);
 
   public static final AclIpSpaceLine PERMIT_ALL = AclIpSpaceLine.permit(UniverseIpSpace.INSTANCE);
-
   private static final String PROP_ACTION = "action";
-
   private static final String PROP_IP_SPACE = "ipSpace";
-
   private static final String PROP_SRC_TEXT = "srcText";
 
   /** */

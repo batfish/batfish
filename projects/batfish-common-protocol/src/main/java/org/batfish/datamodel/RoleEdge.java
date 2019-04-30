@@ -5,9 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.batfish.common.Pair;
 
 public class RoleEdge extends Pair<String, String> {
-
   private static final String PROP_ROLE1 = "role1";
-
   private static final String PROP_ROLE2 = "role2";
 
   private static final long serialVersionUID = 1L;

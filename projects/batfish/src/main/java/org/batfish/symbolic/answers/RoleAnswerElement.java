@@ -6,17 +6,11 @@ import java.util.SortedSet;
 import org.batfish.datamodel.answers.AnswerElement;
 
 public class RoleAnswerElement extends AnswerElement {
-
   private static final String PROP_IMPORT_BGP_ECS = "importBgpEcs";
-
   private static final String PROP_EXPORT_BGP_ECS = "exportBgpEcs";
-
   private static final String PROP_INCOMING_ACL_ECS = "incomingAclEcs";
-
   private static final String PROP_OUTGOING_BGP_ECS = "outgoingAclEcs";
-
   private static final String PROP_INTERFACE_ECS = "interfaceEcs";
-
   private static final String PROP_NODE_ECS = "nodeEcs";
 
   private List<SortedSet<String>> _importBgpEcs;

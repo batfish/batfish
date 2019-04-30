@@ -7,7 +7,6 @@ import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.routing_policy.Environment;
 
 public class ExplicitPrefixSet extends PrefixSetExpr {
-
   private static final String PROP_PREFIX_SPACE = "prefixSpace";
 
   /** */

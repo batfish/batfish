@@ -27,7 +27,6 @@ import org.batfish.datamodel.questions.Question;
 public class IsisLoopbacksQuestionPlugin extends QuestionPlugin {
 
   public static class IsisLoopbacksAnswerElement extends AnswerElement {
-
     private static final String PROP_INACTIVE = "inactive";
 
     private SortedMap<String, SortedSet<String>> _inactive;
@@ -214,7 +213,6 @@ public class IsisLoopbacksQuestionPlugin extends QuestionPlugin {
    * question produces the list of nodes for which such announcements are happening.
    */
   public static class IsisLoopbacksQuestion extends Question {
-
     private static final String PROP_NODE_REGEX = "nodeRegex";
 
     private NodesSpecifier _nodeRegex;

@@ -46,9 +46,7 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
     public static final String PROP_ENVIRONMENT_BGP_TABLES = "environmentBgpTables";
 
     public static final String PROP_ENVIRONMENT_ROUTES = "environmentRoutes";
-
     private static final String PROP_SUMMARY = "summary";
-
     private static final String PROP_VERBOSE_ERROR = "verboseError";
 
     private boolean _environmentBgpTables;

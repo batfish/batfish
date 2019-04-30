@@ -11,7 +11,6 @@ import java.util.SortedSet;
 import javax.annotation.Nonnull;
 
 public final class Layer1Topology {
-
   private static final String PROP_EDGES = "edges";
 
   @JsonCreator

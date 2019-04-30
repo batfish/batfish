@@ -8,15 +8,10 @@ import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 
 public final class VerboseBgpEdge implements Serializable {
-
   private static final String PROP_EDGE_SUMMARY = "edgeSummary";
-
   private static final String PROP_NODE1_SESSION = "node1Session";
-
   private static final String PROP_NODE1_SESSION_ID = "node1SessionId";
-
   private static final String PROP_NODE2_SESSION = "node2Session";
-
   private static final String PROP_NODE2_SESSION_ID = "node2SessionId";
 
   private static final long serialVersionUID = 1L;

@@ -13,11 +13,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public final class Layer2Edge implements Comparable<Layer2Edge> {
-
   private static final String PROP_ENCAPSULATED_VLAN_ID = "encapsulatedVlanId";
-
   private static final String PROP_NODE1 = "node1";
-
   private static final String PROP_NODE2 = "node2";
 
   @JsonCreator

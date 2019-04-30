@@ -16,7 +16,6 @@ import org.batfish.datamodel.Names.Type;
 public class FilterGroup implements Comparable<FilterGroup>, Serializable {
 
   private static final long serialVersionUID = 1L;
-
   private static final String PROP_FILTERS = "filters";
   private static final String PROP_NAME = "name";
 

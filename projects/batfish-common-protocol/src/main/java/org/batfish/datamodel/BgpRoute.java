@@ -226,26 +226,18 @@ public final class BgpRoute extends AbstractRoute {
   public static final long DEFAULT_LOCAL_PREFERENCE = 100L;
 
   public static final String PROP_AS_PATH = "asPath";
-
   private static final String PROP_CLUSTER_LIST = "clusterList";
 
   public static final String PROP_COMMUNITIES = "communities";
-
   private static final String PROP_DISCARD = "discard";
 
   public static final String PROP_LOCAL_PREFERENCE = "localPreference";
-
   private static final String PROP_ORIGIN_TYPE = "originType";
-
   private static final String PROP_ORIGINATOR_IP = "originatorIp";
-
   private static final String PROP_RECEIVED_FROM_IP = "receivedFromIp";
-
   private static final String PROP_RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT =
       "receivedFromRouteReflectorClient";
-
   private static final String PROP_SRC_PROTOCOL = "srcProtocol";
-
   private static final String PROP_WEIGHT = "weight";
 
   private static final Comparator<BgpRoute> COMPARATOR =

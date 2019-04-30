@@ -14,7 +14,6 @@ import org.batfish.datamodel.routing_policy.Result;
 public final class MatchProcessAsn extends BooleanExpr {
 
   private static final long serialVersionUID = 1L;
-
   private static final String PROP_PROCESS_ASN = "asn";
 
   private final long _asn;

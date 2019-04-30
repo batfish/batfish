@@ -9,15 +9,10 @@ import org.batfish.common.util.ComparableStructure;
 public class IkePhase1Proposal extends ComparableStructure<String> {
 
   private static final long serialVersionUID = 1L;
-
   private static final String PROP_AUTHENTICATION_METHOD = "authenticationMethod";
-
   private static final String PROP_ENCRYPTION_ALGORITHM = "encryptionAlgorithm";
-
   private static final String PROP_DIFFIE_HELLMAN_GROUP = "diffieHellmanGroup";
-
   private static final String PROP_HASHING_ALGORITHM = "hashingAlgorithm";
-
   private static final String PROP_LIFETIME_SECONDS = "lifetimeSeconds";
 
   private IkeAuthenticationMethod _authenticationMethod;

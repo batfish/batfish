@@ -12,7 +12,6 @@ import org.batfish.specifier.SpecifierFactories;
 
 @ParametersAreNonnullByDefault
 public class AaaAuthenticationLoginQuestion extends Question {
-
   private static final String PROP_NODES = "nodes";
 
   @Nullable private String _nodes;

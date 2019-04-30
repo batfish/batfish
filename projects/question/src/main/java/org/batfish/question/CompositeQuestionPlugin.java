@@ -14,7 +14,6 @@ import org.batfish.datamodel.questions.Question;
 public class CompositeQuestionPlugin extends QuestionPlugin {
 
   public static class CompositeAnswerElement extends AnswerElement {
-
     private static final String PROP_ANSWERS = "answers";
 
     private List<AnswerElement> _answers;
@@ -54,7 +53,6 @@ public class CompositeQuestionPlugin extends QuestionPlugin {
   }
 
   public static class CompositeQuestion extends Question {
-
     private static final String PROP_QUESTIONS = "questions";
 
     private List<Question> _questions;

@@ -13,7 +13,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 public final class StoredObjectMetadata {
-
   private static final String PROP_KEY = "key";
   private static final String PROP_SIZE = "size";
 

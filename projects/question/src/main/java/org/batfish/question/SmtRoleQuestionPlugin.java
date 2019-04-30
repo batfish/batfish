@@ -29,9 +29,7 @@ public class SmtRoleQuestionPlugin extends QuestionPlugin {
   }
 
   public static class OldRoleQuestion extends Question {
-
     private static final String PROP_NODE_REGEX = "nodeRegex";
-
     private static final String PROP_EQUIVALENCE_TYPE = "equivType";
 
     private NodesSpecifier _nodeRegex = NodesSpecifier.ALL;

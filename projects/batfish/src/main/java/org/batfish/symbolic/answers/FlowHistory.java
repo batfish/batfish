@@ -14,7 +14,6 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.pojo.Environment;
 
 public class FlowHistory extends AnswerElement {
-
   private static final String PROP_TRACES = "traces";
 
   private static String getIndentedString(String str, int indentLevel) {
@@ -28,11 +27,8 @@ public class FlowHistory extends AnswerElement {
   }
 
   public static class FlowHistoryInfo {
-
     private static final String PROP_ENVIRONMENTS = "environments";
-
     private static final String PROP_FLOW = "flow";
-
     private static final String PROP_PATHS = "paths";
 
     private Map<String, Environment> _environments;
