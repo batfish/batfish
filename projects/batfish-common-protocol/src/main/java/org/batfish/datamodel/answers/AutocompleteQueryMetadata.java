@@ -12,7 +12,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 public final class AutocompleteQueryMetadata {
-
   private static final String PROP_DESCRIPTION = "description";
   private static final String PROP_EXPANSIONS = "expansions";
   private static final String PROP_IS_VALID = "isValid";

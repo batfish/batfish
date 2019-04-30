@@ -12,11 +12,8 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpaceMetadata;
 
 public final class DeniedByAclIpSpaceLine extends IpSpaceTraceEvent {
-
   private static final String PROP_INDEX = "index";
-
   private static final String PROP_LINE_DESCRIPTION = "lineDescription";
-
   private static final String PROP_NAME = "name";
 
   private static final long serialVersionUID = 1L;

@@ -16,9 +16,7 @@ public class Aggregate extends BfObject {
   }
 
   private static final String PROP_CONTENTS = "contents";
-
   private static final String PROP_NAME = "name";
-
   private static final String PROP_TYPE = "type";
 
   private Set<String> _contents;

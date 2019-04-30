@@ -46,7 +46,6 @@ public final class SpecifiersQuestion extends Question {
   private static final String PROP_LOCATION_SPECIFIER_INPUT = "locationSpecifierInput";
   private static final String PROP_NODE_SPECIFIER_INPUT = "nodeSpecifierInput";
   private static final String PROP_SPECIFIER_FACTORY_VERSION = "specifierFactoryVersion";
-
   private static final String PROP_QUERY_TYPE = "queryType";
 
   @Nullable private String _filterSpecifierInput;

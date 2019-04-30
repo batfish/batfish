@@ -13,9 +13,7 @@ import org.batfish.common.BfConsts;
 import org.batfish.datamodel.questions.Question;
 
 public class JsonPathToTableQuestion extends Question {
-
   private static final String PROP_DEBUG = "debug";
-
   private static final String PROP_PATH_QUERY = "pathQuery";
 
   private static final Pattern VARIABLE_MATCHER = Pattern.compile("\\$\\{([^\\}]+)\\}");

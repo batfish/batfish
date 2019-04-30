@@ -180,7 +180,6 @@ public class OspfArea implements Serializable {
    * route). The default encodes the IOS behavior; other implementations must override the default.
    */
   private static final int DEFAULT_METRIC_OF_DEFAULT_ROUTE = 0;
-
   private static final String PROP_INJECT_DEFAULT_ROUTE = "injectDefaultRoute";
   private static final String PROP_INTERFACES = "interfaces";
   private static final String PROP_METRIC_OF_DEFAULT_ROUTE = "metricOfDefaultRoute";

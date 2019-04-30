@@ -6,7 +6,6 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.symbolic.smt.VerificationResult;
 
 public class SmtOneAnswerElement extends AnswerElement {
-
   private static final String PROP_RESULT = "result";
 
   private VerificationResult _result;

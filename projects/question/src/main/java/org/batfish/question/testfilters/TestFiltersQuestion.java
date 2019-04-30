@@ -22,7 +22,6 @@ import org.batfish.specifier.SpecifierFactories;
  * 'nodes' and 'filters' fields. By default, all filters on all nodes are considered.
  */
 public class TestFiltersQuestion extends Question {
-
   private static final String PROP_FILTERS = "filters";
   private static final String PROP_HEADERS = "headers";
   private static final String PROP_NODES = "nodes";

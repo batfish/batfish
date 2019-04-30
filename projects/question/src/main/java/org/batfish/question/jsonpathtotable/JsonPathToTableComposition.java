@@ -14,7 +14,6 @@ import org.batfish.datamodel.answers.Schema;
  * {@link JsonPathToTableExtraction}.
  */
 public class JsonPathToTableComposition extends JsonPathToTableColumn {
-
   private static final String PROP_DICTIONARY = "dictionary";
 
   @Nonnull private Map<String, String> _dictionary;

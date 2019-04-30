@@ -38,7 +38,6 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
   @JsonSubTypes.Type(value = SetWeight.class)
 })
 public abstract class Statement implements Serializable {
-
   private static final String PROP_COMMENT = "comment";
 
   /** */

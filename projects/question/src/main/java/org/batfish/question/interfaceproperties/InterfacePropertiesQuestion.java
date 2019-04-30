@@ -25,7 +25,6 @@ import org.batfish.specifier.SpecifierFactories;
 public class InterfacePropertiesQuestion extends Question {
 
   public static final boolean DEFAULT_EXCLUDE_SHUT_INTERFACES = false;
-
   private static final String PROP_EXCLUDE_SHUT_INTERFACES = "excludeShutInterfaces";
   private static final String PROP_INTERFACES = "interfaces";
   private static final String PROP_NODES = "nodes";

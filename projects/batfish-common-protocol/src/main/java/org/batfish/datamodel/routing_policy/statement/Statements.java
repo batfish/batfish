@@ -29,7 +29,6 @@ public enum Statements {
   Unsuppress;
 
   public static class StaticStatement extends Statement {
-
     private static final String PROP_TYPE = "type";
 
     /** */

@@ -9,11 +9,8 @@ import java.io.Serializable;
  * specification of both interfaces as well as the names of both nodes.
  */
 public final class VerboseEdge implements Serializable, Comparable<VerboseEdge> {
-
   private static final String PROP_EDGE_SUMMARY = "edgeSummary";
-
   private static final String PROP_NODE1_INTERFACE = "node1Interface";
-
   private static final String PROP_NODE2_INTERFACE = "node2Interface";
 
   private static final long serialVersionUID = 1L;

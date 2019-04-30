@@ -13,7 +13,6 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
  * different endpoints across API calls.
  */
 public final class Version {
-
   private static final String PROPERTIES_PATH = "org/batfish/common/common.properties";
 
   static final String UNKNOWN_VERSION = "0.0.0";

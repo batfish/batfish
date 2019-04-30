@@ -9,7 +9,6 @@ public class Warning extends Pair<String, String> {
   private static final long serialVersionUID = 1L;
 
   private static final String PROP_TAG = "tag";
-
   private static final String PROP_TEXT = "text";
 
   @JsonCreator

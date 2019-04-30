@@ -8,7 +8,6 @@ import org.batfish.datamodel.Line;
 import org.batfish.datamodel.SwitchportMode;
 
 public class CiscoFamily implements Serializable {
-
   private static final String PROP_AAA = "aaa";
   private static final String PROP_BANNERS = "banners";
   private static final String PROP_CABLE = "cable";

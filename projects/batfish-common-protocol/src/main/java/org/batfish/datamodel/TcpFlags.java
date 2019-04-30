@@ -10,7 +10,6 @@ import javax.annotation.Nonnull;
 
 /** Collection of TCP flags. */
 public final class TcpFlags implements Serializable, Comparable<TcpFlags> {
-
   private static final String PROP_ACK = "ack";
   private static final String PROP_CWR = "cwr";
   private static final String PROP_ECE = "ece";

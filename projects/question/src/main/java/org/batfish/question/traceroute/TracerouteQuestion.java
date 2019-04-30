@@ -23,7 +23,6 @@ import org.batfish.datamodel.questions.Question;
  * the two directions.
  */
 public final class TracerouteQuestion extends Question {
-
   private static final String PROP_IGNORE_FILTERS = "ignoreFilters";
   private static final String PROP_SOURCE_LOCATION = "startLocation";
   private static final String PROP_HEADER_CONSTRAINTS = "headers";

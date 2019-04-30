@@ -16,7 +16,6 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 @ParametersAreNonnullByDefault
 public final class PacketMatchExpr implements BoolExpr {
   private static final long serialVersionUID = 1L;
-
   private static final String PROP_EXPR = "expression";
 
   private final AclLineMatchExpr _expr;

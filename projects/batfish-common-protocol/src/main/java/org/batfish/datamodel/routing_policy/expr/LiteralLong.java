@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.batfish.datamodel.routing_policy.Environment;
 
 public class LiteralLong extends LongExpr {
-
   private static final String PROP_VALUE = "value";
 
   /** */

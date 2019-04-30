@@ -16,9 +16,7 @@ public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
     implements Serializable {
 
   private static final long serialVersionUID = 1L;
-
   private static final String PROP_FILE_MAP = "fileMap";
-
   private static final String PROP_VERSION = "version";
 
   private SortedMap<String, BatfishException.BatfishStackTrace> _errors;

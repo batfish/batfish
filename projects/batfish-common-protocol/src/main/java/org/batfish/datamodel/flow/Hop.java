@@ -15,7 +15,6 @@ import org.batfish.datamodel.pojo.Node;
 
 /** Represents a hop in a particular {@link Trace} of a {@link Flow} */
 public final class Hop {
-
   private static final String PROP_NODE = "node";
   private static final String PROP_STEPS = "steps";
 

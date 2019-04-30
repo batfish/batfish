@@ -35,9 +35,7 @@ public class RipProcess implements Serializable {
   }
 
   public static final long DEFAULT_RIP_COST = 1;
-
   private static final String PROP_EXPORT_POLICY = "exportPolicy";
-
   private static final String PROP_IMPORT_POLICY = "importPolicy";
 
   /** */

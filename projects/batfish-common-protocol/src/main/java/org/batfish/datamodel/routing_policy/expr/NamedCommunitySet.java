@@ -12,7 +12,6 @@ import org.batfish.datamodel.visitors.CommunitySetExprVisitor;
 import org.batfish.datamodel.visitors.VoidCommunitySetExprVisitor;
 
 public class NamedCommunitySet extends CommunitySetExpr {
-
   private static final String PROP_NAME = "name";
 
   private static final long serialVersionUID = 1L;

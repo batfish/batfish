@@ -66,11 +66,8 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
    * specified patterns in the data model induced by the configurations supplied in the test-rig.
    */
   public static class NodesPathQuestion extends Question {
-
     private static final String PROP_NODE_REGEX = "nodeRegex";
-
     private static final String PROP_NODE_TYPES = "nodeTypes";
-
     private static final String PROP_PATHS = "paths";
 
     private NodesSpecifier _nodeRegex;

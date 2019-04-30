@@ -20,11 +20,8 @@ import org.batfish.datamodel.questions.Question;
 
 /** Holds tabular answers. */
 public final class TableAnswerElement extends AnswerElement {
-
   private static final String PROP_EXCLUDED_ROWS = "excludedRows";
-
   private static final String PROP_METADATA = "metadata";
-
   private static final String PROP_ROWS = "rows";
 
   private List<ExcludedRows> _excludedRows;

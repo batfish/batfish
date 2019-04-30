@@ -30,13 +30,10 @@ import org.batfish.datamodel.questions.Question;
 public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
 
   public static class SelfAdjacenciesAnswerElement extends AnswerElement {
-
     private static final String PROP_SELF_ADJACENCIES = "selfAdjacencies";
 
     public static class InterfaceIpPair extends Pair<String, Ip> {
-
       private static final String PROP_INTERFACE_NAME = "interfaceName";
-
       private static final String PROP_IP = "ip";
       /** */
       private static final long serialVersionUID = 1L;
@@ -138,7 +135,6 @@ public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
    * <p>This occurrence likely indicates an error in IP address assignment.
    */
   public static class SelfAdjacenciesQuestion extends Question {
-
     private static final String PROP_NODE_REGEX = "nodeRegex";
 
     private NodesSpecifier _nodeRegex;

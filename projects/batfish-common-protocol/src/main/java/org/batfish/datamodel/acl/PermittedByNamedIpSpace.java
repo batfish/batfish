@@ -12,9 +12,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceMetadata;
 
 public final class PermittedByNamedIpSpace extends IpSpaceTraceEvent {
-
   private static final String PROP_DESCRIPTION = "description";
-
   private static final String PROP_NAME = "name";
 
   private static final long serialVersionUID = 1L;

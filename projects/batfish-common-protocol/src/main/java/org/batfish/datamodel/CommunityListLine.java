@@ -12,9 +12,7 @@ import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 
 /** A line in a CommunityList */
 public class CommunityListLine implements Serializable {
-
   private static final String PROP_ACTION = "action";
-
   private static final String PROP_MATCH_CONDITION = "matchCondition";
 
   private static final long serialVersionUID = 1L;

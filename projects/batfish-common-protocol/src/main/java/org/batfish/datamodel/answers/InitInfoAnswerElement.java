@@ -12,7 +12,6 @@ import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 
 public class InitInfoAnswerElement extends AnswerElement {
-
   private static final String PROP_ERRORS = "errors";
   private static final String PROP_PARSE_STATUS = "parseStatus";
   private static final String PROP_PARSE_TREES = "parseTrees";

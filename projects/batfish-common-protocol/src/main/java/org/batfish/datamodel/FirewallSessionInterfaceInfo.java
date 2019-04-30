@@ -19,7 +19,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class FirewallSessionInterfaceInfo implements Serializable {
   private static final long serialVersionUID = 1L;
-
   private static final String PROP_SESSION_INTERFACES = "sessionInterfaces";
   private static final String PROP_INCOMING_ACL_NAME = "incomingAclName";
   private static final String PROP_OUTGOING_ACL_NAME = "outgoingAclName";

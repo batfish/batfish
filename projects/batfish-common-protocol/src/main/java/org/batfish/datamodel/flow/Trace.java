@@ -17,7 +17,6 @@ import org.batfish.datamodel.FlowDisposition;
 
 /** Represents one of the paths found for a {@link Flow} */
 public final class Trace {
-
   private static final String PROP_DISPOSITION = "disposition";
   private static final String PROP_HOPS = "hops";
 

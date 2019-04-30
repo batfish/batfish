@@ -7,11 +7,8 @@ import java.util.Objects;
 public class BgpAuthenticationSettings implements Serializable {
 
   private static final long serialVersionUID = 1L;
-
   private static final String PROP_AUTHENTICATION_ALGORITHM = "authenticationAlgorithm";
-
   private static final String PROP_AUTHENTICATION_KEY = "authenticationKey";
-
   private static final String PROP_AUTHENTICATION_KEY_CHAIN_NAME = "authenticationKeyChainName";
 
   private BgpAuthenticationAlgorithm _authenticationAlgorithm;

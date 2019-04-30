@@ -18,13 +18,9 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
 
 public final class FlowTraceHop implements Comparable<FlowTraceHop>, Serializable {
-
   private static final String PROP_EDGE = "edge";
-
   private static final String PROP_FILTER_IN = "filterIn";
-
   private static final String PROP_FILTER_OUT = "filterOut";
-
   private static final String PROP_ROUTES = "routes";
 
   /** */

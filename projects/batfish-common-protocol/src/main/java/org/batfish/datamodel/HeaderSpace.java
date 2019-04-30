@@ -475,7 +475,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
               HeaderSpace::getSrcProtocols, Comparators.lexicographical(Ordering.natural()))
           .thenComparing(HeaderSpace::getStates, Comparators.lexicographical(Ordering.natural()))
           .thenComparing(HeaderSpace::getTcpFlags, Comparators.lexicographical(Ordering.natural()));
-
   private static final String PROP_DSCPS = "dscps";
   private static final String PROP_DST_IPS = "dstIps";
   private static final String PROP_DST_PORTS = "dstPorts";

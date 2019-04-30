@@ -16,11 +16,8 @@ import org.batfish.datamodel.answers.AnswerElement;
 
 @ParametersAreNonnullByDefault
 public final class TableView extends AnswerElement {
-
   private static final String PROP_OPTIONS = "options";
-
   private static final String PROP_ROWS = "rows";
-
   private static final String PROP_TABLE_METADATA = "metadata";
 
   @JsonCreator

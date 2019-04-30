@@ -16,7 +16,6 @@ import org.batfish.datamodel.SubRange;
 public class RangeCommunityHalf implements CommunityHalfExpr {
 
   public static final RangeCommunityHalf ALL = new RangeCommunityHalf(new SubRange(0, 65535));
-
   private static final String PROP_RANGE = "range";
 
   private static final long serialVersionUID = 1L;

@@ -45,9 +45,7 @@ import org.batfish.question.jsonpath.JsonPathResult.JsonPathResultEntry;
 public class JsonPathQuestionPlugin extends QuestionPlugin {
 
   public static class JsonPathAnswerElement extends AnswerElement {
-
     private static final String PROP_DEBUG = "debug";
-
     private static final String PROP_RESULTS = "results";
 
     private Map<String, Object> _debug;
@@ -379,9 +377,7 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
    * specified patterns in the data model induced by the configurations supplied in the test-rig.
    */
   public static class JsonPathQuestion extends Question {
-
     private static final String PROP_DEBUG = "debug";
-
     private static final String PROP_PATHS = "paths";
 
     private Boolean _debug;
