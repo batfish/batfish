@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Configuration;
@@ -446,7 +447,7 @@ public class OspfRoutingProcessTest {
     OspfNeighborConfigId n2 = new OspfNeighborConfigId("r2", VRF_NAME, "1", "someIface");
 
     // Both of these should not crash because new message queues exist now
-    _routingProcess.enqueueMessagesIntra(OspfTopology.makeEdge(n2, n1), ImmutableSet.of());
+    _routingProcess.enqueueMessagesIntra(OspfTopology.makeEdge(n2, n1), Stream.of());
     _routingProcess.enqueueMessagesInter(OspfTopology.makeEdge(n2, n1), ImmutableSet.of());
   }
 
@@ -457,7 +458,7 @@ public class OspfRoutingProcessTest {
     OspfNeighborConfigId n2 = new OspfNeighborConfigId("r2", VRF_NAME, "1", "someIface");
     _routingProcess.enqueueMessagesIntra(
         OspfTopology.makeEdge(n2, n1),
-        ImmutableSet.of(
+        Stream.of(
             new RouteAdvertisement<>(
                 OspfIntraAreaRoute.builder()
                     .setArea(0)
@@ -777,7 +778,8 @@ public class OspfRoutingProcessTest {
 
     // Regular conversion
     Collection<RouteAdvertisement<OspfIntraAreaRoute>> transformed =
-        transformIntraAreaRoutesOnExport(delta, AREA0_CONFIG, nextHopIp);
+        transformIntraAreaRoutesOnExport(delta, AREA0_CONFIG, nextHopIp)
+            .collect(Collectors.toList());
     assertThat(
         transformed,
         contains(

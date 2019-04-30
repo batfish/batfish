@@ -253,11 +253,15 @@ public class VirtualRouter implements Serializable {
    */
   static <R extends AbstractRoute, D extends R> void queueDelta(
       Queue<RouteAdvertisement<R>> queue, @Nonnull RibDelta<D> delta) {
-    for (RouteAdvertisement<D> r : delta.getActions()) {
-      // REPLACE does not make sense across routers, update with WITHDRAW
-      Reason reason = r.getReason() == Reason.REPLACE ? Reason.WITHDRAW : r.getReason();
-      queue.add(RouteAdvertisement.<R>builder().setRoute(r.getRoute()).setReason(reason).build());
-    }
+    // REPLACE does not make sense across routers, update with WITHDRAW
+    delta
+        .getActionStream()
+        .forEach(
+            r -> {
+              Reason reason = r.getReason() == Reason.REPLACE ? Reason.WITHDRAW : r.getReason();
+              queue.add(
+                  RouteAdvertisement.<R>builder().setRoute(r.getRoute()).setReason(reason).build());
+            });
   }
 
   /** Lookup the VirtualRouter owner of a remote BGP neighbor. */
@@ -502,7 +506,7 @@ public class VirtualRouter implements Serializable {
      * Updates from these BGP deltas into mainRib will be handled in finalizeBgp routes
      */
     if (!d.isEmpty()) {
-      d.getActions().stream()
+      d.getActionStream()
           .filter(RouteAdvertisement::isWithdrawn)
           .forEach(
               r ->
@@ -1456,7 +1460,8 @@ public class VirtualRouter implements Serializable {
 
       // Compute a set of advertisements that can be queued on remote VR
       Set<RouteAdvertisement<BgpRoute>> exportedAdvertisements =
-          routesToExport.getActions().stream()
+          routesToExport
+              .getActionStream()
               .map(
                   adv -> {
                     BgpRoute transformedRoute =
@@ -1548,7 +1553,7 @@ public class VirtualRouter implements Serializable {
           // TODO: a little cumbersome, simplify later
           RibDelta.Builder<IsisRoute> upgradedRoutes = RibDelta.builder();
           correctedL1Delta
-              .getActions()
+              .getActionStream()
               .forEach(
                   ra -> {
                     Optional<IsisRoute> newRoute =

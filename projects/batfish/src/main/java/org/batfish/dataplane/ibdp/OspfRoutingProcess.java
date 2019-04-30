@@ -719,9 +719,10 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    * @param nextHopIp next hop IP to use for the transformed route
    */
   @VisibleForTesting
-  static Collection<RouteAdvertisement<OspfIntraAreaRoute>> transformIntraAreaRoutesOnExport(
+  static Stream<RouteAdvertisement<OspfIntraAreaRoute>> transformIntraAreaRoutesOnExport(
       RibDelta<OspfIntraAreaRoute> delta, OspfArea areaConfig, Ip nextHopIp) {
-    return delta.getActions().stream()
+    return delta
+        .getActionStream()
         /*
          * For intra-area routes, send the route to all neighbors in the same area as
          * the route's area
@@ -732,7 +733,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                 r.toBuilder()
                     .setRoute(r.getRoute().toBuilder().setNextHopIp(nextHopIp).build())
                     .build())
-        .collect(ImmutableSet.toImmutableSet());
+        .distinct();
   }
 
   /** Send out inter-area routes from a regular (non-ABR) router to a neighbor */
@@ -765,7 +766,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       OspfArea areaConfig,
       Ip nextHopIp,
       @Nullable Long customMetric) {
-    return delta.getActions().stream()
+    return delta
+        .getActionStream()
         /*
          * A regular (non-ABR) router can continue re-advertising
          * inter-area routes for area X in area X.
@@ -855,7 +857,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       // Nothing to do for totally stubby areas, where summaries are suppressed
       return Stream.empty();
     }
-    return delta.getActions().stream()
+    return delta
+        .getActionStream()
         // Only propagate routes from different areas
         .filter(r -> r.getRoute().getArea() != areaConfig.getAreaNumber())
         // Only propagate routes permitted by the filter list
@@ -892,7 +895,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       // Nothing to do for totally stubby areas, where summaries are suppressed
       return Stream.empty();
     }
-    return delta.getActions().stream()
+    return delta
+        .getActionStream()
         // Only propagate routes from different areas
         .filter(r -> r.getRoute().getArea() != areaConfig.getAreaNumber())
         // Only propagate routes permitted by the filter list
@@ -1425,10 +1429,10 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    * @param routes collection of route advertisements
    */
   @VisibleForTesting
-  void enqueueMessagesIntra(
-      EdgeId edge, Collection<RouteAdvertisement<OspfIntraAreaRoute>> routes) {
-    assert _intraAreaIncomingRoutes.keySet().contains(edge);
-    _intraAreaIncomingRoutes.get(edge).addAll(routes);
+  void enqueueMessagesIntra(EdgeId edge, Stream<RouteAdvertisement<OspfIntraAreaRoute>> routes) {
+    Queue<RouteAdvertisement<OspfIntraAreaRoute>> queue = _intraAreaIncomingRoutes.get(edge);
+    assert queue != null;
+    routes.forEach(queue::add);
   }
 
   /**
@@ -1480,7 +1484,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                 .flatMap(m -> m.values().stream())
                 .flatMap(Queue::stream),
             // Deltas
-            Stream.of(_activatedGeneratedRoutes).map(RibDelta::getActions),
+            _activatedGeneratedRoutes.getActionStream(),
             // RIB state
             Stream.of(_intraAreaRib, _interAreaRib, _type1Rib, _type2Rib)
                 .map(AbstractRib::getTypedRoutes))

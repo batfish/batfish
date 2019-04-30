@@ -152,7 +152,7 @@ public class BgpRib extends AbstractRib<BgpRoute> {
     if (!delta.isEmpty()) {
       delta.getPrefixes().forEach(this::selectBestPath);
       delta
-          .getActions()
+          .getActionStream()
           .forEach(
               a -> {
                 if (a.isWithdrawn()) {
