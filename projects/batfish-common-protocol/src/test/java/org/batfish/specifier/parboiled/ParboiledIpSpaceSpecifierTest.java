@@ -44,6 +44,14 @@ public class ParboiledIpSpaceSpecifierTest {
     assertThat(
         computeIpSpace(
             new AddressGroupIpSpaceAstNode(
+                new StringAstNode(book), new StringAstNode(addressGroup)),
+            ctxt),
+        equalTo(new IpWildcard(ip).toIpSpace()));
+
+    // reverse also works
+    assertThat(
+        computeIpSpace(
+            new AddressGroupIpSpaceAstNode(
                 new StringAstNode(addressGroup), new StringAstNode(book)),
             ctxt),
         equalTo(new IpWildcard(ip).toIpSpace()));

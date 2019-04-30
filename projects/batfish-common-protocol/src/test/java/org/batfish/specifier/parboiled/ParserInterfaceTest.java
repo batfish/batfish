@@ -364,7 +364,7 @@ public class ParserInterfaceTest {
                         ImmutableList.of(new InterfaceGroup(ImmutableSortedSet.of(), "g2")))
                     .build()));
 
-    String query = "@interfaceGroup(g1,";
+    String query = "@interfaceGroup(b1,";
 
     // only b1 should be suggested
     assertThat(
@@ -373,7 +373,7 @@ public class ParserInterfaceTest {
             ImmutableSet.of(
                 new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
-                    "b1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()))));
+                    "g1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()))));
   }
 
   /**

@@ -14,7 +14,6 @@ import java.lang.annotation.Target;
 @interface Anchor {
 
   enum Type {
-    ADDRESS_GROUP_AND_REFERENCE_BOOK,
     ADDRESS_GROUP_NAME,
     CHAR_LITERAL,
     DEPRECATED, // grammar rules that are deprecated
@@ -22,7 +21,6 @@ import java.lang.annotation.Target;
     FILTER_NAME,
     FILTER_NAME_REGEX,
     IGNORE, // grammar rules that shouldn't be the basis for autocompletion
-    INTERFACE_GROUP_AND_REFERENCE_BOOK,
     INTERFACE_GROUP_NAME,
     INTERFACE_NAME,
     INTERFACE_NAME_REGEX,
@@ -39,6 +37,8 @@ import java.lang.annotation.Target;
     NODE_ROLE_DIMENSION_NAME,
     NODE_ROLE_NAME,
     NODE_TYPE,
+    REFERENCE_BOOK_AND_ADDRESS_GROUP,
+    REFERENCE_BOOK_AND_INTERFACE_GROUP,
     REFERENCE_BOOK_NAME,
     ROUTING_POLICY_NAME,
     ROUTING_POLICY_NAME_REGEX,

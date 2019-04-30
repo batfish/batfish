@@ -2,6 +2,7 @@ package org.batfish.specifier.parboiled;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -58,10 +59,26 @@ final class ParboiledInterfaceSpecifier implements InterfaceSpecifier {
     @Override
     public Set<NodeInterfacePair> visitInterfaceGroupInterfaceAstNode(
         InterfaceGroupInterfaceAstNode interfaceGroupInterfaceAstNode) {
-      return new ReferenceInterfaceGroupInterfaceSpecifier(
-              interfaceGroupInterfaceAstNode.getInterfaceGroup(),
-              interfaceGroupInterfaceAstNode.getReferenceBook())
-          .resolve(_nodes, _ctxt);
+      // Because we changed the input on Apr 30 2019 from (group, book) to (book, group), we
+      // first interpret the user input as (book, group) if the book exists. Otherwise, we interpret
+      // it is as (group, book)
+      if (_ctxt.getReferenceBook(interfaceGroupInterfaceAstNode.getReferenceBook()).isPresent()) {
+        return new ReferenceInterfaceGroupInterfaceSpecifier(
+                interfaceGroupInterfaceAstNode.getInterfaceGroup(),
+                interfaceGroupInterfaceAstNode.getReferenceBook())
+            .resolve(_nodes, _ctxt);
+      } else if (_ctxt
+          .getReferenceBook(interfaceGroupInterfaceAstNode.getInterfaceGroup())
+          .isPresent()) {
+        return new ReferenceInterfaceGroupInterfaceSpecifier(
+                interfaceGroupInterfaceAstNode.getReferenceBook(),
+                interfaceGroupInterfaceAstNode.getInterfaceGroup())
+            .resolve(_nodes, _ctxt);
+      }
+      throw new NoSuchElementException(
+          "Reference book "
+              + interfaceGroupInterfaceAstNode.getReferenceBook()
+              + " is not present");
     }
 
     @Nonnull
