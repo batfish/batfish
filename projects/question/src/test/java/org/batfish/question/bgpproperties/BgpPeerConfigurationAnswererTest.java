@@ -10,6 +10,7 @@ import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.PEER_GROU
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.REMOTE_AS;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.ROUTE_REFLECTOR_CLIENT;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.SEND_COMMUNITY;
+import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.COL_LOCAL_INTERFACE;
 import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.COL_NODE;
 import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.COL_REMOTE_IP;
 import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.COL_VRF;
@@ -27,6 +28,7 @@ import com.google.common.collect.Multiset;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
@@ -77,11 +79,25 @@ public final class BgpPeerConfigurationAnswererTest {
             .setExportPolicySources(ImmutableSortedSet.of("p4"))
             .setSendCommunity(false)
             .build();
+    BgpUnnumberedPeerConfig unnumberedPeer =
+        BgpUnnumberedPeerConfig.builder()
+            .setLocalAs(100L)
+            .setRemoteAsns(LongSpace.of(400L))
+            .setLocalIp(Ip.parse("169.254.0.1"))
+            .setPeerInterface("iface")
+            .setRouteReflectorClient(true)
+            .setClusterId(Ip.parse("6.6.6.6").asLong())
+            .setGroup("g3")
+            .setImportPolicySources(ImmutableSortedSet.of("p5"))
+            .setExportPolicySources(ImmutableSortedSet.of("p6"))
+            .setSendCommunity(false)
+            .build();
 
     BgpProcess process = new BgpProcess();
     process.setNeighbors(ImmutableSortedMap.of(Prefix.create(Ip.parse("1.1.1.0"), 24), activePeer));
     process.setPassiveNeighbors(
         ImmutableSortedMap.of(Prefix.create(Ip.parse("1.1.1.0"), 24), passivePeer));
+    process.setInterfaceNeighbors(ImmutableSortedMap.of("iface", unnumberedPeer));
 
     Vrf vrf = new Vrf("v");
     vrf.setBgpProcess(process);
@@ -110,6 +126,7 @@ public final class BgpPeerConfigurationAnswererTest {
             .put(COL_VRF, "v")
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, Ip.parse("2.2.2.2")))
             .put(getColumnName(LOCAL_AS), 100L)
+            .put(COL_LOCAL_INTERFACE, null)
             .put(getColumnName(REMOTE_AS), LongSpace.of(200L).toString())
             .put(getColumnName(LOCAL_IP), Ip.parse("1.1.1.1"))
             .put(getColumnName(IS_PASSIVE), false)
@@ -125,6 +142,7 @@ public final class BgpPeerConfigurationAnswererTest {
             .put(COL_NODE, node)
             .put(COL_VRF, "v")
             .put(getColumnName(LOCAL_AS), 100L)
+            .put(COL_LOCAL_INTERFACE, null)
             .put(
                 COL_REMOTE_IP,
                 new SelfDescribingObject(Schema.PREFIX, Prefix.create(Ip.parse("3.3.3.0"), 24)))
@@ -136,6 +154,23 @@ public final class BgpPeerConfigurationAnswererTest {
             .put(getColumnName(PEER_GROUP), "g2")
             .put(getColumnName(IMPORT_POLICY), ImmutableSet.of("p3"))
             .put(getColumnName(EXPORT_POLICY), ImmutableSet.of("p4"))
+            .put(getColumnName(SEND_COMMUNITY), false)
+            .build());
+    expected.add(
+        Row.builder()
+            .put(COL_NODE, node)
+            .put(COL_VRF, "v")
+            .put(getColumnName(LOCAL_AS), 100L)
+            .put(COL_LOCAL_INTERFACE, "iface")
+            .put(COL_REMOTE_IP, null)
+            .put(getColumnName(REMOTE_AS), LongSpace.of(400L).toString())
+            .put(getColumnName(LOCAL_IP), null)
+            .put(getColumnName(IS_PASSIVE), false)
+            .put(getColumnName(ROUTE_REFLECTOR_CLIENT), true)
+            .put(getColumnName(CLUSTER_ID), Ip.parse("6.6.6.6"))
+            .put(getColumnName(PEER_GROUP), "g3")
+            .put(getColumnName(IMPORT_POLICY), ImmutableSet.of("p5"))
+            .put(getColumnName(EXPORT_POLICY), ImmutableSet.of("p6"))
             .put(getColumnName(SEND_COMMUNITY), false)
             .build());
 
@@ -162,6 +197,7 @@ public final class BgpPeerConfigurationAnswererTest {
         Row.builder()
             .put(COL_NODE, node)
             .put(COL_VRF, "v")
+            .put(COL_LOCAL_INTERFACE, null)
             .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, Ip.parse("2.2.2.2")))
             .put(getColumnName(LOCAL_IP), Ip.parse("1.1.1.1"))
             .build());
@@ -169,10 +205,19 @@ public final class BgpPeerConfigurationAnswererTest {
         Row.builder()
             .put(COL_NODE, node)
             .put(COL_VRF, "v")
+            .put(COL_LOCAL_INTERFACE, null)
             .put(
                 COL_REMOTE_IP,
                 new SelfDescribingObject(Schema.PREFIX, Prefix.create(Ip.parse("3.3.3.0"), 24)))
             .put(getColumnName(LOCAL_IP), Ip.parse("1.1.1.2"))
+            .build());
+    expected.add(
+        Row.builder()
+            .put(COL_NODE, node)
+            .put(COL_VRF, "v")
+            .put(COL_LOCAL_INTERFACE, "iface")
+            .put(COL_REMOTE_IP, null)
+            .put(getColumnName(LOCAL_IP), null)
             .build());
 
     assertThat(rows, equalTo(expected));
