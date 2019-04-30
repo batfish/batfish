@@ -283,18 +283,17 @@ class VirtualEigrpProcess {
    * Propagate EIGRP internal routes from every valid EIGRP neighbors
    *
    * @param nodes mapping of node names to instances.
-   * @param topology network topology
+   * @param topology network topologies
    * @param nc All network configurations
    * @return true if new routes have been added to the staging RIB
    */
   boolean propagateInternalRoutes(
-      Map<String, Node> nodes,
-      Network<EigrpInterface, EigrpEdge> topology,
-      NetworkConfigurations nc) {
-
+      Map<String, Node> nodes, TopologyContext topologyContext, NetworkConfigurations nc) {
+    Network<EigrpInterface, EigrpEdge> eigrpTopology = topologyContext.getEigrpTopology();
+    Set<EigrpInterface> eigrpNodes = eigrpTopology.nodes();
     return _interfaces.stream()
-        .filter(topology.nodes()::contains)
-        .flatMap(n -> topology.inEdges(n).stream())
+        .filter(eigrpNodes::contains)
+        .flatMap(n -> eigrpTopology.inEdges(n).stream())
         .map(
             edge ->
                 propagateInternalRoutesFromNeighbor(

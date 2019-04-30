@@ -25,9 +25,9 @@ import org.batfish.datamodel.ospf.OspfTopology;
 
 /** Container for various topologies used during data plane computation. */
 @ParametersAreNonnullByDefault
-final class TopologyContext {
+public final class TopologyContext {
 
-  static final class Builder {
+  public static final class Builder {
 
     private @Nonnull ImmutableValueGraph<BgpPeerConfigId, BgpSessionProperties> _bgpTopology;
     private @Nonnull ImmutableNetwork<EigrpInterface, EigrpEdge> _eigrpTopology;
@@ -36,8 +36,7 @@ final class TopologyContext {
     private @Nonnull Topology _layer3Topology;
     private @Nonnull OspfTopology _ospfTopology;
 
-    @Nonnull
-    TopologyContext build() {
+    public @Nonnull TopologyContext build() {
       return new TopologyContext(
           _bgpTopology,
           _eigrpTopology,
@@ -118,7 +117,7 @@ final class TopologyContext {
     }
   }
 
-  static @Nonnull Builder builder() {
+  public static @Nonnull Builder builder() {
     return new Builder();
   }
 
@@ -196,8 +195,7 @@ final class TopologyContext {
         _ospfTopology);
   }
 
-  @Nonnull
-  Builder toBuilder() {
+  public @Nonnull Builder toBuilder() {
     return builder()
         .setBgpTopology(_bgpTopology)
         .setEigrpTopology(_eigrpTopology)
