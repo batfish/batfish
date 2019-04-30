@@ -19,7 +19,6 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
  * true. Evaluates to false if the given list is empty.
  */
 public final class Disjunction extends BooleanExpr {
-
   private static final String PROP_DISJUNCTS = "disjuncts";
 
   private static final long serialVersionUID = 1L;

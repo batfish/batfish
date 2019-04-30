@@ -12,9 +12,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.NetworkConfigurations;
 
 public final class IsisNode implements Comparable<IsisNode> {
-
   private static final String PROP_NODE = "node";
-
   private static final String PROP_INTERFACE = "interface";
 
   private final String _node;

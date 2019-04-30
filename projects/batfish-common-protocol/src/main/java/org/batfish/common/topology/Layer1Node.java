@@ -13,9 +13,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.NetworkConfigurations;
 
 public final class Layer1Node implements Comparable<Layer1Node> {
-
   private static final String PROP_HOSTNAME = "hostname";
-
   private static final String PROP_INTERFACE_NAME = "interfaceName";
 
   @JsonCreator

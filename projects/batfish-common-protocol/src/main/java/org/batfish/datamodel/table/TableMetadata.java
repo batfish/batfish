@@ -20,11 +20,8 @@ import org.batfish.datamodel.questions.DisplayHints;
 /** Represents metadata for a {@link TableAnswerElement} */
 @ParametersAreNonnullByDefault
 public class TableMetadata {
-
   private static final String PROP_COLUMN_METADATA = "columnMetadata";
-
   private static final String PROP_DISPLAY_HINTS = "displayHints";
-
   private static final String PROP_TEXT_DESC = "textDesc";
 
   @Nonnull private final List<ColumnMetadata> _columnMetadata;

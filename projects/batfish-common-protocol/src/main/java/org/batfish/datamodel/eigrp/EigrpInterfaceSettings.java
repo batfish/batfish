@@ -9,7 +9,6 @@ import javax.annotation.Nullable;
 
 /** Settings for a {@link org.batfish.datamodel.Interface} with an {@link EigrpProcess}. */
 public class EigrpInterfaceSettings implements Serializable {
-
   private static final String PROP_ASN = "asn";
   private static final String PROP_ENABLED = "enabled";
   private static final String PROP_METRIC = "metric";

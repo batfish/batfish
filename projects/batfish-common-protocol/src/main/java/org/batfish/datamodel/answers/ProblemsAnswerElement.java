@@ -5,7 +5,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 public abstract class ProblemsAnswerElement extends AnswerElement {
-
   private static final String PROP_PROBLEMS = "problems";
 
   private SortedMap<String, Problem> _problems;

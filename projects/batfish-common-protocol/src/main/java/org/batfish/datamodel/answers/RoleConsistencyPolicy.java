@@ -11,11 +11,8 @@ import org.batfish.role.OutliersHypothesis;
  * node.
  */
 public class RoleConsistencyPolicy {
-
   private static final String PROP_ROLE_DIMENSION = "roleDimension";
-
   private static final String PROP_NAME = "name";
-
   private static final String PROP_HYPOTHESIS = "hypothesis";
 
   private String _nodeRoleDimension;

@@ -10,7 +10,6 @@ import org.batfish.datamodel.routing_policy.expr.LongExpr;
 
 @ParametersAreNonnullByDefault
 public final class SetLocalPreference extends Statement {
-
   private static final String PROP_LOCAL_PREFERENCE = "localPreference";
 
   /** */

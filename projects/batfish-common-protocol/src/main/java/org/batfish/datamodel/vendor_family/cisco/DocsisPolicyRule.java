@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 
 public final class DocsisPolicyRule implements Serializable {
-
   private static final String PROP_NAME = "name";
 
   /** */

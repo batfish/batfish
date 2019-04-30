@@ -13,7 +13,6 @@ import org.batfish.datamodel.routing_policy.Environment;
 
 @ParametersAreNonnullByDefault
 public final class ExplicitPrefix6Set extends Prefix6SetExpr {
-
   private static final String PROP_PREFIX6_SPACE = "prefix6Space";
 
   /** */

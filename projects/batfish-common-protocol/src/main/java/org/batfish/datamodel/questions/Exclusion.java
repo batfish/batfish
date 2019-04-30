@@ -16,9 +16,7 @@ import org.batfish.datamodel.table.Row;
  * {@link Exclusion} may "cover" multiple rows and cause them to be excluded.
  */
 public class Exclusion {
-
   private static final String PROP_NAME = "name";
-
   private static final String PROP_SPECIFICATION = "specification";
 
   @Nonnull final String _name;

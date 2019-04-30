@@ -54,9 +54,7 @@ public class CommunityList extends CommunitySetExpr {
   }
 
   private static final String PROP_INVERT_MATCH = "invertMatch";
-
   private static final String PROP_LINES = "lines";
-
   private static final String PROP_NAME = "name";
 
   private static final long serialVersionUID = 1L;

@@ -55,11 +55,8 @@ public final class IpAccessListLine implements Serializable {
   }
 
   public static final IpAccessListLine ACCEPT_ALL = accepting("ACCEPT_ALL", TrueExpr.INSTANCE);
-
   private static final String PROP_ACTION = "action";
-
   private static final String PROP_MATCH_CONDITION = "matchCondition";
-
   private static final String PROP_NAME = "name";
 
   public static final IpAccessListLine REJECT_ALL = rejecting("REJECT_ALL", TrueExpr.INSTANCE);

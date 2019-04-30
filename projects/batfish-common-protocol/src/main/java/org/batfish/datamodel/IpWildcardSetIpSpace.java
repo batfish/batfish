@@ -60,9 +60,7 @@ public final class IpWildcardSetIpSpace extends IpSpace {
 
   public static final IpWildcardSetIpSpace ANY =
       IpWildcardSetIpSpace.builder().including(IpWildcard.ANY).build();
-
   private static final String PROP_BLACKLIST = "blacklist";
-
   private static final String PROP_WHITELIST = "whitelist";
 
   /** */

@@ -12,7 +12,6 @@ import org.batfish.specifier.SpecifierFactories;
 
 /** A question that returns VIP mappings of F5 BIG-IP configurations. */
 public class F5BigipVipConfigurationQuestion extends Question {
-
   private static final String PROP_NODES = "nodes";
 
   @Nullable private String _nodes;

@@ -10,9 +10,7 @@ import javax.annotation.Nullable;
 
 /** Represents a configured static (having a specified remote peer) IPSec peer */
 public final class IpsecStaticPeerConfig extends IpsecPeerConfig implements Serializable {
-
   private static final String PROP_DESTINATION_ADDRESS = "destinationAddress";
-
   private static final String PROP_IKE_PHASE1_POLICY = "ikePhase1Policy";
 
   /** */

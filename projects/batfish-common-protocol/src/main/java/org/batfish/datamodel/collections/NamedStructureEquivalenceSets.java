@@ -108,7 +108,6 @@ public class NamedStructureEquivalenceSets<T> {
   }
 
   private static final String PROP_SAME_NAMED_STRUCTURES = "sameNamedStructures";
-
   private static final String PROP_STRUCTURE_CLASS_NAME = "structureClassName";
 
   public static <T> Builder<T> builder(String structureClassName) {

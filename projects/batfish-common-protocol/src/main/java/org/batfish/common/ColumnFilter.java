@@ -12,9 +12,7 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.table.Row;
 
 public final class ColumnFilter {
-
   private static final String PROP_COLUMN = "column";
-
   private static final String PROP_FILTER_TEXT = "filterText";
 
   @JsonCreator

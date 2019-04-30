@@ -21,7 +21,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 /** Represents the configuration of a major issue type */
 @ParametersAreNonnullByDefault
 public class MajorIssueConfig {
-
   private static final String PROP_MAJOR_ISSUE = "majorIssue";
   private static final String PROP_MINOR_ISSUE_CONFIGS = "minorIssueConfigs";
 

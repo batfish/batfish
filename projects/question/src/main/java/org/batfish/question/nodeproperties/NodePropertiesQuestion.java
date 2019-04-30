@@ -21,7 +21,6 @@ import org.batfish.specifier.SpecifierFactories;
  */
 @ParametersAreNonnullByDefault
 public class NodePropertiesQuestion extends Question {
-
   private static final String PROP_NODES = "nodes";
   private static final String PROP_PROPERTIES = "properties";
 

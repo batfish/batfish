@@ -208,39 +208,22 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
   }
 
   private static final String PROP_AS_PATH = "asPath";
-
   private static final String PROP_CLUSTER_LIST = "clusterList";
-
   private static final String PROP_COMMUNITIES = "communities";
-
   private static final String PROP_DST_IP = "dstIp";
-
   private static final String PROP_DST_NODE = "dstNode";
-
   private static final String PROP_DST_VRF = "dstVrf";
-
   private static final String PROP_LOCAL_PREFERENCE = "localPreference";
-
   private static final String PROP_MED = "med";
-
   private static final String PROP_NETWORK = "network";
-
   private static final String PROP_NEXT_HOP_IP = "nextHopIp";
-
   private static final String PROP_ORIGIN_TYPE = "originType";
-
   private static final String PROP_ORIGINATOR_IP = "originatorIp";
-
   private static final String PROP_SRC_IP = "srcIp";
-
   private static final String PROP_SRC_NODE = "srcNode";
-
   private static final String PROP_SRC_PROTOCOL = "srcProtocol";
-
   private static final String PROP_SRC_VRF = "srcVrf";
-
   private static final String PROP_TYPE = "type";
-
   private static final String PROP_WEIGHT = "weight";
 
   /** */

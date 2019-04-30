@@ -17,7 +17,6 @@ import org.batfish.specifier.SpecifierFactories;
 /** A question that returns a table with VXLAN network segments and their properties. */
 @ParametersAreNonnullByDefault
 public final class VxlanVniPropertiesQuestion extends Question {
-
   private static final String PROP_NODES = "nodes";
   private static final String PROP_PROPERTIES = "properties";
 

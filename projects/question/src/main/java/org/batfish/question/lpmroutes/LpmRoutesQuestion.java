@@ -22,7 +22,6 @@ import org.batfish.specifier.SpecifierFactories;
  */
 @ParametersAreNonnullByDefault
 public class LpmRoutesQuestion extends Question {
-
   private static final String PROP_IP = "ip";
   private static final String PROP_NODES = "nodes";
   private static final String PROP_RIB = "rib";

@@ -17,7 +17,6 @@ import org.batfish.datamodel.pojo.Aggregate.AggregateType;
 import org.batfish.datamodel.pojo.Link.LinkType;
 
 public class Topology extends BfObject {
-
   private static final String PROP_TESTRIG_NAME = "testrigName";
 
   @Nonnull private Set<Aggregate> _aggregates;

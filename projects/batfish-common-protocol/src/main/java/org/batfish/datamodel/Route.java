@@ -8,25 +8,17 @@ import javax.annotation.Nullable;
 
 @JsonPropertyOrder({Route.PROP_DIFF_SYMBOL})
 public class Route implements Comparable<Route>, Serializable {
-
   private static final String PROP_ADMINISTRATIVE_COST = "administrativeCost";
 
   public static final String AMBIGUOUS_NEXT_HOP = "(ambiguous)";
 
   protected static final String PROP_DIFF_SYMBOL = "diffSymbol";
-
   private static final String PROP_METRIC = "metric";
-
   private static final String PROP_NETWORK = "network";
-
   private static final String PROP_NEXT_HOP_INTERFACE = "nextHopInterface";
-
   private static final String PROP_NEXT_HOP_IP = "nextHopIp";
-
   private static final String PROP_NEXT_HOP = "nextHop";
-
   private static final String PROP_NODE = "node";
-
   private static final String PROP_PROTOCOL = "protocol";
 
   /** */
@@ -45,7 +37,6 @@ public class Route implements Comparable<Route>, Serializable {
   public static final Ip UNSET_ROUTE_NEXT_HOP_IP = Ip.AUTO;
 
   public static final int UNSET_ROUTE_TAG = -1;
-
   private static final String PROP_VRF = "vrf";
 
   private final int _administrativeCost;

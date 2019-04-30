@@ -20,7 +20,6 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 public class InterfaceGroup implements Comparable<InterfaceGroup>, Serializable {
 
   private static final long serialVersionUID = 1L;
-
   private static final String PROP_INTERFACES = "interfaces";
   private static final String PROP_NAME = "name";
 

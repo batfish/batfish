@@ -12,9 +12,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 public final class TableViewRow {
-
   private static final String PROP_ID = "id";
-
   private static final String PROP_ROW = "row";
 
   @JsonCreator

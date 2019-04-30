@@ -20,13 +20,9 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 /** Edge representing Layer 3 neighbors */
 @ParametersAreNonnullByDefault
 public class Layer3Edge implements Comparable<Layer3Edge> {
-
   private static final String PROP_NODE_INTERFACE1 = "nodeInterface1";
-
   private static final String PROP_NODE_INTERFACE2 = "nodeInterface2";
-
   private static final String PROP_INTERFACE_ADDRESSES1 = "interfaceAddresses1";
-
   private static final String PROP_INTERFACE_ADDRESSES2 = "interfaceAddresses2";
 
   @Nonnull private final NodeInterfacePair _nodeInterface1;

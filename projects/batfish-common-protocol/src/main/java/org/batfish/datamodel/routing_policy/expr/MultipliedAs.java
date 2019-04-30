@@ -13,7 +13,6 @@ import org.batfish.datamodel.routing_policy.Environment;
 
 @ParametersAreNonnullByDefault
 public final class MultipliedAs extends AsPathListExpr {
-
   private static final String PROP_EXPR = "expr";
   private static final String PROP_NUMBER = "number";
 

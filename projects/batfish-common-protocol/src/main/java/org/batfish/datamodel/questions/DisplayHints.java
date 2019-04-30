@@ -20,9 +20,7 @@ import org.batfish.datamodel.answers.Schema;
 public class DisplayHints {
 
   public static class Composition {
-
     private static final String PROP_SCHEMA = "schema";
-
     private static final String PROP_DICTIONARY = "dictionary";
 
     private Map<String, String> _dictionary;
@@ -72,7 +70,6 @@ public class DisplayHints {
 
   public static class Extraction {
     private static final String PROP_METHOD = "method";
-
     private static final String PROP_SCHEMA = "schema";
 
     private Map<String, JsonNode> _method;
@@ -112,9 +109,7 @@ public class DisplayHints {
   }
 
   private static final String PROP_COMPOSITIONS = "compositions";
-
   private static final String PROP_EXTRACTIONS = "extractions";
-
   private static final String PROP_TEXT_DESC = "textDesc";
 
   private Map<String, Composition> _compositions;

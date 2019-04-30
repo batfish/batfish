@@ -247,7 +247,6 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
   }
 
   public static class InferPoliciesAnswerElement extends AnswerElement {
-
     private static final String PROP_ROLE_CONSISTENCY_QUESTIONS = "roleConsistencyQuestions";
 
     @JsonProperty(PROP_ROLE_CONSISTENCY_QUESTIONS)
@@ -417,7 +416,6 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
    * consistent with one another in some particular way.
    */
   public static final class InferPoliciesQuestion extends Question {
-
     private static final String PROP_ROLE_DIMENSION = "roleDimension";
 
     @Nullable private String _roleDimension;

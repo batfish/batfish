@@ -13,7 +13,6 @@ import javax.annotation.Nonnull;
 /** Allows matching flows with specified TCP flags */
 public final class TcpFlagsMatchConditions
     implements Serializable, Comparable<TcpFlagsMatchConditions> {
-
   private static final String PROP_TCP_FLAGS = "tcpFlags";
   private static final String PROP_USE_ACK = "useAck";
   private static final String PROP_USE_CWR = "useCwr";

@@ -12,7 +12,6 @@ import javax.annotation.Nullable;
 
 /** Configuration required to create ISPs for a given network snapshot */
 public class IspConfiguration {
-
   private static final String PROP_BORDER_INTERFACES = "borderInterfaces";
   private static final String PROP_FILTER = "filter";
 

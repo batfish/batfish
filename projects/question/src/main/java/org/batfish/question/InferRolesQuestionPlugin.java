@@ -22,9 +22,7 @@ import org.batfish.role.NodeRoleDimension;
 public class InferRolesQuestionPlugin extends QuestionPlugin {
 
   public static class InferRolesAnswerElement extends AnswerElement {
-
     private static final String PROP_ROLE_DIMENSIONS = "roleDimensions";
-
     private static final String PROP_MATCHING_NODES_COUNT = "matchingNodesCount";
 
     @Nonnull private final SortedSet<NodeRoleDimension> _roleDimensions;
@@ -89,9 +87,7 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
    * <p>Uses heuristics to identify a part of a node's name that represents its role.
    */
   public static final class InferRolesQuestion extends Question {
-
     private static final String PROP_NODE_REGEX = "nodeRegex";
-
     private static final String PROP_CASE_SENSITIVE = "caseSensitive";
 
     private NodesSpecifier _nodeRegex;

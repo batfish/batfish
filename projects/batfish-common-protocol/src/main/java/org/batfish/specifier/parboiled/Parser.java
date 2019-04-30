@@ -1,9 +1,11 @@
 package org.batfish.specifier.parboiled;
 
+import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_AND_REFERENCE_BOOK;
 import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.DEPRECATED;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME_REGEX;
-import static org.batfish.specifier.parboiled.Anchor.Type.IGNORE;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_AND_REFERENCE_BOOK;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME_REGEX;
@@ -185,7 +187,7 @@ public class Parser extends CommonParser {
         push(DirectionFilterAstNode.create(direction.get(), pop())));
   }
 
-  @Anchor(IGNORE)
+  @Anchor(DEPRECATED)
   public Rule FilterDirectionDeprecated() {
     Var<String> direction = new Var<>();
     return Sequence(
@@ -209,7 +211,7 @@ public class Parser extends CommonParser {
     return Sequence(Regex(), push(new NameRegexFilterAstNode(pop())));
   }
 
-  @Anchor(IGNORE)
+  @Anchor(DEPRECATED)
   public Rule FilterNameRegexDeprecated() {
     return Sequence(RegexDeprecated(), push(new NameRegexFilterAstNode(pop())));
   }
@@ -346,7 +348,7 @@ public class Parser extends CommonParser {
         push(new ConnectedToInterfaceAstNode(pop())));
   }
 
-  @Anchor(IGNORE)
+  @Anchor(DEPRECATED)
   public Rule InterfaceConnectedToDeprecated() {
     return Sequence(
         IgnoreCase("connectedTo"),
@@ -362,25 +364,23 @@ public class Parser extends CommonParser {
     return Sequence(
         IgnoreCase("@interfaceGroup"),
         WhiteSpace(),
-        "( ",
-        InterfaceGroup(),
-        ", ",
-        ReferenceBook(),
-        ") ",
+        InterfaceGroupAndReferenceBook(),
         push(new InterfaceGroupInterfaceAstNode(pop(1), pop())));
   }
 
-  @Anchor(IGNORE)
+  @Anchor(DEPRECATED)
   public Rule InterfaceInterfaceGroupDeprecated() {
     return Sequence(
         IgnoreCase("ref.interfaceGroup"),
         WhiteSpace(),
-        "( ",
-        InterfaceGroup(),
-        ", ",
-        ReferenceBook(),
-        ") ",
+        InterfaceGroupAndReferenceBook(),
         push(new InterfaceGroupInterfaceAstNode(pop(1), pop())));
+  }
+
+  /** Matches InterfaceGroup and ReferenceBook pair */
+  @Anchor(INTERFACE_GROUP_AND_REFERENCE_BOOK)
+  public Rule InterfaceGroupAndReferenceBook() {
+    return Sequence("( ", InterfaceGroup(), ", ", ReferenceBook(), ") ");
   }
 
   /** Matches Interface Group name */
@@ -400,7 +400,7 @@ public class Parser extends CommonParser {
         push(new TypeInterfaceAstNode(pop())));
   }
 
-  @Anchor(IGNORE)
+  @Anchor(DEPRECATED)
   public Rule InterfaceTypeDeprecated() {
     return Sequence(
         IgnoreCase("type"),
@@ -428,7 +428,7 @@ public class Parser extends CommonParser {
         push(new VrfInterfaceAstNode(pop())));
   }
 
-  @Anchor(IGNORE)
+  @Anchor(DEPRECATED)
   public Rule InterfaceVrfDeprecated() {
     return Sequence(
         IgnoreCase("vrf"),
@@ -456,7 +456,7 @@ public class Parser extends CommonParser {
         push(new ZoneInterfaceAstNode(pop())));
   }
 
-  @Anchor(IGNORE)
+  @Anchor(DEPRECATED)
   public Rule InterfaceZoneDeprecated() {
     return Sequence(
         IgnoreCase("zone"),
@@ -483,7 +483,7 @@ public class Parser extends CommonParser {
     return Sequence(Regex(), push(new NameRegexInterfaceAstNode(pop())));
   }
 
-  @Anchor(IGNORE)
+  @Anchor(DEPRECATED)
   public Rule InterfaceNameRegexDeprecated() {
     return Sequence(RegexDeprecated(), push(new NameRegexInterfaceAstNode(pop())));
   }
@@ -597,25 +597,23 @@ public class Parser extends CommonParser {
     return Sequence(
         IgnoreCase("@addressgroup"),
         WhiteSpace(),
-        "( ",
-        AddressGroup(),
-        ", ",
-        ReferenceBook(),
-        ") ",
+        AddressGroupAndReferenceBook(),
         push(new AddressGroupIpSpaceAstNode(pop(1), pop())));
   }
 
-  @Anchor(IGNORE)
+  @Anchor(DEPRECATED)
   public Rule IpSpaceAddressGroupDeprecated() {
     return Sequence(
         IgnoreCase("ref.addressgroup"),
         WhiteSpace(),
-        "( ",
-        AddressGroup(),
-        ", ",
-        ReferenceBook(),
-        ") ",
+        AddressGroupAndReferenceBook(),
         push(new AddressGroupIpSpaceAstNode(pop(1), pop())));
+  }
+
+  /** Matches AddressGroup and ReferenceBook pair */
+  @Anchor(ADDRESS_GROUP_AND_REFERENCE_BOOK)
+  public Rule AddressGroupAndReferenceBook() {
+    return Sequence("( ", AddressGroup(), ", ", ReferenceBook(), ") ");
   }
 
   /** Matches AddressGroup name */
@@ -628,7 +626,7 @@ public class Parser extends CommonParser {
     return Sequence(LocationSpec(), push(new LocationIpSpaceAstNode(pop())));
   }
 
-  @Anchor(IGNORE)
+  @Anchor(DEPRECATED)
   public Rule IpSpaceLocationDeprecated() {
     return Sequence(
         IgnoreCase("ofLocation"),
@@ -746,7 +744,7 @@ public class Parser extends CommonParser {
         push(new EnterLocationAstNode(pop())));
   }
 
-  @Anchor(IGNORE)
+  @Anchor(DEPRECATED)
   public Rule LocationEnterDeprecated() {
     return Sequence(
         IgnoreCase("enter"),
@@ -776,7 +774,7 @@ public class Parser extends CommonParser {
             push(InterfaceLocationAstNode.createFromInterface(pop()))));
   }
 
-  @Anchor(IGNORE)
+  @Anchor(DEPRECATED)
   public Rule LocationInterfaceDeprecated() {
     return Sequence(
         // brackets without node expression
@@ -851,7 +849,7 @@ public class Parser extends CommonParser {
         push(new RoleNodeAstNode(pop(1), pop())));
   }
 
-  @Anchor(IGNORE)
+  @Anchor(DEPRECATED)
   public Rule NodeRoleDeprecated() {
     return Sequence(
         IgnoreCase("ref.noderole"),
@@ -902,7 +900,7 @@ public class Parser extends CommonParser {
     return Sequence(Regex(), push(new NameRegexNodeAstNode(pop())));
   }
 
-  @Anchor(IGNORE)
+  @Anchor(DEPRECATED)
   public Rule NodeNameRegexDeprecated() {
     return Sequence(RegexDeprecated(), push(new NameRegexNodeAstNode(pop())), WhiteSpace());
   }
@@ -968,7 +966,7 @@ public class Parser extends CommonParser {
     return Sequence(Regex(), push(new NameRegexRoutingPolicyAstNode(pop())));
   }
 
-  @Anchor(IGNORE)
+  @Anchor(DEPRECATED)
   public Rule RoutingPolicyNameRegexDeprecated() {
     return Sequence(RegexDeprecated(), push(new NameRegexRoutingPolicyAstNode(pop())));
   }

@@ -10,7 +10,6 @@ import org.batfish.datamodel.routing_policy.Environment;
 
 @ParametersAreNonnullByDefault
 public final class LiteralInt extends IntExpr {
-
   private static final String PROP_VALUE = "value";
 
   /** */

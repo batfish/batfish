@@ -16,7 +16,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 /** Configuration for a pool of nodes. */
 @ParametersAreNonnullByDefault
 public final class Pool implements Serializable {
-
   private static final String PROP_DESCRIPTION = "description";
   private static final String PROP_MEMBERS = "members";
   private static final String PROP_MONITOR = "monitor";

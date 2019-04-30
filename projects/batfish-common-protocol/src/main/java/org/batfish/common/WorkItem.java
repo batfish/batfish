@@ -18,7 +18,6 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 
 public class WorkItem {
-
   private static final String PROP_NETWORK = "containerName";
   private static final String PROP_ID = "id";
   private static final String PROP_REQUEST_PARAMS = "requestParams";

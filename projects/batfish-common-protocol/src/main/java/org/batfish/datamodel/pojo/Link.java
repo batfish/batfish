@@ -7,11 +7,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.batfish.datamodel.InterfaceType;
 
 public class Link extends BfObject {
-
   private static final String PROP_DST_ID = "dstId";
-
   private static final String PROP_SRC_ID = "srcId";
-
   private static final String PROP_TYPE = "type";
 
   public enum LinkType {

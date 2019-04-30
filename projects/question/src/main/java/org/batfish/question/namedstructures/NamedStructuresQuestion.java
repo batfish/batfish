@@ -25,7 +25,6 @@ public class NamedStructuresQuestion extends Question {
 
   private static boolean DEFAULT_IGNORE_GENERATED = true;
   private static boolean DEFAULT_INDICATE_PRESENCE = false;
-
   private static final String PROP_IGNORE_GENERATED = "ignoreGenerated";
   private static final String PROP_INDICATE_PRESENCE = "indicatePresence";
   private static final String PROP_NODES = "nodes";

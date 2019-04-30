@@ -54,6 +54,11 @@
     </module>
 
     <module name="RegexpSinglelineJava">
+      <property name="format" value="import org.junit.Assert;"/>
+      <property name="message" value="Static import JUnit assertion helpers"/>
+    </module>
+
+    <module name="RegexpSinglelineJava">
       <property name="format" value=".*MoreObjects\.firstNonNull\(.*"/>
       <property name="message" value="Static import from Guava utility classes"/>
     </module>

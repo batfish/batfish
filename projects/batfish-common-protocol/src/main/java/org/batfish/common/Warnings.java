@@ -25,15 +25,10 @@ public class Warnings implements Serializable {
   public static final String TAG_RED_FLAG = "MISCELLANEOUS";
 
   public static final String TAG_UNIMPLEMENTED = "UNIMPLEMENTED";
-
   private static final String PROP_ERROR_DETAILS = "Error details";
-
   private static final String PROP_PARSE_WARNINGS = "Parse warnings";
-
   private static final String PROP_PEDANTIC = "Pedantic complaints";
-
   private static final String PROP_RED_FLAGS = "Red flags";
-
   private static final String PROP_UNIMPLEMENTED = "Unimplemented features";
 
   private ErrorDetails _errorDetails;
@@ -172,7 +167,6 @@ public class Warnings implements Serializable {
   /** A class to represent a parse warning in a file. */
   public static final class ParseWarning implements Serializable {
     private static final long serialVersionUID = 1L;
-
     private static final String PROP_COMMENT = "Comment";
     private static final String PROP_LINE = "Line";
     private static final String PROP_PARSER_CONTEXT = "Parser_Context";

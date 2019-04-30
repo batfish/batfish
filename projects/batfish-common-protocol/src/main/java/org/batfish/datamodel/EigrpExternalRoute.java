@@ -13,7 +13,6 @@ import org.batfish.datamodel.eigrp.EigrpMetric;
 
 /** Represents an external EIGRP route */
 public class EigrpExternalRoute extends EigrpRoute {
-
   private static final String PROP_DESTINATION_ASN = "destination-asn";
 
   private static final long serialVersionUID = 1L;

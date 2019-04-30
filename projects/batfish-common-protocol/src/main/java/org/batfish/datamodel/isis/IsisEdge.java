@@ -97,9 +97,7 @@ public final class IsisEdge implements Comparable<IsisEdge> {
   }
 
   private static final String PROP_CIRCUIT_TYPE = "circuitType";
-
   private static final String PROP_NODE1 = "node1";
-
   private static final String PROP_NODE2 = "node2";
 
   private final IsisLevel _circuitType;

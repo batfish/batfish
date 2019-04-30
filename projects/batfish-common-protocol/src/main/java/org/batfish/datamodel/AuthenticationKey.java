@@ -7,17 +7,11 @@ import org.batfish.datamodel.isis.IsisAuthenticationAlgorithm;
 import org.batfish.datamodel.isis.IsisOption;
 
 public class AuthenticationKey implements Serializable {
-
   private static final String PROP_BGP_AUTHENTICATION_ALGORITHM = "bgpAuthenticationAlgorithm";
-
   private static final String PROP_ISIS_AUTHENTICATION_ALGORITHM = "isisAuthenticationAlgorithm";
-
   private static final String PROP_ISIS_OPTION = "isisOption";
-
   private static final String PROP_NAME = "name";
-
   private static final String PROP_SECRET = "secret";
-
   private static final String PROP_START_TIME = "startTime";
 
   private static final long serialVersionUID = 1L;

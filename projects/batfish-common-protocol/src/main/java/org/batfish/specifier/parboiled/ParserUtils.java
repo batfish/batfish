@@ -112,6 +112,11 @@ final class ParserUtils {
         throw new IllegalStateException(String.format("No anchor found for path %s", path));
       }
 
+      // Do not consider DEPRECATED paths
+      if (pathElements.stream().anyMatch(e -> e.getAnchorType() == Anchor.Type.DEPRECATED)) {
+        continue;
+      }
+
       Optional<PathElement> pathAnchorOpt =
           fromTop
               ? findPathAnchorFromTop(pathElements)

@@ -175,7 +175,6 @@ public class BgpLoopbacksQuestionPlugin extends QuestionPlugin {
    * This question produces the list of nodes for which such announcements are not happening.
    */
   public static class BgpLoopbacksQuestion extends Question {
-
     private static final String PROP_NODE_REGEX = "nodeRegex";
 
     private NodesSpecifier _nodeRegex;

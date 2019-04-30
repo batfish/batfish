@@ -17,9 +17,7 @@ public class JsonPathExtractionHint {
   }
 
   private static final String PROP_FILTER = "filter";
-
   private static final String PROP_INDEX = "index";
-
   private static final String PROP_USE = "use";
 
   private String _filter;

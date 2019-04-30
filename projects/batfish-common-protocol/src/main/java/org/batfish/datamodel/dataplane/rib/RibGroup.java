@@ -18,7 +18,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class RibGroup implements Serializable {
   private static final long serialVersionUID = 1;
-
   private static final String PROP_NAME = "name";
   private static final String PROP_EXPORT_RIB = "exportRib";
   private static final String PROP_IMPORT_POLICY = "importPolicies";

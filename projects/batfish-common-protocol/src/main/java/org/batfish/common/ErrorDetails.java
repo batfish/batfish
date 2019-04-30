@@ -16,7 +16,6 @@ import org.batfish.grammar.BatfishParser;
 /** A class containing details regarding an error (e.g. parse error or convert error). */
 public class ErrorDetails implements Serializable {
   private static final long serialVersionUID = 1L;
-
   private static final String PROP_PARSE_EXCEPTION_CONTEXT = "Parse_Exception_Context";
   private static final String PROP_MESSAGE = "Message";
 
@@ -71,7 +70,6 @@ public class ErrorDetails implements Serializable {
   /** A class to represent context for a parse exception for a file. */
   public static class ParseExceptionContext implements Serializable {
     private static final long serialVersionUID = 1L;
-
     private static final String PROP_LINE_CONTENT = "Line_Content";
     private static final String PROP_LINE_NUMBER = "Line_Number";
     private static final String PROP_PARSER_CONTEXT = "Parser_Context";

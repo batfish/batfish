@@ -10,9 +10,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.question.jsonpath.JsonPathResult.JsonPathResultEntry;
 
 public class JsonPathDiffResult {
-
   private static final String PROP_ADDED = "added";
-
   private static final String PROP_REMOVED = "removed";
 
   private SortedMap<String, JsonPathResultEntry> _added;

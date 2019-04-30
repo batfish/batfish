@@ -10,7 +10,6 @@ import javax.annotation.Nullable;
 
 /** Represents a configured dynamic (remote peer not specified) IPSec peer */
 public final class IpsecDynamicPeerConfig extends IpsecPeerConfig implements Serializable {
-
   private static final String PROP_IKE_PHASE1_POLICIES = "ikePhase1Policies";
 
   /** */

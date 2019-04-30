@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.batfish.common.util.JsonDiff;
 
 public class JsonDiffAnswerElement extends AnswerElement {
-
   private static final String PROP_JSON_DIFF = "jsonDiff";
 
   private final JsonDiff _jsonDiff;

@@ -8,11 +8,8 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.RipNeighbor;
 
 public final class VerboseRipEdge implements Serializable, Comparable<VerboseRipEdge> {
-
   private static final String PROP_EDGE_SUMMARY = "edgeSummary";
-
   private static final String PROP_NODE1_SESSION = "node1Session";
-
   private static final String PROP_NODE2_SESSION = "node2Session";
 
   private static final long serialVersionUID = 1L;

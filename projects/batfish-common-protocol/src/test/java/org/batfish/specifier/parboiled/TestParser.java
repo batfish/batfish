@@ -71,6 +71,7 @@ class TestParser extends CommonParser {
     return Sequence("! ", TestNot("! "), TestTerm());
   }
 
+  @Anchor(Type.ADDRESS_GROUP_AND_REFERENCE_BOOK)
   public Rule TestSpecifierInput() {
     return Sequence(TestAddressGroupName(), ", ", TestReferenceBookName());
   }
@@ -107,7 +108,7 @@ class TestParser extends CommonParser {
     return Regex();
   }
 
-  @Anchor(Type.IGNORE)
+  @Anchor(Type.DEPRECATED)
   public Rule TestNameRegexDeprecated() {
     return RegexDeprecated();
   }

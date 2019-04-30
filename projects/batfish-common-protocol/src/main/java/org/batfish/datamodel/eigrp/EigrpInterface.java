@@ -23,7 +23,6 @@ import org.batfish.datamodel.NetworkConfigurations;
 @ParametersAreNonnullByDefault
 public class EigrpInterface implements Serializable, Comparable<EigrpInterface> {
   private static final long serialVersionUID = 1L;
-
   private static final String PROP_HOSTNAME = "hostname";
   private static final String PROP_INTERFACE = "interface";
   private static final String PROP_VRF = "vrf";
