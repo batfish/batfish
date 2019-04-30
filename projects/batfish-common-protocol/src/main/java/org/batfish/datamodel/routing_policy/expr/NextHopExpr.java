@@ -10,7 +10,6 @@ import org.batfish.datamodel.routing_policy.Environment;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public abstract class NextHopExpr implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Override

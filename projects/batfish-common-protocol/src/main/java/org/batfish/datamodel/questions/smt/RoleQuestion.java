@@ -6,11 +6,8 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.questions.Question;
 
 public class RoleQuestion extends Question {
-
   private static final String PROP_NODE_REGEX = "nodeRegex";
-
   private static final String PROP_DST_IPS = "dstIps";
-
   private static final String PROP_EQUIVALENCE_TYPE = "equivType";
 
   private String _nodeRegex = ".*";

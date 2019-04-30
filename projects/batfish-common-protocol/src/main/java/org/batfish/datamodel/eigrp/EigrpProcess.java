@@ -13,7 +13,6 @@ import org.batfish.datamodel.Vrf;
 
 /** Represents an EIGRP process on a router */
 public class EigrpProcess implements Comparable<EigrpProcess>, Serializable {
-
   private static final String PROP_ASN = "asn";
   private static final String PROP_EXPORT_POLICY = "export-policy";
   private static final String PROP_MODE = "eigrp-mode";

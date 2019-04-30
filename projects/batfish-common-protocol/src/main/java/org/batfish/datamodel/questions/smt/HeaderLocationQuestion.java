@@ -29,31 +29,22 @@ public class HeaderLocationQuestion extends HeaderQuestion {
   private static final String DEFAULT_FAIL_NODE_REGEX = ".*";
 
   private static final String DEFAULT_NOT_FAIL_NODE_REGEX = "";
-
   private static final String PROP_NEGATE = "negate";
-
   private static final String PROP_FINAL_NODE_REGEX = "finalNodeRegex";
-
   private static final String PROP_FINAL_IFACE_REGEX = "finalIfaceRegex";
-
   private static final String PROP_INGRESS_NODE_REGEX = "ingressNodeRegex";
 
   private static final String FAIL_NODE1_REGEX_VAR = "failNode1Regex";
 
   private static final String FAIL_NODE2_REGEX_VAR = "failNode2Regex";
-
   private static final String PROP_NOT_FINAL_NODE_REGEX = "notFinalNodeRegex";
-
   private static final String PROP_NOT_FINAL_IFACE_REGEX = "notFinalIfaceRegex";
-
   private static final String PROP_NOT_INGRESS_NODE_REGEX = "notIngressNodeRegex";
 
   private static final String NOT_FAIL_NODE1_REGEX_VAR = "notFailNode1Regex";
 
   private static final String NOT_FAIL_NODE2_REGEX_VAR = "notFailNode2Regex";
-
   private static final String PROP_FAIL_NODE_REGEX = "failNodeRegex";
-
   private static final String PROP_NOT_FAIL_NODE_REGEX = "notFailNodeRegex";
 
   private boolean _negate;

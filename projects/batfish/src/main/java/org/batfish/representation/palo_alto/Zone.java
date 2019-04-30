@@ -6,7 +6,6 @@ import java.util.TreeSet;
 
 public final class Zone implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final Set<String> _interfaceNames;

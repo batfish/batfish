@@ -28,7 +28,6 @@ import org.batfish.role.OutliersHypothesis;
 public class RoleConsistencyQuestionPlugin extends QuestionPlugin {
 
   public static class RoleConsistencyAnswerElement extends AnswerElement {
-
     private static final String PROP_ANSWERS = "answers";
 
     private List<OutlierSet<NavigableSet<String>>> _answers;
@@ -114,9 +113,7 @@ public class RoleConsistencyQuestionPlugin extends QuestionPlugin {
    * value for some particular configuration property (e.g., DnsServers).
    */
   public static final class RoleConsistencyQuestion extends AbstractRoleConsistencyQuestion {
-
     private static final String PROP_ROLE_DIMENSION = "roleDimension";
-
     private static final String PROP_PROPERTY_NAME = "propertyName";
 
     @Nullable private String _roleDimension;

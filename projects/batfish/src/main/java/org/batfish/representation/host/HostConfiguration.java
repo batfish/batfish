@@ -55,20 +55,15 @@ public class HostConfiguration extends VendorConfiguration {
   private static final String NAT_OUTPUT = "nat::OUTPUT";
 
   private static final String NAT_PREROUTING = "nat::PREROUTING";
-
   private static final String PROP_HOST_INTERFACES = "hostInterfaces";
-
   private static final String PROP_HOSTNAME = "hostname";
-
   private static final String PROP_IPTABLES_FILE = "iptablesFile";
-
   private static final String PROP_OVERLAY = "overlay";
 
   private static final String RAW_OUTPUT = "raw::OUTPUT";
 
   private static final String RAW_PREROUTING = "raw::PREROUTING";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   public static HostConfiguration fromJson(String filename, String text, Warnings warnings)

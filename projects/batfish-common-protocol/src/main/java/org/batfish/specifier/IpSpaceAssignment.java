@@ -18,7 +18,6 @@ import org.batfish.datamodel.IpSpace;
  * unique.
  */
 public final class IpSpaceAssignment {
-  /** */
   public static class Entry {
     private final @Nonnull IpSpace _ipSpace;
 

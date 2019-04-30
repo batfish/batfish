@@ -10,7 +10,6 @@ import org.batfish.datamodel.questions.Question;
 /** {@link Question} to construct the default policies for a new testrig */
 @ParametersAreNonnullByDefault
 public class FilterTableQuestion extends Question {
-
   private static final String PROP_COLUMNS = "columns";
   private static final String PROP_FILTER = "filter";
   private static final String PROP_INNER_QUESTION = "innerQuestion";

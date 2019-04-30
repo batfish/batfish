@@ -24,9 +24,7 @@ import org.batfish.common.BatfishException;
  * (match in order, with an implicit "deny all" at the end).
  */
 public class RouteFilterList implements Serializable {
-
   private static final String PROP_LINES = "lines";
-
   private static final String PROP_NAME = "name";
 
   private static final long serialVersionUID = 1L;

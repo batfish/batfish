@@ -9,7 +9,6 @@ import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public abstract class IpSpace implements Comparable<IpSpace>, Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   public abstract <R> R accept(GenericIpSpaceVisitor<R> visitor);

@@ -12,15 +12,10 @@ import org.batfish.common.util.ComparableStructure;
 public class IkePhase1Policy extends ComparableStructure<String> {
 
   private static final long serialVersionUID = 1L;
-
   private static final String PROP_IKE_PHASE1_PROPOSALS = "ikePhase1Proposals";
-
   private static final String PROP_IKE_PHASE1_KEY = "ikePhase1Key";
-
   private static final String PROP_REMOTE_IDENTITY = "remoteIdentity";
-
   private static final String PROP_SELF_IDENTITY = "selfIdentity";
-
   private static final String PROP_LOCAL_INTERFACE = "localInterface";
 
   private @Nonnull List<String> _ikePhase1Proposals;

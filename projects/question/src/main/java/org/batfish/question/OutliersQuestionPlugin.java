@@ -35,9 +35,7 @@ import org.batfish.role.OutliersHypothesis;
 public class OutliersQuestionPlugin extends QuestionPlugin {
 
   public static class OutliersAnswerElement extends AnswerElement {
-
     private static final String PROP_NAMED_STRUCTURE_OUTLIERS = "namedStructureOutliers";
-
     private static final String PROP_SERVER_OUTLIERS = "serverOutliers";
 
     private SortedSet<NamedStructureOutlierSet<?>> _namedStructureOutliers;
@@ -389,15 +387,10 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
    * leverages this and similar intuition to find outliers.
    */
   public static final class OutliersQuestion extends Question implements INodeRegexQuestion {
-
     private static final String PROP_HYPOTHESIS = "hypothesis";
-
     private static final String PROP_NAMED_STRUCT_TYPES = "namedStructTypes";
-
     private static final String PROP_NODE_REGEX = "nodeRegex";
-
     private static final String PROP_SERVER_SETS = "serverSets";
-
     private static final String PROP_VERBOSE = "verbose";
 
     private OutliersHypothesis _hypothesis;

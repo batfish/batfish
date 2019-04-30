@@ -8,7 +8,6 @@ import javax.annotation.Nullable;
 
 /** Decrements HSRP/VRRP priority by a given subtrahend when the tracked object is not available */
 public class DecrementPriority implements TrackAction {
-
   private static final String PROP_SUBTRAHEND = "subtrahend";
 
   private static final long serialVersionUID = 1L;

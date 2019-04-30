@@ -10,7 +10,6 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 
 public final class ServiceObject implements ServiceObjectGroupLine {
-  /** */
   private static final long serialVersionUID = 1L;
 
   private String _description;

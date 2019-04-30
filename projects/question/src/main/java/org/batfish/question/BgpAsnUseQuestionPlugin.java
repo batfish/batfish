@@ -103,9 +103,7 @@ public class BgpAsnUseQuestionPlugin extends QuestionPlugin {
    * <p>In eBGP-based data centers, it is often desired that each router have its own ASN.
    */
   public static class BgpAsnUseQuestion extends Question {
-
     private static final String PROP_MIN_COUNT = "minCount";
-
     private static final String PROP_NODE_REGEX = "nodeRegex";
 
     private Integer _minCount;

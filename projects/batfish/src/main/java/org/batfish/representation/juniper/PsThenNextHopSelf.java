@@ -12,7 +12,6 @@ public final class PsThenNextHopSelf extends PsThen {
 
   public static final PsThenNextHopSelf INSTANCE = new PsThenNextHopSelf();
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private PsThenNextHopSelf() {}

@@ -14,13 +14,9 @@ import org.batfish.datamodel.visitors.IpSpaceRepresentative;
 /** Represents a key to be used with IKE phase 1 policy */
 public class IkePhase1Key implements Serializable {
   private static final long serialVersionUID = 1L;
-
   private static final String PROP_KEY_TYPE = "keyType";
-
   private static final String PROP_KEY_HASH = "keyHash";
-
   private static final String PROP_REMOTE_IDENTITY = "remoteIdentity";
-
   private static final String PROP_LOCAL_INTERFACE = "localInterface";
 
   private IkeKeyType _keyType;

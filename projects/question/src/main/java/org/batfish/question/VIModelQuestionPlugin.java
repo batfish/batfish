@@ -68,21 +68,13 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
   public static class VIModelAnswerElement extends AnswerElement {
 
     private static final class Edges {
-
       private static final String PROP_BGP = "bgp";
-
       private static final String PROP_ISIS = "isis";
-
       private static final String PROP_LAYER1 = "layer1";
-
       private static final String PROP_LAYER2 = "layer2";
-
       private static final String PROP_LAYER3 = "layer3";
-
       private static final String PROP_EIGRP = "eigrp";
-
       private static final String PROP_OSPF = "ospf";
-
       private static final String PROP_RIP = "rip";
 
       private SortedSet<VerboseBgpEdge> _bgpEdges;
@@ -168,7 +160,6 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
     }
 
     private static final String PROP_NODES = "nodes";
-
     private static final String PROP_EDGES = "edges";
 
     private final SortedMap<String, Configuration> _nodes;

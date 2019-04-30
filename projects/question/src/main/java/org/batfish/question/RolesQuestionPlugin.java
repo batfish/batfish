@@ -22,9 +22,7 @@ import org.batfish.role.NodeRoleDimension;
 public class RolesQuestionPlugin extends QuestionPlugin {
 
   public static class RolesAnswerElement extends AnswerElement {
-
     private static final String PROP_ROLE_DIMENSION = "roleDimension";
-
     private static final String PROP_ROLE_MAP = "roleMap";
 
     @Nonnull private NodeRoleDimension _roleDimension;
@@ -81,9 +79,7 @@ public class RolesQuestionPlugin extends QuestionPlugin {
 
   /** List the roles of each node. */
   public static final class RolesQuestion extends Question {
-
     private static final String PROP_NODE_REGEX = "nodeRegex";
-
     private static final String PROP_ROLE_DIMENSION = "roleDimension";
 
     @Nonnull private NodesSpecifier _nodeRegex;

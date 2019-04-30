@@ -11,17 +11,11 @@ import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.question.jsonpath.JsonPathResult.JsonPathResultEntry;
 
 public class JsonPathQuery {
-
   private static final String PROP_ASSERTION = "assertion";
-
   private static final String PROP_DESCRIPTION = "description";
-
   private static final String PROP_DISPLAY_HINTS = "displayHints";
-
   private static final String PROP_EXCEPTIONS = "exceptions";
-
   private static final String PROP_PATH = "path";
-
   private static final String PROP_SUFFIX = "suffix";
 
   private JsonPathAssertion _assertion;

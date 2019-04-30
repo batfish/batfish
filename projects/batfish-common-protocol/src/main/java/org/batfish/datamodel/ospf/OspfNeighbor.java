@@ -18,7 +18,6 @@ import org.batfish.datamodel.IpLink;
 /** Configuration for one end of an OSPF adjacency */
 @ParametersAreNonnullByDefault
 public final class OspfNeighbor implements Serializable, Comparable<OspfNeighbor> {
-
   private static final String PROP_AREA = "area";
   private static final String PROP_IFACE = "iface";
   private static final String PROP_NAME = "name";

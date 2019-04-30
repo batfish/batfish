@@ -23,7 +23,6 @@ public final class SwitchedVlanPropertiesQuestion extends Question {
   private static final IntegerSpace ALL_VLANS = IntegerSpace.of(new SubRange(1, 4094));
 
   private static final boolean DEFAULT_EXCLUDE_SHUT_INTERFACES = false;
-
   private static final String PROP_EXCLUDE_SHUT_INTERFACES = "excludeShutInterfaces";
   private static final String PROP_INTERFACES = "interfaces";
   private static final String PROP_NODES = "nodes";

@@ -12,7 +12,6 @@ public class IsisRedistributionPolicy extends RedistributionPolicy {
 
   public static final Integer DEFAULT_REDISTRIBUTE_STATIC_METRIC = 10;
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private IsisLevel _level;

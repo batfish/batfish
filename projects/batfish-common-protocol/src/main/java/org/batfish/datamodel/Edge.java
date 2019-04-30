@@ -17,7 +17,6 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 /** Represents a directed edge between two {@link NodeInterfacePair}s */
 @ParametersAreNonnullByDefault
 public class Edge implements Serializable, Comparable<Edge> {
-
   private static final String PROP_INT1 = "node1interface";
   private static final String PROP_INT2 = "node2interface";
   private static final String PROP_NODE1 = "node1";

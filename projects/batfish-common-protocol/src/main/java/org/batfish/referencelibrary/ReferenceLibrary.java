@@ -26,7 +26,6 @@ import org.batfish.common.util.CommonUtil;
 
 /** Class that describes the reference library information */
 public class ReferenceLibrary {
-
   private static final String PROP_BOOKS = "books";
 
   @Nonnull private SortedSet<ReferenceBook> _books;

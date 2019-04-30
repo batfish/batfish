@@ -9,7 +9,6 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 
 public class ProtocolObjectGroupProtocolLine implements ProtocolObjectGroupLine {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final IpProtocol _protocol;

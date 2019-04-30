@@ -14,7 +14,6 @@ public final class RuleEndpoint implements Serializable {
     REFERENCE
   }
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final Type _type;

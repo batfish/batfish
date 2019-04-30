@@ -12,7 +12,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public final class RegexAsPathSetElem extends AsPathSetElem {
   private static final String PROP_REGEX = "regex";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Nonnull private String _regex;

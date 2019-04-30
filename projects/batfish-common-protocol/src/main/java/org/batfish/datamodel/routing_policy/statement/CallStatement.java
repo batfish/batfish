@@ -11,10 +11,8 @@ import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 public class CallStatement extends Statement {
-
   private static final String PROP_CALLED_POLICY_NAME = "calledPolicyName";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private String _calledPolicyName;

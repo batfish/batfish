@@ -8,9 +8,7 @@ import java.io.Serializable;
 import javax.annotation.Nonnull;
 
 public class IpSpaceMetadata implements Serializable {
-
   private static final String PROP_SOURCE_NAME = "sourceName";
-
   private static final String PROP_SOURCE_TYPE = "sourceType";
 
   private static final long serialVersionUID = 1L;

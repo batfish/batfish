@@ -99,83 +99,44 @@ public final class Configuration implements Serializable {
   public static final String DEFAULT_VRF_NAME = "default";
 
   public static final String NODE_NONE_NAME = "(none)";
-
   private static final String PROP_AS_PATH_ACCESS_LISTS = "asPathAccessLists";
-
   private static final String PROP_AUTHENTICATION_KEY_CHAINS = "authenticationKeyChains";
-
   private static final String PROP_COMMUNITY_LISTS = "communityLists";
-
   private static final String PROP_CONFIGURATION_FORMAT = "configurationFormat";
-
   private static final String PROP_DEFAULT_CROSS_ZONE_ACTION = "defaultCrossZoneAction";
-
   private static final String PROP_DEFAULT_INBOUND_ACTION = "defaultInboundAction";
-
   private static final String PROP_DEVICE_TYPE = "deviceType";
-
   private static final String PROP_DNS_SOURCE_INTERFACE = "dnsSourceInterface";
-
   private static final String PROP_DOMAIN_NAME = "domainName";
-
   private static final String PROP_GENERATED_REFERENCE_BOOKS = "generatedReferenceBooks";
-
   private static final String PROP_IKE_PHASE1_KEYS = "ikePhase1Keys";
-
   private static final String PROP_IKE_PHASE1_POLICIES = "ikePhase1Policies";
-
   private static final String PROP_IKE_PHASE1_PROPOSALS = "ikePhase1Proposals";
-
   private static final String PROP_INTERFACES = "interfaces";
-
   private static final String PROP_IP6_ACCESS_LISTS = "ip6AccessLists";
-
   private static final String PROP_IP_ACCESS_LISTS = "ipAccessLists";
-
   private static final String PROP_IP_SPACES = "ipSpaces";
-
   private static final String PROP_IP_SPACE_METADATA = "ipSpaceMetadata";
-
   private static final String PROP_IPSEC_PEER_CONFIGS = "ipsecPeerConfigs";
-
   private static final String PROP_IPSEC_PHASE2_POLICIES = "ipsecPhase2Policies";
-
   private static final String PROP_IPSEC_PHASE2_PROPOSALS = "ipsecPhase2Proposals";
-
   private static final String PROP_LOGGING_SERVERS = "loggingServers";
-
   private static final String PROP_LOGGING_SOURCE_INTERFACE = "loggingSourceInterface";
-
   private static final String PROP_MLAGS = "mlags";
-
   private static final String PROP_NAME = "name";
-
   private static final String PROP_NTP_SERVERS = "ntpServers";
-
   private static final String PROP_NTP_SOURCE_INTERFACE = "ntpSourceInterface";
-
   private static final String PROP_PACKET_POLICIES = "packetPolicies";
-
   private static final String PROP_ROUTE6_FILTER_LISTS = "route6FilterLists";
-
   private static final String PROP_ROUTE_FILTER_LISTS = "routeFilterLists";
-
   private static final String PROP_ROUTING_POLICIES = "routingPolicies";
-
   private static final String PROP_SNMP_SOURCE_INTERFACE = "snmpSourceInterface";
-
   private static final String PROP_SNMP_TRAP_SERVERS = "snmpTrapServers";
-
   private static final String PROP_TACACS_SERVERS = "tacacsServers";
-
   private static final String PROP_TACACS_SOURCE_INTERFACE = "tacacsSourceInterface";
-
   private static final String PROP_TRACKING_GROUPS = "trackingGroups";
-
   private static final String PROP_VENDOR_FAMILY = "vendorFamily";
-
   private static final String PROP_VRFS = "vrfs";
-
   private static final String PROP_ZONES = "zones";
 
   private static final long serialVersionUID = 1L;

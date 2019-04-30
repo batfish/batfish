@@ -34,10 +34,8 @@ public class VrrpGroup extends ComparableStructure<Integer> {
   }
 
   private static final String PROP_PREEMPT = "preempt";
-
   private static final String PROP_PRIORITY = "priority";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private static final String PROP_VIRTUAL_ADDRESS = "virtualAddress";

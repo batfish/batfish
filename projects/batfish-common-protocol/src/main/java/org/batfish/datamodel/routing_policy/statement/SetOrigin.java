@@ -9,10 +9,8 @@ import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.OriginExpr;
 
 public class SetOrigin extends Statement {
-
   private static final String PROP_ORIGIN_TYPE = "originType";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private OriginExpr _origin;

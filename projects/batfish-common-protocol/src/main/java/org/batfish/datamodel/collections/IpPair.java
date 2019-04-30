@@ -7,7 +7,6 @@ import org.batfish.datamodel.Ip;
 
 public class IpPair extends Pair<Ip, Ip> {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private static Ip part1(String s) {

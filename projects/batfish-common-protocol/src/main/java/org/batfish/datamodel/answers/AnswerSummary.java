@@ -6,13 +6,9 @@ import com.google.common.base.Strings;
 
 /** A general way to summarize what the answer contains, using three basic integers */
 public class AnswerSummary {
-
   private static final String PROP_NOTES = "notes";
-
   private static final String PROP_NUM_FAILED = "numFailed";
-
   private static final String PROP_NUM_PASSED = "numPassed";
-
   private static final String PROP_NUM_RESULTS = "numResults";
 
   private String _notes = "";

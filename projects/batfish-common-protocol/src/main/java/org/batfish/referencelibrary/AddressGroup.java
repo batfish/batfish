@@ -22,7 +22,6 @@ import org.batfish.datamodel.Names.Type;
 public class AddressGroup implements Comparable<AddressGroup>, Serializable {
 
   private static final long serialVersionUID = 1L;
-
   private static final String PROP_ADDRESSES = "addresses";
   private static final String PROP_CHILD_GROUP_NAMES = "childGroupNames";
   private static final String PROP_NAME = "name";

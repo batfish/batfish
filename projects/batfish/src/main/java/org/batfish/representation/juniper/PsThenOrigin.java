@@ -11,7 +11,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 /** A {@link Statement} that sets the origin type on a route. */
 public final class PsThenOrigin extends PsThen {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final OriginType _originType;

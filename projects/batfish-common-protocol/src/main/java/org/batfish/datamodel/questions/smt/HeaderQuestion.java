@@ -20,65 +20,35 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.questions.Question;
 
 public class HeaderQuestion extends Question {
-
   private static final String PROP_DST_IPS = "dstIps";
-
   private static final String PROP_DST_PORTS = "dstPorts";
-
   private static final String PROP_FRAGMENT_OFFSETS = "fragmentOffsets";
-
   private static final String PROP_ICMP_CODES = "icmpCodes";
-
   private static final String PROP_ICMP_TYPES = "icmpTypes";
-
   private static final String PROP_IP_PROTOCOLS = "ipProtocols";
-
   private static final String PROP_NOT_DST_IPS = "notDstIps";
-
   private static final String PROP_NOT_DST_PORTS = "notDstPorts";
-
   private static final String PROP_NOT_FRAGMENT_OFFSETS = "notFragmentOffsets";
-
   private static final String PROP_NOT_ICMP_CODES = "notIcmpCodes";
-
   private static final String PROP_NOT_ICMP_TYPES = "notIcmpTypes";
-
   private static final String PROP_NOT_IP_PROTOCOLS = "notIpProtocols";
-
   private static final String PROP_NOT_SRC_IPS = "notSrcIps";
-
   private static final String PROP_NOT_SRC_PORTS = "notSrcPorts";
-
   private static final String PROP_SRC_IPS = "srcIps";
-
   private static final String PROP_SRC_OR_DST_IPS = "srcOrDstIps";
-
   private static final String PROP_SRC_OR_DST_PORTS = "srcOrDstPorts";
-
   private static final String PROP_SRC_PORTS = "srcPorts";
-
   private static final String PROP_FAILURES = "failures";
-
   private static final String PROP_NODE_FAILURES = "nodeFailures";
-
   private static final String PROP_FULL_MODEL = "fullModel";
-
   private static final String PROP_MINIMIZE = "minimize";
-
   private static final String PROP_DIFF_TYPE = "diffType";
-
   private static final String PROP_BGP_RANKING = "bgpRanking";
-
   private static final String PROP_ENV_DIFF = "envDiff";
-
   private static final String PROP_BASE_ENV_TYPE = "baseEnvType";
-
   private static final String PROP_DIFF_ENV_TYPE = "deltaEnvType";
-
   private static final String PROP_MODEL_OVERFLOW = "modelOverflow";
-
   private static final String PROP_USE_ABSTRACTION = "useAbstraction";
-
   private static final String PROP_BENCHMARK = "benchmark";
 
   private Set<FlowDisposition> _actions;

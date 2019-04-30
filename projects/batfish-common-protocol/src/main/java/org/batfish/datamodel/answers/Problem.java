@@ -7,12 +7,9 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 
 public class Problem implements Serializable {
-
   private static final String PROP_DESCRIPTION = "description";
-
   private static final String PROP_FILES = "files";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private String _description;

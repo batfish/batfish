@@ -18,10 +18,8 @@ import org.batfish.datamodel.answers.AnswerElement;
 public class BatfishException extends RuntimeException {
 
   public static class BatfishStackTrace extends AnswerElement implements Serializable {
-
     private static final String PROP_LINES = "answer";
 
-    /** */
     private static final long serialVersionUID = 1L;
 
     private final transient BatfishException _exception;

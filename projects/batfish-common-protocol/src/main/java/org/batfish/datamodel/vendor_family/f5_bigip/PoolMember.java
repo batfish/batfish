@@ -14,7 +14,6 @@ import org.batfish.datamodel.Ip6;
 /** Configuration for a pool member. */
 @ParametersAreNonnullByDefault
 public final class PoolMember implements Serializable {
-
   private static final String PROP_ADDRESS = "address";
   private static final String PROP_ADDRESS6 = "address6";
   private static final String PROP_DESCRIPTION = "description";

@@ -10,12 +10,9 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
 public class IpSpaceReference extends IpSpace {
-
   private static final String PROP_DESCRIPTION = "description";
-
   private static final String PROP_NAME = "name";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final @Nullable String _description;

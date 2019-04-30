@@ -14,7 +14,6 @@ import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
  */
 public class RouteMapMatchPrefixList implements RouteMapMatch {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final String _prefixList;

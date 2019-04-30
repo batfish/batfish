@@ -100,21 +100,13 @@ public final class HsrpGroup implements Serializable {
   public static final int DEFAULT_HOLD_TIME = 10000; // 10 seconds
 
   public static final int DEFAULT_PRIORITY = 100;
-
   private static final String PROP_AUTHENTICATION = "authentication";
-
   private static final String PROP_GROUP_NUMBER = "groupNumber";
-
   private static final String PROP_HELLO_TIME = "helloTime";
-
   private static final String PROP_HOLD_TIME = "holdTime";
-
   private static final String PROP_IP = "ip";
-
   private static final String PROP_PREEMPT = "preempt";
-
   private static final String PROP_PRIORITY = "priority";
-
   private static final String PROP_TRACK_ACTIONS = "trackActions";
 
   private static final long serialVersionUID = 1L;

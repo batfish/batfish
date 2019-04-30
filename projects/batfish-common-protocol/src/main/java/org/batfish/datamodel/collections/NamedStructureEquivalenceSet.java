@@ -8,9 +8,7 @@ import java.util.SortedSet;
 
 public class NamedStructureEquivalenceSet<T>
     implements Comparable<NamedStructureEquivalenceSet<T>> {
-
   private static final String PROP_NODES = "nodes";
-
   private static final String PROP_REPRESENTATIVE_ELEMENT = "representativeElement";
 
   // a null _namedStructure represents an equivalence class for nodes that are missing

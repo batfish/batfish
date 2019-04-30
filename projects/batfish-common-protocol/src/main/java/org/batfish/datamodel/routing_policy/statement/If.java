@@ -19,12 +19,10 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 
 public class If extends Statement {
-
   private static final String PROP_FALSE_STATEMENTS = "falseStatements";
   private static final String PROP_GUARD = "guard";
   private static final String PROP_TRUE_STATEMENTS = "trueStatements";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private List<Statement> _falseStatements;

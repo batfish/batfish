@@ -15,19 +15,12 @@ import javax.annotation.Nullable;
  * @author Ryan Beckett
  */
 public class VerificationResult {
-
   private static final String PROP_VERIFIED = "verified";
-
   private static final String PROP_MODEL = "model";
-
   private static final String PROP_PACKET_MODEL = "packetModel";
-
   private static final String PROP_ENV_MODEL = "environmentModel";
-
   private static final String PROP_FWD_MODEL = "forwardingModel";
-
   private static final String PROP_FAILURE_MODEL = "failuresModel";
-
   private static final String PROP_STATS = "statistics";
 
   private boolean _verified;

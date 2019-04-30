@@ -1274,7 +1274,7 @@ public final class BDDReachabilityAnalysisFactory {
    * @param actions Find flows for which at least one trace has one of these actions.
    */
   @VisibleForTesting
-  BDDReachabilityAnalysis bddReachabilityAnalysis(
+  public BDDReachabilityAnalysis bddReachabilityAnalysis(
       IpSpaceAssignment srcIpSpaceAssignment,
       AclLineMatchExpr initialHeaderSpace,
       Set<String> forbiddenTransitNodes,

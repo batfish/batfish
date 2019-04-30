@@ -13,7 +13,6 @@ import org.batfish.specifier.SpecifierFactories;
 
 /** Fetches defined structures in config files. */
 public class DefinedStructuresQuestion extends Question {
-
   private static final String PROP_NAMES = "names";
   private static final String PROP_NODES = "nodes";
   private static final String PROP_TYPES = "types";

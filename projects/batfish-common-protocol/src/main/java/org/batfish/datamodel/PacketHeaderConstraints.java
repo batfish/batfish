@@ -36,7 +36,6 @@ import org.batfish.specifier.SpecifierFactories;
  * resolved. For resolution, see {@link #resolveIpProtocols}, and {@link #resolveDstPorts}
  */
 public class PacketHeaderConstraints {
-
   private static final String PROP_APPLICATIONS = "applications";
   private static final String PROP_DSCPS = "dscps";
   private static final String PROP_DST_IPS = "dstIps";

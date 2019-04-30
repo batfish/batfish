@@ -8,11 +8,8 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.answers.AnswerElement;
 
 public class SmtDeterminismAnswerElement extends AnswerElement {
-
   private static final String PROP_FLOW = "flow";
-
   private static final String PROP_FORWARDING_CASE1 = "forwardingCase1";
-
   private static final String PROP_FORWARDING_CASE2 = "forwardingCase2";
 
   private Flow _flow;

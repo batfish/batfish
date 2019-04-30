@@ -14,7 +14,6 @@ import org.batfish.datamodel.Ip;
 /** Apply filter on top of created ISPs through {@link BorderInterfaceInfo}s */
 public class IspFilter {
   public static final IspFilter ALLOW_ALL = new IspFilter(ImmutableList.of(), ImmutableList.of());
-
   private static final String PROP_ONLY_REMOTE_ASNS = "onlyRemoteAsns";
   private static final String PROP_ONLY_REMOTE_IPS = "onlyRemoteIps";
 

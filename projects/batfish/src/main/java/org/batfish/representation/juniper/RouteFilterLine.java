@@ -8,7 +8,6 @@ import org.batfish.datamodel.RouteFilterList;
 
 public abstract class RouteFilterLine implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final Set<PsThen> _thens;

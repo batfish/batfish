@@ -14,7 +14,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 /** Composite {@link TransformationStep} that applies all provided steps */
 @ParametersAreNonnullByDefault
 public class ApplyAll implements TransformationStep, Serializable {
-
   private static final String PROP_STEPS = "steps";
   private static final long serialVersionUID = 1L;
 

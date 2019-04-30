@@ -20,7 +20,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
  * execute only after evaluations that yield true.
  */
 public final class WithEnvironmentExpr extends BooleanExpr {
-
   private static final String PROP_EXPR = "expr";
   private static final String PROP_POST_STATEMENTS = "postStatements";
   private static final String PROP_POST_TRUE_STATEMENTS = "postTrueStatements";

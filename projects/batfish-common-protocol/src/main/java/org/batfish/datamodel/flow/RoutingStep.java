@@ -28,7 +28,6 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
    * to output {@link Interface}
    */
   public static final class RoutingStepDetail {
-
     private static final String PROP_ROUTES = "routes";
 
     /**

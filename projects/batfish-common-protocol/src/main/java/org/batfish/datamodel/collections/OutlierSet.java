@@ -6,9 +6,7 @@ import java.util.Objects;
 import java.util.SortedSet;
 
 public class OutlierSet<T> extends AbstractOutlierSet implements Comparable<OutlierSet<T>> {
-
   private static final String PROP_NAME = "name";
-
   private static final String PROP_DEFINITION = "definition";
 
   /** The name of the configuration property for which we are performing outlier detection */

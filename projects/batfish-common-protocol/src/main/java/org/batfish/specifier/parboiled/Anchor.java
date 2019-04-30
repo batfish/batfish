@@ -17,10 +17,11 @@ import java.lang.annotation.Target;
     ADDRESS_GROUP_AND_REFERENCE_BOOK,
     ADDRESS_GROUP_NAME,
     CHAR_LITERAL,
+    DEPRECATED, // grammar rules that are deprecated
     EOI,
     FILTER_NAME,
     FILTER_NAME_REGEX,
-    IGNORE,
+    IGNORE, // grammar rules that shouldn't be the basis for autocompletion
     INTERFACE_GROUP_AND_REFERENCE_BOOK,
     INTERFACE_GROUP_NAME,
     INTERFACE_NAME,
@@ -32,6 +33,7 @@ import java.lang.annotation.Target;
     IP_PROTOCOL_NUMBER,
     IP_RANGE,
     IP_WILDCARD,
+    NODE_AND_INTERFACE,
     NODE_NAME,
     NODE_NAME_REGEX,
     NODE_ROLE_DIMENSION_NAME,

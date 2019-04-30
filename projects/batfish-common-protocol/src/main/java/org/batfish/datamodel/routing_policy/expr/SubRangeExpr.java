@@ -16,7 +16,6 @@ public final class SubRangeExpr implements Serializable {
   private static final String PROP_FIRST = "first";
   private static final String PROP_LAST = "last";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Nonnull private IntExpr _first;

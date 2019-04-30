@@ -9,14 +9,10 @@ import org.batfish.common.util.ComparableStructure;
 public class RipNeighbor extends ComparableStructure<Pair<Ip, Ip>> {
 
   public static final class RipNeighborSummary extends ComparableStructure<String> {
-
     private static final String PROP_LOCAL_IP = "localIp";
-
     private static final String PROP_REMOTE_IP = "remoteIp";
-
     private static final String PROP_VRF = "vrf";
 
-    /** */
     private static final long serialVersionUID = 1L;
 
     private final Ip _localIp;
@@ -60,7 +56,6 @@ public class RipNeighbor extends ComparableStructure<Pair<Ip, Ip>> {
     }
   }
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private Interface _iface;

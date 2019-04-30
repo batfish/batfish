@@ -110,6 +110,23 @@ public class BDDReachabilityAnalysis {
     }
   }
 
+  /**
+   * Compute the flows (represented as BDDs) that can reach each state {@link StateExpr} in the
+   * reachability graph given the initial flows existing at some states.
+   */
+  public Map<StateExpr, BDD> computeForwardReachableStates(
+      Map<StateExpr, BDD> initialReachableStates) {
+    try (ActiveSpan span =
+        GlobalTracer.get()
+            .buildSpan("BDDReachabilityAnalysis.computeForwardReachableStates")
+            .startActive()) {
+      assert span != null; // avoid unused warning
+      Map<StateExpr, BDD> forwardReachableStates = new LinkedHashMap<>(initialReachableStates);
+      forwardFixpoint(forwardReachableStates);
+      return ImmutableMap.copyOf(forwardReachableStates);
+    }
+  }
+
   private void backwardFixpoint(Map<StateExpr, BDD> reverseReachable) {
     fixpoint(reverseReachable, Tables.transpose(_forwardEdgeTable), Edge::traverseBackward);
   }
@@ -296,6 +313,10 @@ public class BDDReachabilityAnalysis {
 
   public BDDPacket getBDDPacket() {
     return _bddPacket;
+  }
+
+  public ImmutableSet<StateExpr> getIngressLocationStates() {
+    return _ingressLocationStates;
   }
 
   public Map<IngressLocation, BDD> getIngressLocationReachableBDDs() {

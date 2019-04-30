@@ -15,9 +15,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.question.jsonpath.JsonPathResult.JsonPathResultEntry;
 
 public class JsonPathAssertion {
-
   private static final String PROP_TYPE = "type";
-
   private static final String PROP_EXPECT = "expect";
 
   private JsonPathAssertionType _assertionType;

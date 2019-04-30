@@ -4,7 +4,6 @@ import org.batfish.datamodel.answers.StringAnswerElement;
 
 public class InvalidReachabilityParametersException extends Exception {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private StringAnswerElement _invalidParametersAnswer;

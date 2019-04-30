@@ -15,7 +15,6 @@ import org.batfish.datamodel.Names.Type;
 /** Describes a role played by a node */
 @ParametersAreNonnullByDefault
 public class NodeRole implements Comparable<NodeRole> {
-
   private static final String PROP_NAME = "name";
   private static final String PROP_REGEX = "regex";
   private static final String PROP_CASE_SENSITIVE = "caseSensitive";

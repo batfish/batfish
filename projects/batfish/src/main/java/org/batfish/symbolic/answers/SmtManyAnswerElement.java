@@ -8,7 +8,6 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.symbolic.smt.VerificationResult;
 
 public class SmtManyAnswerElement extends AnswerElement {
-
   private static final String PROP_RESULT = "result";
 
   private SortedMap<String, VerificationResult> _result;

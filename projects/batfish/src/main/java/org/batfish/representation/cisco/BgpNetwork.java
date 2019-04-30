@@ -4,7 +4,6 @@ import java.io.Serializable;
 
 public class BgpNetwork implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final Integer _routeMapLine;

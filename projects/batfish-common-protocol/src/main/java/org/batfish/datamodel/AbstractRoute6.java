@@ -10,7 +10,6 @@ import org.batfish.common.BatfishException;
 public abstract class AbstractRoute6 implements Serializable {
 
   protected static final String PROP_ADMINISTRATIVE_COST = "administrativeCost";
-
   private static final String PROP_METRIC = "metric";
 
   protected static final String PROP_NETWORK = "network";
