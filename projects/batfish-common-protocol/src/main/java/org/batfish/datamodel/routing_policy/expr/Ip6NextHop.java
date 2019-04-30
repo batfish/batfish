@@ -16,7 +16,6 @@ import org.batfish.datamodel.routing_policy.Environment;
 @ParametersAreNonnullByDefault
 public final class Ip6NextHop extends NextHopExpr {
   private static final String PROP_IPS = "ips";
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Nonnull private final List<Ip6> _ips;

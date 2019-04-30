@@ -15,10 +15,8 @@ import org.batfish.common.bdd.BDDSourceManager;
 public final class Transitions {
   private Transitions() {}
 
-  /** */
   public static final Transition IDENTITY = Identity.INSTANCE;
 
-  /** */
   public static final Transition ZERO = Zero.INSTANCE;
 
   public static Transition compose(Transition... transitions) {

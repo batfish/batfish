@@ -10,7 +10,6 @@ import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
 
 public class RoutePolicyInlinePrefix6Set extends RoutePolicyPrefixSet {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private Prefix6Space _prefix6Space;

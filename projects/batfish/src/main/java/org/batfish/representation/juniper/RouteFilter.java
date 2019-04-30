@@ -7,7 +7,6 @@ import java.util.Set;
 
 public final class RouteFilter implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private boolean _ipv4;

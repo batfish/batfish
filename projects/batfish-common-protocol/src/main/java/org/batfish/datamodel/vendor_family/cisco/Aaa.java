@@ -8,7 +8,6 @@ public class Aaa implements Serializable {
   private static final String PROP_AUTHENTICATION = "authentication";
   private static final String PROP_NEW_MODEL = "newModel";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private AaaAccounting _accounting;

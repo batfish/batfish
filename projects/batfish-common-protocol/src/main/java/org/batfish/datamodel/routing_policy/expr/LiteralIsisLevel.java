@@ -13,7 +13,6 @@ import org.batfish.datamodel.routing_policy.Environment;
 @ParametersAreNonnullByDefault
 public final class LiteralIsisLevel extends IsisLevelExpr {
   private static final String PROP_LEVEL = "level";
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Nonnull private IsisLevel _level;

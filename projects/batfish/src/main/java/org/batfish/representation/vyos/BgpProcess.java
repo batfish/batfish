@@ -7,7 +7,6 @@ import org.batfish.datamodel.Ip;
 
 public class BgpProcess implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final Map<Ip, BgpNeighbor> _neighbors;

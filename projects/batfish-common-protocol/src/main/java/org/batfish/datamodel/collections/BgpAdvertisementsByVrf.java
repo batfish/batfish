@@ -8,7 +8,6 @@ import org.batfish.datamodel.BgpAdvertisement;
 public final class BgpAdvertisementsByVrf extends TreeMap<String, SortedSet<BgpAdvertisement>>
     implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private boolean _unrecognized;

@@ -23,7 +23,6 @@ public class Line extends ComparableStructure<String> {
   private static final String PROP_TRANSPORT_OUTPUT = "transportOutput";
   private static final String PROP_TRANSPORT_PREFERRED = "transportPreferred";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private AaaAuthenticationLoginList _aaaAuthenticationLoginList;

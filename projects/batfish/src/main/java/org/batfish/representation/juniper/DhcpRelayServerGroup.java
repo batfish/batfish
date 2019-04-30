@@ -7,7 +7,6 @@ import org.batfish.datamodel.Ip;
 
 public class DhcpRelayServerGroup implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final SortedSet<Ip> _servers;

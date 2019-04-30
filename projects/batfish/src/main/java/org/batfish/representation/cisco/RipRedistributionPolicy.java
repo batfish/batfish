@@ -4,7 +4,6 @@ import org.batfish.datamodel.RoutingProtocol;
 
 public class RipRedistributionPolicy extends RedistributionPolicy {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   public static final long DEFAULT_REDISTRIBUTE_CONNECTED_METRIC = 1L;

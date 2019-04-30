@@ -8,7 +8,6 @@ public class DhcpRelayGroup implements Serializable {
 
   public static final String MASTER_DHCP_RELAY_GROUP_NAME = "~MASTER_DHCP_RELAY_GROUP~";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private String _activeServerGroup;

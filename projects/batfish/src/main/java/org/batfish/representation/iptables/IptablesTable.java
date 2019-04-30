@@ -7,7 +7,6 @@ import org.batfish.representation.iptables.IptablesChain.ChainPolicy;
 
 public class IptablesTable implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private Map<String, IptablesChain> _chains;

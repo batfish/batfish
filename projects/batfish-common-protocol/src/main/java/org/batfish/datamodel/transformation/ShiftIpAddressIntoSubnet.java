@@ -18,7 +18,6 @@ import org.batfish.datamodel.flow.TransformationStep.TransformationType;
  * transformation is a noop whenever the transformed IP is already in the specified subnet.
  */
 public final class ShiftIpAddressIntoSubnet implements TransformationStep, Serializable {
-  /** */
   private static final long serialVersionUID = 1L;
 
   private static final String PROP_TRANSFORMATION_TYPE = "transformationType";

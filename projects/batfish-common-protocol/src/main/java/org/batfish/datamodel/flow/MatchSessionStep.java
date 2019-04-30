@@ -16,7 +16,6 @@ public class MatchSessionStep extends Step<MatchSessionStepDetail> {
     super(DETAIL, StepAction.MATCHED_SESSION);
   }
 
-  /** */
   static final class MatchSessionStepDetail {}
 
   private static final MatchSessionStepDetail DETAIL = new MatchSessionStepDetail();
