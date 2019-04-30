@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import java.io.Serializable;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import javax.annotation.Nonnull;
@@ -186,7 +185,8 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_ip, _prefixLength);
+    // We want a custom quick implementation, so don't call Objects.hash()
+    return 31 + 31 * Long.hashCode(_ip.asLong()) + _prefixLength;
   }
 
   @Nonnull
