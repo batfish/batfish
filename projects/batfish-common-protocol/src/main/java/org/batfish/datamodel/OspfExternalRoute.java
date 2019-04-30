@@ -120,6 +120,7 @@ public abstract class OspfExternalRoute extends OspfRoute {
   @Nonnull private final String _advertiser;
   private final long _costToAdvertiser;
   private final long _lsaMetric;
+  private int _hashCode;
 
   @Nonnull
   public static Builder builder() {
@@ -144,7 +145,7 @@ public abstract class OspfExternalRoute extends OspfRoute {
   }
 
   @Override
-  public boolean equals(@Nullable Object o) {
+  public final boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }
@@ -169,21 +170,27 @@ public abstract class OspfExternalRoute extends OspfRoute {
   }
 
   @Override
-  public int hashCode() {
-    return Objects.hash(
-        // AbstractRoute properties
-        _network,
-        _admin,
-        _metric,
-        _nextHopIp,
-        getNonRouting(),
-        getNonForwarding(),
-        // OspfRoute properties
-        _area,
-        // OspfExternalRoute properties
-        getAdvertiser(),
-        getCostToAdvertiser(),
-        getLsaMetric());
+  public final int hashCode() {
+    int h = _hashCode;
+    if (h == 0) {
+      h =
+          Objects.hash(
+              // AbstractRoute properties
+              _network,
+              _admin,
+              _metric,
+              _nextHopIp,
+              getNonRouting(),
+              getNonForwarding(),
+              // OspfRoute properties
+              _area,
+              // OspfExternalRoute properties
+              getAdvertiser(),
+              getCostToAdvertiser(),
+              getLsaMetric());
+      _hashCode = h;
+    }
+    return h;
   }
 
   @JsonProperty(PROP_ADVERTISER)

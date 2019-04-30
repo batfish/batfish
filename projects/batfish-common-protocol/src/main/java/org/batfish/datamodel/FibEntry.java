@@ -16,6 +16,7 @@ public final class FibEntry implements Serializable {
   @Nonnull private final Ip _arpIP;
   @Nonnull private final String _interfaceName;
   @Nonnull private final List<AbstractRoute> _resolutionSteps;
+  private int _hashCode;
 
   /**
    * Create a new FIB entry with the given nextHop/ARP IP, interface name, and resolution steps.
@@ -76,6 +77,13 @@ public final class FibEntry implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(getArpIP(), getInterfaceName(), getResolutionSteps());
+    int h = _hashCode;
+    if (h == 0) {
+      h = _arpIP.hashCode();
+      h = 31 * h + _interfaceName.hashCode();
+      h = 31 * h + _resolutionSteps.hashCode();
+      _hashCode = h;
+    }
+    return h;
   }
 }
