@@ -171,72 +171,81 @@ public class RoutesAnswerer extends Answerer {
     addCommonTableColumnsAtStart(columnBuilder);
     switch (rib) {
       case BGP:
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_NEXT_HOP_IP, Schema.IP, "Route's Next Hop IP", Boolean.FALSE, Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_NEXT_HOP_INTERFACE,
-                Schema.STRING,
-                "Route's Next Hop Interface",
-                Boolean.FALSE,
-                Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_PROTOCOL, Schema.STRING, "Route's Protocol", Boolean.FALSE, Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_AS_PATH, Schema.STRING, "Route's AS path", Boolean.FALSE, Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_METRIC, Schema.INTEGER, "Route's Metric", Boolean.FALSE, Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_LOCAL_PREF,
-                Schema.LONG,
-                "Route's Local Preference",
-                Boolean.FALSE,
-                Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_COMMUNITIES,
-                Schema.list(Schema.STRING),
-                "Route's List of communities",
-                Boolean.FALSE,
-                Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_ORIGIN_PROTOCOL,
-                Schema.STRING,
-                "Route's Origin protocol",
-                Boolean.FALSE,
-                Boolean.TRUE));
+        columnBuilder
+            .add(
+                new ColumnMetadata(
+                    COL_NEXT_HOP_IP, Schema.IP, "Route's Next Hop IP", Boolean.FALSE, Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
+                    COL_NEXT_HOP_INTERFACE,
+                    Schema.STRING,
+                    "Route's Next Hop Interface",
+                    Boolean.FALSE,
+                    Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
+                    COL_PROTOCOL, Schema.STRING, "Route's Protocol", Boolean.FALSE, Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
+                    COL_AS_PATH, Schema.STRING, "Route's AS path", Boolean.FALSE, Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
+                    COL_METRIC, Schema.INTEGER, "Route's Metric", Boolean.FALSE, Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
+                    COL_LOCAL_PREF,
+                    Schema.LONG,
+                    "Route's Local Preference",
+                    Boolean.FALSE,
+                    Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
+                    COL_COMMUNITIES,
+                    Schema.list(Schema.STRING),
+                    "Route's List of communities",
+                    Boolean.FALSE,
+                    Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
+                    COL_ORIGIN_PROTOCOL,
+                    Schema.STRING,
+                    "Route's Origin protocol",
+                    Boolean.FALSE,
+                    Boolean.TRUE));
         break;
       case MAIN:
       default:
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_NEXT_HOP,
-                Schema.STRING,
-                "Route's Next Hop's Hostname",
-                Boolean.FALSE,
-                Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_NEXT_HOP_IP, Schema.IP, "Route's Next Hop IP", Boolean.FALSE, Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_PROTOCOL, Schema.STRING, "Route's Protocol", Boolean.FALSE, Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_METRIC, Schema.INTEGER, "Route's Metric", Boolean.FALSE, Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_ADMIN_DISTANCE,
-                Schema.INTEGER,
-                "Route's Admin distance",
-                Boolean.FALSE,
-                Boolean.TRUE));
+        columnBuilder
+            .add(
+                new ColumnMetadata(
+                    COL_NEXT_HOP,
+                    Schema.STRING,
+                    "Route's Next Hop's Hostname",
+                    Boolean.FALSE,
+                    Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
+                    COL_NEXT_HOP_IP, Schema.IP, "Route's Next Hop IP", Boolean.FALSE, Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
+                    COL_NEXT_HOP_INTERFACE,
+                    Schema.STRING,
+                    "Route's Next Hop Interface",
+                    Boolean.FALSE,
+                    Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
+                    COL_PROTOCOL, Schema.STRING, "Route's Protocol", Boolean.FALSE, Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
+                    COL_METRIC, Schema.INTEGER, "Route's Metric", Boolean.FALSE, Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
+                    COL_ADMIN_DISTANCE,
+                    Schema.INTEGER,
+                    "Route's Admin distance",
+                    Boolean.FALSE,
+                    Boolean.TRUE));
     }
     addCommonTableColumnsAtEnd(columnBuilder);
     return new TableMetadata(columnBuilder.build(), "Display RIB routes");

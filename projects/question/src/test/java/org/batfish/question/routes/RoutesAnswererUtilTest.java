@@ -8,6 +8,7 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_COMMUNITIES;
 import static org.batfish.question.routes.RoutesAnswerer.COL_LOCAL_PREF;
 import static org.batfish.question.routes.RoutesAnswerer.COL_METRIC;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NETWORK;
+import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_INTERFACE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NODE;
@@ -26,6 +27,7 @@ import static org.batfish.question.routes.RoutesAnswererUtil.getRoutesDiff;
 import static org.batfish.question.routes.RoutesAnswererUtil.groupBgpRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.groupRoutes;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -185,18 +187,20 @@ public class RoutesAnswererUtilTest {
             RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
             ".*",
             null);
-
-    assertThat(actual, hasSize(1));
-    Row row = actual.iterator().next();
     assertThat(
-        row,
-        allOf(
-            hasColumn(COL_NODE, equalTo(new Node("n1")), Schema.NODE),
-            hasColumn(COL_VRF_NAME, equalTo(Configuration.DEFAULT_VRF_NAME), Schema.STRING),
-            hasColumn(COL_NETWORK, equalTo(Prefix.parse("1.1.1.0/24")), Schema.PREFIX),
-            hasColumn(COL_NEXT_HOP_IP, equalTo(Ip.parse("1.1.1.2")), Schema.IP),
-            hasColumn(COL_ADMIN_DISTANCE, equalTo(10), Schema.INTEGER),
-            hasColumn(COL_METRIC, equalTo(30L), Schema.LONG)));
+        actual,
+        contains(
+            allOf(
+                hasColumn(COL_NODE, new Node("n1"), Schema.NODE),
+                hasColumn(COL_VRF_NAME, Configuration.DEFAULT_VRF_NAME, Schema.STRING),
+                hasColumn(COL_NETWORK, Prefix.parse("1.1.1.0/24"), Schema.PREFIX),
+                hasColumn(COL_NEXT_HOP_IP, Ip.parse("1.1.1.2"), Schema.IP),
+                hasColumn(COL_NEXT_HOP_INTERFACE, "dynamic", Schema.STRING),
+                hasColumn(COL_NEXT_HOP, nullValue(), Schema.STRING),
+                hasColumn(COL_PROTOCOL, "ospfE2", Schema.STRING),
+                hasColumn(COL_TAG, nullValue(), Schema.INTEGER),
+                hasColumn(COL_ADMIN_DISTANCE, equalTo(10), Schema.INTEGER),
+                hasColumn(COL_METRIC, equalTo(30L), Schema.LONG))));
   }
 
   @Test

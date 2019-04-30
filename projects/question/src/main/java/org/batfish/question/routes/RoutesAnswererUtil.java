@@ -228,11 +228,17 @@ public class RoutesAnswererUtil {
       AbstractRoute abstractRoute,
       Map<String, ColumnMetadata> columnMetadataMap,
       @Nullable Map<Ip, Set<String>> ipOwners) {
+    // If the route's next hop IP is for internal use, do not show it in the row
+    Ip nextHopIp =
+        INTERNAL_USE_IPS.contains(abstractRoute.getNextHopIp())
+            ? null
+            : abstractRoute.getNextHopIp();
     return Row.builder(columnMetadataMap)
         .put(COL_NODE, new Node(hostName))
         .put(COL_VRF_NAME, vrfName)
         .put(COL_NETWORK, abstractRoute.getNetwork())
-        .put(COL_NEXT_HOP_IP, abstractRoute.getNextHopIp())
+        .put(COL_NEXT_HOP_IP, nextHopIp)
+        .put(COL_NEXT_HOP_INTERFACE, abstractRoute.getNextHopInterface())
         .put(COL_NEXT_HOP, computeNextHopNode(abstractRoute.getNextHopIp(), ipOwners))
         .put(COL_PROTOCOL, abstractRoute.getProtocol())
         .put(
