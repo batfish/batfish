@@ -29,10 +29,13 @@ import static org.batfish.question.edges.EdgesAnswerer.getOspfEdges;
 import static org.batfish.question.edges.EdgesAnswerer.getRipEdgeRow;
 import static org.batfish.question.edges.EdgesAnswerer.getRipEdges;
 import static org.batfish.question.edges.EdgesAnswerer.getTableMetadata;
+import static org.batfish.question.edges.EdgesAnswerer.getVxlanEdges;
 import static org.batfish.question.edges.EdgesAnswerer.isisEdgeToRow;
 import static org.batfish.question.edges.EdgesAnswerer.layer1EdgeToRow;
 import static org.batfish.question.edges.EdgesAnswerer.layer2EdgeToRow;
 import static org.batfish.question.edges.EdgesAnswerer.layer3EdgeToRow;
+import static org.batfish.question.edges.EdgesAnswerer.vxlanEdgeToRow;
+import static org.batfish.question.edges.EdgesAnswerer.vxlanEdgeToRows;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -40,10 +43,13 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multiset;
+import com.google.common.graph.EndpointPair;
 import com.google.common.graph.MutableNetwork;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.NetworkBuilder;
@@ -51,6 +57,7 @@ import com.google.common.graph.ValueGraphBuilder;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import org.batfish.common.Pair;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Node;
@@ -61,6 +68,7 @@ import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
+import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
@@ -78,6 +86,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RipNeighbor;
 import org.batfish.datamodel.RipProcess;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -92,11 +101,50 @@ import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
+import org.batfish.datamodel.vxlan.VxlanNode;
+import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.junit.Before;
 import org.junit.Test;
 
 /** Test for {@link EdgesAnswerer} */
 public class EdgesAnswererTest {
+
+  private static final int VXLAN_VNI = 5000;
+  private static final String VXLAN_NODE1 = "n1";
+  private static final String VXLAN_NODE2 = "n2";
+  private static final Ip VXLAN_MULTICAST_GROUP = Ip.parse("224.0.0.1");
+  private static final Ip VXLAN_SRC_IP1 = Ip.parse("1.1.1.1");
+  private static final Ip VXLAN_SRC_IP2 = Ip.parse("2.2.2.2");
+  private static final int VXLAN_UDP_PORT = 5555;
+  private static final int VXLAN_VLAN1 = 1;
+  private static final int VXLAN_VLAN2 = 2;
+
+  private static @Nonnull NetworkConfigurations buildVxlanNetworkConfigurations() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration c1 = cb.setHostname(VXLAN_NODE1).build();
+    Configuration c2 = cb.setHostname(VXLAN_NODE2).build();
+    Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
+    Vrf v1 = vb.setOwner(c1).build();
+    Vrf v2 = vb.setOwner(c2).build();
+    Map<String, Configuration> configurations = ImmutableMap.of(VXLAN_NODE1, c1, VXLAN_NODE2, c2);
+    VniSettings.Builder vniSettingsBuilder =
+        VniSettings.builder()
+            .setBumTransportIps(ImmutableSortedSet.of(VXLAN_MULTICAST_GROUP))
+            .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
+            .setUdpPort(VXLAN_UDP_PORT)
+            .setVni(VXLAN_VNI);
+    VniSettings vniSettingsTail =
+        vniSettingsBuilder.setSourceAddress(VXLAN_SRC_IP1).setVlan(VXLAN_VLAN1).build();
+    v1.setVniSettings(ImmutableSortedMap.of(VXLAN_VNI, vniSettingsTail));
+    v2.setVniSettings(
+        ImmutableSortedMap.of(
+            VXLAN_VNI,
+            vniSettingsBuilder.setSourceAddress(VXLAN_SRC_IP2).setVlan(VXLAN_VLAN2).build()));
+    return NetworkConfigurations.of(configurations);
+  }
+
   private Configuration _host1;
   private Configuration _host2;
   private Map<String, Configuration> _configurations;
@@ -425,6 +473,84 @@ public class EdgesAnswererTest {
                         COL_REMOTE_INTERFACE,
                         equalTo(new NodeInterfacePair("host1", "int1")),
                         Schema.INTERFACE)))));
+  }
+
+  @Test
+  public void testGetVxlanEdges() {
+    NetworkConfigurations nc = buildVxlanNetworkConfigurations();
+    Map<String, Configuration> configurations = nc.getMap();
+    VxlanTopology vxlanTopology = new VxlanTopology(nc.getMap());
+    Set<String> includeNodes = configurations.keySet();
+    Set<String> includeRemoteNodes = configurations.keySet();
+
+    assertThat(
+        getVxlanEdges(nc, includeNodes, includeRemoteNodes, vxlanTopology),
+        equalTo(
+            vxlanEdgeToRows(
+                    nc,
+                    includeNodes,
+                    includeRemoteNodes,
+                    EndpointPair.unordered(
+                        VxlanNode.builder().setHostname(VXLAN_NODE1).setVni(VXLAN_VNI).build(),
+                        VxlanNode.builder().setHostname(VXLAN_NODE2).setVni(VXLAN_VNI).build()))
+                .collect(ImmutableMultiset.toImmutableMultiset())));
+  }
+
+  @Test
+  public void testVxlanEdgeToRows() {
+    NetworkConfigurations nc = buildVxlanNetworkConfigurations();
+    Map<String, Configuration> configurations = nc.getMap();
+    Set<String> includeNodes = configurations.keySet();
+    Set<String> includeRemoteNodes = configurations.keySet();
+    VxlanNode node1 = VxlanNode.builder().setHostname(VXLAN_NODE1).setVni(VXLAN_VNI).build();
+    VxlanNode node2 = VxlanNode.builder().setHostname(VXLAN_NODE2).setVni(VXLAN_VNI).build();
+
+    // no filter
+    assertThat(
+        vxlanEdgeToRows(nc, includeNodes, includeRemoteNodes, EndpointPair.unordered(node1, node2))
+            .collect(ImmutableList.toImmutableList()),
+        containsInAnyOrder(vxlanEdgeToRow(nc, node1, node2), vxlanEdgeToRow(nc, node2, node1)));
+    // only node1 in node position
+    assertThat(
+        vxlanEdgeToRows(
+                nc,
+                ImmutableSet.of(VXLAN_NODE1),
+                includeRemoteNodes,
+                EndpointPair.unordered(node1, node2))
+            .collect(ImmutableList.toImmutableList()),
+        containsInAnyOrder(vxlanEdgeToRow(nc, node1, node2)));
+    // only node1 in remoteNode position
+    assertThat(
+        vxlanEdgeToRows(
+                nc,
+                includeNodes,
+                ImmutableSet.of(VXLAN_NODE1),
+                EndpointPair.unordered(node1, node2))
+            .collect(ImmutableList.toImmutableList()),
+        containsInAnyOrder(vxlanEdgeToRow(nc, node2, node1)));
+  }
+
+  @Test
+  public void testVxlanEdgeToRow() {
+    NetworkConfigurations nc = buildVxlanNetworkConfigurations();
+
+    assertThat(
+        vxlanEdgeToRow(
+            nc,
+            VxlanNode.builder().setHostname(VXLAN_NODE1).setVni(VXLAN_VNI).build(),
+            VxlanNode.builder().setHostname(VXLAN_NODE2).setVni(VXLAN_VNI).build()),
+        equalTo(
+            Row.builder()
+                .put(EdgesAnswerer.COL_VNI, VXLAN_VNI)
+                .put(EdgesAnswerer.COL_NODE, new Node(VXLAN_NODE1))
+                .put(EdgesAnswerer.COL_REMOTE_NODE, new Node(VXLAN_NODE2))
+                .put(EdgesAnswerer.COL_VTEP_ADDRESS, VXLAN_SRC_IP1)
+                .put(EdgesAnswerer.COL_REMOTE_VTEP_ADDRESS, VXLAN_SRC_IP2)
+                .put(EdgesAnswerer.COL_VLAN, VXLAN_VLAN1)
+                .put(EdgesAnswerer.COL_REMOTE_VLAN, VXLAN_VLAN2)
+                .put(EdgesAnswerer.COL_UDP_PORT, VXLAN_UDP_PORT)
+                .put(EdgesAnswerer.COL_MULTICAST_GROUP, VXLAN_MULTICAST_GROUP)
+                .build()));
   }
 
   @Test
