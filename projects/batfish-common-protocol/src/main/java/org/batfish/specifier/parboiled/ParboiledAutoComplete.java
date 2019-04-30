@@ -2,6 +2,8 @@ package org.batfish.specifier.parboiled;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.answers.AutocompleteSuggestion.DEFAULT_RANK;
+import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_NAME;
 import static org.batfish.specifier.parboiled.CommonParser.ESCAPE_CHAR;
 import static org.batfish.specifier.parboiled.CommonParser.isEscapableNameAnchor;
 import static org.batfish.specifier.parboiled.CommonParser.nameNeedsEscaping;
@@ -134,11 +136,8 @@ public final class ParboiledAutoComplete {
   @VisibleForTesting
   List<AutocompleteSuggestion> autoCompletePotentialMatch(PotentialMatch pm) {
     switch (pm.getAnchorType()) {
-      case ADDRESS_GROUP_AND_REFERENCE_BOOK:
-        // ADDRESS_GROUP_NAME or REFERENCE_BOOK_NAME should appear later in the path
-        throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case ADDRESS_GROUP_NAME:
-        return autoCompletePotentialMatch(pm, DEFAULT_RANK);
+        return autoCompleteReferenceBookEntity(pm, DEFAULT_RANK);
       case CHAR_LITERAL:
         /*
          Char and String literals get a lower rank so that the possibly many suggestions for dynamic values
@@ -158,7 +157,7 @@ public final class ParboiledAutoComplete {
         // Node or Interface based anchors should appear later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case INTERFACE_GROUP_NAME:
-        return autoCompletePotentialMatch(pm, DEFAULT_RANK);
+        return autoCompleteReferenceBookEntity(pm, DEFAULT_RANK);
       case INTERFACE_NAME:
         return autoCompleteInterfaceName(pm, DEFAULT_RANK);
       case INTERFACE_NAME_REGEX:
@@ -195,8 +194,14 @@ public final class ParboiledAutoComplete {
       case NODE_TYPE:
         // Relies on STRING_LITERAL completion as it appears later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
+      case REFERENCE_BOOK_AND_ADDRESS_GROUP:
+        // ADDRESS_GROUP_NAME or REFERENCE_BOOK_NAME should appear later in the path
+        throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
+      case REFERENCE_BOOK_AND_INTERFACE_GROUP:
+        // INTERFACE_GROUP_NAME or REFERENCE_BOOK_NAME should appear later in the path
+        throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case REFERENCE_BOOK_NAME:
-        return autoCompleteReferenceBookName(pm, DEFAULT_RANK);
+        return autoCompletePotentialMatch(pm, DEFAULT_RANK);
       case ROUTING_POLICY_NAME:
         return autoCompletePotentialMatch(pm, DEFAULT_RANK);
       case ROUTING_POLICY_NAME_REGEX:
@@ -344,7 +349,7 @@ public final class ParboiledAutoComplete {
    * completion is used
    */
   @VisibleForTesting
-  List<AutocompleteSuggestion> autoCompleteReferenceBookName(PotentialMatch pm, int rank) {
+  List<AutocompleteSuggestion> autoCompleteReferenceBookEntity(PotentialMatch pm, int rank) {
     int anchorIndex = pm.getPath().indexOf(pm.getAnchor());
     checkArgument(anchorIndex != -1, "Anchor is not present in the path.");
 
@@ -356,46 +361,53 @@ public final class ParboiledAutoComplete {
     }
 
     switch (parentAnchorType) {
-      case ADDRESS_GROUP_AND_REFERENCE_BOOK:
+      case REFERENCE_BOOK_AND_ADDRESS_GROUP:
+        checkArgument(
+            pm.getAnchorType() == ADDRESS_GROUP_NAME,
+            "Unexpected anchor for auto completing reference book entity. Expected %s. Got %s.",
+            ADDRESS_GROUP_NAME,
+            pm.getAnchorType());
         Function<ReferenceBook, Set<String>> addressGroupGetter =
             book ->
                 book.getAddressGroups().stream()
                     .map(AddressGroup::getName)
                     .collect(ImmutableSet.toImmutableSet());
-        return autoCompleteReferenceBookName(pm, addressGroupGetter, rank);
-      case INTERFACE_GROUP_AND_REFERENCE_BOOK:
+        return autoCompleteReferenceBookEntity(pm, addressGroupGetter, rank);
+      case REFERENCE_BOOK_AND_INTERFACE_GROUP:
+        checkArgument(
+            pm.getAnchorType() == INTERFACE_GROUP_NAME,
+            "Unexpected anchor for auto completing reference book entity. Expected %s. Got %s.",
+            INTERFACE_GROUP_NAME,
+            pm.getAnchorType());
         Function<ReferenceBook, Set<String>> interfaceGroupGetter =
             book ->
                 book.getInterfaceGroups().stream()
                     .map(InterfaceGroup::getName)
                     .collect(ImmutableSet.toImmutableSet());
-        return autoCompleteReferenceBookName(pm, interfaceGroupGetter, rank);
+        return autoCompleteReferenceBookEntity(pm, interfaceGroupGetter, rank);
       default:
         return autoCompletePotentialMatch(pm, rank);
     }
   }
 
-  private List<AutocompleteSuggestion> autoCompleteReferenceBookName(
-      PotentialMatch pm, Function<ReferenceBook, Set<String>> groupNamesGetter, int rank) {
-    String matchPrefix = unescapeIfNeeded(pm.getMatchPrefix(), Anchor.Type.REFERENCE_BOOK_NAME);
-    // group name is at the head if nothing about the reference book was entered;
+  private List<AutocompleteSuggestion> autoCompleteReferenceBookEntity(
+      PotentialMatch pm, Function<ReferenceBook, Set<String>> entityNameGetter, int rank) {
+    String matchPrefix = pm.getMatchPrefix();
+    // book name is at the head if nothing about the reference book was entered;
     // otherwise, it is second from top
-    String groupName =
+    String bookName =
         ((StringAstNode)
                 _parser.getShadowStack().getValueStack().peek(matchPrefix.isEmpty() ? 0 : 1))
             .getStr();
-    Set<String> candidateBooks =
-        _referenceLibrary.getReferenceBooks().stream()
-            .filter(
-                b ->
-                    groupNamesGetter.apply(b).stream()
-                        .anyMatch(name -> name.equalsIgnoreCase(groupName)))
-            .map(ReferenceBook::getName)
-            .collect(ImmutableSet.toImmutableSet());
+    Set<String> candidateEntityNames =
+        entityNameGetter.apply(
+            _referenceLibrary
+                .getReferenceBook(bookName)
+                .orElse(ReferenceBook.builder("empty").build()));
     return updateSuggestions(
-        AutoCompleteUtils.stringAutoComplete(matchPrefix, candidateBooks),
-        !matchPrefix.equals(pm.getMatchPrefix()),
-        Anchor.Type.REFERENCE_BOOK_NAME,
+        AutoCompleteUtils.stringAutoComplete(matchPrefix, candidateEntityNames),
+        false,
+        pm.getAnchorType(),
         rank,
         pm.getMatchStartIndex());
   }

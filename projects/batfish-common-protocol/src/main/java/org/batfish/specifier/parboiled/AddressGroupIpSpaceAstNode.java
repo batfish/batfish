@@ -8,14 +8,14 @@ final class AddressGroupIpSpaceAstNode implements IpSpaceAstNode {
   private final String _addressGroup;
   private final String _referenceBook;
 
-  AddressGroupIpSpaceAstNode(AstNode addressGroup, AstNode referenceBook) {
-    checkArgument(addressGroup instanceof StringAstNode, "addressGroup must be a string");
+  AddressGroupIpSpaceAstNode(AstNode referenceBook, AstNode addressGroup) {
     checkArgument(referenceBook instanceof StringAstNode, "referenceBook must be a string");
+    checkArgument(addressGroup instanceof StringAstNode, "addressGroup must be a string");
     _addressGroup = ((StringAstNode) addressGroup).getStr();
     _referenceBook = ((StringAstNode) referenceBook).getStr();
   }
 
-  AddressGroupIpSpaceAstNode(String addressGroup, String referenceBook) {
+  AddressGroupIpSpaceAstNode(String referenceBook, String addressGroup) {
     _addressGroup = addressGroup;
     _referenceBook = referenceBook;
   }
@@ -47,7 +47,7 @@ final class AddressGroupIpSpaceAstNode implements IpSpaceAstNode {
     return _addressGroup;
   }
 
-  String getAddressBook() {
+  String getReferenceBook() {
     return _referenceBook;
   }
 

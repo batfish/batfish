@@ -50,7 +50,7 @@ public class CommonParserTest {
                 .put("TestNameRegex", Type.NODE_NAME_REGEX)
                 .put("TestNameRegexDeprecated", Type.DEPRECATED)
                 .put("TestReferenceBookName", Type.REFERENCE_BOOK_NAME)
-                .put("TestSpecifierInput", Type.ADDRESS_GROUP_AND_REFERENCE_BOOK)
+                .put("TestSpecifierInput", Type.REFERENCE_BOOK_AND_ADDRESS_GROUP)
                 .put("WhiteSpace", Type.WHITESPACE)
                 .build()));
   }
@@ -120,54 +120,54 @@ public class CommonParserTest {
   public void testSavedStackInvalidInputAddressGroupAndReferenceBook() {
     TestParser parser = TestParser.instance();
 
-    new ReportingParseRunner<AstNode>(parser.getInputRule()).run("@specifier(g1, b ");
+    new ReportingParseRunner<AstNode>(parser.getInputRule()).run("@specifier(a1, b ");
 
     assertThat(
         ImmutableList.copyOf(parser.getShadowStack().getValueStack()),
-        equalTo(ImmutableList.of(new StringAstNode("g1"), new StringAstNode("b"))));
+        equalTo(ImmutableList.of(new StringAstNode("a1"), new StringAstNode("b"))));
   }
 
   @Test
   public void testSavedStackInvalidInputAddressGroupAndEscapedReferenceBook() {
     TestParser parser = TestParser.instance();
-    new ReportingParseRunner<AstNode>(parser.getInputRule()).run("@specifier(g1, \"b");
+    new ReportingParseRunner<AstNode>(parser.getInputRule()).run("@specifier(a1, \"b");
 
     assertThat(
         ImmutableList.copyOf(parser.getShadowStack().getValueStack()),
-        equalTo(ImmutableList.of(new StringAstNode("g1"), new StringAstNode("b"))));
+        equalTo(ImmutableList.of(new StringAstNode("a1"), new StringAstNode("b"))));
   }
 
   @Test
   public void testSavedStackInvalidInputAddressGroupAndEscapedReferenceBookTrailingSpace() {
     TestParser parser = TestParser.instance();
-    new ReportingParseRunner<AstNode>(parser.getInputRule()).run("@specifier(g1, \"b ");
+    new ReportingParseRunner<AstNode>(parser.getInputRule()).run("@specifier(a1, \"b ");
 
     assertThat(
         ImmutableList.copyOf(parser.getShadowStack().getValueStack()),
-        equalTo(ImmutableList.of(new StringAstNode("g1"), new StringAstNode("b "))));
+        equalTo(ImmutableList.of(new StringAstNode("a1"), new StringAstNode("b "))));
   }
 
   @Test
   public void testSavedStackValidInput() {
     TestParser parser = TestParser.instance();
 
-    new ReportingParseRunner<AstNode>(parser.getInputRule()).run("@specifier(g1, b1)");
+    new ReportingParseRunner<AstNode>(parser.getInputRule()).run("@specifier(a1, b1)");
 
     assertThat(
         ImmutableList.copyOf(parser.getShadowStack().getValueStack()),
-        equalTo(ImmutableList.of(new StringAstNode("g1"), new StringAstNode("b1"))));
+        equalTo(ImmutableList.of(new StringAstNode("a1"), new StringAstNode("b1"))));
   }
 
   @Test
   public void testSavedStackSetInput() {
     TestParser parser = TestParser.instance();
 
-    new ReportingParseRunner<AstNode>(parser.getInputRule()).run("@specifier(g1, b1), 1.1.1.1");
+    new ReportingParseRunner<AstNode>(parser.getInputRule()).run("@specifier(a1, b1), 1.1.1.1");
 
     assertThat(
         ImmutableList.copyOf(parser.getShadowStack().getValueStack()),
         equalTo(
             ImmutableList.of(
-                new StringAstNode("g1"), new StringAstNode("b1"), new IpAstNode("1.1.1.1"))));
+                new StringAstNode("a1"), new StringAstNode("b1"), new IpAstNode("1.1.1.1"))));
   }
 }
