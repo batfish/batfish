@@ -13,7 +13,6 @@ import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 /** A generic BGP route containing the common properties among different types of BGP routes */
 @ParametersAreNonnullByDefault
@@ -47,19 +46,17 @@ public abstract class BgpRoute extends AbstractRoute {
     }
 
     /**
-     * Returns a completely new builder of the same type as {@link B} which has all the fields
-     * unset. This is needed in cases where we need to create a new builder having type as any of
-     * the subclasses of {@link Builder} but we only have access to the more generic {@link
-     * Builder}.
+     * Returns a completely new builder of type {@link B} which has all the fields unset.
      *
-     * <p>For example while evaluating a {@link RoutingPolicy} and executing its statements we need
-     * to create a completely new builder which should be of the same type as the builder in {@link
-     * org.batfish.datamodel.routing_policy.Environment#_outputRoute} but we are not sure of the
-     * concrete type and only know that it is of type {@link Builder}.
-     *
-     * @return A completely new builder of type as any of the subclasses of {@link Builder} (equal
-     *     to {@link B}).
+     * @return A completely new builder of type {@link B}.
      */
+    /* This is needed in cases where we need to create a new builder having type same as any of the
+    subclasses of BgpRoute's builder but we are not sure of the exact type of the concrete child
+    class.
+    For example while evaluating a routing policy and executing its statements we need
+    to create a completely new builder which should be of the same type as environment's output
+    route builder but we are not sure of the concrete type and only know that it extends the
+    abstract BgpRoute's builder. */
     @Nonnull
     public abstract B newBuilder();
 
