@@ -108,11 +108,12 @@ public final class VniSettings implements Serializable {
       @Nullable @JsonProperty(PROP_VLAN) Integer vlan,
       @Nullable @JsonProperty(PROP_VNI) Integer vni) {
     SortedSet<Ip> deserializedBumTransportIps =
-        firstNonNull(bumTransportIps, ImmutableSortedSet.of());
+        ImmutableSortedSet.copyOf(firstNonNull(bumTransportIps, ImmutableSortedSet.of()));
     checkArgument(vni != null, "VNI must not be null.");
     checkArgument(bumTransportMethod != null, "BumTransportMethod must not be null.");
     checkArgument(
-        bumTransportMethod != BumTransportMethod.MULTICAST_GROUP || bumTransportIps.size() <= 1,
+        bumTransportMethod != BumTransportMethod.MULTICAST_GROUP
+            || deserializedBumTransportIps.size() <= 1,
         "Cannot specify more than one multicast group.");
     return new VniSettings(
         deserializedBumTransportIps,
