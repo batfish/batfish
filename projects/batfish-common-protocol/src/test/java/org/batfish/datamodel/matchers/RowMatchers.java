@@ -33,5 +33,14 @@ public final class RowMatchers {
     return new HasColumn<>(equalTo(key), valueMatcher, schema);
   }
 
+  /**
+   * Provides a matcher that matches if the {@link Row} has a column named {@code key} whose value
+   * is equal to {@code expectedValue}.
+   */
+  public static @Nonnull Matcher<Row> hasColumn(
+      String key, @Nonnull Object expectedValue, Schema schema) {
+    return hasColumn(equalTo(key), equalTo(expectedValue), schema);
+  }
+
   private RowMatchers() {}
 }
