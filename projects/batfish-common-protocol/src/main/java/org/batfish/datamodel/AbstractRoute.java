@@ -45,7 +45,7 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
   private final boolean _nonRouting;
   private final boolean _nonForwarding;
 
-  /** The composite scomparator for this class. */
+  /** The composite comparator for this class. */
   private static final Comparator<AbstractRoute> COMPARATOR =
       Comparator.comparing(AbstractRoute::getNetwork)
           .thenComparingInt(AbstractRoute::getAdministrativeCost)
