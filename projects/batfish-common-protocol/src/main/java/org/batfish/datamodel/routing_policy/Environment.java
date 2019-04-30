@@ -124,7 +124,7 @@ public class Environment {
       String defaultPolicy,
       Direction direction,
       boolean error,
-      BgpRoute.Builder intermediateBgpAttributes,
+      BgpRoute.Builder<?, ?> intermediateBgpAttributes,
       Map<String, IpAccessList> ipAccessLists,
       Map<String, Ip6AccessList> ip6AccessLists,
       boolean localDefaultAction,
@@ -301,7 +301,7 @@ public class Environment {
     _error = error;
   }
 
-  public void setIntermediateBgpAttributes(BgpRoute.Builder intermediateBgpAttributes) {
+  public void setIntermediateBgpAttributes(BgpRoute.Builder<?, ?> intermediateBgpAttributes) {
     _intermediateBgpAttributes = intermediateBgpAttributes;
   }
 
