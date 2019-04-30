@@ -7,7 +7,6 @@ import org.batfish.vendor.VendorConfiguration;
 
 public abstract class IptablesConfiguration extends VendorConfiguration {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   Map<String, IptablesTable> _tables = new HashMap<>();

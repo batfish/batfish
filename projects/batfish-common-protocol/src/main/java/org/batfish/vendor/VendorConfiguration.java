@@ -27,7 +27,6 @@ import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 
 public abstract class VendorConfiguration implements Serializable, GenericConfigObject {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private transient ConvertConfigurationAnswerElement _answerElement;

@@ -6,7 +6,6 @@ import org.batfish.datamodel.routing_policy.Result;
 
 public class Comment extends Statement {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @JsonCreator

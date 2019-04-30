@@ -8,7 +8,6 @@ public class AaaAccounting implements Serializable {
 
   public static final String DEFAULT_COMMANDS = "default";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private SortedMap<String, AaaAccountingCommands> _commands;

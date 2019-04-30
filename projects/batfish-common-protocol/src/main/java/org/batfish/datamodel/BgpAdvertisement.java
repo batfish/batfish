@@ -226,7 +226,6 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
   private static final String PROP_TYPE = "type";
   private static final String PROP_WEIGHT = "weight";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   public static final int UNSET_LOCAL_PREFERENCE = 0;

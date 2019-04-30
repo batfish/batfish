@@ -9,7 +9,6 @@ import org.batfish.datamodel.routing_policy.expr.MatchLocalPreference;
 
 public class RoutePolicyBooleanLocalPreference extends RoutePolicyBoolean {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private IntComparator _cmp;

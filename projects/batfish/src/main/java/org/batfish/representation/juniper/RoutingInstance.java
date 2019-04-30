@@ -23,7 +23,6 @@ public class RoutingInstance implements Serializable {
   private static final double DEFAULT_OSPF_REFERENCE_BANDWIDTH = 1E9;
   private static final String MASTER_INTERFACE_NAME = "MASTER_INTERFACE";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Nullable private Long _as;

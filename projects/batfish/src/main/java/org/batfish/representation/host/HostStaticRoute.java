@@ -10,7 +10,6 @@ public class HostStaticRoute implements Serializable {
 
   public static final int DEFAULT_ADMINISTRATIVE_COST = 1;
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private int _administrativeCost;

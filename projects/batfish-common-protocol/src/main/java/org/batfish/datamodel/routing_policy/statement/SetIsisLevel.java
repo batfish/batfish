@@ -17,7 +17,6 @@ import org.batfish.datamodel.routing_policy.expr.IsisLevelExpr;
 public final class SetIsisLevel extends Statement {
   private static final String PROP_LEVEL = "level";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Nonnull private IsisLevelExpr _level;

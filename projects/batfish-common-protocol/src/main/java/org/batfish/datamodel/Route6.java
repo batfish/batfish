@@ -20,7 +20,6 @@ public class Route6 implements Comparable<Route6>, Serializable {
   private static final String PROP_NODE = "node";
   private static final String PROP_PROTOCOL = "protocol";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private static final String PROP_TAG = "tag";

@@ -12,7 +12,6 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 
 public abstract class RoutePolicySetStatement extends RoutePolicyStatement {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Override

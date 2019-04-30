@@ -6,7 +6,6 @@ import java.util.TreeMap;
 
 public class Ntp implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private SortedMap<String, NtpServer> _servers;

@@ -14,7 +14,6 @@ public class IptablesChain implements Serializable {
     RETURN
   }
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private String _name;

@@ -6,7 +6,6 @@ import org.batfish.datamodel.routing_policy.Environment;
 
 public class IncrementLocalPreference extends LongExpr {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private long _addend;

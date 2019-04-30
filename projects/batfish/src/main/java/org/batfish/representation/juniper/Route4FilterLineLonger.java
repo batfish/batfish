@@ -8,7 +8,6 @@ import org.batfish.datamodel.RouteFilterList;
 
 public class Route4FilterLineLonger extends Route4FilterLine {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   public Route4FilterLineLonger(Prefix prefix) {

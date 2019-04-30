@@ -4,7 +4,6 @@ import org.batfish.common.Pair;
 
 public class FilterResult extends Pair<Integer, LineAction> {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   public FilterResult(Integer t1, LineAction t2) {

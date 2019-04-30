@@ -8,7 +8,6 @@ import org.batfish.common.Pair;
 
 public class Prefix6Range extends Pair<Prefix6, SubRange> {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   public static Prefix6Range fromPrefix6(Prefix6 prefix6) {

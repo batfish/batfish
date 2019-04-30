@@ -10,7 +10,6 @@ import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 
 /** A {@link TransformationStep} that transforms the source port */
 public class AssignPortFromPool implements TransformationStep, Serializable {
-  /** */
   private static final long serialVersionUID = 1L;
 
   private static final String PROP_TRANSFORMATION_TYPE = "transformationType";

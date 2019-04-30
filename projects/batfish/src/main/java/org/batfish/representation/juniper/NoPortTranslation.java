@@ -7,7 +7,6 @@ import org.batfish.datamodel.transformation.PortField;
 import org.batfish.datamodel.transformation.TransformationStep;
 
 public class NoPortTranslation implements PortAddressTranslation, Serializable {
-  /** */
   private static final long serialVersionUID = 1L;
 
   public static final NoPortTranslation INSTANCE = new NoPortTranslation();

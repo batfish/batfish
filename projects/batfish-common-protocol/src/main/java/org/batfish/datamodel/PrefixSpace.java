@@ -23,7 +23,6 @@ public class PrefixSpace implements Serializable {
 
   private static class BitTrie implements Serializable {
 
-    /** */
     private static final long serialVersionUID = 1L;
 
     private BitTrieNode _root;
@@ -79,7 +78,6 @@ public class PrefixSpace implements Serializable {
 
   private static class BitTrieNode implements Serializable {
 
-    /** */
     private static final long serialVersionUID = 1L;
 
     private BitTrieNode _left;
@@ -183,7 +181,6 @@ public class PrefixSpace implements Serializable {
     }
   }
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   /**

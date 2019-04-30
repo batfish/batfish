@@ -10,7 +10,6 @@ import java.util.List;
 public class ParseTreeSentences implements Serializable {
   private static final String PROP_SENTENCES = "sentences";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   protected List<String> _sentences;

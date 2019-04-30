@@ -6,7 +6,6 @@ import org.batfish.datamodel.Prefix;
 
 public class StaticNextHopRoute implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final int _distance;

@@ -40,7 +40,6 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 public abstract class Statement implements Serializable {
   private static final String PROP_COMMENT = "comment";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private String _comment;

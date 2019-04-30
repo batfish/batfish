@@ -208,7 +208,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private static final String FIRST_LOOPBACK_INTERFACE_NAME = "lo0";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private static String communityRegexToJavaRegex(String regex) {

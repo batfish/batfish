@@ -23,7 +23,6 @@ import org.batfish.datamodel.routing_policy.Environment;
  */
 public final class AbstractionPrefixSet extends PrefixSetExpr {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private PrefixTrie _prefixTrie;

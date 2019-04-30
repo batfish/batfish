@@ -10,7 +10,6 @@ import org.batfish.datamodel.IpSpace;
 @ParametersAreNonnullByDefault
 public final class FqdnNetworkObject implements Serializable, NetworkObject {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private NetworkObjectInfo _info;

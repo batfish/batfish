@@ -7,7 +7,6 @@ import org.batfish.datamodel.Prefix6;
 
 public class Ipv6BgpPeerGroup extends LeafBgpPeerGroup {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private Ip6 _ip6;

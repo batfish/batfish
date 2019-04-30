@@ -9,7 +9,6 @@ import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 
 public final class NamedAsPathSet extends AsPathSetExpr {
-  /** */
   private static final long serialVersionUID = 1L;
 
   private static final String PROP_NAME = "name";

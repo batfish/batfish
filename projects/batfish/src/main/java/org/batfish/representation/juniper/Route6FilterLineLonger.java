@@ -8,7 +8,6 @@ import org.batfish.datamodel.SubRange;
 
 public class Route6FilterLineLonger extends Route6FilterLine {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   public Route6FilterLineLonger(Prefix6 prefix) {

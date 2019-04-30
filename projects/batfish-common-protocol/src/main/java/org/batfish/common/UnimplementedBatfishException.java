@@ -2,7 +2,6 @@ package org.batfish.common;
 
 public class UnimplementedBatfishException extends BatfishException {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   public UnimplementedBatfishException(String msg) {
