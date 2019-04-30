@@ -15,6 +15,8 @@ import org.jgrapht.alg.util.UnionFind;
 @ParametersAreNonnullByDefault
 public final class Layer2Topology {
 
+  public static final Layer2Topology EMPTY = new Layer2Topology(new UnionFind<>(ImmutableSet.of()));
+
   private final UnionFind<Layer2Node> _unionFind;
 
   private Layer2Topology(UnionFind<Layer2Node> unionFind) {
