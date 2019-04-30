@@ -21,10 +21,10 @@ public final class Layer2Topology {
   public static final Layer2Topology EMPTY = new Layer2Topology(ImmutableMap.of());
 
   // node -> representative
-  private final Map<Layer2Node, Layer2Node> _representative;
+  private final Map<Layer2Node, Layer2Node> _representativeByNode;
 
-  private Layer2Topology(Map<Layer2Node, Layer2Node> representative) {
-    _representative = ImmutableMap.copyOf(representative);
+  private Layer2Topology(Map<Layer2Node, Layer2Node> representativeByNode) {
+    _representativeByNode = ImmutableMap.copyOf(representativeByNode);
   }
 
   public static @Nonnull Layer2Topology fromDomains(Collection<Set<Layer2Node>> domains) {
@@ -35,7 +35,7 @@ public final class Layer2Topology {
                   if (domain.isEmpty()) {
                     return Stream.of();
                   }
-                  Layer2Node repr = domain.stream().sorted().findFirst().get();
+                  Layer2Node repr = domain.stream().max(Layer2Node::compareTo).get();
                   return domain.stream().map(node -> Maps.immutableEntry(node, repr));
                 })
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue)));
@@ -58,7 +58,7 @@ public final class Layer2Topology {
    * Optional#empty} if not represented in the layer-2 topology.
    */
   public @Nonnull Optional<Layer2Node> getBroadcastDomainRepresentative(Layer2Node layer2Node) {
-    return Optional.ofNullable(_representative.get(layer2Node));
+    return Optional.ofNullable(_representativeByNode.get(layer2Node));
   }
 
   /**
@@ -88,8 +88,8 @@ public final class Layer2Topology {
 
   /** Return whether the two interfaces are in the same broadcast domain. */
   public boolean inSameBroadcastDomain(Layer2Node n1, Layer2Node n2) {
-    Layer2Node r1 = _representative.get(n1);
-    return r1 != null && r1.equals(_representative.get(n2));
+    Layer2Node r1 = _representativeByNode.get(n1);
+    return r1 != null && r1.equals(_representativeByNode.get(n2));
   }
 
   /** Return whether the two interfaces are in the same broadcast domain. */
