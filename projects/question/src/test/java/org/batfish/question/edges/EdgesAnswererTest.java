@@ -18,7 +18,6 @@ import static org.batfish.question.edges.EdgesAnswerer.COL_SOURCE_INTERFACE;
 import static org.batfish.question.edges.EdgesAnswerer.COL_TUNNEL_INTERFACE;
 import static org.batfish.question.edges.EdgesAnswerer.COL_VLAN;
 import static org.batfish.question.edges.EdgesAnswerer.eigrpEdgeToRow;
-import static org.batfish.question.edges.EdgesAnswerer.getBgpEdgeRow;
 import static org.batfish.question.edges.EdgesAnswerer.getBgpEdges;
 import static org.batfish.question.edges.EdgesAnswerer.getEigrpEdges;
 import static org.batfish.question.edges.EdgesAnswerer.getIpsecEdges;
@@ -61,6 +60,7 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSessionProperties;
+import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
@@ -229,20 +229,45 @@ public class EdgesAnswererTest {
   @Test
   public void testGetBgpEdges() {
     BgpProcess bgp1 = new BgpProcess();
-    bgp1.setRouterId(Ip.parse("1.1.1.1"));
-    BgpActivePeerConfig peer1 =
-        BgpActivePeerConfig.builder().setLocalIp(Ip.parse("1.1.1.1")).setLocalAs(1L).build();
-    bgp1.getActiveNeighbors().put(Prefix.create(Ip.parse("2.2.2.2"), 24), peer1);
-    BgpPeerConfigId neighborId1 =
-        new BgpPeerConfigId("host1", "vrf1", Prefix.create(Ip.parse("2.2.2.2"), 24), false);
-
     BgpProcess bgp2 = new BgpProcess();
-    bgp2.setRouterId(Ip.parse("2.2.2.2"));
-    BgpActivePeerConfig peer2 =
-        BgpActivePeerConfig.builder().setLocalIp(Ip.parse("2.2.2.2")).setLocalAs(2L).build();
-    bgp2.getActiveNeighbors().put(Prefix.create(Ip.parse("1.1.1.1"), 24), peer2);
-    BgpPeerConfigId neighborId2 =
-        new BgpPeerConfigId("host2", "vrf2", Prefix.create(Ip.parse("1.1.1.1"), 24), false);
+
+    // Edge between active peers
+    Ip ip1 = Ip.parse("1.1.1.1");
+    Ip ip2 = Ip.parse("2.2.2.2");
+
+    BgpActivePeerConfig activePeer1 =
+        BgpActivePeerConfig.builder().setLocalIp(ip1).setLocalAs(1L).build();
+    bgp1.getActiveNeighbors().put(Prefix.create(ip2, Prefix.MAX_PREFIX_LENGTH), activePeer1);
+    BgpPeerConfigId activeId1 =
+        new BgpPeerConfigId("host1", "vrf1", Prefix.create(ip2, Prefix.MAX_PREFIX_LENGTH), false);
+
+    BgpActivePeerConfig activePeer2 =
+        BgpActivePeerConfig.builder().setLocalIp(ip2).setLocalAs(2L).build();
+    bgp2.getActiveNeighbors().put(Prefix.create(ip1, Prefix.MAX_PREFIX_LENGTH), activePeer2);
+    BgpPeerConfigId activeId2 =
+        new BgpPeerConfigId("host2", "vrf2", Prefix.create(ip1, Prefix.MAX_PREFIX_LENGTH), false);
+
+    // Edge between unnumbered peers
+    String iface1 = "iface1";
+    String iface2 = "iface2";
+
+    BgpUnnumberedPeerConfig unnumPeer1 =
+        BgpUnnumberedPeerConfig.builder()
+            .setPeerInterface(iface1)
+            .setLocalAs(1L)
+            .setLocalIp(Ip.parse("169.254.0.1"))
+            .build();
+    bgp1.getInterfaceNeighbors().put(iface1, unnumPeer1);
+    BgpPeerConfigId unnumId1 = new BgpPeerConfigId("host1", "vrf1", iface1);
+
+    BgpUnnumberedPeerConfig unnumPeer2 =
+        BgpUnnumberedPeerConfig.builder()
+            .setPeerInterface(iface2)
+            .setLocalAs(2L)
+            .setLocalIp(Ip.parse("169.254.0.1"))
+            .build();
+    bgp2.getInterfaceNeighbors().put(iface2, unnumPeer2);
+    BgpPeerConfigId unnumId2 = new BgpPeerConfigId("host2", "vrf2", iface2);
 
     Vrf vrf1 = new Vrf("vrf1");
     vrf1.setBgpProcess(bgp1);
@@ -255,21 +280,36 @@ public class EdgesAnswererTest {
     MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
     bgpTopology.putEdgeValue(
-        neighborId1, neighborId2, BgpSessionProperties.from(peer1, peer2, false));
+        activeId1, activeId2, BgpSessionProperties.from(activePeer1, activePeer2, false));
+    bgpTopology.putEdgeValue(
+        unnumId1, unnumId2, BgpSessionProperties.from(unnumPeer1, unnumPeer2, false));
 
     Multiset<Row> rows =
         getBgpEdges(_configurations, _includeNodes, _includeRemoteNodes, bgpTopology);
 
-    assertThat(
-        rows,
-        contains(
-            allOf(
-                hasColumn(COL_NODE, equalTo(new Node("host1")), Schema.NODE),
-                hasColumn(COL_IP, equalTo(Ip.parse("1.1.1.1")), Schema.IP),
-                hasColumn(COL_AS_NUMBER, equalTo("1"), Schema.STRING),
-                hasColumn(COL_REMOTE_NODE, equalTo(new Node("host2")), Schema.NODE),
-                hasColumn(COL_REMOTE_IP, equalTo(Ip.parse("2.2.2.2")), Schema.IP),
-                hasColumn(COL_REMOTE_AS_NUMBER, equalTo("2"), Schema.STRING))));
+    Row expectedActiveRow =
+        Row.builder()
+            .put(COL_NODE, new Node("host1"))
+            .put(COL_IP, ip1)
+            .put(COL_INTERFACE, null)
+            .put(COL_AS_NUMBER, 1L)
+            .put(COL_REMOTE_NODE, new Node("host2"))
+            .put(COL_REMOTE_IP, ip2)
+            .put(COL_REMOTE_INTERFACE, null)
+            .put(COL_REMOTE_AS_NUMBER, 2L)
+            .build();
+    Row expectedUnnumRow =
+        Row.builder()
+            .put(COL_NODE, new Node("host1"))
+            .put(COL_IP, null)
+            .put(COL_INTERFACE, iface1)
+            .put(COL_AS_NUMBER, 1L)
+            .put(COL_REMOTE_NODE, new Node("host2"))
+            .put(COL_REMOTE_IP, null)
+            .put(COL_REMOTE_INTERFACE, iface2)
+            .put(COL_REMOTE_AS_NUMBER, 2L)
+            .build();
+    assertThat(rows, containsInAnyOrder(expectedActiveRow, expectedUnnumRow));
   }
 
   @Test
@@ -533,20 +573,6 @@ public class EdgesAnswererTest {
   }
 
   @Test
-  public void testBgpToRow() {
-    Row row = getBgpEdgeRow("host1", Ip.parse("1.1.1.1"), 1L, "host2", Ip.parse("2.2.2.2"), 2L);
-    assertThat(
-        row,
-        allOf(
-            hasColumn(COL_NODE, equalTo(new Node("host1")), Schema.NODE),
-            hasColumn(COL_IP, equalTo(Ip.parse("1.1.1.1")), Schema.IP),
-            hasColumn(COL_AS_NUMBER, equalTo("1"), Schema.STRING),
-            hasColumn(COL_REMOTE_NODE, equalTo(new Node("host2")), Schema.NODE),
-            hasColumn(COL_REMOTE_IP, equalTo(Ip.parse("2.2.2.2")), Schema.IP),
-            hasColumn(COL_REMOTE_AS_NUMBER, equalTo("2"), Schema.STRING)));
-  }
-
-  @Test
   public void testLayer1ToRow() {
     Row row = layer1EdgeToRow(new Layer1Edge("host1", "int1", "host2", "int2"));
     assertThat(
@@ -638,13 +664,28 @@ public class EdgesAnswererTest {
             .map(ColumnMetadata::getName)
             .collect(ImmutableList.toImmutableList()),
         contains(
-            COL_NODE, COL_IP, COL_AS_NUMBER, COL_REMOTE_NODE, COL_REMOTE_IP, COL_REMOTE_AS_NUMBER));
+            COL_NODE,
+            COL_IP,
+            COL_INTERFACE,
+            COL_AS_NUMBER,
+            COL_REMOTE_NODE,
+            COL_REMOTE_IP,
+            COL_REMOTE_INTERFACE,
+            COL_REMOTE_AS_NUMBER));
 
     assertThat(
         columnMetadata.stream()
             .map(ColumnMetadata::getSchema)
             .collect(ImmutableList.toImmutableList()),
-        contains(Schema.NODE, Schema.IP, Schema.STRING, Schema.NODE, Schema.IP, Schema.STRING));
+        contains(
+            Schema.NODE,
+            Schema.IP,
+            Schema.STRING,
+            Schema.STRING,
+            Schema.NODE,
+            Schema.IP,
+            Schema.STRING,
+            Schema.STRING));
   }
 
   @Test
