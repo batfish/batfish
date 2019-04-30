@@ -23,6 +23,7 @@ import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.IpsecUtil;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
+import org.batfish.datamodel.BgpPeerConfigId.BgpPeerConfigType;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
@@ -124,9 +125,17 @@ public class EdgesAnswerer extends Answerer {
     Map<Ip, Set<String>> ipOwners = TopologyUtil.computeIpNodeOwners(configurations, true);
     switch (edgeType) {
       case BGP:
-        // TODO Include layer 2 topology and test BGP unnumbered edges
         ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-            BgpTopologyUtils.initBgpTopology(configurations, ipOwners, false, false, null, null);
+            BgpTopologyUtils.initBgpTopology(
+                configurations,
+                ipOwners,
+                false,
+                false,
+                null,
+                _batfish
+                    .getTopologyProvider()
+                    .getLayer2Topology(_batfish.getNetworkSnapshot())
+                    .orElse(null));
         return getBgpEdges(configurations, includeNodes, includeRemoteNodes, bgpTopology);
       case EIGRP:
         Network<EigrpInterface, EigrpEdge> eigrpTopology =
@@ -204,6 +213,7 @@ public class EdgesAnswerer extends Answerer {
       Set<String> includeRemoteNodes,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology) {
     Multiset<Row> rows = HashMultiset.create();
+    Map<String, ColumnMetadata> columnMap = getTableMetadata(EdgeType.BGP).toColumnMap();
     for (EndpointPair<BgpPeerConfigId> session : bgpTopology.edges()) {
       BgpPeerConfigId bgpPeerConfigId = session.source();
       BgpPeerConfigId remoteBgpPeerConfigId = session.target();
@@ -216,14 +226,22 @@ public class EdgesAnswerer extends Answerer {
       String hostname = bgpPeerConfigId.getHostname();
       String remoteHostname = remoteBgpPeerConfigId.getHostname();
       if (includeNodes.contains(hostname) && includeRemoteNodes.contains(remoteHostname)) {
+        BgpSessionProperties sessionProperties =
+            bgpTopology.edgeValue(bgpPeerConfigId, remoteBgpPeerConfigId).orElse(null);
+        assert sessionProperties != null;
+        // Leave IPs null for BGP unnumbered session
+        boolean unnumbered = bgpPeerConfigId.getType() == BgpPeerConfigType.UNNUMBERED;
         rows.add(
-            getBgpEdgeRow(
-                hostname,
-                bgpPeerConfig.getLocalIp(),
-                bgpPeerConfig.getLocalAs(),
-                remoteHostname,
-                remoteBgpPeerConfig.getLocalIp(),
-                remoteBgpPeerConfig.getLocalAs()));
+            Row.builder(columnMap)
+                .put(COL_NODE, new Node(hostname))
+                .put(COL_IP, unnumbered ? null : sessionProperties.getTailIp())
+                .put(COL_INTERFACE, bgpPeerConfigId.getPeerInterface())
+                .put(COL_AS_NUMBER, bgpPeerConfig.getLocalAs())
+                .put(COL_REMOTE_NODE, new Node(remoteHostname))
+                .put(COL_REMOTE_IP, unnumbered ? null : sessionProperties.getHeadIp())
+                .put(COL_REMOTE_INTERFACE, remoteBgpPeerConfigId.getPeerInterface())
+                .put(COL_REMOTE_AS_NUMBER, remoteBgpPeerConfig.getLocalAs())
+                .build());
       }
     }
 
@@ -440,24 +458,6 @@ public class EdgesAnswerer extends Answerer {
     return row.build();
   }
 
-  @VisibleForTesting
-  static Row getBgpEdgeRow(
-      String node,
-      @Nullable Ip ip,
-      @Nullable Long asNumber,
-      String remoteNode,
-      @Nullable Ip remoteIp,
-      @Nullable Long remoteAsNumber) {
-    RowBuilder row = Row.builder();
-    row.put(COL_NODE, new Node(node))
-        .put(COL_IP, ip)
-        .put(COL_AS_NUMBER, asNumber)
-        .put(COL_REMOTE_NODE, new Node(remoteNode))
-        .put(COL_REMOTE_IP, remoteIp)
-        .put(COL_REMOTE_AS_NUMBER, remoteAsNumber);
-    return row.build();
-  }
-
   static Row isisEdgeToRow(IsisEdge isisEdge) {
     RowBuilder row = Row.builder();
     row.put(
@@ -616,6 +616,13 @@ public class EdgesAnswerer extends Answerer {
                 COL_IP, Schema.IP, "IP at the side of originator", Boolean.FALSE, Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
+                COL_INTERFACE,
+                Schema.STRING,
+                "Interface at which the edge originates",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
                 COL_AS_NUMBER,
                 Schema.STRING,
                 "AS Number at the side of originator",
@@ -633,6 +640,13 @@ public class EdgesAnswerer extends Answerer {
                 COL_REMOTE_IP,
                 Schema.IP,
                 "IP at the side of the responder",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_REMOTE_INTERFACE,
+                Schema.STRING,
+                "Interface at which the edge terminates",
                 Boolean.FALSE,
                 Boolean.TRUE));
         columnBuilder.add(
