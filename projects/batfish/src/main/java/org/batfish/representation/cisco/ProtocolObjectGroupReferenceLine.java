@@ -8,7 +8,6 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 
 public class ProtocolObjectGroupReferenceLine implements ProtocolObjectGroupLine {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final String _name;

@@ -5,7 +5,6 @@ import org.batfish.datamodel.answers.Answer;
 
 public class QuestionException extends BatfishException {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final Answer _answer;

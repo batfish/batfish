@@ -8,7 +8,6 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 
 public class IcmpTypeGroupTypeLine implements IcmpTypeObjectGroupLine {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final int _type;

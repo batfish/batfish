@@ -8,7 +8,6 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 
 public class PsThenDefaultActionReject extends PsThen {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Override

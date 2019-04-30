@@ -7,7 +7,6 @@ import org.batfish.datamodel.routing_policy.Environment;
 
 public class DestinationNetwork6 extends Prefix6Expr {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Override

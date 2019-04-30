@@ -9,7 +9,6 @@ import org.batfish.datamodel.routing_policy.expr.SubRangeExpr;
 
 public class RoutePolicyBooleanAsPathPassesThrough extends RoutePolicyBoolean {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private boolean _exact;

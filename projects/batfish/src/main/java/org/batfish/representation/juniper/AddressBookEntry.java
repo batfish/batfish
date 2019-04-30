@@ -8,7 +8,6 @@ import org.batfish.datamodel.IpWildcard;
 
 public abstract class AddressBookEntry implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final String _name;

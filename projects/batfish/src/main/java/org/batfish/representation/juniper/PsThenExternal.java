@@ -10,7 +10,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 /** A {@link Statement} that sets the OSPF external metric type on a route. */
 public final class PsThenExternal extends PsThen {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final OspfMetricType _type;

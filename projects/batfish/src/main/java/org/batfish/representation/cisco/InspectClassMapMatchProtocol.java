@@ -13,7 +13,6 @@ import org.batfish.datamodel.acl.TrueExpr;
 
 public class InspectClassMapMatchProtocol implements InspectClassMapMatch {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final InspectClassMapProtocol _protocol;

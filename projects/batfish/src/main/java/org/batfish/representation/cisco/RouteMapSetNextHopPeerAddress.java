@@ -9,7 +9,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class RouteMapSetNextHopPeerAddress extends RouteMapSetLine {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Override

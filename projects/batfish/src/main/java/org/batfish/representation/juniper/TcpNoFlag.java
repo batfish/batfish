@@ -11,7 +11,6 @@ import org.batfish.datamodel.acl.AclLineMatchExprs;
 /** Represents a {@code ScreenOption} checking no TCP flags */
 public final class TcpNoFlag implements ScreenOption {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private static final String TCP_NO_FLAG = "tcp no flag";

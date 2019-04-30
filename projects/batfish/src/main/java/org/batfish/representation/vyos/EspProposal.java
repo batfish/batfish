@@ -5,7 +5,6 @@ import org.batfish.datamodel.EncryptionAlgorithm;
 
 public class EspProposal implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private EncryptionAlgorithm _encryptionAlgorithm;

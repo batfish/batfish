@@ -7,7 +7,6 @@ import org.batfish.datamodel.Ip;
 
 public class TacplusServer extends ComparableStructure<String> {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private String _secret;

@@ -13,7 +13,6 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 
 public class TcpUdpServiceObjectGroupLine implements ServiceObjectGroupLine {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final List<SubRange> _ports;

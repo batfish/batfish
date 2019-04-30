@@ -44,7 +44,6 @@ public class MockFib implements Fib {
     }
   }
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   public static Builder builder() {

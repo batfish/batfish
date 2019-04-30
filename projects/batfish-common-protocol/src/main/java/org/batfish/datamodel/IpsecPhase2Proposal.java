@@ -13,7 +13,6 @@ import javax.annotation.Nullable;
 
 public class IpsecPhase2Proposal implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private static final String PROP_AUTHENTICATION_ALGORITHM = "authenticationAlgorithm";

@@ -7,7 +7,6 @@ import org.batfish.datamodel.LineAction;
 
 public class InspectPolicyMap implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private LineAction _classDefaultAction;

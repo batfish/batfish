@@ -12,7 +12,6 @@ import org.batfish.datamodel.routing_policy.Environment;
 public final class ExplicitAs extends AsExpr {
   private static final String PROP_AS = "as";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private long _as;

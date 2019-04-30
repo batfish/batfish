@@ -10,7 +10,6 @@ import org.batfish.datamodel.IpsecProtocol;
 
 public class IpsecProposal implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private IpsecAuthenticationAlgorithm _authenticationAlgorithm;

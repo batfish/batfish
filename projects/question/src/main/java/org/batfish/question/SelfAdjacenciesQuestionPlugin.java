@@ -35,7 +35,6 @@ public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
     public static class InterfaceIpPair extends Pair<String, Ip> {
       private static final String PROP_INTERFACE_NAME = "interfaceName";
       private static final String PROP_IP = "ip";
-      /** */
       private static final long serialVersionUID = 1L;
 
       @JsonCreator

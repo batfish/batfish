@@ -9,7 +9,6 @@ import org.batfish.datamodel.routing_policy.expr.SubRangeExpr;
 
 public class RoutePolicyBooleanAsPathOriginatesFrom extends RoutePolicyBoolean {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private List<SubRangeExpr> _asRange;

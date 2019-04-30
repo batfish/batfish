@@ -10,7 +10,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 /** A {@link Statement} that increments the metric on a route. */
 public final class PsThenMetricAdd extends PsThen {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final long _metric;

@@ -51,7 +51,6 @@ public class AclIpSpaceLine implements Comparable<AclIpSpaceLine>, Serializable 
   private static final String PROP_IP_SPACE = "ipSpace";
   private static final String PROP_SRC_TEXT = "srcText";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   public static Builder builder() {

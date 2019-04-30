@@ -5,7 +5,6 @@ import javax.annotation.Nonnull;
 
 public final class NetworkObjectInfo implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Nonnull private final String _name;

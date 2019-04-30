@@ -7,7 +7,6 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class NetworkAclEntry implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final Prefix _cidrBlock;

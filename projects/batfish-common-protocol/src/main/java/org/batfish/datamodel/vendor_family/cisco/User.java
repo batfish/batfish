@@ -7,7 +7,6 @@ import org.batfish.common.util.ComparableStructure;
 
 public class User extends ComparableStructure<String> {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private static final String PROP_PASSWORD = "password";

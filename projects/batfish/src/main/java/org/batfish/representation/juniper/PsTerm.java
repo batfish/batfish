@@ -6,7 +6,6 @@ import java.util.Set;
 
 public final class PsTerm implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final PsFroms _froms;

@@ -17,7 +17,6 @@ import org.batfish.datamodel.flow.TransformationStep.TransformationType;
  */
 @ParametersAreNonnullByDefault
 public final class Noop implements TransformationStep, Serializable {
-  /** */
   private static final long serialVersionUID = 1L;
 
   public static final Noop NOOP_DEST_NAT = new Noop(DEST_NAT);
