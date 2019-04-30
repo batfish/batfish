@@ -1,6 +1,7 @@
 package org.batfish.datamodel.matchers;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import javax.annotation.Nonnull;
@@ -31,6 +32,15 @@ public final class RowMatchers {
   public static @Nonnull <V> Matcher<Row> hasColumn(
       String key, Matcher<? super V> valueMatcher, Schema schema) {
     return new HasColumn<>(equalTo(key), valueMatcher, schema);
+  }
+
+  /**
+   * Provides a matcher that matches if the {@link Row} has a column named {@code key} whose value
+   * is equal to {@code expectedValue}.
+   */
+  public static @Nonnull Matcher<Row> hasColumn(String key, Object expectedValue, Schema schema) {
+    return hasColumn(
+        equalTo(key), expectedValue == null ? nullValue() : equalTo(expectedValue), schema);
   }
 
   private RowMatchers() {}

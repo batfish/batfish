@@ -11,6 +11,7 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_LOCAL_PREF;
 import static org.batfish.question.routes.RoutesAnswerer.COL_METRIC;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NETWORK;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP;
+import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_INTERFACE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NODE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_PROTOCOL;
@@ -246,21 +247,21 @@ public class RoutesAnswererTest {
 
   @Test
   public void testGetTableMetadataBGP() {
-    ImmutableList.Builder<String> expectedBuilder = ImmutableList.builder();
-    expectedBuilder.add(
-        COL_NODE,
-        COL_VRF_NAME,
-        COL_NETWORK,
-        COL_NEXT_HOP_IP,
-        COL_PROTOCOL,
-        // BGP attributes
-        COL_AS_PATH,
-        COL_METRIC,
-        COL_LOCAL_PREF,
-        COL_COMMUNITIES,
-        COL_ORIGIN_PROTOCOL,
-        COL_TAG);
-    List<String> expected = expectedBuilder.build();
+    List<String> expected =
+        ImmutableList.of(
+            COL_NODE,
+            COL_VRF_NAME,
+            COL_NETWORK,
+            COL_NEXT_HOP_IP,
+            COL_NEXT_HOP_INTERFACE,
+            COL_PROTOCOL,
+            // BGP attributes
+            COL_AS_PATH,
+            COL_METRIC,
+            COL_LOCAL_PREF,
+            COL_COMMUNITIES,
+            COL_ORIGIN_PROTOCOL,
+            COL_TAG);
 
     List<ColumnMetadata> columnMetadata = getTableMetadata(RibProtocol.BGP).getColumnMetadata();
     assertThat(
