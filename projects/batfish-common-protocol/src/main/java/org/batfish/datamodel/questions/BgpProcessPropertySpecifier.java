@@ -60,7 +60,8 @@ public class BgpProcessPropertySpecifier extends PropertySpecifier {
                   (process) ->
                       Iterables.concat(
                           process.getActiveNeighbors().keySet(),
-                          process.getPassiveNeighbors().keySet()),
+                          process.getPassiveNeighbors().keySet(),
+                          process.getInterfaceNeighbors().keySet()),
                   Schema.set(Schema.STRING)))
           // skip router-id; included as part of process identity
           .put(TIE_BREAKER, new PropertyDescriptor<>(BgpProcess::getTieBreaker, Schema.STRING))
