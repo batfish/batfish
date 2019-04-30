@@ -16,7 +16,7 @@ public final class FibEntry implements Serializable {
   @Nonnull private final Ip _arpIP;
   @Nonnull private final String _interfaceName;
   @Nonnull private final List<AbstractRoute> _resolutionSteps;
-  private int _hashCode;
+  private transient int _hashCode;
 
   /**
    * Create a new FIB entry with the given nextHop/ARP IP, interface name, and resolution steps.

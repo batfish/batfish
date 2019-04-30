@@ -19,7 +19,7 @@ public final class RouteAdvertisement<T> {
   @Nonnull private final T _route;
   @Nonnull private final Reason _reason;
 
-  private transient volatile int _hashcode = 0;
+  private transient int _hashCode = 0;
 
   /** Reason for the advertisement */
   public enum Reason {
@@ -96,10 +96,12 @@ public final class RouteAdvertisement<T> {
 
   @Override
   public int hashCode() {
-    if (_hashcode == 0) {
-      _hashcode = Objects.hash(_route, _reason);
+    int h = _hashCode;
+    if (h == 0) {
+      h = 31 * _route.hashCode() + _reason.hashCode();
+      _hashCode = h;
     }
-    return _hashcode;
+    return _hashCode;
   }
 
   @Override

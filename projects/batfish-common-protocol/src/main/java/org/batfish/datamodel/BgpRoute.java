@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -237,7 +238,9 @@ public abstract class BgpRoute extends AbstractRoute {
   protected final boolean _receivedFromRouteReflectorClient;
   @Nullable protected final RoutingProtocol _srcProtocol;
   /* NOTE: Cisco-only attribute */
-  protected final int _weight;
+  private final int _weight;
+  /* Cache the hashcode */
+  private transient int _hashCode = 0;
 
   protected BgpRoute(
       @Nullable Prefix network,
@@ -264,7 +267,7 @@ public abstract class BgpRoute extends AbstractRoute {
         protocol == RoutingProtocol.BGP
             || protocol == RoutingProtocol.IBGP
             || protocol == RoutingProtocol.AGGREGATE,
-        "Invalid Bgpv4Route protocol");
+        "Invalid BgpRoute protocol");
     _asPath = firstNonNull(asPath, AsPath.empty());
     _clusterList =
         clusterList == null ? ImmutableSortedSet.of() : ImmutableSortedSet.copyOf(clusterList);
@@ -282,6 +285,63 @@ public abstract class BgpRoute extends AbstractRoute {
     _receivedFromRouteReflectorClient = receivedFromRouteReflectorClient;
     _srcProtocol = srcProtocol;
     _weight = weight;
+  }
+
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof BgpRoute)) {
+      return false;
+    }
+    BgpRoute other = (BgpRoute) o;
+    return Objects.equals(_network, other._network)
+        && _admin == other._admin
+        && getNonRouting() == other.getNonRouting()
+        && getNonForwarding() == other.getNonForwarding()
+        && _discard == other._discard
+        && _localPreference == other._localPreference
+        && _med == other._med
+        && _receivedFromRouteReflectorClient == other._receivedFromRouteReflectorClient
+        && _weight == other._weight
+        && Objects.equals(_asPath, other._asPath)
+        && Objects.equals(_clusterList, other._clusterList)
+        && Objects.equals(_communities, other._communities)
+        && _nextHopInterface.equals(other._nextHopInterface)
+        && Objects.equals(_nextHopIp, other._nextHopIp)
+        && Objects.equals(_originatorIp, other._originatorIp)
+        && _originType == other._originType
+        && _protocol == other._protocol
+        && Objects.equals(_receivedFromIp, other._receivedFromIp)
+        && _srcProtocol == other._srcProtocol;
+  }
+
+  @Override
+  public int hashCode() {
+    int h = _hashCode;
+    if (h == 0) {
+      h = _admin;
+      h = h * 31 + _asPath.hashCode();
+      h = h * 31 + _clusterList.hashCode();
+      h = h * 31 + _communities.hashCode();
+      h = h * 31 + Boolean.hashCode(_discard);
+      h = h * 31 + Long.hashCode(_localPreference);
+      h = h * 31 + Long.hashCode(_med);
+      h = h * 31 + _network.hashCode();
+      h = h * 31 + _nextHopInterface.hashCode();
+      h = h * 31 + _nextHopIp.hashCode();
+      h = h * 31 + _originatorIp.hashCode();
+      h = h * 31 + _originType.ordinal();
+      h = h * 31 + _protocol.ordinal();
+      h = h * 31 + Objects.hashCode(_receivedFromIp);
+      h = h * 31 + Boolean.hashCode(_receivedFromRouteReflectorClient);
+      h = h * 31 + (_srcProtocol == null ? 0 : _srcProtocol.ordinal());
+      h = h * 31 + _weight;
+
+      _hashCode = h;
+    }
+    return h;
   }
 
   @Nonnull
