@@ -188,7 +188,8 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
       BgpPeerPropertySpecifier propertySpecifier) {
     RowBuilder rowBuilder = Row.builder(columnMetadata).put(COL_NODE, node).put(COL_VRF, vrfName);
 
-    // Row should have local interface for unnumbered peers, local & remote IP for other peers
+    // Row should have local interface for unnumbered peers, local & remote IP for other peers.
+    // Local IP will be taken care of in BgpPeerPropertySpecifier (see its getLocalIp() method).
     if (peer instanceof BgpUnnumberedPeerConfig) {
       rowBuilder.put(COL_LOCAL_INTERFACE, ((BgpUnnumberedPeerConfig) peer).getPeerInterface());
     } else {
