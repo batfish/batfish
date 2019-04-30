@@ -6,7 +6,10 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Ordering;
+import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -16,6 +19,177 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public abstract class BgpRoute extends AbstractRoute {
 
   private static final long serialVersionUID = 1L;
+
+  /** Builder for {@link Bgpv4Route} */
+  @ParametersAreNonnullByDefault
+  public abstract static class Builder<B extends Builder<B, R>, R extends BgpRoute>
+      extends AbstractRouteBuilder<B, R> {
+
+    @Nonnull protected AsPath _asPath;
+    @Nonnull protected ImmutableSortedSet.Builder<Long> _clusterList;
+    @Nonnull protected SortedSet<Long> _communities;
+    protected boolean _discard;
+    protected long _localPreference;
+    @Nullable protected String _nextHopInterface;
+    @Nullable protected Ip _originatorIp;
+    @Nullable protected OriginType _originType;
+    @Nullable protected RoutingProtocol _protocol;
+    @Nullable protected Ip _receivedFromIp;
+    protected boolean _receivedFromRouteReflectorClient;
+    @Nullable protected RoutingProtocol _srcProtocol;
+    protected int _weight;
+
+    public Builder() {
+      _asPath = AsPath.empty();
+      _communities = new TreeSet<>();
+      _clusterList = new ImmutableSortedSet.Builder<>(Ordering.natural());
+    }
+
+    @Nonnull
+    @Override
+    public abstract R build();
+
+    @Nonnull
+    public AsPath getAsPath() {
+      return _asPath;
+    }
+
+    @Nonnull
+    public SortedSet<Long> getClusterList() {
+      return _clusterList.build();
+    }
+
+    @Nonnull
+    public SortedSet<Long> getCommunities() {
+      return _communities;
+    }
+
+    public long getLocalPreference() {
+      return _localPreference;
+    }
+
+    @Nullable
+    public Ip getOriginatorIp() {
+      return _originatorIp;
+    }
+
+    @Nullable
+    public OriginType getOriginType() {
+      return _originType;
+    }
+
+    @Nullable
+    public RoutingProtocol getProtocol() {
+      return _protocol;
+    }
+
+    @Override
+    @Nonnull
+    protected abstract B getThis();
+
+    public int getWeight() {
+      return _weight;
+    }
+
+    public B setAsPath(AsPath asPath) {
+      _asPath = asPath;
+      return getThis();
+    }
+
+    /** Overwrite the clusterList attribute */
+    public B setClusterList(Set<Long> clusterList) {
+      _clusterList = new ImmutableSortedSet.Builder<>(Ordering.natural());
+      _clusterList.addAll(clusterList);
+      return getThis();
+    }
+
+    /** Add to the cluster list attribute */
+    public B addClusterList(Set<Long> clusterList) {
+      _clusterList.addAll(clusterList);
+      return getThis();
+    }
+
+    /** Add to the cluster list attribute */
+    public B addToClusterList(Long cluster) {
+      _clusterList.add(cluster);
+      return getThis();
+    }
+
+    /** Overwrite communities */
+    public B setCommunities(Set<Long> communities) {
+      _communities = new TreeSet<>();
+      _communities.addAll(communities);
+      return getThis();
+    }
+
+    /** Add communities */
+    public B addCommunities(Set<Long> communities) {
+      _communities.addAll(communities);
+      return getThis();
+    }
+
+    /** Add a single community */
+    public B addCommunity(Long community) {
+      _communities.add(community);
+      return getThis();
+    }
+
+    /** Add communities */
+    public B removeCommunities(Set<Long> communities) {
+      _communities.removeAll(communities);
+      return getThis();
+    }
+
+    public B setDiscard(boolean discard) {
+      _discard = discard;
+      return getThis();
+    }
+
+    public B setLocalPreference(long localPreference) {
+      _localPreference = localPreference;
+      return getThis();
+    }
+
+    public @Nonnull B setNextHopInterface(String nextHopInterface) {
+      _nextHopInterface = nextHopInterface;
+      return getThis();
+    }
+
+    public B setOriginatorIp(Ip originatorIp) {
+      _originatorIp = originatorIp;
+      return getThis();
+    }
+
+    public B setOriginType(OriginType originType) {
+      _originType = originType;
+      return getThis();
+    }
+
+    public B setProtocol(RoutingProtocol protocol) {
+      _protocol = protocol;
+      return getThis();
+    }
+
+    public B setReceivedFromIp(@Nullable Ip receivedFromIp) {
+      _receivedFromIp = receivedFromIp;
+      return getThis();
+    }
+
+    public B setReceivedFromRouteReflectorClient(boolean receivedFromRouteReflectorClient) {
+      _receivedFromRouteReflectorClient = receivedFromRouteReflectorClient;
+      return getThis();
+    }
+
+    public B setSrcProtocol(@Nullable RoutingProtocol srcProtocol) {
+      _srcProtocol = srcProtocol;
+      return getThis();
+    }
+
+    public B setWeight(int weight) {
+      _weight = weight;
+      return getThis();
+    }
+  }
 
   /** Default local preference for a BGP route if one is not set explicitly */
   public static final long DEFAULT_LOCAL_PREFERENCE = 100L;

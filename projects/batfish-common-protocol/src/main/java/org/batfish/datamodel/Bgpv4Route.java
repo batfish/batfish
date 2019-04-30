@@ -6,13 +6,10 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Comparators;
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import java.util.Comparator;
 import java.util.Objects;
-import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -29,29 +26,9 @@ public final class Bgpv4Route extends BgpRoute {
   private static final long serialVersionUID = 1L;
 
   /** Builder for {@link Bgpv4Route} */
-  @ParametersAreNonnullByDefault
-  public static final class Builder extends AbstractRouteBuilder<Builder, Bgpv4Route> {
+  public static final class Builder extends BgpRoute.Builder<Builder, Bgpv4Route> {
 
-    @Nonnull private AsPath _asPath;
-    @Nonnull private ImmutableSortedSet.Builder<Long> _clusterList;
-    @Nonnull private SortedSet<Long> _communities;
-    private boolean _discard;
-    private long _localPreference;
-    @Nullable String _nextHopInterface;
-    @Nullable private Ip _originatorIp;
-    @Nullable private OriginType _originType;
-    @Nullable private RoutingProtocol _protocol;
-    @Nullable private Ip _receivedFromIp;
-    private boolean _receivedFromRouteReflectorClient;
-    @Nullable private RoutingProtocol _srcProtocol;
-    private int _weight;
-
-    public Builder() {
-      _asPath = AsPath.empty();
-      _communities = new TreeSet<>();
-      _clusterList = new ImmutableSortedSet.Builder<>(Ordering.natural());
-    }
-
+    @Nonnull
     @Override
     public Bgpv4Route build() {
       checkArgument(_originatorIp != null, "Missing %s", PROP_ORIGINATOR_IP);
@@ -79,147 +56,10 @@ public final class Bgpv4Route extends BgpRoute {
           getNonRouting());
     }
 
-    @Nonnull
-    public AsPath getAsPath() {
-      return _asPath;
-    }
-
-    @Nonnull
-    public SortedSet<Long> getClusterList() {
-      return _clusterList.build();
-    }
-
-    @Nonnull
-    public SortedSet<Long> getCommunities() {
-      return _communities;
-    }
-
-    public long getLocalPreference() {
-      return _localPreference;
-    }
-
-    @Nullable
-    public Ip getOriginatorIp() {
-      return _originatorIp;
-    }
-
-    @Nullable
-    public OriginType getOriginType() {
-      return _originType;
-    }
-
-    @Nullable
-    public RoutingProtocol getProtocol() {
-      return _protocol;
-    }
-
     @Override
     @Nonnull
-    protected Builder getThis() {
+    public Builder getThis() {
       return this;
-    }
-
-    public int getWeight() {
-      return _weight;
-    }
-
-    public Builder setAsPath(AsPath asPath) {
-      _asPath = asPath;
-      return getThis();
-    }
-
-    /** Overwrite the clusterList attribute */
-    public Builder setClusterList(Set<Long> clusterList) {
-      _clusterList = new ImmutableSortedSet.Builder<>(Ordering.natural());
-      _clusterList.addAll(clusterList);
-      return getThis();
-    }
-
-    /** Add to the cluster list attribute */
-    public Builder addClusterList(Set<Long> clusterList) {
-      _clusterList.addAll(clusterList);
-      return getThis();
-    }
-
-    /** Add to the cluster list attribute */
-    public Builder addToClusterList(Long cluster) {
-      _clusterList.add(cluster);
-      return getThis();
-    }
-
-    /** Overwrite communities */
-    public Builder setCommunities(Set<Long> communities) {
-      _communities = new TreeSet<>();
-      _communities.addAll(communities);
-      return getThis();
-    }
-
-    /** Add communities */
-    public Builder addCommunities(Set<Long> communities) {
-      _communities.addAll(communities);
-      return getThis();
-    }
-
-    /** Add a single community */
-    public Builder addCommunity(Long community) {
-      _communities.add(community);
-      return getThis();
-    }
-
-    /** Add communities */
-    public Builder removeCommunities(Set<Long> communities) {
-      _communities.removeAll(communities);
-      return getThis();
-    }
-
-    public Builder setDiscard(boolean discard) {
-      _discard = discard;
-      return getThis();
-    }
-
-    public Builder setLocalPreference(long localPreference) {
-      _localPreference = localPreference;
-      return getThis();
-    }
-
-    public @Nonnull Builder setNextHopInterface(String nextHopInterface) {
-      _nextHopInterface = nextHopInterface;
-      return getThis();
-    }
-
-    public Builder setOriginatorIp(Ip originatorIp) {
-      _originatorIp = originatorIp;
-      return getThis();
-    }
-
-    public Builder setOriginType(OriginType originType) {
-      _originType = originType;
-      return getThis();
-    }
-
-    public Builder setProtocol(RoutingProtocol protocol) {
-      _protocol = protocol;
-      return getThis();
-    }
-
-    public Builder setReceivedFromIp(@Nullable Ip receivedFromIp) {
-      _receivedFromIp = receivedFromIp;
-      return getThis();
-    }
-
-    public Builder setReceivedFromRouteReflectorClient(boolean receivedFromRouteReflectorClient) {
-      _receivedFromRouteReflectorClient = receivedFromRouteReflectorClient;
-      return getThis();
-    }
-
-    public Builder setSrcProtocol(@Nullable RoutingProtocol srcProtocol) {
-      _srcProtocol = srcProtocol;
-      return getThis();
-    }
-
-    public Builder setWeight(int weight) {
-      _weight = weight;
-      return getThis();
     }
   }
 

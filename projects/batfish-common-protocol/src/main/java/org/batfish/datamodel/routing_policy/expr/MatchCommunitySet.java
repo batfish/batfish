@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import java.util.SortedSet;
-import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
@@ -36,14 +36,15 @@ public final class MatchCommunitySet extends BooleanExpr {
   public Result evaluate(Environment environment) {
     SortedSet<Long> inputCommunities = null;
     if (environment.getUseOutputAttributes()
-        && environment.getOutputRoute() instanceof Bgpv4Route.Builder) {
-      Bgpv4Route.Builder bgpRouteBuilder = (Bgpv4Route.Builder) environment.getOutputRoute();
+        && environment.getOutputRoute() instanceof BgpRoute.Builder<?, ?>) {
+      BgpRoute.Builder<?, ?> bgpRouteBuilder =
+          (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
       inputCommunities = bgpRouteBuilder.getCommunities();
     } else if (environment.getReadFromIntermediateBgpAttributes()) {
       inputCommunities = environment.getIntermediateBgpAttributes().getCommunities();
-    } else if (environment.getOriginalRoute() instanceof Bgpv4Route) {
-      Bgpv4Route bgpv4Route = (Bgpv4Route) environment.getOriginalRoute();
-      inputCommunities = bgpv4Route.getCommunities();
+    } else if (environment.getOriginalRoute() instanceof BgpRoute) {
+      BgpRoute bgpRoute = (BgpRoute) environment.getOriginalRoute();
+      inputCommunities = bgpRoute.getCommunities();
     }
     return inputCommunities == null
         ? new Result(false)

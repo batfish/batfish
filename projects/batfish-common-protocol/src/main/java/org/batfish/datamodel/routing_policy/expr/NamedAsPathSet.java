@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsPathAccessList;
-import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 
 public final class NamedAsPathSet extends AsPathSetExpr {
@@ -53,14 +53,15 @@ public final class NamedAsPathSet extends AsPathSetExpr {
       boolean match = false;
       AsPath inputAsPath = null;
       if (environment.getUseOutputAttributes()
-          && environment.getOutputRoute() instanceof Bgpv4Route.Builder) {
-        Bgpv4Route.Builder bgpRouteBuilder = (Bgpv4Route.Builder) environment.getOutputRoute();
+          && environment.getOutputRoute() instanceof BgpRoute.Builder<?, ?>) {
+        BgpRoute.Builder<?, ?> bgpRouteBuilder =
+            (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
         inputAsPath = bgpRouteBuilder.getAsPath();
       } else if (environment.getReadFromIntermediateBgpAttributes()) {
         inputAsPath = environment.getIntermediateBgpAttributes().getAsPath();
-      } else if (environment.getOriginalRoute() instanceof Bgpv4Route) {
-        Bgpv4Route bgpv4Route = (Bgpv4Route) environment.getOriginalRoute();
-        inputAsPath = bgpv4Route.getAsPath();
+      } else if (environment.getOriginalRoute() instanceof BgpRoute) {
+        BgpRoute bgpRoute = (BgpRoute) environment.getOriginalRoute();
+        inputAsPath = bgpRoute.getAsPath();
       }
       if (inputAsPath != null) {
         match = list.permits(inputAsPath);

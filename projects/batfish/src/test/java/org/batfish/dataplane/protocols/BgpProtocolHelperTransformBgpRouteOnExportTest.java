@@ -35,7 +35,7 @@ import org.junit.Test;
  * Tests of {@link BgpProtocolHelper#transformBgpRoutePreExport(BgpPeerConfig, BgpPeerConfig,
  * BgpSessionProperties, Vrf, Vrf, AbstractRoute) BgpProtocolHelper.transformBgpRouteOnExport}.
  */
-public final class BgpProtocolHelperTransformBgpv4RouteOnExportTest {
+public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
 
   private final NetworkFactory _nf = new NetworkFactory();
   private BgpActivePeerConfig _fromNeighbor;

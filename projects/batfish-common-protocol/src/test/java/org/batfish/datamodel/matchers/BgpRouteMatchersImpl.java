@@ -4,49 +4,49 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.OriginType;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 @ParametersAreNonnullByDefault
 final class BgpRouteMatchersImpl {
-  static final class HasCommunities extends FeatureMatcher<Bgpv4Route, Set<Long>> {
+  static final class HasCommunities extends FeatureMatcher<BgpRoute, Set<Long>> {
     HasCommunities(@Nonnull Matcher<? super Set<Long>> subMatcher) {
-      super(subMatcher, "A Bgpv4Route with communities:", "communities");
+      super(subMatcher, "A BgpRoute with communities:", "communities");
     }
 
     @Override
-    protected Set<Long> featureValueOf(Bgpv4Route actual) {
+    protected Set<Long> featureValueOf(BgpRoute actual) {
       return actual.getCommunities();
     }
   }
 
-  static final class HasOriginType extends FeatureMatcher<Bgpv4Route, OriginType> {
+  static final class HasOriginType extends FeatureMatcher<BgpRoute, OriginType> {
     HasOriginType(@Nonnull Matcher<? super OriginType> subMatcher) {
-      super(subMatcher, "A Bgpv4Route with originType:", "originType");
+      super(subMatcher, "A BgpRoute with originType:", "originType");
     }
 
     @Override
-    protected OriginType featureValueOf(Bgpv4Route actual) {
+    protected OriginType featureValueOf(BgpRoute actual) {
       return actual.getOriginType();
     }
   }
 
-  static final class HasWeight extends FeatureMatcher<Bgpv4Route, Integer> {
+  static final class HasWeight extends FeatureMatcher<BgpRoute, Integer> {
     HasWeight(@Nonnull Matcher<? super Integer> subMatcher) {
-      super(subMatcher, "A Bgpv4Route with weight:", "weight");
+      super(subMatcher, "A BgpRoute with weight:", "weight");
     }
 
     @Override
-    protected Integer featureValueOf(Bgpv4Route actual) {
+    protected Integer featureValueOf(BgpRoute actual) {
       return actual.getWeight();
     }
   }
 
-  static final class IsBgpRouteThat extends IsInstanceThat<AbstractRoute, Bgpv4Route> {
-    IsBgpRouteThat(Matcher<? super Bgpv4Route> subMatcher) {
-      super(Bgpv4Route.class, subMatcher);
+  static final class IsBgpRouteThat extends IsInstanceThat<AbstractRoute, BgpRoute> {
+    IsBgpRouteThat(Matcher<? super BgpRoute> subMatcher) {
+      super(BgpRoute.class, subMatcher);
     }
   }
 
