@@ -120,7 +120,7 @@ public abstract class OspfExternalRoute extends OspfRoute {
   @Nonnull private final String _advertiser;
   private final long _costToAdvertiser;
   private final long _lsaMetric;
-  private int _hashCode;
+  private transient int _hashCode;
 
   @Nonnull
   public static Builder builder() {
@@ -173,21 +173,20 @@ public abstract class OspfExternalRoute extends OspfRoute {
   public final int hashCode() {
     int h = _hashCode;
     if (h == 0) {
-      h =
-          Objects.hash(
-              // AbstractRoute properties
-              _network,
-              _admin,
-              _metric,
-              _nextHopIp,
-              getNonRouting(),
-              getNonForwarding(),
-              // OspfRoute properties
-              _area,
-              // OspfExternalRoute properties
-              getAdvertiser(),
-              getCostToAdvertiser(),
-              getLsaMetric());
+      // AbstractRoute Properties
+      h = _network.hashCode();
+      h = 31 * h + _admin;
+      h = 31 * h + Long.hashCode(_metric);
+      h = 31 * h + _nextHopIp.hashCode();
+      h = 31 * h + Boolean.hashCode(getNonRouting());
+      h = 31 * h + Boolean.hashCode(getNonForwarding());
+      // OspfRoute properties
+      h = 31 * h + Long.hashCode(_area);
+      // OspfExternalRoute properties
+      h = 31 * h + _advertiser.hashCode();
+      h = 31 * h + Long.hashCode(_costToAdvertiser);
+      h = 31 * h + Long.hashCode(_lsaMetric);
+
       _hashCode = h;
     }
     return h;
