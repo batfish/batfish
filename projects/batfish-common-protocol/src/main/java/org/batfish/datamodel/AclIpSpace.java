@@ -323,5 +323,5 @@ public class AclIpSpace extends IpSpace {
     return MoreObjects.toStringHelper(getClass()).add(PROP_LINES, _lines).toString();
   }
 
-  private volatile int _hashCode = 0;
+  private int _hashCode;
 }
