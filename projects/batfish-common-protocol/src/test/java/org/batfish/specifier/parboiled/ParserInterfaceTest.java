@@ -34,14 +34,24 @@ public class ParserInterfaceTest {
   }
 
   private static List<AutocompleteSuggestion> autoCompleteHelper(
+      String query, CompletionMetadata completionMetadata) {
+    return autoCompleteHelper(query, completionMetadata, new ReferenceLibrary(null));
+  }
+
+  private static List<AutocompleteSuggestion> autoCompleteHelper(
       String query, ReferenceLibrary referenceLibrary) {
+    return autoCompleteHelper(query, null, referenceLibrary);
+  }
+
+  private static List<AutocompleteSuggestion> autoCompleteHelper(
+      String query, CompletionMetadata completionMetadata, ReferenceLibrary referenceLibrary) {
     return ParboiledAutoComplete.autoComplete(
         Grammar.INTERFACE_SPECIFIER,
         "network",
         "snapshot",
         query,
         Integer.MAX_VALUE,
-        null,
+        completionMetadata,
         NodeRolesData.builder().build(),
         referenceLibrary);
   }
@@ -337,7 +347,7 @@ public class ParserInterfaceTest {
   }
 
   /**
-   * Test that address group rule is written in a way that allows for context sensitive
+   * Test that interface group rule is written in a way that allows for context sensitive
    * autocompletion
    */
   @Test
@@ -364,5 +374,36 @@ public class ParserInterfaceTest {
                 new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
                     "b1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()))));
+  }
+
+  /**
+   * Test that interface rules are written in a way that allows for context sensitive autocompletion
+   */
+  @Test
+  public void testContextSensitiveInterfaceName() {
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder()
+            .setInterfaces(
+                ImmutableSet.of(
+                    new NodeInterfacePair("n1a", "eth11"),
+                    new NodeInterfacePair("n1a", "eth12"),
+                    new NodeInterfacePair("n2a", "eth21")))
+            .build();
+
+    String query = "n1a[eth1";
+
+    // only eth11 and eth12 should be suggested
+    assertThat(
+        ImmutableSet.copyOf(autoCompleteHelper(query, completionMetadata)),
+        equalTo(
+            ImmutableSet.of(
+                new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion("\\", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion("&", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion("]", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion(
+                    "eth11", true, null, AutocompleteSuggestion.DEFAULT_RANK, 4),
+                new AutocompleteSuggestion(
+                    "eth12", true, null, AutocompleteSuggestion.DEFAULT_RANK, 4))));
   }
 }

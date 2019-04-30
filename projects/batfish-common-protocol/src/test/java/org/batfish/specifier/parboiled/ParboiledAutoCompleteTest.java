@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.InterfaceGroup;
 import org.batfish.referencelibrary.ReferenceBook;
@@ -47,7 +48,11 @@ public class ParboiledAutoCompleteTest {
 
   private static ParboiledAutoComplete getTestPAC(
       String query, CompletionMetadata completionMetadata) {
-    TestParser parser = TestParser.instance();
+    return getTestPAC(TestParser.instance(), query, completionMetadata);
+  }
+
+  private static ParboiledAutoComplete getTestPAC(
+      TestParser parser, String query, CompletionMetadata completionMetadata) {
     return new ParboiledAutoComplete(
         parser,
         parser.getInputRule(),
@@ -79,6 +84,15 @@ public class ParboiledAutoCompleteTest {
         NodeRolesData.builder().build(),
         referenceLibrary);
   }
+
+  private static CompletionMetadata testCompletionMetadata =
+      CompletionMetadata.builder()
+          .setInterfaces(
+              ImmutableSet.of(
+                  new NodeInterfacePair("n1a", "eth11"),
+                  new NodeInterfacePair("n1a", "eth12"),
+                  new NodeInterfacePair("n2a", "eth21")))
+          .build();
 
   private static ReferenceLibrary testLibrary =
       new ReferenceLibrary(
@@ -318,6 +332,125 @@ public class ParboiledAutoCompleteTest {
         new PotentialMatch(
             new PathElement(Type.IP_ADDRESS_MASK, "label", 0, 0), "pfx", ImmutableList.of());
     assertThat(getTestPAC(null).autoCompletePotentialMatch(pm), equalTo(ImmutableList.of()));
+  }
+
+  /** Throw an exception if anchor is not present in the path */
+  @Test
+  public void testAutoCompleteInterfaceNameMissingAnchor() {
+    PotentialMatch pm =
+        new PotentialMatch(
+            new PathElement(Type.INTERFACE_NAME, null, 0, 0), "", ImmutableList.of());
+
+    _thrown.expect(IllegalArgumentException.class);
+    getTestPAC("@specifier(g1,", testCompletionMetadata).autoCompleteInterfaceName(pm, 0);
+  }
+
+  /** Context-sensitive completion of interface name after node name */
+  @Test
+  public void testAutoCompleteInterfaceNameNodeName() {
+    String query = "n1a";
+
+    // the expected stack for the query
+    DefaultValueStack<AstNode> vs = new DefaultValueStack<>();
+    vs.push(new NameNodeAstNode("n1a"));
+    ShadowStack ss = new ShadowStack(vs);
+
+    TestParser parser = TestParser.instance();
+    parser.setShadowStack(ss);
+
+    ParboiledAutoComplete pac = getTestPAC(parser, query, testCompletionMetadata);
+
+    PathElement anchor = new PathElement(Type.INTERFACE_NAME, null, 1, query.length());
+    PathElement parent = new PathElement(Type.NODE_AND_INTERFACE, null, 0, 0);
+    PotentialMatch pm = new PotentialMatch(anchor, "", ImmutableList.of(parent, anchor));
+
+    assertThat(
+        ImmutableSet.copyOf(pac.autoCompleteInterfaceName(pm, 0)),
+        equalTo(
+            ImmutableSet.of(
+                new AutocompleteSuggestion("eth11", true, null, 0, query.length()),
+                new AutocompleteSuggestion("eth12", true, null, 0, query.length()))));
+  }
+
+  /** Context-sensitive completion of interface name after node name regex */
+  @Test
+  public void testAutoCompleteInterfaceNameNodeNameRegex() {
+    String query = "/n1/";
+
+    // the expected stack for the query
+    DefaultValueStack<AstNode> vs = new DefaultValueStack<>();
+    vs.push(new NameRegexNodeAstNode("n1"));
+    ShadowStack ss = new ShadowStack(vs);
+
+    TestParser parser = TestParser.instance();
+    parser.setShadowStack(ss);
+
+    ParboiledAutoComplete pac = getTestPAC(parser, query, testCompletionMetadata);
+
+    PathElement anchor = new PathElement(Type.INTERFACE_NAME, null, 1, query.length());
+    PathElement parent = new PathElement(Type.NODE_AND_INTERFACE, null, 0, 0);
+    PotentialMatch pm = new PotentialMatch(anchor, "", ImmutableList.of(parent, anchor));
+
+    assertThat(
+        ImmutableSet.copyOf(pac.autoCompleteInterfaceName(pm, 0)),
+        equalTo(
+            ImmutableSet.of(
+                new AutocompleteSuggestion("eth11", true, null, 0, query.length()),
+                new AutocompleteSuggestion("eth12", true, null, 0, query.length()))));
+  }
+
+  /** Should fall back to all interfaces for complex node expressions */
+  @Test
+  public void testAutoCompleteInterfaceNameNodeComplex() {
+    String query = "@role(a, b)";
+
+    // the expected stack for the query
+    DefaultValueStack<AstNode> vs = new DefaultValueStack<>();
+    vs.push(new RoleNodeAstNode("a", "b"));
+    ShadowStack ss = new ShadowStack(vs);
+
+    TestParser parser = TestParser.instance();
+    parser.setShadowStack(ss);
+
+    ParboiledAutoComplete pac = getTestPAC(parser, query, testCompletionMetadata);
+
+    PathElement anchor = new PathElement(Type.INTERFACE_NAME, null, 1, query.length());
+    PathElement parent = new PathElement(Type.NODE_AND_INTERFACE, null, 0, 0);
+    PotentialMatch pm = new PotentialMatch(anchor, "", ImmutableList.of(parent, anchor));
+
+    assertThat(
+        ImmutableSet.copyOf(pac.autoCompleteInterfaceName(pm, 0)),
+        equalTo(
+            ImmutableSet.of(
+                new AutocompleteSuggestion("eth11", true, null, 0, query.length()),
+                new AutocompleteSuggestion("eth12", true, null, 0, query.length()),
+                new AutocompleteSuggestion("eth21", true, null, 0, query.length()))));
+  }
+
+  /** Context-sensitive completion of interface name when interface name prefix is present */
+  @Test
+  public void testAutoCompleteInterfaceNameInterfaceNamePrefix() {
+    String query = "n1a[eth12";
+
+    // the expected stack for the query
+    DefaultValueStack<AstNode> vs = new DefaultValueStack<>();
+    vs.push(new NameNodeAstNode("n1a"));
+    vs.push(new StringAstNode("eth12"));
+    ShadowStack ss = new ShadowStack(vs);
+
+    TestParser parser = TestParser.instance();
+    parser.setShadowStack(ss);
+
+    ParboiledAutoComplete pac = getTestPAC(parser, query, testCompletionMetadata);
+
+    PathElement anchor = new PathElement(Type.INTERFACE_NAME, null, 1, query.length());
+    PathElement parent = new PathElement(Type.NODE_AND_INTERFACE, null, 0, 0);
+    PotentialMatch pm = new PotentialMatch(anchor, "eth12", ImmutableList.of(parent, anchor));
+
+    assertThat(
+        ImmutableSet.copyOf(pac.autoCompleteInterfaceName(pm, 0)),
+        equalTo(
+            ImmutableSet.of(new AutocompleteSuggestion("eth12", true, null, 0, query.length()))));
   }
 
   /** Throw an exception if anchor is not present in the path */
