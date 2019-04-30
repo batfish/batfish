@@ -49,9 +49,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
   public static final String DEBUG_FLAG_ASSUME_ALL_UNIQUE = "compareSameName.assumeAllUnique";
 
   public static class CompareSameNameAnswerElement extends AnswerElement {
-
     private static final String PROP_EQUIVALENCE_SETS_MAP = "equivalenceSetsMap";
-
     private static final String PROP_NODES = "nodes";
 
     /** Equivalence sets are keyed by classname */
@@ -210,17 +208,11 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
    * different in the tenth router, the ACL is likely misconfigured on the tenth router.
    */
   public static final class CompareSameNameQuestion extends Question implements INodeRegexQuestion {
-
     private static final String PROP_COMPARE_GENERATED = "compareGenerated";
-
     private static final String PROP_EXCLUDED_NAMED_STRUCT_TYPES = "excludedNamedStructTypes";
-
     private static final String PROP_MISSING = "missing";
-
     private static final String PROP_NAMED_STRUCT_TYPES = "namedStructTypes";
-
     private static final String PROP_NODE_REGEX = "nodeRegex";
-
     private static final String PROP_SINGLETONS = "singletons";
 
     /** Whether to also compare auto-generated structures */

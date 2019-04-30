@@ -16,7 +16,6 @@ import org.batfish.datamodel.Names.Type;
 public class ServiceObjectGroup implements Comparable<ServiceObjectGroup>, Serializable {
 
   private static final long serialVersionUID = 1L;
-
   private static final String PROP_NAME = "name";
   private static final String PROP_SERVICES = "services";
 

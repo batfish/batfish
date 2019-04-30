@@ -22,7 +22,6 @@ public class Assertion {
   }
 
   private static final String PROP_TYPE = "type";
-
   private static final String PROP_EXPECT = "expect";
 
   private AssertionType _assertionType;

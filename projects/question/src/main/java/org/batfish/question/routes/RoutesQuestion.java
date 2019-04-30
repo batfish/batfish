@@ -50,13 +50,9 @@ public class RoutesQuestion extends Question {
   }
 
   private static final String PROP_NETWORK = "network";
-
   private static final String PROP_NODES = "nodes";
-
   private static final String PROP_PROTOCOLS = "protocols";
-
   private static final String PROP_RIB = "rib";
-
   private static final String PROP_VRFS = "vrfs";
 
   private static final String QUESTION_NAME = "routes";

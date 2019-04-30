@@ -16,7 +16,6 @@ import org.batfish.common.util.ComparableStructure;
 
 /** An access-list used to filter IPV6 routes */
 public class Route6FilterList extends ComparableStructure<String> {
-
   private static final String PROP_LINES = "lines";
 
   private static final long serialVersionUID = 1L;

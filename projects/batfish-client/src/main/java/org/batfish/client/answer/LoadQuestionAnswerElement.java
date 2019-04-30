@@ -7,11 +7,8 @@ import java.util.TreeSet;
 import org.batfish.datamodel.answers.AnswerElement;
 
 public class LoadQuestionAnswerElement extends AnswerElement {
-
   private static final String PROP_ADDED = "added";
-
   private static final String PROP_NUM_LOADED = "numLoaded";
-
   private static final String PROP_REPLACED = "replaced";
 
   private SortedSet<String> _added;

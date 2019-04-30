@@ -26,7 +26,6 @@ import org.batfish.datamodel.questions.Question;
 public class ClusterNodesQuestionPlugin extends QuestionPlugin {
 
   public static class ClusterNodesAnswerElement extends AnswerElement {
-
     private static final String PROP_CLUSTERS = "clusters";
 
     private List<Set<String>> _clusters;
@@ -297,13 +296,9 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
    * CompareSameName.
    */
   public static final class ClusterNodesQuestion extends Question {
-
     private static final String PROP_NAME_ONLY = "nameOnly";
-
     private static final String PROP_NAMED_STRUCT_TYPES = "namedStructTypes";
-
     private static final String PROP_NODE_REGEX = "nodeRegex";
-
     private static final String PROP_NUM_CLUSTERS = "numClusters";
 
     private SortedSet<String> _namedStructTypes;

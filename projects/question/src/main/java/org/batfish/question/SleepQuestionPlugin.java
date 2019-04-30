@@ -33,7 +33,6 @@ public class SleepQuestionPlugin extends QuestionPlugin {
 
   /** Since this is not really a question; we do not document it as such. */
   public static class SleepQuestion extends Question {
-
     private static final String PROP_DURATION = "duration";
 
     private long _durationMs;

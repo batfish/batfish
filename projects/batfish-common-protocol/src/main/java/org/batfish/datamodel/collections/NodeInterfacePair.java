@@ -15,7 +15,6 @@ import org.batfish.datamodel.Interface;
 /** Combination of node name and interface name */
 @ParametersAreNonnullByDefault
 public final class NodeInterfacePair implements Serializable, Comparable<NodeInterfacePair> {
-
   private static final String PROP_HOSTNAME = "hostname";
   private static final String PROP_INTERFACE = "interface";
   private static final long serialVersionUID = 1L;

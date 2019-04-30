@@ -18,7 +18,6 @@ import org.batfish.datamodel.dataplane.rib.RibGroup;
  * initiate connections.
  */
 public final class BgpPassivePeerConfig extends BgpPeerConfig {
-
   private static final String PROP_PEER_PREFIX = "peerPrefix";
 
   static final long serialVersionUID = 1L;

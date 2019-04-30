@@ -17,7 +17,6 @@ import org.batfish.datamodel.RoutingProtocol;
  * interface for the {@link ExitOutputIfaceStep}
  */
 public final class RouteInfo {
-
   private static final String PROP_PROTOCOL = "protocol";
   private static final String PROP_NETWORK = "network";
   private static final String PROP_NEXT_HOP_IP = "nextHopIp";

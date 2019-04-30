@@ -10,7 +10,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public final class AclTrace implements Serializable {
-
   private static final String PROP_EVENTS = "events";
 
   private static final long serialVersionUID = 1L;

@@ -88,13 +88,9 @@ public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
   public static final String AUTO_DIMENSION_PREFIX = "auto";
 
   public static final String AUTO_DIMENSION_PRIMARY = "auto0";
-
   private static final String PROP_NAME = "name";
-
   private static final String PROP_ROLES = "roles";
-
   private static final String PROP_ROLE_REGEXES = "roleRegexes";
-
   private static final String PROP_TYPE = "type";
 
   @Nonnull private final String _name;

@@ -110,45 +110,25 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
   }
 
   public static class NeighborsAnswerElement extends AnswerElement {
-
     private static final String PROP_EBGP_NEIGHBORS = "ebgpNeighbors";
-
     private static final String PROP_IBGP_NEIGHBORS = "ibgpNeighbors";
-
     private static final String PROP_LAYER1_NEIGHBORS = "layer1Neighbors";
-
     private static final String PROP_LAYER2_NEIGHBORS = "layer2Neighbors";
-
     private static final String PROP_LAYER3_NEIGHBORS = "layer3Neighbors";
-
     private static final String PROP_EIGRP_NEIGHBORS = "eigrpNeighbors";
-
     private static final String PROP_OSPF_NEIGHBORS = "ospfNeighbors";
-
     private static final String PROP_RIP_NEIGHBORS = "ripNeighbors";
-
     private static final String PROP_ROLE_EBGP_NEIGHBORS = "roleEbgpNeighbors";
-
     private static final String PROP_ROLE_EIGRP_NEIGHBORS = "roleEigrpNeighbors";
-
     private static final String PROP_ROLE_IBGP_NEIGHBORS = "roleIbgpNeighbors";
-
     private static final String PROP_ROLE_LAYER3_NEIGHBORS = "roleLayer3Neighbors";
-
     private static final String PROP_ROLE_OSPF_NEIGHBORS = "roleOspfNeighbors";
-
     private static final String PROP_ROLE_RIP_NEIGHBORS = "roleRipNeighbors";
-
     private static final String PROP_VERBOSE_EBGP_NEIGHBORS = "verboseEbgpNeighbors";
-
     private static final String PROP_VERBOSE_EIGRP_NEIGHBORS = "verboseEigrpNeighbors";
-
     private static final String PROP_VERBOSE_IBGP_NEIGHBORS = "verboseIbgpNeighbors";
-
     private static final String PROP_VERBOSE_LAYER3_NEIGHBORS = "verboseLayer3Neighbors";
-
     private static final String PROP_VERBOSE_OSPF_NEIGHBORS = "verboseOspfNeighbors";
-
     private static final String PROP_VERBOSE_RIP_NEIGHBORS = "verboseRipNeighbors";
 
     private SortedSet<IpEdge> _ebgpNeighbors;
@@ -964,15 +944,10 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
    * <p>Generally prefer {@link org.batfish.question.edges.EdgesQuestion}.
    */
   public static class NeighborsQuestion extends Question {
-
     private static final String PROP_NEIGHBOR_TYPES = "neighborTypes";
-
     private static final String PROP_NODES = "nodes";
-
     private static final String PROP_REMOTE_NODES = "remoteNodes";
-
     private static final String PROP_ROLE_DIMENSION = "roleDimension";
-
     private static final String PROP_STYLE = "style";
 
     private static final EdgeStyle DEFAULT_EDGE_STYLE = EdgeStyle.SUMMARY;

@@ -34,7 +34,6 @@ public class VrrpGroup extends ComparableStructure<Integer> {
   }
 
   private static final String PROP_PREEMPT = "preempt";
-
   private static final String PROP_PRIORITY = "priority";
 
   /** */

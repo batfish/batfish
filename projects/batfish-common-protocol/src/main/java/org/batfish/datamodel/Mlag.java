@@ -19,7 +19,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class Mlag implements Serializable {
   private static final long serialVersionUID = 1L;
-
   private static final String PROP_ID = "id";
   private static final String PROP_LOCAL_INTERFACE = "localInterface";
   private static final String PROP_PEER_ADDRESS = "peerAddress";

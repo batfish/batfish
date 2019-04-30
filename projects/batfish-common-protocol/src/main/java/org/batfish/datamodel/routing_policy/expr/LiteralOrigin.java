@@ -7,7 +7,6 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.routing_policy.Environment;
 
 public class LiteralOrigin extends OriginExpr {
-
   private static final String PROP_ORIGIN_TYPE = "originType";
 
   /** */

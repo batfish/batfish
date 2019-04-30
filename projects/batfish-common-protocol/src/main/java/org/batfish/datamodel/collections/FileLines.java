@@ -12,7 +12,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 public class FileLines {
-
   private static final String PROP_FILENAME = "filename";
   private static final String PROP_LINES = "lines";
 

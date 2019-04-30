@@ -18,7 +18,6 @@ import org.batfish.datamodel.visitors.VoidCommunitySetExprVisitor;
  * by {@link #getCommunity()}.
  */
 public class LiteralCommunity extends CommunitySetExpr {
-
   private static final String PROP_COMMUNITY = "community";
 
   private static final long serialVersionUID = 1L;

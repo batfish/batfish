@@ -12,7 +12,6 @@ import org.batfish.datamodel.questions.Question;
 public final class ParseWarningQuestion extends Question {
 
   private static final boolean DEFAULT_AGGREGATE_DUPLICATES = false;
-
   private static final String PROP_AGGREGATE_DUPLICATES = "aggregateDuplicates";
 
   private final boolean _aggregateDuplicates;

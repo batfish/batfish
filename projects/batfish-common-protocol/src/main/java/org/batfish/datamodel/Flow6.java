@@ -7,47 +7,26 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class)
 public final class Flow6 implements Comparable<Flow6> {
-
   private static final String PROP_DSCP = "dscp";
-
   private static final String PROP_DST_IP = "dstIp";
-
   private static final String PROP_DST_PORT = "dstPort";
-
   private static final String PROP_ECN = "ecn";
-
   private static final String PROP_FRAGMENT_OFFSET = "fragmentOffset";
-
   private static final String PROP_ICMP_CODE = "icmpCode";
-
   private static final String PROP_ICMP_TYPE = "icmpVar";
-
   private static final String PROP_INGRESS_NODE = "ingressNode";
-
   private static final String PROP_IP_PROTOCOL = "ipProtocol";
-
   private static final String PROP_SRC_IP = "srcIp";
-
   private static final String PROP_SRC_PORT = "srcPort";
-
   private static final String PROP_STATE = "state";
-
   private static final String PROP_TAG = "tag";
-
   private static final String PROP_TCP_FLAGS_ACK = "tcpFlagsAck";
-
   private static final String PROP_TCP_FLAGS_CWR = "tcpFlagsCwr";
-
   private static final String PROP_TCP_FLAGS_ECE = "tcpFlagsEce";
-
   private static final String PROP_TCP_FLAGS_FIN = "tcpFlagsFin";
-
   private static final String PROP_TCP_FLAGS_PSH = "tcpFlagsPsh";
-
   private static final String PROP_TCP_FLAGS_RST = "tcpFlagsRst";
-
   private static final String PROP_TCP_FLAGS_SYN = "tcpFlagsSyn";
-
   private static final String PROP_TCP_FLAGS_URG = "tcpFlagsUrg";
 
   private final int _dscp;

@@ -17,11 +17,8 @@ import org.batfish.specifier.SpecifierFactories;
 /** Lists neighbor relationships in the network as edges. */
 @ParametersAreNonnullByDefault
 public class EdgesQuestion extends Question {
-
   private static final String PROP_EDGE_TYPE = "edgeType";
-
   private static final String PROP_NODES = "nodes";
-
   private static final String PROP_REMOTE_NODES = "remoteNodes";
 
   @Nonnull private final EdgeType _edgeType;

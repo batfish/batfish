@@ -16,11 +16,8 @@ import org.batfish.specifier.SpecifierFactories;
 /** Return status of all IPSec sessions in the network */
 public class IpsecSessionStatusQuestion extends Question {
   static final Pattern DEFAULT_STATUS = Pattern.compile(".*");
-
   private static final String PROP_NODES = "nodes";
-
   private static final String PROP_REMOTE_NODES = "remoteNodes";
-
   private static final String PROP_STATUS = "status";
 
   private static final String QUESTION_NAME = "ipsecSessionStatus";

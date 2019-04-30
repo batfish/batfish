@@ -18,7 +18,6 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /** Represents the result of performing a traceroute for a {@link Flow} */
 public class FlowTrace implements Comparable<FlowTrace> {
-
   private static final String PROP_DISPOSITION = "disposition";
   private static final String PROP_HOPS = "hops";
   private static final String PROP_NOTES = "notes";

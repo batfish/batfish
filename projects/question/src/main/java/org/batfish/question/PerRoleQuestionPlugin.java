@@ -28,7 +28,6 @@ import org.batfish.role.NodeRoleDimension;
 public class PerRoleQuestionPlugin extends QuestionPlugin {
 
   public static class PerRoleAnswerElement extends AnswerElement {
-
     private static final String PROP_ANSWERS = "answers";
 
     private SortedMap<String, AnswerElement> _answers;
@@ -136,13 +135,9 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
    * sense to run the CompareSameName question on nodes that have the same role.
    */
   public static final class PerRoleQuestion extends Question {
-
     private static final String PROP_NODE_REGEX = "nodeRegex";
-
     private static final String PROP_QUESTION = "question";
-
     private static final String PROP_ROLES = "roles";
-
     private static final String PROP_ROLE_DIMENSION = "roleDimension";
 
     @Nonnull private NodesSpecifier _nodeRegex;

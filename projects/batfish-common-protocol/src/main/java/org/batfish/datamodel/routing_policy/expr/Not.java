@@ -19,7 +19,6 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 public final class Not extends BooleanExpr {
 
   private static final long serialVersionUID = 1L;
-
   private static final String PROP_EXPR = "expr";
   private final BooleanExpr _expr;
 

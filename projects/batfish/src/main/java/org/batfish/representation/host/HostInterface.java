@@ -18,19 +18,12 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Vrf;
 
 public class HostInterface implements Serializable {
-
   private static final String PROP_BANDWIDTH = "bandwidth";
-
   private static final String PROP_GATEWAY = "gateway";
-
   private static final String PROP_NAME = "name";
-
   private static final String PROP_OTHER_PREFIXES = "otherPrefixes";
-
   private static final String PROP_PREFIX = "prefix";
-
   private static final String PROP_SHARED = "shared";
-
   private static final String PROP_VRF = "vrf";
 
   /** */

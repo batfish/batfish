@@ -7,7 +7,6 @@ import org.batfish.datamodel.PathConstraints;
 
 /** A data class that allows specification of {@link PathConstraints} using string grammars. */
 public class PathConstraintsInput {
-
   private static final String PROP_START_LOCATION = "startLocation";
   private static final String PROP_TRANSIT_LOCATIONS = "transitLocations";
   private static final String PROP_FORBIDDEN_LOCATIONS = "forbiddenLocations";

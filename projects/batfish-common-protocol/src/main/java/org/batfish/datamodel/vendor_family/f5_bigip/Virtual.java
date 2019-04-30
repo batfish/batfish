@@ -21,7 +21,6 @@ import org.batfish.datamodel.Prefix6;
 /** Configuration for a pool of virtual services. */
 @ParametersAreNonnullByDefault
 public final class Virtual implements Serializable {
-
   private static final String PROP_DESCRIPTION = "description";
   private static final String PROP_DESTINATION = "destination";
   private static final String PROP_DESTINATION_PORT = "destinationPort";

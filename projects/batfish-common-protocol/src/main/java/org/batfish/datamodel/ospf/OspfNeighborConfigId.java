@@ -17,7 +17,6 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 @ParametersAreNonnullByDefault
 public final class OspfNeighborConfigId implements Serializable {
   private static final long serialVersionUID = 1;
-
   private static final String PROP_HOSTNAME = "hostname";
   private static final String PROP_VRF = "vrf";
   private static final String PROP_PROCESS = "process";

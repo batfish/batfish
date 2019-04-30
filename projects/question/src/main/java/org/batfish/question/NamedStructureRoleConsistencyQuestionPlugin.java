@@ -26,7 +26,6 @@ import org.batfish.role.OutliersHypothesis;
 public class NamedStructureRoleConsistencyQuestionPlugin extends QuestionPlugin {
 
   public static class NamedStructureRoleConsistencyAnswerElement extends AnswerElement {
-
     private static final String PROP_ANSWERS = "answers";
 
     private List<NamedStructureOutlierSet<?>> _answers;
@@ -99,11 +98,8 @@ public class NamedStructureRoleConsistencyQuestionPlugin extends QuestionPlugin 
    */
   public static final class NamedStructureRoleConsistencyQuestion
       extends AbstractRoleConsistencyQuestion {
-
     private static final String PROP_ROLE_DIMENSION = "roleDimension";
-
     private static final String PROP_STRUCT_TYPE = "structType";
-
     private static final String PROP_HYPOTHESIS = "hypothesis";
 
     @Nullable private String _roleDimension;

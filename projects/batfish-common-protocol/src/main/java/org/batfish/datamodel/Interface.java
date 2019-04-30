@@ -519,120 +519,64 @@ public final class Interface extends ComparableStructure<String> {
   public static final String UNSET_LOCAL_INTERFACE = "unset_local_interface";
 
   public static final String INVALID_LOCAL_INTERFACE = "invalid_local_interface";
-
   private static final String PROP_ACCESS_VLAN = "accessVlan";
-
   private static final String PROP_ACTIVE = "active";
-
   private static final String PROP_ADDITIONAL_ARP_IPS = "additionalArpIps";
-
   private static final String PROP_ALL_PREFIXES = "allPrefixes";
-
   private static final String PROP_ALLOWED_VLANS = "allowedVlans";
-
   private static final String PROP_AUTOSTATE = "autostate";
-
   private static final String PROP_BANDWIDTH = "bandwidth";
-
   private static final String PROP_CHANNEL_GROUP = "channelGroup";
-
   private static final String PROP_CHANNEL_GROUP_MEMBERS = "channelGroupMembers";
-
   private static final String PROP_CRYPTO_MAP = "cryptoMap";
-
   private static final String PROP_DECLARED_NAMES = "declaredNames";
-
   private static final String PROP_DESCRIPTION = "description";
-
   private static final String PROP_DHCP_RELAY_ADDRESSES = "dhcpRelayAddresses";
-
   private static final String PROP_EIGRP = "eigrp";
-
   private static final String PROP_ENCAPSULATION_VLAN = "encapsulationVlan";
-
   private static final String PROP_FIREWALL_SESSION_INTERFACE_INFO = "firewallSessionInterfaceInfo";
-
   private static final String PROP_HSRP_GROUPS = "hsrpGroups";
-
   private static final String PROP_HSRP_VERSION = "hsrpVersion";
-
   private static final String PROP_INBOUND_FILTER = "inboundFilter";
-
   private static final String PROP_INCOMING_FILTER = "incomingFilter";
-
   private static final String PROP_INCOMING_TRANSFORMATION = "incomingTransformation";
-
   private static final String PROP_INTERFACE_TYPE = "type";
-
   private static final String PROP_ISIS = "isis";
-
   private static final String PROP_ISIS_COST = "isisCost";
-
   private static final String PROP_ISIS_L1_INTERFACE_MODE = "isisL1InterfaceMode";
-
   private static final String PROP_ISIS_L2_INTERFACE_MODE = "isisL2InterfaceMode";
-
   private static final String PROP_MLAG_ID = "mlagId";
-
   private static final String PROP_MTU = "mtu";
-
   private static final String PROP_NATIVE_VLAN = "nativeVlan";
-
   private static final String PROP_OSPF_AREA = "ospfArea";
-
   private static final String PROP_OSPF_COST = "ospfCost";
-
   private static final String PROP_OSPF_DEAD_INTERVAL = "ospfDeadInterval";
-
   private static final String PROP_OSPF_ENABLED = "ospfEnabled";
-
   private static final String PROP_OSPF_HELLO_MULTIPLIER = "ospfHelloMultiplier";
-
   private static final String PROP_OSPF_INBOUND_DISTRIBUTE_LIST_POLICY =
       "ospfInboundDistributeListPolicy";
-
   private static final String PROP_OSPF_PASSIVE = "ospfPassive";
-
   private static final String PROP_OSPF_POINT_TO_POINT = "ospfPointToPoint";
-
   private static final String PROP_OSPF_PROCESS = "ospfProcess";
-
   private static final String PROP_OUTGOING_FILTER = "outgoingFilter";
-
   private static final String PROP_OUTGOING_TRANSFORMATION = "outgoingTransformation";
-
   private static final String PROP_POST_TRANSFORMATION_INCOMING_FILTER =
       "postTransformationIncomingFilter";
-
   private static final String PROP_PREFIX = "prefix";
-
   private static final String PROP_PRE_TRANSFORMATION_OUTGOING_FILTER =
       "preTransformationOutgoingFilter";
-
   private static final String PROP_PROXY_ARP = "proxyArp";
-
   private static final String PROP_RIP_ENABLED = "ripEnabled";
-
   private static final String PROP_RIP_PASSIVE = "ripPassive";
-
   private static final String PROP_ROUTING_POLICY = "routingPolicy";
-
   private static final String PROP_SPANNING_TREE_PORTFAST = "spanningTreePortfast";
-
   private static final String PROP_SPEED = "speed";
-
   private static final String PROP_SWITCHPORT = "switchport";
-
   private static final String PROP_SWITCHPORT_MODE = "switchportMode";
-
   private static final String PROP_SWITCHPORT_TRUNK_ENCAPSULATION = "switchportTrunkEncapsulation";
-
   private static final String PROP_VLAN = "vlan";
-
   private static final String PROP_VRF = "vrf";
-
   private static final String PROP_VRRP_GROUPS = "vrrpGroups";
-
   private static final String PROP_ZONE = "zone";
 
   private static final long serialVersionUID = 1L;

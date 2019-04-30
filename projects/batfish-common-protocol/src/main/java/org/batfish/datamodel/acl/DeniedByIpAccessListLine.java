@@ -11,11 +11,8 @@ import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.LineAction;
 
 public final class DeniedByIpAccessListLine implements TerminalTraceEvent {
-
   private static final String PROP_INDEX = "index";
-
   private static final String PROP_LINE_DESCRIPTION = "lineDescription";
-
   private static final String PROP_NAME = "name";
 
   private static final long serialVersionUID = 1L;
