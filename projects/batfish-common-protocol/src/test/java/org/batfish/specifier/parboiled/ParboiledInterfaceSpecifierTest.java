@@ -86,6 +86,12 @@ public class ParboiledInterfaceSpecifierTest {
                 .build()));
     build();
     assertThat(
+        new ParboiledInterfaceSpecifier(new InterfaceGroupInterfaceAstNode(book, interfaceGroup))
+            .resolve(_nodes, _ctxt),
+        contains(new NodeInterfacePair(_iface11)));
+
+    // reverse is also the same
+    assertThat(
         new ParboiledInterfaceSpecifier(new InterfaceGroupInterfaceAstNode(interfaceGroup, book))
             .resolve(_nodes, _ctxt),
         contains(new NodeInterfacePair(_iface11)));

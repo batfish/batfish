@@ -7,7 +7,6 @@ import org.batfish.datamodel.DiffieHellmanGroup;
 
 public class EspGroup implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private boolean _compression;

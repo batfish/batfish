@@ -5,11 +5,17 @@ import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ADMIN_DISTANCE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_AS_PATH;
 import static org.batfish.question.routes.RoutesAnswerer.COL_COMMUNITIES;
+import static org.batfish.question.routes.RoutesAnswerer.COL_LOCAL_PREF;
 import static org.batfish.question.routes.RoutesAnswerer.COL_METRIC;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NETWORK;
+import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP;
+import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_INTERFACE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NODE;
+import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_PROTOCOL;
+import static org.batfish.question.routes.RoutesAnswerer.COL_PROTOCOL;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_ENTRY_PRESENCE;
+import static org.batfish.question.routes.RoutesAnswerer.COL_TAG;
 import static org.batfish.question.routes.RoutesAnswerer.COL_VRF_NAME;
 import static org.batfish.question.routes.RoutesAnswererUtil.alignRouteRowAttributes;
 import static org.batfish.question.routes.RoutesAnswererUtil.computeNextHopNode;
@@ -21,6 +27,7 @@ import static org.batfish.question.routes.RoutesAnswererUtil.getRoutesDiff;
 import static org.batfish.question.routes.RoutesAnswererUtil.groupBgpRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.groupRoutes;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -63,6 +70,7 @@ import org.batfish.question.routes.RoutesAnswererTest.MockRib;
 import org.batfish.question.routes.RoutesAnswererUtil.RouteEntryPresenceStatus;
 import org.batfish.question.routes.RoutesQuestion.RibProtocol;
 import org.batfish.specifier.RoutingProtocolSpecifier;
+import org.hamcrest.Matcher;
 import org.junit.Test;
 
 /** Tests for {@link RoutesAnswererUtil} */
@@ -179,38 +187,41 @@ public class RoutesAnswererUtilTest {
             RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
             ".*",
             null);
-
-    assertThat(actual, hasSize(1));
-    Row row = actual.iterator().next();
     assertThat(
-        row,
-        allOf(
-            hasColumn(COL_NODE, equalTo(new Node("n1")), Schema.NODE),
-            hasColumn(COL_VRF_NAME, equalTo(Configuration.DEFAULT_VRF_NAME), Schema.STRING),
-            hasColumn(COL_NETWORK, equalTo(Prefix.parse("1.1.1.0/24")), Schema.PREFIX),
-            hasColumn(COL_NEXT_HOP_IP, equalTo(Ip.parse("1.1.1.2")), Schema.IP),
-            hasColumn(COL_ADMIN_DISTANCE, equalTo(10), Schema.INTEGER),
-            hasColumn(COL_METRIC, equalTo(30L), Schema.LONG)));
+        actual,
+        contains(
+            allOf(
+                hasColumn(COL_NODE, new Node("n1"), Schema.NODE),
+                hasColumn(COL_VRF_NAME, Configuration.DEFAULT_VRF_NAME, Schema.STRING),
+                hasColumn(COL_NETWORK, Prefix.parse("1.1.1.0/24"), Schema.PREFIX),
+                hasColumn(COL_NEXT_HOP_IP, Ip.parse("1.1.1.2"), Schema.IP),
+                hasColumn(COL_NEXT_HOP_INTERFACE, "dynamic", Schema.STRING),
+                hasColumn(COL_NEXT_HOP, nullValue(), Schema.STRING),
+                hasColumn(COL_PROTOCOL, "ospfE2", Schema.STRING),
+                hasColumn(COL_TAG, nullValue(), Schema.INTEGER),
+                hasColumn(COL_ADMIN_DISTANCE, equalTo(10), Schema.INTEGER),
+                hasColumn(COL_METRIC, equalTo(30L), Schema.LONG))));
   }
 
   @Test
   public void testBgpRibRouteColumnsValue() {
+    // Create two BGP routes: one standard route and one from a BGP unnumbered session
     Ip ip = Ip.parse("1.1.1.1");
+    Prefix prefix = Prefix.create(ip, MAX_PREFIX_LENGTH);
+    Ip bgpUnnumIp = Ip.parse("169.254.0.1");
+    Bgpv4Route.Builder rb =
+        Bgpv4Route.builder()
+            .setNetwork(prefix)
+            .setOriginType(OriginType.IGP)
+            .setCommunities(ImmutableSortedSet.of(65537L))
+            .setProtocol(RoutingProtocol.BGP)
+            .setOriginatorIp(Ip.parse("1.1.1.2"))
+            .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)));
+    Bgpv4Route standardRoute = rb.setNextHopIp(ip).build();
+    Bgpv4Route unnumRoute = rb.setNextHopIp(bgpUnnumIp).setNextHopInterface("iface").build();
+
     Table<String, String, Set<Bgpv4Route>> bgpRouteTable = HashBasedTable.create();
-    bgpRouteTable.put(
-        "node",
-        "vrf",
-        ImmutableSet.of(
-            new Builder()
-                .setNetwork(Prefix.create(ip, MAX_PREFIX_LENGTH))
-                .setOriginType(OriginType.IGP)
-                .setNextHopIp(ip)
-                .setCommunities(ImmutableSortedSet.of(65537L))
-                .setProtocol(RoutingProtocol.BGP)
-                .setOriginatorIp(Ip.parse("1.1.1.2"))
-                .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
-                .setTag(1)
-                .build()));
+    bgpRouteTable.put("node", "vrf", ImmutableSet.of(standardRoute, unnumRoute));
     Multiset<Row> rows =
         getBgpRibRoutes(
             bgpRouteTable,
@@ -220,24 +231,33 @@ public class RoutesAnswererUtilTest {
             RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
             ".*");
 
-    assertThat(rows, hasSize(1));
-
-    Row row = rows.iterator().next();
+    // Both routes should have the same values for these columns
+    Matcher<Row> commonMatcher =
+        allOf(
+            hasColumn(COL_NODE, new Node("node"), Schema.NODE),
+            hasColumn(COL_VRF_NAME, "vrf", Schema.STRING),
+            hasColumn(COL_NETWORK, prefix, Schema.PREFIX),
+            hasColumn(COL_PROTOCOL, "bgp", Schema.STRING),
+            hasColumn(COL_AS_PATH, "1 2", Schema.STRING),
+            hasColumn(COL_METRIC, 0, Schema.INTEGER),
+            hasColumn(COL_LOCAL_PREF, 0L, Schema.LONG),
+            hasColumn(COL_COMMUNITIES, ImmutableList.of("1:1"), Schema.list(Schema.STRING)),
+            hasColumn(COL_ORIGIN_PROTOCOL, nullValue(), Schema.STRING),
+            hasColumn(COL_TAG, nullValue(), Schema.INTEGER));
 
     assertThat(
-        row,
-        allOf(
-            hasColumn(COL_NODE, equalTo(new Node("node")), Schema.NODE),
-            hasColumn(COL_VRF_NAME, equalTo("vrf"), Schema.STRING),
-            hasColumn(COL_NETWORK, equalTo(Prefix.create(ip, MAX_PREFIX_LENGTH)), Schema.PREFIX),
-            hasColumn(COL_NEXT_HOP_IP, equalTo(ip), Schema.IP)));
-
-    assertThat(
-        row,
-        allOf(
-            hasColumn(
-                COL_COMMUNITIES, equalTo(ImmutableList.of("1:1")), Schema.list(Schema.STRING)),
-            hasColumn(COL_AS_PATH, equalTo("1 2"), Schema.STRING)));
+        rows,
+        containsInAnyOrder(
+            // Standard route
+            allOf(
+                commonMatcher,
+                hasColumn(COL_NEXT_HOP_IP, ip, Schema.IP),
+                hasColumn(COL_NEXT_HOP_INTERFACE, "dynamic", Schema.STRING)),
+            // Route from BGP unnumbered session
+            allOf(
+                commonMatcher,
+                hasColumn(COL_NEXT_HOP_IP, nullValue(), Schema.IP),
+                hasColumn(COL_NEXT_HOP_INTERFACE, "iface", Schema.STRING))));
   }
 
   @Test

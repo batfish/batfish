@@ -5,9 +5,10 @@ import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.graph.ImmutableNetwork;
-import com.google.common.graph.MutableNetwork;
-import com.google.common.graph.NetworkBuilder;
+import com.google.common.graph.EndpointPair;
+import com.google.common.graph.GraphBuilder;
+import com.google.common.graph.ImmutableGraph;
+import com.google.common.graph.MutableGraph;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -27,7 +28,7 @@ public final class VxlanTopology {
 
   @VisibleForTesting
   static void addVniEdge(
-      MutableNetwork<VxlanNode, VxlanEdge> graph,
+      MutableGraph<VxlanNode> graph,
       Map<Vrf, String> vrfHostnames,
       Integer vni,
       Vrf vrfTail,
@@ -37,17 +38,13 @@ public final class VxlanTopology {
     if (compatibleVniSettings(vniSettingsTail, vniSettingsHead)) {
       VxlanNode nodeTail = buildVxlanNode(vrfHostnames, vrfTail, vniSettingsTail);
       VxlanNode nodeHead = buildVxlanNode(vrfHostnames, vrfHead, vniSettingsHead);
-      VxlanEdge edge = buildVxlanEdge(vni, vniSettingsTail, nodeTail, nodeHead);
-      graph.addEdge(nodeTail, nodeHead, edge);
+      graph.putEdge(nodeTail, nodeHead);
     }
   }
 
   @VisibleForTesting
   static void addVniEdges(
-      MutableNetwork<VxlanNode, VxlanEdge> graph,
-      Map<Vrf, String> vrfHostnames,
-      Integer vni,
-      List<Vrf> vrfs) {
+      MutableGraph<VxlanNode> graph, Map<Vrf, String> vrfHostnames, Integer vni, List<Vrf> vrfs) {
     for (Vrf vrfTail : vrfs) {
       VniSettings vniSettingsTail = vrfTail.getVniSettings().get(vni);
       vrfs.stream()
@@ -60,32 +57,11 @@ public final class VxlanTopology {
   }
 
   @VisibleForTesting
-  static VxlanEdge buildVxlanEdge(
-      Integer vni, VniSettings vniSettingsCommon, VxlanNode nodeTail, VxlanNode nodeHead) {
-    VxlanEdge edge =
-        VxlanEdge.builder()
-            .setMulticastGroup(
-                vniSettingsCommon.getBumTransportMethod() == BumTransportMethod.MULTICAST_GROUP
-                    ? vniSettingsCommon.getBumTransportIps().first()
-                    : null)
-            .setTail(nodeTail)
-            .setHead(nodeHead)
-            .setUdpPort(vniSettingsCommon.getUdpPort())
-            .setVni(vni)
-            .build();
-    return edge;
-  }
-
-  @VisibleForTesting
   static VxlanNode buildVxlanNode(Map<Vrf, String> vrfHostnames, Vrf vrf, VniSettings vniSettings) {
-    VxlanNode node1 =
-        VxlanNode.builder()
-            .setHostname(vrfHostnames.get(vrf))
-            .setSourceAddress(vniSettings.getSourceAddress())
-            .setVlan(vniSettings.getVlan())
-            .setVrf(vrf.getName())
-            .build();
-    return node1;
+    return VxlanNode.builder()
+        .setHostname(vrfHostnames.get(vrf))
+        .setVni(vniSettings.getVni())
+        .build();
   }
 
   @VisibleForTesting
@@ -136,18 +112,17 @@ public final class VxlanTopology {
     return Collections.unmodifiableMap(vrfHostnames);
   }
 
-  private final ImmutableNetwork<VxlanNode, VxlanEdge> _graph;
+  private final ImmutableGraph<VxlanNode> _graph;
 
   public VxlanTopology(Map<String, Configuration> configurations) {
-    MutableNetwork<VxlanNode, VxlanEdge> graph =
-        NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build();
+    MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
     Map<Integer, List<Vrf>> vrfsByVni = initVniVrfAssociations(configurations);
     Map<Vrf, String> vrfHostnames = initVrfHostnameMap(configurations);
     vrfsByVni.forEach((vni, vrfs) -> addVniEdges(graph, vrfHostnames, vni, vrfs));
-    _graph = ImmutableNetwork.copyOf(graph);
+    _graph = ImmutableGraph.copyOf(graph);
   }
 
-  public Set<VxlanEdge> getEdges() {
+  public Set<EndpointPair<VxlanNode>> getEdges() {
     return ImmutableSet.copyOf(_graph.edges());
   }
 }

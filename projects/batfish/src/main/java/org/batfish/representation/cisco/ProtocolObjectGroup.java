@@ -8,7 +8,6 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 
 public class ProtocolObjectGroup extends ObjectGroup {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final List<ProtocolObjectGroupLine> _lines;

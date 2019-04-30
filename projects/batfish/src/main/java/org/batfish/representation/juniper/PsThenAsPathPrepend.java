@@ -13,7 +13,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 /** A {@link Statement} that prepends AS numbers to AS paths. */
 public final class PsThenAsPathPrepend extends PsThen {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final List<Long> _asPath;

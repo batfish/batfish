@@ -246,15 +246,15 @@ public class ParserIpSpaceTest {
                     .setAddressGroups(ImmutableList.of(new AddressGroup(null, "g2")))
                     .build()));
 
-    String query = "@addressGroup(g1,";
+    String query = "@addressGroup(b1,";
 
-    // only b1 should be suggested
+    // only g1 should be suggested
     assertThat(
         ImmutableSet.copyOf(autoCompleteHelper(query, library)),
         equalTo(
             ImmutableSet.of(
                 new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
-                    "b1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()))));
+                    "g1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()))));
   }
 }

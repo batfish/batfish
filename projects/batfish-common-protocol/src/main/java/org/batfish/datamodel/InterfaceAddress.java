@@ -10,7 +10,6 @@ import org.batfish.common.BatfishException;
 
 public final class InterfaceAddress implements Comparable<InterfaceAddress>, Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private Ip _ip;

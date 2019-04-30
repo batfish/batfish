@@ -1,11 +1,9 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_AND_REFERENCE_BOOK;
 import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.DEPRECATED;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME_REGEX;
-import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_AND_REFERENCE_BOOK;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME_REGEX;
@@ -16,11 +14,14 @@ import static org.batfish.specifier.parboiled.Anchor.Type.IP_PREFIX;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_PROTOCOL_NUMBER;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_RANGE;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_WILDCARD;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_INTERFACE;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_DIMENSION_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_TYPE;
+import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_ADDRESS_GROUP;
+import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_INTERFACE_GROUP;
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_NAME_REGEX;
@@ -276,6 +277,7 @@ public class Parser extends CommonParser {
     return FirstOf(InterfaceWithNode(), InterfaceWithoutNode(), InterfaceParens());
   }
 
+  @Anchor(NODE_AND_INTERFACE)
   public Rule InterfaceWithNode() {
     return Sequence(
         NodeTerm(),
@@ -378,9 +380,9 @@ public class Parser extends CommonParser {
   }
 
   /** Matches InterfaceGroup and ReferenceBook pair */
-  @Anchor(INTERFACE_GROUP_AND_REFERENCE_BOOK)
+  @Anchor(REFERENCE_BOOK_AND_INTERFACE_GROUP)
   public Rule InterfaceGroupAndReferenceBook() {
-    return Sequence("( ", InterfaceGroup(), ", ", ReferenceBook(), ") ");
+    return Sequence("( ", ReferenceBook(), ", ", InterfaceGroup(), ") ");
   }
 
   /** Matches Interface Group name */
@@ -611,9 +613,9 @@ public class Parser extends CommonParser {
   }
 
   /** Matches AddressGroup and ReferenceBook pair */
-  @Anchor(ADDRESS_GROUP_AND_REFERENCE_BOOK)
+  @Anchor(REFERENCE_BOOK_AND_ADDRESS_GROUP)
   public Rule AddressGroupAndReferenceBook() {
-    return Sequence("( ", AddressGroup(), ", ", ReferenceBook(), ") ");
+    return Sequence("( ", ReferenceBook(), ", ", AddressGroup(), ") ");
   }
 
   /** Matches AddressGroup name */

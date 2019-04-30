@@ -13,7 +13,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
  */
 public final class PsThenPreference extends PsThen {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final int _preference;

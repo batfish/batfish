@@ -23,7 +23,6 @@ public class If extends Statement {
   private static final String PROP_GUARD = "guard";
   private static final String PROP_TRUE_STATEMENTS = "trueStatements";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private List<Statement> _falseStatements;

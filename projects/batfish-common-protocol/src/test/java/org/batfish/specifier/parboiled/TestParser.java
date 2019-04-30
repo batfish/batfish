@@ -71,9 +71,9 @@ class TestParser extends CommonParser {
     return Sequence("! ", TestNot("! "), TestTerm());
   }
 
-  @Anchor(Type.ADDRESS_GROUP_AND_REFERENCE_BOOK)
+  @Anchor(Type.REFERENCE_BOOK_AND_ADDRESS_GROUP)
   public Rule TestSpecifierInput() {
-    return Sequence(TestAddressGroupName(), ", ", TestReferenceBookName());
+    return Sequence(TestReferenceBookName(), ", ", TestAddressGroupName());
   }
 
   @Anchor(Type.ADDRESS_GROUP_NAME)

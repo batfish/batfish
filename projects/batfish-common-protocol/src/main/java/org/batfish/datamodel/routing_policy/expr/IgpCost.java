@@ -4,7 +4,6 @@ import org.batfish.datamodel.routing_policy.Environment;
 
 public class IgpCost extends LongExpr {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Override

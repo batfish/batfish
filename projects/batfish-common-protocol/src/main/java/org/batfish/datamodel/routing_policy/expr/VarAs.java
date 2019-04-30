@@ -5,7 +5,6 @@ import org.batfish.datamodel.routing_policy.Environment;
 
 public class VarAs extends AsExpr {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private String _var;

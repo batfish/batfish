@@ -6,7 +6,6 @@ import org.batfish.datamodel.EncryptionAlgorithm;
 
 public class IkeProposal implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private DiffieHellmanGroup _dhGroup;

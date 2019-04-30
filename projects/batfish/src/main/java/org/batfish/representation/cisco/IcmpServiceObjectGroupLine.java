@@ -8,7 +8,6 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 
 public class IcmpServiceObjectGroupLine implements ServiceObjectGroupLine {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Override

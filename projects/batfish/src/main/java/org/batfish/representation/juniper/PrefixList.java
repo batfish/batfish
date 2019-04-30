@@ -7,7 +7,6 @@ import org.batfish.datamodel.Prefix;
 
 public class PrefixList implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private boolean _ipv6;

@@ -8,14 +8,14 @@ final class InterfaceGroupInterfaceAstNode implements InterfaceAstNode {
   private final String _interfaceGroup;
   private final String _referenceBook;
 
-  InterfaceGroupInterfaceAstNode(AstNode interfaceGroup, AstNode referenceBook) {
-    checkArgument(interfaceGroup instanceof StringAstNode, "interfaceGroup must be a string");
+  InterfaceGroupInterfaceAstNode(AstNode referenceBook, AstNode interfaceGroup) {
     checkArgument(referenceBook instanceof StringAstNode, "referenceBook must be a string");
+    checkArgument(interfaceGroup instanceof StringAstNode, "interfaceGroup must be a string");
     _interfaceGroup = ((StringAstNode) interfaceGroup).getStr();
     _referenceBook = ((StringAstNode) referenceBook).getStr();
   }
 
-  InterfaceGroupInterfaceAstNode(String interfaceGroup, String referenceBook) {
+  InterfaceGroupInterfaceAstNode(String referenceBook, String interfaceGroup) {
     _interfaceGroup = interfaceGroup;
     _referenceBook = referenceBook;
   }

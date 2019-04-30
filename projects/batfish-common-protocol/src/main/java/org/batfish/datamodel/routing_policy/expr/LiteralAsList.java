@@ -15,7 +15,6 @@ import org.batfish.datamodel.routing_policy.Environment;
 public final class LiteralAsList extends AsPathListExpr {
   private static final String PROP_LIST = "list";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Nonnull private List<AsExpr> _list;

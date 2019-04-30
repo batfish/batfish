@@ -17,6 +17,7 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
 
   private static final long serialVersionUID = 1L;
   private static final Interner<OspfIntraAreaRoute> _cache = Interners.newWeakInterner();
+  private int _hashCode;
 
   @JsonCreator
   private static OspfIntraAreaRoute jsonCreator(
@@ -69,7 +70,17 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_network, _admin, _area, _metric, _nextHopIp);
+    int h = _hashCode;
+    if (h == 0) {
+      h = _network.hashCode();
+      h = 31 * h + Integer.hashCode(_admin);
+      h = 31 * h + Long.hashCode(_area);
+      h = 31 * h + Long.hashCode(_metric);
+      h = 31 * h + _nextHopIp.hashCode();
+
+      _hashCode = h;
+    }
+    return h;
   }
 
   @Override

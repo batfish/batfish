@@ -14,7 +14,6 @@ import org.batfish.datamodel.routing_policy.Result;
 @ParametersAreNonnullByDefault
 public final class SetIsisMetricType extends Statement {
   private static final String PROP_METRIC_TYPE = "metricType";
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Nonnull private IsisMetricType _metricType;

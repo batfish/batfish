@@ -17,7 +17,6 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 
 public class SimpleExtendedAccessListServiceSpecifier implements AccessListServiceSpecifier {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   public static class Builder {

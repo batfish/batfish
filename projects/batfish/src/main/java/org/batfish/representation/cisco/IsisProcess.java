@@ -9,7 +9,6 @@ import org.batfish.datamodel.isis.IsisLevel;
 
 public class IsisProcess implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private IsisLevel _level;

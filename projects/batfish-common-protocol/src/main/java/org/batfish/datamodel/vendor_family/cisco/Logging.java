@@ -15,7 +15,6 @@ public class Logging implements Serializable {
 
   public static final int MAX_LOGGING_SEVERITY = 7;
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   public static final String SEVERITY_ALERTS = "alerts";

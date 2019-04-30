@@ -7,7 +7,6 @@ import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
 
 public class AsPathSet implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final List<AsPathSetElem> _elements;

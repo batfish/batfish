@@ -9,7 +9,6 @@ import org.batfish.datamodel.LineAction;
 
 public abstract class FwFromApplicationSetMember implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   public abstract void applyTo(

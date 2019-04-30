@@ -9,7 +9,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class RoutePolicySetIsisMetricType extends RoutePolicyStatement {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private IsisMetricType _type;

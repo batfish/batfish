@@ -2,7 +2,6 @@ package org.batfish.representation.juniper;
 
 public class NamedBgpGroup extends BgpGroup {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   public NamedBgpGroup(String name) {

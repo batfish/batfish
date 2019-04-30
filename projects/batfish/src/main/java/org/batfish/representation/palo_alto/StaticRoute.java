@@ -6,7 +6,6 @@ import org.batfish.datamodel.Prefix;
 
 public class StaticRoute implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   /* https://www.paloaltonetworks.com/documentation/80/pan-os/pan-os/networking/static-routes/static-route-overview */

@@ -18,7 +18,7 @@ public final class CanonicalAcl {
   private final Set<Integer> _linesInCycles;
   private final Set<Integer> _linesWithUndefinedReferences;
   private final IpAccessList _acl;
-  private volatile int _hashCode;
+  private int _hashCode;
 
   /**
    * @param sanitizedAcl {@link IpAccessList} represented by this CanonicalAcl with lines containing

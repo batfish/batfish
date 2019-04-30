@@ -12,7 +12,6 @@ import org.batfish.datamodel.routing_policy.expr.LongExpr;
 public final class SetLocalPreference extends Statement {
   private static final String PROP_LOCAL_PREFERENCE = "localPreference";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private LongExpr _localPreference;

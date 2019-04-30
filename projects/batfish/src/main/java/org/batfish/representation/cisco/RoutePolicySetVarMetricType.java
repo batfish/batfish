@@ -8,7 +8,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class RoutePolicySetVarMetricType extends RoutePolicyStatement {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private String _var;

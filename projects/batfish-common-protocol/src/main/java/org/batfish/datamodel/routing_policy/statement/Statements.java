@@ -32,7 +32,6 @@ public enum Statements {
   public static class StaticStatement extends Statement {
     private static final String PROP_TYPE = "type";
 
-    /** */
     private static final long serialVersionUID = 1L;
 
     private Statements _type;

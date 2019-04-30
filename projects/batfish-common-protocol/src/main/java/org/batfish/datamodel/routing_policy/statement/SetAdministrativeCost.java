@@ -19,7 +19,6 @@ import org.batfish.datamodel.routing_policy.expr.IntExpr;
 public final class SetAdministrativeCost extends Statement {
   private static final String PROP_ADMIN = "admin";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Nonnull private final IntExpr _admin;

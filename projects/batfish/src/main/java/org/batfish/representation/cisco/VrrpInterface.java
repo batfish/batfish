@@ -6,7 +6,6 @@ import java.util.TreeMap;
 
 public class VrrpInterface implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final SortedMap<Integer, VrrpGroup> _vrrpGroups;

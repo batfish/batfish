@@ -16,7 +16,6 @@ public class JuniperFamily implements Serializable {
       "rootAuthenticationEncryptedPassword";
   private static final String PROP_SYSTEM_AUTHENTICATION_ORDER = "systemAuthenticationOrder";
   private static final String PROP_TACPLUS_SERVERS = "tacplusServers";
-  /** */
   private static final long serialVersionUID = 1L;
 
   @VisibleForTesting public static final String CONSOLE_LINE_NAME = "console";

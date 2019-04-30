@@ -7,7 +7,6 @@ import org.batfish.datamodel.Route;
 
 public final class RoutesByVrf extends TreeMap<String, SortedSet<Route>> implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private boolean _unrecognized;

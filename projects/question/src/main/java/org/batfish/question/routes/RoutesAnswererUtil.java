@@ -10,6 +10,7 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_LOCAL_PREF;
 import static org.batfish.question.routes.RoutesAnswerer.COL_METRIC;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NETWORK;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP;
+import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_INTERFACE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NODE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_PROTOCOL;
@@ -62,6 +63,12 @@ import org.batfish.question.routes.RoutesQuestion.RibProtocol;
 import org.batfish.specifier.RoutingProtocolSpecifier;
 
 public class RoutesAnswererUtil {
+
+  /** IPs that are used internally and should not be exposed as next hop IPs */
+  private static final Set<Ip> INTERNAL_USE_IPS =
+      ImmutableSet.of(
+          // BGP unnumbered IP
+          Ip.parse("169.254.0.1"));
 
   public enum RouteEntryPresenceStatus {
     ONLY_IN_SNAPSHOT(TableDiff.COL_KEY_STATUS_ONLY_BASE),
@@ -221,11 +228,17 @@ public class RoutesAnswererUtil {
       AbstractRoute abstractRoute,
       Map<String, ColumnMetadata> columnMetadataMap,
       @Nullable Map<Ip, Set<String>> ipOwners) {
+    // If the route's next hop IP is for internal use, do not show it in the row
+    Ip nextHopIp =
+        INTERNAL_USE_IPS.contains(abstractRoute.getNextHopIp())
+            ? null
+            : abstractRoute.getNextHopIp();
     return Row.builder(columnMetadataMap)
         .put(COL_NODE, new Node(hostName))
         .put(COL_VRF_NAME, vrfName)
         .put(COL_NETWORK, abstractRoute.getNetwork())
-        .put(COL_NEXT_HOP_IP, abstractRoute.getNextHopIp())
+        .put(COL_NEXT_HOP_IP, nextHopIp)
+        .put(COL_NEXT_HOP_INTERFACE, abstractRoute.getNextHopInterface())
         .put(COL_NEXT_HOP, computeNextHopNode(abstractRoute.getNextHopIp(), ipOwners))
         .put(COL_PROTOCOL, abstractRoute.getProtocol())
         .put(
@@ -249,11 +262,15 @@ public class RoutesAnswererUtil {
       String vrfName,
       Bgpv4Route bgpv4Route,
       Map<String, ColumnMetadata> columnMetadataMap) {
+    // If the route's next hop IP is for internal use, do not show it in the row
+    Ip nextHopIp =
+        INTERNAL_USE_IPS.contains(bgpv4Route.getNextHopIp()) ? null : bgpv4Route.getNextHopIp();
     return Row.builder(columnMetadataMap)
         .put(COL_NODE, new Node(hostName))
         .put(COL_VRF_NAME, vrfName)
         .put(COL_NETWORK, bgpv4Route.getNetwork())
-        .put(COL_NEXT_HOP_IP, bgpv4Route.getNextHopIp())
+        .put(COL_NEXT_HOP_IP, nextHopIp)
+        .put(COL_NEXT_HOP_INTERFACE, bgpv4Route.getNextHopInterface())
         .put(COL_PROTOCOL, bgpv4Route.getProtocol())
         .put(COL_AS_PATH, bgpv4Route.getAsPath().getAsPathString())
         .put(COL_METRIC, bgpv4Route.getMetric())

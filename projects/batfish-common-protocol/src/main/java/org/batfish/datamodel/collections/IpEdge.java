@@ -11,7 +11,6 @@ public class IpEdge extends Pair<NodeIpPair, NodeIpPair> {
   private static final String PROP_NODE1 = "node1";
   private static final String PROP_NODE2 = "node2";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   public IpEdge(NodeIpPair p1, NodeIpPair p2) {

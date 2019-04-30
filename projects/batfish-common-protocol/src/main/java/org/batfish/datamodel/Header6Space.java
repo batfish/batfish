@@ -36,7 +36,6 @@ public class Header6Space implements Serializable {
   private static final String PROP_SRC_PORTS = "srcPorts";
   private static final String PROP_STATES = "states";
   private static final String PROP_TCP_FLAGS_MATCH_CONDITIONS = "tcpFlagsMatchConditions";
-  /** */
   private static final long serialVersionUID = 1L;
 
   private static boolean rangesContain(Collection<SubRange> ranges, int num) {
