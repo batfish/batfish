@@ -13,7 +13,7 @@ import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.BgpProcess;
-import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -79,7 +79,7 @@ public class Environment {
 
   private boolean _error;
 
-  private Bgpv4Route.Builder _intermediateBgpAttributes;
+  private BgpRoute.Builder<?, ?> _intermediateBgpAttributes;
 
   private final Map<String, IpAccessList> _ipAccessLists;
 
@@ -124,7 +124,7 @@ public class Environment {
       String defaultPolicy,
       Direction direction,
       boolean error,
-      Bgpv4Route.Builder intermediateBgpAttributes,
+      BgpRoute.Builder intermediateBgpAttributes,
       Map<String, IpAccessList> ipAccessLists,
       Map<String, Ip6AccessList> ip6AccessLists,
       boolean localDefaultAction,
@@ -210,7 +210,7 @@ public class Environment {
     return _error;
   }
 
-  public Bgpv4Route.Builder getIntermediateBgpAttributes() {
+  public BgpRoute.Builder<?, ?> getIntermediateBgpAttributes() {
     return _intermediateBgpAttributes;
   }
 
@@ -301,7 +301,7 @@ public class Environment {
     _error = error;
   }
 
-  public void setIntermediateBgpAttributes(Bgpv4Route.Builder intermediateBgpAttributes) {
+  public void setIntermediateBgpAttributes(BgpRoute.Builder intermediateBgpAttributes) {
     _intermediateBgpAttributes = intermediateBgpAttributes;
   }
 
@@ -328,7 +328,7 @@ public class Environment {
     private String _defaultPolicy;
     private Direction _direction;
     private boolean _error;
-    private Bgpv4Route.Builder _intermediateBgpAttributes;
+    private BgpRoute.Builder<?, ?> _intermediateBgpAttributes;
     private Map<String, Ip6AccessList> _ip6AccessLists;
     private Map<String, IpAccessList> _ipAccessLists;
     private boolean _localDefaultAction;
@@ -396,7 +396,7 @@ public class Environment {
       return this;
     }
 
-    public Builder setIntermediateBgpAttributes(Bgpv4Route.Builder intermediateBgpAttributes) {
+    public Builder setIntermediateBgpAttributes(BgpRoute.Builder<?, ?> intermediateBgpAttributes) {
       _intermediateBgpAttributes = intermediateBgpAttributes;
       return this;
     }

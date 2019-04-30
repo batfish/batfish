@@ -46,6 +46,9 @@ public abstract class BgpRoute extends AbstractRoute {
     }
 
     @Nonnull
+    public abstract B newBuilder();
+
+    @Nonnull
     @Override
     public abstract R build();
 

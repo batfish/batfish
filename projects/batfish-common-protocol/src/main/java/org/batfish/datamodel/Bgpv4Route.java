@@ -30,6 +30,12 @@ public final class Bgpv4Route extends BgpRoute {
 
     @Nonnull
     @Override
+    public Builder newBuilder() {
+      return new Builder();
+    }
+
+    @Nonnull
+    @Override
     public Bgpv4Route build() {
       checkArgument(_originatorIp != null, "Missing %s", PROP_ORIGINATOR_IP);
       checkArgument(_originType != null, "Missing %s", PROP_ORIGIN_TYPE);

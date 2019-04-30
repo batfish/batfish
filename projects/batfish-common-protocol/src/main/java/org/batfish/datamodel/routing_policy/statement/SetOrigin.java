@@ -2,7 +2,7 @@ package org.batfish.datamodel.routing_policy.statement;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
@@ -47,7 +47,7 @@ public class SetOrigin extends Statement {
 
   @Override
   public Result execute(Environment environment) {
-    Bgpv4Route.Builder bgpRoute = (Bgpv4Route.Builder) environment.getOutputRoute();
+    BgpRoute.Builder<?, ?> bgpRoute = (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
     OriginType originType = _origin.evaluate(environment);
     bgpRoute.setOriginType(originType);
     if (environment.getWriteToIntermediateBgpAttributes()) {

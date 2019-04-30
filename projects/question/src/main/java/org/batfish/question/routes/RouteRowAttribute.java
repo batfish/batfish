@@ -13,10 +13,10 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNullableByDefault;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
-import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.BgpRoute;
 
 /**
- * Contains the non-key attributes of {@link Bgpv4Route}s and {@link AbstractRoute}s and defines a
+ * Contains the non-key attributes of {@link BgpRoute}s and {@link AbstractRoute}s and defines a
  * sorting order for these attributes
  */
 @ParametersAreNullableByDefault

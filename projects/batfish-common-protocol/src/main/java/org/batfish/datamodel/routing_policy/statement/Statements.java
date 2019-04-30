@@ -3,7 +3,8 @@ package org.batfish.datamodel.routing_policy.statement;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.BgpRoute.Builder;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
@@ -72,10 +73,11 @@ public enum Statements {
 
         case RemovePrivateAs:
           {
-            Bgpv4Route.Builder bgpRouteBuilder = (Bgpv4Route.Builder) environment.getOutputRoute();
+            BgpRoute.Builder<?, ?> bgpRouteBuilder =
+                (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
             bgpRouteBuilder.setAsPath(bgpRouteBuilder.getAsPath().removePrivateAs());
             if (environment.getWriteToIntermediateBgpAttributes()) {
-              Bgpv4Route.Builder ir = environment.getIntermediateBgpAttributes();
+              BgpRoute.Builder<?, ?> ir = environment.getIntermediateBgpAttributes();
               ir.setAsPath(ir.getAsPath().removePrivateAs());
             }
             break;
@@ -118,13 +120,14 @@ public enum Statements {
 
         case SetWriteIntermediateBgpAttributes:
           if (environment.getIntermediateBgpAttributes() == null) {
-            Bgpv4Route.Builder ir = new Bgpv4Route.Builder();
-            environment.setIntermediateBgpAttributes(ir);
-            AbstractRoute or = environment.getOriginalRoute();
-            ir.setMetric(or.getMetric());
-            ir.setTag(or.getTag());
+            if (environment.getOutputRoute() instanceof BgpRoute.Builder<?, ?>) {
+              BgpRoute.Builder<?, ?> bgpRouteBuilder = (Builder<?, ?>) environment.getOutputRoute();
+              AbstractRoute or = environment.getOriginalRoute();
+              environment.setIntermediateBgpAttributes(
+                  bgpRouteBuilder.newBuilder().setMetric(or.getMetric()).setTag(or.getTag()));
+              environment.setWriteToIntermediateBgpAttributes(true);
+            }
           }
-          environment.setWriteToIntermediateBgpAttributes(true);
           break;
 
         case Suppress:

@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
@@ -44,7 +44,7 @@ public final class SetWeight extends Statement {
   @Override
   public Result execute(Environment environment) {
     int weight = _weight.evaluate(environment);
-    Bgpv4Route.Builder bgpRouteBuilder = (Bgpv4Route.Builder) environment.getOutputRoute();
+    BgpRoute.Builder<?, ?> bgpRouteBuilder = (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
     bgpRouteBuilder.setWeight(weight);
     return new Result();
   }

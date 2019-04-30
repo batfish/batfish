@@ -8,7 +8,7 @@ import java.util.Objects;
 import java.util.SortedSet;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
@@ -51,8 +51,8 @@ public final class AddCommunity extends Statement {
 
   @Override
   public Result execute(Environment environment) {
-    if (environment.getOutputRoute() instanceof Bgpv4Route.Builder) {
-      Bgpv4Route.Builder bgpRoute = (Bgpv4Route.Builder) environment.getOutputRoute();
+    if (environment.getOutputRoute() instanceof BgpRoute.Builder<?, ?>) {
+      BgpRoute.Builder<?, ?> bgpRoute = (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
       SortedSet<Long> communities = _expr.asLiteralCommunities(environment);
       bgpRoute.addCommunities(communities);
       if (environment.getWriteToIntermediateBgpAttributes()) {
