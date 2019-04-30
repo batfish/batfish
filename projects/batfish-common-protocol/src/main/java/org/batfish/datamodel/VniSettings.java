@@ -84,7 +84,7 @@ public final class VniSettings implements Serializable {
     return new Builder();
   }
 
-  public VniSettings(
+  private VniSettings(
       SortedSet<Ip> bumTransportIps,
       BumTransportMethod bumTransportMethod,
       @Nullable Ip sourceAddress,
