@@ -13,7 +13,6 @@ import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 /** A generic BGP route containing the common properties among different types of BGP routes */
@@ -55,8 +54,8 @@ public abstract class BgpRoute extends AbstractRoute {
      *
      * <p>For example while evaluating a {@link RoutingPolicy} and executing its statements we need
      * to create a completely new builder which should be of the same type as the builder in {@link
-     * Environment#_outputRoute} but we are not sure of the concrete type and only know that it is
-     * of type {@link Builder}.
+     * org.batfish.datamodel.routing_policy.Environment#_outputRoute} but we are not sure of the
+     * concrete type and only know that it is of type {@link Builder}.
      *
      * @return A completely new builder of type as any of the subclasses of {@link Builder} (equal
      *     to {@link B}).
