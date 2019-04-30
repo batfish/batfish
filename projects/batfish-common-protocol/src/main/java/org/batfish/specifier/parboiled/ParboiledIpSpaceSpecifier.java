@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -104,10 +105,22 @@ final class ParboiledIpSpaceSpecifier implements IpSpaceSpecifier {
     @Override
     @Nonnull
     public IpSpace visitAddressGroupAstNode(AddressGroupIpSpaceAstNode addressGroupIpSpaceAstNode) {
-      return ReferenceAddressGroupIpSpaceSpecifier.computeIpSpace(
-          addressGroupIpSpaceAstNode.getAddressGroup(),
-          addressGroupIpSpaceAstNode.getAddressBook(),
-          _ctxt);
+      // Because we changed the input on Apr 30 2019 from (group, book) to (book, group), we
+      // first interpret the user input as (book, group) if the book exists. Otherwise, we interpret
+      // it is as (group, book)
+      if (_ctxt.getReferenceBook(addressGroupIpSpaceAstNode.getReferenceBook()).isPresent()) {
+        return ReferenceAddressGroupIpSpaceSpecifier.computeIpSpace(
+            addressGroupIpSpaceAstNode.getAddressGroup(),
+            addressGroupIpSpaceAstNode.getReferenceBook(),
+            _ctxt);
+      } else if (_ctxt.getReferenceBook(addressGroupIpSpaceAstNode.getAddressGroup()).isPresent()) {
+        return ReferenceAddressGroupIpSpaceSpecifier.computeIpSpace(
+            addressGroupIpSpaceAstNode.getReferenceBook(),
+            addressGroupIpSpaceAstNode.getAddressGroup(),
+            _ctxt);
+      }
+      throw new NoSuchElementException(
+          "Reference book " + addressGroupIpSpaceAstNode.getReferenceBook() + " does not exist.");
     }
   }
 

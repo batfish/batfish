@@ -314,7 +314,7 @@ public class ParserUtilsTest {
         equalTo(
             ImmutableSet.of(
                 createSimplePotentialMatch(CHAR_LITERAL, "'\"'", 11),
-                createSimplePotentialMatch(ADDRESS_GROUP_NAME, "TestAddressGroupName", 11))));
+                createSimplePotentialMatch(REFERENCE_BOOK_NAME, "TestReferenceBookName", 11))));
   }
 
   @Test
@@ -327,7 +327,7 @@ public class ParserUtilsTest {
         equalTo(
             ImmutableSet.of(
                 createSimplePotentialMatch(CHAR_LITERAL, "'\"'", 13),
-                createSimplePotentialMatch(REFERENCE_BOOK_NAME, "TestReferenceBookName", 13))));
+                createSimplePotentialMatch(ADDRESS_GROUP_NAME, "TestAddressGroupName", 13))));
   }
 
   @Test

@@ -120,7 +120,7 @@ A specification for interfaces in the network.
 
 * `@connectedTo(ipSpec)` indicates all interfaces with configured IPv4 networks that overlap with specified IPs (see [`ipSpec`](#ip-specifier))
 
-* `@interfaceGroup(group, book)` looks in the configured reference library for an interface group with name 'group' and book with name 'book'.
+* `@interfaceGroup(book, group)` looks in the configured reference library for an interface group with name 'group' in book with name 'book'.
 
 * `@vrf(vrf1)` indicates all interfaces configured to be in the VRF with name 'vrf1'.
 
@@ -151,7 +151,7 @@ interfaceWithoutNodeTerm :=
 
 interfaceFunc :=
     <b>@connectedTo(</b>ipSpec<b>)</b>
-    | <b>@interfaceGroup(</b>&lt;<i>address-group-name</i>&gt;<b>,</b> &lt;<i>reference-book-name</i>&gt;<b>)</b>
+    | <b>@interfaceGroup(</b>&lt;<i>reference-book-name</i>&gt;<b>,</b> <&lt;<i>interface-group-name</i>&gt;<b>)</b>
     | <b>@vrf(</b>&lt;<i>vrf-name</i>&gt;<b>)</b>
     | <b>@zone(</b>&lt;<i>zone-name</i>&gt;<b>)</b>
 </pre>
@@ -202,7 +202,7 @@ A specification for a set of IPv4 addresses.
 
 * Constant values that denote addresses (e.g., `1.2.3.4`), prefixes (e.g., `1.2.3.0/24`), address ranges (e.g., `1.2.3.4 - 1.2.3.7`), and wildcards (e.g., `1.2.3.4:255.255.255.0`) may be used.
 
-* `@addressGroup(group, book)` looks in the configured reference library for an address group name 'group' and book name 'book'.
+* `@addressGroup(book, group)` looks in the configured reference library for an address group name 'group' in book name 'book'.
 
 * `locationSpec` can be used to denote addresses corresponding to the specified location (see [`locationSpec`](#location-specifier)).  For example, `as1border1[Ethernet0/0]` includes all IPv4 addresses configured on `as1border1` interface `Ethernet0/0`.
 
@@ -217,7 +217,7 @@ ipTerm :=
     | &lt;<i>ip-prefix</i>&gt;
     | &lt;<i>ip-address-low</i>&gt; <b>-</b> &lt;<i>ip-address-high</i>&gt;
     | &lt;<i>ip wildcard</i>&gt;
-    | <b>@addressGroup</b>(&lt;<i>address-group-name</i>&gt;<b>,</b> &lt;<i>reference-book-name</i>&gt;<b>)</b>
+    | <b>@addressGroup(</b>&lt;<i>reference-book-name</i>&gt;<b>,</b> &lt;<i>address-group-name</i>&gt;<b>)</b>
     | locationSpec
 </pre>
 
