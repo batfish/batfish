@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Ordering;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Comparator;
@@ -21,7 +22,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
@@ -832,9 +832,10 @@ public final class Configuration implements Serializable {
 
   public void simplifyRoutingPolicies() {
     NavigableMap<String, RoutingPolicy> simpleRoutingPolicies =
-        new TreeMap<>(
-            _routingPolicies.entrySet().stream()
-                .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().simplify())));
+        _routingPolicies.entrySet().stream()
+            .collect(
+                ImmutableSortedMap.toImmutableSortedMap(
+                    Ordering.natural(), Entry::getKey, e -> e.getValue().simplify()));
     _routingPolicies = simpleRoutingPolicies;
   }
 
