@@ -8,7 +8,6 @@ import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 
 public class RetainCommunity extends Statement {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private CommunitySetExpr _expr;

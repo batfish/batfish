@@ -8,7 +8,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class RoutePolicySetLevel extends RoutePolicySetStatement {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private IsisLevelExpr _level;

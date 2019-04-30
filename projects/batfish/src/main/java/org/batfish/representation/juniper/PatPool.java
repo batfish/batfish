@@ -9,7 +9,6 @@ import org.batfish.datamodel.transformation.PortField;
 import org.batfish.datamodel.transformation.TransformationStep;
 
 public class PatPool implements PortAddressTranslation, Serializable {
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final int _fromPort;

@@ -5,7 +5,6 @@ import org.batfish.datamodel.routing_policy.Environment;
 
 public class DecrementMetric extends LongExpr {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private long _subtrahend;

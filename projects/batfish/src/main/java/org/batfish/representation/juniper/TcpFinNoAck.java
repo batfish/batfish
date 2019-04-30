@@ -11,7 +11,6 @@ import org.batfish.datamodel.acl.AclLineMatchExprs;
 /** Represents a {@code ScreenOption} checking TCP flags with fin set but ack unset */
 public final class TcpFinNoAck implements ScreenOption {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private static final String TCP_FIN_NO_ACK = "tcp fin no ack";

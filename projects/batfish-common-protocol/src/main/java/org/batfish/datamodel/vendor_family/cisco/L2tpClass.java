@@ -6,7 +6,6 @@ import org.batfish.common.util.ComparableStructure;
 
 public class L2tpClass extends ComparableStructure<String> {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @JsonCreator

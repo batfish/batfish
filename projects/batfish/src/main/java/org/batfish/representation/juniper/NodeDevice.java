@@ -6,7 +6,6 @@ import java.util.TreeMap;
 
 public class NodeDevice implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final Map<String, Interface> _interfaces;

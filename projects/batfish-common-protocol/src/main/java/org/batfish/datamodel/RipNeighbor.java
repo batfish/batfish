@@ -13,7 +13,6 @@ public class RipNeighbor extends ComparableStructure<Pair<Ip, Ip>> {
     private static final String PROP_REMOTE_IP = "remoteIp";
     private static final String PROP_VRF = "vrf";
 
-    /** */
     private static final long serialVersionUID = 1L;
 
     private final Ip _localIp;
@@ -57,7 +56,6 @@ public class RipNeighbor extends ComparableStructure<Pair<Ip, Ip>> {
     }
   }
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private Interface _iface;

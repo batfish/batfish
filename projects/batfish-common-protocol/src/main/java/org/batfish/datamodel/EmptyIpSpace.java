@@ -7,7 +7,6 @@ public class EmptyIpSpace extends IpSpace {
 
   public static final IpSpace INSTANCE = new EmptyIpSpace();
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private EmptyIpSpace() {}

@@ -11,7 +11,6 @@ import org.batfish.datamodel.Prefix;
 
 public class StaticRoute implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   /* https://www.juniper.net/documentation/en_US/junos/topics/reference/general/routing-protocols-default-route-preference-values.html */

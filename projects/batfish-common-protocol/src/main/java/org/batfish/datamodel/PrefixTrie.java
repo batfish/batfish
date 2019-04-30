@@ -12,7 +12,6 @@ public class PrefixTrie implements Serializable {
 
   private class ByteTrie implements Serializable {
 
-    /** */
     private static final long serialVersionUID = 1L;
 
     private ByteTrieNode _root;
@@ -41,7 +40,6 @@ public class PrefixTrie implements Serializable {
 
   private class ByteTrieNode implements Serializable {
 
-    /** */
     private static final long serialVersionUID = 1L;
 
     private ByteTrieNode _left;
@@ -128,7 +126,6 @@ public class PrefixTrie implements Serializable {
     }
   }
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private SortedSet<Prefix> _prefixes;

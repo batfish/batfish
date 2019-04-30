@@ -54,7 +54,6 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
    */
   static class BatfishRecognitionException extends RecognitionException {
 
-    /** */
     private static final long serialVersionUID = 1L;
 
     public BatfishRecognitionException(

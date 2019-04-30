@@ -6,7 +6,6 @@ import java.util.Map;
 
 public final class PolicyStatement implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final PsTerm _defaultTerm;

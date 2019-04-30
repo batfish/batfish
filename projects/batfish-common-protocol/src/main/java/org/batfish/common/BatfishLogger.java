@@ -15,7 +15,6 @@ import javax.annotation.Nullable;
 public final class BatfishLogger {
 
   public static class BatfishLoggerHistory extends ArrayList<HistoryItem> {
-    /** */
     private static final long serialVersionUID = 1L;
 
     public String toString(int logLevel) {
@@ -30,7 +29,6 @@ public final class BatfishLogger {
   }
 
   private static class HistoryItem extends Pair<Integer, String> {
-    /** */
     private static final long serialVersionUID = 1L;
 
     private HistoryItem(int i, String s) {

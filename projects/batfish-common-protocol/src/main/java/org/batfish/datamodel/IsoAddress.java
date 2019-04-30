@@ -33,7 +33,6 @@ public final class IsoAddress implements Serializable {
 
   private static final int AREA_ID_OFFSET = 1;
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private static final int SYSTEM_ID_SIZE = 6;

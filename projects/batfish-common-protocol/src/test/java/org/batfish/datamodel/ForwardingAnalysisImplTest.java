@@ -1664,7 +1664,6 @@ public class ForwardingAnalysisImplTest {
 
   private static class MockIpSpace extends IpSpace {
 
-    /** */
     private static final long serialVersionUID = 1L;
 
     private final int _num;

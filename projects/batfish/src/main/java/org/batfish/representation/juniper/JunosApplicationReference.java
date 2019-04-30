@@ -2,7 +2,6 @@ package org.batfish.representation.juniper;
 
 public class JunosApplicationReference extends ApplicationSetMemberReference {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private JunosApplication _junosApplication;

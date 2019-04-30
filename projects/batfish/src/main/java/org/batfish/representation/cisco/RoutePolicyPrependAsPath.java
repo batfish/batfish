@@ -11,7 +11,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class RoutePolicyPrependAsPath extends RoutePolicyStatement {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private AsExpr _expr;

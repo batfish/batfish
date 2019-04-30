@@ -13,7 +13,6 @@ import org.batfish.datamodel.routing_policy.Environment;
 public final class LiteralRouteType extends RouteTypeExpr {
   private static final String PROP_TYPE = "type";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Nonnull private RouteType _type;

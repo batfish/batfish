@@ -7,7 +7,6 @@ public abstract class DataPlaneAnswerElement extends AnswerElement implements Se
 
   public static final String PROP_VERSION = "version";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @JsonProperty(PROP_VERSION)

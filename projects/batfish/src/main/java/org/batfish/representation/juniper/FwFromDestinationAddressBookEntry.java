@@ -12,7 +12,6 @@ import org.batfish.datamodel.IpSpaceReference;
 
 public final class FwFromDestinationAddressBookEntry extends FwFrom {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final String _addressBookEntryName;

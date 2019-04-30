@@ -2,7 +2,6 @@ package org.batfish.datamodel.vendor_family.cisco;
 
 public class Buffered extends LoggingType {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private Integer _size;

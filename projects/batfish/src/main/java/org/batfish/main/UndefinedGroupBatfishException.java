@@ -4,7 +4,6 @@ import org.batfish.common.BatfishException;
 
 public class UndefinedGroupBatfishException extends BatfishException {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   public UndefinedGroupBatfishException(String msg) {

@@ -26,7 +26,6 @@ import org.batfish.datamodel.routing_policy.Environment;
 public final class ExplicitAsPathSet extends AsPathSetExpr {
   private static final String PROP_ELEMS = "elems";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Nonnull private List<AsPathSetElem> _elems;

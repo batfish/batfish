@@ -9,7 +9,6 @@ import org.batfish.datamodel.routing_policy.expr.MatchMetric;
 
 public class RoutePolicyBooleanMed extends RoutePolicyBoolean {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private IntComparator _cmp;

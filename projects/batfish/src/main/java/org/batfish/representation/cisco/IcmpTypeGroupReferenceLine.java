@@ -7,7 +7,6 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 
 public class IcmpTypeGroupReferenceLine implements IcmpTypeObjectGroupLine {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final String _name;

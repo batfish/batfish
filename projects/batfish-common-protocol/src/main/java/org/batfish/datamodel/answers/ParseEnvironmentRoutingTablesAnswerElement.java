@@ -11,7 +11,6 @@ import org.batfish.common.Warnings;
 public class ParseEnvironmentRoutingTablesAnswerElement extends ParseAnswerElement
     implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private SortedMap<String, BatfishException.BatfishStackTrace> _errors;

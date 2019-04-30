@@ -5,7 +5,6 @@ import org.batfish.datamodel.Ip;
 
 /** Representation of a NAT pool for Cisco devices. */
 public final class NatPool implements Serializable {
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final Ip _first;

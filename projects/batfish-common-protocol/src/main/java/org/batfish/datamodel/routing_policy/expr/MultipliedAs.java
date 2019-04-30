@@ -16,7 +16,6 @@ public final class MultipliedAs extends AsPathListExpr {
   private static final String PROP_EXPR = "expr";
   private static final String PROP_NUMBER = "number";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Nonnull private AsExpr _expr;

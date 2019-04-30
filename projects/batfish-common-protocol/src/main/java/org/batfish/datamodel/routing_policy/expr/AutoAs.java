@@ -10,7 +10,6 @@ import org.batfish.datamodel.routing_policy.Environment.Direction;
 
 public class AutoAs extends AsExpr {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Override

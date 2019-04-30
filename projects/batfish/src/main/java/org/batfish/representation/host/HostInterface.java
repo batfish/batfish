@@ -26,7 +26,6 @@ public class HostInterface implements Serializable {
   private static final String PROP_SHARED = "shared";
   private static final String PROP_VRF = "vrf";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private Double _bandwidth = 1000 * 1000 * 1000.0; // default is 1 Gbps

@@ -9,7 +9,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class RoutePolicySetOspfMetricType extends RoutePolicyStatement {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private OspfMetricType _type;

@@ -11,7 +11,6 @@ import org.batfish.datamodel.acl.AclLineMatchExprs;
 /** Represents a {@code ScreenOption} checking both syn and fin flags are set in TCP packets */
 public final class TcpSynFin implements ScreenOption {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private static final String TCP_SYN_FIN = "tcp syn fin";

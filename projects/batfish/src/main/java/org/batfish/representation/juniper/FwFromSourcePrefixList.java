@@ -11,7 +11,6 @@ import org.batfish.datamodel.RouteFilterList;
 
 public final class FwFromSourcePrefixList extends FwFrom {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final String _name;

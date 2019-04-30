@@ -16,7 +16,6 @@ import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
  */
 public class RoutePolicyBooleanAsPathIsLocal extends RoutePolicyBoolean {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   public RoutePolicyBooleanAsPathIsLocal() {}

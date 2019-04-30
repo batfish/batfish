@@ -13,7 +13,6 @@ import org.batfish.datamodel.routing_policy.Environment;
 public final class IncrementMetric extends LongExpr {
   private static final String PROP_ADDEND = "addend";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Nonnull private long _addend;

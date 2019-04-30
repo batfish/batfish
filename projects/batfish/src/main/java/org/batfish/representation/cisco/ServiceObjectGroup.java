@@ -14,7 +14,6 @@ public class ServiceObjectGroup extends ObjectGroup {
     TCP_UDP
   }
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final List<ServiceObjectGroupLine> _lines;
