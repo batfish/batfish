@@ -65,14 +65,12 @@ public final class VniSettings implements Serializable {
   }
 
   public static final Integer DEFAULT_UDP_PORT = 4789;
-
   private static final String PROP_BUM_TRANSPORT_IPS = "bumTransportIps";
   private static final String PROP_BUM_TRANSPORT_METHOD = "bumTransportMethod";
   private static final String PROP_SOURCE_ADDRESS = "sourceAddress";
   private static final String PROP_UDP_PORT = "udpPort";
   private static final String PROP_VLAN = "vlan";
   private static final String PROP_VNI = "vni";
-
   private static final long serialVersionUID = 1L;
 
   private final SortedSet<Ip> _bumTransportIps;
@@ -109,10 +107,15 @@ public final class VniSettings implements Serializable {
       @Nullable @JsonProperty(PROP_UDP_PORT) Integer udpPort,
       @Nullable @JsonProperty(PROP_VLAN) Integer vlan,
       @Nullable @JsonProperty(PROP_VNI) Integer vni) {
+    SortedSet<Ip> deserializedBumTransportIps =
+        firstNonNull(bumTransportIps, ImmutableSortedSet.of());
     checkArgument(vni != null, "VNI must not be null.");
     checkArgument(bumTransportMethod != null, "BumTransportMethod must not be null.");
+    checkArgument(
+        bumTransportMethod != BumTransportMethod.MULTICAST_GROUP || bumTransportIps.size() <= 1,
+        "Cannot specify more than one multicast group.");
     return new VniSettings(
-        firstNonNull(bumTransportIps, ImmutableSortedSet.of()),
+        deserializedBumTransportIps,
         bumTransportMethod,
         sourceAddress,
         firstNonNull(udpPort, DEFAULT_UDP_PORT),
