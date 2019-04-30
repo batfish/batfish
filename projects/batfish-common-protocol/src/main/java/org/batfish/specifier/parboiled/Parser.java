@@ -16,6 +16,7 @@ import static org.batfish.specifier.parboiled.Anchor.Type.IP_PREFIX;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_PROTOCOL_NUMBER;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_RANGE;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_WILDCARD;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_INTERFACE;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_DIMENSION_NAME;
@@ -276,6 +277,7 @@ public class Parser extends CommonParser {
     return FirstOf(InterfaceWithNode(), InterfaceWithoutNode(), InterfaceParens());
   }
 
+  @Anchor(NODE_AND_INTERFACE)
   public Rule InterfaceWithNode() {
     return Sequence(
         NodeTerm(),
