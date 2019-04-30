@@ -237,13 +237,15 @@ public class EdgesAnswererTest {
 
     BgpActivePeerConfig activePeer1 =
         BgpActivePeerConfig.builder().setLocalIp(ip1).setLocalAs(1L).build();
-    bgp1.getActiveNeighbors().put(Prefix.create(ip2, 24), activePeer1);
-    BgpPeerConfigId activeId1 = new BgpPeerConfigId("host1", "vrf1", Prefix.create(ip2, 24), false);
+    bgp1.getActiveNeighbors().put(Prefix.create(ip2, Prefix.MAX_PREFIX_LENGTH), activePeer1);
+    BgpPeerConfigId activeId1 =
+        new BgpPeerConfigId("host1", "vrf1", Prefix.create(ip2, Prefix.MAX_PREFIX_LENGTH), false);
 
     BgpActivePeerConfig activePeer2 =
         BgpActivePeerConfig.builder().setLocalIp(ip2).setLocalAs(2L).build();
-    bgp2.getActiveNeighbors().put(Prefix.create(ip1, 24), activePeer2);
-    BgpPeerConfigId activeId2 = new BgpPeerConfigId("host2", "vrf2", Prefix.create(ip1, 24), false);
+    bgp2.getActiveNeighbors().put(Prefix.create(ip1, Prefix.MAX_PREFIX_LENGTH), activePeer2);
+    BgpPeerConfigId activeId2 =
+        new BgpPeerConfigId("host2", "vrf2", Prefix.create(ip1, Prefix.MAX_PREFIX_LENGTH), false);
 
     // Edge between unnumbered peers
     String iface1 = "iface1";
