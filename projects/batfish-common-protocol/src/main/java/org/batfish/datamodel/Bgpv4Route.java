@@ -187,26 +187,28 @@ public final class Bgpv4Route extends BgpRoute {
         .setWeight(_weight);
   }
 
-  private static final Comparator<BgpRoute> COMPARATOR =
-      Comparator.comparing(BgpRoute::getAsPath)
-          .thenComparing(BgpRoute::getClusterList, Comparators.lexicographical(Ordering.natural()))
-          .thenComparing(BgpRoute::getCommunities, Comparators.lexicographical(Ordering.natural()))
-          .thenComparing(BgpRoute::getDiscard)
-          .thenComparing(BgpRoute::getLocalPreference)
-          .thenComparing(BgpRoute::getNextHopInterface)
-          .thenComparing(BgpRoute::getOriginType)
-          .thenComparing(BgpRoute::getOriginatorIp)
-          .thenComparing(BgpRoute::getReceivedFromIp)
-          .thenComparing(BgpRoute::getReceivedFromRouteReflectorClient)
-          .thenComparing(BgpRoute::getSrcProtocol)
-          .thenComparing(BgpRoute::getWeight);
+  private static final Comparator<Bgpv4Route> COMPARATOR =
+      Comparator.comparing(Bgpv4Route::getAsPath)
+          .thenComparing(
+              Bgpv4Route::getClusterList, Comparators.lexicographical(Ordering.natural()))
+          .thenComparing(
+              Bgpv4Route::getCommunities, Comparators.lexicographical(Ordering.natural()))
+          .thenComparing(Bgpv4Route::getDiscard)
+          .thenComparing(Bgpv4Route::getLocalPreference)
+          .thenComparing(Bgpv4Route::getNextHopInterface)
+          .thenComparing(Bgpv4Route::getOriginType)
+          .thenComparing(Bgpv4Route::getOriginatorIp)
+          .thenComparing(Bgpv4Route::getReceivedFromIp)
+          .thenComparing(Bgpv4Route::getReceivedFromRouteReflectorClient)
+          .thenComparing(Bgpv4Route::getSrcProtocol)
+          .thenComparing(Bgpv4Route::getWeight);
 
   @Override
   public int routeCompare(@Nonnull AbstractRoute rhs) {
     if (getClass() != rhs.getClass()) {
       return 0;
     }
-    return COMPARATOR.compare(this, (BgpRoute) rhs);
+    return COMPARATOR.compare(this, (Bgpv4Route) rhs);
   }
 
   @Override
@@ -214,10 +216,10 @@ public final class Bgpv4Route extends BgpRoute {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof BgpRoute)) {
+    if (!(o instanceof Bgpv4Route)) {
       return false;
     }
-    BgpRoute other = (BgpRoute) o;
+    Bgpv4Route other = (Bgpv4Route) o;
     return Objects.equals(_network, other._network)
         && _admin == other._admin
         && getNonRouting() == other.getNonRouting()
