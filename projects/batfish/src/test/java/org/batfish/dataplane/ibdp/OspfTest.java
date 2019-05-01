@@ -266,9 +266,11 @@ public class OspfTest {
         (IncrementalDataPlane)
             engine.computeDataPlane(
                     configurations,
-                    topology,
-                    null,
-                    computeOspfTopology(NetworkConfigurations.of(configurations), topology),
+                    TopologyContext.builder()
+                        .setLayer3Topology(topology)
+                        .setOspfTopology(
+                            computeOspfTopology(NetworkConfigurations.of(configurations), topology))
+                        .build(),
                     Collections.emptySet())
                 ._dataPlane;
 
@@ -463,9 +465,11 @@ public class OspfTest {
         (IncrementalDataPlane)
             engine.computeDataPlane(
                     configurations,
-                    topology,
-                    null,
-                    computeOspfTopology(NetworkConfigurations.of(configurations), topology),
+                    TopologyContext.builder()
+                        .setLayer3Topology(topology)
+                        .setOspfTopology(
+                            computeOspfTopology(NetworkConfigurations.of(configurations), topology))
+                        .build(),
                     Collections.emptySet())
                 ._dataPlane;
 
