@@ -97,8 +97,8 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
         // AbstractRoute properties
         .setNetwork(getNetwork())
         .setNextHopIp(getNextHopIp())
-        .setAdmin(getAdministrativeCost())
-        .setMetric(getMetric())
+        .setAdmin(_admin)
+        .setMetric(_metric)
         .setNonForwarding(getNonForwarding())
         .setNonRouting(getNonRouting())
         // OspfIntraAreaRoute properties
@@ -111,7 +111,7 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
 
   public static final class Builder extends AbstractRouteBuilder<Builder, OspfIntraAreaRoute> {
 
-    private Long _area;
+    private long _area;
 
     @Override
     public OspfIntraAreaRoute build() {
