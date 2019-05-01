@@ -23,6 +23,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class OspfTopology {
 
+  /** Return an empty topology (no nodes and no edges) */
+  public static final OspfTopology EMPTY = new OspfTopology(ValueGraphBuilder.directed().build());
+
   @Nonnull private final ValueGraph<OspfNeighborConfigId, OspfSessionProperties> _graph;
 
   public OspfTopology(ValueGraph<OspfNeighborConfigId, OspfSessionProperties> graph) {
@@ -67,11 +70,6 @@ public final class OspfTopology {
     return _graph.predecessors(head).stream()
         .map(tail -> makeEdge(tail, head))
         .collect(ImmutableSet.toImmutableSet());
-  }
-
-  /** Return an empty topology (no nodes and no edges) */
-  public static OspfTopology empty() {
-    return new OspfTopology(ValueGraphBuilder.directed().build());
   }
 
   /**

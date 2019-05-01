@@ -40,11 +40,11 @@ public final class TopologyContext {
 
     private Builder() {
       _bgpTopology = BgpTopology.EMPTY;
-      _layer3Topology = new Topology(ImmutableSortedSet.of());
       _eigrpTopology = EigrpTopology.EMPTY;
       _isisTopology = IsisTopology.EMPTY;
       _layer2Topology = Layer2Topology.EMPTY;
-      _ospfTopology = OspfTopology.empty();
+      _layer3Topology = new Topology(ImmutableSortedSet.of());
+      _ospfTopology = OspfTopology.EMPTY;
       _vxlanTopology = VxlanTopology.EMPTY;
     }
 

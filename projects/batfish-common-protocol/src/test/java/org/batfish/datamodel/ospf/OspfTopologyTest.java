@@ -1,5 +1,6 @@
 package org.batfish.datamodel.ospf;
 
+import static org.batfish.datamodel.ospf.OspfTopology.EMPTY;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -24,7 +25,7 @@ public class OspfTopologyTest {
         ValueGraphBuilder.from(g1).build();
     g2.addNode(new OspfNeighborConfigId("h2", "vrf2", "p", "i2"));
     new EqualsTester()
-        .addEqualityGroup(OspfTopology.empty())
+        .addEqualityGroup(EMPTY)
         .addEqualityGroup(new OspfTopology(g1), new OspfTopology(g1))
         .addEqualityGroup(g2)
         .addEqualityGroup(new Object())
@@ -33,20 +34,20 @@ public class OspfTopologyTest {
 
   @Test
   public void testEmptyTopology() {
-    OspfTopology topo = OspfTopology.empty();
+    OspfTopology topo = EMPTY;
     assertThat(topo.getGraph().nodes(), empty());
   }
 
   @Test
   public void testGetNeighborsNonExistentNode() {
     OspfNeighborConfigId n = new OspfNeighborConfigId("h1", "vrf1", "p", "i1");
-    assertThat(OspfTopology.empty().neighbors(n), empty());
+    assertThat(EMPTY.neighbors(n), empty());
   }
 
   @Test
   public void testGetIncomingEdgesNonExistentNode() {
     OspfNeighborConfigId n = new OspfNeighborConfigId("h1", "vrf1", "p", "i1");
-    assertThat(OspfTopology.empty().incomingEdges(n), empty());
+    assertThat(EMPTY.incomingEdges(n), empty());
   }
 
   @Test
