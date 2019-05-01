@@ -11,6 +11,7 @@ import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.isis.IsisTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
+import org.batfish.datamodel.vxlan.VxlanTopology;
 
 /** Container for various topologies used during data plane computation. */
 @ParametersAreNonnullByDefault
@@ -24,6 +25,7 @@ public final class TopologyContext {
     private @Nonnull Layer2Topology _layer2Topology;
     private @Nonnull Topology _layer3Topology;
     private @Nonnull OspfTopology _ospfTopology;
+    private @Nonnull VxlanTopology _vxlanTopology;
 
     public @Nonnull TopologyContext build() {
       return new TopologyContext(
@@ -32,7 +34,8 @@ public final class TopologyContext {
           _isisTopology,
           _layer2Topology,
           _layer3Topology,
-          _ospfTopology);
+          _ospfTopology,
+          _vxlanTopology);
     }
 
     private Builder() {
@@ -42,6 +45,7 @@ public final class TopologyContext {
       _isisTopology = IsisTopology.EMPTY;
       _layer2Topology = Layer2Topology.EMPTY;
       _ospfTopology = OspfTopology.empty();
+      _vxlanTopology = VxlanTopology.EMPTY;
     }
 
     public @Nonnull BgpTopology getBgpTopology() {
@@ -66,6 +70,10 @@ public final class TopologyContext {
 
     public @Nonnull OspfTopology getOspfTopology() {
       return _ospfTopology;
+    }
+
+    public @Nonnull VxlanTopology getVxlanTopology() {
+      return _vxlanTopology;
     }
 
     public @Nonnull Builder setBgpTopology(BgpTopology bgpTopology) {
@@ -97,6 +105,11 @@ public final class TopologyContext {
       _ospfTopology = ospfTopology;
       return this;
     }
+
+    public @Nonnull Builder setVxlanTopology(VxlanTopology vxlanTopology) {
+      _vxlanTopology = vxlanTopology;
+      return this;
+    }
   }
 
   public static @Nonnull Builder builder() {
@@ -109,6 +122,7 @@ public final class TopologyContext {
   private final @Nonnull Layer2Topology _layer2Topology;
   private final @Nonnull Topology _layer3Topology;
   private final @Nonnull OspfTopology _ospfTopology;
+  private final @Nonnull VxlanTopology _vxlanTopology;
 
   private TopologyContext(
       BgpTopology bgpTopology,
@@ -116,13 +130,15 @@ public final class TopologyContext {
       IsisTopology isisTopology,
       Layer2Topology layer2Topology,
       Topology layer3Topology,
-      OspfTopology ospfTopology) {
+      OspfTopology ospfTopology,
+      VxlanTopology vxlanTopology) {
     _bgpTopology = bgpTopology;
     _eigrpTopology = eigrpTopology;
     _isisTopology = isisTopology;
     _layer2Topology = layer2Topology;
     _layer3Topology = layer3Topology;
     _ospfTopology = ospfTopology;
+    _vxlanTopology = vxlanTopology;
   }
 
   public @Nonnull BgpTopology getBgpTopology() {
@@ -149,6 +165,10 @@ public final class TopologyContext {
     return _ospfTopology;
   }
 
+  public @Nonnull VxlanTopology getVxlanTopology() {
+    return _vxlanTopology;
+  }
+
   @Override
   public boolean equals(@Nullable Object obj) {
     if (this == obj) {
@@ -163,7 +183,8 @@ public final class TopologyContext {
         && _isisTopology.equals(rhs._isisTopology)
         && _layer2Topology.equals(rhs._layer2Topology)
         && _layer3Topology.equals(rhs._layer3Topology)
-        && _ospfTopology.equals(rhs._ospfTopology);
+        && _ospfTopology.equals(rhs._ospfTopology)
+        && _vxlanTopology.equals(rhs._vxlanTopology);
   }
 
   @Override
@@ -174,7 +195,8 @@ public final class TopologyContext {
         _isisTopology,
         _layer2Topology,
         _layer3Topology,
-        _ospfTopology);
+        _ospfTopology,
+        _vxlanTopology);
   }
 
   public @Nonnull Builder toBuilder() {
@@ -184,6 +206,7 @@ public final class TopologyContext {
         .setIsisTopology(_isisTopology)
         .setLayer2Topology(_layer2Topology)
         .setLayer3Topology(_layer3Topology)
-        .setOspfTopology(_ospfTopology);
+        .setOspfTopology(_ospfTopology)
+        .setVxlanTopology(_vxlanTopology);
   }
 }
