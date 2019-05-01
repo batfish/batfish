@@ -51,8 +51,8 @@ public final class AddCommunity extends Statement {
 
   @Override
   public Result execute(Environment environment) {
-    if (environment.getOutputRoute() instanceof BgpRoute.Builder) {
-      BgpRoute.Builder bgpRoute = (BgpRoute.Builder) environment.getOutputRoute();
+    if (environment.getOutputRoute() instanceof BgpRoute.Builder<?, ?>) {
+      BgpRoute.Builder<?, ?> bgpRoute = (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
       SortedSet<Long> communities = _expr.asLiteralCommunities(environment);
       bgpRoute.addCommunities(communities);
       if (environment.getWriteToIntermediateBgpAttributes()) {

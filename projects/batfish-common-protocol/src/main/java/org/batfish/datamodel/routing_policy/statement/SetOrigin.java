@@ -46,7 +46,7 @@ public class SetOrigin extends Statement {
 
   @Override
   public Result execute(Environment environment) {
-    BgpRoute.Builder bgpRoute = (BgpRoute.Builder) environment.getOutputRoute();
+    BgpRoute.Builder<?, ?> bgpRoute = (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
     OriginType originType = _origin.evaluate(environment);
     bgpRoute.setOriginType(originType);
     if (environment.getWriteToIntermediateBgpAttributes()) {

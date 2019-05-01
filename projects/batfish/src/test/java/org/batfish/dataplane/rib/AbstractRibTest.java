@@ -14,6 +14,7 @@ import static org.junit.Assert.assertThat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OspfIntraAreaRoute;
@@ -307,12 +308,15 @@ public class AbstractRibTest {
 
     // First merge old route
     RibDelta<RipInternalRoute> delta = rib.mergeRouteGetDelta(oldRoute);
-    assertThat(delta.getActions().get(0), equalTo(new RouteAdvertisement<>(oldRoute)));
+    List<RouteAdvertisement<RipInternalRoute>> actions =
+        delta.getActions().collect(Collectors.toList());
+    assertThat(actions, contains(new RouteAdvertisement<>(oldRoute)));
     assertThat(delta.getRoutes(), hasItem(oldRoute));
 
     // Try re-merging, should get empty delta, because RIB has not changed
     delta = rib.mergeRouteGetDelta(oldRoute);
-    assertThat(delta.getActions(), empty());
+    actions = delta.getActions().collect(Collectors.toList());
+    assertThat(actions, empty());
 
     // Now replace with a newer route, check that one route removed, one added
     delta = rib.mergeRouteGetDelta(newRoute);
@@ -340,18 +344,17 @@ public class AbstractRibTest {
 
     // Remove
     RibDelta<StaticRoute> d = _rib.removeRouteGetDelta(_mostGeneralRoute);
+    List<RouteAdvertisement<StaticRoute>> actions = d.getActions().collect(Collectors.toList());
 
     // Check only route r remains
     assertThat(_rib.getTypedRoutes(), contains(r));
-    assertThat(
-        d.getActions().contains(new RouteAdvertisement<>(_mostGeneralRoute, Reason.WITHDRAW)),
-        equalTo(true));
+    assertThat(actions, contains(new RouteAdvertisement<>(_mostGeneralRoute, Reason.WITHDRAW)));
 
     // Remove route r
     d = _rib.removeRouteGetDelta(r);
+    actions = d.getActions().collect(Collectors.toList());
     assertThat(_rib.getTypedRoutes(), empty());
-    assertThat(
-        d.getActions().contains(new RouteAdvertisement<>(r, Reason.WITHDRAW)), equalTo(true));
+    assertThat(actions, contains(new RouteAdvertisement<>(r, Reason.WITHDRAW)));
   }
 
   /**

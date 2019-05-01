@@ -16,7 +16,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
@@ -107,14 +107,14 @@ public class CiscoConversionsBgpPoliciesTest {
    * and denies routes with prefix {@link #DENIED_PREFIX} or arbitrary other prefix.
    */
   private void testPolicyMatchesPrefixList(RoutingPolicy p, Direction direction) {
-    BgpRoute.Builder r =
-        BgpRoute.builder()
+    Bgpv4Route.Builder r =
+        Bgpv4Route.builder()
             .setOriginatorIp(PEER_ADDRESS)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.IBGP);
-    BgpRoute permitted = r.setNetwork(PERMITTED_PREFIX).build();
-    BgpRoute denied = r.setNetwork(DENIED_PREFIX).build();
-    BgpRoute unmatched = r.setNetwork(Prefix.parse("3.3.3.0/24")).build();
+    Bgpv4Route permitted = r.setNetwork(PERMITTED_PREFIX).build();
+    Bgpv4Route denied = r.setNetwork(DENIED_PREFIX).build();
+    Bgpv4Route unmatched = r.setNetwork(Prefix.parse("3.3.3.0/24")).build();
     assertThat(
         p.process(permitted, permitted.toBuilder(), PEER_ADDRESS, DEFAULT_VRF_NAME, direction),
         equalTo(true));
@@ -132,15 +132,15 @@ public class CiscoConversionsBgpPoliciesTest {
    * arbitrary other community.
    */
   private void testPolicyMatchesRouteMap(RoutingPolicy p, Direction direction) {
-    BgpRoute.Builder r =
-        BgpRoute.builder()
+    Bgpv4Route.Builder r =
+        Bgpv4Route.builder()
             .setNetwork(Prefix.parse("5.6.7.0/24"))
             .setOriginatorIp(PEER_ADDRESS)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.IBGP);
-    BgpRoute permitted = r.setCommunities(PERMITTED_COMMUNITY_SET).build();
-    BgpRoute denied = r.setCommunities(DENIED_COMMUNITY_SET).build();
-    BgpRoute unmatched = r.setCommunities(ImmutableSet.of(30L)).build();
+    Bgpv4Route permitted = r.setCommunities(PERMITTED_COMMUNITY_SET).build();
+    Bgpv4Route denied = r.setCommunities(DENIED_COMMUNITY_SET).build();
+    Bgpv4Route unmatched = r.setCommunities(ImmutableSet.of(30L)).build();
     assertThat(
         p.process(permitted, permitted.toBuilder(), PEER_ADDRESS, DEFAULT_VRF_NAME, direction),
         equalTo(true));
@@ -173,8 +173,8 @@ public class CiscoConversionsBgpPoliciesTest {
     assertThat(bgpExportPolicy, notNullValue());
     assertThat(_w.getRedFlagWarnings(), empty());
 
-    BgpRoute.Builder r =
-        BgpRoute.builder()
+    Bgpv4Route.Builder r =
+        Bgpv4Route.builder()
             .setOriginatorIp(PEER_ADDRESS)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.IBGP)
