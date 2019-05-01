@@ -2,10 +2,11 @@ package org.batfish.dataplane.rib;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpTieBreaker;
@@ -178,13 +179,14 @@ public class RibDeltaTest {
     builder.from(rib.mergeRouteGetDelta(oldGoodRoute));
     builder.from(rib.mergeRouteGetDelta(newGoodRoute));
 
-    RibDelta<BgpRoute> delta = builder.build();
-    assertThat(delta.getActions(), hasSize(2));
+    List<RouteAdvertisement<BgpRoute>> delta =
+        builder.build().getActions().collect(Collectors.toList());
     // Route withdrawn
     assertThat(
-        delta.getActions().get(0), equalTo(new RouteAdvertisement<>(oldGoodRoute, Reason.REPLACE)));
-    // Route added
-    assertThat(delta.getActions().get(1), equalTo(new RouteAdvertisement<>(newGoodRoute)));
+        delta,
+        contains(
+            equalTo(new RouteAdvertisement<>(oldGoodRoute, Reason.REPLACE)),
+            equalTo(new RouteAdvertisement<>(newGoodRoute))));
   }
 
   /** Test that the routes are exact route matches are removed from the RIB by default */

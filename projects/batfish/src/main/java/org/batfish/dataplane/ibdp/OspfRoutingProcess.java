@@ -722,7 +722,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   static Stream<RouteAdvertisement<OspfIntraAreaRoute>> transformIntraAreaRoutesOnExport(
       RibDelta<OspfIntraAreaRoute> delta, OspfArea areaConfig, Ip nextHopIp) {
     return delta
-        .getActionStream()
+        .getActions()
         /*
          * For intra-area routes, send the route to all neighbors in the same area as
          * the route's area
@@ -767,7 +767,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       Ip nextHopIp,
       @Nullable Long customMetric) {
     return delta
-        .getActionStream()
+        .getActions()
         /*
          * A regular (non-ABR) router can continue re-advertising
          * inter-area routes for area X in area X.
@@ -858,7 +858,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       return Stream.empty();
     }
     return delta
-        .getActionStream()
+        .getActions()
         // Only propagate routes from different areas
         .filter(r -> r.getRoute().getArea() != areaConfig.getAreaNumber())
         // Only propagate routes permitted by the filter list
@@ -896,7 +896,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       return Stream.empty();
     }
     return delta
-        .getActionStream()
+        .getActions()
         // Only propagate routes from different areas
         .filter(r -> r.getRoute().getArea() != areaConfig.getAreaNumber())
         // Only propagate routes permitted by the filter list
@@ -1157,11 +1157,11 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    */
   @Nonnull
   @VisibleForTesting
-  <T extends OspfExternalRoute> Collection<RouteAdvertisement<T>> filterExternalRoutesOnExport(
+  <T extends OspfExternalRoute> Stream<RouteAdvertisement<T>> filterExternalRoutesOnExport(
       RibDelta<T> delta, OspfArea areaConfig) {
     // No external routes can propagate into a stub area
     if (areaConfig.getStubType() == StubType.STUB) {
-      return ImmutableSet.of();
+      return Stream.of();
     }
 
     // If we're an ABR, do not propagate external routes to NSSAs that suppresses type 7 LSAs
@@ -1169,7 +1169,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
         && areaConfig.getNssa() != null
         && areaConfig.getNssa().getSuppressType7()
         && areaConfig.getStubType() == StubType.NSSA) {
-      return ImmutableSet.of();
+      return Stream.of();
     }
 
     return delta.getActions();
@@ -1184,10 +1184,9 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   @Nonnull
   @VisibleForTesting
   Collection<RouteAdvertisement<OspfExternalType1Route>> transformType1RoutesOnExport(
-      Collection<RouteAdvertisement<OspfExternalType1Route>> routeAdvertisements,
-      OspfArea areaConfig) {
+      Stream<RouteAdvertisement<OspfExternalType1Route>> routeAdvertisements, OspfArea areaConfig) {
     Long metricOverride = _process.getMaxMetricSummaryNetworks();
-    return routeAdvertisements.stream()
+    return routeAdvertisements
         .filter(
             /*
              * Route can propagate in the same area or, if crossing areas, only to/from area 0
@@ -1236,10 +1235,9 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    */
   @Nonnull
   @VisibleForTesting
-  Collection<RouteAdvertisement<OspfExternalType2Route>> transformType2RoutesOnExport(
-      Collection<RouteAdvertisement<OspfExternalType2Route>> routeAdvertisements,
-      OspfArea areaConfig) {
-    return routeAdvertisements.stream()
+  static Collection<RouteAdvertisement<OspfExternalType2Route>> transformType2RoutesOnExport(
+      Stream<RouteAdvertisement<OspfExternalType2Route>> routeAdvertisements, OspfArea areaConfig) {
+    return routeAdvertisements
         .map(
             r -> {
               final OspfExternalType2Route route = r.getRoute();
@@ -1386,7 +1384,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                       filterGeneratedRoutesOnExport(
                           _activatedGeneratedRoutes.getRoutes(),
                           areaConfig,
-                          OspfExternalType1Route.class),
+                          OspfExternalType1Route.class)
+                          .stream(),
                       areaConfig));
               neighborProcess.enqueueMessagesType2(
                   edge.reverse(),
@@ -1394,7 +1393,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                       filterGeneratedRoutesOnExport(
                           _activatedGeneratedRoutes.getRoutes(),
                           areaConfig,
-                          OspfExternalType2Route.class),
+                          OspfExternalType2Route.class)
+                          .stream(),
                       areaConfig));
             });
   }
@@ -1484,7 +1484,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                 .flatMap(m -> m.values().stream())
                 .flatMap(Queue::stream),
             // Deltas
-            _activatedGeneratedRoutes.getActionStream(),
+            _activatedGeneratedRoutes.getActions(),
             // RIB state
             Stream.of(_intraAreaRib, _interAreaRib, _type1Rib, _type2Rib)
                 .map(AbstractRib::getTypedRoutes))

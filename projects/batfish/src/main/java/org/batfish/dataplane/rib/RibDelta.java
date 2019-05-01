@@ -48,19 +48,9 @@ public final class RibDelta<R> {
     return _actions.keySet();
   }
 
-  /**
-   * Return all the RIB actions that need to be applied (in order)
-   *
-   * @return a list of {@link RouteAdvertisement}
-   */
-  @Nonnull
-  public List<RouteAdvertisement<R>> getActions() {
-    return getActionStream().collect(ImmutableList.toImmutableList());
-  }
-
   /** Return all the RIB actions that need to be applied (in order). */
   @Nonnull
-  public Stream<RouteAdvertisement<R>> getActionStream() {
+  public Stream<RouteAdvertisement<R>> getActions() {
     return _actions.values().stream().flatMap(List::stream);
   }
 
@@ -96,7 +86,7 @@ public final class RibDelta<R> {
   public static <T extends AbstractRoute, U extends T> void importDeltaToBuilder(
       RibDelta.Builder<AnnotatedRoute<T>> importer, RibDelta<U> exporter, String vrfName) {
     exporter
-        .getActionStream()
+        .getActions()
         .forEach(
             ra -> {
               AnnotatedRoute<T> tRoute = new AnnotatedRoute<>(ra.getRoute(), vrfName);
@@ -190,7 +180,7 @@ public final class RibDelta<R> {
     @Nonnull
     public <T extends R> Builder<R> from(RibDelta<T> delta) {
       delta
-          .getActionStream()
+          .getActions()
           .forEach(
               ra -> {
                 if (ra.isWithdrawn()) {
