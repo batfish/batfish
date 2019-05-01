@@ -10,7 +10,6 @@ import javax.annotation.Nullable;
  * contained value
  */
 public class LiteralCommunityHalf implements CommunityHalfExpr {
-
   private static final String PROP_VALUE = "value";
 
   private static final long serialVersionUID = 1L;

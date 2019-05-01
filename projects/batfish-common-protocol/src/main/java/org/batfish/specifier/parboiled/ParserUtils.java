@@ -6,7 +6,6 @@ import static org.batfish.specifier.parboiled.Anchor.Type.STRING_LITERAL;
 import static org.batfish.specifier.parboiled.Anchor.Type.WHITESPACE;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -16,8 +15,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.parboiled.errors.InvalidInputError;
 import org.parboiled.support.MatcherPath;
@@ -26,52 +23,6 @@ import org.parboiled.support.ParsingResult;
 /** A helper class to interpret parser errors */
 @ParametersAreNonnullByDefault
 final class ParserUtils {
-
-  /** Captures elements of paths that failed to match. */
-  @ParametersAreNonnullByDefault
-  static class PathElement {
-
-    @Nullable private final Anchor.Type _anchorType;
-    private final String _label;
-    private int _level;
-
-    PathElement(String label, int level, @Nullable Anchor.Type anchorType) {
-      _label = label;
-      _level = level;
-      if (anchorType != null) {
-        _anchorType = anchorType;
-      } else if (isStringLiteralLabel(label)) {
-        _anchorType = Anchor.Type.STRING_LITERAL;
-      } else if (isCharLiteralLabel(label)) {
-        _anchorType = CHAR_LITERAL;
-      } else {
-        _anchorType = null;
-      }
-    }
-
-    @Nullable
-    Anchor.Type getAnchorType() {
-      return _anchorType;
-    }
-
-    @Nonnull
-    String getLabel() {
-      return _label;
-    }
-
-    int getLevel() {
-      return _level;
-    }
-
-    @Override
-    public String toString() {
-      return MoreObjects.toStringHelper(getClass())
-          .add("label", _label)
-          .add("level", _level)
-          .add("anchorType", _anchorType)
-          .toString();
-    }
-  }
 
   static AstNode getAst(ParsingResult<AstNode> result) {
     if (!result.parseErrors.isEmpty()) {
@@ -150,19 +101,20 @@ final class ParserUtils {
     ImmutableSet.Builder<PotentialMatch> potentialMatches = ImmutableSet.builder();
 
     for (MatcherPath path : error.getFailedMatchers()) {
+      // convert the parboiled path to a list of PathElement
       List<PathElement> pathElements =
           IntStream.range(0, path.length())
-              .mapToObj(
-                  i ->
-                      new PathElement(
-                          path.getElementAtLevel(i).matcher.getLabel(),
-                          i,
-                          anchorTypes.get(path.getElementAtLevel(i).matcher.getLabel())))
+              .mapToObj(i -> PathElement.create(path.getElementAtLevel(i), anchorTypes))
               .collect(ImmutableList.toImmutableList());
 
       // at least one anchor should exist along every path
       if (!pathElements.stream().anyMatch(pe -> pe.getAnchorType() != null)) {
         throw new IllegalStateException(String.format("No anchor found for path %s", path));
+      }
+
+      // Do not consider DEPRECATED paths
+      if (pathElements.stream().anyMatch(e -> e.getAnchorType() == Anchor.Type.DEPRECATED)) {
+        continue;
       }
 
       Optional<PathElement> pathAnchorOpt =
@@ -174,36 +126,11 @@ final class ParserUtils {
         continue;
       }
 
-      // Build PotentialMatch objects from path anchor
       PathElement pathAnchor = pathAnchorOpt.get();
       String matchPrefix =
-          error
-              .getInputBuffer()
-              .extract(
-                  path.getElementAtLevel(pathAnchor.getLevel()).startIndex,
-                  path.element.startIndex);
+          error.getInputBuffer().extract(pathAnchor.getStartIndex(), path.element.startIndex);
 
-      if (pathAnchor.getAnchorType() == STRING_LITERAL
-          || pathAnchor.getAnchorType() == CHAR_LITERAL) {
-        // Remove quotes inserted by parboiled for completion suggestions
-        String fullToken = path.getElementAtLevel(pathAnchor.getLevel()).matcher.getLabel();
-        if (fullToken.length() >= 2) { // remove surrounding quotes
-          fullToken = fullToken.substring(1, fullToken.length() - 1);
-        }
-        potentialMatches.add(
-            new PotentialMatch(
-                pathAnchor.getAnchorType(),
-                matchPrefix,
-                fullToken,
-                path.getElementAtLevel(pathAnchor.getLevel()).startIndex));
-      } else {
-        potentialMatches.add(
-            new PotentialMatch(
-                pathAnchor.getAnchorType(),
-                matchPrefix,
-                null,
-                path.getElementAtLevel(pathAnchor.getLevel()).startIndex));
-      }
+      potentialMatches.add(new PotentialMatch(pathAnchor, matchPrefix, pathElements));
     }
 
     return potentialMatches.build();
@@ -263,11 +190,13 @@ final class ParserUtils {
         .findFirst();
   }
 
-  private static boolean isCharLiteralLabel(String label) {
+  @VisibleForTesting
+  static boolean isCharLiteralLabel(String label) {
     return label.startsWith("\'") && label.endsWith("\'");
   }
 
-  private static boolean isStringLiteralLabel(String label) {
+  @VisibleForTesting
+  static boolean isStringLiteralLabel(String label) {
     return label.startsWith("\"") && label.endsWith("\"");
   }
 }

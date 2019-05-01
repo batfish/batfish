@@ -12,9 +12,7 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.NetworkConfigurations;
 
 public final class Layer1Edge implements Comparable<Layer1Edge> {
-
   private static final String PROP_NODE1 = "node1";
-
   private static final String PROP_NODE2 = "node2";
 
   @JsonCreator

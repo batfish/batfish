@@ -12,53 +12,29 @@ import org.batfish.common.BatfishException;
  * @author Ryan Beckett
  */
 public class VerificationStats {
-
   private static final String PROP_AVERAGE_NUM_NODES = "avgNumNodes";
-
   private static final String PROP_MAX_NUM_NODES = "maxNumNodes";
-
   private static final String PROP_MIN_NUM_NODES = "minNumNodes";
-
   private static final String PROP_AVERAGE_NUM_EDGES = "avgNumEdges";
-
   private static final String PROP_MAX_NUM_EDGES = "maxNumEdges";
-
   private static final String PROP_MIN_NUM_EDGES = "minNumEdges";
-
   private static final String PROP_AVERAGE_NUM_VARS = "avgNumVariables";
-
   private static final String PROP_MAX_NUM_VARS = "maxNumVariables";
-
   private static final String PROP_MIN_NUM_VARS = "minNumVariables";
-
   private static final String PROP_AVERAGE_NUM_CONSTRAINTS = "avgNumConstraints";
-
   private static final String PROP_MAX_NUM_CONSTRAINTS = "maxNumConstraints";
-
   private static final String PROP_MIN_NUM_CONSTRAINTS = "minNumConstraints";
-
   private static final String PROP_AVERAGE_SOLVER_TIME = "avgSolverTime";
-
   private static final String PROP_MAX_SOLVER_TIME = "maxSolverTime";
-
   private static final String PROP_MIN_SOLVER_TIME = "minSolverTime";
-
   private static final String PROP_AVERAGE_COMPUTE_EC_TIME = "avgComputeEcTime";
-
   private static final String PROP_MAX_COMPUTE_EC_TIME = "maxComputeEcTime";
-
   private static final String PROP_MIN_COMPUTE_EC_TIME = "minComputeEcTime";
-
   private static final String PROP_AVERAGE_ENCODING_TIME = "avgEncodingTime";
-
   private static final String PROP_MAX_ENCODING_TIME = "maxEncodingTime";
-
   private static final String PROP_MIN_ENCODING_TIME = "minEncodingTime";
-
   private static final String PROP_TIME_CREATE_BDDS = "timeCreateBdds";
-
   private static final String PROP_TOTAL_TIME = "totalTime";
-
   private static final String PROP_NUM_ECS = "numEcs";
 
   private double _avgNumNodes;

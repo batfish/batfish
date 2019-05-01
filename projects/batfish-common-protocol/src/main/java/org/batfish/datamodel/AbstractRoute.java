@@ -45,6 +45,18 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
   private final boolean _nonRouting;
   private final boolean _nonForwarding;
 
+  /** The composite comparator for this class. */
+  private static final Comparator<AbstractRoute> COMPARATOR =
+      Comparator.comparing(AbstractRoute::getNetwork)
+          .thenComparingInt(AbstractRoute::getAdministrativeCost)
+          .thenComparing(AbstractRoute::getMetric)
+          .thenComparing(AbstractRoute::routeCompare)
+          .thenComparing(AbstractRoute::getNextHopIp)
+          .thenComparing(AbstractRoute::getNextHopInterface)
+          .thenComparingInt(AbstractRoute::getTag)
+          .thenComparing(AbstractRoute::getNonRouting)
+          .thenComparing(AbstractRoute::getNonForwarding);
+
   @JsonCreator
   protected AbstractRoute(
       @Nullable Prefix network, int admin, boolean nonRouting, boolean nonForwarding) {
@@ -63,17 +75,10 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
 
   @Override
   public final int compareTo(AbstractRouteDecorator rhs) {
-    int routeComparison =
-        Comparator.comparing(AbstractRoute::getNetwork)
-            .thenComparingInt(AbstractRoute::getAdministrativeCost)
-            .thenComparing(AbstractRoute::getMetric)
-            .thenComparing(AbstractRoute::routeCompare)
-            .thenComparing(AbstractRoute::getNextHopIp)
-            .thenComparing(AbstractRoute::getNextHopInterface)
-            .thenComparingInt(AbstractRoute::getTag)
-            .thenComparing(AbstractRoute::getNonRouting)
-            .thenComparing(AbstractRoute::getNonForwarding)
-            .compare(this, rhs.getAbstractRoute());
+    if (this == rhs) {
+      return 0;
+    }
+    int routeComparison = COMPARATOR.compare(this, rhs.getAbstractRoute());
     if (routeComparison != 0) {
       return routeComparison;
     }

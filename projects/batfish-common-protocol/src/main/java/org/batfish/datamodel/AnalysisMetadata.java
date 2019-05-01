@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 
 public class AnalysisMetadata {
-
   private static final String PROP_CREATIONTIMESTAMP = "creationTimestamp";
   private static final String PROP_SUGGESTED = "suggested";
 

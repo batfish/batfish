@@ -9,7 +9,6 @@ import org.batfish.datamodel.TcpFlagsMatchConditions;
 
 public final class FwFromTcpFlags extends FwFrom {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private List<TcpFlagsMatchConditions> _tcpFlags;

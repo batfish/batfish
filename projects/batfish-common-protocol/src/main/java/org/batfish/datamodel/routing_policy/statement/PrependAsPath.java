@@ -21,7 +21,6 @@ import org.batfish.datamodel.routing_policy.expr.AsPathListExpr;
 public final class PrependAsPath extends Statement {
   private static final String PROP_EXPR = "expr";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Nonnull private AsPathListExpr _expr;
@@ -52,7 +51,7 @@ public final class PrependAsPath extends Statement {
     List<Long> toPrepend = _expr.evaluate(environment);
     List<AsSet> newAsPaths = toPrepend.stream().map(AsSet::of).collect(Collectors.toList());
 
-    BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment.getOutputRoute();
+    BgpRoute.Builder<?, ?> bgpRouteBuilder = (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
     bgpRouteBuilder.setAsPath(
         AsPath.of(
             ImmutableList.<AsSet>builder()
@@ -61,7 +60,7 @@ public final class PrependAsPath extends Statement {
                 .build()));
 
     if (environment.getWriteToIntermediateBgpAttributes()) {
-      BgpRoute.Builder ir = environment.getIntermediateBgpAttributes();
+      BgpRoute.Builder<?, ?> ir = environment.getIntermediateBgpAttributes();
       ir.setAsPath(
           AsPath.of(
               ImmutableList.<AsSet>builder()

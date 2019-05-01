@@ -26,7 +26,6 @@ import org.batfish.datamodel.routing_policy.Environment;
 public final class ExplicitAsPathSet extends AsPathSetExpr {
   private static final String PROP_ELEMS = "elems";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Nonnull private List<AsPathSetElem> _elems;
@@ -71,8 +70,9 @@ public final class ExplicitAsPathSet extends AsPathSetExpr {
   public boolean matches(Environment environment) {
     AsPath asPath = null;
     if (environment.getUseOutputAttributes()
-        && environment.getOutputRoute() instanceof BgpRoute.Builder) {
-      BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment.getOutputRoute();
+        && environment.getOutputRoute() instanceof BgpRoute.Builder<?, ?>) {
+      BgpRoute.Builder<?, ?> bgpRouteBuilder =
+          (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
       asPath = bgpRouteBuilder.getAsPath();
     } else if (environment.getReadFromIntermediateBgpAttributes()) {
       asPath = environment.getIntermediateBgpAttributes().getAsPath();

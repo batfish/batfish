@@ -112,11 +112,8 @@ public class JsonPathResult {
   }
 
   private static final String PROP_ASSERTION_RESULT = "assertionResult";
-
   private static final String PROP_EXTRACTED_VALUES = "extractedValues";
-
   private static final String PROP_NUM_RESULTS = "numResults";
-
   private static final String PROP_RESULT = "result";
 
   private Boolean _assertionResult;

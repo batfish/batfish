@@ -4,6 +4,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -13,6 +15,7 @@ import org.batfish.datamodel.ospf.OspfMetricType;
 /** Base class for OSPF external routes */
 @ParametersAreNonnullByDefault
 public abstract class OspfExternalRoute extends OspfRoute {
+  private static final Interner<OspfExternalRoute> _cache = Interners.newWeakInterner();
 
   public static final class Builder extends AbstractRouteBuilder<Builder, OspfExternalRoute> {
 
@@ -33,29 +36,31 @@ public abstract class OspfExternalRoute extends OspfRoute {
       RoutingProtocol protocol = _ospfMetricType.toRoutingProtocol();
       switch (protocol) {
         case OSPF_E1:
-          return new OspfExternalType1Route(
-              getNetwork(),
-              getNextHopIp(),
-              getAdmin(),
-              getMetric(),
-              _lsaMetric,
-              _area,
-              _costToAdvertiser,
-              _advertiser,
-              getNonForwarding(),
-              getNonRouting());
+          return _cache.intern(
+              new OspfExternalType1Route(
+                  getNetwork(),
+                  getNextHopIp(),
+                  getAdmin(),
+                  getMetric(),
+                  _lsaMetric,
+                  _area,
+                  _costToAdvertiser,
+                  _advertiser,
+                  getNonForwarding(),
+                  getNonRouting()));
         case OSPF_E2:
-          return new OspfExternalType2Route(
-              getNetwork(),
-              getNextHopIp(),
-              getAdmin(),
-              getMetric(),
-              _lsaMetric,
-              _area,
-              _costToAdvertiser,
-              _advertiser,
-              getNonForwarding(),
-              getNonRouting());
+          return _cache.intern(
+              new OspfExternalType2Route(
+                  getNetwork(),
+                  getNextHopIp(),
+                  getAdmin(),
+                  getMetric(),
+                  _lsaMetric,
+                  _area,
+                  _costToAdvertiser,
+                  _advertiser,
+                  getNonForwarding(),
+                  getNonRouting()));
         default:
           throw new IllegalArgumentException(
               String.format("Invalid OSPF external protocol %s", protocol));
@@ -115,6 +120,7 @@ public abstract class OspfExternalRoute extends OspfRoute {
   @Nonnull private final String _advertiser;
   private final long _costToAdvertiser;
   private final long _lsaMetric;
+  private transient int _hashCode;
 
   @Nonnull
   public static Builder builder() {
@@ -139,7 +145,7 @@ public abstract class OspfExternalRoute extends OspfRoute {
   }
 
   @Override
-  public boolean equals(@Nullable Object o) {
+  public final boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }
@@ -164,21 +170,26 @@ public abstract class OspfExternalRoute extends OspfRoute {
   }
 
   @Override
-  public int hashCode() {
-    return Objects.hash(
-        // AbstractRoute properties
-        _network,
-        _admin,
-        _metric,
-        _nextHopIp,
-        getNonRouting(),
-        getNonForwarding(),
-        // OspfRoute properties
-        _area,
-        // OspfExternalRoute properties
-        getAdvertiser(),
-        getCostToAdvertiser(),
-        getLsaMetric());
+  public final int hashCode() {
+    int h = _hashCode;
+    if (h == 0) {
+      // AbstractRoute Properties
+      h = _network.hashCode();
+      h = 31 * h + _admin;
+      h = 31 * h + Long.hashCode(_metric);
+      h = 31 * h + _nextHopIp.hashCode();
+      h = 31 * h + Boolean.hashCode(getNonRouting());
+      h = 31 * h + Boolean.hashCode(getNonForwarding());
+      // OspfRoute properties
+      h = 31 * h + Long.hashCode(_area);
+      // OspfExternalRoute properties
+      h = 31 * h + _advertiser.hashCode();
+      h = 31 * h + Long.hashCode(_costToAdvertiser);
+      h = 31 * h + Long.hashCode(_lsaMetric);
+
+      _hashCode = h;
+    }
+    return h;
   }
 
   @JsonProperty(PROP_ADVERTISER)

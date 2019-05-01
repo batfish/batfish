@@ -16,10 +16,11 @@ import java.lang.annotation.Target;
   enum Type {
     ADDRESS_GROUP_NAME,
     CHAR_LITERAL,
+    DEPRECATED, // grammar rules that are deprecated
     EOI,
     FILTER_NAME,
     FILTER_NAME_REGEX,
-    IGNORE,
+    IGNORE, // grammar rules that shouldn't be the basis for autocompletion
     INTERFACE_GROUP_NAME,
     INTERFACE_NAME,
     INTERFACE_NAME_REGEX,
@@ -30,11 +31,14 @@ import java.lang.annotation.Target;
     IP_PROTOCOL_NUMBER,
     IP_RANGE,
     IP_WILDCARD,
+    NODE_AND_INTERFACE,
     NODE_NAME,
     NODE_NAME_REGEX,
     NODE_ROLE_DIMENSION_NAME,
     NODE_ROLE_NAME,
     NODE_TYPE,
+    REFERENCE_BOOK_AND_ADDRESS_GROUP,
+    REFERENCE_BOOK_AND_INTERFACE_GROUP,
     REFERENCE_BOOK_NAME,
     ROUTING_POLICY_NAME,
     ROUTING_POLICY_NAME_REGEX,

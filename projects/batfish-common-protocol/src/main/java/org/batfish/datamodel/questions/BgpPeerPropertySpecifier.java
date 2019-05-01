@@ -28,7 +28,7 @@ import org.batfish.datamodel.answers.Schema;
  *
  * <ul>
  *   <li>multipath-ebgp —&gt; gets the process's corresponding value
- *   <li>multipath-.* --&gt; gets all properties that start with 'max-metric-'
+ *   <li>max-metric-.* -&gt; gets all properties that start with 'max-metric-'
  * </ul>
  */
 public class BgpPeerPropertySpecifier extends PropertySpecifier {
@@ -47,7 +47,7 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
   public static final Map<String, PropertyDescriptor<BgpPeerConfig>> JAVA_MAP =
       new ImmutableMap.Builder<String, PropertyDescriptor<BgpPeerConfig>>()
           .put(LOCAL_AS, new PropertyDescriptor<>(BgpPeerConfig::getLocalAs, Schema.LONG))
-          .put(LOCAL_IP, new PropertyDescriptor<>(BgpPeerConfig::getLocalIp, Schema.IP))
+          .put(LOCAL_IP, new PropertyDescriptor<>(BgpPeerPropertySpecifier::getLocalIp, Schema.IP))
           .put(IS_PASSIVE, new PropertyDescriptor<>((peer) -> getIsPassive(peer), Schema.BOOLEAN))
           .put(REMOTE_AS, new PropertyDescriptor<>(BgpPeerConfig::getRemoteAsns, Schema.STRING))
           .put(
@@ -101,6 +101,11 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
     return JAVA_MAP.keySet().stream()
         .filter(prop -> _pattern.matcher(prop.toLowerCase()).matches())
         .collect(ImmutableList.toImmutableList());
+  }
+
+  private static Ip getLocalIp(@Nonnull BgpPeerConfig peer) {
+    // Do not expose local IP of unnumbered peers
+    return peer instanceof BgpUnnumberedPeerConfig ? null : peer.getLocalIp();
   }
 
   @VisibleForTesting

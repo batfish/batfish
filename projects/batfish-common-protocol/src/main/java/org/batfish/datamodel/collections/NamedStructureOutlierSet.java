@@ -8,13 +8,9 @@ import org.batfish.role.OutliersHypothesis;
 
 public class NamedStructureOutlierSet<T> extends AbstractOutlierSet
     implements Comparable<NamedStructureOutlierSet<T>> {
-
   private static final String PROP_HYPOTHESIS = "hypothesis";
-
   private static final String PROP_NAME = "name";
-
   private static final String PROP_STRUCT_TYPE = "structType";
-
   private static final String PROP_STRUCT_DEFINITION = "structDefinition";
 
   // the hypothesis used to identify outliers

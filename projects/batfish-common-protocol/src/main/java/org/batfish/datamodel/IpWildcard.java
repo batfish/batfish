@@ -1,14 +1,15 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.io.Serializable;
 import java.util.Comparator;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.BatfishException;
 
 /** An IP wildcard consisting of a IP address and a wildcard (also expressed as an IP address) */
 @ParametersAreNonnullByDefault
@@ -24,18 +25,12 @@ public final class IpWildcard implements Serializable, Comparable<IpWildcard> {
   private static Ip parseAddress(String str) {
     if (str.contains(":")) {
       String[] parts = str.split(":");
-      if (parts.length != 2) {
-        throw new BatfishException("Invalid IpWildcard string: '" + str + "'");
-      } else {
-        return Ip.parse(parts[0]);
-      }
+      checkArgument(parts.length == 2, "Invalid IpWildcard string: '%s'");
+      return Ip.parse(parts[0]);
     } else if (str.contains("/")) {
       String[] parts = str.split("/");
-      if (parts.length != 2) {
-        throw new BatfishException("Invalid IpWildcard string: '" + str + "'");
-      } else {
-        return Ip.parse(parts[0]);
-      }
+      checkArgument(parts.length == 2, "Invalid IpWildcard string: '%s'");
+      return Ip.parse(parts[0]);
     } else {
       return Ip.parse(str);
     }
@@ -44,19 +39,13 @@ public final class IpWildcard implements Serializable, Comparable<IpWildcard> {
   private static Ip parseMask(String str) {
     if (str.contains(":")) {
       String[] parts = str.split(":");
-      if (parts.length != 2) {
-        throw new BatfishException("Invalid IpWildcard string: '" + str + "'");
-      } else {
-        return Ip.parse(parts[1]);
-      }
+      checkArgument(parts.length == 2, "Invalid IpWildcard string: '%s'");
+      return Ip.parse(parts[1]);
     } else if (str.contains("/")) {
       String[] parts = str.split("/");
-      if (parts.length != 2) {
-        throw new BatfishException("Invalid IpWildcard string: '" + str + "'");
-      } else {
-        int prefixLength = Integer.parseInt(parts[1]);
-        return Ip.numSubnetBitsToSubnetMask(prefixLength).inverted();
-      }
+      checkArgument(parts.length == 2, "Invalid IpWildcard string: '%s'");
+      int prefixLength = Integer.parseInt(parts[1]);
+      return Ip.numSubnetBitsToSubnetMask(prefixLength).inverted();
     } else {
       return Ip.ZERO;
     }
@@ -70,9 +59,7 @@ public final class IpWildcard implements Serializable, Comparable<IpWildcard> {
     // Canonicalize the address before passing it to parent, so that #equals works.
     _ip = Ip.create(address.asLong() & ~wildcardMask.asLong());
     _mask = wildcardMask;
-    if (!wildcardMask.valid()) {
-      throw new BatfishException("Invalid wildcard: " + wildcardMask);
-    }
+    checkArgument(wildcardMask.valid(), "Invalid wildcard: %s", wildcardMask);
   }
 
   public IpWildcard(Prefix prefix) {
@@ -101,12 +88,12 @@ public final class IpWildcard implements Serializable, Comparable<IpWildcard> {
       return false;
     }
     IpWildcard other = (IpWildcard) o;
-    return Objects.equals(this._ip, other._ip) && Objects.equals(this._mask, other._mask);
+    return this._ip.equals(other._ip) && this._mask.equals(other._mask);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_ip, _mask);
+    return 31 * _ip.hashCode() + _mask.hashCode();
   }
 
   @Override
@@ -180,11 +167,8 @@ public final class IpWildcard implements Serializable, Comparable<IpWildcard> {
   }
 
   public Prefix toPrefix() {
-    if (isPrefix()) {
-      return Prefix.create(_ip, _mask.inverted());
-    } else {
-      throw new BatfishException("Invalid wildcard format for conversion to prefix: " + _mask);
-    }
+    checkState(isPrefix(), "Invalid wildcard format for conversion to prefix: %s", _mask);
+    return Prefix.create(_ip, _mask.inverted());
   }
 
   @JsonValue

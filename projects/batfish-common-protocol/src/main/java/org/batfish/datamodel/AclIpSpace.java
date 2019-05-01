@@ -106,7 +106,6 @@ public class AclIpSpace extends IpSpace {
 
   private static final String PROP_LINES = "lines";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   public static Builder builder() {
@@ -324,5 +323,5 @@ public class AclIpSpace extends IpSpace {
     return MoreObjects.toStringHelper(getClass()).add(PROP_LINES, _lines).toString();
   }
 
-  private volatile int _hashCode = 0;
+  private int _hashCode;
 }

@@ -30,9 +30,7 @@ import org.batfish.role.OutliersHypothesis;
 public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
 
   public static class PerRoleOutliersAnswerElement extends AnswerElement {
-
     private static final String PROP_NAMED_STRUCTURE_OUTLIERS = "namedStructureOutliers";
-
     private static final String PROP_SERVER_OUTLIERS = "serverOutliers";
 
     private SortedSet<NamedStructureOutlierSet<?>> _namedStructureOutliers;
@@ -175,13 +173,9 @@ public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
 
   /** Runs outlier detection on a per-role basis and then does a global ranking of the results. */
   public static final class PerRoleOutliersQuestion extends Question {
-
     private static final String PROP_HYPOTHESIS = "hypothesis";
-
     private static final String PROP_NAMED_STRUCT_TYPES = "namedStructTypes";
-
     private static final String PROP_ROLE_DIMENSION = "roleDimension";
-
     private static final String PROP_ROLES = "roles";
 
     @Nonnull private OutliersHypothesis _hypothesis;

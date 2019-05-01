@@ -166,29 +166,17 @@ public final class BgpAdvertisementGroup implements Serializable {
   private static final long MAX_LOCAL_PREFERENCE = 0xFFFFFFFFL;
 
   private static final long MAX_MED = 0xFFFFFFFFL;
-
   private static final String PROP_AS_PATH = "asPath";
-
   private static final String PROP_DESCRIPTION = "description";
-
   private static final String PROP_EXTENDED_COMMUNITIES = "extendedCommunities";
-
   private static final String PROP_LOCAL_PREFERENCE = "localPreference";
-
   private static final String PROP_MED = "med";
-
   private static final String PROP_ORIGIN_TYPE = "originType";
-
   private static final String PROP_ORIGINATOR = "originator";
-
   private static final String PROP_PREFIXES = "prefixes";
-
   private static final String PROP_RX_PEER = "rxPeer";
-
   private static final String PROP_STANDARD_COMMUNITIES = "standardCommunities";
-
   private static final String PROP_TX_AS = "txAs";
-
   private static final String PROP_TX_PEER = "txPeer";
 
   private static final long serialVersionUID = 1L;

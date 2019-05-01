@@ -18,7 +18,6 @@ public class IptablesRule implements Serializable {
     RETURN
   }
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   public static IptablesActionType fromChainPolicyToActionType(ChainPolicy policy) {

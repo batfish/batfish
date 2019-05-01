@@ -15,7 +15,6 @@ import org.batfish.datamodel.routing_policy.expr.IntExpr;
 @ParametersAreNonnullByDefault
 public final class SetWeight extends Statement {
   private static final String PROP_WEIGHT = "weight";
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Nonnull private IntExpr _weight;
@@ -44,7 +43,7 @@ public final class SetWeight extends Statement {
   @Override
   public Result execute(Environment environment) {
     int weight = _weight.evaluate(environment);
-    BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment.getOutputRoute();
+    BgpRoute.Builder<?, ?> bgpRouteBuilder = (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
     bgpRouteBuilder.setWeight(weight);
     return new Result();
   }

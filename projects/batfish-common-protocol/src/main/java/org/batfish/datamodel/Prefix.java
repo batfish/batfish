@@ -7,13 +7,11 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import java.io.Serializable;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.BatfishException;
 
 /** An IPv4 Prefix */
 @ParametersAreNonnullByDefault
@@ -51,15 +49,13 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
   public static Prefix parse(@Nullable String text) {
     checkArgument(text != null, "Invalid IPv4 prefix %s", text);
     String[] parts = text.split("/");
-    if (parts.length != 2) {
-      throw new BatfishException("Invalid prefix string: \"" + text + "\"");
-    }
+    checkArgument(parts.length == 2, "Invalid prefix string: \"%s\"", text);
     Ip ip = Ip.parse(parts[0]);
     int prefixLength;
     try {
       prefixLength = Integer.parseInt(parts[1]);
     } catch (NumberFormatException e) {
-      throw new BatfishException("Invalid prefix length: \"" + parts[1] + "\"", e);
+      throw new IllegalArgumentException("Invalid prefix length: \"" + parts[1] + "\"", e);
     }
     return create(ip, prefixLength);
   }
@@ -72,7 +68,7 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
   public static Optional<Prefix> tryParse(@Nonnull String text) {
     try {
       return Optional.of(parse(text));
-    } catch (IllegalArgumentException | BatfishException e) {
+    } catch (IllegalArgumentException e) {
       return Optional.empty();
     }
   }
@@ -189,7 +185,8 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_ip, _prefixLength);
+    // We want a custom quick implementation, so don't call Objects.hash()
+    return 31 + 31 * Long.hashCode(_ip.asLong()) + _prefixLength;
   }
 
   @Nonnull

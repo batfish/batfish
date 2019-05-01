@@ -13,7 +13,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 /** A line in a {@link RouteFilterList}. */
 @ParametersAreNonnullByDefault
 public final class RouteFilterLine implements Serializable {
-
   private static final String PROP_ACTION = "action";
   private static final String PROP_LENGTH_RANGE = "lengthRange";
   private static final String PROP_IP_WILDCARD = "ipWildcard";

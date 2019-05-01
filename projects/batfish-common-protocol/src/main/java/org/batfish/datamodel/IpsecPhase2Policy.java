@@ -9,12 +9,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class IpsecPhase2Policy implements Serializable {
-
   private static final String PROP_PFS_KEY_GROUP = "pfsKeyGroup";
-
   private static final String PROP_PROPOSALS = "proposals";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private DiffieHellmanGroup _pfsKeyGroup;

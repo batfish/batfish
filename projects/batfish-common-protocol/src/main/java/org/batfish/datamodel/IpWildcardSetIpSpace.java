@@ -60,12 +60,9 @@ public final class IpWildcardSetIpSpace extends IpSpace {
 
   public static final IpWildcardSetIpSpace ANY =
       IpWildcardSetIpSpace.builder().including(IpWildcard.ANY).build();
-
   private static final String PROP_BLACKLIST = "blacklist";
-
   private static final String PROP_WHITELIST = "whitelist";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   public static Builder builder() {
@@ -129,12 +126,12 @@ public final class IpWildcardSetIpSpace extends IpSpace {
 
   @Override
   public int hashCode() {
-    int hash = _hashCode;
-    if (hash == 0) {
-      hash = Objects.hash(_blacklist, _whitelist);
-      _hashCode = hash;
+    int h = _hashCode;
+    if (h == 0) {
+      h = 31 * _blacklist.hashCode() + _whitelist.hashCode();
+      _hashCode = h;
     }
-    return hash;
+    return h;
   }
 
   @Override
@@ -145,5 +142,5 @@ public final class IpWildcardSetIpSpace extends IpSpace {
         .toString();
   }
 
-  private transient volatile int _hashCode = 0;
+  private transient int _hashCode;
 }

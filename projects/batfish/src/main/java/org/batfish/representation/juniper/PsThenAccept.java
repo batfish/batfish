@@ -13,7 +13,6 @@ public final class PsThenAccept extends PsThen {
 
   public static final PsThenAccept INSTANCE = new PsThenAccept();
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private PsThenAccept() {}

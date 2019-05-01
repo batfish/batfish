@@ -71,8 +71,9 @@ class TestParser extends CommonParser {
     return Sequence("! ", TestNot("! "), TestTerm());
   }
 
+  @Anchor(Type.REFERENCE_BOOK_AND_ADDRESS_GROUP)
   public Rule TestSpecifierInput() {
-    return Sequence(TestAddressGroupName(), ", ", TestReferenceBookName());
+    return Sequence(TestReferenceBookName(), ", ", TestAddressGroupName());
   }
 
   @Anchor(Type.ADDRESS_GROUP_NAME)
@@ -88,7 +89,7 @@ class TestParser extends CommonParser {
   /** An instance of base dynamic value */
   @Anchor(Type.IP_ADDRESS)
   public Rule TestIpAddress() {
-    return IpAddressUnchecked();
+    return Sequence(IpAddressUnchecked(), push(new IpAstNode(match())));
   }
 
   /** An instance of complex dynamic value */
@@ -107,7 +108,7 @@ class TestParser extends CommonParser {
     return Regex();
   }
 
-  @Anchor(Type.IGNORE)
+  @Anchor(Type.DEPRECATED)
   public Rule TestNameRegexDeprecated() {
     return RegexDeprecated();
   }

@@ -4,7 +4,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Objects;
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -14,6 +15,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class OspfIntraAreaRoute extends OspfInternalRoute {
 
   private static final long serialVersionUID = 1L;
+  private static final Interner<OspfIntraAreaRoute> _cache = Interners.newWeakInterner();
+  private int _hashCode;
 
   @JsonCreator
   private static OspfIntraAreaRoute jsonCreator(
@@ -55,18 +58,28 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
       return false;
     }
     OspfIntraAreaRoute other = (OspfIntraAreaRoute) o;
-    return Objects.equals(_network, other._network)
+    return _network.equals(other._network)
         && _admin == other._admin
         && _area == other._area
         && getNonRouting() == other.getNonRouting()
         && getNonForwarding() == other.getNonForwarding()
-        && Objects.equals(_metric, other._metric)
-        && Objects.equals(_nextHopIp, other._nextHopIp);
+        && _metric == other._metric
+        && _nextHopIp.equals(other._nextHopIp);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_network, _admin, _area, _metric, _nextHopIp);
+    int h = _hashCode;
+    if (h == 0) {
+      h = _network.hashCode();
+      h = 31 * h + _admin;
+      h = 31 * h + Long.hashCode(_area);
+      h = 31 * h + Long.hashCode(_metric);
+      h = 31 * h + _nextHopIp.hashCode();
+
+      _hashCode = h;
+    }
+    return h;
   }
 
   @Override
@@ -84,8 +97,8 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
         // AbstractRoute properties
         .setNetwork(getNetwork())
         .setNextHopIp(getNextHopIp())
-        .setAdmin(getAdministrativeCost())
-        .setMetric(getMetric())
+        .setAdmin(_admin)
+        .setMetric(_metric)
         .setNonForwarding(getNonForwarding())
         .setNonRouting(getNonRouting())
         // OspfIntraAreaRoute properties
@@ -98,18 +111,20 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
 
   public static final class Builder extends AbstractRouteBuilder<Builder, OspfIntraAreaRoute> {
 
-    private Long _area;
+    private long _area;
 
     @Override
     public OspfIntraAreaRoute build() {
-      return new OspfIntraAreaRoute(
-          getNetwork(),
-          getNextHopIp(),
-          getAdmin(),
-          getMetric(),
-          _area,
-          getNonForwarding(),
-          getNonRouting());
+      OspfIntraAreaRoute r =
+          new OspfIntraAreaRoute(
+              getNetwork(),
+              getNextHopIp(),
+              getAdmin(),
+              getMetric(),
+              _area,
+              getNonForwarding(),
+              getNonRouting());
+      return _cache.intern(r);
     }
 
     @Nonnull

@@ -13,9 +13,7 @@ import javax.annotation.Nonnull;
  * by an exclusion.
  */
 public class ExcludedRows {
-
   private static final String PROP_EXCLUSION_NAME = "exclusionName";
-
   private static final String PROP_ROWS = "rows";
 
   private @Nonnull final String _exclusionName;

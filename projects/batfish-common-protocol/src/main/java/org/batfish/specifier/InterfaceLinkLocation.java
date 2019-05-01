@@ -9,7 +9,6 @@ import javax.annotation.Nonnull;
 /** Identifies the {@link Location} of the link of an interface in the network. */
 public final class InterfaceLinkLocation implements Location {
   private static final String PROP_INTERFACE_NAME = "interfaceName";
-
   private static final String PROP_NODE_NAME = "nodeName";
 
   private final String _interfaceName;

@@ -17,7 +17,6 @@ import org.batfish.datamodel.routing_policy.expr.NextHopExpr;
 public final class SetNextHop extends Statement {
   private static final String PROP_DESTINATION_VRF = "destinationVrf";
   private static final String PROP_EXPR = "expr";
-  /** */
   private static final long serialVersionUID = 1L;
 
   private boolean _destinationVrf;
@@ -53,7 +52,8 @@ public final class SetNextHop extends Statement {
   public Result execute(Environment environment) {
     Result result = new Result();
     if (_expr.getDiscard()) {
-      BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment.getOutputRoute();
+      BgpRoute.Builder<?, ?> bgpRouteBuilder =
+          (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
       bgpRouteBuilder.setDiscard(true);
     }
     Ip nextHop = _expr.getNextHopIp(environment);

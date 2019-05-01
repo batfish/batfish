@@ -22,7 +22,6 @@ public final class EnterInputIfaceStep extends Step<EnterInputIfaceStepDetail> {
    * Interface}
    */
   public static final class EnterInputIfaceStepDetail {
-
     private static final String PROP_INPUT_INTERFACE = "inputInterface";
     private static final String PROP_INPUT_VRF = "inputVrf";
 

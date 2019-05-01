@@ -2,13 +2,13 @@ package org.batfish.question.testroutepolicies;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
-import static org.batfish.datamodel.BgpRouteDiff.routeDiffs;
 import static org.batfish.datamodel.LineAction.DENY;
 import static org.batfish.datamodel.LineAction.PERMIT;
 import static org.batfish.datamodel.answers.Schema.BGP_ROUTE;
 import static org.batfish.datamodel.answers.Schema.BGP_ROUTE_DIFFS;
 import static org.batfish.datamodel.answers.Schema.NODE;
 import static org.batfish.datamodel.answers.Schema.STRING;
+import static org.batfish.datamodel.questions.BgpRouteDiff.routeDiffs;
 import static org.batfish.datamodel.table.TableDiff.baseColumnName;
 import static org.batfish.datamodel.table.TableDiff.deltaColumnName;
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
@@ -25,17 +25,19 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.datamodel.BgpRoute;
-import org.batfish.datamodel.BgpRouteDiffs;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.questions.BgpRouteDiffs;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -59,14 +61,17 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
   public static final String COL_DIFF = "Difference";
 
   private final Direction _direction;
-  private final List<BgpRoute> _inputRoutes;
+  private final List<Bgpv4Route> _inputRoutes;
   private final String _nodes;
   private final String _policies;
 
   public TestRoutePoliciesAnswerer(TestRoutePoliciesQuestion question, IBatfish batfish) {
     super(question, batfish);
     _direction = question.getDirection();
-    _inputRoutes = question.getInputRoutes();
+    _inputRoutes =
+        question.getInputRoutes().stream()
+            .map(TestRoutePoliciesAnswerer::toDataplaneBgpRoute)
+            .collect(Collectors.toList());
     _nodes = question.getNodes();
     _policies = question.getPolicies();
   }
@@ -91,8 +96,9 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     return _inputRoutes.stream().map(route -> testPolicy(policy, route));
   }
 
-  private Result testPolicy(RoutingPolicy policy, BgpRoute inputRoute) {
-    BgpRoute.Builder outputRoute = inputRoute.toBuilder();
+  private Result testPolicy(RoutingPolicy policy, Bgpv4Route inputRoute) {
+
+    Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
 
     boolean permit =
         policy.process(
@@ -126,6 +132,50 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .map(
             policyId ->
                 configs.get(policyId.getNode()).getRoutingPolicies().get(policyId.getPolicy()));
+  }
+
+  @Nullable
+  private static Bgpv4Route toDataplaneBgpRoute(
+      @Nullable org.batfish.datamodel.questions.BgpRoute questionsBgpRoute) {
+    if (questionsBgpRoute == null) {
+      return null;
+    }
+    return Bgpv4Route.builder()
+        .setWeight(questionsBgpRoute.getWeight())
+        .setNextHopIp(questionsBgpRoute.getNextHopIp())
+        .setProtocol(questionsBgpRoute.getProtocol())
+        .setSrcProtocol(questionsBgpRoute.getSrcProtocol())
+        .setOriginType(questionsBgpRoute.getOriginType())
+        .setOriginatorIp(questionsBgpRoute.getOriginatorIp())
+        .setMetric(questionsBgpRoute.getMetric())
+        .setLocalPreference(questionsBgpRoute.getLocalPreference())
+        .setWeight(questionsBgpRoute.getWeight())
+        .setNetwork(questionsBgpRoute.getNetwork())
+        .setCommunities(questionsBgpRoute.getCommunities())
+        .setAsPath(questionsBgpRoute.getAsPath())
+        .build();
+  }
+
+  @Nullable
+  private static org.batfish.datamodel.questions.BgpRoute toQuestionsBgpRoute(
+      @Nullable Bgpv4Route dataplaneBgpRoute) {
+    if (dataplaneBgpRoute == null) {
+      return null;
+    }
+    return org.batfish.datamodel.questions.BgpRoute.builder()
+        .setWeight(dataplaneBgpRoute.getWeight())
+        .setNextHopIp(dataplaneBgpRoute.getNextHopIp())
+        .setProtocol(dataplaneBgpRoute.getProtocol())
+        .setSrcProtocol(dataplaneBgpRoute.getSrcProtocol())
+        .setOriginType(dataplaneBgpRoute.getOriginType())
+        .setOriginatorIp(dataplaneBgpRoute.getOriginatorIp())
+        .setMetric(dataplaneBgpRoute.getMetric())
+        .setLocalPreference(dataplaneBgpRoute.getLocalPreference())
+        .setWeight(dataplaneBgpRoute.getWeight())
+        .setNetwork(dataplaneBgpRoute.getNetwork())
+        .setCommunities(dataplaneBgpRoute.getCommunities())
+        .setAsPath(dataplaneBgpRoute.getAsPath())
+        .build();
   }
 
   @Override
@@ -237,9 +287,10 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
   }
 
   private static Row toRow(Result result) {
-    BgpRoute inputRoute = result.getInputRoute();
+    org.batfish.datamodel.questions.BgpRoute inputRoute =
+        toQuestionsBgpRoute(result.getInputRoute());
     LineAction action = result.getAction();
-    BgpRoute outputRoute = result.getOutputRoute();
+    Bgpv4Route outputRoute = result.getOutputRoute();
     boolean permit = action == PERMIT;
     RoutingPolicyId policyId = result.getPolicyId();
     return Row.builder()
@@ -247,8 +298,12 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .put(COL_POLICY_NAME, policyId.getPolicy())
         .put(COL_INPUT_ROUTE, inputRoute)
         .put(COL_ACTION, action)
-        .put(COL_OUTPUT_ROUTE, permit ? outputRoute : null)
-        .put(COL_DIFF, permit ? new BgpRouteDiffs(routeDiffs(inputRoute, outputRoute)) : null)
+        .put(COL_OUTPUT_ROUTE, permit ? toQuestionsBgpRoute(outputRoute) : null)
+        .put(
+            COL_DIFF,
+            permit
+                ? new BgpRouteDiffs(routeDiffs(inputRoute, toQuestionsBgpRoute(outputRoute)))
+                : null)
         .build();
   }
 
@@ -256,26 +311,29 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     checkArgument(
         baseResult.getKey().equals(deltaResult.getKey()),
         "results must be for the same policy and input route");
-    BgpRoute baseOutputRoute = baseResult.getOutputRoute();
-    BgpRoute deltaOutputRoute = deltaResult.getOutputRoute();
+    Bgpv4Route baseOutputRoute = baseResult.getOutputRoute();
+    Bgpv4Route deltaOutputRoute = deltaResult.getOutputRoute();
     boolean equalAction = baseResult.getAction() == deltaResult.getAction();
     boolean equalOutputRoutes = Objects.equals(baseOutputRoute, deltaOutputRoute);
     checkArgument(
         !(equalAction && equalOutputRoutes), "Results must have different action or output route");
 
     // delta is reference, base is current. so show diffs from delta -> base
-    BgpRouteDiffs routeDiffs = new BgpRouteDiffs(routeDiffs(deltaOutputRoute, baseOutputRoute));
+    BgpRouteDiffs routeDiffs =
+        new BgpRouteDiffs(
+            routeDiffs(
+                toQuestionsBgpRoute(deltaOutputRoute), toQuestionsBgpRoute(baseOutputRoute)));
 
     RoutingPolicyId policyId = baseResult.getPolicyId();
-    BgpRoute inputRoute = baseResult.getInputRoute();
+    Bgpv4Route inputRoute = baseResult.getInputRoute();
     return Row.builder()
         .put(COL_NODE, new Node(policyId.getNode()))
         .put(COL_POLICY_NAME, policyId.getPolicy())
-        .put(COL_INPUT_ROUTE, inputRoute)
+        .put(COL_INPUT_ROUTE, toQuestionsBgpRoute(inputRoute))
         .put(baseColumnName(COL_ACTION), baseResult.getAction())
         .put(deltaColumnName(COL_ACTION), deltaResult.getAction())
-        .put(baseColumnName(COL_OUTPUT_ROUTE), baseResult.getOutputRoute())
-        .put(deltaColumnName(COL_OUTPUT_ROUTE), deltaResult.getOutputRoute())
+        .put(baseColumnName(COL_OUTPUT_ROUTE), toQuestionsBgpRoute(baseResult.getOutputRoute()))
+        .put(deltaColumnName(COL_OUTPUT_ROUTE), toQuestionsBgpRoute(deltaResult.getOutputRoute()))
         .put(COL_DIFF, routeDiffs)
         .build();
   }

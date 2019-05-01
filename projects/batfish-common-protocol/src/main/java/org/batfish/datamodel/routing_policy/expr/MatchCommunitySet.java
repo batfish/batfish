@@ -15,7 +15,6 @@ import org.batfish.datamodel.routing_policy.Result;
  * community matching a given {@link CommunitySetExpr}.
  */
 public final class MatchCommunitySet extends BooleanExpr {
-
   private static final String PROP_EXPR = "expr";
 
   private static final long serialVersionUID = 1L;
@@ -36,8 +35,9 @@ public final class MatchCommunitySet extends BooleanExpr {
   public Result evaluate(Environment environment) {
     SortedSet<Long> inputCommunities = null;
     if (environment.getUseOutputAttributes()
-        && environment.getOutputRoute() instanceof BgpRoute.Builder) {
-      BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment.getOutputRoute();
+        && environment.getOutputRoute() instanceof BgpRoute.Builder<?, ?>) {
+      BgpRoute.Builder<?, ?> bgpRouteBuilder =
+          (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
       inputCommunities = bgpRouteBuilder.getCommunities();
     } else if (environment.getReadFromIntermediateBgpAttributes()) {
       inputCommunities = environment.getIntermediateBgpAttributes().getCommunities();

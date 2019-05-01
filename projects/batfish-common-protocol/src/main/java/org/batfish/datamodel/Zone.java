@@ -18,20 +18,13 @@ import org.batfish.common.util.ComparableStructure;
 /** An IPV4 firewall zone */
 @ParametersAreNonnullByDefault
 public final class Zone extends ComparableStructure<String> {
-
   private static final String PROP_FROM_HOST_FILTER = "fromHostFilter";
-
   private static final String PROP_INBOUND_FILTER = "inboundFilter";
-
   private static final String PROP_INBOUND_INTERFACE_FILTERS = "inboundInterfaceFilters";
-
   private static final String PROP_INTERFACES = "interfaces";
-
   private static final String PROP_TO_HOST_FILTER = "toHostFilter";
-
   private static final String PROP_TO_ZONE_POLICIES = "toZonePolicies";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Nullable private String _fromHostFilterName;

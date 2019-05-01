@@ -7,7 +7,6 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 
 public class IcmpTypeObjectGroup extends ObjectGroup {
-  /** */
   private static final long serialVersionUID = 1L;
 
   private List<IcmpTypeObjectGroupLine> _lines;

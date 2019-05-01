@@ -39,7 +39,6 @@ public final class BooleanExprs {
   public static final class StaticBooleanExpr extends BooleanExpr {
 
     private static final long serialVersionUID = 1L;
-
     private static final String PROP_TYPE = "type";
 
     private final StaticExpressionType _type;

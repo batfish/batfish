@@ -18,8 +18,8 @@ import java.util.SortedSet;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpPeerConfigId;
-import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Edge;
@@ -37,18 +37,9 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
   public static class Builder {
 
-    private ValueGraph<BgpPeerConfigId, BgpSessionProperties> _bgpTopology;
-
     private Map<Ip, Map<String, Set<String>>> _ipVrfOwners;
-
     private Map<String, Node> _nodes;
-
-    private Topology _topology;
-
-    public Builder setBgpTopology(ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology) {
-      _bgpTopology = bgpTopology;
-      return this;
-    }
+    private TopologyContext _topologyContext;
 
     public Builder setIpVrfOwners(Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
       _ipVrfOwners = ImmutableMap.copyOf(ipVrfOwners);
@@ -60,8 +51,8 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
       return this;
     }
 
-    public Builder setTopology(Topology topology) {
-      _topology = topology;
+    public Builder setTopologyContext(TopologyContext topologyContext) {
+      _topologyContext = topologyContext;
       return this;
     }
 
@@ -107,8 +98,6 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
     return new Builder();
   }
 
-  private final transient ValueGraph<BgpPeerConfigId, BgpSessionProperties> _bgpTopology;
-
   private final Supplier<Map<String, Configuration>> _configurations =
       Suppliers.memoize(new ConfigurationsSupplier());
 
@@ -122,16 +111,15 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
   private final Map<String, Node> _nodes;
 
+  private final transient TopologyContext _topologyContext;
+
   private transient SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
       _ribs;
 
-  private final Topology _topology;
-
   private IncrementalDataPlane(Builder builder) {
-    _bgpTopology = builder._bgpTopology;
     _ipVrfOwners = builder._ipVrfOwners;
     _nodes = builder._nodes;
-    _topology = builder._topology;
+    _topologyContext = builder._topologyContext;
   }
 
   private Map<String, Configuration> computeConfigurations() {
@@ -167,8 +155,8 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   }
 
   @Override
-  public Table<String, String, Set<BgpRoute>> getBgpRoutes(boolean multipath) {
-    Table<String, String, Set<BgpRoute>> table = TreeBasedTable.create();
+  public Table<String, String, Set<Bgpv4Route>> getBgpRoutes(boolean multipath) {
+    Table<String, String, Set<Bgpv4Route>> table = TreeBasedTable.create();
 
     _nodes.forEach(
         (hostname, node) ->
@@ -182,7 +170,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
   @Override
   public ValueGraph<BgpPeerConfigId, BgpSessionProperties> getBgpTopology() {
-    return _bgpTopology;
+    return _topologyContext.getBgpTopology();
   }
 
   @Override
@@ -255,11 +243,11 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
   @Override
   public Topology getTopology() {
-    return _topology;
+    return _topologyContext.getLayer3Topology();
   }
 
   @Override
   public SortedSet<Edge> getTopologyEdges() {
-    return _topology.getEdges();
+    return _topologyContext.getLayer3Topology().getEdges();
   }
 }

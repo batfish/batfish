@@ -12,7 +12,6 @@ import org.batfish.vendor.VendorConfiguration;
 
 public class MrvConfiguration extends VendorConfiguration {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private transient Configuration _c;

@@ -11,7 +11,6 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.common.BatfishException;
 
 /** An IPv4 address */
 public class Ip implements Comparable<Ip>, Serializable {
@@ -116,7 +115,7 @@ public class Ip implements Comparable<Ip>, Serializable {
   public static @Nonnull Optional<Ip> tryParse(@Nonnull String text) {
     try {
       return Optional.of(parse(text));
-    } catch (IllegalArgumentException | BatfishException e) {
+    } catch (IllegalArgumentException e) {
       return Optional.empty();
     }
   }
@@ -171,7 +170,7 @@ public class Ip implements Comparable<Ip>, Serializable {
     } else if (firstOctet <= 223) {
       return create(0xFFFFFF00L);
     } else {
-      throw new BatfishException("Cannot compute classmask");
+      throw new IllegalArgumentException("Cannot compute classmask");
     }
   }
 

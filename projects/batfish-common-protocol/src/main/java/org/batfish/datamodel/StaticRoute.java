@@ -25,7 +25,7 @@ public class StaticRoute extends AbstractRoute {
   @Nonnull private final Ip _nextHopIp;
   private final int _tag;
 
-  private transient volatile int _hashcode = 0;
+  private transient int _hashCode;
 
   @JsonCreator
   private static StaticRoute jsonCreator(
@@ -70,20 +70,21 @@ public class StaticRoute extends AbstractRoute {
       return false;
     }
     StaticRoute rhs = (StaticRoute) o;
-    return Objects.equals(_network, rhs._network)
+    return _network.equals(rhs._network)
         && _admin == rhs._admin
         && getNonForwarding() == rhs.getNonForwarding()
         && getNonRouting() == rhs.getNonRouting()
         && _metric == rhs._metric
-        && Objects.equals(_nextHopInterface, rhs._nextHopInterface)
-        && Objects.equals(_nextHopIp, rhs._nextHopIp)
+        && _nextHopInterface.equals(rhs._nextHopInterface)
+        && _nextHopIp.equals(rhs._nextHopIp)
         && _tag == rhs._tag;
   }
 
   @Override
   public int hashCode() {
-    if (_hashcode == 0) {
-      _hashcode =
+    int h = _hashCode;
+    if (h == 0) {
+      h =
           Objects.hash(
               _network,
               _admin,
@@ -93,8 +94,9 @@ public class StaticRoute extends AbstractRoute {
               _nextHopInterface,
               _nextHopIp,
               _tag);
+      _hashCode = h;
     }
-    return _hashcode;
+    return h;
   }
 
   @Override

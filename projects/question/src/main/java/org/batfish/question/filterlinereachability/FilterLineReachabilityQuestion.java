@@ -24,11 +24,8 @@ import org.batfish.specifier.SpecifierFactories;
 @ParametersAreNonnullByDefault
 public class FilterLineReachabilityQuestion extends Question {
   private static final boolean DEFAULT_IGNORE_COMPOSITES = true;
-
   private static final String PROP_FILTERS = "filters";
-
   private static final String PROP_IGNORE_COMPOSITES = "ignoreComposites";
-
   private static final String PROP_NODES = "nodes";
 
   @Nullable private final String _filters;

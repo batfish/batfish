@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.BgpRoute.Builder;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
@@ -29,10 +30,8 @@ public enum Statements {
   Unsuppress;
 
   public static class StaticStatement extends Statement {
-
     private static final String PROP_TYPE = "type";
 
-    /** */
     private static final long serialVersionUID = 1L;
 
     private Statements _type;
@@ -73,10 +72,11 @@ public enum Statements {
 
         case RemovePrivateAs:
           {
-            BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment.getOutputRoute();
+            BgpRoute.Builder<?, ?> bgpRouteBuilder =
+                (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
             bgpRouteBuilder.setAsPath(bgpRouteBuilder.getAsPath().removePrivateAs());
             if (environment.getWriteToIntermediateBgpAttributes()) {
-              BgpRoute.Builder ir = environment.getIntermediateBgpAttributes();
+              BgpRoute.Builder<?, ?> ir = environment.getIntermediateBgpAttributes();
               ir.setAsPath(ir.getAsPath().removePrivateAs());
             }
             break;
@@ -118,14 +118,15 @@ public enum Statements {
           break;
 
         case SetWriteIntermediateBgpAttributes:
-          if (environment.getIntermediateBgpAttributes() == null) {
-            BgpRoute.Builder ir = new BgpRoute.Builder();
-            environment.setIntermediateBgpAttributes(ir);
-            AbstractRoute or = environment.getOriginalRoute();
-            ir.setMetric(or.getMetric());
-            ir.setTag(or.getTag());
+          if (environment.getOutputRoute() instanceof BgpRoute.Builder<?, ?>) {
+            environment.setWriteToIntermediateBgpAttributes(true);
+            if (environment.getIntermediateBgpAttributes() == null) {
+              BgpRoute.Builder<?, ?> bgpRouteBuilder = (Builder<?, ?>) environment.getOutputRoute();
+              AbstractRoute or = environment.getOriginalRoute();
+              environment.setIntermediateBgpAttributes(
+                  bgpRouteBuilder.newBuilder().setMetric(or.getMetric()).setTag(or.getTag()));
+            }
           }
-          environment.setWriteToIntermediateBgpAttributes(true);
           break;
 
         case Suppress:

@@ -12,7 +12,6 @@ import org.batfish.datamodel.eigrp.EigrpEdge;
 
 /** Verbose description of EIGRP adjacency */
 public final class VerboseEigrpEdge implements Serializable, Comparable<VerboseEigrpEdge> {
-
   private static final String PROP_EDGE_SUMMARY = "edgeSummary";
   private static final String PROP_EDGE = "edge";
   private static final long serialVersionUID = 1L;

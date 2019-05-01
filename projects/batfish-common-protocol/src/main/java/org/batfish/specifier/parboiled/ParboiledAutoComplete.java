@@ -1,6 +1,9 @@
 package org.batfish.specifier.parboiled;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.answers.AutocompleteSuggestion.DEFAULT_RANK;
+import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_NAME;
 import static org.batfish.specifier.parboiled.CommonParser.ESCAPE_CHAR;
 import static org.batfish.specifier.parboiled.CommonParser.isEscapableNameAnchor;
 import static org.batfish.specifier.parboiled.CommonParser.nameNeedsEscaping;
@@ -13,12 +16,18 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.answers.AutoCompleteUtils;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.Variable;
 import org.batfish.datamodel.questions.Variable.Type;
+import org.batfish.referencelibrary.AddressGroup;
+import org.batfish.referencelibrary.InterfaceGroup;
+import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.parboiled.Rule;
@@ -34,6 +43,7 @@ public final class ParboiledAutoComplete {
 
   public static final int RANK_STRING_LITERAL = 1;
 
+  private final CommonParser _parser;
   private final Rule _expression;
   private final Map<String, Anchor.Type> _completionTypes;
 
@@ -46,6 +56,7 @@ public final class ParboiledAutoComplete {
   private final ReferenceLibrary _referenceLibrary;
 
   ParboiledAutoComplete(
+      CommonParser parser,
       Rule expression,
       Map<String, Anchor.Type> completionTypes,
       String network,
@@ -55,6 +66,7 @@ public final class ParboiledAutoComplete {
       CompletionMetadata completionMetadata,
       NodeRolesData nodeRolesData,
       ReferenceLibrary referenceLibrary) {
+    _parser = parser;
     _expression = expression;
     _completionTypes = completionTypes;
     _network = network;
@@ -75,8 +87,10 @@ public final class ParboiledAutoComplete {
       CompletionMetadata completionMetadata,
       NodeRolesData nodeRolesData,
       ReferenceLibrary referenceLibrary) {
+    Parser parser = Parser.instance();
     return new ParboiledAutoComplete(
-            Parser.instance().getInputRule(grammar),
+            parser,
+            parser.getInputRule(grammar),
             Parser.ANCHORS,
             network,
             snapshot,
@@ -123,7 +137,7 @@ public final class ParboiledAutoComplete {
   List<AutocompleteSuggestion> autoCompletePotentialMatch(PotentialMatch pm) {
     switch (pm.getAnchorType()) {
       case ADDRESS_GROUP_NAME:
-        return autoCompletePotentialMatch(pm, DEFAULT_RANK);
+        return autoCompleteReferenceBookEntity(pm, DEFAULT_RANK);
       case CHAR_LITERAL:
         /*
          Char and String literals get a lower rank so that the possibly many suggestions for dynamic values
@@ -139,10 +153,13 @@ public final class ParboiledAutoComplete {
       case FILTER_NAME_REGEX:
         // can't help with regexes
         return ImmutableList.of();
+      case NODE_AND_INTERFACE:
+        // Node or Interface based anchors should appear later in the path
+        throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case INTERFACE_GROUP_NAME:
-        return autoCompletePotentialMatch(pm, DEFAULT_RANK);
+        return autoCompleteReferenceBookEntity(pm, DEFAULT_RANK);
       case INTERFACE_NAME:
-        return autoCompletePotentialMatch(pm, DEFAULT_RANK);
+        return autoCompleteInterfaceName(pm, DEFAULT_RANK);
       case INTERFACE_NAME_REGEX:
         // can't help with regexes
         return ImmutableList.of();
@@ -177,6 +194,12 @@ public final class ParboiledAutoComplete {
       case NODE_TYPE:
         // Relies on STRING_LITERAL completion as it appears later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
+      case REFERENCE_BOOK_AND_ADDRESS_GROUP:
+        // ADDRESS_GROUP_NAME or REFERENCE_BOOK_NAME should appear later in the path
+        throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
+      case REFERENCE_BOOK_AND_INTERFACE_GROUP:
+        // INTERFACE_GROUP_NAME or REFERENCE_BOOK_NAME should appear later in the path
+        throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case REFERENCE_BOOK_NAME:
         return autoCompletePotentialMatch(pm, DEFAULT_RANK);
       case ROUTING_POLICY_NAME:
@@ -205,14 +228,9 @@ public final class ParboiledAutoComplete {
   }
 
   private List<AutocompleteSuggestion> autoCompletePotentialMatch(PotentialMatch pm, int rank) {
-    boolean quoted = false;
-    String matchPrefix = pm.getMatchPrefix();
-    if (isEscapableNameAnchor(pm.getAnchorType()) && matchPrefix.startsWith(ESCAPE_CHAR)) {
-      quoted = true;
-      matchPrefix = matchPrefix.substring(1);
-    }
-    final boolean finalizedQuoted = quoted;
-    return AutoCompleteUtils.autoComplete(
+    String matchPrefix = unescapeIfNeeded(pm.getMatchPrefix(), pm.getAnchorType());
+    List<AutocompleteSuggestion> suggestions =
+        AutoCompleteUtils.autoComplete(
             _network,
             _snapshot,
             anchorTypeToVariableType(pm.getAnchorType()),
@@ -220,22 +238,13 @@ public final class ParboiledAutoComplete {
             _maxSuggestions,
             _completionMetadata,
             _nodeRolesData,
-            _referenceLibrary)
-        .stream()
-        .map(
-            s ->
-                new AutocompleteSuggestion(
-                    // escape if needed
-                    finalizedQuoted
-                            || (isEscapableNameAnchor(pm.getAnchorType())
-                                && nameNeedsEscaping(s.getText()))
-                        ? ESCAPE_CHAR + s.getText() + ESCAPE_CHAR
-                        : s.getText(),
-                    true,
-                    s.getDescription(),
-                    rank,
-                    pm.getMatchStartIndex()))
-        .collect(ImmutableList.toImmutableList());
+            _referenceLibrary);
+    return updateSuggestions(
+        suggestions,
+        !matchPrefix.equals(pm.getMatchPrefix()),
+        pm.getAnchorType(),
+        rank,
+        pm.getMatchStartIndex());
   }
 
   /**
@@ -275,5 +284,166 @@ public final class ParboiledAutoComplete {
       default:
         throw new IllegalArgumentException("No valid Variable type for Anchor type" + anchorType);
     }
+  }
+
+  @VisibleForTesting
+  List<AutocompleteSuggestion> autoCompleteInterfaceName(PotentialMatch pm, int rank) {
+    int anchorIndex = pm.getPath().indexOf(pm.getAnchor());
+    checkArgument(anchorIndex != -1, "Anchor is not present in the path.");
+
+    Anchor.Type parentAnchorType =
+        (anchorIndex == 0) ? null : pm.getPath().get(anchorIndex - 1).getAnchorType();
+
+    if (parentAnchorType == null) {
+      return autoCompletePotentialMatch(pm, rank);
+    }
+
+    switch (parentAnchorType) {
+      case NODE_AND_INTERFACE:
+        String interfaceNamePrefix = pm.getMatchPrefix();
+        // node information is at the head if nothing about the interface name was entered;
+        // otherwise, it is second from top
+        NodeAstNode nodeAst =
+            (NodeAstNode)
+                _parser
+                    .getShadowStack()
+                    .getValueStack()
+                    .peek(interfaceNamePrefix.isEmpty() ? 0 : 1);
+
+        // do context sensitive auto completion input is a node name or regex
+        if (!(nodeAst instanceof NameNodeAstNode) && !(nodeAst instanceof NameRegexNodeAstNode)) {
+          return autoCompletePotentialMatch(pm, rank);
+        }
+
+        Set<String> candidateInterfaces =
+            _completionMetadata.getInterfaces().stream()
+                .filter(i -> nodeNameMatches(i.getHostname(), nodeAst))
+                .map(NodeInterfacePair::getInterface)
+                .collect(ImmutableSet.toImmutableSet());
+        return updateSuggestions(
+            AutoCompleteUtils.stringAutoComplete(interfaceNamePrefix, candidateInterfaces),
+            false,
+            Anchor.Type.INTERFACE_NAME,
+            rank,
+            pm.getMatchStartIndex());
+
+      default:
+        return autoCompletePotentialMatch(pm, rank);
+    }
+  }
+
+  @VisibleForTesting
+  static boolean nodeNameMatches(String nodeName, NodeAstNode nodeAst) {
+    if (nodeAst instanceof NameNodeAstNode) {
+      return nodeName.equalsIgnoreCase(((NameNodeAstNode) nodeAst).getName());
+    } else if (nodeAst instanceof NameRegexNodeAstNode) {
+      return ((NameRegexNodeAstNode) nodeAst).getPattern().matcher(nodeName).find();
+    } else {
+      throw new IllegalArgumentException("Can only match node names or regexes");
+    }
+  }
+
+  /**
+   * Auto completes reference book names. The completion is context sensitive if the parent {@link
+   * PathElement} exists and is one that supports such completion. Otherwise, non context-sensitive
+   * completion is used
+   */
+  @VisibleForTesting
+  List<AutocompleteSuggestion> autoCompleteReferenceBookEntity(PotentialMatch pm, int rank) {
+    int anchorIndex = pm.getPath().indexOf(pm.getAnchor());
+    checkArgument(anchorIndex != -1, "Anchor is not present in the path.");
+
+    Anchor.Type parentAnchorType =
+        (anchorIndex == 0) ? null : pm.getPath().get(anchorIndex - 1).getAnchorType();
+
+    if (parentAnchorType == null) {
+      return autoCompletePotentialMatch(pm, rank);
+    }
+
+    switch (parentAnchorType) {
+      case REFERENCE_BOOK_AND_ADDRESS_GROUP:
+        checkArgument(
+            pm.getAnchorType() == ADDRESS_GROUP_NAME,
+            "Unexpected anchor for auto completing reference book entity. Expected %s. Got %s.",
+            ADDRESS_GROUP_NAME,
+            pm.getAnchorType());
+        Function<ReferenceBook, Set<String>> addressGroupGetter =
+            book ->
+                book.getAddressGroups().stream()
+                    .map(AddressGroup::getName)
+                    .collect(ImmutableSet.toImmutableSet());
+        return autoCompleteReferenceBookEntity(pm, addressGroupGetter, rank);
+      case REFERENCE_BOOK_AND_INTERFACE_GROUP:
+        checkArgument(
+            pm.getAnchorType() == INTERFACE_GROUP_NAME,
+            "Unexpected anchor for auto completing reference book entity. Expected %s. Got %s.",
+            INTERFACE_GROUP_NAME,
+            pm.getAnchorType());
+        Function<ReferenceBook, Set<String>> interfaceGroupGetter =
+            book ->
+                book.getInterfaceGroups().stream()
+                    .map(InterfaceGroup::getName)
+                    .collect(ImmutableSet.toImmutableSet());
+        return autoCompleteReferenceBookEntity(pm, interfaceGroupGetter, rank);
+      default:
+        return autoCompletePotentialMatch(pm, rank);
+    }
+  }
+
+  private List<AutocompleteSuggestion> autoCompleteReferenceBookEntity(
+      PotentialMatch pm, Function<ReferenceBook, Set<String>> entityNameGetter, int rank) {
+    String matchPrefix = pm.getMatchPrefix();
+    // book name is at the head if nothing about the reference book was entered;
+    // otherwise, it is second from top
+    String bookName =
+        ((StringAstNode)
+                _parser.getShadowStack().getValueStack().peek(matchPrefix.isEmpty() ? 0 : 1))
+            .getStr();
+    Set<String> candidateEntityNames =
+        entityNameGetter.apply(
+            _referenceLibrary
+                .getReferenceBook(bookName)
+                .orElse(ReferenceBook.builder("empty").build()));
+    return updateSuggestions(
+        AutoCompleteUtils.stringAutoComplete(matchPrefix, candidateEntityNames),
+        false,
+        pm.getAnchorType(),
+        rank,
+        pm.getMatchStartIndex());
+  }
+
+  /**
+   * Update suggestions obtained through {@link AutoCompleteUtils} to escape names if needed and
+   * assign rank and start index
+   */
+  @Nonnull
+  private static List<AutocompleteSuggestion> updateSuggestions(
+      List<AutocompleteSuggestion> suggestions,
+      boolean escape,
+      Anchor.Type anchorType,
+      int rank,
+      int startIndex) {
+    return suggestions.stream()
+        .map(
+            s ->
+                new AutocompleteSuggestion(
+                    // escape if needed
+                    escape || (isEscapableNameAnchor(anchorType) && nameNeedsEscaping(s.getText()))
+                        ? ESCAPE_CHAR + s.getText() + ESCAPE_CHAR
+                        : s.getText(),
+                    true,
+                    s.getDescription(),
+                    rank,
+                    startIndex))
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  /** Unescapes {@code originalMatch} if it is of escapable type and is already escaped */
+  @Nonnull
+  private static String unescapeIfNeeded(String originalMatch, Anchor.Type anchorType) {
+    if (isEscapableNameAnchor(anchorType) && originalMatch.startsWith(ESCAPE_CHAR)) {
+      return originalMatch.substring(1);
+    }
+    return originalMatch;
   }
 }

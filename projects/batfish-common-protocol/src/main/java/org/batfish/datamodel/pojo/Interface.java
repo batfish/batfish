@@ -8,11 +8,8 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.InterfaceType;
 
 public class Interface extends BfObject {
-
   private static final String PROP_NAME = "name";
-
   private static final String PROP_NODE_ID = "nodeId";
-
   private static final String PROP_TYPE = "type";
 
   @Nonnull private final String _name;

@@ -26,6 +26,27 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     _name = name;
   }
 
+  /**
+   * Applies sanity checks and finishing touches to the given {@link Configuration}.
+   *
+   * <p>Sanity checks such as asserting that required properties hold.
+   *
+   * <p>Finishing touches such as converting structures to their immutable forms.
+   */
+  private static void finalizeConfiguration(Configuration c, Warnings w) {
+    String hostname = c.getHostname();
+    if (c.getDefaultCrossZoneAction() == null) {
+      throw new BatfishException(
+          "Implementation error: missing default cross-zone action for host: '" + hostname + "'");
+    }
+    if (c.getDefaultInboundAction() == null) {
+      throw new BatfishException(
+          "Implementation error: missing default inbound action for host: '" + hostname + "'");
+    }
+    c.simplifyRoutingPolicies();
+    c.computeRoutingPolicySources(w);
+  }
+
   @Override
   public ConvertConfigurationResult call() {
     long startTime = System.currentTimeMillis();
@@ -37,7 +58,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     Multimap<String, String> fileMap = answerElement.getFileMap();
     try {
       // We have only two options: AWS VPCs or router configs
-      if (VendorConfiguration.class.isInstance(_configObject)) {
+      if (_configObject instanceof VendorConfiguration) {
         Warnings warnings = Batfish.buildWarnings(_settings);
         VendorConfiguration vendorConfiguration = ((VendorConfiguration) _configObject);
         String filename = vendorConfiguration.getFilename();
@@ -45,19 +66,8 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
         vendorConfiguration.setAnswerElement(answerElement);
         for (Configuration configuration :
             vendorConfiguration.toVendorIndependentConfigurations()) {
-          String hostname = configuration.getHostname();
-          if (configuration.getDefaultCrossZoneAction() == null) {
-            throw new BatfishException(
-                "Implementation error: missing default cross-zone action for host: '"
-                    + hostname
-                    + "'");
-          }
-          if (configuration.getDefaultInboundAction() == null) {
-            throw new BatfishException(
-                "Implementation error: missing default inbound action for host: '"
-                    + hostname
-                    + "'");
-          }
+
+          finalizeConfiguration(configuration, warnings);
 
           // get iptables if applicable
           IptablesVendorConfiguration iptablesConfig = null;
@@ -77,6 +87,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
             iptablesConfig.applyAsOverlay(configuration, warnings);
           }
 
+          String hostname = configuration.getHostname();
           configurations.put(hostname, configuration);
           warningsByHost.put(hostname, warnings);
           fileMap.put(filename, hostname);

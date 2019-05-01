@@ -4,11 +4,18 @@ import static org.batfish.specifier.parboiled.ParboiledAutoComplete.RANK_STRING_
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
+import java.util.List;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.referencelibrary.InterfaceGroup;
+import org.batfish.referencelibrary.ReferenceBook;
+import org.batfish.referencelibrary.ReferenceLibrary;
+import org.batfish.role.NodeRolesData;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -24,6 +31,29 @@ public class ParserInterfaceTest {
 
   private static AbstractParseRunner<AstNode> getRunner() {
     return new ReportingParseRunner<>(Parser.instance().getInputRule(Grammar.INTERFACE_SPECIFIER));
+  }
+
+  private static List<AutocompleteSuggestion> autoCompleteHelper(
+      String query, CompletionMetadata completionMetadata) {
+    return autoCompleteHelper(query, completionMetadata, new ReferenceLibrary(null));
+  }
+
+  private static List<AutocompleteSuggestion> autoCompleteHelper(
+      String query, ReferenceLibrary referenceLibrary) {
+    return autoCompleteHelper(query, null, referenceLibrary);
+  }
+
+  private static List<AutocompleteSuggestion> autoCompleteHelper(
+      String query, CompletionMetadata completionMetadata, ReferenceLibrary referenceLibrary) {
+    return ParboiledAutoComplete.autoComplete(
+        Grammar.INTERFACE_SPECIFIER,
+        "network",
+        "snapshot",
+        query,
+        Integer.MAX_VALUE,
+        completionMetadata,
+        NodeRolesData.builder().build(),
+        referenceLibrary);
   }
 
   /** This testParses if we have proper completion annotations on the rules */
@@ -46,10 +76,9 @@ public class ParserInterfaceTest {
             .setInterfaces(ImmutableSet.of(new NodeInterfacePair("node1", "iface1")))
             .build();
 
-    ParboiledAutoComplete pac =
-        new ParboiledAutoComplete(
-            Parser.instance().getInputRule(Grammar.INTERFACE_SPECIFIER),
-            Parser.ANCHORS,
+    List<AutocompleteSuggestion> suggestions =
+        ParboiledAutoComplete.autoComplete(
+            Grammar.INTERFACE_SPECIFIER,
             "network",
             "snapshot",
             query,
@@ -59,7 +88,7 @@ public class ParserInterfaceTest {
             null);
 
     assertThat(
-        ImmutableSet.copyOf(pac.run()),
+        ImmutableSet.copyOf(suggestions),
         equalTo(
             ImmutableSet.of(
                 // valid operators
@@ -102,10 +131,9 @@ public class ParserInterfaceTest {
                     new NodeInterfacePair("node1", "iface11")))
             .build();
 
-    ParboiledAutoComplete pac =
-        new ParboiledAutoComplete(
-            Parser.instance().getInputRule(Grammar.INTERFACE_SPECIFIER),
-            Parser.ANCHORS,
+    List<AutocompleteSuggestion> suggestions =
+        ParboiledAutoComplete.autoComplete(
+            Grammar.INTERFACE_SPECIFIER,
             "network",
             "snapshot",
             query,
@@ -115,7 +143,7 @@ public class ParserInterfaceTest {
             null);
 
     assertThat(
-        ImmutableSet.copyOf(pac.run()),
+        ImmutableSet.copyOf(suggestions),
         equalTo(
             ImmutableSet.of(
                 new AutocompleteSuggestion(
@@ -316,5 +344,66 @@ public class ParserInterfaceTest {
                 new IntersectionInterfaceAstNode(
                     new NameInterfaceAstNode("eth0"), new NameInterfaceAstNode("loopback0")),
                 new NameInterfaceAstNode("eth1"))));
+  }
+
+  /**
+   * Test that interface group rule is written in a way that allows for context sensitive
+   * autocompletion
+   */
+  @Test
+  public void testContextSensitiveInterfaceGroup() {
+    ReferenceLibrary library =
+        new ReferenceLibrary(
+            ImmutableList.of(
+                ReferenceBook.builder("b1")
+                    .setInterfaceGroups(
+                        ImmutableList.of(new InterfaceGroup(ImmutableSortedSet.of(), "g1")))
+                    .build(),
+                ReferenceBook.builder("b2")
+                    .setInterfaceGroups(
+                        ImmutableList.of(new InterfaceGroup(ImmutableSortedSet.of(), "g2")))
+                    .build()));
+
+    String query = "@interfaceGroup(b1,";
+
+    // only b1 should be suggested
+    assertThat(
+        ImmutableSet.copyOf(autoCompleteHelper(query, library)),
+        equalTo(
+            ImmutableSet.of(
+                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion(
+                    "g1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()))));
+  }
+
+  /**
+   * Test that interface rules are written in a way that allows for context sensitive autocompletion
+   */
+  @Test
+  public void testContextSensitiveInterfaceName() {
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder()
+            .setInterfaces(
+                ImmutableSet.of(
+                    new NodeInterfacePair("n1a", "eth11"),
+                    new NodeInterfacePair("n1a", "eth12"),
+                    new NodeInterfacePair("n2a", "eth21")))
+            .build();
+
+    String query = "n1a[eth1";
+
+    // only eth11 and eth12 should be suggested
+    assertThat(
+        ImmutableSet.copyOf(autoCompleteHelper(query, completionMetadata)),
+        equalTo(
+            ImmutableSet.of(
+                new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion("\\", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion("&", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion("]", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion(
+                    "eth11", true, null, AutocompleteSuggestion.DEFAULT_RANK, 4),
+                new AutocompleteSuggestion(
+                    "eth12", true, null, AutocompleteSuggestion.DEFAULT_RANK, 4))));
   }
 }

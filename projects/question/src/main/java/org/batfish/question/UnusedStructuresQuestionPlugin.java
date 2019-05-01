@@ -142,7 +142,6 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
    * <p>Such occurrences could be configuration errors or leftover cruft.
    */
   public static class UnusedStructuresQuestion extends Question {
-
     private static final String PROP_NODES = "nodes";
 
     @Nullable private final String _nodes;

@@ -64,16 +64,11 @@ public class IsisInterfaceSettings implements Serializable {
 
   private static final String PROP_BFD_LIVENESS_DETECTION_MINIMUM_INTERVAL =
       "bfdLivenessDetectionMinimumInterval";
-
   private static final String PROP_BFD_LIVENESS_DETECTION_MULTIPLIER =
       "bfdLivenessDetectionMultiplier";
-
   private static final String PROP_ISO_ADDRESS = "isoAddress";
-
   private static final String PROP_LEVEL1 = "level1";
-
   private static final String PROP_LEVEL2 = "level2";
-
   private static final String PROP_POINT_TO_POINT = "pointToPoint";
 
   private static final long serialVersionUID = 1L;

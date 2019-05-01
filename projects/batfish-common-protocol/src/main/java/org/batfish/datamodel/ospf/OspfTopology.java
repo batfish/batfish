@@ -90,7 +90,7 @@ public final class OspfTopology {
       return false;
     }
     OspfTopology topology = (OspfTopology) o;
-    return Objects.equals(_graph, topology._graph);
+    return _graph.equals(topology._graph);
   }
 
   /** Return the graph backing this topology */

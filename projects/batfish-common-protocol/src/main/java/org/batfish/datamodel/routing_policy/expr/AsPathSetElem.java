@@ -6,7 +6,6 @@ import java.io.Serializable;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public abstract class AsPathSetElem implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Override

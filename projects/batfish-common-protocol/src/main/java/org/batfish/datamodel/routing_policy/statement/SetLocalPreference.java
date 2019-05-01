@@ -10,10 +10,8 @@ import org.batfish.datamodel.routing_policy.expr.LongExpr;
 
 @ParametersAreNonnullByDefault
 public final class SetLocalPreference extends Statement {
-
   private static final String PROP_LOCAL_PREFERENCE = "localPreference";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private LongExpr _localPreference;
@@ -39,7 +37,7 @@ public final class SetLocalPreference extends Statement {
   @Override
   public Result execute(Environment environment) {
     Result result = new Result();
-    BgpRoute.Builder bgpBuilder = (BgpRoute.Builder) environment.getOutputRoute();
+    BgpRoute.Builder<?, ?> bgpBuilder = (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
     long localPreference = _localPreference.evaluate(environment);
     bgpBuilder.setLocalPreference(localPreference);
     if (environment.getWriteToIntermediateBgpAttributes()) {

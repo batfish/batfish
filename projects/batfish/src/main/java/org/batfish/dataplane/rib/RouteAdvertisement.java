@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -19,7 +18,7 @@ public final class RouteAdvertisement<T> {
   @Nonnull private final T _route;
   @Nonnull private final Reason _reason;
 
-  private transient volatile int _hashcode = 0;
+  private transient int _hashCode = 0;
 
   /** Reason for the advertisement */
   public enum Reason {
@@ -91,15 +90,17 @@ public final class RouteAdvertisement<T> {
       return false;
     }
     RouteAdvertisement<?> that = (RouteAdvertisement<?>) o;
-    return Objects.equals(_route, that._route) && _reason == that._reason;
+    return _route.equals(that._route) && _reason == that._reason;
   }
 
   @Override
   public int hashCode() {
-    if (_hashcode == 0) {
-      _hashcode = Objects.hash(_route, _reason);
+    int h = _hashCode;
+    if (h == 0) {
+      h = 31 * _route.hashCode() + _reason.hashCode();
+      _hashCode = h;
     }
-    return _hashcode;
+    return _hashCode;
   }
 
   @Override

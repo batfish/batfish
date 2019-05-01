@@ -12,7 +12,6 @@ import javax.annotation.Nullable;
  * contained variable match expression.
  */
 public class VarCommunityHalf implements CommunityHalfExpr {
-
   private static final String PROP_VAR = "var";
 
   private static final long serialVersionUID = 1L;

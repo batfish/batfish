@@ -15,7 +15,6 @@ import org.batfish.datamodel.IpSpaceReference;
  */
 public class NetworkObjectAddressSpecifier implements AccessListAddressSpecifier {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final String _name;

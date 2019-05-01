@@ -35,7 +35,7 @@ import org.batfish.specifier.SpecifierContextImpl;
  * object. This involves getting the right configs and dataplane, and resolving Location, Node, and
  * IpSpace specifiers. All validation of user input is done here.
  */
-final class ReachabilityParametersResolver {
+public final class ReachabilityParametersResolver {
   private final SpecifierContextImpl _context;
 
   private final DataPlane _dataPlane;

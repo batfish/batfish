@@ -14,7 +14,6 @@ import org.batfish.datamodel.questions.Question;
  * Currently, only tracing/propagation via BGP is supported.
  */
 public class PrefixTracerQuestion extends Question {
-
   private static final String PROP_PREFIX = "prefix";
   private static final String PROP_NODES = "nodes";
 

@@ -15,7 +15,6 @@ import javax.annotation.ParametersAreNullableByDefault;
 
 /** Handles EIGRP metric information. */
 public class EigrpMetric implements Serializable {
-
   private static final String PROP_CLASSIC_BANDWIDTH = "classic-bandwidth";
   private static final String PROP_CLASSIC_DELAY = "classic-delay";
   private static final String PROP_NAMED_BANDWIDTH = "named-bandwidth";

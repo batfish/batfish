@@ -10,7 +10,6 @@ import org.batfish.datamodel.acl.AclLineMatchExprs;
 /** Represents a {@code ScreenOption} checking large icmp packets */
 public final class IcmpLarge implements ScreenOption {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private static final String ICMP_LARGE = "icmp large";

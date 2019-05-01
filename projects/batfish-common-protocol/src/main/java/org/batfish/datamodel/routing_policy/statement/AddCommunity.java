@@ -16,7 +16,6 @@ import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 /** Add communities specified by a {@link CommunitySetExpr} to a BGP route */
 @ParametersAreNonnullByDefault
 public final class AddCommunity extends Statement {
-
   private static final String PROP_EXPR = "expr";
   private static final long serialVersionUID = 1L;
 
@@ -52,8 +51,8 @@ public final class AddCommunity extends Statement {
 
   @Override
   public Result execute(Environment environment) {
-    if (environment.getOutputRoute() instanceof BgpRoute.Builder) {
-      BgpRoute.Builder bgpRoute = (BgpRoute.Builder) environment.getOutputRoute();
+    if (environment.getOutputRoute() instanceof BgpRoute.Builder<?, ?>) {
+      BgpRoute.Builder<?, ?> bgpRoute = (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
       SortedSet<Long> communities = _expr.asLiteralCommunities(environment);
       bgpRoute.addCommunities(communities);
       if (environment.getWriteToIntermediateBgpAttributes()) {

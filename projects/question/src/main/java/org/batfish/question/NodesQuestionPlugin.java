@@ -265,7 +265,6 @@ public class NodesQuestionPlugin extends QuestionPlugin {
     }
 
     private static final String PROP_NODES_SUMMARY = "nodesSummary";
-
     private static final String PROP_NODES = "nodes";
 
     private final SortedMap<String, Configuration> _nodes;
@@ -349,11 +348,8 @@ public class NodesQuestionPlugin extends QuestionPlugin {
    * org.batfish.question.nodeproperties.NodePropertiesQuestion}.
    */
   public static class NodesQuestion extends Question {
-
     private static final String PROP_NODES = "nodes";
-
     private static final String PROP_NODE_TYPES = "nodeTypes";
-
     private static final String PROP_SUMMARY = "summary";
 
     private NodesSpecifier _nodes;

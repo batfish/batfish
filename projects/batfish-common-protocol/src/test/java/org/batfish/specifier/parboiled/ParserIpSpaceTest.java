@@ -4,9 +4,15 @@ import static org.batfish.specifier.parboiled.ParboiledAutoComplete.RANK_STRING_
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import java.util.List;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
+import org.batfish.referencelibrary.AddressGroup;
+import org.batfish.referencelibrary.ReferenceBook;
+import org.batfish.referencelibrary.ReferenceLibrary;
+import org.batfish.role.NodeRolesData;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -23,6 +29,19 @@ public class ParserIpSpaceTest {
 
   private static AbstractParseRunner<AstNode> getRunner() {
     return new ReportingParseRunner<>(Parser.instance().getInputRule(Grammar.IP_SPACE_SPECIFIER));
+  }
+
+  private static List<AutocompleteSuggestion> autoCompleteHelper(
+      String query, ReferenceLibrary referenceLibrary) {
+    return ParboiledAutoComplete.autoComplete(
+        Grammar.IP_SPACE_SPECIFIER,
+        "network",
+        "snapshot",
+        query,
+        Integer.MAX_VALUE,
+        null,
+        NodeRolesData.builder().build(),
+        referenceLibrary);
   }
 
   /** This tests if we have proper completion annotations on the rules */
@@ -47,10 +66,9 @@ public class ParserIpSpaceTest {
             .setPrefixes(ImmutableSet.of("1.1.1.1/22"))
             .build();
 
-    ParboiledAutoComplete pac =
-        new ParboiledAutoComplete(
-            Parser.instance().getInputRule(Grammar.IP_SPACE_SPECIFIER),
-            Parser.ANCHORS,
+    List<AutocompleteSuggestion> suggestions =
+        ParboiledAutoComplete.autoComplete(
+            Grammar.IP_SPACE_SPECIFIER,
             "network",
             "snapshot",
             query,
@@ -60,7 +78,7 @@ public class ParserIpSpaceTest {
             null);
 
     assertThat(
-        ImmutableSet.copyOf(pac.run()),
+        ImmutableSet.copyOf(suggestions),
         equalTo(
             ImmutableSet.of(
                 new AutocompleteSuggestion(
@@ -210,5 +228,33 @@ public class ParserIpSpaceTest {
     assertThat(
         ParserUtils.getAst(getRunner().run("1.1.1.1,2.2.2.2-2.2.2.3,3.3.3.3")),
         equalTo(expectedNode2));
+  }
+
+  /**
+   * Test that address group rule is written in a way that allows for context sensitive
+   * autocompletion
+   */
+  @Test
+  public void testContextSensitiveAddressGroup() {
+    ReferenceLibrary library =
+        new ReferenceLibrary(
+            ImmutableList.of(
+                ReferenceBook.builder("b1")
+                    .setAddressGroups(ImmutableList.of(new AddressGroup(null, "g1")))
+                    .build(),
+                ReferenceBook.builder("b2")
+                    .setAddressGroups(ImmutableList.of(new AddressGroup(null, "g2")))
+                    .build()));
+
+    String query = "@addressGroup(b1,";
+
+    // only g1 should be suggested
+    assertThat(
+        ImmutableSet.copyOf(autoCompleteHelper(query, library)),
+        equalTo(
+            ImmutableSet.of(
+                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion(
+                    "g1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()))));
   }
 }

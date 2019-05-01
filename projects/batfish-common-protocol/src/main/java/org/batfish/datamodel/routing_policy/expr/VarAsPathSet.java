@@ -13,7 +13,6 @@ import org.batfish.datamodel.routing_policy.Environment;
 public final class VarAsPathSet extends AsPathSetExpr {
   private static final String PROP_VAR = "var";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Nonnull private String _var;

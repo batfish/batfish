@@ -17,7 +17,6 @@ import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 public final class DeleteCommunity extends Statement {
   private static final String PROP_EXPR = "expr";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Nonnull private final CommunitySetExpr _expr;
@@ -46,7 +45,8 @@ public final class DeleteCommunity extends Statement {
 
   @Override
   public Result execute(Environment environment) {
-    BgpRoute.Builder outputRouteBuilder = (BgpRoute.Builder) environment.getOutputRoute();
+    BgpRoute.Builder<?, ?> outputRouteBuilder =
+        (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
     SortedSet<Long> currentCommunities = outputRouteBuilder.getCommunities();
     SortedSet<Long> matchingCommunities = _expr.matchedCommunities(environment, currentCommunities);
     outputRouteBuilder.removeCommunities(matchingCommunities);

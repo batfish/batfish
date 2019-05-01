@@ -7,10 +7,8 @@ import java.util.Map;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
 public class IpIpSpace extends IpSpace {
-
   private static final String PROP_IP = "ip";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final Ip _ip;

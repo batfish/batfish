@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Configuration;
@@ -193,7 +194,7 @@ public class OspfRoutingProcessTest {
     _routingProcess = new OspfRoutingProcess(ospfProcess, VRF_NAME, _c, _emptyOspfTopology);
   }
 
-  private OspfTopology nonEmptyOspfTopology() {
+  private static OspfTopology nonEmptyOspfTopology() {
     MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> graph =
         ValueGraphBuilder.directed().build();
     OspfNeighborConfigId c1 = new OspfNeighborConfigId(HOSTNAME, VRF_NAME, "1", ACTIVE_IFACE_NAME);
@@ -300,7 +301,7 @@ public class OspfRoutingProcessTest {
     // Must not crash on non-existent interface
     RibDelta<OspfIntraAreaRoute> delta = _routingProcess.initializeRoutesByArea(AREA0_CONFIG);
     // All routes were added
-    assertTrue(delta.getActions().stream().allMatch(r -> r.getReason() == ADD));
+    assertTrue(delta.getActions().allMatch(r -> r.getReason() == ADD));
 
     /*
       Requirements:
@@ -310,7 +311,7 @@ public class OspfRoutingProcessTest {
     - Must include all addresses from active interface
     */
     assertThat(
-        delta.getRoutes(),
+        delta.getRoutesStream().collect(Collectors.toList()),
         containsInAnyOrder(
             hasPrefix(PASSIVE_ADDR.getPrefix()),
             hasPrefix(ACTIVE_ADDR_1.getPrefix()),
@@ -446,7 +447,7 @@ public class OspfRoutingProcessTest {
     OspfNeighborConfigId n2 = new OspfNeighborConfigId("r2", VRF_NAME, "1", "someIface");
 
     // Both of these should not crash because new message queues exist now
-    _routingProcess.enqueueMessagesIntra(OspfTopology.makeEdge(n2, n1), ImmutableSet.of());
+    _routingProcess.enqueueMessagesIntra(OspfTopology.makeEdge(n2, n1), Stream.of());
     _routingProcess.enqueueMessagesInter(OspfTopology.makeEdge(n2, n1), ImmutableSet.of());
   }
 
@@ -457,7 +458,7 @@ public class OspfRoutingProcessTest {
     OspfNeighborConfigId n2 = new OspfNeighborConfigId("r2", VRF_NAME, "1", "someIface");
     _routingProcess.enqueueMessagesIntra(
         OspfTopology.makeEdge(n2, n1),
-        ImmutableSet.of(
+        Stream.of(
             new RouteAdvertisement<>(
                 OspfIntraAreaRoute.builder()
                     .setArea(0)
@@ -777,7 +778,8 @@ public class OspfRoutingProcessTest {
 
     // Regular conversion
     Collection<RouteAdvertisement<OspfIntraAreaRoute>> transformed =
-        transformIntraAreaRoutesOnExport(delta, AREA0_CONFIG, nextHopIp);
+        transformIntraAreaRoutesOnExport(delta, AREA0_CONFIG, nextHopIp)
+            .collect(Collectors.toList());
     assertThat(
         transformed,
         contains(
@@ -845,8 +847,8 @@ public class OspfRoutingProcessTest {
             .setArea(1L)
             .setAdmin(0)
             .setNextHopIp(Ip.parse("1.1.1.1"));
-    Collection<RouteAdvertisement<OspfExternalType1Route>> routes =
-        ImmutableList.of(new RouteAdvertisement<>((OspfExternalType1Route) builder.build()));
+    Stream<RouteAdvertisement<OspfExternalType1Route>> routes =
+        Stream.of(new RouteAdvertisement<>((OspfExternalType1Route) builder.build()));
     final OspfArea ospfArea = OspfArea.builder().setNumber(33).build();
 
     // Going to area 0
@@ -857,7 +859,7 @@ public class OspfRoutingProcessTest {
     // Going from area 0 to some area
     assertThat(
         _routingProcess.transformType1RoutesOnExport(
-            ImmutableList.of(
+            Stream.of(
                 new RouteAdvertisement<>((OspfExternalType1Route) builder.setArea(0).build())),
             ospfArea),
         contains(new RouteAdvertisement<>(builder.setArea(ospfArea.getAreaNumber()).build())));
@@ -865,7 +867,7 @@ public class OspfRoutingProcessTest {
     // Generated locally, going to some area
     assertThat(
         _routingProcess.transformType1RoutesOnExport(
-            ImmutableList.of(
+            Stream.of(
                 new RouteAdvertisement<>(
                     (OspfExternalType1Route) builder.setArea(OspfRoute.NO_AREA).build())),
             ospfArea),
@@ -874,7 +876,7 @@ public class OspfRoutingProcessTest {
     // In the same area
     assertThat(
         _routingProcess.transformType1RoutesOnExport(
-            ImmutableList.of(
+            Stream.of(
                 new RouteAdvertisement<>(
                     (OspfExternalType1Route) builder.setArea(ospfArea.getAreaNumber()).build())),
             ospfArea),
@@ -883,7 +885,7 @@ public class OspfRoutingProcessTest {
     // Going across two non-zero areas: not allowed
     assertThat(
         _routingProcess.transformType1RoutesOnExport(
-            ImmutableList.of(
+            Stream.of(
                 new RouteAdvertisement<>(
                     (OspfExternalType1Route) builder.setArea(ospfArea.getAreaNumber()).build())),
             OspfArea.builder().setNumber(44).build()),
@@ -911,8 +913,8 @@ public class OspfRoutingProcessTest {
             .setArea(1L)
             .setAdmin(0)
             .setNextHopIp(Ip.parse("1.1.1.1"));
-    Collection<RouteAdvertisement<OspfExternalType1Route>> routes =
-        ImmutableList.of(new RouteAdvertisement<>((OspfExternalType1Route) builder.build()));
+    Stream<RouteAdvertisement<OspfExternalType1Route>> routes =
+        Stream.of(new RouteAdvertisement<>((OspfExternalType1Route) builder.build()));
 
     // Override for routes transiting across areas
     assertThat(
@@ -929,7 +931,7 @@ public class OspfRoutingProcessTest {
     // No override for locally generated routes
     assertThat(
         routingProcess.transformType1RoutesOnExport(
-            ImmutableList.of(
+            Stream.of(
                 new RouteAdvertisement<>(
                     (OspfExternalType1Route) builder.setArea(OspfRoute.NO_AREA).build())),
             AREA0_CONFIG),
@@ -947,14 +949,14 @@ public class OspfRoutingProcessTest {
             .setArea(1L)
             .setAdmin(0)
             .setNextHopIp(Ip.parse("1.1.1.1"));
-    Collection<RouteAdvertisement<OspfExternalType2Route>> routes =
-        ImmutableList.of(new RouteAdvertisement<>((OspfExternalType2Route) builder.build()));
+    Stream<RouteAdvertisement<OspfExternalType2Route>> routes =
+        Stream.of(new RouteAdvertisement<>((OspfExternalType2Route) builder.build()));
     assertThat(
-        _routingProcess.transformType2RoutesOnExport(routes, AREA0_CONFIG),
+        OspfRoutingProcess.transformType2RoutesOnExport(routes, AREA0_CONFIG),
         contains(new RouteAdvertisement<>(builder.setArea(1).build())));
     assertThat(
-        _routingProcess.transformType2RoutesOnExport(
-            ImmutableList.of(
+        OspfRoutingProcess.transformType2RoutesOnExport(
+            Stream.of(
                 new RouteAdvertisement<>(
                     (OspfExternalType2Route) builder.setArea(OspfRoute.NO_AREA).build())),
             AREA0_CONFIG),
@@ -1064,31 +1066,39 @@ public class OspfRoutingProcessTest {
             .build();
     // No filtering to regular area
     assertThat(
-        _routingProcess.filterExternalRoutesOnExport(routes, AREA0_CONFIG),
-        equalTo(routes.getActions()));
+        _routingProcess
+            .filterExternalRoutesOnExport(routes, AREA0_CONFIG)
+            .collect(Collectors.toList()),
+        equalTo(routes.getActions().collect(Collectors.toList())));
     // Filtering to STUB
     assertThat(
-        _routingProcess.filterExternalRoutesOnExport(
-            routes,
-            OspfArea.builder().setNumber(33).setStub(StubSettings.builder().build()).build()),
+        _routingProcess
+            .filterExternalRoutesOnExport(
+                routes,
+                OspfArea.builder().setNumber(33).setStub(StubSettings.builder().build()).build())
+            .collect(Collectors.toList()),
         empty());
     // Filtering to NSSA with type7 suppression
     assertThat(
-        _routingProcess.filterExternalRoutesOnExport(
-            routes,
-            OspfArea.builder()
-                .setNumber(33)
-                .setNssa(NssaSettings.builder().setSuppressType7(true).build())
-                .build()),
+        _routingProcess
+            .filterExternalRoutesOnExport(
+                routes,
+                OspfArea.builder()
+                    .setNumber(33)
+                    .setNssa(NssaSettings.builder().setSuppressType7(true).build())
+                    .build())
+            .collect(Collectors.toList()),
         empty());
     // No filtering to NSSA without type7 suppression
     assertThat(
-        _routingProcess.filterExternalRoutesOnExport(
-            routes,
-            OspfArea.builder()
-                .setNumber(33)
-                .setNssa(NssaSettings.builder().setSuppressType7(false).build())
-                .build()),
-        equalTo(routes.getActions()));
+        _routingProcess
+            .filterExternalRoutesOnExport(
+                routes,
+                OspfArea.builder()
+                    .setNumber(33)
+                    .setNssa(NssaSettings.builder().setSuppressType7(false).build())
+                    .build())
+            .collect(Collectors.toList()),
+        equalTo(routes.getActions().collect(Collectors.toList())));
   }
 }

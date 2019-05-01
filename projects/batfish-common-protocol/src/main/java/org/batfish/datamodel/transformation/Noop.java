@@ -17,12 +17,10 @@ import org.batfish.datamodel.flow.TransformationStep.TransformationType;
  */
 @ParametersAreNonnullByDefault
 public final class Noop implements TransformationStep, Serializable {
-  /** */
   private static final long serialVersionUID = 1L;
 
   public static final Noop NOOP_DEST_NAT = new Noop(DEST_NAT);
   public static final Noop NOOP_SOURCE_NAT = new Noop(SOURCE_NAT);
-
   private static final String PROP_TRANSFORMATION_TYPE = "transformationType";
 
   private final TransformationType _type;

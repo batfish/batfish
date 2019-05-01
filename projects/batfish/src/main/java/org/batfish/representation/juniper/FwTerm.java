@@ -6,7 +6,6 @@ import java.util.List;
 
 public final class FwTerm implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final List<FwFromApplicationSetMember> _fromApplicationSetMembers;

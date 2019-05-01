@@ -24,7 +24,6 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 public final class Conjunction extends BooleanExpr {
 
   private static final long serialVersionUID = 1L;
-
   private static final String PROP_CONJUNCTS = "conjuncts";
 
   private List<BooleanExpr> _conjuncts;

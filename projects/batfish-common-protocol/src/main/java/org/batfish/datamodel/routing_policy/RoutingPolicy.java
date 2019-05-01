@@ -81,7 +81,6 @@ public class RoutingPolicy implements Serializable {
   }
 
   private static final long serialVersionUID = 1L;
-
   private static final String PROP_NAME = "name";
   private static final String PROP_STATEMENTS = "statements";
 

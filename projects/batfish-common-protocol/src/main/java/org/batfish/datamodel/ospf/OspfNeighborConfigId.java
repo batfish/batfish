@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
 import java.util.Objects;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -16,16 +17,15 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 @ParametersAreNonnullByDefault
 public final class OspfNeighborConfigId implements Serializable {
   private static final long serialVersionUID = 1;
-
   private static final String PROP_HOSTNAME = "hostname";
   private static final String PROP_VRF = "vrf";
   private static final String PROP_PROCESS = "process";
   private static final String PROP_INTERFACE = "interface";
 
-  private final String _hostname;
-  private final String _vrfName;
-  private final String _procName;
-  private final String _interfaceName;
+  @Nonnull private final String _hostname;
+  @Nonnull private final String _vrfName;
+  @Nonnull private final String _procName;
+  @Nonnull private final String _interfaceName;
 
   /**
    * Create a new unique identifier for an OSPF process
@@ -56,26 +56,31 @@ public final class OspfNeighborConfigId implements Serializable {
     return new OspfNeighborConfigId(hostname, vrf, process, interfaceName);
   }
 
+  @Nonnull
   @JsonProperty(PROP_HOSTNAME)
   public String getHostname() {
     return _hostname;
   }
 
+  @Nonnull
   @JsonProperty(PROP_VRF)
   public String getVrfName() {
     return _vrfName;
   }
 
+  @Nonnull
   @JsonProperty(PROP_PROCESS)
   public String getProcName() {
     return _procName;
   }
 
+  @Nonnull
   @JsonProperty(PROP_INTERFACE)
   public String getInterfaceName() {
     return _interfaceName;
   }
 
+  @Nonnull
   @JsonIgnore
   public NodeInterfacePair getNodeInterfacePair() {
     return new NodeInterfacePair(getHostname(), getInterfaceName());
@@ -90,10 +95,10 @@ public final class OspfNeighborConfigId implements Serializable {
       return false;
     }
     OspfNeighborConfigId other = (OspfNeighborConfigId) o;
-    return Objects.equals(_hostname, other._hostname)
-        && Objects.equals(_vrfName, other._vrfName)
-        && Objects.equals(_procName, other._procName)
-        && Objects.equals(_interfaceName, other._interfaceName);
+    return _hostname.equals(other._hostname)
+        && _vrfName.equals(other._vrfName)
+        && _procName.equals(other._procName)
+        && _interfaceName.equals(other._interfaceName);
   }
 
   @Override

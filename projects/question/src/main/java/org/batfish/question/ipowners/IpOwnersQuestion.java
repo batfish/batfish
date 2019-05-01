@@ -6,7 +6,6 @@ import org.batfish.datamodel.questions.Question;
 
 /** Queries the computed IP owners across all nodes/VRFs/Interfaces in the network. */
 public class IpOwnersQuestion extends Question {
-
   private static final String PROP_DUPLICATES_ONLY = "duplicatesOnly";
 
   private static final String QUESTION_NAME = "ipOwners";

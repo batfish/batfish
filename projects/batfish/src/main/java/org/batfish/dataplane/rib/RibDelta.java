@@ -1,5 +1,6 @@
 package org.batfish.dataplane.rib;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
@@ -12,8 +13,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.Function;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteDecorator;
@@ -27,30 +28,15 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
  * @param <R> route type
  */
 @ParametersAreNonnullByDefault
-public final class RibDelta<R extends AbstractRouteDecorator> {
+public final class RibDelta<R> {
 
   /** Sorted for deterministic iteration order */
   private SortedMap<Prefix, List<RouteAdvertisement<R>>> _actions;
 
+  private static final RibDelta<Object> EMPTY = new RibDelta<>(ImmutableMap.of());
+
   private RibDelta(Map<Prefix, List<RouteAdvertisement<R>>> actions) {
     _actions = ImmutableSortedMap.copyOf(actions);
-  }
-
-  /**
-   * Return all the RIB actions that need to be applied (in order)
-   *
-   * @param p a particular {@link Prefix} to retrieve the actions for. If {@code null}, all actions
-   *     are returned
-   * @return a list of {@link RouteAdvertisement}
-   */
-  @Nonnull
-  private List<RouteAdvertisement<R>> getActions(@Nullable Prefix p) {
-    if (p == null) {
-      return _actions.values().stream()
-          .flatMap(List::stream)
-          .collect(ImmutableList.toImmutableList());
-    }
-    return _actions.getOrDefault(p, ImmutableList.of());
   }
 
   /**
@@ -63,14 +49,10 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
     return _actions.keySet();
   }
 
-  /**
-   * Return all the RIB actions that need to be applied (in order)
-   *
-   * @return a list of {@link RouteAdvertisement}
-   */
+  /** Return all the RIB actions that need to be applied (in order). */
   @Nonnull
-  public List<RouteAdvertisement<R>> getActions() {
-    return getActions(null);
+  public Stream<RouteAdvertisement<R>> getActions() {
+    return _actions.values().stream().flatMap(List::stream);
   }
 
   private Map<Prefix, List<RouteAdvertisement<R>>> getActionMap() {
@@ -87,12 +69,16 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
    *
    * @return List of routes
    */
+  @VisibleForTesting
   @Nonnull
-  public List<R> getRoutes() {
-    return _actions.values().stream()
-        .flatMap(List::stream)
-        .map(RouteAdvertisement::getRoute)
-        .collect(ImmutableList.toImmutableList());
+  List<R> getRoutes() {
+    return getRoutesStream().collect(ImmutableList.toImmutableList());
+  }
+
+  /** Helper method: retrieves all routes affected by this delta. */
+  @Nonnull
+  public Stream<R> getRoutesStream() {
+    return _actions.values().stream().flatMap(List::stream).map(RouteAdvertisement::getRoute);
   }
 
   /**
@@ -104,14 +90,17 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
    */
   public static <T extends AbstractRoute, U extends T> void importDeltaToBuilder(
       RibDelta.Builder<AnnotatedRoute<T>> importer, RibDelta<U> exporter, String vrfName) {
-    for (RouteAdvertisement<U> ra : exporter.getActions()) {
-      AnnotatedRoute<T> tRoute = new AnnotatedRoute<>(ra.getRoute(), vrfName);
-      if (ra.isWithdrawn()) {
-        importer.remove(tRoute, ra.getReason());
-      } else {
-        importer.add(tRoute);
-      }
-    }
+    exporter
+        .getActions()
+        .forEach(
+            ra -> {
+              AnnotatedRoute<T> tRoute = new AnnotatedRoute<>(ra.getRoute(), vrfName);
+              if (ra.isWithdrawn()) {
+                importer.remove(tRoute, ra.getReason());
+              } else {
+                importer.add(tRoute);
+              }
+            });
   }
 
   /** Builder for {@link RibDelta} */
@@ -195,13 +184,16 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
     /** Process all added and removed routes from a given delta */
     @Nonnull
     public <T extends R> Builder<R> from(RibDelta<T> delta) {
-      for (RouteAdvertisement<T> ra : delta.getActions()) {
-        if (ra.isWithdrawn()) {
-          remove(ra.getRoute(), ra.getReason());
-        } else {
-          add(ra.getRoute());
-        }
-      }
+      delta
+          .getActions()
+          .forEach(
+              ra -> {
+                if (ra.isWithdrawn()) {
+                  remove(ra.getRoute(), ra.getReason());
+                } else {
+                  add(ra.getRoute());
+                }
+              });
       return this;
     }
   }
@@ -213,8 +205,9 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
 
   /** Return an empty RIB delta */
   @Nonnull
-  public static <T extends AbstractRouteDecorator> RibDelta<T> empty() {
-    return RibDelta.<T>builder().build();
+  @SuppressWarnings("unchecked") // Fully variant implementation, never stores any Ts
+  public static <T> RibDelta<T> empty() {
+    return (RibDelta<T>) EMPTY;
   }
 
   /**

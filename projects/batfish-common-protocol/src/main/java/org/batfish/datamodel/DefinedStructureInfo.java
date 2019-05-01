@@ -11,11 +11,9 @@ import javax.annotation.Nonnull;
 
 public class DefinedStructureInfo implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   public static final int UNKNOWN_NUM_REFERRERS = -1;
-
   private static final String PROP_DEFINITION_LINES = "definitionLines";
   private static final String PROP_NUM_REFERRERS = "numReferrers";
 

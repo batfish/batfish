@@ -3961,10 +3961,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.BGP_UNDECLARED_PEER_GROUP,
         CiscoStructureUsage.BGP_PEER_GROUP_REFERENCED_BEFORE_DEFINED);
 
-    c.simplifyRoutingPolicies();
-
-    c.computeRoutingPolicySources(_w);
-
     return ImmutableList.of(c);
   }
 
@@ -3992,13 +3988,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
       bumTransportMethod = BumTransportMethod.MULTICAST_GROUP;
     }
 
-    return new VniSettings(
-        bumTransportIps,
-        bumTransportMethod,
-        sourceAddress,
-        firstNonNull(vxlan.getUdpPort(), AristaEosVxlan.DEFAULT_UDP_PORT),
-        vlan,
-        vni);
+    return VniSettings.builder()
+        .setBumTransportIps(bumTransportIps)
+        .setBumTransportMethod(bumTransportMethod)
+        .setSourceAddress(sourceAddress)
+        .setUdpPort(firstNonNull(vxlan.getUdpPort(), AristaEosVxlan.DEFAULT_UDP_PORT))
+        .setVlan(vlan)
+        .setVni(vni)
+        .build();
   }
 
   private boolean allowsIntraZoneTraffic(String zoneName) {

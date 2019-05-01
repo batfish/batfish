@@ -12,7 +12,6 @@ import org.batfish.common.WorkItem;
  * <p>Each {@link WorkStatus WorkStatus} contains the workitem, its workstatus, and taskstatus.
  */
 public class WorkStatus {
-
   private static final String PROP_TASK = "task";
   private static final String PROP_WORK_ITEM = "workitem";
   private static final String PROP_WORK_STATUS_CODE = "workstatuscode";

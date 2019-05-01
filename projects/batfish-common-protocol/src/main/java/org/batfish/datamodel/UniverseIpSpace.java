@@ -7,7 +7,6 @@ public class UniverseIpSpace extends IpSpace {
 
   public static final UniverseIpSpace INSTANCE = new UniverseIpSpace();
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private UniverseIpSpace() {}

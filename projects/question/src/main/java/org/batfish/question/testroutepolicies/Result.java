@@ -4,7 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Objects;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.LineAction;
 
 /** A {@link TestRoutePoliciesQuestion} result for a single policy and input route. */
@@ -12,9 +12,9 @@ final class Result {
   /** A key to relate results by policy and input route. */
   public final class Key {
     private final RoutingPolicyId _policyId;
-    private final BgpRoute _inputRoute;
+    private final Bgpv4Route _inputRoute;
 
-    private Key(RoutingPolicyId policyId, BgpRoute inputRoute) {
+    private Key(RoutingPolicyId policyId, Bgpv4Route inputRoute) {
       _policyId = policyId;
       _inputRoute = inputRoute;
     }
@@ -39,15 +39,15 @@ final class Result {
   }
 
   private final RoutingPolicyId _policyId;
-  private final BgpRoute _inputRoute;
+  private final Bgpv4Route _inputRoute;
   private final LineAction _action;
-  private final @Nullable BgpRoute _outputRoute;
+  private final @Nullable Bgpv4Route _outputRoute;
 
   Result(
       RoutingPolicyId policyId,
-      BgpRoute inputRoute,
+      Bgpv4Route inputRoute,
       LineAction action,
-      @Nullable BgpRoute outputRoute) {
+      @Nullable Bgpv4Route outputRoute) {
     checkArgument(
         (action == LineAction.DENY) == (outputRoute == null),
         "outputRoute is null if and only if action is DENY");
@@ -76,7 +76,7 @@ final class Result {
     return _action;
   }
 
-  public BgpRoute getInputRoute() {
+  public Bgpv4Route getInputRoute() {
     return _inputRoute;
   }
 
@@ -85,7 +85,7 @@ final class Result {
   }
 
   @Nullable
-  public BgpRoute getOutputRoute() {
+  public Bgpv4Route getOutputRoute() {
     return _outputRoute;
   }
 

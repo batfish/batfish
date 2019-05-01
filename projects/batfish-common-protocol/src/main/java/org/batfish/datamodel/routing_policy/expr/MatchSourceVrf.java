@@ -17,7 +17,6 @@ import org.batfish.datamodel.routing_policy.Result;
 public final class MatchSourceVrf extends BooleanExpr {
 
   private static final long serialVersionUID = 1L;
-
   private static final String PROP_SOURCE_VRF = "sourceVrf";
 
   @JsonProperty(PROP_SOURCE_VRF)

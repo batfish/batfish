@@ -10,7 +10,6 @@ import org.batfish.datamodel.questions.Question;
 
 /** A zero-input question to check for forwarding loops. */
 public class DetectLoopsQuestion extends Question {
-
   private static final String PROP_MAX_TRACES = "maxTraces";
 
   private final int _maxTraces;

@@ -72,9 +72,7 @@ public final class QuestionSettingsJsonPathResourceTest extends WorkMgrServiceV2
   private static final QuestionSettingsId BAD_QUESTION_SETTINGS_ID = new QuestionSettingsId("bad");
 
   private static final String NETWORK = "network1";
-
   private static final String PROP1 = "prop1";
-
   private static final String PROP2 = "prop2";
 
   private static final String QUESTION = "qclass1";

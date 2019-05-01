@@ -8,7 +8,6 @@ import org.batfish.datamodel.IkeHashingAlgorithm;
 
 public class IsakmpPolicy implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private IkeAuthenticationMethod _authenticationMethod;

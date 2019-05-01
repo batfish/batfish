@@ -98,17 +98,11 @@ public class IsisProcess implements Serializable {
   }
 
   private static final String PROP_EXPORT_POLICY = "exportPolicy";
-
   private static final String PROP_GENERATED_ROUTES = "generatedRoutes";
-
   private static final String PROP_LEVEL1 = "level1";
-
   private static final String PROP_LEVEL2 = "level2";
-
   private static final String PROP_NET_ADDRESS = "netAddress";
-
   private static final String PROP_OVERLOAD = "overload";
-
   private static final String PROP_REFERENCE_BANDWIDTH = "referenceBandwidth";
 
   private static final long serialVersionUID = 1L;

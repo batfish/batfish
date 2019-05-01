@@ -13,7 +13,6 @@ import org.batfish.datamodel.Names.Type;
 public class ServiceEndpoint implements Comparable<ServiceEndpoint>, Serializable {
 
   private static final long serialVersionUID = 1L;
-
   private static final String PROP_ADDRESS = "address";
   private static final String PROP_NAME = "name";
   private static final String PROP_SERVICE = "service";

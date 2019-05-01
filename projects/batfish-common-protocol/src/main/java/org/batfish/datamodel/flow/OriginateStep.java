@@ -17,7 +17,6 @@ public final class OriginateStep extends Step<OriginateStepDetail> {
 
   /** Details of the {@link Step} when a {@link Flow} originates at a {@link Hop} */
   public static final class OriginateStepDetail {
-
     private static final String PROP_ORIGINATING_VRF = "originatingVrf";
 
     private @Nonnull String _originatingVrf;

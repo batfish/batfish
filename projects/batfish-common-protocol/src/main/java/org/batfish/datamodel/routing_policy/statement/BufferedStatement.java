@@ -14,10 +14,8 @@ import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 public final class BufferedStatement extends Statement {
-
   private static final String PROP_STATEMENT = "statement";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Nonnull private Statement _statement;

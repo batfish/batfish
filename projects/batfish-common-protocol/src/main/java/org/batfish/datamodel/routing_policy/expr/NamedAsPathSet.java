@@ -9,7 +9,6 @@ import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 
 public final class NamedAsPathSet extends AsPathSetExpr {
-  /** */
   private static final long serialVersionUID = 1L;
 
   private static final String PROP_NAME = "name";
@@ -53,8 +52,9 @@ public final class NamedAsPathSet extends AsPathSetExpr {
       boolean match = false;
       AsPath inputAsPath = null;
       if (environment.getUseOutputAttributes()
-          && environment.getOutputRoute() instanceof BgpRoute.Builder) {
-        BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment.getOutputRoute();
+          && environment.getOutputRoute() instanceof BgpRoute.Builder<?, ?>) {
+        BgpRoute.Builder<?, ?> bgpRouteBuilder =
+            (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
         inputAsPath = bgpRouteBuilder.getAsPath();
       } else if (environment.getReadFromIntermediateBgpAttributes()) {
         inputAsPath = environment.getIntermediateBgpAttributes().getAsPath();

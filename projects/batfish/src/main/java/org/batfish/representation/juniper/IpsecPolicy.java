@@ -7,7 +7,6 @@ import org.batfish.datamodel.DiffieHellmanGroup;
 
 public class IpsecPolicy implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final String _name;

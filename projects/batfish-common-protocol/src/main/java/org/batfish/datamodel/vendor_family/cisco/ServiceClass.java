@@ -5,10 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.batfish.common.util.ComparableStructure;
 
 public class ServiceClass extends ComparableStructure<String> {
-
   private static final String PROP_FRIENDLY_NAME = "friendlyName";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private String _friendlyName;

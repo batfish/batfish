@@ -14,11 +14,8 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
 
 public class JsonPathToTableQuery {
-
   private static final String PROP_COMPOSITIONS = "compositions";
-
   private static final String PROP_EXTRACTIONS = "extractions";
-
   private static final String PROP_PATH = "path";
 
   private Map<String, JsonPathToTableComposition> _compositions;

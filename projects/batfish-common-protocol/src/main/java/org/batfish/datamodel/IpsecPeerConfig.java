@@ -24,7 +24,6 @@ public abstract class IpsecPeerConfig implements Serializable {
 
   static final String PROP_TUNNEL_INTERFACE = "tunnelInterface";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Nullable private String _ipsecPolicy;

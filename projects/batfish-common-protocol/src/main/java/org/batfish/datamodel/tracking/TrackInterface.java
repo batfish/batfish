@@ -9,7 +9,6 @@ import javax.annotation.Nullable;
 
 /** Tracks whether a specified interface is active or not */
 public class TrackInterface implements TrackMethod {
-
   private static final String PROP_TRACKED_INTERFACE = "trackedInterface";
 
   private static final long serialVersionUID = 1L;

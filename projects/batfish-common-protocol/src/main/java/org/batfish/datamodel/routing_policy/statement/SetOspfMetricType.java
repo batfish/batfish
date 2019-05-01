@@ -9,10 +9,8 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
 public class SetOspfMetricType extends Statement {
-
   private static final String PROP_METRIC_TYPE = "metricType";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private OspfMetricType _metricType;

@@ -11,11 +11,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class Service implements Serializable {
-
   private static final String PROP_ENABLED = "enabled";
   private static final String PROP_SUBSERVICES = "subservices";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Nullable private Boolean _enabled;

@@ -28,9 +28,7 @@ public final class InitializationMetadata {
   }
 
   private static final String PROP_CURRENT_STATUS = "currentStatus";
-
   private static final String PROP_ERR_MESSAGE = "errMessage";
-
   private static final String PROP_STATUS_HISTORY = "statusHistory";
 
   private final ProcessingStatus _currentStatus;
