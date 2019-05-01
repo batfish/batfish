@@ -8,20 +8,22 @@ import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.EvpnRoute.Builder;
+import org.batfish.datamodel.EvpnType2Route.Builder;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-/** Tests of {@link EvpnRoute} */
-public class EvpnRouteTest {
+/** Tests of {@link EvpnType2Route} */
+public class EvpnType2RouteTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void testJavaSerialization() {
-    EvpnRoute er =
-        EvpnRoute.builder()
+    EvpnType2Route er =
+        EvpnType2Route.builder()
+            .setIp(Ip.parse("1.1.1.1"))
+            .setMacAddress(MacAddress.parse("00:11:22:33:44:55"))
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setNextHopInterface("blah")
             .setOriginatorIp(Ip.parse("1.1.1.1"))
@@ -34,8 +36,10 @@ public class EvpnRouteTest {
 
   @Test
   public void testJsonSerialization() throws IOException {
-    EvpnRoute er =
-        EvpnRoute.builder()
+    EvpnType2Route er =
+        EvpnType2Route.builder()
+            .setIp(Ip.parse("1.1.1.1"))
+            .setMacAddress(MacAddress.parse("00:11:22:33:44:55"))
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setNextHopInterface("blah")
             .setOriginatorIp(Ip.parse("1.1.1.1"))
@@ -43,13 +47,15 @@ public class EvpnRouteTest {
             .setProtocol(RoutingProtocol.BGP)
             .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("1.1.1.1"), 2))
             .build();
-    assertThat(BatfishObjectMapper.clone(er, EvpnRoute.class), equalTo(er));
+    assertThat(BatfishObjectMapper.clone(er, EvpnType2Route.class), equalTo(er));
   }
 
   @Test
   public void testToBuilder() {
-    EvpnRoute er =
-        EvpnRoute.builder()
+    EvpnType2Route er =
+        EvpnType2Route.builder()
+            .setIp(Ip.parse("1.1.1.1"))
+            .setMacAddress(MacAddress.parse("00:11:22:33:44:55"))
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setNextHopInterface("blah")
             .setOriginatorIp(Ip.parse("1.1.1.1"))
@@ -63,7 +69,8 @@ public class EvpnRouteTest {
   @Test
   public void testEquals() {
     Builder erb =
-        EvpnRoute.builder()
+        EvpnType2Route.builder()
+            .setIp(Ip.parse("1.1.1.1"))
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setOriginatorIp(Ip.parse("1.1.1.1"))
             .setOriginType(OriginType.IGP)
@@ -73,6 +80,7 @@ public class EvpnRouteTest {
         .addEqualityGroup(erb.build(), erb.build())
         .addEqualityGroup(erb.setNetwork(Prefix.parse("1.1.2.0/24")).build())
         .addEqualityGroup(erb.setAdmin(10).build())
+        .addEqualityGroup(erb.setMacAddress(MacAddress.parse("00:11:22:33:44:55")))
         .addEqualityGroup(erb.setNonRouting(true).build())
         .addEqualityGroup(erb.setNonForwarding(true).build())
         .addEqualityGroup(erb.setAsPath(AsPath.ofSingletonAsSets(1L, 1L)).build())
