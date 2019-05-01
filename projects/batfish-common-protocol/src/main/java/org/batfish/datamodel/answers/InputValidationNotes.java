@@ -1,5 +1,6 @@
 package org.batfish.datamodel.answers;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.MoreObjects.toStringHelper;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -16,7 +17,7 @@ public final class InputValidationNotes {
 
   /** The overall status of the input */
   public enum Validity {
-    /** Syntactically valid but known to match anything */
+    /** Syntactically valid but has input parts (e.g., node name) that do not match anything */
     EMPTY,
     /** Syntactically invalid */
     INVALID,
@@ -25,6 +26,7 @@ public final class InputValidationNotes {
   }
 
   private static final String PROP_DESCRIPTION = "description";
+  private static final String PROP_ERROR_INDEX = "errorIndex";
   private static final String PROP_EXPANSIONS = "expansions";
   private static final String PROP_VALIDITY = "validity";
 
@@ -33,6 +35,9 @@ public final class InputValidationNotes {
    * or could describe what is specified by the current input if it is valid
    */
   @Nullable private final String _description;
+
+  /** For invalid input, where the error begins */
+  private final int _errorIndex;
 
   /** List of everything specified by the input */
   @Nullable private final List<String> _expansions;
@@ -44,14 +49,32 @@ public final class InputValidationNotes {
   private static @Nonnull InputValidationNotes create(
       @JsonProperty(PROP_VALIDITY) Validity validity,
       @Nullable @JsonProperty(PROP_DESCRIPTION) String description,
+      @Nullable @JsonProperty(PROP_ERROR_INDEX) Integer errorIndex,
       @Nullable @JsonProperty(PROP_EXPANSIONS) List<String> expansions) {
-    return new InputValidationNotes(validity, description, expansions);
+    return new InputValidationNotes(
+        validity, description, firstNonNull(errorIndex, -1), expansions);
+  }
+
+  public InputValidationNotes(Validity validity, String description) {
+    this(validity, description, -1, null);
+  }
+
+  public InputValidationNotes(Validity validity, List<String> expansions) {
+    this(validity, null, -1, expansions);
+  }
+
+  public InputValidationNotes(Validity validity, String description, int errorIndex) {
+    this(validity, description, errorIndex, null);
   }
 
   public InputValidationNotes(
-      Validity validity, @Nullable String description, @Nullable List<String> expansions) {
+      Validity validity,
+      @Nullable String description,
+      int errorIndex,
+      @Nullable List<String> expansions) {
     _validity = validity;
     _description = description;
+    _errorIndex = errorIndex;
     _expansions = expansions;
   }
 
@@ -59,6 +82,11 @@ public final class InputValidationNotes {
   @Nullable
   public String getDescription() {
     return _description;
+  }
+
+  @JsonProperty(PROP_ERROR_INDEX)
+  public int getErrorIndex() {
+    return _errorIndex;
   }
 
   @JsonProperty(PROP_EXPANSIONS)
@@ -79,19 +107,21 @@ public final class InputValidationNotes {
     }
 
     return Objects.equals(_description, ((InputValidationNotes) o)._description)
+        && _errorIndex == ((InputValidationNotes) o)._errorIndex
         && Objects.equals(_expansions, ((InputValidationNotes) o)._expansions)
         && Objects.equals(_validity, ((InputValidationNotes) o)._validity);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_description, _expansions, _validity);
+    return Objects.hash(_description, _errorIndex, _expansions, _validity);
   }
 
   @Override
   public String toString() {
     return toStringHelper(getClass())
         .add(PROP_DESCRIPTION, _description)
+        .add(PROP_ERROR_INDEX, _errorIndex)
         .add(PROP_EXPANSIONS, _expansions)
         .add(PROP_VALIDITY, _validity)
         .toString();

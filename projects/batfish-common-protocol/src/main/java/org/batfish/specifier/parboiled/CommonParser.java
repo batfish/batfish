@@ -31,7 +31,7 @@ import org.parboiled.support.ValueStack;
   "WeakerAccess", // access of Rule methods is needed for parser auto-generation.
 })
 @ParametersAreNonnullByDefault
-public class CommonParser extends BaseParser<AstNode> {
+public abstract class CommonParser extends BaseParser<AstNode> {
 
   /**
    * Parboiled parser runners reset the value stack for invalid inputs. We save it externally (by
@@ -87,6 +87,9 @@ public class CommonParser extends BaseParser<AstNode> {
   void setShadowStack(ShadowStack shadowStack) {
     _shadowStack = shadowStack;
   }
+
+  /** Get the main entry point for {@code grammar} */
+  abstract Rule getInputRule(Grammar grammar);
 
   /** We use double quotes to escape complex names */
   public static final String ESCAPE_CHAR = "\"";

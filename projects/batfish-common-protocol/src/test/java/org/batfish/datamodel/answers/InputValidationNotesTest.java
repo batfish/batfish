@@ -16,22 +16,23 @@ public class InputValidationNotesTest {
 
   @Test
   public void testEquals() {
-    InputValidationNotes notes = new InputValidationNotes(VALID, null, null);
+    InputValidationNotes notes = new InputValidationNotes(VALID, null, -1, null);
 
     new EqualsTester()
         .addEqualityGroup(new Object())
-        .addEqualityGroup(notes, notes, new InputValidationNotes(VALID, null, null))
-        .addEqualityGroup(new InputValidationNotes(INVALID, null, null))
-        .addEqualityGroup(new InputValidationNotes(EMPTY, null, null))
-        .addEqualityGroup(new InputValidationNotes(VALID, "description", null))
+        .addEqualityGroup(notes, notes, new InputValidationNotes(VALID, null, -1, null))
+        .addEqualityGroup(new InputValidationNotes(INVALID, null, -1, null))
+        .addEqualityGroup(new InputValidationNotes(EMPTY, null, -1, null))
+        .addEqualityGroup(new InputValidationNotes(VALID, "description", -1, null))
         .addEqualityGroup(
-            new InputValidationNotes(VALID, "description", ImmutableList.of("expansion")))
+            new InputValidationNotes(VALID, "description", -1, ImmutableList.of("expansion")))
         .addEqualityGroup(
-            new InputValidationNotes(VALID, "description2", ImmutableList.of("expansion")))
+            new InputValidationNotes(VALID, "description2", -1, ImmutableList.of("expansion")))
         .addEqualityGroup(
-            new InputValidationNotes(VALID, "description", ImmutableList.of("expansion2")))
+            new InputValidationNotes(VALID, "description", -1, ImmutableList.of("expansion2")))
         .addEqualityGroup(
-            new InputValidationNotes(INVALID, "description", ImmutableList.of("expansion")))
+            new InputValidationNotes(INVALID, "description", -1, ImmutableList.of("expansion")))
+        .addEqualityGroup(new InputValidationNotes(VALID, null, 0, null))
         .testEquals();
   }
 
@@ -39,7 +40,7 @@ public class InputValidationNotesTest {
   public void testJsonSerialization() throws IOException {
     InputValidationNotes validationNotes =
         new InputValidationNotes(
-            VALID, "some description", ImmutableList.of("expansion1", "expansion2"));
+            VALID, "some description", 3, ImmutableList.of("expansion1", "expansion2"));
 
     assertThat(
         BatfishObjectMapper.clone(validationNotes, InputValidationNotes.class),
