@@ -6,6 +6,8 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.graph.GraphBuilder;
+import com.google.common.graph.MutableGraph;
 import com.google.common.graph.MutableNetwork;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.NetworkBuilder;
@@ -24,6 +26,8 @@ import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.ospf.OspfNeighborConfigId;
 import org.batfish.datamodel.ospf.OspfSessionProperties;
 import org.batfish.datamodel.ospf.OspfTopology;
+import org.batfish.datamodel.vxlan.VxlanNode;
+import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.junit.Test;
 
 /** Test of {@link TopologyContext}. */
@@ -43,6 +47,9 @@ public final class TopologyContextTest {
     MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> ospfTopology =
         ValueGraphBuilder.directed().build();
     ospfTopology.addNode(new OspfNeighborConfigId("a", "b", "c", "d"));
+    MutableGraph<VxlanNode> vxlanTopology =
+        GraphBuilder.undirected().allowsSelfLoops(false).build();
+    vxlanTopology.addNode(new VxlanNode("a", 5));
 
     new EqualsTester()
         .addEqualityGroup(new Object())
@@ -61,6 +68,7 @@ public final class TopologyContextTest {
                 .setLayer3Topology(new Topology(ImmutableSortedSet.of(Edge.of("a", "b", "c", "d"))))
                 .build())
         .addEqualityGroup(builder.setOspfTopology(new OspfTopology(ospfTopology)).build())
+        .addEqualityGroup(builder.setVxlanTopology(new VxlanTopology(vxlanTopology)).build())
         .testEquals();
   }
 
@@ -77,6 +85,9 @@ public final class TopologyContextTest {
     MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> ospfTopology =
         ValueGraphBuilder.directed().build();
     ospfTopology.addNode(new OspfNeighborConfigId("a", "b", "c", "d"));
+    MutableGraph<VxlanNode> vxlanTopology =
+        GraphBuilder.undirected().allowsSelfLoops(false).build();
+    vxlanTopology.addNode(new VxlanNode("a", 5));
     builder
         .setBgpTopology(bgpTopology)
         .setEigrpTopology(eigrpTopology)
@@ -85,7 +96,8 @@ public final class TopologyContextTest {
             Layer2Topology.fromDomains(
                 ImmutableList.of(ImmutableSet.of(new Layer2Node("a", "b", 5)))))
         .setLayer3Topology(new Topology(ImmutableSortedSet.of(Edge.of("a", "b", "c", "d"))))
-        .setOspfTopology(new OspfTopology(ospfTopology));
+        .setOspfTopology(new OspfTopology(ospfTopology))
+        .setVxlanTopology(new VxlanTopology(vxlanTopology));
 
     assertThat(builder.build(), equalTo(builder.build().toBuilder().build()));
   }

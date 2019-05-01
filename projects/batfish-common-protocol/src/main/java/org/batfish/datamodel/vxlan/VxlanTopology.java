@@ -6,6 +6,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.graph.EndpointPair;
+import com.google.common.graph.Graph;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.ImmutableGraph;
 import com.google.common.graph.MutableGraph;
@@ -25,6 +26,9 @@ import org.batfish.datamodel.Vrf;
 /** VXLAN topology with edges for each compatible VNI-endpoint pair */
 @ParametersAreNonnullByDefault
 public final class VxlanTopology {
+
+  public static final VxlanTopology EMPTY =
+      new VxlanTopology(GraphBuilder.undirected().allowsSelfLoops(false).build());
 
   @VisibleForTesting
   static void addVniEdge(
@@ -113,6 +117,10 @@ public final class VxlanTopology {
   }
 
   private final ImmutableGraph<VxlanNode> _graph;
+
+  public VxlanTopology(Graph<VxlanNode> graph) {
+    _graph = ImmutableGraph.copyOf(graph);
+  }
 
   public VxlanTopology(Map<String, Configuration> configurations) {
     MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
