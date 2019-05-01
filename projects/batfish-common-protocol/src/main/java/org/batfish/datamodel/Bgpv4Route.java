@@ -5,6 +5,10 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Comparators;
+import com.google.common.collect.Ordering;
+import java.util.Comparator;
+import java.util.Objects;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -64,6 +68,9 @@ public final class Bgpv4Route extends BgpRoute {
       return this;
     }
   }
+
+  /* Cache the hashcode */
+  private transient int _hashCode = 0;
 
   @JsonCreator
   private static Bgpv4Route jsonCreator(
@@ -178,5 +185,84 @@ public final class Bgpv4Route extends BgpRoute {
         .setReceivedFromRouteReflectorClient(_receivedFromRouteReflectorClient)
         .setSrcProtocol(_srcProtocol)
         .setWeight(_weight);
+  }
+
+  private static final Comparator<BgpRoute> COMPARATOR =
+      Comparator.comparing(BgpRoute::getAsPath)
+          .thenComparing(BgpRoute::getClusterList, Comparators.lexicographical(Ordering.natural()))
+          .thenComparing(BgpRoute::getCommunities, Comparators.lexicographical(Ordering.natural()))
+          .thenComparing(BgpRoute::getDiscard)
+          .thenComparing(BgpRoute::getLocalPreference)
+          .thenComparing(BgpRoute::getNextHopInterface)
+          .thenComparing(BgpRoute::getOriginType)
+          .thenComparing(BgpRoute::getOriginatorIp)
+          .thenComparing(BgpRoute::getReceivedFromIp)
+          .thenComparing(BgpRoute::getReceivedFromRouteReflectorClient)
+          .thenComparing(BgpRoute::getSrcProtocol)
+          .thenComparing(BgpRoute::getWeight);
+
+  @Override
+  public int routeCompare(@Nonnull AbstractRoute rhs) {
+    if (getClass() != rhs.getClass()) {
+      return 0;
+    }
+    return COMPARATOR.compare(this, (BgpRoute) rhs);
+  }
+
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof BgpRoute)) {
+      return false;
+    }
+    BgpRoute other = (BgpRoute) o;
+    return Objects.equals(_network, other._network)
+        && _admin == other._admin
+        && getNonRouting() == other.getNonRouting()
+        && getNonForwarding() == other.getNonForwarding()
+        && _discard == other._discard
+        && _localPreference == other._localPreference
+        && _med == other._med
+        && _receivedFromRouteReflectorClient == other._receivedFromRouteReflectorClient
+        && _weight == other._weight
+        && Objects.equals(_asPath, other._asPath)
+        && Objects.equals(_clusterList, other._clusterList)
+        && Objects.equals(_communities, other._communities)
+        && _nextHopInterface.equals(other._nextHopInterface)
+        && Objects.equals(_nextHopIp, other._nextHopIp)
+        && Objects.equals(_originatorIp, other._originatorIp)
+        && _originType == other._originType
+        && _protocol == other._protocol
+        && Objects.equals(_receivedFromIp, other._receivedFromIp)
+        && _srcProtocol == other._srcProtocol;
+  }
+
+  @Override
+  public int hashCode() {
+    int h = _hashCode;
+    if (h == 0) {
+      h = _admin;
+      h = h * 31 + _asPath.hashCode();
+      h = h * 31 + _clusterList.hashCode();
+      h = h * 31 + _communities.hashCode();
+      h = h * 31 + Boolean.hashCode(_discard);
+      h = h * 31 + Long.hashCode(_localPreference);
+      h = h * 31 + Long.hashCode(_med);
+      h = h * 31 + _network.hashCode();
+      h = h * 31 + _nextHopInterface.hashCode();
+      h = h * 31 + _nextHopIp.hashCode();
+      h = h * 31 + _originatorIp.hashCode();
+      h = h * 31 + _originType.ordinal();
+      h = h * 31 + _protocol.ordinal();
+      h = h * 31 + Objects.hashCode(_receivedFromIp);
+      h = h * 31 + Boolean.hashCode(_receivedFromRouteReflectorClient);
+      h = h * 31 + (_srcProtocol == null ? 0 : _srcProtocol.ordinal());
+      h = h * 31 + _weight;
+
+      _hashCode = h;
+    }
+    return h;
   }
 }
