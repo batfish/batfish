@@ -5,8 +5,10 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
@@ -19,9 +21,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public abstract class BgpRoute extends AbstractRoute {
 
-  private static final long serialVersionUID = 1L;
-
-  /** Builder for {@link Bgpv4Route} */
+  /** Builder for {@link BgpRoute} */
   @ParametersAreNonnullByDefault
   public abstract static class Builder<B extends Builder<B, R>, R extends BgpRoute>
       extends AbstractRouteBuilder<B, R> {
@@ -222,6 +222,22 @@ public abstract class BgpRoute extends AbstractRoute {
       "receivedFromRouteReflectorClient";
   static final String PROP_SRC_PROTOCOL = "srcProtocol";
   static final String PROP_WEIGHT = "weight";
+
+  private static final Comparator<BgpRoute> COMPARATOR =
+      Comparator.comparing(BgpRoute::getAsPath)
+          .thenComparing(BgpRoute::getClusterList, Comparators.lexicographical(Ordering.natural()))
+          .thenComparing(BgpRoute::getCommunities, Comparators.lexicographical(Ordering.natural()))
+          .thenComparing(BgpRoute::getDiscard)
+          .thenComparing(BgpRoute::getLocalPreference)
+          .thenComparing(BgpRoute::getNextHopInterface)
+          .thenComparing(BgpRoute::getOriginType)
+          .thenComparing(BgpRoute::getOriginatorIp)
+          .thenComparing(BgpRoute::getReceivedFromIp)
+          .thenComparing(BgpRoute::getReceivedFromRouteReflectorClient)
+          .thenComparing(BgpRoute::getSrcProtocol)
+          .thenComparing(BgpRoute::getWeight);
+
+  private static final long serialVersionUID = 1L;
 
   @Nonnull protected final AsPath _asPath;
   @Nonnull protected final SortedSet<Long> _clusterList;
@@ -440,5 +456,13 @@ public abstract class BgpRoute extends AbstractRoute {
   @JsonProperty(PROP_WEIGHT)
   public int getWeight() {
     return _weight;
+  }
+
+  @Override
+  public int routeCompare(@Nonnull AbstractRoute rhs) {
+    if (getClass() != rhs.getClass()) {
+      return 0;
+    }
+    return COMPARATOR.compare(this, (BgpRoute) rhs);
   }
 }
