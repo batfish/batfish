@@ -17,7 +17,7 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
-import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Interface;
@@ -148,7 +148,7 @@ public class BgpLoopbacksQuestionPlugin extends QuestionPlugin {
                         Prefix.create(address.getIp(), address.getNetworkBits()), interfaceName);
                 for (RoutingPolicy exportPolicy : exportPolicies) {
                   if (exportPolicy.process(
-                      route, new BgpRoute.Builder(), null, vrf.getName(), Direction.OUT)) {
+                      route, new Bgpv4Route.Builder(), null, vrf.getName(), Direction.OUT)) {
                     exported = true;
                     break outerloop;
                   }

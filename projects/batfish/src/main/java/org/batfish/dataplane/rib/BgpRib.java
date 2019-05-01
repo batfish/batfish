@@ -18,8 +18,8 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
-import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpTieBreaker;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Prefix;
@@ -28,7 +28,7 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
 /** BGP-specific RIB implementation */
 @ParametersAreNonnullByDefault
-public class BgpRib extends AbstractRib<BgpRoute> {
+public class BgpRib extends AbstractRib<Bgpv4Route> {
 
   private static final long serialVersionUID = 1L;
 
@@ -48,17 +48,17 @@ public class BgpRib extends AbstractRib<BgpRoute> {
 
   // Best BGP paths. Invariant: must be re-evaluated (per prefix) each time a route is added or
   // evicted
-  @Nonnull private final Map<Prefix, BgpRoute> _bestPaths;
+  @Nonnull private final Map<Prefix, Bgpv4Route> _bestPaths;
   /**
    * This logical clock helps us keep track when routes were merged into the RIB to determine their
    * age. It's incremented each time a route is merged into the RIB.
    */
   protected long _logicalClock;
   /** Map to keep track when routes were merged in. */
-  protected Map<BgpRoute, Long> _logicalArrivalTime;
+  protected Map<Bgpv4Route, Long> _logicalArrivalTime;
 
   public BgpRib(
-      @Nullable Map<Prefix, SortedSet<BgpRoute>> backupRoutes,
+      @Nullable Map<Prefix, SortedSet<Bgpv4Route>> backupRoutes,
       @Nullable Rib mainRib,
       BgpTieBreaker tieBreaker,
       @Nullable Integer maxPaths,
@@ -92,13 +92,13 @@ public class BgpRib extends AbstractRib<BgpRoute> {
    * - https://www.juniper.net/documentation/en_US/junos/topics/reference/general/routing-protocols-address-representation.html
    */
   @Override
-  public int comparePreference(BgpRoute lhs, BgpRoute rhs) {
+  public int comparePreference(Bgpv4Route lhs, Bgpv4Route rhs) {
     int multipathCompare =
         Comparator
             // Prefer higher Weight (cisco only)
-            .comparing(BgpRoute::getWeight)
+            .comparing(Bgpv4Route::getWeight)
             // Prefer higher LocalPref
-            .thenComparing(BgpRoute::getLocalPreference)
+            .thenComparing(Bgpv4Route::getLocalPreference)
             // NOTE: Accumulated interior gateway protocol (AIGP) is not supported
             // Aggregates (for non-juniper devices, won't appear on Juniper)
             .thenComparing(r -> getAggregatePreference(r.getProtocol()))
@@ -120,7 +120,7 @@ public class BgpRib extends AbstractRib<BgpRoute> {
              *    - On Juniper `path-selection cisco-nondeterministic` changes behavior
              *    - On Cisco `bgp bestpath med missing-as-worst` changes missing MED values from 0 to MAX_INT
              */
-            .thenComparing(BgpRoute::getMetric, Comparator.reverseOrder())
+            .thenComparing(Bgpv4Route::getMetric, Comparator.reverseOrder())
             // Prefer next hop IPs with the lowest IGP metric
             .thenComparing(this::getIgpCostToNextHopIp, Comparator.reverseOrder())
             // Evaluate AS path compatibility for multipath
@@ -135,8 +135,8 @@ public class BgpRib extends AbstractRib<BgpRoute> {
 
   @Nonnull
   @Override
-  public RibDelta<BgpRoute> mergeRouteGetDelta(BgpRoute route) {
-    RibDelta<BgpRoute> delta = super.mergeRouteGetDelta(route);
+  public RibDelta<Bgpv4Route> mergeRouteGetDelta(Bgpv4Route route) {
+    RibDelta<Bgpv4Route> delta = super.mergeRouteGetDelta(route);
     _logicalArrivalTime.put(route, _logicalClock);
     _logicalClock++;
     if (!delta.isEmpty()) {
@@ -147,8 +147,8 @@ public class BgpRib extends AbstractRib<BgpRoute> {
 
   @Nonnull
   @Override
-  public RibDelta<BgpRoute> removeRouteGetDelta(BgpRoute route, Reason reason) {
-    RibDelta<BgpRoute> delta = super.removeRouteGetDelta(route, reason);
+  public RibDelta<Bgpv4Route> removeRouteGetDelta(Bgpv4Route route, Reason reason) {
+    RibDelta<Bgpv4Route> delta = super.removeRouteGetDelta(route, reason);
     if (!delta.isEmpty()) {
       delta.getPrefixes().forEach(this::selectBestPath);
       delta
@@ -164,7 +164,7 @@ public class BgpRib extends AbstractRib<BgpRoute> {
   }
 
   @Override
-  public final Set<BgpRoute> getTypedRoutes() {
+  public final Set<Bgpv4Route> getTypedRoutes() {
     if (isMultipath()) {
       return super.getTypedRoutes();
     } else {
@@ -172,11 +172,11 @@ public class BgpRib extends AbstractRib<BgpRoute> {
     }
   }
 
-  public Set<BgpRoute> getBestPathRoutes() {
+  public Set<Bgpv4Route> getBestPathRoutes() {
     return ImmutableSet.copyOf(_bestPaths.values());
   }
 
-  private int compareRouteAsPath(BgpRoute lhs, BgpRoute rhs) {
+  private int compareRouteAsPath(Bgpv4Route lhs, Bgpv4Route rhs) {
     return compareAsPath(lhs.getAsPath(), rhs.getAsPath());
   }
 
@@ -202,7 +202,7 @@ public class BgpRib extends AbstractRib<BgpRoute> {
   }
 
   private void selectBestPath(Prefix prefix) {
-    Optional<BgpRoute> s = extractRoutes(prefix).stream().max(this::bestPathComparator);
+    Optional<Bgpv4Route> s = extractRoutes(prefix).stream().max(this::bestPathComparator);
     if (!s.isPresent()) {
       // Remove best path and return
       _bestPaths.remove(prefix);
@@ -216,13 +216,13 @@ public class BgpRib extends AbstractRib<BgpRoute> {
    * for multipath equivalence, and thus have the same protocol (e/iBGP, same as path length, etc)
    */
   @VisibleForTesting
-  private int bestPathComparator(BgpRoute lhs, BgpRoute rhs) {
+  private int bestPathComparator(Bgpv4Route lhs, Bgpv4Route rhs) {
     int result = 0;
 
     // Skip arrival order unless requested
     if (_tieBreaker == BgpTieBreaker.ARRIVAL_ORDER) {
       result =
-          Comparator.<BgpRoute, Long>comparing(
+          Comparator.<Bgpv4Route, Long>comparing(
                   r -> _logicalArrivalTime.getOrDefault(r, _logicalClock),
                   Comparator.reverseOrder())
               .compare(lhs, rhs);
@@ -234,11 +234,11 @@ public class BgpRib extends AbstractRib<BgpRoute> {
     // Continue with remaining tie breakers
     return Comparator.nullsFirst(
             // Prefer lower originator router ID
-            Comparator.comparing(BgpRoute::getOriginatorIp, Comparator.reverseOrder())
+            Comparator.comparing(Bgpv4Route::getOriginatorIp, Comparator.reverseOrder())
                 // Prefer lower cluster list length. Only applicable to iBGP
                 .thenComparing(r -> r.getClusterList().size(), Comparator.reverseOrder())
                 // Prefer lower neighbor IP
-                .thenComparing(BgpRoute::getReceivedFromIp, Comparator.reverseOrder()))
+                .thenComparing(Bgpv4Route::getReceivedFromIp, Comparator.reverseOrder()))
         .compare(lhs, rhs);
   }
 
@@ -280,7 +280,7 @@ public class BgpRib extends AbstractRib<BgpRoute> {
    * @return if next hop IP matches a route we have, returns the metric for that route; otherwise
    *     {@link Long#MAX_VALUE}
    */
-  private long getIgpCostToNextHopIp(BgpRoute route) {
+  private long getIgpCostToNextHopIp(Bgpv4Route route) {
     if (_mainRib == null) {
       return Long.MAX_VALUE;
     }

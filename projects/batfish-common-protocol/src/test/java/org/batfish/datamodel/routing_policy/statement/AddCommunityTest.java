@@ -8,7 +8,7 @@ import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
@@ -54,8 +54,8 @@ public class AddCommunityTest {
     // Test does not crash on non-bgp route
     ac.execute(Environment.builder(c, "vrf").setOutputRoute(ConnectedRoute.builder()).build());
     // Test sets community on BGP route
-    Environment e = Environment.builder(c, "vrf").setOutputRoute(BgpRoute.builder()).build();
+    Environment e = Environment.builder(c, "vrf").setOutputRoute(Bgpv4Route.builder()).build();
     ac.execute(e);
-    assertThat(((BgpRoute.Builder) e.getOutputRoute()).getCommunities(), contains(1L));
+    assertThat(((Bgpv4Route.Builder) e.getOutputRoute()).getCommunities(), contains(1L));
   }
 }
