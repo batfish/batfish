@@ -229,11 +229,6 @@ public class CommonParser extends BaseParser<AstNode> {
     return CharRange('0', '9');
   }
 
-  /** See class JavaDoc for why this is a CharRange and not Ch */
-  public Rule DoubleQuote() {
-    return CharRange('0', '9');
-  }
-
   @Anchor(Type.IGNORE)
   public Rule EscapedSlash() {
     return String("\\/");
