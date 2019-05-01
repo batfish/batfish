@@ -15,7 +15,7 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpProcess;
-import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
@@ -242,7 +242,7 @@ public class BgpRibGroupsTest {
         vrf2Routes,
         hasItem(
             new AnnotatedRoute<>(
-                BgpRoute.builder()
+                Bgpv4Route.builder()
                     .setNetwork(Prefix.parse("2.2.2.0/24"))
                     .setAdmin(ADMIN_OVERWRITE)
                     .setAsPath(AsPath.ofSingletonAsSets(2L))
@@ -263,7 +263,7 @@ public class BgpRibGroupsTest {
         defaultVrfRoutes,
         hasItem(
             new AnnotatedRoute<>(
-                BgpRoute.builder()
+                Bgpv4Route.builder()
                     .setNetwork(Prefix.parse("3.3.3.0/24"))
                     .setAdmin(
                         RoutingProtocol.BGP.getDefaultAdministrativeCost(

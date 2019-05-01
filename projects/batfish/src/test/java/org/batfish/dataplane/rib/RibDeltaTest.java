@@ -7,8 +7,8 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpTieBreaker;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
@@ -161,7 +161,7 @@ public class RibDeltaTest {
             BgpTieBreaker.CLUSTER_LIST_LENGTH,
             null,
             MultipathEquivalentAsPathMatchMode.EXACT_PATH);
-    BgpRoute.Builder routeBuilder = new BgpRoute.Builder();
+    Bgpv4Route.Builder routeBuilder = new Bgpv4Route.Builder();
     routeBuilder
         .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), Prefix.MAX_PREFIX_LENGTH))
         .setProtocol(RoutingProtocol.IBGP)
@@ -169,16 +169,16 @@ public class RibDeltaTest {
         .setOriginatorIp(Ip.parse("7.7.7.7"))
         .setReceivedFromIp(Ip.parse("7.7.7.7"))
         .build();
-    BgpRoute oldGoodRoute = routeBuilder.build();
+    Bgpv4Route oldGoodRoute = routeBuilder.build();
     // Better preference, kicks out oldGoodRoute
     routeBuilder.setLocalPreference(oldGoodRoute.getLocalPreference() + 1);
-    BgpRoute newGoodRoute = routeBuilder.build();
+    Bgpv4Route newGoodRoute = routeBuilder.build();
 
-    RibDelta.Builder<BgpRoute> builder = RibDelta.builder();
+    RibDelta.Builder<Bgpv4Route> builder = RibDelta.builder();
     builder.from(rib.mergeRouteGetDelta(oldGoodRoute));
     builder.from(rib.mergeRouteGetDelta(newGoodRoute));
 
-    RibDelta<BgpRoute> delta = builder.build();
+    RibDelta<Bgpv4Route> delta = builder.build();
     assertThat(delta.getActions(), hasSize(2));
     // Route withdrawn
     assertThat(
@@ -197,16 +197,16 @@ public class RibDeltaTest {
             BgpTieBreaker.ROUTER_ID,
             null,
             MultipathEquivalentAsPathMatchMode.EXACT_PATH);
-    BgpRoute r1 =
-        new BgpRoute.Builder()
+    Bgpv4Route r1 =
+        new Bgpv4Route.Builder()
             .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), Prefix.MAX_PREFIX_LENGTH))
             .setProtocol(RoutingProtocol.IBGP)
             .setOriginType(OriginType.IGP)
             .setOriginatorIp(Ip.parse("7.7.7.7"))
             .setReceivedFromIp(Ip.parse("7.7.7.7"))
             .build();
-    BgpRoute r2 =
-        new BgpRoute.Builder()
+    Bgpv4Route r2 =
+        new Bgpv4Route.Builder()
             .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), Prefix.MAX_PREFIX_LENGTH))
             .setProtocol(RoutingProtocol.BGP)
             .setOriginType(OriginType.IGP)
@@ -216,8 +216,8 @@ public class RibDeltaTest {
 
     // Setup
     rib.mergeRoute(r1);
-    RibDelta<BgpRoute> delta =
-        RibDelta.<BgpRoute>builder().add(r2).remove(r1, Reason.WITHDRAW).build();
+    RibDelta<Bgpv4Route> delta =
+        RibDelta.<Bgpv4Route>builder().add(r2).remove(r1, Reason.WITHDRAW).build();
     // Test
     RibDelta.importRibDelta(rib, delta);
     // r1 remains due to different protocol

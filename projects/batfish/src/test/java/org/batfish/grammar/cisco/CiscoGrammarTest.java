@@ -275,8 +275,8 @@ import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
-import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
@@ -756,8 +756,8 @@ public class CiscoGrammarTest {
         dp.getRibs().get("ios-listener").get(DEFAULT_VRF_NAME).getRoutes();
 
     // ROUTE_MAP adds two communities to default route. Make sure listener's default route has them.
-    BgpRoute expectedDefaultRoute =
-        BgpRoute.builder()
+    Bgpv4Route expectedDefaultRoute =
+        Bgpv4Route.builder()
             .setCommunities(ImmutableSet.of(7274718L, 21823932L))
             .setNetwork(Prefix.ZERO)
             .setNextHopIp(Ip.parse("10.1.1.1"))
@@ -796,8 +796,8 @@ public class CiscoGrammarTest {
     Set<AbstractRoute> listenerRoutes =
         dp.getRibs().get("ios-listener").get(DEFAULT_VRF_NAME).getRoutes();
 
-    BgpRoute expectedDefaultRoute =
-        BgpRoute.builder()
+    Bgpv4Route expectedDefaultRoute =
+        Bgpv4Route.builder()
             .setNetwork(Prefix.ZERO)
             .setNextHopIp(Ip.parse("10.1.1.1"))
             .setReceivedFromIp(Ip.parse("10.1.1.1"))
@@ -1971,8 +1971,8 @@ public class CiscoGrammarTest {
     Ip originatorId = Ip.parse("1.1.1.1");
     Ip originatorIp = Ip.parse("10.1.1.1");
     Long originatorAs = 1L;
-    BgpRoute expected =
-        BgpRoute.builder()
+    Bgpv4Route expected =
+        Bgpv4Route.builder()
             .setNetwork(Prefix.ZERO)
             .setNextHopIp(originatorIp)
             .setAdmin(20)
@@ -2034,8 +2034,8 @@ public class CiscoGrammarTest {
     Ip originatorId = Ip.parse("1.1.1.1");
     Ip originatorIp = Ip.parse("10.1.1.1");
     Long originatorAs = 1L;
-    BgpRoute redistributedStaticRoute =
-        BgpRoute.builder()
+    Bgpv4Route redistributedStaticRoute =
+        Bgpv4Route.builder()
             .setTag(25)
             .setNetwork(Prefix.ZERO)
             .setNextHopIp(originatorIp)
@@ -2869,13 +2869,13 @@ public class CiscoGrammarTest {
     assertThat(exportPolicy, notNullValue());
 
     Prefix permittedPrefix = Prefix.parse("10.1.1.0/24");
-    BgpRoute.Builder r =
-        BgpRoute.builder()
+    Bgpv4Route.Builder r =
+        Bgpv4Route.builder()
             .setOriginatorIp(peerAddress)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.IBGP);
-    BgpRoute permittedRoute = r.setNetwork(permittedPrefix).build();
-    BgpRoute unmatchedRoute = r.setNetwork(Prefix.parse("10.1.0.0/16")).build();
+    Bgpv4Route permittedRoute = r.setNetwork(permittedPrefix).build();
+    Bgpv4Route unmatchedRoute = r.setNetwork(Prefix.parse("10.1.0.0/16")).build();
     assertThat(
         importPolicy.process(
             permittedRoute,
@@ -2935,15 +2935,15 @@ public class CiscoGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     RoutingPolicy setWeightPolicy =
         batfish.loadConfigurations().get(hostname).getRoutingPolicies().get("SET_WEIGHT");
-    BgpRoute r =
-        BgpRoute.builder()
+    Bgpv4Route r =
+        Bgpv4Route.builder()
             .setWeight(1)
             .setNetwork(Prefix.ZERO)
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .build();
-    BgpRoute.Builder transformedRoute = r.toBuilder();
+    Bgpv4Route.Builder transformedRoute = r.toBuilder();
 
     assertThat(
         setWeightPolicy.process(r, transformedRoute, Ip.ZERO, DEFAULT_VRF_NAME, Direction.IN),
@@ -3505,7 +3505,7 @@ public class CiscoGrammarTest {
     boolean r2HasPrivate =
         r2Routes.stream()
             .filter(r -> r.getNetwork().equals(r1Loopback))
-            .flatMap(r -> ((BgpRoute) r).getAsPath().getAsSets().stream())
+            .flatMap(r -> ((Bgpv4Route) r).getAsPath().getAsSets().stream())
             .flatMap(asSet -> asSet.getAsns().stream())
             .anyMatch(AsPath::isPrivateAs);
     assertTrue(r2HasPrivate);
@@ -3514,7 +3514,7 @@ public class CiscoGrammarTest {
     boolean r3HasPrivate =
         r3Routes.stream()
             .filter(a -> a.getNetwork().equals(r1Loopback))
-            .flatMap(r -> ((BgpRoute) r).getAsPath().getAsSets().stream())
+            .flatMap(r -> ((Bgpv4Route) r).getAsPath().getAsSets().stream())
             .flatMap(asSet -> asSet.getAsns().stream())
             .anyMatch(AsPath::isPrivateAs);
     assertFalse(r3HasPrivate);

@@ -45,7 +45,8 @@ public final class DeleteCommunity extends Statement {
 
   @Override
   public Result execute(Environment environment) {
-    BgpRoute.Builder outputRouteBuilder = (BgpRoute.Builder) environment.getOutputRoute();
+    BgpRoute.Builder<?, ?> outputRouteBuilder =
+        (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
     SortedSet<Long> currentCommunities = outputRouteBuilder.getCommunities();
     SortedSet<Long> matchingCommunities = _expr.matchedCommunities(environment, currentCommunities);
     outputRouteBuilder.removeCommunities(matchingCommunities);

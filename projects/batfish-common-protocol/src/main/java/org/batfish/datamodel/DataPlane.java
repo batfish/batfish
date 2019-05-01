@@ -10,7 +10,7 @@ import java.util.SortedSet;
 
 public interface DataPlane extends Serializable {
 
-  Table<String, String, Set<BgpRoute>> getBgpRoutes(boolean multipath);
+  Table<String, String, Set<Bgpv4Route>> getBgpRoutes(boolean multipath);
 
   ValueGraph<BgpPeerConfigId, BgpSessionProperties> getBgpTopology();
 

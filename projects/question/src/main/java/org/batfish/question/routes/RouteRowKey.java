@@ -3,11 +3,12 @@ package org.batfish.question.routes;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Prefix;
 
 /**
  * Class representing the primary key used for grouping {@link org.batfish.datamodel.AbstractRoute}s
- * and {@link org.batfish.datamodel.BgpRoute}s
+ * and {@link BgpRoute}s
  */
 @ParametersAreNonnullByDefault
 public class RouteRowKey {
