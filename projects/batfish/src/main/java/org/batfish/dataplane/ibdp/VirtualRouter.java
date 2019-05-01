@@ -16,7 +16,6 @@ import static org.batfish.dataplane.rib.RibDelta.importDeltaToBuilder;
 import static org.batfish.dataplane.rib.RibDelta.importRibDelta;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -27,7 +26,6 @@ import com.google.common.graph.Network;
 import com.google.common.graph.ValueGraph;
 import java.io.Serializable;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -253,11 +251,15 @@ public class VirtualRouter implements Serializable {
    */
   static <R extends AbstractRoute, D extends R> void queueDelta(
       Queue<RouteAdvertisement<R>> queue, @Nonnull RibDelta<D> delta) {
-    for (RouteAdvertisement<D> r : delta.getActions()) {
-      // REPLACE does not make sense across routers, update with WITHDRAW
-      Reason reason = r.getReason() == Reason.REPLACE ? Reason.WITHDRAW : r.getReason();
-      queue.add(RouteAdvertisement.<R>builder().setRoute(r.getRoute()).setReason(reason).build());
-    }
+    delta
+        .getActions()
+        .forEach(
+            r -> {
+              // REPLACE does not make sense across routers, update with WITHDRAW
+              Reason reason = r.getReason() == Reason.REPLACE ? Reason.WITHDRAW : r.getReason();
+              queue.add(
+                  RouteAdvertisement.<R>builder().setRoute(r.getRoute()).setReason(reason).build());
+            });
   }
 
   /** Lookup the VirtualRouter owner of a remote BGP neighbor. */
@@ -386,9 +388,7 @@ public class VirtualRouter implements Serializable {
       enqueueCrossVrfRoutes(
           otherVrfToOurRib,
           // TODO Will need to update once support is added for cross-VRF export policies
-          exportingVR._mainRib.getTypedRoutes().stream()
-              .map(RouteAdvertisement::new)
-              .collect(ImmutableList.toImmutableList()),
+          exportingVR._mainRib.getTypedRoutes().stream().map(RouteAdvertisement::new),
           _vrf.getCrossVrfImportPolicy());
     }
   }
@@ -502,7 +502,7 @@ public class VirtualRouter implements Serializable {
      * Updates from these BGP deltas into mainRib will be handled in finalizeBgp routes
      */
     if (!d.isEmpty()) {
-      d.getActions().stream()
+      d.getActions()
           .filter(RouteAdvertisement::isWithdrawn)
           .forEach(
               r ->
@@ -1457,7 +1457,8 @@ public class VirtualRouter implements Serializable {
 
       // Compute a set of advertisements that can be queued on remote VR
       Set<RouteAdvertisement<Bgpv4Route>> exportedAdvertisements =
-          routesToExport.getActions().stream()
+          routesToExport
+              .getActions()
               .map(
                   adv -> {
                     Bgpv4Route transformedRoute =
@@ -1966,18 +1967,18 @@ public class VirtualRouter implements Serializable {
 
   private void enqueueCrossVrfRoutes(
       @Nonnull CrossVrfEdgeId remoteVrfToOurRib,
-      @Nonnull Collection<RouteAdvertisement<AnnotatedRoute<AbstractRoute>>> routeAdverts,
+      @Nonnull Stream<RouteAdvertisement<AnnotatedRoute<AbstractRoute>>> routeAdverts,
       @Nullable String policyName) {
     if (!_crossVrfIncomingRoutes.containsKey(remoteVrfToOurRib)) {
       // We either messed up royally or https://github.com/batfish/batfish/issues/3050
       return;
     }
 
-    Collection<RouteAdvertisement<AnnotatedRoute<AbstractRoute>>> filteredRoutes = routeAdverts;
+    Stream<RouteAdvertisement<AnnotatedRoute<AbstractRoute>>> filteredRoutes = routeAdverts;
     if (policyName != null) {
       RoutingPolicy policy = _c.getRoutingPolicies().get(policyName);
       filteredRoutes =
-          routeAdverts.stream()
+          routeAdverts
               .map(
                   ra -> {
                     AnnotatedRoute<AbstractRoute> annotatedRoute = ra.getRoute();
@@ -1992,10 +1993,12 @@ public class VirtualRouter implements Serializable {
                     }
                     return null;
                   })
-              .filter(Objects::nonNull)
-              .collect(ImmutableList.toImmutableList());
+              .filter(Objects::nonNull);
     }
-    _crossVrfIncomingRoutes.get(remoteVrfToOurRib).addAll(filteredRoutes);
+
+    Queue<RouteAdvertisement<AnnotatedRoute<AbstractRoute>>> queue =
+        _crossVrfIncomingRoutes.get(remoteVrfToOurRib);
+    filteredRoutes.forEach(queue::add);
   }
 
   void processCrossVrfRoutes() {
