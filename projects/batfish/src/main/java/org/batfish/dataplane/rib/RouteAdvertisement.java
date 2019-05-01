@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -91,7 +90,7 @@ public final class RouteAdvertisement<T> {
       return false;
     }
     RouteAdvertisement<?> that = (RouteAdvertisement<?>) o;
-    return Objects.equals(_route, that._route) && _reason == that._reason;
+    return _route.equals(that._route) && _reason == that._reason;
   }
 
   @Override
