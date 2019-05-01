@@ -50,7 +50,7 @@ public final class EvpnType3Route extends BgpRoute {
           _discard,
           _localPreference,
           getMetric(),
-          getNetwork(),
+          firstNonNull(getNetwork(), Prefix.create(_vniIp, Prefix.MAX_PREFIX_LENGTH)),
           firstNonNull(_nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE),
           getNextHopIp(),
           getNonForwarding(),
@@ -154,7 +154,7 @@ public final class EvpnType3Route extends BgpRoute {
         discard,
         localPreference,
         med,
-        network,
+        firstNonNull(network, Prefix.create(vniIp, Prefix.MAX_PREFIX_LENGTH)),
         firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE),
         nextHopIp,
         false,
@@ -307,9 +307,9 @@ public final class EvpnType3Route extends BgpRoute {
       h = h * 31 + _protocol.ordinal();
       h = h * 31 + Objects.hashCode(_receivedFromIp);
       h = h * 31 + Boolean.hashCode(_receivedFromRouteReflectorClient);
-      h = h * 31 + Objects.hashCode(_routeDistinguisher);
+      h = h * 31 + _routeDistinguisher.hashCode();
       h = h * 31 + (_srcProtocol == null ? 0 : _srcProtocol.ordinal());
-      h = h * 31 + Objects.hashCode(_vniIp);
+      h = h * 31 + _vniIp.hashCode();
       h = h * 31 + _weight;
 
       _hashCode = h;
