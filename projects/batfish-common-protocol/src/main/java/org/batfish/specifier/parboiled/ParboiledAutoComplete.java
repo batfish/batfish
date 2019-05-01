@@ -3,14 +3,18 @@ package org.batfish.specifier.parboiled;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.answers.AutocompleteSuggestion.DEFAULT_RANK;
 import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.CHAR_LITERAL;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.STRING_LITERAL;
 import static org.batfish.specifier.parboiled.CommonParser.ESCAPE_CHAR;
 import static org.batfish.specifier.parboiled.CommonParser.isEscapableNameAnchor;
+import static org.batfish.specifier.parboiled.CommonParser.isOperatorWithRhs;
 import static org.batfish.specifier.parboiled.CommonParser.nameNeedsEscaping;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -107,25 +111,11 @@ public final class ParboiledAutoComplete {
 
   /** This is the entry point for all auto completions */
   List<AutocompleteSuggestion> run() {
-
-    /**
-     * Before passing the query to the parser, we make it illegal by adding a funny, non-ascii
-     * character (soccer ball :)). We will not get any errors backs if the string is legal.
-     */
-    String testQuery = _query + new String(Character.toChars(ILLEGAL_CHAR));
-    ParsingResult<AstNode> result = new ReportingParseRunner<AstNode>(_expression).run(testQuery);
-    if (result.parseErrors.isEmpty()) {
-      throw new IllegalStateException("Failed to force erroneous input");
-    }
-
-    InvalidInputError error = (InvalidInputError) result.parseErrors.get(0);
-
-    Set<PotentialMatch> potentialMatches =
-        ParserUtils.getPotentialMatches(error, _completionTypes, false);
+    Set<PotentialMatch> potentialMatches = getPotentialMatches(_query);
 
     Set<AutocompleteSuggestion> allSuggestions =
         potentialMatches.stream()
-            .map(pm -> autoCompletePotentialMatch(pm))
+            .map(this::autoCompletePotentialMatch)
             .flatMap(Collection::stream)
             .collect(ImmutableSet.toImmutableSet());
 
@@ -134,6 +124,23 @@ public final class ParboiledAutoComplete {
             Comparator.comparing(AutocompleteSuggestion::getRank)
                 .thenComparing(s -> s.getText().length()))
         .collect(ImmutableList.toImmutableList());
+  }
+
+  private Set<PotentialMatch> getPotentialMatches(String query) {
+    /**
+     * Before passing the query to the parser, we make it illegal by adding a funny, non-ascii
+     * character (soccer ball :)). We will not get any errors backs if the string is legal.
+     */
+    String testQuery = query + new String(Character.toChars(ILLEGAL_CHAR));
+
+    ParsingResult<AstNode> result = new ReportingParseRunner<AstNode>(_expression).run(testQuery);
+    if (result.parseErrors.isEmpty()) {
+      throw new IllegalStateException("Failed to force erroneous input");
+    }
+
+    InvalidInputError error = (InvalidInputError) result.parseErrors.get(0);
+
+    return ParserUtils.getPotentialMatches(error, _completionTypes, false);
   }
 
   @VisibleForTesting
@@ -149,13 +156,17 @@ public final class ParboiledAutoComplete {
         return autoCompleteLiteral(pm, RANK_STRING_LITERAL);
       case EOI:
         return ImmutableList.of();
+      case FILTER_INTERFACE_IN:
+      case FILTER_INTERFACE_OUT:
+        // Should delegate to interface spec
+        throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case FILTER_NAME:
         return autoCompletePotentialMatch(pm, DEFAULT_RANK);
       case FILTER_NAME_REGEX:
         // can't help with regexes
         return ImmutableList.of();
-      case NODE_AND_INTERFACE:
-        // Node or Interface based anchors should appear later in the path
+      case FILTER_PARENS:
+        // Other filter rules appear later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case INTERFACE_GROUP_NAME:
         return autoCompleteReferenceBookEntity(pm, DEFAULT_RANK);
@@ -164,8 +175,13 @@ public final class ParboiledAutoComplete {
       case INTERFACE_NAME_REGEX:
         // can't help with regexes
         return ImmutableList.of();
+      case INTERFACE_PARENS:
+        // Other interface rules appear later in the path
+        throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case INTERFACE_TYPE:
-        // Relies on STRING_LITERAL completion as it appears later in the path
+      case INTERFACE_VRF:
+      case INTERFACE_ZONE:
+        // These rely on type, vrf, or zone completion that appear later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case IP_ADDRESS:
         return autoCompletePotentialMatch(pm, DEFAULT_RANK);
@@ -183,11 +199,23 @@ public final class ParboiledAutoComplete {
       case IP_WILDCARD:
         // Relies on IP_ADDRESS and IP_ADDRESS_MASK completions as they appear later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
+      case LOCATION_PARENS:
+        // Other location rules appear later in the path
+        throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
+      case NODE_AND_INTERFACE:
+        // Node or Interface based anchors should appear later in the path
+        throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case NODE_NAME:
         return autoCompletePotentialMatch(pm, DEFAULT_RANK);
       case NODE_NAME_REGEX:
         // can't help with regexes
         return ImmutableList.of();
+      case NODE_PARENS:
+        // Other node rules appear later in the path
+        throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
+      case NODE_ROLE_AND_DIMENSION:
+        // Role and dimension name rules appear later in the path
+        throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case NODE_ROLE_DIMENSION_NAME:
         return autoCompletePotentialMatch(pm, DEFAULT_RANK);
       case NODE_ROLE_NAME:
@@ -196,10 +224,8 @@ public final class ParboiledAutoComplete {
         // Relies on STRING_LITERAL completion as it appears later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case REFERENCE_BOOK_AND_ADDRESS_GROUP:
-        // ADDRESS_GROUP_NAME or REFERENCE_BOOK_NAME should appear later in the path
-        throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case REFERENCE_BOOK_AND_INTERFACE_GROUP:
-        // INTERFACE_GROUP_NAME or REFERENCE_BOOK_NAME should appear later in the path
+        // Reference book name and address/interface group name should appear later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case REFERENCE_BOOK_NAME:
         return autoCompletePotentialMatch(pm, DEFAULT_RANK);
@@ -208,6 +234,9 @@ public final class ParboiledAutoComplete {
       case ROUTING_POLICY_NAME_REGEX:
         // can't help with regexes
         return ImmutableList.of();
+      case ROUTING_POLICY_PARENS:
+        // Other routing policy rules appear later in the path
+        throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case STRING_LITERAL:
         /*
          Char and String literals get a lower rank so that the possibly many suggestions for dynamic values
@@ -228,50 +257,53 @@ public final class ParboiledAutoComplete {
 
   @VisibleForTesting
   List<AutocompleteSuggestion> autoCompleteLiteral(PotentialMatch pm, int rank) {
-    List<AutocompleteSuggestion> extendedSuggestions = extendAutoCompleteSuggestion(pm);
+    Optional<PotentialMatch> extendedMatch = extendLiteralMatch(_query, pm);
 
-    if (extendedSuggestions.size() == 1) {
-      return extendedSuggestions;
-    }
+    PotentialMatch pmToConsider = extendedMatch.orElse(pm);
 
     Optional<Anchor.Type> ancestorAnchor = Optional.empty();
 
-    if (pm.getMatch().equals("(")) {
-      int anchorIndex = pm.getPath().indexOf(pm.getAnchor());
+    if (isOperatorWithRhs(pmToConsider.getMatch())) {
+      int anchorIndex = pmToConsider.getPath().indexOf(pmToConsider.getAnchor());
       checkArgument(anchorIndex != -1, "Anchor is not present in the path.");
 
       ancestorAnchor =
           IntStream.range(0, anchorIndex)
-              .mapToObj(i -> pm.getPath().get(anchorIndex - i - 1).getAnchorType())
+              .mapToObj(i -> pmToConsider.getPath().get(anchorIndex - i - 1).getAnchorType())
               .filter(Objects::nonNull)
               .findFirst();
     }
 
     return ImmutableList.of(
         new AutocompleteSuggestion(
-            pm.getMatch(),
+            pm.getMatch() + extendedMatch.map(PotentialMatch::getMatch).orElse(""),
             true,
             ancestorAnchor.map(Anchor.Type::getDescription).orElse(null),
-            RANK_STRING_LITERAL,
+            rank,
             pm.getMatchStartIndex(),
             ancestorAnchor.map(Anchor.Type::getHint).orElse(null)));
   }
 
-  @VisibleForTesting
-  List<AutocompleteSuggestion> extendAutoCompleteSuggestion(PotentialMatch pm) {
-    String extendedQuery = _query.substring(0, pm.getMatchStartIndex()) + pm.getMatch();
-    return new ParboiledAutoComplete(
-            _parser, // reusing the parser object here, since the current one is done
-            _expression,
-            _completionTypes,
-            _network,
-            _snapshot,
-            extendedQuery,
-            _maxSuggestions,
-            _completionMetadata,
-            _nodeRolesData,
-            _referenceLibrary)
-        .run();
+  /**
+   * For literal matches, we check if there is a unique extension that is also a literal. This is
+   * most helpful for specifiers, so we can suggest '@connectedTo(' (with open parenthesis) instead
+   * of first suggesting '@connectedTo' and then suggesting '('.
+   */
+  private Optional<PotentialMatch> extendLiteralMatch(String query, PotentialMatch pm) {
+    String extendedQuery = query.substring(0, pm.getMatchStartIndex()) + pm.getMatch();
+
+    // this call reuses the parser object, which is OK since the previous iteration is over
+    Set<PotentialMatch> extendedMatches = getPotentialMatches(extendedQuery);
+
+    // if we get a unique extension, extend based on one of those matches
+    if (extendedMatches.stream().map(PotentialMatch::getMatch).distinct().count() == 1) {
+      PotentialMatch someMatch = Iterables.getFirst(extendedMatches, null);
+      if (someMatch.getAnchorType() == CHAR_LITERAL
+          || someMatch.getAnchorType() == STRING_LITERAL) {
+        return Optional.of(someMatch);
+      }
+    }
+    return Optional.empty();
   }
 
   private List<AutocompleteSuggestion> autoCompletePotentialMatch(PotentialMatch pm, int rank) {
@@ -308,8 +340,6 @@ public final class ParboiledAutoComplete {
         return Variable.Type.INTERFACE_GROUP_NAME;
       case INTERFACE_NAME:
         return Type.INTERFACE_NAME;
-      case INTERFACE_TYPE:
-        return Variable.Type.INTERFACE_TYPE;
       case IP_ADDRESS:
         return Variable.Type.IP;
       case IP_PREFIX:

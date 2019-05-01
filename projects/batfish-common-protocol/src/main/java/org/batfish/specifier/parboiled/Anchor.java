@@ -22,24 +22,37 @@ import javax.annotation.ParametersAreNonnullByDefault;
     // grammar rules that are deprecated
     DEPRECATED("DEPRECATED", "Deprecated", "deprecated"),
     EOI("EOI", "EoI", "EoI"),
+    FILTER_INTERFACE_IN("FILTER_INTERFACE_IN", "Incoming filter on interface", "<interface-spec>)"),
+    FILTER_INTERFACE_OUT(
+        "FILTER_INTERFACE_OUT", "Outgoing filter on interface", "<interface-spec>)"),
     FILTER_NAME("FILTER_NAME", "Filter name", "filter-name"),
     FILTER_NAME_REGEX("FILTER_NAME_REGEX", "Filter name regex", "filter-name-regex"),
+    FILTER_PARENS("FILTER_PARENS", "Filter specifier", "<filter-specifier>)"),
     // grammar rules that shouldn't be the basis for autocompletion
     IGNORE("IGNORE", "Ignore", "ignore"),
+    INTERFACE_CONNECTED_TO(
+        "INTERFACE_CONNECTED_TO", "Interfaces connected to IP addresses", "<ip-specifier>)"),
     INTERFACE_GROUP_NAME("INTERFACE_GROUP_NAME", "Interface group name", "interface-group"),
     INTERFACE_NAME("INTERFACE_NAME", "Interface name", "interface-name"),
     INTERFACE_NAME_REGEX("INTERFACE_NAME_REGEX", "Interface name regex", "interface-name-regex"),
-    INTERFACE_TYPE("INTERFACE_TYPE", "Interface type", "interface-type"),
-    IP_ADDRESS("IP_ADDRESS", "IP address", "ip-address"),
-    IP_ADDRESS_MASK("IP_ADDRESS_MASK", "IP address mask", "ip-address:mask"),
-    IP_PREFIX("IP_PREFIX", "IP prefix", "ip-prefix"),
-    IP_PROTOCOL_NUMBER("IP_PROTOCOL_NUMBER", "IP protocol", "ip-protocol"),
-    IP_RANGE("IP_RANGE", "IP range", "ip-address-from - ip-address-to"),
-    IP_WILDCARD("IP_WILDCARD", "IP wildcard", "ip-address:wildcard"),
+    INTERFACE_PARENS("INTERFACE_PARENS", "Interface specifier", "<interface-specifier>)"),
+    INTERFACE_TYPE("INTERFACE_TYPE", "Interfaces of type", "<interface-type>)"),
+    INTERFACE_VRF("INTERFACE_VRF", "Interfaces in VRF", "<vrf-name>)"),
+    INTERFACE_ZONE("INTERFACE_ZONE", "Interfaces in zone", "<zone-name>)"),
+    IP_ADDRESS("IP_ADDRESS", "IP address", "<ip-address>"),
+    IP_ADDRESS_MASK("IP_ADDRESS_MASK", "IP address mask", "<ip-address:mask>"),
+    IP_PREFIX("IP_PREFIX", "IP prefix", "<prefix-length>"),
+    IP_PROTOCOL_NUMBER("IP_PROTOCOL_NUMBER", "IP protocol", "<ip-protocol>"),
+    IP_RANGE("IP_RANGE", "IP range", "<ip-address-to>"),
+    IP_WILDCARD("IP_WILDCARD", "IP wildcard", "<wildcard>"),
+    LOCATION_PARENS("LOCATION_PARENS", "Location specifier", "<location-specifier>)"),
     NODE_AND_INTERFACE(
-        "NODE_AND_INTERFACE", "Node and interface pair", "node-specifier[interface-specifier]"),
+        "NODE_AND_INTERFACE", "Node and interface pair", "<node-specifier>[<interface-specifier>]"),
     NODE_NAME("NODE_NAME", "Node name", "node-name"),
-    NODE_NAME_REGEX("NODE_NAME_REGEX", "Node name regex", "node-name-regex"),
+    NODE_NAME_REGEX("NODE_NAME_REGEX", "Node name regex", "node-name-regex/"),
+    NODE_PARENS("NODE_PARENS", "Node specifier", "<node-specifier>)"),
+    NODE_ROLE_AND_DIMENSION(
+        "NODE_ROLE_AND_DIMENSION", "Nodes in the role", "<role-name>, <dimension-name>)"),
     NODE_ROLE_DIMENSION_NAME(
         "NODE_ROLE_DIMENSION_NAME", "Node role dimension name", "node-role-dimension"),
     NODE_ROLE_NAME("NODE_ROLE_NAME", "Node role name", "node-role"),
@@ -55,7 +68,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
     REFERENCE_BOOK_NAME("REFERENCE_BOOK_NAME", "Reference book name", "reference-book"),
     ROUTING_POLICY_NAME("ROUTING_POLICY_NAME", "Routing policy name", "routing-policy"),
     ROUTING_POLICY_NAME_REGEX(
-        "ROUTING_POLICY_NAME_REGEX", "Routing policy name regex", "routing-policy-name-regex"),
+        "ROUTING_POLICY_NAME_REGEX", "Routing policy name regex", "<routing-policy-name-regex>/"),
+    ROUTING_POLICY_PARENS(
+        "ROUTING_POLICY_PARENS", "Routing policy specifier", "<routing-policy-specifier>)"),
     STRING_LITERAL("STRING_LITERAL", "String literal", "string-literal"),
     VRF_NAME("VRF_NAME", "VRF name", "vrf-name"),
     WHITESPACE("WHITESPACE", "Whitespace", "whitespace"),

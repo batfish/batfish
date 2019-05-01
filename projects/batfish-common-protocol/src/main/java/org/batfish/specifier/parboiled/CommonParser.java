@@ -141,29 +141,25 @@ public class CommonParser extends BaseParser<AstNode> {
       case VRF_NAME:
       case ZONE_NAME:
         return true;
-      case CHAR_LITERAL:
-      case DEPRECATED:
-      case EOI:
-      case FILTER_NAME_REGEX:
-      case IGNORE:
-      case INTERFACE_NAME_REGEX:
-      case INTERFACE_TYPE:
-      case IP_ADDRESS:
-      case IP_ADDRESS_MASK:
-      case IP_PREFIX:
-      case IP_PROTOCOL_NUMBER:
-      case IP_RANGE:
-      case IP_WILDCARD:
-      case NODE_NAME_REGEX:
-      case NODE_TYPE:
-      case REFERENCE_BOOK_AND_ADDRESS_GROUP:
-      case REFERENCE_BOOK_AND_INTERFACE_GROUP:
-      case ROUTING_POLICY_NAME_REGEX:
-      case STRING_LITERAL:
-      case WHITESPACE:
-        return false;
       default:
-        throw new IllegalArgumentException("Unhandled anchor type " + anchorType);
+        return false;
+    }
+  }
+
+  /**
+   * Whether the given strings represents an operator that has values on the right hand side. This
+   * information is used to provide hints and description for auto completion suggestions
+   */
+  static boolean isOperatorWithRhs(String literal) {
+    switch (literal) {
+      case "(":
+      case "/":
+      case "!":
+      case "-":
+      case ":":
+        return true;
+      default:
+        return false;
     }
   }
 
@@ -234,6 +230,11 @@ public class CommonParser extends BaseParser<AstNode> {
 
   /** [0-9] */
   public Rule Digit() {
+    return CharRange('0', '9');
+  }
+
+  /** See class JavaDoc for why this is a CharRange and not Ch */
+  public Rule DoubleQuote() {
     return CharRange('0', '9');
   }
 
