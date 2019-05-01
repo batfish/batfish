@@ -1302,9 +1302,8 @@ public class VirtualRouter implements Serializable {
    */
   boolean propagateEigrpInternalRoutes(
       Map<String, Node> nodes, TopologyContext topologyContext, NetworkConfigurations nc) {
-
     return _virtualEigrpProcesses.values().stream()
-        .map(proc -> proc.propagateInternalRoutes(nodes, topologyContext, nc))
+        .map(proc -> proc.propagateInternalRoutes(nodes, topologyContext.getEigrpTopology(), nc))
         .reduce(false, (a, b) -> a || b);
   }
 
