@@ -1,10 +1,95 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /** Represents properties of a peering session between two {@link BgpPeerConfig}s. */
-public final class BgpSessionProperties {
+public final class BgpSessionProperties implements Serializable {
+
+  public static final class Builder {
+
+    private boolean _additionalPaths;
+    private boolean _advertiseExternal;
+    private boolean _advertiseInactive;
+    private @Nullable Ip _tailIp;
+    private @Nullable Ip _headIp;
+    private @Nonnull SessionType _sessionType;
+
+    private Builder() {
+      _sessionType = SessionType.UNSET;
+    }
+
+    public @Nonnull BgpSessionProperties build() {
+      checkArgument(_headIp != null, "Missing headIp");
+      checkArgument(_tailIp != null, "Missing tailIp");
+      return new BgpSessionProperties(
+          _additionalPaths, _advertiseExternal, _advertiseInactive, _tailIp, _headIp, _sessionType);
+    }
+
+    public boolean getAdditionalPaths() {
+      return _additionalPaths;
+    }
+
+    public @Nonnull Builder setAdditionalPaths(boolean additionalPaths) {
+      _additionalPaths = additionalPaths;
+      return this;
+    }
+
+    public boolean getAdvertiseExternal() {
+      return _advertiseExternal;
+    }
+
+    public @Nonnull Builder setAdvertiseExternal(boolean advertiseExternal) {
+      _advertiseExternal = advertiseExternal;
+      return this;
+    }
+
+    public boolean getAdvertiseInactive() {
+      return _advertiseInactive;
+    }
+
+    public @Nonnull Builder setAdvertiseInactive(boolean advertiseInactive) {
+      _advertiseInactive = advertiseInactive;
+      return this;
+    }
+
+    public Ip getTailIp() {
+      return _tailIp;
+    }
+
+    public @Nonnull Builder setTailIp(Ip tailIp) {
+      _tailIp = tailIp;
+      return this;
+    }
+
+    public Ip getHeadIp() {
+      return _headIp;
+    }
+
+    public @Nonnull Builder setHeadIp(Ip headIp) {
+      _headIp = headIp;
+      return this;
+    }
+
+    public SessionType getSessionType() {
+      return _sessionType;
+    }
+
+    public @Nonnull Builder setSessionType(SessionType sessionType) {
+      _sessionType = sessionType;
+      return this;
+    }
+  }
+
+  public static @Nonnull Builder builder() {
+    return new Builder();
+  }
+
+  private static final long serialVersionUID = 1L;
 
   private final boolean _additionalPaths;
   private final boolean _advertiseExternal;

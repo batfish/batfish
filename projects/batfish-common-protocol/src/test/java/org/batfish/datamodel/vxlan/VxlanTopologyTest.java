@@ -1,5 +1,6 @@
 package org.batfish.datamodel.vxlan;
 
+import static org.batfish.datamodel.vxlan.VxlanTopology.EMPTY;
 import static org.batfish.datamodel.vxlan.VxlanTopology.addVniEdge;
 import static org.batfish.datamodel.vxlan.VxlanTopology.addVniEdges;
 import static org.batfish.datamodel.vxlan.VxlanTopology.buildVxlanNode;
@@ -9,6 +10,7 @@ import static org.batfish.datamodel.vxlan.VxlanTopology.initVrfHostnameMap;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -18,9 +20,12 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.GraphBuilder;
+import com.google.common.graph.ImmutableGraph;
 import com.google.common.graph.MutableGraph;
+import com.google.common.testing.EqualsTester;
 import java.util.Map;
 import java.util.Set;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -509,5 +514,35 @@ public final class VxlanTopologyTest {
     assertThat(
         new VxlanTopology(configurations).getEdges(),
         equalTo(ImmutableSet.of(EndpointPair.unordered(nodeTail, nodeHead))));
+  }
+
+  @Test
+  public void testEquals() {
+    MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
+    VxlanTopology empty = new VxlanTopology(ImmutableGraph.copyOf(graph));
+    VxlanNode n1 = new VxlanNode("a", 1);
+    VxlanNode n2 = new VxlanNode("b", 2);
+    graph.addNode(n1);
+    graph.addNode(n2);
+    graph.putEdge(n1, n2);
+
+    new EqualsTester()
+        .addEqualityGroup(new Object())
+        .addEqualityGroup(EMPTY, EMPTY, empty)
+        .addEqualityGroup(new VxlanTopology(graph))
+        .testEquals();
+  }
+
+  @Test
+  public void testJavaSerialization() {
+    MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
+    VxlanNode n1 = new VxlanNode("a", 1);
+    VxlanNode n2 = new VxlanNode("b", 2);
+    graph.addNode(n1);
+    graph.addNode(n2);
+    graph.putEdge(n1, n2);
+    VxlanTopology topology = new VxlanTopology(graph);
+
+    assertEquals(topology, SerializationUtils.clone(topology));
   }
 }

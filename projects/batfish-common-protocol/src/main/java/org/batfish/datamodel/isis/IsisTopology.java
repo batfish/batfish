@@ -1,28 +1,30 @@
 package org.batfish.datamodel.isis;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.graph.ImmutableNetwork;
 import com.google.common.graph.MutableNetwork;
 import com.google.common.graph.Network;
 import com.google.common.graph.NetworkBuilder;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.topology.SerializableNetwork;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Topology;
 
 /** A topology representing IS-IS sessions */
 @ParametersAreNonnullByDefault
-public final class IsisTopology {
+public final class IsisTopology implements Serializable {
 
   public static final IsisTopology EMPTY =
       new IsisTopology(
           NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build());
+  private static final long serialVersionUID = 1L;
 
   /** Initialize the IS-IS topology as a directed graph. */
   public static @Nonnull IsisTopology initIsisTopology(
@@ -51,13 +53,13 @@ public final class IsisTopology {
     }
   }
 
-  private final @Nonnull ImmutableNetwork<IsisNode, IsisEdge> _network;
+  private final @Nonnull SerializableNetwork<IsisNode, IsisEdge> _network;
 
   public IsisTopology(Network<IsisNode, IsisEdge> network) {
-    _network = ImmutableNetwork.copyOf(network);
+    _network = new SerializableNetwork<>(network);
   }
 
-  public @Nonnull ImmutableNetwork<IsisNode, IsisEdge> getNetwork() {
+  public @Nonnull SerializableNetwork<IsisNode, IsisEdge> getNetwork() {
     return _network;
   }
 
