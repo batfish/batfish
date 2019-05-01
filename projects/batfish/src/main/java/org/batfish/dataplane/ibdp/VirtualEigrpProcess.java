@@ -34,6 +34,7 @@ import org.batfish.datamodel.eigrp.EigrpEdge;
 import org.batfish.datamodel.eigrp.EigrpInterface;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpProcess;
+import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.dataplane.rib.EigrpExternalRib;
@@ -219,11 +220,12 @@ class VirtualEigrpProcess {
    *
    * @param eigrpTopology The topology representing EIGRP adjacencies
    */
-  void initQueues(Network<EigrpInterface, EigrpEdge> eigrpTopology) {
+  void initQueues(EigrpTopology eigrpTopology) {
+    Network<EigrpInterface, EigrpEdge> network = eigrpTopology.getNetwork();
     _incomingRoutes =
         _interfaces.stream()
-            .filter(eigrpTopology.nodes()::contains)
-            .flatMap(n -> eigrpTopology.inEdges(n).stream())
+            .filter(network.nodes()::contains)
+            .flatMap(n -> network.inEdges(n).stream())
             .collect(toImmutableSortedMap(Function.identity(), e -> new ConcurrentLinkedQueue<>()));
   }
 
@@ -289,7 +291,8 @@ class VirtualEigrpProcess {
    */
   boolean propagateInternalRoutes(
       Map<String, Node> nodes, TopologyContext topologyContext, NetworkConfigurations nc) {
-    Network<EigrpInterface, EigrpEdge> eigrpTopology = topologyContext.getEigrpTopology();
+    Network<EigrpInterface, EigrpEdge> eigrpTopology =
+        topologyContext.getEigrpTopology().getNetwork();
     Set<EigrpInterface> eigrpNodes = eigrpTopology.nodes();
     return _interfaces.stream()
         .filter(eigrpNodes::contains)

@@ -115,7 +115,7 @@ public class BgpTopologyUtilsTest {
         ImmutableMap.of(ip1, ImmutableSet.of(NODE1), ip2, ImmutableSet.of(NODE2));
 
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-        initBgpTopology(_configs, ipOwners, true, false, null, null);
+        initBgpTopology(_configs, ipOwners, true, false, null, null).getGraph();
     assertThat(bgpTopology.edges(), hasSize(2));
     EndpointPair<BgpPeerConfigId> edge = bgpTopology.edges().iterator().next();
     assertThat(edge.source().getHostname(), equalTo(NODE1));
@@ -161,7 +161,7 @@ public class BgpTopologyUtilsTest {
             ip1, ImmutableSet.of(NODE1), ip2, ImmutableSet.of(NODE2), ip3, ImmutableSet.of(NODE3));
 
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-        initBgpTopology(_configs, ipOwners, true, false, null, null);
+        initBgpTopology(_configs, ipOwners, true, false, null, null).getGraph();
     assertThat(bgpTopology.edges(), hasSize(2));
     EndpointPair<BgpPeerConfigId> edge = bgpTopology.edges().iterator().next();
     assertThat(edge.source().getHostname(), equalTo(NODE1));
@@ -192,7 +192,8 @@ public class BgpTopologyUtilsTest {
 
     // Shouldn't see session come up if nodes are not connected in layer 2
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-        initBgpTopology(_configs, ImmutableMap.of(), true, false, null, emptyLayer2Topology);
+        initBgpTopology(_configs, ImmutableMap.of(), true, false, null, emptyLayer2Topology)
+            .getGraph();
     assertThat(bgpTopology.nodes(), hasSize(2));
     assertThat(bgpTopology.edges(), empty());
 
@@ -200,7 +201,8 @@ public class BgpTopologyUtilsTest {
     Layer2Edge edge = new Layer2Edge(NODE1, iface1, null, NODE2, iface2, null, null);
     Layer2Topology connectedLayer2Topology = Layer2Topology.fromEdges(ImmutableSet.of(edge));
     bgpTopology =
-        initBgpTopology(_configs, ImmutableMap.of(), true, false, null, connectedLayer2Topology);
+        initBgpTopology(_configs, ImmutableMap.of(), true, false, null, connectedLayer2Topology)
+            .getGraph();
     BgpPeerConfigId peer1Id = new BgpPeerConfigId(NODE1, DEFAULT_VRF_NAME, iface1);
     BgpPeerConfigId peer2To1Id = new BgpPeerConfigId(NODE2, DEFAULT_VRF_NAME, iface2);
     assertThat(bgpTopology.nodes(), hasSize(2));
@@ -213,7 +215,8 @@ public class BgpTopologyUtilsTest {
     Layer2Edge edge1To3 = new Layer2Edge(NODE2, iface2, null, "node3", "iface3", null, null);
     Layer2Edge edge2To4 = new Layer2Edge(NODE2, iface2, null, "node4", "iface4", null, null);
     Layer2Topology disconnected = Layer2Topology.fromEdges(ImmutableSet.of(edge1To3, edge2To4));
-    bgpTopology = initBgpTopology(_configs, ImmutableMap.of(), true, false, null, disconnected);
+    bgpTopology =
+        initBgpTopology(_configs, ImmutableMap.of(), true, false, null, disconnected).getGraph();
     assertThat(bgpTopology.nodes(), hasSize(2));
     assertThat(bgpTopology.edges(), empty());
   }
@@ -243,7 +246,8 @@ public class BgpTopologyUtilsTest {
 
     // Shouldn't see session come up because of incompatible remote AS
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-        initBgpTopology(_configs, ImmutableMap.of(), true, false, null, connectedLayer2Topology);
+        initBgpTopology(_configs, ImmutableMap.of(), true, false, null, connectedLayer2Topology)
+            .getGraph();
     assertThat(bgpTopology.nodes(), hasSize(2));
     assertThat(bgpTopology.edges(), empty());
   }

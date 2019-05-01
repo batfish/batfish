@@ -78,10 +78,10 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.dataplane.rib.RibGroup;
 import org.batfish.datamodel.dataplane.rib.RibId;
-import org.batfish.datamodel.eigrp.EigrpEdge;
-import org.batfish.datamodel.eigrp.EigrpInterface;
+import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.isis.IsisEdge;
 import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
@@ -90,6 +90,7 @@ import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.isis.IsisProcess;
+import org.batfish.datamodel.isis.IsisTopology;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.dataplane.exceptions.BgpRoutePropagationException;
@@ -388,7 +389,8 @@ public class VirtualRouter implements Serializable {
    *
    * @param bgpTopology source of truth for which sessions get established.
    */
-  void initBgpQueues(ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology) {
+  void initBgpQueues(BgpTopology bgpTopology) {
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> graph = bgpTopology.getGraph();
     if (_vrf.getBgpProcess() == null) {
       _bgpIncomingRoutes = ImmutableSortedMap.of();
     } else {
@@ -408,10 +410,8 @@ public class VirtualRouter implements Serializable {
                   _vrf.getBgpProcess().getInterfaceNeighbors().entrySet().stream()
                       .filter(e -> e.getValue().getIpv4UnicastAddressFamily() != null)
                       .map(e -> new BgpPeerConfigId(getHostname(), _vrf.getName(), e.getKey())))
-              .filter(bgpTopology.nodes()::contains)
-              .flatMap(
-                  dst ->
-                      bgpTopology.adjacentNodes(dst).stream().map(src -> new BgpEdgeId(src, dst)))
+              .filter(graph.nodes()::contains)
+              .flatMap(dst -> graph.adjacentNodes(dst).stream().map(src -> new BgpEdgeId(src, dst)))
               .collect(
                   toImmutableSortedMap(Function.identity(), e -> new ConcurrentLinkedQueue<>()));
     }
@@ -422,11 +422,12 @@ public class VirtualRouter implements Serializable {
    *
    * @param eigrpTopology The topology representing EIGRP adjacencies
    */
-  private void initEigrpQueues(Network<EigrpInterface, EigrpEdge> eigrpTopology) {
+  private void initEigrpQueues(EigrpTopology eigrpTopology) {
     _virtualEigrpProcesses.values().forEach(proc -> proc.initQueues(eigrpTopology));
   }
 
-  private void initIsisQueues(Network<IsisNode, IsisEdge> isisTopology) {
+  private void initIsisQueues(IsisTopology isisTopology) {
+    Network<IsisNode, IsisEdge> network = isisTopology.getNetwork();
     // Initialize message queues for each IS-IS circuit
     if (_vrf.getIsisProcess() == null) {
       _isisIncomingRoutes = ImmutableSortedMap.of();
@@ -434,8 +435,8 @@ public class VirtualRouter implements Serializable {
       _isisIncomingRoutes =
           _vrf.getInterfaceNames().stream()
               .map(ifaceName -> new IsisNode(_c.getHostname(), ifaceName))
-              .filter(isisTopology.nodes()::contains)
-              .flatMap(n -> isisTopology.inEdges(n).stream())
+              .filter(network.nodes()::contains)
+              .flatMap(n -> network.inEdges(n).stream())
               .collect(
                   toImmutableSortedMap(Function.identity(), e -> new ConcurrentLinkedQueue<>()));
     }
@@ -537,7 +538,7 @@ public class VirtualRouter implements Serializable {
       Set<BgpAdvertisement> externalAdverts,
       Map<Ip, Set<String>> ipOwners,
       final Map<String, Node> allNodes,
-      ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
+      BgpTopology bgpTopology,
       NetworkConfigurations networkConfigurations) {
 
     BgpProcess proc = _vrf.getBgpProcess();
@@ -1090,9 +1091,7 @@ public class VirtualRouter implements Serializable {
    */
   @Nonnull
   Map<BgpRib, RibDelta<Bgpv4Route>> processBgpMessages(
-      ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
-      NetworkConfigurations nc,
-      Map<String, Node> nodes) {
+      BgpTopology bgpTopology, NetworkConfigurations nc, Map<String, Node> nodes) {
 
     // If we have no BGP process, nothing to do
     if (_vrf.getBgpProcess() == null) {
@@ -1394,7 +1393,7 @@ public class VirtualRouter implements Serializable {
       RibDelta<Bgpv4Route> bgpMultiPathDelta,
       RibDelta<AnnotatedRoute<AbstractRoute>> mainDelta,
       final Map<String, Node> allNodes,
-      ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
+      BgpTopology bgpTopology,
       NetworkConfigurations networkConfigurations) {
     for (BgpEdgeId edge : _bgpIncomingRoutes.keySet()) {
       final BgpSessionProperties session = getBgpSessionProperties(bgpTopology, edge);
@@ -1478,9 +1477,10 @@ public class VirtualRouter implements Serializable {
   }
 
   private static BgpSessionProperties getBgpSessionProperties(
-      ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology, BgpEdgeId edge) {
+      BgpTopology bgpTopology, BgpEdgeId edge) {
     // BGP topology edge guaranteed to exist since the session is established
-    Optional<BgpSessionProperties> session = bgpTopology.edgeValue(edge.src(), edge.dst());
+    Optional<BgpSessionProperties> session =
+        bgpTopology.getGraph().edgeValue(edge.src(), edge.dst());
     return session.orElseThrow(
         () -> new IllegalArgumentException(String.format("No BGP edge %s in BGP topology", edge)));
   }
@@ -1571,7 +1571,7 @@ public class VirtualRouter implements Serializable {
   void finalizeBgpRoutesAndQueueOutgoingMessages(
       Map<BgpRib, RibDelta<Bgpv4Route>> stagingDeltas,
       final Map<String, Node> allNodes,
-      ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
+      BgpTopology bgpTopology,
       NetworkConfigurations networkConfigurations) {
 
     if (_vrf.getBgpProcess() == null) {
@@ -1681,9 +1681,7 @@ public class VirtualRouter implements Serializable {
    * plane iterations.
    */
   void queueInitialBgpMessages(
-      final ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
-      final Map<String, Node> allNodes,
-      NetworkConfigurations nc) {
+      final BgpTopology bgpTopology, final Map<String, Node> allNodes, NetworkConfigurations nc) {
     if (_vrf.getBgpProcess() == null) {
       // nothing to do
       return;
