@@ -37,7 +37,7 @@ public final class SetLocalPreference extends Statement {
   @Override
   public Result execute(Environment environment) {
     Result result = new Result();
-    BgpRoute.Builder bgpBuilder = (BgpRoute.Builder) environment.getOutputRoute();
+    BgpRoute.Builder<?, ?> bgpBuilder = (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
     long localPreference = _localPreference.evaluate(environment);
     bgpBuilder.setLocalPreference(localPreference);
     if (environment.getWriteToIntermediateBgpAttributes()) {

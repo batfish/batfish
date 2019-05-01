@@ -89,7 +89,7 @@ public class MockDataPlane implements DataPlane {
     return new Builder();
   }
 
-  private Table<String, String, Set<BgpRoute>> _bgpRoutes;
+  private Table<String, String, Set<Bgpv4Route>> _bgpRoutes;
 
   private final ValueGraph<BgpPeerConfigId, BgpSessionProperties> _bgpTopology;
 
@@ -120,7 +120,7 @@ public class MockDataPlane implements DataPlane {
   }
 
   @Override
-  public Table<String, String, Set<BgpRoute>> getBgpRoutes(boolean multipath) {
+  public Table<String, String, Set<Bgpv4Route>> getBgpRoutes(boolean multipath) {
     return _bgpRoutes;
   }
 

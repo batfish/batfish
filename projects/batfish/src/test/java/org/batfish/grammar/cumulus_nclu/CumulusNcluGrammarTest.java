@@ -69,8 +69,8 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpPeerConfig;
-import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.IntegerSpace;
@@ -130,7 +130,7 @@ public final class CumulusNcluGrammarTest {
     assertFalse(
         routingPolicy.process(
             new ConnectedRoute(network, "dummy"),
-            BgpRoute.builder().setNetwork(network),
+            Bgpv4Route.builder().setNetwork(network),
             Ip.parse("192.0.2.1"),
             DEFAULT_VRF_NAME,
             Direction.OUT));
@@ -140,7 +140,7 @@ public final class CumulusNcluGrammarTest {
     assertTrue(
         routingPolicy.process(
             new ConnectedRoute(network, "dummy"),
-            BgpRoute.builder().setNetwork(network),
+            Bgpv4Route.builder().setNetwork(network),
             Ip.parse("192.0.2.1"),
             DEFAULT_VRF_NAME,
             Direction.OUT));
@@ -152,16 +152,16 @@ public final class CumulusNcluGrammarTest {
     return BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
   }
 
-  private @Nonnull BgpRoute.Builder makeBgpOutputRouteBuilder() {
-    return BgpRoute.builder()
+  private @Nonnull Bgpv4Route.Builder makeBgpOutputRouteBuilder() {
+    return Bgpv4Route.builder()
         .setNetwork(Prefix.ZERO)
         .setOriginType(OriginType.INCOMPLETE)
         .setOriginatorIp(Ip.ZERO)
         .setProtocol(RoutingProtocol.BGP);
   }
 
-  private @Nonnull BgpRoute makeBgpRoute(Prefix prefix) {
-    return BgpRoute.builder()
+  private @Nonnull Bgpv4Route makeBgpRoute(Prefix prefix) {
+    return Bgpv4Route.builder()
         .setNetwork(prefix)
         .setOriginType(OriginType.INCOMPLETE)
         .setOriginatorIp(Ip.ZERO)
@@ -256,8 +256,8 @@ public final class CumulusNcluGrammarTest {
     Set<AbstractRoute> n1Routes = dp.getRibs().get(node1).get(DEFAULT_VRF_NAME).getRoutes();
     Set<AbstractRoute> n2Routes = dp.getRibs().get(node2).get(DEFAULT_VRF_NAME).getRoutes();
 
-    BgpRoute.Builder routeBuilder =
-        BgpRoute.builder()
+    Bgpv4Route.Builder routeBuilder =
+        Bgpv4Route.builder()
             .setNextHopIp(BGP_UNNUMBERED_IP)
             .setNextHopInterface("swp1") // both peers are configured on interfaces called swp1
             .setReceivedFromIp(BGP_UNNUMBERED_IP)
@@ -266,13 +266,13 @@ public final class CumulusNcluGrammarTest {
             .setSrcProtocol(RoutingProtocol.BGP)
             .setLocalPreference(100)
             .setAdmin(20);
-    BgpRoute expectedRoute1 =
+    Bgpv4Route expectedRoute1 =
         routeBuilder
             .setNetwork(Prefix.parse("6.6.6.6/32"))
             .setAsPath(AsPath.ofSingletonAsSets(65101L))
             .setOriginatorIp(Ip.parse("192.0.2.2"))
             .build();
-    BgpRoute expectedRoute2 =
+    Bgpv4Route expectedRoute2 =
         routeBuilder
             .setNetwork(Prefix.parse("5.5.5.5/32"))
             .setAsPath(AsPath.ofSingletonAsSets(65100L))
@@ -317,7 +317,7 @@ public final class CumulusNcluGrammarTest {
 
     {
       // Redistribute connected route matching lo's interface address
-      BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+      Bgpv4Route.Builder outputBuilder = makeBgpOutputRouteBuilder();
       assertTrue(
           peerExportPolicy
               .call(
@@ -330,7 +330,7 @@ public final class CumulusNcluGrammarTest {
 
     {
       // Reject connected route not matching lo's interface address
-      BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+      Bgpv4Route.Builder outputBuilder = makeBgpOutputRouteBuilder();
       assertFalse(
           peerExportPolicy
               .call(
@@ -343,7 +343,7 @@ public final class CumulusNcluGrammarTest {
 
     {
       // Advertise route for explicitly advertised network 192.0.2.1/32
-      BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+      Bgpv4Route.Builder outputBuilder = makeBgpOutputRouteBuilder();
       assertTrue(
           peerExportPolicy
               .call(
@@ -356,7 +356,7 @@ public final class CumulusNcluGrammarTest {
 
     {
       // Forward BGP route
-      BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+      Bgpv4Route.Builder outputBuilder = makeBgpOutputRouteBuilder();
       assertTrue(
           peerExportPolicy
               .call(
