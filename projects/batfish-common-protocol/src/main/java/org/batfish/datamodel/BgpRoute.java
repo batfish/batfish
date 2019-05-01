@@ -238,7 +238,7 @@ public abstract class BgpRoute extends AbstractRoute {
   protected final boolean _receivedFromRouteReflectorClient;
   @Nullable protected final RoutingProtocol _srcProtocol;
   /* NOTE: Cisco-only attribute */
-  private final int _weight;
+  protected final int _weight;
   /* Cache the hashcode */
   private transient int _hashCode = 0;
 

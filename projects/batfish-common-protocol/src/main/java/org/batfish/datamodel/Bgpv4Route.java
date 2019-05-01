@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Comparators;
 import com.google.common.collect.Ordering;
 import java.util.Comparator;
-import java.util.Objects;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -177,63 +176,6 @@ public final class Bgpv4Route extends BgpRoute {
 
   public static Builder builder() {
     return new Builder();
-  }
-
-  @Override
-  public boolean equals(@Nullable Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof Bgpv4Route)) {
-      return false;
-    }
-    Bgpv4Route other = (Bgpv4Route) o;
-    return Objects.equals(_network, other._network)
-        && _admin == other._admin
-        && getNonRouting() == other.getNonRouting()
-        && getNonForwarding() == other.getNonForwarding()
-        && _discard == other._discard
-        && _localPreference == other._localPreference
-        && _med == other._med
-        && _receivedFromRouteReflectorClient == other._receivedFromRouteReflectorClient
-        && _weight == other._weight
-        && Objects.equals(_asPath, other._asPath)
-        && Objects.equals(_clusterList, other._clusterList)
-        && Objects.equals(_communities, other._communities)
-        && _nextHopInterface.equals(other._nextHopInterface)
-        && Objects.equals(_nextHopIp, other._nextHopIp)
-        && Objects.equals(_originatorIp, other._originatorIp)
-        && _originType == other._originType
-        && _protocol == other._protocol
-        && Objects.equals(_receivedFromIp, other._receivedFromIp)
-        && _srcProtocol == other._srcProtocol;
-  }
-
-  @Override
-  public int hashCode() {
-    if (_hashCode != 0) {
-      return _hashCode;
-    }
-    _hashCode =
-        Objects.hash(
-            _admin,
-            _asPath,
-            _clusterList,
-            _communities,
-            _discard,
-            _localPreference,
-            _med,
-            _network,
-            _nextHopInterface,
-            _nextHopIp,
-            _originatorIp,
-            _originType.ordinal(),
-            _protocol.ordinal(),
-            _receivedFromIp,
-            _receivedFromRouteReflectorClient,
-            _srcProtocol == null ? 0 : _srcProtocol.ordinal(),
-            _weight);
-    return _hashCode;
   }
 
   @Override
