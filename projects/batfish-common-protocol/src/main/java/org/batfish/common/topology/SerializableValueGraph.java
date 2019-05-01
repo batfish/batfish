@@ -21,7 +21,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 /** A {@link Serializable} immutable {@link ValueGraph}. */
 @ParametersAreNonnullByDefault
-public class SerializableValueGraph<N, V> extends AbstractValueGraph<N, V> implements Serializable {
+public class SerializableValueGraph<N extends Serializable, V extends Serializable>
+    extends AbstractValueGraph<N, V> implements Serializable {
 
   private class GraphSupplier implements Supplier<ImmutableValueGraph<N, V>>, Serializable {
 
