@@ -75,6 +75,9 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
 
   @Override
   public final int compareTo(AbstractRouteDecorator rhs) {
+    if (this == rhs) {
+      return 0;
+    }
     int routeComparison = COMPARATOR.compare(this, rhs.getAbstractRoute());
     if (routeComparison != 0) {
       return routeComparison;

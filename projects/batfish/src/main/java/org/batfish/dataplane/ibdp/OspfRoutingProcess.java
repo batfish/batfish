@@ -983,18 +983,21 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       RibDelta<? extends AbstractRouteDecorator> mainRibDelta) {
     RibDelta.Builder<OspfExternalType1Route> type1deltaBuilder = RibDelta.builder();
     RibDelta.Builder<OspfExternalType2Route> type2deltaBuilder = RibDelta.builder();
-    for (AbstractRouteDecorator potentialExport : mainRibDelta.getRoutes()) {
-      Optional<OspfExternalRoute> outputRoute =
-          convertToExternalRoute(potentialExport, _exportPolicy);
-      outputRoute.ifPresent(
-          route -> {
-            if (route.getOspfMetricType() == OspfMetricType.E1) {
-              type1deltaBuilder.from(_type1Rib.mergeRouteGetDelta((OspfExternalType1Route) route));
-            } else { // assuming here that MetricType exists. Or E2 is the default
-              type2deltaBuilder.from(_type2Rib.mergeRouteGetDelta((OspfExternalType2Route) route));
-            }
-          });
-    }
+    mainRibDelta
+        .getRoutesStream()
+        .map(potentialExport -> convertToExternalRoute(potentialExport, _exportPolicy))
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .forEach(
+            route -> {
+              if (route.getOspfMetricType() == OspfMetricType.E1) {
+                type1deltaBuilder.from(
+                    _type1Rib.mergeRouteGetDelta((OspfExternalType1Route) route));
+              } else { // assuming here that MetricType exists. Or E2 is the default
+                type2deltaBuilder.from(
+                    _type2Rib.mergeRouteGetDelta((OspfExternalType2Route) route));
+              }
+            });
     return new ExternalDelta(type1deltaBuilder.build(), type2deltaBuilder.build());
   }
 
@@ -1361,7 +1364,10 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     }
     GeneratedRoute.Builder activatedRoute =
         GeneratedRouteHelper.activateGeneratedRoute(
-            r, generationPolicy, ImmutableSet.copyOf(mainRibDelta.getRoutes()), _vrfName);
+            r,
+            generationPolicy,
+            mainRibDelta.getRoutesStream().collect(ImmutableSet.toImmutableSet()),
+            _vrfName);
     return activatedRoute == null ? null : activatedRoute.build();
   }
 
@@ -1382,19 +1388,17 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                   edge.reverse(),
                   transformType1RoutesOnExport(
                       filterGeneratedRoutesOnExport(
-                          _activatedGeneratedRoutes.getRoutes(),
+                          _activatedGeneratedRoutes.getRoutesStream(),
                           areaConfig,
-                          OspfExternalType1Route.class)
-                          .stream(),
+                          OspfExternalType1Route.class),
                       areaConfig));
               neighborProcess.enqueueMessagesType2(
                   edge.reverse(),
                   transformType2RoutesOnExport(
                       filterGeneratedRoutesOnExport(
-                          _activatedGeneratedRoutes.getRoutes(),
+                          _activatedGeneratedRoutes.getRoutesStream(),
                           areaConfig,
-                          OspfExternalType2Route.class)
-                          .stream(),
+                          OspfExternalType2Route.class),
                       areaConfig));
             });
   }
@@ -1409,16 +1413,13 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    *     OspfExternalType2Route}
    */
   private static <T extends OspfExternalRoute>
-      Collection<RouteAdvertisement<T>> filterGeneratedRoutesOnExport(
-          Collection<OspfExternalRoute> activeGeneratedRoutes,
-          OspfArea areaConfig,
-          Class<T> clazz) {
-    return activeGeneratedRoutes.stream()
+      Stream<RouteAdvertisement<T>> filterGeneratedRoutesOnExport(
+          Stream<OspfExternalRoute> activeGeneratedRoutes, OspfArea areaConfig, Class<T> clazz) {
+    return activeGeneratedRoutes
         .filter(
             r -> areaConfig.getStubType() == StubType.NONE || !r.getNetwork().equals(Prefix.ZERO))
         .filter(clazz::isInstance)
-        .map(r -> new RouteAdvertisement<>(clazz.cast(r)))
-        .collect(ImmutableSet.toImmutableSet());
+        .map(r -> new RouteAdvertisement<>(clazz.cast(r)));
   }
 
   /**
