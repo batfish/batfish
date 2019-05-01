@@ -89,4 +89,13 @@ public final class IngressLocation implements Comparable<IngressLocation> {
   public int hashCode() {
     return Objects.hash(this._pointType, this._node, this._pointWithinNode);
   }
+
+  @Override
+  public String toString() {
+    if (_pointType == Type.VRF) {
+      return String.format("%s:%s", _node, _pointWithinNode);
+    } else {
+      return String.format("%s[%s]", _node, _pointWithinNode);
+    }
+  }
 }
