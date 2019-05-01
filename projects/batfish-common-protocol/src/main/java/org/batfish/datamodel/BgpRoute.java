@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
-import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -285,8 +284,6 @@ public abstract class BgpRoute extends AbstractRoute {
     _weight = weight;
   }
 
-
-
   @Nonnull
   @JsonProperty(PROP_AS_PATH)
   public AsPath getAsPath() {
@@ -384,5 +381,4 @@ public abstract class BgpRoute extends AbstractRoute {
   public int getWeight() {
     return _weight;
   }
-
 }
