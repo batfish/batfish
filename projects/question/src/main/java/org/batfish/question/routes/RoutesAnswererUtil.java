@@ -277,7 +277,9 @@ public class RoutesAnswererUtil {
         .put(COL_LOCAL_PREF, bgpv4Route.getLocalPreference())
         .put(
             COL_COMMUNITIES,
-            bgpv4Route.getCommunities().stream().map(Community::toString).collect(toImmutableList()))
+            bgpv4Route.getCommunities().stream()
+                .map(Community::toString)
+                .collect(toImmutableList()))
         .put(COL_ORIGIN_PROTOCOL, bgpv4Route.getSrcProtocol())
         .put(COL_TAG, bgpv4Route.getTag() == Route.UNSET_ROUTE_TAG ? null : bgpv4Route.getTag())
         .build();
