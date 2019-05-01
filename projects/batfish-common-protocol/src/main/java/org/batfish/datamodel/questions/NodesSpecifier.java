@@ -224,7 +224,7 @@ public class NodesSpecifier {
 
     int rank = 0;
     for (AutocompleteSuggestion suggestion : suggestions) {
-      suggestion.setRank(rank);
+      AutocompleteSuggestion.builder(suggestion).setRank(rank).build();
       rank++;
     }
 

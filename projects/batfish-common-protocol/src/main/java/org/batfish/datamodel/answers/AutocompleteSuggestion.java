@@ -23,6 +23,62 @@ public final class AutocompleteSuggestion {
     OSPF_PROPERTY
   }
 
+  @ParametersAreNonnullByDefault
+  public static final class Builder {
+    private String _description;
+    private String _hint;
+    private int _insertionIndex;
+    private boolean _isPartial;
+    private int _rank;
+    private String _text;
+
+    private Builder() {}
+
+    public Builder(AutocompleteSuggestion suggestion) {
+      _description = suggestion.getDescription();
+      _hint = suggestion.getHint();
+      _insertionIndex = suggestion.getInsertionIndex();
+      _isPartial = suggestion.getIsPartial();
+      _rank = suggestion.getRank();
+      _text = suggestion.getText();
+    }
+
+    public Builder setDescription(String description) {
+      this._description = description;
+      return this;
+    }
+
+    public Builder setHint(String hint) {
+      this._hint = hint;
+      return this;
+    }
+
+    public Builder setInsertionIndex(int insertionIndex) {
+      this._insertionIndex = insertionIndex;
+      return this;
+    }
+
+    public Builder setIsPartial(boolean isPartial) {
+      this._isPartial = isPartial;
+      return this;
+    }
+
+    public Builder setRank(int rank) {
+      this._rank = rank;
+      return this;
+    }
+
+    public Builder setText(String text) {
+      this._text = text;
+      return this;
+    }
+
+    public AutocompleteSuggestion build() {
+      return new AutocompleteSuggestion(
+          _text, _isPartial, _description, _rank, _insertionIndex, _hint);
+    }
+  }
+
   private static final String PROP_DESCRIPTION = "description";
   private static final String PROP_HINT = "hint";
   private static final String PROP_INSERTION_INDEX = "insertionIndex";
@@ -51,7 +107,7 @@ public final class AutocompleteSuggestion {
   private final boolean _isPartial;
 
   /** Relevance of the suggestion relative to other suggestions */
-  private int _rank;
+  private final int _rank;
 
   /** Actual text of the suggestion */
   @Nonnull private final String _text;
@@ -99,6 +155,14 @@ public final class AutocompleteSuggestion {
     _rank = rank;
     _insertionIndex = insertionIndex;
     _hint = hint;
+  }
+
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  public static Builder builder(AutocompleteSuggestion suggestion) {
+    return new Builder(suggestion);
   }
 
   @Override
@@ -150,10 +214,6 @@ public final class AutocompleteSuggestion {
   public int hashCode() {
     // ignore rank and description
     return Objects.hash(_isPartial, _text, _insertionIndex);
-  }
-
-  public void setRank(int rank) {
-    _rank = rank;
   }
 
   @Override
