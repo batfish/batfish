@@ -30,17 +30,9 @@ public final class BgpSessionProperties implements Serializable {
           _additionalPaths, _advertiseExternal, _advertiseInactive, _tailIp, _headIp, _sessionType);
     }
 
-    public boolean getAdditionalPaths() {
-      return _additionalPaths;
-    }
-
     public @Nonnull Builder setAdditionalPaths(boolean additionalPaths) {
       _additionalPaths = additionalPaths;
       return this;
-    }
-
-    public boolean getAdvertiseExternal() {
-      return _advertiseExternal;
     }
 
     public @Nonnull Builder setAdvertiseExternal(boolean advertiseExternal) {
@@ -48,17 +40,9 @@ public final class BgpSessionProperties implements Serializable {
       return this;
     }
 
-    public boolean getAdvertiseInactive() {
-      return _advertiseInactive;
-    }
-
     public @Nonnull Builder setAdvertiseInactive(boolean advertiseInactive) {
       _advertiseInactive = advertiseInactive;
       return this;
-    }
-
-    public Ip getTailIp() {
-      return _tailIp;
     }
 
     public @Nonnull Builder setTailIp(Ip tailIp) {
@@ -66,17 +50,9 @@ public final class BgpSessionProperties implements Serializable {
       return this;
     }
 
-    public Ip getHeadIp() {
-      return _headIp;
-    }
-
     public @Nonnull Builder setHeadIp(Ip headIp) {
       _headIp = headIp;
       return this;
-    }
-
-    public SessionType getSessionType() {
-      return _sessionType;
     }
 
     public @Nonnull Builder setSessionType(SessionType sessionType) {
