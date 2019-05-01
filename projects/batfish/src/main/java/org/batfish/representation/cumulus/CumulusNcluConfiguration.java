@@ -182,30 +182,41 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     builder.setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
 
     BgpL2vpnEvpnAddressFamily evpnConfig = bgpVrf.getL2VpnEvpn();
-    if (evpnConfig != null) {
+    // sadly, we allow localAs == null in VI datamodel above
+    if (evpnConfig != null && localAs != null) {
       ImmutableSet.Builder<Layer2VniConfig> l2Vnis = ImmutableSet.builder();
       ImmutableSet.Builder<Layer3VniConfig> l3Vnis = ImmutableSet.builder();
+      HashMap<Integer, Integer> vniToIndex = new HashMap<>(0);
       if (evpnConfig.getAdvertiseAllVni()) {
         CommonUtil.forEachWithIndex(
             _vxlans.values(),
             (index, vxlan) -> {
-              if (vxlan.getId() == null
-                  || localAs == null // we allow localAs == null in VI datamodel above
-              ) {
+              if (vxlan.getId() == null) {
                 return;
               }
+              vniToIndex.put(vxlan.getId(), index);
               RouteDistinguisher rd = RouteDistinguisher.from(newProc.getRouterId(), index);
               ExtendedCommunity rt = ExtendedCommunity.target(localAs, vxlan.getId());
-              if (vxlan.getLocalTunnelip() == null) {
+              if (vxlan.getLocalTunnelip() != null) {
                 // Advertise L2 VNIs
                 l2Vnis.add(new Layer2VniConfig(vxlan.getId(), bgpVrf.getVrfName(), rd, rt));
-              } else {
-                // Advertise L3 VNIs
-                l3Vnis.add(
-                    new Layer3VniConfig(
-                        bgpVrf.getVrfName(), rd, rt, evpnConfig.getAdvertiseIpv4Unicast() != null));
+                if (evpnConfig.getAdvertiseDefaultGw()) {
+                  // Advertise VTEP gateway IP address for the L2 VNI as type 3 route
+                  l3Vnis.add(new Layer3VniConfig(bgpVrf.getVrfName(), rd, rt, false));
+                }
               }
             });
+      }
+      // Advertise the L3 VNI per vrf if one is configured
+      Vrf vrf = _vrfs.get(bgpVrf.getVrfName());
+      Integer l3Vni = vrf == null ? null : vrf.getVni();
+      if (l3Vni != null) {
+        RouteDistinguisher rd =
+            RouteDistinguisher.from(newProc.getRouterId(), vniToIndex.get(l3Vni));
+        ExtendedCommunity rt = ExtendedCommunity.target(localAs, l3Vni);
+        l3Vnis.add(
+            new Layer3VniConfig(
+                bgpVrf.getVrfName(), rd, rt, evpnConfig.getAdvertiseIpv4Unicast() != null));
       }
       builder.setEvpnAddressFamily(new EvpnAddressFamily(l2Vnis.build(), l3Vnis.build()));
     }
