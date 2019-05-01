@@ -114,7 +114,7 @@ public final class GeneratedRoute extends AbstractRoute {
   private SortedSet<String> _attributePolicySources;
   private SortedSet<String> _generationPolicySources;
   // Cache the hashcode
-  private transient volatile int _hashcode = 0;
+  private transient int _hashCode = 0;
 
   @JsonCreator
   private static GeneratedRoute jsonCreator(
@@ -196,8 +196,9 @@ public final class GeneratedRoute extends AbstractRoute {
 
   @Override
   public int hashCode() {
-    if (_hashcode == 0) {
-      _hashcode =
+    int h = _hashCode;
+    if (h == 0) {
+      h =
           Objects.hash(
               _network,
               _admin,
@@ -211,8 +212,9 @@ public final class GeneratedRoute extends AbstractRoute {
               _metric,
               _nextHopInterface,
               _nextHopIp);
+      _hashCode = h;
     }
-    return _hashcode;
+    return h;
   }
 
   /** A BGP AS-path attribute to associate with this generated route */

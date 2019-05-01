@@ -18,8 +18,8 @@ import java.util.SortedSet;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpPeerConfigId;
-import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Edge;
@@ -155,8 +155,8 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   }
 
   @Override
-  public Table<String, String, Set<BgpRoute>> getBgpRoutes(boolean multipath) {
-    Table<String, String, Set<BgpRoute>> table = TreeBasedTable.create();
+  public Table<String, String, Set<Bgpv4Route>> getBgpRoutes(boolean multipath) {
+    Table<String, String, Set<Bgpv4Route>> table = TreeBasedTable.create();
 
     _nodes.forEach(
         (hostname, node) ->

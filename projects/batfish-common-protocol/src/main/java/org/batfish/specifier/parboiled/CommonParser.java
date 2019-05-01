@@ -269,7 +269,7 @@ public class CommonParser extends BaseParser<AstNode> {
             push(new StringAstNode(match()))),
         Sequence(
             '"',
-            ZeroOrMore(FirstOf(EscapedQuote(), AsciiButNot("\""))),
+            OneOrMore(FirstOf(EscapedQuote(), AsciiButNot("\""))),
             push(new StringAstNode(match())),
             '"'));
   }
