@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -59,13 +58,13 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
       return false;
     }
     OspfIntraAreaRoute other = (OspfIntraAreaRoute) o;
-    return Objects.equals(_network, other._network)
+    return _network.equals(other._network)
         && _admin == other._admin
         && _area == other._area
         && getNonRouting() == other.getNonRouting()
         && getNonForwarding() == other.getNonForwarding()
-        && Objects.equals(_metric, other._metric)
-        && Objects.equals(_nextHopIp, other._nextHopIp);
+        && _metric == other._metric
+        && _nextHopIp.equals(other._nextHopIp);
   }
 
   @Override
