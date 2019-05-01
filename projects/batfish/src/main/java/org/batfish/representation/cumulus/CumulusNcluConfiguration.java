@@ -23,11 +23,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
@@ -179,32 +179,35 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setLocalIp(BgpProcess.BGP_UNNUMBERED_IP)
             .setPeerInterface(peerInterface)
             .setRemoteAsns(computeRemoteAsns(neighbor, localAs));
-    if (bgpVrf.getIpv4Unicast() != null) {
-      builder.setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
-    }
+    builder.setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
 
     BgpL2vpnEvpnAddressFamily evpnConfig = bgpVrf.getL2VpnEvpn();
-    if (evpnConfig != null
-        && bgpVrf.getRouterId() != null
-        && bgpVrf.getAutonomousSystem() != null) {
-      Set<Layer2VniConfig> l2Vnis = ImmutableSet.of();
-      Set<Layer3VniConfig> l3Vnis = ImmutableSet.of();
+    if (evpnConfig != null) {
+      ImmutableSet.Builder<Layer2VniConfig> l2Vnis = ImmutableSet.builder();
+      ImmutableSet.Builder<Layer3VniConfig> l3Vnis = ImmutableSet.builder();
       if (evpnConfig.getAdvertiseAllVni()) {
-        AtomicInteger vniIndex = new AtomicInteger();
-        l2Vnis =
-            _vxlans.values().stream()
-                .filter(vxlan -> vxlan.getId() != null && vxlan.getLocalTunnelip() == null)
-                .map(
-                    vxlan ->
-                        new Layer2VniConfig(
-                            vxlan.getId(),
-                            bgpVrf.getVrfName(),
-                            RouteDistinguisher.from(
-                                bgpVrf.getRouterId(), vniIndex.getAndIncrement()),
-                            ExtendedCommunity.target(bgpVrf.getAutonomousSystem(), vxlan.getId())))
-                .collect(ImmutableSet.toImmutableSet());
+        CommonUtil.forEachWithIndex(
+            _vxlans.values(),
+            (index, vxlan) -> {
+              if (vxlan.getId() == null
+                  || localAs == null // we allow localAs == null in VI datamodel above
+              ) {
+                return;
+              }
+              RouteDistinguisher rd = RouteDistinguisher.from(newProc.getRouterId(), index);
+              ExtendedCommunity rt = ExtendedCommunity.target(localAs, vxlan.getId());
+              if (vxlan.getLocalTunnelip() == null) {
+                // Advertise L2 VNIs
+                l2Vnis.add(new Layer2VniConfig(vxlan.getId(), bgpVrf.getVrfName(), rd, rt));
+              } else {
+                // Advertise L3 VNIs
+                l3Vnis.add(
+                    new Layer3VniConfig(
+                        bgpVrf.getVrfName(), rd, rt, evpnConfig.getAdvertiseIpv4Unicast() != null));
+              }
+            });
       }
-      builder.setEvpnAddressFamily(new EvpnAddressFamily(l2Vnis, l3Vnis));
+      builder.setEvpnAddressFamily(new EvpnAddressFamily(l2Vnis.build(), l3Vnis.build()));
     }
     builder.build();
   }

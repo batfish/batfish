@@ -168,4 +168,12 @@ public final class ExtendedCommunityTest {
                 .or(BigInteger.valueOf(4294967295L).shiftLeft(16))
                 .or(BigInteger.valueOf(65535))));
   }
+
+  @Test
+  public void testTargetCreation() {
+    assertThat(ExtendedCommunity.target(1, 65555), equalTo(ExtendedCommunity.of(0x02, 1, 65555)));
+    assertThat(
+        ExtendedCommunity.target(65555, 1),
+        equalTo(ExtendedCommunity.of(0x02 << 8 | 0x02, 65555, 1)));
+  }
 }
