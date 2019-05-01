@@ -10,11 +10,23 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+/** A class that captures the results of running input validation on an input */
 @ParametersAreNonnullByDefault
-public final class AutocompleteQueryMetadata {
+public final class InputValidationNotes {
+
+  /** The overall status of the input */
+  public enum Validity {
+    /** Syntactically valid but known to match anything */
+    EMPTY,
+    /** Syntactically invalid */
+    INVALID,
+    /** Syntactically valid and may match things */
+    VALID
+  }
+
   private static final String PROP_DESCRIPTION = "description";
   private static final String PROP_EXPANSIONS = "expansions";
-  private static final String PROP_IS_VALID = "isValid";
+  private static final String PROP_VALIDITY = "validity";
 
   /**
    * Commentary on the current input. Could be a message to show the user why the input is invalid
@@ -26,19 +38,19 @@ public final class AutocompleteQueryMetadata {
   @Nullable private final List<String> _expansions;
 
   /** Whether the current input is valid or not */
-  private final boolean _isValid;
+  private final Validity _validity;
 
   @JsonCreator
-  private static @Nonnull AutocompleteQueryMetadata create(
-      @JsonProperty(PROP_IS_VALID) boolean isValid,
+  private static @Nonnull InputValidationNotes create(
+      @JsonProperty(PROP_VALIDITY) Validity validity,
       @Nullable @JsonProperty(PROP_DESCRIPTION) String description,
       @Nullable @JsonProperty(PROP_EXPANSIONS) List<String> expansions) {
-    return new AutocompleteQueryMetadata(isValid, description, expansions);
+    return new InputValidationNotes(validity, description, expansions);
   }
 
-  public AutocompleteQueryMetadata(
-      boolean isValid, @Nullable String description, @Nullable List<String> expansions) {
-    _isValid = isValid;
+  public InputValidationNotes(
+      Validity validity, @Nullable String description, @Nullable List<String> expansions) {
+    _validity = validity;
     _description = description;
     _expansions = expansions;
   }
@@ -55,25 +67,25 @@ public final class AutocompleteQueryMetadata {
     return _expansions;
   }
 
-  @JsonProperty(PROP_IS_VALID)
-  public boolean getIsValid() {
-    return _isValid;
+  @JsonProperty(PROP_VALIDITY)
+  public Validity getValidity() {
+    return _validity;
   }
 
   @Override
   public boolean equals(Object o) {
-    if (!(o instanceof AutocompleteQueryMetadata)) {
+    if (!(o instanceof InputValidationNotes)) {
       return false;
     }
 
-    return Objects.equals(_description, ((AutocompleteQueryMetadata) o)._description)
-        && Objects.equals(_expansions, ((AutocompleteQueryMetadata) o)._expansions)
-        && Objects.equals(_isValid, ((AutocompleteQueryMetadata) o)._isValid);
+    return Objects.equals(_description, ((InputValidationNotes) o)._description)
+        && Objects.equals(_expansions, ((InputValidationNotes) o)._expansions)
+        && Objects.equals(_validity, ((InputValidationNotes) o)._validity);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_description, _expansions, _isValid);
+    return Objects.hash(_description, _expansions, _validity);
   }
 
   @Override
@@ -81,7 +93,7 @@ public final class AutocompleteQueryMetadata {
     return toStringHelper(getClass())
         .add(PROP_DESCRIPTION, _description)
         .add(PROP_EXPANSIONS, _expansions)
-        .add(PROP_IS_VALID, _isValid)
+        .add(PROP_VALIDITY, _validity)
         .toString();
   }
 }
