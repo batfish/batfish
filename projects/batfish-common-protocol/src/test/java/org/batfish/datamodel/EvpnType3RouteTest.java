@@ -75,7 +75,6 @@ public class EvpnType3RouteTest {
             .setVniIp(Ip.parse("1.1.1.1"));
     new EqualsTester()
         .addEqualityGroup(erb.build(), erb.build())
-        .addEqualityGroup(erb.setNetwork(Prefix.parse("1.1.2.0/24")).build())
         .addEqualityGroup(erb.setAdmin(10).build())
         .addEqualityGroup(erb.setNonRouting(true).build())
         .addEqualityGroup(erb.setNonForwarding(true).build())
