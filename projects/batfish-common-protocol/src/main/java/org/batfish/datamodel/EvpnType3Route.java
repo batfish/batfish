@@ -118,6 +118,7 @@ public final class EvpnType3Route extends BgpRoute {
   /* Cache the hashcode */
   private transient int _hashCode = 0;
 
+  @SuppressWarnings("unused")
   @JsonCreator
   private static EvpnType3Route jsonCreator(
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
@@ -127,6 +128,7 @@ public final class EvpnType3Route extends BgpRoute {
       @JsonProperty(PROP_DISCARD) boolean discard,
       @JsonProperty(PROP_LOCAL_PREFERENCE) long localPreference,
       @JsonProperty(PROP_METRIC) long med,
+      // value of network is ignored while calling class constructor
       @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
       @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
       @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
