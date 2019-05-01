@@ -93,7 +93,7 @@ public final class BgpTopologyUtils {
       boolean keepInvalid,
       boolean checkReachability,
       @Nullable TracerouteEngine tracerouteEngine,
-      @Nonnull Layer2Topology layer2Topology) {
+      @Nullable Layer2Topology layer2Topology) {
     checkArgument(
         !checkReachability || tracerouteEngine != null,
         "Cannot check reachability without a traceroute engine");
