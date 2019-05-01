@@ -80,6 +80,7 @@ public final class RibDelta<R> {
   public Stream<R> getRoutesStream() {
     return _actions.values().stream().flatMap(List::stream).map(RouteAdvertisement::getRoute);
   }
+
   /**
    * Copy annotated versions of all routes advertisements in {@code exporter} to {@code importer}
    *
