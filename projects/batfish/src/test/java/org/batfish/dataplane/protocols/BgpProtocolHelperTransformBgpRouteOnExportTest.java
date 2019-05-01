@@ -15,8 +15,8 @@ import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
-import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.GeneratedRoute;
@@ -45,7 +45,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
   private Vrf _toVrf;
 
   private GeneratedRoute.Builder _baseAggRouteBuilder;
-  private BgpRoute.Builder _baseBgpRouteBuilder;
+  private Bgpv4Route.Builder _baseBgpRouteBuilder;
 
   /** AS for both source and dest peers if IBGP, or only source peer if EBGP */
   private static final Long AS1 = 1L;
@@ -65,7 +65,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
   public void resetDefaultRouteBuilders() {
     _baseAggRouteBuilder = GeneratedRoute.builder().setNetwork(DEST_NETWORK);
     _baseBgpRouteBuilder =
-        new BgpRoute.Builder()
+        new Bgpv4Route.Builder()
             .setOriginatorIp(ORIGINATOR_IP)
             .setOriginType(OriginType.IGP)
             .setNetwork(DEST_NETWORK)
@@ -110,18 +110,18 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
    * BgpSessionProperties, Vrf, Vrf, AbstractRoute) transformBgpRoutePreExport} with the given
    * {@code route} and the class variables representing the BGP session.
    */
-  private BgpRoute.Builder runTransformBgpRoutePreExport(AbstractRoute route)
+  private Bgpv4Route.Builder runTransformBgpRoutePreExport(AbstractRoute route)
       throws BgpRoutePropagationException {
     return BgpProtocolHelper.transformBgpRoutePreExport(
         _fromNeighbor, _toNeighbor, _sessionProperties, _fromVrf, _toVrf, route);
   }
 
   /**
-   * Calls {@link BgpProtocolHelper#transformBgpRoutePostExport(BgpRoute.Builder, BgpPeerConfig,
+   * Calls {@link BgpProtocolHelper#transformBgpRoutePostExport(Bgpv4Route.Builder, BgpPeerConfig,
    * BgpSessionProperties) transformBgpRoutePostExport} with the given {@code routeBuilder} and the
    * class variables representing the BGP session.
    */
-  private void runTransformBgpRoutePostExport(BgpRoute.Builder routeBuilder)
+  private void runTransformBgpRoutePostExport(Bgpv4Route.Builder routeBuilder)
       throws BgpRoutePropagationException {
     BgpProtocolHelper.transformBgpRoutePostExport(routeBuilder, _fromNeighbor, _sessionProperties);
   }
@@ -149,7 +149,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
             .setTag(12345)
             .setAdministrativeCost(1)
             .build();
-    BgpRoute.Builder transformedRoute = runTransformBgpRoutePreExport(route);
+    Bgpv4Route.Builder transformedRoute = runTransformBgpRoutePreExport(route);
     assertThat(transformedRoute.getTag(), equalTo(12345));
   }
 
@@ -163,11 +163,11 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
       setUpPeers(isIbgp);
       Set<Long> communities = ImmutableSortedSet.of(10L);
       GeneratedRoute aggRoute = _baseAggRouteBuilder.setCommunities(communities).build();
-      BgpRoute bgpRoute = _baseBgpRouteBuilder.setCommunities(communities).build();
+      Bgpv4Route bgpv4Route = _baseBgpRouteBuilder.setCommunities(communities).build();
 
       // By default, _fromNeighbor doesn't have sendCommunity set; should see no communities
-      BgpRoute.Builder transformedAggregateRoute = runTransformBgpRoutePreExport(aggRoute);
-      BgpRoute.Builder transformedBgpRoute = runTransformBgpRoutePreExport(bgpRoute);
+      Bgpv4Route.Builder transformedAggregateRoute = runTransformBgpRoutePreExport(aggRoute);
+      Bgpv4Route.Builder transformedBgpRoute = runTransformBgpRoutePreExport(bgpv4Route);
       assertThat(transformedAggregateRoute.getCommunities(), empty());
       assertThat(transformedBgpRoute.getCommunities(), empty());
 
@@ -179,7 +179,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
               .setRemoteAsns(_fromNeighbor.getRemoteAsns())
               .build();
       transformedAggregateRoute = runTransformBgpRoutePreExport(aggRoute);
-      transformedBgpRoute = runTransformBgpRoutePreExport(bgpRoute);
+      transformedBgpRoute = runTransformBgpRoutePreExport(bgpv4Route);
       assertThat(transformedAggregateRoute.getCommunities(), equalTo(communities));
       assertThat(transformedBgpRoute.getCommunities(), equalTo(communities));
     }
@@ -195,10 +195,10 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
       setUpPeers(isIbgp);
       Set<Long> noAdvertiseCommunitySet = ImmutableSortedSet.of(WellKnownCommunity.NO_ADVERTISE);
 
-      BgpRoute.Builder transformedAggregateRoute =
+      Bgpv4Route.Builder transformedAggregateRoute =
           runTransformBgpRoutePreExport(
               _baseAggRouteBuilder.setCommunities(noAdvertiseCommunitySet).build());
-      BgpRoute.Builder transformedBgpRoute =
+      Bgpv4Route.Builder transformedBgpRoute =
           runTransformBgpRoutePreExport(
               _baseBgpRouteBuilder.setCommunities(noAdvertiseCommunitySet).build());
 
@@ -216,9 +216,9 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
     setUpPeers(false);
     Long asInPath = 3L;
     AsPath originalAsPath = AsPath.of(AsSet.of(asInPath));
-    BgpRoute.Builder transformedAggregateRoute =
+    Bgpv4Route.Builder transformedAggregateRoute =
         runTransformBgpRoutePreExport(_baseAggRouteBuilder.setAsPath(originalAsPath).build());
-    BgpRoute.Builder transformedBgpRoute =
+    Bgpv4Route.Builder transformedBgpRoute =
         runTransformBgpRoutePreExport(_baseBgpRouteBuilder.setAsPath(originalAsPath).build());
 
     // Expect correct as-path before export policy is applied
@@ -238,7 +238,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
     // Also check for a route type that does not have an asPath property
     StaticRoute staticRoute =
         StaticRoute.builder().setNetwork(DEST_NETWORK).setAdministrativeCost(1).build();
-    BgpRoute.Builder transformedRoute = runTransformBgpRoutePreExport(staticRoute);
+    Bgpv4Route.Builder transformedRoute = runTransformBgpRoutePreExport(staticRoute);
     assertThat(transformedRoute.getAsPath(), equalTo(AsPath.empty()));
 
     runTransformBgpRoutePostExport(transformedRoute);
@@ -252,20 +252,20 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
   @Test
   public void testEbgpDoesNotExportWithAsLoop() throws BgpRoutePropagationException {
     AsPath asPathContainingDestPeer = AsPath.of(AsSet.of(AS2));
-    BgpRoute bgpRoute = _baseBgpRouteBuilder.setAsPath(asPathContainingDestPeer).build();
+    Bgpv4Route bgpv4Route = _baseBgpRouteBuilder.setAsPath(asPathContainingDestPeer).build();
     GeneratedRoute aggRoute = _baseAggRouteBuilder.setAsPath(asPathContainingDestPeer).build();
 
     // IBGP: Routes should get exported with the expected AS path
     setUpPeers(true);
-    BgpRoute.Builder transformedAggregateRoute = runTransformBgpRoutePreExport(aggRoute);
-    BgpRoute.Builder transformedBgpRoute = runTransformBgpRoutePreExport(bgpRoute);
+    Bgpv4Route.Builder transformedAggregateRoute = runTransformBgpRoutePreExport(aggRoute);
+    Bgpv4Route.Builder transformedBgpRoute = runTransformBgpRoutePreExport(bgpv4Route);
     assertThat(transformedAggregateRoute.getAsPath(), equalTo(asPathContainingDestPeer));
     assertThat(transformedBgpRoute.getAsPath(), equalTo(asPathContainingDestPeer));
 
     // EBGP: Routes shouldn't get exported
     setUpPeers(false);
     transformedAggregateRoute = runTransformBgpRoutePreExport(aggRoute);
-    transformedBgpRoute = runTransformBgpRoutePreExport(bgpRoute);
+    transformedBgpRoute = runTransformBgpRoutePreExport(bgpv4Route);
     assertThat(transformedAggregateRoute, nullValue());
     assertThat(transformedBgpRoute, nullValue());
   }
@@ -273,36 +273,36 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
   /** Test that MED is not preserved/advertised to EBGP peers. */
   @Test
   public void testEbgpDoesNotExportWithMEDSet() throws BgpRoutePropagationException {
-    BgpRoute bgpRoute = _baseBgpRouteBuilder.setMetric(1000).build();
+    Bgpv4Route bgpv4Route = _baseBgpRouteBuilder.setMetric(1000).build();
 
     setUpPeers(false);
-    BgpRoute.Builder transformedBgpRoute = runTransformBgpRoutePreExport(bgpRoute);
+    Bgpv4Route.Builder transformedBgpRoute = runTransformBgpRoutePreExport(bgpv4Route);
     assertThat(transformedBgpRoute.getMetric(), equalTo(0L));
   }
 
   /** Test that MED is preserved/advertised to IBGP peers. */
   @Test
   public void testIbgpDoesNotExportWithMEDSet() throws BgpRoutePropagationException {
-    BgpRoute bgpRoute = _baseBgpRouteBuilder.setMetric(1000).build();
+    Bgpv4Route bgpv4Route = _baseBgpRouteBuilder.setMetric(1000).build();
 
     setUpPeers(true);
-    BgpRoute.Builder transformedBgpRoute = runTransformBgpRoutePreExport(bgpRoute);
+    Bgpv4Route.Builder transformedBgpRoute = runTransformBgpRoutePreExport(bgpv4Route);
     assertThat(transformedBgpRoute.getMetric(), equalTo(1000L));
   }
 
   /** Test that weight is cleared before exporting for both IBGP and EBGP. */
   @Test
   public void testWeightIsClearedBeforeExport() throws BgpRoutePropagationException {
-    BgpRoute bgpRoute = _baseBgpRouteBuilder.setWeight(19).build();
+    Bgpv4Route bgpv4Route = _baseBgpRouteBuilder.setWeight(19).build();
 
     // IBGP
     setUpPeers(true);
-    BgpRoute.Builder transformedBgpRoute = runTransformBgpRoutePreExport(bgpRoute);
+    Bgpv4Route.Builder transformedBgpRoute = runTransformBgpRoutePreExport(bgpv4Route);
     assertThat(transformedBgpRoute.getWeight(), equalTo(0));
 
     // EBGP
     setUpPeers(false);
-    transformedBgpRoute = runTransformBgpRoutePreExport(bgpRoute);
+    transformedBgpRoute = runTransformBgpRoutePreExport(bgpv4Route);
     assertThat(transformedBgpRoute.getWeight(), equalTo(0));
   }
 }

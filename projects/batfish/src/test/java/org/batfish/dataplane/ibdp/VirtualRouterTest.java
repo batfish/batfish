@@ -37,8 +37,8 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
-import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
@@ -124,7 +124,7 @@ public class VirtualRouterTest {
 
   private static Set<AbstractRoute> makeOneRouteOfEveryType() {
     return ImmutableSet.of(
-        BgpRoute.builder()
+        Bgpv4Route.builder()
             .setNetwork(Prefix.parse("1.0.0.0/24"))
             .setOriginatorIp(Ip.parse("8.8.8.8"))
             .setOriginType(OriginType.IGP)

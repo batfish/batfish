@@ -53,9 +53,9 @@ import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
-import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpTieBreaker;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Edge;
@@ -121,17 +121,17 @@ public class VirtualRouter implements Serializable {
   private final Configuration _c;
 
   /** Route dependency tracker for BGP aggregate routes */
-  private transient RouteDependencyTracker<BgpRoute, AbstractRoute> _bgpAggDeps =
+  private transient RouteDependencyTracker<Bgpv4Route, AbstractRoute> _bgpAggDeps =
       new RouteDependencyTracker<>();
 
   /** Incoming messages into this router from each BGP neighbor */
-  transient SortedMap<BgpEdgeId, Queue<RouteAdvertisement<BgpRoute>>> _bgpIncomingRoutes;
+  transient SortedMap<BgpEdgeId, Queue<RouteAdvertisement<Bgpv4Route>>> _bgpIncomingRoutes;
 
   /** Combined BGP (both iBGP and eBGP) RIB */
   BgpRib _bgpRib;
 
   /** Builder for constructing {@link RibDelta} as pertains to the multipath BGP RIB */
-  private transient RibDelta.Builder<BgpRoute> _bgpDeltaBuilder;
+  private transient RibDelta.Builder<Bgpv4Route> _bgpDeltaBuilder;
 
   /** The RIB containing connected routes */
   private transient ConnectedRib _connectedRib;
@@ -557,7 +557,7 @@ public class VirtualRouter implements Serializable {
     }
 
     // Keep track of changes to the RIBs using delta builders, keyed by RIB type
-    Map<BgpRib, RibDelta.Builder<BgpRoute>> ribDeltas = new IdentityHashMap<>();
+    Map<BgpRib, RibDelta.Builder<Bgpv4Route>> ribDeltas = new IdentityHashMap<>();
     ribDeltas.put(_ebgpStagingRib, RibDelta.builder());
     ribDeltas.put(_ibgpStagingRib, RibDelta.builder());
 
@@ -565,7 +565,7 @@ public class VirtualRouter implements Serializable {
     int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(_c.getConfigurationFormat());
     int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(_c.getConfigurationFormat());
 
-    BgpRoute.Builder outgoingRouteBuilder = new BgpRoute.Builder();
+    Bgpv4Route.Builder outgoingRouteBuilder = new Bgpv4Route.Builder();
     // Process each BGP advertisement
     for (BgpAdvertisement advert : externalAdverts) {
 
@@ -637,7 +637,7 @@ public class VirtualRouter implements Serializable {
         OriginType originType = advert.getOriginType();
         RoutingProtocol srcProtocol = advert.getSrcProtocol();
         int weight = advert.getWeight();
-        BgpRoute.Builder builder = new BgpRoute.Builder();
+        Bgpv4Route.Builder builder = new Bgpv4Route.Builder();
         builder.setAdmin(admin);
         builder.setAsPath(asPath);
         builder.setClusterList(clusterList);
@@ -655,12 +655,12 @@ public class VirtualRouter implements Serializable {
         builder.setSrcProtocol(srcProtocol);
         // TODO: possibly support setting tag
         builder.setWeight(weight);
-        BgpRoute route = builder.build();
+        Bgpv4Route route = builder.build();
         ribDeltas.get(targetRib).from(targetRib.mergeRouteGetDelta(route));
       } else {
         long localPreference;
         if (ebgp) {
-          localPreference = BgpRoute.DEFAULT_LOCAL_PREFERENCE;
+          localPreference = Bgpv4Route.DEFAULT_LOCAL_PREFERENCE;
         } else {
           localPreference = advert.getLocalPreference();
         }
@@ -677,8 +677,8 @@ public class VirtualRouter implements Serializable {
         // TODO:
         // outgoingRouteBuilder.setReceivedFromRouteReflectorClient(...);
         outgoingRouteBuilder.setSrcProtocol(advert.getSrcProtocol());
-        BgpRoute transformedOutgoingRoute = outgoingRouteBuilder.build();
-        BgpRoute.Builder transformedIncomingRouteBuilder = new BgpRoute.Builder();
+        Bgpv4Route transformedOutgoingRoute = outgoingRouteBuilder.build();
+        Bgpv4Route.Builder transformedIncomingRouteBuilder = new Bgpv4Route.Builder();
 
         // Incoming originatorIp
         transformedIncomingRouteBuilder.setOriginatorIp(transformedOutgoingRoute.getOriginatorIp());
@@ -754,14 +754,14 @@ public class VirtualRouter implements Serializable {
           }
         }
         if (acceptIncoming) {
-          BgpRoute transformedIncomingRoute = transformedIncomingRouteBuilder.build();
+          Bgpv4Route transformedIncomingRoute = transformedIncomingRouteBuilder.build();
           ribDeltas.get(targetRib).from(targetRib.mergeRouteGetDelta(transformedIncomingRoute));
         }
       }
     }
 
     // Propagate received routes through all the RIBs and send out appropriate messages to neighbors
-    Map<BgpRib, RibDelta<BgpRoute>> deltas =
+    Map<BgpRib, RibDelta<Bgpv4Route>> deltas =
         ribDeltas.entrySet().stream()
             .filter(e -> !e.getValue().build().isEmpty())
             .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().build()));
@@ -819,11 +819,11 @@ public class VirtualRouter implements Serializable {
       GeneratedRoute gr = (GeneratedRoute) grAbstract;
 
       // Prevent route from being merged into the main RIB by marking it non-routing
-      BgpRoute br =
+      Bgpv4Route br =
           BgpProtocolHelper.convertGeneratedRouteToBgp(
               gr, _vrf.getBgpProcess().getRouterId(), true);
       /* TODO: tests for this */
-      RibDelta<BgpRoute> d1 = _bgpRib.mergeRouteGetDelta(br);
+      RibDelta<Bgpv4Route> d1 = _bgpRib.mergeRouteGetDelta(br);
       _bgpDeltaBuilder.from(d1);
       if (!d1.isEmpty()) {
         _bgpAggDeps.addRouteDependency(br, gr);
@@ -1099,7 +1099,7 @@ public class VirtualRouter implements Serializable {
    * @return Map from a {@link BgpRib} to {@link RibDelta} objects
    */
   @Nonnull
-  Map<BgpRib, RibDelta<BgpRoute>> processBgpMessages(
+  Map<BgpRib, RibDelta<Bgpv4Route>> processBgpMessages(
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
       NetworkConfigurations nc,
       Map<String, Node> nodes) {
@@ -1110,15 +1110,16 @@ public class VirtualRouter implements Serializable {
     }
 
     // Keep track of changes to the RIBs using delta builders, keyed by RIB type
-    Map<BgpRib, RibDelta.Builder<BgpRoute>> ribDeltas = new IdentityHashMap<>();
+    Map<BgpRib, RibDelta.Builder<Bgpv4Route>> ribDeltas = new IdentityHashMap<>();
     ribDeltas.put(_ebgpStagingRib, RibDelta.builder());
     ribDeltas.put(_ibgpStagingRib, RibDelta.builder());
 
     // Process updates from each neighbor
-    for (Entry<BgpEdgeId, Queue<RouteAdvertisement<BgpRoute>>> e : _bgpIncomingRoutes.entrySet()) {
+    for (Entry<BgpEdgeId, Queue<RouteAdvertisement<Bgpv4Route>>> e :
+        _bgpIncomingRoutes.entrySet()) {
 
       // Grab the queue containing all messages from remoteBgpPeerConfig
-      Queue<RouteAdvertisement<BgpRoute>> queue = e.getValue();
+      Queue<RouteAdvertisement<Bgpv4Route>> queue = e.getValue();
 
       // Setup helper vars
       BgpPeerConfigId remoteConfigId = e.getKey().src();
@@ -1134,10 +1135,10 @@ public class VirtualRouter implements Serializable {
 
       // Process all routes from neighbor
       while (queue.peek() != null) {
-        RouteAdvertisement<BgpRoute> remoteRouteAdvert = queue.remove();
-        BgpRoute remoteRoute = remoteRouteAdvert.getRoute();
+        RouteAdvertisement<Bgpv4Route> remoteRouteAdvert = queue.remove();
+        Bgpv4Route remoteRoute = remoteRouteAdvert.getRoute();
 
-        BgpRoute.Builder transformedIncomingRouteBuilder =
+        Bgpv4Route.Builder transformedIncomingRouteBuilder =
             BgpProtocolHelper.transformBgpRouteOnImport(
                 ourConfigId,
                 ourBgpConfig,
@@ -1177,7 +1178,7 @@ public class VirtualRouter implements Serializable {
               IN);
           continue;
         }
-        BgpRoute transformedIncomingRoute = transformedIncomingRouteBuilder.build();
+        Bgpv4Route transformedIncomingRoute = transformedIncomingRouteBuilder.build();
 
         // If new route gets leaked to other VRFs via RibGroup, this VRF should be its source
         AnnotatedRoute<AbstractRoute> annotatedTransformedRoute =
@@ -1218,7 +1219,7 @@ public class VirtualRouter implements Serializable {
       }
     }
     // Return built deltas from RibDelta builders
-    Map<BgpRib, RibDelta<BgpRoute>> builtDeltas = new IdentityHashMap<>();
+    Map<BgpRib, RibDelta<Bgpv4Route>> builtDeltas = new IdentityHashMap<>();
     ribDeltas.forEach((rib, deltaBuilder) -> builtDeltas.put(rib, deltaBuilder.build()));
     return builtDeltas;
   }
@@ -1401,8 +1402,8 @@ public class VirtualRouter implements Serializable {
    * @param bgpTopology the bgp peering relationships
    */
   private void queueOutgoingBgpRoutes(
-      RibDelta<BgpRoute> ebgpBestPathDelta,
-      RibDelta<BgpRoute> bgpMultiPathDelta,
+      RibDelta<Bgpv4Route> ebgpBestPathDelta,
+      RibDelta<Bgpv4Route> bgpMultiPathDelta,
       RibDelta<AnnotatedRoute<AbstractRoute>> mainDelta,
       final Map<String, Node> allNodes,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
@@ -1455,12 +1456,12 @@ public class VirtualRouter implements Serializable {
       }
 
       // Compute a set of advertisements that can be queued on remote VR
-      Set<RouteAdvertisement<BgpRoute>> exportedAdvertisements =
+      Set<RouteAdvertisement<Bgpv4Route>> exportedAdvertisements =
           routesToExport
               .getActions()
               .map(
                   adv -> {
-                    BgpRoute transformedRoute =
+                    Bgpv4Route transformedRoute =
                         exportBgpRoute(
                             adv.getRoute(),
                             ourConfigId,
@@ -1472,7 +1473,7 @@ public class VirtualRouter implements Serializable {
                     return transformedRoute == null
                         ? null
                         // REPLACE does not make sense across routers, update with WITHDRAW
-                        : RouteAdvertisement.<BgpRoute>builder()
+                        : RouteAdvertisement.<Bgpv4Route>builder()
                             .setReason(
                                 adv.getReason() == Reason.REPLACE
                                     ? Reason.WITHDRAW
@@ -1580,7 +1581,7 @@ public class VirtualRouter implements Serializable {
    * @param bgpTopology the bgp peering relationships
    */
   void finalizeBgpRoutesAndQueueOutgoingMessages(
-      Map<BgpRib, RibDelta<BgpRoute>> stagingDeltas,
+      Map<BgpRib, RibDelta<Bgpv4Route>> stagingDeltas,
       final Map<String, Node> allNodes,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
       NetworkConfigurations networkConfigurations) {
@@ -1589,13 +1590,13 @@ public class VirtualRouter implements Serializable {
       return;
     }
 
-    RibDelta<BgpRoute> ebgpStagingDelta =
+    RibDelta<Bgpv4Route> ebgpStagingDelta =
         stagingDeltas.getOrDefault(_ebgpStagingRib, RibDelta.empty());
-    RibDelta<BgpRoute> ibgpStagingDelta =
+    RibDelta<Bgpv4Route> ibgpStagingDelta =
         stagingDeltas.getOrDefault(_ibgpStagingRib, RibDelta.empty());
 
-    RibDelta<BgpRoute> ebgpDelta = importRibDelta(_ebgpRib, ebgpStagingDelta);
-    RibDelta<BgpRoute> ibgpDelta = importRibDelta(_ibgpRib, ibgpStagingDelta);
+    RibDelta<Bgpv4Route> ebgpDelta = importRibDelta(_ebgpRib, ebgpStagingDelta);
+    RibDelta<Bgpv4Route> ibgpDelta = importRibDelta(_ibgpRib, ibgpStagingDelta);
     _bgpDeltaBuilder.from(importRibDelta(_bgpRib, ebgpDelta));
     _bgpDeltaBuilder.from(importRibDelta(_bgpRib, ibgpDelta));
     _mainRibRouteDeltaBuilder.from(
@@ -1712,7 +1713,7 @@ public class VirtualRouter implements Serializable {
    * @param routes a set of BGP routes that are being exchanged
    */
   private void enqueueBgpMessages(
-      @Nonnull BgpEdgeId edgeId, @Nonnull Set<RouteAdvertisement<BgpRoute>> routes) {
+      @Nonnull BgpEdgeId edgeId, @Nonnull Set<RouteAdvertisement<Bgpv4Route>> routes) {
     _bgpIncomingRoutes.get(edgeId).addAll(routes);
   }
 
@@ -1739,7 +1740,7 @@ public class VirtualRouter implements Serializable {
     /*
      * Export route advertisements by looking at main RIB
      */
-    Set<RouteAdvertisement<BgpRoute>> exportedRoutes =
+    Set<RouteAdvertisement<Bgpv4Route>> exportedRoutes =
         _mainRib.getTypedRoutes().stream()
             // This performs transformations and filtering using the export policy
             .map(
@@ -1762,19 +1763,19 @@ public class VirtualRouter implements Serializable {
     /*
      * Export neighbor-specific generated routes, these routes skip global export policy
      */
-    Set<RouteAdvertisement<BgpRoute>> exportedNeighborSpecificRoutes =
+    Set<RouteAdvertisement<Bgpv4Route>> exportedNeighborSpecificRoutes =
         localConfig.getGeneratedRoutes().stream()
             .map(
                 r -> {
                   // Activate route and convert to BGP if activated
-                  BgpRoute bgpRoute = processNeighborSpecificGeneratedRoute(r);
-                  if (bgpRoute == null) {
+                  Bgpv4Route bgpv4Route = processNeighborSpecificGeneratedRoute(r);
+                  if (bgpv4Route == null) {
                     // Route was not activated
                     return null;
                   }
                   // Run pre-export transform, export policy, & post-export transform
                   return exportBgpRoute(
-                      bgpRoute,
+                      bgpv4Route,
                       localConfigId,
                       remoteConfigId,
                       localConfig,
@@ -1792,14 +1793,14 @@ public class VirtualRouter implements Serializable {
 
   /**
    * Check whether given {@link GeneratedRoute} should be sent to a BGP neighbor. This checks
-   * activation conditions for the generated route, and converts it to a {@link BgpRoute}. No export
-   * policy computation is performed.
+   * activation conditions for the generated route, and converts it to a {@link Bgpv4Route}. No
+   * export policy computation is performed.
    *
    * @param generatedRoute route to process
-   * @return a new {@link BgpRoute} if the {@code generatedRoute} was activated.
+   * @return a new {@link Bgpv4Route} if the {@code generatedRoute} was activated.
    */
   @Nullable
-  private BgpRoute processNeighborSpecificGeneratedRoute(@Nonnull GeneratedRoute generatedRoute) {
+  private Bgpv4Route processNeighborSpecificGeneratedRoute(@Nonnull GeneratedRoute generatedRoute) {
     String policyName = generatedRoute.getGenerationPolicy();
     RoutingPolicy policy = policyName != null ? _c.getRoutingPolicies().get(policyName) : null;
     GeneratedRoute.Builder builder =
@@ -1882,11 +1883,11 @@ public class VirtualRouter implements Serializable {
    * @param allNodes all nodes in the network
    * @param sessionProperties {@link BgpSessionProperties} representing the <em>incoming</em> edge:
    *     i.e. the edge from {@code remoteConfig} to {@code ourConfig}
-   * @return The transformed route as a {@link BgpRoute}, or {@code null} if the route should not be
-   *     exported.
+   * @return The transformed route as a {@link Bgpv4Route}, or {@code null} if the route should not
+   *     be exported.
    */
   @Nullable
-  private BgpRoute exportBgpRoute(
+  private Bgpv4Route exportBgpRoute(
       @Nonnull AbstractRouteDecorator exportCandidate,
       @Nonnull BgpPeerConfigId ourConfigId,
       @Nonnull BgpPeerConfigId remoteConfigId,
@@ -1896,7 +1897,7 @@ public class VirtualRouter implements Serializable {
       @Nonnull BgpSessionProperties sessionProperties) {
 
     RoutingPolicy exportPolicy = _c.getRoutingPolicies().get(ourConfig.getExportPolicy());
-    BgpRoute.Builder transformedOutgoingRouteBuilder;
+    Bgpv4Route.Builder transformedOutgoingRouteBuilder;
     try {
       transformedOutgoingRouteBuilder =
           BgpProtocolHelper.transformBgpRoutePreExport(
@@ -1946,7 +1947,7 @@ public class VirtualRouter implements Serializable {
         transformedOutgoingRouteBuilder, ourConfig, sessionProperties);
 
     // Successfully exported route
-    BgpRoute transformedOutgoingRoute = transformedOutgoingRouteBuilder.build();
+    Bgpv4Route transformedOutgoingRoute = transformedOutgoingRouteBuilder.build();
     _prefixTracer.sentTo(
         transformedOutgoingRoute.getNetwork(),
         requireNonNull(remoteVr).getHostname(),
