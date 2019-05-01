@@ -20,6 +20,7 @@ import org.batfish.datamodel.bgp.RouteDistinguisher;
 public final class EvpnType2Route extends BgpRoute {
 
   private static final long serialVersionUID = 1L;
+
   /** Builder for {@link EvpnType2Route} */
   @ParametersAreNonnullByDefault
   public static final class Builder
