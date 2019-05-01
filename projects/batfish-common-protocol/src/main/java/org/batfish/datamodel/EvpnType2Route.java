@@ -246,7 +246,7 @@ public final class EvpnType2Route extends BgpRoute {
     return _macAddress;
   }
 
-  @Nullable
+  @Nonnull
   public Ip getIp() {
     return _ip;
   }
