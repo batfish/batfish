@@ -15,8 +15,11 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.CompletionMetadata;
@@ -143,9 +146,7 @@ public final class ParboiledAutoComplete {
          Char and String literals get a lower rank so that the possibly many suggestions for dynamic values
          (e.g., all nodes in the snapshot) do not drown everything else
         */
-        return ImmutableList.of(
-            new AutocompleteSuggestion(
-                pm.getMatch(), true, null, RANK_STRING_LITERAL, pm.getMatchStartIndex()));
+        return autoCompleteLiteral(pm, RANK_STRING_LITERAL);
       case EOI:
         return ImmutableList.of();
       case FILTER_NAME:
@@ -212,9 +213,7 @@ public final class ParboiledAutoComplete {
          Char and String literals get a lower rank so that the possibly many suggestions for dynamic values
          (e.g., all nodes in the snapshot) do not drown everything else
         */
-        return ImmutableList.of(
-            new AutocompleteSuggestion(
-                pm.getMatch(), true, null, RANK_STRING_LITERAL, pm.getMatchStartIndex()));
+        return autoCompleteLiteral(pm, RANK_STRING_LITERAL);
       case VRF_NAME:
         return autoCompletePotentialMatch(pm, DEFAULT_RANK);
       case WHITESPACE:
@@ -225,6 +224,54 @@ public final class ParboiledAutoComplete {
       default:
         throw new IllegalArgumentException("Unhandled completion type " + pm.getAnchorType());
     }
+  }
+
+  @VisibleForTesting
+  List<AutocompleteSuggestion> autoCompleteLiteral(PotentialMatch pm, int rank) {
+    List<AutocompleteSuggestion> extendedSuggestions = extendAutoCompleteSuggestion(pm);
+
+    if (extendedSuggestions.size() == 1) {
+      return extendedSuggestions;
+    }
+
+    Optional<Anchor.Type> ancestorAnchor = Optional.empty();
+
+    if (pm.getMatch().equals("(")) {
+      int anchorIndex = pm.getPath().indexOf(pm.getAnchor());
+      checkArgument(anchorIndex != -1, "Anchor is not present in the path.");
+
+      ancestorAnchor =
+          IntStream.range(0, anchorIndex)
+              .mapToObj(i -> pm.getPath().get(anchorIndex - i - 1).getAnchorType())
+              .filter(Objects::nonNull)
+              .findFirst();
+    }
+
+    return ImmutableList.of(
+        new AutocompleteSuggestion(
+            pm.getMatch(),
+            true,
+            ancestorAnchor.map(Anchor.Type::getDescription).orElse(null),
+            RANK_STRING_LITERAL,
+            pm.getMatchStartIndex(),
+            ancestorAnchor.map(Anchor.Type::getHint).orElse(null)));
+  }
+
+  @VisibleForTesting
+  List<AutocompleteSuggestion> extendAutoCompleteSuggestion(PotentialMatch pm) {
+    String extendedQuery = _query.substring(0, pm.getMatchStartIndex()) + pm.getMatch();
+    return new ParboiledAutoComplete(
+            _parser, // reusing the parser object here, since the current one is done
+            _expression,
+            _completionTypes,
+            _network,
+            _snapshot,
+            extendedQuery,
+            _maxSuggestions,
+            _completionMetadata,
+            _nodeRolesData,
+            _referenceLibrary)
+        .run();
   }
 
   private List<AutocompleteSuggestion> autoCompletePotentialMatch(PotentialMatch pm, int rank) {

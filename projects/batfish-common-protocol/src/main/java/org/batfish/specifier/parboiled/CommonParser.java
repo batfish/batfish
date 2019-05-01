@@ -106,6 +106,10 @@ public class CommonParser extends BaseParser<AstNode> {
     return Parboiled.createParser(CommonParser.class);
   }
 
+  static CommonParser createInstance(Class<? extends CommonParser> parserClass) {
+    return Parboiled.createParser(parserClass);
+  }
+
   static Map<String, Type> initAnchors(Class<?> parserClass) {
     ImmutableMap.Builder<String, Anchor.Type> completionTypes = ImmutableMap.builder();
     // Explicitly add EOI

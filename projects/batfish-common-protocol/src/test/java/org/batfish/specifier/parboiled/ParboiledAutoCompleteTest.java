@@ -235,6 +235,16 @@ public class ParboiledAutoCompleteTest {
   @Test
   public void testRunSpecifierInput() {
     assertThat(
+        ImmutableSet.copyOf(getTestPAC("@specifie", testLibrary).run()),
+        equalTo(
+            ImmutableSet.of(
+                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, 11),
+                new AutocompleteSuggestion(
+                    "b1a", true, null, AutocompleteSuggestion.DEFAULT_RANK, 11),
+                new AutocompleteSuggestion(
+                    "b2a", true, null, AutocompleteSuggestion.DEFAULT_RANK, 11))));
+
+    assertThat(
         ImmutableSet.copyOf(getTestPAC("@specifier(", testLibrary).run()),
         equalTo(
             ImmutableSet.of(
