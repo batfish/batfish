@@ -3,29 +3,26 @@ package org.batfish.specifier.parboiled;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
-final class NameRegexRoutingPolicyAstNode implements RoutingPolicyAstNode {
+final class RegexAstNode implements AstNode {
   private final String _regex;
   private final Pattern _pattern;
 
-  NameRegexRoutingPolicyAstNode(AstNode regexAst) {
-    _regex = ((RegexAstNode) regexAst).getRegex();
-    _pattern = ((RegexAstNode) regexAst).getPattern();
-  }
-
-  NameRegexRoutingPolicyAstNode(String regex) {
+  RegexAstNode(String regex) {
     _regex = regex;
-    _pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+    try {
+      _pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+    } catch (PatternSyntaxException e) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Invalid regex /%s/: %s near index %d", _regex, e.getDescription(), e.getIndex()));
+    }
   }
 
   @Override
   public <T> T accept(AstNodeVisitor<T> visitor) {
-    return visitor.visitNameRegexRoutingPolicyAstNode(this);
-  }
-
-  @Override
-  public <T> T accept(RoutingPolicyAstNodeVisitor<T> visitor) {
-    return visitor.visitNameRegexRoutingPolicyAstNode(this);
+    return visitor.visitRegexAstNode(this);
   }
 
   @Override
@@ -33,10 +30,10 @@ final class NameRegexRoutingPolicyAstNode implements RoutingPolicyAstNode {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof NameRegexRoutingPolicyAstNode)) {
+    if (!(o instanceof RegexAstNode)) {
       return false;
     }
-    NameRegexRoutingPolicyAstNode that = (NameRegexRoutingPolicyAstNode) o;
+    RegexAstNode that = (RegexAstNode) o;
     return Objects.equals(_regex, that._regex);
   }
 

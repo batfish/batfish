@@ -171,6 +171,10 @@ public abstract class CommonParser extends BaseParser<AstNode> {
             || containsSpecialChar(name));
   }
 
+  static String escapeNameIfNeeded(@Nullable String name) {
+    return nameNeedsEscaping(name) ? ESCAPE_CHAR + name + ESCAPE_CHAR : name;
+  }
+
   private static boolean containsSpecialChar(String name) {
     for (char c : CommonParser.SPECIAL_CHARS_ARRAY) {
       if (name.indexOf(c) >= 0) {
@@ -288,7 +292,7 @@ public abstract class CommonParser extends BaseParser<AstNode> {
     return Sequence(
         '/',
         OneOrMore(FirstOf(EscapedSlash(), AsciiButNot("/"))),
-        push(new StringAstNode(match())),
+        push(new RegexAstNode(match())),
         '/');
   }
 
@@ -305,7 +309,7 @@ public abstract class CommonParser extends BaseParser<AstNode> {
             OneOrMore(AsciiButNot(SPECIAL_CHARS + "*")),
             "*",
             ZeroOrMore(AsciiButNot(SPECIAL_CHARS))),
-        push(new StringAstNode(match())));
+        push(new RegexAstNode(match())));
   }
 
   /** See class JavaDoc for why this is a CharRange and not Ch */

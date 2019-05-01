@@ -121,7 +121,7 @@ public class WorkMgrService {
               .collect(Collectors.toList());
 
       String serializedMetadata =
-          BatfishObjectMapper.writeString(new InputValidationNotes(Validity.VALID, null, null));
+          BatfishObjectMapper.writeString(new InputValidationNotes(Validity.VALID, null, -1, null));
 
       return successResponse(
           new JSONObject()

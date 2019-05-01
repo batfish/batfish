@@ -1,18 +1,29 @@
 package org.batfish.specifier.parboiled;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.PatternSyntaxException;
+import java.util.Optional;
+import java.util.Set;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.CompletionMetadata;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.EmptyIpSpace;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.answers.InputValidationNotes;
 import org.batfish.datamodel.answers.InputValidationNotes.Validity;
+import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
+import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.specifier.SpecifierContext;
 import org.parboiled.errors.InvalidInputError;
 import org.parboiled.errors.ParserRuntimeException;
 import org.parboiled.parserunners.ReportingParseRunner;
@@ -34,6 +45,53 @@ public final class ParboiledInputValidator {
   private final CompletionMetadata _completionMetadata;
   private final NodeRolesData _nodeRolesData;
   private final ReferenceLibrary _referenceLibrary;
+  private final SpecifierContext _specifierContext;
+
+  static class ValidatorSpecifierContext implements SpecifierContext {
+
+    private final CompletionMetadata _completionMetadata;
+    private final NodeRolesData _nodeRolesData;
+    private final ReferenceLibrary _referenceLibrary;
+
+    ValidatorSpecifierContext(
+        CompletionMetadata completionMetadata,
+        NodeRolesData nodeRolesData,
+        ReferenceLibrary referenceLibrary) {
+      _completionMetadata = completionMetadata;
+      _nodeRolesData = nodeRolesData;
+      _referenceLibrary = referenceLibrary;
+    }
+
+    @Nonnull
+    @Override
+    public Map<String, Configuration> getConfigs() {
+      return _completionMetadata.getNodes().stream()
+          .collect(
+              ImmutableMap.toImmutableMap(
+                  n -> n, n -> new Configuration(n, ConfigurationFormat.UNKNOWN)));
+    }
+
+    @Override
+    public Optional<ReferenceBook> getReferenceBook(String bookName) {
+      return _referenceLibrary.getReferenceBook(bookName);
+    }
+
+    @Nonnull
+    @Override
+    public Optional<NodeRoleDimension> getNodeRoleDimension(@Nullable String dimension) {
+      return _nodeRolesData.getNodeRoleDimension(dimension);
+    }
+
+    @Override
+    public Map<String, Map<String, IpSpace>> getInterfaceOwnedIps() {
+      return ImmutableMap.of();
+    }
+
+    @Override
+    public IpSpace getSnapshotDeviceOwnedIps() {
+      return EmptyIpSpace.INSTANCE;
+    }
+  }
 
   ParboiledInputValidator(
       CommonParser parser,
@@ -56,6 +114,8 @@ public final class ParboiledInputValidator {
     _completionMetadata = completionMetadata;
     _nodeRolesData = nodeRolesData;
     _referenceLibrary = referenceLibrary;
+    _specifierContext =
+        new ValidatorSpecifierContext(completionMetadata, nodeRolesData, referenceLibrary);
   }
 
   public static InputValidationNotes validate(
@@ -89,9 +149,9 @@ public final class ParboiledInputValidator {
     try {
       result = new ReportingParseRunner<AstNode>(_parser.getInputRule(_grammar)).run(_query);
     } catch (ParserRuntimeException e) {
-      if (e.getCause() instanceof PatternSyntaxException) {
+      if (e.getCause() instanceof IllegalArgumentException) {
         return new InputValidationNotes(
-            Validity.INVALID, getErrorMessageRegex((PatternSyntaxException) e.getCause()), -1);
+            Validity.INVALID, getErrorMessage((IllegalArgumentException) e.getCause()), -1);
       } else {
         return new InputValidationNotes(Validity.INVALID, e.getMessage(), -1);
       }
@@ -106,17 +166,27 @@ public final class ParboiledInputValidator {
     }
 
     ValueStack<AstNode> stack = _parser.getShadowStack().getValueStack();
-    checkArgument(stack.size() == 1, "Unexpected stack size for input '%s'", _query);
-
-    List<String> emptyMessages = emptyMessages(stack.peek());
-
+    List<String> emptyMessages = emptyMessages(Iterables.getOnlyElement(stack));
     if (!emptyMessages.isEmpty()) {
       return new InputValidationNotes(Validity.EMPTY, emptyMessages.get(0));
     }
 
-    List<String> expansions = expand(stack.peek());
+    Set<String> expansions = expand(stack.peek());
+    return new InputValidationNotes(Validity.VALID, ImmutableList.copyOf(expansions));
+  }
 
-    return new InputValidationNotes(Validity.VALID, expansions);
+  private List<String> emptyMessages(AstNode astNode) {
+    if (astNode instanceof NodeAstNode) {
+      return new NodeValidator((NodeAstNode) astNode).emptyMessages(_specifierContext);
+    }
+    return ImmutableList.of();
+  }
+
+  private Set<String> expand(AstNode astNode) {
+    if (astNode instanceof NodeAstNode) {
+      new ParboiledNodeSpecifier((NodeAstNode) astNode).resolve(_specifierContext);
+    }
+    return ImmutableSet.of();
   }
 
   @VisibleForTesting
@@ -125,32 +195,26 @@ public final class ParboiledInputValidator {
   }
 
   @VisibleForTesting
-  static String getErrorMessageRegex(PatternSyntaxException exception) {
+  static String getErrorMessage(IllegalArgumentException exception) {
+    return exception.getMessage();
+  }
+
+  static String getErrorMessageEmptyDeviceRegex(String regex) {
+    return String.format("Regex /%s/ does not match any device name", regex);
+  }
+
+  static String getErrorMessageMissingDevice(String nodeName) {
+    return String.format("Device %s does not exist", CommonParser.escapeNameIfNeeded(nodeName));
+  }
+
+  static String getErrorMessageMissingNodeRole(String role, String dimension) {
     return String.format(
-        "Invalid regular expression '%s': %s", exception.getPattern(), exception.getDescription());
+        "Node role %s does not exist in dimension %s.",
+        CommonParser.escapeNameIfNeeded(role), CommonParser.escapeNameIfNeeded(dimension));
   }
 
-  @VisibleForTesting
-  List<String> emptyMessages(AstNode astNode) {
-    // TODO: other types
-    if (astNode instanceof NameNodeAstNode) {
-      // TODO: case insensitive match
-      if (!_completionMetadata.getNodes().contains(((NameNodeAstNode) astNode).getName())) {
-        return ImmutableList.of(
-            String.format("%s does not match any device", ((NameNodeAstNode) astNode).getName()));
-      }
-    }
-
-    return ImmutableList.of();
-  }
-
-  @VisibleForTesting
-  List<String> expand(AstNode astNode) {
-    if (astNode instanceof NameRegexNodeAstNode) {
-      return _completionMetadata.getNodes().stream()
-          .filter(name -> ((NameRegexNodeAstNode) astNode).getPattern().matcher(name).find())
-          .collect(ImmutableList.toImmutableList());
-    }
-    return ImmutableList.of();
+  static String getErrorMessageMissingNodeRoleDimension(String dimension) {
+    return String.format(
+        "Node role dimension %s does not exist.", CommonParser.escapeNameIfNeeded(dimension));
   }
 }

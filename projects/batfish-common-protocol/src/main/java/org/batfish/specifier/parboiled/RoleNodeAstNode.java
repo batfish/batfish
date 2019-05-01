@@ -31,6 +31,11 @@ final class RoleNodeAstNode implements NodeAstNode {
   }
 
   @Override
+  public <T> T accept(NodeEmptyChecker<T> visitor) {
+    return visitor.visitRoleNodeAstNode(this);
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;
