@@ -311,7 +311,7 @@ public class OspfRoutingProcessTest {
     - Must include all addresses from active interface
     */
     assertThat(
-        delta.getRoutes(),
+        delta.getRoutesStream().collect(Collectors.toList()),
         containsInAnyOrder(
             hasPrefix(PASSIVE_ADDR.getPrefix()),
             hasPrefix(ACTIVE_ADDR_1.getPrefix()),

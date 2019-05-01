@@ -1,5 +1,6 @@
 package org.batfish.dataplane.rib;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
@@ -68,14 +69,17 @@ public final class RibDelta<R> {
    *
    * @return List of routes
    */
+  @VisibleForTesting
   @Nonnull
-  public List<R> getRoutes() {
-    return _actions.values().stream()
-        .flatMap(List::stream)
-        .map(RouteAdvertisement::getRoute)
-        .collect(ImmutableList.toImmutableList());
+  List<R> getRoutes() {
+    return getRoutesStream().collect(ImmutableList.toImmutableList());
   }
 
+  /** Helper method: retrieves all routes affected by this delta. */
+  @Nonnull
+  public Stream<R> getRoutesStream() {
+    return _actions.values().stream().flatMap(List::stream).map(RouteAdvertisement::getRoute);
+  }
   /**
    * Copy annotated versions of all routes advertisements in {@code exporter} to {@code importer}
    *

@@ -456,8 +456,7 @@ public class VirtualRouter implements Serializable {
    *
    * @return a new {@link RibDelta} if a new route has been activated, otherwise {@code null}
    */
-  @VisibleForTesting
-  RibDelta<AnnotatedRoute<AbstractRoute>> activateGeneratedRoutes() {
+  private RibDelta<AnnotatedRoute<AbstractRoute>> activateGeneratedRoutes() {
     RibDelta.Builder<AnnotatedRoute<AbstractRoute>> builder = RibDelta.builder();
 
     /*
