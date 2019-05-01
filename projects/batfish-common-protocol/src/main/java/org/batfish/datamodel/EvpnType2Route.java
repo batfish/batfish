@@ -15,7 +15,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 
-/** An EVPN type 1 route */
+/** An EVPN type 2 route */
 @ParametersAreNonnullByDefault
 public final class EvpnRoute extends BgpRoute {
 
