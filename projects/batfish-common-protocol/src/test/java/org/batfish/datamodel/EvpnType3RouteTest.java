@@ -97,4 +97,37 @@ public class EvpnType3RouteTest {
         .addEqualityGroup(new Object())
         .testEquals();
   }
+
+  @Test
+  public void testBuilderNetworkOverwrite() {
+    Builder erb =
+        EvpnType3Route.builder()
+            .setVniIp(Ip.parse("1.1.1.1"))
+            .setNetwork(Prefix.parse("3.3.3.3/24"))
+            .setOriginatorIp(Ip.parse("1.1.1.1"))
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("2.2.2.2"), 2));
+    ;
+
+    assertThat(erb.build().getNetwork(), equalTo(Prefix.parse("1.1.1.1/32")));
+  }
+
+  @Test
+  public void testJsonSerializationNetworkOverwrite() throws IOException {
+    EvpnType3Route er =
+        EvpnType3Route.builder()
+            .setVniIp(Ip.parse("1.1.1.1"))
+            .setNetwork(Prefix.parse("3.3.3.3/24"))
+            .setNextHopInterface("blah")
+            .setOriginatorIp(Ip.parse("1.1.1.1"))
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("1.2.3.4"), 2))
+            .build();
+
+    assertThat(
+        BatfishObjectMapper.clone(er, EvpnType3Route.class).getNetwork(),
+        equalTo(Prefix.parse("1.1.1.1/32")));
+  }
 }
