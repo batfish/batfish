@@ -20,7 +20,7 @@ public abstract class AbstractRouteBuilder<
   @Nonnull
   public abstract T build();
 
-  public final Integer getAdmin() {
+  public final int getAdmin() {
     return _admin;
   }
 
@@ -33,7 +33,7 @@ public abstract class AbstractRouteBuilder<
   @Nonnull
   protected abstract S getThis();
 
-  public final Long getMetric() {
+  public final long getMetric() {
     return _metric;
   }
 
