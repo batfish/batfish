@@ -101,4 +101,38 @@ public class EvpnType2RouteTest {
         .addEqualityGroup(new Object())
         .testEquals();
   }
+
+  @Test
+  public void testBuilderNetworkOverwrite() {
+    Builder erb =
+        EvpnType2Route.builder()
+            .setIp(Ip.parse("1.1.1.1"))
+            .setNetwork(Prefix.parse("3.3.3.3/24"))
+            .setOriginatorIp(Ip.parse("1.1.1.1"))
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("2.2.2.2"), 2));
+    ;
+
+    assertThat(erb.build().getNetwork(), equalTo(Prefix.parse("1.1.1.1/32")));
+  }
+
+  @Test
+  public void testJsonSerializationNetworkOverwrite() throws IOException {
+    EvpnType2Route er =
+        EvpnType2Route.builder()
+            .setIp(Ip.parse("1.1.1.1"))
+            .setMacAddress(MacAddress.parse("00:11:22:33:44:55"))
+            .setNetwork(Prefix.parse("3.3.3.3/24"))
+            .setNextHopInterface("blah")
+            .setOriginatorIp(Ip.parse("1.1.1.1"))
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("1.2.3.4"), 2))
+            .build();
+
+    assertThat(
+        BatfishObjectMapper.clone(er, EvpnType2Route.class).getNetwork(),
+        equalTo(Prefix.parse("1.1.1.1/32")));
+  }
 }

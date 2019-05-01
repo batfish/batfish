@@ -54,7 +54,6 @@ public final class EvpnType2Route extends BgpRoute {
           _localPreference,
           _macAddress,
           getMetric(),
-          firstNonNull(getNetwork(), Prefix.create(_ip, Prefix.MAX_PREFIX_LENGTH)),
           firstNonNull(_nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE),
           getNextHopIp(),
           getNonForwarding(),
@@ -173,7 +172,6 @@ public final class EvpnType2Route extends BgpRoute {
         localPreference,
         macAddress,
         med,
-        firstNonNull(network, Prefix.create(ip, Prefix.MAX_PREFIX_LENGTH)),
         firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE),
         nextHopIp,
         false,
@@ -198,7 +196,6 @@ public final class EvpnType2Route extends BgpRoute {
       long localPreference,
       @Nullable MacAddress macAddress,
       long med,
-      @Nullable Prefix network,
       String nextHopInterface,
       @Nullable Ip nextHopIp,
       boolean nonForwarding,
@@ -212,7 +209,7 @@ public final class EvpnType2Route extends BgpRoute {
       @Nullable RoutingProtocol srcProtocol,
       int weight) {
     super(
-        network,
+        Prefix.create(ip, Prefix.MAX_PREFIX_LENGTH),
         nextHopIp,
         admin,
         asPath,
