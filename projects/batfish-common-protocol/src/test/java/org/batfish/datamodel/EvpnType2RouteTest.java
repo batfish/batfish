@@ -112,7 +112,6 @@ public class EvpnType2RouteTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("2.2.2.2"), 2));
-    ;
 
     assertThat(erb.build().getNetwork(), equalTo(Prefix.parse("1.1.1.1/32")));
   }
