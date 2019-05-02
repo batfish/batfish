@@ -1,6 +1,7 @@
 package org.batfish.specifier.parboiled;
 
-import com.google.common.annotations.VisibleForTesting;
+import static org.batfish.datamodel.answers.InputValidationUtils.getErrorMessage;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -101,9 +102,6 @@ public final class ParboiledInputValidator {
   ParboiledInputValidator(
       CommonParser parser,
       Grammar grammar,
-      Map<String, Anchor.Type> completionTypes,
-      String network,
-      String snapshot,
       String query,
       CompletionMetadata completionMetadata,
       NodeRolesData nodeRolesData,
@@ -120,23 +118,13 @@ public final class ParboiledInputValidator {
 
   public static InputValidationNotes validate(
       Grammar grammar,
-      String network,
-      String snapshot,
       String query,
       CompletionMetadata completionMetadata,
       NodeRolesData nodeRolesData,
       ReferenceLibrary referenceLibrary) {
     Parser parser = Parser.instance();
     return new ParboiledInputValidator(
-            parser,
-            grammar,
-            Parser.ANCHORS,
-            network,
-            snapshot,
-            query,
-            completionMetadata,
-            nodeRolesData,
-            referenceLibrary)
+            parser, grammar, query, completionMetadata, nodeRolesData, referenceLibrary)
         .run();
   }
 
@@ -193,52 +181,5 @@ public final class ParboiledInputValidator {
       return new ParboiledNodeSpecifier((NodeAstNode) astNode).resolve(_specifierContext);
     }
     return ImmutableSet.of();
-  }
-
-  @VisibleForTesting
-  static String getErrorMessage(String grammarName, int startIndex) {
-    return String.format("Cannot parse input as %s at index %d", grammarName, startIndex);
-  }
-
-  @VisibleForTesting
-  static String getErrorMessage(IllegalArgumentException exception) {
-    return exception.getMessage();
-  }
-
-  static String getErrorMessageEmptyNameRegex(String nameRegex, String nameType) {
-    return String.format("Regex /%s/ does not match any %s", nameRegex, nameType);
-  }
-
-  static String getErrorMessageMissingName(String name, String nameType) {
-    return String.format(
-        "%s %s does not exist",
-        capitalizeFirstChar(nameType), CommonParser.escapeNameIfNeeded(name));
-  }
-
-  /**
-   * This function considers node role dimension as a book type, and node roles as groups within it
-   */
-  static String getErrorMessageMissingGroup(
-      String group, String groupType, String book, String bookType) {
-    return String.format(
-        "%s %s does not exist in %s %s",
-        capitalizeFirstChar(groupType),
-        CommonParser.escapeNameIfNeeded(group),
-        bookType,
-        CommonParser.escapeNameIfNeeded(book));
-  }
-
-  /** This function considers node role dimension as a book type, in addition to reference books */
-  static String getErrorMessageMissingBook(String book, String bookType) {
-    return String.format(
-        "%s %s does not exist",
-        capitalizeFirstChar(bookType), CommonParser.escapeNameIfNeeded(book));
-  }
-
-  private static String capitalizeFirstChar(String nameType) {
-    if (nameType.length() > 1) {
-      return nameType.substring(0, 1).toUpperCase() + nameType.substring(1);
-    }
-    return nameType;
   }
 }

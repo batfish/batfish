@@ -88,6 +88,8 @@ public abstract class CommonParser extends BaseParser<AstNode> {
     _shadowStack = shadowStack;
   }
 
+  abstract Rule getInputRule(Grammar grammar);
+
   static CommonParser instance() {
     return Parboiled.createParser(CommonParser.class);
   }

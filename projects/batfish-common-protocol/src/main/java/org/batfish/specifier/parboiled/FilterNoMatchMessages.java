@@ -1,7 +1,7 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.ParboiledInputValidator.getErrorMessageEmptyNameRegex;
-import static org.batfish.specifier.parboiled.ParboiledInputValidator.getErrorMessageMissingName;
+import static org.batfish.datamodel.answers.InputValidationUtils.getErrorMessageEmptyNameRegex;
+import static org.batfish.datamodel.answers.InputValidationUtils.getErrorMessageMissingName;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
