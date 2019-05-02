@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.io.Serializable;
 import java.util.Comparator;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -89,12 +88,12 @@ public final class IpWildcard implements Serializable, Comparable<IpWildcard> {
       return false;
     }
     IpWildcard other = (IpWildcard) o;
-    return Objects.equals(this._ip, other._ip) && Objects.equals(this._mask, other._mask);
+    return this._ip.equals(other._ip) && this._mask.equals(other._mask);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_ip, _mask);
+    return 31 * _ip.hashCode() + _mask.hashCode();
   }
 
   @Override

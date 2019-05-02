@@ -90,7 +90,6 @@ import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.isis.IsisProcess;
-import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.dataplane.exceptions.BgpRoutePropagationException;
@@ -275,7 +274,7 @@ public class VirtualRouter implements Serializable {
    * iterations (e.g., static route RIB, connected route RIB, etc.)
    */
   @VisibleForTesting
-  void initForIgpComputation(OspfTopology ospfTopology) {
+  void initForIgpComputation(TopologyContext topologyContext) {
     initConnectedRib();
     initKernelRib();
     initLocalRib();
@@ -302,7 +301,8 @@ public class VirtualRouter implements Serializable {
       _ospfProcesses =
           ImmutableMap.of(
               _vrf.getOspfProcess().getProcessId(),
-              new OspfRoutingProcess(_vrf.getOspfProcess(), _name, _c, ospfTopology));
+              new OspfRoutingProcess(
+                  _vrf.getOspfProcess(), _name, _c, topologyContext.getOspfTopology()));
     }
     _ospfProcesses.values().forEach(OspfRoutingProcess::initialize);
 
@@ -338,38 +338,28 @@ public class VirtualRouter implements Serializable {
   }
 
   /**
-   * Prep for the Egp part of the computation
+   * Prepare for the EGP part of the computation
    *
-   * @param bgpTopology the bgp peering relationships
-   * @param eigrpTopology The topology representing EIGRP adjacencies
-   * @param ospfTopology The OSPF adjacency
+   * @param topologyContext The various network topologies
    */
-  void initForEgpComputation(
-      ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
-      Network<EigrpInterface, EigrpEdge> eigrpTopology,
-      Network<IsisNode, IsisEdge> isisTopology,
-      OspfTopology ospfTopology) {
-    initQueuesAndDeltaBuilders(bgpTopology, eigrpTopology, isisTopology);
+  void initForEgpComputation(TopologyContext topologyContext) {
+    initQueuesAndDeltaBuilders(topologyContext);
   }
 
   /**
    * Initializes RIB delta builders and protocol message queues.
    *
-   * @param bgpTopology the bgp peering relationships
-   * @param eigrpTopology The topology representing EIGRP adjacencies
+   * @param topologyContext The various network topologies
    */
   @VisibleForTesting
-  void initQueuesAndDeltaBuilders(
-      final ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
-      final Network<EigrpInterface, EigrpEdge> eigrpTopology,
-      final Network<IsisNode, IsisEdge> isisTopology) {
+  void initQueuesAndDeltaBuilders(TopologyContext topologyContext) {
 
     // Initialize message queues for each BGP neighbor
-    initBgpQueues(bgpTopology);
+    initBgpQueues(topologyContext.getBgpTopology());
     // Initialize message queues for each EIGRP neighbor
-    initEigrpQueues(eigrpTopology);
+    initEigrpQueues(topologyContext.getEigrpTopology());
     // Initialize message queues for each IS-IS neighbor
-    initIsisQueues(isisTopology);
+    initIsisQueues(topologyContext.getIsisTopology());
     // Initalize message queues for all neighboring VRFs/VirtualRouters
     initCrossVrfQueues();
   }
@@ -456,8 +446,7 @@ public class VirtualRouter implements Serializable {
    *
    * @return a new {@link RibDelta} if a new route has been activated, otherwise {@code null}
    */
-  @VisibleForTesting
-  RibDelta<AnnotatedRoute<AbstractRoute>> activateGeneratedRoutes() {
+  private RibDelta<AnnotatedRoute<AbstractRoute>> activateGeneratedRoutes() {
     RibDelta.Builder<AnnotatedRoute<AbstractRoute>> builder = RibDelta.builder();
 
     /*
@@ -1307,17 +1296,14 @@ public class VirtualRouter implements Serializable {
    * Propagate EIGRP internal routes from every valid EIGRP neighbors
    *
    * @param nodes mapping of node names to instances.
-   * @param topology network topology
+   * @param topologyContext network topologies
    * @param nc All network configurations
    * @return true if new routes have been added to the staging RIB
    */
   boolean propagateEigrpInternalRoutes(
-      Map<String, Node> nodes,
-      Network<EigrpInterface, EigrpEdge> topology,
-      NetworkConfigurations nc) {
-
+      Map<String, Node> nodes, TopologyContext topologyContext, NetworkConfigurations nc) {
     return _virtualEigrpProcesses.values().stream()
-        .map(proc -> proc.propagateInternalRoutes(nodes, topology, nc))
+        .map(proc -> proc.propagateInternalRoutes(nodes, topologyContext.getEigrpTopology(), nc))
         .reduce(false, (a, b) -> a || b);
   }
 

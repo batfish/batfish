@@ -34,7 +34,6 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
@@ -222,9 +221,7 @@ public class RouteReflectionTest {
     ComputeDataPlaneResult dpResult =
         engine.computeDataPlane(
             configurations,
-            topology,
-            null,
-            OspfTopology.empty(),
+            TopologyContext.builder().setLayer3Topology(topology).build(),
             ImmutableSet.of(
                 _ab.setAsPath(AsPath.ofSingletonAsSets(1L))
                     .setDstIp(edge1EbgpIfaceIp)
@@ -350,9 +347,7 @@ public class RouteReflectionTest {
         (IncrementalDataPlane)
             engine.computeDataPlane(
                     configurations,
-                    topology,
-                    null,
-                    OspfTopology.empty(),
+                    TopologyContext.builder().setLayer3Topology(topology).build(),
                     ImmutableSet.of(
                         _ab.setAsPath(AsPath.ofSingletonAsSets(1L))
                             .setDstIp(edge1EbgpIfaceIp)
