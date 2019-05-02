@@ -154,47 +154,37 @@ public class BDDInteger {
     checkArgument(val >= 0, "value is negative");
     checkArgument(val < (1L << _bitvec.length), "value %s is out of range", val);
     long currentVal = val;
-    BDD[] eq = new BDD[_bitvec.length];
-    BDD[] less = new BDD[_bitvec.length];
+    BDD acc = _factory.one(); // whether the suffix of BDD is leq suffix of val.
     for (int i = _bitvec.length - 1; i >= 0; i--) {
       if ((currentVal & 1) != 0) {
-        eq[i] = _bitvec[i];
-        less[i] = _bitvec[i].not();
+        // since this bit of val is 1: 0 implies lt OR 1 and suffix leq. ('1 and' is redundant).
+        acc = _bitvec[i].imp(acc); // "not i or acc" rewritten "i implies acc".
       } else {
-        eq[i] = _bitvec[i].not();
-        less[i] = _factory.zero();
+        // since this bit of val is 0: must be 0 and have leq suffix.
+        acc = _bitvec[i].less(acc); // "not i and acc" rewritten "i less acc"
       }
       currentVal >>= 1;
-    }
-    BDD acc = _factory.one();
-    for (int i = _bitvec.length - 1; i >= 0; i--) {
-      acc = less[i].or(eq[i].and(acc));
     }
     return acc;
   }
 
   /*
-   * Less than or equal to on integers
+   * Greater than or equal to on integers
    */
   public BDD geq(long val) {
     checkArgument(val >= 0, "value is negative");
     checkArgument(val < (1L << _bitvec.length), "value %s is out of range", val);
     long currentVal = val;
-    BDD[] eq = new BDD[_bitvec.length];
-    BDD[] greater = new BDD[_bitvec.length];
+    BDD acc = _factory.one(); // whether the suffix of BDD is geq suffix of val.
     for (int i = _bitvec.length - 1; i >= 0; i--) {
       if ((currentVal & 1) != 0) {
-        eq[i] = _bitvec[i];
-        greater[i] = _factory.zero();
+        // since this bit of val is 1: must be 1 and have geq suffix.
+        acc = _bitvec[i].and(acc);
       } else {
-        eq[i] = _bitvec[i].not();
-        greater[i] = _bitvec[i];
+        // since this bit of val is 0: 1 implies gt OR 0 and suffix geq. ('0 and' is redundant.)
+        acc = _bitvec[i].or(acc);
       }
       currentVal >>= 1;
-    }
-    BDD acc = _factory.one();
-    for (int i = _bitvec.length - 1; i >= 0; i--) {
-      acc = greater[i].or(eq[i].and(acc));
     }
     return acc;
   }
