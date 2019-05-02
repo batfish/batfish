@@ -1,12 +1,12 @@
 package org.batfish.specifier.parboiled;
 
+import static org.batfish.datamodel.Names.SPECIAL_CHARS;
 import static org.batfish.specifier.parboiled.Anchor.Type.STRING_LITERAL;
 
 import com.google.common.collect.ImmutableMap;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.specifier.parboiled.Anchor.Type;
@@ -88,23 +88,6 @@ public abstract class CommonParser extends BaseParser<AstNode> {
     _shadowStack = shadowStack;
   }
 
-  /** Get the main entry point for {@code grammar} */
-  abstract Rule getInputRule(Grammar grammar);
-
-  /** We use double quotes to escape complex names */
-  public static final String ESCAPE_CHAR = "\"";
-
-  /**
-   * Characters that we deem special in our grammar and cannot appear in unquoted names. We are
-   * currently using the first bunch and setting aside some more for future use.
-   *
-   * <p>Once we stop supporting now-deprecated regexes, '*' should probably added to the reserved
-   * list.
-   */
-  private static final String SPECIAL_CHARS = " \t,\\&()[]@" + "!#$%^;?<>={}";
-
-  private static final char[] SPECIAL_CHARS_ARRAY = SPECIAL_CHARS.toCharArray();
-
   static CommonParser instance() {
     return Parboiled.createParser(CommonParser.class);
   }
@@ -161,28 +144,6 @@ public abstract class CommonParser extends BaseParser<AstNode> {
       default:
         return false;
     }
-  }
-
-  static boolean nameNeedsEscaping(@Nullable String name) {
-    return name != null
-        && !name.isEmpty()
-        && (name.startsWith(ESCAPE_CHAR)
-            || Character.isDigit(name.charAt(0))
-            || name.startsWith("/")
-            || containsSpecialChar(name));
-  }
-
-  static String escapeNameIfNeeded(@Nullable String name) {
-    return nameNeedsEscaping(name) ? ESCAPE_CHAR + name + ESCAPE_CHAR : name;
-  }
-
-  private static boolean containsSpecialChar(String name) {
-    for (char c : CommonParser.SPECIAL_CHARS_ARRAY) {
-      if (name.indexOf(c) >= 0) {
-        return true;
-      }
-    }
-    return false;
   }
 
   /**
@@ -257,9 +218,9 @@ public abstract class CommonParser extends BaseParser<AstNode> {
 
   /**
    * A shared rule for a range of a names. Allow unquoted strings for names that 1) don't contain
-   * one of the {@link #SPECIAL_CHARS} in our grammar, 2) don't begin with a digit (to avoid
-   * confusion with IP addresses), and 3) don't begin with '/' (to avoid confusion with regexes).
-   * Otherwise, double quotes are needed.
+   * one of the {@link org.batfish.datamodel.Names#SPECIAL_CHARS} in our grammar, 2) don't begin
+   * with a digit (to avoid confusion with IP addresses), and 3) don't begin with '/' (to avoid
+   * confusion with regexes). Otherwise, double quotes are needed.
    *
    * <p>This rule puts a {@link StringAstNode} with the parsed name on the stack.
    */
@@ -299,7 +260,8 @@ public abstract class CommonParser extends BaseParser<AstNode> {
 
   /**
    * We infer deprecated (non-enclosed) regexes as strings that: 1) don't begin with double quote,
-   * digit, slash; 2) do not contain {@link #SPECIAL_CHARS}; and 3) contain '*'.
+   * digit, slash; 2) do not contain {@link org.batfish.datamodel.Names#SPECIAL_CHARS}; and 3)
+   * contain '*'.
    */
   public Rule RegexDeprecated() {
     return Sequence(

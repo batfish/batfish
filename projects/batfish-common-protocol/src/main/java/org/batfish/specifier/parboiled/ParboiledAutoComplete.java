@@ -1,15 +1,15 @@
 package org.batfish.specifier.parboiled;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.Names.ESCAPE_CHAR;
+import static org.batfish.datamodel.Names.nameNeedsEscaping;
 import static org.batfish.datamodel.answers.AutocompleteSuggestion.DEFAULT_RANK;
 import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.CHAR_LITERAL;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.STRING_LITERAL;
-import static org.batfish.specifier.parboiled.CommonParser.ESCAPE_CHAR;
 import static org.batfish.specifier.parboiled.CommonParser.isEscapableNameAnchor;
 import static org.batfish.specifier.parboiled.CommonParser.isOperatorWithRhs;
-import static org.batfish.specifier.parboiled.CommonParser.nameNeedsEscaping;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;

@@ -893,7 +893,8 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       if (!_remoteBgpNeighborsInitialized) {
         Map<Ip, Set<String>> ipOwners = TopologyUtil.computeIpNodeOwners(configurations, true);
         _bgpTopology =
-            BgpTopologyUtils.initBgpTopology(configurations, ipOwners, false, false, null, null);
+            BgpTopologyUtils.initBgpTopology(configurations, ipOwners, false, false, null, null)
+                .getGraph();
         _remoteBgpNeighborsInitialized = true;
       }
     }
@@ -901,7 +902,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     private void initRemoteEigrpNeighbors(
         Map<String, Configuration> configurations, Topology topology) {
       if (!_remoteEigrpNeighborsInitialized) {
-        _eigrpTopology = EigrpTopology.initEigrpTopology(configurations, topology);
+        _eigrpTopology = EigrpTopology.initEigrpTopology(configurations, topology).getNetwork();
         _remoteEigrpNeighborsInitialized = true;
       }
     }

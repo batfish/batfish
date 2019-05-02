@@ -170,7 +170,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
   @Override
   public ValueGraph<BgpPeerConfigId, BgpSessionProperties> getBgpTopology() {
-    return _topologyContext.getBgpTopology();
+    return _topologyContext.getBgpTopology().getGraph();
   }
 
   @Override
