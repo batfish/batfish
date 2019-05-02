@@ -64,7 +64,7 @@ class TestParser extends CommonParser {
   }
 
   public Rule TestFunc() {
-    return Sequence(IgnoreCase("@specifier"), WhiteSpace(), "( ", TestSpecifierInput(), ") ");
+    return Sequence(IgnoreCase("@specifier"), WhiteSpace(), TestSpecifierInput());
   }
 
   public Rule TestNotOp() {
@@ -73,7 +73,7 @@ class TestParser extends CommonParser {
 
   @Anchor(Type.REFERENCE_BOOK_AND_ADDRESS_GROUP)
   public Rule TestSpecifierInput() {
-    return Sequence(TestReferenceBookName(), ", ", TestAddressGroupName());
+    return Sequence("( ", TestReferenceBookName(), ", ", TestAddressGroupName(), ") ");
   }
 
   @Anchor(Type.ADDRESS_GROUP_NAME)
