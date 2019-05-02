@@ -77,8 +77,7 @@ public class ParserRoutingPolicyTest {
                 ROUTING_POLICY_NAME_REGEX.getDescription(),
                 RANK_STRING_LITERAL,
                 query.length(),
-                ROUTING_POLICY_NAME_REGEX.getHint()),
-            new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length())));
+                ROUTING_POLICY_NAME_REGEX.getHint())));
   }
 
   @Test

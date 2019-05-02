@@ -134,7 +134,6 @@ public class ParboiledAutoCompleteTest {
                     RANK_STRING_LITERAL,
                     query.length(),
                     NODE_NAME_REGEX.getHint()),
-                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
                     "@specifier(",
                     true,
@@ -219,13 +218,11 @@ public class ParboiledAutoCompleteTest {
 
     // this should auto complete to 1.1.1.10, '-' (range), and ',' (list)
     assertThat(
-        ImmutableSet.copyOf(getTestPAC(query, completionMetadata).run()),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, 6),
-                new AutocompleteSuggestion("\"node1\"", true, null, RANK_STRING_LITERAL, 0),
-                new AutocompleteSuggestion(
-                    "\"node10\"", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0))));
+        getTestPAC(query, completionMetadata).run(),
+        containsInAnyOrder(
+            new AutocompleteSuggestion("\"node1\"", true, null, RANK_STRING_LITERAL, 0),
+            new AutocompleteSuggestion(
+                "\"node10\"", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0)));
   }
 
   /** Test that we produce auto complete snapshot-based names even when we begin with a quote. */
@@ -302,7 +299,6 @@ public class ParboiledAutoCompleteTest {
         ImmutableSet.copyOf(getTestPAC("@specifier(", testLibrary).run()),
         equalTo(
             ImmutableSet.of(
-                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, 11),
                 new AutocompleteSuggestion(
                     "b1a", true, null, AutocompleteSuggestion.DEFAULT_RANK, 11),
                 new AutocompleteSuggestion(
@@ -313,7 +309,6 @@ public class ParboiledAutoCompleteTest {
         ImmutableSet.copyOf(getTestPAC("@specifier(b1a,", testLibrary).run()),
         equalTo(
             ImmutableSet.of(
-                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, 15),
                 new AutocompleteSuggestion(
                     "g11", true, null, AutocompleteSuggestion.DEFAULT_RANK, 15),
                 new AutocompleteSuggestion(
@@ -334,9 +329,9 @@ public class ParboiledAutoCompleteTest {
      * The first 5 elements should be string literals and the last one should be dynamic. We do a
      * 3-step dance because the ordering of string completions is non-deterministic.
      */
-    assertThat(suggestions.size(), equalTo(6));
+    assertThat(suggestions.size(), equalTo(5));
     assertThat(
-        suggestions.subList(0, 5),
+        suggestions.subList(0, 4),
         containsInAnyOrder(
             new AutocompleteSuggestion("!", true, null, RANK_STRING_LITERAL, 0),
             new AutocompleteSuggestion(
@@ -347,7 +342,6 @@ public class ParboiledAutoCompleteTest {
                 0,
                 NODE_NAME_REGEX.getHint()),
             new AutocompleteSuggestion("(", true, null, RANK_STRING_LITERAL, 0),
-            new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, 0),
             new AutocompleteSuggestion(
                 "@specifier(",
                 true,
@@ -356,7 +350,7 @@ public class ParboiledAutoCompleteTest {
                 0,
                 REFERENCE_BOOK_AND_ADDRESS_GROUP.getHint())));
     assertThat(
-        suggestions.get(5),
+        suggestions.get(4),
         equalTo(
             new AutocompleteSuggestion(
                 "1.1.1.1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0)));
