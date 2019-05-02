@@ -4,6 +4,7 @@ import static org.batfish.datamodel.answers.InputValidationUtils.getErrorMessage
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import java.util.function.Function;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.Ip;
@@ -37,7 +38,7 @@ public class InputValidationUtilsTest {
   }
 
   @Test
-  public void testIpAddress() {
+  public void testIpAddressBad() {
     String query = "1.1.1.345";
 
     IllegalArgumentException exception = getException(query, Ip::parse);
@@ -45,5 +46,13 @@ public class InputValidationUtilsTest {
     assertThat(
         validateQuery(query, Type.IP_SPACE_SPEC),
         equalTo(new InputValidationNotes(Validity.INVALID, getErrorMessage(exception), -1)));
+  }
+
+  @Test
+  public void testIpAddressGood() {
+    String query = "1.1.1.3";
+    assertThat(
+        validateQuery(query, Type.IP_SPACE_SPEC),
+        equalTo(new InputValidationNotes(Validity.VALID, ImmutableList.of())));
   }
 }
