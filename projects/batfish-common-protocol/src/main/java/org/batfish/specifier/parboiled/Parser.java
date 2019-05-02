@@ -83,7 +83,7 @@ public class Parser extends CommonParser {
     return Parboiled.createParser(Parser.class);
   }
 
-  /** Get the main entry point for the grammar */
+  @Override
   Rule getInputRule(Grammar grammar) {
     switch (grammar) {
       case APPLICATION_SPECIFIER:
