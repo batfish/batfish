@@ -1,7 +1,7 @@
 package org.batfish.datamodel.answers;
 
-import static org.batfish.datamodel.answers.InputValidationNotes.Validity.EMPTY;
 import static org.batfish.datamodel.answers.InputValidationNotes.Validity.INVALID;
+import static org.batfish.datamodel.answers.InputValidationNotes.Validity.NO_MATCH;
 import static org.batfish.datamodel.answers.InputValidationNotes.Validity.VALID;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -22,7 +22,7 @@ public class InputValidationNotesTest {
         .addEqualityGroup(new Object())
         .addEqualityGroup(notes, notes, new InputValidationNotes(VALID, null, -1, null))
         .addEqualityGroup(new InputValidationNotes(INVALID, null, -1, null))
-        .addEqualityGroup(new InputValidationNotes(EMPTY, null, -1, null))
+        .addEqualityGroup(new InputValidationNotes(NO_MATCH, null, -1, null))
         .addEqualityGroup(new InputValidationNotes(VALID, "description", -1, null))
         .addEqualityGroup(
             new InputValidationNotes(VALID, "description", -1, ImmutableList.of("expansion")))

@@ -166,18 +166,25 @@ public final class ParboiledInputValidator {
     }
 
     ValueStack<AstNode> stack = _parser.getShadowStack().getValueStack();
-    List<String> emptyMessages = emptyMessages(Iterables.getOnlyElement(stack));
-    if (!emptyMessages.isEmpty()) {
-      return new InputValidationNotes(Validity.EMPTY, emptyMessages.get(0));
+    List<String> noMatchMessages = noMatchMessages(Iterables.getOnlyElement(stack));
+    if (!noMatchMessages.isEmpty()) {
+      return new InputValidationNotes(Validity.NO_MATCH, noMatchMessages.get(0));
     }
 
     Set<String> expansions = expand(stack.peek());
     return new InputValidationNotes(Validity.VALID, ImmutableList.copyOf(expansions));
   }
 
-  private List<String> emptyMessages(AstNode astNode) {
-    if (astNode instanceof NodeAstNode) {
-      return new NodeValidator((NodeAstNode) astNode).emptyMessages(_specifierContext);
+  private List<String> noMatchMessages(AstNode astNode) {
+    if (astNode instanceof FilterAstNode) {
+      return new FilterNoMatchMessages((FilterAstNode) astNode)
+          .get(_completionMetadata, _nodeRolesData, _referenceLibrary);
+    } else if (astNode instanceof InterfaceAstNode) {
+      return new InterfaceNoMatchMessages((InterfaceAstNode) astNode)
+          .get(_completionMetadata, _nodeRolesData, _referenceLibrary);
+    } else if (astNode instanceof NodeAstNode) {
+      return new NodeNoMatchMessages((NodeAstNode) astNode)
+          .get(_completionMetadata, _nodeRolesData, _referenceLibrary);
     }
     return ImmutableList.of();
   }
@@ -199,22 +206,40 @@ public final class ParboiledInputValidator {
     return exception.getMessage();
   }
 
-  static String getErrorMessageEmptyDeviceRegex(String regex) {
-    return String.format("Regex /%s/ does not match any device name", regex);
+  static String getErrorMessageEmptyNameRegex(String nameRegex, String nameType) {
+    return String.format("Regex /%s/ does not match any %s", nameRegex, nameType);
   }
 
-  static String getErrorMessageMissingDevice(String nodeName) {
-    return String.format("Device %s does not exist", CommonParser.escapeNameIfNeeded(nodeName));
-  }
-
-  static String getErrorMessageMissingNodeRole(String role, String dimension) {
+  static String getErrorMessageMissingName(String name, String nameType) {
     return String.format(
-        "Node role %s does not exist in dimension %s.",
-        CommonParser.escapeNameIfNeeded(role), CommonParser.escapeNameIfNeeded(dimension));
+        "%s %s does not exist",
+        capitalizeFirstChar(nameType), CommonParser.escapeNameIfNeeded(name));
   }
 
-  static String getErrorMessageMissingNodeRoleDimension(String dimension) {
+  /**
+   * This function considers node role dimension as a book type, and node roles as groups within it
+   */
+  static String getErrorMessageMissingGroup(
+      String group, String groupType, String book, String bookType) {
     return String.format(
-        "Node role dimension %s does not exist.", CommonParser.escapeNameIfNeeded(dimension));
+        "%s %s does not exist in %s %s",
+        capitalizeFirstChar(groupType),
+        CommonParser.escapeNameIfNeeded(group),
+        bookType,
+        CommonParser.escapeNameIfNeeded(book));
+  }
+
+  /** This function considers node role dimension as a book type, in addition to reference books */
+  static String getErrorMessageMissingBook(String book, String bookType) {
+    return String.format(
+        "%s %s does not exist",
+        capitalizeFirstChar(bookType), CommonParser.escapeNameIfNeeded(book));
+  }
+
+  private static String capitalizeFirstChar(String nameType) {
+    if (nameType.length() > 1) {
+      return nameType.substring(0, 1).toUpperCase() + nameType.substring(1);
+    }
+    return nameType;
   }
 }

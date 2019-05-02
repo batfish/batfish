@@ -1,7 +1,7 @@
 package org.batfish.specifier.parboiled;
 
 import static org.batfish.specifier.parboiled.ParboiledInputValidator.getErrorMessage;
-import static org.batfish.specifier.parboiled.ParboiledInputValidator.getErrorMessageMissingDevice;
+import static org.batfish.specifier.parboiled.ParboiledInputValidator.getErrorMessageMissingName;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -101,17 +101,19 @@ public class ParboiledInputValidatorTest {
   }
 
   /**
-   * Test that we create the right type of notes object when encountering empty things. The actual
-   * content of the messages is tested inside individual validators
+   * Test that we create the right type of notes object when encountering things that don't match.
+   * The actual content of the messages is tested inside individual validators
    */
   @Test
-  public void testEmpty() {
+  public void testNoMatch() {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setNodes(ImmutableSet.of("b1", "b2")).build();
     String query = "a";
     assertThat(
         getTestPIV(query, completionMetadata).run(),
-        equalTo(new InputValidationNotes(Validity.EMPTY, getErrorMessageMissingDevice(query))));
+        equalTo(
+            new InputValidationNotes(
+                Validity.NO_MATCH, getErrorMessageMissingName(query, "Device"))));
   }
 
   /** Test that we create the right type of notes object when expanding things. */

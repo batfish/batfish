@@ -17,8 +17,8 @@ public final class InputValidationNotes {
 
   /** The overall status of the input */
   public enum Validity {
-    /** Syntactically valid but has input parts (e.g., node name) that do not match anything */
-    EMPTY,
+    /** Syntactically valid but parts of the input do not match anything */
+    NO_MATCH,
     /** Syntactically invalid */
     INVALID,
     /** Syntactically valid and may match things */
