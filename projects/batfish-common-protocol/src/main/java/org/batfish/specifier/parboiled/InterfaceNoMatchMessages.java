@@ -1,6 +1,8 @@
 package org.batfish.specifier.parboiled;
 
+import static org.batfish.specifier.parboiled.ParboiledInputValidator.getErrorMessageEmptyNameRegex;
 import static org.batfish.specifier.parboiled.ParboiledInputValidator.getErrorMessageMissingBook;
+import static org.batfish.specifier.parboiled.ParboiledInputValidator.getErrorMessageMissingName;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -70,33 +72,51 @@ final class InterfaceNoMatchMessages {
     @Override
     public List<String> visitInterfaceWithNodeInterfaceAstNode(
         InterfaceWithNodeInterfaceAstNode interfaceWithNodeInterfaceAstNode) {
-      // TODO: check if we figure out which interface is present on which node
-      return ImmutableList.of();
+      // this is doing a context insensitive evaluation of existence of nodes and interfaces
+      // we can do slightly better if the node term is simple enough for us to be able to expand
+      // leaving that as future work for now
+      return concat(
+          new NodeNoMatchMessages(interfaceWithNodeInterfaceAstNode.getNodeAstNode())
+              .get(_completionMetadata, _nodeRolesData, _referenceLibrary),
+          new InterfaceNoMatchMessages(interfaceWithNodeInterfaceAstNode.getInterfaceAstNode())
+              .get(_completionMetadata, _nodeRolesData, _referenceLibrary));
     }
 
     @Override
     public List<String> visitNameInterfaceNode(NameInterfaceAstNode nameInterfaceAstNode) {
-      // TODO: do something here
-      return ImmutableList.of();
+      return _completionMetadata.getInterfaces().stream()
+              .anyMatch(i -> i.getInterface().equalsIgnoreCase(nameInterfaceAstNode.getName()))
+          ? ImmutableList.of()
+          : ImmutableList.of(
+              getErrorMessageMissingName(nameInterfaceAstNode.getName(), "interface"));
     }
 
     @Override
     public List<String> visitNameRegexInterfaceAstNode(
         NameRegexInterfaceAstNode nameRegexInterfaceAstNode) {
-      // TODO: do something here
-      return ImmutableList.of();
+      return _completionMetadata.getInterfaces().stream()
+              .anyMatch(
+                  i -> nameRegexInterfaceAstNode.getPattern().matcher(i.getInterface()).find())
+          ? ImmutableList.of()
+          : ImmutableList.of(
+              getErrorMessageEmptyNameRegex(nameRegexInterfaceAstNode.getRegex(), "interface"));
     }
 
     @Override
     public List<String> visitVrfInterfaceAstNode(VrfInterfaceAstNode vrfInterfaceAstNode) {
-      // TODO: check vrf names
-      return ImmutableList.of();
+      return _completionMetadata.getVrfs().stream()
+              .anyMatch(v -> v.equalsIgnoreCase(vrfInterfaceAstNode.getVrfName()))
+          ? ImmutableList.of()
+          : ImmutableList.of(getErrorMessageMissingName(vrfInterfaceAstNode.getVrfName(), "VRF"));
     }
 
     @Override
     public List<String> visitZoneInterfaceAstNode(ZoneInterfaceAstNode zoneInterfaceAstNode) {
-      // TODO: check zone names
-      return ImmutableList.of();
+      return _completionMetadata.getZones().stream()
+              .anyMatch(v -> v.equalsIgnoreCase(zoneInterfaceAstNode.getZoneName()))
+          ? ImmutableList.of()
+          : ImmutableList.of(
+              getErrorMessageMissingName(zoneInterfaceAstNode.getZoneName(), "zone"));
     }
 
     @Override
