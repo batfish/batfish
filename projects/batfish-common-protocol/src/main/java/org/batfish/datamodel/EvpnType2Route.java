@@ -14,6 +14,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
+import org.batfish.datamodel.bgp.community.Community;
 
 /** An EVPN type 2 route */
 @ParametersAreNonnullByDefault
@@ -140,7 +141,7 @@ public final class EvpnType2Route extends BgpRoute {
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
       @Nullable @JsonProperty(PROP_AS_PATH) AsPath asPath,
       @Nullable @JsonProperty(PROP_CLUSTER_LIST) SortedSet<Long> clusterList,
-      @Nullable @JsonProperty(PROP_COMMUNITIES) SortedSet<Long> communities,
+      @Nullable @JsonProperty(PROP_COMMUNITIES) SortedSet<Community> communities,
       @JsonProperty(PROP_DISCARD) boolean discard,
       @Nullable @JsonProperty(PROP_IP) Ip ip,
       @JsonProperty(PROP_LOCAL_PREFERENCE) long localPreference,
@@ -192,7 +193,7 @@ public final class EvpnType2Route extends BgpRoute {
       int admin,
       @Nullable AsPath asPath,
       @Nullable SortedSet<Long> clusterList,
-      @Nullable SortedSet<Long> communities,
+      @Nullable SortedSet<Community> communities,
       boolean discard,
       Ip ip,
       long localPreference,
