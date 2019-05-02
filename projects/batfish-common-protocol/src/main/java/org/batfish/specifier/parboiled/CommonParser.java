@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableMap;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.specifier.parboiled.Anchor.Type;
@@ -163,28 +162,6 @@ public abstract class CommonParser extends BaseParser<AstNode> {
     }
   }
 
-  static boolean nameNeedsEscaping(@Nullable String name) {
-    return name != null
-        && !name.isEmpty()
-        && (name.startsWith(ESCAPE_CHAR)
-            || Character.isDigit(name.charAt(0))
-            || name.startsWith("/")
-            || containsSpecialChar(name));
-  }
-
-  static String escapeNameIfNeeded(@Nullable String name) {
-    return nameNeedsEscaping(name) ? ESCAPE_CHAR + name + ESCAPE_CHAR : name;
-  }
-
-  private static boolean containsSpecialChar(String name) {
-    for (char c : CommonParser.SPECIAL_CHARS_ARRAY) {
-      if (name.indexOf(c) >= 0) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   /**
    * Initialize an array of case-insenstive rules that match the array of provided values (e.g.,
    * those belonging to an Enum).
@@ -257,9 +234,9 @@ public abstract class CommonParser extends BaseParser<AstNode> {
 
   /**
    * A shared rule for a range of a names. Allow unquoted strings for names that 1) don't contain
-   * one of the {@link #SPECIAL_CHARS} in our grammar, 2) don't begin with a digit (to avoid
-   * confusion with IP addresses), and 3) don't begin with '/' (to avoid confusion with regexes).
-   * Otherwise, double quotes are needed.
+   * one of the {@link org.batfish.datamodel.Names#SPECIAL_CHARS} in our grammar, 2) don't begin
+   * with a digit (to avoid confusion with IP addresses), and 3) don't begin with '/' (to avoid
+   * confusion with regexes). Otherwise, double quotes are needed.
    *
    * <p>This rule puts a {@link StringAstNode} with the parsed name on the stack.
    */
@@ -299,7 +276,8 @@ public abstract class CommonParser extends BaseParser<AstNode> {
 
   /**
    * We infer deprecated (non-enclosed) regexes as strings that: 1) don't begin with double quote,
-   * digit, slash; 2) do not contain {@link #SPECIAL_CHARS}; and 3) contain '*'.
+   * digit, slash; 2) do not contain {@link org.batfish.datamodel.Names#SPECIAL_CHARS}; and 3)
+   * contain '*'.
    */
   public Rule RegexDeprecated() {
     return Sequence(

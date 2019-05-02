@@ -1,5 +1,7 @@
 package org.batfish.specifier.parboiled;
 
+import static org.batfish.datamodel.Names.escapeNameIfNeeded;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -214,8 +216,7 @@ public final class ParboiledInputValidator {
 
   static String getErrorMessageMissingName(String name, String nameType) {
     return String.format(
-        "%s %s does not exist",
-        capitalizeFirstChar(nameType), CommonParser.escapeNameIfNeeded(name));
+        "%s %s does not exist", capitalizeFirstChar(nameType), escapeNameIfNeeded(name));
   }
 
   /**
@@ -226,16 +227,15 @@ public final class ParboiledInputValidator {
     return String.format(
         "%s %s does not exist in %s %s",
         capitalizeFirstChar(groupType),
-        CommonParser.escapeNameIfNeeded(group),
+        escapeNameIfNeeded(group),
         bookType,
-        CommonParser.escapeNameIfNeeded(book));
+        escapeNameIfNeeded(book));
   }
 
   /** This function considers node role dimension as a book type, in addition to reference books */
   static String getErrorMessageMissingBook(String book, String bookType) {
     return String.format(
-        "%s %s does not exist",
-        capitalizeFirstChar(bookType), CommonParser.escapeNameIfNeeded(book));
+        "%s %s does not exist", capitalizeFirstChar(bookType), escapeNameIfNeeded(book));
   }
 
   private static String capitalizeFirstChar(String nameType) {

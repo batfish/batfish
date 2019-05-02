@@ -8,7 +8,6 @@ import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
 
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.graph.ValueGraph;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.util.HashMap;
@@ -25,8 +24,6 @@ import org.batfish.common.Version;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
-import org.batfish.datamodel.BgpPeerConfigId;
-import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
@@ -34,6 +31,7 @@ import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.IncrementalBdpAnswerElement;
+import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.isis.IsisTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
@@ -121,7 +119,7 @@ class IncrementalBdpEngine {
                   .build();
 
           // Initialize BGP topology
-          ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+          BgpTopology bgpTopology =
               initBgpTopology(
                   configurations,
                   ipOwners,
@@ -359,7 +357,7 @@ class IncrementalBdpEngine {
       Map<String, Node> nodes,
       String iterationLabel,
       Map<String, Node> allNodes,
-      ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
+      BgpTopology bgpTopology,
       NetworkConfigurations networkConfigurations) {
     try (ActiveSpan span =
         GlobalTracer.get()
@@ -554,8 +552,7 @@ class IncrementalBdpEngine {
           GlobalTracer.get().buildSpan("Queue initial bgp messages").startActive()) {
         assert innerSpan != null; // avoid unused warning
         // Queue initial outgoing messages
-        ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-            topologyContext.getBgpTopology();
+        BgpTopology bgpTopology = topologyContext.getBgpTopology();
         nodes
             .values()
             .parallelStream()
