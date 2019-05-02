@@ -31,7 +31,7 @@ import org.parboiled.support.ValueStack;
   "WeakerAccess", // access of Rule methods is needed for parser auto-generation.
 })
 @ParametersAreNonnullByDefault
-public class CommonParser extends BaseParser<AstNode> {
+public abstract class CommonParser extends BaseParser<AstNode> {
 
   /**
    * Parboiled parser runners reset the value stack for invalid inputs. We save it externally (by
@@ -87,6 +87,9 @@ public class CommonParser extends BaseParser<AstNode> {
   void setShadowStack(ShadowStack shadowStack) {
     _shadowStack = shadowStack;
   }
+
+  /** Get the main entry point for {@code grammar} */
+  abstract Rule getInputRule(Grammar grammar);
 
   static CommonParser instance() {
     return Parboiled.createParser(CommonParser.class);
@@ -254,7 +257,7 @@ public class CommonParser extends BaseParser<AstNode> {
     return Sequence(
         '/',
         OneOrMore(FirstOf(EscapedSlash(), AsciiButNot("/"))),
-        push(new StringAstNode(match())),
+        push(new RegexAstNode(match())),
         '/');
   }
 
@@ -272,7 +275,7 @@ public class CommonParser extends BaseParser<AstNode> {
             OneOrMore(AsciiButNot(SPECIAL_CHARS + "*")),
             "*",
             ZeroOrMore(AsciiButNot(SPECIAL_CHARS))),
-        push(new StringAstNode(match())));
+        push(new RegexAstNode(match())));
   }
 
   /** See class JavaDoc for why this is a CharRange and not Ch */

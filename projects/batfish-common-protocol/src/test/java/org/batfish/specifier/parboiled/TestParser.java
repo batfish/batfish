@@ -24,6 +24,11 @@ class TestParser extends CommonParser {
   Rule getInputRule() {
     return input(TestSpec());
   }
+
+  @Override
+  Rule getInputRule(Grammar grammar) {
+    return input(TestSpec());
+  }
   /**
    * Test grammar
    *
@@ -100,12 +105,12 @@ class TestParser extends CommonParser {
 
   @Anchor(Type.NODE_NAME)
   public Rule TestName() {
-    return NameLiteral();
+    return Sequence(NameLiteral(), push(new NameNodeAstNode(pop())));
   }
 
   @Anchor(Type.NODE_NAME_REGEX)
   public Rule TestNameRegex() {
-    return Regex();
+    return Sequence(Regex(), push(new NameRegexNodeAstNode(pop())));
   }
 
   @Anchor(Type.DEPRECATED)

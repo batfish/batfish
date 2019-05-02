@@ -9,7 +9,8 @@ final class NameRegexInterfaceAstNode implements InterfaceAstNode {
   private final Pattern _pattern;
 
   NameRegexInterfaceAstNode(AstNode regexAst) {
-    this(((StringAstNode) regexAst).getStr());
+    _regex = ((RegexAstNode) regexAst).getRegex();
+    _pattern = ((RegexAstNode) regexAst).getPattern();
   }
 
   NameRegexInterfaceAstNode(String regex) {
