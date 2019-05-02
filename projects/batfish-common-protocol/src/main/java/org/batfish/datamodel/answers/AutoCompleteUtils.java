@@ -478,9 +478,23 @@ public final class AutoCompleteUtils {
 
     String testQuery = query == null ? "" : query.toLowerCase();
 
-    return strings.stream()
-        .filter(s -> s.toLowerCase().contains(testQuery))
+    List<String> matches = getStringMatches(testQuery, strings);
+
+    // if there are no matches, remove characters from the end of the query until there are matches
+    // or the query is the empty string
+    while (testQuery.length() > 0 && matches.isEmpty()) {
+      testQuery = testQuery.substring(0, testQuery.length() - 1);
+      matches = getStringMatches(testQuery, strings);
+    }
+
+    return matches.stream()
         .map(s -> new AutocompleteSuggestion(s, false))
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  private static List<String> getStringMatches(String query, Set<String> strings) {
+    return strings.stream()
+        .filter(s -> s.toLowerCase().contains(query))
         .collect(ImmutableList.toImmutableList());
   }
 

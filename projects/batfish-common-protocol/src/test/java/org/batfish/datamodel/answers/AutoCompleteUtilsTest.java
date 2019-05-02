@@ -384,6 +384,20 @@ public class AutoCompleteUtilsTest {
         equalTo(ImmutableSet.of(DNS_SERVERS, DNS_SOURCE_INTERFACE)));
   }
 
+  @Test
+  public void testQueryWithNoMatchesHasSuggestions() throws IOException {
+    CompletionMetadata completionMetadata = getMockCompletionMetadata();
+
+    // the query 'leax' does not match any node names so removing characters off the end should give
+    // the same suggestions as the query 'lea'
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+            "network", "snapshot", Type.NODE_NAME, "leax", 10, completionMetadata, null, null),
+        equalTo(
+            AutoCompleteUtils.autoComplete(
+                "network", "snapshot", Type.NODE_NAME, "lea", 10, completionMetadata, null, null)));
+  }
+
   @Ignore
   @Test
   public void testNodeNameAutocompleteEmptyString() throws IOException {
