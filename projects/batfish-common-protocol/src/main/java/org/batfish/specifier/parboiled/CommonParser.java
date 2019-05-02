@@ -143,7 +143,7 @@ public class CommonParser extends BaseParser<AstNode> {
   }
 
   /**
-   * Whether the given strings represents an operator that has values on the right hand side. This
+   * Whether {@code literal} represents an operator that has values on the right hand side. This
    * information is used to provide hints and description for auto completion suggestions
    */
   static boolean isOperatorWithRhs(String literal) {
@@ -153,6 +153,7 @@ public class CommonParser extends BaseParser<AstNode> {
       case "!":
       case "-":
       case ":":
+      case "[":
         return true;
       default:
         return false;
@@ -219,14 +220,14 @@ public class CommonParser extends BaseParser<AstNode> {
     return CharRange('@', '@');
   }
 
-  /** See class JavaDoc for why this is a CharRange and not Ch */
-  public Rule Dash() {
-    return CharRange('-', '-');
-  }
-
   /** [0-9] */
   public Rule Digit() {
     return CharRange('0', '9');
+  }
+
+  /** See class JavaDoc for why this is a CharRange and not Ch */
+  public Rule EscapeChar() {
+    return CharRange('"', '"');
   }
 
   @Anchor(Type.IGNORE)
@@ -258,16 +259,16 @@ public class CommonParser extends BaseParser<AstNode> {
   public Rule NameLiteral() {
     return FirstOf(
         Sequence(
-            TestNot('"'),
+            TestNot(EscapeChar()),
             TestNot(Digit()),
             TestNot(Slash()),
             OneOrMore(AsciiButNot(SPECIAL_CHARS)),
             push(new StringAstNode(match()))),
         Sequence(
-            '"',
+            EscapeChar(),
             OneOrMore(FirstOf(EscapedQuote(), AsciiButNot("\""))),
             push(new StringAstNode(match())),
-            '"'));
+            EscapeChar()));
   }
 
   /** [0-9]+ */

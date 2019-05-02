@@ -4,7 +4,9 @@ import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_CONNECTED_TO
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_TYPE;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_VRF;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_ZONE;
+import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_ENTER;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_PARENS;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_INTERFACE;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_PARENS;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_AND_DIMENSION;
@@ -91,7 +93,6 @@ public class ParserLocationTest {
                 RANK_STRING_LITERAL,
                 query.length(),
                 NODE_NAME_REGEX.getHint()),
-            new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
             new AutocompleteSuggestion(
                 "@connectedTo(",
                 true,
@@ -106,7 +107,13 @@ public class ParserLocationTest {
                 RANK_STRING_LITERAL,
                 query.length(),
                 NODE_TYPE.getHint()),
-            new AutocompleteSuggestion("@enter(", true, null, RANK_STRING_LITERAL, query.length()),
+            new AutocompleteSuggestion(
+                "@enter(",
+                true,
+                LOCATION_ENTER.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                LOCATION_ENTER.getHint()),
             new AutocompleteSuggestion(
                 "@interfaceGroup(",
                 true,
@@ -173,7 +180,13 @@ public class ParserLocationTest {
                 new AutocompleteSuggestion("\\", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("&", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("[", true, null, RANK_STRING_LITERAL, query.length()))));
+                new AutocompleteSuggestion(
+                    "[",
+                    true,
+                    NODE_AND_INTERFACE.getDescription(),
+                    RANK_STRING_LITERAL,
+                    query.length(),
+                    NODE_AND_INTERFACE.getHint()))));
   }
 
   @Test
