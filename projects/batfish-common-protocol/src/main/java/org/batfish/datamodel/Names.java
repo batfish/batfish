@@ -107,6 +107,7 @@ public final class Names {
     return String.format("zone~%s~to~zone~%s", fromZone, toZone);
   }
 
+  /** Checks if the provided name needs to be escaped per our rules */
   public static boolean nameNeedsEscaping(@Nullable String name) {
     return name != null
         && !name.isEmpty()
@@ -125,6 +126,7 @@ public final class Names {
     return false;
   }
 
+  /** Returns the escaped named if it needs escaping else return the original */
   public static String escapeNameIfNeeded(@Nullable String name) {
     return nameNeedsEscaping(name) ? ESCAPE_CHAR + name + ESCAPE_CHAR : name;
   }
