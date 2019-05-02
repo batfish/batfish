@@ -75,7 +75,7 @@ public class BgpSessionCompatibilityAnswerer extends BgpSessionAnswerer {
     Set<Ip> allInterfaceIps = ipOwners.keySet();
 
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredBgpTopology =
-        BgpTopologyUtils.initBgpTopology(configurations, ipOwners, true);
+        BgpTopologyUtils.initBgpTopology(configurations, ipOwners, true).getGraph();
 
     // Keep track of compatible active peers to assess whether passive peers have compatible remotes
     Set<BgpPeerConfigId> compatibleActivePeers = new TreeSet<>();

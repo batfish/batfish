@@ -89,7 +89,7 @@ public class NodeColoredSchedule extends IbdpSchedule {
     nodes.keySet().forEach(n -> _graph.addVertex(n));
 
     // Process BGP connections
-    for (EndpointPair<BgpPeerConfigId> edge : topologyContext.getBgpTopology().edges()) {
+    for (EndpointPair<BgpPeerConfigId> edge : topologyContext.getBgpTopology().getGraph().edges()) {
       _graph.addEdge(edge.source().getHostname(), edge.target().getHostname());
     }
     // Process OSPF edges

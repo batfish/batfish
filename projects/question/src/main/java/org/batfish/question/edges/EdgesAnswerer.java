@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.graph.EndpointPair;
-import com.google.common.graph.Network;
 import com.google.common.graph.ValueGraph;
 import java.util.Map;
 import java.util.Objects;
@@ -43,13 +42,12 @@ import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.eigrp.EigrpEdge;
-import org.batfish.datamodel.eigrp.EigrpInterface;
 import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.isis.IsisEdge;
-import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.isis.IsisTopology;
 import org.batfish.datamodel.ospf.OspfNeighborConfigId;
 import org.batfish.datamodel.ospf.OspfProcess;
@@ -127,7 +125,7 @@ public class EdgesAnswerer extends Answerer {
     Map<Ip, Set<String>> ipOwners = TopologyUtil.computeIpNodeOwners(configurations, true);
     switch (edgeType) {
       case BGP:
-        ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+        BgpTopology bgpTopology =
             BgpTopologyUtils.initBgpTopology(
                 configurations,
                 ipOwners,
@@ -140,16 +138,14 @@ public class EdgesAnswerer extends Answerer {
                     .orElse(null));
         return getBgpEdges(configurations, includeNodes, includeRemoteNodes, bgpTopology);
       case EIGRP:
-        Network<EigrpInterface, EigrpEdge> eigrpTopology =
-            EigrpTopology.initEigrpTopology(configurations, topology);
+        EigrpTopology eigrpTopology = EigrpTopology.initEigrpTopology(configurations, topology);
         return getEigrpEdges(includeNodes, includeRemoteNodes, eigrpTopology);
       case IPSEC:
         ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology =
             IpsecUtil.initIpsecTopology(configurations);
         return getIpsecEdges(ipsecTopology, configurations);
       case ISIS:
-        Network<IsisNode, IsisEdge> isisTopology =
-            IsisTopology.initIsisTopology(configurations, topology);
+        IsisTopology isisTopology = IsisTopology.initIsisTopology(configurations, topology);
         return getIsisEdges(includeNodes, includeRemoteNodes, isisTopology);
       case OSPF:
         return getOspfEdges(
@@ -187,11 +183,8 @@ public class EdgesAnswerer extends Answerer {
 
   @VisibleForTesting
   static Multiset<Row> getEigrpEdges(
-      Set<String> includeNodes,
-      Set<String> includeRemoteNodes,
-      Network<EigrpInterface, EigrpEdge> eigrpTopology) {
-
-    return eigrpTopology.edges().stream()
+      Set<String> includeNodes, Set<String> includeRemoteNodes, EigrpTopology eigrpTopology) {
+    return eigrpTopology.getNetwork().edges().stream()
         .filter(
             eigrpEdge ->
                 includeNodes.contains(eigrpEdge.getNode1().getHostname())
@@ -216,10 +209,10 @@ public class EdgesAnswerer extends Answerer {
       Map<String, Configuration> configurations,
       Set<String> includeNodes,
       Set<String> includeRemoteNodes,
-      ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology) {
+      BgpTopology bgpTopology) {
     Multiset<Row> rows = HashMultiset.create();
     Map<String, ColumnMetadata> columnMap = getTableMetadata(EdgeType.BGP).toColumnMap();
-    for (EndpointPair<BgpPeerConfigId> session : bgpTopology.edges()) {
+    for (EndpointPair<BgpPeerConfigId> session : bgpTopology.getGraph().edges()) {
       BgpPeerConfigId bgpPeerConfigId = session.source();
       BgpPeerConfigId remoteBgpPeerConfigId = session.target();
       NetworkConfigurations nc = NetworkConfigurations.of(configurations);
@@ -232,7 +225,7 @@ public class EdgesAnswerer extends Answerer {
       String remoteHostname = remoteBgpPeerConfigId.getHostname();
       if (includeNodes.contains(hostname) && includeRemoteNodes.contains(remoteHostname)) {
         BgpSessionProperties sessionProperties =
-            bgpTopology.edgeValue(bgpPeerConfigId, remoteBgpPeerConfigId).orElse(null);
+            bgpTopology.getGraph().edgeValue(bgpPeerConfigId, remoteBgpPeerConfigId).orElse(null);
         assert sessionProperties != null;
         // Leave IPs null for BGP unnumbered session
         boolean unnumbered = bgpPeerConfigId.getType() == BgpPeerConfigType.UNNUMBERED;
@@ -255,10 +248,8 @@ public class EdgesAnswerer extends Answerer {
 
   @VisibleForTesting
   static Multiset<Row> getIsisEdges(
-      Set<String> includeNodes,
-      Set<String> includeRemoteNodes,
-      Network<IsisNode, IsisEdge> isisTopology) {
-    return isisTopology.edges().stream()
+      Set<String> includeNodes, Set<String> includeRemoteNodes, IsisTopology isisTopology) {
+    return isisTopology.getNetwork().edges().stream()
         .filter(Objects::nonNull)
         .filter(
             isisEdge ->

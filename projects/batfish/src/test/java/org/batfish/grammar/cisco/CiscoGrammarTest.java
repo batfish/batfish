@@ -3382,7 +3382,7 @@ public class CiscoGrammarTest {
     Map<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = TopologyUtil.computeIpNodeOwners(configurations, true);
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-        BgpTopologyUtils.initBgpTopology(configurations, ipOwners, false);
+        BgpTopologyUtils.initBgpTopology(configurations, ipOwners, false).getGraph();
 
     // Edge one direction
     assertThat(

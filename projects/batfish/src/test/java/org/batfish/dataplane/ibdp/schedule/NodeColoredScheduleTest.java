@@ -13,15 +13,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.graph.ValueGraph;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.BgpActivePeerConfig;
-import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
-import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
@@ -30,6 +27,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.OspfTopology;
@@ -123,8 +121,7 @@ public class NodeColoredScheduleTest {
     Node n = TestUtils.makeIosRouter("r1");
     Map<String, Node> nodes = ImmutableMap.of("r1", n);
     Map<String, Configuration> configs = ImmutableMap.of("r1", n.getConfiguration());
-    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-        initBgpTopology(configs, computeIpNodeOwners(configs, false), false);
+    BgpTopology bgpTopology = initBgpTopology(configs, computeIpNodeOwners(configs, false), false);
     NodeColoredSchedule schedule =
         new NodeColoredSchedule(
             nodes, _coloring, TopologyContext.builder().setBgpTopology(bgpTopology).build());
@@ -143,8 +140,7 @@ public class NodeColoredScheduleTest {
         nodes.entrySet().stream()
             .collect(
                 ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getConfiguration()));
-    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-        initBgpTopology(configs, computeIpNodeOwners(configs, false), false);
+    BgpTopology bgpTopology = initBgpTopology(configs, computeIpNodeOwners(configs, false), false);
     NodeColoredSchedule schedule =
         new NodeColoredSchedule(
             nodes, _coloring, TopologyContext.builder().setBgpTopology(bgpTopology).build());
@@ -158,7 +154,7 @@ public class NodeColoredScheduleTest {
   @Test
   public void testTwoNodesConnectedDirectlyViaBGP() {
 
-    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+    BgpTopology bgpTopology =
         initBgpTopology(_configurations, computeIpNodeOwners(_configurations, false), false);
     ImmutableMap<String, Node> nodes =
         _configurations.entrySet().stream()

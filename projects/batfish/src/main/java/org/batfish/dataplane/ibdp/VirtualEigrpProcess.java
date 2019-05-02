@@ -34,6 +34,7 @@ import org.batfish.datamodel.eigrp.EigrpEdge;
 import org.batfish.datamodel.eigrp.EigrpInterface;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpProcess;
+import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.dataplane.rib.EigrpExternalRib;
@@ -219,11 +220,12 @@ class VirtualEigrpProcess {
    *
    * @param eigrpTopology The topology representing EIGRP adjacencies
    */
-  void initQueues(Network<EigrpInterface, EigrpEdge> eigrpTopology) {
+  void initQueues(EigrpTopology eigrpTopology) {
+    Network<EigrpInterface, EigrpEdge> network = eigrpTopology.getNetwork();
     _incomingRoutes =
         _interfaces.stream()
-            .filter(eigrpTopology.nodes()::contains)
-            .flatMap(n -> eigrpTopology.inEdges(n).stream())
+            .filter(network.nodes()::contains)
+            .flatMap(n -> network.inEdges(n).stream())
             .collect(toImmutableSortedMap(Function.identity(), e -> new ConcurrentLinkedQueue<>()));
   }
 
@@ -283,18 +285,17 @@ class VirtualEigrpProcess {
    * Propagate EIGRP internal routes from every valid EIGRP neighbors
    *
    * @param nodes mapping of node names to instances.
-   * @param topology network topology
+   * @param eigrpTopology EIGRP session topology
    * @param nc All network configurations
    * @return true if new routes have been added to the staging RIB
    */
   boolean propagateInternalRoutes(
-      Map<String, Node> nodes,
-      Network<EigrpInterface, EigrpEdge> topology,
-      NetworkConfigurations nc) {
-
+      Map<String, Node> nodes, EigrpTopology eigrpTopology, NetworkConfigurations nc) {
+    Network<EigrpInterface, EigrpEdge> network = eigrpTopology.getNetwork();
+    Set<EigrpInterface> eigrpNodes = network.nodes();
     return _interfaces.stream()
-        .filter(topology.nodes()::contains)
-        .flatMap(n -> topology.inEdges(n).stream())
+        .filter(eigrpNodes::contains)
+        .flatMap(n -> network.inEdges(n).stream())
         .map(
             edge ->
                 propagateInternalRoutesFromNeighbor(
