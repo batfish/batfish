@@ -181,7 +181,7 @@ public class ParserUtilsTest {
         createSimplePotentialMatch(CHAR_LITERAL, "'!'", matchStartIndex),
         createSimplePotentialMatch(IP_ADDRESS, "TestIpAddress", matchStartIndex),
         createSimplePotentialMatch(NODE_NAME, "TestName", matchStartIndex),
-        createSimplePotentialMatch(CHAR_LITERAL, "'\"'", matchStartIndex),
+        // createSimplePotentialMatch(CHAR_LITERAL, "'\"'", matchStartIndex),
         createSimplePotentialMatch(CHAR_LITERAL, "'/'", matchStartIndex),
         createSimplePotentialMatch(CHAR_LITERAL, "'('", matchStartIndex));
   }
@@ -288,10 +288,7 @@ public class ParserUtilsTest {
         simplifyPotentialMatches(
             getPotentialMatches(
                 (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false)),
-        equalTo(
-            ImmutableSet.of(
-                createSimplePotentialMatch(CHAR_LITERAL, "'\"'", 2),
-                createSimplePotentialMatch(NODE_NAME, "TestName", 0, "\"a"))));
+        equalTo(ImmutableSet.of(createSimplePotentialMatch(NODE_NAME, "TestName", 0, "\"a"))));
   }
 
   @Test
@@ -313,7 +310,6 @@ public class ParserUtilsTest {
                 (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false)),
         equalTo(
             ImmutableSet.of(
-                createSimplePotentialMatch(CHAR_LITERAL, "'\"'", 11),
                 createSimplePotentialMatch(REFERENCE_BOOK_NAME, "TestReferenceBookName", 11))));
   }
 
@@ -326,7 +322,6 @@ public class ParserUtilsTest {
                 (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false)),
         equalTo(
             ImmutableSet.of(
-                createSimplePotentialMatch(CHAR_LITERAL, "'\"'", 13),
                 createSimplePotentialMatch(ADDRESS_GROUP_NAME, "TestAddressGroupName", 13))));
   }
 

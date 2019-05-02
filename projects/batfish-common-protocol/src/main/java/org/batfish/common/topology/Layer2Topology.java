@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.jgrapht.alg.util.UnionFind;
@@ -18,6 +19,7 @@ import org.jgrapht.alg.util.UnionFind;
 /** Tracks which interfaces are in the same layer 2 broadcast domain. */
 @ParametersAreNonnullByDefault
 public final class Layer2Topology {
+
   public static final Layer2Topology EMPTY = new Layer2Topology(ImmutableMap.of());
 
   // node -> representative
@@ -102,5 +104,21 @@ public final class Layer2Topology {
   /** Return whether two non-switchport interfaces are in the same broadcast domain. */
   public boolean inSameBroadcastDomain(String host1, String iface1, String host2, String iface2) {
     return inSameBroadcastDomain(layer2Node(host1, iface1), layer2Node(host2, iface2));
+  }
+
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof Layer2Topology)) {
+      return false;
+    }
+    return _representativeByNode.equals(((Layer2Topology) obj)._representativeByNode);
+  }
+
+  @Override
+  public int hashCode() {
+    return _representativeByNode.hashCode();
   }
 }

@@ -1,6 +1,11 @@
 package org.batfish.specifier.parboiled;
 
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_PARENS;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_AND_DIMENSION;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_TYPE;
 import static org.batfish.specifier.parboiled.ParboiledAutoComplete.RANK_STRING_LITERAL;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -55,18 +60,38 @@ public class ParserNodeTest {
             null);
 
     assertThat(
-        ImmutableSet.copyOf(suggestions),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion(
-                    "node1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
-                new AutocompleteSuggestion("(", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("/", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(
-                    "@role", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(
-                    "@deviceType", true, null, RANK_STRING_LITERAL, query.length()))));
+        suggestions,
+        containsInAnyOrder(
+            new AutocompleteSuggestion(
+                "node1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
+            new AutocompleteSuggestion(
+                "(",
+                true,
+                NODE_PARENS.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                NODE_PARENS.getHint()),
+            new AutocompleteSuggestion(
+                "/",
+                true,
+                NODE_NAME_REGEX.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                NODE_NAME_REGEX.getHint()),
+            new AutocompleteSuggestion(
+                "@role(",
+                true,
+                NODE_ROLE_AND_DIMENSION.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                NODE_ROLE_AND_DIMENSION.getHint()),
+            new AutocompleteSuggestion(
+                "@deviceType(",
+                true,
+                NODE_TYPE.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                NODE_TYPE.getHint())));
   }
 
   @Test

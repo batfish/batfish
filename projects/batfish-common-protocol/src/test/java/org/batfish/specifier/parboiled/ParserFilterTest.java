@@ -1,6 +1,11 @@
 package org.batfish.specifier.parboiled;
 
+import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_INTERFACE_IN;
+import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_INTERFACE_OUT;
+import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_PARENS;
 import static org.batfish.specifier.parboiled.ParboiledAutoComplete.RANK_STRING_LITERAL;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -54,17 +59,38 @@ public class ParserFilterTest {
             null);
 
     assertThat(
-        ImmutableSet.copyOf(suggestions),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion(
-                    "filter1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
-                new AutocompleteSuggestion("(", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("/", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("@in", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(
-                    "@out", true, null, RANK_STRING_LITERAL, query.length()))));
+        suggestions,
+        containsInAnyOrder(
+            new AutocompleteSuggestion(
+                "filter1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
+            new AutocompleteSuggestion(
+                "(",
+                true,
+                FILTER_PARENS.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                FILTER_PARENS.getHint()),
+            new AutocompleteSuggestion(
+                "/",
+                true,
+                FILTER_NAME_REGEX.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                FILTER_NAME_REGEX.getHint()),
+            new AutocompleteSuggestion(
+                "@in(",
+                true,
+                FILTER_INTERFACE_IN.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                FILTER_INTERFACE_OUT.getHint()),
+            new AutocompleteSuggestion(
+                "@out(",
+                true,
+                FILTER_INTERFACE_OUT.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                FILTER_INTERFACE_OUT.getHint())));
   }
 
   @Test

@@ -89,12 +89,15 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.eigrp.EigrpEdge;
 import org.batfish.datamodel.eigrp.EigrpInterface;
+import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.isis.IsisEdge;
 import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.isis.IsisNode;
+import org.batfish.datamodel.isis.IsisTopology;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.OspfTopologyUtils;
@@ -258,7 +261,8 @@ public class EdgesAnswererTest {
     eigrpTopology.addEdge(
         eigrpInterface1, eigrpInterface2, new EigrpEdge(eigrpInterface1, eigrpInterface2));
 
-    Multiset<Row> rows = getEigrpEdges(_includeNodes, _includeRemoteNodes, eigrpTopology);
+    Multiset<Row> rows =
+        getEigrpEdges(_includeNodes, _includeRemoteNodes, new EigrpTopology(eigrpTopology));
 
     assertThat(
         rows,
@@ -333,7 +337,8 @@ public class EdgesAnswererTest {
         unnumId1, unnumId2, BgpSessionProperties.from(unnumPeer1, unnumPeer2, false));
 
     Multiset<Row> rows =
-        getBgpEdges(_configurations, _includeNodes, _includeRemoteNodes, bgpTopology);
+        getBgpEdges(
+            _configurations, _includeNodes, _includeRemoteNodes, new BgpTopology(bgpTopology));
 
     Row expectedActiveRow =
         Row.builder()
@@ -564,7 +569,8 @@ public class EdgesAnswererTest {
         NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build();
     isisTopology.addEdge(node1, node2, edge);
 
-    Multiset<Row> rows = getIsisEdges(_includeNodes, _includeRemoteNodes, isisTopology);
+    Multiset<Row> rows =
+        getIsisEdges(_includeNodes, _includeRemoteNodes, new IsisTopology(isisTopology));
     assertThat(
         rows,
         contains(

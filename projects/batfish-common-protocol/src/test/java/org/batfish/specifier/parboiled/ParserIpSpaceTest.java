@@ -1,6 +1,10 @@
 package org.batfish.specifier.parboiled;
 
+import static org.batfish.specifier.parboiled.Anchor.Type.IP_PREFIX;
+import static org.batfish.specifier.parboiled.Anchor.Type.IP_RANGE;
+import static org.batfish.specifier.parboiled.Anchor.Type.IP_WILDCARD;
 import static org.batfish.specifier.parboiled.ParboiledAutoComplete.RANK_STRING_LITERAL;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -78,20 +82,27 @@ public class ParserIpSpaceTest {
             null);
 
     assertThat(
-        ImmutableSet.copyOf(suggestions),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion(
-                    "1.1.1.1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
-                new AutocompleteSuggestion(
-                    "1.1.1.10", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
-                new AutocompleteSuggestion("-", true, null, RANK_STRING_LITERAL, 7),
-                new AutocompleteSuggestion(":", true, null, RANK_STRING_LITERAL, 7),
-                new AutocompleteSuggestion("/", true, null, RANK_STRING_LITERAL, 7),
-                new AutocompleteSuggestion("1.1.1.1/22", true, null, RANK_STRING_LITERAL, 0),
-                new AutocompleteSuggestion("\\", true, null, RANK_STRING_LITERAL, 7),
-                new AutocompleteSuggestion("&", true, null, RANK_STRING_LITERAL, 7),
-                new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, 7))));
+        suggestions,
+        containsInAnyOrder(
+            new AutocompleteSuggestion(
+                "1.1.1.1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
+            new AutocompleteSuggestion(
+                "1.1.1.10", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
+            new AutocompleteSuggestion(
+                "-", true, IP_RANGE.getDescription(), RANK_STRING_LITERAL, 7, IP_RANGE.getHint()),
+            new AutocompleteSuggestion(
+                ":",
+                true,
+                IP_WILDCARD.getDescription(),
+                RANK_STRING_LITERAL,
+                7,
+                IP_WILDCARD.getHint()),
+            new AutocompleteSuggestion(
+                "/", true, IP_PREFIX.getDescription(), RANK_STRING_LITERAL, 7, IP_PREFIX.getHint()),
+            new AutocompleteSuggestion("1.1.1.1/22", true, null, RANK_STRING_LITERAL, 0),
+            new AutocompleteSuggestion("\\", true, null, RANK_STRING_LITERAL, 7),
+            new AutocompleteSuggestion("&", true, null, RANK_STRING_LITERAL, 7),
+            new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, 7)));
   }
 
   @Test
@@ -253,7 +264,6 @@ public class ParserIpSpaceTest {
         ImmutableSet.copyOf(autoCompleteHelper(query, library)),
         equalTo(
             ImmutableSet.of(
-                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
                     "g1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()))));
   }

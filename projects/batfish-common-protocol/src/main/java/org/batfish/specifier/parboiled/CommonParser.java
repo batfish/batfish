@@ -1,12 +1,12 @@
 package org.batfish.specifier.parboiled;
 
+import static org.batfish.datamodel.Names.SPECIAL_CHARS;
 import static org.batfish.specifier.parboiled.Anchor.Type.STRING_LITERAL;
 
 import com.google.common.collect.ImmutableMap;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.specifier.parboiled.Anchor.Type;
@@ -31,7 +31,7 @@ import org.parboiled.support.ValueStack;
   "WeakerAccess", // access of Rule methods is needed for parser auto-generation.
 })
 @ParametersAreNonnullByDefault
-public class CommonParser extends BaseParser<AstNode> {
+public abstract class CommonParser extends BaseParser<AstNode> {
 
   /**
    * Parboiled parser runners reset the value stack for invalid inputs. We save it externally (by
@@ -88,19 +88,8 @@ public class CommonParser extends BaseParser<AstNode> {
     _shadowStack = shadowStack;
   }
 
-  /** We use double quotes to escape complex names */
-  public static final String ESCAPE_CHAR = "\"";
-
-  /**
-   * Characters that we deem special in our grammar and cannot appear in unquoted names. We are
-   * currently using the first bunch and setting aside some more for future use.
-   *
-   * <p>Once we stop supporting now-deprecated regexes, '*' should probably added to the reserved
-   * list.
-   */
-  private static final String SPECIAL_CHARS = " \t,\\&()[]@" + "!#$%^;?<>={}";
-
-  private static final char[] SPECIAL_CHARS_ARRAY = SPECIAL_CHARS.toCharArray();
+  /** Get the main entry point for {@code grammar} */
+  abstract Rule getInputRule(Grammar grammar);
 
   static CommonParser instance() {
     return Parboiled.createParser(CommonParser.class);
@@ -137,48 +126,27 @@ public class CommonParser extends BaseParser<AstNode> {
       case VRF_NAME:
       case ZONE_NAME:
         return true;
-      case CHAR_LITERAL:
-      case DEPRECATED:
-      case EOI:
-      case FILTER_NAME_REGEX:
-      case IGNORE:
-      case INTERFACE_NAME_REGEX:
-      case INTERFACE_TYPE:
-      case IP_ADDRESS:
-      case IP_ADDRESS_MASK:
-      case IP_PREFIX:
-      case IP_PROTOCOL_NUMBER:
-      case IP_RANGE:
-      case IP_WILDCARD:
-      case NODE_NAME_REGEX:
-      case NODE_TYPE:
-      case REFERENCE_BOOK_AND_ADDRESS_GROUP:
-      case REFERENCE_BOOK_AND_INTERFACE_GROUP:
-      case ROUTING_POLICY_NAME_REGEX:
-      case STRING_LITERAL:
-      case WHITESPACE:
-        return false;
       default:
-        throw new IllegalArgumentException("Unhandled anchor type " + anchorType);
+        return false;
     }
   }
 
-  static boolean nameNeedsEscaping(@Nullable String name) {
-    return name != null
-        && !name.isEmpty()
-        && (name.startsWith(ESCAPE_CHAR)
-            || Character.isDigit(name.charAt(0))
-            || name.startsWith("/")
-            || containsSpecialChar(name));
-  }
-
-  private static boolean containsSpecialChar(String name) {
-    for (char c : CommonParser.SPECIAL_CHARS_ARRAY) {
-      if (name.indexOf(c) >= 0) {
+  /**
+   * Whether {@code literal} represents an operator that has values on the right hand side. This
+   * information is used to provide hints and description for auto completion suggestions
+   */
+  static boolean isOperatorWithRhs(String literal) {
+    switch (literal) {
+      case "(":
+      case "/":
+      case "!":
+      case "-":
+      case ":":
+      case "[":
         return true;
-      }
+      default:
+        return false;
     }
-    return false;
   }
 
   /**
@@ -223,14 +191,14 @@ public class CommonParser extends BaseParser<AstNode> {
     return CharRange('@', '@');
   }
 
-  /** See class JavaDoc for why this is a CharRange and not Ch */
-  public Rule Dash() {
-    return CharRange('-', '-');
-  }
-
   /** [0-9] */
   public Rule Digit() {
     return CharRange('0', '9');
+  }
+
+  /** See class JavaDoc for why this is a CharRange and not Ch */
+  public Rule EscapeChar() {
+    return CharRange('"', '"');
   }
 
   @Anchor(Type.IGNORE)
@@ -253,25 +221,25 @@ public class CommonParser extends BaseParser<AstNode> {
 
   /**
    * A shared rule for a range of a names. Allow unquoted strings for names that 1) don't contain
-   * one of the {@link #SPECIAL_CHARS} in our grammar, 2) don't begin with a digit (to avoid
-   * confusion with IP addresses), and 3) don't begin with '/' (to avoid confusion with regexes).
-   * Otherwise, double quotes are needed.
+   * one of the {@link org.batfish.datamodel.Names#SPECIAL_CHARS} in our grammar, 2) don't begin
+   * with a digit (to avoid confusion with IP addresses), and 3) don't begin with '/' (to avoid
+   * confusion with regexes). Otherwise, double quotes are needed.
    *
    * <p>This rule puts a {@link StringAstNode} with the parsed name on the stack.
    */
   public Rule NameLiteral() {
     return FirstOf(
         Sequence(
-            TestNot('"'),
+            TestNot(EscapeChar()),
             TestNot(Digit()),
             TestNot(Slash()),
             OneOrMore(AsciiButNot(SPECIAL_CHARS)),
             push(new StringAstNode(match()))),
         Sequence(
-            '"',
+            EscapeChar(),
             OneOrMore(FirstOf(EscapedQuote(), AsciiButNot("\""))),
             push(new StringAstNode(match())),
-            '"'));
+            EscapeChar()));
   }
 
   /** [0-9]+ */
@@ -289,13 +257,14 @@ public class CommonParser extends BaseParser<AstNode> {
     return Sequence(
         '/',
         OneOrMore(FirstOf(EscapedSlash(), AsciiButNot("/"))),
-        push(new StringAstNode(match())),
+        push(new RegexAstNode(match())),
         '/');
   }
 
   /**
    * We infer deprecated (non-enclosed) regexes as strings that: 1) don't begin with double quote,
-   * digit, slash; 2) do not contain {@link #SPECIAL_CHARS}; and 3) contain '*'.
+   * digit, slash; 2) do not contain {@link org.batfish.datamodel.Names#SPECIAL_CHARS}; and 3)
+   * contain '*'.
    */
   public Rule RegexDeprecated() {
     return Sequence(
@@ -306,7 +275,7 @@ public class CommonParser extends BaseParser<AstNode> {
             OneOrMore(AsciiButNot(SPECIAL_CHARS + "*")),
             "*",
             ZeroOrMore(AsciiButNot(SPECIAL_CHARS))),
-        push(new StringAstNode(match())));
+        push(new RegexAstNode(match())));
   }
 
   /** See class JavaDoc for why this is a CharRange and not Ch */

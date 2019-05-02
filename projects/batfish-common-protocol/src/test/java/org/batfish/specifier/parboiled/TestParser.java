@@ -24,6 +24,11 @@ class TestParser extends CommonParser {
   Rule getInputRule() {
     return input(TestSpec());
   }
+
+  @Override
+  Rule getInputRule(Grammar grammar) {
+    return input(TestSpec());
+  }
   /**
    * Test grammar
    *
@@ -64,7 +69,7 @@ class TestParser extends CommonParser {
   }
 
   public Rule TestFunc() {
-    return Sequence(IgnoreCase("@specifier"), WhiteSpace(), "( ", TestSpecifierInput(), ") ");
+    return Sequence(IgnoreCase("@specifier"), WhiteSpace(), TestSpecifierInput());
   }
 
   public Rule TestNotOp() {
@@ -73,7 +78,7 @@ class TestParser extends CommonParser {
 
   @Anchor(Type.REFERENCE_BOOK_AND_ADDRESS_GROUP)
   public Rule TestSpecifierInput() {
-    return Sequence(TestReferenceBookName(), ", ", TestAddressGroupName());
+    return Sequence("( ", TestReferenceBookName(), ", ", TestAddressGroupName(), ") ");
   }
 
   @Anchor(Type.ADDRESS_GROUP_NAME)
@@ -100,12 +105,12 @@ class TestParser extends CommonParser {
 
   @Anchor(Type.NODE_NAME)
   public Rule TestName() {
-    return NameLiteral();
+    return Sequence(NameLiteral(), push(new NameNodeAstNode(pop())));
   }
 
   @Anchor(Type.NODE_NAME_REGEX)
   public Rule TestNameRegex() {
-    return Regex();
+    return Sequence(Regex(), push(new NameRegexNodeAstNode(pop())));
   }
 
   @Anchor(Type.DEPRECATED)

@@ -1,6 +1,9 @@
 package org.batfish.specifier.parboiled;
 
+import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_NAME_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_PARENS;
 import static org.batfish.specifier.parboiled.ParboiledAutoComplete.RANK_STRING_LITERAL;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -57,19 +60,24 @@ public class ParserRoutingPolicyTest {
             null);
 
     assertThat(
-        ImmutableSet.copyOf(suggestions),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion(
-                    "RoutingPolicy1",
-                    true,
-                    null,
-                    AutocompleteSuggestion.DEFAULT_RANK,
-                    query.length()),
-                new AutocompleteSuggestion("(", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("/", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(
-                    "\"", true, null, RANK_STRING_LITERAL, query.length()))));
+        suggestions,
+        containsInAnyOrder(
+            new AutocompleteSuggestion(
+                "RoutingPolicy1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
+            new AutocompleteSuggestion(
+                "(",
+                true,
+                ROUTING_POLICY_PARENS.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                ROUTING_POLICY_PARENS.getHint()),
+            new AutocompleteSuggestion(
+                "/",
+                true,
+                ROUTING_POLICY_NAME_REGEX.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                ROUTING_POLICY_NAME_REGEX.getHint())));
   }
 
   @Test
