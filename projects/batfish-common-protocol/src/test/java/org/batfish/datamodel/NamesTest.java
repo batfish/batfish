@@ -3,11 +3,14 @@ package org.batfish.datamodel;
 import static org.batfish.datamodel.Names.Type.REFERENCE_OBJECT;
 import static org.batfish.datamodel.Names.Type.TABLE_COLUMN;
 import static org.batfish.datamodel.Names.VALID_PATTERNS;
+import static org.batfish.datamodel.Names.nameNeedsEscaping;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
@@ -23,6 +26,18 @@ public class NamesTest {
   // empty strings and non-ascii characters are not allowed
   public static List<String> REFERENCE_OBJECT_INVALID_NAMES =
       ImmutableList.of("", "has" + (char) 128);
+
+  @Test
+  public void testNameNeedsEscaping() {
+    assertFalse("null", nameNeedsEscaping(null));
+    assertFalse("empty", nameNeedsEscaping(""));
+    assertFalse("normal", nameNeedsEscaping("abc"));
+
+    assertTrue("digit start", nameNeedsEscaping("1abc"));
+    assertTrue("quote start", nameNeedsEscaping("\"abc"));
+    assertTrue("slash start", nameNeedsEscaping("/abc"));
+    assertTrue("special char", nameNeedsEscaping("a bc"));
+  }
 
   @Test
   public void testReferenceObjectNames() {

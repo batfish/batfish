@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
@@ -53,6 +54,20 @@ public final class Names {
     }
   }
 
+  /** We use double quotes to escape complex names */
+  public static final String ESCAPE_CHAR = "\"";
+
+  /**
+   * Characters that we deem special and cannot appear in unquoted names. We are currently using the
+   * first bunch and setting aside some more for future use.
+   *
+   * <p>Once we stop supporting now-deprecated regexes, '*' should probably added to the reserved
+   * list.
+   */
+  public static final String SPECIAL_CHARS = " \t,\\&()[]@" + "!#$%^;?<>={}";
+
+  private static final char[] SPECIAL_CHARS_ARRAY = SPECIAL_CHARS.toCharArray();
+
   @VisibleForTesting
   static final Map<Type, Pattern> VALID_PATTERNS =
       Arrays.stream(Type.values())
@@ -90,5 +105,29 @@ public final class Names {
    */
   public static String zoneToZoneFilter(String fromZone, String toZone) {
     return String.format("zone~%s~to~zone~%s", fromZone, toZone);
+  }
+
+  /** Checks if the provided name needs to be escaped per our rules */
+  public static boolean nameNeedsEscaping(@Nullable String name) {
+    return name != null
+        && !name.isEmpty()
+        && (name.startsWith(ESCAPE_CHAR)
+            || Character.isDigit(name.charAt(0))
+            || name.startsWith("/")
+            || nameContainsSpecialChar(name));
+  }
+
+  private static boolean nameContainsSpecialChar(String name) {
+    for (char c : SPECIAL_CHARS_ARRAY) {
+      if (name.indexOf(c) >= 0) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /** Returns the escaped named if it needs escaping else return the original */
+  public static String escapeNameIfNeeded(@Nullable String name) {
+    return nameNeedsEscaping(name) ? ESCAPE_CHAR + name + ESCAPE_CHAR : name;
   }
 }
