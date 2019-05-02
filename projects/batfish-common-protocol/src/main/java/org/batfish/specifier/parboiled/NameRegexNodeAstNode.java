@@ -29,11 +29,6 @@ final class NameRegexNodeAstNode implements NodeAstNode {
   }
 
   @Override
-  public <T> T accept(NodeEmptyChecker<T> visitor) {
-    return visitor.visitNameRegexNodeAstNode(this);
-  }
-
-  @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;

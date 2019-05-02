@@ -20,7 +20,7 @@ import org.batfish.specifier.SpecifierContext;
 final class NodeValidator {
 
   @ParametersAreNonnullByDefault
-  private final class EmptyChecker implements NodeEmptyChecker<List<String>> {
+  private final class EmptyChecker implements NodeAstNodeVisitor<List<String>> {
 
     SpecifierContext _ctxt;
 

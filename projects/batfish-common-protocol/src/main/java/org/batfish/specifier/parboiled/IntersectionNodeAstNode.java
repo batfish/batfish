@@ -15,9 +15,4 @@ final class IntersectionNodeAstNode extends SetOpNodeAstNode {
   public <T> T accept(NodeAstNodeVisitor<T> visitor) {
     return visitor.visitIntersectionNodeAstNode(this);
   }
-
-  @Override
-  public <T> T accept(NodeEmptyChecker<T> visitor) {
-    return visitor.visitIntersectionNodeAstNode(this);
-  }
 }

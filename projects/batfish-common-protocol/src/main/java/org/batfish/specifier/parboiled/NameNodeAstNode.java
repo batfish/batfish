@@ -25,11 +25,6 @@ final class NameNodeAstNode implements NodeAstNode {
   }
 
   @Override
-  public <T> T accept(NodeEmptyChecker<T> visitor) {
-    return visitor.visitNameNodeAstNode(this);
-  }
-
-  @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;

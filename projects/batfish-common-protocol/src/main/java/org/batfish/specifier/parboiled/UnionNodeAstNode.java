@@ -15,9 +15,4 @@ final class UnionNodeAstNode extends SetOpNodeAstNode {
   public <T> T accept(NodeAstNodeVisitor<T> visitor) {
     return visitor.visitUnionNodeAstNode(this);
   }
-
-  @Override
-  public <T> T accept(NodeEmptyChecker<T> visitor) {
-    return visitor.visitUnionNodeAstNode(this);
-  }
 }

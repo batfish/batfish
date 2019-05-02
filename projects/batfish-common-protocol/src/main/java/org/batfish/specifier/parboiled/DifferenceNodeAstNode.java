@@ -15,9 +15,4 @@ final class DifferenceNodeAstNode extends SetOpNodeAstNode {
   public <T> T accept(NodeAstNodeVisitor<T> visitor) {
     return visitor.visitDifferenceNodeAstNode(this);
   }
-
-  @Override
-  public <T> T accept(NodeEmptyChecker<T> visitor) {
-    return visitor.visitDifferenceNodeAstNode(this);
-  }
 }
