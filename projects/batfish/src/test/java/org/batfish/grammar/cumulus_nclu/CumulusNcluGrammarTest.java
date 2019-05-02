@@ -46,6 +46,7 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
@@ -55,6 +56,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Range;
 import java.io.IOException;
 import java.util.Arrays;
@@ -90,6 +92,10 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.bgp.Layer2VniConfig;
+import org.batfish.datamodel.bgp.Layer3VniConfig;
+import org.batfish.datamodel.bgp.RouteDistinguisher;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -1366,5 +1372,68 @@ public final class CumulusNcluGrammarTest {
         getBatfishForConfigurationNames(hostname).loadConvertConfigurationAnswerElementOrReparse();
 
     assertThat(ans, hasNumReferrers(filename, CumulusStructureType.VXLAN, "v2", 1));
+  }
+
+  @Test
+  public void testEvpnConversions() throws IOException {
+    Configuration c = parseConfig("cumulus_nclu_evpn");
+
+    BgpUnnumberedPeerConfig bgpPeer =
+        c.getDefaultVrf().getBgpProcess().getInterfaceNeighbors().get("swp1");
+    assertThat(bgpPeer.getIpv4UnicastAddressFamily(), not(nullValue()));
+    Ip routerId = Ip.parse("192.0.0.0");
+    // All defined VXLAN Vnis
+    ImmutableSortedSet<Layer2VniConfig> expectedL2Vnis =
+        ImmutableSortedSet.of(
+            new Layer2VniConfig(
+                10001,
+                DEFAULT_VRF_NAME,
+                RouteDistinguisher.from(routerId, 0),
+                ExtendedCommunity.target(65500, 10001)),
+            new Layer2VniConfig(
+                10002,
+                DEFAULT_VRF_NAME,
+                RouteDistinguisher.from(routerId, 1),
+                ExtendedCommunity.target(65500, 10002)),
+            new Layer2VniConfig(
+                10004,
+                DEFAULT_VRF_NAME,
+                RouteDistinguisher.from(routerId, 2),
+                ExtendedCommunity.target(65500, 10004)));
+
+    ImmutableSortedSet<Layer3VniConfig> expectedL3Vnis =
+        ImmutableSortedSet.of(
+            // All defined VXLAN VNIs as l3 because of advertise-default-gw
+            new Layer3VniConfig(
+                DEFAULT_VRF_NAME,
+                RouteDistinguisher.from(routerId, 0),
+                ExtendedCommunity.target(65500, 10001),
+                false),
+            new Layer3VniConfig(
+                DEFAULT_VRF_NAME,
+                RouteDistinguisher.from(routerId, 1),
+                ExtendedCommunity.target(65500, 10002),
+                false),
+            new Layer3VniConfig(
+                DEFAULT_VRF_NAME,
+                RouteDistinguisher.from(routerId, 2),
+                ExtendedCommunity.target(65500, 10004),
+                false),
+            // VRF1's explicitly defined l3-VNI with advertise-ipv4-unicast
+            new Layer3VniConfig(
+                "vrf1",
+                RouteDistinguisher.from(Ip.parse("192.0.1.1"), 2),
+                ExtendedCommunity.target(65500, 10004),
+                true));
+
+    assertThat(bgpPeer.getEvpnAddressFamily().getL2VNIs(), equalTo(expectedL2Vnis));
+    assertThat(bgpPeer.getEvpnAddressFamily().getL3VNIs(), equalTo(expectedL3Vnis));
+
+    assertThat(c.getVrfs().get("vrf1").getBgpProcess().getInterfaceNeighbors(), anEmptyMap());
+
+    BgpUnnumberedPeerConfig vrf2BgpPeer =
+        c.getVrfs().get("vrf2").getBgpProcess().getInterfaceNeighbors().get("swp2");
+    assertThat(vrf2BgpPeer.getIpv4UnicastAddressFamily(), notNullValue());
+    assertThat(vrf2BgpPeer.getEvpnAddressFamily(), nullValue());
   }
 }

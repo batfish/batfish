@@ -172,6 +172,12 @@ public final class ExtendedCommunity extends Community {
     return of(type, globalAdministrator.asLong(), localAdministrator);
   }
 
+  /** Return a route target extended community */
+  public static ExtendedCommunity target(long asn, long value) {
+    int type = asn <= 0xFFFFL ? 0x00 : 0x02;
+    return of(type << 8 | 0x02, asn, value);
+  }
+
   @Override
   public boolean isTransitive() {
     // Second most significant bit is set
