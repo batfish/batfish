@@ -78,7 +78,6 @@ public class ParserNodeTest {
                 RANK_STRING_LITERAL,
                 query.length(),
                 NODE_NAME_REGEX.getHint()),
-            new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
             new AutocompleteSuggestion(
                 "@role(",
                 true,

@@ -264,7 +264,6 @@ public class ParserIpSpaceTest {
         ImmutableSet.copyOf(autoCompleteHelper(query, library)),
         equalTo(
             ImmutableSet.of(
-                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
                     "g1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()))));
   }
