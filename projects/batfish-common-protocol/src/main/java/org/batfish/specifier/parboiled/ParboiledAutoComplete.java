@@ -110,7 +110,7 @@ public final class ParboiledAutoComplete {
   }
 
   /** This is the entry point for all auto completions */
-  List<AutocompleteSuggestion> run() {
+  List<ParboiledAutoCompleteSuggestion> run() {
     Set<PotentialMatch> potentialMatches = getPotentialMatches(_query);
 
     Set<AutocompleteSuggestion> allSuggestions =
@@ -144,7 +144,7 @@ public final class ParboiledAutoComplete {
   }
 
   @VisibleForTesting
-  List<AutocompleteSuggestion> autoCompletePotentialMatch(PotentialMatch pm) {
+  List<ParboiledAutoCompleteSuggestion> autoCompletePotentialMatch(PotentialMatch pm) {
     switch (pm.getAnchorType()) {
       case ADDRESS_GROUP_NAME:
         return autoCompleteReferenceBookEntity(pm, DEFAULT_RANK);
@@ -426,7 +426,8 @@ public final class ParboiledAutoComplete {
    * completion is used
    */
   @VisibleForTesting
-  List<AutocompleteSuggestion> autoCompleteReferenceBookEntity(PotentialMatch pm, int rank) {
+  List<ParboiledAutoCompleteSuggestion> autoCompleteReferenceBookEntity(
+      PotentialMatch pm, int rank) {
     int anchorIndex = pm.getPath().indexOf(pm.getAnchor());
     checkArgument(anchorIndex != -1, "Anchor is not present in the path.");
 
@@ -467,7 +468,7 @@ public final class ParboiledAutoComplete {
     }
   }
 
-  private List<AutocompleteSuggestion> autoCompleteReferenceBookEntity(
+  private List<ParboiledAutoCompleteSuggestion> autoCompleteReferenceBookEntity(
       PotentialMatch pm, Function<ReferenceBook, Set<String>> entityNameGetter, int rank) {
     String matchPrefix = pm.getMatchPrefix();
     // book name is at the head if nothing about the reference book was entered;
@@ -494,7 +495,7 @@ public final class ParboiledAutoComplete {
    * assign rank and start index
    */
   @Nonnull
-  private static List<AutocompleteSuggestion> updateSuggestions(
+  private static List<ParboiledAutoCompleteSuggestion> updateSuggestions(
       List<AutocompleteSuggestion> suggestions,
       boolean escape,
       Anchor.Type anchorType,
