@@ -1357,6 +1357,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     }
   }
 
+  @Nonnull
   private static StandardCommunity toStandardCommunity(Sc_literalContext ctx) {
     String text = ctx.STANDARD_COMMUNITY().getText();
     return StandardCommunity.parse(text);

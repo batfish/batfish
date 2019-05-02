@@ -26,6 +26,12 @@ import org.batfish.datamodel.bgp.community.Community;
 @ParametersAreNonnullByDefault
 public final class CommunityVar implements Comparable<CommunityVar> {
 
+  private static final Comparator<CommunityVar> COMPARATOR =
+      Comparator.comparing(CommunityVar::getType)
+          .thenComparing(CommunityVar::getRegex)
+          .thenComparing(
+              CommunityVar::getLiteralValue, Comparator.nullsLast(Comparator.naturalOrder()));
+
   public enum Type {
     EXACT,
     REGEX,
@@ -99,15 +105,11 @@ public final class CommunityVar implements Comparable<CommunityVar> {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_type, _regex, _literalValue);
+    return Objects.hash(_type.ordinal(), _regex, _literalValue);
   }
 
   @Override
   public int compareTo(CommunityVar that) {
-    return Comparator.comparing(CommunityVar::getType)
-        .thenComparing(CommunityVar::getRegex)
-        .thenComparing(
-            CommunityVar::getLiteralValue, Comparator.nullsLast(Comparator.naturalOrder()))
-        .compare(this, that);
+    return COMPARATOR.compare(this, that);
   }
 }
