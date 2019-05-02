@@ -50,7 +50,6 @@ public class ParboiledInputValidatorTest {
         "network",
         "snapshot",
         query,
-        Integer.MAX_VALUE,
         completionMetadata,
         nodeRolesData,
         referenceLibrary);
@@ -59,7 +58,8 @@ public class ParboiledInputValidatorTest {
   private static IllegalArgumentException getException(
       String query, Function<String, AstNode> getter) {
     try {
-      getter.apply(query);
+      AstNode ignore = getter.apply(query);
+      assert ignore != null; // prevent unused warning
     } catch (IllegalArgumentException e) {
       return e;
     }

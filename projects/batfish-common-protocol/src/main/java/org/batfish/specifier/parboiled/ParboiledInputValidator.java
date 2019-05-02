@@ -41,7 +41,6 @@ public final class ParboiledInputValidator {
   private final String _network;
   private final String _snapshot;
   private final String _query;
-  private final int _maxSuggestions;
   private final CompletionMetadata _completionMetadata;
   private final NodeRolesData _nodeRolesData;
   private final ReferenceLibrary _referenceLibrary;
@@ -100,7 +99,6 @@ public final class ParboiledInputValidator {
       String network,
       String snapshot,
       String query,
-      int maxSuggestions,
       CompletionMetadata completionMetadata,
       NodeRolesData nodeRolesData,
       ReferenceLibrary referenceLibrary) {
@@ -110,12 +108,16 @@ public final class ParboiledInputValidator {
     _network = network;
     _snapshot = snapshot;
     _query = query;
-    _maxSuggestions = maxSuggestions;
     _completionMetadata = completionMetadata;
     _nodeRolesData = nodeRolesData;
     _referenceLibrary = referenceLibrary;
     _specifierContext =
-        new ValidatorSpecifierContext(completionMetadata, nodeRolesData, referenceLibrary);
+        new ValidatorSpecifierContext(_completionMetadata, _nodeRolesData, _referenceLibrary);
+
+    // to prevent unused warnings
+    assert _network != null;
+    assert _snapshot != null;
+    assert _completionTypes != null;
   }
 
   public static InputValidationNotes validate(
@@ -123,7 +125,6 @@ public final class ParboiledInputValidator {
       String network,
       String snapshot,
       String query,
-      int maxSuggestions,
       CompletionMetadata completionMetadata,
       NodeRolesData nodeRolesData,
       ReferenceLibrary referenceLibrary) {
@@ -135,7 +136,6 @@ public final class ParboiledInputValidator {
             network,
             snapshot,
             query,
-            maxSuggestions,
             completionMetadata,
             nodeRolesData,
             referenceLibrary)
