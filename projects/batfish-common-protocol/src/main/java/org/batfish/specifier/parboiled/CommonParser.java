@@ -1,5 +1,6 @@
 package org.batfish.specifier.parboiled;
 
+import static org.batfish.datamodel.Names.SPECIAL_CHARS;
 import static org.batfish.specifier.parboiled.Anchor.Type.STRING_LITERAL;
 
 import com.google.common.collect.ImmutableMap;
@@ -89,20 +90,6 @@ public abstract class CommonParser extends BaseParser<AstNode> {
 
   /** Get the main entry point for {@code grammar} */
   abstract Rule getInputRule(Grammar grammar);
-
-  /** We use double quotes to escape complex names */
-  public static final String ESCAPE_CHAR = "\"";
-
-  /**
-   * Characters that we deem special in our grammar and cannot appear in unquoted names. We are
-   * currently using the first bunch and setting aside some more for future use.
-   *
-   * <p>Once we stop supporting now-deprecated regexes, '*' should probably added to the reserved
-   * list.
-   */
-  private static final String SPECIAL_CHARS = " \t,\\&()[]@" + "!#$%^;?<>={}";
-
-  private static final char[] SPECIAL_CHARS_ARRAY = SPECIAL_CHARS.toCharArray();
 
   static CommonParser instance() {
     return Parboiled.createParser(CommonParser.class);

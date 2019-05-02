@@ -44,15 +44,7 @@ public class ParboiledInputValidatorTest {
       ReferenceLibrary referenceLibrary) {
     TestParser parser = TestParser.instance();
     return new ParboiledInputValidator(
-        parser,
-        Grammar.NODE_SPECIFIER,
-        TestParser.ANCHORS,
-        "network",
-        "snapshot",
-        query,
-        completionMetadata,
-        nodeRolesData,
-        referenceLibrary);
+        parser, Grammar.NODE_SPECIFIER, query, completionMetadata, nodeRolesData, referenceLibrary);
   }
 
   private static IllegalArgumentException getException(

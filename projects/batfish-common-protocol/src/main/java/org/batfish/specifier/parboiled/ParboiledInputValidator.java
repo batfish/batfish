@@ -106,9 +106,6 @@ public final class ParboiledInputValidator {
   ParboiledInputValidator(
       CommonParser parser,
       Grammar grammar,
-      Map<String, Anchor.Type> completionTypes,
-      String network,
-      String snapshot,
       String query,
       CompletionMetadata completionMetadata,
       NodeRolesData nodeRolesData,
@@ -125,23 +122,13 @@ public final class ParboiledInputValidator {
 
   public static InputValidationNotes validate(
       Grammar grammar,
-      String network,
-      String snapshot,
       String query,
       CompletionMetadata completionMetadata,
       NodeRolesData nodeRolesData,
       ReferenceLibrary referenceLibrary) {
     Parser parser = Parser.instance();
     return new ParboiledInputValidator(
-            parser,
-            grammar,
-            Parser.ANCHORS,
-            network,
-            snapshot,
-            query,
-            completionMetadata,
-            nodeRolesData,
-            referenceLibrary)
+            parser, grammar, query, completionMetadata, nodeRolesData, referenceLibrary)
         .run();
   }
 
