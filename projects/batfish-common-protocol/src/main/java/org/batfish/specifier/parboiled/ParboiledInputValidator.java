@@ -43,10 +43,13 @@ public final class ParboiledInputValidator {
   private final SpecifierContext _specifierContext;
 
   /**
-   * Builds a best-effort config object from provided information. The current implementation is
-   * good only for node names, regexes, and roles. We can do better, e.g., with interfaces by
-   * pulling out interface information from completion metadata and attaching to nodes in configs.
-   * Those enhancements are left for the future.
+   * Builds a best-effort config object from provided information so that we can expand the
+   * specifier. We are creating this object because the actual, fully-populated context is not
+   * available as this functionality is invoked by the coordinator and not the worker.
+   *
+   * <p>The current implementation is good only for node names, regexes, and roles. We can do
+   * better, e.g., with interfaces by pulling out interface information from completion metadata and
+   * attaching to nodes in configs. Those enhancements are left for the future.
    */
   static class ValidatorSpecifierContext implements SpecifierContext {
 

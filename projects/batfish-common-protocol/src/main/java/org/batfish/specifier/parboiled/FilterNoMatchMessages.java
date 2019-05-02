@@ -13,9 +13,9 @@ import org.batfish.common.CompletionMetadata;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 
-/** Checks if the node specifier results in an empty set */
+/** Implemented {@link NoMatchMessages} for filters */
 @ParametersAreNonnullByDefault
-final class FilterNoMatchMessages {
+final class FilterNoMatchMessages implements NoMatchMessages {
 
   @ParametersAreNonnullByDefault
   private final class Checker implements FilterAstNodeVisitor<List<String>> {
@@ -115,6 +115,7 @@ final class FilterNoMatchMessages {
     return Objects.hash(_ast);
   }
 
+  @Override
   public List<String> get(
       CompletionMetadata completionMetadata,
       NodeRolesData nodeRolesData,
