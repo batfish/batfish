@@ -1,6 +1,19 @@
 package org.batfish.specifier.parboiled;
 
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_CONNECTED_TO;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_PARENS;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_TYPE;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_VRF;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_ZONE;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_INTERFACE;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_PARENS;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_AND_DIMENSION;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_TYPE;
+import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_INTERFACE_GROUP;
 import static org.batfish.specifier.parboiled.ParboiledAutoComplete.RANK_STRING_LITERAL;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -88,34 +101,93 @@ public class ParserInterfaceTest {
             null);
 
     assertThat(
-        ImmutableSet.copyOf(suggestions),
-        equalTo(
-            ImmutableSet.of(
-                // valid operators
-                new AutocompleteSuggestion("(", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("/", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
+        suggestions,
+        containsInAnyOrder(
+            // valid operators
+            new AutocompleteSuggestion(
+                "(",
+                true,
+                INTERFACE_PARENS.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                INTERFACE_PARENS.getHint()),
+            new AutocompleteSuggestion(
+                "/",
+                true,
+                INTERFACE_NAME_REGEX.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                INTERFACE_NAME_REGEX.getHint()),
 
-                // node based completions
-                new AutocompleteSuggestion(
-                    "node1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
-                new AutocompleteSuggestion(
-                    "@role", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(
-                    "@deviceType", true, null, RANK_STRING_LITERAL, query.length()),
-
-                // interface based completions
-                new AutocompleteSuggestion(
-                    "iface1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
-                new AutocompleteSuggestion(
-                    "@connectedTo", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(
-                    "@interfaceGroup", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(
-                    "@interfaceType", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("@vrf", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(
-                    "@zone", true, null, RANK_STRING_LITERAL, query.length()))));
+            // node based completions
+            new AutocompleteSuggestion(
+                "(",
+                true,
+                NODE_PARENS.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                NODE_PARENS.getHint()),
+            new AutocompleteSuggestion(
+                "/",
+                true,
+                NODE_NAME_REGEX.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                NODE_NAME_REGEX.getHint()),
+            new AutocompleteSuggestion(
+                "node1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
+            new AutocompleteSuggestion(
+                "@role(",
+                true,
+                NODE_ROLE_AND_DIMENSION.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                NODE_ROLE_AND_DIMENSION.getHint()),
+            new AutocompleteSuggestion(
+                "@deviceType(",
+                true,
+                NODE_TYPE.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                NODE_TYPE.getHint()),
+            // interface based completions
+            new AutocompleteSuggestion(
+                "iface1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
+            new AutocompleteSuggestion(
+                "@connectedTo(",
+                true,
+                INTERFACE_CONNECTED_TO.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                INTERFACE_CONNECTED_TO.getHint()),
+            new AutocompleteSuggestion(
+                "@interfaceGroup(",
+                true,
+                REFERENCE_BOOK_AND_INTERFACE_GROUP.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                REFERENCE_BOOK_AND_INTERFACE_GROUP.getHint()),
+            new AutocompleteSuggestion(
+                "@interfaceType(",
+                true,
+                INTERFACE_TYPE.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                INTERFACE_TYPE.getHint()),
+            new AutocompleteSuggestion(
+                "@vrf(",
+                true,
+                INTERFACE_VRF.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                INTERFACE_VRF.getHint()),
+            new AutocompleteSuggestion(
+                "@zone(",
+                true,
+                INTERFACE_ZONE.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                INTERFACE_ZONE.getHint())));
   }
 
   @Test
@@ -153,7 +225,13 @@ public class ParserInterfaceTest {
                 new AutocompleteSuggestion("\\", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("&", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("[", true, null, RANK_STRING_LITERAL, query.length()))));
+                new AutocompleteSuggestion(
+                    "[",
+                    true,
+                    NODE_AND_INTERFACE.getDescription(),
+                    RANK_STRING_LITERAL,
+                    query.length(),
+                    NODE_AND_INTERFACE.getHint()))));
   }
 
   @Test
@@ -371,7 +449,6 @@ public class ParserInterfaceTest {
         ImmutableSet.copyOf(autoCompleteHelper(query, library)),
         equalTo(
             ImmutableSet.of(
-                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
                     "g1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()))));
   }

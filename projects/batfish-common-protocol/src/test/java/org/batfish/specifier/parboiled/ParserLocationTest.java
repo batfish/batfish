@@ -1,13 +1,24 @@
 package org.batfish.specifier.parboiled;
 
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_CONNECTED_TO;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_TYPE;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_VRF;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_ZONE;
+import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_ENTER;
+import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_PARENS;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_INTERFACE;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_PARENS;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_AND_DIMENSION;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_TYPE;
+import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_INTERFACE_GROUP;
 import static org.batfish.specifier.parboiled.ParboiledAutoComplete.RANK_STRING_LITERAL;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
@@ -56,33 +67,88 @@ public class ParserLocationTest {
             null,
             null);
 
-    ImmutableSet<AutocompleteSuggestion> expectedSet =
-        ImmutableSet.<AutocompleteSuggestion>builder()
-            .add(
-                new AutocompleteSuggestion(
-                    "node1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()))
-            .addAll(
-                ImmutableList.of(
-                        "(",
-                        "/",
-                        "\"",
-                        "@connectedTo",
-                        "@deviceType",
-                        "@enter",
-                        "@interfaceGroup",
-                        "@interfaceType",
-                        "@role",
-                        "@vrf",
-                        "@zone")
-                    .stream()
-                    .map(
-                        s ->
-                            new AutocompleteSuggestion(
-                                s, true, null, RANK_STRING_LITERAL, query.length()))
-                    .collect(Collectors.toSet()))
-            .build();
-
-    assertThat(ImmutableSet.copyOf(suggestions), equalTo(expectedSet));
+    assertThat(
+        suggestions,
+        containsInAnyOrder(
+            new AutocompleteSuggestion(
+                "node1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
+            new AutocompleteSuggestion(
+                "(",
+                true,
+                NODE_PARENS.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                NODE_PARENS.getHint()),
+            new AutocompleteSuggestion(
+                "(",
+                true,
+                LOCATION_PARENS.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                LOCATION_PARENS.getHint()),
+            new AutocompleteSuggestion(
+                "/",
+                true,
+                NODE_NAME_REGEX.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                NODE_NAME_REGEX.getHint()),
+            new AutocompleteSuggestion(
+                "@connectedTo(",
+                true,
+                INTERFACE_CONNECTED_TO.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                INTERFACE_CONNECTED_TO.getHint()),
+            new AutocompleteSuggestion(
+                "@deviceType(",
+                true,
+                NODE_TYPE.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                NODE_TYPE.getHint()),
+            new AutocompleteSuggestion(
+                "@enter(",
+                true,
+                LOCATION_ENTER.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                LOCATION_ENTER.getHint()),
+            new AutocompleteSuggestion(
+                "@interfaceGroup(",
+                true,
+                REFERENCE_BOOK_AND_INTERFACE_GROUP.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                REFERENCE_BOOK_AND_INTERFACE_GROUP.getHint()),
+            new AutocompleteSuggestion(
+                "@interfaceType(",
+                true,
+                INTERFACE_TYPE.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                INTERFACE_TYPE.getHint()),
+            new AutocompleteSuggestion(
+                "@role(",
+                true,
+                NODE_ROLE_AND_DIMENSION.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                NODE_ROLE_AND_DIMENSION.getHint()),
+            new AutocompleteSuggestion(
+                "@vrf(",
+                true,
+                INTERFACE_VRF.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                INTERFACE_VRF.getHint()),
+            new AutocompleteSuggestion(
+                "@zone(",
+                true,
+                INTERFACE_ZONE.getDescription(),
+                RANK_STRING_LITERAL,
+                query.length(),
+                INTERFACE_ZONE.getHint())));
   }
 
   @Test
@@ -114,7 +180,13 @@ public class ParserLocationTest {
                 new AutocompleteSuggestion("\\", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("&", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("[", true, null, RANK_STRING_LITERAL, query.length()))));
+                new AutocompleteSuggestion(
+                    "[",
+                    true,
+                    NODE_AND_INTERFACE.getDescription(),
+                    RANK_STRING_LITERAL,
+                    query.length(),
+                    NODE_AND_INTERFACE.getHint()))));
   }
 
   @Test

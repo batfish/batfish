@@ -2,8 +2,8 @@ package org.batfish.specifier.parboiled;
 
 final class InFilterAstNode extends DirectionFilterAstNode {
 
-  InFilterAstNode(InterfaceAstNode interfaceAst) {
-    super(interfaceAst);
+  InFilterAstNode(AstNode interfaceAst) {
+    super((InterfaceAstNode) interfaceAst);
   }
 
   @Override
