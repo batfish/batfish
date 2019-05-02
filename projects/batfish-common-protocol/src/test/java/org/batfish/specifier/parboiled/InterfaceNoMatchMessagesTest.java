@@ -215,6 +215,6 @@ public class InterfaceNoMatchMessagesTest {
                 new UnionInterfaceAstNode(
                     new NameInterfaceAstNode("i1"), new NameInterfaceAstNode("b1"))),
             completionMetadata),
-        equalTo(ImmutableList.of(getErrorMessageMissingName("b1", "filter"))));
+        equalTo(ImmutableList.of(getErrorMessageMissingName("b1", "interface"))));
   }
 }

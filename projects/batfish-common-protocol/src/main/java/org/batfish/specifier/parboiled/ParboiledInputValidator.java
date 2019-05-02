@@ -36,18 +36,21 @@ public final class ParboiledInputValidator {
 
   private final CommonParser _parser;
   private final Grammar _grammar;
-  private final Map<String, Anchor.Type> _completionTypes;
-
-  private final String _network;
-  private final String _snapshot;
   private final String _query;
   private final CompletionMetadata _completionMetadata;
   private final NodeRolesData _nodeRolesData;
   private final ReferenceLibrary _referenceLibrary;
   private final SpecifierContext _specifierContext;
 
+  /**
+   * Builds a best-effort config object from provided information. The current implementation is
+   * good only for node names, regexes, and roles. We can do better, e.g., with interfaces by
+   * pulling out interface information from completion metadata and attaching to nodes in configs.
+   * Those enhancements are left for the future.
+   */
   static class ValidatorSpecifierContext implements SpecifierContext {
 
+    private final Map<String, Configuration> _configs;
     private final CompletionMetadata _completionMetadata;
     private final NodeRolesData _nodeRolesData;
     private final ReferenceLibrary _referenceLibrary;
@@ -59,15 +62,18 @@ public final class ParboiledInputValidator {
       _completionMetadata = completionMetadata;
       _nodeRolesData = nodeRolesData;
       _referenceLibrary = referenceLibrary;
+
+      _configs =
+          _completionMetadata.getNodes().stream()
+              .collect(
+                  ImmutableMap.toImmutableMap(
+                      n -> n, n -> new Configuration(n, ConfigurationFormat.UNKNOWN)));
     }
 
     @Nonnull
     @Override
     public Map<String, Configuration> getConfigs() {
-      return _completionMetadata.getNodes().stream()
-          .collect(
-              ImmutableMap.toImmutableMap(
-                  n -> n, n -> new Configuration(n, ConfigurationFormat.UNKNOWN)));
+      return _configs;
     }
 
     @Override
@@ -104,20 +110,12 @@ public final class ParboiledInputValidator {
       ReferenceLibrary referenceLibrary) {
     _parser = parser;
     _grammar = grammar;
-    _completionTypes = completionTypes;
-    _network = network;
-    _snapshot = snapshot;
     _query = query;
     _completionMetadata = completionMetadata;
     _nodeRolesData = nodeRolesData;
     _referenceLibrary = referenceLibrary;
     _specifierContext =
         new ValidatorSpecifierContext(_completionMetadata, _nodeRolesData, _referenceLibrary);
-
-    // to prevent unused warnings
-    assert _network != null;
-    assert _snapshot != null;
-    assert _completionTypes != null;
   }
 
   public static InputValidationNotes validate(
@@ -189,6 +187,7 @@ public final class ParboiledInputValidator {
     return ImmutableList.of();
   }
 
+  /** Only expand for nodes for now */
   private Set<String> expand(AstNode astNode) {
     if (astNode instanceof NodeAstNode) {
       return new ParboiledNodeSpecifier((NodeAstNode) astNode).resolve(_specifierContext);
