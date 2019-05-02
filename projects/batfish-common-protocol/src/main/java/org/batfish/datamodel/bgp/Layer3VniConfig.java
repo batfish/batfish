@@ -117,10 +117,10 @@ public final class Layer3VniConfig implements Serializable, Comparable<Layer3Vni
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this)
-        .add("vrf", _vrf)
-        .add("rd", _rd)
-        .add("routeTarget", _routeTarget)
-        .add("advertisev4Unicast", _advertisev4Unicast)
+        .add(PROP_VRF, _vrf)
+        .add(PROP_ROUTE_DISTINGUISHER, _rd)
+        .add(PROP_ROUTE_TARGET, _routeTarget)
+        .add(PROP_ADVERTISE_V4_UNICAST, _advertisev4Unicast)
         .toString();
   }
 }

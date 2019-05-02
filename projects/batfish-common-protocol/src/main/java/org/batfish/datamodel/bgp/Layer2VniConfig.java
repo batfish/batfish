@@ -109,10 +109,10 @@ public class Layer2VniConfig implements Serializable, Comparable<Layer2VniConfig
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this)
-        .add("vni", _vni)
-        .add("vrf", _vrf)
-        .add("rd", _rd)
-        .add("routeTarget", _routeTarget)
+        .add(PROP_VNI, _vni)
+        .add(PROP_VRF, _vrf)
+        .add(PROP_ROUTE_DISTINGUISHER, _rd)
+        .add(PROP_ROUTE_TARGET, _routeTarget)
         .toString();
   }
 }
