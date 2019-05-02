@@ -11,7 +11,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.Network;
-import com.google.common.graph.ValueGraph;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Objects;
@@ -30,7 +29,6 @@ import org.batfish.common.topology.Layer3Edge;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
-import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
@@ -41,6 +39,7 @@ import org.batfish.datamodel.RipProcess;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.collections.IpEdge;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -51,7 +50,6 @@ import org.batfish.datamodel.eigrp.EigrpEdge;
 import org.batfish.datamodel.eigrp.EigrpInterface;
 import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.isis.IsisEdge;
-import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.isis.IsisTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.questions.Question;
@@ -227,10 +225,10 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
 
     private static SortedSet<VerboseBgpEdge> getBgpEdges(
         Map<String, Configuration> configs, Map<Ip, Set<String>> ipOwners) {
-      ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+      BgpTopology bgpTopology =
           BgpTopologyUtils.initBgpTopology(configs, ipOwners, false, false, null, null);
       SortedSet<VerboseBgpEdge> bgpEdges = new TreeSet<>(VERBOSE_BGP_EDGE_COMPARATOR);
-      for (EndpointPair<BgpPeerConfigId> session : bgpTopology.edges()) {
+      for (EndpointPair<BgpPeerConfigId> session : bgpTopology.getGraph().edges()) {
         BgpPeerConfigId bgpPeerConfigId = session.source();
         BgpPeerConfigId remoteBgpPeerConfigId = session.target();
         NetworkConfigurations nc = NetworkConfigurations.of(configs);
@@ -258,7 +256,7 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
     private static SortedSet<VerboseEigrpEdge> getEigrpEdges(
         Map<String, Configuration> configs, Topology topology) {
       Network<EigrpInterface, EigrpEdge> eigrpTopology =
-          EigrpTopology.initEigrpTopology(configs, topology);
+          EigrpTopology.initEigrpTopology(configs, topology).getNetwork();
       NetworkConfigurations nc = NetworkConfigurations.of(configs);
       SortedSet<VerboseEigrpEdge> eigrpEdges = new TreeSet<>();
       for (Configuration c : configs.values()) {
@@ -278,8 +276,7 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
 
     private static SortedSet<IsisEdge> getIsisEdges(
         Map<String, Configuration> configs, Topology topology) {
-      Network<IsisNode, IsisEdge> isisTopology = IsisTopology.initIsisTopology(configs, topology);
-      return isisTopology.edges().stream()
+      return IsisTopology.initIsisTopology(configs, topology).getNetwork().edges().stream()
           .filter(Objects::nonNull)
           .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
     }

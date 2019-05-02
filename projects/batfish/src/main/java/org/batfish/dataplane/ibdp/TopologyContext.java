@@ -1,25 +1,14 @@
 package org.batfish.dataplane.ibdp;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.graph.ImmutableNetwork;
-import com.google.common.graph.ImmutableValueGraph;
-import com.google.common.graph.Network;
-import com.google.common.graph.ValueGraph;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.topology.Layer2Topology;
-import org.batfish.datamodel.BgpPeerConfigId;
-import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Topology;
-import org.batfish.datamodel.bgp.BgpTopologyUtils;
-import org.batfish.datamodel.eigrp.EigrpEdge;
-import org.batfish.datamodel.eigrp.EigrpInterface;
+import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.eigrp.EigrpTopology;
-import org.batfish.datamodel.isis.IsisEdge;
-import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.isis.IsisTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.vxlan.VxlanTopology;
@@ -30,9 +19,9 @@ public final class TopologyContext {
 
   public static final class Builder {
 
-    private @Nonnull ImmutableValueGraph<BgpPeerConfigId, BgpSessionProperties> _bgpTopology;
-    private @Nonnull ImmutableNetwork<EigrpInterface, EigrpEdge> _eigrpTopology;
-    private @Nonnull ImmutableNetwork<IsisNode, IsisEdge> _isisTopology;
+    private @Nonnull BgpTopology _bgpTopology;
+    private @Nonnull EigrpTopology _eigrpTopology;
+    private @Nonnull IsisTopology _isisTopology;
     private @Nonnull Layer2Topology _layer2Topology;
     private @Nonnull Topology _layer3Topology;
     private @Nonnull OspfTopology _ospfTopology;
@@ -50,30 +39,24 @@ public final class TopologyContext {
     }
 
     private Builder() {
-      _bgpTopology =
-          ImmutableValueGraph.copyOf(
-              BgpTopologyUtils.initBgpTopology(ImmutableMap.of(), ImmutableMap.of(), false));
-      _layer3Topology = new Topology(ImmutableSortedSet.of());
-      _eigrpTopology =
-          ImmutableNetwork.copyOf(
-              EigrpTopology.initEigrpTopology(ImmutableMap.of(), _layer3Topology));
-      _isisTopology =
-          ImmutableNetwork.copyOf(
-              IsisTopology.initIsisTopology(ImmutableMap.of(), _layer3Topology));
+      _bgpTopology = BgpTopology.EMPTY;
+      _eigrpTopology = EigrpTopology.EMPTY;
+      _isisTopology = IsisTopology.EMPTY;
       _layer2Topology = Layer2Topology.EMPTY;
-      _ospfTopology = OspfTopology.empty();
+      _layer3Topology = new Topology(ImmutableSortedSet.of());
+      _ospfTopology = OspfTopology.EMPTY;
       _vxlanTopology = VxlanTopology.EMPTY;
     }
 
-    public @Nonnull ImmutableValueGraph<BgpPeerConfigId, BgpSessionProperties> getBgpTopology() {
+    public @Nonnull BgpTopology getBgpTopology() {
       return _bgpTopology;
     }
 
-    public @Nonnull ImmutableNetwork<EigrpInterface, EigrpEdge> getEigrpTopology() {
+    public @Nonnull EigrpTopology getEigrpTopology() {
       return _eigrpTopology;
     }
 
-    public @Nonnull ImmutableNetwork<IsisNode, IsisEdge> getIsisTopology() {
+    public @Nonnull IsisTopology getIsisTopology() {
       return _isisTopology;
     }
 
@@ -93,19 +76,18 @@ public final class TopologyContext {
       return _vxlanTopology;
     }
 
-    public @Nonnull Builder setBgpTopology(
-        ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology) {
-      _bgpTopology = ImmutableValueGraph.copyOf(bgpTopology);
+    public @Nonnull Builder setBgpTopology(BgpTopology bgpTopology) {
+      _bgpTopology = bgpTopology;
       return this;
     }
 
-    public @Nonnull Builder setEigrpTopology(Network<EigrpInterface, EigrpEdge> eigrpTopology) {
-      _eigrpTopology = ImmutableNetwork.copyOf(eigrpTopology);
+    public @Nonnull Builder setEigrpTopology(EigrpTopology eigrpTopology) {
+      _eigrpTopology = eigrpTopology;
       return this;
     }
 
-    public @Nonnull Builder setIsisTopology(Network<IsisNode, IsisEdge> isisTopology) {
-      _isisTopology = ImmutableNetwork.copyOf(isisTopology);
+    public @Nonnull Builder setIsisTopology(IsisTopology isisTopology) {
+      _isisTopology = isisTopology;
       return this;
     }
 
@@ -134,18 +116,18 @@ public final class TopologyContext {
     return new Builder();
   }
 
-  private final @Nonnull ImmutableValueGraph<BgpPeerConfigId, BgpSessionProperties> _bgpTopology;
-  private final @Nonnull ImmutableNetwork<EigrpInterface, EigrpEdge> _eigrpTopology;
-  private final @Nonnull ImmutableNetwork<IsisNode, IsisEdge> _isisTopology;
+  private final @Nonnull BgpTopology _bgpTopology;
+  private final @Nonnull EigrpTopology _eigrpTopology;
+  private final @Nonnull IsisTopology _isisTopology;
   private final @Nonnull Layer2Topology _layer2Topology;
   private final @Nonnull Topology _layer3Topology;
   private final @Nonnull OspfTopology _ospfTopology;
   private final @Nonnull VxlanTopology _vxlanTopology;
 
   private TopologyContext(
-      ImmutableValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
-      ImmutableNetwork<EigrpInterface, EigrpEdge> eigrpTopology,
-      ImmutableNetwork<IsisNode, IsisEdge> isisTopology,
+      BgpTopology bgpTopology,
+      EigrpTopology eigrpTopology,
+      IsisTopology isisTopology,
       Layer2Topology layer2Topology,
       Topology layer3Topology,
       OspfTopology ospfTopology,
@@ -159,15 +141,15 @@ public final class TopologyContext {
     _vxlanTopology = vxlanTopology;
   }
 
-  public @Nonnull ImmutableValueGraph<BgpPeerConfigId, BgpSessionProperties> getBgpTopology() {
+  public @Nonnull BgpTopology getBgpTopology() {
     return _bgpTopology;
   }
 
-  public @Nonnull ImmutableNetwork<EigrpInterface, EigrpEdge> getEigrpTopology() {
+  public @Nonnull EigrpTopology getEigrpTopology() {
     return _eigrpTopology;
   }
 
-  public @Nonnull ImmutableNetwork<IsisNode, IsisEdge> getIsisTopology() {
+  public @Nonnull IsisTopology getIsisTopology() {
     return _isisTopology;
   }
 

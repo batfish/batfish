@@ -10,12 +10,22 @@ import io.opentracing.util.GlobalTracer;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Topology;
 
-public class IsisTopology {
-  /** Initialize the ISIS topology as a directed graph. */
-  public static Network<IsisNode, IsisEdge> initIsisTopology(
+/** A topology representing IS-IS sessions */
+@ParametersAreNonnullByDefault
+public final class IsisTopology {
+
+  public static final IsisTopology EMPTY =
+      new IsisTopology(
+          NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build());
+
+  /** Initialize the IS-IS topology as a directed graph. */
+  public static @Nonnull IsisTopology initIsisTopology(
       Map<String, Configuration> configurations, Topology topology) {
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("IsisTopology.initIsisTopology").startActive()) {
@@ -37,7 +47,33 @@ public class IsisTopology {
           });
       nodes.build().forEach(graph::addNode);
       edges.forEach(edge -> graph.addEdge(edge.getNode1(), edge.getNode2(), edge));
-      return ImmutableNetwork.copyOf(graph);
+      return new IsisTopology(graph);
     }
+  }
+
+  private final @Nonnull ImmutableNetwork<IsisNode, IsisEdge> _network;
+
+  public IsisTopology(Network<IsisNode, IsisEdge> network) {
+    _network = ImmutableNetwork.copyOf(network);
+  }
+
+  public @Nonnull ImmutableNetwork<IsisNode, IsisEdge> getNetwork() {
+    return _network;
+  }
+
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof IsisTopology)) {
+      return false;
+    }
+    return _network.equals(((IsisTopology) obj)._network);
+  }
+
+  @Override
+  public int hashCode() {
+    return _network.hashCode();
   }
 }
