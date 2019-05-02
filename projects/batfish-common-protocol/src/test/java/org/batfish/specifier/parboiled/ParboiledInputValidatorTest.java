@@ -5,6 +5,7 @@ import static org.batfish.specifier.parboiled.ParboiledInputValidator.getErrorMe
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.function.Function;
 import org.batfish.common.CompletionMetadata;
@@ -111,5 +112,16 @@ public class ParboiledInputValidatorTest {
     assertThat(
         getTestPIV(query, completionMetadata).run(),
         equalTo(new InputValidationNotes(Validity.EMPTY, getErrorMessageMissingDevice(query))));
+  }
+
+  /** Test that we create the right type of notes object when expanding things. */
+  @Test
+  public void testExpand() {
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder().setNodes(ImmutableSet.of("b1", "b2", "a1")).build();
+    String query = "/b/";
+    assertThat(
+        getTestPIV(query, completionMetadata).run(),
+        equalTo(new InputValidationNotes(Validity.VALID, ImmutableList.of("b1", "b2"))));
   }
 }

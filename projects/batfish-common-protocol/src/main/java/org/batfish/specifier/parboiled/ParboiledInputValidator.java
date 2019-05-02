@@ -184,7 +184,7 @@ public final class ParboiledInputValidator {
 
   private Set<String> expand(AstNode astNode) {
     if (astNode instanceof NodeAstNode) {
-      new ParboiledNodeSpecifier((NodeAstNode) astNode).resolve(_specifierContext);
+      return new ParboiledNodeSpecifier((NodeAstNode) astNode).resolve(_specifierContext);
     }
     return ImmutableSet.of();
   }
