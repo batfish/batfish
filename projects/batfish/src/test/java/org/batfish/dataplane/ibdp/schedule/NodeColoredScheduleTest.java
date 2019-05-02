@@ -14,7 +14,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.graph.ValueGraph;
-import com.google.common.graph.ValueGraphBuilder;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -37,6 +36,7 @@ import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.dataplane.ibdp.Node;
 import org.batfish.dataplane.ibdp.TestUtils;
+import org.batfish.dataplane.ibdp.TopologyContext;
 import org.batfish.dataplane.ibdp.schedule.NodeColoredSchedule.Coloring;
 import org.junit.Before;
 import org.junit.Test;
@@ -126,7 +126,8 @@ public class NodeColoredScheduleTest {
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
         initBgpTopology(configs, computeIpNodeOwners(configs, false), false);
     NodeColoredSchedule schedule =
-        new NodeColoredSchedule(nodes, _coloring, bgpTopology, OspfTopology.empty());
+        new NodeColoredSchedule(
+            nodes, _coloring, TopologyContext.builder().setBgpTopology(bgpTopology).build());
 
     assertThat(schedule.hasNext(), is(true));
     assertThat(schedule.next(), equalTo(nodes));
@@ -145,7 +146,8 @@ public class NodeColoredScheduleTest {
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
         initBgpTopology(configs, computeIpNodeOwners(configs, false), false);
     NodeColoredSchedule schedule =
-        new NodeColoredSchedule(nodes, _coloring, bgpTopology, OspfTopology.empty());
+        new NodeColoredSchedule(
+            nodes, _coloring, TopologyContext.builder().setBgpTopology(bgpTopology).build());
 
     // Expect both nodes to have the same color because there is no edge between them
     assertThat(schedule.hasNext(), is(true));
@@ -164,7 +166,8 @@ public class NodeColoredScheduleTest {
 
     // Note empty OSPF topology
     NodeColoredSchedule schedule =
-        new NodeColoredSchedule(nodes, _coloring, bgpTopology, OspfTopology.empty());
+        new NodeColoredSchedule(
+            nodes, _coloring, TopologyContext.builder().setBgpTopology(bgpTopology).build());
     ImmutableList<Map<String, Node>> coloredNodes =
         ImmutableList.copyOf(schedule.getAllRemaining());
     // 2 colors because of edge in the BGP topology
@@ -185,7 +188,7 @@ public class NodeColoredScheduleTest {
     NodeColoredSchedule schedule =
         // Note empty BGP topology
         new NodeColoredSchedule(
-            nodes, _coloring, ValueGraphBuilder.directed().build(), ospfTopology);
+            nodes, _coloring, TopologyContext.builder().setOspfTopology(ospfTopology).build());
     ImmutableList<Map<String, Node>> coloredNodes =
         ImmutableList.copyOf(schedule.getAllRemaining());
     // 2 colors because of edge in the OSPF topology

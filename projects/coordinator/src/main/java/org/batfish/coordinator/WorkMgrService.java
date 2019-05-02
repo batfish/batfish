@@ -49,9 +49,10 @@ import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
-import org.batfish.datamodel.answers.AutocompleteQueryMetadata;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.GetAnalysisAnswerMetricsAnswer;
+import org.batfish.datamodel.answers.InputValidationNotes;
+import org.batfish.datamodel.answers.InputValidationNotes.Validity;
 import org.batfish.datamodel.pojo.WorkStatus;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Variable;
@@ -120,7 +121,7 @@ public class WorkMgrService {
               .collect(Collectors.toList());
 
       String serializedMetadata =
-          BatfishObjectMapper.writeString(new AutocompleteQueryMetadata(true, null, null));
+          BatfishObjectMapper.writeString(new InputValidationNotes(Validity.VALID, null, null));
 
       return successResponse(
           new JSONObject()

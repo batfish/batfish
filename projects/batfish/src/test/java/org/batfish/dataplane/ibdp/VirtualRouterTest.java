@@ -574,7 +574,13 @@ public class VirtualRouterTest {
     Network<EigrpInterface, EigrpEdge> eigrpTopology = initEigrpTopology(configs, topology);
     vrs.values()
         .forEach(
-            vr -> vr.initQueuesAndDeltaBuilders(bgpTopology, eigrpTopology, initialIsisTopology));
+            vr ->
+                vr.initQueuesAndDeltaBuilders(
+                    TopologyContext.builder()
+                        .setBgpTopology(bgpTopology)
+                        .setEigrpTopology(eigrpTopology)
+                        .setIsisTopology(initialIsisTopology)
+                        .build()));
 
     // Assert that queues are empty as there are no OSPF, BGP, EIGRP, nor IS-IS processes
     vrs.values()
@@ -611,7 +617,12 @@ public class VirtualRouterTest {
     for (Node n : nodes.values()) {
       n.getVirtualRouters()
           .get(DEFAULT_VRF_NAME)
-          .initQueuesAndDeltaBuilders(bgpTopology2, eigrpTopology, isisTopology);
+          .initQueuesAndDeltaBuilders(
+              TopologyContext.builder()
+                  .setBgpTopology(bgpTopology2)
+                  .setEigrpTopology(eigrpTopology)
+                  .setIsisTopology(isisTopology)
+                  .build());
     }
     // Assert that queues are initialized
     vrs.values()
@@ -672,7 +683,13 @@ public class VirtualRouterTest {
     Network<EigrpInterface, EigrpEdge> eigrpTopology = initEigrpTopology(configs, topology);
     vrs.values()
         .forEach(
-            vr -> vr.initQueuesAndDeltaBuilders(bgpTopology, eigrpTopology, initialIsisTopology));
+            vr ->
+                vr.initQueuesAndDeltaBuilders(
+                    TopologyContext.builder()
+                        .setBgpTopology(bgpTopology)
+                        .setEigrpTopology(eigrpTopology)
+                        .setIsisTopology(initialIsisTopology)
+                        .build()));
 
     // Assert that queues are empty as there are no OSPF, BGP, nor IS-IS processes
     vrs.values()
@@ -689,7 +706,13 @@ public class VirtualRouterTest {
     // Re-run
     vrs.values()
         .forEach(
-            vr -> vr.initQueuesAndDeltaBuilders(bgpTopology, eigrpTopology, updatedIsisTopology));
+            vr ->
+                vr.initQueuesAndDeltaBuilders(
+                    TopologyContext.builder()
+                        .setBgpTopology(bgpTopology)
+                        .setEigrpTopology(eigrpTopology)
+                        .setIsisTopology(updatedIsisTopology)
+                        .build()));
 
     // Assert that queues are initialized
     assertThat(
