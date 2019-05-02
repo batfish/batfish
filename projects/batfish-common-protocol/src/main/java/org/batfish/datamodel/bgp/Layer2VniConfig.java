@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Objects;
@@ -103,5 +104,15 @@ public class Layer2VniConfig implements Serializable, Comparable<Layer2VniConfig
         .thenComparing(Layer2VniConfig::getRouteDistinguisher)
         .thenComparing(Layer2VniConfig::getRouteTarget)
         .compare(this, o);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .add("vni", _vni)
+        .add("vrf", _vrf)
+        .add("rd", _rd)
+        .add("routeTarget", _routeTarget)
+        .toString();
   }
 }

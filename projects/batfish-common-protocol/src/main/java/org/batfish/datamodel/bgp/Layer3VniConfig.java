@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Objects;
@@ -111,5 +112,15 @@ public final class Layer3VniConfig implements Serializable, Comparable<Layer3Vni
         .thenComparing(Layer3VniConfig::getRouteTarget)
         .thenComparing(Layer3VniConfig::getAdvertisev4Unicast)
         .compare(this, o);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .add("vrf", _vrf)
+        .add("rd", _rd)
+        .add("routeTarget", _routeTarget)
+        .add("advertisev4Unicast", _advertisev4Unicast)
+        .toString();
   }
 }

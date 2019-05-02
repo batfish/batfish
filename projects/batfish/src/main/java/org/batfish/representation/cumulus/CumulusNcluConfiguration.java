@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Streams;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -186,15 +187,17 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     if (evpnConfig != null && localAs != null) {
       ImmutableSet.Builder<Layer2VniConfig> l2Vnis = ImmutableSet.builder();
       ImmutableSet.Builder<Layer3VniConfig> l3Vnis = ImmutableSet.builder();
-      HashMap<Integer, Integer> vniToIndex = new HashMap<>(0);
+      ImmutableMap.Builder<Integer, Integer> vniToIndexBuilder = ImmutableMap.builder();
       if (evpnConfig.getAdvertiseAllVni()) {
         CommonUtil.forEachWithIndex(
-            _vxlans.values(),
+            // Keep indices in deterministic order
+            ImmutableList.sortedCopyOf(
+                Comparator.nullsLast(Comparator.comparing(Vxlan::getId)), _vxlans.values()),
             (index, vxlan) -> {
               if (vxlan.getId() == null) {
                 return;
               }
-              vniToIndex.put(vxlan.getId(), index);
+              vniToIndexBuilder.put(vxlan.getId(), index);
               RouteDistinguisher rd = RouteDistinguisher.from(newProc.getRouterId(), index);
               ExtendedCommunity rt = ExtendedCommunity.target(localAs, vxlan.getId());
               if (vxlan.getLocalTunnelip() != null) {
@@ -207,17 +210,29 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
               }
             });
       }
+      Map<Integer, Integer> vniToIndex = vniToIndexBuilder.build();
       // Advertise the L3 VNI per vrf if one is configured
-      Vrf vrf = _vrfs.get(bgpVrf.getVrfName());
-      Integer l3Vni = vrf == null ? null : vrf.getVni();
-      if (l3Vni != null) {
-        RouteDistinguisher rd =
-            RouteDistinguisher.from(newProc.getRouterId(), vniToIndex.get(l3Vni));
-        ExtendedCommunity rt = ExtendedCommunity.target(localAs, l3Vni);
-        l3Vnis.add(
-            new Layer3VniConfig(
-                bgpVrf.getVrfName(), rd, rt, evpnConfig.getAdvertiseIpv4Unicast() != null));
-      }
+      assert _bgpProcess != null; // Since we are in neighbor conversion, this must be true
+      Iterables.concat(ImmutableSet.of(_bgpProcess.getDefaultVrf()), _bgpProcess.getVrfs().values())
+          .forEach(
+              aBgpVrf -> {
+                Vrf vrf = _vrfs.get(aBgpVrf.getVrfName());
+                Integer l3Vni = vrf == null ? null : vrf.getVni();
+                if (l3Vni != null) {
+                  RouteDistinguisher rd =
+                      RouteDistinguisher.from(
+                          _c.getVrfs().get(vrf.getName()).getBgpProcess().getRouterId(),
+                          vniToIndex.get(l3Vni));
+                  ExtendedCommunity rt = ExtendedCommunity.target(localAs, l3Vni);
+                  l3Vnis.add(
+                      new Layer3VniConfig(
+                          aBgpVrf.getVrfName(),
+                          rd,
+                          rt,
+                          evpnConfig.getAdvertiseIpv4Unicast() != null));
+                }
+              });
+
       builder.setEvpnAddressFamily(new EvpnAddressFamily(l2Vnis.build(), l3Vnis.build()));
     }
     builder.build();
@@ -314,6 +329,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     if (_bgpProcess == null) {
       return;
     }
+    // First pass: only core processes
     _c.getDefaultVrf()
         .setBgpProcess(toBgpProcess(Configuration.DEFAULT_VRF_NAME, _bgpProcess.getDefaultVrf()));
     // We make one VI process per VRF because our current datamodel requires it
@@ -322,6 +338,27 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         .forEach(
             (vrfName, bgpVrf) ->
                 _c.getVrfs().get(vrfName).setBgpProcess(toBgpProcess(vrfName, bgpVrf)));
+    /*
+     * Second pass: Add neighbors.
+     * Requires all VRFs & bgp processes in a VRF to be set in VI so that we can initialize address families
+     * that access other VRFs (e.g., EVPN)
+     */
+    Iterables.concat(ImmutableSet.of(_bgpProcess.getDefaultVrf()), _bgpProcess.getVrfs().values())
+        .forEach(
+            bgpVrf -> {
+              Long localAs = bgpVrf.getAutonomousSystem();
+              bgpVrf
+                  .getInterfaceNeighbors()
+                  .forEach(
+                      (peerInterface, neighbor) ->
+                          addInterfaceNeighbor(
+                              peerInterface,
+                              neighbor,
+                              localAs,
+                              bgpVrf,
+                              _c.getVrfs().get(bgpVrf.getVrfName()).getBgpProcess()));
+            });
+
     // All interfaces involved in BGP unnumbered should reply to ARP for BGP_UNNUMBERED_IP
     Streams.concat(
             _bgpProcess.getDefaultVrf().getInterfaceNeighbors().keySet().stream(),
@@ -662,13 +699,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     if (bgpVrf.getIpv4Unicast() != null) {
       bgpVrf.getIpv4Unicast().getNetworks().keySet().forEach(newProc::addToOriginationSpace);
     }
-
-    Long localAs = bgpVrf.getAutonomousSystem();
-    bgpVrf
-        .getInterfaceNeighbors()
-        .forEach(
-            (peerInterface, neighbor) ->
-                addInterfaceNeighbor(peerInterface, neighbor, localAs, bgpVrf, newProc));
 
     return newProc;
   }

@@ -176,5 +176,6 @@ public final class ExtendedCommunityTest {
         ExtendedCommunity.target(65555, 1),
         equalTo(ExtendedCommunity.of(0x02 << 8 | 0x02, 65555, 1)));
     assertThat(ExtendedCommunity.target(1, 65555).toString(), equalTo("2:1:65555"));
+    assertThat(ExtendedCommunity.target(65555, 1).toString(), equalTo("514:65555L:1"));
   }
 }
