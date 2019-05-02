@@ -6,6 +6,7 @@ import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_PARENS;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_TYPE;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_VRF;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_ZONE;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_INTERFACE;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_PARENS;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_AND_DIMENSION;
@@ -117,7 +118,6 @@ public class ParserInterfaceTest {
                 RANK_STRING_LITERAL,
                 query.length(),
                 INTERFACE_NAME_REGEX.getHint()),
-            new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
 
             // node based completions
             new AutocompleteSuggestion(
@@ -225,7 +225,13 @@ public class ParserInterfaceTest {
                 new AutocompleteSuggestion("\\", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("&", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("[", true, null, RANK_STRING_LITERAL, query.length()))));
+                new AutocompleteSuggestion(
+                    "[",
+                    true,
+                    NODE_AND_INTERFACE.getDescription(),
+                    RANK_STRING_LITERAL,
+                    query.length(),
+                    NODE_AND_INTERFACE.getHint()))));
   }
 
   @Test
@@ -443,7 +449,6 @@ public class ParserInterfaceTest {
         ImmutableSet.copyOf(autoCompleteHelper(query, library)),
         equalTo(
             ImmutableSet.of(
-                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
                     "g1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()))));
   }

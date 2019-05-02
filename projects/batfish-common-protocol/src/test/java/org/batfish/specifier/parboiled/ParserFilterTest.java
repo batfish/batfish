@@ -77,7 +77,6 @@ public class ParserFilterTest {
                 RANK_STRING_LITERAL,
                 query.length(),
                 FILTER_NAME_REGEX.getHint()),
-            new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
             new AutocompleteSuggestion(
                 "@in(",
                 true,
