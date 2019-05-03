@@ -8,8 +8,7 @@ public abstract class AbstractCoordinator extends PluginConsumer implements ICoo
 
   protected final Map<String, SyncTestrigsPlugin> _snapshotsSyncers;
 
-  public AbstractCoordinator(boolean serializeToText) {
-    super(serializeToText);
+  public AbstractCoordinator() {
     _snapshotsSyncers = new HashMap<>();
   }
 

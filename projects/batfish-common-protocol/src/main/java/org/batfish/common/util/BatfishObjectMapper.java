@@ -114,10 +114,10 @@ public final class BatfishObjectMapper {
   }
 
   /** Returns a pretty JSON string representation of the given object. */
-  public static String writePrettyStringRuntimeError(Object o) throws JsonProcessingException {
+  public static String writePrettyStringRuntimeError(Object o) {
     try {
       return writePrettyString(o);
-    } catch (JsonProcessingException e) {
+    } catch (Exception e) {
       throw new IllegalArgumentException(e);
     }
   }
