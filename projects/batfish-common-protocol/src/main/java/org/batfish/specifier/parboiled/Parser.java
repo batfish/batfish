@@ -210,7 +210,7 @@ public class Parser extends CommonParser {
         "( ",
         InterfaceSpec(),
         WhiteSpace(),
-        ") ",
+        CloseParens(),
         push(new InFilterAstNode((pop()))));
   }
 
@@ -222,7 +222,7 @@ public class Parser extends CommonParser {
         "( ",
         InterfaceSpec(),
         WhiteSpace(),
-        ") ",
+        CloseParens(),
         push(new OutFilterAstNode((pop()))));
   }
 
@@ -236,7 +236,7 @@ public class Parser extends CommonParser {
         "( ",
         InterfaceSpec(),
         WhiteSpace(),
-        ") ",
+        CloseParens(),
         push(DirectionFilterAstNode.create(direction.get(), pop())));
   }
 
@@ -258,7 +258,7 @@ public class Parser extends CommonParser {
   @Anchor(FILTER_PARENS)
   public Rule FilterParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
-    return Sequence("( ", FilterSpec(), WhiteSpace(), ") ");
+    return Sequence("( ", FilterSpec(), WhiteSpace(), CloseParens());
   }
 
   /**
@@ -325,7 +325,7 @@ public class Parser extends CommonParser {
         "[ ",
         InterfaceWithoutNode(),
         WhiteSpace(),
-        "] ",
+        CloseBrackets(),
         push(new InterfaceWithNodeInterfaceAstNode(pop(1), pop())));
   }
 
@@ -388,7 +388,7 @@ public class Parser extends CommonParser {
         "( ",
         IpSpaceSpec(),
         WhiteSpace(),
-        ") ",
+        CloseParens(),
         push(new ConnectedToInterfaceAstNode(pop())));
   }
 
@@ -400,7 +400,7 @@ public class Parser extends CommonParser {
         "( ",
         IpSpaceSpec(),
         WhiteSpace(),
-        ") ",
+        CloseParens(),
         push(new ConnectedToInterfaceAstNode(pop())));
   }
 
@@ -424,7 +424,7 @@ public class Parser extends CommonParser {
   /** Matches InterfaceGroup and ReferenceBook pair */
   @Anchor(REFERENCE_BOOK_AND_INTERFACE_GROUP)
   public Rule InterfaceGroupAndReferenceBook() {
-    return Sequence("( ", ReferenceBook(), ", ", InterfaceGroup(), ") ");
+    return Sequence("( ", ReferenceBook(), ", ", InterfaceGroup(), CloseParens());
   }
 
   /** Matches Interface Group name */
@@ -441,7 +441,7 @@ public class Parser extends CommonParser {
         "( ",
         InterfaceTypeSpec(),
         WhiteSpace(),
-        ") ",
+        CloseParens(),
         push(new TypeInterfaceAstNode(pop())));
   }
 
@@ -453,7 +453,7 @@ public class Parser extends CommonParser {
         "( ",
         InterfaceTypeSpec(),
         WhiteSpace(),
-        ") ",
+        CloseParens(),
         push(new TypeInterfaceAstNode(pop())));
   }
 
@@ -469,7 +469,7 @@ public class Parser extends CommonParser {
         "( ",
         VrfName(),
         WhiteSpace(),
-        ") ",
+        CloseParens(),
         push(new VrfInterfaceAstNode(pop())));
   }
 
@@ -481,7 +481,7 @@ public class Parser extends CommonParser {
         "( ",
         VrfName(),
         WhiteSpace(),
-        ") ",
+        CloseParens(),
         push(new VrfInterfaceAstNode(pop())));
   }
 
@@ -498,7 +498,7 @@ public class Parser extends CommonParser {
         "( ",
         ZoneName(),
         WhiteSpace(),
-        ") ",
+        CloseParens(),
         push(new ZoneInterfaceAstNode(pop())));
   }
 
@@ -510,7 +510,7 @@ public class Parser extends CommonParser {
         "( ",
         ZoneName(),
         WhiteSpace(),
-        ") ",
+        CloseParens(),
         push(new ZoneInterfaceAstNode(pop())));
   }
 
@@ -537,14 +537,14 @@ public class Parser extends CommonParser {
   @Anchor(INTERFACE_PARENS)
   public Rule InterfaceParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
-    return Sequence("( ", InterfaceSpec(), WhiteSpace(), ") ");
+    return Sequence("( ", InterfaceSpec(), WhiteSpace(), CloseParens());
   }
 
   // The anchor here is an approximation to simplify user messages
   @Anchor(INTERFACE_PARENS)
   public Rule InterfaceWithoutNodeParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
-    return Sequence("( ", InterfaceWithoutNode(), WhiteSpace(), ") ");
+    return Sequence("( ", InterfaceWithoutNode(), WhiteSpace(), CloseParens());
   }
 
   /**
@@ -669,7 +669,7 @@ public class Parser extends CommonParser {
   /** Matches AddressGroup and ReferenceBook pair */
   @Anchor(REFERENCE_BOOK_AND_ADDRESS_GROUP)
   public Rule AddressGroupAndReferenceBook() {
-    return Sequence("( ", ReferenceBook(), ", ", AddressGroup(), ") ");
+    return Sequence("( ", ReferenceBook(), ", ", AddressGroup(), CloseParens());
   }
 
   /** Matches AddressGroup name */
@@ -690,7 +690,7 @@ public class Parser extends CommonParser {
         "( ",
         LocationSpec(),
         WhiteSpace(),
-        ") ",
+        CloseParens(),
         push(new LocationIpSpaceAstNode(pop())));
   }
 
@@ -798,7 +798,7 @@ public class Parser extends CommonParser {
         WhiteSpace(),
         "( ",
         LocationInterface(),
-        ") ",
+        CloseParens(),
         push(new EnterLocationAstNode(pop())));
   }
 
@@ -809,7 +809,7 @@ public class Parser extends CommonParser {
         WhiteSpace(),
         "( ",
         FirstOf(LocationInterfaceDeprecated(), LocationInterface()),
-        ") ",
+        CloseParens(),
         push(new EnterLocationAstNode(pop())));
   }
 
@@ -839,14 +839,14 @@ public class Parser extends CommonParser {
         "[ ",
         InterfaceSpec(),
         WhiteSpace(),
-        "] ",
+        CloseBrackets(),
         push(InterfaceLocationAstNode.createFromInterface(pop())));
   }
 
   @Anchor(LOCATION_PARENS)
   public Rule LocationParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
-    return Sequence("( ", LocationSpec(), WhiteSpace(), ") ");
+    return Sequence("( ", LocationSpec(), WhiteSpace(), CloseParens());
   }
 
   /**
@@ -913,7 +913,7 @@ public class Parser extends CommonParser {
         NodeRoleName(),
         ", ",
         NodeRoleDimensionName(),
-        ") ",
+        CloseParens(),
         push(new RoleNodeAstNode(pop(1), pop())));
   }
 
@@ -937,7 +937,7 @@ public class Parser extends CommonParser {
         "( ",
         NodeTypeSpec(),
         WhiteSpace(),
-        ") ",
+        CloseParens(),
         push(new TypeNodeAstNode(pop())));
   }
 
@@ -963,7 +963,7 @@ public class Parser extends CommonParser {
   @Anchor(NODE_PARENS)
   public Rule NodeParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
-    return Sequence("( ", NodeSpec(), WhiteSpace(), ") ");
+    return Sequence("( ", NodeSpec(), WhiteSpace(), CloseParens());
   }
 
   /**
@@ -1031,6 +1031,6 @@ public class Parser extends CommonParser {
   @Anchor(ROUTING_POLICY_PARENS)
   public Rule RoutingPolicyParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
-    return Sequence("( ", RoutingPolicySpec(), WhiteSpace(), ") ");
+    return Sequence("( ", RoutingPolicySpec(), WhiteSpace(), CloseParens());
   }
 }

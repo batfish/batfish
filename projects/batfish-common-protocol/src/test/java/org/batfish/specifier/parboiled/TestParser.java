@@ -69,7 +69,7 @@ class TestParser extends CommonParser {
 
   @Anchor(Type.NODE_PARENS)
   public Rule TestParens() {
-    return Sequence("( ", TestSpec(), ") ");
+    return Sequence("( ", TestSpec(), CloseParens());
   }
 
   public Rule TestFunc() {
@@ -83,7 +83,7 @@ class TestParser extends CommonParser {
 
   @Anchor(Type.REFERENCE_BOOK_AND_ADDRESS_GROUP)
   public Rule TestSpecifierInput() {
-    return Sequence("( ", TestReferenceBookName(), ", ", TestAddressGroupName(), ") ");
+    return Sequence("( ", TestReferenceBookName(), ", ", TestAddressGroupName(), CloseParens());
   }
 
   @Anchor(Type.ADDRESS_GROUP_NAME)

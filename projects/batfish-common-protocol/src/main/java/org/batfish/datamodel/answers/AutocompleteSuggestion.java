@@ -33,11 +33,10 @@ public final class AutocompleteSuggestion {
     FUNCTION,
     /** Names of objects in the network, e.g., nodes, interfaces, address groups */
     NAME_LITERAL,
-    /**
-     * An operator that should be followed by something, e.g., '[' for node[interface] and ','
-     * for @role(a, b)
-     */
-    OPERATOR_WITH_RHS,
+    /** An operator followed by operands, e.g., '[' in node[iface] and '(', ',' in @role(a, b) */
+    OPERATOR_NON_END,
+    /** Operator that ends an expression, e.g., ']' in [interface] and ')' in @role(a, b) */
+    OPERATOR_AT_END,
     /** Indicates (the start of) a parenthetical content */
     PARENTHESIS,
     /** Indicates (the start of) a regex */

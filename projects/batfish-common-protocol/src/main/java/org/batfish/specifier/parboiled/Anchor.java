@@ -100,7 +100,7 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
     IP_PROTOCOL_NAME("IP_PROTOCOL_NAME", null, null, SuggestionType.CONSTANT),
     /** Rule for excluding an IP protocol */
     IP_PROTOCOL_NOT(
-        "IP_PROTOCOL_NOT", "Exclude IP protocol", "ipProtocol", SuggestionType.OPERATOR_WITH_RHS),
+        "IP_PROTOCOL_NOT", "Exclude IP protocol", "ipProtocol", SuggestionType.OPERATOR_NON_END),
     /** IPv4 address */
     IP_ADDRESS("IP_ADDRESS", "IP address", null, SuggestionType.ADDRESS_LITERAL),
     /** IPv4 address mask */
@@ -144,7 +144,7 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
         "NODE_AND_INTERFACE",
         "Node and interface pair",
         "interfaceSpec]",
-        SuggestionType.OPERATOR_WITH_RHS),
+        SuggestionType.OPERATOR_NON_END),
     /** Names of devices */
     NODE_NAME("NODE_NAME", "Device name", null, SuggestionType.NAME_LITERAL),
     /** Name regex for devices */
@@ -169,6 +169,7 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
     NODE_SET_OP("NODE_SET_OP", " of nodes", "nodeSpec", SuggestionType.SET_OPERATOR),
     /** Rule for @deviceType() to pick nodes */
     NODE_TYPE("DEVICE_TYPE", "Device type", "deviceType)", SuggestionType.FUNCTION),
+    OPERATOR_END("OPERATOR_END", null, null, SuggestionType.OPERATOR_AT_END),
     /** Rule for @addressGroup(book, group) */
     REFERENCE_BOOK_AND_ADDRESS_GROUP(
         "REFERENCE_BOOK_AND_ADDRESS_GROUP",
