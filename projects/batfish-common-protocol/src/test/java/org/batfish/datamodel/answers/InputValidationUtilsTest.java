@@ -28,6 +28,7 @@ public class InputValidationUtilsTest {
         varType, query, emptyCompletionMetadata, emptyNodeRolesData, emptyReferenceLibrary);
   }
 
+  @SuppressWarnings("ReturnValueIgnored")
   private static IllegalArgumentException getException(String query, Function<String, ?> getter) {
     try {
       getter.apply(query);
