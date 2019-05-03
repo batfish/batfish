@@ -298,7 +298,8 @@ public final class ParboiledAutoComplete {
             _maxSuggestions,
             _completionMetadata,
             _nodeRolesData,
-            _referenceLibrary);
+            _referenceLibrary,
+            false);
     return updateSuggestions(
         suggestions,
         !matchPrefix.equals(pm.getMatchPrefix()),
