@@ -131,8 +131,7 @@ public final class CommunitySetExprMatchers {
     @Override
     public void describeTo(Description description) {
       description.appendText(
-          String.format(
-              "A CommunitySetExpr matching the individual community: %s", _community.toString()));
+          String.format("A CommunitySetExpr matching the individual community: %s", _community));
     }
 
     @Override
@@ -141,8 +140,7 @@ public final class CommunitySetExprMatchers {
       if (!match) {
         mismatchDescription.appendText(
             String.format(
-                "CommunitySetExpr: '%s' did not match the community: '%s'",
-                item, _community.toString()));
+                "CommunitySetExpr: '%s' did not match the community: '%s'", item, _community));
         return false;
       }
       return true;

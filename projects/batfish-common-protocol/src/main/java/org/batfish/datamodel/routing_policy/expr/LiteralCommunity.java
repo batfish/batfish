@@ -6,7 +6,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSortedSet;
-import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -83,7 +82,7 @@ public class LiteralCommunity extends CommunitySetExpr {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_community);
+    return _community.hashCode();
   }
 
   @Override
