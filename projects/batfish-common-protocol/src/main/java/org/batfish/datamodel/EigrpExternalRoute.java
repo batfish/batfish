@@ -114,6 +114,7 @@ public class EigrpExternalRoute extends EigrpRoute {
 
     private Builder() {}
 
+    @Nonnull
     @Override
     public EigrpExternalRoute build() {
       checkArgument(getNetwork() != null, "EIGRP route: missing %s", PROP_NETWORK);
@@ -131,6 +132,7 @@ public class EigrpExternalRoute extends EigrpRoute {
           getNonRouting());
     }
 
+    @Nonnull
     @Override
     protected Builder getThis() {
       return this;

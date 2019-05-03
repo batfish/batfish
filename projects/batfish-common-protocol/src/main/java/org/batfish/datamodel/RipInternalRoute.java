@@ -87,11 +87,13 @@ public class RipInternalRoute extends RipRoute {
 
     private Builder() {}
 
+    @Nonnull
     @Override
     public RipInternalRoute build() {
       return new RipInternalRoute(getNetwork(), getNextHopIp(), getAdmin(), getMetric());
     }
 
+    @Nonnull
     @Override
     protected Builder getThis() {
       return this;
