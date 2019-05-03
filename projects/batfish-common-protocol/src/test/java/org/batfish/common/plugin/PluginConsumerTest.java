@@ -14,7 +14,8 @@ import org.junit.runners.JUnit4;
 public class PluginConsumerTest {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
-  private void runSerializationTest() throws Exception {
+  @Test
+  public void testSerializingAndDeserializing() throws Exception {
     Path serializeFile = _folder.newFile().toPath();
 
     int[] ints = new int[] {1, 2, 3};
@@ -22,15 +23,5 @@ public class PluginConsumerTest {
 
     int[] value = PluginConsumer.deserializeObject(serializeFile, int[].class);
     assertThat(value, equalTo(ints));
-  }
-
-  @Test
-  public void testSerializingAndDeserializingJava() throws Exception {
-    runSerializationTest();
-  }
-
-  @Test
-  public void testSerializingAndDeserializingText() throws Exception {
-    runSerializationTest();
   }
 }
