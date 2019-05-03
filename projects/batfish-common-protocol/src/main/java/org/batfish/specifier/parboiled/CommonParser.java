@@ -197,6 +197,11 @@ public abstract class CommonParser extends BaseParser<AstNode> {
   }
 
   /** See class JavaDoc for why this is a CharRange and not Ch */
+  public Rule Dot() {
+    return CharRange('.', '.');
+  }
+
+  /** See class JavaDoc for why this is a CharRange and not Ch */
   public Rule EscapeChar() {
     return CharRange('"', '"');
   }
@@ -212,11 +217,11 @@ public abstract class CommonParser extends BaseParser<AstNode> {
   }
 
   public Rule IpAddressUnchecked() {
-    return Sequence(Number(), '.', Number(), '.', Number(), '.', Number());
+    return Sequence(Number(), Dot(), Number(), Dot(), Number(), Dot(), Number());
   }
 
   public Rule IpPrefixUnchecked() {
-    return Sequence(IpAddressUnchecked(), '/', Number());
+    return Sequence(IpAddressUnchecked(), Slash(), Number());
   }
 
   /**

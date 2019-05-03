@@ -122,6 +122,7 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
         "routingPolicySpec)",
         SuggestionType.PARENTHESIS),
     STRING_LITERAL("STRING_LITERAL", "String literal", "string", SuggestionType.CONSTANT),
+    UNKNOWN("UNKNOWN", "Unknown", "unknown", SuggestionType.UNKNOWN),
     VRF_NAME("VRF_NAME", "VRF name", "vrfName", SuggestionType.NAME_LITERAL),
     WHITESPACE("WHITESPACE", "Whitespace", "whitespace", SuggestionType.UNKNOWN),
     ZONE_NAME("ZONE_NAME", "Zone name", "zoneName", SuggestionType.NAME_LITERAL);
