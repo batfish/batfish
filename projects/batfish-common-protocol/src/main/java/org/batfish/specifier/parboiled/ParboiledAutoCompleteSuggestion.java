@@ -21,6 +21,10 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
 @ParametersAreNonnullByDefault
 final class ParboiledAutoCompleteSuggestion {
 
+  static final String SET_PREFIX_DIFFERENCE = "Set difference";
+  static final String SET_PREFIX_INTERSECTION = "Set intersection";
+  static final String SET_PREFIX_UNION = "Set union";
+
   /** The anchor based on which we are auto completing. */
   @Nonnull private final Anchor.Type _anchorType;
 
@@ -88,11 +92,11 @@ final class ParboiledAutoCompleteSuggestion {
     }
     switch (suggestion._text) {
       case SET_OP_DIFFERENCE:
-        return "Difference" + suggestion._anchorType.getDescription();
+        return SET_PREFIX_DIFFERENCE + suggestion._anchorType.getDescription();
       case SET_OP_INTERSECTION:
-        return "Intersection" + suggestion._anchorType.getDescription();
+        return SET_PREFIX_INTERSECTION + suggestion._anchorType.getDescription();
       case SET_OP_UNION:
-        return "Union" + suggestion._anchorType.getDescription();
+        return SET_PREFIX_UNION + suggestion._anchorType.getDescription();
       default:
         return suggestion._anchorType.getDescription();
     }
