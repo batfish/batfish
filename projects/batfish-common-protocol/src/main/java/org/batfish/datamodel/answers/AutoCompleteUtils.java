@@ -18,6 +18,8 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.FlowState;
@@ -130,16 +132,34 @@ public final class AutoCompleteUtils {
       }
     }
 
-    return orderSuggestions(suggestions);
+    return orderSuggestions(query, suggestions);
   }
 
   /** Basic ordering logic, by suggestion type and then by suggestion text */
   @VisibleForTesting
-  static List<AutocompleteSuggestion> orderSuggestions(List<AutocompleteSuggestion> suggestions) {
+  static List<AutocompleteSuggestion> orderSuggestions(
+      String query, List<AutocompleteSuggestion> suggestions) {
+    final LevenshteinDistance distance = new LevenshteinDistance();
     return suggestions.stream()
         .sorted(
+            // first order by suggestion type
             Comparator.comparing(AutocompleteSuggestion::getSuggestionType)
-                .thenComparing(AutocompleteSuggestion::getText))
+                // then by (inverse of) common prefix length
+                .thenComparing(
+                    s ->
+                        -1
+                            * StringUtils.getCommonPrefix(
+                                    query.toLowerCase(),
+                                    (query.substring(0, s.getInsertionIndex()) + s.getText()))
+                                .toLowerCase()
+                                .length())
+                // then by edit distance
+                .thenComparing(
+                    s ->
+                        distance.apply(
+                            query.toLowerCase(),
+                            (query.substring(0, s.getInsertionIndex()) + s.getText())
+                                .toLowerCase())))
         .collect(ImmutableList.toImmutableList());
   }
 
