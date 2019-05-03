@@ -474,7 +474,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Map<NetworkSnapshot, SortedMap<String, RoutesByVrf>> cachedEnvironmentRoutingTables,
       @Nullable StorageProvider alternateStorageProvider,
       @Nullable IdResolver alternateIdResolver) {
-    super(settings.getSerializeToText());
     _settings = settings;
     _bgpTablePlugins = new TreeMap<>();
     _cachedConfigurations = cachedConfigurations;
