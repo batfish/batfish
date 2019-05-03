@@ -113,6 +113,7 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
 
     private long _area;
 
+    @Nonnull
     @Override
     public OspfIntraAreaRoute build() {
       OspfIntraAreaRoute r =
