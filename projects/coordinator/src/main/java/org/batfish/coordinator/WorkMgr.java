@@ -252,7 +252,6 @@ public class WorkMgr extends AbstractCoordinator {
       BatfishLogger logger,
       @Nonnull IdManager idManager,
       @Nonnull StorageProvider storage) {
-    super();
     _settings = settings;
     _idManager = idManager;
     _storage = storage;
