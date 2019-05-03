@@ -169,6 +169,7 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
     NODE_SET_OP("NODE_SET_OP", " of nodes", "nodeSpec", SuggestionType.SET_OPERATOR),
     /** Rule for @deviceType() to pick nodes */
     NODE_TYPE("DEVICE_TYPE", "Device type", "deviceType)", SuggestionType.FUNCTION),
+    /** Denotes an operator that ends an expression, e.g., ], ) */
     OPERATOR_END("OPERATOR_END", null, null, SuggestionType.OPERATOR_AT_END),
     /** Rule for @addressGroup(book, group) */
     REFERENCE_BOOK_AND_ADDRESS_GROUP(
