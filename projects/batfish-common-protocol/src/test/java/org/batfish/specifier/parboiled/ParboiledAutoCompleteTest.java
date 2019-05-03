@@ -325,7 +325,7 @@ public class ParboiledAutoCompleteTest {
             new PathElement(Type.INTERFACE_NAME, null, 0, 0), "", ImmutableList.of());
 
     _thrown.expect(IllegalArgumentException.class);
-    getTestPAC("@specifier(g1,", testCompletionMetadata).autoCompleteInterfaceName(pm, 0);
+    getTestPAC("@specifier(g1,", testCompletionMetadata).autoCompleteInterfaceName(pm);
   }
 
   /** Context-sensitive completion of interface name after node name */
@@ -348,7 +348,7 @@ public class ParboiledAutoCompleteTest {
     PotentialMatch pm = new PotentialMatch(anchor, "", ImmutableList.of(parent, anchor));
 
     assertThat(
-        pac.autoCompleteInterfaceName(pm, 0),
+        pac.autoCompleteInterfaceName(pm),
         containsInAnyOrder(
             new ParboiledAutoCompleteSuggestion("eth11", query.length(), INTERFACE_NAME),
             new ParboiledAutoCompleteSuggestion("eth12", query.length(), INTERFACE_NAME)));
@@ -374,7 +374,7 @@ public class ParboiledAutoCompleteTest {
     PotentialMatch pm = new PotentialMatch(anchor, "", ImmutableList.of(parent, anchor));
 
     assertThat(
-        pac.autoCompleteInterfaceName(pm, 0),
+        pac.autoCompleteInterfaceName(pm),
         containsInAnyOrder(
             new ParboiledAutoCompleteSuggestion("eth11", query.length(), INTERFACE_NAME),
             new ParboiledAutoCompleteSuggestion("eth12", query.length(), INTERFACE_NAME)));
@@ -400,7 +400,7 @@ public class ParboiledAutoCompleteTest {
     PotentialMatch pm = new PotentialMatch(anchor, "", ImmutableList.of(parent, anchor));
 
     assertThat(
-        pac.autoCompleteInterfaceName(pm, 0),
+        pac.autoCompleteInterfaceName(pm),
         containsInAnyOrder(
             new ParboiledAutoCompleteSuggestion("eth11", query.length(), INTERFACE_NAME),
             new ParboiledAutoCompleteSuggestion("eth12", query.length(), INTERFACE_NAME),
@@ -428,7 +428,7 @@ public class ParboiledAutoCompleteTest {
     PotentialMatch pm = new PotentialMatch(anchor, "eth12", ImmutableList.of(parent, anchor));
 
     assertThat(
-        pac.autoCompleteInterfaceName(pm, 0),
+        pac.autoCompleteInterfaceName(pm),
         containsInAnyOrder(
             new ParboiledAutoCompleteSuggestion("eth12", query.length(), INTERFACE_NAME)));
   }
@@ -441,7 +441,7 @@ public class ParboiledAutoCompleteTest {
             new PathElement(Type.REFERENCE_BOOK_NAME, null, 0, 0), "", ImmutableList.of());
 
     _thrown.expect(IllegalArgumentException.class);
-    getTestPAC("@specifier(b1a,", testLibrary).autoCompleteReferenceBookEntity(pm, 0);
+    getTestPAC("@specifier(b1a,", testLibrary).autoCompleteReferenceBookEntity(pm);
   }
 
   /** Revert to non context-sensitive completion when the parent anchor is not what we expect */
@@ -454,7 +454,7 @@ public class ParboiledAutoCompleteTest {
     PotentialMatch pm = new PotentialMatch(anchor, "", ImmutableList.of(anchor));
 
     assertThat(
-        pac.autoCompleteReferenceBookEntity(pm, 0),
+        pac.autoCompleteReferenceBookEntity(pm),
         containsInAnyOrder(
             new ParboiledAutoCompleteSuggestion("g11", query.length(), ADDRESS_GROUP_NAME),
             new ParboiledAutoCompleteSuggestion("g12", query.length(), ADDRESS_GROUP_NAME),
@@ -471,7 +471,7 @@ public class ParboiledAutoCompleteTest {
     PotentialMatch pm = new PotentialMatch(anchor, "", ImmutableList.of(anchor));
 
     assertThat(
-        pac.autoCompleteReferenceBookEntity(pm, 0),
+        pac.autoCompleteReferenceBookEntity(pm),
         containsInAnyOrder(
             new ParboiledAutoCompleteSuggestion("i11", query.length(), INTERFACE_GROUP_NAME),
             new ParboiledAutoCompleteSuggestion("i12", query.length(), INTERFACE_GROUP_NAME),
@@ -498,7 +498,7 @@ public class ParboiledAutoCompleteTest {
     PotentialMatch pm = new PotentialMatch(anchor, "", ImmutableList.of(parent, anchor));
 
     assertThat(
-        pac.autoCompleteReferenceBookEntity(pm, 0),
+        pac.autoCompleteReferenceBookEntity(pm),
         containsInAnyOrder(
             new ParboiledAutoCompleteSuggestion("g11", query.length(), ADDRESS_GROUP_NAME),
             new ParboiledAutoCompleteSuggestion("g12", query.length(), ADDRESS_GROUP_NAME)));
@@ -524,7 +524,7 @@ public class ParboiledAutoCompleteTest {
     PotentialMatch pm = new PotentialMatch(anchor, "", ImmutableList.of(parent, anchor));
 
     assertThat(
-        pac.autoCompleteReferenceBookEntity(pm, 0),
+        pac.autoCompleteReferenceBookEntity(pm),
         containsInAnyOrder(
             new ParboiledAutoCompleteSuggestion("i11", query.length(), INTERFACE_GROUP_NAME),
             new ParboiledAutoCompleteSuggestion("i12", query.length(), INTERFACE_GROUP_NAME)));
@@ -561,7 +561,7 @@ public class ParboiledAutoCompleteTest {
     PotentialMatch pm = new PotentialMatch(anchor, "g1", ImmutableList.of(parent, anchor));
 
     assertThat(
-        pac.autoCompleteReferenceBookEntity(pm, 0),
+        pac.autoCompleteReferenceBookEntity(pm),
         containsInAnyOrder(
             new ParboiledAutoCompleteSuggestion("g1a", query.length(), ADDRESS_GROUP_NAME)));
   }

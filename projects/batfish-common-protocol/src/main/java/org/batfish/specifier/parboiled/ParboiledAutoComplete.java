@@ -3,7 +3,6 @@ package org.batfish.specifier.parboiled;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.Names.ESCAPE_CHAR;
 import static org.batfish.datamodel.Names.nameNeedsEscaping;
-import static org.batfish.datamodel.answers.AutocompleteSuggestion.DEFAULT_RANK;
 import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.CHAR_LITERAL;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_NAME;
@@ -140,7 +139,7 @@ public final class ParboiledAutoComplete {
   Set<ParboiledAutoCompleteSuggestion> autoCompletePotentialMatch(PotentialMatch pm) {
     switch (pm.getAnchorType()) {
       case ADDRESS_GROUP_NAME:
-        return autoCompleteReferenceBookEntity(pm, DEFAULT_RANK);
+        return autoCompleteReferenceBookEntity(pm);
       case CHAR_LITERAL:
         return autoCompleteLiteral(pm);
       case EOI:
@@ -158,9 +157,9 @@ public final class ParboiledAutoComplete {
         // Other filter rules appear later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case INTERFACE_GROUP_NAME:
-        return autoCompleteReferenceBookEntity(pm, DEFAULT_RANK);
+        return autoCompleteReferenceBookEntity(pm);
       case INTERFACE_NAME:
-        return autoCompleteInterfaceName(pm, DEFAULT_RANK);
+        return autoCompleteInterfaceName(pm);
       case INTERFACE_NAME_REGEX:
         // can't help with regexes
         return ImmutableSet.of();
@@ -345,7 +344,7 @@ public final class ParboiledAutoComplete {
   }
 
   @VisibleForTesting
-  Set<ParboiledAutoCompleteSuggestion> autoCompleteInterfaceName(PotentialMatch pm, int rank) {
+  Set<ParboiledAutoCompleteSuggestion> autoCompleteInterfaceName(PotentialMatch pm) {
     int anchorIndex = pm.getPath().indexOf(pm.getAnchor());
     checkArgument(anchorIndex != -1, "Anchor is not present in the path.");
 
@@ -406,8 +405,7 @@ public final class ParboiledAutoComplete {
    * completion is used
    */
   @VisibleForTesting
-  Set<ParboiledAutoCompleteSuggestion> autoCompleteReferenceBookEntity(
-      PotentialMatch pm, int rank) {
+  Set<ParboiledAutoCompleteSuggestion> autoCompleteReferenceBookEntity(PotentialMatch pm) {
     int anchorIndex = pm.getPath().indexOf(pm.getAnchor());
     checkArgument(anchorIndex != -1, "Anchor is not present in the path.");
 
@@ -430,7 +428,7 @@ public final class ParboiledAutoComplete {
                 book.getAddressGroups().stream()
                     .map(AddressGroup::getName)
                     .collect(ImmutableSet.toImmutableSet());
-        return autoCompleteReferenceBookEntity(pm, addressGroupGetter, rank);
+        return autoCompleteReferenceBookEntity(pm, addressGroupGetter);
       case REFERENCE_BOOK_AND_INTERFACE_GROUP:
         checkArgument(
             pm.getAnchorType() == INTERFACE_GROUP_NAME,
@@ -442,14 +440,14 @@ public final class ParboiledAutoComplete {
                 book.getInterfaceGroups().stream()
                     .map(InterfaceGroup::getName)
                     .collect(ImmutableSet.toImmutableSet());
-        return autoCompleteReferenceBookEntity(pm, interfaceGroupGetter, rank);
+        return autoCompleteReferenceBookEntity(pm, interfaceGroupGetter);
       default:
         return autoCompleteGeneric(pm);
     }
   }
 
   private Set<ParboiledAutoCompleteSuggestion> autoCompleteReferenceBookEntity(
-      PotentialMatch pm, Function<ReferenceBook, Set<String>> entityNameGetter, int rank) {
+      PotentialMatch pm, Function<ReferenceBook, Set<String>> entityNameGetter) {
     String matchPrefix = pm.getMatchPrefix();
     // book name is at the head if nothing about the reference book was entered;
     // otherwise, it is second from top
