@@ -6,6 +6,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Comparators;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import java.util.Comparator;
 import java.util.Objects;
@@ -53,7 +54,7 @@ public final class EvpnType3Route extends EvpnRoute {
           _localPreference,
           getMetric(),
           firstNonNull(_nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE),
-          getNextHopIp(),
+          firstNonNull(getNextHopIp(), Route.UNSET_ROUTE_NEXT_HOP_IP),
           getNonForwarding(),
           getNonRouting(),
           _originatorIp,
@@ -140,14 +141,14 @@ public final class EvpnType3Route extends EvpnRoute {
     checkArgument(vniIp != null, "Missing %s", PROP_VNI_IP);
     return new EvpnType3Route(
         admin,
-        asPath,
-        clusterList,
-        communities,
+        firstNonNull(asPath, AsPath.empty()),
+        firstNonNull(clusterList, ImmutableSortedSet.of()),
+        firstNonNull(communities, ImmutableSortedSet.of()),
         discard,
         localPreference,
         med,
         firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE),
-        nextHopIp,
+        firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP),
         false,
         false,
         originatorIp,
@@ -163,14 +164,14 @@ public final class EvpnType3Route extends EvpnRoute {
 
   private EvpnType3Route(
       int admin,
-      @Nullable AsPath asPath,
-      @Nullable SortedSet<Long> clusterList,
-      @Nullable SortedSet<Community> communities,
+      AsPath asPath,
+      SortedSet<Long> clusterList,
+      SortedSet<Community> communities,
       boolean discard,
       long localPreference,
       long med,
       String nextHopInterface,
-      @Nullable Ip nextHopIp,
+      Ip nextHopIp,
       boolean nonForwarding,
       boolean nonRouting,
       Ip originatorIp,

@@ -38,17 +38,17 @@ public abstract class EvpnRoute extends BgpRoute {
   @Nonnull protected final RouteDistinguisher _routeDistinguisher;
 
   protected EvpnRoute(
-      @Nullable Prefix network,
-      @Nullable Ip nextHopIp,
+      Prefix network,
+      Ip nextHopIp,
       int admin,
-      @Nullable AsPath asPath,
-      @Nullable SortedSet<Community> communities,
+      AsPath asPath,
+      SortedSet<Community> communities,
       boolean discard,
       long localPreference,
       long med,
       String nextHopInterface,
       Ip originatorIp,
-      @Nullable SortedSet<Long> clusterList,
+      SortedSet<Long> clusterList,
       boolean receivedFromRouteReflectorClient,
       OriginType originType,
       RoutingProtocol protocol,
