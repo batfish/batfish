@@ -13,6 +13,7 @@ import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.bgp.community.Community;
 
 /** A generic BGP route containing the common properties among different types of BGP routes */
 @ParametersAreNonnullByDefault
@@ -25,7 +26,7 @@ public abstract class BgpRoute extends AbstractRoute {
 
     @Nonnull protected AsPath _asPath;
     @Nonnull protected ImmutableSortedSet.Builder<Long> _clusterList;
-    @Nonnull protected SortedSet<Long> _communities;
+    @Nonnull protected SortedSet<Community> _communities;
     protected boolean _discard;
     protected long _localPreference;
     @Nullable protected String _nextHopInterface;
@@ -73,7 +74,7 @@ public abstract class BgpRoute extends AbstractRoute {
     }
 
     @Nonnull
-    public SortedSet<Long> getCommunities() {
+    public SortedSet<Community> getCommunities() {
       return _communities;
     }
 
@@ -129,26 +130,26 @@ public abstract class BgpRoute extends AbstractRoute {
     }
 
     /** Overwrite communities */
-    public B setCommunities(Set<Long> communities) {
-      _communities = new TreeSet<>();
+    public B setCommunities(Set<Community> communities) {
+      _communities = new TreeSet<Community>();
       _communities.addAll(communities);
       return getThis();
     }
 
     /** Add communities */
-    public B addCommunities(Set<Long> communities) {
+    public B addCommunities(Set<Community> communities) {
       _communities.addAll(communities);
       return getThis();
     }
 
     /** Add a single community */
-    public B addCommunity(Long community) {
+    public B addCommunity(Community community) {
       _communities.add(community);
       return getThis();
     }
 
     /** Add communities */
-    public B removeCommunities(Set<Long> communities) {
+    public B removeCommunities(Set<Community> communities) {
       _communities.removeAll(communities);
       return getThis();
     }
@@ -224,7 +225,7 @@ public abstract class BgpRoute extends AbstractRoute {
 
   @Nonnull protected final AsPath _asPath;
   @Nonnull protected final SortedSet<Long> _clusterList;
-  @Nonnull protected final SortedSet<Long> _communities;
+  @Nonnull protected final SortedSet<Community> _communities;
   protected final boolean _discard;
   protected final long _localPreference;
   protected final long _med;
@@ -244,7 +245,7 @@ public abstract class BgpRoute extends AbstractRoute {
       @Nullable Ip nextHopIp,
       int admin,
       @Nullable AsPath asPath,
-      @Nullable SortedSet<Long> communities,
+      @Nullable SortedSet<Community> communities,
       boolean discard,
       long localPreference,
       long med,
@@ -298,7 +299,7 @@ public abstract class BgpRoute extends AbstractRoute {
 
   @Nonnull
   @JsonProperty(PROP_COMMUNITIES)
-  public SortedSet<Long> getCommunities() {
+  public SortedSet<Community> getCommunities() {
     return _communities;
   }
 

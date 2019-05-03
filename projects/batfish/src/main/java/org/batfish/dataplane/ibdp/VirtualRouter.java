@@ -79,6 +79,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.BgpTopology;
+import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.dataplane.rib.RibGroup;
 import org.batfish.datamodel.dataplane.rib.RibId;
 import org.batfish.datamodel.eigrp.EigrpTopology;
@@ -618,7 +619,7 @@ public class VirtualRouter implements Serializable {
         int admin = ebgp ? ebgpAdmin : ibgpAdmin;
         AsPath asPath = advert.getAsPath();
         SortedSet<Long> clusterList = advert.getClusterList();
-        SortedSet<Long> communities = ImmutableSortedSet.copyOf(advert.getCommunities());
+        SortedSet<Community> communities = ImmutableSortedSet.copyOf(advert.getCommunities());
         long localPreference = advert.getLocalPreference();
         long metric = advert.getMed();
         Prefix network = advert.getNetwork();

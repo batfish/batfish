@@ -10,6 +10,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.EvpnType5Route.Builder;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -78,7 +79,7 @@ public class EvpnType5RouteTest {
         .addEqualityGroup(erb.setNonForwarding(true).build())
         .addEqualityGroup(erb.setAsPath(AsPath.ofSingletonAsSets(1L, 1L)).build())
         .addEqualityGroup(erb.setClusterList(ImmutableSet.of(1L)).build())
-        .addEqualityGroup(erb.setCommunities(ImmutableSet.of(1L)).build())
+        .addEqualityGroup(erb.setCommunities(ImmutableSet.of(StandardCommunity.of(1L))).build())
         .addEqualityGroup(erb.setDiscard(true).build())
         .addEqualityGroup(erb.setLocalPreference(10).build())
         .addEqualityGroup(erb.setMetric(10).build())

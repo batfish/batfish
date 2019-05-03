@@ -1,6 +1,10 @@
 package org.batfish.datamodel.bgp.community;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.databind.JsonNode;
 import java.io.Serializable;
 import java.math.BigInteger;
 import javax.annotation.Nonnull;
@@ -22,6 +26,32 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public abstract class Community implements Serializable, Comparable<Community> {
 
   private static final long serialVersionUID = 1L;
+
+  @JsonCreator
+  private static Community create(@Nullable JsonNode node) {
+    checkArgument(node != null && !node.isNull(), "Invalid value for BGP community");
+    if (node.isIntegralNumber()) {
+      // Backwards compatible with previous long representation
+      return StandardCommunity.of(node.longValue());
+    }
+    if (!node.isTextual()) {
+      throw new IllegalArgumentException(
+          String.format("Invalid value for BGP community: %s", node));
+    }
+    String str = node.textValue();
+    // Try each possible type
+    switch (str.split(":").length) {
+      case 2:
+        return StandardCommunity.parse(str);
+      case 3:
+        return ExtendedCommunity.parse(str);
+      case 4:
+        return LargeCommunity.parse(str);
+      default:
+        throw new IllegalArgumentException(
+            String.format("Invalid value for BGP community: %s", str));
+    }
+  }
 
   /**
    * Whether this community is transitive (can traverse from autonomous system to autonomous system)
