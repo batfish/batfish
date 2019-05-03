@@ -1,0 +1,37 @@
+net del all
+#
+net add hostname cumulus_nclu_evpn
+#
+net add interface swp1
+net add bgp autonomous-system 65500
+net add bgp router-id 192.0.0.0
+net add bgp l2vpn evpn advertise ipv4 unicast
+net add bgp l2vpn evpn advertise-all-vni
+net add bgp l2vpn evpn advertise-default-gw
+# Neighbor
+net add bgp neighbor swp1 interface remote-as external
+net add bgp l2vpn evpn neighbor swp1 activate
+# VNIs for default VRF
+net add vxlan vni10001 bridge access 5
+net add vxlan vni10001 vxlan id 10001
+net add vxlan vni10001 vxlan local-tunnelip 192.0.2.11
+net add vxlan vni10005 vxlan id 10002
+net add vxlan vni10005 vxlan local-tunnelip 192.0.2.12
+# VNIs for vrf1
+net add vrf vrf1 vni 10004
+net add bgp vrf vrf1 router-id 192.0.1.1
+net add vxlan vni10004 vxlan id 10004
+net add vxlan vni10004 vxlan local-tunnelip 192.0.2.14
+net commit
+# Unrelated to EVPN vrf
+net add vrf vrf2
+net add interface swp2 vrf vrf2
+net add bgp vrf vrf2 router-id 192.0.2.2
+net add bgp vrf vrf2 neighbor swp2 interface remote-as external
+
+
+# The following will append those commands to the appropriate files.
+# There are some configuration commands that are not yet supported by nclu.
+# ========================================================================
+sudo sh -c "printf 'username cumulus nopassword\n' >> /etc/frr/frr.conf"
+sudo sh -c "printf 'vrf vrf1\n  ip route 0.0.0.0/0 192.0.2.1\n' >> /etc/frr/frr.conf"

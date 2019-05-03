@@ -13984,6 +13984,30 @@
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
+                  "evpnAddressFamily" : {
+                    "l2Vnis" : [
+                      {
+                        "routeDistinguisher" : "192.0.2.2:1",
+                        "routeTarget" : "2:65500:10004",
+                        "vni" : 10004,
+                        "vrf" : "default"
+                      }
+                    ],
+                    "l3Vnis" : [
+                      {
+                        "advertiseV4UnicastRoutes" : false,
+                        "routeDistinguisher" : "192.0.2.2:1",
+                        "routeTarget" : "2:65500:10004",
+                        "vrf" : "default"
+                      },
+                      {
+                        "advertiseV4UnicastRoutes" : true,
+                        "routeDistinguisher" : "192.0.2.3:0",
+                        "routeTarget" : "2:65500:10001",
+                        "vrf" : "vrf1"
+                      }
+                    ]
+                  },
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:swp1~",
                   "ipv4UnicastAddressFamily" : { },
                   "localAs" : 65500,
