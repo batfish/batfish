@@ -235,6 +235,29 @@ public class ParboiledAutoCompleteTest {
             new ParboiledAutoCompleteSuggestion("\"node 1\"", 0, NODE_NAME)));
   }
 
+  /** Test that we produce an empty suggestion after a '/' that opens a regex */
+  @Test
+  public void testRunRegexEmpty() {
+    String query = "/";
+
+    assertThat(
+        getTestPAC(query).run(),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("", query.length(), NODE_NAME_REGEX)));
+  }
+
+  /** Test that we produce an empty suggestion after a '/aa' that denotes a partial regex */
+  @Test
+  public void testRunRegexPartial() {
+    String query = "/aa";
+
+    assertThat(
+        getTestPAC(query).run(),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("/", query.length(), NODE_NAME_REGEX),
+            new ParboiledAutoCompleteSuggestion("", query.length(), NODE_NAME_REGEX)));
+  }
+
   /** Test that we auto complete partial specifier names */
   @Test
   public void testRunSpecifierPartial() {
