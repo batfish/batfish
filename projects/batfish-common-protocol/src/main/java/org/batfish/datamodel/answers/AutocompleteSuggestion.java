@@ -23,6 +23,31 @@ public final class AutocompleteSuggestion {
     OSPF_PROPERTY
   }
 
+  /** The type of a suggestion which provides more context to the user beyond the suggestion text */
+  public enum SuggestionType {
+    /** Represents IP addresses and related things such as ranges and prefix lengths */
+    ADDRESS_LITERAL,
+    /** Constant enum strings that are network independent, e.g., protocol types */
+    CONSTANT,
+    /** A function, e.g., @enter, @in */
+    FUNCTION,
+    /** Names of objects in the network, e.g., nodes, interfaces, address groups */
+    NAME_LITERAL,
+    /**
+     * An operator that should be followed by something, e.g., '[' for node[interface] and ','
+     * for @role(a, b)
+     */
+    OPERATOR_WITH_RHS,
+    /** Indicates (the start of) a parenthetical content */
+    PARENTHESIS,
+    /** Indicates (the start of) a regex */
+    REGEX,
+    /** Operators that indicates set functions, e.g., union and intersection */
+    SET_OPERATOR,
+    /** We don't know or used for backward compatibility as the default */
+    UNKNOWN
+  }
+
   @ParametersAreNonnullByDefault
   public static final class Builder {
     private String _description;
@@ -30,6 +55,7 @@ public final class AutocompleteSuggestion {
     private int _insertionIndex;
     private boolean _isPartial;
     private int _rank;
+    private SuggestionType _suggestionType;
     private String _text;
 
     private Builder() {}
@@ -68,6 +94,11 @@ public final class AutocompleteSuggestion {
       return this;
     }
 
+    public Builder setSuggestionType(SuggestionType suggestionType) {
+      this._suggestionType = suggestionType;
+      return this;
+    }
+
     public Builder setText(String text) {
       this._text = text;
       return this;
@@ -75,7 +106,7 @@ public final class AutocompleteSuggestion {
 
     public AutocompleteSuggestion build() {
       return new AutocompleteSuggestion(
-          _text, _isPartial, _description, _rank, _insertionIndex, _hint);
+          _text, _suggestionType, _isPartial, _description, _rank, _insertionIndex, _hint);
     }
   }
 
@@ -84,6 +115,7 @@ public final class AutocompleteSuggestion {
   private static final String PROP_INSERTION_INDEX = "insertionIndex";
   private static final String PROP_IS_PARTIAL = "isPartial";
   private static final String PROP_RANK = "rank";
+  private static final String PROP_SUGGESTION_TYPE = "suggestionType";
   private static final String PROP_TEXT = "text";
 
   public static final int DEFAULT_RANK = Integer.MAX_VALUE;
@@ -109,19 +141,29 @@ public final class AutocompleteSuggestion {
   /** Relevance of the suggestion relative to other suggestions */
   private final int _rank;
 
+  /** The type of this suggestion */
+  @Nonnull private final SuggestionType _suggestionType;
+
   /** Actual text of the suggestion */
   @Nonnull private final String _text;
 
   @JsonCreator
   private static @Nonnull AutocompleteSuggestion create(
       @Nullable @JsonProperty(PROP_TEXT) String text,
+      @Nullable @JsonProperty(PROP_SUGGESTION_TYPE) SuggestionType suggestionType,
       @JsonProperty(PROP_IS_PARTIAL) boolean isPartial,
       @Nullable @JsonProperty(PROP_DESCRIPTION) String description,
       @JsonProperty(PROP_RANK) int rank,
       @JsonProperty(PROP_INSERTION_INDEX) int insertionIndex,
       @Nullable @JsonProperty(PROP_HINT) String hint) {
     return new AutocompleteSuggestion(
-        firstNonNull(text, ""), isPartial, description, rank, insertionIndex, hint);
+        firstNonNull(text, ""),
+        firstNonNull(suggestionType, SuggestionType.UNKNOWN),
+        isPartial,
+        description,
+        rank,
+        insertionIndex,
+        hint);
   }
 
   public AutocompleteSuggestion(String text, boolean isPartial) {
@@ -139,17 +181,19 @@ public final class AutocompleteSuggestion {
 
   public AutocompleteSuggestion(
       String text, boolean isPartial, @Nullable String description, int rank, int insertionIndex) {
-    this(text, isPartial, description, rank, insertionIndex, null);
+    this(text, SuggestionType.UNKNOWN, isPartial, description, rank, insertionIndex, null);
   }
 
   public AutocompleteSuggestion(
       String text,
+      SuggestionType suggestionType,
       boolean isPartial,
       @Nullable String description,
       int rank,
       int insertionIndex,
       @Nullable String hint) {
     _text = text;
+    _suggestionType = suggestionType;
     _isPartial = isPartial;
     _description = description;
     _rank = rank;
@@ -202,6 +246,11 @@ public final class AutocompleteSuggestion {
   @JsonProperty(PROP_RANK)
   public int getRank() {
     return _rank;
+  }
+
+  @Nonnull
+  public SuggestionType getSuggestionType() {
+    return _suggestionType;
   }
 
   @JsonProperty(PROP_TEXT)

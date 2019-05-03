@@ -3,20 +3,18 @@ package org.batfish.specifier.parboiled;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.Names.ESCAPE_CHAR;
 import static org.batfish.datamodel.Names.nameNeedsEscaping;
-import static org.batfish.datamodel.answers.AutocompleteSuggestion.DEFAULT_RANK;
 import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.CHAR_LITERAL;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.STRING_LITERAL;
 import static org.batfish.specifier.parboiled.CommonParser.isEscapableNameAnchor;
 import static org.batfish.specifier.parboiled.CommonParser.isOperatorWithRhs;
+import static org.batfish.specifier.parboiled.ParboiledAutoCompleteSuggestion.toAutoCompleteSuggestions;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -37,7 +35,6 @@ import org.batfish.referencelibrary.InterfaceGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
-import org.parboiled.Rule;
 import org.parboiled.errors.InvalidInputError;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;
@@ -51,7 +48,7 @@ public final class ParboiledAutoComplete {
   public static final int RANK_STRING_LITERAL = 1;
 
   private final CommonParser _parser;
-  private final Rule _expression;
+  private final Grammar _grammar;
   private final Map<String, Anchor.Type> _completionTypes;
 
   private final String _network;
@@ -64,7 +61,7 @@ public final class ParboiledAutoComplete {
 
   ParboiledAutoComplete(
       CommonParser parser,
-      Rule expression,
+      Grammar grammar,
       Map<String, Anchor.Type> completionTypes,
       String network,
       String snapshot,
@@ -74,7 +71,7 @@ public final class ParboiledAutoComplete {
       NodeRolesData nodeRolesData,
       ReferenceLibrary referenceLibrary) {
     _parser = parser;
-    _expression = expression;
+    _grammar = grammar;
     _completionTypes = completionTypes;
     _network = network;
     _snapshot = snapshot;
@@ -95,35 +92,29 @@ public final class ParboiledAutoComplete {
       NodeRolesData nodeRolesData,
       ReferenceLibrary referenceLibrary) {
     Parser parser = Parser.instance();
-    return new ParboiledAutoComplete(
-            parser,
-            parser.getInputRule(grammar),
-            Parser.ANCHORS,
-            network,
-            snapshot,
-            query,
-            maxSuggestions,
-            completionMetadata,
-            nodeRolesData,
-            referenceLibrary)
-        .run();
+    return toAutoCompleteSuggestions(
+        new ParboiledAutoComplete(
+                parser,
+                grammar,
+                Parser.ANCHORS,
+                network,
+                snapshot,
+                query,
+                maxSuggestions,
+                completionMetadata,
+                nodeRolesData,
+                referenceLibrary)
+            .run());
   }
 
   /** This is the entry point for all auto completions */
-  List<AutocompleteSuggestion> run() {
+  Set<ParboiledAutoCompleteSuggestion> run() {
     Set<PotentialMatch> potentialMatches = getPotentialMatches(_query);
 
-    Set<AutocompleteSuggestion> allSuggestions =
-        potentialMatches.stream()
-            .map(this::autoCompletePotentialMatch)
-            .flatMap(Collection::stream)
-            .collect(ImmutableSet.toImmutableSet());
-
-    return allSuggestions.stream()
-        .sorted(
-            Comparator.comparing(AutocompleteSuggestion::getRank)
-                .thenComparing(s -> s.getText().length()))
-        .collect(ImmutableList.toImmutableList());
+    return potentialMatches.stream()
+        .map(this::autoCompletePotentialMatch)
+        .flatMap(Collection::stream)
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   private Set<PotentialMatch> getPotentialMatches(String query) {
@@ -133,7 +124,8 @@ public final class ParboiledAutoComplete {
      */
     String testQuery = query + new String(Character.toChars(ILLEGAL_CHAR));
 
-    ParsingResult<AstNode> result = new ReportingParseRunner<AstNode>(_expression).run(testQuery);
+    ParsingResult<AstNode> result =
+        new ReportingParseRunner<AstNode>(_parser.getInputRule(_grammar)).run(testQuery);
     if (result.parseErrors.isEmpty()) {
       throw new IllegalStateException("Failed to force erroneous input");
     }
@@ -144,37 +136,33 @@ public final class ParboiledAutoComplete {
   }
 
   @VisibleForTesting
-  List<AutocompleteSuggestion> autoCompletePotentialMatch(PotentialMatch pm) {
+  Set<ParboiledAutoCompleteSuggestion> autoCompletePotentialMatch(PotentialMatch pm) {
     switch (pm.getAnchorType()) {
       case ADDRESS_GROUP_NAME:
-        return autoCompleteReferenceBookEntity(pm, DEFAULT_RANK);
+        return autoCompleteReferenceBookEntity(pm);
       case CHAR_LITERAL:
-        /*
-         Char and String literals get a lower rank so that the possibly many suggestions for dynamic values
-         (e.g., all nodes in the snapshot) do not drown everything else
-        */
-        return autoCompleteLiteral(pm, RANK_STRING_LITERAL);
+        return autoCompleteLiteral(pm);
       case EOI:
-        return ImmutableList.of();
+        return ImmutableSet.of();
       case FILTER_INTERFACE_IN:
       case FILTER_INTERFACE_OUT:
         // Should delegate to interface spec
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case FILTER_NAME:
-        return autoCompletePotentialMatch(pm, DEFAULT_RANK);
+        return autoCompleteGeneric(pm);
       case FILTER_NAME_REGEX:
         // can't help with regexes
-        return ImmutableList.of();
+        return ImmutableSet.of();
       case FILTER_PARENS:
         // Other filter rules appear later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case INTERFACE_GROUP_NAME:
-        return autoCompleteReferenceBookEntity(pm, DEFAULT_RANK);
+        return autoCompleteReferenceBookEntity(pm);
       case INTERFACE_NAME:
-        return autoCompleteInterfaceName(pm, DEFAULT_RANK);
+        return autoCompleteInterfaceName(pm);
       case INTERFACE_NAME_REGEX:
         // can't help with regexes
-        return ImmutableList.of();
+        return ImmutableSet.of();
       case INTERFACE_PARENS:
         // Other interface rules appear later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
@@ -184,15 +172,15 @@ public final class ParboiledAutoComplete {
         // These rely on type, vrf, or zone completion that appear later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case IP_ADDRESS:
-        return autoCompletePotentialMatch(pm, DEFAULT_RANK);
+        return autoCompleteGeneric(pm);
       case IP_ADDRESS_MASK:
         // can't help with masks
-        return ImmutableList.of();
+        return ImmutableSet.of();
       case IP_PROTOCOL_NUMBER:
         // don't help with numbers
-        return ImmutableList.of();
+        return ImmutableSet.of();
       case IP_PREFIX:
-        return autoCompletePotentialMatch(pm, DEFAULT_RANK);
+        return autoCompleteGeneric(pm);
       case IP_RANGE:
         // Relies on IP_ADDRESS completion as it appears later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
@@ -206,10 +194,10 @@ public final class ParboiledAutoComplete {
         // Node or Interface based anchors should appear later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case NODE_NAME:
-        return autoCompletePotentialMatch(pm, DEFAULT_RANK);
+        return autoCompleteGeneric(pm);
       case NODE_NAME_REGEX:
         // can't help with regexes
-        return ImmutableList.of();
+        return ImmutableSet.of();
       case NODE_PARENS:
         // Other node rules appear later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
@@ -217,9 +205,9 @@ public final class ParboiledAutoComplete {
         // Role and dimension name rules appear later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case NODE_ROLE_DIMENSION_NAME:
-        return autoCompletePotentialMatch(pm, DEFAULT_RANK);
+        return autoCompleteGeneric(pm);
       case NODE_ROLE_NAME:
-        return autoCompletePotentialMatch(pm, DEFAULT_RANK);
+        return autoCompleteGeneric(pm);
       case NODE_TYPE:
         // Relies on STRING_LITERAL completion as it appears later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
@@ -228,35 +216,31 @@ public final class ParboiledAutoComplete {
         // Reference book name and address/interface group name should appear later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case REFERENCE_BOOK_NAME:
-        return autoCompletePotentialMatch(pm, DEFAULT_RANK);
+        return autoCompleteGeneric(pm);
       case ROUTING_POLICY_NAME:
-        return autoCompletePotentialMatch(pm, DEFAULT_RANK);
+        return autoCompleteGeneric(pm);
       case ROUTING_POLICY_NAME_REGEX:
         // can't help with regexes
-        return ImmutableList.of();
+        return ImmutableSet.of();
       case ROUTING_POLICY_PARENS:
         // Other routing policy rules appear later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case STRING_LITERAL:
-        /*
-         Char and String literals get a lower rank so that the possibly many suggestions for dynamic values
-         (e.g., all nodes in the snapshot) do not drown everything else
-        */
-        return autoCompleteLiteral(pm, RANK_STRING_LITERAL);
+        return autoCompleteLiteral(pm);
       case VRF_NAME:
-        return autoCompletePotentialMatch(pm, DEFAULT_RANK);
+        return autoCompleteGeneric(pm);
       case WHITESPACE:
         // nothing useful to suggest for these completion types
-        return ImmutableList.of();
+        return ImmutableSet.of();
       case ZONE_NAME:
-        return autoCompletePotentialMatch(pm, DEFAULT_RANK);
+        return autoCompleteGeneric(pm);
       default:
         throw new IllegalArgumentException("Unhandled completion type " + pm.getAnchorType());
     }
   }
 
   @VisibleForTesting
-  List<AutocompleteSuggestion> autoCompleteLiteral(PotentialMatch pm, int rank) {
+  Set<ParboiledAutoCompleteSuggestion> autoCompleteLiteral(PotentialMatch pm) {
     Optional<PotentialMatch> extendedMatch = extendLiteralMatch(_query, pm);
 
     PotentialMatch pmToConsider = extendedMatch.orElse(pm);
@@ -274,14 +258,11 @@ public final class ParboiledAutoComplete {
               .findFirst();
     }
 
-    return ImmutableList.of(
-        new AutocompleteSuggestion(
+    return ImmutableSet.of(
+        new ParboiledAutoCompleteSuggestion(
             pm.getMatch() + extendedMatch.map(PotentialMatch::getMatch).orElse(""),
-            true,
-            ancestorAnchor.map(Anchor.Type::getDescription).orElse(null),
-            rank,
             pm.getMatchStartIndex(),
-            ancestorAnchor.map(Anchor.Type::getHint).orElse(null)));
+            ancestorAnchor.orElse(Anchor.Type.UNKNOWN)));
   }
 
   /**
@@ -306,7 +287,7 @@ public final class ParboiledAutoComplete {
     return Optional.empty();
   }
 
-  private List<AutocompleteSuggestion> autoCompletePotentialMatch(PotentialMatch pm, int rank) {
+  private Set<ParboiledAutoCompleteSuggestion> autoCompleteGeneric(PotentialMatch pm) {
     String matchPrefix = unescapeIfNeeded(pm.getMatchPrefix(), pm.getAnchorType());
     List<AutocompleteSuggestion> suggestions =
         AutoCompleteUtils.autoComplete(
@@ -322,7 +303,6 @@ public final class ParboiledAutoComplete {
         suggestions,
         !matchPrefix.equals(pm.getMatchPrefix()),
         pm.getAnchorType(),
-        rank,
         pm.getMatchStartIndex());
   }
 
@@ -364,7 +344,7 @@ public final class ParboiledAutoComplete {
   }
 
   @VisibleForTesting
-  List<AutocompleteSuggestion> autoCompleteInterfaceName(PotentialMatch pm, int rank) {
+  Set<ParboiledAutoCompleteSuggestion> autoCompleteInterfaceName(PotentialMatch pm) {
     int anchorIndex = pm.getPath().indexOf(pm.getAnchor());
     checkArgument(anchorIndex != -1, "Anchor is not present in the path.");
 
@@ -372,7 +352,7 @@ public final class ParboiledAutoComplete {
         (anchorIndex == 0) ? null : pm.getPath().get(anchorIndex - 1).getAnchorType();
 
     if (parentAnchorType == null) {
-      return autoCompletePotentialMatch(pm, rank);
+      return autoCompleteGeneric(pm);
     }
 
     switch (parentAnchorType) {
@@ -389,7 +369,7 @@ public final class ParboiledAutoComplete {
 
         // do context sensitive auto completion input is a node name or regex
         if (!(nodeAst instanceof NameNodeAstNode) && !(nodeAst instanceof NameRegexNodeAstNode)) {
-          return autoCompletePotentialMatch(pm, rank);
+          return autoCompleteGeneric(pm);
         }
 
         Set<String> candidateInterfaces =
@@ -401,11 +381,10 @@ public final class ParboiledAutoComplete {
             AutoCompleteUtils.stringAutoComplete(interfaceNamePrefix, candidateInterfaces),
             false,
             Anchor.Type.INTERFACE_NAME,
-            rank,
             pm.getMatchStartIndex());
 
       default:
-        return autoCompletePotentialMatch(pm, rank);
+        return autoCompleteGeneric(pm);
     }
   }
 
@@ -426,7 +405,7 @@ public final class ParboiledAutoComplete {
    * completion is used
    */
   @VisibleForTesting
-  List<AutocompleteSuggestion> autoCompleteReferenceBookEntity(PotentialMatch pm, int rank) {
+  Set<ParboiledAutoCompleteSuggestion> autoCompleteReferenceBookEntity(PotentialMatch pm) {
     int anchorIndex = pm.getPath().indexOf(pm.getAnchor());
     checkArgument(anchorIndex != -1, "Anchor is not present in the path.");
 
@@ -434,7 +413,7 @@ public final class ParboiledAutoComplete {
         (anchorIndex == 0) ? null : pm.getPath().get(anchorIndex - 1).getAnchorType();
 
     if (parentAnchorType == null) {
-      return autoCompletePotentialMatch(pm, rank);
+      return autoCompleteGeneric(pm);
     }
 
     switch (parentAnchorType) {
@@ -449,7 +428,7 @@ public final class ParboiledAutoComplete {
                 book.getAddressGroups().stream()
                     .map(AddressGroup::getName)
                     .collect(ImmutableSet.toImmutableSet());
-        return autoCompleteReferenceBookEntity(pm, addressGroupGetter, rank);
+        return autoCompleteReferenceBookEntity(pm, addressGroupGetter);
       case REFERENCE_BOOK_AND_INTERFACE_GROUP:
         checkArgument(
             pm.getAnchorType() == INTERFACE_GROUP_NAME,
@@ -461,14 +440,14 @@ public final class ParboiledAutoComplete {
                 book.getInterfaceGroups().stream()
                     .map(InterfaceGroup::getName)
                     .collect(ImmutableSet.toImmutableSet());
-        return autoCompleteReferenceBookEntity(pm, interfaceGroupGetter, rank);
+        return autoCompleteReferenceBookEntity(pm, interfaceGroupGetter);
       default:
-        return autoCompletePotentialMatch(pm, rank);
+        return autoCompleteGeneric(pm);
     }
   }
 
-  private List<AutocompleteSuggestion> autoCompleteReferenceBookEntity(
-      PotentialMatch pm, Function<ReferenceBook, Set<String>> entityNameGetter, int rank) {
+  private Set<ParboiledAutoCompleteSuggestion> autoCompleteReferenceBookEntity(
+      PotentialMatch pm, Function<ReferenceBook, Set<String>> entityNameGetter) {
     String matchPrefix = pm.getMatchPrefix();
     // book name is at the head if nothing about the reference book was entered;
     // otherwise, it is second from top
@@ -485,34 +464,29 @@ public final class ParboiledAutoComplete {
         AutoCompleteUtils.stringAutoComplete(matchPrefix, candidateEntityNames),
         false,
         pm.getAnchorType(),
-        rank,
         pm.getMatchStartIndex());
   }
 
   /**
    * Update suggestions obtained through {@link AutoCompleteUtils} to escape names if needed and
-   * assign rank and start index
+   * assign start index
    */
   @Nonnull
-  private static List<AutocompleteSuggestion> updateSuggestions(
+  private static Set<ParboiledAutoCompleteSuggestion> updateSuggestions(
       List<AutocompleteSuggestion> suggestions,
       boolean escape,
       Anchor.Type anchorType,
-      int rank,
       int startIndex) {
     return suggestions.stream()
         .map(
             s ->
-                new AutocompleteSuggestion(
-                    // escape if needed
+                new ParboiledAutoCompleteSuggestion(
                     escape || (isEscapableNameAnchor(anchorType) && nameNeedsEscaping(s.getText()))
                         ? ESCAPE_CHAR + s.getText() + ESCAPE_CHAR
                         : s.getText(),
-                    true,
-                    s.getDescription(),
-                    rank,
-                    startIndex))
-        .collect(ImmutableList.toImmutableList());
+                    startIndex,
+                    anchorType))
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   /** Unescapes {@code originalMatch} if it is of escapable type and is already escaped */

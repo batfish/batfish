@@ -1,15 +1,15 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.ParboiledAutoComplete.RANK_STRING_LITERAL;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Set;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.Protocol;
-import org.batfish.datamodel.answers.AutocompleteSuggestion;
+import org.batfish.specifier.parboiled.Anchor.Type;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -45,25 +45,28 @@ public class ParserApplicationTest {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setFilterNames(ImmutableSet.of("filter1")).build();
 
-    List<AutocompleteSuggestion> suggestions =
-        ParboiledAutoComplete.autoComplete(
-            Grammar.APPLICATION_SPECIFIER,
-            "network",
-            "snapshot",
-            query,
-            Integer.MAX_VALUE,
-            completionMetadata,
-            null,
-            null);
+    Set<ParboiledAutoCompleteSuggestion> suggestions =
+        new ParboiledAutoComplete(
+                Parser.instance(),
+                Grammar.APPLICATION_SPECIFIER,
+                Parser.ANCHORS,
+                "network",
+                "snapshot",
+                query,
+                Integer.MAX_VALUE,
+                completionMetadata,
+                null,
+                null)
+            .run();
 
     assertThat(
-        ImmutableSet.copyOf(suggestions),
+        suggestions,
         equalTo(
             Arrays.stream(Protocol.values())
                 .map(
                     val ->
-                        new AutocompleteSuggestion(
-                            val.toString(), true, null, RANK_STRING_LITERAL, query.length()))
+                        new ParboiledAutoCompleteSuggestion(
+                            val.toString(), query.length(), Type.UNKNOWN))
                 .collect(ImmutableSet.toImmutableSet())));
   }
 
@@ -71,22 +74,23 @@ public class ParserApplicationTest {
   public void testCompletionPartialName() {
     String query = "SS";
 
-    List<AutocompleteSuggestion> suggestions =
-        ParboiledAutoComplete.autoComplete(
-            Grammar.APPLICATION_SPECIFIER,
-            "network",
-            "snapshot",
-            query,
-            Integer.MAX_VALUE,
-            null,
-            null,
-            null);
+    Set<ParboiledAutoCompleteSuggestion> suggestions =
+        new ParboiledAutoComplete(
+                Parser.instance(),
+                Grammar.APPLICATION_SPECIFIER,
+                Parser.ANCHORS,
+                "network",
+                "snapshot",
+                query,
+                Integer.MAX_VALUE,
+                null,
+                null,
+                null)
+            .run();
 
     assertThat(
-        ImmutableSet.copyOf(suggestions),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion("SSH", true, null, RANK_STRING_LITERAL, 0))));
+        suggestions,
+        containsInAnyOrder(new ParboiledAutoCompleteSuggestion("SSH", 0, Type.UNKNOWN)));
   }
 
   @Test
