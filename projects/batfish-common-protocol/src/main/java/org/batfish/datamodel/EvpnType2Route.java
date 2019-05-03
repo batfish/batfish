@@ -17,18 +17,19 @@ import org.batfish.datamodel.bgp.RouteDistinguisher;
 
 /** An EVPN type 2 route */
 @ParametersAreNonnullByDefault
-public final class EvpnType2Route extends BgpRoute {
+public final class EvpnType2Route extends EvpnRoute {
 
   private static final long serialVersionUID = 1L;
 
   /** Builder for {@link EvpnType2Route} */
   @ParametersAreNonnullByDefault
   public static final class Builder
-      extends BgpRoute.Builder<EvpnType2Route.Builder, EvpnType2Route> {
+      extends EvpnRoute.Builder<EvpnType2Route.Builder, EvpnType2Route> {
 
     @Nullable private Ip _ip;
     @Nullable private MacAddress _macAddress;
-    @Nullable private RouteDistinguisher _routeDistinguisher;
+
+    private Builder() {}
 
     @Nonnull
     @Override
@@ -68,11 +69,6 @@ public final class EvpnType2Route extends BgpRoute {
           _weight);
     }
 
-    public Builder setRouteDistinguisher(@Nonnull RouteDistinguisher routeDistinguisher) {
-      _routeDistinguisher = routeDistinguisher;
-      return this;
-    }
-
     public Builder setIp(@Nonnull Ip ip) {
       _ip = ip;
       return this;
@@ -93,11 +89,6 @@ public final class EvpnType2Route extends BgpRoute {
       return _macAddress;
     }
 
-    @Nullable
-    public RouteDistinguisher getRouteDistinguisher() {
-      return _routeDistinguisher;
-    }
-
     @Override
     @Nonnull
     public Builder getThis() {
@@ -107,7 +98,6 @@ public final class EvpnType2Route extends BgpRoute {
 
   private static final String PROP_IP = "ip";
   private static final String PROP_MAC_ADDRESS = "macAddress";
-  private static final String PROP_ROUTE_DISTINGUISHER = "routeDistinguisher";
 
   private static final Comparator<EvpnType2Route> COMPARATOR =
       Comparator.comparing(EvpnType2Route::getAsPath)
@@ -130,7 +120,6 @@ public final class EvpnType2Route extends BgpRoute {
 
   @Nonnull private final Ip _ip;
   @Nullable private final MacAddress _macAddress;
-  @Nonnull private final RouteDistinguisher _routeDistinguisher;
   /* Cache the hashcode */
   private transient int _hashCode = 0;
 
@@ -229,15 +218,10 @@ public final class EvpnType2Route extends BgpRoute {
         srcProtocol,
         weight,
         nonForwarding,
-        nonRouting);
-    _routeDistinguisher = routeDistinguisher;
+        nonRouting,
+        routeDistinguisher);
     _ip = ip;
     _macAddress = macAddress;
-  }
-
-  @Nonnull
-  public RouteDistinguisher getRouteDistinguisher() {
-    return _routeDistinguisher;
   }
 
   @Nullable

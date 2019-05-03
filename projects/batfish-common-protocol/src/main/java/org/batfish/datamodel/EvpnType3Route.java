@@ -17,16 +17,17 @@ import org.batfish.datamodel.bgp.RouteDistinguisher;
 
 /** An EVPN type 3 route */
 @ParametersAreNonnullByDefault
-public final class EvpnType3Route extends BgpRoute {
+public final class EvpnType3Route extends EvpnRoute {
 
   private static final long serialVersionUID = 1L;
 
   /** Builder for {@link EvpnType3Route} */
   @ParametersAreNonnullByDefault
-  public static final class Builder extends BgpRoute.Builder<Builder, EvpnType3Route> {
+  public static final class Builder extends EvpnRoute.Builder<Builder, EvpnType3Route> {
 
     @Nullable private Ip _vniIp;
-    @Nullable private RouteDistinguisher _routeDistinguisher;
+
+    private Builder() {}
 
     @Nonnull
     @Override
@@ -65,11 +66,6 @@ public final class EvpnType3Route extends BgpRoute {
           _weight);
     }
 
-    public Builder setRouteDistinguisher(@Nonnull RouteDistinguisher routeDistinguisher) {
-      _routeDistinguisher = routeDistinguisher;
-      return this;
-    }
-
     public Builder setVniIp(@Nonnull Ip vniIp) {
       _vniIp = vniIp;
       return this;
@@ -80,11 +76,6 @@ public final class EvpnType3Route extends BgpRoute {
       return _vniIp;
     }
 
-    @Nullable
-    public RouteDistinguisher getRouteDistinguisher() {
-      return _routeDistinguisher;
-    }
-
     @Override
     @Nonnull
     public Builder getThis() {
@@ -93,7 +84,6 @@ public final class EvpnType3Route extends BgpRoute {
   }
 
   private static final String PROP_VNI_IP = "vniIp";
-  private static final String PROP_ROUTE_DISTINGUISHER = "routeDistinguisher";
 
   private static final Comparator<EvpnType3Route> COMPARATOR =
       Comparator.comparing(EvpnType3Route::getAsPath)
@@ -114,7 +104,7 @@ public final class EvpnType3Route extends BgpRoute {
           .thenComparing(EvpnType3Route::getWeight);
 
   @Nonnull private final Ip _vniIp;
-  @Nonnull private final RouteDistinguisher _routeDistinguisher;
+
   /* Cache the hashcode */
   private transient int _hashCode = 0;
 
@@ -210,14 +200,9 @@ public final class EvpnType3Route extends BgpRoute {
         srcProtocol,
         weight,
         nonForwarding,
-        nonRouting);
-    _routeDistinguisher = routeDistinguisher;
+        nonRouting,
+        routeDistinguisher);
     _vniIp = vniIp;
-  }
-
-  @Nonnull
-  public RouteDistinguisher getRouteDistinguisher() {
-    return _routeDistinguisher;
   }
 
   @Nonnull

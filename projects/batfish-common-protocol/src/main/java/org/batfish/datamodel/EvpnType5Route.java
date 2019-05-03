@@ -17,15 +17,13 @@ import org.batfish.datamodel.bgp.RouteDistinguisher;
 
 /** An EVPN type 5 route */
 @ParametersAreNonnullByDefault
-public final class EvpnType5Route extends BgpRoute {
+public final class EvpnType5Route extends EvpnRoute {
 
   private static final long serialVersionUID = 1L;
 
   /** Builder for {@link EvpnType5Route} */
   @ParametersAreNonnullByDefault
-  public static final class Builder extends BgpRoute.Builder<Builder, EvpnType5Route> {
-
-    @Nullable private RouteDistinguisher _routeDistinguisher;
+  public static final class Builder extends EvpnRoute.Builder<Builder, EvpnType5Route> {
 
     @Nonnull
     @Override
@@ -63,24 +61,12 @@ public final class EvpnType5Route extends BgpRoute {
           _weight);
     }
 
-    public Builder setRouteDistinguisher(@Nonnull RouteDistinguisher routeDistinguisher) {
-      _routeDistinguisher = routeDistinguisher;
-      return this;
-    }
-
-    @Nullable
-    public RouteDistinguisher getRouteDistinguisher() {
-      return _routeDistinguisher;
-    }
-
     @Override
     @Nonnull
     public Builder getThis() {
       return this;
     }
   }
-
-  private static final String PROP_ROUTE_DISTINGUISHER = "routeDistinguisher";
 
   private static final Comparator<EvpnType5Route> COMPARATOR =
       Comparator.comparing(EvpnType5Route::getAsPath)
@@ -99,7 +85,6 @@ public final class EvpnType5Route extends BgpRoute {
           .thenComparing(EvpnType5Route::getSrcProtocol)
           .thenComparing(EvpnType5Route::getWeight);
 
-  @Nonnull private final RouteDistinguisher _routeDistinguisher;
   /* Cache the hashcode */
   private transient int _hashCode = 0;
 
@@ -191,13 +176,8 @@ public final class EvpnType5Route extends BgpRoute {
         srcProtocol,
         weight,
         nonForwarding,
-        nonRouting);
-    _routeDistinguisher = routeDistinguisher;
-  }
-
-  @Nonnull
-  public RouteDistinguisher getRouteDistinguisher() {
-    return _routeDistinguisher;
+        nonRouting,
+        routeDistinguisher);
   }
 
   public static Builder builder() {
