@@ -4,8 +4,8 @@ import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_ADDRESS;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_PREFIX;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_RANGE;
+import static org.batfish.specifier.parboiled.Anchor.Type.IP_SPACE_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_WILDCARD;
-import static org.batfish.specifier.parboiled.Anchor.Type.UNKNOWN;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -96,9 +96,9 @@ public class ParserIpSpaceTest {
             new ParboiledAutoCompleteSuggestion("-", query.length(), IP_RANGE),
             new ParboiledAutoCompleteSuggestion(":", query.length(), IP_WILDCARD),
             new ParboiledAutoCompleteSuggestion("1.1.1.1/22", 0, IP_PREFIX),
-            new ParboiledAutoCompleteSuggestion("\\", query.length(), UNKNOWN),
-            new ParboiledAutoCompleteSuggestion("&", query.length(), UNKNOWN),
-            new ParboiledAutoCompleteSuggestion(",", query.length(), UNKNOWN)));
+            new ParboiledAutoCompleteSuggestion("\\", query.length(), IP_SPACE_SET_OP),
+            new ParboiledAutoCompleteSuggestion("&", query.length(), IP_SPACE_SET_OP),
+            new ParboiledAutoCompleteSuggestion(",", query.length(), IP_SPACE_SET_OP)));
   }
 
   @Test
