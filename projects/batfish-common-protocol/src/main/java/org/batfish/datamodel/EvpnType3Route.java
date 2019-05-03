@@ -6,6 +6,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Comparators;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import java.util.Comparator;
 import java.util.Objects;
@@ -18,16 +19,17 @@ import org.batfish.datamodel.bgp.community.Community;
 
 /** An EVPN type 3 route */
 @ParametersAreNonnullByDefault
-public final class EvpnType3Route extends BgpRoute {
+public final class EvpnType3Route extends EvpnRoute {
 
   private static final long serialVersionUID = 1L;
 
   /** Builder for {@link EvpnType3Route} */
   @ParametersAreNonnullByDefault
-  public static final class Builder extends BgpRoute.Builder<Builder, EvpnType3Route> {
+  public static final class Builder extends EvpnRoute.Builder<Builder, EvpnType3Route> {
 
     @Nullable private Ip _vniIp;
-    @Nullable private RouteDistinguisher _routeDistinguisher;
+
+    private Builder() {}
 
     @Nonnull
     @Override
@@ -52,7 +54,7 @@ public final class EvpnType3Route extends BgpRoute {
           _localPreference,
           getMetric(),
           firstNonNull(_nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE),
-          getNextHopIp(),
+          firstNonNull(getNextHopIp(), Route.UNSET_ROUTE_NEXT_HOP_IP),
           getNonForwarding(),
           getNonRouting(),
           _originatorIp,
@@ -66,11 +68,6 @@ public final class EvpnType3Route extends BgpRoute {
           _weight);
     }
 
-    public Builder setRouteDistinguisher(@Nonnull RouteDistinguisher routeDistinguisher) {
-      _routeDistinguisher = routeDistinguisher;
-      return this;
-    }
-
     public Builder setVniIp(@Nonnull Ip vniIp) {
       _vniIp = vniIp;
       return this;
@@ -81,11 +78,6 @@ public final class EvpnType3Route extends BgpRoute {
       return _vniIp;
     }
 
-    @Nullable
-    public RouteDistinguisher getRouteDistinguisher() {
-      return _routeDistinguisher;
-    }
-
     @Override
     @Nonnull
     public Builder getThis() {
@@ -94,7 +86,6 @@ public final class EvpnType3Route extends BgpRoute {
   }
 
   private static final String PROP_VNI_IP = "vniIp";
-  private static final String PROP_ROUTE_DISTINGUISHER = "routeDistinguisher";
 
   private static final Comparator<EvpnType3Route> COMPARATOR =
       Comparator.comparing(EvpnType3Route::getAsPath)
@@ -115,7 +106,7 @@ public final class EvpnType3Route extends BgpRoute {
           .thenComparing(EvpnType3Route::getWeight);
 
   @Nonnull private final Ip _vniIp;
-  @Nonnull private final RouteDistinguisher _routeDistinguisher;
+
   /* Cache the hashcode */
   private transient int _hashCode = 0;
 
@@ -150,14 +141,14 @@ public final class EvpnType3Route extends BgpRoute {
     checkArgument(vniIp != null, "Missing %s", PROP_VNI_IP);
     return new EvpnType3Route(
         admin,
-        asPath,
-        clusterList,
-        communities,
+        firstNonNull(asPath, AsPath.empty()),
+        firstNonNull(clusterList, ImmutableSortedSet.of()),
+        firstNonNull(communities, ImmutableSortedSet.of()),
         discard,
         localPreference,
         med,
         firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE),
-        nextHopIp,
+        firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP),
         false,
         false,
         originatorIp,
@@ -173,14 +164,14 @@ public final class EvpnType3Route extends BgpRoute {
 
   private EvpnType3Route(
       int admin,
-      @Nullable AsPath asPath,
-      @Nullable SortedSet<Long> clusterList,
-      @Nullable SortedSet<Community> communities,
+      AsPath asPath,
+      SortedSet<Long> clusterList,
+      SortedSet<Community> communities,
       boolean discard,
       long localPreference,
       long med,
       String nextHopInterface,
-      @Nullable Ip nextHopIp,
+      Ip nextHopIp,
       boolean nonForwarding,
       boolean nonRouting,
       Ip originatorIp,
@@ -211,14 +202,9 @@ public final class EvpnType3Route extends BgpRoute {
         srcProtocol,
         weight,
         nonForwarding,
-        nonRouting);
-    _routeDistinguisher = routeDistinguisher;
+        nonRouting,
+        routeDistinguisher);
     _vniIp = vniIp;
-  }
-
-  @Nonnull
-  public RouteDistinguisher getRouteDistinguisher() {
-    return _routeDistinguisher;
   }
 
   @Nonnull
