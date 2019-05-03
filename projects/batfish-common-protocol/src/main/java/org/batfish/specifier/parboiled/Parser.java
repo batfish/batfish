@@ -136,7 +136,7 @@ public class Parser extends CommonParser {
    * </pre>
    */
 
-  /* A Filter expression is one or more intersection terms separated by , or \ */
+  /** An applicationSpec is one or more intersection terms separated by , or \ */
   @Anchor(APPLICATION_SET_OP)
   public Rule ApplicationSpec() {
     return Sequence(

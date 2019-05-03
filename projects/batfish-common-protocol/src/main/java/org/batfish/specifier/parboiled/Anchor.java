@@ -17,6 +17,7 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
 @Target(ElementType.METHOD)
 @interface Anchor {
 
+  /** An enum to describe different types of anchors */
   @ParametersAreNonnullByDefault
   enum Type {
     /** Names of address groups in a reference book */
@@ -65,7 +66,7 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
     FILTER_SET_OP("FILTER_SET_OP", " of filters", "filterSpec", SuggestionType.SET_OPERATOR),
     /** Rules tagged as IGNORE and their children will not be used for autocompletion */
     IGNORE("IGNORE", null, null, SuggestionType.UNKNOWN),
-    /** @connectedTo() function for interfaces */
+    /** connectedTo() function for interfaces */
     INTERFACE_CONNECTED_TO(
         "INTERFACE_CONNECTED_TO",
         "Interfaces connected to IP addresses",
@@ -88,12 +89,12 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
      */
     INTERFACE_SET_OP(
         "INTERFACE_SET_OP", " of interfaces", "interfaceSpec", SuggestionType.SET_OPERATOR),
-    /** @interfaceType() function */
+    /** interfaceType() function */
     INTERFACE_TYPE(
         "INTERFACE_TYPE", "Interfaces of type", "interfaceType)", SuggestionType.FUNCTION),
-    /** @vrf() function to identify interfaces */
+    /** vrf() function to identify interfaces */
     INTERFACE_VRF("INTERFACE_VRF", "Interfaces in VRF", "vrfName)", SuggestionType.FUNCTION),
-    /** @zone() function to identify interfaces */
+    /** zone() function to identify interfaces */
     INTERFACE_ZONE("INTERFACE_ZONE", "Interfaces in zone", "zoneName)", SuggestionType.FUNCTION),
     /** Name of an IP protocol such as TCP */
     IP_PROTOCOL_NAME("IP_PROTOCOL_NAME", null, null, SuggestionType.CONSTANT),
@@ -123,7 +124,7 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
     IP_SPACE_SET_OP("IP_PROTOCOL_SET_OP", " of IP spaces", "ipSpec", SuggestionType.SET_OPERATOR),
     /** IPv4 wildcard ip1:ip2 */
     IP_WILDCARD("IP_WILDCARD", "IP wildcard", null, SuggestionType.ADDRESS_LITERAL),
-    /** @enter() for locationSpec */
+    /** enter() function for locationSpec */
     LOCATION_ENTER(
         "LOCATION_ENTER",
         "Packets entering interface",
@@ -229,7 +230,11 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
 
     @Nonnull private final SuggestionType _suggestionType;
 
-    Type(String name, String description, String hint, SuggestionType suggestionType) {
+    Type(
+        String name,
+        @Nullable String description,
+        @Nullable String hint,
+        SuggestionType suggestionType) {
       _name = name;
       _description = description;
       _hint = hint;
