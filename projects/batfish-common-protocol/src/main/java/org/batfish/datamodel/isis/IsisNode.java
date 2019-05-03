@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.toStringHelper;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -11,12 +12,13 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.NetworkConfigurations;
 
-public final class IsisNode implements Comparable<IsisNode> {
+public final class IsisNode implements Comparable<IsisNode>, Serializable {
+
   private static final String PROP_NODE = "node";
   private static final String PROP_INTERFACE = "interface";
+  private static final long serialVersionUID = 1L;
 
   private final String _node;
-
   private final String _interfaceName;
 
   public IsisNode(@Nonnull String node, @Nonnull String interfaceName) {

@@ -8,9 +8,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.graph.ImmutableValueGraph;
 import com.google.common.graph.ValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.Optional;
@@ -18,18 +18,19 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.topology.SerializableValueGraph;
 
 /** A graph representing OSPF adjacencies */
 @ParametersAreNonnullByDefault
-public final class OspfTopology {
+public final class OspfTopology implements Serializable {
 
-  /** Return an empty topology (no nodes and no edges) */
   public static final OspfTopology EMPTY = new OspfTopology(ValueGraphBuilder.directed().build());
+  private static final long serialVersionUID = 1L;
 
-  @Nonnull private final ValueGraph<OspfNeighborConfigId, OspfSessionProperties> _graph;
+  @Nonnull private final SerializableValueGraph<OspfNeighborConfigId, OspfSessionProperties> _graph;
 
   public OspfTopology(ValueGraph<OspfNeighborConfigId, OspfSessionProperties> graph) {
-    _graph = ImmutableValueGraph.copyOf(graph);
+    _graph = new SerializableValueGraph<>(graph);
   }
 
   /**
@@ -93,7 +94,7 @@ public final class OspfTopology {
 
   /** Return the graph backing this topology */
   @VisibleForTesting
-  ValueGraph<OspfNeighborConfigId, OspfSessionProperties> getGraph() {
+  SerializableValueGraph<OspfNeighborConfigId, OspfSessionProperties> getGraph() {
     return _graph;
   }
 

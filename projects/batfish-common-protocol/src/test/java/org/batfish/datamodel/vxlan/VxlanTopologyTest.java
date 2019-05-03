@@ -1,5 +1,6 @@
 package org.batfish.datamodel.vxlan;
 
+import static org.batfish.datamodel.vxlan.VxlanTopology.EMPTY;
 import static org.batfish.datamodel.vxlan.VxlanTopology.addVniEdge;
 import static org.batfish.datamodel.vxlan.VxlanTopology.addVniEdges;
 import static org.batfish.datamodel.vxlan.VxlanTopology.buildVxlanNode;
@@ -9,6 +10,7 @@ import static org.batfish.datamodel.vxlan.VxlanTopology.initVrfHostnameMap;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -19,8 +21,11 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.MutableGraph;
+import com.google.common.testing.EqualsTester;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nonnull;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -43,6 +48,12 @@ public final class VxlanTopologyTest {
   private static final int VLAN1 = 1;
   private static final int VLAN2 = 2;
   private static final int VNI = 5000;
+
+  private static @Nonnull VxlanTopology nonTrivialTopology() {
+    MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
+    graph.putEdge(new VxlanNode("a", 1), new VxlanNode("b", 2));
+    return new VxlanTopology(graph);
+  }
 
   private Configuration _c1;
   private Configuration _c2;
@@ -509,5 +520,22 @@ public final class VxlanTopologyTest {
     assertThat(
         new VxlanTopology(configurations).getEdges(),
         equalTo(ImmutableSet.of(EndpointPair.unordered(nodeTail, nodeHead))));
+  }
+
+  @Test
+  public void testEquals() {
+    new EqualsTester()
+        .addEqualityGroup(new Object())
+        .addEqualityGroup(
+            EMPTY,
+            EMPTY,
+            new VxlanTopology(GraphBuilder.undirected().allowsSelfLoops(false).build()))
+        .addEqualityGroup(nonTrivialTopology())
+        .testEquals();
+  }
+
+  @Test
+  public void testJavaSerialization() {
+    assertEquals(nonTrivialTopology(), SerializationUtils.clone(nonTrivialTopology()));
   }
 }

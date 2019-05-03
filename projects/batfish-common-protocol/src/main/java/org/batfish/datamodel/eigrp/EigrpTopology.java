@@ -1,16 +1,17 @@
 package org.batfish.datamodel.eigrp;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.graph.ImmutableNetwork;
 import com.google.common.graph.MutableNetwork;
 import com.google.common.graph.Network;
 import com.google.common.graph.NetworkBuilder;
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.topology.SerializableNetwork;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Topology;
 
@@ -19,11 +20,12 @@ import org.batfish.datamodel.Topology;
  * edges are {@link EigrpEdge}s.
  */
 @ParametersAreNonnullByDefault
-public final class EigrpTopology {
+public final class EigrpTopology implements Serializable {
 
   public static final EigrpTopology EMPTY =
       new EigrpTopology(
           NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build());
+  private static final long serialVersionUID = 1L;
 
   /** Initialize the EIGRP topology as a directed graph. */
   public static @Nonnull EigrpTopology initEigrpTopology(
@@ -47,13 +49,13 @@ public final class EigrpTopology {
     return new EigrpTopology(graph);
   }
 
-  private final @Nonnull ImmutableNetwork<EigrpInterface, EigrpEdge> _network;
+  private final @Nonnull SerializableNetwork<EigrpInterface, EigrpEdge> _network;
 
   public EigrpTopology(Network<EigrpInterface, EigrpEdge> network) {
-    _network = ImmutableNetwork.copyOf(network);
+    _network = new SerializableNetwork<>(network);
   }
 
-  public @Nonnull ImmutableNetwork<EigrpInterface, EigrpEdge> getNetwork() {
+  public @Nonnull SerializableNetwork<EigrpInterface, EigrpEdge> getNetwork() {
     return _network;
   }
 
