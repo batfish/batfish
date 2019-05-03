@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -41,19 +42,9 @@ import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.batfish.specifier.parboiled.Grammar;
 import org.batfish.specifier.parboiled.ParboiledAutoComplete;
 
+/** A utility class to generate auto complete suggestions for user input */
 @ParametersAreNonnullByDefault
 public final class AutoCompleteUtils {
-
-  @VisibleForTesting
-  static class StringPair {
-    public final String s1;
-    public final String s2;
-
-    StringPair(String s1, String s2) {
-      this.s1 = s1;
-      this.s2 = s2;
-    }
-  }
 
   @Nonnull
   public static List<AutocompleteSuggestion> autoComplete(
@@ -139,7 +130,17 @@ public final class AutoCompleteUtils {
       }
     }
 
-    return suggestions;
+    return orderSuggestions(suggestions);
+  }
+
+  /** Basic ordering logic, by suggestion type and then by suggestion text */
+  @VisibleForTesting
+  static List<AutocompleteSuggestion> orderSuggestions(List<AutocompleteSuggestion> suggestions) {
+    return suggestions.stream()
+        .sorted(
+            Comparator.comparing(AutocompleteSuggestion::getSuggestionType)
+                .thenComparing(AutocompleteSuggestion::getText))
+        .collect(ImmutableList.toImmutableList());
   }
 
   @Nonnull

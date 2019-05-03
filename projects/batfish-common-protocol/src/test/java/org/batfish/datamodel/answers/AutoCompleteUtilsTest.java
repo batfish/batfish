@@ -13,6 +13,7 @@ import static org.batfish.datamodel.FlowState.RELATED;
 import static org.batfish.datamodel.Protocol.HTTP;
 import static org.batfish.datamodel.Protocol.HTTPS;
 import static org.batfish.datamodel.Protocol.SSH;
+import static org.batfish.datamodel.answers.AutoCompleteUtils.orderSuggestions;
 import static org.batfish.datamodel.answers.AutoCompleteUtils.stringAutoComplete;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.IS_PASSIVE;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.LOCAL_AS;
@@ -51,6 +52,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.common.CompletionMetadata;
+import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.Variable.Type;
@@ -1310,5 +1312,41 @@ public class AutoCompleteUtilsTest {
     _thrown.expectMessage("Unsupported completion type: " + type);
 
     AutoCompleteUtils.autoComplete("network", "snapshot", type, "blah", 5, null, null, null);
+  }
+
+  @Test
+  public void testOrderingSuggestionsSuggestionType() {
+    AutocompleteSuggestion s1 =
+        AutocompleteSuggestion.builder()
+            .setText("123")
+            .setSuggestionType(SuggestionType.CONSTANT)
+            .build();
+    AutocompleteSuggestion s2 =
+        AutocompleteSuggestion.builder()
+            .setText("12")
+            .setSuggestionType(SuggestionType.ADDRESS_LITERAL)
+            .build();
+
+    // s2 should come second because of its type even though it is a shorter suggestion
+    assertThat(orderSuggestions(ImmutableList.of(s1, s2)), equalTo(ImmutableList.of(s1, s2)));
+    assertThat(orderSuggestions(ImmutableList.of(s2, s1)), equalTo(ImmutableList.of(s1, s2)));
+  }
+
+  @Test
+  public void testOrderingSuggestionsText() {
+    AutocompleteSuggestion s1 =
+        AutocompleteSuggestion.builder()
+            .setText("123")
+            .setSuggestionType(SuggestionType.CONSTANT)
+            .build();
+    AutocompleteSuggestion s2 =
+        AutocompleteSuggestion.builder()
+            .setText("234")
+            .setSuggestionType(SuggestionType.CONSTANT)
+            .build();
+
+    // s2 should come second because of its suggestion text
+    assertThat(orderSuggestions(ImmutableList.of(s1, s2)), equalTo(ImmutableList.of(s1, s2)));
+    assertThat(orderSuggestions(ImmutableList.of(s2, s1)), equalTo(ImmutableList.of(s1, s2)));
   }
 }
