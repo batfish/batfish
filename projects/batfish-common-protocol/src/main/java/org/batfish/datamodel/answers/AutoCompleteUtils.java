@@ -123,14 +123,15 @@ public final class AutoCompleteUtils {
       // If there are no suggestions, remove characters from the end of the query until there are
       // suggestions or the query is the empty string. This logic is done here to ensure that all
       // possible suggestions types have been considered before relaxing the query
-      while (query.length() > 0 && suggestions.isEmpty()) {
-        query = query.substring(0, query.length() - 1);
+      String relaxedQuery = query;
+      while (relaxedQuery.length() > 0 && suggestions.isEmpty()) {
+        relaxedQuery = relaxedQuery.substring(0, relaxedQuery.length() - 1);
         suggestions =
             getPotentialMatches(
                 network,
                 snapshot,
                 completionType,
-                query,
+                relaxedQuery,
                 maxSuggestions,
                 completionMetadata,
                 nodeRolesData,
