@@ -13,6 +13,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.junit.Test;
@@ -21,23 +22,23 @@ import org.junit.Test;
 public class AddCommunityTest {
   @Test
   public void testEquals() {
-    AddCommunity ac = new AddCommunity(new LiteralCommunity(1L));
+    AddCommunity ac = new AddCommunity(new LiteralCommunity(StandardCommunity.of(1L)));
     new EqualsTester()
-        .addEqualityGroup(ac, ac, new AddCommunity(new LiteralCommunity(1L)))
-        .addEqualityGroup(new AddCommunity(new LiteralCommunity(2L)))
+        .addEqualityGroup(ac, ac, new AddCommunity(new LiteralCommunity(StandardCommunity.of(1L))))
+        .addEqualityGroup(new AddCommunity(new LiteralCommunity(StandardCommunity.of(2L))))
         .addEqualityGroup(new Object())
         .testEquals();
   }
 
   @Test
   public void testJavaSerialization() {
-    AddCommunity ac = new AddCommunity(new LiteralCommunity(1L));
+    AddCommunity ac = new AddCommunity(new LiteralCommunity(StandardCommunity.of(1L)));
     assertThat(SerializationUtils.clone(ac), equalTo(ac));
   }
 
   @Test
   public void testJsonSerialization() throws IOException {
-    AddCommunity ac = new AddCommunity(new LiteralCommunity(1L));
+    AddCommunity ac = new AddCommunity(new LiteralCommunity(StandardCommunity.of(1L)));
     assertThat(BatfishObjectMapper.clone(ac, AddCommunity.class), equalTo(ac));
   }
 
@@ -50,12 +51,14 @@ public class AddCommunityTest {
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .build();
     nf.vrfBuilder().setName("vrf").setOwner(c).build();
-    AddCommunity ac = new AddCommunity(new LiteralCommunity(1L));
+    AddCommunity ac = new AddCommunity(new LiteralCommunity(StandardCommunity.of(1L)));
     // Test does not crash on non-bgp route
     ac.execute(Environment.builder(c, "vrf").setOutputRoute(ConnectedRoute.builder()).build());
     // Test sets community on BGP route
     Environment e = Environment.builder(c, "vrf").setOutputRoute(Bgpv4Route.builder()).build();
     ac.execute(e);
-    assertThat(((Bgpv4Route.Builder) e.getOutputRoute()).getCommunities(), contains(1L));
+    assertThat(
+        ((Bgpv4Route.Builder) e.getOutputRoute()).getCommunities(),
+        contains(StandardCommunity.of(1L)));
   }
 }
