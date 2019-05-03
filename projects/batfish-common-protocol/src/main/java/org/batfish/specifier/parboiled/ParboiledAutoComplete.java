@@ -5,7 +5,11 @@ import static org.batfish.datamodel.Names.ESCAPE_CHAR;
 import static org.batfish.datamodel.Names.nameNeedsEscaping;
 import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.CHAR_LITERAL;
+import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_NAME_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.STRING_LITERAL;
 import static org.batfish.specifier.parboiled.CommonParser.isEscapableNameAnchor;
 import static org.batfish.specifier.parboiled.ParboiledAutoCompleteSuggestion.toAutoCompleteSuggestions;
@@ -150,8 +154,9 @@ public final class ParboiledAutoComplete {
       case FILTER_NAME:
         return autoCompleteGeneric(pm);
       case FILTER_NAME_REGEX:
-        // can't help with regexes
-        return ImmutableSet.of();
+        return ImmutableSet.of(
+            new ParboiledAutoCompleteSuggestion(
+                "", pm.getMatchPrefix().length() + pm.getMatchStartIndex(), FILTER_NAME_REGEX));
       case FILTER_PARENS:
         // Other filter rules appear later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
@@ -160,8 +165,9 @@ public final class ParboiledAutoComplete {
       case INTERFACE_NAME:
         return autoCompleteInterfaceName(pm);
       case INTERFACE_NAME_REGEX:
-        // can't help with regexes
-        return ImmutableSet.of();
+        return ImmutableSet.of(
+            new ParboiledAutoCompleteSuggestion(
+                "", pm.getMatchPrefix().length() + pm.getMatchStartIndex(), INTERFACE_NAME_REGEX));
       case INTERFACE_PARENS:
         // Other interface rules appear later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
@@ -195,8 +201,9 @@ public final class ParboiledAutoComplete {
       case NODE_NAME:
         return autoCompleteGeneric(pm);
       case NODE_NAME_REGEX:
-        // can't help with regexes
-        return ImmutableSet.of();
+        return ImmutableSet.of(
+            new ParboiledAutoCompleteSuggestion(
+                "", pm.getMatchPrefix().length() + pm.getMatchStartIndex(), NODE_NAME_REGEX));
       case NODE_PARENS:
         // Other node rules appear later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
@@ -219,8 +226,11 @@ public final class ParboiledAutoComplete {
       case ROUTING_POLICY_NAME:
         return autoCompleteGeneric(pm);
       case ROUTING_POLICY_NAME_REGEX:
-        // can't help with regexes
-        return ImmutableSet.of();
+        return ImmutableSet.of(
+            new ParboiledAutoCompleteSuggestion(
+                "",
+                pm.getMatchPrefix().length() + pm.getMatchStartIndex(),
+                ROUTING_POLICY_NAME_REGEX));
       case ROUTING_POLICY_PARENS:
         // Other routing policy rules appear later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
@@ -293,7 +303,8 @@ public final class ParboiledAutoComplete {
             _maxSuggestions,
             _completionMetadata,
             _nodeRolesData,
-            _referenceLibrary);
+            _referenceLibrary,
+            false);
     return updateSuggestions(
         suggestions,
         !matchPrefix.equals(pm.getMatchPrefix()),

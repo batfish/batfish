@@ -5,6 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
 
@@ -19,7 +20,7 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
   @ParametersAreNonnullByDefault
   enum Type {
     ADDRESS_GROUP_NAME(
-        "ADDRESS_GROUP_NAME", "Address group name", "addressGroup", SuggestionType.NAME_LITERAL),
+        "ADDRESS_GROUP_NAME", "Address group name", null, SuggestionType.NAME_LITERAL),
     APPLICATION_NAME("APPLICATION_NAME", null, null, SuggestionType.CONSTANT),
     /**
      * The full description is filled in {@link
@@ -28,10 +29,10 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
      */
     APPLICATION_SET_OP(
         "APPLICATION_SET_OP", " of applications", "applicationSpec", SuggestionType.SET_OPERATOR),
-    CHAR_LITERAL("CHAR_LITERAL", "Character literal", "character", SuggestionType.UNKNOWN),
+    CHAR_LITERAL("CHAR_LITERAL", null, null, SuggestionType.UNKNOWN),
     // grammar rules that are deprecated
-    DEPRECATED("DEPRECATED", "Deprecated", "deprecated", SuggestionType.UNKNOWN),
-    EOI("EOI", "EoI", "EoI", SuggestionType.UNKNOWN),
+    DEPRECATED("DEPRECATED", null, null, SuggestionType.UNKNOWN),
+    EOI("EOI", null, null, SuggestionType.UNKNOWN),
     FILTER_INTERFACE_IN(
         "FILTER_INTERFACE_IN",
         "Incoming filter on interface",
@@ -42,7 +43,7 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
         "Outgoing filter on interface",
         "interfaceSpec)",
         SuggestionType.FUNCTION),
-    FILTER_NAME("FILTER_NAME", "Filter name", "filterName", SuggestionType.NAME_LITERAL),
+    FILTER_NAME("FILTER_NAME", "Filter name", null, SuggestionType.NAME_LITERAL),
     FILTER_NAME_REGEX(
         "FILTER_NAME_REGEX", "Filter name regex", "filterNameRegex", SuggestionType.REGEX),
     FILTER_PARENS("FILTER_PARENS", "Filter specifier", "filterSpec)", SuggestionType.PARENTHESIS),
@@ -53,19 +54,15 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
      */
     FILTER_SET_OP("FILTER_SET_OP", " of filters", "filterSpec", SuggestionType.SET_OPERATOR),
     // grammar rules that shouldn't be the basis for autocompletion
-    IGNORE("IGNORE", "Ignore", "ignore", SuggestionType.UNKNOWN),
+    IGNORE("IGNORE", null, null, SuggestionType.UNKNOWN),
     INTERFACE_CONNECTED_TO(
         "INTERFACE_CONNECTED_TO",
         "Interfaces connected to IP addresses",
         "ipSpec)",
         SuggestionType.FUNCTION),
     INTERFACE_GROUP_NAME(
-        "INTERFACE_GROUP_NAME",
-        "Interface group name",
-        "interfaceGroup",
-        SuggestionType.NAME_LITERAL),
-    INTERFACE_NAME(
-        "INTERFACE_NAME", "Interface name", "interfaceName", SuggestionType.NAME_LITERAL),
+        "INTERFACE_GROUP_NAME", "Interface group name", null, SuggestionType.NAME_LITERAL),
+    INTERFACE_NAME("INTERFACE_NAME", "Interface name", null, SuggestionType.NAME_LITERAL),
     INTERFACE_NAME_REGEX(
         "INTERFACE_NAME_REGEX", "Interface name regex", "interfaceNameRegex", SuggestionType.REGEX),
     INTERFACE_PARENS(
@@ -81,14 +78,13 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
         "INTERFACE_TYPE", "Interfaces of type", "interfaceType)", SuggestionType.FUNCTION),
     INTERFACE_VRF("INTERFACE_VRF", "Interfaces in VRF", "vrfName)", SuggestionType.FUNCTION),
     INTERFACE_ZONE("INTERFACE_ZONE", "Interfaces in zone", "zoneName)", SuggestionType.FUNCTION),
-    IP_ADDRESS("IP_ADDRESS", "IP address", "ip-address", SuggestionType.ADDRESS_LITERAL),
-    IP_ADDRESS_MASK(
-        "IP_ADDRESS_MASK", "IP address mask", "ipAddressMask", SuggestionType.ADDRESS_LITERAL),
-    IP_PREFIX("IP_PREFIX", "IP prefix", "prefix-length", SuggestionType.ADDRESS_LITERAL),
     IP_PROTOCOL_NAME("IP_PROTOCOL_NAME", null, null, SuggestionType.CONSTANT),
     IP_PROTOCOL_NOT(
         "IP_PROTOCOL_NOT", "Exclude IP protocol", "ipProtocol", SuggestionType.OPERATOR_WITH_RHS),
-    IP_PROTOCOL_NUMBER("IP_PROTOCOL_NUMBER", "IP protocol", "ipProtocol", SuggestionType.CONSTANT),
+    IP_ADDRESS("IP_ADDRESS", "IP address", null, SuggestionType.ADDRESS_LITERAL),
+    IP_ADDRESS_MASK("IP_ADDRESS_MASK", "IP address mask", null, SuggestionType.ADDRESS_LITERAL),
+    IP_PREFIX("IP_PREFIX", "IP prefix", null, SuggestionType.ADDRESS_LITERAL),
+    IP_PROTOCOL_NUMBER("IP_PROTOCOL_NUMBER", "IP protocol", null, SuggestionType.CONSTANT),
     /**
      * The full description is filled in {@link
      * ParboiledAutoCompleteSuggestion#toAutoCompleteSuggestion(ParboiledAutoCompleteSuggestion)}
@@ -96,14 +92,14 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
      */
     IP_PROTOCOL_SET_OP(
         "IP_PROTOCOL_SET_OP", " of IP protocols", "ipProtocolSpec", SuggestionType.SET_OPERATOR),
+    IP_RANGE("IP_RANGE", "IP range", null, SuggestionType.ADDRESS_LITERAL),
     /**
      * The full description is filled in {@link
      * ParboiledAutoCompleteSuggestion#toAutoCompleteSuggestion(ParboiledAutoCompleteSuggestion)}
      * based on the operator.
      */
     IP_SPACE_SET_OP("IP_PROTOCOL_SET_OP", " of IP spaces", "ipSpec", SuggestionType.SET_OPERATOR),
-    IP_RANGE("IP_RANGE", "IP range", "ipAddressEnd", SuggestionType.ADDRESS_LITERAL),
-    IP_WILDCARD("IP_WILDCARD", "IP wildcard", "wildcard", SuggestionType.ADDRESS_LITERAL),
+    IP_WILDCARD("IP_WILDCARD", "IP wildcard", null, SuggestionType.ADDRESS_LITERAL),
     LOCATION_ENTER(
         "LOCATION_ENTER",
         "Packets entering interface",
@@ -123,7 +119,7 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
         "Node and interface pair",
         "interfaceSpec]",
         SuggestionType.OPERATOR_WITH_RHS),
-    NODE_NAME("NODE_NAME", "Node name", "nodeName", SuggestionType.NAME_LITERAL),
+    NODE_NAME("NODE_NAME", "Node name", null, SuggestionType.NAME_LITERAL),
     NODE_NAME_REGEX("NODE_NAME_REGEX", "Node name regex", "nodeNameRegex/", SuggestionType.REGEX),
     NODE_PARENS("NODE_PARENS", "Node specifier", "nodeSpec)", SuggestionType.PARENTHESIS),
     NODE_ROLE_AND_DIMENSION(
@@ -132,11 +128,8 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
         "roleName, dimensionName)",
         SuggestionType.FUNCTION),
     NODE_ROLE_DIMENSION_NAME(
-        "NODE_ROLE_DIMENSION_NAME",
-        "Node role dimension name",
-        "dimensionName",
-        SuggestionType.NAME_LITERAL),
-    NODE_ROLE_NAME("NODE_ROLE_NAME", "Node role name", "roleName", SuggestionType.NAME_LITERAL),
+        "NODE_ROLE_DIMENSION_NAME", "Node role dimension name", null, SuggestionType.NAME_LITERAL),
+    NODE_ROLE_NAME("NODE_ROLE_NAME", "Node role name", null, SuggestionType.NAME_LITERAL),
     /**
      * The full description is filled in {@link
      * ParboiledAutoCompleteSuggestion#toAutoCompleteSuggestion(ParboiledAutoCompleteSuggestion)}
@@ -155,12 +148,9 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
         "referenceBook, interfaceGroup)",
         SuggestionType.FUNCTION),
     REFERENCE_BOOK_NAME(
-        "REFERENCE_BOOK_NAME", "Reference book name", "referenceBook", SuggestionType.NAME_LITERAL),
+        "REFERENCE_BOOK_NAME", "Reference book name", null, SuggestionType.NAME_LITERAL),
     ROUTING_POLICY_NAME(
-        "ROUTING_POLICY_NAME",
-        "Routing policy name",
-        "routingPolicyName",
-        SuggestionType.NAME_LITERAL),
+        "ROUTING_POLICY_NAME", "Routing policy name", null, SuggestionType.NAME_LITERAL),
     ROUTING_POLICY_NAME_REGEX(
         "ROUTING_POLICY_NAME_REGEX",
         "Routing policy name regex",
@@ -181,15 +171,15 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
         " of routing policies",
         "routingPolicySpec",
         SuggestionType.SET_OPERATOR),
-    STRING_LITERAL("STRING_LITERAL", "String literal", "string", SuggestionType.CONSTANT),
-    UNKNOWN("UNKNOWN", "Unknown", "unknown", SuggestionType.UNKNOWN),
-    VRF_NAME("VRF_NAME", "VRF name", "vrfName", SuggestionType.NAME_LITERAL),
-    WHITESPACE("WHITESPACE", "Whitespace", "whitespace", SuggestionType.UNKNOWN),
-    ZONE_NAME("ZONE_NAME", "Zone name", "zoneName", SuggestionType.NAME_LITERAL);
+    STRING_LITERAL("STRING_LITERAL", "String literal", null, SuggestionType.CONSTANT),
+    UNKNOWN("UNKNOWN", null, null, SuggestionType.UNKNOWN),
+    VRF_NAME("VRF_NAME", "VRF name", null, SuggestionType.NAME_LITERAL),
+    WHITESPACE("WHITESPACE", null, null, SuggestionType.UNKNOWN),
+    ZONE_NAME("ZONE_NAME", "Zone name", null, SuggestionType.NAME_LITERAL);
 
-    @Nonnull private final String _description;
+    @Nullable private final String _description;
 
-    @Nonnull private final String _hint;
+    @Nullable private final String _hint;
 
     @Nonnull private final String _name;
 
@@ -202,12 +192,12 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
       _suggestionType = suggestionType;
     }
 
-    @Nonnull
+    @Nullable
     public String getDescription() {
       return _description;
     }
 
-    @Nonnull
+    @Nullable
     public String getHint() {
       return _hint;
     }
