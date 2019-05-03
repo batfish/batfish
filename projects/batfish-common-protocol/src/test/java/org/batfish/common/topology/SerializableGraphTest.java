@@ -13,11 +13,13 @@ public final class SerializableGraphTest {
   @Test
   public void testJavaSerialization() {
     MutableGraph<String> graph = GraphBuilder.directed().build();
-    graph.addNode("a");
-    graph.addNode("b");
     graph.putEdge("a", "b");
     SerializableGraph<String> sgraph = new SerializableGraph<>(graph);
+    SerializableGraph<String> cloned = SerializationUtils.clone(sgraph);
 
-    assertEquals(sgraph, SerializationUtils.clone(sgraph));
+    assertEquals(sgraph, cloned);
+
+    // make sure deserialized version preserves equality with other Graph implementations
+    assertEquals(cloned, graph);
   }
 }

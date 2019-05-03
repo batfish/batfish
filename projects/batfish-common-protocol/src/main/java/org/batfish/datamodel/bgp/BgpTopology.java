@@ -1,28 +1,31 @@
 package org.batfish.datamodel.bgp;
 
-import com.google.common.graph.ImmutableValueGraph;
 import com.google.common.graph.ValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
+import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.topology.SerializableValueGraph;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpSessionProperties;
 
 /** A topology representing all BGP peerings. */
 @ParametersAreNonnullByDefault
-public final class BgpTopology {
+public final class BgpTopology implements Serializable {
+
+  private static final long serialVersionUID = 1L;
 
   public static final BgpTopology EMPTY =
       new BgpTopology(ValueGraphBuilder.directed().allowsSelfLoops(false).build());
 
-  private final ImmutableValueGraph<BgpPeerConfigId, BgpSessionProperties> _graph;
+  private final SerializableValueGraph<BgpPeerConfigId, BgpSessionProperties> _graph;
 
   public BgpTopology(ValueGraph<BgpPeerConfigId, BgpSessionProperties> graph) {
-    _graph = ImmutableValueGraph.copyOf(graph);
+    _graph = new SerializableValueGraph<>(graph);
   }
 
-  public @Nonnull ImmutableValueGraph<BgpPeerConfigId, BgpSessionProperties> getGraph() {
+  public @Nonnull SerializableValueGraph<BgpPeerConfigId, BgpSessionProperties> getGraph() {
     return _graph;
   }
 

@@ -13,11 +13,13 @@ public final class SerializableNetworkTest {
   @Test
   public void testJavaSerialization() {
     MutableNetwork<String, Integer> network = NetworkBuilder.directed().build();
-    network.addNode("a");
-    network.addNode("b");
     network.addEdge("a", "b", 5);
     SerializableNetwork<String, Integer> snetwork = new SerializableNetwork<>(network);
+    SerializableNetwork<String, Integer> cloned = SerializationUtils.clone(snetwork);
 
-    assertEquals(snetwork, SerializationUtils.clone(snetwork));
+    assertEquals(snetwork, cloned);
+
+    // make sure deserialized version preserves equality with other Network implementations
+    assertEquals(cloned, network);
   }
 }

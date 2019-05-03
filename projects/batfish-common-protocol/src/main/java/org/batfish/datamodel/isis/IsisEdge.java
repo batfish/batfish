@@ -11,6 +11,7 @@ import static org.batfish.datamodel.isis.IsisLevel.union;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
@@ -23,7 +24,7 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Vrf;
 
-public final class IsisEdge implements Comparable<IsisEdge> {
+public final class IsisEdge implements Comparable<IsisEdge>, Serializable {
 
   @Nullable
   private static IsisLevel interfaceSettingsLevel(IsisInterfaceSettings settings) {
@@ -99,11 +100,10 @@ public final class IsisEdge implements Comparable<IsisEdge> {
   private static final String PROP_CIRCUIT_TYPE = "circuitType";
   private static final String PROP_NODE1 = "node1";
   private static final String PROP_NODE2 = "node2";
+  private static final long serialVersionUID = 1L;
 
   private final IsisLevel _circuitType;
-
   private final IsisNode _node1;
-
   private final IsisNode _node2;
 
   public IsisEdge(
