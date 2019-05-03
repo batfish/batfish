@@ -35,6 +35,7 @@ public final class GeneratedRoute extends AbstractRoute {
 
     private Builder() {}
 
+    @Nonnull
     @Override
     public GeneratedRoute build() {
       return new GeneratedRoute(
@@ -52,6 +53,7 @@ public final class GeneratedRoute extends AbstractRoute {
           getNonRouting());
     }
 
+    @Nonnull
     @Override
     protected Builder getThis() {
       return this;
