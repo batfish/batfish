@@ -13,8 +13,6 @@ public final class SerializableValueGraphTest {
   @Test
   public void testJavaSerialization() {
     MutableValueGraph<String, Integer> graph = ValueGraphBuilder.directed().build();
-    graph.addNode("a");
-    graph.addNode("b");
     graph.putEdgeValue("a", "b", 5);
     SerializableValueGraph<String, Integer> sgraph = new SerializableValueGraph<>(graph);
     SerializableValueGraph<String, Integer> cloned = SerializationUtils.clone(sgraph);

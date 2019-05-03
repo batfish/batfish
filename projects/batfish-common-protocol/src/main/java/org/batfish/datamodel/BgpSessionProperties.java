@@ -6,8 +6,10 @@ import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 /** Represents properties of a peering session between two {@link BgpPeerConfig}s. */
+@ParametersAreNonnullByDefault
 public final class BgpSessionProperties implements Serializable {
 
   public static final class Builder {
@@ -141,7 +143,7 @@ public final class BgpSessionProperties implements Serializable {
    *     (listener to initiator) rather than forwards direction (initiator to listener)
    */
   public static BgpSessionProperties from(
-      @Nonnull BgpPeerConfig initiator, @Nonnull BgpPeerConfig listener, boolean reverseDirection) {
+      BgpPeerConfig initiator, BgpPeerConfig listener, boolean reverseDirection) {
     Ip initiatorIp = initiator.getLocalIp();
     Ip listenerIp = listener.getLocalIp();
     if (listenerIp == null || listenerIp == Ip.AUTO) {
@@ -183,7 +185,7 @@ public final class BgpSessionProperties implements Serializable {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }

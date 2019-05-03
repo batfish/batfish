@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import com.google.common.testing.EqualsTester;
+import javax.annotation.Nonnull;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpLink;
@@ -18,18 +19,26 @@ import org.junit.Test;
 
 /** Tests of {@link OspfTopology} */
 public final class OspfTopologyTest {
+
+  private static @Nonnull OspfTopology nonTrivialTopology() {
+    MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> graph =
+        ValueGraphBuilder.directed().allowsSelfLoops(false).build();
+    graph.putEdgeValue(
+        new OspfNeighborConfigId("a", "b", "c", "d"),
+        new OspfNeighborConfigId("e", "f", "g", "h"),
+        new OspfSessionProperties(
+            5L, new IpLink(Ip.FIRST_CLASS_A_PRIVATE_IP, Ip.FIRST_CLASS_B_PRIVATE_IP)));
+    return new OspfTopology(graph);
+  }
+
   @Test
   public void testEquals() {
-    MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> g1 =
-        ValueGraphBuilder.directed().build();
-    g1.addNode(new OspfNeighborConfigId("h1", "vrf1", "p", "i1"));
-    MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> g2 =
-        ValueGraphBuilder.from(g1).build();
-    g2.addNode(new OspfNeighborConfigId("h2", "vrf2", "p", "i2"));
     new EqualsTester()
-        .addEqualityGroup(EMPTY)
-        .addEqualityGroup(new OspfTopology(g1), new OspfTopology(g1))
-        .addEqualityGroup(g2)
+        .addEqualityGroup(
+            EMPTY,
+            EMPTY,
+            new OspfTopology(ValueGraphBuilder.directed().allowsSelfLoops(false).build()))
+        .addEqualityGroup(nonTrivialTopology())
         .addEqualityGroup(new Object())
         .testEquals();
   }
@@ -94,18 +103,6 @@ public final class OspfTopologyTest {
 
   @Test
   public void testJavaSerialization() {
-    MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> graph =
-        ValueGraphBuilder.directed().allowsSelfLoops(false).build();
-    OspfNeighborConfigId n1 = new OspfNeighborConfigId("a", "b", "c", "d");
-    OspfNeighborConfigId n2 = new OspfNeighborConfigId("e", "f", "g", "h");
-    OspfSessionProperties v =
-        new OspfSessionProperties(
-            5L, new IpLink(Ip.FIRST_CLASS_A_PRIVATE_IP, Ip.FIRST_CLASS_B_PRIVATE_IP));
-    graph.addNode(n1);
-    graph.addNode(n2);
-    graph.putEdgeValue(n1, n2, v);
-    OspfTopology topology = new OspfTopology(graph);
-
-    assertEquals(topology, SerializationUtils.clone(topology));
+    assertEquals(nonTrivialTopology(), SerializationUtils.clone(nonTrivialTopology()));
   }
 }
