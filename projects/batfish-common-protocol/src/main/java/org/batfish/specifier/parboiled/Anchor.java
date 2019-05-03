@@ -20,6 +20,14 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
   enum Type {
     ADDRESS_GROUP_NAME(
         "ADDRESS_GROUP_NAME", "Address group name", "addressGroup", SuggestionType.NAME_LITERAL),
+    APPLICATION_NAME("APPLICATION_NAME", null, null, SuggestionType.CONSTANT),
+    /**
+     * The full description is filled in {@link
+     * ParboiledAutoCompleteSuggestion#toAutoCompleteSuggestion(ParboiledAutoCompleteSuggestion)}
+     * based on the operator.
+     */
+    APPLICATION_SET_OP(
+        "APPLICATION_SET_OP", " of applications", "applicationSpec", SuggestionType.SET_OPERATOR),
     CHAR_LITERAL("CHAR_LITERAL", "Character literal", "character", SuggestionType.UNKNOWN),
     // grammar rules that are deprecated
     DEPRECATED("DEPRECATED", "Deprecated", "deprecated", SuggestionType.UNKNOWN),
@@ -38,6 +46,12 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
     FILTER_NAME_REGEX(
         "FILTER_NAME_REGEX", "Filter name regex", "filterNameRegex", SuggestionType.REGEX),
     FILTER_PARENS("FILTER_PARENS", "Filter specifier", "filterSpec)", SuggestionType.PARENTHESIS),
+    /**
+     * The full description is filled in {@link
+     * ParboiledAutoCompleteSuggestion#toAutoCompleteSuggestion(ParboiledAutoCompleteSuggestion)}
+     * based on the operator.
+     */
+    FILTER_SET_OP("FILTER_SET_OP", " of filters", "filterSpec", SuggestionType.SET_OPERATOR),
     // grammar rules that shouldn't be the basis for autocompletion
     IGNORE("IGNORE", "Ignore", "ignore", SuggestionType.UNKNOWN),
     INTERFACE_CONNECTED_TO(
@@ -56,6 +70,13 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
         "INTERFACE_NAME_REGEX", "Interface name regex", "interfaceNameRegex", SuggestionType.REGEX),
     INTERFACE_PARENS(
         "INTERFACE_PARENS", "Interface specifier", "interfaceSpec)", SuggestionType.PARENTHESIS),
+    /**
+     * The full description is filled in {@link
+     * ParboiledAutoCompleteSuggestion#toAutoCompleteSuggestion(ParboiledAutoCompleteSuggestion)}
+     * based on the operator.
+     */
+    INTERFACE_SET_OP(
+        "INTERFACE_SET_OP", " of interfaces", "interfaceSpec", SuggestionType.SET_OPERATOR),
     INTERFACE_TYPE(
         "INTERFACE_TYPE", "Interfaces of type", "interfaceType)", SuggestionType.FUNCTION),
     INTERFACE_VRF("INTERFACE_VRF", "Interfaces in VRF", "vrfName)", SuggestionType.FUNCTION),
@@ -64,7 +85,23 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
     IP_ADDRESS_MASK(
         "IP_ADDRESS_MASK", "IP address mask", "ipAddressMask", SuggestionType.ADDRESS_LITERAL),
     IP_PREFIX("IP_PREFIX", "IP prefix", "prefix-length", SuggestionType.ADDRESS_LITERAL),
+    IP_PROTOCOL_NAME("IP_PROTOCOL_NAME", null, null, SuggestionType.CONSTANT),
+    IP_PROTOCOL_NOT(
+        "IP_PROTOCOL_NOT", "Exclude IP protocol", "ipProtocol", SuggestionType.OPERATOR_WITH_RHS),
     IP_PROTOCOL_NUMBER("IP_PROTOCOL_NUMBER", "IP protocol", "ipProtocol", SuggestionType.CONSTANT),
+    /**
+     * The full description is filled in {@link
+     * ParboiledAutoCompleteSuggestion#toAutoCompleteSuggestion(ParboiledAutoCompleteSuggestion)}
+     * based on the operator.
+     */
+    IP_PROTOCOL_SET_OP(
+        "IP_PROTOCOL_SET_OP", " of IP protocols", "ipProtocolSpec", SuggestionType.SET_OPERATOR),
+    /**
+     * The full description is filled in {@link
+     * ParboiledAutoCompleteSuggestion#toAutoCompleteSuggestion(ParboiledAutoCompleteSuggestion)}
+     * based on the operator.
+     */
+    IP_SPACE_SET_OP("IP_PROTOCOL_SET_OP", " of IP spaces", "ipSpec", SuggestionType.SET_OPERATOR),
     IP_RANGE("IP_RANGE", "IP range", "ipAddressEnd", SuggestionType.ADDRESS_LITERAL),
     IP_WILDCARD("IP_WILDCARD", "IP wildcard", "wildcard", SuggestionType.ADDRESS_LITERAL),
     LOCATION_ENTER(
@@ -74,6 +111,13 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
         SuggestionType.FUNCTION),
     LOCATION_PARENS(
         "LOCATION_PARENS", "Location specifier", "locationSpec)", SuggestionType.PARENTHESIS),
+    /**
+     * The full description is filled in {@link
+     * ParboiledAutoCompleteSuggestion#toAutoCompleteSuggestion(ParboiledAutoCompleteSuggestion)}
+     * based on the operator.
+     */
+    LOCATION_SET_OP(
+        "INTERFACE_SET_OP", " of locations", "locationSpec", SuggestionType.SET_OPERATOR),
     NODE_AND_INTERFACE(
         "NODE_AND_INTERFACE",
         "Node and interface pair",
@@ -93,6 +137,12 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
         "dimensionName",
         SuggestionType.NAME_LITERAL),
     NODE_ROLE_NAME("NODE_ROLE_NAME", "Node role name", "roleName", SuggestionType.NAME_LITERAL),
+    /**
+     * The full description is filled in {@link
+     * ParboiledAutoCompleteSuggestion#toAutoCompleteSuggestion(ParboiledAutoCompleteSuggestion)}
+     * based on the operator.
+     */
+    NODE_SET_OP("NODE_SET_OP", " of nodes", "nodeSpec", SuggestionType.SET_OPERATOR),
     NODE_TYPE("DEVICE_TYPE", "Device type", "deviceType)", SuggestionType.FUNCTION),
     REFERENCE_BOOK_AND_ADDRESS_GROUP(
         "REFERENCE_BOOK_AND_ADDRESS_GROUP",
@@ -121,6 +171,16 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
         "Routing policy specifier",
         "routingPolicySpec)",
         SuggestionType.PARENTHESIS),
+    /**
+     * The full description is filled in {@link
+     * ParboiledAutoCompleteSuggestion#toAutoCompleteSuggestion(ParboiledAutoCompleteSuggestion)}
+     * based on the operator.
+     */
+    ROUTING_POLICY_SET_OP(
+        "ROUTING_POLICY_SET_OP",
+        " of routing policies",
+        "routingPolicySpec",
+        SuggestionType.SET_OPERATOR),
     STRING_LITERAL("STRING_LITERAL", "String literal", "string", SuggestionType.CONSTANT),
     UNKNOWN("UNKNOWN", "Unknown", "unknown", SuggestionType.UNKNOWN),
     VRF_NAME("VRF_NAME", "VRF name", "vrfName", SuggestionType.NAME_LITERAL),

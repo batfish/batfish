@@ -6,6 +6,7 @@ import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_VRF;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_ZONE;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_ENTER;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_PARENS;
+import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_INTERFACE;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME_REGEX;
@@ -13,7 +14,6 @@ import static org.batfish.specifier.parboiled.Anchor.Type.NODE_PARENS;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_AND_DIMENSION;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_TYPE;
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_INTERFACE_GROUP;
-import static org.batfish.specifier.parboiled.Anchor.Type.UNKNOWN;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -115,9 +115,9 @@ public class ParserLocationTest {
         containsInAnyOrder(
             new ParboiledAutoCompleteSuggestion("node1", 0, NODE_NAME),
             new ParboiledAutoCompleteSuggestion("node11", 0, NODE_NAME),
-            new ParboiledAutoCompleteSuggestion("\\", query.length(), UNKNOWN),
-            new ParboiledAutoCompleteSuggestion(",", query.length(), UNKNOWN),
-            new ParboiledAutoCompleteSuggestion("&", query.length(), UNKNOWN),
+            new ParboiledAutoCompleteSuggestion("\\", query.length(), LOCATION_SET_OP),
+            new ParboiledAutoCompleteSuggestion(",", query.length(), LOCATION_SET_OP),
+            new ParboiledAutoCompleteSuggestion("&", query.length(), LOCATION_SET_OP),
             new ParboiledAutoCompleteSuggestion("[", query.length(), NODE_AND_INTERFACE)));
   }
 

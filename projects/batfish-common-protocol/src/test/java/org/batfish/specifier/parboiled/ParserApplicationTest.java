@@ -66,7 +66,7 @@ public class ParserApplicationTest {
                 .map(
                     val ->
                         new ParboiledAutoCompleteSuggestion(
-                            val.toString(), query.length(), Type.UNKNOWN))
+                            val.toString(), query.length(), Type.APPLICATION_NAME))
                 .collect(ImmutableSet.toImmutableSet())));
   }
 
@@ -90,7 +90,7 @@ public class ParserApplicationTest {
 
     assertThat(
         suggestions,
-        containsInAnyOrder(new ParboiledAutoCompleteSuggestion("SSH", 0, Type.UNKNOWN)));
+        containsInAnyOrder(new ParboiledAutoCompleteSuggestion("SSH", 0, Type.APPLICATION_NAME)));
   }
 
   @Test

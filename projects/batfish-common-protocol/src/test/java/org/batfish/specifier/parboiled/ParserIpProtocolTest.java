@@ -57,17 +57,21 @@ public class ParserIpProtocolTest {
                 null)
             .run();
 
-    assertThat(
-        suggestions,
-        equalTo(
-            // '!' and all named values
-            Stream.concat(
-                    Arrays.stream(IpProtocol.values())
-                        .map(Object::toString)
-                        .filter(p -> !p.startsWith("UNNAMED")),
-                    ImmutableSet.of("!").stream())
-                .map(val -> new ParboiledAutoCompleteSuggestion(val, query.length(), Type.UNKNOWN))
-                .collect(ImmutableSet.toImmutableSet())));
+    Set<ParboiledAutoCompleteSuggestion> expected =
+        Stream.concat(
+                Arrays.stream(IpProtocol.values())
+                    .map(Object::toString)
+                    .filter(p -> !p.startsWith("UNNAMED"))
+                    .map(
+                        val ->
+                            new ParboiledAutoCompleteSuggestion(
+                                val, query.length(), Type.IP_PROTOCOL_NAME)),
+                ImmutableSet.of(
+                    new ParboiledAutoCompleteSuggestion("!", query.length(), Type.IP_PROTOCOL_NOT))
+                    .stream())
+            .collect(ImmutableSet.toImmutableSet());
+
+    assertThat(suggestions, equalTo(expected));
   }
 
   @Test
@@ -91,8 +95,8 @@ public class ParserIpProtocolTest {
     assertThat(
         suggestions,
         containsInAnyOrder(
-            new ParboiledAutoCompleteSuggestion("TCF", 0, Type.UNKNOWN),
-            new ParboiledAutoCompleteSuggestion("TCP", 0, Type.UNKNOWN)));
+            new ParboiledAutoCompleteSuggestion("TCF", 0, Type.IP_PROTOCOL_NAME),
+            new ParboiledAutoCompleteSuggestion("TCP", 0, Type.IP_PROTOCOL_NAME)));
   }
 
   @Test
@@ -115,7 +119,8 @@ public class ParserIpProtocolTest {
 
     assertThat(
         suggestions,
-        containsInAnyOrder(new ParboiledAutoCompleteSuggestion(",", query.length(), Type.UNKNOWN)));
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion(",", query.length(), Type.IP_PROTOCOL_SET_OP)));
   }
 
   @Test

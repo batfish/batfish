@@ -8,7 +8,6 @@ import static org.batfish.specifier.parboiled.Anchor.Type.CHAR_LITERAL;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.STRING_LITERAL;
 import static org.batfish.specifier.parboiled.CommonParser.isEscapableNameAnchor;
-import static org.batfish.specifier.parboiled.CommonParser.isOperatorWithRhs;
 import static org.batfish.specifier.parboiled.ParboiledAutoCompleteSuggestion.toAutoCompleteSuggestions;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -141,7 +140,7 @@ public final class ParboiledAutoComplete {
       case ADDRESS_GROUP_NAME:
         return autoCompleteReferenceBookEntity(pm);
       case CHAR_LITERAL:
-        return autoCompleteLiteral(pm);
+        return autoCompleteCharLiteral(pm);
       case EOI:
         return ImmutableSet.of();
       case FILTER_INTERFACE_IN:
@@ -226,7 +225,7 @@ public final class ParboiledAutoComplete {
         // Other routing policy rules appear later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case STRING_LITERAL:
-        return autoCompleteLiteral(pm);
+        return autoCompleteCharLiteral(pm);
       case VRF_NAME:
         return autoCompleteGeneric(pm);
       case WHITESPACE:
@@ -240,23 +239,19 @@ public final class ParboiledAutoComplete {
   }
 
   @VisibleForTesting
-  Set<ParboiledAutoCompleteSuggestion> autoCompleteLiteral(PotentialMatch pm) {
+  Set<ParboiledAutoCompleteSuggestion> autoCompleteCharLiteral(PotentialMatch pm) {
     Optional<PotentialMatch> extendedMatch = extendLiteralMatch(_query, pm);
 
     PotentialMatch pmToConsider = extendedMatch.orElse(pm);
 
-    Optional<Anchor.Type> ancestorAnchor = Optional.empty();
+    int anchorIndex = pmToConsider.getPath().indexOf(pmToConsider.getAnchor());
+    checkArgument(anchorIndex != -1, "Anchor is not present in the path.");
 
-    if (isOperatorWithRhs(pmToConsider.getMatch())) {
-      int anchorIndex = pmToConsider.getPath().indexOf(pmToConsider.getAnchor());
-      checkArgument(anchorIndex != -1, "Anchor is not present in the path.");
-
-      ancestorAnchor =
-          IntStream.range(0, anchorIndex)
-              .mapToObj(i -> pmToConsider.getPath().get(anchorIndex - i - 1).getAnchorType())
-              .filter(Objects::nonNull)
-              .findFirst();
-    }
+    Optional<Anchor.Type> ancestorAnchor =
+        IntStream.range(0, anchorIndex)
+            .mapToObj(i -> pmToConsider.getPath().get(anchorIndex - i - 1).getAnchorType())
+            .filter(Objects::nonNull)
+            .findFirst();
 
     return ImmutableSet.of(
         new ParboiledAutoCompleteSuggestion(

@@ -5,9 +5,12 @@ import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_ADDRESS;
+import static org.batfish.specifier.parboiled.Anchor.Type.IP_PROTOCOL_NOT;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_RANGE;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_PARENS;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_ADDRESS_GROUP;
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.UNKNOWN;
@@ -126,8 +129,8 @@ public class ParboiledAutoCompleteTest {
     assertThat(
         getTestPAC(query).run(),
         containsInAnyOrder(
-            new ParboiledAutoCompleteSuggestion("(", query.length(), UNKNOWN),
-            new ParboiledAutoCompleteSuggestion("!", query.length(), UNKNOWN),
+            new ParboiledAutoCompleteSuggestion("(", query.length(), NODE_PARENS),
+            new ParboiledAutoCompleteSuggestion("!", query.length(), IP_PROTOCOL_NOT),
             new ParboiledAutoCompleteSuggestion("/", query.length(), NODE_NAME_REGEX),
             new ParboiledAutoCompleteSuggestion(
                 "@specifier(", query.length(), REFERENCE_BOOK_AND_ADDRESS_GROUP)));
@@ -168,7 +171,7 @@ public class ParboiledAutoCompleteTest {
             new ParboiledAutoCompleteSuggestion("1.1.1.1", 0, IP_ADDRESS),
             new ParboiledAutoCompleteSuggestion("1.1.1.10", 0, IP_ADDRESS),
             new ParboiledAutoCompleteSuggestion("-", 7, IP_RANGE),
-            new ParboiledAutoCompleteSuggestion(",", 7, UNKNOWN)));
+            new ParboiledAutoCompleteSuggestion(",", 7, NODE_SET_OP)));
   }
 
   /** Test that we produce auto complete snapshot-based names. */
@@ -186,7 +189,7 @@ public class ParboiledAutoCompleteTest {
             ImmutableSet.of(
                 new ParboiledAutoCompleteSuggestion("node1", 0, NODE_NAME),
                 new ParboiledAutoCompleteSuggestion("node10", 0, NODE_NAME),
-                new ParboiledAutoCompleteSuggestion(",", query.length(), UNKNOWN))));
+                new ParboiledAutoCompleteSuggestion(",", query.length(), NODE_SET_OP))));
   }
 
   /** Test that we produce auto complete snapshot-based names even when we begin with a quote. */
@@ -215,7 +218,7 @@ public class ParboiledAutoCompleteTest {
 
     assertThat(
         getTestPAC(query, completionMetadata).run(),
-        containsInAnyOrder(new ParboiledAutoCompleteSuggestion(",", query.length(), UNKNOWN)));
+        containsInAnyOrder(new ParboiledAutoCompleteSuggestion(",", query.length(), NODE_SET_OP)));
   }
 
   /** Test that we properly quote a name complex names when we offer them as suggestions. */
@@ -230,7 +233,7 @@ public class ParboiledAutoCompleteTest {
     assertThat(
         getTestPAC(query, completionMetadata).run(),
         containsInAnyOrder(
-            new ParboiledAutoCompleteSuggestion(",", query.length(), UNKNOWN),
+            new ParboiledAutoCompleteSuggestion(",", query.length(), NODE_SET_OP),
             new ParboiledAutoCompleteSuggestion("node10", 0, NODE_NAME),
             new ParboiledAutoCompleteSuggestion("\"node 1\"", 0, NODE_NAME)));
   }
@@ -285,14 +288,13 @@ public class ParboiledAutoCompleteTest {
     // commma is the only viable auto completion after a valid input
     assertThat(
         getTestPAC(query).run(),
-        containsInAnyOrder(new ParboiledAutoCompleteSuggestion(",", 9, UNKNOWN)));
+        containsInAnyOrder(new ParboiledAutoCompleteSuggestion(",", 9, NODE_SET_OP)));
   }
 
   @Test
   public void testAutoCompletePotentialMatchStringLiteral() {
-    PotentialMatch pm =
-        new PotentialMatch(
-            new PathElement(Type.STRING_LITERAL, "\"pfxcomp\"", 0, 0), "pfx", ImmutableList.of());
+    PathElement anchor = new PathElement(Type.STRING_LITERAL, "\"pfxcomp\"", 0, 0);
+    PotentialMatch pm = new PotentialMatch(anchor, "pfx", ImmutableList.of(anchor));
     assertThat(
         getTestPAC("pfx").autoCompletePotentialMatch(pm),
         containsInAnyOrder(new ParboiledAutoCompleteSuggestion("pfxcomp", 0, UNKNOWN)));
@@ -301,9 +303,8 @@ public class ParboiledAutoCompleteTest {
   /** The suggestion should have the case in the grammar token independent of user input */
   @Test
   public void testAutoCompletePotentialMatchStringLiteralCasePreserve() {
-    PotentialMatch pm =
-        new PotentialMatch(
-            new PathElement(Type.STRING_LITERAL, "\"pfxcomp\"", 0, 0), "PfX", ImmutableList.of());
+    PathElement anchor = new PathElement(Type.STRING_LITERAL, "\"pfxcomp\"", 0, 0);
+    PotentialMatch pm = new PotentialMatch(anchor, "PfX", ImmutableList.of(anchor));
     assertThat(
         getTestPAC("PfX").autoCompletePotentialMatch(pm),
         containsInAnyOrder(new ParboiledAutoCompleteSuggestion("pfxcomp", 0, UNKNOWN)));
