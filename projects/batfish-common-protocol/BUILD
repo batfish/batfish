@@ -77,6 +77,7 @@ java_library(
         "@commons_configuration2//:compile",
         "@commons_io//:compile",
         "@commons_lang3//:compile",
+        "@commons_text//:compile",
         "@errorprone_annotations//:compile",
         "@grizzly_framework//:compile",
         "@grizzly_server//:compile",
