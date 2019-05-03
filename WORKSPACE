@@ -161,6 +161,25 @@ load("@commons_io//:rules.bzl", "commons_io_compile")
 
 commons_io_compile()
 
+#
+maven_repository(
+    name = "commons_text",
+    force = [
+        "org.apache.commons:commons-lang3:3.8.1",
+    ],
+    transitive_deps = [
+        "6505a72a097d9270f7a9e7bf42c4238283247755:org.apache.commons:commons-lang3:3.8.1",
+        "9abf61708a66ab5e55f6169a200dbfc584b546d9:org.apache.commons:commons-text:1.3",
+    ],
+    deps = [
+        "org.apache.commons:commons-text:1.3",
+    ],
+)
+
+load("@commons_text//:rules.bzl", "commons_text_compile")
+
+commons_text_compile()
+
 # diffutils
 maven_repository(
     name = "diffutils",
