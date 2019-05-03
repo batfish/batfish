@@ -16,10 +16,6 @@ public class PluginConsumerTest {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   private static class TestPluginConsumer extends PluginConsumer {
-    private TestPluginConsumer() {
-      super();
-    }
-
     @Override
     public PluginClientType getType() {
       throw new UnsupportedOperationException();
@@ -36,7 +32,7 @@ public class PluginConsumerTest {
     TestPluginConsumer consumer = new TestPluginConsumer();
 
     int[] ints = new int[] {1, 2, 3};
-    consumer.serializeObject(ints, serializeFile);
+    PluginConsumer.serializeObject(ints, serializeFile);
 
     int[] value = consumer.deserializeObject(serializeFile, int[].class);
     assertThat(value, equalTo(ints));

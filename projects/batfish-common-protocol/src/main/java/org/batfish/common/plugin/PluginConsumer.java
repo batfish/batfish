@@ -57,11 +57,12 @@ public abstract class PluginConsumer implements IPluginConsumer {
 
   private ClassLoader _currentClassLoader;
 
-  public PluginConsumer() {
+  protected PluginConsumer() {
     _currentClassLoader = Thread.currentThread().getContextClassLoader();
   }
 
-  private <S extends Serializable> S deserializeObject(InputStream stream, Class<S> outputClass) {
+  private static <S extends Serializable> S deserializeObject(
+      InputStream stream, Class<S> outputClass) {
     try {
       ObjectInputStream ois = new ObjectInputStream(stream);
       Object o = ois.readObject();
@@ -74,7 +75,8 @@ public abstract class PluginConsumer implements IPluginConsumer {
   }
 
   /** Deserialize object from file, with support for different compression methods. */
-  protected <S extends Serializable> S deserializeObject(Path inputFile, Class<S> outputClass) {
+  protected static <S extends Serializable> S deserializeObject(
+      Path inputFile, Class<S> outputClass) {
     try {
       // Awkward nested try blocks required because we refuse to throw IOExceptions.
       try (Closer closer = Closer.create()) {
