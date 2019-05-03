@@ -34,7 +34,7 @@ public abstract class EvpnRoute extends BgpRoute {
 
   private static final long serialVersionUID = 1L;
 
-  protected static final String PROP_ROUTE_DISTINGUISHER = "routeDistinguisher";
+  static final String PROP_ROUTE_DISTINGUISHER = "routeDistinguisher";
   @Nonnull protected final RouteDistinguisher _routeDistinguisher;
 
   protected EvpnRoute(

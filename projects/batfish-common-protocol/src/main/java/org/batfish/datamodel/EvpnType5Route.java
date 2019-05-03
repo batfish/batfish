@@ -32,6 +32,8 @@ public final class EvpnType5Route extends EvpnRoute {
       return new Builder();
     }
 
+    private Builder() {}
+
     @Nonnull
     @Override
     public EvpnType5Route build() {
