@@ -71,6 +71,60 @@ public final class AutoCompleteUtils {
       @Nullable CompletionMetadata completionMetadata,
       @Nullable NodeRolesData nodeRolesData,
       @Nullable ReferenceLibrary referenceLibrary) {
+    return autoComplete(network, snapshot, completionType, query, maxSuggestions, completionMetadata, nodeRolesData, referenceLibrary, true);
+  }
+
+  @Nonnull
+  public static List<AutocompleteSuggestion> autoComplete(
+      @Nullable String network,
+      @Nullable String snapshot,
+      Variable.Type completionType,
+      String query,
+      int maxSuggestions,
+      @Nullable CompletionMetadata completionMetadata,
+      @Nullable NodeRolesData nodeRolesData,
+      @Nullable ReferenceLibrary referenceLibrary,
+      boolean fuzzyMatching) {
+
+    List<AutocompleteSuggestion> suggestions =
+        getPotentialMatches(
+            network,
+            snapshot,
+            completionType,
+            query,
+            maxSuggestions,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
+
+    if (fuzzyMatching) {
+      while (query.length() > 0 && suggestions.isEmpty()) {
+        query = query.substring(0, query.length() - 1);
+        suggestions = getPotentialMatches(
+            network,
+            snapshot,
+            completionType,
+            query,
+            maxSuggestions,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
+      }
+    }
+
+    return suggestions;
+  }
+
+  @Nonnull
+  private static List<AutocompleteSuggestion> getPotentialMatches(
+      @Nullable String network,
+      @Nullable String snapshot,
+      Variable.Type completionType,
+      String query,
+      int maxSuggestions,
+      @Nullable CompletionMetadata completionMetadata,
+      @Nullable NodeRolesData nodeRolesData,
+      @Nullable ReferenceLibrary referenceLibrary) {
     List<AutocompleteSuggestion> suggestions;
 
     switch (completionType) {
@@ -478,23 +532,9 @@ public final class AutoCompleteUtils {
 
     String testQuery = query == null ? "" : query.toLowerCase();
 
-    List<String> matches = getStringMatches(testQuery, strings);
-
-    // if there are no matches, remove characters from the end of the query until there are matches
-    // or the query is the empty string
-    while (testQuery.length() > 0 && matches.isEmpty()) {
-      testQuery = testQuery.substring(0, testQuery.length() - 1);
-      matches = getStringMatches(testQuery, strings);
-    }
-
-    return matches.stream()
-        .map(s -> new AutocompleteSuggestion(s, false))
-        .collect(ImmutableList.toImmutableList());
-  }
-
-  private static List<String> getStringMatches(String query, Set<String> strings) {
     return strings.stream()
-        .filter(s -> s.toLowerCase().contains(query))
+        .filter(s -> s.toLowerCase().contains(testQuery))
+        .map(s -> new AutocompleteSuggestion(s, false))
         .collect(ImmutableList.toImmutableList());
   }
 
