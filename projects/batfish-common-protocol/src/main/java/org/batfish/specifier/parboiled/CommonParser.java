@@ -88,6 +88,11 @@ public abstract class CommonParser extends BaseParser<AstNode> {
     _shadowStack = shadowStack;
   }
 
+  // Characters we use for different set operators
+  static final String SET_OP_DIFFERENCE = "\\";
+  static final String SET_OP_INTERSECTION = "&";
+  static final String SET_OP_UNION = ",";
+
   /** Get the main entry point for {@code grammar} */
   abstract Rule getInputRule(Grammar grammar);
 
@@ -125,24 +130,6 @@ public abstract class CommonParser extends BaseParser<AstNode> {
       case ROUTING_POLICY_NAME:
       case VRF_NAME:
       case ZONE_NAME:
-        return true;
-      default:
-        return false;
-    }
-  }
-
-  /**
-   * Whether {@code literal} represents an operator that has values on the right hand side. This
-   * information is used to provide hints and description for auto completion suggestions
-   */
-  static boolean isOperatorWithRhs(String literal) {
-    switch (literal) {
-      case "(":
-      case "/":
-      case "!":
-      case "-":
-      case ":":
-      case "[":
         return true;
       default:
         return false;

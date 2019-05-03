@@ -3,7 +3,7 @@ package org.batfish.specifier.parboiled;
 import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_NAME_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_PARENS;
-import static org.batfish.specifier.parboiled.Anchor.Type.UNKNOWN;
+import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_SET_OP;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -95,14 +95,13 @@ public class ParserRoutingPolicyTest {
             .run();
 
     assertThat(
-        ImmutableSet.copyOf(suggestions),
-        equalTo(
-            ImmutableSet.of(
-                new ParboiledAutoCompleteSuggestion("RoutingPolicy1", 0, ROUTING_POLICY_NAME),
-                new ParboiledAutoCompleteSuggestion("RoutingPolicy11", 0, ROUTING_POLICY_NAME),
-                new ParboiledAutoCompleteSuggestion("\\", query.length(), UNKNOWN),
-                new ParboiledAutoCompleteSuggestion(",", query.length(), UNKNOWN),
-                new ParboiledAutoCompleteSuggestion("&", query.length(), UNKNOWN))));
+        suggestions,
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("RoutingPolicy1", 0, ROUTING_POLICY_NAME),
+            new ParboiledAutoCompleteSuggestion("RoutingPolicy11", 0, ROUTING_POLICY_NAME),
+            new ParboiledAutoCompleteSuggestion("\\", query.length(), ROUTING_POLICY_SET_OP),
+            new ParboiledAutoCompleteSuggestion(",", query.length(), ROUTING_POLICY_SET_OP),
+            new ParboiledAutoCompleteSuggestion("&", query.length(), ROUTING_POLICY_SET_OP)));
   }
 
   @Test
