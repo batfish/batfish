@@ -9,7 +9,8 @@ final class NameRegexNodeAstNode implements NodeAstNode {
   private final Pattern _pattern;
 
   NameRegexNodeAstNode(AstNode regexAst) {
-    this(((StringAstNode) regexAst).getStr());
+    _regex = ((RegexAstNode) regexAst).getRegex();
+    _pattern = ((RegexAstNode) regexAst).getPattern();
   }
 
   NameRegexNodeAstNode(String regex) {

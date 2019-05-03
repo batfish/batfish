@@ -12,6 +12,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.questions.BgpRoute.Builder;
 import org.junit.Test;
 
@@ -43,7 +44,7 @@ public class BgpRouteTest {
         .addEqualityGroup(brb.build(), brb.build())
         .addEqualityGroup(brb.setNetwork(Prefix.parse("1.1.2.0/24")).build())
         .addEqualityGroup(brb.setAsPath(AsPath.ofSingletonAsSets(1L, 1L)).build())
-        .addEqualityGroup(brb.setCommunities(ImmutableSet.of(1L)).build())
+        .addEqualityGroup(brb.setCommunities(ImmutableSet.of(StandardCommunity.of(1L))).build())
         .addEqualityGroup(brb.setLocalPreference(10).build())
         .addEqualityGroup(brb.setMetric(10).build())
         .addEqualityGroup(brb.setNextHopIp(Ip.parse("2.2.2.2")).build())

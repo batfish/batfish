@@ -7,15 +7,18 @@ import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public final class Layer2Node implements Comparable<Layer2Node> {
+public final class Layer2Node implements Comparable<Layer2Node>, Serializable {
+
   private static final String PROP_HOSTNAME = "hostname";
   private static final String PROP_INTERFACE_NAME = "interfaceName";
   private static final String PROP_SWITCHPORT_VLAN_ID = "switchportVlanId";
+  private static final long serialVersionUID = 1L;
 
   @JsonCreator
   private static @Nonnull Layer2Node create(

@@ -1,52 +1,64 @@
 package org.batfish.datamodel.ospf;
 
+import static org.batfish.datamodel.ospf.OspfTopology.EMPTY;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import com.google.common.testing.EqualsTester;
+import javax.annotation.Nonnull;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpLink;
 import org.batfish.datamodel.ospf.OspfTopology.EdgeId;
 import org.junit.Test;
 
 /** Tests of {@link OspfTopology} */
-public class OspfTopologyTest {
+public final class OspfTopologyTest {
+
+  private static @Nonnull OspfTopology nonTrivialTopology() {
+    MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> graph =
+        ValueGraphBuilder.directed().allowsSelfLoops(false).build();
+    graph.putEdgeValue(
+        new OspfNeighborConfigId("a", "b", "c", "d"),
+        new OspfNeighborConfigId("e", "f", "g", "h"),
+        new OspfSessionProperties(
+            5L, new IpLink(Ip.FIRST_CLASS_A_PRIVATE_IP, Ip.FIRST_CLASS_B_PRIVATE_IP)));
+    return new OspfTopology(graph);
+  }
+
   @Test
   public void testEquals() {
-    MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> g1 =
-        ValueGraphBuilder.directed().build();
-    g1.addNode(new OspfNeighborConfigId("h1", "vrf1", "p", "i1"));
-    MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> g2 =
-        ValueGraphBuilder.from(g1).build();
-    g2.addNode(new OspfNeighborConfigId("h2", "vrf2", "p", "i2"));
     new EqualsTester()
-        .addEqualityGroup(OspfTopology.empty())
-        .addEqualityGroup(new OspfTopology(g1), new OspfTopology(g1))
-        .addEqualityGroup(g2)
+        .addEqualityGroup(
+            EMPTY,
+            EMPTY,
+            new OspfTopology(ValueGraphBuilder.directed().allowsSelfLoops(false).build()))
+        .addEqualityGroup(nonTrivialTopology())
         .addEqualityGroup(new Object())
         .testEquals();
   }
 
   @Test
   public void testEmptyTopology() {
-    OspfTopology topo = OspfTopology.empty();
+    OspfTopology topo = EMPTY;
     assertThat(topo.getGraph().nodes(), empty());
   }
 
   @Test
   public void testGetNeighborsNonExistentNode() {
     OspfNeighborConfigId n = new OspfNeighborConfigId("h1", "vrf1", "p", "i1");
-    assertThat(OspfTopology.empty().neighbors(n), empty());
+    assertThat(EMPTY.neighbors(n), empty());
   }
 
   @Test
   public void testGetIncomingEdgesNonExistentNode() {
     OspfNeighborConfigId n = new OspfNeighborConfigId("h1", "vrf1", "p", "i1");
-    assertThat(OspfTopology.empty().incomingEdges(n), empty());
+    assertThat(EMPTY.incomingEdges(n), empty());
   }
 
   @Test
@@ -87,5 +99,10 @@ public class OspfTopologyTest {
     OspfNeighborConfigId n2 = new OspfNeighborConfigId("h2", "vrf2", "p", "i2");
     EdgeId edgeId = OspfTopology.makeEdge(n, n2);
     assertThat(edgeId.reverse(), equalTo(OspfTopology.makeEdge(n2, n)));
+  }
+
+  @Test
+  public void testJavaSerialization() {
+    assertEquals(nonTrivialTopology(), SerializationUtils.clone(nonTrivialTopology()));
   }
 }

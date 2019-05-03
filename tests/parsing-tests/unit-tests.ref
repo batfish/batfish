@@ -41291,7 +41291,7 @@
             "          (vxv_id",
             "            ID:'id'",
             "            vni = (vni_number",
-            "              v = DEC:'100001')",
+            "              v = DEC:'10001')",
             "            NEWLINE:'\\n')))))",
             "  (statement",
             "    (s_net_add",
@@ -41405,6 +41405,40 @@
             "                DASH:'-'",
             "                high = (uint16",
             "                  d = DEC:'10003')))))",
+            "        (vx_vxlan",
+            "          VXLAN:'vxlan'",
+            "          (vxv_local_tunnelip",
+            "            LOCAL_TUNNELIP:'local-tunnelip'",
+            "            ip = (ip_address",
+            "              IP_ADDRESS:'192.0.2.10')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vxlan",
+            "        VXLAN:'vxlan'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'vni10004')))",
+            "        (vx_vxlan",
+            "          VXLAN:'vxlan'",
+            "          (vxv_id",
+            "            ID:'id'",
+            "            vni = (vni_number",
+            "              v = DEC:'10004')",
+            "            NEWLINE:'\\n')))))",
+            "  (statement",
+            "    (s_net_add",
+            "      NET:'net'",
+            "      ADD:'add'",
+            "      (a_vxlan",
+            "        VXLAN:'vxlan'",
+            "        names = (glob",
+            "          (glob_range_set",
+            "            base_word = (numbered_word",
+            "              NUMBERED_WORD:'vni10004')))",
             "        (vx_vxlan",
             "          VXLAN:'vxlan'",
             "          (vxv_local_tunnelip",
@@ -73086,7 +73120,7 @@
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 86,
+              "Line" : 88,
               "Parser_Context" : "[frr_username s_extra_configuration statement cumulus_nclu_configuration]",
               "Text" : "username cumulus nopassword\\n"
             }
@@ -77783,6 +77817,12 @@
             "vni10001" : {
               "definitionLines" : [
                 75
+              ],
+              "numReferrers" : 1
+            },
+            "vni10004" : {
+              "definitionLines" : [
+                81
               ],
               "numReferrers" : 1
             }
@@ -84582,7 +84622,7 @@
               "vrf self-reference" : [
                 72,
                 73,
-                87
+                89
               ]
             }
           },
@@ -84590,6 +84630,11 @@
             "vni10001" : {
               "vxlan self-reference" : [
                 75
+              ]
+            },
+            "vni10004" : {
+              "vxlan self-reference" : [
+                81
               ]
             }
           }

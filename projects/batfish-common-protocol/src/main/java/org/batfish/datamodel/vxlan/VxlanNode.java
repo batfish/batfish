@@ -3,6 +3,7 @@ package org.batfish.datamodel.vxlan;
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -10,7 +11,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 /** A VXLAN endpoint. */
 @ParametersAreNonnullByDefault
-public final class VxlanNode {
+public final class VxlanNode implements Serializable {
 
   public static final class Builder {
 
@@ -39,6 +40,8 @@ public final class VxlanNode {
   public static @Nonnull Builder builder() {
     return new Builder();
   }
+
+  private static final long serialVersionUID = 1L;
 
   private final String _hostname;
   private final int _vni;

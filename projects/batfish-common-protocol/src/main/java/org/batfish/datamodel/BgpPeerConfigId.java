@@ -4,19 +4,23 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /** Uniquely identifies a {@link BgpPeerConfig} in a network. */
-public final class BgpPeerConfigId implements Comparable<BgpPeerConfigId> {
+public final class BgpPeerConfigId implements Comparable<BgpPeerConfigId>, Serializable {
+
   private static final String PROP_HOSTNAME = "hostname";
   private static final String PROP_VRF_NAME = "vrf";
   private static final String PROP_INTERFACE = "interface";
   private static final String PROP_PREFIX = "prefix";
   private static final String PROP_TYPE = "type";
   private static final String PROP_DYNAMIC = "dynamic";
+  private static final long serialVersionUID = 1L;
+
   private final String _hostname;
   private final String _vrfName;
   @Nullable private final String _peerInterface;

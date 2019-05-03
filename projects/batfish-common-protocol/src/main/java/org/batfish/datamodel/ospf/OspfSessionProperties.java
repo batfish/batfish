@@ -1,11 +1,14 @@
 package org.batfish.datamodel.ospf;
 
 import com.google.common.base.MoreObjects;
+import java.io.Serializable;
 import java.util.Objects;
 import org.batfish.datamodel.IpLink;
 
 /** Properties of an OSPF session that is compatible (based on two endpoint configurations). */
-public final class OspfSessionProperties {
+public final class OspfSessionProperties implements Serializable {
+
+  private static final long serialVersionUID = 1L;
 
   private final long _area;
   private final IpLink _ipLink;

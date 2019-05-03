@@ -382,6 +382,7 @@ import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
@@ -9655,7 +9656,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitSet_community_additive_rm_stanza(Set_community_additive_rm_stanzaContext ctx) {
-    List<Long> commList = new ArrayList<>();
+    ImmutableList.Builder<StandardCommunity> builder = ImmutableList.builder();
     for (CommunityContext c : ctx.communities) {
       Long community = toLong(c);
       if (community == null) {
@@ -9664,9 +9665,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                 "Invalid standard community: '%s' in: '%s'", c.getText(), getFullText(ctx)));
         return;
       }
-      commList.add(community);
+      builder.add(StandardCommunity.of(community));
     }
-    RouteMapSetAdditiveCommunityLine line = new RouteMapSetAdditiveCommunityLine(commList);
+    RouteMapSetAdditiveCommunityLine line = new RouteMapSetAdditiveCommunityLine(builder.build());
     _currentRouteMapClause.addSetLine(line);
   }
 
@@ -11020,7 +11021,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.ACCEPT_OWN() != null) {
       return WellKnownCommunity.ACCEPT_OWN;
     } else if (ctx.STANDARD_COMMUNITY() != null) {
-      return CommonUtil.communityStringToLong(ctx.getText());
+      return StandardCommunity.parse(ctx.getText()).asLong();
     } else if (ctx.uint32() != null) {
       return toLong(ctx.uint32());
     } else if (ctx.INTERNET() != null) {

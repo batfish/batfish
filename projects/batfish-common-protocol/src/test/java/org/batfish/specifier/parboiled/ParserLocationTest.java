@@ -1,16 +1,27 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.ParboiledAutoComplete.RANK_STRING_LITERAL;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_CONNECTED_TO;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_TYPE;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_VRF;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_ZONE;
+import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_ENTER;
+import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_PARENS;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_INTERFACE;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_PARENS;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_AND_DIMENSION;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_TYPE;
+import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_INTERFACE_GROUP;
+import static org.batfish.specifier.parboiled.Anchor.Type.UNKNOWN;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.InterfaceType;
-import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -45,44 +56,37 @@ public class ParserLocationTest {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setNodes(ImmutableSet.of("node1")).build();
 
-    List<AutocompleteSuggestion> suggestions =
-        ParboiledAutoComplete.autoComplete(
-            Grammar.LOCATION_SPECIFIER,
-            "network",
-            "snapshot",
-            query,
-            Integer.MAX_VALUE,
-            completionMetadata,
-            null,
-            null);
+    Set<ParboiledAutoCompleteSuggestion> suggestions =
+        new ParboiledAutoComplete(
+                Parser.instance(),
+                Grammar.LOCATION_SPECIFIER,
+                Parser.ANCHORS,
+                "network",
+                "snapshot",
+                query,
+                Integer.MAX_VALUE,
+                completionMetadata,
+                null,
+                null)
+            .run();
 
-    ImmutableSet<AutocompleteSuggestion> expectedSet =
-        ImmutableSet.<AutocompleteSuggestion>builder()
-            .add(
-                new AutocompleteSuggestion(
-                    "node1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()))
-            .addAll(
-                ImmutableList.of(
-                        "(",
-                        "/",
-                        "\"",
-                        "@connectedTo",
-                        "@deviceType",
-                        "@enter",
-                        "@interfaceGroup",
-                        "@interfaceType",
-                        "@role",
-                        "@vrf",
-                        "@zone")
-                    .stream()
-                    .map(
-                        s ->
-                            new AutocompleteSuggestion(
-                                s, true, null, RANK_STRING_LITERAL, query.length()))
-                    .collect(Collectors.toSet()))
-            .build();
-
-    assertThat(ImmutableSet.copyOf(suggestions), equalTo(expectedSet));
+    assertThat(
+        suggestions,
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("node1", query.length(), NODE_NAME),
+            new ParboiledAutoCompleteSuggestion("(", query.length(), NODE_PARENS),
+            new ParboiledAutoCompleteSuggestion("(", query.length(), LOCATION_PARENS),
+            new ParboiledAutoCompleteSuggestion("/", query.length(), NODE_NAME_REGEX),
+            new ParboiledAutoCompleteSuggestion(
+                "@connectedTo(", query.length(), INTERFACE_CONNECTED_TO),
+            new ParboiledAutoCompleteSuggestion("@deviceType(", query.length(), NODE_TYPE),
+            new ParboiledAutoCompleteSuggestion("@enter(", query.length(), LOCATION_ENTER),
+            new ParboiledAutoCompleteSuggestion(
+                "@interfaceGroup(", query.length(), REFERENCE_BOOK_AND_INTERFACE_GROUP),
+            new ParboiledAutoCompleteSuggestion("@interfaceType(", query.length(), INTERFACE_TYPE),
+            new ParboiledAutoCompleteSuggestion("@role(", query.length(), NODE_ROLE_AND_DIMENSION),
+            new ParboiledAutoCompleteSuggestion("@vrf(", query.length(), INTERFACE_VRF),
+            new ParboiledAutoCompleteSuggestion("@zone(", query.length(), INTERFACE_ZONE)));
   }
 
   @Test
@@ -92,29 +96,29 @@ public class ParserLocationTest {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setNodes(ImmutableSet.of("node1", "node11")).build();
 
-    List<AutocompleteSuggestion> suggestions =
-        ParboiledAutoComplete.autoComplete(
-            Grammar.LOCATION_SPECIFIER,
-            "network",
-            "snapshot",
-            query,
-            Integer.MAX_VALUE,
-            completionMetadata,
-            null,
-            null);
+    Set<ParboiledAutoCompleteSuggestion> suggestions =
+        new ParboiledAutoComplete(
+                Parser.instance(),
+                Grammar.LOCATION_SPECIFIER,
+                Parser.ANCHORS,
+                "network",
+                "snapshot",
+                query,
+                Integer.MAX_VALUE,
+                completionMetadata,
+                null,
+                null)
+            .run();
 
     assertThat(
-        ImmutableSet.copyOf(suggestions),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion(
-                    "node1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
-                new AutocompleteSuggestion(
-                    "node11", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
-                new AutocompleteSuggestion("\\", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("&", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("[", true, null, RANK_STRING_LITERAL, query.length()))));
+        suggestions,
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("node1", 0, NODE_NAME),
+            new ParboiledAutoCompleteSuggestion("node11", 0, NODE_NAME),
+            new ParboiledAutoCompleteSuggestion("\\", query.length(), UNKNOWN),
+            new ParboiledAutoCompleteSuggestion(",", query.length(), UNKNOWN),
+            new ParboiledAutoCompleteSuggestion("&", query.length(), UNKNOWN),
+            new ParboiledAutoCompleteSuggestion("[", query.length(), NODE_AND_INTERFACE)));
   }
 
   @Test

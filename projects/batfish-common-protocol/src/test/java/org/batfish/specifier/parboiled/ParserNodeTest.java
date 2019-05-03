@@ -1,14 +1,19 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.ParboiledAutoComplete.RANK_STRING_LITERAL;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_PARENS;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_AND_DIMENSION;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_TYPE;
+import static org.batfish.specifier.parboiled.Anchor.Type.UNKNOWN;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
-import java.util.List;
+import java.util.Set;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.DeviceType;
-import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -43,30 +48,28 @@ public class ParserNodeTest {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setNodes(ImmutableSet.of("node1")).build();
 
-    List<AutocompleteSuggestion> suggestions =
-        ParboiledAutoComplete.autoComplete(
-            Grammar.NODE_SPECIFIER,
-            "network",
-            "snapshot",
-            query,
-            Integer.MAX_VALUE,
-            completionMetadata,
-            null,
-            null);
+    Set<ParboiledAutoCompleteSuggestion> suggestions =
+        new ParboiledAutoComplete(
+                Parser.instance(),
+                Grammar.NODE_SPECIFIER,
+                Parser.ANCHORS,
+                "network",
+                "snapshot",
+                query,
+                Integer.MAX_VALUE,
+                completionMetadata,
+                null,
+                null)
+            .run();
 
     assertThat(
-        ImmutableSet.copyOf(suggestions),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion(
-                    "node1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
-                new AutocompleteSuggestion("(", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("/", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(
-                    "@role", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(
-                    "@deviceType", true, null, RANK_STRING_LITERAL, query.length()))));
+        suggestions,
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("node1", query.length(), NODE_NAME),
+            new ParboiledAutoCompleteSuggestion("(", query.length(), NODE_PARENS),
+            new ParboiledAutoCompleteSuggestion("/", query.length(), NODE_NAME_REGEX),
+            new ParboiledAutoCompleteSuggestion("@role(", query.length(), NODE_ROLE_AND_DIMENSION),
+            new ParboiledAutoCompleteSuggestion("@deviceType(", query.length(), NODE_TYPE)));
   }
 
   @Test
@@ -76,28 +79,29 @@ public class ParserNodeTest {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setNodes(ImmutableSet.of("node1", "node11")).build();
 
-    List<AutocompleteSuggestion> suggestions =
-        ParboiledAutoComplete.autoComplete(
-            Grammar.NODE_SPECIFIER,
-            "network",
-            "snapshot",
-            query,
-            Integer.MAX_VALUE,
-            completionMetadata,
-            null,
-            null);
+    Set<ParboiledAutoCompleteSuggestion> suggestions =
+        new ParboiledAutoComplete(
+                Parser.instance(),
+                Grammar.NODE_SPECIFIER,
+                Parser.ANCHORS,
+                "network",
+                "snapshot",
+                query,
+                Integer.MAX_VALUE,
+                completionMetadata,
+                null,
+                null)
+            .run();
 
     assertThat(
         ImmutableSet.copyOf(suggestions),
         equalTo(
             ImmutableSet.of(
-                new AutocompleteSuggestion(
-                    "node1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
-                new AutocompleteSuggestion(
-                    "node11", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
-                new AutocompleteSuggestion("\\", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("&", true, null, RANK_STRING_LITERAL, query.length()))));
+                new ParboiledAutoCompleteSuggestion("node1", 0, NODE_NAME),
+                new ParboiledAutoCompleteSuggestion("node11", 0, NODE_NAME),
+                new ParboiledAutoCompleteSuggestion("\\", query.length(), UNKNOWN),
+                new ParboiledAutoCompleteSuggestion(",", query.length(), UNKNOWN),
+                new ParboiledAutoCompleteSuggestion("&", query.length(), UNKNOWN))));
   }
 
   @Test

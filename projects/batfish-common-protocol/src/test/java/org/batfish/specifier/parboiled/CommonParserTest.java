@@ -1,6 +1,5 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.CommonParser.nameNeedsEscaping;
 import static org.batfish.specifier.parboiled.Parser.initAnchors;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
@@ -19,18 +18,6 @@ public class CommonParserTest {
 
   private static boolean matches(String query, Rule rule) {
     return new BasicParseRunner<AstNode>(rule).run(query).matched;
-  }
-
-  @Test
-  public void testNameNeedsEscaping() {
-    assertFalse("null", nameNeedsEscaping(null));
-    assertFalse("empty", nameNeedsEscaping(""));
-    assertFalse("normal", nameNeedsEscaping("abc"));
-
-    assertTrue("digit start", nameNeedsEscaping("1abc"));
-    assertTrue("quote start", nameNeedsEscaping("\"abc"));
-    assertTrue("slash start", nameNeedsEscaping("/abc"));
-    assertTrue("special char", nameNeedsEscaping("a bc"));
   }
 
   @Test
