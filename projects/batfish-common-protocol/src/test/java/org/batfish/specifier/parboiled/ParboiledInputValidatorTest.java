@@ -1,7 +1,7 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.ParboiledInputValidator.getErrorMessage;
-import static org.batfish.specifier.parboiled.ParboiledInputValidator.getErrorMessageMissingName;
+import static org.batfish.datamodel.answers.InputValidationUtils.getErrorMessage;
+import static org.batfish.datamodel.answers.InputValidationUtils.getErrorMessageMissingName;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
