@@ -71,9 +71,31 @@ public final class AutoCompleteUtils {
       @Nullable CompletionMetadata completionMetadata,
       @Nullable NodeRolesData nodeRolesData,
       @Nullable ReferenceLibrary referenceLibrary) {
-    return autoComplete(network, snapshot, completionType, query, maxSuggestions, completionMetadata, nodeRolesData, referenceLibrary, true);
+    return autoComplete(
+        network,
+        snapshot,
+        completionType,
+        query,
+        maxSuggestions,
+        completionMetadata,
+        nodeRolesData,
+        referenceLibrary,
+        true);
   }
 
+  /**
+   * @param network name of network
+   * @param snapshot name of snapshot
+   * @param completionType completion type
+   * @param query input query
+   * @param maxSuggestions maximum number of suggestions returned
+   * @param completionMetadata completion metadata
+   * @param nodeRolesData node roles data
+   * @param referenceLibrary reference library
+   * @param fuzzyMatching if true will relax the input query to guarantee that suggestions are
+   *     returned
+   * @return a list of AutocompleteSuggestion
+   */
   @Nonnull
   public static List<AutocompleteSuggestion> autoComplete(
       @Nullable String network,
@@ -98,17 +120,21 @@ public final class AutoCompleteUtils {
             referenceLibrary);
 
     if (fuzzyMatching) {
+      // If there are no suggestions, remove characters from the end of the query until there are
+      // suggestions or the query is the empty string. This logic is done here to ensure that all
+      // possible suggestions types have been considered before relaxing the query
       while (query.length() > 0 && suggestions.isEmpty()) {
         query = query.substring(0, query.length() - 1);
-        suggestions = getPotentialMatches(
-            network,
-            snapshot,
-            completionType,
-            query,
-            maxSuggestions,
-            completionMetadata,
-            nodeRolesData,
-            referenceLibrary);
+        suggestions =
+            getPotentialMatches(
+                network,
+                snapshot,
+                completionType,
+                query,
+                maxSuggestions,
+                completionMetadata,
+                nodeRolesData,
+                referenceLibrary);
       }
     }
 
