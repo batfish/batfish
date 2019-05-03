@@ -88,6 +88,7 @@ public abstract class CommonParser extends BaseParser<AstNode> {
     _shadowStack = shadowStack;
   }
 
+  /** Get the main entry point for {@code grammar} */
   abstract Rule getInputRule(Grammar grammar);
 
   static CommonParser instance() {

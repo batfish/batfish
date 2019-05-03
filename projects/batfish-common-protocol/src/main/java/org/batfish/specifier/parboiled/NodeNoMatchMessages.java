@@ -17,24 +17,19 @@ import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 
-/** Checks if the node specifier results in an empty set */
+/** Implemented {@link NoMatchMessages} for nodes */
 @ParametersAreNonnullByDefault
-final class NodeNoMatchMessages {
+final class NodeNoMatchMessages implements NoMatchMessages {
 
   @ParametersAreNonnullByDefault
   private final class Checker implements NodeAstNodeVisitor<List<String>> {
 
     private final CompletionMetadata _completionMetadata;
     private final NodeRolesData _nodeRolesData;
-    private final ReferenceLibrary _referenceLibrary;
 
-    Checker(
-        CompletionMetadata completionMetadata,
-        NodeRolesData nodeRolesData,
-        ReferenceLibrary referenceLibrary) {
+    Checker(CompletionMetadata completionMetadata, NodeRolesData nodeRolesData) {
       _completionMetadata = completionMetadata;
       _nodeRolesData = nodeRolesData;
-      _referenceLibrary = referenceLibrary;
     }
 
     private List<String> concat(List<String> a, List<String> b) {
@@ -130,10 +125,11 @@ final class NodeNoMatchMessages {
     return Objects.hash(_ast);
   }
 
+  @Override
   public List<String> get(
       CompletionMetadata completionMetadata,
       NodeRolesData nodeRolesData,
       ReferenceLibrary referenceLibrary) {
-    return _ast.accept(new Checker(completionMetadata, nodeRolesData, referenceLibrary));
+    return _ast.accept(new Checker(completionMetadata, nodeRolesData));
   }
 }

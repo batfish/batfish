@@ -17,9 +17,9 @@ import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 
-/** Checks if the node specifier results in an empty set */
+/** Implemented {@link NoMatchMessages} for interfaces */
 @ParametersAreNonnullByDefault
-final class InterfaceNoMatchMessages {
+final class InterfaceNoMatchMessages implements NoMatchMessages {
 
   @ParametersAreNonnullByDefault
   private final class Checker implements InterfaceAstNodeVisitor<List<String>> {
@@ -177,6 +177,7 @@ final class InterfaceNoMatchMessages {
     return Objects.hash(_ast);
   }
 
+  @Override
   public List<String> get(
       CompletionMetadata completionMetadata,
       NodeRolesData nodeRolesData,

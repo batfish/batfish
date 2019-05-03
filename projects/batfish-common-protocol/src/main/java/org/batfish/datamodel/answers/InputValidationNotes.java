@@ -1,6 +1,5 @@
 package org.batfish.datamodel.answers;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.MoreObjects.toStringHelper;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -37,7 +36,7 @@ public final class InputValidationNotes {
   @Nullable private final String _description;
 
   /** For invalid input, where the error begins */
-  private final int _errorIndex;
+  @Nullable private final Integer _errorIndex;
 
   /** List of everything specified by the input */
   @Nullable private final List<String> _expansions;
@@ -51,8 +50,7 @@ public final class InputValidationNotes {
       @Nullable @JsonProperty(PROP_DESCRIPTION) String description,
       @Nullable @JsonProperty(PROP_ERROR_INDEX) Integer errorIndex,
       @Nullable @JsonProperty(PROP_EXPANSIONS) List<String> expansions) {
-    return new InputValidationNotes(
-        validity, description, firstNonNull(errorIndex, -1), expansions);
+    return new InputValidationNotes(validity, description, errorIndex, expansions);
   }
 
   public InputValidationNotes(Validity validity, String description) {
@@ -60,17 +58,17 @@ public final class InputValidationNotes {
   }
 
   public InputValidationNotes(Validity validity, List<String> expansions) {
-    this(validity, null, -1, expansions);
+    this(validity, null, null, expansions);
   }
 
-  public InputValidationNotes(Validity validity, String description, int errorIndex) {
+  public InputValidationNotes(Validity validity, String description, @Nullable Integer errorIndex) {
     this(validity, description, errorIndex, null);
   }
 
   public InputValidationNotes(
       Validity validity,
       @Nullable String description,
-      int errorIndex,
+      @Nullable Integer errorIndex,
       @Nullable List<String> expansions) {
     _validity = validity;
     _description = description;
@@ -85,7 +83,8 @@ public final class InputValidationNotes {
   }
 
   @JsonProperty(PROP_ERROR_INDEX)
-  public int getErrorIndex() {
+  @Nullable
+  public Integer getErrorIndex() {
     return _errorIndex;
   }
 
@@ -107,7 +106,7 @@ public final class InputValidationNotes {
     }
 
     return Objects.equals(_description, ((InputValidationNotes) o)._description)
-        && _errorIndex == ((InputValidationNotes) o)._errorIndex
+        && Objects.equals(_errorIndex, ((InputValidationNotes) o)._errorIndex)
         && Objects.equals(_expansions, ((InputValidationNotes) o)._expansions)
         && Objects.equals(_validity, ((InputValidationNotes) o)._validity);
   }
