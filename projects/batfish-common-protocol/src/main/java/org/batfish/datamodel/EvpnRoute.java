@@ -6,6 +6,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
+import org.batfish.datamodel.bgp.community.Community;
 
 /**
  * A generic EVPN route containing the common properties among the different types of EVPN routes
@@ -41,7 +42,7 @@ public abstract class EvpnRoute extends BgpRoute {
       Ip nextHopIp,
       int admin,
       AsPath asPath,
-      SortedSet<Long> communities,
+      SortedSet<Community> communities,
       boolean discard,
       long localPreference,
       long med,
