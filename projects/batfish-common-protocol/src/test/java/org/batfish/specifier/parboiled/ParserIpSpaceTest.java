@@ -1,18 +1,19 @@
 package org.batfish.specifier.parboiled;
 
+import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.IP_ADDRESS;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_PREFIX;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_RANGE;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_WILDCARD;
-import static org.batfish.specifier.parboiled.ParboiledAutoComplete.RANK_STRING_LITERAL;
+import static org.batfish.specifier.parboiled.Anchor.Type.UNKNOWN;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import java.util.List;
+import java.util.Set;
 import org.batfish.common.CompletionMetadata;
-import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
@@ -35,17 +36,20 @@ public class ParserIpSpaceTest {
     return new ReportingParseRunner<>(Parser.instance().getInputRule(Grammar.IP_SPACE_SPECIFIER));
   }
 
-  private static List<AutocompleteSuggestion> autoCompleteHelper(
+  private static Set<ParboiledAutoCompleteSuggestion> autoCompleteHelper(
       String query, ReferenceLibrary referenceLibrary) {
-    return ParboiledAutoComplete.autoComplete(
-        Grammar.IP_SPACE_SPECIFIER,
-        "network",
-        "snapshot",
-        query,
-        Integer.MAX_VALUE,
-        null,
-        NodeRolesData.builder().build(),
-        referenceLibrary);
+    return new ParboiledAutoComplete(
+            Parser.instance(),
+            Grammar.IP_SPACE_SPECIFIER,
+            Parser.ANCHORS,
+            "network",
+            "snapshot",
+            query,
+            Integer.MAX_VALUE,
+            null,
+            NodeRolesData.builder().build(),
+            referenceLibrary)
+        .run();
   }
 
   /** This tests if we have proper completion annotations on the rules */
@@ -70,39 +74,31 @@ public class ParserIpSpaceTest {
             .setPrefixes(ImmutableSet.of("1.1.1.1/22"))
             .build();
 
-    List<AutocompleteSuggestion> suggestions =
-        ParboiledAutoComplete.autoComplete(
-            Grammar.IP_SPACE_SPECIFIER,
-            "network",
-            "snapshot",
-            query,
-            Integer.MAX_VALUE,
-            completionMetadata,
-            null,
-            null);
+    Set<ParboiledAutoCompleteSuggestion> suggestions =
+        new ParboiledAutoComplete(
+                Parser.instance(),
+                Grammar.IP_SPACE_SPECIFIER,
+                Parser.ANCHORS,
+                "network",
+                "snapshot",
+                query,
+                Integer.MAX_VALUE,
+                completionMetadata,
+                null,
+                null)
+            .run();
 
     assertThat(
         suggestions,
         containsInAnyOrder(
-            new AutocompleteSuggestion(
-                "1.1.1.1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
-            new AutocompleteSuggestion(
-                "1.1.1.10", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
-            new AutocompleteSuggestion(
-                "-", true, IP_RANGE.getDescription(), RANK_STRING_LITERAL, 7, IP_RANGE.getHint()),
-            new AutocompleteSuggestion(
-                ":",
-                true,
-                IP_WILDCARD.getDescription(),
-                RANK_STRING_LITERAL,
-                7,
-                IP_WILDCARD.getHint()),
-            new AutocompleteSuggestion(
-                "/", true, IP_PREFIX.getDescription(), RANK_STRING_LITERAL, 7, IP_PREFIX.getHint()),
-            new AutocompleteSuggestion("1.1.1.1/22", true, null, RANK_STRING_LITERAL, 0),
-            new AutocompleteSuggestion("\\", true, null, RANK_STRING_LITERAL, 7),
-            new AutocompleteSuggestion("&", true, null, RANK_STRING_LITERAL, 7),
-            new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, 7)));
+            new ParboiledAutoCompleteSuggestion("1.1.1.1", 0, IP_ADDRESS),
+            new ParboiledAutoCompleteSuggestion("1.1.1.10", 0, IP_ADDRESS),
+            new ParboiledAutoCompleteSuggestion("-", query.length(), IP_RANGE),
+            new ParboiledAutoCompleteSuggestion(":", query.length(), IP_WILDCARD),
+            new ParboiledAutoCompleteSuggestion("1.1.1.1/22", 0, IP_PREFIX),
+            new ParboiledAutoCompleteSuggestion("\\", query.length(), UNKNOWN),
+            new ParboiledAutoCompleteSuggestion("&", query.length(), UNKNOWN),
+            new ParboiledAutoCompleteSuggestion(",", query.length(), UNKNOWN)));
   }
 
   @Test
@@ -261,10 +257,8 @@ public class ParserIpSpaceTest {
 
     // only g1 should be suggested
     assertThat(
-        ImmutableSet.copyOf(autoCompleteHelper(query, library)),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion(
-                    "g1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()))));
+        autoCompleteHelper(query, library),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("g1", query.length(), ADDRESS_GROUP_NAME)));
   }
 }
