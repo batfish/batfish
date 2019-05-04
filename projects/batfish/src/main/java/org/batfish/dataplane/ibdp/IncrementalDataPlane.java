@@ -24,6 +24,7 @@ import org.batfish.datamodel.ForwardingAnalysisImpl;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Topology;
 
 public final class IncrementalDataPlane implements Serializable, DataPlane {
 
@@ -33,7 +34,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
     private Map<Ip, Map<String, Set<String>>> _ipVrfOwners;
     private Map<String, Node> _nodes;
-    private TopologyContext _topologyContext;
+    private Topology _layer3Topology;
 
     public Builder setIpVrfOwners(Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
       _ipVrfOwners = ImmutableMap.copyOf(ipVrfOwners);
@@ -45,8 +46,8 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
       return this;
     }
 
-    public Builder setTopologyContext(TopologyContext topologyContext) {
-      _topologyContext = topologyContext;
+    public Builder setLayer3Topology(Topology layer3Topology) {
+      _layer3Topology = layer3Topology;
       return this;
     }
 
@@ -105,15 +106,15 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
   private final Map<String, Node> _nodes;
 
-  private final transient TopologyContext _topologyContext;
-
+  private final Topology _layer3Topology;
+  
   private transient SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
       _ribs;
 
   private IncrementalDataPlane(Builder builder) {
     _ipVrfOwners = builder._ipVrfOwners;
     _nodes = builder._nodes;
-    _topologyContext = builder._topologyContext;
+    _layer3Topology = builder._layer3Topology;
   }
 
   private Map<String, Configuration> computeConfigurations() {
@@ -134,7 +135,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
   private ForwardingAnalysis computeForwardingAnalysis() {
     return new ForwardingAnalysisImpl(
-        getConfigurations(), getFibs(), _topologyContext.getLayer3Topology());
+        getConfigurations(), getFibs(), _layer3Topology);
   }
 
   private SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
