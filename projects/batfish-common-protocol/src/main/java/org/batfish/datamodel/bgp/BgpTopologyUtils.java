@@ -222,8 +222,8 @@ public final class BgpTopologyUtils {
     }
 
     Set<BgpPeerConfigId> alreadyEstablished = graph.adjacentNodes(neighborId);
-    NodeInterfacePair peerNip =
-        new NodeInterfacePair(neighborId.getHostname(), neighborId.getPeerInterface());
+    String hostname = neighborId.getHostname();
+    NodeInterfacePair peerNip = new NodeInterfacePair(hostname, neighborId.getPeerInterface());
     graph.nodes().stream()
         .filter(
             candidateId ->
@@ -231,7 +231,7 @@ public final class BgpTopologyUtils {
                 // initiate the session), don't bother checking in this direction
                 !alreadyEstablished.contains(candidateId)
                     //  Ensure candidate is unnumbered and has compatible local/remote AS
-                    && bgpCandidatePassesSanityChecks(neighbor, candidateId, nc)
+                    && bgpCandidatePassesSanityChecks(hostname, neighbor, candidateId, nc)
                     // Check layer 2 connectivity
                     && layer2Topology.inSameBroadcastDomain(
                         peerNip,
@@ -315,15 +315,22 @@ public final class BgpTopologyUtils {
   }
 
   /**
-   * Check if {@code candidateId} represents a BGP unnumbered peer with a valid configuration and
-   * compatible local/remote AS to peer with BGP unnumbered peer {@code neighbor}.
+   * Check if {@code candidateId} represents a BGP unnumbered peer compatible with BGP unnumbered
+   * peer {@code neighbor}. This means:
+   *
+   * <ul>
+   *   <li>The candidate is not on the same node as the neighbor
+   *   <li>The candidate's possible remote ASNs include the neighbor's local AS, and vice versa
+   * </ul>
    */
   private static boolean bgpCandidatePassesSanityChecks(
+      @Nonnull String neighborHostname,
       @Nonnull BgpUnnumberedPeerConfig neighbor,
       @Nonnull BgpPeerConfigId candidateId,
       @Nonnull NetworkConfigurations nc) {
     BgpPeerConfig candidate = nc.getBgpPeerConfig(candidateId);
     return candidate instanceof BgpUnnumberedPeerConfig
+        && !neighborHostname.equals(candidateId.getHostname())
         && neighbor.hasCompatibleRemoteAsns(candidate.getLocalAs())
         && candidate.hasCompatibleRemoteAsns(neighbor.getLocalAs());
   }

@@ -169,7 +169,7 @@ public class BgpTopologyUtilsTest {
   }
 
   @Test
-  public void testInitTopologyBgpUnnumbered() {
+  public void testInitTopologyBgpUnnumberedEbgp() {
     /*
          AS 1          AS 2
            N1 ---------- N2
@@ -188,11 +188,9 @@ public class BgpTopologyUtilsTest {
     _node1BgpProcess.setInterfaceNeighbors(ImmutableSortedMap.of(iface1, peer1));
     _node2BgpProcess.setInterfaceNeighbors(ImmutableSortedMap.of(iface2, peer2));
 
-    Layer2Topology emptyLayer2Topology = Layer2Topology.fromEdges(ImmutableSet.of());
-
     // Shouldn't see session come up if nodes are not connected in layer 2
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-        initBgpTopology(_configs, ImmutableMap.of(), true, false, null, emptyLayer2Topology)
+        initBgpTopology(_configs, ImmutableMap.of(), true, false, null, Layer2Topology.EMPTY)
             .getGraph();
     assertThat(bgpTopology.nodes(), hasSize(2));
     assertThat(bgpTopology.edges(), empty());
@@ -219,6 +217,40 @@ public class BgpTopologyUtilsTest {
         initBgpTopology(_configs, ImmutableMap.of(), true, false, null, disconnected).getGraph();
     assertThat(bgpTopology.nodes(), hasSize(2));
     assertThat(bgpTopology.edges(), empty());
+  }
+
+  @Test
+  public void testInitTopologyBgpUnnumberedIbgp() {
+    /*
+         AS 1          AS 1
+           N1 ---------- N2
+      Peers on N1 and N2 are compatible and connected on layer 2. Session should come up.
+    */
+
+    String iface1 = "iface1";
+    String iface2 = "iface2";
+
+    BgpUnnumberedPeerConfig.Builder builder =
+        BgpUnnumberedPeerConfig.builder().setLocalIp(Ip.parse("169.254.0.1"));
+    BgpUnnumberedPeerConfig peer1 =
+        builder.setLocalAs(1L).setRemoteAs(1L).setPeerInterface(iface1).build();
+    BgpUnnumberedPeerConfig peer2 =
+        builder.setLocalAs(1L).setRemoteAs(1L).setPeerInterface(iface2).build();
+    _node1BgpProcess.setInterfaceNeighbors(ImmutableSortedMap.of(iface1, peer1));
+    _node2BgpProcess.setInterfaceNeighbors(ImmutableSortedMap.of(iface2, peer2));
+
+    Layer2Edge edge = new Layer2Edge(NODE1, iface1, null, NODE2, iface2, null, null);
+    Layer2Topology connectedLayer2Topology = Layer2Topology.fromEdges(ImmutableSet.of(edge));
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+        initBgpTopology(_configs, ImmutableMap.of(), true, false, null, connectedLayer2Topology)
+            .getGraph();
+    BgpPeerConfigId peer1Id = new BgpPeerConfigId(NODE1, DEFAULT_VRF_NAME, iface1);
+    BgpPeerConfigId peer2To1Id = new BgpPeerConfigId(NODE2, DEFAULT_VRF_NAME, iface2);
+    assertThat(bgpTopology.nodes(), hasSize(2));
+    assertThat(
+        bgpTopology.edges(),
+        containsInAnyOrder(
+            EndpointPair.ordered(peer1Id, peer2To1Id), EndpointPair.ordered(peer2To1Id, peer1Id)));
   }
 
   @Test
