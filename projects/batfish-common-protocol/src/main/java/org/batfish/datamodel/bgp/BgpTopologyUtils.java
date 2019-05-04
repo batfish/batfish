@@ -6,10 +6,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.google.common.graph.ImmutableValueGraph;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.Network;
-import com.google.common.graph.ValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
@@ -58,9 +56,9 @@ public final class BgpTopologyUtils {
    * @param keepInvalid whether to keep improperly configured neighbors. If performing configuration
    *     checks, you probably want this set to {@code true}, otherwise (e.g., computing dataplane)
    *     you want this to be {@code false}.
-   * @return A graph ({@link Network}) representing all BGP peerings.
+   * @return A {@link BgpTopology} representing all BGP peerings.
    */
-  public static ValueGraph<BgpPeerConfigId, BgpSessionProperties> initBgpTopology(
+  public static @Nonnull BgpTopology initBgpTopology(
       Map<String, Configuration> configurations,
       Map<Ip, Set<String>> ipOwners,
       boolean keepInvalid) {
@@ -87,7 +85,7 @@ public final class BgpTopologyUtils {
    *     reachability.
    * @return A graph ({@link Network}) representing all BGP peerings.
    */
-  public static ValueGraph<BgpPeerConfigId, BgpSessionProperties> initBgpTopology(
+  public static @Nonnull BgpTopology initBgpTopology(
       Map<String, Configuration> configurations,
       Map<Ip, Set<String>> ipOwners,
       boolean keepInvalid,
@@ -171,7 +169,7 @@ public final class BgpTopologyUtils {
                 String.format("Unrecognized peer type: %s", neighborId));
         }
       }
-      return ImmutableValueGraph.copyOf(graph);
+      return new BgpTopology(graph);
     }
   }
 

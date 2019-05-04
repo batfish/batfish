@@ -52,7 +52,8 @@ public final class SetNextHop extends Statement {
   public Result execute(Environment environment) {
     Result result = new Result();
     if (_expr.getDiscard()) {
-      BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment.getOutputRoute();
+      BgpRoute.Builder<?, ?> bgpRouteBuilder =
+          (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
       bgpRouteBuilder.setDiscard(true);
     }
     Ip nextHop = _expr.getNextHopIp(environment);

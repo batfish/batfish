@@ -1,6 +1,5 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.CommonParser.nameNeedsEscaping;
 import static org.batfish.specifier.parboiled.Parser.initAnchors;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
@@ -22,18 +21,6 @@ public class CommonParserTest {
   }
 
   @Test
-  public void testNameNeedsEscaping() {
-    assertFalse("null", nameNeedsEscaping(null));
-    assertFalse("empty", nameNeedsEscaping(""));
-    assertFalse("normal", nameNeedsEscaping("abc"));
-
-    assertTrue("digit start", nameNeedsEscaping("1abc"));
-    assertTrue("quote start", nameNeedsEscaping("\"abc"));
-    assertTrue("slash start", nameNeedsEscaping("/abc"));
-    assertTrue("special char", nameNeedsEscaping("a bc"));
-  }
-
-  @Test
   public void testInitAnchors() {
     assertThat(
         initAnchors(TestParser.class),
@@ -45,11 +32,14 @@ public class CommonParserTest {
                 .put("EscapedQuote", Type.IGNORE)
                 .put("TestAddressGroupName", Type.ADDRESS_GROUP_NAME)
                 .put("TestIpAddress", Type.IP_ADDRESS)
+                .put("TestNotOp", Type.IP_PROTOCOL_NOT)
                 .put("TestIpRange", Type.IP_RANGE)
                 .put("TestName", Type.NODE_NAME)
                 .put("TestNameRegex", Type.NODE_NAME_REGEX)
                 .put("TestNameRegexDeprecated", Type.DEPRECATED)
+                .put("TestParens", Type.NODE_PARENS)
                 .put("TestReferenceBookName", Type.REFERENCE_BOOK_NAME)
+                .put("TestSpec", Type.NODE_SET_OP)
                 .put("TestSpecifierInput", Type.REFERENCE_BOOK_AND_ADDRESS_GROUP)
                 .put("WhiteSpace", Type.WHITESPACE)
                 .build()));
@@ -84,6 +74,9 @@ public class CommonParserTest {
     assertFalse(matches("1startDigit", rule));
     assertFalse(matches("/startSlash", rule));
     assertFalse(matches("@startAt", rule));
+    assertFalse(matches("", rule));
+    assertFalse(matches("\"", rule));
+    assertFalse(matches("\"\"", rule));
   }
 
   @Test

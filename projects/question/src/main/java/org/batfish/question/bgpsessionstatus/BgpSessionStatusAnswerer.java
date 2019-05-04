@@ -79,12 +79,13 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
     Set<Ip> allInterfaceIps = ipOwners.keySet();
 
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredBgpTopology =
-        BgpTopologyUtils.initBgpTopology(configurations, ipOwners, true);
+        BgpTopologyUtils.initBgpTopology(configurations, ipOwners, true).getGraph();
 
     // TODO Use layer 2 topology to include BGP unnumbered sessions
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> establishedBgpTopology =
         BgpTopologyUtils.initBgpTopology(
-            configurations, ipOwners, false, true, _batfish.getTracerouteEngine(), null);
+                configurations, ipOwners, false, true, _batfish.getTracerouteEngine(), null)
+            .getGraph();
 
     Stream<Row> activePeerRows =
         configuredBgpTopology.nodes().stream()

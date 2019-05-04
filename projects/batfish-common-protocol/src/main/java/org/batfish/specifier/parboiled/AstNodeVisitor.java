@@ -104,4 +104,6 @@ interface AstNodeVisitor<T> {
   T visitDifferenceIpSpaceAstNode(DifferenceIpSpaceAstNode differenceIpSpaceAstNode);
 
   T visitIntersectionIpSpaceAstNode(IntersectionIpSpaceAstNode intersectionIpSpaceAstNode);
+
+  T visitRegexAstNode(RegexAstNode regexAstNode);
 }

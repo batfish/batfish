@@ -13,10 +13,11 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNullableByDefault;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.BgpRoute;
 
 /**
- * Contains the non-key attributes of {@link org.batfish.datamodel.BgpRoute}s and {@link
- * AbstractRoute}s and defines a sorting order for these attributes
+ * Contains the non-key attributes of {@link BgpRoute}s and {@link AbstractRoute}s and defines a
+ * sorting order for these attributes
  */
 @ParametersAreNullableByDefault
 public class RouteRowAttribute implements Comparable<RouteRowAttribute> {

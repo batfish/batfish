@@ -1,16 +1,31 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.ParboiledAutoComplete.RANK_STRING_LITERAL;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_CONNECTED_TO;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_PARENS;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_SET_OP;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_TYPE;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_VRF;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_ZONE;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_INTERFACE;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_PARENS;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_AND_DIMENSION;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_TYPE;
+import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_INTERFACE_GROUP;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import java.util.List;
+import java.util.Set;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.InterfaceType;
-import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.referencelibrary.InterfaceGroup;
 import org.batfish.referencelibrary.ReferenceBook;
@@ -33,27 +48,30 @@ public class ParserInterfaceTest {
     return new ReportingParseRunner<>(Parser.instance().getInputRule(Grammar.INTERFACE_SPECIFIER));
   }
 
-  private static List<AutocompleteSuggestion> autoCompleteHelper(
+  private static Set<ParboiledAutoCompleteSuggestion> autoCompleteHelper(
       String query, CompletionMetadata completionMetadata) {
     return autoCompleteHelper(query, completionMetadata, new ReferenceLibrary(null));
   }
 
-  private static List<AutocompleteSuggestion> autoCompleteHelper(
+  private static Set<ParboiledAutoCompleteSuggestion> autoCompleteHelper(
       String query, ReferenceLibrary referenceLibrary) {
     return autoCompleteHelper(query, null, referenceLibrary);
   }
 
-  private static List<AutocompleteSuggestion> autoCompleteHelper(
+  private static Set<ParboiledAutoCompleteSuggestion> autoCompleteHelper(
       String query, CompletionMetadata completionMetadata, ReferenceLibrary referenceLibrary) {
-    return ParboiledAutoComplete.autoComplete(
-        Grammar.INTERFACE_SPECIFIER,
-        "network",
-        "snapshot",
-        query,
-        Integer.MAX_VALUE,
-        completionMetadata,
-        NodeRolesData.builder().build(),
-        referenceLibrary);
+    return new ParboiledAutoComplete(
+            Parser.instance(),
+            Grammar.INTERFACE_SPECIFIER,
+            Parser.ANCHORS,
+            "network",
+            "snapshot",
+            query,
+            Integer.MAX_VALUE,
+            completionMetadata,
+            NodeRolesData.builder().build(),
+            referenceLibrary)
+        .run();
   }
 
   /** This testParses if we have proper completion annotations on the rules */
@@ -76,46 +94,42 @@ public class ParserInterfaceTest {
             .setInterfaces(ImmutableSet.of(new NodeInterfacePair("node1", "iface1")))
             .build();
 
-    List<AutocompleteSuggestion> suggestions =
-        ParboiledAutoComplete.autoComplete(
-            Grammar.INTERFACE_SPECIFIER,
-            "network",
-            "snapshot",
-            query,
-            Integer.MAX_VALUE,
-            completionMetadata,
-            null,
-            null);
+    Set<ParboiledAutoCompleteSuggestion> suggestions =
+        new ParboiledAutoComplete(
+                Parser.instance(),
+                Grammar.INTERFACE_SPECIFIER,
+                Parser.ANCHORS,
+                "network",
+                "snapshot",
+                query,
+                Integer.MAX_VALUE,
+                completionMetadata,
+                null,
+                null)
+            .run();
 
     assertThat(
-        ImmutableSet.copyOf(suggestions),
-        equalTo(
-            ImmutableSet.of(
-                // valid operators
-                new AutocompleteSuggestion("(", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("/", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
+        suggestions,
+        containsInAnyOrder(
+            // valid operators
+            new ParboiledAutoCompleteSuggestion("(", query.length(), INTERFACE_PARENS),
+            new ParboiledAutoCompleteSuggestion("/", query.length(), INTERFACE_NAME_REGEX),
 
-                // node based completions
-                new AutocompleteSuggestion(
-                    "node1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
-                new AutocompleteSuggestion(
-                    "@role", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(
-                    "@deviceType", true, null, RANK_STRING_LITERAL, query.length()),
-
-                // interface based completions
-                new AutocompleteSuggestion(
-                    "iface1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
-                new AutocompleteSuggestion(
-                    "@connectedTo", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(
-                    "@interfaceGroup", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(
-                    "@interfaceType", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("@vrf", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(
-                    "@zone", true, null, RANK_STRING_LITERAL, query.length()))));
+            // node based completions
+            new ParboiledAutoCompleteSuggestion("(", query.length(), NODE_PARENS),
+            new ParboiledAutoCompleteSuggestion("/", query.length(), NODE_NAME_REGEX),
+            new ParboiledAutoCompleteSuggestion("node1", query.length(), NODE_NAME),
+            new ParboiledAutoCompleteSuggestion("@role(", query.length(), NODE_ROLE_AND_DIMENSION),
+            new ParboiledAutoCompleteSuggestion("@deviceType(", query.length(), NODE_TYPE),
+            // interface based completions
+            new ParboiledAutoCompleteSuggestion("iface1", query.length(), INTERFACE_NAME),
+            new ParboiledAutoCompleteSuggestion(
+                "@connectedTo(", query.length(), INTERFACE_CONNECTED_TO),
+            new ParboiledAutoCompleteSuggestion(
+                "@interfaceGroup(", query.length(), REFERENCE_BOOK_AND_INTERFACE_GROUP),
+            new ParboiledAutoCompleteSuggestion("@interfaceType(", query.length(), INTERFACE_TYPE),
+            new ParboiledAutoCompleteSuggestion("@vrf(", query.length(), INTERFACE_VRF),
+            new ParboiledAutoCompleteSuggestion("@zone(", query.length(), INTERFACE_ZONE)));
   }
 
   @Test
@@ -131,29 +145,29 @@ public class ParserInterfaceTest {
                     new NodeInterfacePair("node1", "iface11")))
             .build();
 
-    List<AutocompleteSuggestion> suggestions =
-        ParboiledAutoComplete.autoComplete(
-            Grammar.INTERFACE_SPECIFIER,
-            "network",
-            "snapshot",
-            query,
-            Integer.MAX_VALUE,
-            completionMetadata,
-            null,
-            null);
+    Set<ParboiledAutoCompleteSuggestion> suggestions =
+        new ParboiledAutoComplete(
+                Parser.instance(),
+                Grammar.INTERFACE_SPECIFIER,
+                Parser.ANCHORS,
+                "network",
+                "snapshot",
+                query,
+                Integer.MAX_VALUE,
+                completionMetadata,
+                null,
+                null)
+            .run();
 
     assertThat(
         ImmutableSet.copyOf(suggestions),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion(
-                    "iface1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
-                new AutocompleteSuggestion(
-                    "iface11", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
-                new AutocompleteSuggestion("\\", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("&", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("[", true, null, RANK_STRING_LITERAL, query.length()))));
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("iface1", 0, INTERFACE_NAME),
+            new ParboiledAutoCompleteSuggestion("iface11", 0, INTERFACE_NAME),
+            new ParboiledAutoCompleteSuggestion("\\", query.length(), INTERFACE_SET_OP),
+            new ParboiledAutoCompleteSuggestion(",", query.length(), INTERFACE_SET_OP),
+            new ParboiledAutoCompleteSuggestion("&", query.length(), INTERFACE_SET_OP),
+            new ParboiledAutoCompleteSuggestion("[", query.length(), NODE_AND_INTERFACE)));
   }
 
   @Test
@@ -371,9 +385,7 @@ public class ParserInterfaceTest {
         ImmutableSet.copyOf(autoCompleteHelper(query, library)),
         equalTo(
             ImmutableSet.of(
-                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(
-                    "g1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()))));
+                new ParboiledAutoCompleteSuggestion("g1", query.length(), INTERFACE_GROUP_NAME))));
   }
 
   /**
@@ -391,19 +403,18 @@ public class ParserInterfaceTest {
             .build();
 
     String query = "n1a[eth1";
+    Set<ParboiledAutoCompleteSuggestion> suggestions =
+        autoCompleteHelper(query, completionMetadata);
 
     // only eth11 and eth12 should be suggested
     assertThat(
-        ImmutableSet.copyOf(autoCompleteHelper(query, completionMetadata)),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("\\", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("&", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("]", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(
-                    "eth11", true, null, AutocompleteSuggestion.DEFAULT_RANK, 4),
-                new AutocompleteSuggestion(
-                    "eth12", true, null, AutocompleteSuggestion.DEFAULT_RANK, 4))));
+        suggestions,
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion(",", query.length(), INTERFACE_SET_OP),
+            new ParboiledAutoCompleteSuggestion("\\", query.length(), INTERFACE_SET_OP),
+            new ParboiledAutoCompleteSuggestion("&", query.length(), INTERFACE_SET_OP),
+            new ParboiledAutoCompleteSuggestion("]", query.length(), NODE_AND_INTERFACE),
+            new ParboiledAutoCompleteSuggestion("eth11", 4, INTERFACE_NAME),
+            new ParboiledAutoCompleteSuggestion("eth12", 4, INTERFACE_NAME)));
   }
 }

@@ -1,76 +1,62 @@
 package org.batfish.dataplane.ibdp;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.graph.ImmutableNetwork;
-import com.google.common.graph.ImmutableValueGraph;
-import com.google.common.graph.Network;
-import com.google.common.graph.ValueGraph;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.topology.Layer2Topology;
-import org.batfish.datamodel.BgpPeerConfigId;
-import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Topology;
-import org.batfish.datamodel.bgp.BgpTopologyUtils;
-import org.batfish.datamodel.eigrp.EigrpEdge;
-import org.batfish.datamodel.eigrp.EigrpInterface;
+import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.eigrp.EigrpTopology;
-import org.batfish.datamodel.isis.IsisEdge;
-import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.isis.IsisTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
+import org.batfish.datamodel.vxlan.VxlanTopology;
 
 /** Container for various topologies used during data plane computation. */
 @ParametersAreNonnullByDefault
-final class TopologyContext {
+public final class TopologyContext {
 
-  static final class Builder {
+  public static final class Builder {
 
-    private @Nonnull ImmutableValueGraph<BgpPeerConfigId, BgpSessionProperties> _bgpTopology;
-    private @Nonnull ImmutableNetwork<EigrpInterface, EigrpEdge> _eigrpTopology;
-    private @Nonnull ImmutableNetwork<IsisNode, IsisEdge> _isisTopology;
+    private @Nonnull BgpTopology _bgpTopology;
+    private @Nonnull EigrpTopology _eigrpTopology;
+    private @Nonnull IsisTopology _isisTopology;
     private @Nonnull Layer2Topology _layer2Topology;
     private @Nonnull Topology _layer3Topology;
     private @Nonnull OspfTopology _ospfTopology;
+    private @Nonnull VxlanTopology _vxlanTopology;
 
-    @Nonnull
-    TopologyContext build() {
+    public @Nonnull TopologyContext build() {
       return new TopologyContext(
           _bgpTopology,
           _eigrpTopology,
           _isisTopology,
           _layer2Topology,
           _layer3Topology,
-          _ospfTopology);
+          _ospfTopology,
+          _vxlanTopology);
     }
 
     private Builder() {
-      _bgpTopology =
-          ImmutableValueGraph.copyOf(
-              BgpTopologyUtils.initBgpTopology(ImmutableMap.of(), ImmutableMap.of(), false));
-      _layer3Topology = new Topology(ImmutableSortedSet.of());
-      _eigrpTopology =
-          ImmutableNetwork.copyOf(
-              EigrpTopology.initEigrpTopology(ImmutableMap.of(), _layer3Topology));
-      _isisTopology =
-          ImmutableNetwork.copyOf(
-              IsisTopology.initIsisTopology(ImmutableMap.of(), _layer3Topology));
+      _bgpTopology = BgpTopology.EMPTY;
+      _eigrpTopology = EigrpTopology.EMPTY;
+      _isisTopology = IsisTopology.EMPTY;
       _layer2Topology = Layer2Topology.EMPTY;
-      _ospfTopology = OspfTopology.empty();
+      _layer3Topology = new Topology(ImmutableSortedSet.of());
+      _ospfTopology = OspfTopology.EMPTY;
+      _vxlanTopology = VxlanTopology.EMPTY;
     }
 
-    public @Nonnull ImmutableValueGraph<BgpPeerConfigId, BgpSessionProperties> getBgpTopology() {
+    public @Nonnull BgpTopology getBgpTopology() {
       return _bgpTopology;
     }
 
-    public @Nonnull ImmutableNetwork<EigrpInterface, EigrpEdge> getEigrpTopology() {
+    public @Nonnull EigrpTopology getEigrpTopology() {
       return _eigrpTopology;
     }
 
-    public @Nonnull ImmutableNetwork<IsisNode, IsisEdge> getIsisTopology() {
+    public @Nonnull IsisTopology getIsisTopology() {
       return _isisTopology;
     }
 
@@ -86,19 +72,22 @@ final class TopologyContext {
       return _ospfTopology;
     }
 
-    public @Nonnull Builder setBgpTopology(
-        ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology) {
-      _bgpTopology = ImmutableValueGraph.copyOf(bgpTopology);
+    public @Nonnull VxlanTopology getVxlanTopology() {
+      return _vxlanTopology;
+    }
+
+    public @Nonnull Builder setBgpTopology(BgpTopology bgpTopology) {
+      _bgpTopology = bgpTopology;
       return this;
     }
 
-    public @Nonnull Builder setEigrpTopology(Network<EigrpInterface, EigrpEdge> eigrpTopology) {
-      _eigrpTopology = ImmutableNetwork.copyOf(eigrpTopology);
+    public @Nonnull Builder setEigrpTopology(EigrpTopology eigrpTopology) {
+      _eigrpTopology = eigrpTopology;
       return this;
     }
 
-    public @Nonnull Builder setIsisTopology(Network<IsisNode, IsisEdge> isisTopology) {
-      _isisTopology = ImmutableNetwork.copyOf(isisTopology);
+    public @Nonnull Builder setIsisTopology(IsisTopology isisTopology) {
+      _isisTopology = isisTopology;
       return this;
     }
 
@@ -116,43 +105,51 @@ final class TopologyContext {
       _ospfTopology = ospfTopology;
       return this;
     }
+
+    public @Nonnull Builder setVxlanTopology(VxlanTopology vxlanTopology) {
+      _vxlanTopology = vxlanTopology;
+      return this;
+    }
   }
 
-  static @Nonnull Builder builder() {
+  public static @Nonnull Builder builder() {
     return new Builder();
   }
 
-  private final @Nonnull ImmutableValueGraph<BgpPeerConfigId, BgpSessionProperties> _bgpTopology;
-  private final @Nonnull ImmutableNetwork<EigrpInterface, EigrpEdge> _eigrpTopology;
-  private final @Nonnull ImmutableNetwork<IsisNode, IsisEdge> _isisTopology;
+  private final @Nonnull BgpTopology _bgpTopology;
+  private final @Nonnull EigrpTopology _eigrpTopology;
+  private final @Nonnull IsisTopology _isisTopology;
   private final @Nonnull Layer2Topology _layer2Topology;
   private final @Nonnull Topology _layer3Topology;
   private final @Nonnull OspfTopology _ospfTopology;
+  private final @Nonnull VxlanTopology _vxlanTopology;
 
   private TopologyContext(
-      ImmutableValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
-      ImmutableNetwork<EigrpInterface, EigrpEdge> eigrpTopology,
-      ImmutableNetwork<IsisNode, IsisEdge> isisTopology,
+      BgpTopology bgpTopology,
+      EigrpTopology eigrpTopology,
+      IsisTopology isisTopology,
       Layer2Topology layer2Topology,
       Topology layer3Topology,
-      OspfTopology ospfTopology) {
+      OspfTopology ospfTopology,
+      VxlanTopology vxlanTopology) {
     _bgpTopology = bgpTopology;
     _eigrpTopology = eigrpTopology;
     _isisTopology = isisTopology;
     _layer2Topology = layer2Topology;
     _layer3Topology = layer3Topology;
     _ospfTopology = ospfTopology;
+    _vxlanTopology = vxlanTopology;
   }
 
-  public @Nonnull ImmutableValueGraph<BgpPeerConfigId, BgpSessionProperties> getBgpTopology() {
+  public @Nonnull BgpTopology getBgpTopology() {
     return _bgpTopology;
   }
 
-  public @Nonnull ImmutableNetwork<EigrpInterface, EigrpEdge> getEigrpTopology() {
+  public @Nonnull EigrpTopology getEigrpTopology() {
     return _eigrpTopology;
   }
 
-  public @Nonnull ImmutableNetwork<IsisNode, IsisEdge> getIsisTopology() {
+  public @Nonnull IsisTopology getIsisTopology() {
     return _isisTopology;
   }
 
@@ -166,6 +163,10 @@ final class TopologyContext {
 
   public @Nonnull OspfTopology getOspfTopology() {
     return _ospfTopology;
+  }
+
+  public @Nonnull VxlanTopology getVxlanTopology() {
+    return _vxlanTopology;
   }
 
   @Override
@@ -182,7 +183,8 @@ final class TopologyContext {
         && _isisTopology.equals(rhs._isisTopology)
         && _layer2Topology.equals(rhs._layer2Topology)
         && _layer3Topology.equals(rhs._layer3Topology)
-        && _ospfTopology.equals(rhs._ospfTopology);
+        && _ospfTopology.equals(rhs._ospfTopology)
+        && _vxlanTopology.equals(rhs._vxlanTopology);
   }
 
   @Override
@@ -193,17 +195,18 @@ final class TopologyContext {
         _isisTopology,
         _layer2Topology,
         _layer3Topology,
-        _ospfTopology);
+        _ospfTopology,
+        _vxlanTopology);
   }
 
-  @Nonnull
-  Builder toBuilder() {
+  public @Nonnull Builder toBuilder() {
     return builder()
         .setBgpTopology(_bgpTopology)
         .setEigrpTopology(_eigrpTopology)
         .setIsisTopology(_isisTopology)
         .setLayer2Topology(_layer2Topology)
         .setLayer3Topology(_layer3Topology)
-        .setOspfTopology(_ospfTopology);
+        .setOspfTopology(_ospfTopology)
+        .setVxlanTopology(_vxlanTopology);
   }
 }

@@ -104,6 +104,7 @@ import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.dataplane.rib.RibId;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisProcess;
@@ -217,7 +218,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return out;
   }
 
-  private final Set<Long> _allStandardCommunities;
+  private final Set<StandardCommunity> _allStandardCommunities;
 
   Configuration _c;
 
@@ -917,7 +918,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return "~OSPF_EXPORT_POLICY:" + vrfName + "~";
   }
 
-  public Set<Long> getAllStandardCommunities() {
+  public Set<StandardCommunity> getAllStandardCommunities() {
     return _allStandardCommunities;
   }
 

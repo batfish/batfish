@@ -59,7 +59,7 @@ public final class OspfInterAreaRoute extends OspfInternalRoute {
       return false;
     }
     OspfInterAreaRoute other = (OspfInterAreaRoute) o;
-    return Objects.equals(_network, other._network)
+    return _network.equals(other._network)
         && _admin == other._admin
         && getNonRouting() == other.getNonRouting()
         && getNonForwarding() == other.getNonForwarding()
@@ -118,6 +118,7 @@ public final class OspfInterAreaRoute extends OspfInternalRoute {
 
     private Long _area;
 
+    @Nonnull
     @Override
     public OspfInterAreaRoute build() {
       return _cache.intern(

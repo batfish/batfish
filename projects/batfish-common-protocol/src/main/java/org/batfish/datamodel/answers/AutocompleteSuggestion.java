@@ -10,6 +10,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+/** Represents an auto complete suggestion for user input */
 @ParametersAreNonnullByDefault
 public final class AutocompleteSuggestion {
 
@@ -23,11 +24,100 @@ public final class AutocompleteSuggestion {
     OSPF_PROPERTY
   }
 
+  /**
+   * The type of a suggestion which provides more context beyond the suggestion text.
+   *
+   * <p>The enums here should be kept ordered based on which types we want the user to see first.
+   */
+  public enum SuggestionType {
+    /** Constant enum strings that are network independent, e.g., protocol types */
+    CONSTANT,
+    /** Represents IP addresses and related things such as ranges and prefix lengths */
+    ADDRESS_LITERAL,
+    /** Names of objects in the network, e.g., nodes, interfaces, address groups */
+    NAME_LITERAL,
+    /** Indicates a regex */
+    REGEX,
+    /** A function, e.g., @enter( and @in( */
+    FUNCTION,
+    /** An operator that's followed by something, e.g., '[' in node[iface] and ',' in @role(a, b) */
+    OPERATOR_WITH_RHS,
+    /** Operators that indicates set functions, e.g., union and intersection */
+    SET_OPERATOR,
+    /** Indicates (the start of) a parenthetical content */
+    PARENTHESIS,
+    /** We don't know or used for backward compatibility as the default */
+    UNKNOWN
+  }
+
+  @ParametersAreNonnullByDefault
+  public static final class Builder {
+    private String _description;
+    private String _hint;
+    private int _insertionIndex;
+    private boolean _isPartial;
+    private int _rank;
+    private SuggestionType _suggestionType;
+    private String _text;
+
+    private Builder() {}
+
+    public Builder(AutocompleteSuggestion suggestion) {
+      _description = suggestion.getDescription();
+      _hint = suggestion.getHint();
+      _insertionIndex = suggestion.getInsertionIndex();
+      _isPartial = suggestion.getIsPartial();
+      _rank = suggestion.getRank();
+      _text = suggestion.getText();
+    }
+
+    public Builder setDescription(String description) {
+      this._description = description;
+      return this;
+    }
+
+    public Builder setHint(String hint) {
+      this._hint = hint;
+      return this;
+    }
+
+    public Builder setInsertionIndex(int insertionIndex) {
+      this._insertionIndex = insertionIndex;
+      return this;
+    }
+
+    public Builder setIsPartial(boolean isPartial) {
+      this._isPartial = isPartial;
+      return this;
+    }
+
+    public Builder setRank(int rank) {
+      this._rank = rank;
+      return this;
+    }
+
+    public Builder setSuggestionType(SuggestionType suggestionType) {
+      this._suggestionType = suggestionType;
+      return this;
+    }
+
+    public Builder setText(String text) {
+      this._text = text;
+      return this;
+    }
+
+    public AutocompleteSuggestion build() {
+      return new AutocompleteSuggestion(
+          _text, _suggestionType, _isPartial, _description, _rank, _insertionIndex, _hint);
+    }
+  }
+
   private static final String PROP_DESCRIPTION = "description";
   private static final String PROP_HINT = "hint";
   private static final String PROP_INSERTION_INDEX = "insertionIndex";
   private static final String PROP_IS_PARTIAL = "isPartial";
   private static final String PROP_RANK = "rank";
+  private static final String PROP_SUGGESTION_TYPE = "suggestionType";
   private static final String PROP_TEXT = "text";
 
   public static final int DEFAULT_RANK = Integer.MAX_VALUE;
@@ -51,7 +141,10 @@ public final class AutocompleteSuggestion {
   private final boolean _isPartial;
 
   /** Relevance of the suggestion relative to other suggestions */
-  private int _rank;
+  private final int _rank;
+
+  /** The type of this suggestion */
+  @Nonnull private final SuggestionType _suggestionType;
 
   /** Actual text of the suggestion */
   @Nonnull private final String _text;
@@ -59,13 +152,20 @@ public final class AutocompleteSuggestion {
   @JsonCreator
   private static @Nonnull AutocompleteSuggestion create(
       @Nullable @JsonProperty(PROP_TEXT) String text,
+      @Nullable @JsonProperty(PROP_SUGGESTION_TYPE) SuggestionType suggestionType,
       @JsonProperty(PROP_IS_PARTIAL) boolean isPartial,
       @Nullable @JsonProperty(PROP_DESCRIPTION) String description,
       @JsonProperty(PROP_RANK) int rank,
       @JsonProperty(PROP_INSERTION_INDEX) int insertionIndex,
       @Nullable @JsonProperty(PROP_HINT) String hint) {
     return new AutocompleteSuggestion(
-        firstNonNull(text, ""), isPartial, description, rank, insertionIndex, hint);
+        firstNonNull(text, ""),
+        firstNonNull(suggestionType, SuggestionType.UNKNOWN),
+        isPartial,
+        description,
+        rank,
+        insertionIndex,
+        hint);
   }
 
   public AutocompleteSuggestion(String text, boolean isPartial) {
@@ -83,22 +183,32 @@ public final class AutocompleteSuggestion {
 
   public AutocompleteSuggestion(
       String text, boolean isPartial, @Nullable String description, int rank, int insertionIndex) {
-    this(text, isPartial, description, rank, insertionIndex, null);
+    this(text, SuggestionType.UNKNOWN, isPartial, description, rank, insertionIndex, null);
   }
 
   public AutocompleteSuggestion(
       String text,
+      SuggestionType suggestionType,
       boolean isPartial,
       @Nullable String description,
       int rank,
       int insertionIndex,
       @Nullable String hint) {
     _text = text;
+    _suggestionType = suggestionType;
     _isPartial = isPartial;
     _description = description;
     _rank = rank;
     _insertionIndex = insertionIndex;
     _hint = hint;
+  }
+
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  public static Builder builder(AutocompleteSuggestion suggestion) {
+    return new Builder(suggestion);
   }
 
   @Override
@@ -140,6 +250,11 @@ public final class AutocompleteSuggestion {
     return _rank;
   }
 
+  @Nonnull
+  public SuggestionType getSuggestionType() {
+    return _suggestionType;
+  }
+
   @JsonProperty(PROP_TEXT)
   @Nonnull
   public String getText() {
@@ -150,10 +265,6 @@ public final class AutocompleteSuggestion {
   public int hashCode() {
     // ignore rank and description
     return Objects.hash(_isPartial, _text, _insertionIndex);
-  }
-
-  public void setRank(int rank) {
-    _rank = rank;
   }
 
   @Override

@@ -1,6 +1,5 @@
 package org.batfish.grammar.f5_bigip_imish;
 
-import static org.batfish.common.util.CommonUtil.communityStringToLong;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.Prefix.MAX_PREFIX_LENGTH;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
@@ -49,7 +48,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishLogger;
@@ -64,7 +62,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
-import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DataPlane;
@@ -83,6 +81,7 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.ParseStatus;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
@@ -118,7 +117,7 @@ public final class F5BigipImishGrammarTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private void assertAcceptsKernelRoute(RoutingPolicy rp, Ip peerAddress) {
-    BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+    Bgpv4Route.Builder outputBuilder = makeBgpOutputRouteBuilder();
     assertTrue(
         rp.process(
             new KernelRoute(Prefix.ZERO),
@@ -130,7 +129,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   private void assertRejectsKernelRoute(RoutingPolicy rp, Ip peerAddress) {
-    BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+    Bgpv4Route.Builder outputBuilder = makeBgpOutputRouteBuilder();
     assertFalse(
         rp.process(
             new KernelRoute(Prefix.ZERO),
@@ -152,16 +151,16 @@ public final class F5BigipImishGrammarTest {
     _bddPrefix = new BDDPrefix(packet.getDstIp(), packet.getDscp());
   }
 
-  private BgpRoute.Builder makeBgpOutputRouteBuilder() {
-    return BgpRoute.builder()
+  private Bgpv4Route.Builder makeBgpOutputRouteBuilder() {
+    return Bgpv4Route.builder()
         .setNetwork(Prefix.ZERO)
         .setOriginType(OriginType.INCOMPLETE)
         .setOriginatorIp(Ip.ZERO)
         .setProtocol(RoutingProtocol.BGP);
   }
 
-  private @Nonnull BgpRoute makeBgpRoute(Prefix prefix) {
-    return BgpRoute.builder()
+  private @Nonnull Bgpv4Route makeBgpRoute(Prefix prefix) {
+    return Bgpv4Route.builder()
         .setNetwork(prefix)
         .setOriginType(OriginType.INCOMPLETE)
         .setOriginatorIp(Ip.ZERO)
@@ -208,8 +207,8 @@ public final class F5BigipImishGrammarTest {
     return (F5BigipConfiguration) vc;
   }
 
-  private @Nonnull BgpRoute processBgpRoute(RoutingPolicy rp1, Ip peerAddress) {
-    BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+  private @Nonnull Bgpv4Route processBgpRoute(RoutingPolicy rp1, Ip peerAddress) {
+    Bgpv4Route.Builder outputBuilder = makeBgpOutputRouteBuilder();
     assertTrue(
         rp1.process(
             makeBgpRoute(Prefix.ZERO),
@@ -477,17 +476,17 @@ public final class F5BigipImishGrammarTest {
     String peerExportPolicyName =
         F5BigipConfiguration.computeBgpPeerExportPolicyName(bgpProcessName, Ip.parse("192.0.2.1"));
 
-    BgpRoute.Builder bgpRouteBuilder =
-        BgpRoute.builder()
+    Bgpv4Route.Builder bgpRouteBuilder =
+        Bgpv4Route.builder()
             .setAdmin(10)
             .setMetric(10)
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("1.2.3.4"));
-    BgpRoute bgpRouteAllowedByPeerPolicy =
+    Bgpv4Route bgpv4RouteAllowedByPeerPolicy =
         bgpRouteBuilder.setNetwork(Prefix.strict("10.0.0.0/24")).build();
-    BgpRoute bgpRouteAllowedOnlyByCommonPolicy =
+    Bgpv4Route bgpv4RouteAllowedOnlyByCommonPolicy =
         bgpRouteBuilder.setNetwork(Prefix.strict("10.0.1.0/24")).build();
     ConnectedRoute connectedRoute = new ConnectedRoute(Prefix.strict("10.0.0.0/24"), "blah");
     KernelRoute kernelRoute = new KernelRoute(Prefix.strict("10.0.0.0/24"));
@@ -502,42 +501,42 @@ public final class F5BigipImishGrammarTest {
 
     {
       // BGP input route acceptable to common export policy
-      BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+      Bgpv4Route.Builder outputBuilder = makeBgpOutputRouteBuilder();
       assertTrue(
           commonExportPolicy
               .call(
                   Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
-                      .setOriginalRoute(bgpRouteAllowedByPeerPolicy)
+                      .setOriginalRoute(bgpv4RouteAllowedByPeerPolicy)
                       .setOutputRoute(outputBuilder)
                       .build())
               .getBooleanValue());
-      BgpRoute outputRoute = outputBuilder.build();
+      Bgpv4Route outputRoute = outputBuilder.build();
       assertThat(outputRoute, hasCommunities(empty()));
     }
 
     {
       // BGP input route acceptable to peer export policy
-      BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+      Bgpv4Route.Builder outputBuilder = makeBgpOutputRouteBuilder();
       assertTrue(
           peerExportPolicy
               .call(
                   Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
-                      .setOriginalRoute(bgpRouteAllowedByPeerPolicy)
+                      .setOriginalRoute(bgpv4RouteAllowedByPeerPolicy)
                       .setOutputRoute(outputBuilder)
                       .build())
               .getBooleanValue());
-      BgpRoute outputRoute = outputBuilder.build();
-      assertThat(outputRoute, hasCommunities(contains(communityStringToLong("2:2"))));
+      Bgpv4Route outputRoute = outputBuilder.build();
+      assertThat(outputRoute, hasCommunities(contains(StandardCommunity.parse("2:2"))));
     }
 
     {
       // With below test, BGP input route acceptable ONLY to common export policy
-      BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+      Bgpv4Route.Builder outputBuilder = makeBgpOutputRouteBuilder();
       assertTrue(
           commonExportPolicy
               .call(
                   Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
-                      .setOriginalRoute(bgpRouteAllowedOnlyByCommonPolicy)
+                      .setOriginalRoute(bgpv4RouteAllowedOnlyByCommonPolicy)
                       .setOutputRoute(outputBuilder)
                       .build())
               .getBooleanValue());
@@ -545,12 +544,12 @@ public final class F5BigipImishGrammarTest {
 
     {
       // BGP input route unacceptable to peer export policy
-      BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+      Bgpv4Route.Builder outputBuilder = makeBgpOutputRouteBuilder();
       assertFalse(
           peerExportPolicy
               .call(
                   Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
-                      .setOriginalRoute(bgpRouteAllowedOnlyByCommonPolicy)
+                      .setOriginalRoute(bgpv4RouteAllowedOnlyByCommonPolicy)
                       .setOutputRoute(outputBuilder)
                       .build())
               .getBooleanValue());
@@ -558,7 +557,7 @@ public final class F5BigipImishGrammarTest {
 
     {
       // Connected input route unacceptable to common export policy
-      BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+      Bgpv4Route.Builder outputBuilder = makeBgpOutputRouteBuilder();
       assertFalse(
           commonExportPolicy
               .call(
@@ -571,7 +570,7 @@ public final class F5BigipImishGrammarTest {
 
     {
       // Connected input route unacceptable to peer export policy
-      BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+      Bgpv4Route.Builder outputBuilder = makeBgpOutputRouteBuilder();
       assertFalse(
           peerExportPolicy
               .call(
@@ -584,7 +583,7 @@ public final class F5BigipImishGrammarTest {
 
     {
       // Kernel input route acceptable to common export policy
-      BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+      Bgpv4Route.Builder outputBuilder = makeBgpOutputRouteBuilder();
       assertTrue(
           commonExportPolicy
               .call(
@@ -593,13 +592,13 @@ public final class F5BigipImishGrammarTest {
                       .setOutputRoute(outputBuilder)
                       .build())
               .getBooleanValue());
-      BgpRoute outputRoute = outputBuilder.build();
+      Bgpv4Route outputRoute = outputBuilder.build();
       assertThat(outputRoute, hasCommunities(empty()));
     }
 
     {
       // Kernel input route acceptable to peer export policy
-      BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+      Bgpv4Route.Builder outputBuilder = makeBgpOutputRouteBuilder();
       assertTrue(
           peerExportPolicy
               .call(
@@ -608,8 +607,8 @@ public final class F5BigipImishGrammarTest {
                       .setOutputRoute(outputBuilder)
                       .build())
               .getBooleanValue());
-      BgpRoute outputRoute = outputBuilder.build();
-      assertThat(outputRoute, hasCommunities(contains(communityStringToLong("2:2"))));
+      Bgpv4Route outputRoute = outputBuilder.build();
+      assertThat(outputRoute, hasCommunities(contains(StandardCommunity.parse("2:2"))));
     }
   }
 
@@ -749,8 +748,8 @@ public final class F5BigipImishGrammarTest {
 
     ConnectedRoute acceptedRoute =
         new ConnectedRoute(Prefix.strict("10.0.1.0/24"), "/Common/outint");
-    BgpRoute.Builder outputRoute =
-        BgpRoute.builder()
+    Bgpv4Route.Builder outputRoute =
+        Bgpv4Route.builder()
             .setNetwork(acceptedRoute.getNetwork())
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.INCOMPLETE)
@@ -767,10 +766,7 @@ public final class F5BigipImishGrammarTest {
     assertThat(
         "rm1 sets communities 1:2 and 33:44 on the output route",
         outputRoute.build().getCommunities(),
-        equalTo(
-            Stream.of("1:2", "33:44")
-                .map(CommonUtil::communityStringToLong)
-                .collect(ImmutableSet.toImmutableSet())));
+        equalTo(ImmutableSet.of(StandardCommunity.of(1, 2), StandardCommunity.of(33, 44))));
 
     assertTrue(
         "rm1 rejects prefix 10.0.2.0/24 (no matching entry)",

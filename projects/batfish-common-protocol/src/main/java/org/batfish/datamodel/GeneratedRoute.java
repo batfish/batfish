@@ -17,6 +17,7 @@ import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.bgp.community.Community;
 
 /** A generated/aggregate IPV4 route. */
 @ParametersAreNonnullByDefault
@@ -27,13 +28,14 @@ public final class GeneratedRoute extends AbstractRoute {
 
     @Nullable private AsPath _asPath;
     @Nullable private String _attributePolicy;
-    @Nullable private Set<Long> _communities;
+    @Nullable private Set<Community> _communities;
     private boolean _discard;
     @Nullable private String _generationPolicy;
     @Nullable private String _nextHopInterface;
 
     private Builder() {}
 
+    @Nonnull
     @Override
     public GeneratedRoute build() {
       return new GeneratedRoute(
@@ -51,6 +53,7 @@ public final class GeneratedRoute extends AbstractRoute {
           getNonRouting());
     }
 
+    @Nonnull
     @Override
     protected Builder getThis() {
       return this;
@@ -66,7 +69,7 @@ public final class GeneratedRoute extends AbstractRoute {
       return this;
     }
 
-    public Builder setCommunities(@Nullable Set<Long> communities) {
+    public Builder setCommunities(@Nullable Set<Community> communities) {
       _communities = communities;
       return this;
     }
@@ -104,7 +107,7 @@ public final class GeneratedRoute extends AbstractRoute {
 
   private final AsPath _asPath;
   @Nullable private final String _attributePolicy;
-  @Nonnull private final SortedSet<Long> _communities;
+  @Nonnull private final SortedSet<Community> _communities;
   private final boolean _discard;
   @Nullable private final String _generationPolicy;
   private final Long _metric;
@@ -123,7 +126,7 @@ public final class GeneratedRoute extends AbstractRoute {
       @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @Nullable @JsonProperty(PROP_AS_PATH) AsPath asPath,
       @Nullable @JsonProperty(PROP_ATTRIBUTE_POLICY) String attributePolicy,
-      @Nullable @JsonProperty(PROP_COMMUNITIES) SortedSet<Long> communities,
+      @Nullable @JsonProperty(PROP_COMMUNITIES) SortedSet<Community> communities,
       @JsonProperty(PROP_DISCARD) boolean discard,
       @Nullable @JsonProperty(PROP_GENERATION_POLICY) String generationPolicy,
       @Nullable @JsonProperty(PROP_METRIC) Long metric,
@@ -151,7 +154,7 @@ public final class GeneratedRoute extends AbstractRoute {
       Ip nextHopIp,
       AsPath asPath,
       @Nullable String attributePolicy,
-      SortedSet<Long> communities,
+      @Nullable SortedSet<Community> communities,
       boolean discard,
       @Nullable String generationPolicy,
       Long metric,
@@ -238,7 +241,7 @@ public final class GeneratedRoute extends AbstractRoute {
   /** The communities attached to this route */
   @Nonnull
   @JsonProperty(PROP_COMMUNITIES)
-  public SortedSet<Long> getCommunities() {
+  public SortedSet<Community> getCommunities() {
     return _communities;
   }
 

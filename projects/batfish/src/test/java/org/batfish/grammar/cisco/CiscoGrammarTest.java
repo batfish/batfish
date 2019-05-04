@@ -275,8 +275,8 @@ import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
-import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
@@ -335,6 +335,8 @@ import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpTopologyUtils;
+import org.batfish.datamodel.bgp.community.Community;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.matchers.CommunityListLineMatchers;
@@ -756,9 +758,10 @@ public class CiscoGrammarTest {
         dp.getRibs().get("ios-listener").get(DEFAULT_VRF_NAME).getRoutes();
 
     // ROUTE_MAP adds two communities to default route. Make sure listener's default route has them.
-    BgpRoute expectedDefaultRoute =
-        BgpRoute.builder()
-            .setCommunities(ImmutableSet.of(7274718L, 21823932L))
+    Bgpv4Route expectedDefaultRoute =
+        Bgpv4Route.builder()
+            .setCommunities(
+                ImmutableSet.of(StandardCommunity.of(7274718L), StandardCommunity.of(21823932L)))
             .setNetwork(Prefix.ZERO)
             .setNextHopIp(Ip.parse("10.1.1.1"))
             .setReceivedFromIp(Ip.parse("10.1.1.1"))
@@ -796,8 +799,8 @@ public class CiscoGrammarTest {
     Set<AbstractRoute> listenerRoutes =
         dp.getRibs().get("ios-listener").get(DEFAULT_VRF_NAME).getRoutes();
 
-    BgpRoute expectedDefaultRoute =
-        BgpRoute.builder()
+    Bgpv4Route expectedDefaultRoute =
+        Bgpv4Route.builder()
             .setNetwork(Prefix.ZERO)
             .setNextHopIp(Ip.parse("10.1.1.1"))
             .setReceivedFromIp(Ip.parse("10.1.1.1"))
@@ -1971,8 +1974,8 @@ public class CiscoGrammarTest {
     Ip originatorId = Ip.parse("1.1.1.1");
     Ip originatorIp = Ip.parse("10.1.1.1");
     Long originatorAs = 1L;
-    BgpRoute expected =
-        BgpRoute.builder()
+    Bgpv4Route expected =
+        Bgpv4Route.builder()
             .setNetwork(Prefix.ZERO)
             .setNextHopIp(originatorIp)
             .setAdmin(20)
@@ -2034,8 +2037,8 @@ public class CiscoGrammarTest {
     Ip originatorId = Ip.parse("1.1.1.1");
     Ip originatorIp = Ip.parse("10.1.1.1");
     Long originatorAs = 1L;
-    BgpRoute redistributedStaticRoute =
-        BgpRoute.builder()
+    Bgpv4Route redistributedStaticRoute =
+        Bgpv4Route.builder()
             .setTag(25)
             .setNetwork(Prefix.ZERO)
             .setNextHopIp(originatorIp)
@@ -2869,13 +2872,13 @@ public class CiscoGrammarTest {
     assertThat(exportPolicy, notNullValue());
 
     Prefix permittedPrefix = Prefix.parse("10.1.1.0/24");
-    BgpRoute.Builder r =
-        BgpRoute.builder()
+    Bgpv4Route.Builder r =
+        Bgpv4Route.builder()
             .setOriginatorIp(peerAddress)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.IBGP);
-    BgpRoute permittedRoute = r.setNetwork(permittedPrefix).build();
-    BgpRoute unmatchedRoute = r.setNetwork(Prefix.parse("10.1.0.0/16")).build();
+    Bgpv4Route permittedRoute = r.setNetwork(permittedPrefix).build();
+    Bgpv4Route unmatchedRoute = r.setNetwork(Prefix.parse("10.1.0.0/16")).build();
     assertThat(
         importPolicy.process(
             permittedRoute,
@@ -2935,15 +2938,15 @@ public class CiscoGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     RoutingPolicy setWeightPolicy =
         batfish.loadConfigurations().get(hostname).getRoutingPolicies().get("SET_WEIGHT");
-    BgpRoute r =
-        BgpRoute.builder()
+    Bgpv4Route r =
+        Bgpv4Route.builder()
             .setWeight(1)
             .setNetwork(Prefix.ZERO)
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .build();
-    BgpRoute.Builder transformedRoute = r.toBuilder();
+    Bgpv4Route.Builder transformedRoute = r.toBuilder();
 
     assertThat(
         setWeightPolicy.process(r, transformedRoute, Ip.ZERO, DEFAULT_VRF_NAME, Direction.IN),
@@ -3301,7 +3304,7 @@ public class CiscoGrammarTest {
         CommunityListMatchers.hasLine(
             2,
             CommunityListLineMatchers.hasMatchCondition(
-                equalTo(new LiteralCommunity(CommonUtil.communityStringToLong("1:2"))))));
+                equalTo(new LiteralCommunity(StandardCommunity.parse("1:2"))))));
     assertThat(
         list,
         CommunityListMatchers.hasLine(
@@ -3382,7 +3385,7 @@ public class CiscoGrammarTest {
     Map<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = TopologyUtil.computeIpNodeOwners(configurations, true);
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-        BgpTopologyUtils.initBgpTopology(configurations, ipOwners, false);
+        BgpTopologyUtils.initBgpTopology(configurations, ipOwners, false).getGraph();
 
     // Edge one direction
     assertThat(
@@ -3505,7 +3508,7 @@ public class CiscoGrammarTest {
     boolean r2HasPrivate =
         r2Routes.stream()
             .filter(r -> r.getNetwork().equals(r1Loopback))
-            .flatMap(r -> ((BgpRoute) r).getAsPath().getAsSets().stream())
+            .flatMap(r -> ((Bgpv4Route) r).getAsPath().getAsSets().stream())
             .flatMap(asSet -> asSet.getAsns().stream())
             .anyMatch(AsPath::isPrivateAs);
     assertTrue(r2HasPrivate);
@@ -3514,7 +3517,7 @@ public class CiscoGrammarTest {
     boolean r3HasPrivate =
         r3Routes.stream()
             .filter(a -> a.getNetwork().equals(r1Loopback))
-            .flatMap(r -> ((BgpRoute) r).getAsPath().getAsSets().stream())
+            .flatMap(r -> ((Bgpv4Route) r).getAsPath().getAsSets().stream())
             .flatMap(asSet -> asSet.getAsns().stream())
             .anyMatch(AsPath::isPrivateAs);
     assertFalse(r3HasPrivate);
@@ -3546,43 +3549,43 @@ public class CiscoGrammarTest {
     SortedMap<String, CommunityList> nxosCommunityLists =
         nxosCommunityListConfig.getCommunityLists();
 
-    long iosImpliedStd = communityListToCommunity(iosCommunityLists, "40");
+    Community iosImpliedStd = communityListToCommunity(iosCommunityLists, "40");
     String iosRegexImpliedExp = communityListToRegex(iosCommunityLists, "400");
-    long iosStdAsnn = communityListToCommunity(iosCommunityLists, "std_as_nn");
+    Community iosStdAsnn = communityListToCommunity(iosCommunityLists, "std_as_nn");
     String iosRegexExpAsnn = communityListToRegex(iosCommunityLists, "exp_as_nn");
-    long iosStdGshut = communityListToCommunity(iosCommunityLists, "std_gshut");
+    Community iosStdGshut = communityListToCommunity(iosCommunityLists, "std_gshut");
     String iosRegexExpGshut = communityListToRegex(iosCommunityLists, "exp_gshut");
-    long iosStdInternet = communityListToCommunity(iosCommunityLists, "std_internet");
+    Community iosStdInternet = communityListToCommunity(iosCommunityLists, "std_internet");
     String iosRegexExpInternet = communityListToRegex(iosCommunityLists, "exp_internet");
-    long iosStdLocalAs = communityListToCommunity(iosCommunityLists, "std_local_AS");
+    Community iosStdLocalAs = communityListToCommunity(iosCommunityLists, "std_local_AS");
     String iosRegexExpLocalAs = communityListToRegex(iosCommunityLists, "exp_local_AS");
-    long iosStdNoAdv = communityListToCommunity(iosCommunityLists, "std_no_advertise");
+    Community iosStdNoAdv = communityListToCommunity(iosCommunityLists, "std_no_advertise");
     String iosRegexExpNoAdv = communityListToRegex(iosCommunityLists, "exp_no_advertise");
-    long iosStdNoExport = communityListToCommunity(iosCommunityLists, "std_no_export");
+    Community iosStdNoExport = communityListToCommunity(iosCommunityLists, "std_no_export");
     String iosRegexExpNoExport = communityListToRegex(iosCommunityLists, "exp_no_export");
 
-    long eosStd = communityListToCommunity(eosCommunityLists, "eos_std");
+    Community eosStd = communityListToCommunity(eosCommunityLists, "eos_std");
     String eosRegexExp = communityListToRegex(eosCommunityLists, "eos_exp");
-    long eosStdGshut = communityListToCommunity(eosCommunityLists, "eos_std_gshut");
-    long eosStdInternet = communityListToCommunity(eosCommunityLists, "eos_std_internet");
-    long eosStdLocalAs = communityListToCommunity(eosCommunityLists, "eos_std_local_AS");
-    long eosStdNoAdv = communityListToCommunity(eosCommunityLists, "eos_std_no_adv");
-    long eosStdNoExport = communityListToCommunity(eosCommunityLists, "eos_std_no_export");
+    Community eosStdGshut = communityListToCommunity(eosCommunityLists, "eos_std_gshut");
+    Community eosStdInternet = communityListToCommunity(eosCommunityLists, "eos_std_internet");
+    Community eosStdLocalAs = communityListToCommunity(eosCommunityLists, "eos_std_local_AS");
+    Community eosStdNoAdv = communityListToCommunity(eosCommunityLists, "eos_std_no_adv");
+    Community eosStdNoExport = communityListToCommunity(eosCommunityLists, "eos_std_no_export");
     String eosRegexExpMulti = communityListToRegex(eosCommunityLists, "eos_exp_multi");
 
-    long nxosStd = communityListToCommunity(nxosCommunityLists, "nxos_std");
+    Community nxosStd = communityListToCommunity(nxosCommunityLists, "nxos_std");
     String nxosRegexExp = communityListToRegex(nxosCommunityLists, "nxos_exp");
-    long nxosStdInternet = communityListToCommunity(nxosCommunityLists, "nxos_std_internet");
-    long nxosStdLocalAs = communityListToCommunity(nxosCommunityLists, "nxos_std_local_AS");
-    long nxosStdNoAdv = communityListToCommunity(nxosCommunityLists, "nxos_std_no_adv");
-    long nxosStdNoExport = communityListToCommunity(nxosCommunityLists, "nxos_std_no_export");
+    Community nxosStdInternet = communityListToCommunity(nxosCommunityLists, "nxos_std_internet");
+    Community nxosStdLocalAs = communityListToCommunity(nxosCommunityLists, "nxos_std_local_AS");
+    Community nxosStdNoAdv = communityListToCommunity(nxosCommunityLists, "nxos_std_no_adv");
+    Community nxosStdNoExport = communityListToCommunity(nxosCommunityLists, "nxos_std_no_export");
     String nxosRegexExpMulti = communityListToRegex(nxosCommunityLists, "nxos_exp_multi");
 
     // check literal communities
-    assertThat(iosImpliedStd, equalTo(4294967295L));
-    assertThat(iosStdAsnn, equalTo(CommonUtil.communityStringToLong("65535:65535")));
-    assertThat(eosStd, equalTo(CommonUtil.communityStringToLong("0:1")));
-    assertThat(nxosStd, equalTo(CommonUtil.communityStringToLong("65535:65535")));
+    assertThat(iosImpliedStd, equalTo(StandardCommunity.of(4294967295L)));
+    assertThat(iosStdAsnn, equalTo(StandardCommunity.parse("65535:65535")));
+    assertThat(eosStd, equalTo(StandardCommunity.parse("0:1")));
+    assertThat(nxosStd, equalTo(StandardCommunity.parse("65535:65535")));
 
     // check regex communities
     assertThat(iosRegexImpliedExp, equalTo("4294967295"));
@@ -3601,21 +3604,24 @@ public class CiscoGrammarTest {
     assertThat(nxosRegexExpMulti, equalTo("0:10:20:3"));
 
     // Check well known community regexes are generated properly
-    assertThat(iosStdInternet, equalTo(WellKnownCommunity.INTERNET));
-    assertThat(iosStdNoAdv, equalTo(WellKnownCommunity.NO_ADVERTISE));
-    assertThat(iosStdNoExport, equalTo(WellKnownCommunity.NO_EXPORT));
-    assertThat(iosStdGshut, equalTo(WellKnownCommunity.GRACEFUL_SHUTDOWN));
-    assertThat(iosStdLocalAs, equalTo(WellKnownCommunity.NO_EXPORT_SUBCONFED));
-    assertThat(eosStdInternet, equalTo(WellKnownCommunity.INTERNET));
-    assertThat(eosStdNoAdv, equalTo(WellKnownCommunity.NO_ADVERTISE));
-    assertThat(eosStdNoExport, equalTo(WellKnownCommunity.NO_EXPORT));
-    assertThat(eosStdGshut, equalTo(WellKnownCommunity.GRACEFUL_SHUTDOWN));
-    assertThat(eosStdLocalAs, equalTo(WellKnownCommunity.NO_EXPORT_SUBCONFED));
+    assertThat(iosStdInternet, equalTo(StandardCommunity.of(WellKnownCommunity.INTERNET)));
+    assertThat(iosStdNoAdv, equalTo(StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE)));
+    assertThat(iosStdNoExport, equalTo(StandardCommunity.of(WellKnownCommunity.NO_EXPORT)));
+    assertThat(iosStdGshut, equalTo(StandardCommunity.of(WellKnownCommunity.GRACEFUL_SHUTDOWN)));
+    assertThat(
+        iosStdLocalAs, equalTo(StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED)));
+    assertThat(eosStdInternet, equalTo(StandardCommunity.of(WellKnownCommunity.INTERNET)));
+    assertThat(eosStdNoAdv, equalTo(StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE)));
+    assertThat(eosStdNoExport, equalTo(StandardCommunity.of(WellKnownCommunity.NO_EXPORT)));
+    assertThat(eosStdGshut, equalTo(StandardCommunity.of(WellKnownCommunity.GRACEFUL_SHUTDOWN)));
+    assertThat(
+        eosStdLocalAs, equalTo(StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED)));
     // NX-OS does not support gshut
-    assertThat(nxosStdInternet, equalTo(WellKnownCommunity.INTERNET));
-    assertThat(nxosStdNoAdv, equalTo(WellKnownCommunity.NO_ADVERTISE));
-    assertThat(nxosStdNoExport, equalTo(WellKnownCommunity.NO_EXPORT));
-    assertThat(nxosStdLocalAs, equalTo(WellKnownCommunity.NO_EXPORT_SUBCONFED));
+    assertThat(nxosStdInternet, equalTo(StandardCommunity.of(WellKnownCommunity.INTERNET)));
+    assertThat(nxosStdNoAdv, equalTo(StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE)));
+    assertThat(nxosStdNoExport, equalTo(StandardCommunity.of(WellKnownCommunity.NO_EXPORT)));
+    assertThat(
+        nxosStdLocalAs, equalTo(StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED)));
 
     // make sure well known communities in expanded lists are not actually converted
     assertThat(iosRegexExpGshut, equalTo("gshut"));
@@ -3629,17 +3635,23 @@ public class CiscoGrammarTest {
         ((LiteralCommunityConjunction)
                 communityListToMatchCondition(iosCommunityLists, "std_community"))
             .getRequiredCommunities(),
-        equalTo(ImmutableSet.of(1L, 2L, 3L)));
+        equalTo(
+            ImmutableSet.of(
+                StandardCommunity.of(1L), StandardCommunity.of(2L), StandardCommunity.of(3L))));
     assertThat(
         ((LiteralCommunityConjunction)
                 communityListToMatchCondition(eosCommunityLists, "eos_std_multi"))
             .getRequiredCommunities(),
-        equalTo(ImmutableSet.of(1L, 2L, 3L)));
+        equalTo(
+            ImmutableSet.of(
+                StandardCommunity.of(1L), StandardCommunity.of(2L), StandardCommunity.of(3L))));
     assertThat(
         ((LiteralCommunityConjunction)
                 communityListToMatchCondition(nxosCommunityLists, "nxos_std_multi"))
             .getRequiredCommunities(),
-        equalTo(ImmutableSet.of(1L, 2L, 3L)));
+        equalTo(
+            ImmutableSet.of(
+                StandardCommunity.of(1L), StandardCommunity.of(2L), StandardCommunity.of(3L))));
   }
 
   @Test
@@ -3852,7 +3864,7 @@ public class CiscoGrammarTest {
     return communityLists.get(communityName).getLines().get(0).getMatchCondition();
   }
 
-  private static long communityListToCommunity(
+  private static Community communityListToCommunity(
       SortedMap<String, CommunityList> communityLists, String communityName) {
     return communityLists
         .get(communityName)

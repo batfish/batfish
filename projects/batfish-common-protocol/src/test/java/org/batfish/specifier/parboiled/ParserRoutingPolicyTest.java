@@ -1,13 +1,16 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.ParboiledAutoComplete.RANK_STRING_LITERAL;
+import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_NAME_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_PARENS;
+import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_SET_OP;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
-import java.util.List;
+import java.util.Set;
 import org.batfish.common.CompletionMetadata;
-import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -45,31 +48,27 @@ public class ParserRoutingPolicyTest {
             .setRoutingPolicyNames(ImmutableSet.of("RoutingPolicy1"))
             .build();
 
-    List<AutocompleteSuggestion> suggestions =
-        ParboiledAutoComplete.autoComplete(
-            Grammar.ROUTING_POLICY_SPECIFIER,
-            "network",
-            "snapshot",
-            query,
-            Integer.MAX_VALUE,
-            completionMetadata,
-            null,
-            null);
+    Set<ParboiledAutoCompleteSuggestion> suggestions =
+        new ParboiledAutoComplete(
+                Parser.instance(),
+                Grammar.ROUTING_POLICY_SPECIFIER,
+                Parser.ANCHORS,
+                "network",
+                "snapshot",
+                query,
+                Integer.MAX_VALUE,
+                completionMetadata,
+                null,
+                null)
+            .run();
 
     assertThat(
-        ImmutableSet.copyOf(suggestions),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion(
-                    "RoutingPolicy1",
-                    true,
-                    null,
-                    AutocompleteSuggestion.DEFAULT_RANK,
-                    query.length()),
-                new AutocompleteSuggestion("(", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("/", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(
-                    "\"", true, null, RANK_STRING_LITERAL, query.length()))));
+        suggestions,
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion(
+                "RoutingPolicy1", query.length(), ROUTING_POLICY_NAME),
+            new ParboiledAutoCompleteSuggestion("(", query.length(), ROUTING_POLICY_PARENS),
+            new ParboiledAutoCompleteSuggestion("/", query.length(), ROUTING_POLICY_NAME_REGEX)));
   }
 
   @Test
@@ -81,28 +80,28 @@ public class ParserRoutingPolicyTest {
             .setRoutingPolicyNames(ImmutableSet.of("RoutingPolicy1", "RoutingPolicy11"))
             .build();
 
-    List<AutocompleteSuggestion> suggestions =
-        ParboiledAutoComplete.autoComplete(
-            Grammar.ROUTING_POLICY_SPECIFIER,
-            "network",
-            "snapshot",
-            query,
-            Integer.MAX_VALUE,
-            completionMetadata,
-            null,
-            null);
+    Set<ParboiledAutoCompleteSuggestion> suggestions =
+        new ParboiledAutoComplete(
+                Parser.instance(),
+                Grammar.ROUTING_POLICY_SPECIFIER,
+                Parser.ANCHORS,
+                "network",
+                "snapshot",
+                query,
+                Integer.MAX_VALUE,
+                completionMetadata,
+                null,
+                null)
+            .run();
 
     assertThat(
-        ImmutableSet.copyOf(suggestions),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion(
-                    "RoutingPolicy1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
-                new AutocompleteSuggestion(
-                    "RoutingPolicy11", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
-                new AutocompleteSuggestion("\\", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("&", true, null, RANK_STRING_LITERAL, query.length()))));
+        suggestions,
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("RoutingPolicy1", 0, ROUTING_POLICY_NAME),
+            new ParboiledAutoCompleteSuggestion("RoutingPolicy11", 0, ROUTING_POLICY_NAME),
+            new ParboiledAutoCompleteSuggestion("\\", query.length(), ROUTING_POLICY_SET_OP),
+            new ParboiledAutoCompleteSuggestion(",", query.length(), ROUTING_POLICY_SET_OP),
+            new ParboiledAutoCompleteSuggestion("&", query.length(), ROUTING_POLICY_SET_OP)));
   }
 
   @Test

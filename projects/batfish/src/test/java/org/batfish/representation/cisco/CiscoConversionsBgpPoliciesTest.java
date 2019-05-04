@@ -16,7 +16,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
@@ -28,6 +28,8 @@ import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.bgp.community.Community;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet;
@@ -48,8 +50,10 @@ public class CiscoConversionsBgpPoliciesTest {
   private static final String ROUTE_MAP_NAME = "ROUTE_MAP";
   private static final Prefix PERMITTED_PREFIX = Prefix.parse("1.1.1.0/24");
   private static final Prefix DENIED_PREFIX = Prefix.parse("2.2.2.0/24");
-  private static final Set<Long> PERMITTED_COMMUNITY_SET = ImmutableSet.of(10L);
-  private static final Set<Long> DENIED_COMMUNITY_SET = ImmutableSet.of(20L);
+  private static final Set<Community> PERMITTED_COMMUNITY_SET =
+      ImmutableSet.of(StandardCommunity.of(10L));
+  private static final Set<Community> DENIED_COMMUNITY_SET =
+      ImmutableSet.of(StandardCommunity.of(20L));
 
   private Configuration _c;
   private Warnings _w;
@@ -107,14 +111,14 @@ public class CiscoConversionsBgpPoliciesTest {
    * and denies routes with prefix {@link #DENIED_PREFIX} or arbitrary other prefix.
    */
   private void testPolicyMatchesPrefixList(RoutingPolicy p, Direction direction) {
-    BgpRoute.Builder r =
-        BgpRoute.builder()
+    Bgpv4Route.Builder r =
+        Bgpv4Route.builder()
             .setOriginatorIp(PEER_ADDRESS)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.IBGP);
-    BgpRoute permitted = r.setNetwork(PERMITTED_PREFIX).build();
-    BgpRoute denied = r.setNetwork(DENIED_PREFIX).build();
-    BgpRoute unmatched = r.setNetwork(Prefix.parse("3.3.3.0/24")).build();
+    Bgpv4Route permitted = r.setNetwork(PERMITTED_PREFIX).build();
+    Bgpv4Route denied = r.setNetwork(DENIED_PREFIX).build();
+    Bgpv4Route unmatched = r.setNetwork(Prefix.parse("3.3.3.0/24")).build();
     assertThat(
         p.process(permitted, permitted.toBuilder(), PEER_ADDRESS, DEFAULT_VRF_NAME, direction),
         equalTo(true));
@@ -132,15 +136,15 @@ public class CiscoConversionsBgpPoliciesTest {
    * arbitrary other community.
    */
   private void testPolicyMatchesRouteMap(RoutingPolicy p, Direction direction) {
-    BgpRoute.Builder r =
-        BgpRoute.builder()
+    Bgpv4Route.Builder r =
+        Bgpv4Route.builder()
             .setNetwork(Prefix.parse("5.6.7.0/24"))
             .setOriginatorIp(PEER_ADDRESS)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.IBGP);
-    BgpRoute permitted = r.setCommunities(PERMITTED_COMMUNITY_SET).build();
-    BgpRoute denied = r.setCommunities(DENIED_COMMUNITY_SET).build();
-    BgpRoute unmatched = r.setCommunities(ImmutableSet.of(30L)).build();
+    Bgpv4Route permitted = r.setCommunities(PERMITTED_COMMUNITY_SET).build();
+    Bgpv4Route denied = r.setCommunities(DENIED_COMMUNITY_SET).build();
+    Bgpv4Route unmatched = r.setCommunities(ImmutableSet.of(StandardCommunity.of(30L))).build();
     assertThat(
         p.process(permitted, permitted.toBuilder(), PEER_ADDRESS, DEFAULT_VRF_NAME, direction),
         equalTo(true));
@@ -173,8 +177,8 @@ public class CiscoConversionsBgpPoliciesTest {
     assertThat(bgpExportPolicy, notNullValue());
     assertThat(_w.getRedFlagWarnings(), empty());
 
-    BgpRoute.Builder r =
-        BgpRoute.builder()
+    Bgpv4Route.Builder r =
+        Bgpv4Route.builder()
             .setOriginatorIp(PEER_ADDRESS)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.IBGP)

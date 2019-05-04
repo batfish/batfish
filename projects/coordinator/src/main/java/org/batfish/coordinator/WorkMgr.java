@@ -1,5 +1,6 @@
 package org.batfish.coordinator;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.collect.Comparators.lexicographical;
@@ -111,6 +112,8 @@ import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.AnswerSummary;
 import org.batfish.datamodel.answers.AutoCompleteUtils;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
+import org.batfish.datamodel.answers.InputValidationNotes;
+import org.batfish.datamodel.answers.InputValidationUtils;
 import org.batfish.datamodel.answers.Issue;
 import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.Metrics;
@@ -252,7 +255,6 @@ public class WorkMgr extends AbstractCoordinator {
       BatfishLogger logger,
       @Nonnull IdManager idManager,
       @Nonnull StorageProvider storage) {
-    super(false);
     _settings = settings;
     _idManager = idManager;
     _storage = storage;
@@ -3078,5 +3080,27 @@ public class WorkMgr extends AbstractCoordinator {
       throws IOException {
     _storage.storeNodeRoles(nodeRolesData, nodeRolesId);
     _idManager.assignNetworkNodeRolesId(networkId, nodeRolesId);
+  }
+
+  /** Provides the results of validating the user supplied input */
+  @Nullable
+  public InputValidationNotes validateInput(
+      String network, String snapshot, Variable.Type varType, String query) throws IOException {
+
+    if (!_idManager.hasNetworkId(network)) {
+      return null;
+    }
+    NetworkId networkId = _idManager.getNetworkId(network);
+    if (!_idManager.hasSnapshotId(snapshot, networkId)) {
+      return null;
+    }
+
+    return InputValidationUtils.validate(
+        varType,
+        query,
+        firstNonNull(
+            getCompletionMetadata(network, snapshot), CompletionMetadata.builder().build()),
+        firstNonNull(getNetworkNodeRoles(network), NodeRolesData.builder().build()),
+        firstNonNull(getReferenceLibrary(network), new ReferenceLibrary(null)));
   }
 }

@@ -1,6 +1,5 @@
 package org.batfish.dataplane.ibdp;
 
-import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.common.topology.TopologyUtil.computeIpNodeOwners;
 import static org.batfish.common.topology.TopologyUtil.computeIpVrfOwners;
 import static org.batfish.common.topology.TopologyUtil.computeNodeInterfaces;
@@ -9,43 +8,31 @@ import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
 
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.graph.Network;
-import com.google.common.graph.ValueGraph;
-import com.google.common.graph.ValueGraphBuilder;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BdpOscillationException;
 import org.batfish.common.Version;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
-import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
-import org.batfish.datamodel.BgpPeerConfigId;
-import org.batfish.datamodel.BgpRoute;
-import org.batfish.datamodel.BgpSessionProperties;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.IncrementalBdpAnswerElement;
-import org.batfish.datamodel.eigrp.EigrpEdge;
-import org.batfish.datamodel.eigrp.EigrpInterface;
+import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.eigrp.EigrpTopology;
-import org.batfish.datamodel.isis.IsisEdge;
-import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.isis.IsisTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.dataplane.TracerouteEngineImpl;
@@ -62,61 +49,6 @@ class IncrementalBdpEngine {
   private final BatfishLogger _bfLogger;
   private final IncrementalDataPlaneSettings _settings;
 
-  /**
-   * Helper class to capture intermediate steps during the dataplane fixed point computation.
-   * Equality of {@link IntermediateComputationResult} indicates that a fixed point has been
-   * reached.
-   */
-  private static final class IntermediateComputationResult {
-    // TODO: add other intermediate state (e.g., other topologies)
-    final ValueGraph<BgpPeerConfigId, BgpSessionProperties> _bgpTopology;
-
-    private IntermediateComputationResult(
-        @Nonnull ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology) {
-      _bgpTopology = bgpTopology;
-    }
-
-    private static Builder builder() {
-      return new Builder();
-    }
-
-    /**
-     * Convenience builder for {@link IntermediateComputationResult}, ensures that all fields are
-     * specified)
-     */
-    private static final class Builder {
-      @Nullable ValueGraph<BgpPeerConfigId, BgpSessionProperties> _bgpTopology;
-
-      public Builder setBgpTopology(
-          @Nullable ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology) {
-        _bgpTopology = bgpTopology;
-        return this;
-      }
-
-      public IntermediateComputationResult build() {
-        checkState(_bgpTopology != null, "Must update bgp topology during dataplane computation");
-        return new IntermediateComputationResult(_bgpTopology);
-      }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (!(o instanceof IntermediateComputationResult)) {
-        return false;
-      }
-      IntermediateComputationResult other = (IntermediateComputationResult) o;
-      return _bgpTopology.equals(other._bgpTopology);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(_bgpTopology);
-    }
-  }
-
   IncrementalBdpEngine(IncrementalDataPlaneSettings settings, BatfishLogger logger) {
     _settings = settings;
     _bfLogger = logger;
@@ -124,9 +56,7 @@ class IncrementalBdpEngine {
 
   ComputeDataPlaneResult computeDataPlane(
       Map<String, Configuration> configurations,
-      Topology topology,
-      @Nullable Layer2Topology layer2Topology,
-      OspfTopology ospfTopology,
+      TopologyContext callerTopologyContext,
       Set<BgpAdvertisement> externalAdverts) {
     try (ActiveSpan span = GlobalTracer.get().buildSpan("Compute Data Plane").startActive()) {
       assert span != null; // avoid unused warning
@@ -139,10 +69,16 @@ class IncrementalBdpEngine {
       Map<Ip, Set<String>> ipOwners = computeIpNodeOwners(configurations, true);
       Map<Ip, Map<String, Set<String>>> ipVrfOwners =
           computeIpVrfOwners(true, computeNodeInterfaces(configurations));
-      Network<EigrpInterface, EigrpEdge> eigrpTopology =
-          EigrpTopology.initEigrpTopology(configurations, topology);
-      Network<IsisNode, IsisEdge> isisTopology =
-          IsisTopology.initIsisTopology(configurations, topology);
+      TopologyContext initialTopologyContext =
+          callerTopologyContext
+              .toBuilder()
+              .setEigrpTopology(
+                  EigrpTopology.initEigrpTopology(
+                      configurations, callerTopologyContext.getLayer3Topology()))
+              .setIsisTopology(
+                  IsisTopology.initIsisTopology(
+                      configurations, callerTopologyContext.getLayer3Topology()))
+              .build();
 
       // Generate our nodes, keyed by name, sorted for determinism
       SortedMap<String, Node> nodes =
@@ -158,14 +94,13 @@ class IncrementalBdpEngine {
        */
       IncrementalBdpAnswerElement answerElement = new IncrementalBdpAnswerElement();
       // TODO: eventually, IGP needs to be part of fixed-point below, because tunnels.
-      computeIgpDataPlane(
-          nodes, topology, eigrpTopology, answerElement, networkConfigurations, ospfTopology);
+      computeIgpDataPlane(nodes, initialTopologyContext, answerElement, networkConfigurations);
 
       /*
        * Perform a fixed-point computation.
        */
       int topologyIterations = 0;
-      IntermediateComputationResult newResult = null;
+      TopologyContext currentTopologyContext = initialTopologyContext;
       boolean converged = false;
       while (!converged && topologyIterations++ < MAX_TOPOLOGY_ITERATIONS) {
         try (ActiveSpan iterSpan =
@@ -177,27 +112,30 @@ class IncrementalBdpEngine {
           // Force re-init of partial dataplane. Re-inits forwarding analysis, etc.
           computeFibs(nodes);
           IncrementalDataPlane partialDataplane =
-              dpBuilder.setIpVrfOwners(ipVrfOwners).setNodes(nodes).setTopology(topology).build();
+              dpBuilder
+                  .setIpVrfOwners(ipVrfOwners)
+                  .setNodes(nodes)
+                  .setTopologyContext(currentTopologyContext)
+                  .build();
 
           // Initialize BGP topology
-          ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+          BgpTopology bgpTopology =
               initBgpTopology(
                   configurations,
                   ipOwners,
                   false,
                   true,
                   new TracerouteEngineImpl(partialDataplane),
-                  layer2Topology);
+                  initialTopologyContext.getLayer2Topology());
+          TopologyContext newTopologyContext =
+              currentTopologyContext.toBuilder().setBgpTopology(bgpTopology).build();
 
           boolean isOscillating =
               computeNonMonotonicPortionOfDataPlane(
                   nodes,
                   externalAdverts,
                   answerElement,
-                  bgpTopology,
-                  eigrpTopology,
-                  isisTopology,
-                  ospfTopology,
+                  newTopologyContext,
                   networkConfigurations,
                   ipOwners);
           if (isOscillating) {
@@ -205,9 +143,8 @@ class IncrementalBdpEngine {
             throw new BdpOscillationException("Network has no stable solution");
           }
 
-          IntermediateComputationResult oldResult = newResult;
-          newResult = IntermediateComputationResult.builder().setBgpTopology(bgpTopology).build();
-          converged = Objects.equals(oldResult, newResult);
+          converged = currentTopologyContext.equals(newTopologyContext);
+          currentTopologyContext = newTopologyContext;
         }
       }
 
@@ -225,9 +162,8 @@ class IncrementalBdpEngine {
       IncrementalDataPlane finalDataplane =
           IncrementalDataPlane.builder()
               .setNodes(nodes)
-              .setTopology(topology)
+              .setTopologyContext(currentTopologyContext)
               .setIpVrfOwners(ipVrfOwners)
-              .setBgpTopology(newResult._bgpTopology)
               .build();
       _bfLogger.printElapsedTime();
       return new ComputeDataPlaneResult(answerElement, finalDataplane);
@@ -247,13 +183,13 @@ class IncrementalBdpEngine {
    * @param nodes nodes that are participating in the computation
    * @param iterationLabel iteration label (for stats tracking)
    * @param allNodes all nodes in the network (for correct neighbor referencing)
-   * @param bgpTopology the bgp peering relationships
+   * @param topologyContext the various network topologies
    */
   private static void computeDependentRoutesIteration(
       Map<String, Node> nodes,
       String iterationLabel,
       Map<String, Node> allNodes,
-      ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
+      TopologyContext topologyContext,
       NetworkConfigurations networkConfigurations) {
     try (ActiveSpan overallSpan =
         GlobalTracer.get().buildSpan(iterationLabel + ": Compute dependent routes").startActive()) {
@@ -402,7 +338,7 @@ class IncrementalBdpEngine {
       }
 
       computeIterationOfBgpRoutes(
-          nodes, iterationLabel, allNodes, bgpTopology, networkConfigurations);
+          nodes, iterationLabel, allNodes, topologyContext.getBgpTopology(), networkConfigurations);
 
       try (ActiveSpan span =
           GlobalTracer.get().buildSpan(iterationLabel + ": Redistribute").startActive()) {
@@ -421,7 +357,7 @@ class IncrementalBdpEngine {
       Map<String, Node> nodes,
       String iterationLabel,
       Map<String, Node> allNodes,
-      ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
+      BgpTopology bgpTopology,
       NetworkConfigurations networkConfigurations) {
     try (ActiveSpan span =
         GlobalTracer.get()
@@ -445,7 +381,7 @@ class IncrementalBdpEngine {
           .flatMap(n -> n.getVirtualRouters().values().stream())
           .forEach(
               vr -> {
-                Map<BgpRib, RibDelta<BgpRoute>> deltas =
+                Map<BgpRib, RibDelta<Bgpv4Route>> deltas =
                     vr.processBgpMessages(bgpTopology, networkConfigurations, nodes);
                 vr.finalizeBgpRoutesAndQueueOutgoingMessages(
                     deltas, allNodes, bgpTopology, networkConfigurations);
@@ -503,20 +439,16 @@ class IncrementalBdpEngine {
    * Compute the IGP portion of the dataplane.
    *
    * @param nodes A dictionary of configuration-wrapping Bdp nodes keyed by name
-   * @param topology The topology representing Layer 3 adjacencies between interface of the nodes
-   * @param eigrpTopology The topology representing EIGRP adjacencies
+   * @param topologyContext The topology context in which various adjacencies are stored
    * @param ae The output answer element in which to store a report of the computation. Also
    *     contains the current recovery iteration.
    * @param networkConfigurations All configurations in the network
-   * @param ospfTopology the OSPF topology
    */
   private void computeIgpDataPlane(
       SortedMap<String, Node> nodes,
-      Topology topology,
-      Network<EigrpInterface, EigrpEdge> eigrpTopology,
+      TopologyContext topologyContext,
       IncrementalBdpAnswerElement ae,
-      NetworkConfigurations networkConfigurations,
-      OspfTopology ospfTopology) {
+      NetworkConfigurations networkConfigurations) {
     try (ActiveSpan span = GlobalTracer.get().buildSpan("Compute IGP").startActive()) {
       assert span != null; // avoid unused warning
 
@@ -534,21 +466,18 @@ class IncrementalBdpEngine {
             .values()
             .parallelStream()
             .flatMap(n -> n.getVirtualRouters().values().stream())
-            .forEach(
-                vr -> {
-                  vr.initForIgpComputation(ospfTopology);
-                });
+            .forEach(vr -> vr.initForIgpComputation(topologyContext));
       }
 
       // EIGRP internal routes
       numEigrpInternalIterations =
-          initEigrpInternalRoutes(nodes, eigrpTopology, networkConfigurations);
+          initEigrpInternalRoutes(nodes, topologyContext, networkConfigurations);
 
       // OSPF internal routes
-      numOspfInternalIterations = initOspfInternalRoutes(nodes, ospfTopology);
+      numOspfInternalIterations = initOspfInternalRoutes(nodes, topologyContext.getOspfTopology());
 
       // RIP internal routes
-      initRipInternalRoutes(nodes, topology);
+      initRipInternalRoutes(nodes, topologyContext.getLayer3Topology());
 
       // Activate static routes
       try (ActiveSpan staticSpan =
@@ -580,8 +509,7 @@ class IncrementalBdpEngine {
    * @param externalAdverts the set of external BGP advertisements
    * @param ae The output answer element in which to store a report of the computation. Also
    *     contains the current recovery iteration.
-   * @param eigrpTopology The topology representing EIGRP adjacencies
-   * @param ospfTopology The topology representing OSPF topology
+   * @param topologyContext The various network topologies
    * @param ipOwners The ip owner mapping
    * @return true iff the computation is oscillating
    */
@@ -589,10 +517,7 @@ class IncrementalBdpEngine {
       SortedMap<String, Node> nodes,
       Set<BgpAdvertisement> externalAdverts,
       IncrementalBdpAnswerElement ae,
-      ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
-      Network<EigrpInterface, EigrpEdge> eigrpTopology,
-      Network<IsisNode, IsisEdge> isisTopology,
-      OspfTopology ospfTopology,
+      TopologyContext topologyContext,
       NetworkConfigurations networkConfigurations,
       Map<Ip, Set<String>> ipOwners) {
     try (ActiveSpan span = GlobalTracer.get().buildSpan("Compute EGP").startActive()) {
@@ -610,10 +535,7 @@ class IncrementalBdpEngine {
             .values()
             .parallelStream()
             .flatMap(n -> n.getVirtualRouters().values().stream())
-            .forEach(
-                vr ->
-                    vr.initForEgpComputation(
-                        bgpTopology, eigrpTopology, isisTopology, ospfTopology));
+            .forEach(vr -> vr.initForEgpComputation(topologyContext));
       }
 
       try (ActiveSpan innerSpan =
@@ -630,6 +552,7 @@ class IncrementalBdpEngine {
           GlobalTracer.get().buildSpan("Queue initial bgp messages").startActive()) {
         assert innerSpan != null; // avoid unused warning
         // Queue initial outgoing messages
+        BgpTopology bgpTopology = topologyContext.getBgpTopology();
         nodes
             .values()
             .parallelStream()
@@ -664,9 +587,7 @@ class IncrementalBdpEngine {
               GlobalTracer.get().buildSpan("Compute schedule").startActive()) {
             assert innerSpan != null; // avoid unused warning
             // Compute node schedule
-            schedule =
-                IbdpSchedule.getSchedule(
-                    _settings, currentSchedule, nodes, bgpTopology, ospfTopology);
+            schedule = IbdpSchedule.getSchedule(_settings, currentSchedule, nodes, topologyContext);
           }
 
           // compute dependent routes for each allowable set of nodes until we cover all nodes
@@ -676,7 +597,7 @@ class IncrementalBdpEngine {
             String iterationlabel =
                 String.format("Iteration %d Schedule %d", _numIterations, nodeSet);
             computeDependentRoutesIteration(
-                iterationNodes, iterationlabel, nodes, bgpTopology, networkConfigurations);
+                iterationNodes, iterationlabel, nodes, topologyContext, networkConfigurations);
             ++nodeSet;
           }
 
@@ -800,13 +721,13 @@ class IncrementalBdpEngine {
    * Run the IGP EIGRP computation until convergence.
    *
    * @param nodes list of nodes for which to initialize the EIGRP routes
-   * @param eigrpTopology The topology representing EIGRP adjacencies
+   * @param topologyContext The topology context in which EIGRP adjacencies are stored
    * @param networkConfigurations All configurations in the network
    * @return the number of iterations it took for internal EIGRP routes to converge
    */
   private static int initEigrpInternalRoutes(
       Map<String, Node> nodes,
-      Network<EigrpInterface, EigrpEdge> eigrpTopology,
+      TopologyContext topologyContext,
       NetworkConfigurations networkConfigurations) {
     AtomicBoolean eigrpInternalChanged = new AtomicBoolean(true);
     int eigrpInternalIterations = 0;
@@ -826,7 +747,7 @@ class IncrementalBdpEngine {
             .forEach(
                 vr -> {
                   if (vr.propagateEigrpInternalRoutes(
-                      nodes, eigrpTopology, networkConfigurations)) {
+                      nodes, topologyContext, networkConfigurations)) {
                     eigrpInternalChanged.set(true);
                   }
                 });
@@ -880,8 +801,7 @@ class IncrementalBdpEngine {
                 _settings,
                 _settings.getScheduleName(),
                 allNodes,
-                ValueGraphBuilder.directed().build(),
-                ospfTopology);
+                TopologyContext.builder().setOspfTopology(ospfTopology).build());
 
         while (schedule.hasNext()) {
           Map<String, Node> scheduleNodes = schedule.next();

@@ -40,20 +40,13 @@ public final class LargeCommunity extends Community {
   public static LargeCommunity parse(String value) {
     String[] parts = value.split(":");
     checkArgument(
-        parts.length == 3 || (parts.length == 4 && parts[0].equalsIgnoreCase("large")),
+        parts.length == 4 && parts[0].equalsIgnoreCase("large"),
         "Invalid large BGP community string %s",
         value);
-    if (parts.length == 3) {
-      return of(
-          Long.parseUnsignedLong(parts[0]),
-          Long.parseUnsignedLong(parts[1]),
-          Long.parseUnsignedLong(parts[2]));
-    } else {
-      return of(
-          Long.parseUnsignedLong(parts[1]),
-          Long.parseUnsignedLong(parts[2]),
-          Long.parseUnsignedLong(parts[3]));
-    }
+    return of(
+        Long.parseUnsignedLong(parts[1]),
+        Long.parseUnsignedLong(parts[2]),
+        Long.parseUnsignedLong(parts[3]));
   }
 
   public static LargeCommunity of(long globalAdministrator, long localData1, long localData2) {
@@ -107,7 +100,7 @@ public final class LargeCommunity extends Community {
   @Override
   public String toString() {
     if (_str == null) {
-      _str = _globalAdministrator + ":" + _localData1 + ":" + _localData2;
+      _str = "large:" + _globalAdministrator + ":" + _localData1 + ":" + _localData2;
     }
     return _str;
   }

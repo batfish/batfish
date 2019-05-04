@@ -49,9 +49,9 @@ import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
-import org.batfish.datamodel.answers.AutocompleteQueryMetadata;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.GetAnalysisAnswerMetricsAnswer;
+import org.batfish.datamodel.answers.InputValidationNotes;
 import org.batfish.datamodel.pojo.WorkStatus;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Variable;
@@ -99,12 +99,14 @@ public class WorkMgrService {
       checkClientVersion(clientVersion);
       checkNetworkAccessibility(apiKey, networkName);
 
+      Variable.Type varType = Variable.Type.fromString(completionType);
+
       List<AutocompleteSuggestion> answer =
           Main.getWorkMgr()
               .autoComplete(
                   networkName,
                   snapshotName,
-                  Variable.Type.fromString(completionType),
+                  varType,
                   query,
                   Strings.isNullOrEmpty(maxSuggestions)
                       ? Integer.MAX_VALUE
@@ -119,8 +121,10 @@ public class WorkMgrService {
               .map(BatfishObjectMapper::writeStringRuntimeError)
               .collect(Collectors.toList());
 
-      String serializedMetadata =
-          BatfishObjectMapper.writeString(new AutocompleteQueryMetadata(true, null, null));
+      InputValidationNotes validationNotes =
+          Main.getWorkMgr().validateInput(networkName, snapshotName, varType, query);
+
+      String serializedMetadata = BatfishObjectMapper.writeString(validationNotes);
 
       return successResponse(
           new JSONObject()

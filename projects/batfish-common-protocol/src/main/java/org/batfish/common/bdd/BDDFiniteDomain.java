@@ -24,9 +24,10 @@ public final class BDDFiniteDomain<V> {
   private @Nonnull final Map<V, BDD> _valueBdds;
   private @Nonnull final BDD _isValidValue;
   private @Nullable final BDD _varBits;
+  private @Nullable final BDDInteger _var;
 
   /** Allocate a variable sufficient for the given set of values. */
-  BDDFiniteDomain(BDDPacket pkt, String varName, Set<V> values) {
+  public BDDFiniteDomain(BDDPacket pkt, String varName, Set<V> values) {
     this(pkt.allocateBDDInteger(varName, computeBitsRequired(values.size()), false), values);
   }
 
@@ -34,6 +35,7 @@ public final class BDDFiniteDomain<V> {
   BDDFiniteDomain(BDDInteger var, Set<V> values) {
     int size = values.size();
     BDD one = var.getFactory().one();
+    _var = var;
     _varBits = Arrays.stream(var.getBitvec()).reduce(BDD::and).orElse(null);
     if (size == 0) {
       _valueBdds = ImmutableMap.of();
@@ -106,5 +108,10 @@ public final class BDDFiniteDomain<V> {
 
   public BDD getIsValidConstraint() {
     return _isValidValue;
+  }
+
+  @Nullable
+  public BDDInteger getVar() {
+    return _var;
   }
 }

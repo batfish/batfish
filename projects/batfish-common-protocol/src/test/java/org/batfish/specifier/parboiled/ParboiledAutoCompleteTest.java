@@ -1,16 +1,27 @@
 package org.batfish.specifier.parboiled;
 
 import static junit.framework.TestCase.assertTrue;
-import static org.batfish.specifier.parboiled.ParboiledAutoComplete.RANK_STRING_LITERAL;
+import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.IP_ADDRESS;
+import static org.batfish.specifier.parboiled.Anchor.Type.IP_PROTOCOL_NOT;
+import static org.batfish.specifier.parboiled.Anchor.Type.IP_RANGE;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_PARENS;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_SET_OP;
+import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_ADDRESS_GROUP;
+import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.UNKNOWN;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import java.util.List;
 import org.batfish.common.CompletionMetadata;
-import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.InterfaceGroup;
@@ -32,10 +43,9 @@ public class ParboiledAutoCompleteTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static ParboiledAutoComplete getTestPAC(String query) {
-    TestParser parser = TestParser.instance();
     return new ParboiledAutoComplete(
-        parser,
-        parser.getInputRule(),
+        TestParser.instance(),
+        Grammar.NODE_SPECIFIER,
         TestParser.ANCHORS,
         "network",
         "snapshot",
@@ -55,7 +65,7 @@ public class ParboiledAutoCompleteTest {
       TestParser parser, String query, CompletionMetadata completionMetadata) {
     return new ParboiledAutoComplete(
         parser,
-        parser.getInputRule(),
+        Grammar.NODE_SPECIFIER,
         TestParser.ANCHORS,
         "network",
         "snapshot",
@@ -74,7 +84,7 @@ public class ParboiledAutoCompleteTest {
       TestParser parser, String query, ReferenceLibrary referenceLibrary) {
     return new ParboiledAutoComplete(
         parser,
-        parser.getInputRule(),
+        Grammar.NODE_SPECIFIER,
         TestParser.ANCHORS,
         "network",
         "snapshot",
@@ -112,6 +122,20 @@ public class ParboiledAutoCompleteTest {
                       ImmutableList.of(new InterfaceGroup(ImmutableSortedSet.of(), "i21")))
                   .build()));
 
+  @Test
+  public void testCompletionEmpty() {
+    String query = "";
+
+    assertThat(
+        getTestPAC(query).run(),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("(", query.length(), NODE_PARENS),
+            new ParboiledAutoCompleteSuggestion("!", query.length(), IP_PROTOCOL_NOT),
+            new ParboiledAutoCompleteSuggestion("/", query.length(), NODE_NAME_REGEX),
+            new ParboiledAutoCompleteSuggestion(
+                "@specifier(", query.length(), REFERENCE_BOOK_AND_ADDRESS_GROUP)));
+  }
+
   /**
    * Test that we produce auto complete snapshot-based base (i.e., those that do not depend on other
    * values) dynamic values like IP addresses
@@ -126,11 +150,7 @@ public class ParboiledAutoCompleteTest {
     // 1.1.1.1 matches, but 2.2.2.2 does not
     assertThat(
         ImmutableSet.copyOf(getTestPAC(query, completionMetadata).run()),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion(
-                    "1.1.1.1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
-                new AutocompleteSuggestion(".", true, null, RANK_STRING_LITERAL, 5))));
+        containsInAnyOrder(new ParboiledAutoCompleteSuggestion("1.1.1.1", 0, IP_ADDRESS)));
   }
 
   /**
@@ -146,15 +166,12 @@ public class ParboiledAutoCompleteTest {
 
     // this should auto complete to 1.1.1.10, '-' (range), and ',' (list)
     assertThat(
-        ImmutableSet.copyOf(getTestPAC(query, completionMetadata).run()),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion(
-                    "1.1.1.1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
-                new AutocompleteSuggestion(
-                    "1.1.1.10", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
-                new AutocompleteSuggestion("-", true, null, RANK_STRING_LITERAL, 7),
-                new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, 7))));
+        getTestPAC(query, completionMetadata).run(),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("1.1.1.1", 0, IP_ADDRESS),
+            new ParboiledAutoCompleteSuggestion("1.1.1.10", 0, IP_ADDRESS),
+            new ParboiledAutoCompleteSuggestion("-", 7, IP_RANGE),
+            new ParboiledAutoCompleteSuggestion(",", 7, NODE_SET_OP)));
   }
 
   /** Test that we produce auto complete snapshot-based names. */
@@ -170,11 +187,9 @@ public class ParboiledAutoCompleteTest {
         ImmutableSet.copyOf(getTestPAC(query, completionMetadata).run()),
         equalTo(
             ImmutableSet.of(
-                new AutocompleteSuggestion(
-                    "node1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
-                new AutocompleteSuggestion(
-                    "node10", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
-                new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()))));
+                new ParboiledAutoCompleteSuggestion("node1", 0, NODE_NAME),
+                new ParboiledAutoCompleteSuggestion("node10", 0, NODE_NAME),
+                new ParboiledAutoCompleteSuggestion(",", query.length(), NODE_SET_OP))));
   }
 
   /** Test that we produce auto complete snapshot-based names even when we begin with a quote. */
@@ -187,13 +202,10 @@ public class ParboiledAutoCompleteTest {
 
     // this should auto complete to 1.1.1.10, '-' (range), and ',' (list)
     assertThat(
-        ImmutableSet.copyOf(getTestPAC(query, completionMetadata).run()),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, 6),
-                new AutocompleteSuggestion("\"node1\"", true, null, RANK_STRING_LITERAL, 0),
-                new AutocompleteSuggestion(
-                    "\"node10\"", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0))));
+        getTestPAC(query, completionMetadata).run(),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("\"node1\"", 0, NODE_NAME),
+            new ParboiledAutoCompleteSuggestion("\"node10\"", 0, NODE_NAME)));
   }
 
   /** Test that we produce auto complete snapshot-based names even when we begin with a quote. */
@@ -205,10 +217,8 @@ public class ParboiledAutoCompleteTest {
         CompletionMetadata.builder().setNodes(ImmutableSet.of("node1", "node10")).build();
 
     assertThat(
-        ImmutableSet.copyOf(getTestPAC(query, completionMetadata).run()),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()))));
+        getTestPAC(query, completionMetadata).run(),
+        containsInAnyOrder(new ParboiledAutoCompleteSuggestion(",", query.length(), NODE_SET_OP)));
   }
 
   /** Test that we properly quote a name complex names when we offer them as suggestions. */
@@ -221,70 +231,70 @@ public class ParboiledAutoCompleteTest {
 
     // node10 should not be quoted and node 1 should be quoted
     assertThat(
-        ImmutableSet.copyOf(getTestPAC(query, completionMetadata).run()),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(
-                    "node10", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
-                new AutocompleteSuggestion(
-                    "\"node 1\"", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0))));
+        getTestPAC(query, completionMetadata).run(),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion(",", query.length(), NODE_SET_OP),
+            new ParboiledAutoCompleteSuggestion("node10", 0, NODE_NAME),
+            new ParboiledAutoCompleteSuggestion("\"node 1\"", 0, NODE_NAME)));
+  }
+
+  /** Test that we produce an empty suggestion after a '/' that opens a regex */
+  @Test
+  public void testRunRegexEmpty() {
+    String query = "/";
+
+    assertThat(
+        getTestPAC(query).run(),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("", query.length(), NODE_NAME_REGEX)));
+  }
+
+  /** Test that we produce an empty suggestion after a '/aa' that denotes a partial regex */
+  @Test
+  public void testRunRegexPartial() {
+    String query = "/aa";
+
+    assertThat(
+        getTestPAC(query).run(),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("/", query.length(), NODE_NAME_REGEX),
+            new ParboiledAutoCompleteSuggestion("", query.length(), NODE_NAME_REGEX)));
+  }
+
+  /** Test that we auto complete partial specifier names */
+  @Test
+  public void testRunSpecifierPartial() {
+    assertThat(
+        getTestPAC("@specifie", testLibrary).run(),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion(
+                "@specifier(", 0, REFERENCE_BOOK_AND_ADDRESS_GROUP)));
+  }
+
+  /** Test that we auto complete specifier names */
+  @Test
+  public void testRunSpecifierFull() {
+    assertThat(
+        getTestPAC("@specifier", testLibrary).run(),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("(", 10, REFERENCE_BOOK_AND_ADDRESS_GROUP)));
   }
 
   /** Test that we produce auto complete snapshot-based dynamic values like address groups */
   @Test
   public void testRunSpecifierInput() {
     assertThat(
-        ImmutableSet.copyOf(getTestPAC("@specifier(", testLibrary).run()),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, 11),
-                new AutocompleteSuggestion(
-                    "b1a", true, null, AutocompleteSuggestion.DEFAULT_RANK, 11),
-                new AutocompleteSuggestion(
-                    "b2a", true, null, AutocompleteSuggestion.DEFAULT_RANK, 11))));
+        getTestPAC("@specifier(", testLibrary).run(),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("b1a", 11, REFERENCE_BOOK_NAME),
+            new ParboiledAutoCompleteSuggestion("b2a", 11, REFERENCE_BOOK_NAME)));
 
     // only g11 and g12 should be suggested
     assertThat(
-        ImmutableSet.copyOf(getTestPAC("@specifier(b1a,", testLibrary).run()),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, 15),
-                new AutocompleteSuggestion(
-                    "g11", true, null, AutocompleteSuggestion.DEFAULT_RANK, 15),
-                new AutocompleteSuggestion(
-                    "g12", true, null, AutocompleteSuggestion.DEFAULT_RANK, 15))));
-  }
-
-  /** Test that String literals are inserted before dynamic values */
-  @Test
-  public void testRunStringLiteralsFirst() {
-    String query = "";
-
-    CompletionMetadata completionMetadata =
-        CompletionMetadata.builder().setIps(ImmutableSet.of("1.1.1.1")).build();
-
-    List<AutocompleteSuggestion> suggestions = getTestPAC(query, completionMetadata).run();
-
-    /**
-     * The first 5 elements should be string literals and the last one should be dynamic. We do a
-     * 3-step dance because the ordering of string completions is non-deterministic.
-     */
-    assertThat(suggestions.size(), equalTo(6));
-    assertThat(
-        ImmutableSet.copyOf(suggestions.subList(0, 5)),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion("!", true, null, RANK_STRING_LITERAL, 0),
-                new AutocompleteSuggestion("/", true, null, RANK_STRING_LITERAL, 0),
-                new AutocompleteSuggestion("(", true, null, RANK_STRING_LITERAL, 0),
-                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, 0),
-                new AutocompleteSuggestion("@specifier", true, null, RANK_STRING_LITERAL, 0))));
-    assertThat(
-        suggestions.get(5),
-        equalTo(
-            new AutocompleteSuggestion(
-                "1.1.1.1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0)));
+        getTestPAC("@specifier(b1a,", testLibrary).run(),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("g11", 15, ADDRESS_GROUP_NAME),
+            new ParboiledAutoCompleteSuggestion("g12", 15, ADDRESS_GROUP_NAME)));
   }
 
   /** Test that we produce auto completion suggestions even for valid inputs */
@@ -301,29 +311,26 @@ public class ParboiledAutoCompleteTest {
     // commma is the only viable auto completion after a valid input
     assertThat(
         getTestPAC(query).run(),
-        equalTo(
-            ImmutableList.of(new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, 9))));
+        containsInAnyOrder(new ParboiledAutoCompleteSuggestion(",", 9, NODE_SET_OP)));
   }
 
   @Test
   public void testAutoCompletePotentialMatchStringLiteral() {
-    PotentialMatch pm =
-        new PotentialMatch(
-            new PathElement(Type.STRING_LITERAL, "\"pfxcomp\"", 0, 0), "pfx", ImmutableList.of());
+    PathElement anchor = new PathElement(Type.STRING_LITERAL, "\"pfxcomp\"", 0, 0);
+    PotentialMatch pm = new PotentialMatch(anchor, "pfx", ImmutableList.of(anchor));
     assertThat(
-        getTestPAC(null).autoCompletePotentialMatch(pm),
-        equalTo(ImmutableList.of(new AutocompleteSuggestion("pfxcomp", true, null, -1, 0))));
+        getTestPAC("pfx").autoCompletePotentialMatch(pm),
+        containsInAnyOrder(new ParboiledAutoCompleteSuggestion("pfxcomp", 0, UNKNOWN)));
   }
 
   /** The suggestion should have the case in the grammar token independent of user input */
   @Test
   public void testAutoCompletePotentialMatchStringLiteralCasePreserve() {
-    PotentialMatch pm =
-        new PotentialMatch(
-            new PathElement(Type.STRING_LITERAL, "\"pfxcomp\"", 0, 0), "PfX", ImmutableList.of());
+    PathElement anchor = new PathElement(Type.STRING_LITERAL, "\"pfxcomp\"", 0, 0);
+    PotentialMatch pm = new PotentialMatch(anchor, "PfX", ImmutableList.of(anchor));
     assertThat(
-        getTestPAC(null).autoCompletePotentialMatch(pm),
-        equalTo(ImmutableList.of(new AutocompleteSuggestion("pfxcomp", true, null, -1, 0))));
+        getTestPAC("PfX").autoCompletePotentialMatch(pm),
+        containsInAnyOrder(new ParboiledAutoCompleteSuggestion("pfxcomp", 0, UNKNOWN)));
   }
 
   @Test
@@ -331,7 +338,7 @@ public class ParboiledAutoCompleteTest {
     PotentialMatch pm =
         new PotentialMatch(
             new PathElement(Type.IP_ADDRESS_MASK, "label", 0, 0), "pfx", ImmutableList.of());
-    assertThat(getTestPAC(null).autoCompletePotentialMatch(pm), equalTo(ImmutableList.of()));
+    assertThat(getTestPAC(null).autoCompletePotentialMatch(pm), equalTo(ImmutableSet.of()));
   }
 
   /** Throw an exception if anchor is not present in the path */
@@ -342,7 +349,7 @@ public class ParboiledAutoCompleteTest {
             new PathElement(Type.INTERFACE_NAME, null, 0, 0), "", ImmutableList.of());
 
     _thrown.expect(IllegalArgumentException.class);
-    getTestPAC("@specifier(g1,", testCompletionMetadata).autoCompleteInterfaceName(pm, 0);
+    getTestPAC("@specifier(g1,", testCompletionMetadata).autoCompleteInterfaceName(pm);
   }
 
   /** Context-sensitive completion of interface name after node name */
@@ -365,11 +372,10 @@ public class ParboiledAutoCompleteTest {
     PotentialMatch pm = new PotentialMatch(anchor, "", ImmutableList.of(parent, anchor));
 
     assertThat(
-        ImmutableSet.copyOf(pac.autoCompleteInterfaceName(pm, 0)),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion("eth11", true, null, 0, query.length()),
-                new AutocompleteSuggestion("eth12", true, null, 0, query.length()))));
+        pac.autoCompleteInterfaceName(pm),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("eth11", query.length(), INTERFACE_NAME),
+            new ParboiledAutoCompleteSuggestion("eth12", query.length(), INTERFACE_NAME)));
   }
 
   /** Context-sensitive completion of interface name after node name regex */
@@ -392,11 +398,10 @@ public class ParboiledAutoCompleteTest {
     PotentialMatch pm = new PotentialMatch(anchor, "", ImmutableList.of(parent, anchor));
 
     assertThat(
-        ImmutableSet.copyOf(pac.autoCompleteInterfaceName(pm, 0)),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion("eth11", true, null, 0, query.length()),
-                new AutocompleteSuggestion("eth12", true, null, 0, query.length()))));
+        pac.autoCompleteInterfaceName(pm),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("eth11", query.length(), INTERFACE_NAME),
+            new ParboiledAutoCompleteSuggestion("eth12", query.length(), INTERFACE_NAME)));
   }
 
   /** Should fall back to all interfaces for complex node expressions */
@@ -419,12 +424,11 @@ public class ParboiledAutoCompleteTest {
     PotentialMatch pm = new PotentialMatch(anchor, "", ImmutableList.of(parent, anchor));
 
     assertThat(
-        ImmutableSet.copyOf(pac.autoCompleteInterfaceName(pm, 0)),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion("eth11", true, null, 0, query.length()),
-                new AutocompleteSuggestion("eth12", true, null, 0, query.length()),
-                new AutocompleteSuggestion("eth21", true, null, 0, query.length()))));
+        pac.autoCompleteInterfaceName(pm),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("eth11", query.length(), INTERFACE_NAME),
+            new ParboiledAutoCompleteSuggestion("eth12", query.length(), INTERFACE_NAME),
+            new ParboiledAutoCompleteSuggestion("eth21", query.length(), INTERFACE_NAME)));
   }
 
   /** Context-sensitive completion of interface name when interface name prefix is present */
@@ -448,9 +452,9 @@ public class ParboiledAutoCompleteTest {
     PotentialMatch pm = new PotentialMatch(anchor, "eth12", ImmutableList.of(parent, anchor));
 
     assertThat(
-        ImmutableSet.copyOf(pac.autoCompleteInterfaceName(pm, 0)),
-        equalTo(
-            ImmutableSet.of(new AutocompleteSuggestion("eth12", true, null, 0, query.length()))));
+        pac.autoCompleteInterfaceName(pm),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("eth12", query.length(), INTERFACE_NAME)));
   }
 
   /** Throw an exception if anchor is not present in the path */
@@ -461,7 +465,7 @@ public class ParboiledAutoCompleteTest {
             new PathElement(Type.REFERENCE_BOOK_NAME, null, 0, 0), "", ImmutableList.of());
 
     _thrown.expect(IllegalArgumentException.class);
-    getTestPAC("@specifier(b1a,", testLibrary).autoCompleteReferenceBookEntity(pm, 0);
+    getTestPAC("@specifier(b1a,", testLibrary).autoCompleteReferenceBookEntity(pm);
   }
 
   /** Revert to non context-sensitive completion when the parent anchor is not what we expect */
@@ -474,12 +478,11 @@ public class ParboiledAutoCompleteTest {
     PotentialMatch pm = new PotentialMatch(anchor, "", ImmutableList.of(anchor));
 
     assertThat(
-        ImmutableSet.copyOf(pac.autoCompleteReferenceBookEntity(pm, 0)),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion("g11", true, null, 0, query.length()),
-                new AutocompleteSuggestion("g12", true, null, 0, query.length()),
-                new AutocompleteSuggestion("g21", true, null, 0, query.length()))));
+        pac.autoCompleteReferenceBookEntity(pm),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("g11", query.length(), ADDRESS_GROUP_NAME),
+            new ParboiledAutoCompleteSuggestion("g12", query.length(), ADDRESS_GROUP_NAME),
+            new ParboiledAutoCompleteSuggestion("g21", query.length(), ADDRESS_GROUP_NAME)));
   }
 
   /** Revert to non context-sensitive completion when the parent anchor is not what we expect */
@@ -492,12 +495,11 @@ public class ParboiledAutoCompleteTest {
     PotentialMatch pm = new PotentialMatch(anchor, "", ImmutableList.of(anchor));
 
     assertThat(
-        ImmutableSet.copyOf(pac.autoCompleteReferenceBookEntity(pm, 0)),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion("i11", true, null, 0, query.length()),
-                new AutocompleteSuggestion("i12", true, null, 0, query.length()),
-                new AutocompleteSuggestion("i21", true, null, 0, query.length()))));
+        pac.autoCompleteReferenceBookEntity(pm),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("i11", query.length(), INTERFACE_GROUP_NAME),
+            new ParboiledAutoCompleteSuggestion("i12", query.length(), INTERFACE_GROUP_NAME),
+            new ParboiledAutoCompleteSuggestion("i21", query.length(), INTERFACE_GROUP_NAME)));
   }
 
   /** Context-sensitive completion when address groups come before the reference book */
@@ -516,15 +518,14 @@ public class ParboiledAutoCompleteTest {
     ParboiledAutoComplete pac = getTestPAC(parser, query, testLibrary);
 
     PathElement anchor = new PathElement(Type.ADDRESS_GROUP_NAME, null, 1, query.length());
-    PathElement parent = new PathElement(Type.REFERENCE_BOOK_AND_ADDRESS_GROUP, null, 0, 0);
+    PathElement parent = new PathElement(REFERENCE_BOOK_AND_ADDRESS_GROUP, null, 0, 0);
     PotentialMatch pm = new PotentialMatch(anchor, "", ImmutableList.of(parent, anchor));
 
     assertThat(
-        ImmutableSet.copyOf(pac.autoCompleteReferenceBookEntity(pm, 0)),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion("g11", true, null, 0, query.length()),
-                new AutocompleteSuggestion("g12", true, null, 0, query.length()))));
+        pac.autoCompleteReferenceBookEntity(pm),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("g11", query.length(), ADDRESS_GROUP_NAME),
+            new ParboiledAutoCompleteSuggestion("g12", query.length(), ADDRESS_GROUP_NAME)));
   }
 
   /** Context-sensitive completion when interface groups come before the reference book */
@@ -547,11 +548,10 @@ public class ParboiledAutoCompleteTest {
     PotentialMatch pm = new PotentialMatch(anchor, "", ImmutableList.of(parent, anchor));
 
     assertThat(
-        ImmutableSet.copyOf(pac.autoCompleteReferenceBookEntity(pm, 0)),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion("i11", true, null, 0, query.length()),
-                new AutocompleteSuggestion("i12", true, null, 0, query.length()))));
+        pac.autoCompleteReferenceBookEntity(pm),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("i11", query.length(), INTERFACE_GROUP_NAME),
+            new ParboiledAutoCompleteSuggestion("i12", query.length(), INTERFACE_GROUP_NAME)));
   }
 
   /** Group name's prefix is considered in context-sensitive autocompletion */
@@ -581,11 +581,12 @@ public class ParboiledAutoCompleteTest {
     ParboiledAutoComplete pac = getTestPAC(parser, query, testLibrary);
 
     PathElement anchor = new PathElement(Type.ADDRESS_GROUP_NAME, null, 1, query.length());
-    PathElement parent = new PathElement(Type.REFERENCE_BOOK_AND_ADDRESS_GROUP, null, 0, 0);
+    PathElement parent = new PathElement(REFERENCE_BOOK_AND_ADDRESS_GROUP, null, 0, 0);
     PotentialMatch pm = new PotentialMatch(anchor, "g1", ImmutableList.of(parent, anchor));
 
     assertThat(
-        ImmutableSet.copyOf(pac.autoCompleteReferenceBookEntity(pm, 0)),
-        equalTo(ImmutableSet.of(new AutocompleteSuggestion("g1a", true, null, 0, query.length()))));
+        pac.autoCompleteReferenceBookEntity(pm),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("g1a", query.length(), ADDRESS_GROUP_NAME)));
   }
 }

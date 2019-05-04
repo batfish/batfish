@@ -18,6 +18,7 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.bgp.community.Community;
 
 /** A user facing representation for IPv4 BGP route */
 @ParametersAreNonnullByDefault
@@ -36,7 +37,7 @@ public final class BgpRoute {
   public static final String PROP_CLASS = "class";
 
   @Nonnull private final AsPath _asPath;
-  @Nonnull private final SortedSet<Long> _communities;
+  @Nonnull private final SortedSet<Community> _communities;
   private final long _localPreference;
   private final long _metric;
   @Nonnull private final Prefix _network;
@@ -49,7 +50,7 @@ public final class BgpRoute {
 
   private BgpRoute(
       AsPath asPath,
-      SortedSet<Long> communities,
+      SortedSet<Community> communities,
       long localPreference,
       long metric,
       Prefix network,
@@ -75,7 +76,7 @@ public final class BgpRoute {
   @JsonCreator
   private static BgpRoute jsonCreator(
       @Nullable @JsonProperty(PROP_AS_PATH) AsPath asPath,
-      @Nullable @JsonProperty(PROP_COMMUNITIES) SortedSet<Long> communities,
+      @Nullable @JsonProperty(PROP_COMMUNITIES) SortedSet<Community> communities,
       @JsonProperty(PROP_LOCAL_PREFERENCE) long localPreference,
       @JsonProperty(PROP_METRIC) long metric,
       @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
@@ -113,7 +114,7 @@ public final class BgpRoute {
 
   @Nonnull
   @JsonProperty(PROP_COMMUNITIES)
-  public SortedSet<Long> getCommunities() {
+  public SortedSet<Community> getCommunities() {
     return _communities;
   }
 
@@ -230,7 +231,7 @@ public final class BgpRoute {
   public static final class Builder {
 
     @Nonnull private AsPath _asPath;
-    @Nonnull private SortedSet<Long> _communities;
+    @Nonnull private SortedSet<Community> _communities;
     private long _localPreference;
     private long _metric;
     @Nullable private Prefix _network;
@@ -272,7 +273,7 @@ public final class BgpRoute {
       return this;
     }
 
-    public Builder setCommunities(Set<Long> communities) {
+    public Builder setCommunities(Set<Community> communities) {
       _communities = ImmutableSortedSet.copyOf(communities);
       return this;
     }

@@ -6,9 +6,10 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.graph.EndpointPair;
+import com.google.common.graph.Graph;
 import com.google.common.graph.GraphBuilder;
-import com.google.common.graph.ImmutableGraph;
 import com.google.common.graph.MutableGraph;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -16,7 +17,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.topology.SerializableGraph;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.VniSettings;
@@ -24,7 +27,11 @@ import org.batfish.datamodel.Vrf;
 
 /** VXLAN topology with edges for each compatible VNI-endpoint pair */
 @ParametersAreNonnullByDefault
-public final class VxlanTopology {
+public final class VxlanTopology implements Serializable {
+
+  public static final VxlanTopology EMPTY =
+      new VxlanTopology(GraphBuilder.undirected().allowsSelfLoops(false).build());
+  private static final long serialVersionUID = 1L;
 
   @VisibleForTesting
   static void addVniEdge(
@@ -112,17 +119,37 @@ public final class VxlanTopology {
     return Collections.unmodifiableMap(vrfHostnames);
   }
 
-  private final ImmutableGraph<VxlanNode> _graph;
+  private final SerializableGraph<VxlanNode> _graph;
+
+  public VxlanTopology(Graph<VxlanNode> graph) {
+    _graph = new SerializableGraph<>(graph);
+  }
 
   public VxlanTopology(Map<String, Configuration> configurations) {
     MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
     Map<Integer, List<Vrf>> vrfsByVni = initVniVrfAssociations(configurations);
     Map<Vrf, String> vrfHostnames = initVrfHostnameMap(configurations);
     vrfsByVni.forEach((vni, vrfs) -> addVniEdges(graph, vrfHostnames, vni, vrfs));
-    _graph = ImmutableGraph.copyOf(graph);
+    _graph = new SerializableGraph<>(graph);
   }
 
   public Set<EndpointPair<VxlanNode>> getEdges() {
     return ImmutableSet.copyOf(_graph.edges());
+  }
+
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof VxlanTopology)) {
+      return false;
+    }
+    return _graph.equals(((VxlanTopology) obj)._graph);
+  }
+
+  @Override
+  public int hashCode() {
+    return _graph.hashCode();
   }
 }

@@ -52,8 +52,8 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
-import org.batfish.datamodel.BgpRoute;
-import org.batfish.datamodel.BgpRoute.Builder;
+import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
@@ -62,6 +62,7 @@ import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.Row;
@@ -209,18 +210,18 @@ public class RoutesAnswererUtilTest {
     Ip ip = Ip.parse("1.1.1.1");
     Prefix prefix = Prefix.create(ip, MAX_PREFIX_LENGTH);
     Ip bgpUnnumIp = Ip.parse("169.254.0.1");
-    BgpRoute.Builder rb =
-        new Builder()
+    Bgpv4Route.Builder rb =
+        Bgpv4Route.builder()
             .setNetwork(prefix)
             .setOriginType(OriginType.IGP)
-            .setCommunities(ImmutableSortedSet.of(65537L))
+            .setCommunities(ImmutableSortedSet.of(StandardCommunity.of(65537L)))
             .setProtocol(RoutingProtocol.BGP)
             .setOriginatorIp(Ip.parse("1.1.1.2"))
             .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)));
-    BgpRoute standardRoute = rb.setNextHopIp(ip).build();
-    BgpRoute unnumRoute = rb.setNextHopIp(bgpUnnumIp).setNextHopInterface("iface").build();
+    Bgpv4Route standardRoute = rb.setNextHopIp(ip).build();
+    Bgpv4Route unnumRoute = rb.setNextHopIp(bgpUnnumIp).setNextHopInterface("iface").build();
 
-    Table<String, String, Set<BgpRoute>> bgpRouteTable = HashBasedTable.create();
+    Table<String, String, Set<Bgpv4Route>> bgpRouteTable = HashBasedTable.create();
     bgpRouteTable.put("node", "vrf", ImmutableSet.of(standardRoute, unnumRoute));
     Multiset<Row> rows =
         getBgpRibRoutes(
@@ -263,7 +264,7 @@ public class RoutesAnswererUtilTest {
   @Test
   public void testGetBgpRoutesCommunities() {
     Ip ip = Ip.parse("1.1.1.1");
-    Table<String, String, Set<BgpRoute>> bgpRouteTable = HashBasedTable.create();
+    Table<String, String, Set<Bgpv4Route>> bgpRouteTable = HashBasedTable.create();
     bgpRouteTable.put(
         "node",
         "vrf",
@@ -273,7 +274,7 @@ public class RoutesAnswererUtilTest {
                 .setOriginType(OriginType.IGP)
                 .setOriginatorIp(ip)
                 .setReceivedFromIp(ip)
-                .setCommunities(ImmutableSortedSet.of(65537L))
+                .setCommunities(ImmutableSortedSet.of(StandardCommunity.of(65537L)))
                 .setProtocol(RoutingProtocol.BGP)
                 .build()));
     Multiset<Row> rows =
@@ -459,8 +460,8 @@ public class RoutesAnswererUtilTest {
 
   @Test
   public void testGroupMatchingBgpRoutesByPrefix() {
-    BgpRoute bgpRoute1 =
-        BgpRoute.builder()
+    Bgpv4Route bgpv4Route1 =
+        Bgpv4Route.builder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setNextHopIp(Ip.parse("1.1.1.2"))
             .setOriginType(OriginType.IGP)
@@ -472,8 +473,8 @@ public class RoutesAnswererUtilTest {
             .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
             .build();
 
-    BgpRoute bgpRoute2 =
-        BgpRoute.builder()
+    Bgpv4Route bgpv4Route2 =
+        Bgpv4Route.builder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setNextHopIp(Ip.parse("1.1.1.3"))
             .setAdmin(10)
@@ -485,10 +486,10 @@ public class RoutesAnswererUtilTest {
             .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
             .build();
 
-    Table<String, String, Set<BgpRoute>> bgpTable = HashBasedTable.create();
+    Table<String, String, Set<Bgpv4Route>> bgpTable = HashBasedTable.create();
     bgpTable.row("node").put(Configuration.DEFAULT_VRF_NAME, new HashSet<>());
-    bgpTable.row("node").get(Configuration.DEFAULT_VRF_NAME).add(bgpRoute1);
-    bgpTable.row("node").get(Configuration.DEFAULT_VRF_NAME).add(bgpRoute2);
+    bgpTable.row("node").get(Configuration.DEFAULT_VRF_NAME).add(bgpv4Route1);
+    bgpTable.row("node").get(Configuration.DEFAULT_VRF_NAME).add(bgpv4Route2);
 
     Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>> grouped =
         groupBgpRoutes(bgpTable, ImmutableSet.of("node"), ".*", null, ".*");

@@ -1,30 +1,53 @@
 package org.batfish.specifier.parboiled;
 
 import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.APPLICATION_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.APPLICATION_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.DEPRECATED;
+import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_INTERFACE_IN;
+import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_INTERFACE_OUT;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_PARENS;
+import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_SET_OP;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_CONNECTED_TO;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_PARENS;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_TYPE;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_VRF;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_ZONE;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_ADDRESS;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_ADDRESS_MASK;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_PREFIX;
+import static org.batfish.specifier.parboiled.Anchor.Type.IP_PROTOCOL_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.IP_PROTOCOL_NOT;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_PROTOCOL_NUMBER;
+import static org.batfish.specifier.parboiled.Anchor.Type.IP_PROTOCOL_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_RANGE;
+import static org.batfish.specifier.parboiled.Anchor.Type.IP_SPACE_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_WILDCARD;
+import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_ENTER;
+import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_PARENS;
+import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_INTERFACE;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_PARENS;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_AND_DIMENSION;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_DIMENSION_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_TYPE;
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_ADDRESS_GROUP;
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_INTERFACE_GROUP;
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_NAME_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_PARENS;
+import static org.batfish.specifier.parboiled.Anchor.Type.ROUTING_POLICY_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.VRF_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.ZONE_NAME;
 
@@ -71,7 +94,7 @@ public class Parser extends CommonParser {
     return Parboiled.createParser(Parser.class);
   }
 
-  /** Get the main entry point for the grammar */
+  @Override
   Rule getInputRule(Grammar grammar) {
     switch (grammar) {
       case APPLICATION_SPECIFIER:
@@ -113,7 +136,8 @@ public class Parser extends CommonParser {
    * </pre>
    */
 
-  /* A Filter expression is one or more intersection terms separated by , or \ */
+  /** An applicationSpec is one or more intersection terms separated by , or \ */
+  @Anchor(APPLICATION_SET_OP)
   public Rule ApplicationSpec() {
     return Sequence(
         ApplicationTerm(),
@@ -125,6 +149,7 @@ public class Parser extends CommonParser {
             WhiteSpace()));
   }
 
+  @Anchor(APPLICATION_NAME)
   public Rule ApplicationTerm() {
     return Sequence(FirstOf(_applicationNameRules), push(new NameApplicationAstNode(match())));
   }
@@ -143,7 +168,8 @@ public class Parser extends CommonParser {
    * </pre>
    */
 
-  /* A Filter expression is one or more intersection terms separated by , or \ */
+  /** A Filter expression is one or more intersection terms separated by , or \ */
+  @Anchor(FILTER_SET_OP)
   public Rule FilterSpec() {
     Var<Character> op = new Var<>();
     return Sequence(
@@ -167,7 +193,8 @@ public class Parser extends CommonParser {
 
   public Rule FilterTerm() {
     return FirstOf(
-        FilterDirection(),
+        FilterInterfaceIn(),
+        FilterInterfaceOut(),
         FilterDirectionDeprecated(),
         FilterNameRegexDeprecated(),
         FilterNameRegex(),
@@ -175,17 +202,28 @@ public class Parser extends CommonParser {
         FilterParens());
   }
 
-  public Rule FilterDirection() {
-    Var<String> direction = new Var<>();
+  @Anchor(FILTER_INTERFACE_IN)
+  public Rule FilterInterfaceIn() {
     return Sequence(
-        FirstOf(IgnoreCase("@in"), IgnoreCase("@out")),
-        direction.set(match()),
+        IgnoreCase("@in"),
         WhiteSpace(),
         "( ",
         InterfaceSpec(),
         WhiteSpace(),
         ") ",
-        push(DirectionFilterAstNode.create(direction.get(), pop())));
+        push(new InFilterAstNode((pop()))));
+  }
+
+  @Anchor(FILTER_INTERFACE_OUT)
+  public Rule FilterInterfaceOut() {
+    return Sequence(
+        IgnoreCase("@out"),
+        WhiteSpace(),
+        "( ",
+        InterfaceSpec(),
+        WhiteSpace(),
+        ") ",
+        push(new OutFilterAstNode((pop()))));
   }
 
   @Anchor(DEPRECATED)
@@ -217,6 +255,7 @@ public class Parser extends CommonParser {
     return Sequence(RegexDeprecated(), push(new NameRegexFilterAstNode(pop())));
   }
 
+  @Anchor(FILTER_PARENS)
   public Rule FilterParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
     return Sequence("( ", FilterSpec(), WhiteSpace(), ") ");
@@ -248,7 +287,8 @@ public class Parser extends CommonParser {
    * </pre>
    */
 
-  /* An Interface expression is union and difference of one or more intersections */
+  /** An Interface expression is union and difference of one or more intersections */
+  @Anchor(INTERFACE_SET_OP)
   public Rule InterfaceSpec() {
     Var<Character> op = new Var<>();
     return Sequence(
@@ -289,6 +329,7 @@ public class Parser extends CommonParser {
         push(new InterfaceWithNodeInterfaceAstNode(pop(1), pop())));
   }
 
+  @Anchor(INTERFACE_SET_OP)
   public Rule InterfaceWithoutNode() {
     Var<Character> op = new Var<>();
     return Sequence(
@@ -339,6 +380,7 @@ public class Parser extends CommonParser {
         InterfaceZoneDeprecated());
   }
 
+  @Anchor(INTERFACE_CONNECTED_TO)
   public Rule InterfaceConnectedTo() {
     return Sequence(
         IgnoreCase("@connectedTo"),
@@ -391,6 +433,7 @@ public class Parser extends CommonParser {
     return Sequence(NameLiteral(), WhiteSpace());
   }
 
+  @Anchor(INTERFACE_TYPE)
   public Rule InterfaceType() {
     return Sequence(
         IgnoreCase("@interfaceType"),
@@ -414,11 +457,11 @@ public class Parser extends CommonParser {
         push(new TypeInterfaceAstNode(pop())));
   }
 
-  @Anchor(INTERFACE_TYPE)
   public Rule InterfaceTypeSpec() {
     return Sequence(FirstOf(_interfaceTypeRules), push(new StringAstNode(match())));
   }
 
+  @Anchor(INTERFACE_VRF)
   public Rule InterfaceVrf() {
     return Sequence(
         IgnoreCase("@vrf"),
@@ -447,6 +490,7 @@ public class Parser extends CommonParser {
     return NameLiteral();
   }
 
+  @Anchor(INTERFACE_ZONE)
   public Rule InterfaceZone() {
     return Sequence(
         IgnoreCase("@zone"),
@@ -490,11 +534,14 @@ public class Parser extends CommonParser {
     return Sequence(RegexDeprecated(), push(new NameRegexInterfaceAstNode(pop())));
   }
 
+  @Anchor(INTERFACE_PARENS)
   public Rule InterfaceParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
     return Sequence("( ", InterfaceSpec(), WhiteSpace(), ") ");
   }
 
+  // The anchor here is an approximation to simplify user messages
+  @Anchor(INTERFACE_PARENS)
   public Rule InterfaceWithoutNodeParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
     return Sequence("( ", InterfaceWithoutNode(), WhiteSpace(), ") ");
@@ -514,7 +561,8 @@ public class Parser extends CommonParser {
    * </pre>
    */
 
-  /* A Filter expression is one or more intersection terms separated by , or \ */
+  /** A IP protocol expression is one or more terms separated by */
+  @Anchor(IP_PROTOCOL_SET_OP)
   public Rule IpProtocolSpec() {
     return Sequence(
         IpProtocolTerm(),
@@ -524,14 +572,19 @@ public class Parser extends CommonParser {
   }
 
   public Rule IpProtocolTerm() {
-    return FirstOf(
-        IpProtocol(), Sequence("! ", IpProtocol(), push(new NotIpProtocolAstNode(pop()))));
+    return FirstOf(IpProtocol(), IpProtocolNot());
   }
 
   public Rule IpProtocol() {
     return FirstOf(IpProtocolName(), IpProtocolNumber());
   }
 
+  @Anchor(IP_PROTOCOL_NOT)
+  public Rule IpProtocolNot() {
+    return Sequence("! ", IpProtocol(), push(new NotIpProtocolAstNode(pop())));
+  }
+
+  @Anchor(IP_PROTOCOL_NAME)
   public Rule IpProtocolName() {
     return Sequence(FirstOf(_ipProtocolNameRules), push(new IpProtocolIpProtocolAstNode(match())));
   }
@@ -558,6 +611,7 @@ public class Parser extends CommonParser {
    */
 
   /* An IpSpace expression is union or difference of IpSpace intersection terms */
+  @Anchor(IP_SPACE_SET_OP)
   public Rule IpSpaceSpec() {
     Var<Character> op = new Var<>();
     return Sequence(
@@ -702,7 +756,8 @@ public class Parser extends CommonParser {
    * </pre>
    */
 
-  /* A Node expression is one or more intersection terms separated by + or - */
+  /** A location expression is one or more intersection terms separated by + or - */
+  @Anchor(LOCATION_SET_OP)
   public Rule LocationSpec() {
     Var<Character> op = new Var<>();
     return Sequence(
@@ -736,6 +791,7 @@ public class Parser extends CommonParser {
         LocationParens());
   }
 
+  @Anchor(LOCATION_ENTER)
   public Rule LocationEnter() {
     return Sequence(
         IgnoreCase("@enter"),
@@ -787,6 +843,7 @@ public class Parser extends CommonParser {
         push(InterfaceLocationAstNode.createFromInterface(pop())));
   }
 
+  @Anchor(LOCATION_PARENS)
   public Rule LocationParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
     return Sequence("( ", LocationSpec(), WhiteSpace(), ") ");
@@ -807,6 +864,7 @@ public class Parser extends CommonParser {
    */
 
   /* A Node expression is one or more intersection terms separated by + or - */
+  @Anchor(NODE_SET_OP)
   public Rule NodeSpec() {
     Var<Character> op = new Var<>();
     return Sequence(
@@ -840,22 +898,17 @@ public class Parser extends CommonParser {
   }
 
   public Rule NodeRole() {
-    return Sequence(
-        IgnoreCase("@role"),
-        WhiteSpace(),
-        "( ",
-        NodeRoleName(),
-        ", ",
-        NodeRoleDimensionName(),
-        ") ",
-        push(new RoleNodeAstNode(pop(1), pop())));
+    return Sequence(IgnoreCase("@role"), WhiteSpace(), NodeRoleAndDimension());
   }
 
   @Anchor(DEPRECATED)
   public Rule NodeRoleDeprecated() {
+    return Sequence(IgnoreCase("ref.noderole"), WhiteSpace(), NodeRoleAndDimension());
+  }
+
+  @Anchor(NODE_ROLE_AND_DIMENSION)
+  public Rule NodeRoleAndDimension() {
     return Sequence(
-        IgnoreCase("ref.noderole"),
-        WhiteSpace(),
         "( ",
         NodeRoleName(),
         ", ",
@@ -876,6 +929,7 @@ public class Parser extends CommonParser {
     return Sequence(NameLiteral(), WhiteSpace());
   }
 
+  @Anchor(NODE_TYPE)
   public Rule NodeType() {
     return Sequence(
         IgnoreCase("@deviceType"),
@@ -887,7 +941,6 @@ public class Parser extends CommonParser {
         push(new TypeNodeAstNode(pop())));
   }
 
-  @Anchor(NODE_TYPE)
   public Rule NodeTypeSpec() {
     return Sequence(FirstOf(_deviceTypeRules), push(new StringAstNode(match())));
   }
@@ -907,6 +960,7 @@ public class Parser extends CommonParser {
     return Sequence(RegexDeprecated(), push(new NameRegexNodeAstNode(pop())), WhiteSpace());
   }
 
+  @Anchor(NODE_PARENS)
   public Rule NodeParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
     return Sequence("( ", NodeSpec(), WhiteSpace(), ") ");
@@ -925,7 +979,8 @@ public class Parser extends CommonParser {
    * </pre>
    */
 
-  /* A Filter expression is one or more intersection terms separated by , or \ */
+  /** A RoutingPolicy expression is one or more intersection terms separated by , or \ */
+  @Anchor(ROUTING_POLICY_SET_OP)
   public Rule RoutingPolicySpec() {
     Var<Character> op = new Var<>();
     return Sequence(
@@ -973,6 +1028,7 @@ public class Parser extends CommonParser {
     return Sequence(RegexDeprecated(), push(new NameRegexRoutingPolicyAstNode(pop())));
   }
 
+  @Anchor(ROUTING_POLICY_PARENS)
   public Rule RoutingPolicyParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
     return Sequence("( ", RoutingPolicySpec(), WhiteSpace(), ") ");

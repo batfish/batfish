@@ -501,7 +501,7 @@ public final class Interface extends ComparableStructure<String> {
         return false;
       }
       Dependency that = (Dependency) o;
-      return Objects.equals(_interfaceName, that._interfaceName) && _type == that._type;
+      return _interfaceName.equals(that._interfaceName) && _type == that._type;
     }
 
     @Override

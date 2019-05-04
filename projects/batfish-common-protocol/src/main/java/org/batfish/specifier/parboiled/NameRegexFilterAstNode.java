@@ -9,7 +9,8 @@ final class NameRegexFilterAstNode implements FilterAstNode {
   private final Pattern _pattern;
 
   NameRegexFilterAstNode(AstNode regexAst) {
-    this(((StringAstNode) regexAst).getStr());
+    _regex = ((RegexAstNode) regexAst).getRegex();
+    _pattern = ((RegexAstNode) regexAst).getPattern();
   }
 
   NameRegexFilterAstNode(String regex) {

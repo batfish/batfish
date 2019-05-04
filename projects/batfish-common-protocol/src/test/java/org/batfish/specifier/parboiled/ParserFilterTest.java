@@ -1,13 +1,18 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.ParboiledAutoComplete.RANK_STRING_LITERAL;
+import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_INTERFACE_IN;
+import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_INTERFACE_OUT;
+import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_PARENS;
+import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_SET_OP;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
-import java.util.List;
+import java.util.Set;
 import org.batfish.common.CompletionMetadata;
-import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -42,29 +47,28 @@ public class ParserFilterTest {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setFilterNames(ImmutableSet.of("filter1")).build();
 
-    List<AutocompleteSuggestion> suggestions =
-        ParboiledAutoComplete.autoComplete(
-            Grammar.FILTER_SPECIFIER,
-            "network",
-            "snapshot",
-            query,
-            Integer.MAX_VALUE,
-            completionMetadata,
-            null,
-            null);
+    Set<ParboiledAutoCompleteSuggestion> suggestions =
+        new ParboiledAutoComplete(
+                Parser.instance(),
+                Grammar.FILTER_SPECIFIER,
+                Parser.ANCHORS,
+                "network",
+                "snapshot",
+                query,
+                Integer.MAX_VALUE,
+                completionMetadata,
+                null,
+                null)
+            .run();
 
     assertThat(
-        ImmutableSet.copyOf(suggestions),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion(
-                    "filter1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
-                new AutocompleteSuggestion("(", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("/", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("@in", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(
-                    "@out", true, null, RANK_STRING_LITERAL, query.length()))));
+        suggestions,
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("filter1", query.length(), FILTER_NAME),
+            new ParboiledAutoCompleteSuggestion("(", query.length(), FILTER_PARENS),
+            new ParboiledAutoCompleteSuggestion("/", query.length(), FILTER_NAME_REGEX),
+            new ParboiledAutoCompleteSuggestion("@in(", query.length(), FILTER_INTERFACE_IN),
+            new ParboiledAutoCompleteSuggestion("@out(", query.length(), FILTER_INTERFACE_OUT)));
   }
 
   @Test
@@ -74,28 +78,28 @@ public class ParserFilterTest {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setFilterNames(ImmutableSet.of("filter1", "filter11")).build();
 
-    List<AutocompleteSuggestion> suggestions =
-        ParboiledAutoComplete.autoComplete(
-            Grammar.FILTER_SPECIFIER,
-            "network",
-            "snapshot",
-            query,
-            Integer.MAX_VALUE,
-            completionMetadata,
-            null,
-            null);
+    Set<ParboiledAutoCompleteSuggestion> suggestions =
+        new ParboiledAutoComplete(
+                Parser.instance(),
+                Grammar.FILTER_SPECIFIER,
+                Parser.ANCHORS,
+                "network",
+                "snapshot",
+                query,
+                Integer.MAX_VALUE,
+                completionMetadata,
+                null,
+                null)
+            .run();
 
     assertThat(
-        ImmutableSet.copyOf(suggestions),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion(
-                    "filter1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
-                new AutocompleteSuggestion(
-                    "filter11", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
-                new AutocompleteSuggestion("\\", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("&", true, null, RANK_STRING_LITERAL, query.length()))));
+        suggestions,
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("filter1", 0, FILTER_NAME),
+            new ParboiledAutoCompleteSuggestion("filter11", 0, FILTER_NAME),
+            new ParboiledAutoCompleteSuggestion("\\", query.length(), FILTER_SET_OP),
+            new ParboiledAutoCompleteSuggestion(",", query.length(), FILTER_SET_OP),
+            new ParboiledAutoCompleteSuggestion("&", query.length(), FILTER_SET_OP)));
   }
 
   @Test

@@ -95,10 +95,10 @@ public final class OspfNeighborConfigId implements Serializable {
       return false;
     }
     OspfNeighborConfigId other = (OspfNeighborConfigId) o;
-    return Objects.equals(_hostname, other._hostname)
-        && Objects.equals(_vrfName, other._vrfName)
-        && Objects.equals(_procName, other._procName)
-        && Objects.equals(_interfaceName, other._interfaceName);
+    return _hostname.equals(other._hostname)
+        && _vrfName.equals(other._vrfName)
+        && _procName.equals(other._procName)
+        && _interfaceName.equals(other._interfaceName);
   }
 
   @Override

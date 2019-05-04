@@ -6,7 +6,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.AsPath;
-import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -29,7 +29,7 @@ public class ExplicitAsPathSetTest {
         ImmutableMap.of(Configuration.DEFAULT_VRF_NAME, new Vrf(Configuration.DEFAULT_VRF_NAME)));
     return Environment.builder(c, Configuration.DEFAULT_VRF_NAME)
         .setOriginalRoute(
-            BgpRoute.builder()
+            Bgpv4Route.builder()
                 .setOriginatorIp(Ip.ZERO)
                 .setOriginType(OriginType.INCOMPLETE)
                 .setProtocol(RoutingProtocol.BGP)

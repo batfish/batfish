@@ -23,6 +23,7 @@ public class IsisRoute extends AbstractRoute {
     private RoutingProtocol _protocol;
     private String _systemId;
 
+    @Nonnull
     @Override
     public IsisRoute build() {
       return new IsisRoute(
@@ -41,6 +42,7 @@ public class IsisRoute extends AbstractRoute {
           getNonRouting());
     }
 
+    @Nonnull
     @Override
     protected Builder getThis() {
       return this;

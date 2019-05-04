@@ -1,15 +1,15 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.ParboiledAutoComplete.RANK_STRING_LITERAL;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.answers.AutocompleteSuggestion;
+import org.batfish.specifier.parboiled.Anchor.Type;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -43,76 +43,84 @@ public class ParserIpProtocolTest {
   public void testCompletionEmpty() {
     String query = "";
 
-    List<AutocompleteSuggestion> suggestions =
-        ParboiledAutoComplete.autoComplete(
-            Grammar.IP_PROTOCOL_SPECIFIER,
-            "network",
-            "snapshot",
-            query,
-            Integer.MAX_VALUE,
-            null,
-            null,
-            null);
+    Set<ParboiledAutoCompleteSuggestion> suggestions =
+        new ParboiledAutoComplete(
+                Parser.instance(),
+                Grammar.IP_PROTOCOL_SPECIFIER,
+                Parser.ANCHORS,
+                "network",
+                "snapshot",
+                query,
+                Integer.MAX_VALUE,
+                null,
+                null,
+                null)
+            .run();
 
-    assertThat(
-        ImmutableSet.copyOf(suggestions),
-        equalTo(
-            // '!' and all named values
-            Stream.concat(
-                    Arrays.stream(IpProtocol.values())
-                        .map(Object::toString)
-                        .filter(p -> !p.startsWith("UNNAMED")),
-                    ImmutableSet.of("!").stream())
-                .map(
-                    val ->
-                        new AutocompleteSuggestion(
-                            val, true, null, RANK_STRING_LITERAL, query.length()))
-                .collect(ImmutableSet.toImmutableSet())));
+    Set<ParboiledAutoCompleteSuggestion> expected =
+        Stream.concat(
+                Arrays.stream(IpProtocol.values())
+                    .map(Object::toString)
+                    .filter(p -> !p.startsWith("UNNAMED"))
+                    .map(
+                        val ->
+                            new ParboiledAutoCompleteSuggestion(
+                                val, query.length(), Type.IP_PROTOCOL_NAME)),
+                ImmutableSet.of(
+                    new ParboiledAutoCompleteSuggestion("!", query.length(), Type.IP_PROTOCOL_NOT))
+                    .stream())
+            .collect(ImmutableSet.toImmutableSet());
+
+    assertThat(suggestions, equalTo(expected));
   }
 
   @Test
   public void testCompletionPartialName() {
     String query = "TC";
 
-    List<AutocompleteSuggestion> suggestions =
-        ParboiledAutoComplete.autoComplete(
-            Grammar.IP_PROTOCOL_SPECIFIER,
-            "network",
-            "snapshot",
-            query,
-            Integer.MAX_VALUE,
-            null,
-            null,
-            null);
+    Set<ParboiledAutoCompleteSuggestion> suggestions =
+        new ParboiledAutoComplete(
+                Parser.instance(),
+                Grammar.IP_PROTOCOL_SPECIFIER,
+                Parser.ANCHORS,
+                "network",
+                "snapshot",
+                query,
+                Integer.MAX_VALUE,
+                null,
+                null,
+                null)
+            .run();
 
     assertThat(
-        ImmutableSet.copyOf(suggestions),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion("TCF", true, null, RANK_STRING_LITERAL, 0),
-                new AutocompleteSuggestion("TCP", true, null, RANK_STRING_LITERAL, 0))));
+        suggestions,
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("TCF", 0, Type.IP_PROTOCOL_NAME),
+            new ParboiledAutoCompleteSuggestion("TCP", 0, Type.IP_PROTOCOL_NAME)));
   }
 
   @Test
   public void testCompletionNumber() {
     String query = "25";
 
-    List<AutocompleteSuggestion> suggestions =
-        ParboiledAutoComplete.autoComplete(
-            Grammar.IP_PROTOCOL_SPECIFIER,
-            "network",
-            "snapshot",
-            query,
-            Integer.MAX_VALUE,
-            null,
-            null,
-            null);
+    Set<ParboiledAutoCompleteSuggestion> suggestions =
+        new ParboiledAutoComplete(
+                Parser.instance(),
+                Grammar.IP_PROTOCOL_SPECIFIER,
+                Parser.ANCHORS,
+                "network",
+                "snapshot",
+                query,
+                Integer.MAX_VALUE,
+                null,
+                null,
+                null)
+            .run();
 
     assertThat(
-        ImmutableSet.copyOf(suggestions),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()))));
+        suggestions,
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion(",", query.length(), Type.IP_PROTOCOL_SET_OP)));
   }
 
   @Test

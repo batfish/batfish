@@ -1,10 +1,73 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 /** Represents properties of a peering session between two {@link BgpPeerConfig}s. */
-public final class BgpSessionProperties {
+@ParametersAreNonnullByDefault
+public final class BgpSessionProperties implements Serializable {
+
+  public static final class Builder {
+
+    private boolean _additionalPaths;
+    private boolean _advertiseExternal;
+    private boolean _advertiseInactive;
+    private @Nullable Ip _tailIp;
+    private @Nullable Ip _headIp;
+    private @Nonnull SessionType _sessionType;
+
+    private Builder() {
+      _sessionType = SessionType.UNSET;
+    }
+
+    public @Nonnull BgpSessionProperties build() {
+      checkArgument(_headIp != null, "Missing headIp");
+      checkArgument(_tailIp != null, "Missing tailIp");
+      return new BgpSessionProperties(
+          _additionalPaths, _advertiseExternal, _advertiseInactive, _tailIp, _headIp, _sessionType);
+    }
+
+    public @Nonnull Builder setAdditionalPaths(boolean additionalPaths) {
+      _additionalPaths = additionalPaths;
+      return this;
+    }
+
+    public @Nonnull Builder setAdvertiseExternal(boolean advertiseExternal) {
+      _advertiseExternal = advertiseExternal;
+      return this;
+    }
+
+    public @Nonnull Builder setAdvertiseInactive(boolean advertiseInactive) {
+      _advertiseInactive = advertiseInactive;
+      return this;
+    }
+
+    public @Nonnull Builder setTailIp(Ip tailIp) {
+      _tailIp = tailIp;
+      return this;
+    }
+
+    public @Nonnull Builder setHeadIp(Ip headIp) {
+      _headIp = headIp;
+      return this;
+    }
+
+    public @Nonnull Builder setSessionType(SessionType sessionType) {
+      _sessionType = sessionType;
+      return this;
+    }
+  }
+
+  public static @Nonnull Builder builder() {
+    return new Builder();
+  }
+
+  private static final long serialVersionUID = 1L;
 
   private final boolean _additionalPaths;
   private final boolean _advertiseExternal;
@@ -80,7 +143,7 @@ public final class BgpSessionProperties {
    *     (listener to initiator) rather than forwards direction (initiator to listener)
    */
   public static BgpSessionProperties from(
-      @Nonnull BgpPeerConfig initiator, @Nonnull BgpPeerConfig listener, boolean reverseDirection) {
+      BgpPeerConfig initiator, BgpPeerConfig listener, boolean reverseDirection) {
     Ip initiatorIp = initiator.getLocalIp();
     Ip listenerIp = listener.getLocalIp();
     if (listenerIp == null || listenerIp == Ip.AUTO) {
@@ -122,7 +185,7 @@ public final class BgpSessionProperties {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }

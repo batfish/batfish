@@ -3,7 +3,6 @@ package org.batfish.datamodel;
 import static com.google.common.base.MoreObjects.toStringHelper;
 
 import java.io.Serializable;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -68,7 +67,7 @@ public final class AnnotatedRoute<R extends AbstractRoute>
       return false;
     }
     AnnotatedRoute<?> o = (AnnotatedRoute<?>) obj;
-    return Objects.equals(_route, o._route) && Objects.equals(_sourceVrf, o._sourceVrf);
+    return _route.equals(o._route) && _sourceVrf.equals(o._sourceVrf);
   }
 
   @Override

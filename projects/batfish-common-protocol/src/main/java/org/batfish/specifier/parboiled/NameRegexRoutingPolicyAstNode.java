@@ -9,7 +9,8 @@ final class NameRegexRoutingPolicyAstNode implements RoutingPolicyAstNode {
   private final Pattern _pattern;
 
   NameRegexRoutingPolicyAstNode(AstNode regexAst) {
-    this(((StringAstNode) regexAst).getStr());
+    _regex = ((RegexAstNode) regexAst).getRegex();
+    _pattern = ((RegexAstNode) regexAst).getPattern();
   }
 
   NameRegexRoutingPolicyAstNode(String regex) {

@@ -13,6 +13,7 @@ import static org.batfish.datamodel.FlowState.RELATED;
 import static org.batfish.datamodel.Protocol.HTTP;
 import static org.batfish.datamodel.Protocol.HTTPS;
 import static org.batfish.datamodel.Protocol.SSH;
+import static org.batfish.datamodel.answers.AutoCompleteUtils.orderSuggestions;
 import static org.batfish.datamodel.answers.AutoCompleteUtils.stringAutoComplete;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.IS_PASSIVE;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.LOCAL_AS;
@@ -51,6 +52,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.common.CompletionMetadata;
+import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.Variable.Type;
@@ -384,6 +386,20 @@ public class AutoCompleteUtilsTest {
         equalTo(ImmutableSet.of(DNS_SERVERS, DNS_SOURCE_INTERFACE)));
   }
 
+  @Test
+  public void testQueryWithNoMatchesHasSuggestions() throws IOException {
+    CompletionMetadata completionMetadata = getMockCompletionMetadata();
+
+    // the query 'leax' does not match any node names so removing characters off the end should give
+    // the same suggestions as the query 'lea'
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+            "network", "snapshot", Type.NODE_NAME, "leax", 10, completionMetadata, null, null),
+        equalTo(
+            AutoCompleteUtils.autoComplete(
+                "network", "snapshot", Type.NODE_NAME, "lea", 10, completionMetadata, null, null)));
+  }
+
   @Ignore
   @Test
   public void testNodeNameAutocompleteEmptyString() throws IOException {
@@ -401,7 +417,6 @@ public class AutoCompleteUtilsTest {
                 "enternet1", "host1", "host2", "leaf", "router1", "spine", "\"/foo/leaf\"")));
   }
 
-  @Ignore
   @Test
   public void testNodeNameAutocompleteNonPrefixCharacter() throws IOException {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
@@ -416,7 +431,6 @@ public class AutoCompleteUtilsTest {
         equalTo(ImmutableList.of("host1", "host2", "router1", "\"/foo/leaf\"")));
   }
 
-  @Ignore
   @Test
   public void testNodeNameAutocompleteOnePrefixCharacter() throws IOException {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
@@ -432,7 +446,6 @@ public class AutoCompleteUtilsTest {
         equalTo(ImmutableList.of("spine", "host1", "host2")));
   }
 
-  @Ignore
   @Test
   public void testNodeNameAutocompletePrefixQuery() throws IOException {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
@@ -448,7 +461,6 @@ public class AutoCompleteUtilsTest {
         equalTo(ImmutableList.of("leaf", "\"/foo/leaf\"")));
   }
 
-  @Ignore
   @Test
   public void testNodeNameAutocompleteUnmatchableCharacterAtEnd() throws IOException {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
@@ -482,7 +494,6 @@ public class AutoCompleteUtilsTest {
                 "enternet1", "host1", "host2", "leaf", "router1", "spine", "\"/foo/leaf\"")));
   }
 
-  @Ignore
   @Test
   public void testNodeNameAutocompleteUnmatchableCharacterInMiddle() throws IOException {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
@@ -498,7 +509,6 @@ public class AutoCompleteUtilsTest {
         equalTo(ImmutableList.of("leaf", "\"/foo/leaf\"")));
   }
 
-  @Ignore
   @Test
   public void testNodeNameAutocompleteEscapedPartial() throws IOException {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
@@ -520,7 +530,6 @@ public class AutoCompleteUtilsTest {
         equalTo(ImmutableList.of("\"/foo/leaf\"")));
   }
 
-  @Ignore
   @Test
   public void testNodeNameAutocompleteUnescapedPartial() throws IOException {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
@@ -535,7 +544,6 @@ public class AutoCompleteUtilsTest {
         equalTo(ImmutableList.of("\"/foo/leaf\"")));
   }
 
-  @Ignore
   @Test
   public void testNodeNameAutocompleteValidInputIncluded() throws IOException {
     CompletionMetadata completionMetadata = getMockCompletionMetadata();
@@ -1292,9 +1300,71 @@ public class AutoCompleteUtilsTest {
   public void testAutocompleteUnsupportedType() throws IOException {
     Type type = Type.ANSWER_ELEMENT;
 
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Unsupported completion type: " + type);
+    assertThat(
+        AutoCompleteUtils.autoComplete("network", "snapshot", type, "blah", 5, null, null, null),
+        equalTo(ImmutableList.of()));
+  }
 
-    AutoCompleteUtils.autoComplete("network", "snapshot", type, "blah", 5, null, null, null);
+  @Test
+  public void testOrderingSuggestionsSuggestionType() {
+    String query = "12";
+    AutocompleteSuggestion s1 =
+        AutocompleteSuggestion.builder()
+            .setText("123")
+            .setSuggestionType(SuggestionType.CONSTANT)
+            .build();
+    AutocompleteSuggestion s2 =
+        AutocompleteSuggestion.builder()
+            .setText("12")
+            .setSuggestionType(SuggestionType.ADDRESS_LITERAL)
+            .build();
+
+    // s2 should come second because of its type even though the suggestions matches 12 exactly
+    assertThat(
+        orderSuggestions(query, ImmutableList.of(s1, s2)), equalTo(ImmutableList.of(s1, s2)));
+    assertThat(
+        orderSuggestions(query, ImmutableList.of(s2, s1)), equalTo(ImmutableList.of(s1, s2)));
+  }
+
+  @Test
+  public void testOrderingSuggestionsText() {
+    String query = "125";
+    AutocompleteSuggestion s1 =
+        AutocompleteSuggestion.builder()
+            .setText("123")
+            .setSuggestionType(SuggestionType.CONSTANT)
+            .build();
+    AutocompleteSuggestion s2 =
+        AutocompleteSuggestion.builder()
+            .setText("234")
+            .setSuggestionType(SuggestionType.CONSTANT)
+            .build();
+
+    // s2 should come second because of its suggestion text
+    assertThat(
+        orderSuggestions(query, ImmutableList.of(s1, s2)), equalTo(ImmutableList.of(s1, s2)));
+    assertThat(
+        orderSuggestions(query, ImmutableList.of(s2, s1)), equalTo(ImmutableList.of(s1, s2)));
+  }
+
+  @Test
+  public void testParseErrorsHandled() {
+    String query = "1.1.1.345";
+
+    // an invalid IP will cause a parse error, which should be handled
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network",
+                "snapshot",
+                Type.IP_SPACE_SPEC,
+                query,
+                5,
+                CompletionMetadata.builder().build(),
+                null,
+                null)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(":", "-", "&", ",", "\\")));
   }
 }
