@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -29,6 +30,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
@@ -851,5 +853,17 @@ public class IncrementalDataPlanePluginTest {
             ImmutableSet.of(
                 EndpointPair.ordered(bgpConfig1, bgpConfig2),
                 EndpointPair.ordered(bgpConfig2, bgpConfig1))));
+  }
+
+  @Test
+  public void testGetForwardingAnalysisDeserialized() throws IOException {
+    String hostname = "n1";
+    Configuration c = new Configuration(hostname, ConfigurationFormat.CISCO_IOS);
+    Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
+    batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
+    batfish.computeDataPlane();
+    DataPlane deserializedDataPlane = SerializationUtils.clone(batfish.loadDataPlane());
+
+    assertNotNull(deserializedDataPlane.getForwardingAnalysis());
   }
 }
