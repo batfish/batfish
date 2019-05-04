@@ -106,6 +106,7 @@ public class EigrpInternalRoute extends EigrpRoute {
           getNonRouting());
     }
 
+    @Nonnull
     @Override
     protected Builder getThis() {
       return this;
