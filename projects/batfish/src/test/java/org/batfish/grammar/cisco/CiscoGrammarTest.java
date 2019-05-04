@@ -3385,7 +3385,7 @@ public class CiscoGrammarTest {
     Map<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = TopologyUtil.computeIpNodeOwners(configurations, true);
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-        BgpTopologyUtils.initBgpTopology(configurations, ipOwners, false).getGraph();
+        BgpTopologyUtils.initBgpTopology(configurations, ipOwners, false, null).getGraph();
 
     // Edge one direction
     assertThat(
@@ -3419,8 +3419,6 @@ public class CiscoGrammarTest {
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
-    Map<Ip, Set<String>> ipOwners = TopologyUtil.computeIpNodeOwners(configurations, true);
-    BgpTopologyUtils.initBgpTopology(configurations, ipOwners, false);
     org.batfish.datamodel.BgpProcess aristaDisabled =
         configurations.get("arista_disabled").getDefaultVrf().getBgpProcess();
     org.batfish.datamodel.BgpProcess aristaEnabled =
@@ -3488,9 +3486,6 @@ public class CiscoGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
-    Map<Ip, Set<String>> ipOwners = TopologyUtil.computeIpNodeOwners(configurations, true);
-    BgpTopologyUtils.initBgpTopology(configurations, ipOwners, false);
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
     batfish.computeDataPlane(); // compute and cache the dataPlane
 

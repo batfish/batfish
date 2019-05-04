@@ -179,6 +179,11 @@ public final class BgpSessionProperties implements Serializable {
     if (initiator.getLocalAs() == null || initiator.getRemoteAsns().isEmpty()) {
       return SessionType.UNSET;
     }
+    if (initiator instanceof BgpUnnumberedPeerConfig) {
+      return initiator.getRemoteAsns().equals(LongSpace.of(initiator.getLocalAs()))
+          ? SessionType.IBGP_UNNUMBERED
+          : SessionType.EBGP_UNNUMBERED;
+    }
     return initiator.getRemoteAsns().equals(LongSpace.of(initiator.getLocalAs()))
         ? SessionType.IBGP
         : initiator.getEbgpMultihop() ? SessionType.EBGP_MULTIHOP : SessionType.EBGP_SINGLEHOP;
@@ -209,10 +214,14 @@ public final class BgpSessionProperties implements Serializable {
     IBGP,
     EBGP_SINGLEHOP,
     EBGP_MULTIHOP,
+    EBGP_UNNUMBERED,
+    IBGP_UNNUMBERED,
     UNSET;
 
     public static boolean isEbgp(SessionType sessionType) {
-      return sessionType == SessionType.EBGP_SINGLEHOP || sessionType == SessionType.EBGP_MULTIHOP;
+      return sessionType == SessionType.EBGP_SINGLEHOP
+          || sessionType == SessionType.EBGP_MULTIHOP
+          || sessionType == EBGP_UNNUMBERED;
     }
   }
 }

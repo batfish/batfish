@@ -1,5 +1,6 @@
 package org.batfish.question.bgpsessionstatus;
 
+import static org.batfish.datamodel.BgpSessionProperties.getSessionType;
 import static org.batfish.datamodel.questions.ConfiguredSessionStatus.UNIQUE_MATCH;
 import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.SessionStatus.ESTABLISHED;
 import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.SessionStatus.NOT_COMPATIBLE;
@@ -16,6 +17,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
@@ -77,15 +79,45 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
         question.getRemoteNodeSpecifier().resolve(_batfish.specifierContext());
     Map<Ip, Set<String>> ipOwners = TopologyUtil.computeIpNodeOwners(configurations, true);
     Set<Ip> allInterfaceIps = ipOwners.keySet();
+    Layer2Topology layer2Topology =
+        _batfish
+            .getTopologyProvider()
+            .getLayer2Topology(_batfish.getNetworkSnapshot())
+            .orElse(null);
 
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredBgpTopology =
-        BgpTopologyUtils.initBgpTopology(configurations, ipOwners, true).getGraph();
+        BgpTopologyUtils.initBgpTopology(configurations, ipOwners, true, layer2Topology).getGraph();
 
-    // TODO Use layer 2 topology to include BGP unnumbered sessions
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> establishedBgpTopology =
         BgpTopologyUtils.initBgpTopology(
-                configurations, ipOwners, false, true, _batfish.getTracerouteEngine(), null)
+                configurations,
+                ipOwners,
+                false,
+                true,
+                _batfish.getTracerouteEngine(),
+                layer2Topology)
             .getGraph();
+
+    return getRows(
+        question,
+        configurations,
+        nodes,
+        remoteNodes,
+        metadataMap,
+        allInterfaceIps,
+        configuredBgpTopology,
+        establishedBgpTopology);
+  }
+
+  public static List<Row> getRows(
+      BgpSessionQuestion question,
+      Map<String, Configuration> configurations,
+      Set<String> nodes,
+      Set<String> remoteNodes,
+      Map<String, ColumnMetadata> metadataMap,
+      Set<Ip> allInterfaceIps,
+      ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredBgpTopology,
+      ValueGraph<BgpPeerConfigId, BgpSessionProperties> establishedBgpTopology) {
 
     Stream<Row> activePeerRows =
         configuredBgpTopology.nodes().stream()
@@ -101,7 +133,7 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
                             + bpc.getClass().getName());
                   }
                   BgpActivePeerConfig activePeer = (BgpActivePeerConfig) bpc;
-                  SessionType type = BgpSessionProperties.getSessionType(activePeer);
+                  SessionType type = getSessionType(activePeer);
 
                   SessionStatus status = NOT_COMPATIBLE;
                   if (establishedBgpTopology.nodes().contains(neighbor)
@@ -114,13 +146,32 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
                   }
 
                   return buildActivePeerRow(
-                      neighbor,
-                      activePeer,
-                      type,
-                      status,
-                      metadataMap,
-                      configuredBgpTopology,
-                      configurations);
+                      neighbor, activePeer, status, metadataMap, configuredBgpTopology);
+                })
+            .filter(
+                row -> row != null && matchesQuestionFilters(row, nodes, remoteNodes, question));
+
+    Stream<Row> unnumPeerRows =
+        configuredBgpTopology.nodes().stream()
+            .map(
+                neighbor -> {
+                  BgpPeerConfig bpc = getBgpPeerConfig(configurations, neighbor);
+                  if (!(bpc instanceof BgpUnnumberedPeerConfig)) {
+                    return null;
+                  }
+                  BgpUnnumberedPeerConfig unnumPeer = (BgpUnnumberedPeerConfig) bpc;
+
+                  SessionStatus status = NOT_COMPATIBLE;
+                  if (establishedBgpTopology.nodes().contains(neighbor)
+                      && establishedBgpTopology.outDegree(neighbor) == 1) {
+                    status = ESTABLISHED;
+                  } else if (getConfiguredStatus(neighbor, unnumPeer, configuredBgpTopology)
+                      == UNIQUE_MATCH) {
+                    status = NOT_ESTABLISHED;
+                  }
+
+                  return buildUnnumPeerRow(
+                      neighbor, unnumPeer, status, metadataMap, configuredBgpTopology);
                 })
             .filter(
                 row -> row != null && matchesQuestionFilters(row, nodes, remoteNodes, question));
@@ -172,12 +223,12 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
                                   passivePeer,
                                   remoteId,
                                   (BgpActivePeerConfig) getBgpPeerConfig(configurations, remoteId),
-                                  establishedRemotes.contains(remoteId),
-                                  configurations));
+                                  establishedRemotes.contains(remoteId)));
                 })
             .filter(row -> matchesQuestionFilters(row, nodes, remoteNodes, question));
 
-    return Streams.concat(activePeerRows, passivePeerRows).collect(ImmutableList.toImmutableList());
+    return Streams.concat(activePeerRows, unnumPeerRows, passivePeerRows)
+        .collect(ImmutableList.toImmutableList());
   }
 
   public static TableMetadata createMetadata(Question question) {
@@ -206,6 +257,12 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
             new ColumnMetadata(
                 COL_REMOTE_NODE, Schema.NODE, "Remote node for this session", false, false),
             new ColumnMetadata(
+                COL_REMOTE_INTERFACE,
+                Schema.INTERFACE,
+                "Remote interface for this session",
+                false,
+                false),
+            new ColumnMetadata(
                 COL_REMOTE_IP,
                 Schema.SELF_DESCRIBING,
                 "Remote IP or prefix for this session",
@@ -230,11 +287,9 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
   private static @Nonnull Row buildActivePeerRow(
       BgpPeerConfigId activeId,
       BgpActivePeerConfig activePeer,
-      SessionType type,
       SessionStatus status,
       Map<String, ColumnMetadata> metadataMap,
-      ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredBgpTopology,
-      Map<String, Configuration> configurations) {
+      ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredBgpTopology) {
     Node remoteNode = null;
     if (status != NOT_COMPATIBLE) {
       String remoteNodeName =
@@ -242,21 +297,49 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
       remoteNode = new Node(remoteNodeName);
     }
 
-    Ip localIp = activePeer.getLocalIp();
-    NodeInterfacePair localInterface =
-        getInterface(configurations.get(activeId.getHostname()), localIp);
-
     return Row.builder(metadataMap)
         .put(COL_ESTABLISHED_STATUS, status)
-        .put(COL_LOCAL_INTERFACE, localInterface)
+        .put(COL_LOCAL_INTERFACE, null)
         .put(COL_LOCAL_AS, activePeer.getLocalAs())
         .put(COL_LOCAL_IP, activePeer.getLocalIp())
         .put(COL_NODE, new Node(activeId.getHostname()))
         .put(COL_REMOTE_AS, activePeer.getRemoteAsns().toString())
         .put(COL_REMOTE_NODE, remoteNode)
+        .put(COL_REMOTE_INTERFACE, null)
         .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, activePeer.getPeerAddress()))
-        .put(COL_SESSION_TYPE, type)
+        .put(COL_SESSION_TYPE, getSessionType(activePeer))
         .put(COL_VRF, activeId.getVrfName())
+        .build();
+  }
+
+  private static @Nonnull Row buildUnnumPeerRow(
+      BgpPeerConfigId unnumId,
+      BgpUnnumberedPeerConfig unnumPeer,
+      SessionStatus status,
+      Map<String, ColumnMetadata> metadataMap,
+      ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredBgpTopology) {
+    Node remoteNode = null;
+    NodeInterfacePair remoteInterface = null;
+    if (status != NOT_COMPATIBLE) {
+      BgpPeerConfigId remoteId = configuredBgpTopology.adjacentNodes(unnumId).iterator().next();
+      remoteNode = new Node(remoteId.getHostname());
+      remoteInterface = new NodeInterfacePair(remoteId.getHostname(), remoteId.getPeerInterface());
+    }
+
+    return Row.builder(metadataMap)
+        .put(COL_ESTABLISHED_STATUS, status)
+        .put(
+            COL_LOCAL_INTERFACE,
+            new NodeInterfacePair(unnumId.getHostname(), unnumPeer.getPeerInterface()))
+        .put(COL_LOCAL_AS, unnumPeer.getLocalAs())
+        .put(COL_LOCAL_IP, null)
+        .put(COL_NODE, new Node(unnumId.getHostname()))
+        .put(COL_REMOTE_AS, unnumPeer.getRemoteAsns().toString())
+        .put(COL_REMOTE_NODE, remoteNode)
+        .put(COL_REMOTE_INTERFACE, remoteInterface)
+        .put(COL_REMOTE_IP, null)
+        .put(COL_SESSION_TYPE, getSessionType(unnumPeer))
+        .put(COL_VRF, unnumId.getVrfName())
         .build();
   }
 
@@ -274,6 +357,7 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
         .put(COL_NODE, new Node(passiveId.getHostname()))
         .put(COL_REMOTE_AS, passivePeer.getRemoteAsns().toString())
         .put(COL_REMOTE_NODE, null)
+        .put(COL_REMOTE_INTERFACE, null)
         .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.PREFIX, passivePeer.getPeerPrefix()))
         .put(COL_SESSION_TYPE, SessionType.UNSET)
         .put(COL_VRF, passiveId.getVrfName())
@@ -287,23 +371,18 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
       BgpPassivePeerConfig passivePeer,
       BgpPeerConfigId activeId,
       BgpActivePeerConfig activePeer,
-      boolean established,
-      Map<String, Configuration> configurations) {
-    SessionType type = BgpSessionProperties.getSessionType(activePeer);
-    SessionStatus status = established ? ESTABLISHED : NOT_ESTABLISHED;
-    Ip localIp = activePeer.getPeerAddress();
-    NodeInterfacePair localInterface =
-        getInterface(configurations.get(passiveId.getHostname()), localIp);
+      boolean established) {
     return Row.builder(metadataMap)
-        .put(COL_ESTABLISHED_STATUS, status)
-        .put(COL_LOCAL_INTERFACE, localInterface)
+        .put(COL_ESTABLISHED_STATUS, established ? ESTABLISHED : NOT_ESTABLISHED)
+        .put(COL_LOCAL_INTERFACE, null)
         .put(COL_LOCAL_AS, passivePeer.getLocalAs())
-        .put(COL_LOCAL_IP, localIp)
+        .put(COL_LOCAL_IP, activePeer.getPeerAddress())
         .put(COL_NODE, new Node(passiveId.getHostname()))
         .put(COL_REMOTE_AS, LongSpace.of(activePeer.getLocalAs()).toString())
         .put(COL_REMOTE_NODE, new Node(activeId.getHostname()))
+        .put(COL_REMOTE_INTERFACE, null)
         .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, activePeer.getLocalIp()))
-        .put(COL_SESSION_TYPE, type)
+        .put(COL_SESSION_TYPE, getSessionType(activePeer))
         .put(COL_VRF, passiveId.getVrfName())
         .build();
   }

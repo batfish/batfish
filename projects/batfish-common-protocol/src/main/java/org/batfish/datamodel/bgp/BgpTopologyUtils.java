@@ -61,9 +61,9 @@ public final class BgpTopologyUtils {
   public static @Nonnull BgpTopology initBgpTopology(
       Map<String, Configuration> configurations,
       Map<Ip, Set<String>> ipOwners,
-      boolean keepInvalid) {
-    // TODO Include layer 2 topology later for BGP unnumbered sessions in BgpSession questions.
-    return initBgpTopology(configurations, ipOwners, keepInvalid, false, null, null);
+      boolean keepInvalid,
+      @Nullable Layer2Topology layer2Topology) {
+    return initBgpTopology(configurations, ipOwners, keepInvalid, false, null, layer2Topology);
   }
 
   /**
