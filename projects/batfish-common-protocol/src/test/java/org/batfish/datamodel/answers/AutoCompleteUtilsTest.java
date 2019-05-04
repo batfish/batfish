@@ -1300,10 +1300,9 @@ public class AutoCompleteUtilsTest {
   public void testAutocompleteUnsupportedType() throws IOException {
     Type type = Type.ANSWER_ELEMENT;
 
-    _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Unsupported completion type: " + type);
-
-    AutoCompleteUtils.autoComplete("network", "snapshot", type, "blah", 5, null, null, null);
+    assertThat(
+        AutoCompleteUtils.autoComplete("network", "snapshot", type, "blah", 5, null, null, null),
+        equalTo(ImmutableList.of()));
   }
 
   @Test
@@ -1386,5 +1385,26 @@ public class AutoCompleteUtilsTest {
             .map(AutocompleteSuggestion::getText)
             .collect(ImmutableList.toImmutableList()),
         equalTo(ImmutableList.of("t1s1", "t2s1", "t3s1", "t1s2")));
+  }
+
+  @Test
+  public void testParseErrorsHandled() {
+    String query = "1.1.1.345";
+
+    // an invalid IP will cause a parse error, which should be handled
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network",
+                "snapshot",
+                Type.IP_SPACE_SPEC,
+                query,
+                5,
+                CompletionMetadata.builder().build(),
+                null,
+                null)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(":", "-", "&", ",", "\\")));
   }
 }
