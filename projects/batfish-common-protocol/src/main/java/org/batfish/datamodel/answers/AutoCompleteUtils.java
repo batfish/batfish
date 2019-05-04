@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -17,6 +18,8 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.FlowState;
@@ -41,19 +44,9 @@ import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.batfish.specifier.parboiled.Grammar;
 import org.batfish.specifier.parboiled.ParboiledAutoComplete;
 
+/** A utility class to generate auto complete suggestions for user input */
 @ParametersAreNonnullByDefault
 public final class AutoCompleteUtils {
-
-  @VisibleForTesting
-  static class StringPair {
-    public final String s1;
-    public final String s2;
-
-    StringPair(String s1, String s2) {
-      this.s1 = s1;
-      this.s2 = s2;
-    }
-  }
 
   @Nonnull
   public static List<AutocompleteSuggestion> autoComplete(
@@ -139,7 +132,35 @@ public final class AutoCompleteUtils {
       }
     }
 
-    return suggestions;
+    return orderSuggestions(query, suggestions);
+  }
+
+  /** Basic ordering logic, by suggestion type and then by suggestion text */
+  @VisibleForTesting
+  static List<AutocompleteSuggestion> orderSuggestions(
+      String query, List<AutocompleteSuggestion> suggestions) {
+    final LevenshteinDistance distance = new LevenshteinDistance();
+    return suggestions.stream()
+        .sorted(
+            // first order by suggestion type
+            Comparator.comparing(AutocompleteSuggestion::getSuggestionType)
+                // then by (inverse of) common prefix length
+                .thenComparing(
+                    s ->
+                        -1
+                            * StringUtils.getCommonPrefix(
+                                    query.toLowerCase(),
+                                    (query.substring(0, s.getInsertionIndex()) + s.getText()))
+                                .toLowerCase()
+                                .length())
+                // then by edit distance
+                .thenComparing(
+                    s ->
+                        distance.apply(
+                            query.toLowerCase(),
+                            (query.substring(0, s.getInsertionIndex()) + s.getText())
+                                .toLowerCase())))
+        .collect(ImmutableList.toImmutableList());
   }
 
   @Nonnull

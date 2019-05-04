@@ -13,6 +13,7 @@ import static org.batfish.specifier.parboiled.Anchor.Type.NODE_PARENS;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.OPERATOR_END;
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_ADDRESS_GROUP;
+import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_ADDRESS_GROUP_TAIL;
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.UNKNOWN;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -22,6 +23,7 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import java.util.Set;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.referencelibrary.AddressGroup;
@@ -274,7 +276,7 @@ public class ParboiledAutoCompleteTest {
 
   /** Test that we auto complete specifier names */
   @Test
-  public void testRunSpecifierFull() {
+  public void testRunSpecifierFullWithoutParens() {
     assertThat(
         getTestPAC("@specifier", testLibrary).run(),
         containsInAnyOrder(
@@ -283,17 +285,48 @@ public class ParboiledAutoCompleteTest {
 
   /** Test that we produce auto complete snapshot-based dynamic values like address groups */
   @Test
-  public void testRunSpecifierInput() {
+  public void testRunSpecifierWithParensNoInput() {
     assertThat(
         getTestPAC("@specifier(", testLibrary).run(),
         containsInAnyOrder(
             new ParboiledAutoCompleteSuggestion("b1a", 11, REFERENCE_BOOK_NAME),
             new ParboiledAutoCompleteSuggestion("b2a", 11, REFERENCE_BOOK_NAME)));
+  }
 
+  @Test
+  public void testRunSpecifierOneInputNoComma() {
+    assertThat(
+        getTestPAC("@specifier(b1", testLibrary).run(),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("b1a", 11, REFERENCE_BOOK_NAME),
+            new ParboiledAutoCompleteSuggestion(",", 13, REFERENCE_BOOK_AND_ADDRESS_GROUP_TAIL)));
+  }
+
+  @Test
+  public void testRunSpecifierOneInputCommaNoRefbookMatch() {
+    // nothing should match since b is not a reference book in the data
+    assertThat(getTestPAC("@specifier(b,", testLibrary).run(), containsInAnyOrder());
+  }
+
+  @Test
+  public void testRunSpecifierOneInputCommonRefbookMatch() {
     // only g11 and g12 should be suggested
     assertThat(
         getTestPAC("@specifier(b1a,", testLibrary).run(),
         containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("g11", 15, ADDRESS_GROUP_NAME),
+            new ParboiledAutoCompleteSuggestion("g12", 15, ADDRESS_GROUP_NAME)));
+  }
+
+  @Test
+  public void testRunSpecifierTwoInputs() {
+    Set<ParboiledAutoCompleteSuggestion> suggestions =
+        getTestPAC("@specifier(b1a, g", testLibrary).run();
+    // only g11 and g12 should be suggested
+    assertThat(
+        suggestions,
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion(")", 17, OPERATOR_END),
             new ParboiledAutoCompleteSuggestion("g11", 15, ADDRESS_GROUP_NAME),
             new ParboiledAutoCompleteSuggestion("g12", 15, ADDRESS_GROUP_NAME)));
   }

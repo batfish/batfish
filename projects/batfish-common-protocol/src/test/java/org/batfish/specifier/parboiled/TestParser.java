@@ -83,7 +83,16 @@ class TestParser extends CommonParser {
 
   @Anchor(Type.REFERENCE_BOOK_AND_ADDRESS_GROUP)
   public Rule TestSpecifierInput() {
-    return Sequence("( ", TestReferenceBookName(), ", ", TestAddressGroupName(), CloseParens());
+    return Sequence(
+        "( ",
+        TestReferenceBookName(),
+        TestSpecifierInputTail(),
+        push(new AddressGroupIpSpaceAstNode(pop(1), pop())));
+  }
+
+  @Anchor(Type.REFERENCE_BOOK_AND_ADDRESS_GROUP_TAIL)
+  public Rule TestSpecifierInputTail() {
+    return Sequence(MiddleComma(), TestAddressGroupName(), CloseParens());
   }
 
   @Anchor(Type.ADDRESS_GROUP_NAME)

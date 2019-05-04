@@ -2,6 +2,7 @@ package org.batfish.specifier.parboiled;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.base.MoreObjects;
 import java.util.Objects;
 
 final class AddressGroupIpSpaceAstNode implements IpSpaceAstNode {
@@ -54,5 +55,13 @@ final class AddressGroupIpSpaceAstNode implements IpSpaceAstNode {
   @Override
   public int hashCode() {
     return Objects.hash(_addressGroup, _referenceBook);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .add("referenceBook", _referenceBook)
+        .add("addressGroup", _addressGroup)
+        .toString();
   }
 }

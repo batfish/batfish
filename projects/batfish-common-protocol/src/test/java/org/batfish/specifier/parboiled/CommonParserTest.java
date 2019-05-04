@@ -13,6 +13,7 @@ import org.parboiled.Rule;
 import org.parboiled.parserunners.BasicParseRunner;
 import org.parboiled.parserunners.ReportingParseRunner;
 
+/** Tests for {@link CommonParser} */
 public class CommonParserTest {
 
   private static boolean matches(String query, Rule rule) {
@@ -42,6 +43,7 @@ public class CommonParserTest {
             "TestReferenceBookName",
             "TestSpec",
             "TestSpecifierInput",
+            "TestSpecifierInputTail",
             "WhiteSpace"));
   }
 
@@ -99,6 +101,17 @@ public class CommonParserTest {
   }
 
   @Test
+  public void testSavedStackInvalidInputAddressGroupNoComma() {
+    TestParser parser = TestParser.instance();
+
+    new ReportingParseRunner<AstNode>(parser.getInputRule()).run("@specifier(g1");
+
+    assertThat(
+        ImmutableList.copyOf(parser.getShadowStack().getValueStack()),
+        equalTo(ImmutableList.of(new StringAstNode("g1"))));
+  }
+
+  @Test
   public void testSavedStackInvalidInputAddressGroup() {
     TestParser parser = TestParser.instance();
 
@@ -148,7 +161,7 @@ public class CommonParserTest {
 
     assertThat(
         ImmutableList.copyOf(parser.getShadowStack().getValueStack()),
-        equalTo(ImmutableList.of(new StringAstNode("a1"), new StringAstNode("b1"))));
+        equalTo(ImmutableList.of(new AddressGroupIpSpaceAstNode("a1", "b1"))));
   }
 
   @Test
@@ -161,6 +174,6 @@ public class CommonParserTest {
         ImmutableList.copyOf(parser.getShadowStack().getValueStack()),
         equalTo(
             ImmutableList.of(
-                new StringAstNode("a1"), new StringAstNode("b1"), new IpAstNode("1.1.1.1"))));
+                new AddressGroupIpSpaceAstNode("a1", "b1"), new IpAstNode("1.1.1.1"))));
   }
 }

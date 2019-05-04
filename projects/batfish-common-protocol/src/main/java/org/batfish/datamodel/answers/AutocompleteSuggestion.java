@@ -10,6 +10,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+/** Represents an auto complete suggestion for user input */
 @ParametersAreNonnullByDefault
 public final class AutocompleteSuggestion {
 
@@ -23,24 +24,28 @@ public final class AutocompleteSuggestion {
     OSPF_PROPERTY
   }
 
-  /** The type of a suggestion which provides more context to the user beyond the suggestion text */
+  /**
+   * The type of a suggestion which provides more context beyond the suggestion text.
+   *
+   * <p>The enums here should be kept ordered based on which types we want the user to see first.
+   */
   public enum SuggestionType {
-    /** Represents IP addresses and related things such as ranges and prefix lengths */
-    ADDRESS_LITERAL,
     /** Constant enum strings that are network independent, e.g., protocol types */
     CONSTANT,
-    /** A function, e.g., @enter, @in */
-    FUNCTION,
+    /** Represents IP addresses and related things such as ranges and prefix lengths */
+    ADDRESS_LITERAL,
     /** Names of objects in the network, e.g., nodes, interfaces, address groups */
     NAME_LITERAL,
-    /** An operator followed by operands, e.g., '[' in node[iface] and '(', ',' in @role(a, b) */
-    OPERATOR_NON_END,
-    /** Operator that ends an expression, e.g., ']' in [interface] and ')' in @role(a, b) */
-    OPERATOR_AT_END,
-    /** Indicates (the start of) a parenthetical content */
-    PARENTHESIS,
-    /** Indicates (the start of) a regex */
+    /** Operator in the middle of a (sub) expression, e.g., '[' in node[eth], ',' in @role(a, b) */
+    OPERATOR_MIDDLE,
+    /** Operator that ends a (sub) expression, e.g., ']' in [interface] and ')' in @role(a, b) */
+    OPERATOR_END,
+    /** Operator that starts a (sub) expression, e.g., '(' in (node) */
+    OPERATOR_BEGINNING,
+    /** Indicates a regex */
     REGEX,
+    /** A function, e.g., @enter( and @in( */
+    FUNCTION,
     /** Operators that indicates set functions, e.g., union and intersection */
     SET_OPERATOR,
     /** We don't know or used for backward compatibility as the default */

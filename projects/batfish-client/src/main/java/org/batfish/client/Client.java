@@ -723,7 +723,6 @@ public class Client extends AbstractClient implements IClient {
   private BfCoordWorkHelper _workHelper;
 
   public Client(Settings settings) {
-    super(false);
     _additionalBatfishOptions = new HashMap<>();
     _bfq = new TreeMap<>();
     _settings = settings;

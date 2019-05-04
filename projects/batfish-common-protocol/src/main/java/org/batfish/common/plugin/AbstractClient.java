@@ -9,8 +9,7 @@ public abstract class AbstractClient extends PluginConsumer implements IClient {
 
   protected final Map<String, Supplier<Question>> _questions;
 
-  public AbstractClient(boolean serializeToText) {
-    super(serializeToText);
+  public AbstractClient() {
     _questions = new HashMap<>();
   }
 

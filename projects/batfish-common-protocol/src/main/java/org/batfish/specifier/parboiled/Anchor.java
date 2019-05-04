@@ -58,7 +58,8 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
     FILTER_NAME_REGEX(
         "FILTER_NAME_REGEX", "Filter name regex", "filterNameRegex", SuggestionType.REGEX),
     /** For a rule that denotes filterSpec can be parenthetical */
-    FILTER_PARENS("FILTER_PARENS", "Filter specifier", "filterSpec)", SuggestionType.PARENTHESIS),
+    FILTER_PARENS(
+        "FILTER_PARENS", "Filter specifier", "filterSpec)", SuggestionType.OPERATOR_BEGINNING),
     /**
      * Denotes a set operation for filterSpec. The full description is filled in {@link
      * ParboiledAutoCompleteSuggestion#completeDescriptionIfNeeded}.
@@ -82,7 +83,10 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
         "INTERFACE_NAME_REGEX", "Interface name regex", "interfaceNameRegex", SuggestionType.REGEX),
     /** For a rule that denotes interfaceSpec can be paranthetical */
     INTERFACE_PARENS(
-        "INTERFACE_PARENS", "Interface specifier", "interfaceSpec)", SuggestionType.PARENTHESIS),
+        "INTERFACE_PARENS",
+        "Interface specifier",
+        "interfaceSpec)",
+        SuggestionType.OPERATOR_BEGINNING),
     /**
      * Denotes a set operation for interfaceSpec. The full description is filled in {@link
      * ParboiledAutoCompleteSuggestion#completeDescriptionIfNeeded}.
@@ -100,7 +104,7 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
     IP_PROTOCOL_NAME("IP_PROTOCOL_NAME", null, null, SuggestionType.CONSTANT),
     /** Rule for excluding an IP protocol */
     IP_PROTOCOL_NOT(
-        "IP_PROTOCOL_NOT", "Exclude IP protocol", "ipProtocol", SuggestionType.OPERATOR_NON_END),
+        "IP_PROTOCOL_NOT", "Exclude IP protocol", "ipProtocol", SuggestionType.OPERATOR_MIDDLE),
     /** IPv4 address */
     IP_ADDRESS("IP_ADDRESS", "IP address", null, SuggestionType.ADDRESS_LITERAL),
     /** IPv4 address mask */
@@ -132,7 +136,10 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
         SuggestionType.FUNCTION),
     /** For a rule that denotes locationSpec can be parenthetical */
     LOCATION_PARENS(
-        "LOCATION_PARENS", "Location specifier", "locationSpec)", SuggestionType.PARENTHESIS),
+        "LOCATION_PARENS",
+        "Location specifier",
+        "locationSpec)",
+        SuggestionType.OPERATOR_BEGINNING),
     /**
      * Denotes a set operation for locationSpec. The full description is filled in {@link
      * ParboiledAutoCompleteSuggestion#completeDescriptionIfNeeded}.
@@ -144,13 +151,13 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
         "NODE_AND_INTERFACE",
         "Node and interface pair",
         "interfaceSpec]",
-        SuggestionType.OPERATOR_NON_END),
+        SuggestionType.OPERATOR_MIDDLE),
     /** Names of devices */
     NODE_NAME("NODE_NAME", "Device name", null, SuggestionType.NAME_LITERAL),
     /** Name regex for devices */
     NODE_NAME_REGEX("NODE_NAME_REGEX", "Device name regex", "nodeNameRegex/", SuggestionType.REGEX),
     /** For a rule that denotes nodeSpec can be parenthetical */
-    NODE_PARENS("NODE_PARENS", "Node specifier", "nodeSpec)", SuggestionType.PARENTHESIS),
+    NODE_PARENS("NODE_PARENS", "Node specifier", "nodeSpec)", SuggestionType.OPERATOR_BEGINNING),
     /** Rule for @role(roleName, dimName) */
     NODE_ROLE_AND_DIMENSION(
         "NODE_ROLE_AND_DIMENSION",
@@ -170,13 +177,19 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
     /** Rule for @deviceType() to pick nodes */
     NODE_TYPE("DEVICE_TYPE", "Device type", "deviceType)", SuggestionType.FUNCTION),
     /** Denotes an operator that ends an expression, e.g., ], ) */
-    OPERATOR_END("OPERATOR_END", null, null, SuggestionType.OPERATOR_AT_END),
+    OPERATOR_END("OPERATOR_END", null, null, SuggestionType.OPERATOR_END),
     /** Rule for @addressGroup(book, group) */
     REFERENCE_BOOK_AND_ADDRESS_GROUP(
         "REFERENCE_BOOK_AND_ADDRESS_GROUP",
         "IP address space in an address group",
         "referenceBook, addressGroup)",
         SuggestionType.FUNCTION),
+    /** Tail of @addressGroup(book, group) */
+    REFERENCE_BOOK_AND_ADDRESS_GROUP_TAIL(
+        "REFERENCE_BOOK_AND_ADDRESS_GROUP_TAIL",
+        "Address group in the reference book",
+        "addressGroup)",
+        SuggestionType.OPERATOR_MIDDLE),
     /** Rule for @interfaceGroup(book, group) */
     REFERENCE_BOOK_AND_INTERFACE_GROUP(
         "REFERENCE_BOOK_AND_INTERFACE_GROUP",
@@ -200,7 +213,7 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
         "ROUTING_POLICY_PARENS",
         "Routing policy specifier",
         "routingPolicySpec)",
-        SuggestionType.PARENTHESIS),
+        SuggestionType.OPERATOR_BEGINNING),
     /**
      * Denotes a set operation for routingPolicySpec. The full description is filled in {@link
      * ParboiledAutoCompleteSuggestion#completeDescriptionIfNeeded}.

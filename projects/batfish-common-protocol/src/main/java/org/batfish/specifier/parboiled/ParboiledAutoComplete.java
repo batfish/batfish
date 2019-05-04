@@ -423,7 +423,7 @@ public final class ParboiledAutoComplete {
     }
 
     switch (parentAnchorType) {
-      case REFERENCE_BOOK_AND_ADDRESS_GROUP:
+      case REFERENCE_BOOK_AND_ADDRESS_GROUP_TAIL:
         checkArgument(
             pm.getAnchorType() == ADDRESS_GROUP_NAME,
             "Unexpected anchor for auto completing reference book entity. Expected %s. Got %s.",

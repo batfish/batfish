@@ -106,4 +106,6 @@ interface AstNodeVisitor<T> {
   T visitIntersectionIpSpaceAstNode(IntersectionIpSpaceAstNode intersectionIpSpaceAstNode);
 
   T visitRegexAstNode(RegexAstNode regexAstNode);
+
+  T visitOperatorAstNode(OperatorAstNode operatorAstNode);
 }

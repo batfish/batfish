@@ -249,6 +249,17 @@ public abstract class CommonParser extends BaseParser<AstNode> {
   public Rule CloseParens() {
     return Sequence(')', WhiteSpace());
   }
+
+  /** Puts the bracket on the stack. Helps autocomplete know when the previous operand was done */
+  public Rule MiddleBracket() {
+    return Sequence('[', push(new OperatorAstNode('[')), WhiteSpace());
+  }
+
+  /** Puts the comma on the stack. Helps autocomplete know when the previous operand was done */
+  public Rule MiddleComma() {
+    return Sequence(',', WhiteSpace());
+  }
+
   /**
    * A rule for regexes enclosed in slashes. Anything can appear in the interior of a regex except
    * that '/' (47) should be escaped.
