@@ -13,6 +13,7 @@ import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.NetworkBuilder;
 import com.google.common.graph.ValueGraphBuilder;
 import com.google.common.testing.EqualsTester;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.topology.Layer2Node;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.BgpPeerConfigId;
@@ -103,5 +104,35 @@ public final class TopologyContextTest {
         .setVxlanTopology(new VxlanTopology(vxlanTopology));
 
     assertThat(builder.build(), equalTo(builder.build().toBuilder().build()));
+  }
+
+  @Test
+  public void testJavaSerialization() {
+    TopologyContext.Builder builder = TopologyContext.builder();
+    MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+        ValueGraphBuilder.directed().build();
+    bgpTopology.addNode(new BgpPeerConfigId("a", "b", "c"));
+    MutableNetwork<EigrpInterface, EigrpEdge> eigrpTopology = NetworkBuilder.directed().build();
+    eigrpTopology.addNode(new EigrpInterface("a", "b", "c"));
+    MutableNetwork<IsisNode, IsisEdge> isisTopology = NetworkBuilder.directed().build();
+    isisTopology.addNode(new IsisNode("a", "b"));
+    MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> ospfTopology =
+        ValueGraphBuilder.directed().build();
+    ospfTopology.addNode(new OspfNeighborConfigId("a", "b", "c", "d"));
+    MutableGraph<VxlanNode> vxlanTopology =
+        GraphBuilder.undirected().allowsSelfLoops(false).build();
+    vxlanTopology.addNode(new VxlanNode("a", 5));
+    builder
+        .setBgpTopology(new BgpTopology(bgpTopology))
+        .setEigrpTopology(new EigrpTopology(eigrpTopology))
+        .setIsisTopology(new IsisTopology(isisTopology))
+        .setLayer2Topology(
+            Layer2Topology.fromDomains(
+                ImmutableList.of(ImmutableSet.of(new Layer2Node("a", "b", 5)))))
+        .setLayer3Topology(new Topology(ImmutableSortedSet.of(Edge.of("a", "b", "c", "d"))))
+        .setOspfTopology(new OspfTopology(ospfTopology))
+        .setVxlanTopology(new VxlanTopology(vxlanTopology));
+
+    assertThat(SerializationUtils.clone(builder.build()), equalTo(builder.build()));
   }
 }
