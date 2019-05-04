@@ -3045,7 +3045,7 @@ public class WorkMgr extends AbstractCoordinator {
       return null;
     }
     SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
-    String topologyStr = _storage.loadTopology(networkId, snapshotId);
+    String topologyStr = _storage.loadInitialTopology(networkId, snapshotId);
     return BatfishObjectMapper.mapper()
         .readValue(topologyStr, org.batfish.datamodel.Topology.class);
   }

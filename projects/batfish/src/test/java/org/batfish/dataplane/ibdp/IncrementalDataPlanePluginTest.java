@@ -390,9 +390,9 @@ public class IncrementalDataPlanePluginTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
     batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
-    DataPlane dp = dataPlanePlugin.computeDataPlane()._dataPlane;
-
-    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology = dp.getBgpTopology();
+    ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane();
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+        result._topologies.getBgpTopology().getGraph();
 
     // N2 has proper neighbor relationship
     Set<Entry<Prefix, BgpActivePeerConfig>> n2Neighbors =
@@ -458,7 +458,8 @@ public class IncrementalDataPlanePluginTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
     batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
-    DataPlane dp = dataPlanePlugin.computeDataPlane()._dataPlane;
+    ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane();
+    DataPlane dp = result._dataPlane;
 
     BgpPeerConfigId initiator =
         new BgpPeerConfigId("node1", "~Vrf_0~", Prefix.parse("1.0.0.0/32"), false);
@@ -477,7 +478,10 @@ public class IncrementalDataPlanePluginTest {
     // the neighbor should be reachable because it is only one hop away from the initiator
     assertTrue(
         BgpTopologyUtils.isReachableBgpNeighbor(
-            initiator, listener, source, new TracerouteEngineImpl(dp)));
+            initiator,
+            listener,
+            source,
+            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology())));
   }
 
   @Test
@@ -487,7 +491,8 @@ public class IncrementalDataPlanePluginTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
     batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
-    DataPlane dp = dataPlanePlugin.computeDataPlane()._dataPlane;
+    ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane();
+    DataPlane dp = result._dataPlane;
 
     BgpPeerConfigId initiator =
         new BgpPeerConfigId("node1", "~Vrf_0~", Prefix.parse("1.0.0.0/32"), false);
@@ -506,7 +511,10 @@ public class IncrementalDataPlanePluginTest {
     // the neighbor should be not be reachable because it is two hops away from the initiator
     assertFalse(
         BgpTopologyUtils.isReachableBgpNeighbor(
-            initiator, listener, source, new TracerouteEngineImpl(dp)));
+            initiator,
+            listener,
+            source,
+            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology())));
   }
 
   @Test
@@ -516,7 +524,8 @@ public class IncrementalDataPlanePluginTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
     batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
-    DataPlane dp = dataPlanePlugin.computeDataPlane()._dataPlane;
+    ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane();
+    DataPlane dp = result._dataPlane;
 
     BgpPeerConfigId initiator =
         new BgpPeerConfigId("node1", "~Vrf_0~", Prefix.parse("1.0.0.0/32"), false);
@@ -535,7 +544,10 @@ public class IncrementalDataPlanePluginTest {
     // the neighbor should be reachable because multi-hops are allowed
     assertTrue(
         BgpTopologyUtils.isReachableBgpNeighbor(
-            initiator, listener, source, new TracerouteEngineImpl(dp)));
+            initiator,
+            listener,
+            source,
+            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology())));
   }
 
   @Test
@@ -546,7 +558,8 @@ public class IncrementalDataPlanePluginTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
     batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
-    DataPlane dp = dataPlanePlugin.computeDataPlane()._dataPlane;
+    ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane();
+    DataPlane dp = result._dataPlane;
 
     BgpPeerConfigId initiator =
         new BgpPeerConfigId("node1", "~Vrf_0~", Prefix.parse("1.0.0.0/32"), false);
@@ -566,7 +579,10 @@ public class IncrementalDataPlanePluginTest {
     // denied in on node 3
     assertFalse(
         BgpTopologyUtils.isReachableBgpNeighbor(
-            initiator, listener, source, new TracerouteEngineImpl(dp)));
+            initiator,
+            listener,
+            source,
+            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology())));
   }
 
   @Test
@@ -577,7 +593,8 @@ public class IncrementalDataPlanePluginTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
     batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
-    DataPlane dp = dataPlanePlugin.computeDataPlane()._dataPlane;
+    ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane();
+    DataPlane dp = result._dataPlane;
 
     BgpPeerConfigId initiator =
         new BgpPeerConfigId("node1", "~Vrf_0~", Prefix.parse("1.0.0.0/32"), false);
@@ -597,7 +614,10 @@ public class IncrementalDataPlanePluginTest {
     // allows everything out
     assertTrue(
         BgpTopologyUtils.isReachableBgpNeighbor(
-            initiator, listener, source, new TracerouteEngineImpl(dp)));
+            initiator,
+            listener,
+            source,
+            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology())));
   }
 
   /**
@@ -806,9 +826,15 @@ public class IncrementalDataPlanePluginTest {
     ImmutableSortedMap<String, Configuration> configs = ImmutableSortedMap.of("n1", c1, "n2", c2);
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
     batfish.computeDataPlane();
-    DataPlane dp = batfish.loadDataPlane();
 
-    assertThat(dp.getBgpTopology().edges().size(), equalTo(2));
+    assertThat(
+        batfish
+            .getTopologyProvider()
+            .getBgpTopology(batfish.getNetworkSnapshot())
+            .getGraph()
+            .edges()
+            .size(),
+        equalTo(2));
     BgpPeerConfigId bgpConfig1 =
         new BgpPeerConfigId(
             "n1", DEFAULT_VRF_NAME, Prefix.create(lo2Ip, Prefix.MAX_PREFIX_LENGTH), false);
@@ -816,7 +842,11 @@ public class IncrementalDataPlanePluginTest {
         new BgpPeerConfigId(
             "n2", DEFAULT_VRF_NAME, Prefix.create(lo1Ip, Prefix.MAX_PREFIX_LENGTH), false);
     assertThat(
-        dp.getBgpTopology().edges(),
+        batfish
+            .getTopologyProvider()
+            .getBgpTopology(batfish.getNetworkSnapshot())
+            .getGraph()
+            .edges(),
         equalTo(
             ImmutableSet.of(
                 EndpointPair.ordered(bgpConfig1, bgpConfig2),

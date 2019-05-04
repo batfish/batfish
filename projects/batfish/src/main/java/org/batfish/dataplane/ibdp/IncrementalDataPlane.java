@@ -8,28 +8,22 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Table;
 import com.google.common.collect.TreeBasedTable;
-import com.google.common.graph.ValueGraph;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
-import org.batfish.datamodel.BgpPeerConfigId;
-import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.ForwardingAnalysisImpl;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.Topology;
 
 public final class IncrementalDataPlane implements Serializable, DataPlane {
 
@@ -139,7 +133,8 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   }
 
   private ForwardingAnalysis computeForwardingAnalysis() {
-    return new ForwardingAnalysisImpl(getConfigurations(), getFibs(), getTopology());
+    return new ForwardingAnalysisImpl(
+        getConfigurations(), getFibs(), _topologyContext.getLayer3Topology());
   }
 
   private SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
@@ -166,11 +161,6 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
                       table.put(hostname, vrfName, vr.getBgpRib().getTypedRoutes());
                     }));
     return table;
-  }
-
-  @Override
-  public ValueGraph<BgpPeerConfigId, BgpSessionProperties> getBgpTopology() {
-    return _topologyContext.getBgpTopology().getGraph();
   }
 
   @Override
@@ -239,15 +229,5 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
       _ribs = computeRibs();
     }
     return _ribs;
-  }
-
-  @Override
-  public Topology getTopology() {
-    return _topologyContext.getLayer3Topology();
-  }
-
-  @Override
-  public SortedSet<Edge> getTopologyEdges() {
-    return _topologyContext.getLayer3Topology().getEdges();
   }
 }

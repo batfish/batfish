@@ -7,30 +7,53 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.graph.ImmutableValueGraph;
+import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
-import java.io.Serializable;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.topology.SerializableValueGraph;
+import org.batfish.common.topology.ValueEdge;
 
 /** A graph representing OSPF adjacencies */
 @ParametersAreNonnullByDefault
-public final class OspfTopology implements Serializable {
+public final class OspfTopology {
 
   public static final OspfTopology EMPTY = new OspfTopology(ValueGraphBuilder.directed().build());
-  private static final long serialVersionUID = 1L;
+  private static final String PROP_EDGES = "edges";
+  private static final String PROP_NODES = "nodes";
 
-  @Nonnull private final SerializableValueGraph<OspfNeighborConfigId, OspfSessionProperties> _graph;
+  @JsonCreator
+  private static @Nonnull OspfTopology create(
+      @JsonProperty(PROP_EDGES) @Nullable
+          List<ValueEdge<OspfNeighborConfigId, OspfSessionProperties>> edges,
+      @JsonProperty(PROP_NODES) @Nullable Set<OspfNeighborConfigId> nodes) {
+    MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> graph =
+        ValueGraphBuilder.directed().allowsSelfLoops(false).build();
+    if (nodes != null) {
+      nodes.forEach(graph::addNode);
+    }
+    if (edges != null) {
+      edges.forEach(
+          valueEdge ->
+              graph.putEdgeValue(
+                  valueEdge.getSource(), valueEdge.getTarget(), valueEdge.getValue()));
+    }
+    return new OspfTopology(graph);
+  }
+
+  @Nonnull private final ValueGraph<OspfNeighborConfigId, OspfSessionProperties> _graph;
 
   public OspfTopology(ValueGraph<OspfNeighborConfigId, OspfSessionProperties> graph) {
-    _graph = new SerializableValueGraph<>(graph);
+    _graph = ImmutableValueGraph.copyOf(graph);
   }
 
   /**
@@ -51,6 +74,23 @@ public final class OspfTopology implements Serializable {
     return _graph.edges().stream()
         .map(pair -> makeEdge(pair.nodeU(), pair.nodeV()))
         .collect(ImmutableSet.toImmutableSet());
+  }
+
+  @JsonProperty(PROP_EDGES)
+  private List<ValueEdge<OspfNeighborConfigId, OspfSessionProperties>> getEdges() {
+    return _graph.edges().stream()
+        .map(
+            endpointPair ->
+                new ValueEdge<>(
+                    endpointPair.source(),
+                    endpointPair.target(),
+                    _graph.edgeValue(endpointPair.source(), endpointPair.target()).get()))
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  @JsonProperty(PROP_NODES)
+  private @Nonnull Set<OspfNeighborConfigId> getNodes() {
+    return _graph.nodes();
   }
 
   @Nonnull
@@ -93,8 +133,9 @@ public final class OspfTopology implements Serializable {
   }
 
   /** Return the graph backing this topology */
+  @JsonIgnore
   @VisibleForTesting
-  SerializableValueGraph<OspfNeighborConfigId, OspfSessionProperties> getGraph() {
+  ValueGraph<OspfNeighborConfigId, OspfSessionProperties> getGraph() {
     return _graph;
   }
 

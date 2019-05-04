@@ -216,7 +216,10 @@ public class BatfishTest {
         BatfishTestUtils.getBatfishFromTestrigText(testrigTextBuilder.build(), _folder);
 
     assertThat(
-        batfish.getTopologyProvider().getRawLayer3Topology(batfish.getNetworkSnapshot()).getEdges(),
+        batfish
+            .getTopologyProvider()
+            .getInitialRawLayer3Topology(batfish.getNetworkSnapshot())
+            .getEdges(),
         containsInAnyOrder(Edge.of("c1", "i1", "c2", "i2"), Edge.of("c2", "i2", "c1", "i1")));
   }
 

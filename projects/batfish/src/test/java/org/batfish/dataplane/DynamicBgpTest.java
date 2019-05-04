@@ -56,7 +56,8 @@ public class DynamicBgpTest {
 
     batfish.computeDataPlane(); // compute and cache the dataPlane
     DataPlane dp = batfish.loadDataPlane();
-    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology = dp.getBgpTopology();
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+        batfish.getTopologyProvider().getBgpTopology(batfish.getNetworkSnapshot()).getGraph();
 
     // Three sessions are established, so should see 6 directed edges.
     assertThat(bgpTopology.edges(), hasSize(6));
@@ -86,7 +87,8 @@ public class DynamicBgpTest {
     batfish.computeDataPlane(); // compute and cache the dataPlane
 
     DataPlane dp = batfish.loadDataPlane();
-    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology = dp.getBgpTopology();
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+        batfish.getTopologyProvider().getBgpTopology(batfish.getNetworkSnapshot()).getGraph();
 
     // Three sessions are established, so should see 6 directed edges.
     assertThat(bgpTopology.edges(), hasSize(6));
@@ -127,7 +129,8 @@ public class DynamicBgpTest {
     batfish.computeDataPlane(); // compute and cache the dataPlane
 
     DataPlane dp = batfish.loadDataPlane();
-    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology = dp.getBgpTopology();
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+        batfish.getTopologyProvider().getBgpTopology(batfish.getNetworkSnapshot()).getGraph();
 
     // Only two sessions are established (not r2 <--> r4), so should see 4 directed edges.
     assertThat(bgpTopology.edges(), hasSize(4));
