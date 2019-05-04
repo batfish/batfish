@@ -1347,4 +1347,44 @@ public class AutoCompleteUtilsTest {
     assertThat(
         orderSuggestions(query, ImmutableList.of(s2, s1)), equalTo(ImmutableList.of(s1, s2)));
   }
+
+  @Test
+  public void testLimitSuggestionsByType() {
+    List<AutocompleteSuggestion> orderedSuggestions =
+        ImmutableList.of(
+            AutocompleteSuggestion.builder()
+                .setText("t1s1")
+                .setSuggestionType(SuggestionType.CONSTANT)
+                .build(),
+            AutocompleteSuggestion.builder()
+                .setText("t1s2")
+                .setSuggestionType(SuggestionType.CONSTANT)
+                .build(),
+            AutocompleteSuggestion.builder()
+                .setText("t1s3")
+                .setSuggestionType(SuggestionType.CONSTANT)
+                .build(),
+            AutocompleteSuggestion.builder()
+                .setText("t2s1")
+                .setSuggestionType(SuggestionType.NAME_LITERAL)
+                .build(),
+            AutocompleteSuggestion.builder()
+                .setText("t2s2")
+                .setSuggestionType(SuggestionType.NAME_LITERAL)
+                .build(),
+            AutocompleteSuggestion.builder()
+                .setText("t3s1")
+                .setSuggestionType(SuggestionType.FUNCTION)
+                .build(),
+            AutocompleteSuggestion.builder()
+                .setText("t3s2")
+                .setSuggestionType(SuggestionType.FUNCTION)
+                .build());
+
+    assertThat(
+        AutoCompleteUtils.limitSuggestionsByType(orderedSuggestions, 4, 1).stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(ImmutableList.of("t1s1", "t2s1", "t3s1", "t1s2")));
+  }
 }

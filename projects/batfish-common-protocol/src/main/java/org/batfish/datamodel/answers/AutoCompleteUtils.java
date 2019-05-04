@@ -6,11 +6,14 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
@@ -25,6 +28,7 @@ import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Protocol;
+import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
 import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
@@ -132,7 +136,7 @@ public final class AutoCompleteUtils {
       }
     }
 
-    return orderSuggestions(query, suggestions);
+    return limitSuggestionsByType(orderSuggestions(query, suggestions), maxSuggestions, 5);
   }
 
   /** Basic ordering logic, by suggestion type and then by suggestion text */
@@ -161,6 +165,54 @@ public final class AutoCompleteUtils {
                             (query.substring(0, s.getInsertionIndex()) + s.getText())
                                 .toLowerCase())))
         .collect(ImmutableList.toImmutableList());
+  }
+
+  /**
+   * Limits the number of suggestions per type.
+   *
+   * @param orderedSuggestions original ordered list of suggestions
+   * @param maxSuggestions the maximum number of suggestions
+   * @param maxSuggestionsPerType the maximum number of suggestions for a given type
+   */
+  @VisibleForTesting
+  static List<AutocompleteSuggestion> limitSuggestionsByType(
+      List<AutocompleteSuggestion> orderedSuggestions,
+      int maxSuggestions,
+      int maxSuggestionsPerType) {
+    if (orderedSuggestions.size() <= maxSuggestions) {
+      return orderedSuggestions;
+    }
+
+    Map<SuggestionType, Integer> suggestionTypeCounts = new TreeMap<>();
+
+    List<AutocompleteSuggestion> limitedSuggestions = new ArrayList<>();
+    List<AutocompleteSuggestion> leftOverSuggestions = new ArrayList<>();
+
+    for (AutocompleteSuggestion suggestion : orderedSuggestions) {
+      if (limitedSuggestions.size() == maxSuggestions) {
+        return limitedSuggestions;
+      }
+
+      Integer count = suggestionTypeCounts.getOrDefault(suggestion.getSuggestionType(), 0);
+
+      if (count < maxSuggestionsPerType) {
+        limitedSuggestions.add(suggestion);
+        suggestionTypeCounts.put(suggestion.getSuggestionType(), count + 1);
+      } else {
+        leftOverSuggestions.add(suggestion);
+      }
+    }
+
+    int suggestionsToAdd = maxSuggestions - limitedSuggestions.size();
+
+    if (suggestionsToAdd > 0) {
+      // add remaining suggestions from leftovers
+      limitedSuggestions.addAll(
+          leftOverSuggestions.subList(
+              0, Integer.min(suggestionsToAdd, leftOverSuggestions.size())));
+    }
+
+    return limitedSuggestions;
   }
 
   @Nonnull
@@ -537,7 +589,7 @@ public final class AutoCompleteUtils {
       default:
         throw new IllegalArgumentException("Unsupported completion type: " + completionType);
     }
-    return suggestions.subList(0, Integer.min(suggestions.size(), maxSuggestions));
+    return suggestions;
   }
 
   /**
