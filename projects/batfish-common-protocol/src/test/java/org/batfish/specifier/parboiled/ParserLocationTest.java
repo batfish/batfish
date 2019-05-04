@@ -7,7 +7,7 @@ import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_ZONE;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_ENTER;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_PARENS;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_SET_OP;
-import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_INTERFACE;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_INTERFACE_TAIL;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_PARENS;
@@ -118,7 +118,7 @@ public class ParserLocationTest {
             new ParboiledAutoCompleteSuggestion("\\", query.length(), LOCATION_SET_OP),
             new ParboiledAutoCompleteSuggestion(",", query.length(), LOCATION_SET_OP),
             new ParboiledAutoCompleteSuggestion("&", query.length(), LOCATION_SET_OP),
-            new ParboiledAutoCompleteSuggestion("[", query.length(), NODE_AND_INTERFACE)));
+            new ParboiledAutoCompleteSuggestion("[", query.length(), NODE_AND_INTERFACE_TAIL)));
   }
 
   @Test

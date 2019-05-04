@@ -152,6 +152,12 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
         "Node and interface pair",
         "interfaceSpec]",
         SuggestionType.OPERATOR_MIDDLE),
+    /** Part of node[interface] after node */
+    NODE_AND_INTERFACE_TAIL(
+        "NODE_AND_INTERFACE_TAIL",
+        "Interfaces of the node",
+        "interfaceSpec]",
+        SuggestionType.OPERATOR_END),
     /** Names of devices */
     NODE_NAME("NODE_NAME", "Device name", null, SuggestionType.NAME_LITERAL),
     /** Name regex for devices */
@@ -184,7 +190,7 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
         "IP address space in an address group",
         "referenceBook, addressGroup)",
         SuggestionType.FUNCTION),
-    /** Tail of @addressGroup(book, group) */
+    /** Part of @addressGroup(book, group) after book */
     REFERENCE_BOOK_AND_ADDRESS_GROUP_TAIL(
         "REFERENCE_BOOK_AND_ADDRESS_GROUP_TAIL",
         "Address group in the reference book",
@@ -196,6 +202,12 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
         "Interfaces in an interface group",
         "referenceBook, interfaceGroup)",
         SuggestionType.FUNCTION),
+    /** Part of @interfaceGroup(book, group) after book */
+    REFERENCE_BOOK_AND_INTERFACE_GROUP_TAIL(
+        "REFERENCE_BOOK_AND_INTERFACE_GROUP_TAIL",
+        "Interface group in the reference book",
+        "interfaceGroup)",
+        SuggestionType.OPERATOR_MIDDLE),
     /** Rule for reference book name */
     REFERENCE_BOOK_NAME(
         "REFERENCE_BOOK_NAME", "Reference book name", null, SuggestionType.NAME_LITERAL),

@@ -130,7 +130,7 @@ public class CommonParserTest {
 
     assertThat(
         ImmutableList.copyOf(parser.getShadowStack().getValueStack()),
-        equalTo(ImmutableList.of(new StringAstNode("a1"), new StringAstNode("b"))));
+        equalTo(ImmutableList.of(new StringAstNode("b"), new StringAstNode("a1"))));
   }
 
   @Test
@@ -140,7 +140,7 @@ public class CommonParserTest {
 
     assertThat(
         ImmutableList.copyOf(parser.getShadowStack().getValueStack()),
-        equalTo(ImmutableList.of(new StringAstNode("a1"), new StringAstNode("b"))));
+        equalTo(ImmutableList.of(new StringAstNode("b"), new StringAstNode("a1"))));
   }
 
   @Test
@@ -150,7 +150,7 @@ public class CommonParserTest {
 
     assertThat(
         ImmutableList.copyOf(parser.getShadowStack().getValueStack()),
-        equalTo(ImmutableList.of(new StringAstNode("a1"), new StringAstNode("b "))));
+        equalTo(ImmutableList.of(new StringAstNode("b "), new StringAstNode("a1"))));
   }
 
   @Test
@@ -174,6 +174,19 @@ public class CommonParserTest {
         ImmutableList.copyOf(parser.getShadowStack().getValueStack()),
         equalTo(
             ImmutableList.of(
-                new AddressGroupIpSpaceAstNode("a1", "b1"), new IpAstNode("1.1.1.1"))));
+                new IpAstNode("1.1.1.1"), new AddressGroupIpSpaceAstNode("a1", "b1"))));
+  }
+
+  @Test
+  public void testSavedStackSetSecondInput() {
+    TestParser parser = TestParser.instance();
+
+    new ReportingParseRunner<AstNode>(parser.getInputRule()).run("1.1.1.1, @specifier(a1, b1");
+
+    assertThat(
+        ImmutableList.copyOf(parser.getShadowStack().getValueStack()),
+        equalTo(
+            ImmutableList.of(
+                new StringAstNode("b1"), new StringAstNode("a1"), new IpAstNode("1.1.1.1"))));
   }
 }

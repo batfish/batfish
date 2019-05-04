@@ -92,7 +92,7 @@ class TestParser extends CommonParser {
 
   @Anchor(Type.REFERENCE_BOOK_AND_ADDRESS_GROUP_TAIL)
   public Rule TestSpecifierInputTail() {
-    return Sequence(MiddleComma(), TestAddressGroupName(), CloseParens());
+    return Sequence(", ", TestAddressGroupName(), CloseParens());
   }
 
   @Anchor(Type.ADDRESS_GROUP_NAME)

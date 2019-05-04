@@ -118,6 +118,7 @@ public final class OspfInterAreaRoute extends OspfInternalRoute {
 
     private Long _area;
 
+    @Nonnull
     @Override
     public OspfInterAreaRoute build() {
       return _cache.intern(

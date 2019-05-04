@@ -6,6 +6,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Comparators;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import java.util.Comparator;
 import java.util.Objects;
@@ -18,15 +19,13 @@ import org.batfish.datamodel.bgp.community.Community;
 
 /** An EVPN type 5 route */
 @ParametersAreNonnullByDefault
-public final class EvpnType5Route extends BgpRoute {
+public final class EvpnType5Route extends EvpnRoute {
 
   private static final long serialVersionUID = 1L;
 
   /** Builder for {@link EvpnType5Route} */
   @ParametersAreNonnullByDefault
-  public static final class Builder extends BgpRoute.Builder<Builder, EvpnType5Route> {
-
-    @Nullable private RouteDistinguisher _routeDistinguisher;
+  public static final class Builder extends EvpnRoute.Builder<Builder, EvpnType5Route> {
 
     @Nonnull
     @Override
@@ -34,9 +33,12 @@ public final class EvpnType5Route extends BgpRoute {
       return new Builder();
     }
 
+    private Builder() {}
+
     @Nonnull
     @Override
     public EvpnType5Route build() {
+      checkArgument(getNetwork() != null, "Missing %s", PROP_NETWORK);
       checkArgument(_originatorIp != null, "Missing %s", PROP_ORIGINATOR_IP);
       checkArgument(_originType != null, "Missing %s", PROP_ORIGIN_TYPE);
       checkArgument(_protocol != null, "Missing %s", PROP_PROTOCOL);
@@ -51,7 +53,7 @@ public final class EvpnType5Route extends BgpRoute {
           getMetric(),
           getNetwork(),
           firstNonNull(_nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE),
-          getNextHopIp(),
+          firstNonNull(getNextHopIp(), Route.UNSET_ROUTE_NEXT_HOP_IP),
           getNonForwarding(),
           getNonRouting(),
           _originatorIp,
@@ -64,24 +66,12 @@ public final class EvpnType5Route extends BgpRoute {
           _weight);
     }
 
-    public Builder setRouteDistinguisher(@Nonnull RouteDistinguisher routeDistinguisher) {
-      _routeDistinguisher = routeDistinguisher;
-      return this;
-    }
-
-    @Nullable
-    public RouteDistinguisher getRouteDistinguisher() {
-      return _routeDistinguisher;
-    }
-
     @Override
     @Nonnull
     public Builder getThis() {
       return this;
     }
   }
-
-  private static final String PROP_ROUTE_DISTINGUISHER = "routeDistinguisher";
 
   private static final Comparator<EvpnType5Route> COMPARATOR =
       Comparator.comparing(EvpnType5Route::getAsPath)
@@ -100,7 +90,6 @@ public final class EvpnType5Route extends BgpRoute {
           .thenComparing(EvpnType5Route::getSrcProtocol)
           .thenComparing(EvpnType5Route::getWeight);
 
-  @Nonnull private final RouteDistinguisher _routeDistinguisher;
   /* Cache the hashcode */
   private transient int _hashCode = 0;
 
@@ -125,21 +114,22 @@ public final class EvpnType5Route extends BgpRoute {
       @Nullable @JsonProperty(PROP_ROUTE_DISTINGUISHER) RouteDistinguisher routeDistinguisher,
       @Nullable @JsonProperty(PROP_SRC_PROTOCOL) RoutingProtocol srcProtocol,
       @JsonProperty(PROP_WEIGHT) int weight) {
+    checkArgument(network != null, "Missing %s", PROP_NETWORK);
     checkArgument(originatorIp != null, "Missing %s", PROP_ORIGINATOR_IP);
     checkArgument(originType != null, "Missing %s", PROP_ORIGIN_TYPE);
     checkArgument(protocol != null, "Missing %s", PROP_PROTOCOL);
     checkArgument(routeDistinguisher != null, "Missing %s", PROP_ROUTE_DISTINGUISHER);
     return new EvpnType5Route(
         admin,
-        asPath,
-        clusterList,
-        communities,
+        firstNonNull(asPath, AsPath.empty()),
+        firstNonNull(clusterList, ImmutableSortedSet.of()),
+        firstNonNull(communities, ImmutableSortedSet.of()),
         discard,
         localPreference,
         med,
         network,
         firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE),
-        nextHopIp,
+        firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP),
         false,
         false,
         originatorIp,
@@ -154,15 +144,15 @@ public final class EvpnType5Route extends BgpRoute {
 
   private EvpnType5Route(
       int admin,
-      @Nullable AsPath asPath,
-      @Nullable SortedSet<Long> clusterList,
-      @Nullable SortedSet<Community> communities,
+      AsPath asPath,
+      SortedSet<Long> clusterList,
+      SortedSet<Community> communities,
       boolean discard,
       long localPreference,
       long med,
-      @Nullable Prefix network,
+      Prefix network,
       String nextHopInterface,
-      @Nullable Ip nextHopIp,
+      Ip nextHopIp,
       boolean nonForwarding,
       boolean nonRouting,
       Ip originatorIp,
@@ -192,13 +182,8 @@ public final class EvpnType5Route extends BgpRoute {
         srcProtocol,
         weight,
         nonForwarding,
-        nonRouting);
-    _routeDistinguisher = routeDistinguisher;
-  }
-
-  @Nonnull
-  public RouteDistinguisher getRouteDistinguisher() {
-    return _routeDistinguisher;
+        nonRouting,
+        routeDistinguisher);
   }
 
   public static Builder builder() {

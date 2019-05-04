@@ -23,7 +23,6 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import java.util.Set;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.referencelibrary.AddressGroup;
@@ -93,7 +92,7 @@ public class ParboiledAutoCompleteTest {
         "snapshot",
         query,
         Integer.MAX_VALUE,
-        null,
+        CompletionMetadata.builder().build(),
         NodeRolesData.builder().build(),
         referenceLibrary);
   }
@@ -283,7 +282,7 @@ public class ParboiledAutoCompleteTest {
             new ParboiledAutoCompleteSuggestion("(", 10, REFERENCE_BOOK_AND_ADDRESS_GROUP)));
   }
 
-  /** Test that we produce auto complete snapshot-based dynamic values like address groups */
+  /** Test that we auto complete snapshot-based dynamic values like reference books */
   @Test
   public void testRunSpecifierWithParensNoInput() {
     assertThat(
@@ -308,9 +307,19 @@ public class ParboiledAutoCompleteTest {
     assertThat(getTestPAC("@specifier(b,", testLibrary).run(), containsInAnyOrder());
   }
 
+  /** Test that we auto complete prefixes of snapshot-based dynamic values like reference books */
   @Test
-  public void testRunSpecifierOneInputCommonRefbookMatch() {
-    // only g11 and g12 should be suggested
+  public void testRunSpecifierFirstPartialInput() {
+    assertThat(
+        getTestPAC("@specifier(b1", testLibrary).run(),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("b1a", 11, REFERENCE_BOOK_NAME),
+            new ParboiledAutoCompleteSuggestion(",", 13, REFERENCE_BOOK_AND_ADDRESS_GROUP_TAIL)));
+  }
+
+  /** Test that we auto complete in a context-sensitive manner */
+  @Test
+  public void testRunSpecifierAfterFirstInput() {
     assertThat(
         getTestPAC("@specifier(b1a,", testLibrary).run(),
         containsInAnyOrder(
@@ -318,17 +327,16 @@ public class ParboiledAutoCompleteTest {
             new ParboiledAutoCompleteSuggestion("g12", 15, ADDRESS_GROUP_NAME)));
   }
 
+  /** Test that we auto complete in a context-sensitive manner while accounting for prefix */
   @Test
-  public void testRunSpecifierTwoInputs() {
-    Set<ParboiledAutoCompleteSuggestion> suggestions =
-        getTestPAC("@specifier(b1a, g", testLibrary).run();
-    // only g11 and g12 should be suggested
+  public void testRunSpecifierPartialSecondInput() {
+    String query = "@specifier(b1a, g";
     assertThat(
-        suggestions,
+        getTestPAC(query, testLibrary).run(),
         containsInAnyOrder(
-            new ParboiledAutoCompleteSuggestion(")", 17, OPERATOR_END),
-            new ParboiledAutoCompleteSuggestion("g11", 15, ADDRESS_GROUP_NAME),
-            new ParboiledAutoCompleteSuggestion("g12", 15, ADDRESS_GROUP_NAME)));
+            new ParboiledAutoCompleteSuggestion("g11", query.length() - 1, ADDRESS_GROUP_NAME),
+            new ParboiledAutoCompleteSuggestion("g12", query.length() - 1, ADDRESS_GROUP_NAME),
+            new ParboiledAutoCompleteSuggestion(")", query.length(), OPERATOR_END)));
   }
 
   /** Test that we produce auto completion suggestions even for valid inputs */
@@ -416,7 +424,7 @@ public class ParboiledAutoCompleteTest {
   /** Context-sensitive completion of interface name after node name */
   @Test
   public void testAutoCompleteInterfaceNameNodeName() {
-    String query = "n1a";
+    String query = "n1a[";
 
     // the expected stack for the query
     DefaultValueStack<AstNode> vs = new DefaultValueStack<>();
@@ -442,7 +450,7 @@ public class ParboiledAutoCompleteTest {
   /** Context-sensitive completion of interface name after node name regex */
   @Test
   public void testAutoCompleteInterfaceNameNodeNameRegex() {
-    String query = "/n1/";
+    String query = "/n1/[";
 
     // the expected stack for the query
     DefaultValueStack<AstNode> vs = new DefaultValueStack<>();
@@ -563,7 +571,7 @@ public class ParboiledAutoCompleteTest {
             new ParboiledAutoCompleteSuggestion("i21", query.length(), INTERFACE_GROUP_NAME)));
   }
 
-  /** Context-sensitive completion when address groups come before the reference book */
+  /** Context-sensitive completion for address groups based on reference book */
   @Test
   public void testAutoCompleteReferenceBookEntityAddressGroup() {
     String query = "@specifier(b1a,";
@@ -589,7 +597,7 @@ public class ParboiledAutoCompleteTest {
             new ParboiledAutoCompleteSuggestion("g12", query.length(), ADDRESS_GROUP_NAME)));
   }
 
-  /** Context-sensitive completion when interface groups come before the reference book */
+  /** Context-sensitive completion for interface groups based on reference book */
   @Test
   public void testAutoCompleteReferenceBookEntityInterfaceGroup() {
     String query = "@specifier(b1a,";
