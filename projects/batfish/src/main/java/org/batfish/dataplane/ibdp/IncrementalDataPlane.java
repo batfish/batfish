@@ -111,7 +111,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
   private final Map<String, Node> _nodes;
 
-  private final transient TopologyContext _topologyContext;
+  private final TopologyContext _topologyContext;
 
   private transient SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
       _ribs;
