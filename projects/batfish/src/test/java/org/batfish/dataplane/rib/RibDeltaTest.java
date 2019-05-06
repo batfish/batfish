@@ -155,8 +155,8 @@ public class RibDeltaTest {
   /** Test that deltas are chained correctly using the {@link RibDelta.Builder#from} function */
   @Test
   public void testChainDeltas() {
-    BgpRib rib =
-        new BgpRib(
+    Bgpv4Rib rib =
+        new Bgpv4Rib(
             null,
             null,
             BgpTieBreaker.CLUSTER_LIST_LENGTH,
@@ -192,8 +192,8 @@ public class RibDeltaTest {
   /** Test that the routes are exact route matches are removed from the RIB by default */
   @Test
   public void testImportRibExactRemoval() {
-    BgpRib rib =
-        new BgpRib(
+    Bgpv4Rib rib =
+        new Bgpv4Rib(
             null,
             null,
             BgpTieBreaker.ROUTER_ID,
