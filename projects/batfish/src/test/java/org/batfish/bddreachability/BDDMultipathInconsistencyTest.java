@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
@@ -37,7 +38,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.batfish.minesweeper.bdd.BDDAcl;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.z3.IngressLocation;
@@ -164,7 +164,7 @@ public class BDDMultipathInconsistencyTest {
             .getIngressLocationReachableBDDs();
 
     BDD natAclIpBDD = srcIpBDD(SOURCE_NAT_ACL_IP);
-    BDD srcNatAclBDD = BDDAcl.create(PKT, _net._link2SrcSourceNatAcl).getBdd();
+    BDD srcNatAclBDD = IpAccessListToBdd.toBDD(PKT, _net._link2SrcSourceNatAcl);
     assertThat(srcNatAclBDD, equalTo(natAclIpBDD));
 
     /*
