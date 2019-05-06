@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableMap;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.IntStream;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.specifier.parboiled.Anchor.Type;
@@ -61,7 +62,10 @@ public abstract class CommonParser extends BaseParser<AstNode> {
         _repeatedRun = true;
         return;
       }
-      _vs = new DefaultValueStack<>(context.getValueStack());
+      ValueStack<AstNode> contextStack = context.getValueStack();
+      _vs.clear();
+      IntStream.range(0, contextStack.size())
+          .forEach(i -> _vs.push(contextStack.peek(contextStack.size() - i - 1)));
       _currentIndex = context.getCurrentIndex();
     }
 

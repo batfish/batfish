@@ -11,6 +11,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -105,5 +106,24 @@ public final class Topology implements Serializable {
   @JsonValue
   public SortedSet<Edge> sortedEdges() {
     return _edges;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof Topology)) {
+      return false;
+    }
+    Topology topology = (Topology) o;
+    return Objects.equals(_edges, topology._edges)
+        && Objects.equals(_interfaceNeighbors, topology._interfaceNeighbors)
+        && Objects.equals(_nodeEdges, topology._nodeEdges);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_edges, _interfaceNeighbors, _nodeEdges);
   }
 }
