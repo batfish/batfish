@@ -139,18 +139,18 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
      */
     LOCATION_SET_OP(
         "INTERFACE_SET_OP", " of locations", "locationSpec", SuggestionType.SET_OPERATOR),
-    /** Rule for node[interface] style interfaceSpec */
+    /**
+     * Rule for node[interface] style interfaceSpec. This anchor shouldn't be suggested as the rule
+     * has no literal, and things will get delegated to sub rules.
+     */
     NODE_AND_INTERFACE(
-        "NODE_AND_INTERFACE",
-        "Node and interface pair",
-        "interfaceSpec]",
-        SuggestionType.OPERATOR_NON_END),
+        "NODE_AND_INTERFACE", "Node and interface pair", null, SuggestionType.UNKNOWN),
     /** Part of node[interface] after node */
     NODE_AND_INTERFACE_TAIL(
         "NODE_AND_INTERFACE_TAIL",
-        "Interfaces of the node",
+        "Interfaces of specified node(s)",
         "interfaceSpec]",
-        SuggestionType.OPERATOR_END),
+        SuggestionType.OPERATOR_NON_END),
     /** Names of devices */
     NODE_NAME("NODE_NAME", "Device name", null, SuggestionType.NAME_LITERAL),
     /** Name regex for devices */

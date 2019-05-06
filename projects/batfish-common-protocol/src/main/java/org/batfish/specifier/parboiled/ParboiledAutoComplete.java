@@ -145,7 +145,7 @@ public final class ParboiledAutoComplete {
       case ADDRESS_GROUP_NAME:
         return autoCompleteReferenceBookEntity(pm);
       case CHAR_LITERAL:
-        return autoCompleteCharLiteral(pm);
+        return autoCompleteLiteral(pm);
       case EOI:
         return ImmutableSet.of();
       case FILTER_INTERFACE_IN:
@@ -236,7 +236,7 @@ public final class ParboiledAutoComplete {
         // Other routing policy rules appear later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case STRING_LITERAL:
-        return autoCompleteCharLiteral(pm);
+        return autoCompleteLiteral(pm);
       case VRF_NAME:
         return autoCompleteGeneric(pm);
       case WHITESPACE:
@@ -249,8 +249,7 @@ public final class ParboiledAutoComplete {
     }
   }
 
-  @VisibleForTesting
-  Set<ParboiledAutoCompleteSuggestion> autoCompleteCharLiteral(PotentialMatch pm) {
+  private Set<ParboiledAutoCompleteSuggestion> autoCompleteLiteral(PotentialMatch pm) {
     Optional<PotentialMatch> extendedMatch = extendLiteralMatch(_query, pm);
 
     PotentialMatch pmToConsider = extendedMatch.orElse(pm);
