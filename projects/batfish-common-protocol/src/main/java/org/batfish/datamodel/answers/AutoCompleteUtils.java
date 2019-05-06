@@ -52,6 +52,8 @@ import org.batfish.specifier.parboiled.ParboiledAutoComplete;
 @ParametersAreNonnullByDefault
 public final class AutoCompleteUtils {
 
+  private static final int MAX_SUGGESTIONS_PER_TYPE = 5;
+
   @Nonnull
   public static List<AutocompleteSuggestion> autoComplete(
       Variable.Type completionType, String query, int maxSuggestions) {
@@ -136,7 +138,8 @@ public final class AutoCompleteUtils {
       }
     }
 
-    return limitSuggestionsByType(orderSuggestions(query, suggestions), maxSuggestions, 5);
+    return limitSuggestionsByType(
+        orderSuggestions(query, suggestions), maxSuggestions, MAX_SUGGESTIONS_PER_TYPE);
   }
 
   /** Basic ordering logic, by suggestion type and then by suggestion text */
