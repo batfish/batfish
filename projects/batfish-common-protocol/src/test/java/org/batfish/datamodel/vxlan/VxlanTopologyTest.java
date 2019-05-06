@@ -22,10 +22,11 @@ import com.google.common.graph.EndpointPair;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.MutableGraph;
 import com.google.common.testing.EqualsTester;
+import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
-import org.apache.commons.lang3.SerializationUtils;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -518,7 +519,7 @@ public final class VxlanTopologyTest {
     VxlanNode nodeHead = VxlanNode.builder().setHostname(NODE2).setVni(VNI).build();
 
     assertThat(
-        new VxlanTopology(configurations).getEdges(),
+        new VxlanTopology(configurations).getGraph().edges(),
         equalTo(ImmutableSet.of(EndpointPair.unordered(nodeTail, nodeHead))));
   }
 
@@ -535,7 +536,8 @@ public final class VxlanTopologyTest {
   }
 
   @Test
-  public void testJavaSerialization() {
-    assertEquals(nonTrivialTopology(), SerializationUtils.clone(nonTrivialTopology()));
+  public void testJacksonSerialization() throws IOException {
+    assertEquals(
+        nonTrivialTopology(), BatfishObjectMapper.clone(nonTrivialTopology(), VxlanTopology.class));
   }
 }

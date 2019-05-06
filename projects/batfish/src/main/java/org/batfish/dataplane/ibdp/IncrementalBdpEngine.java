@@ -115,7 +115,7 @@ class IncrementalBdpEngine {
               dpBuilder
                   .setIpVrfOwners(ipVrfOwners)
                   .setNodes(nodes)
-                  .setTopologyContext(currentTopologyContext)
+                  .setLayer3Topology(currentTopologyContext.getLayer3Topology())
                   .build();
 
           // Initialize BGP topology
@@ -125,7 +125,8 @@ class IncrementalBdpEngine {
                   ipOwners,
                   false,
                   true,
-                  new TracerouteEngineImpl(partialDataplane),
+                  new TracerouteEngineImpl(
+                      partialDataplane, currentTopologyContext.getLayer3Topology()),
                   initialTopologyContext.getLayer2Topology());
           TopologyContext newTopologyContext =
               currentTopologyContext.toBuilder().setBgpTopology(bgpTopology).build();
@@ -162,11 +163,11 @@ class IncrementalBdpEngine {
       IncrementalDataPlane finalDataplane =
           IncrementalDataPlane.builder()
               .setNodes(nodes)
-              .setTopologyContext(currentTopologyContext)
+              .setLayer3Topology(currentTopologyContext.getLayer3Topology())
               .setIpVrfOwners(ipVrfOwners)
               .build();
       _bfLogger.printElapsedTime();
-      return new ComputeDataPlaneResult(answerElement, finalDataplane);
+      return new ComputeDataPlaneResult(answerElement, finalDataplane, currentTopologyContext);
     }
   }
 

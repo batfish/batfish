@@ -5,7 +5,8 @@ import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
-import org.apache.commons.lang3.SerializationUtils;
+import java.io.IOException;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
 public final class Layer2TopologyTest {
@@ -31,13 +32,13 @@ public final class Layer2TopologyTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  public void testJacksonSerialization() throws IOException {
     Layer2Topology topology =
         Layer2Topology.fromDomains(
             ImmutableSet.of(
                 ImmutableSet.of(new Layer2Node("a", "b", 1), new Layer2Node("c", "d", 1)),
                 ImmutableSet.of(new Layer2Node("e", "f", 1), new Layer2Node("g", "h", 1))));
 
-    assertEquals(topology, SerializationUtils.clone(topology));
+    assertEquals(topology, BatfishObjectMapper.clone(topology, Layer2Topology.class));
   }
 }

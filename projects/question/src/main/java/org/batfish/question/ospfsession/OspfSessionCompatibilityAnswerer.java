@@ -63,7 +63,7 @@ public class OspfSessionCompatibilityAnswerer extends Answerer {
             configurations,
             nodes,
             remoteNodes,
-            _batfish.getTopologyProvider().getOspfTopology(_batfish.getNetworkSnapshot()),
+            _batfish.getTopologyProvider().getInitialOspfTopology(_batfish.getNetworkSnapshot()),
             tableMetadata.toColumnMap());
 
     answer.postProcessAnswer(question, propertyRows);

@@ -206,7 +206,7 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
           _batfish.getLayer1Topology(),
           getLayer3Edges(configs, topology),
           getOspfEdges(
-              _batfish.getTopologyProvider().getOspfTopology(_batfish.getNetworkSnapshot())),
+              _batfish.getTopologyProvider().getInitialOspfTopology(_batfish.getNetworkSnapshot())),
           getRipEdges(configs));
     }
 

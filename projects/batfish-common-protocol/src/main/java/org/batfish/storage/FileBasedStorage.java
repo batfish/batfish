@@ -48,9 +48,11 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CompletionMetadata;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Version;
 import org.batfish.common.plugin.PluginConsumer.Format;
 import org.batfish.common.topology.Layer1Topology;
+import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ZipUtility;
@@ -62,9 +64,13 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
+import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
+import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.IssueSettingsId;
@@ -80,6 +86,12 @@ import org.batfish.role.NodeRolesData;
 public final class FileBasedStorage implements StorageProvider {
 
   private static final String RELPATH_COMPLETION_METADATA_FILE = "completion_metadata.json";
+  private static final String RELPATH_BGP_TOPOLOGY = "bgp_topology.json";
+  private static final String RELPATH_EIGRP_TOPOLOGY = "eigrp_topology.json";
+  private static final String RELPATH_LAYER2_TOPOLOGY = "layer2_topology.json";
+  private static final String RELPATH_LAYER3_TOPOLOGY = "layer3_topology.json";
+  private static final String RELPATH_OSPF_TOPOLOGY = "ospf_topology.json";
+  private static final String RELPATH_VXLAN_TOPOLOGY = "vxlan_topology.json";
 
   private final BatfishLogger _logger;
   private final BiFunction<String, Integer, AtomicInteger> _newBatch;
@@ -888,6 +900,36 @@ public final class FileBasedStorage implements StorageProvider {
     return FileUtils.readFileToString(path.toFile(), UTF_8);
   }
 
+  private @Nonnull Path getBgpTopologyPath(NetworkSnapshot snapshot) {
+    return _d.getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
+        .resolve(RELPATH_BGP_TOPOLOGY);
+  }
+
+  private @Nonnull Path getEigrpTopologyPath(NetworkSnapshot snapshot) {
+    return _d.getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
+        .resolve(RELPATH_EIGRP_TOPOLOGY);
+  }
+
+  private @Nonnull Path getLayer2TopologyPath(NetworkSnapshot snapshot) {
+    return _d.getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
+        .resolve(RELPATH_LAYER2_TOPOLOGY);
+  }
+
+  private @Nonnull Path getLayer3TopologyPath(NetworkSnapshot snapshot) {
+    return _d.getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
+        .resolve(RELPATH_LAYER3_TOPOLOGY);
+  }
+
+  private @Nonnull Path getOspfTopologyPath(NetworkSnapshot snapshot) {
+    return _d.getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
+        .resolve(RELPATH_OSPF_TOPOLOGY);
+  }
+
+  private @Nonnull Path getVxlanTopologyPath(NetworkSnapshot snapshot) {
+    return _d.getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
+        .resolve(RELPATH_VXLAN_TOPOLOGY);
+  }
+
   private @Nonnull Path getPojoTopologyPath(NetworkId networkId, SnapshotId snapshotId) {
     return _d.getSnapshotDir(networkId, snapshotId)
         .resolve(BfConsts.RELPATH_OUTPUT)
@@ -900,7 +942,7 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public @Nonnull String loadTopology(NetworkId networkId, SnapshotId snapshotId)
+  public @Nonnull String loadInitialTopology(NetworkId networkId, SnapshotId snapshotId)
       throws IOException {
     Path path = getEnvTopologyPath(networkId, snapshotId);
     return FileUtils.readFileToString(path.toFile(), UTF_8);
@@ -913,7 +955,7 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public void storeTopology(Topology topology, NetworkId networkId, SnapshotId snapshotId)
+  public void storeInitialTopology(Topology topology, NetworkId networkId, SnapshotId snapshotId)
       throws IOException {
     Path path = getEnvTopologyPath(networkId, snapshotId);
     path.getParent().toFile().mkdirs();
@@ -977,5 +1019,94 @@ public final class FileBasedStorage implements StorageProvider {
     if (!dir.toFile().mkdirs() && !dir.toFile().exists()) {
       throw new BatfishException(String.format("Unable to create directory '%s'", dir));
     }
+  }
+
+  @Override
+  public @Nonnull BgpTopology loadBgpTopology(NetworkSnapshot networkSnapshot) throws IOException {
+    return BatfishObjectMapper.mapper()
+        .readValue(CommonUtil.readFile(getBgpTopologyPath(networkSnapshot)), BgpTopology.class);
+  }
+
+  @Override
+  public @Nonnull EigrpTopology loadEigrpTopology(NetworkSnapshot networkSnapshot)
+      throws IOException {
+    return BatfishObjectMapper.mapper()
+        .readValue(CommonUtil.readFile(getEigrpTopologyPath(networkSnapshot)), EigrpTopology.class);
+  }
+
+  @Override
+  public @Nonnull Layer2Topology loadLayer2Topology(NetworkSnapshot networkSnapshot)
+      throws IOException {
+    return BatfishObjectMapper.mapper()
+        .readValue(
+            CommonUtil.readFile(getLayer2TopologyPath(networkSnapshot)), Layer2Topology.class);
+  }
+
+  @Override
+  public @Nonnull Topology loadLayer3Topology(NetworkSnapshot networkSnapshot) throws IOException {
+    return BatfishObjectMapper.mapper()
+        .readValue(CommonUtil.readFile(getLayer3TopologyPath(networkSnapshot)), Topology.class);
+  }
+
+  @Override
+  public @Nonnull OspfTopology loadOspfTopology(NetworkSnapshot networkSnapshot)
+      throws IOException {
+    return BatfishObjectMapper.mapper()
+        .readValue(CommonUtil.readFile(getOspfTopologyPath(networkSnapshot)), OspfTopology.class);
+  }
+
+  @Override
+  public @Nonnull VxlanTopology loadVxlanTopology(NetworkSnapshot networkSnapshot)
+      throws IOException {
+    return BatfishObjectMapper.mapper()
+        .readValue(CommonUtil.readFile(getVxlanTopologyPath(networkSnapshot)), VxlanTopology.class);
+  }
+
+  @Override
+  public void storeBgpTopology(BgpTopology bgpTopology, NetworkSnapshot networkSnapshot)
+      throws IOException {
+    Path path = getBgpTopologyPath(networkSnapshot);
+    mkdirs(path.getParent());
+    FileUtils.write(path.toFile(), BatfishObjectMapper.writeString(bgpTopology), UTF_8);
+  }
+
+  @Override
+  public void storeEigrpTopology(EigrpTopology eigrpTopology, NetworkSnapshot networkSnapshot)
+      throws IOException {
+    Path path = getEigrpTopologyPath(networkSnapshot);
+    mkdirs(path.getParent());
+    FileUtils.write(path.toFile(), BatfishObjectMapper.writeString(eigrpTopology), UTF_8);
+  }
+
+  @Override
+  public void storeLayer2Topology(Layer2Topology layer2Topology, NetworkSnapshot networkSnapshot)
+      throws IOException {
+    Path path = getLayer2TopologyPath(networkSnapshot);
+    mkdirs(path.getParent());
+    FileUtils.write(path.toFile(), BatfishObjectMapper.writeString(layer2Topology), UTF_8);
+  }
+
+  @Override
+  public void storeLayer3Topology(Topology layer3Topology, NetworkSnapshot networkSnapshot)
+      throws IOException {
+    Path path = getLayer3TopologyPath(networkSnapshot);
+    mkdirs(path.getParent());
+    FileUtils.write(path.toFile(), BatfishObjectMapper.writeString(layer3Topology), UTF_8);
+  }
+
+  @Override
+  public void storeOspfTopology(OspfTopology ospfTopology, NetworkSnapshot networkSnapshot)
+      throws IOException {
+    Path path = getOspfTopologyPath(networkSnapshot);
+    mkdirs(path.getParent());
+    FileUtils.write(path.toFile(), BatfishObjectMapper.writeString(ospfTopology), UTF_8);
+  }
+
+  @Override
+  public void storeVxlanTopology(VxlanTopology vxlanTopology, NetworkSnapshot networkSnapshot)
+      throws IOException {
+    Path path = getVxlanTopologyPath(networkSnapshot);
+    mkdirs(path.getParent());
+    FileUtils.write(path.toFile(), BatfishObjectMapper.writeString(vxlanTopology), UTF_8);
   }
 }
