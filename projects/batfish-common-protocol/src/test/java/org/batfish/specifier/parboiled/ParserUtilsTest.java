@@ -12,6 +12,7 @@ import static org.batfish.specifier.parboiled.ParserUtils.getErrorString;
 import static org.batfish.specifier.parboiled.ParserUtils.getPotentialMatches;
 import static org.batfish.specifier.parboiled.ParserUtils.isCharLiteralLabel;
 import static org.batfish.specifier.parboiled.ParserUtils.isStringLiteralLabel;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
@@ -174,6 +175,13 @@ public class ParserUtilsTest {
         pm.getMatchPrefix());
   }
 
+  private static Set<PotentialMatch> getSimplePotentialMatches(String query) {
+    ParsingResult<?> resultEmpty = getRunner().run(query);
+    return simplifyPotentialMatches(
+        getPotentialMatches(
+            (InvalidInputError) resultEmpty.parseErrors.get(0), TestParser.ANCHORS, false));
+  }
+
   /** These represent all the ways valid input can start */
   private static Set<PotentialMatch> getValidStarts(int matchStartIndex) {
     return ImmutableSet.of(
@@ -188,175 +196,149 @@ public class ParserUtilsTest {
 
   @Test
   public void testGetPotentialMatchesEmpty() {
-    ParsingResult<?> resultEmpty = getRunner().run("");
-    assertThat(
-        simplifyPotentialMatches(
-            getPotentialMatches(
-                (InvalidInputError) resultEmpty.parseErrors.get(0), TestParser.ANCHORS, false)),
-        equalTo(getValidStarts(0)));
+    assertThat(getSimplePotentialMatches(""), equalTo(getValidStarts(0)));
+    assertThat(getSimplePotentialMatches(" "), equalTo(getValidStarts(1)));
   }
 
   @Test
   public void testGetPotentialMatchesDeprecated() {
-    ParsingResult<?> resultEmpty = getRunner().run("(.*");
     assertThat(
-        simplifyPotentialMatches(
-            getPotentialMatches(
-                (InvalidInputError) resultEmpty.parseErrors.get(0), TestParser.ANCHORS, false)),
-        equalTo(
-            ImmutableSet.of(
-                createSimplePotentialMatch(CHAR_LITERAL, "\',\'", 3),
-                createSimplePotentialMatch(CHAR_LITERAL, "\')\'", 3))));
+        getSimplePotentialMatches("(.*"),
+        containsInAnyOrder(
+            createSimplePotentialMatch(CHAR_LITERAL, "\',\'", 3),
+            createSimplePotentialMatch(CHAR_LITERAL, "\')\'", 3)));
+    assertThat(
+        getSimplePotentialMatches("(.* "),
+        containsInAnyOrder(
+            createSimplePotentialMatch(CHAR_LITERAL, "\',\'", 4),
+            createSimplePotentialMatch(CHAR_LITERAL, "\')\'", 4)));
   }
 
   @Test
   public void testGetPotentialMatchesBadStart() {
-    ParsingResult<?> resultEmpty =
-        getRunner().run(new String(Character.toChars(ParboiledAutoComplete.ILLEGAL_CHAR)));
     assertThat(
-        simplifyPotentialMatches(
-            getPotentialMatches(
-                (InvalidInputError) resultEmpty.parseErrors.get(0), TestParser.ANCHORS, false)),
+        getSimplePotentialMatches(
+            new String(Character.toChars(ParboiledAutoComplete.ILLEGAL_CHAR))),
         equalTo(getValidStarts(0)));
   }
 
   @Test
   public void testGetPotentialMatchesIncompleteBase() {
-    ParsingResult<?> result = getRunner().run("(1.1.1.");
     assertThat(
-        simplifyPotentialMatches(
-            getPotentialMatches(
-                (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false)),
-        equalTo(
-            ImmutableSet.of(
-                new PotentialMatch(
-                    new PathElement(IP_ADDRESS, "TestIpAddress", 0, 1),
-                    "1.1.1.",
-                    ImmutableList.of()))));
+        getSimplePotentialMatches("(1.1.1."),
+        containsInAnyOrder(createSimplePotentialMatch(IP_ADDRESS, "TestIpAddress", 1, "1.1.1.")));
+    // because we didn't finish parsing the IP, we try to match on its prefix
+    assertThat(
+        getSimplePotentialMatches("(1.1.1. "),
+        containsInAnyOrder(createSimplePotentialMatch(IP_ADDRESS, "TestIpAddress", 1, "1.1.1.")));
   }
 
   @Test
   public void testGetPotentialMatchesIncompleteList() {
-    ParsingResult<?> resultEmpty = getRunner().run("a,");
-    assertThat(
-        simplifyPotentialMatches(
-            getPotentialMatches(
-                (InvalidInputError) resultEmpty.parseErrors.get(0), TestParser.ANCHORS, false)),
-        equalTo(getValidStarts(2)));
+    assertThat(getSimplePotentialMatches("a,"), equalTo(getValidStarts(2)));
+    assertThat(getSimplePotentialMatches("a, "), equalTo(getValidStarts(3)));
   }
 
   @Test
   public void testGetPotentialMatchesOpenParens() {
-    ParsingResult<?> resultEmpty = getRunner().run("(");
-    assertThat(
-        simplifyPotentialMatches(
-            getPotentialMatches(
-                (InvalidInputError) resultEmpty.parseErrors.get(0), TestParser.ANCHORS, false)),
-        equalTo(getValidStarts(1)));
+    assertThat(getSimplePotentialMatches("("), equalTo(getValidStarts(1)));
+    assertThat(getSimplePotentialMatches("( "), equalTo(getValidStarts(2)));
   }
 
   @Test
   public void testGetPotentialMatchesOperator() {
-    ParsingResult<?> resultEmpty = getRunner().run("!");
-    assertThat(
-        simplifyPotentialMatches(
-            getPotentialMatches(
-                (InvalidInputError) resultEmpty.parseErrors.get(0), TestParser.ANCHORS, false)),
-        equalTo(getValidStarts(1)));
+    assertThat(getSimplePotentialMatches("!"), equalTo(getValidStarts(1)));
+    assertThat(getSimplePotentialMatches("! "), equalTo(getValidStarts(2)));
   }
 
   @Test
   public void testGetPotentialMatchesMissingCloseParens() {
-    ParsingResult<?> result = getRunner().run("(1.1.1.1");
-
     assertThat(
-        simplifyPotentialMatches(
-            getPotentialMatches(
-                (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false)),
-        equalTo(
-            ImmutableSet.of(
-                createSimplePotentialMatch(CHAR_LITERAL, "')'", 8),
-                createSimplePotentialMatch(CHAR_LITERAL, "','", 8),
-                createSimplePotentialMatch(IP_ADDRESS, "TestIpAddress", 1, "1.1.1.1"),
-                createSimplePotentialMatch(CHAR_LITERAL, "'-'", 8))));
+        getSimplePotentialMatches("(1.1.1.1"),
+        containsInAnyOrder(
+            createSimplePotentialMatch(CHAR_LITERAL, "')'", 8),
+            createSimplePotentialMatch(CHAR_LITERAL, "','", 8),
+            createSimplePotentialMatch(IP_ADDRESS, "TestIpAddress", 1, "1.1.1.1"),
+            createSimplePotentialMatch(CHAR_LITERAL, "'-'", 8)));
+    // we finished parsing the IP address, so that token is considered done and is option
+    assertThat(
+        getSimplePotentialMatches("(1.1.1.1 "),
+        containsInAnyOrder(
+            createSimplePotentialMatch(CHAR_LITERAL, "')'", 9),
+            createSimplePotentialMatch(CHAR_LITERAL, "','", 9),
+            createSimplePotentialMatch(CHAR_LITERAL, "'-'", 9)));
   }
 
   @Test
   public void testGetPotentialMatchesQuoteOpenName() {
-    ParsingResult<?> result = getRunner().run("\"a");
     assertThat(
-        simplifyPotentialMatches(
-            getPotentialMatches(
-                (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false)),
-        equalTo(ImmutableSet.of(createSimplePotentialMatch(NODE_NAME, "TestName", 0, "\"a"))));
+        getSimplePotentialMatches("\"a"),
+        containsInAnyOrder(createSimplePotentialMatch(NODE_NAME, "TestName", 0, "\"a")));
+    // the trailing space is preserved in the match prefix
+    assertThat(
+        getSimplePotentialMatches("\"a "),
+        containsInAnyOrder(createSimplePotentialMatch(NODE_NAME, "TestName", 0, "\"a ")));
   }
 
   @Test
   public void testGetPotentialMatchesSpecifierComplete() {
-    ParsingResult<?> result = getRunner().run("@specifier");
     assertThat(
-        simplifyPotentialMatches(
-            getPotentialMatches(
-                (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false)),
+        getSimplePotentialMatches("@specifier"),
         equalTo(ImmutableSet.of(createSimplePotentialMatch(CHAR_LITERAL, "'('", 10))));
+    assertThat(
+        getSimplePotentialMatches("@specifier "),
+        equalTo(ImmutableSet.of(createSimplePotentialMatch(CHAR_LITERAL, "'('", 11))));
   }
 
   @Test
   public void testGetPotentialMatchesSpecifierOpenParens() {
-    ParsingResult<?> result = getRunner().run("@specifier(");
     assertThat(
-        simplifyPotentialMatches(
-            getPotentialMatches(
-                (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false)),
-        equalTo(
-            ImmutableSet.of(
-                createSimplePotentialMatch(REFERENCE_BOOK_NAME, "TestReferenceBookName", 11))));
+        getSimplePotentialMatches("@specifier("),
+        containsInAnyOrder(
+            createSimplePotentialMatch(REFERENCE_BOOK_NAME, "TestReferenceBookName", 11)));
+    assertThat(
+        getSimplePotentialMatches("@specifier( "),
+        containsInAnyOrder(
+            createSimplePotentialMatch(REFERENCE_BOOK_NAME, "TestReferenceBookName", 12)));
   }
 
   @Test
   public void testGetPotentialMatchesSpecifierOneOfPair() {
-    ParsingResult<?> result = getRunner().run("@specifier(a,");
     assertThat(
-        simplifyPotentialMatches(
-            getPotentialMatches(
-                (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false)),
-        equalTo(
-            ImmutableSet.of(
-                createSimplePotentialMatch(ADDRESS_GROUP_NAME, "TestAddressGroupName", 13))));
+        getSimplePotentialMatches("@specifier(a,"),
+        containsInAnyOrder(
+            createSimplePotentialMatch(ADDRESS_GROUP_NAME, "TestAddressGroupName", 13)));
+    assertThat(
+        getSimplePotentialMatches("@specifier(a, "),
+        containsInAnyOrder(
+            createSimplePotentialMatch(ADDRESS_GROUP_NAME, "TestAddressGroupName", 14)));
   }
 
   @Test
   public void testGetPotentialMatchesSpecifierSubstring() {
-    ParsingResult<?> result = getRunner().run("@specifi");
     assertThat(
-        simplifyPotentialMatches(
-            getPotentialMatches(
-                (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false)),
-        equalTo(
-            ImmutableSet.of(
-                createSimplePotentialMatch(STRING_LITERAL, "\"@specifier\"", 0, "@specifi"))));
+        getSimplePotentialMatches("@specifi"),
+        containsInAnyOrder(
+            createSimplePotentialMatch(STRING_LITERAL, "\"@specifier\"", 0, "@specifi")));
+    // the trailing whitespace does not prevent us from completing the specifier
+    assertThat(
+        getSimplePotentialMatches("@specifi "),
+        containsInAnyOrder(
+            createSimplePotentialMatch(STRING_LITERAL, "\"@specifier\"", 0, "@specifi")));
   }
 
   @Test
   public void testGetPotentialMatchesSpecifierIncorrect() {
-    ParsingResult<?> result = getRunner().run("@wrong");
     assertThat(
-        simplifyPotentialMatches(
-            getPotentialMatches(
-                (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false)),
-        equalTo(
-            ImmutableSet.of(createSimplePotentialMatch(STRING_LITERAL, "\"@specifier\"", 0, "@"))));
+        getSimplePotentialMatches("@wrong"),
+        containsInAnyOrder(createSimplePotentialMatch(STRING_LITERAL, "\"@specifier\"", 0, "@")));
   }
 
   @Test
   public void testGetPotentialMatchesStringLiteralCasePreserve() {
-    ParsingResult<?> result = getRunner().run("@SPeciFi");
     assertThat(
-        simplifyPotentialMatches(
-            getPotentialMatches(
-                (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false)),
-        equalTo(
-            ImmutableSet.of(
-                createSimplePotentialMatch(STRING_LITERAL, "\"@specifier\"", 0, "@SPeciFi"))));
+        getSimplePotentialMatches("@SPeciFi"),
+        containsInAnyOrder(
+            createSimplePotentialMatch(STRING_LITERAL, "\"@specifier\"", 0, "@SPeciFi")));
   }
 }
