@@ -88,8 +88,7 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
         BgpTopologyUtils.initBgpTopology(configurations, ipOwners, true, layer2Topology);
 
     BgpTopology establishedBgpTopology =
-        BgpTopologyUtils.initBgpTopology(
-            configurations, ipOwners, false, true, _batfish.getTracerouteEngine(), layer2Topology);
+        _batfish.getTopologyProvider().getBgpTopology(_batfish.getNetworkSnapshot());
 
     return getRows(
         question,
