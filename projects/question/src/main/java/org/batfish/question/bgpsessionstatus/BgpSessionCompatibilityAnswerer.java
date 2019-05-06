@@ -5,6 +5,7 @@ import static org.batfish.datamodel.questions.ConfiguredSessionStatus.DYNAMIC_MA
 import static org.batfish.datamodel.questions.ConfiguredSessionStatus.NO_MATCH_FOUND;
 import static org.batfish.datamodel.questions.ConfiguredSessionStatus.UNIQUE_MATCH;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
@@ -81,7 +82,8 @@ public class BgpSessionCompatibilityAnswerer extends BgpSessionAnswerer {
     return getRows(question, configurations, nodes, remoteNodes, metadataMap, layer2Topology);
   }
 
-  public static List<Row> getRows(
+  @VisibleForTesting
+  static List<Row> getRows(
       BgpSessionQuestion question,
       Map<String, Configuration> configurations,
       Set<String> nodes,

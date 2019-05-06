@@ -6,6 +6,7 @@ import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.Ses
 import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.SessionStatus.NOT_COMPATIBLE;
 import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.SessionStatus.NOT_ESTABLISHED;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Streams;
@@ -104,7 +105,8 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
         establishedBgpTopology.getGraph());
   }
 
-  public static List<Row> getRows(
+  @VisibleForTesting
+  static List<Row> getRows(
       BgpSessionQuestion question,
       Map<String, Configuration> configurations,
       Set<String> nodes,
