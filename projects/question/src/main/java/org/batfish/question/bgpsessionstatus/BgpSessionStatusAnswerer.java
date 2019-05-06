@@ -82,10 +82,7 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
     Map<Ip, Set<String>> ipOwners = TopologyUtil.computeIpNodeOwners(configurations, true);
     Set<Ip> allInterfaceIps = ipOwners.keySet();
     Layer2Topology layer2Topology =
-        _batfish
-            .getTopologyProvider()
-            .getLayer2Topology(_batfish.getNetworkSnapshot())
-            .orElse(null);
+        _batfish.getTopologyProvider().getLayer2Topology(_batfish.getNetworkSnapshot());
 
     BgpTopology configuredBgpTopology =
         BgpTopologyUtils.initBgpTopology(configurations, ipOwners, true, layer2Topology);
