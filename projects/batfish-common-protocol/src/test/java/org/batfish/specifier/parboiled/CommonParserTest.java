@@ -1,48 +1,50 @@
 package org.batfish.specifier.parboiled;
 
 import static org.batfish.specifier.parboiled.Parser.initAnchors;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import org.batfish.specifier.parboiled.Anchor.Type;
 import org.junit.Test;
 import org.parboiled.Rule;
 import org.parboiled.parserunners.BasicParseRunner;
 import org.parboiled.parserunners.ReportingParseRunner;
 
+/** Tests for {@link CommonParser} */
 public class CommonParserTest {
 
   private static boolean matches(String query, Rule rule) {
     return new BasicParseRunner<AstNode>(rule).run(query).matched;
   }
 
+  /** Test that anchor annotations are being correctly picked up */
   @Test
   public void testInitAnchors() {
     assertThat(
-        initAnchors(TestParser.class),
-        equalTo(
-            ImmutableMap.<String, Type>builder()
-                .put("EOI", Type.EOI)
-                .put("AsciiButNot", Type.IGNORE)
-                .put("EscapedSlash", Type.IGNORE)
-                .put("EscapedQuote", Type.IGNORE)
-                .put("TestAddressGroupName", Type.ADDRESS_GROUP_NAME)
-                .put("TestIpAddress", Type.IP_ADDRESS)
-                .put("TestNotOp", Type.IP_PROTOCOL_NOT)
-                .put("TestIpRange", Type.IP_RANGE)
-                .put("TestName", Type.NODE_NAME)
-                .put("TestNameRegex", Type.NODE_NAME_REGEX)
-                .put("TestNameRegexDeprecated", Type.DEPRECATED)
-                .put("TestParens", Type.NODE_PARENS)
-                .put("TestReferenceBookName", Type.REFERENCE_BOOK_NAME)
-                .put("TestSpec", Type.NODE_SET_OP)
-                .put("TestSpecifierInput", Type.REFERENCE_BOOK_AND_ADDRESS_GROUP)
-                .put("WhiteSpace", Type.WHITESPACE)
-                .build()));
+        initAnchors(TestParser.class).keySet(),
+        containsInAnyOrder(
+            "EOI",
+            "AsciiButNot",
+            "CloseBrackets",
+            "CloseParens",
+            "EscapedSlash",
+            "EscapedQuote",
+            "TestAddressGroupName",
+            "TestIpAddress",
+            "TestNotOp",
+            "TestIpRange",
+            "TestName",
+            "TestNameRegex",
+            "TestNameRegexDeprecated",
+            "TestParens",
+            "TestReferenceBookName",
+            "TestSpec",
+            "TestSpecifierInput",
+            "TestSpecifierInputTail",
+            "WhiteSpace"));
   }
 
   @Test
@@ -96,6 +98,17 @@ public class CommonParserTest {
     assertFalse(matches("/startSlash", rule));
     assertFalse(matches("has[", rule));
     assertFalse(matches("has(", rule));
+  }
+
+  @Test
+  public void testSavedStackInvalidInputAddressGroupNoComma() {
+    TestParser parser = TestParser.instance();
+
+    new ReportingParseRunner<AstNode>(parser.getInputRule()).run("@specifier(g1");
+
+    assertThat(
+        ImmutableList.copyOf(parser.getShadowStack().getValueStack()),
+        equalTo(ImmutableList.of(new StringAstNode("g1"))));
   }
 
   @Test

@@ -1,6 +1,7 @@
 package org.batfish.specifier.parboiled;
 
 import static org.batfish.datamodel.Names.SPECIAL_CHARS;
+import static org.batfish.specifier.parboiled.Anchor.Type.OPERATOR_END;
 import static org.batfish.specifier.parboiled.Anchor.Type.STRING_LITERAL;
 
 import com.google.common.collect.ImmutableMap;
@@ -241,6 +242,16 @@ public abstract class CommonParser extends BaseParser<AstNode> {
   /** [0-9]+ */
   public Rule Number() {
     return OneOrMore(Digit());
+  }
+
+  @Anchor(OPERATOR_END)
+  public Rule CloseBrackets() {
+    return Sequence(']', WhiteSpace());
+  }
+
+  @Anchor(OPERATOR_END)
+  public Rule CloseParens() {
+    return Sequence(')', WhiteSpace());
   }
 
   /**
