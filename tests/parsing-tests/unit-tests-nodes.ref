@@ -11267,51 +11267,6 @@
               "Loopback0"
             ],
             "ospfProcesses" : {
-              "ignored" : {
-                "adminCosts" : {
-                  "ospf" : 110,
-                  "ospfE1" : 110,
-                  "ospfE2" : 110,
-                  "ospfIA" : 110
-                },
-                "areas" : {
-                  "0" : {
-                    "injectDefaultRoute" : true,
-                    "interfaces" : [
-                      "Ethernet1/0"
-                    ],
-                    "metricOfDefaultRoute" : 0,
-                    "name" : 0,
-                    "stubType" : "NONE"
-                  },
-                  "1" : {
-                    "injectDefaultRoute" : true,
-                    "metricOfDefaultRoute" : 0,
-                    "name" : 1,
-                    "stubType" : "NONE",
-                    "summaries" : {
-                      "3.3.3.0/24" : {
-                        "advertise" : true
-                      }
-                    },
-                    "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:1~"
-                  }
-                },
-                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
-                "neighbors" : {
-                  "Ethernet1/0" : {
-                    "area" : 0,
-                    "hostname" : "cisco_ospf_multi_process",
-                    "interface" : "Ethernet1/0",
-                    "passive" : false,
-                    "vrf" : "default"
-                  }
-                },
-                "processId" : "ignored",
-                "referenceBandwidth" : 1.0E8,
-                "routerId" : "1.1.1.1",
-                "summaryAdminCost" : 254
-              },
               "1" : {
                 "adminCosts" : {
                   "ospf" : 110,
@@ -11378,6 +11333,51 @@
                 },
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
                 "processId" : "abcdefg",
+                "referenceBandwidth" : 1.0E8,
+                "routerId" : "1.1.1.1",
+                "summaryAdminCost" : 254
+              },
+              "ignored" : {
+                "adminCosts" : {
+                  "ospf" : 110,
+                  "ospfE1" : 110,
+                  "ospfE2" : 110,
+                  "ospfIA" : 110
+                },
+                "areas" : {
+                  "0" : {
+                    "injectDefaultRoute" : true,
+                    "interfaces" : [
+                      "Ethernet1/0"
+                    ],
+                    "metricOfDefaultRoute" : 0,
+                    "name" : 0,
+                    "stubType" : "NONE"
+                  },
+                  "1" : {
+                    "injectDefaultRoute" : true,
+                    "metricOfDefaultRoute" : 0,
+                    "name" : 1,
+                    "stubType" : "NONE",
+                    "summaries" : {
+                      "3.3.3.0/24" : {
+                        "advertise" : true
+                      }
+                    },
+                    "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:1~"
+                  }
+                },
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "neighbors" : {
+                  "Ethernet1/0" : {
+                    "area" : 0,
+                    "hostname" : "cisco_ospf_multi_process",
+                    "interface" : "Ethernet1/0",
+                    "passive" : false,
+                    "vrf" : "default"
+                  }
+                },
+                "processId" : "ignored",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "1.1.1.1",
                 "summaryAdminCost" : 254
@@ -27704,19 +27704,6 @@
           "OTHER" : {
             "name" : "OTHER",
             "ospfProcesses" : {
-              "ignored" : {
-                "adminCosts" : {
-                  "ospf" : 110,
-                  "ospfE1" : 110,
-                  "ospfE2" : 110,
-                  "ospfIA" : 110
-                },
-                "exportPolicy" : "~OSPF_EXPORT_POLICY:OTHER~",
-                "processId" : "ignored",
-                "referenceBandwidth" : 4.0E10,
-                "routerId" : "5.6.7.8",
-                "summaryAdminCost" : 254
-              },
               "1" : {
                 "adminCosts" : {
                   "ospf" : 110,
@@ -27729,6 +27716,19 @@
                 "referenceBandwidth" : 4.0E10,
                 "routerId" : "1.2.3.4",
                 "summaryAdminCost" : 254
+              },
+              "ignored" : {
+                "adminCosts" : {
+                  "ospf" : 110,
+                  "ospfE1" : 110,
+                  "ospfE2" : 110,
+                  "ospfIA" : 110
+                },
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:OTHER~",
+                "processId" : "ignored",
+                "referenceBandwidth" : 4.0E10,
+                "routerId" : "5.6.7.8",
+                "summaryAdminCost" : 254
               }
             }
           },
@@ -27738,19 +27738,6 @@
               "Ethernet0/0"
             ],
             "ospfProcesses" : {
-              "ignored" : {
-                "adminCosts" : {
-                  "ospf" : 110,
-                  "ospfE1" : 110,
-                  "ospfE2" : 110,
-                  "ospfIA" : 110
-                },
-                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
-                "processId" : "ignored",
-                "referenceBandwidth" : 4.0E10,
-                "routerId" : "5.6.7.8",
-                "summaryAdminCost" : 254
-              },
               "1" : {
                 "adminCosts" : {
                   "ospf" : 110,
@@ -27785,6 +27772,19 @@
                 "processId" : "1",
                 "referenceBandwidth" : 4.0E10,
                 "routerId" : "1.2.3.4",
+                "summaryAdminCost" : 254
+              },
+              "ignored" : {
+                "adminCosts" : {
+                  "ospf" : 110,
+                  "ospfE1" : 110,
+                  "ospfE2" : 110,
+                  "ospfIA" : 110
+                },
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "processId" : "ignored",
+                "referenceBandwidth" : 4.0E10,
+                "routerId" : "5.6.7.8",
                 "summaryAdminCost" : 254
               }
             }

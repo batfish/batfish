@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -288,18 +289,19 @@ public class Vrf extends ComparableStructure<String> {
 
   @JsonProperty(PROP_OSPF_PROCESS)
   public void setOspfProcess(@Nonnull OspfProcess process) {
-    setOspfProcesses(ImmutableMap.of(process.getProcessId(), process));
+    setOspfProcesses(ImmutableSortedMap.of(process.getProcessId(), process));
   }
 
   @JsonProperty(PROP_OSPF_PROCESSES)
-  public void setOspfProcesses(@Nonnull Map<String, OspfProcess> processes) {
+  public void setOspfProcesses(@Nonnull SortedMap<String, OspfProcess> processes) {
     _ospfProcesses = processes;
   }
 
   public void setOspfProcesses(@Nonnull Stream<OspfProcess> processes) {
     setOspfProcesses(
         processes.collect(
-            ImmutableMap.toImmutableMap(OspfProcess::getProcessId, Functions.identity())));
+            ImmutableSortedMap.toImmutableSortedMap(
+                Comparator.naturalOrder(), OspfProcess::getProcessId, Functions.identity())));
   }
 
   @JsonProperty(PROP_RIP_PROCESS)
