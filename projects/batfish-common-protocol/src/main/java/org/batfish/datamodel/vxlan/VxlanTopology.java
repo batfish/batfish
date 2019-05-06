@@ -2,14 +2,15 @@ package org.batfish.datamodel.vxlan;
 
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.graph.EndpointPair;
 import com.google.common.graph.Graph;
 import com.google.common.graph.GraphBuilder;
+import com.google.common.graph.ImmutableGraph;
 import com.google.common.graph.MutableGraph;
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -17,9 +18,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.topology.SerializableGraph;
+import org.batfish.common.topology.UndirectedEdge;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.VniSettings;
@@ -27,11 +29,12 @@ import org.batfish.datamodel.Vrf;
 
 /** VXLAN topology with edges for each compatible VNI-endpoint pair */
 @ParametersAreNonnullByDefault
-public final class VxlanTopology implements Serializable {
+public final class VxlanTopology {
 
   public static final VxlanTopology EMPTY =
       new VxlanTopology(GraphBuilder.undirected().allowsSelfLoops(false).build());
-  private static final long serialVersionUID = 1L;
+  private static final String PROP_EDGES = "edges";
+  private static final String PROP_NODES = "nodes";
 
   @VisibleForTesting
   static void addVniEdge(
@@ -91,6 +94,20 @@ public final class VxlanTopology implements Serializable {
                     .contains(vniSettingsTail.getSourceAddress())));
   }
 
+  @JsonCreator
+  private static @Nonnull VxlanTopology create(
+      @JsonProperty(PROP_EDGES) @Nullable List<UndirectedEdge<VxlanNode>> edges,
+      @JsonProperty(PROP_NODES) @Nullable Set<VxlanNode> nodes) {
+    MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
+    if (nodes != null) {
+      nodes.forEach(graph::addNode);
+    }
+    if (edges != null) {
+      edges.forEach(edge -> graph.putEdge(edge.getNodeU(), edge.getNodeV()));
+    }
+    return new VxlanTopology(graph);
+  }
+
   /** Associate VNIs with VRFs that have {@link VniSettings} mentioning them */
   @VisibleForTesting
   static Map<Integer, List<Vrf>> initVniVrfAssociations(Map<String, Configuration> configurations) {
@@ -119,10 +136,10 @@ public final class VxlanTopology implements Serializable {
     return Collections.unmodifiableMap(vrfHostnames);
   }
 
-  private final SerializableGraph<VxlanNode> _graph;
+  private final Graph<VxlanNode> _graph;
 
   public VxlanTopology(Graph<VxlanNode> graph) {
-    _graph = new SerializableGraph<>(graph);
+    _graph = ImmutableGraph.copyOf(graph);
   }
 
   public VxlanTopology(Map<String, Configuration> configurations) {
@@ -130,11 +147,24 @@ public final class VxlanTopology implements Serializable {
     Map<Integer, List<Vrf>> vrfsByVni = initVniVrfAssociations(configurations);
     Map<Vrf, String> vrfHostnames = initVrfHostnameMap(configurations);
     vrfsByVni.forEach((vni, vrfs) -> addVniEdges(graph, vrfHostnames, vni, vrfs));
-    _graph = new SerializableGraph<>(graph);
+    _graph = ImmutableGraph.copyOf(graph);
   }
 
-  public Set<EndpointPair<VxlanNode>> getEdges() {
-    return ImmutableSet.copyOf(_graph.edges());
+  @JsonProperty(PROP_EDGES)
+  private @Nonnull List<UndirectedEdge<VxlanNode>> getEdges() {
+    return _graph.edges().stream()
+        .map(endpointPair -> new UndirectedEdge<>(endpointPair.nodeU(), endpointPair.nodeV()))
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  @JsonProperty(PROP_NODES)
+  private @Nonnull Set<VxlanNode> getNodes() {
+    return _graph.nodes();
+  }
+
+  @JsonIgnore
+  public @Nonnull Graph<VxlanNode> getGraph() {
+    return _graph;
   }
 
   @Override

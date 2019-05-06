@@ -28,7 +28,7 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
   public ComputeDataPlaneResult computeDataPlane() {
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
     Topology topology =
-        _batfish.getTopologyProvider().getLayer3Topology(_batfish.getNetworkSnapshot());
+        _batfish.getTopologyProvider().getInitialLayer3Topology(_batfish.getNetworkSnapshot());
     return computeDataPlane(configurations, topology);
   }
 
@@ -46,10 +46,12 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
         TopologyContext.builder()
             .setLayer3Topology(topology)
             .setOspfTopology(
-                _batfish.getTopologyProvider().getOspfTopology(_batfish.getNetworkSnapshot()));
+                _batfish
+                    .getTopologyProvider()
+                    .getInitialOspfTopology(_batfish.getNetworkSnapshot()));
     _batfish
         .getTopologyProvider()
-        .getLayer2Topology(_batfish.getNetworkSnapshot())
+        .getInitialLayer2Topology(_batfish.getNetworkSnapshot())
         .ifPresent(topologyContext::setLayer2Topology);
 
     ComputeDataPlaneResult answer =

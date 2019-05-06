@@ -22,6 +22,7 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MockDataPlane;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
@@ -51,6 +52,7 @@ public final class FlowTracerTest {
     TracerouteEngineImplContext ctxt =
         new TracerouteEngineImplContext(
             MockDataPlane.builder().setConfigs(ImmutableMap.of(c.getHostname(), c)).build(),
+            Topology.EMPTY,
             ImmutableSet.of(),
             ImmutableSet.of(),
             ImmutableMap.of(),
@@ -83,6 +85,7 @@ public final class FlowTracerTest {
     TracerouteEngineImplContext ctxt =
         new TracerouteEngineImplContext(
             MockDataPlane.builder().setConfigs(ImmutableMap.of(c.getHostname(), c)).build(),
+            Topology.EMPTY,
             ImmutableSet.of(),
             ImmutableSet.of(),
             ImmutableMap.of(),

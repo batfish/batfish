@@ -5,9 +5,10 @@ import static org.junit.Assert.assertEquals;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import com.google.common.testing.EqualsTester;
+import java.io.IOException;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.apache.commons.lang3.SerializationUtils;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
@@ -49,8 +50,9 @@ public final class BgpTopologyTest {
   }
 
   @Test
-  public void testJavaSerialization() {
-    assertEquals(nonTrivialTopology(), SerializationUtils.clone(nonTrivialTopology()));
+  public void testJacksonSerialization() throws IOException {
+    assertEquals(
+        nonTrivialTopology(), BatfishObjectMapper.clone(nonTrivialTopology(), BgpTopology.class));
   }
 
   @Test
