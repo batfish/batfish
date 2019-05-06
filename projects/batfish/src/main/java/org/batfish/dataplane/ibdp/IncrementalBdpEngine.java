@@ -38,7 +38,7 @@ import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.dataplane.ibdp.schedule.IbdpSchedule;
 import org.batfish.dataplane.ibdp.schedule.IbdpSchedule.Schedule;
-import org.batfish.dataplane.rib.BgpRib;
+import org.batfish.dataplane.rib.Bgpv4Rib;
 import org.batfish.dataplane.rib.RibDelta;
 
 class IncrementalBdpEngine {
@@ -115,7 +115,7 @@ class IncrementalBdpEngine {
               dpBuilder
                   .setIpVrfOwners(ipVrfOwners)
                   .setNodes(nodes)
-                  .setTopologyContext(currentTopologyContext)
+                  .setLayer3Topology(currentTopologyContext.getLayer3Topology())
                   .build();
 
           // Initialize BGP topology
@@ -125,7 +125,8 @@ class IncrementalBdpEngine {
                   ipOwners,
                   false,
                   true,
-                  new TracerouteEngineImpl(partialDataplane),
+                  new TracerouteEngineImpl(
+                      partialDataplane, currentTopologyContext.getLayer3Topology()),
                   initialTopologyContext.getLayer2Topology());
           TopologyContext newTopologyContext =
               currentTopologyContext.toBuilder().setBgpTopology(bgpTopology).build();
@@ -162,11 +163,11 @@ class IncrementalBdpEngine {
       IncrementalDataPlane finalDataplane =
           IncrementalDataPlane.builder()
               .setNodes(nodes)
-              .setTopologyContext(currentTopologyContext)
+              .setLayer3Topology(currentTopologyContext.getLayer3Topology())
               .setIpVrfOwners(ipVrfOwners)
               .build();
       _bfLogger.printElapsedTime();
-      return new ComputeDataPlaneResult(answerElement, finalDataplane);
+      return new ComputeDataPlaneResult(answerElement, finalDataplane, currentTopologyContext);
     }
   }
 
@@ -381,7 +382,7 @@ class IncrementalBdpEngine {
           .flatMap(n -> n.getVirtualRouters().values().stream())
           .forEach(
               vr -> {
-                Map<BgpRib, RibDelta<Bgpv4Route>> deltas =
+                Map<Bgpv4Rib, RibDelta<Bgpv4Route>> deltas =
                     vr.processBgpMessages(bgpTopology, networkConfigurations, nodes);
                 vr.finalizeBgpRoutesAndQueueOutgoingMessages(
                     deltas, allNodes, bgpTopology, networkConfigurations);

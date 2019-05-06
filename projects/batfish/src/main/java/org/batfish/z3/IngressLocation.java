@@ -1,5 +1,7 @@
 package org.batfish.z3;
 
+import static org.batfish.datamodel.Names.escapeNameIfNeeded;
+
 import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -88,5 +90,17 @@ public final class IngressLocation implements Comparable<IngressLocation> {
   @Override
   public int hashCode() {
     return Objects.hash(this._pointType, this._node, this._pointWithinNode);
+  }
+
+  @Override
+  public String toString() {
+    String node = escapeNameIfNeeded(_node);
+    String pointWithinNode = escapeNameIfNeeded(_pointWithinNode);
+
+    if (_pointType == Type.VRF) {
+      return String.format("%s[@vrf(%s)]", node, pointWithinNode);
+    } else {
+      return String.format("%s[%s]", node, pointWithinNode);
+    }
   }
 }

@@ -1355,6 +1355,46 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
+  public void testLimitSuggestionsByType() {
+    List<AutocompleteSuggestion> orderedSuggestions =
+        ImmutableList.of(
+            AutocompleteSuggestion.builder()
+                .setText("t1s1")
+                .setSuggestionType(SuggestionType.CONSTANT)
+                .build(),
+            AutocompleteSuggestion.builder()
+                .setText("t1s2")
+                .setSuggestionType(SuggestionType.CONSTANT)
+                .build(),
+            AutocompleteSuggestion.builder()
+                .setText("t1s3")
+                .setSuggestionType(SuggestionType.CONSTANT)
+                .build(),
+            AutocompleteSuggestion.builder()
+                .setText("t2s1")
+                .setSuggestionType(SuggestionType.NAME_LITERAL)
+                .build(),
+            AutocompleteSuggestion.builder()
+                .setText("t2s2")
+                .setSuggestionType(SuggestionType.NAME_LITERAL)
+                .build(),
+            AutocompleteSuggestion.builder()
+                .setText("t3s1")
+                .setSuggestionType(SuggestionType.FUNCTION)
+                .build(),
+            AutocompleteSuggestion.builder()
+                .setText("t3s2")
+                .setSuggestionType(SuggestionType.FUNCTION)
+                .build());
+
+    assertThat(
+        AutoCompleteUtils.limitSuggestionsByType(orderedSuggestions, 4, 1).stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(ImmutableList.of("t1s1", "t2s1", "t3s1", "t1s2")));
+  }
+
+  @Test
   public void testParseErrorsHandled() {
     String query = "1.1.1.345";
 

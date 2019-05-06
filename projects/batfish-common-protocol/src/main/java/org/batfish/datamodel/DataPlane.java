@@ -1,18 +1,14 @@
 package org.batfish.datamodel;
 
 import com.google.common.collect.Table;
-import com.google.common.graph.ValueGraph;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 
 public interface DataPlane extends Serializable {
 
   Table<String, String, Set<Bgpv4Route>> getBgpRoutes(boolean multipath);
-
-  ValueGraph<BgpPeerConfigId, BgpSessionProperties> getBgpTopology();
 
   Map<String, Configuration> getConfigurations();
 
@@ -28,12 +24,6 @@ public interface DataPlane extends Serializable {
 
   /** Return the set of all (main) RIBs. Map structure: hostname -&gt; VRF name -&gt; GenericRib */
   SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> getRibs();
-
-  /** Return the network (i.e., layer 3) topology */
-  Topology getTopology();
-
-  /** Get a set of all layer 3 edges in the network */
-  SortedSet<Edge> getTopologyEdges();
 
   /**
    * Return the summary of route prefix propagation. Map structure: Hostname -&gt; VRF name -&gt;

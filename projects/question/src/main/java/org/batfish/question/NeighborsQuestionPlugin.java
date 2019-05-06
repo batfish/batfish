@@ -600,7 +600,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
       if (question.getNeighborTypes().contains(NeighborType.OSPF)) {
         OspfTopology ospfTopology =
-            _batfish.getTopologyProvider().getOspfTopology(_batfish.getNetworkSnapshot());
+            _batfish.getTopologyProvider().getInitialOspfTopology(_batfish.getNetworkSnapshot());
         switch (question.getStyle()) {
           case SUMMARY:
             answerElement.setOspfNeighbors(

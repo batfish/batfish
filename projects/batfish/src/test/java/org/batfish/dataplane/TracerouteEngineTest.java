@@ -112,7 +112,9 @@ public class TracerouteEngineTest {
 
     // Compute flow traces
     SortedMap<Flow, List<Trace>> traces =
-        new TracerouteEngineImpl(dp).computeTraces(ImmutableSet.of(flow1, flow2), false);
+        new TracerouteEngineImpl(
+                dp, batfish.getTopologyProvider().getLayer3Topology(batfish.getNetworkSnapshot()))
+            .computeTraces(ImmutableSet.of(flow1, flow2), false);
 
     assertThat(traces, hasEntry(equalTo(flow1), contains(hasDisposition(NO_ROUTE))));
     assertThat(traces, hasEntry(equalTo(flow2), contains(hasDisposition(ACCEPTED))));
@@ -155,7 +157,10 @@ public class TracerouteEngineTest {
             .setTag("tag")
             .build();
     List<Trace> traces =
-        new TracerouteEngineImpl(dp).computeTraces(ImmutableSet.of(flow), false).get(flow);
+        new TracerouteEngineImpl(
+                dp, batfish.getTopologyProvider().getLayer3Topology(batfish.getNetworkSnapshot()))
+            .computeTraces(ImmutableSet.of(flow), false)
+            .get(flow);
 
     /*
      *  Since the 'other' neighbor should not respond to ARP:
@@ -341,7 +346,8 @@ public class TracerouteEngineTest {
 
     _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage("Node missingNode is not in the network");
-    new TracerouteEngineImpl(dp)
+    new TracerouteEngineImpl(
+            dp, batfish.getTopologyProvider().getLayer3Topology(batfish.getNetworkSnapshot()))
         .computeTraces(
             ImmutableSet.of(Flow.builder().setTag("tag").setIngressNode("missingNode").build()),
             false);

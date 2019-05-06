@@ -5,13 +5,15 @@ import static org.junit.Assert.assertEquals;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import com.google.common.testing.EqualsTester;
+import java.io.IOException;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.apache.commons.lang3.SerializationUtils;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.bgp.BgpTopology.EdgeId;
 import org.junit.Test;
 
 /** Test of {@link BgpTopology}. */
@@ -48,7 +50,20 @@ public final class BgpTopologyTest {
   }
 
   @Test
-  public void testJavaSerialization() {
-    assertEquals(nonTrivialTopology(), SerializationUtils.clone(nonTrivialTopology()));
+  public void testJacksonSerialization() throws IOException {
+    assertEquals(
+        nonTrivialTopology(), BatfishObjectMapper.clone(nonTrivialTopology(), BgpTopology.class));
+  }
+
+  @Test
+  public void testEdgeIdEquality() {
+    BgpPeerConfigId c1 = new BgpPeerConfigId("h", "vrf", "iface1");
+    BgpPeerConfigId c2 = new BgpPeerConfigId("h", "vrf", "iface2");
+    EdgeId edge = new EdgeId(c1, c2);
+    new EqualsTester()
+        .addEqualityGroup(edge, edge, new EdgeId(c1, c2))
+        .addEqualityGroup(new EdgeId(c2, c1))
+        .addEqualityGroup(new Object())
+        .testEquals();
   }
 }

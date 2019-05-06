@@ -12,7 +12,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.CompletionMetadata;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.topology.Layer1Topology;
+import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
@@ -21,8 +23,12 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
+import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
+import org.batfish.datamodel.ospf.OspfTopology;
+import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.IssueSettingsId;
@@ -452,14 +458,14 @@ public interface StorageProvider {
    * @throws IOException if there is an error reading the topology
    */
   @Nonnull
-  String loadTopology(NetworkId networkId, SnapshotId snapshotId) throws IOException;
+  String loadInitialTopology(NetworkId networkId, SnapshotId snapshotId) throws IOException;
 
   /**
    * Writes the topology for the provided network and snapshot
    *
    * @throws IOException if there is an error writing the topology
    */
-  void storeTopology(Topology topology, NetworkId networkId, SnapshotId snapshotId)
+  void storeInitialTopology(Topology topology, NetworkId networkId, SnapshotId snapshotId)
       throws IOException;
 
   /**
@@ -497,5 +503,113 @@ public interface StorageProvider {
    */
   void storeCompletionMetadata(
       CompletionMetadata completionMetadata, NetworkId networkId, SnapshotId snapshotId)
+      throws IOException;
+
+  /**
+   * Loads the {@link BgpTopology} corresponding to the converged {@link
+   * org.batfish.datamodel.DataPlane} for the provided {@link NetworkSnapshot}.
+   *
+   * @throws IOException if there is an error reading the {@link BgpTopology}
+   */
+  @Nonnull
+  BgpTopology loadBgpTopology(NetworkSnapshot networkSnapshot) throws IOException;
+
+  /**
+   * Loads the {@link EigrpTopology} corresponding to the converged {@link
+   * org.batfish.datamodel.DataPlane} for the provided {@link NetworkSnapshot}.
+   *
+   * @throws IOException if there is an error reading the {@link EigrpTopology}
+   */
+  @Nonnull
+  EigrpTopology loadEigrpTopology(NetworkSnapshot networkSnapshot) throws IOException;
+
+  /**
+   * Loads the {@link Layer2Topology} corresponding to the converged {@link
+   * org.batfish.datamodel.DataPlane} for the provided {@link NetworkSnapshot}.
+   *
+   * @throws IOException if there is an error reading the {@link Layer2Topology}
+   */
+  @Nonnull
+  Layer2Topology loadLayer2Topology(NetworkSnapshot networkSnapshot) throws IOException;
+
+  /**
+   * Loads the layer-3 {@link Topology} corresponding to the converged {@link
+   * org.batfish.datamodel.DataPlane} for the provided {@link NetworkSnapshot}.
+   *
+   * @throws IOException if there is an error reading the layer-3 {@link Topology}
+   */
+  @Nonnull
+  Topology loadLayer3Topology(NetworkSnapshot networkSnapshot) throws IOException;
+
+  /**
+   * Loads the {@link OspfTopology} corresponding to the converged {@link
+   * org.batfish.datamodel.DataPlane} for the provided {@link NetworkSnapshot}.
+   *
+   * @throws IOException if there is an error reading the {@link OspfTopology}
+   */
+  @Nonnull
+  OspfTopology loadOspfTopology(NetworkSnapshot networkSnapshot) throws IOException;
+
+  /**
+   * Loads the {@link VxlanTopology} corresponding to the converged {@link
+   * org.batfish.datamodel.DataPlane} for the provided {@link NetworkSnapshot}.
+   *
+   * @throws IOException if there is an error reading the {@link VxlanTopology}
+   */
+  @Nonnull
+  VxlanTopology loadVxlanTopology(NetworkSnapshot networkSnapshot) throws IOException;
+
+  /**
+   * Stores the provided {@code bgpTopology} corresponding to the converged {@link
+   * org.batfish.datamodel.DataPlane} for the provided {@link NetworkSnapshot}.
+   *
+   * @throws IOException if there is an error writing the {@code bgpTopology}
+   */
+  void storeBgpTopology(BgpTopology bgpTopology, NetworkSnapshot networkSnapshot)
+      throws IOException;
+
+  /**
+   * Stores the provided {@code eigrpTopology} corresponding to the converged {@link
+   * org.batfish.datamodel.DataPlane} for the provided {@link NetworkSnapshot}.
+   *
+   * @throws IOException if there is an error writing the {@code eigrpTopology}
+   */
+  void storeEigrpTopology(EigrpTopology eigrpTopology, NetworkSnapshot networkSnapshot)
+      throws IOException;
+
+  /**
+   * Stores the provided {@code layer2Topology} corresponding to the converged {@link
+   * org.batfish.datamodel.DataPlane} for the provided {@link NetworkSnapshot}.
+   *
+   * @throws IOException if there is an error writing the {@code layer2Topology}
+   */
+  void storeLayer2Topology(Layer2Topology layer2Topology, NetworkSnapshot networkSnapshot)
+      throws IOException;
+
+  /**
+   * Stores the provided {@code layer3Topology} corresponding to the converged {@link
+   * org.batfish.datamodel.DataPlane} for the provided {@link NetworkSnapshot}.
+   *
+   * @throws IOException if there is an error writing the {@code layer3Topology}
+   */
+  void storeLayer3Topology(Topology layer3Topology, NetworkSnapshot networkSnapshot)
+      throws IOException;
+
+  /**
+   * Stores the provided {@code ospfTopology} corresponding to the converged {@link
+   * org.batfish.datamodel.DataPlane} for the provided {@link NetworkSnapshot}.
+   *
+   * @throws IOException if there is an error writing the {@code ospfTopology}
+   */
+  void storeOspfTopology(OspfTopology ospfTopology, NetworkSnapshot networkSnapshot)
+      throws IOException;
+
+  /**
+   * Stores the provided {@code vxlanTopology} corresponding to the converged {@link
+   * org.batfish.datamodel.DataPlane} for the provided {@link NetworkSnapshot}.
+   *
+   * @throws IOException if there is an error writing the {@code vxlanTopology}
+   */
+  void storeVxlanTopology(VxlanTopology vxlanTopology, NetworkSnapshot networkSnapshot)
       throws IOException;
 }

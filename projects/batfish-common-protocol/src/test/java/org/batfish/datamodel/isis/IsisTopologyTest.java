@@ -5,9 +5,10 @@ import static org.junit.Assert.assertEquals;
 import com.google.common.graph.MutableNetwork;
 import com.google.common.graph.NetworkBuilder;
 import com.google.common.testing.EqualsTester;
+import java.io.IOException;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.apache.commons.lang3.SerializationUtils;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
 /** Test of {@link IsisTopology}. */
@@ -40,7 +41,8 @@ public final class IsisTopologyTest {
   }
 
   @Test
-  public void testJavaSerialization() {
-    assertEquals(nonTrivialTopology(), SerializationUtils.clone(nonTrivialTopology()));
+  public void testJacksonSerialization() throws IOException {
+    assertEquals(
+        nonTrivialTopology(), BatfishObjectMapper.clone(nonTrivialTopology(), IsisTopology.class));
   }
 }

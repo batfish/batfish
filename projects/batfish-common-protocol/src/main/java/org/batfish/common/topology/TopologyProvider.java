@@ -5,6 +5,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 
@@ -14,6 +15,52 @@ import org.batfish.datamodel.vxlan.VxlanTopology;
  */
 @ParametersAreNonnullByDefault
 public interface TopologyProvider {
+
+  /**
+   * Returns the {@link BgpTopology} corresponding to the converged {@link
+   * org.batfish.datamodel.DataPlane}.
+   */
+  @Nonnull
+  BgpTopology getBgpTopology(NetworkSnapshot snapshot);
+
+  /**
+   * Computes the {@link Layer2Topology} for a given {@link NetworkSnapshot}. The layer-2 topology
+   * is constructed from the layer-1 logical topology and switching information in the
+   * configurations.
+   *
+   * @return computed topology, or {@link Optional#empty()} if layer-1 logical topology is absent.
+   */
+  @Nonnull
+  Optional<Layer2Topology> getInitialLayer2Topology(NetworkSnapshot networkSnapshot);
+
+  /**
+   * Return the layer-3 {@link Topology} for a given {@link NetworkSnapshot} that is a subset of the
+   * raw layer-3 topology such that edges corresponding to blacklisted entities or failed tunnels
+   * have been pruned.
+   */
+  @Nonnull
+  Topology getInitialLayer3Topology(NetworkSnapshot networkSnapshot);
+
+  /** Return the topology representing OSPF adjacencies. */
+  @Nonnull
+  OspfTopology getInitialOspfTopology(@Nonnull NetworkSnapshot networkSnapshot);
+
+  /**
+   * Return the raw layer-3 {@link Topology} for a given {@link NetworkSnapshot}. The layer-3
+   * topology is constructed by inferring layer-3 adjacencies via the layer-3 information in the
+   * configurations, and pruning edges whose vertices are not in the same broadcast domain according
+   * to the layer-2 topology. Nevertheless, pruning does NOT occur for any inferred layer-3 edge
+   * where either vertex's node (i.e., hostname) does not appear in the tail of any edge of the raw
+   * layer-1 topology. Note that an absent raw layer-1 topology is treated as empty, so no pruning
+   * occurs in that case.
+   */
+  @Nonnull
+  Topology getInitialRawLayer3Topology(NetworkSnapshot networkSnapshot);
+
+  /** Return the {@link VxlanTopology} for a given {@link NetworkSnapshot}. */
+  @Nonnull
+  VxlanTopology getInitialVxlanTopology(NetworkSnapshot snapshot);
+
   /**
    * Return {@link IpOwners} computed (based on configurations only) for a given {@link
    * NetworkSnapshot}
@@ -49,26 +96,18 @@ public interface TopologyProvider {
   Optional<Layer1Topology> getLayer1PhysicalTopology(NetworkSnapshot networkSnapshot);
 
   /**
-   * Computes the {@link Layer2Topology} for a given {@link NetworkSnapshot}. The layer-2 topology
-   * is constructed from the layer-1 logical topology and switching information in the
-   * configurations.
-   *
-   * @return computed topology, or {@link Optional#empty()} if layer-1 logical topology is absent.
+   * Returns the {@link Layer2Topology} corresponding to the converged {@link
+   * org.batfish.datamodel.DataPlane}.
    */
   @Nonnull
-  Optional<Layer2Topology> getLayer2Topology(NetworkSnapshot networkSnapshot);
+  Layer2Topology getLayer2Topology(NetworkSnapshot snapshot);
 
   /**
-   * Return the layer-3 {@link Topology} for a given {@link NetworkSnapshot} that is a subset of the
-   * raw layer-3 topology such that edges corresponding to blacklisted entities or failed tunnels
-   * have been pruned.
+   * Returns the layer-3 {@link Topology} corresponding to the converged {@link
+   * org.batfish.datamodel.DataPlane}.
    */
   @Nonnull
-  Topology getLayer3Topology(NetworkSnapshot networkSnapshot);
-
-  /** Return the topology representing OSPF adjacencies. */
-  @Nonnull
-  OspfTopology getOspfTopology(@Nonnull NetworkSnapshot networkSnapshot);
+  Topology getLayer3Topology(NetworkSnapshot snapshot);
 
   /**
    * Return the raw {@link Layer1Topology} provided by the user in the snapshot, or {@link
@@ -78,18 +117,9 @@ public interface TopologyProvider {
   Optional<Layer1Topology> getRawLayer1PhysicalTopology(NetworkSnapshot networkSnapshot);
 
   /**
-   * Return the raw layer-3 {@link Topology} for a given {@link NetworkSnapshot}. The layer-3
-   * topology is constructed by inferring layer-3 adjacencies via the layer-3 information in the
-   * configurations, and pruning edges whose vertices are not in the same broadcast domain according
-   * to the layer-2 topology. Nevertheless, pruning does NOT occur for any inferred layer-3 edge
-   * where either vertex's node (i.e., hostname) does not appear in the tail of any edge of the raw
-   * layer-1 topology. Note that an absent raw layer-1 topology is treated as empty, so no pruning
-   * occurs in that case.
+   * Returns the {@link VxlanTopology} corresponding to the converged {@link
+   * org.batfish.datamodel.DataPlane}.
    */
-  @Nonnull
-  Topology getRawLayer3Topology(NetworkSnapshot networkSnapshot);
-
-  /** Return the {@link VxlanTopology} for a given {@link NetworkSnapshot}. */
   @Nonnull
   VxlanTopology getVxlanTopology(NetworkSnapshot snapshot);
 }
