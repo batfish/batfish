@@ -2,7 +2,9 @@ package org.batfish.datamodel.answers;
 
 import static org.batfish.datamodel.BgpSessionProperties.SessionType.EBGP_MULTIHOP;
 import static org.batfish.datamodel.BgpSessionProperties.SessionType.EBGP_SINGLEHOP;
+import static org.batfish.datamodel.BgpSessionProperties.SessionType.EBGP_UNNUMBERED;
 import static org.batfish.datamodel.BgpSessionProperties.SessionType.IBGP;
+import static org.batfish.datamodel.BgpSessionProperties.SessionType.IBGP_UNNUMBERED;
 import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
 import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
@@ -201,7 +203,12 @@ public class AutoCompleteUtilsTest {
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(
-            ImmutableSet.of(IBGP.toString(), EBGP_SINGLEHOP.toString(), EBGP_MULTIHOP.toString())));
+            ImmutableSet.of(
+                IBGP.name(),
+                EBGP_SINGLEHOP.name(),
+                EBGP_MULTIHOP.name(),
+                EBGP_UNNUMBERED.name(),
+                IBGP_UNNUMBERED.name())));
   }
 
   @Test
