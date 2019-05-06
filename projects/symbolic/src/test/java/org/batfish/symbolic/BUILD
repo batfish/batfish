@@ -2,7 +2,7 @@ package(default_visibility = ["//visibility:private"])
 
 load("@batfish//skylark:junit.bzl", "junit_tests")
 
-java_library(
+junit_tests(
     name = "IngressLocationTest",
     srcs = ["IngressLocationTest.java"],
     deps = [
