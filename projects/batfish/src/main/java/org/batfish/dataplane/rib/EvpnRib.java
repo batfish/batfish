@@ -11,12 +11,12 @@ import org.batfish.datamodel.Prefix;
 
 /** RIB implementation for all types of EVPN routes */
 @ParametersAreNonnullByDefault
-public final class EvpnRib extends BgpRib<EvpnRoute> {
+public final class EvpnRib<R extends EvpnRoute> extends BgpRib<R> {
 
   private static final long serialVersionUID = 1L;
 
   public EvpnRib(
-      @Nullable Map<Prefix, SortedSet<EvpnRoute>> backupRoutes,
+      @Nullable Map<Prefix, SortedSet<R>> backupRoutes,
       @Nullable Rib mainRib,
       BgpTieBreaker tieBreaker,
       @Nullable Integer maxPaths,
