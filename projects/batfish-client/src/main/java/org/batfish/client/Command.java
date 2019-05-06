@@ -74,6 +74,7 @@ public enum Command {
     COMPAREALL,
     COMPAREFAILURES,
     COMPARESUMMARY,
+    JSON,
     RAW
   }
 

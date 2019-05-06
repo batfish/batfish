@@ -843,12 +843,20 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       boolean layer1 = question.getNeighborTypes().contains(NeighborType.LAYER1);
       boolean layer2 = question.getNeighborTypes().contains(NeighborType.LAYER2);
       if (layer1 || layer2) {
-        layer1Topology = _batfish.getLayer1Topology();
+        layer1Topology =
+            _batfish
+                .getTopologyProvider()
+                .getLayer1LogicalTopology(_batfish.getNetworkSnapshot())
+                .orElse(null);
         if (layer1) {
           answerElement.setLayer1Neighbors(layer1Topology);
         }
         if (layer2) {
-          answerElement.setLayer2Neighbors(_batfish.getLayer2Topology());
+          answerElement.setLayer2Neighbors(
+              _batfish
+                  .getTopologyProvider()
+                  .getInitialLayer2Topology(_batfish.getNetworkSnapshot())
+                  .orElse(null));
         }
       }
       return answerElement;
@@ -918,7 +926,8 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     private void initTopology() {
       if (_topology == null) {
-        _topology = _batfish.getEnvironmentTopology();
+        _topology =
+            _batfish.getTopologyProvider().getInitialLayer3Topology(_batfish.getNetworkSnapshot());
       }
     }
 

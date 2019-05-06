@@ -179,7 +179,8 @@ public class Graph {
     }
     _routers = _configurations.keySet();
 
-    Topology topology = _batfish.getEnvironmentTopology();
+    Topology topology =
+        _batfish.getTopologyProvider().getInitialLayer3Topology(_batfish.getNetworkSnapshot());
 
     // Remove the routers we don't want to model
     if (routers != null) {
