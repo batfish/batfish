@@ -11,7 +11,9 @@ import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_PARENS;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_SET_OP;
+import static org.batfish.specifier.parboiled.Anchor.Type.OPERATOR_END;
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_ADDRESS_GROUP;
+import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_ADDRESS_GROUP_TAIL;
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.UNKNOWN;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -273,7 +275,7 @@ public class ParboiledAutoCompleteTest {
 
   /** Test that we auto complete specifier names */
   @Test
-  public void testRunSpecifierFull() {
+  public void testRunSpecifierFullWithoutParens() {
     assertThat(
         getTestPAC("@specifier", testLibrary).run(),
         containsInAnyOrder(
@@ -282,12 +284,27 @@ public class ParboiledAutoCompleteTest {
 
   /** Test that we auto complete snapshot-based dynamic values like reference books */
   @Test
-  public void testRunSpecifierNoInput() {
+  public void testRunSpecifierWithParensNoInput() {
     assertThat(
         getTestPAC("@specifier(", testLibrary).run(),
         containsInAnyOrder(
             new ParboiledAutoCompleteSuggestion("b1a", 11, REFERENCE_BOOK_NAME),
             new ParboiledAutoCompleteSuggestion("b2a", 11, REFERENCE_BOOK_NAME)));
+  }
+
+  @Test
+  public void testRunSpecifierOneInputNoComma() {
+    assertThat(
+        getTestPAC("@specifier(b1", testLibrary).run(),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("b1a", 11, REFERENCE_BOOK_NAME),
+            new ParboiledAutoCompleteSuggestion(",", 13, REFERENCE_BOOK_AND_ADDRESS_GROUP_TAIL)));
+  }
+
+  @Test
+  public void testRunSpecifierOneInputCommaNoRefbookMatch() {
+    // nothing should match since b is not a reference book in the data
+    assertThat(getTestPAC("@specifier(b,", testLibrary).run(), containsInAnyOrder());
   }
 
   /** Test that we auto complete prefixes of snapshot-based dynamic values like reference books */
@@ -297,7 +314,7 @@ public class ParboiledAutoCompleteTest {
         getTestPAC("@specifier(b1", testLibrary).run(),
         containsInAnyOrder(
             new ParboiledAutoCompleteSuggestion("b1a", 11, REFERENCE_BOOK_NAME),
-            new ParboiledAutoCompleteSuggestion(",", 13, REFERENCE_BOOK_AND_ADDRESS_GROUP)));
+            new ParboiledAutoCompleteSuggestion(",", 13, REFERENCE_BOOK_AND_ADDRESS_GROUP_TAIL)));
   }
 
   /** Test that we auto complete in a context-sensitive manner */
@@ -319,8 +336,7 @@ public class ParboiledAutoCompleteTest {
         containsInAnyOrder(
             new ParboiledAutoCompleteSuggestion("g11", query.length() - 1, ADDRESS_GROUP_NAME),
             new ParboiledAutoCompleteSuggestion("g12", query.length() - 1, ADDRESS_GROUP_NAME),
-            new ParboiledAutoCompleteSuggestion(
-                ")", query.length(), REFERENCE_BOOK_AND_ADDRESS_GROUP)));
+            new ParboiledAutoCompleteSuggestion(")", query.length(), OPERATOR_END)));
   }
 
   /** Test that we produce auto completion suggestions even for valid inputs */
@@ -338,6 +354,33 @@ public class ParboiledAutoCompleteTest {
     assertThat(
         getTestPAC(query).run(),
         containsInAnyOrder(new ParboiledAutoCompleteSuggestion(",", 9, NODE_SET_OP)));
+  }
+
+  @Test
+  public void testRunOpenParen() {
+    String query = "("; //
+
+    // these should be the same as empty input ones
+    assertThat(
+        getTestPAC(query).run(),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("(", query.length(), NODE_PARENS),
+            new ParboiledAutoCompleteSuggestion("!", query.length(), IP_PROTOCOL_NOT),
+            new ParboiledAutoCompleteSuggestion("/", query.length(), NODE_NAME_REGEX),
+            new ParboiledAutoCompleteSuggestion(
+                "@specifier(", query.length(), REFERENCE_BOOK_AND_ADDRESS_GROUP)));
+  }
+
+  @Test
+  public void testRunOpenParenWithValidInput() {
+    String query = "(a"; //
+
+    // these should be the same as empty input ones
+    assertThat(
+        getTestPAC(query).run(),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion(",", query.length(), NODE_SET_OP),
+            new ParboiledAutoCompleteSuggestion(")", query.length(), OPERATOR_END)));
   }
 
   @Test
@@ -381,7 +424,7 @@ public class ParboiledAutoCompleteTest {
   /** Context-sensitive completion of interface name after node name */
   @Test
   public void testAutoCompleteInterfaceNameNodeName() {
-    String query = "n1a";
+    String query = "n1a[";
 
     // the expected stack for the query
     DefaultValueStack<AstNode> vs = new DefaultValueStack<>();
@@ -407,7 +450,7 @@ public class ParboiledAutoCompleteTest {
   /** Context-sensitive completion of interface name after node name regex */
   @Test
   public void testAutoCompleteInterfaceNameNodeNameRegex() {
-    String query = "/n1/";
+    String query = "/n1/[";
 
     // the expected stack for the query
     DefaultValueStack<AstNode> vs = new DefaultValueStack<>();
