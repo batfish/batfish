@@ -1,7 +1,7 @@
 package org.batfish.z3.state;
 
 import org.batfish.z3.expr.StateExpr;
-import org.batfish.z3.state.visitors.StateExprVisitor;
+import org.batfish.z3.expr.StateExprVisitor;
 
 public class NeighborUnreachable implements StateExpr {
 

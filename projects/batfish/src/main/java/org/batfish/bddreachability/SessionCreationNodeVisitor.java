@@ -2,6 +2,7 @@ package org.batfish.bddreachability;
 
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.expr.StateExpr;
+import org.batfish.z3.expr.StateExprVisitor;
 import org.batfish.z3.state.NodeAccept;
 import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
@@ -24,7 +25,6 @@ import org.batfish.z3.state.PreOutInterfaceExitsNetwork;
 import org.batfish.z3.state.PreOutInterfaceInsufficientInfo;
 import org.batfish.z3.state.PreOutInterfaceNeighborUnreachable;
 import org.batfish.z3.state.PreOutVrf;
-import org.batfish.z3.state.visitors.StateExprVisitor;
 
 /**
  * For {@link StateExpr StateExprs} that correspond to points where a firewall session would get

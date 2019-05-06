@@ -1,4 +1,4 @@
-package org.batfish.z3.state.visitors;
+package org.batfish.z3.expr;
 
 import org.batfish.z3.state.NodeAccept;
 import org.batfish.z3.state.NodeDropAclIn;
