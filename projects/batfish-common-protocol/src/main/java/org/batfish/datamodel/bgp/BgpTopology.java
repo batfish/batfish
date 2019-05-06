@@ -8,7 +8,9 @@ import com.google.common.graph.ImmutableValueGraph;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -86,5 +88,54 @@ public final class BgpTopology {
   @Override
   public int hashCode() {
     return _graph.hashCode();
+  }
+
+  /** Directional, reversible BGP edge pointing to two {@link BgpPeerConfigId}. */
+  @ParametersAreNonnullByDefault
+  public static final class EdgeId implements Comparable<EdgeId> {
+
+    @Nonnull private final BgpPeerConfigId _tail;
+    @Nonnull private final BgpPeerConfigId _head;
+    private static final Comparator<EdgeId> COMPARATOR =
+        Comparator.comparing(EdgeId::tail).thenComparing(EdgeId::head);
+
+    public EdgeId(BgpPeerConfigId tail, BgpPeerConfigId head) {
+      _tail = tail;
+      _head = head;
+    }
+
+    public BgpPeerConfigId tail() {
+      return _tail;
+    }
+
+    public BgpPeerConfigId head() {
+      return _head;
+    }
+
+    public EdgeId reverse() {
+      return new EdgeId(_head, _tail);
+    }
+
+    @Override
+    public boolean equals(@Nullable Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof EdgeId)) {
+        return false;
+      }
+      EdgeId other = (EdgeId) o;
+      return _tail.equals(other._tail) && _head.equals(other._head);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(_tail, _head);
+    }
+
+    @Override
+    public int compareTo(EdgeId o) {
+      return COMPARATOR.compare(this, o);
+    }
   }
 }

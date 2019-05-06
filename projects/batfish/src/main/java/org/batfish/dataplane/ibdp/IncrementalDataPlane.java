@@ -107,7 +107,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   private final Map<String, Node> _nodes;
 
   private final Topology _layer3Topology;
-  
+
   private transient SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
       _ribs;
 
@@ -134,8 +134,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   }
 
   private ForwardingAnalysis computeForwardingAnalysis() {
-    return new ForwardingAnalysisImpl(
-        getConfigurations(), getFibs(), _layer3Topology);
+    return new ForwardingAnalysisImpl(getConfigurations(), getFibs(), _layer3Topology);
   }
 
   private SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
