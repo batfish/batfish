@@ -8,6 +8,9 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/**
+ * Jackson-serializable representation of an undirected {@link com.google.common.graph.Graph} edge.
+ */
 public final class UndirectedEdge<N> {
 
   private static final String PROP_NODE_U = "nodeU";
