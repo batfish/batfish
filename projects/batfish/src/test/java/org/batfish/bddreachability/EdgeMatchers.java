@@ -6,7 +6,7 @@ import org.batfish.bddreachability.EdgeMatchersImpl.HasPostState;
 import org.batfish.bddreachability.EdgeMatchersImpl.HasPreState;
 import org.batfish.bddreachability.EdgeMatchersImpl.HasTransition;
 import org.batfish.bddreachability.transition.Transition;
-import org.batfish.z3.state.StateExpr;
+import org.batfish.symbolic.state.StateExpr;
 import org.hamcrest.Matcher;
 
 /** {@link Matcher Matchers} for {@link Edge Edges}. */

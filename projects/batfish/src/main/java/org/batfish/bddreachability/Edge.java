@@ -9,7 +9,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.transition.Identity;
 import org.batfish.bddreachability.transition.Transition;
-import org.batfish.z3.state.StateExpr;
+import org.batfish.symbolic.state.StateExpr;
 
 /** An edge in the graph modeling network behavior. */
 @ParametersAreNonnullByDefault

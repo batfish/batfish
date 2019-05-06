@@ -40,8 +40,8 @@ import org.batfish.question.bidirectionalreachability.BidirectionalReachabilityR
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationVisitor;
-import org.batfish.z3.state.Query;
-import org.batfish.z3.state.StateExpr;
+import org.batfish.symbolic.state.Query;
+import org.batfish.symbolic.state.StateExpr;
 
 /** Performs a bidirectional reachability analysis. */
 public final class BidirectionalReachabilityAnalysis {

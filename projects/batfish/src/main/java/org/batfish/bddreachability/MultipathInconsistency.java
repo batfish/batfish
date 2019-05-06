@@ -1,7 +1,7 @@
 package org.batfish.bddreachability;
 
 import net.sf.javabdd.BDD;
-import org.batfish.z3.IngressLocation;
+import org.batfish.symbolic.IngressLocation;
 
 /*
  * Internal class representing a multipath inconsistency.

@@ -40,7 +40,7 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
-import org.batfish.z3.IngressLocation;
+import org.batfish.symbolic.IngressLocation;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

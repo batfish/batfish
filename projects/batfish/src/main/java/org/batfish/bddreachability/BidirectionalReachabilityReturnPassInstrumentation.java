@@ -7,9 +7,9 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
-import org.batfish.z3.state.NodeInterfaceInsufficientInfo;
-import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
-import org.batfish.z3.state.StateExpr;
+import org.batfish.symbolic.state.NodeInterfaceInsufficientInfo;
+import org.batfish.symbolic.state.NodeInterfaceNeighborUnreachable;
+import org.batfish.symbolic.state.StateExpr;
 
 /**
  * Instruments the return-pass graph edges of a bidirectional reachability analysis.
