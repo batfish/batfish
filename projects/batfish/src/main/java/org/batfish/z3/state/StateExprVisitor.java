@@ -1,27 +1,4 @@
-package org.batfish.z3.expr;
-
-import org.batfish.z3.state.NodeAccept;
-import org.batfish.z3.state.NodeDropAclIn;
-import org.batfish.z3.state.NodeDropAclOut;
-import org.batfish.z3.state.NodeDropNoRoute;
-import org.batfish.z3.state.NodeDropNullRoute;
-import org.batfish.z3.state.NodeInterfaceDeliveredToSubnet;
-import org.batfish.z3.state.NodeInterfaceExitsNetwork;
-import org.batfish.z3.state.NodeInterfaceInsufficientInfo;
-import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
-import org.batfish.z3.state.OriginateInterfaceLink;
-import org.batfish.z3.state.OriginateVrf;
-import org.batfish.z3.state.PostInInterface;
-import org.batfish.z3.state.PostInInterfacePostNat;
-import org.batfish.z3.state.PostInVrf;
-import org.batfish.z3.state.PreInInterface;
-import org.batfish.z3.state.PreOutEdge;
-import org.batfish.z3.state.PreOutEdgePostNat;
-import org.batfish.z3.state.PreOutInterfaceDeliveredToSubnet;
-import org.batfish.z3.state.PreOutInterfaceExitsNetwork;
-import org.batfish.z3.state.PreOutInterfaceInsufficientInfo;
-import org.batfish.z3.state.PreOutInterfaceNeighborUnreachable;
-import org.batfish.z3.state.PreOutVrf;
+package org.batfish.z3.state;
 
 public interface StateExprVisitor<R> {
 

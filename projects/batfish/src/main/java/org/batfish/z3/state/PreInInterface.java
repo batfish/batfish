@@ -2,8 +2,6 @@ package org.batfish.z3.state;
 
 import java.util.Objects;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.z3.expr.StateExpr;
-import org.batfish.z3.expr.StateExprVisitor;
 
 @ParametersAreNonnullByDefault
 public final class PreInInterface implements StateExpr {

@@ -1,8 +1,6 @@
 package org.batfish.z3.state;
 
 import java.util.Objects;
-import org.batfish.z3.expr.StateExpr;
-import org.batfish.z3.expr.StateExprVisitor;
 
 /**
  * A {@link StateExpr} for flows being forwarded out an interface with the {@link

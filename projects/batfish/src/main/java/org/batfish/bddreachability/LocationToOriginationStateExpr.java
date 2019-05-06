@@ -8,9 +8,9 @@ import org.batfish.datamodel.Interface;
 import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.LocationVisitor;
-import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
+import org.batfish.z3.state.StateExpr;
 
 class LocationToOriginationStateExpr implements LocationVisitor<Optional<StateExpr>> {
   private final Map<String, Configuration> _configs;

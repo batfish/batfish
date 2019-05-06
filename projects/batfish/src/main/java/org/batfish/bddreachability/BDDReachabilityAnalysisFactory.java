@@ -77,7 +77,6 @@ import org.batfish.datamodel.transformation.TransformationStepVisitor;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.LocationVisitor;
 import org.batfish.z3.IngressLocation;
-import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.DeliveredToSubnet;
 import org.batfish.z3.state.DropAclIn;
@@ -109,6 +108,7 @@ import org.batfish.z3.state.PreOutInterfaceInsufficientInfo;
 import org.batfish.z3.state.PreOutInterfaceNeighborUnreachable;
 import org.batfish.z3.state.PreOutVrf;
 import org.batfish.z3.state.Query;
+import org.batfish.z3.state.StateExpr;
 
 /**
  * Constructs a the reachability graph for {@link BDDReachabilityAnalysis}. The public API is very

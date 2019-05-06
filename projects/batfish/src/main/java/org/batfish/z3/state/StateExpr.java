@@ -1,4 +1,4 @@
-package org.batfish.z3.expr;
+package org.batfish.z3.state;
 
 /** An expression representing parameterized state. */
 public interface StateExpr {

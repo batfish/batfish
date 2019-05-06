@@ -1,7 +1,6 @@
 package org.batfish.bddreachability;
 
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.z3.expr.StateExprVisitor;
 import org.batfish.z3.state.NodeAccept;
 import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
@@ -24,6 +23,7 @@ import org.batfish.z3.state.PreOutInterfaceExitsNetwork;
 import org.batfish.z3.state.PreOutInterfaceInsufficientInfo;
 import org.batfish.z3.state.PreOutInterfaceNeighborUnreachable;
 import org.batfish.z3.state.PreOutVrf;
+import org.batfish.z3.state.StateExprVisitor;
 
 /**
  * If the input node occurs right before an outgoing transformation is applied (possibly with an

@@ -5,10 +5,10 @@ import static org.junit.Assert.assertEquals;
 import com.google.common.collect.ImmutableMap;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
-import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.NodeInterfaceInsufficientInfo;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.Query;
+import org.batfish.z3.state.StateExpr;
 import org.junit.Before;
 import org.junit.Test;
 

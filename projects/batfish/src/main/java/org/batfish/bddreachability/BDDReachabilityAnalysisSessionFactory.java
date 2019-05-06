@@ -29,7 +29,7 @@ import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.z3.expr.StateExpr;
+import org.batfish.z3.state.StateExpr;
 
 /**
  * Factory for creating {@link BDDFirewallSessionTraceInfo} objects for bidirectional reachability

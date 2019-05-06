@@ -24,10 +24,10 @@ import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.z3.IngressLocation;
-import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.Query;
+import org.batfish.z3.state.StateExpr;
 
 /**
  * A new reachability analysis engine using BDDs. The analysis maintains a graph that describes how

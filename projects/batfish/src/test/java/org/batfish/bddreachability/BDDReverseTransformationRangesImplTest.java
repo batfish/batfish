@@ -28,9 +28,9 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.PreInInterface;
 import org.batfish.z3.state.PreOutEdge;
+import org.batfish.z3.state.StateExpr;
 import org.junit.Before;
 import org.junit.Test;
 
