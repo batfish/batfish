@@ -1,13 +1,17 @@
 package org.batfish.datamodel;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.testing.EqualsTester;
+import java.io.IOException;
 import java.util.Set;
 import java.util.SortedSet;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.junit.Test;
 
@@ -139,5 +143,20 @@ public class TopologyTest {
         topo.getNodeEdges(), equalTo(ImmutableMap.of("n1", _edge1to2Set, "n2", _edge1to2Set)));
     assertThat(topo.getNeighbors(_nip1), equalTo(ImmutableSet.of(_nip2)));
     assertThat(topo.getNeighbors(_nip2), equalTo(ImmutableSet.of()));
+  }
+
+  @Test
+  public void testEquals() {
+    new EqualsTester()
+        .addEqualityGroup(new Object())
+        .addEqualityGroup(Topology.EMPTY, Topology.EMPTY, new Topology(ImmutableSortedSet.of()))
+        .addEqualityGroup(new Topology(_bothEdges))
+        .testEquals();
+  }
+
+  @Test
+  public void testJacksonSerialization() throws IOException {
+    Topology topo = new Topology(_bothEdges);
+    assertEquals(BatfishObjectMapper.clone(topo, Topology.class), topo);
   }
 }

@@ -134,7 +134,7 @@ public class EdgesAnswerer extends Answerer {
                 null,
                 _batfish
                     .getTopologyProvider()
-                    .getLayer2Topology(_batfish.getNetworkSnapshot())
+                    .getInitialLayer2Topology(_batfish.getNetworkSnapshot())
                     .orElse(null));
         return getBgpEdges(configurations, includeNodes, includeRemoteNodes, bgpTopology);
       case EIGRP:
@@ -152,13 +152,13 @@ public class EdgesAnswerer extends Answerer {
             configurations,
             includeNodes,
             includeRemoteNodes,
-            _batfish.getTopologyProvider().getOspfTopology(_batfish.getNetworkSnapshot()));
+            _batfish.getTopologyProvider().getInitialOspfTopology(_batfish.getNetworkSnapshot()));
       case RIP:
         _batfish.initRemoteRipNeighbors(configurations, ipOwners, topology);
         return getRipEdges(configurations, includeNodes, includeRemoteNodes);
       case VXLAN:
         VxlanTopology vxlanTopology =
-            _batfish.getTopologyProvider().getVxlanTopology(_batfish.getNetworkSnapshot());
+            _batfish.getTopologyProvider().getInitialVxlanTopology(_batfish.getNetworkSnapshot());
         return getVxlanEdges(
             NetworkConfigurations.of(configurations),
             includeNodes,
@@ -199,7 +199,7 @@ public class EdgesAnswerer extends Answerer {
       Set<String> includeNodes,
       Set<String> includeRemoteNodes,
       VxlanTopology vxlanTopology) {
-    return vxlanTopology.getEdges().stream()
+    return vxlanTopology.getGraph().edges().stream()
         .flatMap(edge -> vxlanEdgeToRows(nc, includeNodes, includeRemoteNodes, edge))
         .collect(Collectors.toCollection(HashMultiset::create));
   }

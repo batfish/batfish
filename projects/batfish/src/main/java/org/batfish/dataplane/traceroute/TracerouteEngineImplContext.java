@@ -25,6 +25,7 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Hop;
@@ -47,9 +48,11 @@ public class TracerouteEngineImplContext {
   private final Set<Flow> _flows;
   private final ForwardingAnalysis _forwardingAnalysis;
   private final boolean _ignoreFilters;
+  private final Topology _topology;
 
   public TracerouteEngineImplContext(
       DataPlane dataPlane,
+      Topology topology,
       Set<FirewallSessionTraceInfo> sessions,
       Set<Flow> flows,
       Map<String, Map<String, Fib>> fibs,
@@ -61,6 +64,7 @@ public class TracerouteEngineImplContext {
     _ignoreFilters = ignoreFilters;
     _forwardingAnalysis = _dataPlane.getForwardingAnalysis();
     _sessionsByIngressInterface = buildSessionsByIngressInterface(sessions);
+    _topology = topology;
   }
 
   /**
@@ -193,8 +197,6 @@ public class TracerouteEngineImplContext {
   @Nonnull
   SortedSet<NodeInterfacePair> getInterfaceNeighbors(
       String currentNodeName, String outgoingIfaceName) {
-    return _dataPlane
-        .getTopology()
-        .getNeighbors(new NodeInterfacePair(currentNodeName, outgoingIfaceName));
+    return _topology.getNeighbors(new NodeInterfacePair(currentNodeName, outgoingIfaceName));
   }
 }

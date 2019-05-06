@@ -38,6 +38,7 @@ import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
@@ -212,7 +213,7 @@ public class IBatfishTestAdapter implements IBatfish {
       }
 
       @Override
-      public Optional<Layer2Topology> getLayer2Topology(NetworkSnapshot networkSnapshot) {
+      public Layer2Topology getLayer2Topology(NetworkSnapshot networkSnapshot) {
         throw new UnsupportedOperationException();
       }
 
@@ -223,7 +224,7 @@ public class IBatfishTestAdapter implements IBatfish {
 
       @Nonnull
       @Override
-      public OspfTopology getOspfTopology(@Nonnull NetworkSnapshot networkSnapshot) {
+      public OspfTopology getInitialOspfTopology(@Nonnull NetworkSnapshot networkSnapshot) {
         throw new UnsupportedOperationException();
       }
 
@@ -234,8 +235,28 @@ public class IBatfishTestAdapter implements IBatfish {
       }
 
       @Override
-      public Topology getRawLayer3Topology(NetworkSnapshot networkSnapshot) {
+      public Topology getInitialRawLayer3Topology(NetworkSnapshot networkSnapshot) {
         throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public BgpTopology getBgpTopology(NetworkSnapshot snapshot) {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public Optional<Layer2Topology> getInitialLayer2Topology(NetworkSnapshot networkSnapshot) {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public Topology getInitialLayer3Topology(NetworkSnapshot networkSnapshot) {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public VxlanTopology getInitialVxlanTopology(NetworkSnapshot snapshot) {
+        return new VxlanTopology(loadConfigurations(snapshot));
       }
     };
   }

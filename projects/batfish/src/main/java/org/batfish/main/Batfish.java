@@ -107,6 +107,7 @@ import org.batfish.common.plugin.PluginConsumer;
 import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
+import org.batfish.common.topology.TopologyContainer;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -496,7 +497,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         alternateIdResolver != null
             ? alternateIdResolver
             : new FileBasedIdResolver(_settings.getStorageBase());
-    _topologyProvider = new TopologyProviderImpl(this);
+    _topologyProvider = new TopologyProviderImpl(this, _storage);
   }
 
   /**
@@ -720,22 +721,32 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public DataPlaneAnswerElement computeDataPlane() {
     checkSnapshotOutputReady();
     ComputeDataPlaneResult result = getDataPlanePlugin().computeDataPlane();
-    saveDataPlane(result._dataPlane, result._answerElement);
+    saveDataPlane(result);
     return result._answerElement;
   }
 
   /* Write the dataplane to disk and cache, and write the answer element to disk.
    */
-  private void saveDataPlane(DataPlane dataPlane, DataPlaneAnswerElement answerElement) {
-    _cachedDataPlanes.put(getNetworkSnapshot(), dataPlane);
+  private void saveDataPlane(ComputeDataPlaneResult result) {
+    _cachedDataPlanes.put(getNetworkSnapshot(), result._dataPlane);
 
     _logger.resetTimer();
     newBatch("Writing data plane to disk", 0);
     try (ActiveSpan writeDataplane =
         GlobalTracer.get().buildSpan("Writing data plane").startActive()) {
       assert writeDataplane != null; // avoid unused warning
-      serializeObject(dataPlane, _testrigSettings.getDataPlanePath());
-      serializeObject(answerElement, _testrigSettings.getDataPlaneAnswerPath());
+      serializeObject(result._dataPlane, _testrigSettings.getDataPlanePath());
+      serializeObject(result._answerElement, _testrigSettings.getDataPlaneAnswerPath());
+      TopologyContainer topologies = result._topologies;
+      NetworkSnapshot networkSnapshot = getNetworkSnapshot();
+      _storage.storeBgpTopology(topologies.getBgpTopology(), networkSnapshot);
+      _storage.storeEigrpTopology(topologies.getEigrpTopology(), networkSnapshot);
+      _storage.storeLayer2Topology(topologies.getLayer2Topology(), networkSnapshot);
+      _storage.storeLayer3Topology(topologies.getLayer3Topology(), networkSnapshot);
+      _storage.storeOspfTopology(topologies.getOspfTopology(), networkSnapshot);
+      _storage.storeVxlanTopology(topologies.getVxlanTopology(), networkSnapshot);
+    } catch (IOException e) {
+      throw new BatfishException("Failed to save data plane", e);
     }
     _logger.printElapsedTime();
   }
@@ -2165,7 +2176,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public TracerouteEngine getTracerouteEngine() {
-    return new TracerouteEngineImpl(loadDataPlane());
+    return new TracerouteEngineImpl(
+        loadDataPlane(), _topologyProvider.getLayer3Topology(getNetworkSnapshot()));
   }
 
   /** Function that processes an interface blacklist across all configurations */
@@ -2517,7 +2529,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @VisibleForTesting
   void initializeTopology(NetworkSnapshot networkSnapshot) {
     Map<String, Configuration> configurations = loadConfigurations();
-    Topology rawLayer3Topology = _topologyProvider.getRawLayer3Topology(networkSnapshot);
+    Topology rawLayer3Topology = _topologyProvider.getInitialRawLayer3Topology(networkSnapshot);
     serializeAsJson(_testrigSettings.getTopologyPath(), rawLayer3Topology, "raw layer-3 topology");
     checkTopology(configurations, rawLayer3Topology);
     org.batfish.datamodel.pojo.Topology pojoTopology =
@@ -2525,9 +2537,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
             _settings.getSnapshotName(), configurations, rawLayer3Topology);
     serializeAsJson(
         _testrigSettings.getPojoTopologyPath(), pojoTopology, "raw layer-3 pojo topology");
-    Topology layer3Topology = _topologyProvider.getLayer3Topology(getNetworkSnapshot());
+    Topology layer3Topology = _topologyProvider.getInitialLayer3Topology(getNetworkSnapshot());
     try {
-      _storage.storeTopology(
+      _storage.storeInitialTopology(
           layer3Topology, networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
     } catch (IOException e) {
       throw new BatfishException("Could not serialize layer-3 topology", e);
@@ -2744,7 +2756,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     SnapshotId snapshotId = _settings.getTestrig();
     NodeRolesId snapshotNodeRolesId = _idResolver.getSnapshotNodeRolesId(networkId, snapshotId);
     Set<String> nodeNames = loadConfigurations().keySet();
-    Topology rawLayer3Topology = _topologyProvider.getRawLayer3Topology(getNetworkSnapshot());
+    Topology rawLayer3Topology =
+        _topologyProvider.getInitialRawLayer3Topology(getNetworkSnapshot());
     SortedSet<NodeRoleDimension> autoRoles =
         new InferRoles(nodeNames, rawLayer3Topology).inferRoles();
     NodeRolesData.Builder snapshotNodeRoles = NodeRolesData.builder();

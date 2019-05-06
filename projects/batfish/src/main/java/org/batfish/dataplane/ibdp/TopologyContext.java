@@ -1,12 +1,11 @@
 package org.batfish.dataplane.ibdp;
 
-import com.google.common.collect.ImmutableSortedSet;
-import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.topology.Layer2Topology;
+import org.batfish.common.topology.TopologyContainer;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.eigrp.EigrpTopology;
@@ -16,9 +15,7 @@ import org.batfish.datamodel.vxlan.VxlanTopology;
 
 /** Container for various topologies used during data plane computation. */
 @ParametersAreNonnullByDefault
-public final class TopologyContext implements Serializable {
-
-  private static final long serialVersionUID = 1L;
+public final class TopologyContext implements TopologyContainer {
 
   public static final class Builder {
 
@@ -46,7 +43,7 @@ public final class TopologyContext implements Serializable {
       _eigrpTopology = EigrpTopology.EMPTY;
       _isisTopology = IsisTopology.EMPTY;
       _layer2Topology = Layer2Topology.EMPTY;
-      _layer3Topology = new Topology(ImmutableSortedSet.of());
+      _layer3Topology = Topology.EMPTY;
       _ospfTopology = OspfTopology.EMPTY;
       _vxlanTopology = VxlanTopology.EMPTY;
     }
@@ -144,30 +141,37 @@ public final class TopologyContext implements Serializable {
     _vxlanTopology = vxlanTopology;
   }
 
+  @Override
   public @Nonnull BgpTopology getBgpTopology() {
     return _bgpTopology;
   }
 
+  @Override
   public @Nonnull EigrpTopology getEigrpTopology() {
     return _eigrpTopology;
   }
 
+  @Override
   public @Nonnull IsisTopology getIsisTopology() {
     return _isisTopology;
   }
 
+  @Override
   public @Nonnull Layer2Topology getLayer2Topology() {
     return _layer2Topology;
   }
 
+  @Override
   public @Nonnull Topology getLayer3Topology() {
     return _layer3Topology;
   }
 
+  @Override
   public @Nonnull OspfTopology getOspfTopology() {
     return _ospfTopology;
   }
 
+  @Override
   public @Nonnull VxlanTopology getVxlanTopology() {
     return _vxlanTopology;
   }

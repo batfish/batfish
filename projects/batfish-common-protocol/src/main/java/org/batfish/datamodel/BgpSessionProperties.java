@@ -1,8 +1,11 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.io.Serializable;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -10,7 +13,33 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 /** Represents properties of a peering session between two {@link BgpPeerConfig}s. */
 @ParametersAreNonnullByDefault
-public final class BgpSessionProperties implements Serializable {
+public final class BgpSessionProperties {
+
+  private static final String PROP_ADDITIONAL_PATHS = "additionalPaths";
+  private static final String PROP_ADVERTISE_EXTERNAL = "advertiseExternal";
+  private static final String PROP_ADVERTISE_INACTIVE = "advertiseInactive";
+  private static final String PROP_HEAD_IP = "headIp";
+  private static final String PROP_SESSION_TYPE = "sessionType";
+  private static final String PROP_TAIL_IP = "tailIp";
+
+  @JsonCreator
+  private static @Nonnull BgpSessionProperties create(
+      @JsonProperty(PROP_ADDITIONAL_PATHS) boolean additionalPaths,
+      @JsonProperty(PROP_ADVERTISE_EXTERNAL) boolean advertiseExternal,
+      @JsonProperty(PROP_ADVERTISE_INACTIVE) boolean advertiseInactive,
+      @JsonProperty(PROP_HEAD_IP) @Nullable Ip headIp,
+      @JsonProperty(PROP_SESSION_TYPE) @Nullable SessionType sessionType,
+      @JsonProperty(PROP_TAIL_IP) @Nullable Ip tailIp) {
+    checkArgument(headIp != null, "Missing %s", PROP_HEAD_IP);
+    checkArgument(tailIp != null, "Missing %s", PROP_TAIL_IP);
+    return new BgpSessionProperties(
+        additionalPaths,
+        advertiseExternal,
+        advertiseInactive,
+        tailIp,
+        headIp,
+        firstNonNull(sessionType, SessionType.UNSET));
+  }
 
   public static final class Builder {
 
@@ -67,8 +96,6 @@ public final class BgpSessionProperties implements Serializable {
     return new Builder();
   }
 
-  private static final long serialVersionUID = 1L;
-
   private final boolean _additionalPaths;
   private final boolean _advertiseExternal;
   private final boolean _advertiseInactive;
@@ -95,6 +122,7 @@ public final class BgpSessionProperties implements Serializable {
    * When this is set, add best eBGP path independently of whether it is preempted by an iBGP or IGP
    * route. Only applicable to iBGP sessions.
    */
+  @JsonProperty(PROP_ADVERTISE_EXTERNAL)
   public boolean getAdvertiseExternal() {
     return _advertiseExternal;
   }
@@ -103,33 +131,39 @@ public final class BgpSessionProperties implements Serializable {
    * When this is true, add best BGP path independently of whether it is preempted by an IGP route.
    * Only applicable to eBGP sessions.
    */
+  @JsonProperty(PROP_ADVERTISE_INACTIVE)
   public boolean getAdvertiseInactive() {
     return _advertiseInactive;
   }
 
   /** When this is true, advertise all paths from the multipath RIB */
+  @JsonProperty(PROP_ADDITIONAL_PATHS)
   public boolean getAdditionalPaths() {
     return _additionalPaths;
   }
 
   /** Whether this session is eBGP. */
+  @JsonIgnore
   public boolean isEbgp() {
     return SessionType.isEbgp(_sessionType);
   }
 
   /** IP of local peer for this session */
+  @JsonProperty(PROP_TAIL_IP)
   @Nonnull
   public Ip getTailIp() {
     return _tailIp;
   }
 
   /** IP of remote peer for this session */
+  @JsonProperty(PROP_HEAD_IP)
   @Nonnull
   public Ip getHeadIp() {
     return _headIp;
   }
 
   /** Return this session's {@link SessionType}. */
+  @JsonProperty(PROP_SESSION_TYPE)
   public SessionType getSessionType() {
     return _sessionType;
   }

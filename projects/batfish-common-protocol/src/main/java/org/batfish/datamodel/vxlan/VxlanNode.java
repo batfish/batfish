@@ -3,7 +3,8 @@ package org.batfish.datamodel.vxlan;
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.io.Serializable;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -11,7 +12,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 /** A VXLAN endpoint. */
 @ParametersAreNonnullByDefault
-public final class VxlanNode implements Serializable {
+public final class VxlanNode {
+
+  private static final String PROP_HOSTNAME = "hostname";
+  private static final String PROP_VNI = "vni";
 
   public static final class Builder {
 
@@ -37,11 +41,16 @@ public final class VxlanNode implements Serializable {
     }
   }
 
+  @JsonCreator
+  private static @Nonnull VxlanNode create(
+      @JsonProperty(PROP_HOSTNAME) @Nullable String hostname, @JsonProperty(PROP_VNI) int vni) {
+    checkArgument(hostname != null, "Missing %s", PROP_HOSTNAME);
+    return new VxlanNode(hostname, vni);
+  }
+
   public static @Nonnull Builder builder() {
     return new Builder();
   }
-
-  private static final long serialVersionUID = 1L;
 
   private final String _hostname;
   private final int _vni;
@@ -74,11 +83,13 @@ public final class VxlanNode implements Serializable {
   }
 
   /** Hostname of the endpoint. */
+  @JsonProperty(PROP_HOSTNAME)
   public @Nonnull String getHostname() {
     return _hostname;
   }
 
   /** VNI number of the endpoint. */
+  @JsonProperty(PROP_VNI)
   public int getVni() {
     return _vni;
   }
