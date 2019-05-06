@@ -256,7 +256,7 @@ public class IBatfishTestAdapter implements IBatfish {
 
       @Override
       public VxlanTopology getInitialVxlanTopology(NetworkSnapshot snapshot) {
-        throw new UnsupportedOperationException();
+        return new VxlanTopology(loadConfigurations(snapshot));
       }
     };
   }
