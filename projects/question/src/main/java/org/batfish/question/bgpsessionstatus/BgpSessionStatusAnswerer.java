@@ -32,6 +32,7 @@ import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.SelfDescribingObject;
+import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
@@ -85,18 +86,12 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
             .getLayer2Topology(_batfish.getNetworkSnapshot())
             .orElse(null);
 
-    ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredBgpTopology =
-        BgpTopologyUtils.initBgpTopology(configurations, ipOwners, true, layer2Topology).getGraph();
+    BgpTopology configuredBgpTopology =
+        BgpTopologyUtils.initBgpTopology(configurations, ipOwners, true, layer2Topology);
 
-    ValueGraph<BgpPeerConfigId, BgpSessionProperties> establishedBgpTopology =
+    BgpTopology establishedBgpTopology =
         BgpTopologyUtils.initBgpTopology(
-                configurations,
-                ipOwners,
-                false,
-                true,
-                _batfish.getTracerouteEngine(),
-                layer2Topology)
-            .getGraph();
+            configurations, ipOwners, false, true, _batfish.getTracerouteEngine(), layer2Topology);
 
     return getRows(
         question,
@@ -105,8 +100,8 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
         remoteNodes,
         metadataMap,
         allInterfaceIps,
-        configuredBgpTopology,
-        establishedBgpTopology);
+        configuredBgpTopology.getGraph(),
+        establishedBgpTopology.getGraph());
   }
 
   public static List<Row> getRows(
