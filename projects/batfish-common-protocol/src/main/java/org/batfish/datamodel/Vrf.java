@@ -93,7 +93,7 @@ public class Vrf extends ComparableStructure<String> {
   private NavigableMap<String, Interface> _interfaces;
   private IsisProcess _isisProcess;
   private SortedSet<KernelRoute> _kernelRoutes;
-  @Nonnull private Map<String, OspfProcess> _ospfProcesses;
+  @Nonnull private SortedMap<String, OspfProcess> _ospfProcesses;
   private RipProcess _ripProcess;
   private SnmpServer _snmpServer;
   private SortedSet<StaticRoute> _staticRoutes;
@@ -108,7 +108,7 @@ public class Vrf extends ComparableStructure<String> {
     _generatedIpv6Routes = new TreeSet<>();
     _interfaces = new TreeMap<>();
     _kernelRoutes = ImmutableSortedSet.of();
-    _ospfProcesses = ImmutableMap.of();
+    _ospfProcesses = ImmutableSortedMap.of();
     _staticRoutes = new TreeSet<>();
     _vniSettings = new TreeMap<>();
   }

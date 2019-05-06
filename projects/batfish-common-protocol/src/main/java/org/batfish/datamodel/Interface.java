@@ -1244,6 +1244,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonIgnore
+  @Nullable
   public OspfArea getOspfArea() {
     if (_ospfProcess == null
         || _ospfAreaName == null
