@@ -443,7 +443,7 @@ public final class FileBasedStorage implements StorageProvider {
       }
       closer.register(ois);
       return outputClass.cast(ois.readObject());
-    } catch (IOException | ClassNotFoundException | ClassCastException e) {
+    } catch (Exception e) {
       throw new BatfishException(
           String.format(
               "Failed to deserialize object of type %s from file %s",
@@ -488,7 +488,7 @@ public final class FileBasedStorage implements StorageProvider {
           ObjectOutputStream oos = new ObjectOutputStream(gos)) {
         oos.writeObject(object);
       }
-    } catch (IOException e) {
+    } catch (Throwable e) {
       throw new BatfishException("Failed to serialize object to output file: " + outputFile, e);
     }
   }

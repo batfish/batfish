@@ -110,6 +110,7 @@ junit_tests(
         "//projects/bdd",
         "//projects/lib/z3",
         "@antlr4_runtime//:compile",
+        "@commons_lang3//:compile",
         "@guava//:compile",
         "@guava_testlib//:compile",
         "@hamcrest//:compile",

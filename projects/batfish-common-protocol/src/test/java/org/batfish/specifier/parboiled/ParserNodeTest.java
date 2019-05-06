@@ -4,8 +4,8 @@ import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_PARENS;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_AND_DIMENSION;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_TYPE;
-import static org.batfish.specifier.parboiled.Anchor.Type.UNKNOWN;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -99,9 +99,9 @@ public class ParserNodeTest {
             ImmutableSet.of(
                 new ParboiledAutoCompleteSuggestion("node1", 0, NODE_NAME),
                 new ParboiledAutoCompleteSuggestion("node11", 0, NODE_NAME),
-                new ParboiledAutoCompleteSuggestion("\\", query.length(), UNKNOWN),
-                new ParboiledAutoCompleteSuggestion(",", query.length(), UNKNOWN),
-                new ParboiledAutoCompleteSuggestion("&", query.length(), UNKNOWN))));
+                new ParboiledAutoCompleteSuggestion("\\", query.length(), NODE_SET_OP),
+                new ParboiledAutoCompleteSuggestion(",", query.length(), NODE_SET_OP),
+                new ParboiledAutoCompleteSuggestion("&", query.length(), NODE_SET_OP))));
   }
 
   @Test

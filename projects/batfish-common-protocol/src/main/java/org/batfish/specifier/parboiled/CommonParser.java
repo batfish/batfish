@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableMap;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.IntStream;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.specifier.parboiled.Anchor.Type;
@@ -61,7 +62,10 @@ public abstract class CommonParser extends BaseParser<AstNode> {
         _repeatedRun = true;
         return;
       }
-      _vs = new DefaultValueStack<>(context.getValueStack());
+      ValueStack<AstNode> contextStack = context.getValueStack();
+      _vs.clear();
+      IntStream.range(0, contextStack.size())
+          .forEach(i -> _vs.push(contextStack.peek(contextStack.size() - i - 1)));
       _currentIndex = context.getCurrentIndex();
     }
 
@@ -87,6 +91,11 @@ public abstract class CommonParser extends BaseParser<AstNode> {
   void setShadowStack(ShadowStack shadowStack) {
     _shadowStack = shadowStack;
   }
+
+  // Characters we use for different set operators
+  static final String SET_OP_DIFFERENCE = "\\";
+  static final String SET_OP_INTERSECTION = "&";
+  static final String SET_OP_UNION = ",";
 
   /** Get the main entry point for {@code grammar} */
   abstract Rule getInputRule(Grammar grammar);
@@ -125,24 +134,6 @@ public abstract class CommonParser extends BaseParser<AstNode> {
       case ROUTING_POLICY_NAME:
       case VRF_NAME:
       case ZONE_NAME:
-        return true;
-      default:
-        return false;
-    }
-  }
-
-  /**
-   * Whether {@code literal} represents an operator that has values on the right hand side. This
-   * information is used to provide hints and description for auto completion suggestions
-   */
-  static boolean isOperatorWithRhs(String literal) {
-    switch (literal) {
-      case "(":
-      case "/":
-      case "!":
-      case "-":
-      case ":":
-      case "[":
         return true;
       default:
         return false;

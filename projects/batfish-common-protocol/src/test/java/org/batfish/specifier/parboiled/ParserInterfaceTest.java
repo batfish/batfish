@@ -5,6 +5,7 @@ import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_PARENS;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_TYPE;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_VRF;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_ZONE;
@@ -15,7 +16,6 @@ import static org.batfish.specifier.parboiled.Anchor.Type.NODE_PARENS;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_AND_DIMENSION;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_TYPE;
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_INTERFACE_GROUP;
-import static org.batfish.specifier.parboiled.Anchor.Type.UNKNOWN;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -164,9 +164,9 @@ public class ParserInterfaceTest {
         containsInAnyOrder(
             new ParboiledAutoCompleteSuggestion("iface1", 0, INTERFACE_NAME),
             new ParboiledAutoCompleteSuggestion("iface11", 0, INTERFACE_NAME),
-            new ParboiledAutoCompleteSuggestion("\\", query.length(), UNKNOWN),
-            new ParboiledAutoCompleteSuggestion(",", query.length(), UNKNOWN),
-            new ParboiledAutoCompleteSuggestion("&", query.length(), UNKNOWN),
+            new ParboiledAutoCompleteSuggestion("\\", query.length(), INTERFACE_SET_OP),
+            new ParboiledAutoCompleteSuggestion(",", query.length(), INTERFACE_SET_OP),
+            new ParboiledAutoCompleteSuggestion("&", query.length(), INTERFACE_SET_OP),
             new ParboiledAutoCompleteSuggestion("[", query.length(), NODE_AND_INTERFACE)));
   }
 
@@ -403,15 +403,17 @@ public class ParserInterfaceTest {
             .build();
 
     String query = "n1a[eth1";
+    Set<ParboiledAutoCompleteSuggestion> suggestions =
+        autoCompleteHelper(query, completionMetadata);
 
     // only eth11 and eth12 should be suggested
     assertThat(
-        autoCompleteHelper(query, completionMetadata),
+        suggestions,
         containsInAnyOrder(
-            new ParboiledAutoCompleteSuggestion(",", query.length(), UNKNOWN),
-            new ParboiledAutoCompleteSuggestion("\\", query.length(), UNKNOWN),
-            new ParboiledAutoCompleteSuggestion("&", query.length(), UNKNOWN),
-            new ParboiledAutoCompleteSuggestion("]", query.length(), UNKNOWN),
+            new ParboiledAutoCompleteSuggestion(",", query.length(), INTERFACE_SET_OP),
+            new ParboiledAutoCompleteSuggestion("\\", query.length(), INTERFACE_SET_OP),
+            new ParboiledAutoCompleteSuggestion("&", query.length(), INTERFACE_SET_OP),
+            new ParboiledAutoCompleteSuggestion("]", query.length(), NODE_AND_INTERFACE),
             new ParboiledAutoCompleteSuggestion("eth11", 4, INTERFACE_NAME),
             new ParboiledAutoCompleteSuggestion("eth12", 4, INTERFACE_NAME)));
   }

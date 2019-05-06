@@ -79,6 +79,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.BgpTopology;
+import org.batfish.datamodel.bgp.BgpTopology.EdgeId;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.dataplane.rib.RibGroup;
 import org.batfish.datamodel.dataplane.rib.RibId;
@@ -112,7 +113,6 @@ import org.batfish.dataplane.rib.RipRib;
 import org.batfish.dataplane.rib.RouteAdvertisement;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.batfish.dataplane.rib.StaticRib;
-import org.batfish.dataplane.topology.BgpEdgeId;
 
 public class VirtualRouter implements Serializable {
 
@@ -126,7 +126,7 @@ public class VirtualRouter implements Serializable {
       new RouteDependencyTracker<>();
 
   /** Incoming messages into this router from each BGP neighbor */
-  transient SortedMap<BgpEdgeId, Queue<RouteAdvertisement<Bgpv4Route>>> _bgpIncomingRoutes;
+  transient SortedMap<EdgeId, Queue<RouteAdvertisement<Bgpv4Route>>> _bgpIncomingRoutes;
 
   /** Combined BGP (both iBGP and eBGP) RIB */
   Bgpv4Rib _bgpRib;
@@ -412,7 +412,7 @@ public class VirtualRouter implements Serializable {
                       .filter(e -> e.getValue().getIpv4UnicastAddressFamily() != null)
                       .map(e -> new BgpPeerConfigId(getHostname(), _vrf.getName(), e.getKey())))
               .filter(graph.nodes()::contains)
-              .flatMap(dst -> graph.adjacentNodes(dst).stream().map(src -> new BgpEdgeId(src, dst)))
+              .flatMap(dst -> graph.adjacentNodes(dst).stream().map(src -> new EdgeId(src, dst)))
               .collect(
                   toImmutableSortedMap(Function.identity(), e -> new ConcurrentLinkedQueue<>()));
     }
@@ -1104,18 +1104,17 @@ public class VirtualRouter implements Serializable {
     ribDeltas.put(_ibgpStagingRib, RibDelta.builder());
 
     // Process updates from each neighbor
-    for (Entry<BgpEdgeId, Queue<RouteAdvertisement<Bgpv4Route>>> e :
-        _bgpIncomingRoutes.entrySet()) {
+    for (Entry<EdgeId, Queue<RouteAdvertisement<Bgpv4Route>>> e : _bgpIncomingRoutes.entrySet()) {
 
       // Grab the queue containing all messages from remoteBgpPeerConfig
       Queue<RouteAdvertisement<Bgpv4Route>> queue = e.getValue();
 
       // Setup helper vars
-      BgpPeerConfigId remoteConfigId = e.getKey().src();
-      BgpPeerConfigId ourConfigId = e.getKey().dst();
+      BgpPeerConfigId remoteConfigId = e.getKey().tail();
+      BgpPeerConfigId ourConfigId = e.getKey().head();
       BgpSessionProperties sessionProperties =
-          getBgpSessionProperties(bgpTopology, new BgpEdgeId(remoteConfigId, ourConfigId));
-      BgpPeerConfig ourBgpConfig = requireNonNull(nc.getBgpPeerConfig(e.getKey().dst()));
+          getBgpSessionProperties(bgpTopology, new EdgeId(remoteConfigId, ourConfigId));
+      BgpPeerConfig ourBgpConfig = requireNonNull(nc.getBgpPeerConfig(e.getKey().head()));
       // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
       Ip remoteIp = sessionProperties.getTailIp();
 
@@ -1394,13 +1393,13 @@ public class VirtualRouter implements Serializable {
       final Map<String, Node> allNodes,
       BgpTopology bgpTopology,
       NetworkConfigurations networkConfigurations) {
-    for (BgpEdgeId edge : _bgpIncomingRoutes.keySet()) {
+    for (EdgeId edge : _bgpIncomingRoutes.keySet()) {
       final BgpSessionProperties session = getBgpSessionProperties(bgpTopology, edge);
 
-      BgpPeerConfigId remoteConfigId = edge.src();
-      BgpPeerConfigId ourConfigId = edge.dst();
-      BgpPeerConfig ourConfig = networkConfigurations.getBgpPeerConfig(edge.dst());
-      BgpPeerConfig remoteConfig = networkConfigurations.getBgpPeerConfig(edge.src());
+      BgpPeerConfigId remoteConfigId = edge.tail();
+      BgpPeerConfigId ourConfigId = edge.head();
+      BgpPeerConfig ourConfig = networkConfigurations.getBgpPeerConfig(edge.head());
+      BgpPeerConfig remoteConfig = networkConfigurations.getBgpPeerConfig(edge.tail());
       VirtualRouter remoteVirtualRouter = getRemoteBgpNeighborVR(remoteConfigId, allNodes);
       if (remoteVirtualRouter == null) {
         continue;
@@ -1476,10 +1475,10 @@ public class VirtualRouter implements Serializable {
   }
 
   private static BgpSessionProperties getBgpSessionProperties(
-      BgpTopology bgpTopology, BgpEdgeId edge) {
+      BgpTopology bgpTopology, EdgeId edge) {
     // BGP topology edge guaranteed to exist since the session is established
     Optional<BgpSessionProperties> session =
-        bgpTopology.getGraph().edgeValue(edge.src(), edge.dst());
+        bgpTopology.getGraph().edgeValue(edge.tail(), edge.head());
     return session.orElseThrow(
         () -> new IllegalArgumentException(String.format("No BGP edge %s in BGP topology", edge)));
   }
@@ -1685,7 +1684,7 @@ public class VirtualRouter implements Serializable {
       // nothing to do
       return;
     }
-    for (BgpEdgeId edge : _bgpIncomingRoutes.keySet()) {
+    for (EdgeId edge : _bgpIncomingRoutes.keySet()) {
       newBgpSessionEstablishedHook(edge, getBgpSessionProperties(bgpTopology, edge), allNodes, nc);
     }
   }
@@ -1698,19 +1697,19 @@ public class VirtualRouter implements Serializable {
    * @param routes a set of BGP routes that are being exchanged
    */
   private void enqueueBgpMessages(
-      @Nonnull BgpEdgeId edgeId, @Nonnull Set<RouteAdvertisement<Bgpv4Route>> routes) {
+      @Nonnull EdgeId edgeId, @Nonnull Set<RouteAdvertisement<Bgpv4Route>> routes) {
     _bgpIncomingRoutes.get(edgeId).addAll(routes);
   }
 
   /** Deal with a newly established BGP session. */
   private void newBgpSessionEstablishedHook(
-      @Nonnull BgpEdgeId edge,
+      @Nonnull EdgeId edge,
       @Nonnull BgpSessionProperties sessionProperties,
       @Nonnull Map<String, Node> allNodes,
       NetworkConfigurations nc) {
 
-    BgpPeerConfigId localConfigId = edge.dst();
-    BgpPeerConfigId remoteConfigId = edge.src();
+    BgpPeerConfigId localConfigId = edge.head();
+    BgpPeerConfigId remoteConfigId = edge.tail();
     BgpPeerConfig localConfig = nc.getBgpPeerConfig(localConfigId);
     BgpPeerConfig remoteConfig = nc.getBgpPeerConfig(remoteConfigId);
 

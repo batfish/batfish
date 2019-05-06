@@ -1,6 +1,7 @@
 package org.batfish.dataplane.ibdp;
 
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -15,7 +16,9 @@ import org.batfish.datamodel.vxlan.VxlanTopology;
 
 /** Container for various topologies used during data plane computation. */
 @ParametersAreNonnullByDefault
-public final class TopologyContext {
+public final class TopologyContext implements Serializable {
+
+  private static final long serialVersionUID = 1L;
 
   public static final class Builder {
 

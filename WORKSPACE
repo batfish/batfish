@@ -161,6 +161,25 @@ load("@commons_io//:rules.bzl", "commons_io_compile")
 
 commons_io_compile()
 
+#
+maven_repository(
+    name = "commons_text",
+    force = [
+        "org.apache.commons:commons-lang3:3.8.1",
+    ],
+    transitive_deps = [
+        "6505a72a097d9270f7a9e7bf42c4238283247755:org.apache.commons:commons-lang3:3.8.1",
+        "9abf61708a66ab5e55f6169a200dbfc584b546d9:org.apache.commons:commons-text:1.3",
+    ],
+    deps = [
+        "org.apache.commons:commons-text:1.3",
+    ],
+)
+
+load("@commons_text//:rules.bzl", "commons_text_compile")
+
+commons_text_compile()
+
 # diffutils
 maven_repository(
     name = "diffutils",
@@ -1141,23 +1160,6 @@ maven_repository(
 load("@sqlite_jdbc//:rules.bzl", "sqlite_jdbc_compile")
 
 sqlite_jdbc_compile()
-
-# XStream
-maven_repository(
-    name = "xstream",
-    transitive_deps = [
-        "bce3282142b63068260f021fcbe48b72e8d71a1a:com.thoughtworks.xstream:xstream:1.4.7",
-        "2b8e230d2ab644e4ecaa94db7cdedbc40c805dfa:xmlpull:xmlpull:1.1.3.1",
-        "19d4e90b43059058f6e056f794f0ea4030d60b86:xpp3:xpp3_min:1.1.4c",
-    ],
-    deps = [
-        "com.thoughtworks.xstream:xstream:1.4.7",
-    ],
-)
-
-load("@xstream//:rules.bzl", "xstream_compile")
-
-xstream_compile()
 
 ##########################################################
 ## Third section: tools

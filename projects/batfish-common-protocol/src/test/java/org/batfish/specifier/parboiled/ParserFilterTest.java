@@ -5,7 +5,7 @@ import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_INTERFACE_OUT;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_PARENS;
-import static org.batfish.specifier.parboiled.Anchor.Type.UNKNOWN;
+import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_SET_OP;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -97,9 +97,9 @@ public class ParserFilterTest {
         containsInAnyOrder(
             new ParboiledAutoCompleteSuggestion("filter1", 0, FILTER_NAME),
             new ParboiledAutoCompleteSuggestion("filter11", 0, FILTER_NAME),
-            new ParboiledAutoCompleteSuggestion("\\", query.length(), UNKNOWN),
-            new ParboiledAutoCompleteSuggestion(",", query.length(), UNKNOWN),
-            new ParboiledAutoCompleteSuggestion("&", query.length(), UNKNOWN)));
+            new ParboiledAutoCompleteSuggestion("\\", query.length(), FILTER_SET_OP),
+            new ParboiledAutoCompleteSuggestion(",", query.length(), FILTER_SET_OP),
+            new ParboiledAutoCompleteSuggestion("&", query.length(), FILTER_SET_OP)));
   }
 
   @Test

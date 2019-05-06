@@ -1,5 +1,7 @@
 package org.batfish.specifier.parboiled;
 
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_SET_OP;
+
 import java.util.Map;
 import org.batfish.specifier.parboiled.Anchor.Type;
 import org.parboiled.Parboiled;
@@ -47,6 +49,7 @@ class TestParser extends CommonParser {
    */
 
   /* An Test expression is a comma-separated list of TestTerms */
+  @Anchor(NODE_SET_OP)
   public Rule TestSpec() {
     return Sequence(TestTerm(), WhiteSpace(), ZeroOrMore(", ", TestTerm(), WhiteSpace()));
   }
@@ -64,6 +67,7 @@ class TestParser extends CommonParser {
         TestName());
   }
 
+  @Anchor(Type.NODE_PARENS)
   public Rule TestParens() {
     return Sequence("( ", TestSpec(), ") ");
   }
@@ -72,13 +76,20 @@ class TestParser extends CommonParser {
     return Sequence(IgnoreCase("@specifier"), WhiteSpace(), TestSpecifierInput());
   }
 
+  @Anchor(Type.IP_PROTOCOL_NOT)
   public Rule TestNotOp() {
     return Sequence("! ", TestNot("! "), TestTerm());
   }
 
   @Anchor(Type.REFERENCE_BOOK_AND_ADDRESS_GROUP)
   public Rule TestSpecifierInput() {
-    return Sequence("( ", TestReferenceBookName(), ", ", TestAddressGroupName(), ") ");
+    return Sequence(
+        "( ",
+        TestReferenceBookName(),
+        ", ",
+        TestAddressGroupName(),
+        ") ",
+        push(new AddressGroupIpSpaceAstNode(pop(1), pop())));
   }
 
   @Anchor(Type.ADDRESS_GROUP_NAME)

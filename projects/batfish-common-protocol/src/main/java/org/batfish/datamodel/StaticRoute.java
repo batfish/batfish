@@ -167,6 +167,7 @@ public class StaticRoute extends AbstractRoute {
       setAdmin(Route.UNSET_ROUTE_ADMIN);
     }
 
+    @Nonnull
     @Override
     public StaticRoute build() {
       checkArgument(
@@ -184,6 +185,7 @@ public class StaticRoute extends AbstractRoute {
           getNonRouting());
     }
 
+    @Nonnull
     @Override
     protected Builder getThis() {
       return this;

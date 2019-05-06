@@ -5,9 +5,12 @@ import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_ADDRESS;
+import static org.batfish.specifier.parboiled.Anchor.Type.IP_PROTOCOL_NOT;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_RANGE;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_PARENS;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_ADDRESS_GROUP;
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.UNKNOWN;
@@ -87,7 +90,7 @@ public class ParboiledAutoCompleteTest {
         "snapshot",
         query,
         Integer.MAX_VALUE,
-        null,
+        CompletionMetadata.builder().build(),
         NodeRolesData.builder().build(),
         referenceLibrary);
   }
@@ -126,8 +129,8 @@ public class ParboiledAutoCompleteTest {
     assertThat(
         getTestPAC(query).run(),
         containsInAnyOrder(
-            new ParboiledAutoCompleteSuggestion("(", query.length(), UNKNOWN),
-            new ParboiledAutoCompleteSuggestion("!", query.length(), UNKNOWN),
+            new ParboiledAutoCompleteSuggestion("(", query.length(), NODE_PARENS),
+            new ParboiledAutoCompleteSuggestion("!", query.length(), IP_PROTOCOL_NOT),
             new ParboiledAutoCompleteSuggestion("/", query.length(), NODE_NAME_REGEX),
             new ParboiledAutoCompleteSuggestion(
                 "@specifier(", query.length(), REFERENCE_BOOK_AND_ADDRESS_GROUP)));
@@ -168,7 +171,7 @@ public class ParboiledAutoCompleteTest {
             new ParboiledAutoCompleteSuggestion("1.1.1.1", 0, IP_ADDRESS),
             new ParboiledAutoCompleteSuggestion("1.1.1.10", 0, IP_ADDRESS),
             new ParboiledAutoCompleteSuggestion("-", 7, IP_RANGE),
-            new ParboiledAutoCompleteSuggestion(",", 7, UNKNOWN)));
+            new ParboiledAutoCompleteSuggestion(",", 7, NODE_SET_OP)));
   }
 
   /** Test that we produce auto complete snapshot-based names. */
@@ -186,7 +189,7 @@ public class ParboiledAutoCompleteTest {
             ImmutableSet.of(
                 new ParboiledAutoCompleteSuggestion("node1", 0, NODE_NAME),
                 new ParboiledAutoCompleteSuggestion("node10", 0, NODE_NAME),
-                new ParboiledAutoCompleteSuggestion(",", query.length(), UNKNOWN))));
+                new ParboiledAutoCompleteSuggestion(",", query.length(), NODE_SET_OP))));
   }
 
   /** Test that we produce auto complete snapshot-based names even when we begin with a quote. */
@@ -215,7 +218,7 @@ public class ParboiledAutoCompleteTest {
 
     assertThat(
         getTestPAC(query, completionMetadata).run(),
-        containsInAnyOrder(new ParboiledAutoCompleteSuggestion(",", query.length(), UNKNOWN)));
+        containsInAnyOrder(new ParboiledAutoCompleteSuggestion(",", query.length(), NODE_SET_OP)));
   }
 
   /** Test that we properly quote a name complex names when we offer them as suggestions. */
@@ -230,7 +233,7 @@ public class ParboiledAutoCompleteTest {
     assertThat(
         getTestPAC(query, completionMetadata).run(),
         containsInAnyOrder(
-            new ParboiledAutoCompleteSuggestion(",", query.length(), UNKNOWN),
+            new ParboiledAutoCompleteSuggestion(",", query.length(), NODE_SET_OP),
             new ParboiledAutoCompleteSuggestion("node10", 0, NODE_NAME),
             new ParboiledAutoCompleteSuggestion("\"node 1\"", 0, NODE_NAME)));
   }
@@ -277,21 +280,47 @@ public class ParboiledAutoCompleteTest {
             new ParboiledAutoCompleteSuggestion("(", 10, REFERENCE_BOOK_AND_ADDRESS_GROUP)));
   }
 
-  /** Test that we produce auto complete snapshot-based dynamic values like address groups */
+  /** Test that we auto complete snapshot-based dynamic values like reference books */
   @Test
-  public void testRunSpecifierInput() {
+  public void testRunSpecifierNoInput() {
     assertThat(
         getTestPAC("@specifier(", testLibrary).run(),
         containsInAnyOrder(
             new ParboiledAutoCompleteSuggestion("b1a", 11, REFERENCE_BOOK_NAME),
             new ParboiledAutoCompleteSuggestion("b2a", 11, REFERENCE_BOOK_NAME)));
+  }
 
-    // only g11 and g12 should be suggested
+  /** Test that we auto complete prefixes of snapshot-based dynamic values like reference books */
+  @Test
+  public void testRunSpecifierFirstPartialInput() {
+    assertThat(
+        getTestPAC("@specifier(b1", testLibrary).run(),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("b1a", 11, REFERENCE_BOOK_NAME),
+            new ParboiledAutoCompleteSuggestion(",", 13, REFERENCE_BOOK_AND_ADDRESS_GROUP)));
+  }
+
+  /** Test that we auto complete in a context-sensitive manner */
+  @Test
+  public void testRunSpecifierAfterFirstInput() {
     assertThat(
         getTestPAC("@specifier(b1a,", testLibrary).run(),
         containsInAnyOrder(
             new ParboiledAutoCompleteSuggestion("g11", 15, ADDRESS_GROUP_NAME),
             new ParboiledAutoCompleteSuggestion("g12", 15, ADDRESS_GROUP_NAME)));
+  }
+
+  /** Test that we auto complete in a context-sensitive manner while accounting for prefix */
+  @Test
+  public void testRunSpecifierPartialSecondInput() {
+    String query = "@specifier(b1a, g";
+    assertThat(
+        getTestPAC(query, testLibrary).run(),
+        containsInAnyOrder(
+            new ParboiledAutoCompleteSuggestion("g11", query.length() - 1, ADDRESS_GROUP_NAME),
+            new ParboiledAutoCompleteSuggestion("g12", query.length() - 1, ADDRESS_GROUP_NAME),
+            new ParboiledAutoCompleteSuggestion(
+                ")", query.length(), REFERENCE_BOOK_AND_ADDRESS_GROUP)));
   }
 
   /** Test that we produce auto completion suggestions even for valid inputs */
@@ -308,14 +337,13 @@ public class ParboiledAutoCompleteTest {
     // commma is the only viable auto completion after a valid input
     assertThat(
         getTestPAC(query).run(),
-        containsInAnyOrder(new ParboiledAutoCompleteSuggestion(",", 9, UNKNOWN)));
+        containsInAnyOrder(new ParboiledAutoCompleteSuggestion(",", 9, NODE_SET_OP)));
   }
 
   @Test
   public void testAutoCompletePotentialMatchStringLiteral() {
-    PotentialMatch pm =
-        new PotentialMatch(
-            new PathElement(Type.STRING_LITERAL, "\"pfxcomp\"", 0, 0), "pfx", ImmutableList.of());
+    PathElement anchor = new PathElement(Type.STRING_LITERAL, "\"pfxcomp\"", 0, 0);
+    PotentialMatch pm = new PotentialMatch(anchor, "pfx", ImmutableList.of(anchor));
     assertThat(
         getTestPAC("pfx").autoCompletePotentialMatch(pm),
         containsInAnyOrder(new ParboiledAutoCompleteSuggestion("pfxcomp", 0, UNKNOWN)));
@@ -324,9 +352,8 @@ public class ParboiledAutoCompleteTest {
   /** The suggestion should have the case in the grammar token independent of user input */
   @Test
   public void testAutoCompletePotentialMatchStringLiteralCasePreserve() {
-    PotentialMatch pm =
-        new PotentialMatch(
-            new PathElement(Type.STRING_LITERAL, "\"pfxcomp\"", 0, 0), "PfX", ImmutableList.of());
+    PathElement anchor = new PathElement(Type.STRING_LITERAL, "\"pfxcomp\"", 0, 0);
+    PotentialMatch pm = new PotentialMatch(anchor, "PfX", ImmutableList.of(anchor));
     assertThat(
         getTestPAC("PfX").autoCompletePotentialMatch(pm),
         containsInAnyOrder(new ParboiledAutoCompleteSuggestion("pfxcomp", 0, UNKNOWN)));
@@ -501,7 +528,7 @@ public class ParboiledAutoCompleteTest {
             new ParboiledAutoCompleteSuggestion("i21", query.length(), INTERFACE_GROUP_NAME)));
   }
 
-  /** Context-sensitive completion when address groups come before the reference book */
+  /** Context-sensitive completion for address groups based on reference book */
   @Test
   public void testAutoCompleteReferenceBookEntityAddressGroup() {
     String query = "@specifier(b1a,";
@@ -527,7 +554,7 @@ public class ParboiledAutoCompleteTest {
             new ParboiledAutoCompleteSuggestion("g12", query.length(), ADDRESS_GROUP_NAME)));
   }
 
-  /** Context-sensitive completion when interface groups come before the reference book */
+  /** Context-sensitive completion for interface groups based on reference book */
   @Test
   public void testAutoCompleteReferenceBookEntityInterfaceGroup() {
     String query = "@specifier(b1a,";
