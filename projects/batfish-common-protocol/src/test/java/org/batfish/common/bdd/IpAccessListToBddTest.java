@@ -1,4 +1,4 @@
-package org.batfish.minesweeper.bdd;
+package org.batfish.common.bdd;
 
 import static org.batfish.datamodel.IpAccessListLine.rejecting;
 import static org.hamcrest.Matchers.contains;
@@ -12,11 +12,6 @@ import java.util.List;
 import java.util.Map;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
-import org.batfish.common.bdd.BDDPacket;
-import org.batfish.common.bdd.BDDSourceManager;
-import org.batfish.common.bdd.IpAccessListToBdd;
-import org.batfish.common.bdd.IpAccessListToBddImpl;
-import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -31,6 +26,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+/** Tests of {@link IpAccessListToBdd}. */
 public class IpAccessListToBddTest {
   @Rule public ExpectedException exception = ExpectedException.none();
 

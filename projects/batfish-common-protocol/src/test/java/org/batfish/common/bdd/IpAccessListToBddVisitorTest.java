@@ -1,4 +1,4 @@
-package org.batfish.minesweeper.bdd;
+package org.batfish.common.bdd;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.oneOf;
@@ -11,10 +11,6 @@ import java.util.Map;
 import java.util.Optional;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
-import org.batfish.common.bdd.BDDPacket;
-import org.batfish.common.bdd.BDDSourceManager;
-import org.batfish.common.bdd.IpAccessListToBdd;
-import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
