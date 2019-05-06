@@ -369,17 +369,18 @@ public final class ParboiledAutoComplete {
       return autoCompleteGeneric(pm);
     }
 
-    String interfaceNamePrefix = pm.getMatchPrefix();
     // node information is at the head if nothing about the interface name was entered;
     // otherwise, it is second from top
     NodeAstNode nodeAst =
         (NodeAstNode)
-            _parser.getShadowStack().getValueStack().peek(interfaceNamePrefix.isEmpty() ? 0 : 1);
+            _parser.getShadowStack().getValueStack().peek(pm.getMatchPrefix().isEmpty() ? 0 : 1);
 
     // do context sensitive auto completion input is a node name or regex
     if (!(nodeAst instanceof NameNodeAstNode) && !(nodeAst instanceof NameRegexNodeAstNode)) {
       return autoCompleteGeneric(pm);
     }
+
+    String interfaceNamePrefix = unescapeIfNeeded(pm.getMatchPrefix(), pm.getAnchorType());
 
     Set<String> candidateInterfaces =
         _completionMetadata.getInterfaces().stream()
@@ -388,7 +389,7 @@ public final class ParboiledAutoComplete {
             .collect(ImmutableSet.toImmutableSet());
     return updateSuggestions(
         AutoCompleteUtils.stringAutoComplete(interfaceNamePrefix, candidateInterfaces),
-        false,
+        !interfaceNamePrefix.equals(pm.getMatchPrefix()),
         Anchor.Type.INTERFACE_NAME,
         pm.getMatchStartIndex());
   }
@@ -449,21 +450,24 @@ public final class ParboiledAutoComplete {
 
   private Set<ParboiledAutoCompleteSuggestion> autoCompleteReferenceBookEntity(
       PotentialMatch pm, Function<ReferenceBook, Set<String>> entityNameGetter) {
-    String matchPrefix = pm.getMatchPrefix();
     // book name is at the head if nothing about the reference book was entered;
     // otherwise, it is second from top
     String bookName =
         ((StringAstNode)
-                _parser.getShadowStack().getValueStack().peek(matchPrefix.isEmpty() ? 0 : 1))
+                _parser
+                    .getShadowStack()
+                    .getValueStack()
+                    .peek(pm.getMatchPrefix().isEmpty() ? 0 : 1))
             .getStr();
     Set<String> candidateEntityNames =
         entityNameGetter.apply(
             _referenceLibrary
                 .getReferenceBook(bookName)
                 .orElse(ReferenceBook.builder("empty").build()));
+    String matchPrefix = unescapeIfNeeded(pm.getMatchPrefix(), pm.getAnchorType());
     return updateSuggestions(
         AutoCompleteUtils.stringAutoComplete(matchPrefix, candidateEntityNames),
-        false,
+        !matchPrefix.equals(pm.getMatchPrefix()),
         pm.getAnchorType(),
         pm.getMatchStartIndex());
   }
