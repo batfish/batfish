@@ -250,7 +250,7 @@ public final class ParboiledAutoComplete {
   }
 
   @VisibleForTesting
-  Set<ParboiledAutoCompleteSuggestion> autoCompleteLiteral(PotentialMatch pm) {
+  private Set<ParboiledAutoCompleteSuggestion> autoCompleteLiteral(PotentialMatch pm) {
     Optional<PotentialMatch> extendedMatch = extendLiteralMatch(_query, pm);
 
     PotentialMatch pmToConsider = extendedMatch.orElse(pm);
