@@ -87,7 +87,7 @@ EOF
 ###### Ensure the code still compiles with Bazel
 cat <<EOF
   - label: ":bazel: Bazel"
-    command: "bazel build -- //... -projects:javadoc"
+    command: "bazel build -- //..."
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
           image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
