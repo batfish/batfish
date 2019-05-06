@@ -38,7 +38,7 @@ import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.dataplane.ibdp.schedule.IbdpSchedule;
 import org.batfish.dataplane.ibdp.schedule.IbdpSchedule.Schedule;
-import org.batfish.dataplane.rib.BgpRib;
+import org.batfish.dataplane.rib.Bgpv4Rib;
 import org.batfish.dataplane.rib.RibDelta;
 
 class IncrementalBdpEngine {
@@ -381,7 +381,7 @@ class IncrementalBdpEngine {
           .flatMap(n -> n.getVirtualRouters().values().stream())
           .forEach(
               vr -> {
-                Map<BgpRib, RibDelta<Bgpv4Route>> deltas =
+                Map<Bgpv4Rib, RibDelta<Bgpv4Route>> deltas =
                     vr.processBgpMessages(bgpTopology, networkConfigurations, nodes);
                 vr.finalizeBgpRoutesAndQueueOutgoingMessages(
                     deltas, allNodes, bgpTopology, networkConfigurations);
