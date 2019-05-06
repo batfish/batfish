@@ -77,23 +77,6 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public Set<Flow> bddLoopDetection() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Set<Flow> bddMultipathConsistency(MultipathConsistencyParameters parameters) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Nonnull
-  @Override
-  public BidirectionalReachabilityResult bidirectionalReachability(
-      BDDPacket bddPacket, ReachabilityParameters parameters) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public SortedMap<Flow, List<Trace>> buildFlows(Set<Flow> flows, boolean ignoreFilters) {
     throw new UnsupportedOperationException();
   }
@@ -109,12 +92,12 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public @Nullable Answerer createAnswerer(@Nonnull Question question) {
+  public boolean debugFlagEnabled(String flag) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public boolean debugFlagEnabled(String flag) {
+  public ReferenceLibrary getReferenceLibraryData() {
     throw new UnsupportedOperationException();
   }
 
@@ -134,11 +117,6 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public SortedSet<Edge> getEdgeBlacklist(NetworkSnapshot networkSnapshot) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public Environment getEnvironment() {
     throw new UnsupportedOperationException();
   }
@@ -154,7 +132,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public SortedSet<NodeInterfacePair> getInterfaceBlacklist(NetworkSnapshot networkSnapshot) {
+  public MajorIssueConfig getMajorIssueConfig(String majorIssue) {
     throw new UnsupportedOperationException();
   }
 
@@ -174,22 +152,6 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public MajorIssueConfig getMajorIssueConfig(String majorIssue) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public NetworkSnapshot getNetworkSnapshot() {
-    return new NetworkSnapshot(
-        new NetworkId(UUID.randomUUID().toString()), new SnapshotId(UUID.randomUUID().toString()));
-  }
-
-  @Override
-  public SortedSet<String> getNodeBlacklist(NetworkSnapshot networkSnapshot) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public Optional<NodeRoleDimension> getNodeRoleDimension(String roleDimension) {
     throw new UnsupportedOperationException();
   }
@@ -201,11 +163,6 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public Map<String, String> getQuestionTemplates(boolean verbose) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public ReferenceLibrary getReferenceLibraryData() {
     throw new UnsupportedOperationException();
   }
 
@@ -233,6 +190,55 @@ public class IBatfishTestAdapter implements IBatfish {
   @Override
   public TopologyProvider getTopologyProvider() {
     return new TopologyProvider() {
+      @Nonnull
+      @Override
+      public IpOwners getIpOwners(NetworkSnapshot snapshot) {
+        return new IpOwners(loadConfigurations(snapshot));
+      }
+
+      @Override
+      public Optional<Layer1Topology> getLayer1LogicalTopology(NetworkSnapshot networkSnapshot) {
+        return Optional.of(
+            TopologyUtil.computeLayer1LogicalTopology(getLayer1Topology(), loadConfigurations()));
+      }
+
+      @Override
+      public VxlanTopology getVxlanTopology(NetworkSnapshot snapshot) {
+        return new VxlanTopology(loadConfigurations(snapshot));
+      }
+
+      @Override
+      public Optional<Layer1Topology> getLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public Layer2Topology getLayer2Topology(NetworkSnapshot networkSnapshot) {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public Topology getLayer3Topology(NetworkSnapshot networkSnapshot) {
+        throw new UnsupportedOperationException();
+      }
+
+      @Nonnull
+      @Override
+      public OspfTopology getInitialOspfTopology(@Nonnull NetworkSnapshot networkSnapshot) {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public Optional<Layer1Topology> getRawLayer1PhysicalTopology(
+          NetworkSnapshot networkSnapshot) {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public Topology getInitialRawLayer3Topology(NetworkSnapshot networkSnapshot) {
+        throw new UnsupportedOperationException();
+      }
+
       @Override
       public BgpTopology getBgpTopology(NetworkSnapshot snapshot) {
         throw new UnsupportedOperationException();
@@ -248,65 +254,11 @@ public class IBatfishTestAdapter implements IBatfish {
         throw new UnsupportedOperationException();
       }
 
-      @Nonnull
-      @Override
-      public OspfTopology getInitialOspfTopology(@Nonnull NetworkSnapshot networkSnapshot) {
-        throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public Topology getInitialRawLayer3Topology(NetworkSnapshot networkSnapshot) {
-        throw new UnsupportedOperationException();
-      }
-
       @Override
       public VxlanTopology getInitialVxlanTopology(NetworkSnapshot snapshot) {
-        return new VxlanTopology(loadConfigurations(snapshot));
-      }
-
-      @Nonnull
-      @Override
-      public IpOwners getIpOwners(NetworkSnapshot snapshot) {
-        return new IpOwners(loadConfigurations(snapshot));
-      }
-
-      @Override
-      public Optional<Layer1Topology> getLayer1LogicalTopology(NetworkSnapshot networkSnapshot) {
-        return Optional.of(
-            TopologyUtil.computeLayer1LogicalTopology(getLayer1Topology(), loadConfigurations()));
-      }
-
-      @Override
-      public Optional<Layer1Topology> getLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
-        throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public Layer2Topology getLayer2Topology(NetworkSnapshot snapshot) {
-        throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public Topology getLayer3Topology(NetworkSnapshot snapshot) {
-        throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public Optional<Layer1Topology> getRawLayer1PhysicalTopology(
-          NetworkSnapshot networkSnapshot) {
-        throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public VxlanTopology getVxlanTopology(NetworkSnapshot snapshot) {
         throw new UnsupportedOperationException();
       }
     };
-  }
-
-  @Override
-  public TracerouteEngine getTracerouteEngine() {
-    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -383,22 +335,17 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public @Nullable String loadQuestionSettings(@Nonnull Question question) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Layer1Topology loadRawLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public AtomicInteger newBatch(String description, int jobs) {
     throw new UnsupportedOperationException();
   }
 
   @Override
   public void popSnapshot() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public TracerouteEngine getTracerouteEngine() {
     throw new UnsupportedOperationException();
   }
 
@@ -509,6 +456,59 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public AnswerElement standard(ReachabilityParameters reachabilityParameters) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Set<Flow> bddLoopDetection() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Set<Flow> bddMultipathConsistency(MultipathConsistencyParameters parameters) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public @Nullable String loadQuestionSettings(@Nonnull Question question) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public @Nullable Answerer createAnswerer(@Nonnull Question question) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public NetworkSnapshot getNetworkSnapshot() {
+    return new NetworkSnapshot(
+        new NetworkId(UUID.randomUUID().toString()), new SnapshotId(UUID.randomUUID().toString()));
+  }
+
+  @Override
+  public Layer1Topology loadRawLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public SortedSet<Edge> getEdgeBlacklist(NetworkSnapshot networkSnapshot) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public SortedSet<NodeInterfacePair> getInterfaceBlacklist(NetworkSnapshot networkSnapshot) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public SortedSet<String> getNodeBlacklist(NetworkSnapshot networkSnapshot) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nonnull
+  @Override
+  public BidirectionalReachabilityResult bidirectionalReachability(
+      BDDPacket bddPacket, ReachabilityParameters parameters) {
     throw new UnsupportedOperationException();
   }
 }
