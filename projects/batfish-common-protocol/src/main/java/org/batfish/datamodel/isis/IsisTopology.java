@@ -27,12 +27,17 @@ public final class IsisTopology {
       new IsisTopology(
           NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build());
   private static final String PROP_EDGES = "edges";
+  private static final String PROP_NODES = "nodes";
 
   @JsonCreator
   private static @Nonnull IsisTopology create(
-      @JsonProperty(PROP_EDGES) @Nullable Set<IsisEdge> edges) {
+      @JsonProperty(PROP_EDGES) @Nullable Set<IsisEdge> edges,
+      @JsonProperty(PROP_NODES) @Nullable Set<IsisNode> nodes) {
     MutableNetwork<IsisNode, IsisEdge> network =
         NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build();
+    if (nodes != null) {
+      nodes.forEach(network::addNode);
+    }
     if (edges != null) {
       edges.forEach(edge -> network.addEdge(edge.getNode1(), edge.getNode2(), edge));
     }
@@ -80,6 +85,11 @@ public final class IsisTopology {
   @JsonIgnore
   public @Nonnull Network<IsisNode, IsisEdge> getNetwork() {
     return _network;
+  }
+
+  @JsonProperty(PROP_NODES)
+  private @Nonnull Set<IsisNode> getNodes() {
+    return _network.nodes();
   }
 
   @Override

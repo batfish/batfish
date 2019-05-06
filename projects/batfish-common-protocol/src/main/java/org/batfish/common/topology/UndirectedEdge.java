@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -36,5 +37,22 @@ public final class UndirectedEdge<N> {
   @JsonProperty(PROP_NODE_V)
   public @Nonnull N getNodeV() {
     return _nodeV;
+  }
+
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof UndirectedEdge)) {
+      return false;
+    }
+    UndirectedEdge<?> rhs = (UndirectedEdge<?>) obj;
+    return _nodeU.equals(rhs._nodeU) && _nodeV.equals(rhs._nodeV);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_nodeU, _nodeV);
   }
 }

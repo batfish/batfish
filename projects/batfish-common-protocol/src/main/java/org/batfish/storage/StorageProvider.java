@@ -572,7 +572,7 @@ public interface StorageProvider {
    * Stores the provided {@code eigrpTopology} corresponding to the converged {@link
    * org.batfish.datamodel.DataPlane} for the provided {@link NetworkSnapshot}.
    *
-   * @throws IOException if there is an error writing the {@code bgpTopology}
+   * @throws IOException if there is an error writing the {@code eigrpTopology}
    */
   void storeEigrpTopology(EigrpTopology eigrpTopology, NetworkSnapshot networkSnapshot)
       throws IOException;

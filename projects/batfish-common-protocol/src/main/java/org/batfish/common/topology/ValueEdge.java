@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -18,9 +19,9 @@ public final class ValueEdge<N, V> {
   private static final String PROP_TARGET = "target";
   private static final String PROP_VALUE = "value";
 
-  private final N _source;
-  private final N _target;
-  private final V _value;
+  private final @Nonnull N _source;
+  private final @Nonnull N _target;
+  private final @Nonnull V _value;
 
   @JsonCreator
   private static @Nonnull <N, V> ValueEdge<N, V> create(
@@ -52,5 +53,22 @@ public final class ValueEdge<N, V> {
   @JsonProperty(PROP_VALUE)
   public @Nonnull V getValue() {
     return _value;
+  }
+
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof ValueEdge)) {
+      return false;
+    }
+    ValueEdge<?, ?> rhs = (ValueEdge<?, ?>) obj;
+    return _source.equals(rhs._source) && _target.equals(rhs._target) && _value.equals(rhs._value);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_source, _target, _value);
   }
 }
