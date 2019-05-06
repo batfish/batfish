@@ -1,8 +1,8 @@
 [
   {
-    "class" : "org.batfish.symbolic.answers.SmtReachabilityAnswerElement",
+    "class" : "org.batfish.minesweeper.answers.SmtReachabilityAnswerElement",
     "flowHistory" : {
-      "class" : "org.batfish.symbolic.answers.FlowHistory",
+      "class" : "org.batfish.minesweeper.answers.FlowHistory",
       "traces" : {
         "Flow<ingressNode:r1 ingressVrf:default srcIp:0.0.0.0 dstIp:42.42.42.1 ipProtocol:HOPOPT dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:SMT>" : {
           "environments" : {

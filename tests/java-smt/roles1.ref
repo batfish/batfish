@@ -1,6 +1,6 @@
 [
   {
-    "class" : "org.batfish.symbolic.answers.RoleAnswerElement",
+    "class" : "org.batfish.minesweeper.answers.RoleAnswerElement",
     "exportBgpEcs" : [
       [
         "r1,Serial1 --> _,_",
