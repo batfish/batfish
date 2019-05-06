@@ -18,6 +18,8 @@ java_library(
     ]),
     resources = glob(["src/main/resources/**"]),
     runtime_deps = [
+        "//projects/minesweeper",
+        "//projects/question",
     ],
     deps = [
         "//projects/batfish",
@@ -207,6 +209,9 @@ junit_tests(
     srcs = glob([
         "src/test/java/org/batfish/symbolic/smt/*.java",
     ]),
+    runtime_deps = [
+        "//projects/minesweeper",
+    ],
     deps = [
         "//projects/batfish",
         "//projects/batfish:batfish_testlib",

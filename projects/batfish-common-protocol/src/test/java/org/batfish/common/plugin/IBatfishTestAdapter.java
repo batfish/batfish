@@ -9,7 +9,6 @@ import java.util.SortedSet;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
-import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.configuration2.ImmutableConfiguration;
@@ -46,9 +45,6 @@ import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
-import org.batfish.datamodel.questions.smt.HeaderQuestion;
-import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.identifiers.NetworkId;
@@ -386,61 +382,6 @@ public class IBatfishTestAdapter implements IBatfish {
   @Override
   public void registerExternalBgpAdvertisementPlugin(
       ExternalBgpAdvertisementPlugin externalBgpAdvertisementPlugin) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public AnswerElement smtBlackhole(HeaderQuestion q) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public AnswerElement smtBoundedLength(HeaderLocationQuestion q, Integer bound) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public AnswerElement smtDeterminism(HeaderQuestion q) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public AnswerElement smtEqualLength(HeaderLocationQuestion q) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public AnswerElement smtForwarding(HeaderQuestion q) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public AnswerElement smtLoadBalance(HeaderLocationQuestion q, int threshold) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public AnswerElement smtLocalConsistency(Pattern routerRegex, boolean strict, boolean fullModel) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public AnswerElement smtMultipathConsistency(HeaderLocationQuestion q) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public AnswerElement smtReachability(HeaderLocationQuestion q) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public AnswerElement smtRoles(RoleQuestion q) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public AnswerElement smtRoutingLoop(HeaderQuestion q) {
     throw new UnsupportedOperationException();
   }
 

@@ -626,6 +626,19 @@
 
       <dependency>
         <groupId>org.batfish</groupId>
+        <artifactId>minesweeper</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.batfish</groupId>
+        <artifactId>minesweeper</artifactId>
+        <classifier>tests</classifier>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.batfish</groupId>
         <artifactId>question</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -1022,6 +1035,7 @@
     <module>bdd</module>
     <module>build-tools</module>
     <module>coordinator</module>
+    <module>minesweeper</module>
     <module>question</module>
     <module>symbolic</module>
   </modules>

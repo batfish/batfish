@@ -9,7 +9,7 @@
     <version>0.36.0</version>
   </parent>
 
-  <artifactId>allinone</artifactId>
+  <artifactId>minesweeper</artifactId>
 
   <packaging>jar</packaging>
 
@@ -26,13 +26,9 @@
               </goals>
               <configuration>
                 <ignoredUnusedDeclaredDependencies>
-                  <ignoredUnusedDeclaredDependency>org.lastnpe.eea:guava-eea
+                  <ignoredUnusedDeclaredDependency>org.batfish:batfish
                   </ignoredUnusedDeclaredDependency>
-                  <ignoredUnusedDeclaredDependency>org.lastnpe.eea:jdk-eea
-                  </ignoredUnusedDeclaredDependency>
-                  <ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14
-                  </ignoredUnusedDeclaredDependency>
-                  <ignoredUnusedDeclaredDependency>org.batfish:question
+                  <ignoredUnusedDeclaredDependency>com.google.auto.service:auto-service
                   </ignoredUnusedDeclaredDependency>
                 </ignoredUnusedDeclaredDependencies>
               </configuration>
@@ -57,39 +53,29 @@
       </plugin>
 
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
+        <groupId>org.antlr</groupId>
+        <artifactId>antlr4-maven-plugin</artifactId>
         <executions>
+          <!-- Test grammars -->
           <execution>
-            <phase>package</phase>
+            <id>antlr4-test-simple</id>
+            <phase>generate-test-sources</phase>
             <goals>
-              <goal>shade</goal>
+              <goal>antlr4</goal>
             </goals>
             <configuration>
-              <finalName>${project.artifactId}-bundle-${project.version}</finalName>
-              <filters>
-                <filter>
-                  <artifact>*:*</artifact>
-                  <excludes>
-                    <exclude>META-INF/*.DSA</exclude>
-                    <exclude>META-INF/*.RSA</exclude>
-                    <exclude>META-INF/*.SF</exclude>
-                  </excludes>
-                </filter>
-              </filters>
-              <transformers>
-                <transformer
-                    implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <manifestEntries>
-                    <Main-Class>org.batfish.allinone.Main</Main-Class>
-                  </manifestEntries>
-                </transformer>
-                <transformer
-                    implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-              </transformers>
+              <sourceDirectory>${basedir}/src/test/antlr4</sourceDirectory>
+              <outputDirectory>${project.build.directory}/generated-test-sources/antlr4
+              </outputDirectory>
+              <includes>**/*.g4</includes>
             </configuration>
           </execution>
         </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>
@@ -97,27 +83,12 @@
   <dependencies>
     <dependency>
       <groupId>org.batfish</groupId>
-      <artifactId>batfish</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.batfish</groupId>
-      <artifactId>batfish-client</artifactId>
+      <artifactId>bdd</artifactId>
     </dependency>
 
     <dependency>
       <groupId>org.batfish</groupId>
       <artifactId>batfish-common-protocol</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.batfish</groupId>
-      <artifactId>coordinator</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.batfish</groupId>
-      <artifactId>minesweeper</artifactId>
     </dependency>
 
     <dependency>
@@ -126,42 +97,37 @@
     </dependency>
 
     <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.auto.service</groupId>
+      <artifactId>auto-service</artifactId>
+      <optional>true</optional>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>com.uber.jaeger</groupId>
-      <artifactId>jaeger-core</artifactId>
+      <groupId>com.microsoft.z3</groupId>
+      <artifactId>z3</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>io.opentracing</groupId>
-      <artifactId>opentracing-util</artifactId>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
     </dependency>
 
-    <!-- Provided dependencies to be available at compile time only -->
-    <dependency>
-      <groupId>org.lastnpe.eea</groupId>
-      <artifactId>guava-eea</artifactId>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.lastnpe.eea</groupId>
-      <artifactId>jdk-eea</artifactId>
-      <scope>provided</scope>
-    </dependency>
-
-
-    <!-- Test scope dependencies. -->
-    <dependency>
-      <groupId>org.batfish</groupId>
-      <artifactId>batfish</artifactId>
-      <classifier>tests</classifier>
-      <scope>test</scope>
-    </dependency>
-
+    <!-- Test dependencies. -->
     <dependency>
       <groupId>org.batfish</groupId>
       <artifactId>batfish-common-protocol</artifactId>
@@ -171,8 +137,20 @@
 
     <dependency>
       <groupId>org.batfish</groupId>
-      <artifactId>minesweeper</artifactId>
+      <artifactId>batfish</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.batfish</groupId>
+      <artifactId>batfish</artifactId>
       <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava-testlib</artifactId>
       <scope>test</scope>
     </dependency>
 
@@ -186,13 +164,6 @@
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest</artifactId>
       <scope>test</scope>
-    </dependency>
-
-    <!-- Runtime dependencies to add logging. -->
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-jdk14</artifactId>
-      <scope>runtime</scope>
     </dependency>
   </dependencies>
 </project>

@@ -2,29 +2,32 @@ package org.batfish.question;
 
 import com.google.auto.service.AutoService;
 import org.batfish.common.Answerer;
+import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
+import org.batfish.minesweeper.smt.PropertyChecker;
 
 @AutoService(Plugin.class)
-public class SmtRoutingLoopQuestionPlugin extends QuestionPlugin {
+public class SmtDeterministicQuestionPlugin extends QuestionPlugin {
 
-  public static class RoutingLoopAnswerer extends Answerer {
+  public static class DeterministicAnswerer extends Answerer {
 
-    public RoutingLoopAnswerer(Question question, IBatfish batfish) {
+    public DeterministicAnswerer(Question question, IBatfish batfish) {
       super(question, batfish);
     }
 
     @Override
     public AnswerElement answer() {
-      RoutingLoopQuestion q = (RoutingLoopQuestion) _question;
-      return _batfish.smtRoutingLoop(q);
+      DeterministicQuestion q = (DeterministicQuestion) _question;
+      PropertyChecker p = new PropertyChecker(new BDDPacket(), _batfish);
+      return p.checkDeterminism(q);
     }
   }
 
-  public static class RoutingLoopQuestion extends HeaderQuestion {
+  public static class DeterministicQuestion extends HeaderQuestion {
 
     @Override
     public boolean getDataPlane() {
@@ -33,17 +36,17 @@ public class SmtRoutingLoopQuestionPlugin extends QuestionPlugin {
 
     @Override
     public String getName() {
-      return "smt-routing-loop";
+      return "smt-deterministic";
     }
   }
 
   @Override
   protected Answerer createAnswerer(Question question, IBatfish batfish) {
-    return new RoutingLoopAnswerer(question, batfish);
+    return new DeterministicAnswerer(question, batfish);
   }
 
   @Override
   protected Question createQuestion() {
-    return new RoutingLoopQuestion();
+    return new DeterministicQuestion();
   }
 }

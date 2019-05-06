@@ -2,48 +2,48 @@ package org.batfish.question;
 
 import com.google.auto.service.AutoService;
 import org.batfish.common.Answerer;
+import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
+import org.batfish.minesweeper.smt.PropertyChecker;
 
 @AutoService(Plugin.class)
-public class SmtDeterministicQuestionPlugin extends QuestionPlugin {
+public class SmtBlackholeQuestionPlugin extends QuestionPlugin {
 
-  public static class DeterministicAnswerer extends Answerer {
+  public static class BlackholeAnswerer extends Answerer {
 
-    public DeterministicAnswerer(Question question, IBatfish batfish) {
+    public BlackholeAnswerer(Question question, IBatfish batfish) {
       super(question, batfish);
     }
 
     @Override
     public AnswerElement answer() {
-      DeterministicQuestion q = (DeterministicQuestion) _question;
-      return _batfish.smtDeterminism(q);
+      BlackholeQuestion q = (BlackholeQuestion) _question;
+      PropertyChecker p = new PropertyChecker(new BDDPacket(), _batfish);
+      return p.checkBlackHole(q);
     }
   }
 
-  public static class DeterministicQuestion extends HeaderQuestion {
+  public static class BlackholeQuestion extends HeaderQuestion {
 
-    @Override
-    public boolean getDataPlane() {
-      return false;
-    }
+    public BlackholeQuestion() {}
 
     @Override
     public String getName() {
-      return "smt-deterministic";
+      return "smt-blackhole";
     }
   }
 
   @Override
   protected Answerer createAnswerer(Question question, IBatfish batfish) {
-    return new DeterministicAnswerer(question, batfish);
+    return new BlackholeAnswerer(question, batfish);
   }
 
   @Override
   protected Question createQuestion() {
-    return new DeterministicQuestion();
+    return new BlackholeQuestion();
   }
 }

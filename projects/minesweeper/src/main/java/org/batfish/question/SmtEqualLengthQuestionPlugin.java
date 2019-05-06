@@ -2,29 +2,31 @@ package org.batfish.question;
 
 import com.google.auto.service.AutoService;
 import org.batfish.common.Answerer;
+import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
+import org.batfish.minesweeper.smt.PropertyChecker;
 
 @AutoService(Plugin.class)
-public class SmtMultipathConsistencyQuestionPlugin extends QuestionPlugin {
+public class SmtEqualLengthQuestionPlugin extends QuestionPlugin {
 
-  public static class MulipathConsistencyAnswerer extends Answerer {
+  public static class EqualLengthAnswerer extends Answerer {
 
-    public MulipathConsistencyAnswerer(Question question, IBatfish batfish) {
+    public EqualLengthAnswerer(Question question, IBatfish batfish) {
       super(question, batfish);
     }
 
     @Override
     public AnswerElement answer() {
-      MultipathConsistencyQuestion q = (MultipathConsistencyQuestion) _question;
-      return _batfish.smtMultipathConsistency(q);
+      PropertyChecker p = new PropertyChecker(new BDDPacket(), _batfish);
+      return p.checkEqualLength((EqualLengthQuestion) _question);
     }
   }
 
-  public static class MultipathConsistencyQuestion extends HeaderLocationQuestion {
+  public static class EqualLengthQuestion extends HeaderLocationQuestion {
 
     @Override
     public boolean getDataPlane() {
@@ -33,17 +35,17 @@ public class SmtMultipathConsistencyQuestionPlugin extends QuestionPlugin {
 
     @Override
     public String getName() {
-      return "smt-multipath-consistency";
+      return "smt-equal-length";
     }
   }
 
   @Override
   protected Answerer createAnswerer(Question question, IBatfish batfish) {
-    return new MulipathConsistencyAnswerer(question, batfish);
+    return new EqualLengthAnswerer(question, batfish);
   }
 
   @Override
   protected Question createQuestion() {
-    return new MultipathConsistencyQuestion();
+    return new EqualLengthQuestion();
   }
 }

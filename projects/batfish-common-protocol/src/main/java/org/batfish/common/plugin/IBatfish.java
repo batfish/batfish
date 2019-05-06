@@ -8,7 +8,6 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
-import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.configuration2.ImmutableConfiguration;
@@ -40,9 +39,6 @@ import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
-import org.batfish.datamodel.questions.smt.HeaderQuestion;
-import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
@@ -191,28 +187,6 @@ public interface IBatfish extends IPluginConsumer {
 
   void registerExternalBgpAdvertisementPlugin(
       ExternalBgpAdvertisementPlugin externalBgpAdvertisementPlugin);
-
-  AnswerElement smtBlackhole(HeaderQuestion q);
-
-  AnswerElement smtBoundedLength(HeaderLocationQuestion q, Integer bound);
-
-  AnswerElement smtDeterminism(HeaderQuestion q);
-
-  AnswerElement smtEqualLength(HeaderLocationQuestion q);
-
-  AnswerElement smtForwarding(HeaderQuestion q);
-
-  AnswerElement smtLoadBalance(HeaderLocationQuestion q, int threshold);
-
-  AnswerElement smtLocalConsistency(Pattern routerRegex, boolean strict, boolean fullModel);
-
-  AnswerElement smtMultipathConsistency(HeaderLocationQuestion q);
-
-  AnswerElement smtReachability(HeaderLocationQuestion q);
-
-  AnswerElement smtRoles(RoleQuestion q);
-
-  AnswerElement smtRoutingLoop(HeaderQuestion q);
 
   /** Use more explicit {@link #specifierContext(NetworkSnapshot)} if possible. */
   SpecifierContext specifierContext();

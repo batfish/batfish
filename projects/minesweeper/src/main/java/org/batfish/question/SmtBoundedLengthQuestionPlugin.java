@@ -3,11 +3,14 @@ package org.batfish.question;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import org.batfish.common.Answerer;
+import org.batfish.common.BatfishException;
+import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
+import org.batfish.minesweeper.smt.PropertyChecker;
 
 @AutoService(Plugin.class)
 public class SmtBoundedLengthQuestionPlugin extends QuestionPlugin {
@@ -22,7 +25,11 @@ public class SmtBoundedLengthQuestionPlugin extends QuestionPlugin {
     public AnswerElement answer() {
       BoundedLengthQuestion q = (BoundedLengthQuestion) _question;
 
-      return _batfish.smtBoundedLength(q, q.getBound());
+      if (q.getBound() == null) {
+        throw new BatfishException("Missing parameter length bound: (e.g., bound=3)");
+      }
+      PropertyChecker p = new PropertyChecker(new BDDPacket(), _batfish);
+      return p.checkBoundedLength(q, q.getBound());
     }
   }
 

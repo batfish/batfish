@@ -3,11 +3,13 @@ package org.batfish.question;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import org.batfish.common.Answerer;
+import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
+import org.batfish.minesweeper.smt.PropertyChecker;
 
 @AutoService(Plugin.class)
 public class SmtLoadBalanceQuestionPlugin extends QuestionPlugin {
@@ -21,7 +23,8 @@ public class SmtLoadBalanceQuestionPlugin extends QuestionPlugin {
     @Override
     public AnswerElement answer() {
       LoadBalanceQuestion q = (LoadBalanceQuestion) _question;
-      return _batfish.smtLoadBalance(q, q.getThreshold());
+      PropertyChecker p = new PropertyChecker(new BDDPacket(), _batfish);
+      return p.checkLoadBalancing(q, q.getThreshold());
     }
   }
 
