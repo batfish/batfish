@@ -729,9 +729,9 @@ public final class FlatJuniperGrammarTest {
     Layer1Topology layer1LogicalTopology =
         batfish.getTopologyProvider().getLayer1LogicalTopology(batfish.getNetworkSnapshot()).get();
     Layer2Topology layer2Topology =
-        batfish.getTopologyProvider().getLayer2Topology(batfish.getNetworkSnapshot()).get();
+        batfish.getTopologyProvider().getInitialLayer2Topology(batfish.getNetworkSnapshot()).get();
     Topology layer3Topology =
-        batfish.getTopologyProvider().getLayer3Topology(batfish.getNetworkSnapshot());
+        batfish.getTopologyProvider().getInitialLayer3Topology(batfish.getNetworkSnapshot());
 
     // check layer-1 logical adjacencies
     assertThat(

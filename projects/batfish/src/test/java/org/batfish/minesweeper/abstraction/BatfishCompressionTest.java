@@ -209,13 +209,18 @@ public class BatfishCompressionTest {
             cD.getHostname(), cD));
   }
 
-  private DataPlane getDataPlane(SortedMap<String, Configuration> configs) throws IOException {
+  private Batfish getBatfish(SortedMap<String, Configuration> configs) throws IOException {
     // make sure to reconstruct the network, since compression mutates it
     TemporaryFolder tmp = new TemporaryFolder();
     tmp.create();
     Batfish batfish = BatfishTestUtils.getBatfish(configs, tmp);
     batfish.computeDataPlane();
-    return batfish.loadDataPlane();
+    return batfish;
+  }
+
+  private DataPlane getDataPlane(SortedMap<String, Configuration> configs) throws IOException {
+    // make sure to reconstruct the network, since compression mutates it
+    return getBatfish(configs).loadDataPlane();
   }
 
   private SortedMap<String, Configuration> simpleNetwork() {
@@ -312,9 +317,15 @@ public class BatfishCompressionTest {
             .setDstIps(ImmutableList.of(new IpWildcard(Prefix.parse("4.4.4.4/32"))))
             .build();
     SortedMap<String, Configuration> origConfigs = diamondNetwork();
-    DataPlane origDataPlane = getDataPlane(origConfigs);
+    Batfish batfish = getBatfish(origConfigs);
+    DataPlane origDataPlane = batfish.loadDataPlane();
     Map<String, Map<String, Fib>> origFibs = origDataPlane.getFibs();
-    Topology origTopology = new Topology(origDataPlane.getTopologyEdges());
+    Topology origTopology =
+        new Topology(
+            batfish
+                .getTopologyProvider()
+                .getLayer3Topology(batfish.getNetworkSnapshot())
+                .sortedEdges());
 
     /* Node A should have a route with C as a next hop. */
     assertThat(

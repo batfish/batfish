@@ -36,16 +36,18 @@ public final class AutocompleteSuggestion {
     ADDRESS_LITERAL,
     /** Names of objects in the network, e.g., nodes, interfaces, address groups */
     NAME_LITERAL,
+    /** Operator that ends a (sub) expression, e.g., ']' in [interface] and ')' in @role(a, b) */
+    OPERATOR_END,
+    /** Operator with follow-on operands, e.g., node*[*eth], @role(a*,* b), and *!* TCP */
+    OPERATOR_NON_END,
+    /** Parenthesis to enclose a (sub) expression, e.g., '(' in (node) */
+    OPEN_PARENS,
     /** Indicates a regex */
     REGEX,
     /** A function, e.g., @enter( and @in( */
     FUNCTION,
-    /** An operator that's followed by something, e.g., '[' in node[iface] and ',' in @role(a, b) */
-    OPERATOR_WITH_RHS,
     /** Operators that indicates set functions, e.g., union and intersection */
     SET_OPERATOR,
-    /** Indicates (the start of) a parenthetical content */
-    PARENTHESIS,
     /** We don't know or used for backward compatibility as the default */
     UNKNOWN
   }

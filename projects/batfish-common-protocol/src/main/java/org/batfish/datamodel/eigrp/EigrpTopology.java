@@ -1,17 +1,19 @@
 package org.batfish.datamodel.eigrp;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.graph.ImmutableNetwork;
 import com.google.common.graph.MutableNetwork;
 import com.google.common.graph.Network;
 import com.google.common.graph.NetworkBuilder;
-import java.io.Serializable;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.topology.SerializableNetwork;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Topology;
 
@@ -20,12 +22,29 @@ import org.batfish.datamodel.Topology;
  * edges are {@link EigrpEdge}s.
  */
 @ParametersAreNonnullByDefault
-public final class EigrpTopology implements Serializable {
+public final class EigrpTopology {
+
+  private static final String PROP_EDGES = "edges";
+  private static final String PROP_NODES = "nodes";
 
   public static final EigrpTopology EMPTY =
       new EigrpTopology(
           NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build());
-  private static final long serialVersionUID = 1L;
+
+  @JsonCreator
+  private static @Nonnull EigrpTopology create(
+      @JsonProperty(PROP_NODES) @Nullable Set<EigrpInterface> nodes,
+      @JsonProperty(PROP_EDGES) @Nullable Set<EigrpEdge> edges) {
+    MutableNetwork<EigrpInterface, EigrpEdge> network =
+        NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build();
+    if (nodes != null) {
+      nodes.forEach(network::addNode);
+    }
+    if (edges != null) {
+      edges.forEach(edge -> network.addEdge(edge.getNode1(), edge.getNode2(), edge));
+    }
+    return new EigrpTopology(network);
+  }
 
   /** Initialize the EIGRP topology as a directed graph. */
   public static @Nonnull EigrpTopology initEigrpTopology(
@@ -49,14 +68,25 @@ public final class EigrpTopology implements Serializable {
     return new EigrpTopology(graph);
   }
 
-  private final @Nonnull SerializableNetwork<EigrpInterface, EigrpEdge> _network;
+  private final @Nonnull Network<EigrpInterface, EigrpEdge> _network;
 
   public EigrpTopology(Network<EigrpInterface, EigrpEdge> network) {
-    _network = new SerializableNetwork<>(network);
+    _network = ImmutableNetwork.copyOf(network);
   }
 
-  public @Nonnull SerializableNetwork<EigrpInterface, EigrpEdge> getNetwork() {
+  @JsonIgnore
+  public @Nonnull Network<EigrpInterface, EigrpEdge> getNetwork() {
     return _network;
+  }
+
+  @JsonProperty(PROP_EDGES)
+  private @Nonnull Set<EigrpEdge> getEdges() {
+    return _network.edges();
+  }
+
+  @JsonProperty(PROP_NODES)
+  private @Nonnull Set<EigrpInterface> getNodes() {
+    return _network.nodes();
   }
 
   @Override

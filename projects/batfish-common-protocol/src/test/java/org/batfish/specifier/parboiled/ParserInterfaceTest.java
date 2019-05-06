@@ -9,12 +9,13 @@ import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_TYPE;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_VRF;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_ZONE;
-import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_INTERFACE;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_AND_INTERFACE_TAIL;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_PARENS;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_AND_DIMENSION;
 import static org.batfish.specifier.parboiled.Anchor.Type.NODE_TYPE;
+import static org.batfish.specifier.parboiled.Anchor.Type.OPERATOR_END;
 import static org.batfish.specifier.parboiled.Anchor.Type.REFERENCE_BOOK_AND_INTERFACE_GROUP;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -167,7 +168,7 @@ public class ParserInterfaceTest {
             new ParboiledAutoCompleteSuggestion("\\", query.length(), INTERFACE_SET_OP),
             new ParboiledAutoCompleteSuggestion(",", query.length(), INTERFACE_SET_OP),
             new ParboiledAutoCompleteSuggestion("&", query.length(), INTERFACE_SET_OP),
-            new ParboiledAutoCompleteSuggestion("[", query.length(), NODE_AND_INTERFACE)));
+            new ParboiledAutoCompleteSuggestion("[", query.length(), NODE_AND_INTERFACE_TAIL)));
   }
 
   @Test
@@ -402,7 +403,7 @@ public class ParserInterfaceTest {
                     new NodeInterfacePair("n2a", "eth21")))
             .build();
 
-    String query = "n1a[eth1";
+    String query = "n1a[eth";
     Set<ParboiledAutoCompleteSuggestion> suggestions =
         autoCompleteHelper(query, completionMetadata);
 
@@ -413,7 +414,7 @@ public class ParserInterfaceTest {
             new ParboiledAutoCompleteSuggestion(",", query.length(), INTERFACE_SET_OP),
             new ParboiledAutoCompleteSuggestion("\\", query.length(), INTERFACE_SET_OP),
             new ParboiledAutoCompleteSuggestion("&", query.length(), INTERFACE_SET_OP),
-            new ParboiledAutoCompleteSuggestion("]", query.length(), NODE_AND_INTERFACE),
+            new ParboiledAutoCompleteSuggestion("]", query.length(), OPERATOR_END),
             new ParboiledAutoCompleteSuggestion("eth11", 4, INTERFACE_NAME),
             new ParboiledAutoCompleteSuggestion("eth12", 4, INTERFACE_NAME)));
   }
