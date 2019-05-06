@@ -130,12 +130,14 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE
 import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_AREA_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasKey;
@@ -2013,11 +2015,13 @@ public final class FlatJuniperGrammarTest {
         BatfishTestUtils.parseTextConfigs(
                 _folder, "org/batfish/grammar/juniper/testconfigs/ospf-area-default-metric")
             .get("ospf-area-default-metric");
-    OspfArea area1 = config.getDefaultVrf().getOspfProcess().getAreas().get(1L);
+    OspfArea area1 =
+        config.getDefaultVrf().getOspfProcesses().get(DEFAULT_VRF_NAME).getAreas().get(1L);
     assertThat(area1, hasInjectDefaultRoute());
     assertThat(area1, hasMetricOfDefaultRoute(equalTo(10)));
 
-    OspfArea area2 = config.getDefaultVrf().getOspfProcess().getAreas().get(2L);
+    OspfArea area2 =
+        config.getDefaultVrf().getOspfProcesses().get(DEFAULT_VRF_NAME).getAreas().get(2L);
     assertThat(area2, not(hasInjectDefaultRoute()));
   }
 
@@ -2026,7 +2030,9 @@ public final class FlatJuniperGrammarTest {
     // Config has interfaces ge-0/0/1.0 and ge-0/0/2.0 configured in OSPF.
     // Interface ge-0/0/2.0 has disable set in OSPF config.
     Configuration config = parseConfig("ospf-interface-disable");
-    assertThat(config.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcess(), notNullValue());
+    assertThat(
+        config.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses(),
+        hasEntry(equalTo(DEFAULT_VRF_NAME), notNullValue()));
     assertThat(config.getActiveInterfaces().get("ge-0/0/1.0"), hasOspfEnabled());
     assertThat(config.getActiveInterfaces().get("ge-0/0/2.0"), not(hasOspfEnabled()));
   }
@@ -2042,19 +2048,21 @@ public final class FlatJuniperGrammarTest {
     Configuration config = parseConfig("ospf-disable");
 
     // Default VRF: OSPF process should not be created
-    assertThat(config.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcess(), nullValue());
+    assertThat(config.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses(), anEmptyMap());
     assertThat(config.getActiveInterfaces().get("ge-0/0/0.0"), not(hasOspfEnabled()));
 
     // INSTANCE_1: OSPF process should not be created
-    assertThat(config.getVrfs().get("INSTANCE_1").getOspfProcess(), nullValue());
+    assertThat(config.getVrfs().get("INSTANCE_1").getOspfProcesses(), anEmptyMap());
     assertThat(config.getActiveInterfaces().get("ge-0/0/1.0"), not(hasOspfEnabled()));
 
     // INSTANCE_2: OSPF process should be created and its interface enabled
-    assertThat(config.getVrfs().get("INSTANCE_2").getOspfProcess(), notNullValue());
+    assertThat(
+        config.getVrfs().get("INSTANCE_2").getOspfProcesses(),
+        hasEntry(equalTo("INSTANCE_2"), notNullValue()));
     assertThat(config.getActiveInterfaces().get("ge-0/0/2.0"), hasOspfEnabled());
 
     // INSTANCE_3: OSPF process should not be created
-    assertThat(config.getVrfs().get("INSTANCE_3").getOspfProcess(), nullValue());
+    assertThat(config.getVrfs().get("INSTANCE_3").getOspfProcesses(), anEmptyMap());
     assertThat(config.getActiveInterfaces().get("ge-0/0/3.0"), not(hasOspfEnabled()));
   }
 
@@ -2067,7 +2075,8 @@ public final class FlatJuniperGrammarTest {
     OspfAreaSummary summary =
         config
             .getDefaultVrf()
-            .getOspfProcess()
+            .getOspfProcesses()
+            .get(DEFAULT_VRF_NAME)
             .getAreas()
             .get(1L)
             .getSummaries()
@@ -2079,7 +2088,8 @@ public final class FlatJuniperGrammarTest {
     summary =
         config
             .getDefaultVrf()
-            .getOspfProcess()
+            .getOspfProcesses()
+            .get(DEFAULT_VRF_NAME)
             .getAreas()
             .get(2L)
             .getSummaries()
@@ -3892,7 +3902,12 @@ public final class FlatJuniperGrammarTest {
                         hasStubType(equalTo(StubType.STUB)),
                         hasSummary(Prefix.parse("10.0.1.0/24"), isAdvertised()))))));
     String summaryFilterName =
-        c.getDefaultVrf().getOspfProcess().getAreas().get(1L).getSummaryFilter();
+        c.getDefaultVrf()
+            .getOspfProcesses()
+            .get(DEFAULT_VRF_NAME)
+            .getAreas()
+            .get(1L)
+            .getSummaryFilter();
     assertThat(summaryFilterName, not(nullValue()));
     assertThat(c.getRouteFilterLists().get(summaryFilterName), not(nullValue()));
     Prefix blockPrefix = Prefix.parse("10.0.1.0/24");

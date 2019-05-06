@@ -232,7 +232,13 @@ public class Graph {
   @Nullable
   public static RoutingPolicy findCommonRoutingPolicy(Configuration conf, Protocol proto) {
     if (proto.isOspf()) {
-      String exp = conf.getDefaultVrf().getOspfProcess().getExportPolicy();
+      if (conf.getDefaultVrf().getOspfProcesses().isEmpty()) {
+        throw new BatfishException(
+            String.format("No OSPF processes on node %s", conf.getHostname()));
+      }
+      // TODO Support multiple OSPF processes
+      String exp =
+          conf.getDefaultVrf().getOspfProcesses().values().iterator().next().getExportPolicy();
       return conf.getRoutingPolicies().get(exp);
     }
     if (proto.isBgp()) {
@@ -256,7 +262,7 @@ public class Graph {
   public static Set<Prefix> getOriginatedNetworks(Configuration conf) {
     Set<Prefix> allNetworks = new HashSet<>();
     Vrf vrf = conf.getDefaultVrf();
-    if (vrf.getOspfProcess() != null) {
+    if (!vrf.getOspfProcesses().isEmpty()) {
       allNetworks.addAll(getOriginatedNetworks(conf, Protocol.OSPF));
     }
     if (vrf.getBgpProcess() != null) {
@@ -278,12 +284,13 @@ public class Graph {
     Set<Prefix> acc = new HashSet<>();
 
     if (proto.isOspf()) {
-      OspfProcess ospf = conf.getDefaultVrf().getOspfProcess();
-      for (OspfArea area : ospf.getAreas().values()) {
-        for (String ifaceName : area.getInterfaces()) {
-          Interface iface = conf.getAllInterfaces().get(ifaceName);
-          if (iface.getActive() && iface.getOspfEnabled()) {
-            acc.add(iface.getAddress().getPrefix());
+      for (OspfProcess ospf : conf.getDefaultVrf().getOspfProcesses().values()) {
+        for (OspfArea area : ospf.getAreas().values()) {
+          for (String ifaceName : area.getInterfaces()) {
+            Interface iface = conf.getAllInterfaces().get(ifaceName);
+            if (iface.getActive() && iface.getOspfEnabled()) {
+              acc.add(iface.getAddress().getPrefix());
+            }
           }
         }
       }
@@ -732,8 +739,7 @@ public class Graph {
       String router = entry.getKey();
       Configuration conf = entry.getValue();
       Set<Long> areaIds = new HashSet<>();
-      OspfProcess p = conf.getDefaultVrf().getOspfProcess();
-      if (p != null) {
+      for (OspfProcess p : conf.getDefaultVrf().getOspfProcesses().values()) {
         p.getAreas().forEach((id, area) -> areaIds.add(id));
       }
       _areaIds.put(router, areaIds);
@@ -1018,7 +1024,18 @@ public class Graph {
       return conf.getDefaultVrf().getBgpProcess().getRouterId().asLong();
     }
     if (proto.isOspf()) {
-      return conf.getDefaultVrf().getOspfProcess().getRouterId().asLong();
+      if (conf.getDefaultVrf().getOspfProcesses().isEmpty()) {
+        throw new BatfishException(
+            String.format("No OSPF processes on node %s", conf.getHostname()));
+      }
+      // TODO Support multiple OSPF processes
+      return conf.getDefaultVrf()
+          .getOspfProcesses()
+          .values()
+          .iterator()
+          .next()
+          .getRouterId()
+          .asLong();
     } else {
       return 0;
     }
@@ -1147,11 +1164,12 @@ public class Graph {
       return null;
     }
     if (proto.isOspf()) {
-      OspfProcess p = conf.getDefaultVrf().getOspfProcess();
-      if (p == null) {
+      if (conf.getDefaultVrf().getOspfProcesses().isEmpty()) {
         return null;
       }
-      String exp = p.getExportPolicy();
+      // TODO Support multiple OSPF processes
+      String exp =
+          conf.getDefaultVrf().getOspfProcesses().values().iterator().next().getExportPolicy();
       return conf.getRoutingPolicies().get(exp);
     }
     if (proto.isBgp()) {

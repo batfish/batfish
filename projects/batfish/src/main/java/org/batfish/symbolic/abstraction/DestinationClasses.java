@@ -221,7 +221,7 @@ public class DestinationClasses {
       List<Protocol> protos = new ArrayList<>();
       protocols.put(router, protos);
 
-      if (conf.getDefaultVrf().getOspfProcess() != null) {
+      if (!conf.getDefaultVrf().getOspfProcesses().isEmpty()) {
         protos.add(Protocol.OSPF);
       }
 

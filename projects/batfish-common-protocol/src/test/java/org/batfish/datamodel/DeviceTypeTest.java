@@ -3,7 +3,6 @@ package org.batfish.datamodel;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
-import org.batfish.datamodel.ospf.OspfProcess;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -101,15 +100,12 @@ public class DeviceTypeTest {
       // If vrf has BGP, OSPF, or RIP process and device isn't a host, set device type to router
       if (c.getDeviceType() == null
           && (vrf.getBgpProcess() != null
-              || vrf.getOspfProcess() != null
+              || !vrf.getOspfProcesses().isEmpty()
               || vrf.getRipProcess() != null)) {
         c.setDeviceType(DeviceType.ROUTER);
       }
       // Compute OSPF interface costs where they are missing
-      OspfProcess proc = vrf.getOspfProcess();
-      if (proc != null) {
-        proc.initInterfaceCosts(c);
-      }
+      vrf.getOspfProcesses().values().forEach(proc -> proc.initInterfaceCosts(c));
     }
     // If device was not a host or router, call it a switch
     if (c.getDeviceType() == null) {

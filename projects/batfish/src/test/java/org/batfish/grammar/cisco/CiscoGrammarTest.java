@@ -688,11 +688,12 @@ public class CiscoGrammarTest {
   @Test
   public void testAristaOspfReferenceBandwidth() throws IOException {
     Configuration manual = parseConfig("aristaOspfCost");
-    assertThat(manual.getDefaultVrf().getOspfProcess().getReferenceBandwidth(), equalTo(3e6d));
+    assertThat(
+        manual.getDefaultVrf().getOspfProcesses().get("1").getReferenceBandwidth(), equalTo(3e6d));
 
     Configuration defaults = parseConfig("aristaOspfCostDefaults");
     assertThat(
-        defaults.getDefaultVrf().getOspfProcess().getReferenceBandwidth(),
+        defaults.getDefaultVrf().getOspfProcesses().get("1").getReferenceBandwidth(),
         equalTo(getReferenceOspfBandwidth(ConfigurationFormat.ARISTA)));
   }
 
@@ -907,11 +908,12 @@ public class CiscoGrammarTest {
   @Test
   public void testAsaOspfReferenceBandwidth() throws IOException {
     Configuration manual = parseConfig("asaOspfCost");
-    assertThat(manual.getDefaultVrf().getOspfProcess().getReferenceBandwidth(), equalTo(3e6d));
+    assertThat(
+        manual.getDefaultVrf().getOspfProcesses().get("1").getReferenceBandwidth(), equalTo(3e6d));
 
     Configuration defaults = parseConfig("asaOspfCostDefaults");
     assertThat(
-        defaults.getDefaultVrf().getOspfProcess().getReferenceBandwidth(),
+        defaults.getDefaultVrf().getOspfProcesses().get("1").getReferenceBandwidth(),
         equalTo(getReferenceOspfBandwidth(ConfigurationFormat.CISCO_ASA)));
   }
 
@@ -2358,7 +2360,7 @@ public class CiscoGrammarTest {
 
     // Sanity check: ensure the ABR has a generated default route in its OSPF process
     Set<GeneratedRoute> abrOspfGeneratedRoutes =
-        abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcess().getGeneratedRoutes();
+        abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getGeneratedRoutes();
     assertThat(abrOspfGeneratedRoutes, contains(hasPrefix(Prefix.ZERO)));
 
     batfish.computeDataPlane();
@@ -2403,7 +2405,7 @@ public class CiscoGrammarTest {
 
     // Sanity check: ensure the ABR has a generated default route in its OSPF process
     Set<GeneratedRoute> abrOspfGeneratedRoutes =
-        abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcess().getGeneratedRoutes();
+        abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getGeneratedRoutes();
     assertThat(abrOspfGeneratedRoutes, contains(hasPrefix(Prefix.ZERO)));
 
     batfish.computeDataPlane();
@@ -2447,7 +2449,7 @@ public class CiscoGrammarTest {
 
     // Sanity check: ensure the ABR has a generated default route in its OSPF process
     Set<GeneratedRoute> abrOspfGeneratedRoutes =
-        abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcess().getGeneratedRoutes();
+        abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getGeneratedRoutes();
     assertThat(abrOspfGeneratedRoutes, contains(hasPrefix(Prefix.ZERO)));
 
     batfish.computeDataPlane();
@@ -2491,9 +2493,9 @@ public class CiscoGrammarTest {
     Configuration r1 = configurations.get(r1Name);
     Configuration r2 = configurations.get(r2Name);
     Set<GeneratedRoute> r1OspfGeneratedRoutes =
-        r1.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcess().getGeneratedRoutes();
+        r1.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getGeneratedRoutes();
     Set<GeneratedRoute> r2OspfGeneratedRoutes =
-        r2.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcess().getGeneratedRoutes();
+        r2.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getGeneratedRoutes();
     assertThat(r1OspfGeneratedRoutes, contains(hasPrefix(Prefix.ZERO)));
     assertThat(r2OspfGeneratedRoutes, contains(hasPrefix(Prefix.ZERO)));
 
@@ -2755,11 +2757,12 @@ public class CiscoGrammarTest {
   @Test
   public void testIosOspfReferenceBandwidth() throws IOException {
     Configuration manual = parseConfig("iosOspfCost");
-    assertThat(manual.getDefaultVrf().getOspfProcess().getReferenceBandwidth(), equalTo(10e6d));
+    assertThat(
+        manual.getDefaultVrf().getOspfProcesses().get("1").getReferenceBandwidth(), equalTo(10e6d));
 
     Configuration defaults = parseConfig("iosOspfCostDefaults");
     assertThat(
-        defaults.getDefaultVrf().getOspfProcess().getReferenceBandwidth(),
+        defaults.getDefaultVrf().getOspfProcesses().get("1").getReferenceBandwidth(),
         equalTo(getReferenceOspfBandwidth(ConfigurationFormat.CISCO_IOS)));
   }
 
@@ -3335,22 +3338,24 @@ public class CiscoGrammarTest {
   @Test
   public void testIosXrOspfReferenceBandwidth() throws IOException {
     Configuration manual = parseConfig("iosxrOspfCost");
-    assertThat(manual.getDefaultVrf().getOspfProcess().getReferenceBandwidth(), equalTo(10e6d));
+    assertThat(
+        manual.getDefaultVrf().getOspfProcesses().get("1").getReferenceBandwidth(), equalTo(10e6d));
 
     Configuration defaults = parseConfig("iosxrOspfCostDefaults");
     assertThat(
-        defaults.getDefaultVrf().getOspfProcess().getReferenceBandwidth(),
+        defaults.getDefaultVrf().getOspfProcesses().get("1").getReferenceBandwidth(),
         equalTo(getReferenceOspfBandwidth(ConfigurationFormat.CISCO_IOS_XR)));
   }
 
   @Test
   public void testNxosOspfReferenceBandwidth() throws IOException {
     Configuration manual = parseConfig("nxosOspfCost");
-    assertThat(manual.getDefaultVrf().getOspfProcess().getReferenceBandwidth(), equalTo(10e9d));
+    assertThat(
+        manual.getDefaultVrf().getOspfProcesses().get("1").getReferenceBandwidth(), equalTo(10e9d));
 
     Configuration defaults = parseConfig("nxosOspfCostDefaults");
     assertThat(
-        defaults.getDefaultVrf().getOspfProcess().getReferenceBandwidth(),
+        defaults.getDefaultVrf().getOspfProcesses().get("1").getReferenceBandwidth(),
         equalTo(getReferenceOspfBandwidth(ConfigurationFormat.CISCO_NX)));
   }
 
@@ -4262,7 +4267,7 @@ public class CiscoGrammarTest {
     assertThat(configurations, hasKey(hostname));
     Configuration c = configurations.get(hostname);
     assertThat(c, hasDefaultVrf(hasOspfProcess(hasAreas(hasKey(areaNum)))));
-    OspfArea area = c.getDefaultVrf().getOspfProcess().getAreas().get(areaNum);
+    OspfArea area = c.getDefaultVrf().getOspfProcesses().get("1").getAreas().get(areaNum);
     assertThat(area, OspfAreaMatchers.hasInterfaces(hasItem(ifaceName)));
     assertThat(c, hasInterface(ifaceName, hasOspfArea(sameInstance(area))));
     assertThat(c, hasInterface(ifaceName, isOspfPassive(equalTo(false))));
@@ -4292,7 +4297,7 @@ public class CiscoGrammarTest {
     assertThat(c, hasVrfs(hasKey(vrfName)));
     Vrf vrf = c.getVrfs().get(vrfName);
     assertThat(vrf, hasOspfProcess(hasAreas(hasKey(areaNum))));
-    OspfArea area = vrf.getOspfProcess().getAreas().get(areaNum);
+    OspfArea area = vrf.getOspfProcesses().get("1").getAreas().get(areaNum);
     assertThat(area, OspfAreaMatchers.hasInterfaces(hasItem(ifaceName)));
     assertThat(c, hasInterface(ifaceName, hasVrf(sameInstance(vrf))));
     assertThat(c, hasInterface(ifaceName, hasOspfArea(sameInstance(area))));
@@ -4320,9 +4325,9 @@ public class CiscoGrammarTest {
     Configuration iosMaxMetric = configurations.get(iosMaxMetricName);
     Configuration iosMaxMetricCustom = configurations.get(iosMaxMetricCustomName);
     Configuration iosMaxMetricOnStartup = configurations.get(iosMaxMetricOnStartupName);
-    OspfProcess proc = iosMaxMetric.getDefaultVrf().getOspfProcess();
-    OspfProcess procCustom = iosMaxMetricCustom.getDefaultVrf().getOspfProcess();
-    OspfProcess procOnStartup = iosMaxMetricOnStartup.getDefaultVrf().getOspfProcess();
+    OspfProcess proc = iosMaxMetric.getDefaultVrf().getOspfProcesses().get("1");
+    OspfProcess procCustom = iosMaxMetricCustom.getDefaultVrf().getOspfProcesses().get("1");
+    OspfProcess procOnStartup = iosMaxMetricOnStartup.getDefaultVrf().getOspfProcesses().get("1");
     long expectedMaxMetricRouterLsa =
         org.batfish.representation.cisco.OspfProcess.MAX_METRIC_ROUTER_LSA;
     long expectedMaxMetricStub = org.batfish.representation.cisco.OspfProcess.MAX_METRIC_ROUTER_LSA;
@@ -4578,7 +4583,7 @@ public class CiscoGrammarTest {
       Configuration configuration = configurations.get(configurationNames[i].toLowerCase());
       assertThat(configuration.getVrfs().size(), equalTo(1));
       for (Vrf vrf : configuration.getVrfs().values()) {
-        assertThat(vrf.getOspfProcess().getRfc1583Compatible(), is(expectedResults[i]));
+        assertThat(vrf.getOspfProcesses().get("1").getRfc1583Compatible(), is(expectedResults[i]));
       }
     }
   }

@@ -85,32 +85,30 @@ public class OspfSessionCompatibilityAnswerer extends Answerer {
           .values()
           .forEach(
               vrf -> {
-                OspfProcess ospfProcess = vrf.getOspfProcess();
-                if (ospfProcess == null) {
-                  return;
+                for (OspfProcess ospfProcess : vrf.getOspfProcesses().values()) {
+                  ospfProcess
+                      .getOspfNeighborConfigs()
+                      .keySet()
+                      .forEach(
+                          iface -> {
+                            OspfNeighborConfigId ospfNeighborConfigId =
+                                new OspfNeighborConfigId(
+                                    node, vrf.getName(), ospfProcess.getProcessId(), iface);
+                            Set<OspfNeighborConfigId> filteredNeighbors =
+                                ospfTopology.neighbors(ospfNeighborConfigId).stream()
+                                    .filter(
+                                        neighborConfigId ->
+                                            remoteNodes.contains(neighborConfigId.getHostname()))
+                                    .collect(ImmutableSet.toImmutableSet());
+                            rows.addAll(
+                                getRowsForAllNeighbors(
+                                    configurations,
+                                    ospfNeighborConfigId,
+                                    filteredNeighbors,
+                                    ospfTopology,
+                                    columnMetadataMap));
+                          });
                 }
-                ospfProcess
-                    .getOspfNeighborConfigs()
-                    .keySet()
-                    .forEach(
-                        iface -> {
-                          OspfNeighborConfigId ospfNeighborConfigId =
-                              new OspfNeighborConfigId(
-                                  node, vrf.getName(), ospfProcess.getProcessId(), iface);
-                          Set<OspfNeighborConfigId> filteredNeighbors =
-                              ospfTopology.neighbors(ospfNeighborConfigId).stream()
-                                  .filter(
-                                      neighborConfigId ->
-                                          remoteNodes.contains(neighborConfigId.getHostname()))
-                                  .collect(ImmutableSet.toImmutableSet());
-                          rows.addAll(
-                              getRowsForAllNeighbors(
-                                  configurations,
-                                  ospfNeighborConfigId,
-                                  filteredNeighbors,
-                                  ospfTopology,
-                                  columnMetadataMap));
-                        });
               });
     }
     return rows;

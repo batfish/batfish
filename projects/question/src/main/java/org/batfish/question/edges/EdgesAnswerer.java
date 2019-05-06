@@ -306,30 +306,26 @@ public class EdgesAnswerer extends Answerer {
       }
 
       for (Vrf vrf : c.getVrfs().values()) {
-        OspfProcess proc = vrf.getOspfProcess();
-
-        if (proc == null) {
-          continue;
+        for (OspfProcess proc : vrf.getOspfProcesses().values()) {
+          proc.getOspfNeighborConfigs()
+              .keySet()
+              .forEach(
+                  interfaceName ->
+                      topology
+                          .neighbors(
+                              new OspfNeighborConfigId(
+                                  hostname, vrf.getName(), proc.getProcessId(), interfaceName))
+                          .stream()
+                          .filter(n -> includeRemoteNodes.contains(n.getHostname()))
+                          .forEach(
+                              remote ->
+                                  rows.add(
+                                      getOspfEdgeRow(
+                                          hostname,
+                                          interfaceName,
+                                          remote.getHostname(),
+                                          remote.getInterfaceName()))));
         }
-
-        proc.getOspfNeighborConfigs()
-            .keySet()
-            .forEach(
-                interfaceName ->
-                    topology
-                        .neighbors(
-                            new OspfNeighborConfigId(
-                                hostname, vrf.getName(), proc.getProcessId(), interfaceName))
-                        .stream()
-                        .filter(n -> includeRemoteNodes.contains(n.getHostname()))
-                        .forEach(
-                            remote ->
-                                rows.add(
-                                    getOspfEdgeRow(
-                                        hostname,
-                                        interfaceName,
-                                        remote.getHostname(),
-                                        remote.getInterfaceName()))));
       }
     }
     return rows;

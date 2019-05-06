@@ -126,12 +126,10 @@ public final class OspfProcessConfigurationAnswerer extends Answerer {
               .values()
               .forEach(
                   vrf -> {
-                    OspfProcess ospfProcess = vrf.getOspfProcess();
-                    if (ospfProcess == null) {
-                      return;
+                    for (OspfProcess ospfProcess : vrf.getOspfProcesses().values()) {
+                      rows.add(
+                          getRow(nodeName, vrf.getName(), ospfProcess, properties, columnMetadata));
                     }
-                    rows.add(
-                        getRow(nodeName, vrf.getName(), ospfProcess, properties, columnMetadata));
                   });
         });
     return rows;

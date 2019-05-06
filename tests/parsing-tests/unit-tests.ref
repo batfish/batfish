@@ -75008,7 +75008,7 @@
         "cisco_nxos_bgp" : "WARNINGS",
         "cisco_ospf" : "WARNINGS",
         "cisco_ospf_ipv6" : "PASSED",
-        "cisco_ospf_multi_process" : "WARNINGS",
+        "cisco_ospf_multi_process" : "PASSED",
         "cisco_ospfv3" : "PASSED",
         "cisco_pim" : "PASSED",
         "cisco_platform" : "PASSED",
@@ -89162,14 +89162,6 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "OSPF process default:1 in cisco_ospf uses distribute-list of type ACCESS_LIST, only prefix-lists are supported in dist-lists by Batfish"
-            }
-          ]
-        },
-        "cisco_ospf_multi_process" : {
-          "Red flags" : [
-            {
-              "tag" : "1",
-              "text" : "Multiple OSPF processes are not supported, choosing the last defined OSPF process with id %s"
             }
           ]
         },

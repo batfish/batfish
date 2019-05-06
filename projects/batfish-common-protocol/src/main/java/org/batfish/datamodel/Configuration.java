@@ -300,8 +300,7 @@ public final class Configuration implements Serializable {
           neighbor.setImportPolicySources(getRoutingPolicySources(neighbor.getImportPolicy()));
         }
       }
-      OspfProcess ospfProcess = vrf.getOspfProcess();
-      if (ospfProcess != null) {
+      for (OspfProcess ospfProcess : vrf.getOspfProcesses().values()) {
         ospfProcess.setExportPolicySources(getRoutingPolicySources(ospfProcess.getExportPolicy()));
       }
       for (GeneratedRoute gr : vrf.getGeneratedRoutes()) {

@@ -5,6 +5,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
@@ -18,6 +19,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
@@ -71,6 +73,7 @@ public class Vrf extends ComparableStructure<String> {
   private static final String PROP_EIGRP_PROCESSES = "eigrpProcesses";
   private static final String PROP_KERNEL_ROUTES = "kernelRoutes";
   private static final String PROP_OSPF_PROCESS = "ospfProcess";
+  private static final String PROP_OSPF_PROCESSES = "ospfProcesses";
   private static final String PROP_RIP_PROCESS = "ripProcess";
   private static final String PROP_STATIC_ROUTES = "staticRoutes";
   private static final String PROP_VNI_SETTINGS = "vniSettings";
@@ -89,7 +92,7 @@ public class Vrf extends ComparableStructure<String> {
   private NavigableMap<String, Interface> _interfaces;
   private IsisProcess _isisProcess;
   private SortedSet<KernelRoute> _kernelRoutes;
-  @Nullable private OspfProcess _ospfProcess;
+  @Nonnull private Map<String, OspfProcess> _ospfProcesses;
   private RipProcess _ripProcess;
   private SnmpServer _snmpServer;
   private SortedSet<StaticRoute> _staticRoutes;
@@ -104,6 +107,7 @@ public class Vrf extends ComparableStructure<String> {
     _generatedIpv6Routes = new TreeSet<>();
     _interfaces = new TreeMap<>();
     _kernelRoutes = ImmutableSortedSet.of();
+    _ospfProcesses = ImmutableMap.of();
     _staticRoutes = new TreeSet<>();
     _vniSettings = new TreeMap<>();
   }
@@ -189,10 +193,11 @@ public class Vrf extends ComparableStructure<String> {
     return _kernelRoutes;
   }
 
-  /** OSPF routing process for this VRF. */
-  @JsonProperty(PROP_OSPF_PROCESS)
-  public OspfProcess getOspfProcess() {
-    return _ospfProcess;
+  /** OSPF routing processes for this VRF, keyed on {@link OspfProcess#getProcessId()}. */
+  @JsonProperty(PROP_OSPF_PROCESSES)
+  @Nonnull
+  public Map<String, OspfProcess> getOspfProcesses() {
+    return _ospfProcesses;
   }
 
   @JsonProperty(PROP_RIP_PROCESS)
@@ -282,8 +287,19 @@ public class Vrf extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_OSPF_PROCESS)
-  public void setOspfProcess(OspfProcess process) {
-    _ospfProcess = process;
+  public void setOspfProcess(@Nonnull OspfProcess process) {
+    setOspfProcesses(ImmutableMap.of(process.getProcessId(), process));
+  }
+
+  @JsonProperty(PROP_OSPF_PROCESSES)
+  public void setOspfProcesses(@Nonnull Map<String, OspfProcess> processes) {
+    _ospfProcesses = processes;
+  }
+
+  public void setOspfProcesses(@Nonnull Stream<OspfProcess> processes) {
+    setOspfProcesses(
+        processes.collect(
+            ImmutableMap.toImmutableMap(OspfProcess::getProcessId, Functions.identity())));
   }
 
   @JsonProperty(PROP_RIP_PROCESS)

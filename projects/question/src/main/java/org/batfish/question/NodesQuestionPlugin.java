@@ -109,7 +109,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
           }
         }
         for (Vrf vrf : node.getVrfs().values()) {
-          if (vrf.getOspfProcess() != null) {
+          if (!vrf.getOspfProcesses().isEmpty()) {
             _routingProtocols.add(RoutingProtocol.OSPF);
             break;
           }
