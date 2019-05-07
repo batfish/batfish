@@ -105,11 +105,8 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.PluginClientType;
 import org.batfish.common.plugin.PluginConsumer;
 import org.batfish.common.plugin.TracerouteEngine;
-import org.batfish.common.topology.Layer1Topology;
-import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyContainer;
 import org.batfish.common.topology.TopologyProvider;
-import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.IspModelingUtils;
@@ -759,11 +756,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     serializeEnvironmentRoutingTables(inputPath, outputPath);
   }
 
-  @Override
-  public Layer1Topology loadRawLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
-    return _storage.loadLayer1Topology(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
-  }
-
   private Map<String, Configuration> convertConfigurations(
       Map<String, GenericConfigObject> vendorConfigurations,
       ConvertConfigurationAnswerElement answerElement) {
@@ -1093,17 +1085,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     SortedMap<String, RoutesByVrf> routingTables =
         parseEnvironmentRoutingTables(inputData, answerElement);
     return routingTables;
-  }
-
-  @Override
-  public Topology getEnvironmentTopology() {
-    try {
-      return BatfishObjectMapper.mapper()
-          .readValue(
-              CommonUtil.readFile(_testrigSettings.getSerializeTopologyPath()), Topology.class);
-    } catch (IOException e) {
-      throw new BatfishException("Could not getEnvironmentTopology: ", e);
-    }
   }
 
   @Override
@@ -2528,27 +2509,22 @@ public class Batfish extends PluginConsumer implements IBatfish {
   void initializeTopology(NetworkSnapshot networkSnapshot) {
     Map<String, Configuration> configurations = loadConfigurations();
     Topology rawLayer3Topology = _topologyProvider.getInitialRawLayer3Topology(networkSnapshot);
-    serializeAsJson(_testrigSettings.getTopologyPath(), rawLayer3Topology, "raw layer-3 topology");
     checkTopology(configurations, rawLayer3Topology);
     org.batfish.datamodel.pojo.Topology pojoTopology =
         org.batfish.datamodel.pojo.Topology.create(
             _settings.getSnapshotName(), configurations, rawLayer3Topology);
-    serializeAsJson(
-        _testrigSettings.getPojoTopologyPath(), pojoTopology, "raw layer-3 pojo topology");
+    try {
+      _storage.storePojoTopology(
+          pojoTopology, networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
+    } catch (IOException e) {
+      throw new BatfishException("Could not serialize layer-3 POJO topology", e);
+    }
     Topology layer3Topology = _topologyProvider.getInitialLayer3Topology(getNetworkSnapshot());
     try {
       _storage.storeInitialTopology(
           layer3Topology, networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
     } catch (IOException e) {
       throw new BatfishException("Could not serialize layer-3 topology", e);
-    }
-  }
-
-  public static void serializeAsJson(Path outputPath, Object object, String objectName) {
-    try {
-      BatfishObjectMapper.prettyWriter().writeValue(outputPath.toFile(), object);
-    } catch (IOException e) {
-      throw new BatfishException("Could not serialize " + objectName + " ", e);
     }
   }
 
@@ -3460,20 +3436,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (_settings.getQuestionName() != null) {
       writeJsonAnswer(structuredAnswerString);
     }
-  }
-
-  @Override
-  public @Nullable Layer1Topology getLayer1Topology() {
-    return _storage.loadLayer1Topology(_settings.getContainer(), _testrigSettings.getName());
-  }
-
-  @Override
-  public @Nullable Layer2Topology getLayer2Topology() {
-    Layer1Topology layer1Topology = getLayer1Topology();
-    if (layer1Topology == null) {
-      return null;
-    }
-    return TopologyUtil.computeLayer2Topology(layer1Topology, loadConfigurations());
   }
 
   @Override

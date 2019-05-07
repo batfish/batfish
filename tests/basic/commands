@@ -8,12 +8,8 @@ add-batfish-option verboseparse
 test -compareall tests/basic/init.ref init-snapshot networks/example/live basic-example
 test tests/basic/parse-status.ref get fileparsestatus
 test -compareall tests/basic/genDp.ref generate-dataplane
-test -raw tests/basic/topology.ref get-object testrig_pojo_topology
+test -json tests/basic/topology.ref get-object testrig_pojo_topology
 test tests/basic/viModel.ref get viModel
-test tests/basic/nodes-summary.ref get nodes summary=true
-test tests/basic/nodes.ref get nodes summary=false
-test tests/basic/neighbors-summary.ref get neighbors neighborTypes=["ebgp","ibgp","ospf","layer3"]
-test tests/basic/neighbors.ref get neighbors style=verbose, neighborTypes=["ebgp","ibgp","ospf","layer1","layer2","layer3"]
 test tests/basic/routes.ref get routes
 
 # some ref tests using reference snapshot

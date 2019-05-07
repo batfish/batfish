@@ -14,8 +14,6 @@ import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.batfish.common.Answerer;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
-import org.batfish.common.topology.Layer1Topology;
-import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
@@ -87,18 +85,10 @@ public interface IBatfish extends IPluginConsumer {
 
   Environment getEnvironment();
 
-  Topology getEnvironmentTopology();
-
   String getFlowTag();
 
   /** Get the configuration of the major issue type {@code majorIssueType} if its present */
   MajorIssueConfig getMajorIssueConfig(String majorIssueType);
-
-  @Nullable
-  Layer1Topology getLayer1Topology();
-
-  @Nullable
-  Layer2Topology getLayer2Topology();
 
   @Nonnull
   NetworkSnapshot getNetworkSnapshot();
@@ -202,13 +192,6 @@ public interface IBatfish extends IPluginConsumer {
 
   @Nullable
   String loadQuestionSettings(@Nonnull Question question);
-
-  /**
-   * Return the raw layer-1 physical topology provided by the user in the snapshot, or {@code null}
-   * if absent.
-   */
-  @Nullable
-  Layer1Topology loadRawLayer1PhysicalTopology(@Nonnull NetworkSnapshot networkSnapshot);
 
   /** Returns edge blacklist for given snapshot or empty set if absent. */
   @Nonnull

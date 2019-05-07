@@ -248,7 +248,11 @@ public class BatfishTest {
         TestrigText.builder().setLayer1TopologyText("org/batfish/common/topology/testrigs/layer1");
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(testrigTextBuilder.build(), _folder);
-    Layer1Topology layer1Topology = batfish.getLayer1Topology();
+    Layer1Topology layer1Topology =
+        batfish
+            .getTopologyProvider()
+            .getRawLayer1PhysicalTopology(batfish.getNetworkSnapshot())
+            .orElse(null);
 
     Layer1Node c1i1 = new Layer1Node("c1", "i1");
     Layer1Node c2i2 = new Layer1Node("c2", "i2");

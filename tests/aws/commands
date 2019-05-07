@@ -6,6 +6,6 @@ add-batfish-option verboseparse
 
 # example-aws network
 test tests/aws/init-example-aws.ref init-snapshot networks/hybrid-cloud-aws basic-example-aws
-test tests/aws/nodes-example-aws.ref get nodes summary=false
-test -raw tests/aws/topology-example-aws.ref get-object testrig_pojo_topology
+test tests/aws/vimodel-example-aws.ref get viModel
+test -json tests/aws/topology-example-aws.ref get-object testrig_pojo_topology
 
