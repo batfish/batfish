@@ -11,7 +11,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.transition.TransformationToTransition;
@@ -65,10 +64,7 @@ public class BDDReverseFlowTransformationFactoryImplTest {
             new TransformationToTransition(
                 PKT,
                 new IpAccessListToBddImpl(
-                    PKT,
-                    BDDSourceManager.forInterfaces(PKT, ImmutableSet.of()),
-                    _headerSpaceToBDD,
-                    ImmutableMap.of())));
+                    PKT, BDDSourceManager.empty(PKT), _headerSpaceToBDD, ImmutableMap.of())));
   }
 
   private BDD dstBdd(Ip ip) {

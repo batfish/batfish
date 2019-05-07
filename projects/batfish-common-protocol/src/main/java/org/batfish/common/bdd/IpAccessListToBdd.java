@@ -5,7 +5,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -69,12 +68,7 @@ public abstract class IpAccessListToBdd {
    * @see #toBDD(BDDPacket, IpAccessList, Map, Map, BDDSourceManager)
    */
   public static BDD toBDD(BDDPacket pkt, IpAccessList acl) {
-    return toBDD(
-        pkt,
-        acl,
-        ImmutableMap.of(),
-        ImmutableMap.of(),
-        BDDSourceManager.forInterfaces(pkt, ImmutableSet.of()));
+    return toBDD(pkt, acl, ImmutableMap.of(), ImmutableMap.of(), BDDSourceManager.empty(pkt));
   }
 
   @Nonnull private final Map<String, Supplier<BDD>> _aclEnv;

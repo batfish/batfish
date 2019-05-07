@@ -19,7 +19,6 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Map;
 import org.batfish.common.bdd.BDDPacket;
@@ -87,7 +86,7 @@ public class AclToAclLineMatchExprTest {
   private static IpAccessListToBdd aclLineMatchExprToBDD(Map<String, IpAccessList> namedAcls) {
     BDDPacket pkt = new BDDPacket();
     return new IpAccessListToBddImpl(
-        pkt, BDDSourceManager.forInterfaces(pkt, ImmutableSet.of()), namedAcls, ImmutableMap.of());
+        pkt, BDDSourceManager.empty(pkt), namedAcls, ImmutableMap.of());
   }
 
   private static AclToAclLineMatchExpr aclToAclLineMatchExpr() {

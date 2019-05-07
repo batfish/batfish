@@ -10,7 +10,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import java.util.Optional;
 import net.sf.javabdd.BDD;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -29,10 +28,7 @@ public class MemoizedIpAccessListToBddTest {
     BDDPacket pkt = new BDDPacket();
     _toBdd =
         new MemoizedIpAccessListToBdd(
-            pkt,
-            BDDSourceManager.forInterfaces(pkt, ImmutableSet.of()),
-            ImmutableMap.of(),
-            ImmutableMap.of());
+            pkt, BDDSourceManager.empty(pkt), ImmutableMap.of(), ImmutableMap.of());
   }
 
   @Test

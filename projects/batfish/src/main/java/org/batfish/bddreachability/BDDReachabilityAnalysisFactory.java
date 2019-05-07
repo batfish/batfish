@@ -1288,10 +1288,7 @@ public final class BDDReachabilityAnalysisFactory {
       assert span != null; // avoid unused warning
       IpAccessListToBdd ipAccessListToBdd =
           new MemoizedIpAccessListToBdd(
-              _bddPacket,
-              BDDSourceManager.forInterfaces(_bddPacket, ImmutableSet.of()),
-              ImmutableMap.of(),
-              ImmutableMap.of());
+              _bddPacket, BDDSourceManager.empty(_bddPacket), ImmutableMap.of(), ImmutableMap.of());
       BDD initialHeaderSpaceBdd = ipAccessListToBdd.toBdd(initialHeaderSpace);
       BDD finalHeaderSpaceBdd = computeFinalHeaderSpaceBdd(initialHeaderSpaceBdd);
 

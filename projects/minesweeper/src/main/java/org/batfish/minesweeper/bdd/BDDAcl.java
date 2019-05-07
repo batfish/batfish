@@ -1,7 +1,6 @@
 package org.batfish.minesweeper.bdd;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -40,12 +39,7 @@ public final class BDDAcl {
    * @param acl the {@link IpAccessList} to represent
    */
   public static BDDAcl create(BDDPacket pkt, IpAccessList acl) {
-    return create(
-        pkt,
-        acl,
-        ImmutableMap.of(),
-        ImmutableMap.of(),
-        BDDSourceManager.forInterfaces(pkt, ImmutableSet.of()));
+    return create(pkt, acl, ImmutableMap.of(), ImmutableMap.of(), BDDSourceManager.empty(pkt));
   }
 
   /**
@@ -62,8 +56,7 @@ public final class BDDAcl {
       IpAccessList acl,
       Map<String, IpAccessList> aclEnv,
       Map<String, IpSpace> ipSpaceEnv) {
-    return create(
-        pkt, acl, aclEnv, ipSpaceEnv, BDDSourceManager.forInterfaces(pkt, ImmutableSet.of()));
+    return create(pkt, acl, aclEnv, ipSpaceEnv, BDDSourceManager.empty(pkt));
   }
 
   public static BDDAcl create(
