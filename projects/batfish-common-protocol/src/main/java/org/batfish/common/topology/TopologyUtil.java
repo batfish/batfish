@@ -267,6 +267,10 @@ public final class TopologyUtil {
         });
   }
 
+  /**
+   * Computes intra-node edges between non-switchport layer-2 entity (IRB or VNI) and switchport
+   * interfaces associated with the entity's VLAN
+   */
   private static @Nonnull Stream<Layer2Edge> computeSelfSwitchportNonSwitchportEdges(
       Map<Integer, List<String>> switchportsByVlan,
       String hostname,
@@ -324,12 +328,20 @@ public final class TopologyUtil {
     return Layer2Topology.fromEdges(edges.build());
   }
 
+  /**
+   * Create {@link Layer2Edge}s corresponding the to inter-node {@link VxlanNode} pairs in the
+   * {@link VxlanTopology}.
+   */
   @VisibleForTesting
   static @Nonnull Stream<Layer2Edge> computeVniInterNodeEdges(
       VxlanTopology vxlanTopology, NetworkConfigurations nc) {
     return vxlanTopology.getGraph().edges().stream().flatMap(edge -> toVniVniEdges(edge, nc));
   }
 
+  /**
+   * Create pair of directional {@link Layer2Edge}s for undirected pair of inter-node {@link
+   * VxlanNode}s.
+   */
   @VisibleForTesting
   static @Nonnull Stream<Layer2Edge> toVniVniEdges(
       EndpointPair<VxlanNode> edge, NetworkConfigurations nc) {
