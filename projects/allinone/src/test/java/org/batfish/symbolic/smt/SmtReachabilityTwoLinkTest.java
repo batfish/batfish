@@ -11,6 +11,7 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.SortedMap;
+import org.batfish.common.Answerer;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.main.Batfish;
@@ -49,7 +50,7 @@ public class SmtReachabilityTwoLinkTest {
     question.setFinalNodeRegex(_dstNode.getHostname());
     question.setFailures(1);
 
-    final AnswerElement answer = _batfish.smtReachability(question);
+    final AnswerElement answer = Answerer.create(question, _batfish).answer();
     assertThat(answer, instanceOf(SmtReachabilityAnswerElement.class));
 
     final SmtReachabilityAnswerElement smtAnswer = (SmtReachabilityAnswerElement) answer;
@@ -74,7 +75,7 @@ public class SmtReachabilityTwoLinkTest {
     question.setFailures(1);
     question.setNegate(true);
 
-    final AnswerElement answer = _batfish.smtReachability(question);
+    final AnswerElement answer = Answerer.create(question, _batfish).answer();
     assertThat(answer, instanceOf(SmtReachabilityAnswerElement.class));
 
     final SmtReachabilityAnswerElement smtAnswer = (SmtReachabilityAnswerElement) answer;
@@ -94,7 +95,7 @@ public class SmtReachabilityTwoLinkTest {
     question.setNotFailNode1Regex(_srcNode.getHostname());
     question.setNotFailNode2Regex(".*");
 
-    final AnswerElement answer = _batfish.smtReachability(question);
+    final AnswerElement answer = Answerer.create(question, _batfish).answer();
     assertThat(answer, instanceOf(SmtReachabilityAnswerElement.class));
 
     final SmtReachabilityAnswerElement smtAnswer = (SmtReachabilityAnswerElement) answer;
@@ -113,7 +114,7 @@ public class SmtReachabilityTwoLinkTest {
     question.setNotFailNode1Regex(".*");
     question.setNotFailNode2Regex(_srcNode.getHostname());
 
-    final AnswerElement answer = _batfish.smtReachability(question);
+    final AnswerElement answer = Answerer.create(question, _batfish).answer();
     assertThat(answer, instanceOf(SmtReachabilityAnswerElement.class));
 
     final SmtReachabilityAnswerElement smtAnswer = (SmtReachabilityAnswerElement) answer;
