@@ -286,6 +286,7 @@ public final class TopologyUtilTest {
         containsInAnyOrder(new Layer2Edge(n1, n2, null), new Layer2Edge(n2, n1, null)));
   }
 
+  @Test
   public void testComputeLayer2Topology_layer1() {
     String c1Name = "c1";
     String c2Name = "c2";
