@@ -23,6 +23,24 @@ java_library(
     ],
 )
 
+java_library(
+    name = "matchers",
+testonly=True,
+    srcs = glob(
+        [
+            "src/test/java/**/*.java",
+        ],
+        exclude = ["src/test/java/**/*Test.java"],
+    ),
+    runtime_deps = [
+        "@slf4j_jdk14//:runtime",
+    ],
+    deps = [
+        ":minesweeper",
+        "@hamcrest//:compile",
+    ],
+)
+
 junit_tests(
     name = "minesweeper_tests",
     size = "small",
