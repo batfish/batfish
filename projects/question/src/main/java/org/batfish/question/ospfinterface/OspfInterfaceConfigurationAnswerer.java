@@ -152,7 +152,7 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
 
   private static Row getRow(
       String nodeName,
-      @Nullable String ospfProcessId,
+      String ospfProcessId,
       Interface iface,
       List<String> properties,
       Map<String, ColumnMetadata> columnMetadataMap) {

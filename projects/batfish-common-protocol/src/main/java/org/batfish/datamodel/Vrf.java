@@ -308,6 +308,7 @@ public class Vrf extends ComparableStructure<String> {
     _ospfProcesses = processes;
   }
 
+  @JsonIgnore
   public void setOspfProcesses(@Nonnull Stream<OspfProcess> processes) {
     setOspfProcesses(
         processes.collect(
