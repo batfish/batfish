@@ -53,27 +53,6 @@
       </plugin>
 
       <plugin>
-        <groupId>org.antlr</groupId>
-        <artifactId>antlr4-maven-plugin</artifactId>
-        <executions>
-          <!-- Test grammars -->
-          <execution>
-            <id>antlr4-test-simple</id>
-            <phase>generate-test-sources</phase>
-            <goals>
-              <goal>antlr4</goal>
-            </goals>
-            <configuration>
-              <sourceDirectory>${basedir}/src/test/antlr4</sourceDirectory>
-              <outputDirectory>${project.build.directory}/generated-test-sources/antlr4
-              </outputDirectory>
-              <includes>**/*.g4</includes>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
       </plugin>
