@@ -2112,12 +2112,11 @@ public final class FlatJuniperGrammarTest {
   public void testOspfReferenceBandwidth() throws IOException {
     String hostname = "ospf-reference-bandwidth";
     Configuration c = parseConfig(hostname);
-    assertThat(
-        c, hasDefaultVrf(hasOspfProcess(DEFAULT_VRF_NAME, hasReferenceBandwidth(equalTo(1E9D)))));
-    assertThat(c, hasVrf("vrf1", hasOspfProcess("vrf1", hasReferenceBandwidth(equalTo(2E9D)))));
-    assertThat(c, hasVrf("vrf2", hasOspfProcess("vrf2", hasReferenceBandwidth(equalTo(3E9D)))));
-    assertThat(c, hasVrf("vrf3", hasOspfProcess("vrf3", hasReferenceBandwidth(equalTo(4E9D)))));
-    assertThat(c, hasVrf("vrf4", hasOspfProcess("vrf4", hasReferenceBandwidth(equalTo(5E9D)))));
+    assertThat(c, hasDefaultVrf(hasOspfProcess(DEFAULT_VRF_NAME, hasReferenceBandwidth(1E9D))));
+    assertThat(c, hasVrf("vrf1", hasOspfProcess("vrf1", hasReferenceBandwidth(2E9D))));
+    assertThat(c, hasVrf("vrf2", hasOspfProcess("vrf2", hasReferenceBandwidth(3E9D))));
+    assertThat(c, hasVrf("vrf3", hasOspfProcess("vrf3", hasReferenceBandwidth(4E9D))));
+    assertThat(c, hasVrf("vrf4", hasOspfProcess("vrf4", hasReferenceBandwidth(5E9D))));
   }
 
   @Test
