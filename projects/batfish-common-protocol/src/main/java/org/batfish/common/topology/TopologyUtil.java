@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
+import com.google.common.graph.EndpointPair;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.util.Collection;
@@ -20,9 +21,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.configuration2.builder.fluent.Configurations;
@@ -41,6 +45,9 @@ import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.VniSettings;
+import org.batfish.datamodel.vxlan.VxlanNode;
+import org.batfish.datamodel.vxlan.VxlanTopology;
 
 public final class TopologyUtil {
 
@@ -182,6 +189,11 @@ public final class TopologyUtil {
   }
 
   @VisibleForTesting
+  static String computeVniName(int vni) {
+    return String.format("~vni~%d", vni);
+  }
+
+  @VisibleForTesting
   static void computeLayer2SelfEdges(
       @Nonnull Configuration config, @Nonnull ImmutableSet.Builder<Layer2Edge> edges) {
     String hostname = config.getHostname();
@@ -221,6 +233,11 @@ public final class TopologyUtil {
                 }
               });
         });
+    Map<Integer, VniSettings> vniSettingsByVlan =
+        config.getVrfs().values().stream()
+            .flatMap(vrf -> vrf.getVniSettings().values().stream())
+            .filter(vniSettings -> vniSettings.getVlan() != null)
+            .collect(ImmutableMap.toImmutableMap(VniSettings::getVlan, Function.identity()));
     config.getAllInterfaces().values().stream()
         .filter(Interface::getActive)
         .filter(i -> i.getInterfaceType() == InterfaceType.VLAN && i.getVlan() != null)
@@ -228,26 +245,64 @@ public final class TopologyUtil {
             irbInterface -> {
               String irbName = irbInterface.getName();
               int vlanId = irbInterface.getVlan();
-              switchportsByVlan
-                  .getOrDefault(vlanId, ImmutableList.of())
-                  .forEach(
-                      switchportName -> {
+              computeSelfSwitchportNonSwitchportEdges(switchportsByVlan, hostname, irbName, vlanId)
+                  .forEach(edges::add);
+              // Link IRB to VNI in same VLAN
+              Optional.ofNullable(vniSettingsByVlan.get(vlanId))
+                  .map(vniSettings -> computeVniName(vniSettings.getVni()))
+                  .ifPresent(
+                      vniName -> {
                         edges.add(
-                            new Layer2Edge(
-                                hostname, irbName, null, hostname, switchportName, vlanId, null));
+                            new Layer2Edge(hostname, irbName, null, hostname, vniName, null, null));
                         edges.add(
-                            new Layer2Edge(
-                                hostname, switchportName, vlanId, hostname, irbName, null, null));
+                            new Layer2Edge(hostname, vniName, null, hostname, irbName, null, null));
                       });
             });
+    // Link each VNI to switchports in same VLAN
+    vniSettingsByVlan.forEach(
+        (vlanId, vniSettings) -> {
+          String vniName = computeVniName(vniSettings.getVni());
+          computeSelfSwitchportNonSwitchportEdges(switchportsByVlan, hostname, vniName, vlanId)
+              .forEach(edges::add);
+        });
   }
 
   /**
-   * Compute the layer-2 topology via the {@code layer1LogicalTopology} and switching information
-   * contained in the {@code configurations}.
+   * Computes intra-node edges between non-switchport layer-2 entity (IRB or VNI) and switchport
+   * interfaces associated with the entity's VLAN
+   */
+  private static @Nonnull Stream<Layer2Edge> computeSelfSwitchportNonSwitchportEdges(
+      Map<Integer, List<String>> switchportsByVlan,
+      String hostname,
+      String nonSwitchportName,
+      int vlanId) {
+    Stream.Builder<Layer2Edge> edges = Stream.builder();
+    switchportsByVlan
+        .getOrDefault(vlanId, ImmutableList.of())
+        .forEach(
+            switchportName -> {
+              edges.add(
+                  new Layer2Edge(
+                      hostname, nonSwitchportName, null, hostname, switchportName, vlanId, null));
+              edges.add(
+                  new Layer2Edge(
+                      hostname, switchportName, vlanId, hostname, nonSwitchportName, null, null));
+            });
+    return edges.build();
+  }
+
+  /**
+   * Compute the layer-2 topology via:
+   *
+   * <ul>
+   *   <li>wiring information from {@code layer1LogicalTopology}
+   *   <li>established VXLAN bridges from {@code vxlanTopology}
+   *   <li>switching information from {@code configurations}
+   * </ul>
    */
   public static @Nonnull Layer2Topology computeLayer2Topology(
       @Nonnull Layer1Topology layer1LogicalTopology,
+      VxlanTopology vxlanTopology,
       @Nonnull Map<String, Configuration> configurations) {
     ImmutableSet.Builder<Layer2Edge> edges = ImmutableSet.builder();
 
@@ -263,10 +318,44 @@ public final class TopologyUtil {
                 computeLayer2EdgesForLayer1Edge(
                     layer1Edge, configurations, edges, parentChildrenMap));
 
-    // Then add edges within each node to connect switchports on the same VLAN(s).
+    // Then add edges within each node to connect switchports and VNIs on the same VLAN(s).
     configurations.values().forEach(c -> computeLayer2SelfEdges(c, edges));
 
+    // Finally add edges between connected VNIs on different nodes
+    computeVniInterNodeEdges(vxlanTopology, NetworkConfigurations.of(configurations))
+        .forEach(edges::add);
+
     return Layer2Topology.fromEdges(edges.build());
+  }
+
+  /**
+   * Create {@link Layer2Edge}s corresponding the to inter-node {@link VxlanNode} pairs in the
+   * {@link VxlanTopology}.
+   */
+  @VisibleForTesting
+  static @Nonnull Stream<Layer2Edge> computeVniInterNodeEdges(
+      VxlanTopology vxlanTopology, NetworkConfigurations nc) {
+    return vxlanTopology.getGraph().edges().stream().flatMap(edge -> toVniVniEdges(edge, nc));
+  }
+
+  /**
+   * Create pair of directional {@link Layer2Edge}s for undirected pair of inter-node {@link
+   * VxlanNode}s.
+   */
+  @VisibleForTesting
+  static @Nonnull Stream<Layer2Edge> toVniVniEdges(
+      EndpointPair<VxlanNode> edge, NetworkConfigurations nc) {
+    VxlanNode n1 = edge.nodeU();
+    VxlanNode n2 = edge.nodeV();
+    String h1 = n1.getHostname();
+    String h2 = n2.getHostname();
+    int vni1 = n1.getVni();
+    int vni2 = n2.getVni();
+    String vni1Name = computeVniName(vni1);
+    String vni2Name = computeVniName(vni2);
+    return Stream.of(
+        new Layer2Edge(h1, vni1Name, null, h2, vni2Name, null, null),
+        new Layer2Edge(h2, vni2Name, null, h1, vni1Name, null, null));
   }
 
   private static Map<Layer1Node, Set<Layer1Node>> computeParentChildrenMap(

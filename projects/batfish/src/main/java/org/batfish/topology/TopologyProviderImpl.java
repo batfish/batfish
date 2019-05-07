@@ -110,7 +110,9 @@ public final class TopologyProviderImpl implements TopologyProvider {
           .map(
               layer1LogicalTopology ->
                   TopologyUtil.computeLayer2Topology(
-                      layer1LogicalTopology, _batfish.loadConfigurations(networkSnapshot)));
+                      layer1LogicalTopology,
+                      VxlanTopology.EMPTY,
+                      _batfish.loadConfigurations(networkSnapshot)));
     }
   }
 
