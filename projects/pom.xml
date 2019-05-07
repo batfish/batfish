@@ -79,7 +79,6 @@
     <jgrapht-core.version>1.2.0</jgrapht-core.version>
     <jline.version>3.9.0</jline.version>
     <jsonassert.version>1.5.0</jsonassert.version>
-    <jsonpath.version>2.4.0-batfish-internal</jsonpath.version>
     <jsr305.version>3.0.2</jsr305.version>
     <junit.version>4.12</junit.version>
     <lz4.version>1.5.0</lz4.version>
@@ -445,22 +444,6 @@
               <sources>${basedir}/lib/z3/com.microsoft.z3-${z3.version}-sources.jar</sources>
             </configuration>
           </execution>
-          <!-- Batfish includes a custom version of JsonPath with bugfixes to array handling. -->
-          <execution>
-            <phase>initialize</phase>
-            <goals>
-              <goal>install-file</goal>
-            </goals>
-            <id>install-json-path</id>
-            <configuration>
-              <groupId>com.jayway.jsonpath</groupId>
-              <artifactId>json-path</artifactId>
-              <packaging>jar</packaging>
-              <pomFile>${basedir}/lib/jsonpath/json-path-${jsonpath.version}.pom</pomFile>
-              <file>${basedir}/lib/jsonpath/json-path-${jsonpath.version}.jar</file>
-              <sources>${basedir}/lib/jsonpath/json-path-${jsonpath.version}-sources.jar</sources>
-            </configuration>
-          </execution>
         </executions>
         <!-- run this phase only once at the top level, not in any of the child modules. -->
         <inherited>false</inherited>
@@ -692,12 +675,6 @@
         <groupId>com.ibm.icu</groupId>
         <artifactId>icu4j</artifactId>
         <version>${icu4j.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.jayway.jsonpath</groupId>
-        <artifactId>json-path</artifactId>
-        <version>${jsonpath.version}</version>
       </dependency>
 
       <dependency>
