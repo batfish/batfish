@@ -64,7 +64,12 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
       Set<String> nodes = question.getNodeRegex().getMatchingNodes(_batfish);
 
       SortedSet<NodeRoleDimension> roleDimensions =
-          new InferRoles(nodes, _batfish.getEnvironmentTopology(), question.getCaseSensitive())
+          new InferRoles(
+                  nodes,
+                  _batfish
+                      .getTopologyProvider()
+                      .getInitialLayer3Topology(_batfish.getNetworkSnapshot()),
+                  question.getCaseSensitive())
               .inferRoles();
       answerElement.getRoleDimensions().addAll(roleDimensions);
 

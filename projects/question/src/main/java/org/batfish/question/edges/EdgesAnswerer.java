@@ -108,7 +108,8 @@ public class EdgesAnswerer extends Answerer {
         question.getRemoteNodeSpecifier().resolve(_batfish.specifierContext());
 
     TableAnswerElement answer = new TableAnswerElement(getTableMetadata(question.getEdgeType()));
-    Topology topology = _batfish.getEnvironmentTopology();
+    Topology topology =
+        _batfish.getTopologyProvider().getInitialLayer3Topology(_batfish.getNetworkSnapshot());
     answer.postProcessAnswer(
         _question,
         generateRows(

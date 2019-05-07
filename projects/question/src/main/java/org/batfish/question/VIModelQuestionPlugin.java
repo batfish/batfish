@@ -194,7 +194,8 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
     @Override
     public VIModelAnswerElement answer() {
       SortedMap<String, Configuration> configs = _batfish.loadConfigurations();
-      Topology topology = _batfish.getEnvironmentTopology();
+      Topology topology =
+          _batfish.getTopologyProvider().getInitialLayer3Topology(_batfish.getNetworkSnapshot());
       Map<Ip, Set<String>> ipOwners = TopologyUtil.computeIpNodeOwners(configs, true);
       _batfish.initRemoteRipNeighbors(configs, ipOwners, topology);
 
@@ -203,7 +204,10 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
           getBgpEdges(configs, ipOwners),
           getEigrpEdges(configs, topology),
           getIsisEdges(configs, topology),
-          _batfish.getLayer1Topology(),
+          _batfish
+              .getTopologyProvider()
+              .getLayer1PhysicalTopology(_batfish.getNetworkSnapshot())
+              .orElse(null),
           getLayer3Edges(configs, topology),
           getOspfEdges(
               _batfish.getTopologyProvider().getInitialOspfTopology(_batfish.getNetworkSnapshot())),

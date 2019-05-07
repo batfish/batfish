@@ -2862,9 +2862,20 @@ public class Client extends AbstractClient implements IClient {
       }
     } else if (testCommandSucceeded) {
       try {
-        if (TestComparisonMode.RAW != comparisonMode) {
-          Answer testAnswer = BatfishObjectMapper.mapper().readValue(testOutput, Answer.class);
-          testOutput = getTestComparisonString(testAnswer, comparisonMode);
+        switch (comparisonMode) {
+          case RAW:
+            break;
+
+          case JSON:
+            testOutput =
+                BatfishObjectMapper.writePrettyString(
+                    BatfishObjectMapper.mapper().readTree(testOutput));
+            break;
+
+          default:
+            Answer testAnswer = BatfishObjectMapper.mapper().readValue(testOutput, Answer.class);
+            testOutput = getTestComparisonString(testAnswer, comparisonMode);
+            break;
         }
 
         String referenceOutput =
