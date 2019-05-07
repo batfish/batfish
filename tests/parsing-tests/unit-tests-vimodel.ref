@@ -2919,9 +2919,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "interfaces" : [
-              "blah"
-            ],
             "ospfProcesses" : {
               "1" : {
                 "adminCosts" : {
@@ -2956,7 +2953,10 @@
                 "routerId" : "192.168.1.0",
                 "summaryAdminCost" : 254
               }
-            }
+            },
+            "interfaces" : [
+              "blah"
+            ]
           }
         },
         "zones" : {
@@ -11318,11 +11318,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "interfaces" : [
-              "Ethernet0/0",
-              "Ethernet1/0",
-              "Loopback0"
-            ],
             "ospfProcesses" : {
               "1" : {
                 "adminCosts" : {
@@ -11364,7 +11359,12 @@
                 "routerId" : "1.2.3.4",
                 "summaryAdminCost" : 254
               }
-            }
+            },
+            "interfaces" : [
+              "Ethernet0/0",
+              "Ethernet1/0",
+              "Loopback0"
+            ]
           }
         }
       },
@@ -11602,11 +11602,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "interfaces" : [
-              "Ethernet0/0",
-              "Ethernet1/0",
-              "Loopback0"
-            ],
             "ospfProcesses" : {
               "1" : {
                 "adminCosts" : {
@@ -11723,7 +11718,12 @@
                 "routerId" : "1.1.1.1",
                 "summaryAdminCost" : 254
               }
-            }
+            },
+            "interfaces" : [
+              "Ethernet0/0",
+              "Ethernet1/0",
+              "Loopback0"
+            ]
           }
         }
       },
@@ -17274,10 +17274,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "interfaces" : [
-              "Ethernet0",
-              "Ethernet1"
-            ],
             "ospfProcesses" : {
               "1" : {
                 "adminCosts" : {
@@ -17320,7 +17316,11 @@
                 "routerId" : "2.130.0.1",
                 "summaryAdminCost" : 254
               }
-            }
+            },
+            "interfaces" : [
+              "Ethernet0",
+              "Ethernet1"
+            ]
           }
         }
       },
@@ -18304,11 +18304,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "interfaces" : [
-              "xe-0/0/0",
-              "xe-0/0/0:0",
-              "xe-0/0/0:0.0"
-            ],
             "ospfProcesses" : {
               "default" : {
                 "adminCosts" : {
@@ -18344,7 +18339,12 @@
                 "routerId" : "10.1.2.3",
                 "summaryAdminCost" : 10
               }
-            }
+            },
+            "interfaces" : [
+              "xe-0/0/0",
+              "xe-0/0/0:0",
+              "xe-0/0/0:0.0"
+            ]
           }
         }
       },
@@ -19567,17 +19567,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "interfaces" : [
-              "Bundle-Ethernet101",
-              "Bundle-Ethernet103",
-              "Bundle-Ethernet201",
-              "HundredGigabitEthernet0/2/0/0.292",
-              "HundredGigabitEthernet0/2/0/3",
-              "Loopback0",
-              "TenGigabitEthernet0/0/0/2",
-              "TenGigabitEthernet0/0/0/4",
-              "TenGigabitEthernet0/0/0/5"
-            ],
             "ospfProcesses" : {
               "2" : {
                 "adminCosts" : {
@@ -19618,7 +19607,18 @@
                 "routerId" : "169.232.1.4",
                 "summaryAdminCost" : 254
               }
-            }
+            },
+            "interfaces" : [
+              "Bundle-Ethernet101",
+              "Bundle-Ethernet103",
+              "Bundle-Ethernet201",
+              "HundredGigabitEthernet0/2/0/0.292",
+              "HundredGigabitEthernet0/2/0/3",
+              "Loopback0",
+              "TenGigabitEthernet0/0/0/2",
+              "TenGigabitEthernet0/0/0/4",
+              "TenGigabitEthernet0/0/0/5"
+            ]
           }
         }
       },
@@ -20216,28 +20216,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "aggregateRoutes" : [
-              {
-                "class" : "org.batfish.datamodel.GeneratedRoute",
-                "administrativeCost" : 10,
-                "asPath" : [ ],
-                "discard" : true,
-                "generationPolicy" : "~SUMMARY1_2_0_0_16~",
-                "metric" : 100,
-                "network" : "1.2.0.0/16",
-                "nextHopIp" : "AUTO/NONE(-1l)"
-              }
-            ],
-            "interfaces" : [
-              "ae16",
-              "ae16.0",
-              "xe-0/0/1",
-              "xe-0/0/1.0",
-              "xe-0/0/20:0",
-              "xe-0/0/20:0.0",
-              "xe-0/0/21:0",
-              "xe-0/0/21:0.0"
-            ],
             "ospfProcesses" : {
               "default" : {
                 "adminCosts" : {
@@ -20271,7 +20249,29 @@
                 "referenceBandwidth" : 1.0E9,
                 "summaryAdminCost" : 10
               }
-            }
+            },
+            "aggregateRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.GeneratedRoute",
+                "administrativeCost" : 10,
+                "asPath" : [ ],
+                "discard" : true,
+                "generationPolicy" : "~SUMMARY1_2_0_0_16~",
+                "metric" : 100,
+                "network" : "1.2.0.0/16",
+                "nextHopIp" : "AUTO/NONE(-1l)"
+              }
+            ],
+            "interfaces" : [
+              "ae16",
+              "ae16.0",
+              "xe-0/0/1",
+              "xe-0/0/1.0",
+              "xe-0/0/20:0",
+              "xe-0/0/20:0.0",
+              "xe-0/0/21:0",
+              "xe-0/0/21:0.0"
+            ]
           }
         }
       },
@@ -28075,9 +28075,6 @@
           },
           "default" : {
             "name" : "default",
-            "interfaces" : [
-              "Ethernet0/0"
-            ],
             "ospfProcesses" : {
               "1" : {
                 "adminCosts" : {
@@ -28128,7 +28125,10 @@
                 "routerId" : "5.6.7.8",
                 "summaryAdminCost" : 254
               }
-            }
+            },
+            "interfaces" : [
+              "Ethernet0/0"
+            ]
           }
         }
       },
