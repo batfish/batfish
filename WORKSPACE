@@ -917,28 +917,6 @@ load("@jsonassert//:rules.bzl", "jsonassert_compile")
 
 jsonassert_compile()
 
-# jsonassert
-maven_repository(
-    name = "jsonpath",
-    force = [
-        "org.ow2.asm:asm:7.0",
-    ],
-    transitive_deps = [
-        "765a4401ceb2dc8d40553c2075eb80a8fa35c2ae:com.jayway.jsonpath:json-path:2.4.0",
-        "c592b500269bfde36096641b01238a8350f8aa31:net.minidev:accessors-smart:1.2",
-        "007396407491352ce4fa30de92efb158adb76b5b:net.minidev:json-smart:2.3",
-        "d74d4ba0dee443f68fb2dcb7fcdb945a2cd89912:org.ow2.asm:asm:7.0",
-        "da76ca59f6a57ee3102f8f9bd9cee742973efa8a:org.slf4j:slf4j-api:1.7.25",
-    ],
-    deps = [
-        "com.jayway.jsonpath:json-path:2.4.0",
-    ],
-)
-
-load("@jsonpath//:rules.bzl", "jsonpath_compile")
-
-jsonpath_compile()
-
 # JSR305
 maven_repository(
     name = "jsr305",

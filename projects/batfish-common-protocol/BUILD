@@ -69,7 +69,6 @@ java_library(
     deps = [
         ":parser_common",
         "//projects/bdd",
-        "//projects/lib/jsonpath",
         "//projects/lib/z3",
         "@antlr4_runtime//:compile",
         "@auto_service//:compile",
