@@ -7,7 +7,7 @@ junit_tests(
     srcs = ["IngressLocationTest.java"],
     deps = [
         "//projects/batfish-common-protocol:common",
-        "//projects/symbolic",
+        "//projects/symbolic/src/main/java/org/batfish/symbolic:core",
         "@jsr305//:compile",
         "@junit//:compile",
     ],
