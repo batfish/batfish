@@ -896,8 +896,7 @@ public final class FileBasedStorage implements StorageProvider {
   @Override
   public @Nonnull String loadPojoTopology(NetworkId networkId, SnapshotId snapshotId)
       throws IOException {
-    Path path = getPojoTopologyPath(networkId, snapshotId);
-    return FileUtils.readFileToString(path.toFile(), UTF_8);
+    return FileUtils.readFileToString(getPojoTopologyPath(networkId, snapshotId).toFile(), UTF_8);
   }
 
   private @Nonnull Path getBgpTopologyPath(NetworkSnapshot snapshot) {

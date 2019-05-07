@@ -8,7 +8,7 @@ add-batfish-option verboseparse
 test -compareall tests/basic/init.ref init-snapshot networks/example/live basic-example
 test tests/basic/parse-status.ref get fileparsestatus
 test -compareall tests/basic/genDp.ref generate-dataplane
-test -raw tests/basic/topology.ref get-object testrig_pojo_topology
+test -json tests/basic/topology.ref get-object testrig_pojo_topology
 test tests/basic/viModel.ref get viModel
 test tests/basic/routes.ref get routes
 
