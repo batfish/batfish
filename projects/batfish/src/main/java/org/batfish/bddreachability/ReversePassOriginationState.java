@@ -1,30 +1,30 @@
 package org.batfish.bddreachability;
 
 import javax.annotation.Nullable;
-import org.batfish.z3.expr.StateExpr;
-import org.batfish.z3.state.NodeAccept;
-import org.batfish.z3.state.NodeDropAclIn;
-import org.batfish.z3.state.NodeDropAclOut;
-import org.batfish.z3.state.NodeDropNoRoute;
-import org.batfish.z3.state.NodeDropNullRoute;
-import org.batfish.z3.state.NodeInterfaceDeliveredToSubnet;
-import org.batfish.z3.state.NodeInterfaceExitsNetwork;
-import org.batfish.z3.state.NodeInterfaceInsufficientInfo;
-import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
-import org.batfish.z3.state.OriginateInterfaceLink;
-import org.batfish.z3.state.OriginateVrf;
-import org.batfish.z3.state.PostInInterface;
-import org.batfish.z3.state.PostInInterfacePostNat;
-import org.batfish.z3.state.PostInVrf;
-import org.batfish.z3.state.PreInInterface;
-import org.batfish.z3.state.PreOutEdge;
-import org.batfish.z3.state.PreOutEdgePostNat;
-import org.batfish.z3.state.PreOutInterfaceDeliveredToSubnet;
-import org.batfish.z3.state.PreOutInterfaceExitsNetwork;
-import org.batfish.z3.state.PreOutInterfaceInsufficientInfo;
-import org.batfish.z3.state.PreOutInterfaceNeighborUnreachable;
-import org.batfish.z3.state.PreOutVrf;
-import org.batfish.z3.state.visitors.StateExprVisitor;
+import org.batfish.symbolic.state.NodeAccept;
+import org.batfish.symbolic.state.NodeDropAclIn;
+import org.batfish.symbolic.state.NodeDropAclOut;
+import org.batfish.symbolic.state.NodeDropNoRoute;
+import org.batfish.symbolic.state.NodeDropNullRoute;
+import org.batfish.symbolic.state.NodeInterfaceDeliveredToSubnet;
+import org.batfish.symbolic.state.NodeInterfaceExitsNetwork;
+import org.batfish.symbolic.state.NodeInterfaceInsufficientInfo;
+import org.batfish.symbolic.state.NodeInterfaceNeighborUnreachable;
+import org.batfish.symbolic.state.OriginateInterfaceLink;
+import org.batfish.symbolic.state.OriginateVrf;
+import org.batfish.symbolic.state.PostInInterface;
+import org.batfish.symbolic.state.PostInInterfacePostNat;
+import org.batfish.symbolic.state.PostInVrf;
+import org.batfish.symbolic.state.PreInInterface;
+import org.batfish.symbolic.state.PreOutEdge;
+import org.batfish.symbolic.state.PreOutEdgePostNat;
+import org.batfish.symbolic.state.PreOutInterfaceDeliveredToSubnet;
+import org.batfish.symbolic.state.PreOutInterfaceExitsNetwork;
+import org.batfish.symbolic.state.PreOutInterfaceInsufficientInfo;
+import org.batfish.symbolic.state.PreOutInterfaceNeighborUnreachable;
+import org.batfish.symbolic.state.PreOutVrf;
+import org.batfish.symbolic.state.StateExpr;
+import org.batfish.symbolic.state.StateExprVisitor;
 
 /**
  * Converts successful flow termination states from the forward pass of a bidirectional reachability

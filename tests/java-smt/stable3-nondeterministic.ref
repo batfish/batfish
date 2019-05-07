@@ -1,6 +1,6 @@
 [
   {
-    "class" : "org.batfish.symbolic.answers.SmtDeterminismAnswerElement",
+    "class" : "org.batfish.minesweeper.answers.SmtDeterminismAnswerElement",
     "flow" : {
       "dscp" : 0,
       "dstIp" : "42.42.42.0",

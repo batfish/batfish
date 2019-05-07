@@ -12,7 +12,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
-import org.batfish.z3.IngressLocation;
+import org.batfish.symbolic.IngressLocation;
 
 /**
  * Detect multipath consistency violations. Given two {@link FlowDisposition dispositions}, find any
