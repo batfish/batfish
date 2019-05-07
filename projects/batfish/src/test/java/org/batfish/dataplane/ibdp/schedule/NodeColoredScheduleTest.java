@@ -121,7 +121,8 @@ public class NodeColoredScheduleTest {
     Node n = TestUtils.makeIosRouter("r1");
     Map<String, Node> nodes = ImmutableMap.of("r1", n);
     Map<String, Configuration> configs = ImmutableMap.of("r1", n.getConfiguration());
-    BgpTopology bgpTopology = initBgpTopology(configs, computeIpNodeOwners(configs, false), false);
+    BgpTopology bgpTopology =
+        initBgpTopology(configs, computeIpNodeOwners(configs, false), false, null);
     NodeColoredSchedule schedule =
         new NodeColoredSchedule(
             nodes, _coloring, TopologyContext.builder().setBgpTopology(bgpTopology).build());
@@ -140,7 +141,8 @@ public class NodeColoredScheduleTest {
         nodes.entrySet().stream()
             .collect(
                 ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getConfiguration()));
-    BgpTopology bgpTopology = initBgpTopology(configs, computeIpNodeOwners(configs, false), false);
+    BgpTopology bgpTopology =
+        initBgpTopology(configs, computeIpNodeOwners(configs, false), false, null);
     NodeColoredSchedule schedule =
         new NodeColoredSchedule(
             nodes, _coloring, TopologyContext.builder().setBgpTopology(bgpTopology).build());
@@ -155,7 +157,7 @@ public class NodeColoredScheduleTest {
   public void testTwoNodesConnectedDirectlyViaBGP() {
 
     BgpTopology bgpTopology =
-        initBgpTopology(_configurations, computeIpNodeOwners(_configurations, false), false);
+        initBgpTopology(_configurations, computeIpNodeOwners(_configurations, false), false, null);
     ImmutableMap<String, Node> nodes =
         _configurations.entrySet().stream()
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> new Node(e.getValue())));

@@ -53,6 +53,13 @@
           "schema" : "Node"
         },
         {
+          "description" : "Remote interface for this session",
+          "isKey" : false,
+          "isValue" : false,
+          "name" : "Remote_Interface",
+          "schema" : "Interface"
+        },
+        {
           "description" : "Remote IP or prefix for this session",
           "isKey" : true,
           "isValue" : false,
@@ -79,10 +86,7 @@
     "rows" : [
       {
         "Established_Status" : "ESTABLISHED",
-        "Local_Interface" : {
-          "hostname" : "as2border2",
-          "interface" : "GigabitEthernet0/0"
-        },
+        "Local_Interface" : null,
         "Local_AS" : 2,
         "Local_IP" : "10.23.21.2",
         "Node" : {
@@ -94,6 +98,7 @@
           "id" : "node-as3border1",
           "name" : "as3border1"
         },
+        "Remote_Interface" : null,
         "Remote_IP" : {
           "schema" : "Ip",
           "value" : "10.23.21.3"
