@@ -656,7 +656,12 @@ public class Parser extends CommonParser {
         IpSpaceAddressGroup(),
         IpSpaceAddressGroupDeprecated(),
         IpSpaceLocationDeprecated(),
-        IpSpaceLocation());
+        IpSpaceLocation(),
+        IpSpaceParens());
+  }
+
+  public Rule IpSpaceParens() {
+    return Sequence("( ", IpSpaceSpec(), ") ");
   }
 
   public Rule IpSpaceAddressGroup() {
