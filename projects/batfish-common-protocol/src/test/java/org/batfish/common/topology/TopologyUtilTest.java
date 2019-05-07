@@ -7,6 +7,8 @@ import static org.batfish.common.topology.TopologyUtil.computeLayer1PhysicalTopo
 import static org.batfish.common.topology.TopologyUtil.computeLayer2SelfEdges;
 import static org.batfish.common.topology.TopologyUtil.computeLayer2Topology;
 import static org.batfish.common.topology.TopologyUtil.computeLayer3Topology;
+import static org.batfish.common.topology.TopologyUtil.computeVniInterNodeEdges;
+import static org.batfish.common.topology.TopologyUtil.computeVniName;
 import static org.batfish.datamodel.matchers.EdgeMatchers.hasHead;
 import static org.batfish.datamodel.matchers.EdgeMatchers.hasNode1;
 import static org.batfish.datamodel.matchers.EdgeMatchers.hasNode2;
@@ -24,6 +26,9 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.graph.GraphBuilder;
+import com.google.common.graph.MutableGraph;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -31,6 +36,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.IspModelingUtils;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -42,15 +48,19 @@ import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.isp_configuration.IspFilter;
+import org.batfish.datamodel.vxlan.VxlanNode;
+import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -187,6 +197,96 @@ public final class TopologyUtilTest {
   }
 
   @Test
+  public void testComputeLayer2TopologyCrossVni() {
+    /*
+     * SWP1      I1 I2      SWP2
+     * <=== S1 ===> <=== S2 ===>
+     *
+     * - S1 and S2 are switches
+     * - SWP1 and SWP2 are access ports for VLAN 2
+     * - I1 and I2 are layer-3-only interfaces
+     * - Working VXLAN tunnel on VNI 10002 between I1 and I2
+     * - VNI 10002 associated with VLAN 2 on S1 and S2
+     *
+     * Then SWP1 and SWP2 should be in same broadcast domain
+     */
+    String s1Name = "S1";
+    String s2Name = "S2";
+    String swp1Name = "SWP1";
+    String swp2Name = "SWP2";
+    int vlanId = 2;
+    int vni = 10002;
+    String vrfName = "v1";
+    Configuration s1 = _cb.setHostname(s1Name).build();
+    Configuration s2 = _cb.setHostname(s2Name).build();
+    Vrf v1 = _vb.setOwner(s1).setName(vrfName).build();
+    Vrf v2 = _vb.setOwner(s2).setName(vrfName).build();
+    _ib.setActive(true);
+
+    // Switchports
+    _ib.setAccessVlan(vlanId).setSwitchport(true).setSwitchportMode(SwitchportMode.ACCESS);
+    _ib.setOwner(s1).setVrf(v1).setName(swp1Name).build();
+    _ib.setOwner(s2).setVrf(v2).setName(swp2Name).build();
+    // (Assume existence of layer-3 interfaces)
+
+    // VNIs
+    VniSettings.Builder vnb =
+        VniSettings.builder()
+            .setBumTransportIps(ImmutableSortedSet.of(Ip.FIRST_MULTICAST_IP))
+            .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
+            .setVlan(vlanId)
+            .setVni(vni);
+    v1.getVniSettings().put(vni, vnb.build());
+    v2.getVniSettings().put(vni, vnb.build());
+
+    MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
+    graph.putEdge(new VxlanNode(s1Name, vni), new VxlanNode(s2Name, vni));
+    VxlanTopology vxlanTopology = new VxlanTopology(graph);
+    Layer1Topology layer1Topology = new Layer1Topology(ImmutableList.of());
+
+    assertTrue(
+        computeLayer2Topology(
+                layer1Topology, vxlanTopology, ImmutableMap.of(s1Name, s1, s2Name, s2))
+            .inSameBroadcastDomain(
+                new Layer2Node(s1Name, swp1Name, vlanId),
+                new Layer2Node(s2Name, swp2Name, vlanId)));
+  }
+
+  @Test
+  public void testComputeVniInterNodeEdges() {
+    String s1Name = "S1";
+    String s2Name = "S2";
+    int vlanId = 2;
+    int vni = 10002;
+    String vrfName = "v1";
+    Configuration s1 = _cb.setHostname(s1Name).build();
+    Configuration s2 = _cb.setHostname(s2Name).build();
+    Vrf v1 = _vb.setOwner(s1).setName(vrfName).build();
+    Vrf v2 = _vb.setOwner(s2).setName(vrfName).build();
+    VniSettings.Builder vnb =
+        VniSettings.builder()
+            .setBumTransportIps(ImmutableSortedSet.of(Ip.FIRST_MULTICAST_IP))
+            .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
+            .setVlan(vlanId)
+            .setVni(vni);
+    v1.getVniSettings().put(vni, vnb.build());
+    v2.getVniSettings().put(vni, vnb.build());
+    String vniName = computeVniName(vni);
+
+    MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
+    graph.putEdge(new VxlanNode(s1Name, vni), new VxlanNode(s2Name, vni));
+    VxlanTopology vxlanTopology = new VxlanTopology(graph);
+    Layer2Node n1 = new Layer2Node(s1Name, vniName, null);
+    Layer2Node n2 = new Layer2Node(s2Name, vniName, null);
+
+    assertThat(
+        computeVniInterNodeEdges(
+                vxlanTopology, NetworkConfigurations.of(ImmutableMap.of(s1Name, s1, s2Name, s2)))
+            .collect(ImmutableList.toImmutableList()),
+        containsInAnyOrder(new Layer2Edge(n1, n2, null), new Layer2Edge(n2, n1, null)));
+  }
+
+  @Test
   public void testComputeLayer2Topology_layer1() {
     String c1Name = "c1";
     String c2Name = "c2";
@@ -215,7 +315,8 @@ public final class TopologyUtilTest {
        */
       Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2);
       Layer1Topology layer1Topology = layer1Topology(c1Name, c1i1Name, c2Name, c2i1Name);
-      Layer2Topology layer2Topology = computeLayer2Topology(layer1Topology, configs);
+      Layer2Topology layer2Topology =
+          computeLayer2Topology(layer1Topology, VxlanTopology.EMPTY, configs);
       assertTrue(
           "c1:i1 and c2:i1 are in the same broadcast domain",
           layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
@@ -241,7 +342,8 @@ public final class TopologyUtilTest {
           layer1Topology(
               c1Name, c1i1Name, c3Name, c3i1Name, //
               c2Name, c2i1Name, c3Name, c3i2Name);
-      Layer2Topology layer2Topology = computeLayer2Topology(layer1Topology, configs);
+      Layer2Topology layer2Topology =
+          computeLayer2Topology(layer1Topology, VxlanTopology.EMPTY, configs);
       assertTrue(
           "c1:i1 and c2:i1 are in the same broadcast domain",
           layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
@@ -267,7 +369,8 @@ public final class TopologyUtilTest {
           layer1Topology(
               c1Name, c1i1Name, c3Name, c3i1Name, //
               c2Name, c2i1Name, c3Name, c3i2Name);
-      Layer2Topology layer2Topology = computeLayer2Topology(layer1Topology, configs);
+      Layer2Topology layer2Topology =
+          computeLayer2Topology(layer1Topology, VxlanTopology.EMPTY, configs);
       assertFalse(
           "c1:i1 and c2:i1 are not in the same broadcast domain",
           layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
@@ -294,7 +397,8 @@ public final class TopologyUtilTest {
           layer1Topology(
               c1Name, c1i1Name, c3Name, c3i1Name, //
               c2Name, c2i1Name, c3Name, c3i2Name);
-      Layer2Topology layer2Topology = computeLayer2Topology(layer1Topology, configs);
+      Layer2Topology layer2Topology =
+          computeLayer2Topology(layer1Topology, VxlanTopology.EMPTY, configs);
       assertTrue(
           "c1:i1 and c2:i1 are in the same broadcast domain",
           layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
@@ -321,7 +425,8 @@ public final class TopologyUtilTest {
           layer1Topology(
               c1Name, c1i1Name, c3Name, c3i1Name, //
               c2Name, c2i1Name, c3Name, c3i2Name);
-      Layer2Topology layer2Topology = computeLayer2Topology(layer1Topology, configs);
+      Layer2Topology layer2Topology =
+          computeLayer2Topology(layer1Topology, VxlanTopology.EMPTY, configs);
       assertFalse(
           "c1:i1 and c2:i1 are not in the same broadcast domain",
           layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
@@ -348,7 +453,8 @@ public final class TopologyUtilTest {
           layer1Topology(
               c1Name, c1i1Name, c3Name, c3i1Name, //
               c2Name, c2i1Name, c3Name, c3i2Name);
-      Layer2Topology layer2Topology = computeLayer2Topology(layer1Topology, configs);
+      Layer2Topology layer2Topology =
+          computeLayer2Topology(layer1Topology, VxlanTopology.EMPTY, configs);
       assertFalse(
           "c1:i1 and c2:i1 are not in the same broadcast domain",
           layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
@@ -391,7 +497,8 @@ public final class TopologyUtilTest {
               c1Name, c1i1Name, c3Name, c3i1Name, //
               c3Name, c3i2Name, c4Name, c4i1Name, //
               c4Name, c4i2Name, c2Name, c2i1Name);
-      Layer2Topology layer2Topology = computeLayer2Topology(layer1Topology, configs);
+      Layer2Topology layer2Topology =
+          computeLayer2Topology(layer1Topology, VxlanTopology.EMPTY, configs);
       assertTrue(
           "c1:i1 and c2:i1 are in the same broadcast domain",
           layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
@@ -434,7 +541,8 @@ public final class TopologyUtilTest {
               c1Name, c1i1Name, c3Name, c3i1Name, //
               c3Name, c3i2Name, c4Name, c4i2Name, //
               c4Name, c4i1Name, c2Name, c2i1Name);
-      Layer2Topology layer2Topology = computeLayer2Topology(layer1Topology, configs);
+      Layer2Topology layer2Topology =
+          computeLayer2Topology(layer1Topology, VxlanTopology.EMPTY, configs);
       assertFalse(
           "c1:i1 and c2:i1 are not in the same broadcast domain",
           layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
@@ -470,6 +578,88 @@ public final class TopologyUtilTest {
             ImmutableSet.of(
                 new Layer2Edge(c1Name, i1Name, 2, c1Name, i2Name, 2, null),
                 new Layer2Edge(c1Name, i2Name, 2, c1Name, i1Name, 2, null))));
+  }
+
+  @Test
+  public void testComputeLayer2SelfEdgesVniIrb() {
+    String c1Name = "c1";
+
+    int vlanId = 2;
+    int vni = 10002;
+
+    String irbName = "irb1";
+    Configuration c1 = _cb.setHostname(c1Name).build();
+    Vrf v1 = _vb.setOwner(c1).build();
+    _ib.setOwner(c1)
+        .setVrf(v1)
+        .setActive(true)
+        .setName(irbName)
+        .setType(InterfaceType.VLAN)
+        .setVlan(vlanId)
+        .build();
+
+    String vniName = TopologyUtil.computeVniName(vni);
+    v1.getVniSettings()
+        .put(
+            vni,
+            VniSettings.builder()
+                .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
+                .setBumTransportIps(ImmutableSortedSet.of(Ip.FIRST_CLASS_B_PRIVATE_IP))
+                .setVni(vni)
+                .setVlan(vlanId)
+                .build());
+
+    ImmutableSet.Builder<Layer2Edge> builder = ImmutableSet.builder();
+    computeLayer2SelfEdges(c1, builder);
+
+    assertThat(
+        builder.build(),
+        equalTo(
+            ImmutableSet.of(
+                new Layer2Edge(c1Name, irbName, null, c1Name, vniName, null, null),
+                new Layer2Edge(c1Name, vniName, null, c1Name, irbName, null, null))));
+  }
+
+  @Test
+  public void testComputeLayer2SelfEdgesVniSwitchport() {
+    String c1Name = "c1";
+
+    int vlanId = 2;
+    int vni = 10002;
+
+    String switchportName = "swp1";
+    Configuration c1 = _cb.setHostname(c1Name).build();
+    Vrf v1 = _vb.setOwner(c1).build();
+    _ib.setOwner(c1)
+        .setVrf(v1)
+        .setActive(true)
+        .setName(switchportName)
+        .setType(InterfaceType.PHYSICAL)
+        .setAccessVlan(vlanId)
+        .setSwitchport(true)
+        .setSwitchportMode(SwitchportMode.ACCESS)
+        .build();
+
+    String vniName = TopologyUtil.computeVniName(vni);
+    v1.getVniSettings()
+        .put(
+            vni,
+            VniSettings.builder()
+                .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
+                .setBumTransportIps(ImmutableSortedSet.of(Ip.FIRST_CLASS_B_PRIVATE_IP))
+                .setVni(vni)
+                .setVlan(vlanId)
+                .build());
+
+    ImmutableSet.Builder<Layer2Edge> builder = ImmutableSet.builder();
+    computeLayer2SelfEdges(c1, builder);
+
+    assertThat(
+        builder.build(),
+        equalTo(
+            ImmutableSet.of(
+                new Layer2Edge(c1Name, switchportName, vlanId, c1Name, vniName, null, null),
+                new Layer2Edge(c1Name, vniName, null, c1Name, switchportName, vlanId, null))));
   }
 
   @Test
@@ -513,7 +703,8 @@ public final class TopologyUtilTest {
 
     // Layer2
     Layer2Topology layer2Topology =
-        computeLayer2Topology(layer1LogicalTopology, ImmutableMap.of(n1Name, n1, n2Name, n2));
+        computeLayer2Topology(
+            layer1LogicalTopology, VxlanTopology.EMPTY, ImmutableMap.of(n1Name, n1, n2Name, n2));
 
     assertTrue(
         "n1:i1a and n2:i1a are in the same broadcast domain",
@@ -617,7 +808,8 @@ public final class TopologyUtilTest {
 
     // Layer2
     Layer2Topology layer2Topology =
-        computeLayer2Topology(layer1LogicalTopology, ImmutableMap.of(n1Name, n1, n2Name, n2));
+        computeLayer2Topology(
+            layer1LogicalTopology, VxlanTopology.EMPTY, ImmutableMap.of(n1Name, n1, n2Name, n2));
 
     assertTrue(
         "n1:ia and n2:ia are in the same broadcast domain",
@@ -840,6 +1032,7 @@ public final class TopologyUtilTest {
             rawLayer1Topology,
             computeLayer2Topology(
                 computeLayer1LogicalTopology(layer1PhysicalTopology, configurations),
+                VxlanTopology.EMPTY,
                 configurations),
             configurations);
 
@@ -976,6 +1169,7 @@ public final class TopologyUtilTest {
             rawLayer1Topology,
             computeLayer2Topology(
                 computeLayer1LogicalTopology(layer1PhysicalTopology, configurations),
+                VxlanTopology.EMPTY,
                 configurations),
             configurations);
 

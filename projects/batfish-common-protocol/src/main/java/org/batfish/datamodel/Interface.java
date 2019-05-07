@@ -112,6 +112,8 @@ public final class Interface extends ComparableStructure<String> {
 
     private InterfaceType _type;
 
+    private @Nullable Integer _vlan;
+
     private Vrf _vrf;
 
     private SortedMap<Integer, VrrpGroup> _vrrpGroups;
@@ -190,6 +192,7 @@ public final class Interface extends ComparableStructure<String> {
       if (_type != null) {
         iface.setInterfaceType(_type);
       }
+      iface.setVlan(_vlan);
       iface.setVrf(_vrf);
       if (_vrf != null) {
         _vrf.getInterfaces().put(name, iface);
@@ -443,6 +446,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setType(InterfaceType type) {
       _type = type;
+      return this;
+    }
+
+    public @Nonnull Builder setVlan(@Nullable Integer vlan) {
+      _vlan = vlan;
       return this;
     }
 

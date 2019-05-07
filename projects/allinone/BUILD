@@ -18,6 +18,8 @@ java_library(
     ]),
     resources = glob(["src/main/resources/**"]),
     runtime_deps = [
+        "//projects/minesweeper",
+        "//projects/question",
     ],
     deps = [
         "//projects/batfish",
@@ -205,13 +207,15 @@ junit_tests(
     name = "smt_tests",
     size = "small",
     srcs = glob([
-        "src/test/java/org/batfish/symbolic/smt/*.java",
+        "src/test/java/org/batfish/minesweeper/smt/*.java",
     ]),
     deps = [
         "//projects/batfish",
         "//projects/batfish:batfish_testlib",
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol:common_testlib",
+        "//projects/minesweeper",
+        "//projects/minesweeper:matchers",
         "//projects/question",
         "@guava//:compile",
         "@hamcrest//:compile",

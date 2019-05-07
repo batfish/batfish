@@ -163,11 +163,7 @@ import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
-import org.batfish.datamodel.questions.smt.HeaderQuestion;
-import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishParseException;
@@ -198,8 +194,6 @@ import org.batfish.job.ParseEnvironmentRoutingTableJob;
 import org.batfish.job.ParseResult;
 import org.batfish.job.ParseVendorConfigurationJob;
 import org.batfish.job.ParseVendorConfigurationResult;
-import org.batfish.minesweeper.abstraction.Roles;
-import org.batfish.minesweeper.smt.PropertyChecker;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.ResolvedReachabilityParameters;
 import org.batfish.question.SrcNattedConstraint;
@@ -3053,75 +3047,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public void setTerminatingExceptionMessage(String terminatingExceptionMessage) {
     _terminatingExceptionMessage = terminatingExceptionMessage;
-  }
-
-  @Override
-  public AnswerElement smtBlackhole(HeaderQuestion q) {
-    PropertyChecker p = new PropertyChecker(new BDDPacket(), this, _settings);
-    return p.checkBlackHole(q);
-  }
-
-  @Override
-  public AnswerElement smtBoundedLength(HeaderLocationQuestion q, Integer bound) {
-    if (bound == null) {
-      throw new BatfishException("Missing parameter length bound: (e.g., bound=3)");
-    }
-    PropertyChecker p = new PropertyChecker(new BDDPacket(), this, _settings);
-    return p.checkBoundedLength(q, bound);
-  }
-
-  @Override
-  public AnswerElement smtDeterminism(HeaderQuestion q) {
-    PropertyChecker p = new PropertyChecker(new BDDPacket(), this, _settings);
-    return p.checkDeterminism(q);
-  }
-
-  @Override
-  public AnswerElement smtEqualLength(HeaderLocationQuestion q) {
-    PropertyChecker p = new PropertyChecker(new BDDPacket(), this, _settings);
-    return p.checkEqualLength(q);
-  }
-
-  @Override
-  public AnswerElement smtForwarding(HeaderQuestion q) {
-    PropertyChecker p = new PropertyChecker(new BDDPacket(), this, _settings);
-    return p.checkForwarding(q);
-  }
-
-  @Override
-  public AnswerElement smtLoadBalance(HeaderLocationQuestion q, int threshold) {
-    PropertyChecker p = new PropertyChecker(new BDDPacket(), this, _settings);
-    return p.checkLoadBalancing(q, threshold);
-  }
-
-  @Override
-  public AnswerElement smtLocalConsistency(Pattern routerRegex, boolean strict, boolean fullModel) {
-    PropertyChecker p = new PropertyChecker(new BDDPacket(), this, _settings);
-    return p.checkLocalEquivalence(routerRegex, strict, fullModel);
-  }
-
-  @Override
-  public AnswerElement smtMultipathConsistency(HeaderLocationQuestion q) {
-    PropertyChecker p = new PropertyChecker(new BDDPacket(), this, _settings);
-    return p.checkMultipathConsistency(q);
-  }
-
-  @Override
-  public AnswerElement smtReachability(HeaderLocationQuestion q) {
-    PropertyChecker p = new PropertyChecker(new BDDPacket(), this, _settings);
-    return p.checkReachability(q);
-  }
-
-  @Override
-  public AnswerElement smtRoles(RoleQuestion q) {
-    Roles roles = Roles.create(this, q.getDstIps(), new NodesSpecifier(q.getNodeRegex()));
-    return roles.asAnswer(q.getType());
-  }
-
-  @Override
-  public AnswerElement smtRoutingLoop(HeaderQuestion q) {
-    PropertyChecker p = new PropertyChecker(new BDDPacket(), this, _settings);
-    return p.checkRoutingLoop(q);
   }
 
   @Override
