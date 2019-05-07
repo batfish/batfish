@@ -6,7 +6,7 @@ import com.google.common.collect.Streams;
 import com.google.common.collect.Table;
 import java.util.function.Function;
 import org.batfish.bddreachability.transition.Transitions;
-import org.batfish.z3.expr.StateExpr;
+import org.batfish.symbolic.state.StateExpr;
 
 /**
  * Utility methods for {@link BDDReachabilityAnalysis} and {@link BDDReachabilityAnalysisFactory}.

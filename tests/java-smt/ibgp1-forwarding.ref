@@ -1,6 +1,6 @@
 [
   {
-    "class" : "org.batfish.symbolic.answers.SmtOneAnswerElement",
+    "class" : "org.batfish.minesweeper.answers.SmtOneAnswerElement",
     "result" : {
       "model" : {
         "|0_FAILED-EDGE_r1_Loopback0|" : "0",

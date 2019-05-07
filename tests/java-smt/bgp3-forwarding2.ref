@@ -1,6 +1,6 @@
 [
   {
-    "class" : "org.batfish.symbolic.answers.SmtOneAnswerElement",
+    "class" : "org.batfish.minesweeper.answers.SmtOneAnswerElement",
     "result" : {
       "forwardingModel" : [
         "r1,Serial0 --> r2,Serial0 (OSPF)"

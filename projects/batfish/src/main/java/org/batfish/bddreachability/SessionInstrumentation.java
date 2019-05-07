@@ -30,12 +30,12 @@ import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.z3.expr.StateExpr;
-import org.batfish.z3.state.NodeAccept;
-import org.batfish.z3.state.NodeDropAclIn;
-import org.batfish.z3.state.NodeDropAclOut;
-import org.batfish.z3.state.NodeInterfaceDeliveredToSubnet;
-import org.batfish.z3.state.PreInInterface;
+import org.batfish.symbolic.state.NodeAccept;
+import org.batfish.symbolic.state.NodeDropAclIn;
+import org.batfish.symbolic.state.NodeDropAclOut;
+import org.batfish.symbolic.state.NodeInterfaceDeliveredToSubnet;
+import org.batfish.symbolic.state.PreInInterface;
+import org.batfish.symbolic.state.StateExpr;
 
 /**
  * Instruments a {@link BDDReachabilityAnalysis} graph to install {@link BDDFirewallSessionTraceInfo

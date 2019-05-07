@@ -1,7 +1,7 @@
 package org.batfish.bddreachability;
 
 import org.batfish.bddreachability.transition.Transition;
-import org.batfish.z3.expr.StateExpr;
+import org.batfish.symbolic.state.StateExpr;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
