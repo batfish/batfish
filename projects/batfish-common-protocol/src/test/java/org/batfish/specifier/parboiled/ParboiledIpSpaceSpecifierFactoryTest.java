@@ -37,7 +37,8 @@ public class ParboiledIpSpaceSpecifierFactoryTest {
   @Test
   public void testBuildIpSpaceSpecifierParensSpaces() {
     assertThat(
-        new ParboiledIpSpaceSpecifierFactory().buildIpSpaceSpecifier("   (  1.1.1.1   , 2.2.2.2   )  "),
+        new ParboiledIpSpaceSpecifierFactory()
+            .buildIpSpaceSpecifier("   (  1.1.1.1   , 2.2.2.2   )  "),
         equalTo(
             new ParboiledIpSpaceSpecifier(
                 new UnionIpSpaceAstNode(new IpAstNode("1.1.1.1"), new IpAstNode("2.2.2.2")))));
