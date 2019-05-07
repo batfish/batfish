@@ -745,7 +745,7 @@ public final class TopologyUtil {
     return new Topology(edges.build());
   }
 
-  public static Layer1Topology computeLayer1LogicalTopology(
+  public static @Nonnull Layer1Topology computeLayer1LogicalTopology(
       Layer1Topology layer1PhysicalTopology, Map<String, Configuration> configurations) {
     return new Layer1Topology(
         layer1PhysicalTopology.getGraph().edges().stream()

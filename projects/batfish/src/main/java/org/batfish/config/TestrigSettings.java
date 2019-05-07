@@ -76,10 +76,6 @@ public final class TestrigSettings {
     return getOutputPath().resolve(BfConsts.RELPATH_PARSE_ANSWER_PATH);
   }
 
-  public Path getPojoTopologyPath() {
-    return getOutputPath().resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH);
-  }
-
   public Path getReferenceLibraryPath() {
     return getInputPath().resolve(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH);
   }
@@ -92,20 +88,12 @@ public final class TestrigSettings {
     return getOutputPath().resolve(BfConsts.RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES);
   }
 
-  public Path getSerializeTopologyPath() {
-    return getOutputPath().resolve(BfConsts.RELPATH_ENV_TOPOLOGY_FILE);
-  }
-
   public Path getSerializeVendorPath() {
     return getOutputPath().resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR);
   }
 
   public Path getValidateSnapshotAnswerPath() {
     return getOutputPath().resolve(BfConsts.RELPATH_VALIDATE_SNAPSHOT_ANSWER);
-  }
-
-  public Path getTopologyPath() {
-    return getOutputPath().resolve(BfConsts.RELPATH_TESTRIG_TOPOLOGY_PATH);
   }
 
   @Override
