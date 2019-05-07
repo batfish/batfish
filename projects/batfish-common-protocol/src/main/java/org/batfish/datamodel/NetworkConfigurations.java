@@ -129,7 +129,7 @@ public final class NetworkConfigurations {
 
   public Optional<OspfNeighborConfig> getOspfNeighborConfig(OspfNeighborConfigId ospfConfigId) {
     return getVrf(ospfConfigId.getHostname(), ospfConfigId.getVrfName())
-        .map(Vrf::getOspfProcess)
+        .map(vrf -> vrf.getOspfProcesses().get(ospfConfigId.getProcName()))
         .map(OspfProcess::getOspfNeighborConfigs)
         .map(oc -> oc.get(ospfConfigId.getInterfaceName()));
   }

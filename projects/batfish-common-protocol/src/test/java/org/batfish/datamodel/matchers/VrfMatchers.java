@@ -1,5 +1,8 @@
 package org.batfish.datamodel.matchers;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
+
 import java.util.Map;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -17,7 +20,7 @@ import org.batfish.datamodel.matchers.VrfMatchersImpl.HasGeneratedRoutes;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasInterfaces;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasKernelRoutes;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasName;
-import org.batfish.datamodel.matchers.VrfMatchersImpl.HasOspfProcess;
+import org.batfish.datamodel.matchers.VrfMatchersImpl.HasOspfProcesses;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasSnmpServer;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasStaticRoutes;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasVniSettings;
@@ -61,11 +64,12 @@ public class VrfMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the provided {@code subMatcher} matches the VRF's OSPF
-   * process.
+   * Provides a matcher that matches if the VRF has an OSPF process named {@code name} that matches
+   * the provided {@code subMatcher}.
    */
-  public static HasOspfProcess hasOspfProcess(Matcher<? super OspfProcess> subMatcher) {
-    return new HasOspfProcess(subMatcher);
+  public static HasOspfProcesses hasOspfProcess(
+      String name, Matcher<? super OspfProcess> subMatcher) {
+    return new HasOspfProcesses(hasEntry(equalTo(name), subMatcher));
   }
 
   /**

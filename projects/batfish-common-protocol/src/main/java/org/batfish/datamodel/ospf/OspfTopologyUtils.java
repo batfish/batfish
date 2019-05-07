@@ -37,8 +37,8 @@ public final class OspfTopologyUtils {
 
   /**
    * Examine {@link Configuration} objects to compute and generate IDs for all available OSPF
-   * neighbors; Initialize {@link OspfProcess} map containing all local neighbor configs, obtainable
-   * with {@link OspfProcess#getOspfNeighborConfigs()}.
+   * neighbors on all OSPF processes; initialize {@link OspfProcess} map containing all local
+   * neighbor configs, obtainable with {@link OspfProcess#getOspfNeighborConfigs()}.
    */
   public static void initNeighborConfigs(NetworkConfigurations configurations) {
     // Iterate over all configurations
@@ -46,35 +46,30 @@ public final class OspfTopologyUtils {
       // All VRFs in the configuration
       for (Entry<String, Vrf> vrfEntry : config.getVrfs().entrySet()) {
         Vrf vrf = vrfEntry.getValue();
-        OspfProcess proc = vrf.getOspfProcess();
+        for (OspfProcess proc : vrf.getOspfProcesses().values()) {
+          Builder<String, OspfNeighborConfig> neighborMap = ImmutableMap.builder();
 
-        if (proc == null) {
-          // No OSPF process, nothing to do.
-          continue;
-        }
+          // Iterate over all OSPF areas
+          for (Entry<Long, OspfArea> ospfAreaEntry : proc.getAreas().entrySet()) {
+            OspfArea area = ospfAreaEntry.getValue();
 
-        Builder<String, OspfNeighborConfig> neighborMap = ImmutableMap.builder();
+            // All interfaces in this area
+            for (String ifaceName : area.getInterfaces()) {
+              Interface iface = config.getAllInterfaces().get(ifaceName);
 
-        // Iterate over all OSPF areas
-        for (Entry<Long, OspfArea> ospfAreaEntry : proc.getAreas().entrySet()) {
-          OspfArea area = ospfAreaEntry.getValue();
-
-          // All interfaces in this area
-          for (String ifaceName : area.getInterfaces()) {
-            Interface iface = config.getAllInterfaces().get(ifaceName);
-
-            neighborMap.put(
-                ifaceName,
-                OspfNeighborConfig.builder()
-                    .setArea(area.getAreaNumber())
-                    .setHostname(config.getHostname())
-                    .setInterfaceName(ifaceName)
-                    .setVrfName(vrf.getName())
-                    .setPassive(iface.getOspfPassive())
-                    .build());
+              neighborMap.put(
+                  ifaceName,
+                  OspfNeighborConfig.builder()
+                      .setArea(area.getAreaNumber())
+                      .setHostname(config.getHostname())
+                      .setInterfaceName(ifaceName)
+                      .setVrfName(vrf.getName())
+                      .setPassive(iface.getOspfPassive())
+                      .build());
+            }
           }
+          proc.setOspfNeighborConfigs(neighborMap.build());
         }
-        proc.setOspfNeighborConfigs(neighborMap.build());
       }
     }
   }
@@ -89,31 +84,29 @@ public final class OspfTopologyUtils {
       // All VRFs in the configuration
       for (Entry<String, Vrf> vrfEntry : config.getVrfs().entrySet()) {
         Vrf vrf = vrfEntry.getValue();
-        OspfProcess proc = vrf.getOspfProcess();
+        for (OspfProcess proc : vrf.getOspfProcesses().values()) {
+          for (OspfNeighborConfig neighbor : proc.getOspfNeighborConfigs().values()) {
+            if (neighbor.isPassive()) {
+              continue;
+            }
 
-        if (proc == null) {
-          // No OSPF process, nothing to do.
-          continue;
-        }
+            // Check if the interface is up
+            Optional<Interface> iface =
+                configurations.getInterface(config.getHostname(), neighbor.getInterfaceName());
+            if (!iface.isPresent()) {
+              continue;
+            }
+            if (!iface.get().getActive()) {
+              continue;
+            }
 
-        for (OspfNeighborConfig neighbor : proc.getOspfNeighborConfigs().values()) {
-          if (neighbor.isPassive()) {
-            continue;
+            graph.addNode(
+                new OspfNeighborConfigId(
+                    config.getHostname(),
+                    vrf.getName(),
+                    proc.getProcessId(),
+                    iface.get().getName()));
           }
-
-          // Check if the interface is up
-          Optional<Interface> iface =
-              configurations.getInterface(config.getHostname(), neighbor.getInterfaceName());
-          if (!iface.isPresent()) {
-            continue;
-          }
-          if (!iface.get().getActive()) {
-            continue;
-          }
-
-          graph.addNode(
-              new OspfNeighborConfigId(
-                  config.getHostname(), vrf.getName(), proc.getProcessId(), iface.get().getName()));
         }
       }
     }

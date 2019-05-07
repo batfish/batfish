@@ -84,14 +84,14 @@ final class VrfMatchersImpl {
     }
   }
 
-  static final class HasOspfProcess extends FeatureMatcher<Vrf, OspfProcess> {
-    HasOspfProcess(@Nonnull Matcher<? super OspfProcess> subMatcher) {
-      super(subMatcher, "A VRF with ospfProcess:", "ospfProcess");
+  static final class HasOspfProcesses extends FeatureMatcher<Vrf, Map<String, OspfProcess>> {
+    HasOspfProcesses(@Nonnull Matcher<? super Map<String, OspfProcess>> subMatcher) {
+      super(subMatcher, "A VRF with ospfProcesses:", "ospfProcesses");
     }
 
     @Override
-    protected OspfProcess featureValueOf(Vrf actual) {
-      return actual.getOspfProcess();
+    protected Map<String, OspfProcess> featureValueOf(Vrf actual) {
+      return actual.getOspfProcesses();
     }
   }
 

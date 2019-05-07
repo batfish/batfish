@@ -299,13 +299,14 @@ public class VirtualRouter implements Serializable {
       applyRibGroup(localRibGroup, _localRib);
     }
 
-    if (_vrf.getOspfProcess() != null) {
-      _ospfProcesses =
-          ImmutableMap.of(
-              _vrf.getOspfProcess().getProcessId(),
-              new OspfRoutingProcess(
-                  _vrf.getOspfProcess(), _name, _c, topologyContext.getOspfTopology()));
-    }
+    _ospfProcesses =
+        _vrf.getOspfProcesses().entrySet().stream()
+            .collect(
+                ImmutableMap.toImmutableMap(
+                    Entry::getKey,
+                    e ->
+                        new OspfRoutingProcess(
+                            e.getValue(), _name, _c, topologyContext.getOspfTopology())));
     _ospfProcesses.values().forEach(OspfRoutingProcess::initialize);
 
     initEigrp();

@@ -233,7 +233,7 @@ public class Graph {
   @Nullable
   public static RoutingPolicy findCommonRoutingPolicy(Configuration conf, Protocol proto) {
     if (proto.isOspf()) {
-      String exp = conf.getDefaultVrf().getOspfProcess().getExportPolicy();
+      String exp = getFirstOspfProcess(conf.getDefaultVrf()).getExportPolicy();
       return conf.getRoutingPolicies().get(exp);
     }
     if (proto.isBgp()) {
@@ -257,7 +257,7 @@ public class Graph {
   public static Set<Prefix> getOriginatedNetworks(Configuration conf) {
     Set<Prefix> allNetworks = new HashSet<>();
     Vrf vrf = conf.getDefaultVrf();
-    if (vrf.getOspfProcess() != null) {
+    if (!vrf.getOspfProcesses().isEmpty()) {
       allNetworks.addAll(getOriginatedNetworks(conf, Protocol.OSPF));
     }
     if (vrf.getBgpProcess() != null) {
@@ -279,7 +279,7 @@ public class Graph {
     Set<Prefix> acc = new HashSet<>();
 
     if (proto.isOspf()) {
-      OspfProcess ospf = conf.getDefaultVrf().getOspfProcess();
+      OspfProcess ospf = getFirstOspfProcess(conf.getDefaultVrf());
       for (OspfArea area : ospf.getAreas().values()) {
         for (String ifaceName : area.getInterfaces()) {
           Interface iface = conf.getAllInterfaces().get(ifaceName);
@@ -347,6 +347,19 @@ public class Graph {
     }
 
     throw new BatfishException("ERROR: getOriginatedNetworks: " + proto.name());
+  }
+
+  // TODO Support multiple OSPF processes and delete this method.
+  /**
+   * Returns the {@link OspfProcess} on the given {@link Vrf} with the lexicographically lowest
+   * process ID, or {@code null} if {@code vrf} does not have any OSPF processes.
+   */
+  @Nullable
+  private static OspfProcess getFirstOspfProcess(Vrf vrf) {
+    if (vrf.getOspfProcesses().isEmpty()) {
+      return null;
+    }
+    return vrf.getOspfProcesses().values().iterator().next();
   }
 
   /*
@@ -733,7 +746,7 @@ public class Graph {
       String router = entry.getKey();
       Configuration conf = entry.getValue();
       Set<Long> areaIds = new HashSet<>();
-      OspfProcess p = conf.getDefaultVrf().getOspfProcess();
+      OspfProcess p = getFirstOspfProcess(conf.getDefaultVrf());
       if (p != null) {
         p.getAreas().forEach((id, area) -> areaIds.add(id));
       }
@@ -1019,7 +1032,7 @@ public class Graph {
       return conf.getDefaultVrf().getBgpProcess().getRouterId().asLong();
     }
     if (proto.isOspf()) {
-      return conf.getDefaultVrf().getOspfProcess().getRouterId().asLong();
+      return getFirstOspfProcess(conf.getDefaultVrf()).getRouterId().asLong();
     } else {
       return 0;
     }
@@ -1148,7 +1161,7 @@ public class Graph {
       return null;
     }
     if (proto.isOspf()) {
-      OspfProcess p = conf.getDefaultVrf().getOspfProcess();
+      OspfProcess p = getFirstOspfProcess(conf.getDefaultVrf());
       if (p == null) {
         return null;
       }

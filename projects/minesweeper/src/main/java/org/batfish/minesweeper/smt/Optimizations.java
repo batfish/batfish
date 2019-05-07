@@ -255,7 +255,7 @@ class Optimizations {
         .forEach(
             (router, conf) -> {
               List<Protocol> protos = getProtocols().get(router);
-              if (conf.getDefaultVrf().getOspfProcess() != null) {
+              if (!conf.getDefaultVrf().getOspfProcesses().isEmpty()) {
                 protos.add(Protocol.OSPF);
               }
               // TODO: re-evaluate this in the future

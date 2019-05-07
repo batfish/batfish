@@ -42,7 +42,6 @@ import com.google.common.collect.Multimaps;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -58,7 +57,6 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -3522,35 +3520,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
             newVrf.setRipProcess(newRipProcess);
           }
 
-          /*
-           * Convert OSPF processes.
-           * Note that at this time the datamodel/BDP only supports a single process per VRF.
-           * Therefore we apply a simple heuristic: ignore any empty processes (i.e, with no active interfaces).
-           * If there is still more than one valid process left after filtering,
-           * warn and choose the last one defined.
-           */
-          Collection<OspfProcess> ospfProcesses = vrf.getOspfProcesses().values();
-          if (ospfProcesses.size() > 1) {
-            ospfProcesses =
-                vrf.getOspfProcesses().values().stream()
-                    .filter(
-                        proc ->
-                            _interfaces.values().stream()
-                                .map(Interface::getOspfProcess)
-                                .anyMatch(Predicate.isEqual(proc.getName())))
-                    .collect(ImmutableList.toImmutableList());
-          }
-          if (!ospfProcesses.isEmpty()) {
-            OspfProcess ospfProcess = Iterables.getLast(ospfProcesses);
-            if (ospfProcesses.size() > 1) {
-              _w.redFlag(
-                  "Multiple OSPF processes are not supported, choosing the last defined OSPF process with id %s",
-                  ospfProcess.getName());
-            }
-            org.batfish.datamodel.ospf.OspfProcess newOspfProcess =
-                toOspfProcess(ospfProcess, vrfName, c, this);
-            newVrf.setOspfProcess(newOspfProcess);
-          }
+          // Convert OSPF processes.
+          newVrf.setOspfProcesses(
+              vrf.getOspfProcesses().values().stream()
+                  .map(proc -> toOspfProcess(proc, vrfName, c, this))
+                  .filter(Objects::nonNull));
 
           // convert eigrp processes
           vrf.getEigrpProcesses().values().stream()

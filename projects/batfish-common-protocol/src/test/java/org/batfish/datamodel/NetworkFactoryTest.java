@@ -86,7 +86,7 @@ public class NetworkFactoryTest {
     OspfProcess o1 = ob.build();
     OspfProcess o2 = ob.setVrf(vrf).build();
     assertThat(o1, not(sameInstance(o2)));
-    assertThat(vrf.getOspfProcess(), sameInstance(o2));
+    assertThat(vrf.getOspfProcesses().values().iterator().next(), sameInstance(o2));
   }
 
   @Test

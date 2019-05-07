@@ -32,7 +32,6 @@ import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfArea;
-import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.transformation.Transformation;
 
 public final class Interface extends ComparableStructure<String> {
@@ -197,9 +196,8 @@ public final class Interface extends ComparableStructure<String> {
       iface.setVrf(_vrf);
       if (_vrf != null) {
         _vrf.getInterfaces().put(name, iface);
-        OspfProcess proc = _vrf.getOspfProcess();
-        if (proc != null && _active) {
-          iface.setOspfCost(proc.computeInterfaceCost(iface));
+        if (_active && _ospfProcess != null && _vrf.getOspfProcesses().containsKey(_ospfProcess)) {
+          iface.setOspfCost(_vrf.getOspfProcesses().get(_ospfProcess).computeInterfaceCost(iface));
         }
       }
       iface.setVrrpGroups(_vrrpGroups);
@@ -1254,11 +1252,14 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonIgnore
+  @Nullable
   public OspfArea getOspfArea() {
-    if (_ospfAreaName == null || _vrf.getOspfProcess() == null) {
+    if (_ospfProcess == null
+        || _ospfAreaName == null
+        || !_vrf.getOspfProcesses().containsKey(_ospfProcess)) {
       return null;
     }
-    return _vrf.getOspfProcess().getAreas().get(_ospfAreaName);
+    return _vrf.getOspfProcesses().get(_ospfProcess).getAreas().get(_ospfAreaName);
   }
 
   /** The OSPF area to which this interface belongs. */

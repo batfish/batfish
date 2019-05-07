@@ -164,8 +164,9 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
               } else {
                 // check if exported as external ospf route
                 boolean exported = false;
-                OspfProcess proc = vrf.getOspfProcess();
-                if (proc != null) {
+                if (iface.getOspfProcess() != null
+                    && vrf.getOspfProcesses().containsKey(iface.getOspfProcess())) {
+                  OspfProcess proc = vrf.getOspfProcesses().get(iface.getOspfProcess());
                   String exportPolicyName = proc.getExportPolicy();
                   if (exportPolicyName != null) {
                     RoutingPolicy exportPolicy = c.getRoutingPolicies().get(exportPolicyName);

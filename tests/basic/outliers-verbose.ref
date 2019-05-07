@@ -2357,6 +2357,49 @@
         ],
         "structDefinition" : {
           "name" : "default",
+          "ospfProcesses" : {
+            "1" : {
+              "adminCosts" : {
+                "ospf" : 110,
+                "ospfE1" : 110,
+                "ospfE2" : 110,
+                "ospfIA" : 110
+              },
+              "areas" : {
+                "1" : {
+                  "injectDefaultRoute" : true,
+                  "interfaces" : [
+                    "GigabitEthernet0/0",
+                    "Loopback0"
+                  ],
+                  "metricOfDefaultRoute" : 0,
+                  "name" : 1,
+                  "stubType" : "NONE"
+                }
+              },
+              "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+              "neighbors" : {
+                "GigabitEthernet0/0" : {
+                  "area" : 1,
+                  "hostname" : "as1border1",
+                  "interface" : "GigabitEthernet0/0",
+                  "passive" : false,
+                  "vrf" : "default"
+                },
+                "Loopback0" : {
+                  "area" : 1,
+                  "hostname" : "as1border1",
+                  "interface" : "Loopback0",
+                  "passive" : true,
+                  "vrf" : "default"
+                }
+              },
+              "processId" : "1",
+              "referenceBandwidth" : 1.0E8,
+              "routerId" : "1.1.1.1",
+              "summaryAdminCost" : 254
+            }
+          },
           "bgpProcess" : {
             "multipathEbgp" : true,
             "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -2468,48 +2511,7 @@
             "GigabitEthernet0/0",
             "GigabitEthernet1/0",
             "Loopback0"
-          ],
-          "ospfProcess" : {
-            "adminCosts" : {
-              "ospf" : 110,
-              "ospfE1" : 110,
-              "ospfE2" : 110,
-              "ospfIA" : 110
-            },
-            "areas" : {
-              "1" : {
-                "injectDefaultRoute" : true,
-                "interfaces" : [
-                  "GigabitEthernet0/0",
-                  "Loopback0"
-                ],
-                "metricOfDefaultRoute" : 0,
-                "name" : 1,
-                "stubType" : "NONE"
-              }
-            },
-            "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
-            "neighbors" : {
-              "GigabitEthernet0/0" : {
-                "area" : 1,
-                "hostname" : "as1border1",
-                "interface" : "GigabitEthernet0/0",
-                "passive" : false,
-                "vrf" : "default"
-              },
-              "Loopback0" : {
-                "area" : 1,
-                "hostname" : "as1border1",
-                "interface" : "Loopback0",
-                "passive" : true,
-                "vrf" : "default"
-              }
-            },
-            "processId" : "1",
-            "referenceBandwidth" : 1.0E8,
-            "routerId" : "1.1.1.1",
-            "summaryAdminCost" : 254
-          }
+          ]
         },
         "structType" : "Vrf"
       }

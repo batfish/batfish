@@ -524,32 +524,34 @@ class AbstractionBuilder {
       }
       abstractVrf.setInterfaces(abstractVrfInterfaces);
       abstractVrf.setInterfaceNames(new TreeSet<>(abstractVrfInterfaces.keySet()));
-
-      OspfProcess ospf = vrf.getOspfProcess();
-      if (ospf != null) {
-        OspfProcess abstractOspf =
-            OspfProcess.builder()
-                .setReferenceBandwidth(ospf.getReferenceBandwidth())
-                .setAdminCosts(ospf.getAdminCosts())
-                .setSummaryAdminCost(ospf.getSummaryAdminCost())
-                .build();
-        abstractOspf.setAreas(ospf.getAreas());
-        abstractOspf.setExportPolicy(ospf.getExportPolicy());
-        abstractOspf.setRouterId(ospf.getRouterId());
-        // Copy over neighbors
-        Map<IpLink, OspfNeighbor> abstractNeighbors = new HashMap<>();
-        if (ospf.getOspfNeighbors() != null) {
-          for (Entry<IpLink, OspfNeighbor> entry2 : ospf.getOspfNeighbors().entrySet()) {
-            IpLink link = entry2.getKey();
-            OspfNeighbor neighbor = entry2.getValue();
-            if (ipNeighbors.contains(link)) {
-              abstractNeighbors.put(link, neighbor);
-            }
-          }
-        }
-        abstractOspf.setOspfNeighbors(abstractNeighbors);
-        abstractVrf.setOspfProcess(abstractOspf);
-      }
+      abstractVrf.setOspfProcesses(
+          vrf.getOspfProcesses().values().stream()
+              .map(
+                  ospf -> {
+                    OspfProcess abstractOspf =
+                        OspfProcess.builder()
+                            .setReferenceBandwidth(ospf.getReferenceBandwidth())
+                            .setAdminCosts(ospf.getAdminCosts())
+                            .setSummaryAdminCost(ospf.getSummaryAdminCost())
+                            .build();
+                    abstractOspf.setAreas(ospf.getAreas());
+                    abstractOspf.setExportPolicy(ospf.getExportPolicy());
+                    abstractOspf.setRouterId(ospf.getRouterId());
+                    // Copy over neighbors
+                    Map<IpLink, OspfNeighbor> abstractNeighbors = new HashMap<>();
+                    if (ospf.getOspfNeighbors() != null) {
+                      for (Entry<IpLink, OspfNeighbor> entry2 :
+                          ospf.getOspfNeighbors().entrySet()) {
+                        IpLink link = entry2.getKey();
+                        OspfNeighbor neighbor = entry2.getValue();
+                        if (ipNeighbors.contains(link)) {
+                          abstractNeighbors.put(link, neighbor);
+                        }
+                      }
+                    }
+                    abstractOspf.setOspfNeighbors(abstractNeighbors);
+                    return abstractOspf;
+                  }));
 
       BgpProcess bgp = vrf.getBgpProcess();
       if (bgp != null) {

@@ -160,7 +160,6 @@ import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
-import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
@@ -2042,7 +2041,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               vrf ->
                   vrf.getBgpProcess() != null
                       || !vrf.getEigrpProcesses().isEmpty()
-                      || vrf.getOspfProcess() != null
+                      || !vrf.getOspfProcesses().isEmpty()
                       || vrf.getRipProcess() != null)) {
         // If any vrf on device has BGP, EIGRP, OSPF, or RIP, set device type to router
         c.setDeviceType(DeviceType.ROUTER);
@@ -2124,10 +2123,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     .forEach(
                         vrf -> {
                           // Compute OSPF interface costs where they are missing
-                          OspfProcess proc = vrf.getOspfProcess();
-                          if (proc != null) {
-                            proc.initInterfaceCosts(c);
-                          }
+                          vrf.getOspfProcesses().values().forEach(p -> p.initInterfaceCosts(c));
                         }));
   }
 
