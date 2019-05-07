@@ -182,12 +182,11 @@ public final class DataModelMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link
-   * OspfProcess}'s reference-bandwidth.
+   * Provides a matcher that matches if the provided {@code expectedReferenceBandwidth} is equal to
+   * the {@link OspfProcess}'s reference-bandwidth.
    */
-  public static Matcher<OspfProcess> hasReferenceBandwidth(
-      @Nonnull Matcher<? super Double> subMatcher) {
-    return new HasReferenceBandwidth(subMatcher);
+  public static Matcher<OspfProcess> hasReferenceBandwidth(double expectedReferenceBandwidth) {
+    return new HasReferenceBandwidth(equalTo(expectedReferenceBandwidth));
   }
 
   /**

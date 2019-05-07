@@ -88,19 +88,17 @@ public class OspfAreaConfigurationAnswerer extends Answerer {
               .values()
               .forEach(
                   vrf -> {
-                    OspfProcess ospfProcess = vrf.getOspfProcess();
-                    if (ospfProcess == null) {
-                      return;
-                    }
-                    for (OspfArea area : ospfProcess.getAreas().values()) {
-                      rows.add(
-                          getRow(
-                              configurations.get(nodeName),
-                              nodeName,
-                              vrf.getName(),
-                              ospfProcess.getProcessId(),
-                              area,
-                              columnMetadata));
+                    for (OspfProcess ospfProcess : vrf.getOspfProcesses().values()) {
+                      for (OspfArea area : ospfProcess.getAreas().values()) {
+                        rows.add(
+                            getRow(
+                                configurations.get(nodeName),
+                                nodeName,
+                                vrf.getName(),
+                                ospfProcess.getProcessId(),
+                                area,
+                                columnMetadata));
+                      }
                     }
                   });
         });

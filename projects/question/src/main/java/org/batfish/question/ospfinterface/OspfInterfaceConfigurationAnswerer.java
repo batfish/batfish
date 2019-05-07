@@ -125,27 +125,25 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
               .values()
               .forEach(
                   vrf -> {
-                    OspfProcess ospfProcess = vrf.getOspfProcess();
-                    if (ospfProcess == null) {
-                      return;
-                    }
-                    List<String> ifaces =
-                        ospfProcess.getAreas().values().stream()
-                            .flatMap(area -> area.getInterfaces().stream())
-                            .collect(ImmutableList.toImmutableList());
-                    for (String iface : ifaces) {
-                      Interface ifaceObject =
-                          configurations.get(nodeName).getAllInterfaces().get(iface);
-                      if (ifaceObject == null) {
-                        continue;
+                    for (OspfProcess ospfProcess : vrf.getOspfProcesses().values()) {
+                      List<String> ifaces =
+                          ospfProcess.getAreas().values().stream()
+                              .flatMap(area -> area.getInterfaces().stream())
+                              .collect(ImmutableList.toImmutableList());
+                      for (String iface : ifaces) {
+                        Interface ifaceObject =
+                            configurations.get(nodeName).getAllInterfaces().get(iface);
+                        if (ifaceObject == null) {
+                          continue;
+                        }
+                        rows.add(
+                            getRow(
+                                nodeName,
+                                ospfProcess.getProcessId(),
+                                ifaceObject,
+                                properties,
+                                columnMetadata));
                       }
-                      rows.add(
-                          getRow(
-                              nodeName,
-                              ospfProcess.getProcessId(),
-                              ifaceObject,
-                              properties,
-                              columnMetadata));
                     }
                   });
         });
@@ -154,7 +152,7 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
 
   private static Row getRow(
       String nodeName,
-      @Nullable String ospfProcessId,
+      String ospfProcessId,
       Interface iface,
       List<String> properties,
       Map<String, ColumnMetadata> columnMetadataMap) {

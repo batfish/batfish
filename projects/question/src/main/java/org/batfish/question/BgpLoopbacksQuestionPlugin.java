@@ -116,7 +116,7 @@ public class BgpLoopbacksQuestionPlugin extends QuestionPlugin {
         }
         Configuration c = e.getValue();
         for (Vrf vrf : c.getVrfs().values()) {
-          if (vrf.getOspfProcess() != null
+          if (!vrf.getOspfProcesses().isEmpty()
               || vrf.getIsisProcess() != null
               || vrf.getBgpProcess() == null) {
             continue;

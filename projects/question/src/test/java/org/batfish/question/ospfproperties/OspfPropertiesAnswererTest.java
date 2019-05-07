@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Multiset;
+import java.util.stream.Stream;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Vrf;
@@ -28,7 +29,7 @@ public class OspfPropertiesAnswererTest {
     ospf1.setReferenceBandwidth(42.0);
 
     Vrf vrf1 = new Vrf("vrf1");
-    vrf1.setOspfProcess(ospf1);
+    vrf1.setOspfProcesses(Stream.of(ospf1));
 
     Configuration conf1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
     conf1.setVrfs(ImmutableMap.of("vrf1", vrf1));

@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
+import com.google.common.collect.Streams;
 import java.io.Serializable;
 import java.util.EnumSet;
 import java.util.Map;
@@ -20,6 +21,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.function.Function;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -83,7 +85,8 @@ public final class OspfProcess implements Serializable {
               _routerId,
               _summaryAdminCost);
       if (_vrf != null) {
-        _vrf.setOspfProcess(ospfProcess);
+        _vrf.setOspfProcesses(
+            Streams.concat(_vrf.getOspfProcesses().values().stream(), Stream.of(ospfProcess)));
       }
       return ospfProcess;
     }

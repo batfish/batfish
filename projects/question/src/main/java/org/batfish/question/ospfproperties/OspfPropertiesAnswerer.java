@@ -118,38 +118,36 @@ public class OspfPropertiesAnswerer extends Answerer {
                   .values()
                   .forEach(
                       vrf -> {
-                        OspfProcess ospfProcess = vrf.getOspfProcess();
-                        if (ospfProcess == null) {
-                          return;
-                        }
-                        RowBuilder rowBuilder =
-                            Row.builder(columnMetadata)
-                                .put(COL_NODE, new Node(nodeName))
-                                .put(COL_VRF, vrf.getName())
-                                .put(COL_PROCESS_ID, ospfProcess.getProcessId());
+                        for (OspfProcess ospfProcess : vrf.getOspfProcesses().values()) {
+                          RowBuilder rowBuilder =
+                              Row.builder(columnMetadata)
+                                  .put(COL_NODE, new Node(nodeName))
+                                  .put(COL_VRF, vrf.getName())
+                                  .put(COL_PROCESS_ID, ospfProcess.getProcessId());
 
-                        for (String property : propertySpecifier.getMatchingProperties()) {
-                          PropertyDescriptor<OspfProcess> propertyDescriptor =
-                              OspfPropertySpecifier.JAVA_MAP.get(property);
-                          try {
-                            PropertySpecifier.fillProperty(
-                                propertyDescriptor, ospfProcess, property, rowBuilder);
-                          } catch (ClassCastException e) {
-                            throw new BatfishException(
-                                String.format(
-                                    "Type mismatch between property value ('%s') and Schema ('%s') for property '%s' for OSPF process '%s->%s-%s': %s",
-                                    propertyDescriptor.getGetter().apply(ospfProcess),
-                                    propertyDescriptor.getSchema(),
-                                    property,
-                                    nodeName,
-                                    vrf.getName(),
-                                    ospfProcess,
-                                    e.getMessage()),
-                                e);
+                          for (String property : propertySpecifier.getMatchingProperties()) {
+                            PropertyDescriptor<OspfProcess> propertyDescriptor =
+                                OspfPropertySpecifier.JAVA_MAP.get(property);
+                            try {
+                              PropertySpecifier.fillProperty(
+                                  propertyDescriptor, ospfProcess, property, rowBuilder);
+                            } catch (ClassCastException e) {
+                              throw new BatfishException(
+                                  String.format(
+                                      "Type mismatch between property value ('%s') and Schema ('%s') for property '%s' for OSPF process '%s->%s-%s': %s",
+                                      propertyDescriptor.getGetter().apply(ospfProcess),
+                                      propertyDescriptor.getSchema(),
+                                      property,
+                                      nodeName,
+                                      vrf.getName(),
+                                      ospfProcess,
+                                      e.getMessage()),
+                                  e);
+                            }
                           }
-                        }
 
-                        rows.add(rowBuilder.build());
+                          rows.add(rowBuilder.build());
+                        }
                       });
             });
 

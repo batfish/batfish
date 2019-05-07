@@ -2919,42 +2919,44 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "ospfProcesses" : {
+              "1" : {
+                "adminCosts" : {
+                  "ospf" : 110,
+                  "ospfE1" : 110,
+                  "ospfE2" : 110,
+                  "ospfIA" : 110
+                },
+                "areas" : {
+                  "0" : {
+                    "injectDefaultRoute" : true,
+                    "interfaces" : [
+                      "blah"
+                    ],
+                    "metricOfDefaultRoute" : 0,
+                    "name" : 0,
+                    "stubType" : "NONE"
+                  }
+                },
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "neighbors" : {
+                  "blah" : {
+                    "area" : 0,
+                    "hostname" : "asa_ospf",
+                    "interface" : "blah",
+                    "passive" : false,
+                    "vrf" : "default"
+                  }
+                },
+                "processId" : "1",
+                "referenceBandwidth" : 1.0E8,
+                "routerId" : "192.168.1.0",
+                "summaryAdminCost" : 254
+              }
+            },
             "interfaces" : [
               "blah"
-            ],
-            "ospfProcess" : {
-              "adminCosts" : {
-                "ospf" : 110,
-                "ospfE1" : 110,
-                "ospfE2" : 110,
-                "ospfIA" : 110
-              },
-              "areas" : {
-                "0" : {
-                  "injectDefaultRoute" : true,
-                  "interfaces" : [
-                    "blah"
-                  ],
-                  "metricOfDefaultRoute" : 0,
-                  "name" : 0,
-                  "stubType" : "NONE"
-                }
-              },
-              "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
-              "neighbors" : {
-                "blah" : {
-                  "area" : 0,
-                  "hostname" : "asa_ospf",
-                  "interface" : "blah",
-                  "passive" : false,
-                  "vrf" : "default"
-                }
-              },
-              "processId" : "1",
-              "referenceBandwidth" : 1.0E8,
-              "routerId" : "192.168.1.0",
-              "summaryAdminCost" : 254
-            }
+            ]
           }
         },
         "zones" : {
@@ -11316,51 +11318,53 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "ospfProcesses" : {
+              "1" : {
+                "adminCosts" : {
+                  "ospf" : 110,
+                  "ospfE1" : 110,
+                  "ospfE2" : 110,
+                  "ospfIA" : 110
+                },
+                "areas" : {
+                  "0" : {
+                    "injectDefaultRoute" : true,
+                    "metricOfDefaultRoute" : 0,
+                    "name" : 0,
+                    "stubType" : "NONE",
+                    "summaries" : {
+                      "1.2.3.0/24" : {
+                        "advertise" : true,
+                        "metric" : 17
+                      }
+                    },
+                    "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:0~"
+                  },
+                  "16909056" : {
+                    "injectDefaultRoute" : true,
+                    "metricOfDefaultRoute" : 0,
+                    "name" : 16909056,
+                    "stubType" : "NONE",
+                    "summaries" : {
+                      "1.2.3.0/24" : {
+                        "advertise" : false
+                      }
+                    },
+                    "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:16909056~"
+                  }
+                },
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "processId" : "1",
+                "referenceBandwidth" : 4.0E10,
+                "routerId" : "1.2.3.4",
+                "summaryAdminCost" : 254
+              }
+            },
             "interfaces" : [
               "Ethernet0/0",
               "Ethernet1/0",
               "Loopback0"
-            ],
-            "ospfProcess" : {
-              "adminCosts" : {
-                "ospf" : 110,
-                "ospfE1" : 110,
-                "ospfE2" : 110,
-                "ospfIA" : 110
-              },
-              "areas" : {
-                "0" : {
-                  "injectDefaultRoute" : true,
-                  "metricOfDefaultRoute" : 0,
-                  "name" : 0,
-                  "stubType" : "NONE",
-                  "summaries" : {
-                    "1.2.3.0/24" : {
-                      "advertise" : true,
-                      "metric" : 17
-                    }
-                  },
-                  "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:0~"
-                },
-                "16909056" : {
-                  "injectDefaultRoute" : true,
-                  "metricOfDefaultRoute" : 0,
-                  "name" : 16909056,
-                  "stubType" : "NONE",
-                  "summaries" : {
-                    "1.2.3.0/24" : {
-                      "advertise" : false
-                    }
-                  },
-                  "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:16909056~"
-                }
-              },
-              "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
-              "processId" : "1",
-              "referenceBandwidth" : 4.0E10,
-              "routerId" : "1.2.3.4",
-              "summaryAdminCost" : 254
-            }
+            ]
           }
         }
       },
@@ -11482,8 +11486,9 @@
             ],
             "mtu" : 1500,
             "ospfArea" : 0,
+            "ospfCost" : 10,
             "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
+            "ospfEnabled" : true,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
@@ -11564,6 +11569,21 @@
               }
             ],
             "name" : "~OSPF_SUMMARY_FILTER:default:16909056~"
+          },
+          "~OSPF_SUMMARY_FILTER:default:1~" : {
+            "lines" : [
+              {
+                "action" : "DENY",
+                "ipWildcard" : "3.3.3.0/24",
+                "lengthRange" : "25-32"
+              },
+              {
+                "action" : "PERMIT",
+                "ipWildcard" : "0.0.0.0/0",
+                "lengthRange" : "0-32"
+              }
+            ],
+            "name" : "~OSPF_SUMMARY_FILTER:default:1~"
           }
         },
         "routingPolicies" : {
@@ -11582,68 +11602,128 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "ospfProcesses" : {
+              "1" : {
+                "adminCosts" : {
+                  "ospf" : 110,
+                  "ospfE1" : 110,
+                  "ospfE2" : 110,
+                  "ospfIA" : 110
+                },
+                "areas" : {
+                  "0" : {
+                    "injectDefaultRoute" : true,
+                    "interfaces" : [
+                      "Ethernet0/0"
+                    ],
+                    "metricOfDefaultRoute" : 0,
+                    "name" : 0,
+                    "nssa" : {
+                      "defaultOriginateType" : "INTER_AREA",
+                      "suppressType3" : true,
+                      "suppressType7" : true
+                    },
+                    "stubType" : "NSSA",
+                    "summaries" : {
+                      "1.2.3.0/24" : {
+                        "advertise" : true,
+                        "metric" : 17
+                      }
+                    },
+                    "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:0~"
+                  },
+                  "16909056" : {
+                    "injectDefaultRoute" : true,
+                    "metricOfDefaultRoute" : 0,
+                    "name" : 16909056,
+                    "stubType" : "NONE",
+                    "summaries" : {
+                      "1.2.3.0/24" : {
+                        "advertise" : false
+                      }
+                    },
+                    "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:16909056~"
+                  }
+                },
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "neighbors" : {
+                  "Ethernet0/0" : {
+                    "area" : 0,
+                    "hostname" : "cisco_ospf_multi_process",
+                    "interface" : "Ethernet0/0",
+                    "passive" : false,
+                    "vrf" : "default"
+                  }
+                },
+                "processId" : "1",
+                "referenceBandwidth" : 1.0E8,
+                "routerId" : "1.1.1.1",
+                "summaryAdminCost" : 254
+              },
+              "abcdefg" : {
+                "adminCosts" : {
+                  "ospf" : 110,
+                  "ospfE1" : 110,
+                  "ospfE2" : 110,
+                  "ospfIA" : 110
+                },
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "processId" : "abcdefg",
+                "referenceBandwidth" : 1.0E8,
+                "routerId" : "1.1.1.1",
+                "summaryAdminCost" : 254
+              },
+              "ignored" : {
+                "adminCosts" : {
+                  "ospf" : 110,
+                  "ospfE1" : 110,
+                  "ospfE2" : 110,
+                  "ospfIA" : 110
+                },
+                "areas" : {
+                  "0" : {
+                    "injectDefaultRoute" : true,
+                    "interfaces" : [
+                      "Ethernet1/0"
+                    ],
+                    "metricOfDefaultRoute" : 0,
+                    "name" : 0,
+                    "stubType" : "NONE"
+                  },
+                  "1" : {
+                    "injectDefaultRoute" : true,
+                    "metricOfDefaultRoute" : 0,
+                    "name" : 1,
+                    "stubType" : "NONE",
+                    "summaries" : {
+                      "3.3.3.0/24" : {
+                        "advertise" : true
+                      }
+                    },
+                    "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:1~"
+                  }
+                },
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "neighbors" : {
+                  "Ethernet1/0" : {
+                    "area" : 0,
+                    "hostname" : "cisco_ospf_multi_process",
+                    "interface" : "Ethernet1/0",
+                    "passive" : false,
+                    "vrf" : "default"
+                  }
+                },
+                "processId" : "ignored",
+                "referenceBandwidth" : 1.0E8,
+                "routerId" : "1.1.1.1",
+                "summaryAdminCost" : 254
+              }
+            },
             "interfaces" : [
               "Ethernet0/0",
               "Ethernet1/0",
               "Loopback0"
-            ],
-            "ospfProcess" : {
-              "adminCosts" : {
-                "ospf" : 110,
-                "ospfE1" : 110,
-                "ospfE2" : 110,
-                "ospfIA" : 110
-              },
-              "areas" : {
-                "0" : {
-                  "injectDefaultRoute" : true,
-                  "interfaces" : [
-                    "Ethernet0/0"
-                  ],
-                  "metricOfDefaultRoute" : 0,
-                  "name" : 0,
-                  "nssa" : {
-                    "defaultOriginateType" : "INTER_AREA",
-                    "suppressType3" : true,
-                    "suppressType7" : true
-                  },
-                  "stubType" : "NSSA",
-                  "summaries" : {
-                    "1.2.3.0/24" : {
-                      "advertise" : true,
-                      "metric" : 17
-                    }
-                  },
-                  "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:0~"
-                },
-                "16909056" : {
-                  "injectDefaultRoute" : true,
-                  "metricOfDefaultRoute" : 0,
-                  "name" : 16909056,
-                  "stubType" : "NONE",
-                  "summaries" : {
-                    "1.2.3.0/24" : {
-                      "advertise" : false
-                    }
-                  },
-                  "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:16909056~"
-                }
-              },
-              "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
-              "neighbors" : {
-                "Ethernet0/0" : {
-                  "area" : 0,
-                  "hostname" : "cisco_ospf_multi_process",
-                  "interface" : "Ethernet0/0",
-                  "passive" : false,
-                  "vrf" : "default"
-                }
-              },
-              "processId" : "1",
-              "referenceBandwidth" : 1.0E8,
-              "routerId" : "1.1.1.1",
-              "summaryAdminCost" : 254
-            }
+            ]
           }
         }
       },
@@ -17194,51 +17274,53 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "ospfProcesses" : {
+              "1" : {
+                "adminCosts" : {
+                  "ospf" : 110,
+                  "ospfE1" : 110,
+                  "ospfE2" : 110,
+                  "ospfIA" : 110
+                },
+                "areas" : {
+                  "0" : {
+                    "injectDefaultRoute" : true,
+                    "interfaces" : [
+                      "Ethernet0",
+                      "Ethernet1"
+                    ],
+                    "metricOfDefaultRoute" : 0,
+                    "name" : 0,
+                    "stubType" : "NONE"
+                  }
+                },
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "neighbors" : {
+                  "Ethernet0" : {
+                    "area" : 0,
+                    "hostname" : "host2",
+                    "interface" : "Ethernet0",
+                    "passive" : false,
+                    "vrf" : "default"
+                  },
+                  "Ethernet1" : {
+                    "area" : 0,
+                    "hostname" : "host2",
+                    "interface" : "Ethernet1",
+                    "passive" : false,
+                    "vrf" : "default"
+                  }
+                },
+                "processId" : "1",
+                "referenceBandwidth" : 1.0E8,
+                "routerId" : "2.130.0.1",
+                "summaryAdminCost" : 254
+              }
+            },
             "interfaces" : [
               "Ethernet0",
               "Ethernet1"
-            ],
-            "ospfProcess" : {
-              "adminCosts" : {
-                "ospf" : 110,
-                "ospfE1" : 110,
-                "ospfE2" : 110,
-                "ospfIA" : 110
-              },
-              "areas" : {
-                "0" : {
-                  "injectDefaultRoute" : true,
-                  "interfaces" : [
-                    "Ethernet0",
-                    "Ethernet1"
-                  ],
-                  "metricOfDefaultRoute" : 0,
-                  "name" : 0,
-                  "stubType" : "NONE"
-                }
-              },
-              "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
-              "neighbors" : {
-                "Ethernet0" : {
-                  "area" : 0,
-                  "hostname" : "host2",
-                  "interface" : "Ethernet0",
-                  "passive" : false,
-                  "vrf" : "default"
-                },
-                "Ethernet1" : {
-                  "area" : 0,
-                  "hostname" : "host2",
-                  "interface" : "Ethernet1",
-                  "passive" : false,
-                  "vrf" : "default"
-                }
-              },
-              "processId" : "1",
-              "referenceBandwidth" : 1.0E8,
-              "routerId" : "2.130.0.1",
-              "summaryAdminCost" : 254
-            }
+            ]
           }
         }
       },
@@ -18222,45 +18304,47 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "ospfProcesses" : {
+              "default" : {
+                "adminCosts" : {
+                  "ospf" : 10,
+                  "ospfE1" : 150,
+                  "ospfE2" : 150,
+                  "ospfIA" : 10
+                },
+                "areas" : {
+                  "0" : {
+                    "injectDefaultRoute" : false,
+                    "interfaces" : [
+                      "xe-0/0/0:0.0"
+                    ],
+                    "metricOfDefaultRoute" : 0,
+                    "name" : 0,
+                    "stubType" : "NONE",
+                    "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:0~"
+                  }
+                },
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "neighbors" : {
+                  "xe-0/0/0:0.0" : {
+                    "area" : 0,
+                    "hostname" : "interfacemtu",
+                    "interface" : "xe-0/0/0:0.0",
+                    "passive" : false,
+                    "vrf" : "default"
+                  }
+                },
+                "processId" : "default",
+                "referenceBandwidth" : 1.0E9,
+                "routerId" : "10.1.2.3",
+                "summaryAdminCost" : 10
+              }
+            },
             "interfaces" : [
               "xe-0/0/0",
               "xe-0/0/0:0",
               "xe-0/0/0:0.0"
-            ],
-            "ospfProcess" : {
-              "adminCosts" : {
-                "ospf" : 10,
-                "ospfE1" : 150,
-                "ospfE2" : 150,
-                "ospfIA" : 10
-              },
-              "areas" : {
-                "0" : {
-                  "injectDefaultRoute" : false,
-                  "interfaces" : [
-                    "xe-0/0/0:0.0"
-                  ],
-                  "metricOfDefaultRoute" : 0,
-                  "name" : 0,
-                  "stubType" : "NONE",
-                  "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:0~"
-                }
-              },
-              "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
-              "neighbors" : {
-                "xe-0/0/0:0.0" : {
-                  "area" : 0,
-                  "hostname" : "interfacemtu",
-                  "interface" : "xe-0/0/0:0.0",
-                  "passive" : false,
-                  "vrf" : "default"
-                }
-              },
-              "processId" : "default",
-              "referenceBandwidth" : 1.0E9,
-              "routerId" : "10.1.2.3",
-              "summaryAdminCost" : 10
-            }
+            ]
           }
         }
       },
@@ -19483,6 +19567,47 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "ospfProcesses" : {
+              "2" : {
+                "adminCosts" : {
+                  "ospf" : 110,
+                  "ospfE1" : 110,
+                  "ospfE2" : 110,
+                  "ospfIA" : 110
+                },
+                "areas" : {
+                  "0" : {
+                    "injectDefaultRoute" : true,
+                    "metricOfDefaultRoute" : 0,
+                    "name" : 0,
+                    "stubType" : "NONE",
+                    "summaries" : {
+                      "10.0.0.0/15" : {
+                        "advertise" : true
+                      }
+                    },
+                    "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:0~"
+                  }
+                },
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "generatedRoutes" : [
+                  {
+                    "class" : "org.batfish.datamodel.GeneratedRoute",
+                    "administrativeCost" : 32767,
+                    "asPath" : [ ],
+                    "discard" : false,
+                    "generationPolicy" : "~OSPF_DEFAULT_ROUTE_GENERATION_POLICY:default:2~",
+                    "metric" : 0,
+                    "network" : "0.0.0.0/0",
+                    "nextHopIp" : "AUTO/NONE(-1l)"
+                  }
+                ],
+                "processId" : "2",
+                "referenceBandwidth" : 1.0E8,
+                "routerId" : "169.232.1.4",
+                "summaryAdminCost" : 254
+              }
+            },
             "interfaces" : [
               "Bundle-Ethernet101",
               "Bundle-Ethernet103",
@@ -19493,46 +19618,7 @@
               "TenGigabitEthernet0/0/0/2",
               "TenGigabitEthernet0/0/0/4",
               "TenGigabitEthernet0/0/0/5"
-            ],
-            "ospfProcess" : {
-              "adminCosts" : {
-                "ospf" : 110,
-                "ospfE1" : 110,
-                "ospfE2" : 110,
-                "ospfIA" : 110
-              },
-              "areas" : {
-                "0" : {
-                  "injectDefaultRoute" : true,
-                  "metricOfDefaultRoute" : 0,
-                  "name" : 0,
-                  "stubType" : "NONE",
-                  "summaries" : {
-                    "10.0.0.0/15" : {
-                      "advertise" : true
-                    }
-                  },
-                  "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:0~"
-                }
-              },
-              "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
-              "generatedRoutes" : [
-                {
-                  "class" : "org.batfish.datamodel.GeneratedRoute",
-                  "administrativeCost" : 32767,
-                  "asPath" : [ ],
-                  "discard" : false,
-                  "generationPolicy" : "~OSPF_DEFAULT_ROUTE_GENERATION_POLICY:default:2~",
-                  "metric" : 0,
-                  "network" : "0.0.0.0/0",
-                  "nextHopIp" : "AUTO/NONE(-1l)"
-                }
-              ],
-              "processId" : "2",
-              "referenceBandwidth" : 1.0E8,
-              "routerId" : "169.232.1.4",
-              "summaryAdminCost" : 254
-            }
+            ]
           }
         }
       },
@@ -20130,6 +20216,40 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "ospfProcesses" : {
+              "default" : {
+                "adminCosts" : {
+                  "ospf" : 10,
+                  "ospfE1" : 150,
+                  "ospfE2" : 150,
+                  "ospfIA" : 10
+                },
+                "areas" : {
+                  "66051" : {
+                    "injectDefaultRoute" : false,
+                    "metricOfDefaultRoute" : 0,
+                    "name" : 66051,
+                    "nssa" : {
+                      "defaultOriginateType" : "INTER_AREA",
+                      "suppressType3" : true,
+                      "suppressType7" : false
+                    },
+                    "stubType" : "NSSA",
+                    "summaries" : {
+                      "1.2.0.0/16" : {
+                        "advertise" : true,
+                        "metric" : 100
+                      }
+                    },
+                    "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:66051~"
+                  }
+                },
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "processId" : "default",
+                "referenceBandwidth" : 1.0E9,
+                "summaryAdminCost" : 10
+              }
+            },
             "aggregateRoutes" : [
               {
                 "class" : "org.batfish.datamodel.GeneratedRoute",
@@ -20151,39 +20271,7 @@
               "xe-0/0/20:0.0",
               "xe-0/0/21:0",
               "xe-0/0/21:0.0"
-            ],
-            "ospfProcess" : {
-              "adminCosts" : {
-                "ospf" : 10,
-                "ospfE1" : 150,
-                "ospfE2" : 150,
-                "ospfIA" : 10
-              },
-              "areas" : {
-                "66051" : {
-                  "injectDefaultRoute" : false,
-                  "metricOfDefaultRoute" : 0,
-                  "name" : 66051,
-                  "nssa" : {
-                    "defaultOriginateType" : "INTER_AREA",
-                    "suppressType3" : true,
-                    "suppressType7" : false
-                  },
-                  "stubType" : "NSSA",
-                  "summaries" : {
-                    "1.2.0.0/16" : {
-                      "advertise" : true,
-                      "metric" : 100
-                    }
-                  },
-                  "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:66051~"
-                }
-              },
-              "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
-              "processId" : "default",
-              "referenceBandwidth" : 1.0E9,
-              "summaryAdminCost" : 10
-            }
+            ]
           }
         }
       },
@@ -23192,39 +23280,41 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "ospfProcess" : {
-              "adminCosts" : {
-                "ospf" : 10,
-                "ospfE1" : 150,
-                "ospfE2" : 150,
-                "ospfIA" : 10
-              },
-              "areas" : {
-                "7" : {
-                  "injectDefaultRoute" : true,
-                  "metricOfDefaultRoute" : 10,
-                  "name" : 7,
-                  "stub" : {
-                    "suppressType3" : false
-                  },
-                  "stubType" : "STUB",
-                  "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:7~"
+            "ospfProcesses" : {
+              "default" : {
+                "adminCosts" : {
+                  "ospf" : 10,
+                  "ospfE1" : 150,
+                  "ospfE2" : 150,
+                  "ospfIA" : 10
                 },
-                "46" : {
-                  "injectDefaultRoute" : false,
-                  "metricOfDefaultRoute" : 0,
-                  "name" : 46,
-                  "stub" : {
-                    "suppressType3" : true
+                "areas" : {
+                  "7" : {
+                    "injectDefaultRoute" : true,
+                    "metricOfDefaultRoute" : 10,
+                    "name" : 7,
+                    "stub" : {
+                      "suppressType3" : false
+                    },
+                    "stubType" : "STUB",
+                    "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:7~"
                   },
-                  "stubType" : "STUB",
-                  "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:46~"
-                }
-              },
-              "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
-              "processId" : "default",
-              "referenceBandwidth" : 1.0E9,
-              "summaryAdminCost" : 10
+                  "46" : {
+                    "injectDefaultRoute" : false,
+                    "metricOfDefaultRoute" : 0,
+                    "name" : 46,
+                    "stub" : {
+                      "suppressType3" : true
+                    },
+                    "stubType" : "STUB",
+                    "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:46~"
+                  }
+                },
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "processId" : "default",
+                "referenceBandwidth" : 1.0E9,
+                "summaryAdminCost" : 10
+              }
             }
           }
         }
@@ -27954,61 +28044,91 @@
         "vrfs" : {
           "OTHER" : {
             "name" : "OTHER",
-            "ospfProcess" : {
-              "adminCosts" : {
-                "ospf" : 110,
-                "ospfE1" : 110,
-                "ospfE2" : 110,
-                "ospfIA" : 110
+            "ospfProcesses" : {
+              "1" : {
+                "adminCosts" : {
+                  "ospf" : 110,
+                  "ospfE1" : 110,
+                  "ospfE2" : 110,
+                  "ospfIA" : 110
+                },
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:OTHER~",
+                "processId" : "1",
+                "referenceBandwidth" : 4.0E10,
+                "routerId" : "1.2.3.4",
+                "summaryAdminCost" : 254
               },
-              "exportPolicy" : "~OSPF_EXPORT_POLICY:OTHER~",
-              "processId" : "1",
-              "referenceBandwidth" : 4.0E10,
-              "routerId" : "1.2.3.4",
-              "summaryAdminCost" : 254
+              "ignored" : {
+                "adminCosts" : {
+                  "ospf" : 110,
+                  "ospfE1" : 110,
+                  "ospfE2" : 110,
+                  "ospfIA" : 110
+                },
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:OTHER~",
+                "processId" : "ignored",
+                "referenceBandwidth" : 4.0E10,
+                "routerId" : "5.6.7.8",
+                "summaryAdminCost" : 254
+              }
             }
           },
           "default" : {
             "name" : "default",
+            "ospfProcesses" : {
+              "1" : {
+                "adminCosts" : {
+                  "ospf" : 110,
+                  "ospfE1" : 110,
+                  "ospfE2" : 110,
+                  "ospfIA" : 110
+                },
+                "areas" : {
+                  "1" : {
+                    "injectDefaultRoute" : true,
+                    "interfaces" : [
+                      "Ethernet0/0"
+                    ],
+                    "metricOfDefaultRoute" : 0,
+                    "name" : 1,
+                    "stub" : {
+                      "suppressType3" : false
+                    },
+                    "stubType" : "STUB"
+                  }
+                },
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "neighbors" : {
+                  "Ethernet0/0" : {
+                    "area" : 1,
+                    "hostname" : "nxos_ospf",
+                    "interface" : "Ethernet0/0",
+                    "passive" : false,
+                    "vrf" : "default"
+                  }
+                },
+                "processId" : "1",
+                "referenceBandwidth" : 4.0E10,
+                "routerId" : "1.2.3.4",
+                "summaryAdminCost" : 254
+              },
+              "ignored" : {
+                "adminCosts" : {
+                  "ospf" : 110,
+                  "ospfE1" : 110,
+                  "ospfE2" : 110,
+                  "ospfIA" : 110
+                },
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "processId" : "ignored",
+                "referenceBandwidth" : 4.0E10,
+                "routerId" : "5.6.7.8",
+                "summaryAdminCost" : 254
+              }
+            },
             "interfaces" : [
               "Ethernet0/0"
-            ],
-            "ospfProcess" : {
-              "adminCosts" : {
-                "ospf" : 110,
-                "ospfE1" : 110,
-                "ospfE2" : 110,
-                "ospfIA" : 110
-              },
-              "areas" : {
-                "1" : {
-                  "injectDefaultRoute" : true,
-                  "interfaces" : [
-                    "Ethernet0/0"
-                  ],
-                  "metricOfDefaultRoute" : 0,
-                  "name" : 1,
-                  "stub" : {
-                    "suppressType3" : false
-                  },
-                  "stubType" : "STUB"
-                }
-              },
-              "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
-              "neighbors" : {
-                "Ethernet0/0" : {
-                  "area" : 1,
-                  "hostname" : "nxos_ospf",
-                  "interface" : "Ethernet0/0",
-                  "passive" : false,
-                  "vrf" : "default"
-                }
-              },
-              "processId" : "1",
-              "referenceBandwidth" : 4.0E10,
-              "routerId" : "1.2.3.4",
-              "summaryAdminCost" : 254
-            }
+            ]
           }
         }
       },

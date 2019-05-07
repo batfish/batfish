@@ -2791,7 +2791,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (ri.getOspfAreas().size() > 0) {
         OspfProcess oproc = createOspfProcess(ri);
         if (oproc != null) {
-          vrf.setOspfProcess(oproc);
+          vrf.setOspfProcesses(ImmutableSortedMap.of(oproc.getProcessId(), oproc));
           // add discard routes for OSPF summaries
           oproc.getAreas().values().stream()
               .flatMap(a -> a.getSummaries().entrySet().stream())

@@ -1,14 +1,17 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -18,6 +21,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
@@ -71,6 +75,7 @@ public class Vrf extends ComparableStructure<String> {
   private static final String PROP_EIGRP_PROCESSES = "eigrpProcesses";
   private static final String PROP_KERNEL_ROUTES = "kernelRoutes";
   private static final String PROP_OSPF_PROCESS = "ospfProcess";
+  private static final String PROP_OSPF_PROCESSES = "ospfProcesses";
   private static final String PROP_RIP_PROCESS = "ripProcess";
   private static final String PROP_STATIC_ROUTES = "staticRoutes";
   private static final String PROP_VNI_SETTINGS = "vniSettings";
@@ -89,14 +94,13 @@ public class Vrf extends ComparableStructure<String> {
   private NavigableMap<String, Interface> _interfaces;
   private IsisProcess _isisProcess;
   private SortedSet<KernelRoute> _kernelRoutes;
-  @Nullable private OspfProcess _ospfProcess;
+  @Nonnull private SortedMap<String, OspfProcess> _ospfProcesses;
   private RipProcess _ripProcess;
   private SnmpServer _snmpServer;
   private SortedSet<StaticRoute> _staticRoutes;
   private NavigableMap<Integer, VniSettings> _vniSettings;
 
-  @JsonCreator
-  public Vrf(@JsonProperty(PROP_NAME) String name) {
+  public Vrf(@Nonnull String name) {
     super(name);
     _appliedRibGroups = ImmutableSortedMap.of();
     _eigrpProcesses = new TreeMap<>();
@@ -104,8 +108,25 @@ public class Vrf extends ComparableStructure<String> {
     _generatedIpv6Routes = new TreeSet<>();
     _interfaces = new TreeMap<>();
     _kernelRoutes = ImmutableSortedSet.of();
+    _ospfProcesses = ImmutableSortedMap.of();
     _staticRoutes = new TreeSet<>();
     _vniSettings = new TreeMap<>();
+  }
+
+  @JsonCreator
+  private static Vrf create(
+      @Nullable @JsonProperty(PROP_NAME) String name,
+      @Nullable @JsonProperty(PROP_OSPF_PROCESSES) Map<String, OspfProcess> ospfProcesses,
+      // For backwards compatible deserialization
+      @Nullable @JsonProperty(PROP_OSPF_PROCESS) OspfProcess ospfProcess) {
+    checkArgument(name != null, "%s must be provided", PROP_NAME);
+    Vrf v = new Vrf(name);
+    if (ospfProcesses != null) {
+      v.setOspfProcesses(ImmutableSortedMap.copyOf(ospfProcesses));
+    } else if (ospfProcess != null) {
+      v.setOspfProcesses(ImmutableSortedMap.of(ospfProcess.getProcessId(), ospfProcess));
+    }
+    return v;
   }
 
   /** Return any RIB groups applied to a given routing protocol */
@@ -189,10 +210,11 @@ public class Vrf extends ComparableStructure<String> {
     return _kernelRoutes;
   }
 
-  /** OSPF routing process for this VRF. */
-  @JsonProperty(PROP_OSPF_PROCESS)
-  public OspfProcess getOspfProcess() {
-    return _ospfProcess;
+  /** OSPF routing processes for this VRF, keyed on {@link OspfProcess#getProcessId()}. */
+  @JsonProperty(PROP_OSPF_PROCESSES)
+  @Nonnull
+  public Map<String, OspfProcess> getOspfProcesses() {
+    return _ospfProcesses;
   }
 
   @JsonProperty(PROP_RIP_PROCESS)
@@ -281,9 +303,21 @@ public class Vrf extends ComparableStructure<String> {
     _kernelRoutes = kernelRoutes;
   }
 
-  @JsonProperty(PROP_OSPF_PROCESS)
-  public void setOspfProcess(OspfProcess process) {
-    _ospfProcess = process;
+  @JsonIgnore
+  public void setOspfProcesses(@Nonnull SortedMap<String, OspfProcess> processes) {
+    _ospfProcesses = processes;
+  }
+
+  /**
+   * Sets the VRF's OSPF processes to a map keyed on process IDs with the given {@code processes} as
+   * values.
+   */
+  @JsonIgnore
+  public void setOspfProcesses(@Nonnull Stream<OspfProcess> processes) {
+    setOspfProcesses(
+        processes.collect(
+            ImmutableSortedMap.toImmutableSortedMap(
+                Comparator.naturalOrder(), OspfProcess::getProcessId, Functions.identity())));
   }
 
   @JsonProperty(PROP_RIP_PROCESS)
