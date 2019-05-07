@@ -55,7 +55,6 @@ public class MultipathConsistencyTest {
 
   @Test
   public void testMultipath() {
-    _batfish.getSettings().setDebugFlags(ImmutableList.of());
     MultipathConsistencyQuestion question = new MultipathConsistencyQuestion();
     MultipathConsistencyAnswerer answerer = new MultipathConsistencyAnswerer(question, _batfish);
     TableAnswerElement ae = (TableAnswerElement) answerer.answer();

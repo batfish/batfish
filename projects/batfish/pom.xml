@@ -197,6 +197,11 @@
     </dependency>
 
     <dependency>
+      <groupId>org.batfish</groupId>
+      <artifactId>symbolic</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
     </dependency>
@@ -225,11 +230,6 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.microsoft.z3</groupId>
-      <artifactId>z3</artifactId>
     </dependency>
 
     <dependency>

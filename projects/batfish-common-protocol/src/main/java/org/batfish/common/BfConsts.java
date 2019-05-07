@@ -179,7 +179,6 @@ public class BfConsts {
   public static final String RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES = "rt_processed";
   public static final String RELPATH_SNAPSHOTS_DIR = "snapshots";
   public static final String RELPATH_SYNC_TESTRIGS_DIR = "testrig_sync";
-  public static final String RELPATH_TESTRIG_TOPOLOGY_PATH = "testrig_topology";
   public static final String RELPATH_VALIDATE_SNAPSHOT_ANSWER = "venv_answer";
   public static final String RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
   public static final String RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";

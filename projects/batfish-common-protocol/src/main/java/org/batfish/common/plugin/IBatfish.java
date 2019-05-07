@@ -8,15 +8,12 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
-import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.batfish.common.Answerer;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
-import org.batfish.common.topology.Layer1Topology;
-import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
@@ -40,9 +37,6 @@ import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
-import org.batfish.datamodel.questions.smt.HeaderQuestion;
-import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
@@ -91,18 +85,10 @@ public interface IBatfish extends IPluginConsumer {
 
   Environment getEnvironment();
 
-  Topology getEnvironmentTopology();
-
   String getFlowTag();
 
   /** Get the configuration of the major issue type {@code majorIssueType} if its present */
   MajorIssueConfig getMajorIssueConfig(String majorIssueType);
-
-  @Nullable
-  Layer1Topology getLayer1Topology();
-
-  @Nullable
-  Layer2Topology getLayer2Topology();
 
   @Nonnull
   NetworkSnapshot getNetworkSnapshot();
@@ -192,28 +178,6 @@ public interface IBatfish extends IPluginConsumer {
   void registerExternalBgpAdvertisementPlugin(
       ExternalBgpAdvertisementPlugin externalBgpAdvertisementPlugin);
 
-  AnswerElement smtBlackhole(HeaderQuestion q);
-
-  AnswerElement smtBoundedLength(HeaderLocationQuestion q, Integer bound);
-
-  AnswerElement smtDeterminism(HeaderQuestion q);
-
-  AnswerElement smtEqualLength(HeaderLocationQuestion q);
-
-  AnswerElement smtForwarding(HeaderQuestion q);
-
-  AnswerElement smtLoadBalance(HeaderLocationQuestion q, int threshold);
-
-  AnswerElement smtLocalConsistency(Pattern routerRegex, boolean strict, boolean fullModel);
-
-  AnswerElement smtMultipathConsistency(HeaderLocationQuestion q);
-
-  AnswerElement smtReachability(HeaderLocationQuestion q);
-
-  AnswerElement smtRoles(RoleQuestion q);
-
-  AnswerElement smtRoutingLoop(HeaderQuestion q);
-
   /** Use more explicit {@link #specifierContext(NetworkSnapshot)} if possible. */
   SpecifierContext specifierContext();
 
@@ -228,13 +192,6 @@ public interface IBatfish extends IPluginConsumer {
 
   @Nullable
   String loadQuestionSettings(@Nonnull Question question);
-
-  /**
-   * Return the raw layer-1 physical topology provided by the user in the snapshot, or {@code null}
-   * if absent.
-   */
-  @Nullable
-  Layer1Topology loadRawLayer1PhysicalTopology(@Nonnull NetworkSnapshot networkSnapshot);
 
   /** Returns edge blacklist for given snapshot or empty set if absent. */
   @Nonnull

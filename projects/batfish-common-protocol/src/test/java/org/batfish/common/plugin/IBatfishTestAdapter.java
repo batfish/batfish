@@ -9,7 +9,6 @@ import java.util.SortedSet;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
-import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.configuration2.ImmutableConfiguration;
@@ -46,9 +45,6 @@ import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
-import org.batfish.datamodel.questions.smt.HeaderQuestion;
-import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.identifiers.NetworkId;
@@ -69,6 +65,86 @@ import org.batfish.specifier.SpecifierContextImpl;
  * minimal methods needed.
  */
 public class IBatfishTestAdapter implements IBatfish {
+
+  public static class TopologyProviderTestAdapter implements TopologyProvider {
+
+    protected final IBatfish _batfish;
+
+    public TopologyProviderTestAdapter(IBatfish batfish) {
+      _batfish = batfish;
+    }
+
+    @Nonnull
+    @Override
+    public IpOwners getIpOwners(NetworkSnapshot snapshot) {
+      return new IpOwners(_batfish.loadConfigurations(snapshot));
+    }
+
+    @Override
+    public Optional<Layer1Topology> getLayer1LogicalTopology(NetworkSnapshot networkSnapshot) {
+      return getLayer1PhysicalTopology(networkSnapshot)
+          .map(
+              l1PhysicalTopology ->
+                  TopologyUtil.computeLayer1LogicalTopology(
+                      l1PhysicalTopology, _batfish.loadConfigurations()));
+    }
+
+    @Override
+    public VxlanTopology getVxlanTopology(NetworkSnapshot snapshot) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Optional<Layer1Topology> getLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Layer2Topology getLayer2Topology(NetworkSnapshot networkSnapshot) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Topology getLayer3Topology(NetworkSnapshot networkSnapshot) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Nonnull
+    @Override
+    public OspfTopology getInitialOspfTopology(@Nonnull NetworkSnapshot networkSnapshot) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Optional<Layer1Topology> getRawLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Topology getInitialRawLayer3Topology(NetworkSnapshot networkSnapshot) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public BgpTopology getBgpTopology(NetworkSnapshot snapshot) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Optional<Layer2Topology> getInitialLayer2Topology(NetworkSnapshot networkSnapshot) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Topology getInitialLayer3Topology(NetworkSnapshot networkSnapshot) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public VxlanTopology getInitialVxlanTopology(NetworkSnapshot snapshot) {
+      return new VxlanTopology(_batfish.loadConfigurations(snapshot));
+    }
+  }
 
   @Override
   public DifferentialReachabilityResult bddDifferentialReachability(
@@ -122,11 +198,6 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public Topology getEnvironmentTopology() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public String getFlowTag() {
     throw new UnsupportedOperationException();
   }
@@ -134,16 +205,6 @@ public class IBatfishTestAdapter implements IBatfish {
   @Override
   public MajorIssueConfig getMajorIssueConfig(String majorIssue) {
     throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Layer1Topology getLayer1Topology() {
-    throw new UnsupportedOperationException("no implementation for generated method");
-  }
-
-  @Override
-  public Layer2Topology getLayer2Topology() {
-    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
@@ -189,76 +250,7 @@ public class IBatfishTestAdapter implements IBatfish {
   @Nonnull
   @Override
   public TopologyProvider getTopologyProvider() {
-    return new TopologyProvider() {
-      @Nonnull
-      @Override
-      public IpOwners getIpOwners(NetworkSnapshot snapshot) {
-        return new IpOwners(loadConfigurations(snapshot));
-      }
-
-      @Override
-      public Optional<Layer1Topology> getLayer1LogicalTopology(NetworkSnapshot networkSnapshot) {
-        return Optional.of(
-            TopologyUtil.computeLayer1LogicalTopology(getLayer1Topology(), loadConfigurations()));
-      }
-
-      @Override
-      public VxlanTopology getVxlanTopology(NetworkSnapshot snapshot) {
-        return new VxlanTopology(loadConfigurations(snapshot));
-      }
-
-      @Override
-      public Optional<Layer1Topology> getLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
-        throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public Layer2Topology getLayer2Topology(NetworkSnapshot networkSnapshot) {
-        throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public Topology getLayer3Topology(NetworkSnapshot networkSnapshot) {
-        throw new UnsupportedOperationException();
-      }
-
-      @Nonnull
-      @Override
-      public OspfTopology getInitialOspfTopology(@Nonnull NetworkSnapshot networkSnapshot) {
-        throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public Optional<Layer1Topology> getRawLayer1PhysicalTopology(
-          NetworkSnapshot networkSnapshot) {
-        throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public Topology getInitialRawLayer3Topology(NetworkSnapshot networkSnapshot) {
-        throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public BgpTopology getBgpTopology(NetworkSnapshot snapshot) {
-        throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public Optional<Layer2Topology> getInitialLayer2Topology(NetworkSnapshot networkSnapshot) {
-        throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public Topology getInitialLayer3Topology(NetworkSnapshot networkSnapshot) {
-        throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public VxlanTopology getInitialVxlanTopology(NetworkSnapshot snapshot) {
-        return new VxlanTopology(loadConfigurations(snapshot));
-      }
-    };
+    return new TopologyProviderTestAdapter(this);
   }
 
   @Override
@@ -390,61 +382,6 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public AnswerElement smtBlackhole(HeaderQuestion q) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public AnswerElement smtBoundedLength(HeaderLocationQuestion q, Integer bound) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public AnswerElement smtDeterminism(HeaderQuestion q) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public AnswerElement smtEqualLength(HeaderLocationQuestion q) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public AnswerElement smtForwarding(HeaderQuestion q) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public AnswerElement smtLoadBalance(HeaderLocationQuestion q, int threshold) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public AnswerElement smtLocalConsistency(Pattern routerRegex, boolean strict, boolean fullModel) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public AnswerElement smtMultipathConsistency(HeaderLocationQuestion q) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public AnswerElement smtReachability(HeaderLocationQuestion q) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public AnswerElement smtRoles(RoleQuestion q) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public AnswerElement smtRoutingLoop(HeaderQuestion q) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public SpecifierContext specifierContext() {
     return new SpecifierContextImpl(this, getNetworkSnapshot());
   }
@@ -483,11 +420,6 @@ public class IBatfishTestAdapter implements IBatfish {
   public NetworkSnapshot getNetworkSnapshot() {
     return new NetworkSnapshot(
         new NetworkId(UUID.randomUUID().toString()), new SnapshotId(UUID.randomUUID().toString()));
-  }
-
-  @Override
-  public Layer1Topology loadRawLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
-    throw new UnsupportedOperationException();
   }
 
   @Override

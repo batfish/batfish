@@ -43,10 +43,10 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.z3.expr.StateExpr;
-import org.batfish.z3.state.OriginateVrf;
-import org.batfish.z3.state.PreInInterface;
-import org.batfish.z3.state.PreOutEdgePostNat;
+import org.batfish.symbolic.state.OriginateVrf;
+import org.batfish.symbolic.state.PreInInterface;
+import org.batfish.symbolic.state.PreOutEdgePostNat;
+import org.batfish.symbolic.state.StateExpr;
 import org.junit.Before;
 import org.junit.Test;
 

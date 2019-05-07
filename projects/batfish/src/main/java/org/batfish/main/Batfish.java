@@ -105,11 +105,8 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.PluginClientType;
 import org.batfish.common.plugin.PluginConsumer;
 import org.batfish.common.plugin.TracerouteEngine;
-import org.batfish.common.topology.Layer1Topology;
-import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyContainer;
 import org.batfish.common.topology.TopologyProvider;
-import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.IspModelingUtils;
@@ -167,11 +164,7 @@ import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
-import org.batfish.datamodel.questions.smt.HeaderQuestion;
-import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishParseException;
@@ -226,11 +219,9 @@ import org.batfish.specifier.SpecifierContextImpl;
 import org.batfish.specifier.UnionLocationSpecifier;
 import org.batfish.storage.FileBasedStorage;
 import org.batfish.storage.StorageProvider;
-import org.batfish.symbolic.abstraction.Roles;
-import org.batfish.symbolic.smt.PropertyChecker;
+import org.batfish.symbolic.IngressLocation;
 import org.batfish.topology.TopologyProviderImpl;
 import org.batfish.vendor.VendorConfiguration;
-import org.batfish.z3.IngressLocation;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.jgrapht.Graph;
@@ -499,6 +490,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             ? alternateIdResolver
             : new FileBasedIdResolver(_settings.getStorageBase());
     _topologyProvider = new TopologyProviderImpl(this, _storage);
+    loadPlugins();
   }
 
   /**
@@ -762,11 +754,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Path outputPath = _testrigSettings.getSerializeEnvironmentRoutingTablesPath();
     Path inputPath = _testrigSettings.getEnvironmentRoutingTablesPath();
     serializeEnvironmentRoutingTables(inputPath, outputPath);
-  }
-
-  @Override
-  public Layer1Topology loadRawLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
-    return _storage.loadLayer1Topology(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
   }
 
   private Map<String, Configuration> convertConfigurations(
@@ -1098,17 +1085,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     SortedMap<String, RoutesByVrf> routingTables =
         parseEnvironmentRoutingTables(inputData, answerElement);
     return routingTables;
-  }
-
-  @Override
-  public Topology getEnvironmentTopology() {
-    try {
-      return BatfishObjectMapper.mapper()
-          .readValue(
-              CommonUtil.readFile(_testrigSettings.getSerializeTopologyPath()), Topology.class);
-    } catch (IOException e) {
-      throw new BatfishException("Could not getEnvironmentTopology: ", e);
-    }
   }
 
   @Override
@@ -2468,7 +2444,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public Answer run() {
     newBatch("Begin job", 0);
-    loadPlugins();
     boolean action = false;
     Answer answer = new Answer();
 
@@ -2534,27 +2509,22 @@ public class Batfish extends PluginConsumer implements IBatfish {
   void initializeTopology(NetworkSnapshot networkSnapshot) {
     Map<String, Configuration> configurations = loadConfigurations();
     Topology rawLayer3Topology = _topologyProvider.getInitialRawLayer3Topology(networkSnapshot);
-    serializeAsJson(_testrigSettings.getTopologyPath(), rawLayer3Topology, "raw layer-3 topology");
     checkTopology(configurations, rawLayer3Topology);
     org.batfish.datamodel.pojo.Topology pojoTopology =
         org.batfish.datamodel.pojo.Topology.create(
             _settings.getSnapshotName(), configurations, rawLayer3Topology);
-    serializeAsJson(
-        _testrigSettings.getPojoTopologyPath(), pojoTopology, "raw layer-3 pojo topology");
+    try {
+      _storage.storePojoTopology(
+          pojoTopology, networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
+    } catch (IOException e) {
+      throw new BatfishException("Could not serialize layer-3 POJO topology", e);
+    }
     Topology layer3Topology = _topologyProvider.getInitialLayer3Topology(getNetworkSnapshot());
     try {
       _storage.storeInitialTopology(
           layer3Topology, networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
     } catch (IOException e) {
       throw new BatfishException("Could not serialize layer-3 topology", e);
-    }
-  }
-
-  public static void serializeAsJson(Path outputPath, Object object, String objectName) {
-    try {
-      BatfishObjectMapper.prettyWriter().writeValue(outputPath.toFile(), object);
-    } catch (IOException e) {
-      throw new BatfishException("Could not serialize " + objectName + " ", e);
     }
   }
 
@@ -3084,75 +3054,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AnswerElement smtBlackhole(HeaderQuestion q) {
-    PropertyChecker p = new PropertyChecker(new BDDPacket(), this, _settings);
-    return p.checkBlackHole(q);
-  }
-
-  @Override
-  public AnswerElement smtBoundedLength(HeaderLocationQuestion q, Integer bound) {
-    if (bound == null) {
-      throw new BatfishException("Missing parameter length bound: (e.g., bound=3)");
-    }
-    PropertyChecker p = new PropertyChecker(new BDDPacket(), this, _settings);
-    return p.checkBoundedLength(q, bound);
-  }
-
-  @Override
-  public AnswerElement smtDeterminism(HeaderQuestion q) {
-    PropertyChecker p = new PropertyChecker(new BDDPacket(), this, _settings);
-    return p.checkDeterminism(q);
-  }
-
-  @Override
-  public AnswerElement smtEqualLength(HeaderLocationQuestion q) {
-    PropertyChecker p = new PropertyChecker(new BDDPacket(), this, _settings);
-    return p.checkEqualLength(q);
-  }
-
-  @Override
-  public AnswerElement smtForwarding(HeaderQuestion q) {
-    PropertyChecker p = new PropertyChecker(new BDDPacket(), this, _settings);
-    return p.checkForwarding(q);
-  }
-
-  @Override
-  public AnswerElement smtLoadBalance(HeaderLocationQuestion q, int threshold) {
-    PropertyChecker p = new PropertyChecker(new BDDPacket(), this, _settings);
-    return p.checkLoadBalancing(q, threshold);
-  }
-
-  @Override
-  public AnswerElement smtLocalConsistency(Pattern routerRegex, boolean strict, boolean fullModel) {
-    PropertyChecker p = new PropertyChecker(new BDDPacket(), this, _settings);
-    return p.checkLocalEquivalence(routerRegex, strict, fullModel);
-  }
-
-  @Override
-  public AnswerElement smtMultipathConsistency(HeaderLocationQuestion q) {
-    PropertyChecker p = new PropertyChecker(new BDDPacket(), this, _settings);
-    return p.checkMultipathConsistency(q);
-  }
-
-  @Override
-  public AnswerElement smtReachability(HeaderLocationQuestion q) {
-    PropertyChecker p = new PropertyChecker(new BDDPacket(), this, _settings);
-    return p.checkReachability(q);
-  }
-
-  @Override
-  public AnswerElement smtRoles(RoleQuestion q) {
-    Roles roles = Roles.create(this, q.getDstIps(), new NodesSpecifier(q.getNodeRegex()));
-    return roles.asAnswer(q.getType());
-  }
-
-  @Override
-  public AnswerElement smtRoutingLoop(HeaderQuestion q) {
-    PropertyChecker p = new PropertyChecker(new BDDPacket(), this, _settings);
-    return p.checkRoutingLoop(q);
-  }
-
-  @Override
   public SpecifierContext specifierContext() {
     return new SpecifierContextImpl(this, getNetworkSnapshot());
   }
@@ -3535,20 +3436,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (_settings.getQuestionName() != null) {
       writeJsonAnswer(structuredAnswerString);
     }
-  }
-
-  @Override
-  public @Nullable Layer1Topology getLayer1Topology() {
-    return _storage.loadLayer1Topology(_settings.getContainer(), _testrigSettings.getName());
-  }
-
-  @Override
-  public @Nullable Layer2Topology getLayer2Topology() {
-    Layer1Topology layer1Topology = getLayer1Topology();
-    if (layer1Topology == null) {
-      return null;
-    }
-    return TopologyUtil.computeLayer2Topology(layer1Topology, loadConfigurations());
   }
 
   @Override

@@ -22,8 +22,8 @@ import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.z3.expr.StateExpr;
-import org.batfish.z3.state.PreInInterface;
+import org.batfish.symbolic.state.PreInInterface;
+import org.batfish.symbolic.state.StateExpr;
 
 /**
  * Implemention of valid ranges (outputs) of reversed transformations (for reverse flows). The valid

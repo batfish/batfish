@@ -101,7 +101,8 @@ public final class TopologyProviderImpl implements TopologyProvider {
     }
   }
 
-  private @Nonnull Optional<Layer2Topology> computeLayer2Topology(NetworkSnapshot networkSnapshot) {
+  private @Nonnull Optional<Layer2Topology> computeInitialLayer2Topology(
+      NetworkSnapshot networkSnapshot) {
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("TopologyProviderImpl::computeLayer2Topology").startActive()) {
       assert span != null; // avoid unused warning
@@ -109,7 +110,9 @@ public final class TopologyProviderImpl implements TopologyProvider {
           .map(
               layer1LogicalTopology ->
                   TopologyUtil.computeLayer2Topology(
-                      layer1LogicalTopology, _batfish.loadConfigurations(networkSnapshot)));
+                      layer1LogicalTopology,
+                      VxlanTopology.EMPTY,
+                      _batfish.loadConfigurations(networkSnapshot)));
     }
   }
 
@@ -136,7 +139,8 @@ public final class TopologyProviderImpl implements TopologyProvider {
             .buildSpan("TopologyProviderImpl::computeRawLayer1PhysicalTopology")
             .startActive()) {
       assert span != null; // avoid unused warning
-      return Optional.ofNullable(_batfish.loadRawLayer1PhysicalTopology(networkSnapshot));
+      return Optional.ofNullable(
+          _storage.loadLayer1Topology(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot()));
     }
   }
 
@@ -152,7 +156,7 @@ public final class TopologyProviderImpl implements TopologyProvider {
               rawLayer1PhysicalTopology ->
                   TopologyUtil.computeLayer3Topology(
                       rawLayer1PhysicalTopology,
-                      computeLayer2Topology(networkSnapshot).get(),
+                      computeInitialLayer2Topology(networkSnapshot).get(),
                       configurations))
           .orElse(TopologyUtil.synthesizeL3Topology(configurations));
     }
@@ -199,9 +203,10 @@ public final class TopologyProviderImpl implements TopologyProvider {
   @Override
   public Optional<Layer2Topology> getInitialLayer2Topology(NetworkSnapshot networkSnapshot) {
     try {
-      return _layer2Topologies.get(networkSnapshot, () -> computeLayer2Topology(networkSnapshot));
+      return _layer2Topologies.get(
+          networkSnapshot, () -> computeInitialLayer2Topology(networkSnapshot));
     } catch (ExecutionException e) {
-      return computeLayer2Topology(networkSnapshot);
+      return computeInitialLayer2Topology(networkSnapshot);
     }
   }
 
