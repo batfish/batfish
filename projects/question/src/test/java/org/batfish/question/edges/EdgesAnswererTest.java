@@ -57,6 +57,7 @@ import com.google.common.graph.ValueGraphBuilder;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.batfish.common.Pair;
 import org.batfish.common.topology.Layer1Edge;
@@ -375,9 +376,9 @@ public class EdgesAnswererTest {
     OspfArea.builder(nf).setNumber(1L).setOspfProcess(ospf2).addInterface("int2").build();
 
     Vrf vrf1 = new Vrf("vrf1");
-    vrf1.setOspfProcess(ospf1);
+    vrf1.setOspfProcesses(Stream.of(ospf1));
     Vrf vrf2 = new Vrf("vrf2");
-    vrf2.setOspfProcess(ospf2);
+    vrf2.setOspfProcesses(Stream.of(ospf2));
 
     _host1.setVrfs(ImmutableSortedMap.of("vrf1", vrf1));
     _host2.setVrfs(ImmutableSortedMap.of("vrf2", vrf2));

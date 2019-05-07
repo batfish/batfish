@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.util.Collections;
+import java.util.stream.Stream;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -80,7 +81,7 @@ public class ConfigurationTest {
 
     // OSPF
     OspfProcess ospfProcess = _factory.ospfProcessBuilder().build();
-    vrf.setOspfProcess(ospfProcess);
+    vrf.setOspfProcesses(Stream.of(ospfProcess));
     RoutingPolicy ospfExportPolicy =
         c.getRoutingPolicies().computeIfAbsent(ospfExportPolicyName, n -> new RoutingPolicy(n, c));
     ospfProcess.setExportPolicy(ospfExportPolicyName);

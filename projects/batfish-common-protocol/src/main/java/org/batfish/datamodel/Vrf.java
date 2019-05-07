@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -99,8 +100,7 @@ public class Vrf extends ComparableStructure<String> {
   private SortedSet<StaticRoute> _staticRoutes;
   private NavigableMap<Integer, VniSettings> _vniSettings;
 
-  @JsonCreator
-  public Vrf(@JsonProperty(PROP_NAME) String name) {
+  public Vrf(@Nonnull String name) {
     super(name);
     _appliedRibGroups = ImmutableSortedMap.of();
     _eigrpProcesses = new TreeMap<>();
@@ -111,6 +111,22 @@ public class Vrf extends ComparableStructure<String> {
     _ospfProcesses = ImmutableSortedMap.of();
     _staticRoutes = new TreeSet<>();
     _vniSettings = new TreeMap<>();
+  }
+
+  @JsonCreator
+  private static Vrf create(
+      @Nullable @JsonProperty(PROP_NAME) String name,
+      @Nullable @JsonProperty(PROP_OSPF_PROCESSES) Map<String, OspfProcess> ospfProcesses,
+      // For backwards compatible deserialization
+      @Nullable @JsonProperty(PROP_OSPF_PROCESS) OspfProcess ospfProcess) {
+    checkArgument(name != null, "%s must be provided", PROP_NAME);
+    Vrf v = new Vrf(name);
+    if (ospfProcesses != null) {
+      v.setOspfProcesses(ImmutableSortedMap.copyOf(ospfProcesses));
+    } else if (ospfProcess != null) {
+      v.setOspfProcesses(ImmutableSortedMap.of(ospfProcess.getProcessId(), ospfProcess));
+    }
+    return v;
   }
 
   /** Return any RIB groups applied to a given routing protocol */
@@ -287,12 +303,7 @@ public class Vrf extends ComparableStructure<String> {
     _kernelRoutes = kernelRoutes;
   }
 
-  @JsonProperty(PROP_OSPF_PROCESS)
-  public void setOspfProcess(@Nonnull OspfProcess process) {
-    setOspfProcesses(ImmutableSortedMap.of(process.getProcessId(), process));
-  }
-
-  @JsonProperty(PROP_OSPF_PROCESSES)
+  @JsonIgnore
   public void setOspfProcesses(@Nonnull SortedMap<String, OspfProcess> processes) {
     _ospfProcesses = processes;
   }
