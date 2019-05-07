@@ -172,6 +172,7 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
+import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishParseException;
@@ -3548,7 +3549,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (layer1Topology == null) {
       return null;
     }
-    return TopologyUtil.computeLayer2Topology(layer1Topology, loadConfigurations());
+    return TopologyUtil.computeLayer2Topology(
+        layer1Topology, VxlanTopology.EMPTY, loadConfigurations());
   }
 
   @Override
