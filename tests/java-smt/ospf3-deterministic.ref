@@ -1,5 +1,5 @@
 [
   {
-    "class" : "org.batfish.symbolic.answers.SmtDeterminismAnswerElement"
+    "class" : "org.batfish.minesweeper.answers.SmtDeterminismAnswerElement"
   }
 ]

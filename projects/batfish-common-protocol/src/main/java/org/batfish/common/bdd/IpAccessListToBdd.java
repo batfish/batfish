@@ -4,6 +4,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -40,18 +42,47 @@ import org.batfish.datamodel.acl.TrueExpr;
 @ParametersAreNonnullByDefault
 public abstract class IpAccessListToBdd {
 
+  /**
+   * Converts the given {@link IpAccessList} to a {@link BDD} using the given context.
+   *
+   * <p>Note that if converting multiple {@link IpAccessList ACLs} with the same context,
+   * considerable work can be saved by creating a single {@link IpAccessListToBdd} and reusing it.
+   */
+  public static BDD toBDD(
+      BDDPacket pkt,
+      IpAccessList acl,
+      Map<String, IpAccessList> aclEnv,
+      Map<String, IpSpace> ipSpaceEnv,
+      BDDSourceManager bddSrcManager) {
+    return new IpAccessListToBddImpl(pkt, bddSrcManager, aclEnv, ipSpaceEnv).toBdd(acl);
+  }
+
+  /**
+   * Converts the given {@link IpAccessList} to a {@link BDD}.
+   *
+   * <p>The {@link IpAccessList} must be self-contained, with no references to source {@link
+   * org.batfish.datamodel.Interface}, named {@link IpAccessList ACLs} or {@link IpSpace IP spaces}.
+   *
+   * <p>Note that if converting multiple {@link IpAccessList ACLs} with the same context,
+   * considerable work can be saved by creating a single {@link IpAccessListToBdd} and reusing it.
+   *
+   * @see #toBDD(BDDPacket, IpAccessList, Map, Map, BDDSourceManager)
+   */
+  public static BDD toBDD(BDDPacket pkt, IpAccessList acl) {
+    return toBDD(
+        pkt,
+        acl,
+        ImmutableMap.of(),
+        ImmutableMap.of(),
+        BDDSourceManager.forInterfaces(pkt, ImmutableSet.of()));
+  }
+
   @Nonnull private final Map<String, Supplier<BDD>> _aclEnv;
-
   @Nonnull private final BDDFactory _factory;
-
   @Nonnull private final BDDPacket _pkt;
-
   @Nonnull private final BDDOps _bddOps;
-
   @Nonnull private final BDDSourceManager _bddSrcManager;
-
   @Nonnull private final HeaderSpaceToBDD _headerSpaceToBDD;
-
   @Nonnull private final Visitor _visitor;
 
   protected IpAccessListToBdd(

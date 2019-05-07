@@ -37,6 +37,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
+import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
@@ -62,7 +63,6 @@ import org.batfish.question.testfilters.TestFiltersAnswerer;
 import org.batfish.question.testfilters.TestFiltersQuestion;
 import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.SpecifierContext;
-import org.batfish.symbolic.bdd.BDDAcl;
 
 /** Answerer for SearchFiltersQuestion */
 public final class SearchFiltersAnswerer extends Answerer {
@@ -401,8 +401,7 @@ public final class SearchFiltersAnswerer extends Answerer {
     HeaderSpace headerSpace = parameters.resolveHeaderspace(specifierContext);
     BDD headerSpaceBDD = new HeaderSpaceToBDD(bddPacket, node.getIpSpaces()).toBDD(headerSpace);
     BDD bdd =
-        BDDAcl.create(bddPacket, acl, node.getIpAccessLists(), node.getIpSpaces(), mgr)
-            .getBdd()
+        IpAccessListToBdd.toBDD(bddPacket, acl, node.getIpAccessLists(), node.getIpSpaces(), mgr)
             .and(headerSpaceBDD)
             .and(mgr.isValidValue());
 
@@ -449,15 +448,13 @@ public final class SearchFiltersAnswerer extends Answerer {
             searchFiltersParameters.getStartLocationSpecifier());
 
     BDD baseAclBDD =
-        BDDAcl.create(
+        IpAccessListToBdd.toBDD(
                 bddPacket, baseAcl, baseConfig.getIpAccessLists(), baseConfig.getIpSpaces(), mgr)
-            .getBdd()
             .and(headerSpaceBDD)
             .and(mgr.isValidValue());
     BDD deltaAclBDD =
-        BDDAcl.create(
+        IpAccessListToBdd.toBDD(
                 bddPacket, deltaAcl, deltaConfig.getIpAccessLists(), deltaConfig.getIpSpaces(), mgr)
-            .getBdd()
             .and(headerSpaceBDD)
             .and(mgr.isValidValue());
 
