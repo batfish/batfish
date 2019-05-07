@@ -117,6 +117,11 @@
 
     <dependency>
       <groupId>org.batfish</groupId>
+      <artifactId>minesweeper</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.batfish</groupId>
       <artifactId>question</artifactId>
     </dependency>
 
@@ -160,6 +165,13 @@
     <dependency>
       <groupId>org.batfish</groupId>
       <artifactId>batfish-common-protocol</artifactId>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.batfish</groupId>
+      <artifactId>minesweeper</artifactId>
       <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
