@@ -61,9 +61,9 @@ public final class BgpTopologyUtils {
   public static @Nonnull BgpTopology initBgpTopology(
       Map<String, Configuration> configurations,
       Map<Ip, Set<String>> ipOwners,
-      boolean keepInvalid) {
-    // TODO Include layer 2 topology later for BGP unnumbered sessions in BgpSession questions.
-    return initBgpTopology(configurations, ipOwners, keepInvalid, false, null, null);
+      boolean keepInvalid,
+      @Nullable Layer2Topology layer2Topology) {
+    return initBgpTopology(configurations, ipOwners, keepInvalid, false, null, layer2Topology);
   }
 
   /**
@@ -336,7 +336,8 @@ public final class BgpTopologyUtils {
   }
 
   /**
-   * Check if a bgp peer is reachable to establish a session
+   * Check if the active BGP peer represented by {@code initiatorId} can reach the BGP peer
+   * represented by {@code listenerId} to establish a session.
    *
    * <p><b>Warning:</b> Notion of directionality is important here, we are assuming {@code
    * initiator} is initiating the connection according to its local configuration
@@ -352,6 +353,7 @@ public final class BgpTopologyUtils {
     // we do a bidirectional traceroute only from the initiator to the listener since the other
     // direction will be checked once we pick up the listener as the source. This is consistent with
     // the directional nature of BGP graph
+    assert initiatorId.getType() == BgpPeerConfigType.ACTIVE;
     return canInitiateBgpSession(
         initiatorId.getHostname(),
         initiatorId.getVrfName(),

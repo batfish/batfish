@@ -551,7 +551,8 @@ public class VirtualRouterTest {
     Topology topology = synthesizeL3Topology(ImmutableMap.of("r1", c1, "r2", c2));
 
     Map<String, Configuration> configs = ImmutableMap.of("r1", c1, "r2", c2);
-    BgpTopology bgpTopology = initBgpTopology(configs, computeIpNodeOwners(configs, false), false);
+    BgpTopology bgpTopology =
+        initBgpTopology(configs, computeIpNodeOwners(configs, false), false, null);
     IsisTopology isisTopology = initIsisTopology(configs, topology);
 
     Map<String, Node> nodes =
@@ -606,7 +607,8 @@ public class VirtualRouterTest {
         .build();
 
     // Re-run
-    BgpTopology bgpTopology2 = initBgpTopology(configs, computeIpNodeOwners(configs, false), false);
+    BgpTopology bgpTopology2 =
+        initBgpTopology(configs, computeIpNodeOwners(configs, false), false, null);
     for (Node n : nodes.values()) {
       n.getVirtualRouters()
           .get(DEFAULT_VRF_NAME)

@@ -1,13 +1,18 @@
 package org.batfish.question.bgpsessionstatus;
 
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswerer.getConfiguredStatus;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswerer.getLocallyBrokenStatus;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.graph.MutableValueGraph;
+import com.google.common.graph.ValueGraphBuilder;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
+import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpSessionProperties;
+import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NetworkFactory;
@@ -86,6 +91,51 @@ public final class BgpSessionAnswererTest {
         equalTo(status));
     assertThat(
         getLocallyBrokenStatus(peer, BgpSessionProperties.SessionType.IBGP), equalTo(status));
+  }
+
+  @Test
+  public void testUnnumberedStatuses() {
+    BgpPeerConfigId id = new BgpPeerConfigId("c", "vrf", "iface");
+    BgpUnnumberedPeerConfig.Builder peerBuilder =
+        BgpUnnumberedPeerConfig.builder().setPeerInterface("iface");
+    MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> topology =
+        ValueGraphBuilder.directed().allowsSelfLoops(false).build();
+
+    // First issue should be no local AS (not currently possible for peer interface to be missing)
+    assertThat(
+        getConfiguredStatus(id, peerBuilder.build(), topology),
+        equalTo(ConfiguredSessionStatus.NO_LOCAL_AS));
+
+    // Once local AS is set, status should be no remote AS
+    BgpUnnumberedPeerConfig peer = peerBuilder.setLocalAs(1L).build();
+    assertThat(
+        getConfiguredStatus(id, peer, topology), equalTo(ConfiguredSessionStatus.NO_REMOTE_AS));
+
+    // With local and remote AS set but no edges in topology, status should be HALF_OPEN
+    peer = peerBuilder.setRemoteAs(1L).build();
+    topology.addNode(id);
+    assertThat(getConfiguredStatus(id, peer, topology), equalTo(ConfiguredSessionStatus.HALF_OPEN));
+
+    // With one edge, status should be UNIQUE_MATCH
+    // Peers need local IPs to avoid breaking assumptions in BgpSessionProperties.from()
+    Ip unnumIp = Ip.parse("169.254.0.1");
+    peer = peerBuilder.setLocalIp(unnumIp).build();
+    BgpPeerConfigId id2 = new BgpPeerConfigId("c2", "vrf", "iface2");
+    BgpUnnumberedPeerConfig peer2 = peerBuilder.setPeerInterface("iface2").build();
+    topology.addNode(id2);
+    topology.putEdgeValue(id, id2, BgpSessionProperties.from(peer, peer2, false));
+    topology.putEdgeValue(id2, id, BgpSessionProperties.from(peer, peer2, true));
+    assertThat(
+        getConfiguredStatus(id, peer, topology), equalTo(ConfiguredSessionStatus.UNIQUE_MATCH));
+
+    // With multiple edges, status should be MULTIPLE_REMOTES
+    BgpPeerConfigId id3 = new BgpPeerConfigId("c3", "vrf", "iface3");
+    BgpUnnumberedPeerConfig peer3 = peerBuilder.setPeerInterface("iface3").build();
+    topology.addNode(id3);
+    topology.putEdgeValue(id, id3, BgpSessionProperties.from(peer, peer3, false));
+    topology.putEdgeValue(id3, id, BgpSessionProperties.from(peer, peer3, true));
+    assertThat(
+        getConfiguredStatus(id, peer, topology), equalTo(ConfiguredSessionStatus.MULTIPLE_REMOTES));
   }
 
   @Test
