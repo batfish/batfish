@@ -75,7 +75,10 @@ public class BgpSessionCompatibilityAnswerer extends BgpSessionAnswerer {
     Set<String> remoteNodes =
         question.getRemoteNodeSpecifier().resolve(_batfish.specifierContext());
     Layer2Topology layer2Topology =
-        _batfish.getTopologyProvider().getLayer2Topology(_batfish.getNetworkSnapshot());
+        _batfish
+            .getTopologyProvider()
+            .getInitialLayer2Topology(_batfish.getNetworkSnapshot())
+            .orElse(null);
     return getRows(question, configurations, nodes, remoteNodes, metadataMap, layer2Topology);
   }
 
