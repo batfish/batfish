@@ -25,7 +25,7 @@ java_library(
 
 java_library(
     name = "matchers",
-testonly=True,
+    testonly = True,
     srcs = glob(
         [
             "src/test/java/**/*.java",
