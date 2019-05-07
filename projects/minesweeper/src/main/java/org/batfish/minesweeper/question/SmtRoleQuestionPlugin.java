@@ -1,4 +1,4 @@
-package org.batfish.question;
+package org.batfish.minesweeper.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
@@ -11,6 +11,7 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.EquivalenceType;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.minesweeper.abstraction.Roles;
+import org.batfish.question.QuestionPlugin;
 
 @AutoService(Plugin.class)
 public class SmtRoleQuestionPlugin extends QuestionPlugin {

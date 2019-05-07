@@ -1,4 +1,4 @@
-package org.batfish.question;
+package org.batfish.minesweeper.question;
 
 import com.google.auto.service.AutoService;
 import org.batfish.common.Answerer;
@@ -7,43 +7,46 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.questions.smt.HeaderQuestion;
+import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.minesweeper.smt.PropertyChecker;
+import org.batfish.question.QuestionPlugin;
 
 @AutoService(Plugin.class)
-public class SmtBlackholeQuestionPlugin extends QuestionPlugin {
+public class SmtEqualLengthQuestionPlugin extends QuestionPlugin {
 
-  public static class BlackholeAnswerer extends Answerer {
+  public static class EqualLengthAnswerer extends Answerer {
 
-    public BlackholeAnswerer(Question question, IBatfish batfish) {
+    public EqualLengthAnswerer(Question question, IBatfish batfish) {
       super(question, batfish);
     }
 
     @Override
     public AnswerElement answer() {
-      BlackholeQuestion q = (BlackholeQuestion) _question;
       PropertyChecker p = new PropertyChecker(new BDDPacket(), _batfish);
-      return p.checkBlackHole(q);
+      return p.checkEqualLength((EqualLengthQuestion) _question);
     }
   }
 
-  public static class BlackholeQuestion extends HeaderQuestion {
+  public static class EqualLengthQuestion extends HeaderLocationQuestion {
 
-    public BlackholeQuestion() {}
+    @Override
+    public boolean getDataPlane() {
+      return false;
+    }
 
     @Override
     public String getName() {
-      return "smt-blackhole";
+      return "smt-equal-length";
     }
   }
 
   @Override
   protected Answerer createAnswerer(Question question, IBatfish batfish) {
-    return new BlackholeAnswerer(question, batfish);
+    return new EqualLengthAnswerer(question, batfish);
   }
 
   @Override
   protected Question createQuestion() {
-    return new BlackholeQuestion();
+    return new EqualLengthQuestion();
   }
 }

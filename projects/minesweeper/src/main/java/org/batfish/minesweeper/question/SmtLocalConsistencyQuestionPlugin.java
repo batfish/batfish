@@ -1,4 +1,4 @@
-package org.batfish.question;
+package org.batfish.minesweeper.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
@@ -13,6 +13,7 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.minesweeper.smt.PropertyChecker;
+import org.batfish.question.QuestionPlugin;
 
 @AutoService(Plugin.class)
 public class SmtLocalConsistencyQuestionPlugin extends QuestionPlugin {

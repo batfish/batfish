@@ -16,7 +16,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.minesweeper.answers.SmtReachabilityAnswerElement;
-import org.batfish.question.SmtReachabilityQuestionPlugin.ReachabilityQuestion;
+import org.batfish.minesweeper.question.SmtReachabilityQuestionPlugin.ReachabilityQuestion;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

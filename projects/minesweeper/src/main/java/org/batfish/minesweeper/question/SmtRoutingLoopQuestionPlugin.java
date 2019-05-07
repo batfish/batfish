@@ -1,4 +1,4 @@
-package org.batfish.question;
+package org.batfish.minesweeper.question;
 
 import com.google.auto.service.AutoService;
 import org.batfish.common.Answerer;
@@ -9,25 +9,26 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.minesweeper.smt.PropertyChecker;
+import org.batfish.question.QuestionPlugin;
 
 @AutoService(Plugin.class)
-public class SmtDeterministicQuestionPlugin extends QuestionPlugin {
+public class SmtRoutingLoopQuestionPlugin extends QuestionPlugin {
 
-  public static class DeterministicAnswerer extends Answerer {
+  public static class RoutingLoopAnswerer extends Answerer {
 
-    public DeterministicAnswerer(Question question, IBatfish batfish) {
+    public RoutingLoopAnswerer(Question question, IBatfish batfish) {
       super(question, batfish);
     }
 
     @Override
     public AnswerElement answer() {
-      DeterministicQuestion q = (DeterministicQuestion) _question;
+      RoutingLoopQuestion q = (RoutingLoopQuestion) _question;
       PropertyChecker p = new PropertyChecker(new BDDPacket(), _batfish);
-      return p.checkDeterminism(q);
+      return p.checkRoutingLoop(q);
     }
   }
 
-  public static class DeterministicQuestion extends HeaderQuestion {
+  public static class RoutingLoopQuestion extends HeaderQuestion {
 
     @Override
     public boolean getDataPlane() {
@@ -36,17 +37,17 @@ public class SmtDeterministicQuestionPlugin extends QuestionPlugin {
 
     @Override
     public String getName() {
-      return "smt-deterministic";
+      return "smt-routing-loop";
     }
   }
 
   @Override
   protected Answerer createAnswerer(Question question, IBatfish batfish) {
-    return new DeterministicAnswerer(question, batfish);
+    return new RoutingLoopAnswerer(question, batfish);
   }
 
   @Override
   protected Question createQuestion() {
-    return new DeterministicQuestion();
+    return new RoutingLoopQuestion();
   }
 }

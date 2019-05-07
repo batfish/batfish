@@ -1,4 +1,4 @@
-package org.batfish.question;
+package org.batfish.minesweeper.question;
 
 import com.google.auto.service.AutoService;
 import org.batfish.common.Answerer;
@@ -7,27 +7,28 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
+import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.minesweeper.smt.PropertyChecker;
+import org.batfish.question.QuestionPlugin;
 
 @AutoService(Plugin.class)
-public class SmtMultipathConsistencyQuestionPlugin extends QuestionPlugin {
+public class SmtDeterministicQuestionPlugin extends QuestionPlugin {
 
-  public static class MulipathConsistencyAnswerer extends Answerer {
+  public static class DeterministicAnswerer extends Answerer {
 
-    public MulipathConsistencyAnswerer(Question question, IBatfish batfish) {
+    public DeterministicAnswerer(Question question, IBatfish batfish) {
       super(question, batfish);
     }
 
     @Override
     public AnswerElement answer() {
-      MultipathConsistencyQuestion q = (MultipathConsistencyQuestion) _question;
+      DeterministicQuestion q = (DeterministicQuestion) _question;
       PropertyChecker p = new PropertyChecker(new BDDPacket(), _batfish);
-      return p.checkMultipathConsistency(q);
+      return p.checkDeterminism(q);
     }
   }
 
-  public static class MultipathConsistencyQuestion extends HeaderLocationQuestion {
+  public static class DeterministicQuestion extends HeaderQuestion {
 
     @Override
     public boolean getDataPlane() {
@@ -36,17 +37,17 @@ public class SmtMultipathConsistencyQuestionPlugin extends QuestionPlugin {
 
     @Override
     public String getName() {
-      return "smt-multipath-consistency";
+      return "smt-deterministic";
     }
   }
 
   @Override
   protected Answerer createAnswerer(Question question, IBatfish batfish) {
-    return new MulipathConsistencyAnswerer(question, batfish);
+    return new DeterministicAnswerer(question, batfish);
   }
 
   @Override
   protected Question createQuestion() {
-    return new MultipathConsistencyQuestion();
+    return new DeterministicQuestion();
   }
 }
