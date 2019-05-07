@@ -499,6 +499,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             ? alternateIdResolver
             : new FileBasedIdResolver(_settings.getStorageBase());
     _topologyProvider = new TopologyProviderImpl(this, _storage);
+    loadPlugins();
   }
 
   /**
@@ -2468,7 +2469,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public Answer run() {
     newBatch("Begin job", 0);
-    loadPlugins();
     boolean action = false;
     Answer answer = new Answer();
 
