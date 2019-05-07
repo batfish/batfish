@@ -2,13 +2,10 @@ package org.batfish.question.bgpsessionstatus;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.graph.ValueGraph;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.common.Answerer;
-import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
@@ -22,13 +19,16 @@ import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.ConfiguredSessionStatus;
-import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.Row;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 
-/** Captures the configuration state of a BGP session. */
-public abstract class BgpSessionAnswerer extends Answerer {
+/**
+ * Shared utility methods for {@link BgpSessionCompatibilityAnswerer} and {@link
+ * BgpSessionStatusAnswerer}.
+ */
+public class BgpSessionAnswererUtils {
 
+  /* Common column names for both BGP session questions*/
   public static final String COL_LOCAL_INTERFACE = "Local_Interface";
   public static final String COL_LOCAL_AS = "Local_AS";
   public static final String COL_LOCAL_IP = "Local_IP";
@@ -39,10 +39,6 @@ public abstract class BgpSessionAnswerer extends Answerer {
   public static final String COL_REMOTE_IP = "Remote_IP";
   public static final String COL_SESSION_TYPE = "Session_Type";
   public static final String COL_VRF = "VRF";
-
-  public BgpSessionAnswerer(Question question, IBatfish batfish) {
-    super(question, batfish);
-  }
 
   static @Nonnull BgpPeerConfig getBgpPeerConfig(
       Map<String, Configuration> configurations, BgpPeerConfigId id) {
@@ -129,7 +125,7 @@ public abstract class BgpSessionAnswerer extends Answerer {
   /**
    * Returns true if local node, remote node, and session type in row match the question's filters
    */
-  protected static boolean matchesNodesAndType(
+  static boolean matchesNodesAndType(
       Row row, Set<String> nodes, Set<String> remoteNodes, BgpSessionQuestion question) {
     if (!question.getNodeSpecifier().equals(AllNodesNodeSpecifier.INSTANCE)) {
       Node node = (Node) row.get(COL_NODE, Schema.NODE);
@@ -146,5 +142,5 @@ public abstract class BgpSessionAnswerer extends Answerer {
     return question.matchesType((String) row.get(COL_SESSION_TYPE, Schema.STRING));
   }
 
-  public abstract List<Row> getRows(BgpSessionQuestion question);
+  private BgpSessionAnswererUtils() {}
 }
