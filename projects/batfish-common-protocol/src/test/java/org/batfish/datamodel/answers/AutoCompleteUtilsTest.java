@@ -1,10 +1,5 @@
 package org.batfish.datamodel.answers;
 
-import static org.batfish.datamodel.BgpSessionProperties.SessionType.EBGP_MULTIHOP;
-import static org.batfish.datamodel.BgpSessionProperties.SessionType.EBGP_SINGLEHOP;
-import static org.batfish.datamodel.BgpSessionProperties.SessionType.EBGP_UNNUMBERED;
-import static org.batfish.datamodel.BgpSessionProperties.SessionType.IBGP;
-import static org.batfish.datamodel.BgpSessionProperties.SessionType.IBGP_UNNUMBERED;
 import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
 import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
@@ -54,6 +49,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.common.CompletionMetadata;
+import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
@@ -199,16 +195,16 @@ public class AutoCompleteUtilsTest {
   @Test
   public void testBgpSessionTypeAutocomplete() throws IOException {
     assertThat(
-        AutoCompleteUtils.autoComplete(Type.BGP_SESSION_TYPE, "bgp", 5).stream()
+        AutoCompleteUtils.autoComplete(Type.BGP_SESSION_TYPE, "bgp", 10).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(
             ImmutableSet.of(
-                IBGP.name(),
-                EBGP_SINGLEHOP.name(),
-                EBGP_MULTIHOP.name(),
-                EBGP_UNNUMBERED.name(),
-                IBGP_UNNUMBERED.name())));
+                SessionType.IBGP.name(),
+                SessionType.EBGP_SINGLEHOP.name(),
+                SessionType.EBGP_MULTIHOP.name(),
+                SessionType.EBGP_UNNUMBERED.name(),
+                SessionType.IBGP_UNNUMBERED.name())));
   }
 
   @Test

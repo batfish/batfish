@@ -31,7 +31,6 @@ import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpSessionProperties;
-import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
@@ -761,7 +760,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
                               String.format(
                                   "Edge %s -> %s not in IBGP topology",
                                   bgpPeerConfigId, remoteBgpPeerConfigId)));
-          boolean ibgp = sessionProp.getSessionType() == SessionType.IBGP;
+          boolean ibgp = !sessionProp.isEbgp();
           if (ibgp) {
             VerboseBgpEdge edge =
                 constructVerboseBgpEdge(
