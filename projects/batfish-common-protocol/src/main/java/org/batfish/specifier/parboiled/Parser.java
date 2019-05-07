@@ -660,8 +660,9 @@ public class Parser extends CommonParser {
         IpSpaceParens());
   }
 
+  @Anchor(NODE_PARENS)
   public Rule IpSpaceParens() {
-    return Sequence("( ", IpSpaceSpec(), ") ");
+    return Sequence("( ", IpSpaceSpec(), WhiteSpace(), CloseParens());
   }
 
   public Rule IpSpaceAddressGroup() {
