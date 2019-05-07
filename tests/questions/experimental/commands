@@ -51,12 +51,6 @@ test -raw tests/questions/experimental/multipathConsistency.ref validate-templat
 # validate namedStructures
 test -raw tests/questions/experimental/namedStructures.ref validate-template namedStructures ignoreGenerated=false, indicatePresence=false, nodes=".*", structureNames=".*", structureTypes=".*"
 
-# validate neighbors
-test -raw tests/questions/experimental/neighbors.ref validate-template neighbors neighborTypes=["ebgp"], nodes=".*", remoteNodes=".*", style="summary", roleDimension="default"
-
-# validate nodes
-test -raw tests/questions/experimental/nodes.ref validate-template nodes nodes=".*", nodeTypes=["ospf"], summary=true
-
 # validate nodeProperties
 test -raw tests/questions/experimental/nodeProperties.ref validate-template nodeProperties nodes=".*", properties="ntp.*"
 
