@@ -3,11 +3,11 @@ package org.batfish.bddreachability;
 import static org.junit.Assert.assertEquals;
 
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.z3.state.PreOutEdge;
-import org.batfish.z3.state.PreOutInterfaceDeliveredToSubnet;
-import org.batfish.z3.state.PreOutInterfaceExitsNetwork;
-import org.batfish.z3.state.PreOutInterfaceInsufficientInfo;
-import org.batfish.z3.state.PreOutInterfaceNeighborUnreachable;
+import org.batfish.symbolic.state.PreOutEdge;
+import org.batfish.symbolic.state.PreOutInterfaceDeliveredToSubnet;
+import org.batfish.symbolic.state.PreOutInterfaceExitsNetwork;
+import org.batfish.symbolic.state.PreOutInterfaceInsufficientInfo;
+import org.batfish.symbolic.state.PreOutInterfaceNeighborUnreachable;
 import org.junit.Test;
 
 /** Tests for {@link PreOutgoingTransformationNodeVisitor}. */

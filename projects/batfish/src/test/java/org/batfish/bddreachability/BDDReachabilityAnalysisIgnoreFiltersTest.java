@@ -41,7 +41,7 @@ import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.NameRegexNodeSpecifier;
 import org.batfish.specifier.NodeNameRegexInterfaceLocationSpecifier;
-import org.batfish.z3.IngressLocation;
+import org.batfish.symbolic.IngressLocation;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;

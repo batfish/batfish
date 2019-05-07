@@ -1,6 +1,6 @@
 [
   {
-    "class" : "org.batfish.symbolic.answers.SmtManyAnswerElement",
+    "class" : "org.batfish.minesweeper.answers.SmtManyAnswerElement",
     "result" : {
       "r1<-->r2" : {
         "environmentModel" : {

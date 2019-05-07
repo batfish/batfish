@@ -15,4 +15,5 @@ java_doc(
     pkgs = [
         "org.batfish",
     ],
+    tags = ["manual"],
 )

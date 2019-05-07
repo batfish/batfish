@@ -630,6 +630,19 @@
         <version>${project.version}</version>
       </dependency>
 
+      <dependency>
+        <groupId>org.batfish</groupId>
+        <artifactId>symbolic</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.batfish</groupId>
+        <artifactId>symbolic</artifactId>
+        <classifier>tests</classifier>
+        <version>${project.version}</version>
+      </dependency>
+
       <!-- External modules. -->
       <dependency>
         <groupId>com.fasterxml.jackson</groupId>
@@ -1010,5 +1023,6 @@
     <module>build-tools</module>
     <module>coordinator</module>
     <module>question</module>
+    <module>symbolic</module>
   </modules>
 </project>
