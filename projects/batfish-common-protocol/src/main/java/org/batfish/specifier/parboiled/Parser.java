@@ -27,6 +27,7 @@ import static org.batfish.specifier.parboiled.Anchor.Type.IP_PROTOCOL_NOT;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_PROTOCOL_NUMBER;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_PROTOCOL_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_RANGE;
+import static org.batfish.specifier.parboiled.Anchor.Type.IP_SPACE_PARENS;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_SPACE_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_WILDCARD;
 import static org.batfish.specifier.parboiled.Anchor.Type.LOCATION_ENTER;
@@ -660,7 +661,7 @@ public class Parser extends CommonParser {
         IpSpaceParens());
   }
 
-  @Anchor(NODE_PARENS)
+  @Anchor(IP_SPACE_PARENS)
   public Rule IpSpaceParens() {
     return Sequence("( ", IpSpaceSpec(), WhiteSpace(), CloseParens());
   }
