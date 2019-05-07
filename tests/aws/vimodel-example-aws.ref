@@ -1,6 +1,1028 @@
 [
   {
-    "class" : "org.batfish.question.NodesQuestionPlugin$NodesAnswerElement",
+    "class" : "org.batfish.question.VIModelQuestionPlugin$VIModelAnswerElement",
+    "edges" : {
+      "bgp" : [
+        {
+          "edgeSummary" : {
+            "ip1" : "169.254.13.238",
+            "ip2" : "169.254.13.237",
+            "node1" : "lhr-border-02",
+            "node2" : "vgw-81fd279f"
+          },
+          "node1Session" : {
+            "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+            "additionalPathsReceive" : false,
+            "additionalPathsSelectAll" : false,
+            "additionalPathsSend" : false,
+            "advertiseExternal" : false,
+            "advertiseInactive" : true,
+            "allowLocalAsIn" : false,
+            "allowRemoteAsOut" : true,
+            "clusterId" : 168492808,
+            "defaultMetric" : 0,
+            "ebgpMultihop" : false,
+            "enforceFirstAs" : false,
+            "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:169.254.13.237~",
+            "generatedRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.GeneratedRoute",
+                "administrativeCost" : 32767,
+                "asPath" : [ ],
+                "discard" : false,
+                "metric" : 0,
+                "network" : "0.0.0.0/0",
+                "nextHopIp" : "AUTO/NONE(-1l)"
+              }
+            ],
+            "importPolicy" : "PROTECT_LOOPBACK",
+            "importPolicySources" : [
+              "PROTECT_LOOPBACK"
+            ],
+            "ipv4UnicastAddressFamily" : { },
+            "localAs" : 65301,
+            "localIp" : "169.254.13.238",
+            "peerAddress" : "169.254.13.237",
+            "remoteAsns" : "65401",
+            "routeReflectorClient" : false,
+            "sendCommunity" : false
+          },
+          "node1SessionId" : {
+            "hostname" : "lhr-border-02",
+            "prefix" : "169.254.13.237/32",
+            "type" : "ACTIVE",
+            "vrf" : "default"
+          },
+          "node2Session" : {
+            "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+            "additionalPathsReceive" : false,
+            "additionalPathsSelectAll" : false,
+            "additionalPathsSend" : false,
+            "advertiseExternal" : false,
+            "advertiseInactive" : false,
+            "allowLocalAsIn" : false,
+            "allowRemoteAsOut" : false,
+            "defaultMetric" : 0,
+            "ebgpMultihop" : false,
+            "enforceFirstAs" : false,
+            "exportPolicy" : "vpn-ba2e34a8-2_origination",
+            "ipv4UnicastAddressFamily" : { },
+            "localAs" : 65401,
+            "localIp" : "169.254.13.237",
+            "peerAddress" : "169.254.13.238",
+            "remoteAsns" : "65301",
+            "routeReflectorClient" : false,
+            "sendCommunity" : false
+          },
+          "node2SessionId" : {
+            "hostname" : "vgw-81fd279f",
+            "prefix" : "169.254.13.238/32",
+            "type" : "ACTIVE",
+            "vrf" : "default"
+          }
+        },
+        {
+          "edgeSummary" : {
+            "ip1" : "169.254.15.194",
+            "ip2" : "169.254.15.193",
+            "node1" : "lhr-border-02",
+            "node2" : "vgw-81fd279f"
+          },
+          "node1Session" : {
+            "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+            "additionalPathsReceive" : false,
+            "additionalPathsSelectAll" : false,
+            "additionalPathsSend" : false,
+            "advertiseExternal" : false,
+            "advertiseInactive" : true,
+            "allowLocalAsIn" : false,
+            "allowRemoteAsOut" : true,
+            "clusterId" : 168492808,
+            "defaultMetric" : 0,
+            "ebgpMultihop" : false,
+            "enforceFirstAs" : false,
+            "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:169.254.15.193~",
+            "generatedRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.GeneratedRoute",
+                "administrativeCost" : 32767,
+                "asPath" : [ ],
+                "discard" : false,
+                "metric" : 0,
+                "network" : "0.0.0.0/0",
+                "nextHopIp" : "AUTO/NONE(-1l)"
+              }
+            ],
+            "importPolicy" : "PROTECT_LOOPBACK",
+            "importPolicySources" : [
+              "PROTECT_LOOPBACK"
+            ],
+            "ipv4UnicastAddressFamily" : { },
+            "localAs" : 65301,
+            "localIp" : "169.254.15.194",
+            "peerAddress" : "169.254.15.193",
+            "remoteAsns" : "65401",
+            "routeReflectorClient" : false,
+            "sendCommunity" : false
+          },
+          "node1SessionId" : {
+            "hostname" : "lhr-border-02",
+            "prefix" : "169.254.15.193/32",
+            "type" : "ACTIVE",
+            "vrf" : "default"
+          },
+          "node2Session" : {
+            "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+            "additionalPathsReceive" : false,
+            "additionalPathsSelectAll" : false,
+            "additionalPathsSend" : false,
+            "advertiseExternal" : false,
+            "advertiseInactive" : false,
+            "allowLocalAsIn" : false,
+            "allowRemoteAsOut" : false,
+            "defaultMetric" : 0,
+            "ebgpMultihop" : false,
+            "enforceFirstAs" : false,
+            "exportPolicy" : "vpn-ba2e34a8-1_origination",
+            "ipv4UnicastAddressFamily" : { },
+            "localAs" : 65401,
+            "localIp" : "169.254.15.193",
+            "peerAddress" : "169.254.15.194",
+            "remoteAsns" : "65301",
+            "routeReflectorClient" : false,
+            "sendCommunity" : false
+          },
+          "node2SessionId" : {
+            "hostname" : "vgw-81fd279f",
+            "prefix" : "169.254.15.194/32",
+            "type" : "ACTIVE",
+            "vrf" : "default"
+          }
+        },
+        {
+          "edgeSummary" : {
+            "ip1" : "169.254.13.237",
+            "ip2" : "169.254.13.238",
+            "node1" : "vgw-81fd279f",
+            "node2" : "lhr-border-02"
+          },
+          "node1Session" : {
+            "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+            "additionalPathsReceive" : false,
+            "additionalPathsSelectAll" : false,
+            "additionalPathsSend" : false,
+            "advertiseExternal" : false,
+            "advertiseInactive" : false,
+            "allowLocalAsIn" : false,
+            "allowRemoteAsOut" : false,
+            "defaultMetric" : 0,
+            "ebgpMultihop" : false,
+            "enforceFirstAs" : false,
+            "exportPolicy" : "vpn-ba2e34a8-2_origination",
+            "ipv4UnicastAddressFamily" : { },
+            "localAs" : 65401,
+            "localIp" : "169.254.13.237",
+            "peerAddress" : "169.254.13.238",
+            "remoteAsns" : "65301",
+            "routeReflectorClient" : false,
+            "sendCommunity" : false
+          },
+          "node1SessionId" : {
+            "hostname" : "vgw-81fd279f",
+            "prefix" : "169.254.13.238/32",
+            "type" : "ACTIVE",
+            "vrf" : "default"
+          },
+          "node2Session" : {
+            "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+            "additionalPathsReceive" : false,
+            "additionalPathsSelectAll" : false,
+            "additionalPathsSend" : false,
+            "advertiseExternal" : false,
+            "advertiseInactive" : true,
+            "allowLocalAsIn" : false,
+            "allowRemoteAsOut" : true,
+            "clusterId" : 168492808,
+            "defaultMetric" : 0,
+            "ebgpMultihop" : false,
+            "enforceFirstAs" : false,
+            "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:169.254.13.237~",
+            "generatedRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.GeneratedRoute",
+                "administrativeCost" : 32767,
+                "asPath" : [ ],
+                "discard" : false,
+                "metric" : 0,
+                "network" : "0.0.0.0/0",
+                "nextHopIp" : "AUTO/NONE(-1l)"
+              }
+            ],
+            "importPolicy" : "PROTECT_LOOPBACK",
+            "importPolicySources" : [
+              "PROTECT_LOOPBACK"
+            ],
+            "ipv4UnicastAddressFamily" : { },
+            "localAs" : 65301,
+            "localIp" : "169.254.13.238",
+            "peerAddress" : "169.254.13.237",
+            "remoteAsns" : "65401",
+            "routeReflectorClient" : false,
+            "sendCommunity" : false
+          },
+          "node2SessionId" : {
+            "hostname" : "lhr-border-02",
+            "prefix" : "169.254.13.237/32",
+            "type" : "ACTIVE",
+            "vrf" : "default"
+          }
+        },
+        {
+          "edgeSummary" : {
+            "ip1" : "169.254.15.193",
+            "ip2" : "169.254.15.194",
+            "node1" : "vgw-81fd279f",
+            "node2" : "lhr-border-02"
+          },
+          "node1Session" : {
+            "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+            "additionalPathsReceive" : false,
+            "additionalPathsSelectAll" : false,
+            "additionalPathsSend" : false,
+            "advertiseExternal" : false,
+            "advertiseInactive" : false,
+            "allowLocalAsIn" : false,
+            "allowRemoteAsOut" : false,
+            "defaultMetric" : 0,
+            "ebgpMultihop" : false,
+            "enforceFirstAs" : false,
+            "exportPolicy" : "vpn-ba2e34a8-1_origination",
+            "ipv4UnicastAddressFamily" : { },
+            "localAs" : 65401,
+            "localIp" : "169.254.15.193",
+            "peerAddress" : "169.254.15.194",
+            "remoteAsns" : "65301",
+            "routeReflectorClient" : false,
+            "sendCommunity" : false
+          },
+          "node1SessionId" : {
+            "hostname" : "vgw-81fd279f",
+            "prefix" : "169.254.15.194/32",
+            "type" : "ACTIVE",
+            "vrf" : "default"
+          },
+          "node2Session" : {
+            "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+            "additionalPathsReceive" : false,
+            "additionalPathsSelectAll" : false,
+            "additionalPathsSend" : false,
+            "advertiseExternal" : false,
+            "advertiseInactive" : true,
+            "allowLocalAsIn" : false,
+            "allowRemoteAsOut" : true,
+            "clusterId" : 168492808,
+            "defaultMetric" : 0,
+            "ebgpMultihop" : false,
+            "enforceFirstAs" : false,
+            "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:169.254.15.193~",
+            "generatedRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.GeneratedRoute",
+                "administrativeCost" : 32767,
+                "asPath" : [ ],
+                "discard" : false,
+                "metric" : 0,
+                "network" : "0.0.0.0/0",
+                "nextHopIp" : "AUTO/NONE(-1l)"
+              }
+            ],
+            "importPolicy" : "PROTECT_LOOPBACK",
+            "importPolicySources" : [
+              "PROTECT_LOOPBACK"
+            ],
+            "ipv4UnicastAddressFamily" : { },
+            "localAs" : 65301,
+            "localIp" : "169.254.15.194",
+            "peerAddress" : "169.254.15.193",
+            "remoteAsns" : "65401",
+            "routeReflectorClient" : false,
+            "sendCommunity" : false
+          },
+          "node2SessionId" : {
+            "hostname" : "lhr-border-02",
+            "prefix" : "169.254.15.193/32",
+            "type" : "ACTIVE",
+            "vrf" : "default"
+          }
+        },
+        {
+          "edgeSummary" : {
+            "ip1" : "240.0.0.6",
+            "ip2" : "240.0.0.7",
+            "node1" : "vgw-81fd279f",
+            "node2" : "vpc-815775e7"
+          },
+          "node1Session" : {
+            "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+            "additionalPathsReceive" : false,
+            "additionalPathsSelectAll" : false,
+            "additionalPathsSend" : false,
+            "advertiseExternal" : false,
+            "advertiseInactive" : false,
+            "allowLocalAsIn" : false,
+            "allowRemoteAsOut" : false,
+            "defaultMetric" : 0,
+            "ebgpMultihop" : false,
+            "enforceFirstAs" : false,
+            "exportPolicy" : "~ACCEPT_ALL_EBGP_AND_SET_NEXT_HOP_SELF~",
+            "importPolicy" : "~REJECT_ALL~",
+            "ipv4UnicastAddressFamily" : { },
+            "localAs" : 65401,
+            "localIp" : "240.0.0.6",
+            "peerAddress" : "240.0.0.7",
+            "remoteAsns" : "65401",
+            "routeReflectorClient" : false,
+            "sendCommunity" : true
+          },
+          "node1SessionId" : {
+            "hostname" : "vgw-81fd279f",
+            "prefix" : "240.0.0.7/32",
+            "type" : "ACTIVE",
+            "vrf" : "default"
+          },
+          "node2Session" : {
+            "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+            "additionalPathsReceive" : false,
+            "additionalPathsSelectAll" : false,
+            "additionalPathsSend" : false,
+            "advertiseExternal" : false,
+            "advertiseInactive" : false,
+            "allowLocalAsIn" : false,
+            "allowRemoteAsOut" : false,
+            "defaultMetric" : 0,
+            "ebgpMultihop" : false,
+            "enforceFirstAs" : false,
+            "exportPolicy" : "~REJECT_ALL~",
+            "importPolicy" : "~ACCEPT_ALL~",
+            "ipv4UnicastAddressFamily" : { },
+            "localAs" : 65401,
+            "localIp" : "240.0.0.7",
+            "peerAddress" : "240.0.0.6",
+            "remoteAsns" : "65401",
+            "routeReflectorClient" : false,
+            "sendCommunity" : true
+          },
+          "node2SessionId" : {
+            "hostname" : "vpc-815775e7",
+            "prefix" : "240.0.0.6/32",
+            "type" : "ACTIVE",
+            "vrf" : "default"
+          }
+        },
+        {
+          "edgeSummary" : {
+            "ip1" : "240.0.0.7",
+            "ip2" : "240.0.0.6",
+            "node1" : "vpc-815775e7",
+            "node2" : "vgw-81fd279f"
+          },
+          "node1Session" : {
+            "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+            "additionalPathsReceive" : false,
+            "additionalPathsSelectAll" : false,
+            "additionalPathsSend" : false,
+            "advertiseExternal" : false,
+            "advertiseInactive" : false,
+            "allowLocalAsIn" : false,
+            "allowRemoteAsOut" : false,
+            "defaultMetric" : 0,
+            "ebgpMultihop" : false,
+            "enforceFirstAs" : false,
+            "exportPolicy" : "~REJECT_ALL~",
+            "importPolicy" : "~ACCEPT_ALL~",
+            "ipv4UnicastAddressFamily" : { },
+            "localAs" : 65401,
+            "localIp" : "240.0.0.7",
+            "peerAddress" : "240.0.0.6",
+            "remoteAsns" : "65401",
+            "routeReflectorClient" : false,
+            "sendCommunity" : true
+          },
+          "node1SessionId" : {
+            "hostname" : "vpc-815775e7",
+            "prefix" : "240.0.0.6/32",
+            "type" : "ACTIVE",
+            "vrf" : "default"
+          },
+          "node2Session" : {
+            "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+            "additionalPathsReceive" : false,
+            "additionalPathsSelectAll" : false,
+            "additionalPathsSend" : false,
+            "advertiseExternal" : false,
+            "advertiseInactive" : false,
+            "allowLocalAsIn" : false,
+            "allowRemoteAsOut" : false,
+            "defaultMetric" : 0,
+            "ebgpMultihop" : false,
+            "enforceFirstAs" : false,
+            "exportPolicy" : "~ACCEPT_ALL_EBGP_AND_SET_NEXT_HOP_SELF~",
+            "importPolicy" : "~REJECT_ALL~",
+            "ipv4UnicastAddressFamily" : { },
+            "localAs" : 65401,
+            "localIp" : "240.0.0.6",
+            "peerAddress" : "240.0.0.7",
+            "remoteAsns" : "65401",
+            "routeReflectorClient" : false,
+            "sendCommunity" : true
+          },
+          "node2SessionId" : {
+            "hostname" : "vgw-81fd279f",
+            "prefix" : "240.0.0.7/32",
+            "type" : "ACTIVE",
+            "vrf" : "default"
+          }
+        }
+      ],
+      "layer3" : [
+        {
+          "interfaceAddresses1" : [
+            "192.168.1.2/24"
+          ],
+          "interfaceAddresses2" : [
+            "192.168.1.1/24"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "es-domain",
+            "interface" : "es-domain-subnet-1641fa70"
+          },
+          "nodeInterface2" : {
+            "hostname" : "subnet-1641fa70",
+            "interface" : "subnet-1641fa70"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "192.168.1.2/24"
+          ],
+          "interfaceAddresses2" : [
+            "192.168.1.3/24"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "es-domain",
+            "interface" : "es-domain-subnet-1641fa70"
+          },
+          "nodeInterface2" : {
+            "hostname" : "test-rds",
+            "interface" : "test-rds-subnet-1641fa70"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "192.168.2.2/28"
+          ],
+          "interfaceAddresses2" : [
+            "192.168.2.1/28"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "es-domain",
+            "interface" : "es-domain-subnet-7044ff16"
+          },
+          "nodeInterface2" : {
+            "hostname" : "subnet-7044ff16",
+            "interface" : "subnet-7044ff16"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "240.0.0.2/31"
+          ],
+          "interfaceAddresses2" : [
+            "240.0.0.3/31"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "igw-068fee63",
+            "interface" : "vpc-f8fad69d"
+          },
+          "nodeInterface2" : {
+            "hostname" : "vpc-f8fad69d",
+            "interface" : "igw-068fee63"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "240.0.0.4/31"
+          ],
+          "interfaceAddresses2" : [
+            "240.0.0.5/31"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "igw-9b93ddfc",
+            "interface" : "vpc-b390fad5"
+          },
+          "nodeInterface2" : {
+            "hostname" : "vpc-b390fad5",
+            "interface" : "igw-9b93ddfc"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "240.0.0.0/31"
+          ],
+          "interfaceAddresses2" : [
+            "240.0.0.1/31"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "igw-fac5839d",
+            "interface" : "vpc-925131f4"
+          },
+          "nodeInterface2" : {
+            "hostname" : "vpc-925131f4",
+            "interface" : "igw-fac5839d"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "240.0.0.10/31"
+          ],
+          "interfaceAddresses2" : [
+            "240.0.0.11/31"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "subnet-073b8061",
+            "interface" : "vpc-b390fad5"
+          },
+          "nodeInterface2" : {
+            "hostname" : "vpc-b390fad5",
+            "interface" : "subnet-073b8061"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "192.168.1.1/24"
+          ],
+          "interfaceAddresses2" : [
+            "192.168.1.2/24"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "subnet-1641fa70",
+            "interface" : "subnet-1641fa70"
+          },
+          "nodeInterface2" : {
+            "hostname" : "es-domain",
+            "interface" : "es-domain-subnet-1641fa70"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "192.168.1.1/24"
+          ],
+          "interfaceAddresses2" : [
+            "192.168.1.3/24"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "subnet-1641fa70",
+            "interface" : "subnet-1641fa70"
+          },
+          "nodeInterface2" : {
+            "hostname" : "test-rds",
+            "interface" : "test-rds-subnet-1641fa70"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "240.0.0.18/31"
+          ],
+          "interfaceAddresses2" : [
+            "240.0.0.19/31"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "subnet-1641fa70",
+            "interface" : "vpc-b390fad5"
+          },
+          "nodeInterface2" : {
+            "hostname" : "vpc-b390fad5",
+            "interface" : "subnet-1641fa70"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "240.0.0.12/31"
+          ],
+          "interfaceAddresses2" : [
+            "240.0.0.13/31"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "subnet-1f315846",
+            "interface" : "vpc-f8fad69d"
+          },
+          "nodeInterface2" : {
+            "hostname" : "vpc-f8fad69d",
+            "interface" : "subnet-1f315846"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "240.0.0.26/31"
+          ],
+          "interfaceAddresses2" : [
+            "240.0.0.27/31"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "subnet-30398256",
+            "interface" : "vpc-b390fad5"
+          },
+          "nodeInterface2" : {
+            "hostname" : "vpc-b390fad5",
+            "interface" : "subnet-30398256"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "240.0.0.22/31"
+          ],
+          "interfaceAddresses2" : [
+            "240.0.0.23/31"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "subnet-62f14104",
+            "interface" : "vpc-925131f4"
+          },
+          "nodeInterface2" : {
+            "hostname" : "vpc-925131f4",
+            "interface" : "subnet-62f14104"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "192.168.2.1/28"
+          ],
+          "interfaceAddresses2" : [
+            "192.168.2.2/28"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "subnet-7044ff16",
+            "interface" : "subnet-7044ff16"
+          },
+          "nodeInterface2" : {
+            "hostname" : "es-domain",
+            "interface" : "es-domain-subnet-7044ff16"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "240.0.0.14/31"
+          ],
+          "interfaceAddresses2" : [
+            "240.0.0.15/31"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "subnet-7044ff16",
+            "interface" : "vpc-b390fad5"
+          },
+          "nodeInterface2" : {
+            "hostname" : "vpc-b390fad5",
+            "interface" : "subnet-7044ff16"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "240.0.0.8/31"
+          ],
+          "interfaceAddresses2" : [
+            "240.0.0.9/31"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "subnet-8d0cbdeb",
+            "interface" : "vpc-925131f4"
+          },
+          "nodeInterface2" : {
+            "hostname" : "vpc-925131f4",
+            "interface" : "subnet-8d0cbdeb"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "240.0.0.16/31"
+          ],
+          "interfaceAddresses2" : [
+            "240.0.0.17/31"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "subnet-9c8adceb",
+            "interface" : "vpc-f8fad69d"
+          },
+          "nodeInterface2" : {
+            "hostname" : "vpc-f8fad69d",
+            "interface" : "subnet-9c8adceb"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "240.0.0.24/31"
+          ],
+          "interfaceAddresses2" : [
+            "240.0.0.25/31"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "subnet-d9cafabc",
+            "interface" : "vpc-f8fad69d"
+          },
+          "nodeInterface2" : {
+            "hostname" : "vpc-f8fad69d",
+            "interface" : "subnet-d9cafabc"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "240.0.0.20/31"
+          ],
+          "interfaceAddresses2" : [
+            "240.0.0.21/31"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "subnet-f73a8191",
+            "interface" : "vpc-b390fad5"
+          },
+          "nodeInterface2" : {
+            "hostname" : "vpc-b390fad5",
+            "interface" : "subnet-f73a8191"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "192.168.1.3/24"
+          ],
+          "interfaceAddresses2" : [
+            "192.168.1.2/24"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "test-rds",
+            "interface" : "test-rds-subnet-1641fa70"
+          },
+          "nodeInterface2" : {
+            "hostname" : "es-domain",
+            "interface" : "es-domain-subnet-1641fa70"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "192.168.1.3/24"
+          ],
+          "interfaceAddresses2" : [
+            "192.168.1.1/24"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "test-rds",
+            "interface" : "test-rds-subnet-1641fa70"
+          },
+          "nodeInterface2" : {
+            "hostname" : "subnet-1641fa70",
+            "interface" : "subnet-1641fa70"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "240.0.0.6/31"
+          ],
+          "interfaceAddresses2" : [
+            "240.0.0.7/31"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "vgw-81fd279f",
+            "interface" : "vpc-815775e7"
+          },
+          "nodeInterface2" : {
+            "hostname" : "vpc-815775e7",
+            "interface" : "vgw-81fd279f"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "240.0.0.7/31"
+          ],
+          "interfaceAddresses2" : [
+            "240.0.0.6/31"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "vpc-815775e7",
+            "interface" : "vgw-81fd279f"
+          },
+          "nodeInterface2" : {
+            "hostname" : "vgw-81fd279f",
+            "interface" : "vpc-815775e7"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "240.0.0.1/31"
+          ],
+          "interfaceAddresses2" : [
+            "240.0.0.0/31"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "vpc-925131f4",
+            "interface" : "igw-fac5839d"
+          },
+          "nodeInterface2" : {
+            "hostname" : "igw-fac5839d",
+            "interface" : "vpc-925131f4"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "240.0.0.23/31"
+          ],
+          "interfaceAddresses2" : [
+            "240.0.0.22/31"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "vpc-925131f4",
+            "interface" : "subnet-62f14104"
+          },
+          "nodeInterface2" : {
+            "hostname" : "subnet-62f14104",
+            "interface" : "vpc-925131f4"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "240.0.0.9/31"
+          ],
+          "interfaceAddresses2" : [
+            "240.0.0.8/31"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "vpc-925131f4",
+            "interface" : "subnet-8d0cbdeb"
+          },
+          "nodeInterface2" : {
+            "hostname" : "subnet-8d0cbdeb",
+            "interface" : "vpc-925131f4"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "240.0.0.5/31"
+          ],
+          "interfaceAddresses2" : [
+            "240.0.0.4/31"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "vpc-b390fad5",
+            "interface" : "igw-9b93ddfc"
+          },
+          "nodeInterface2" : {
+            "hostname" : "igw-9b93ddfc",
+            "interface" : "vpc-b390fad5"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "240.0.0.11/31"
+          ],
+          "interfaceAddresses2" : [
+            "240.0.0.10/31"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "vpc-b390fad5",
+            "interface" : "subnet-073b8061"
+          },
+          "nodeInterface2" : {
+            "hostname" : "subnet-073b8061",
+            "interface" : "vpc-b390fad5"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "240.0.0.19/31"
+          ],
+          "interfaceAddresses2" : [
+            "240.0.0.18/31"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "vpc-b390fad5",
+            "interface" : "subnet-1641fa70"
+          },
+          "nodeInterface2" : {
+            "hostname" : "subnet-1641fa70",
+            "interface" : "vpc-b390fad5"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "240.0.0.27/31"
+          ],
+          "interfaceAddresses2" : [
+            "240.0.0.26/31"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "vpc-b390fad5",
+            "interface" : "subnet-30398256"
+          },
+          "nodeInterface2" : {
+            "hostname" : "subnet-30398256",
+            "interface" : "vpc-b390fad5"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "240.0.0.15/31"
+          ],
+          "interfaceAddresses2" : [
+            "240.0.0.14/31"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "vpc-b390fad5",
+            "interface" : "subnet-7044ff16"
+          },
+          "nodeInterface2" : {
+            "hostname" : "subnet-7044ff16",
+            "interface" : "vpc-b390fad5"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "240.0.0.21/31"
+          ],
+          "interfaceAddresses2" : [
+            "240.0.0.20/31"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "vpc-b390fad5",
+            "interface" : "subnet-f73a8191"
+          },
+          "nodeInterface2" : {
+            "hostname" : "subnet-f73a8191",
+            "interface" : "vpc-b390fad5"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "240.0.0.3/31"
+          ],
+          "interfaceAddresses2" : [
+            "240.0.0.2/31"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "vpc-f8fad69d",
+            "interface" : "igw-068fee63"
+          },
+          "nodeInterface2" : {
+            "hostname" : "igw-068fee63",
+            "interface" : "vpc-f8fad69d"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "240.0.0.13/31"
+          ],
+          "interfaceAddresses2" : [
+            "240.0.0.12/31"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "vpc-f8fad69d",
+            "interface" : "subnet-1f315846"
+          },
+          "nodeInterface2" : {
+            "hostname" : "subnet-1f315846",
+            "interface" : "vpc-f8fad69d"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "240.0.0.17/31"
+          ],
+          "interfaceAddresses2" : [
+            "240.0.0.16/31"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "vpc-f8fad69d",
+            "interface" : "subnet-9c8adceb"
+          },
+          "nodeInterface2" : {
+            "hostname" : "subnet-9c8adceb",
+            "interface" : "vpc-f8fad69d"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "240.0.0.25/31"
+          ],
+          "interfaceAddresses2" : [
+            "240.0.0.24/31"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "vpc-f8fad69d",
+            "interface" : "subnet-d9cafabc"
+          },
+          "nodeInterface2" : {
+            "hostname" : "subnet-d9cafabc",
+            "interface" : "vpc-f8fad69d"
+          }
+        }
+      ]
+    },
     "nodes" : {
       "es-domain" : {
         "configurationFormat" : "AWS",

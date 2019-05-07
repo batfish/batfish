@@ -1,6 +1,347 @@
 [
   {
-    "class" : "org.batfish.question.NodesQuestionPlugin$NodesAnswerElement",
+    "class" : "org.batfish.question.VIModelQuestionPlugin$VIModelAnswerElement",
+    "edges" : {
+      "layer3" : [
+        {
+          "interfaceAddresses1" : [
+            "2.2.2.0/25",
+            "3.3.3.0/26",
+            "4.4.4.0/28",
+            "5.5.0.0/23"
+          ],
+          "interfaceAddresses2" : [
+            "1.1.1.1/24",
+            "2.2.2.2/24"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "cadant_interface",
+            "interface" : "cable-mac1.2"
+          },
+          "nodeInterface2" : {
+            "hostname" : "juniper_routing_policy",
+            "interface" : "ge-0/0/0.0"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "2.2.2.0/24"
+          ],
+          "interfaceAddresses2" : [
+            "1.1.1.1/24",
+            "2.2.2.2/24"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "cisco_ospf_ipv6",
+            "interface" : "Ethernet0/0"
+          },
+          "nodeInterface2" : {
+            "hostname" : "juniper_routing_policy",
+            "interface" : "ge-0/0/0.0"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "2.2.2.0/24"
+          ],
+          "interfaceAddresses2" : [
+            "1.1.1.1/24",
+            "2.2.2.2/24"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "cisco_ospf_multi_process",
+            "interface" : "Ethernet0/0"
+          },
+          "nodeInterface2" : {
+            "hostname" : "juniper_routing_policy",
+            "interface" : "ge-0/0/0.0"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "2.2.2.0/24"
+          ],
+          "interfaceAddresses2" : [
+            "1.1.1.1/24",
+            "2.2.2.2/24"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "cisco_ospfv3",
+            "interface" : "Ethernet0/0"
+          },
+          "nodeInterface2" : {
+            "hostname" : "juniper_routing_policy",
+            "interface" : "ge-0/0/0.0"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "1.0.0.0/24"
+          ],
+          "interfaceAddresses2" : [
+            "1.0.0.1/31"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "cisco_vrrp",
+            "interface" : "Ethernet0"
+          },
+          "nodeInterface2" : {
+            "hostname" : "interface-reth",
+            "interface" : "ge-0/0/1.0"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "1.0.0.0/24"
+          ],
+          "interfaceAddresses2" : [
+            "1.0.0.1/24"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "cisco_vrrp",
+            "interface" : "Ethernet0"
+          },
+          "nodeInterface2" : {
+            "hostname" : "juniper_nat",
+            "interface" : "ge-0/0/0.0"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "10.0.0.1/24"
+          ],
+          "interfaceAddresses2" : [
+            "10.0.0.0/31"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "f5_bigip_structured_net",
+            "interface" : "/Common/MYVLAN"
+          },
+          "nodeInterface2" : {
+            "hostname" : "ospf-disable",
+            "interface" : "ge-0/0/0.0"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "1.0.0.0/31"
+          ],
+          "interfaceAddresses2" : [
+            "1.0.0.1/24"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "interface-reth",
+            "interface" : "ge-0/0/0.0"
+          },
+          "nodeInterface2" : {
+            "hostname" : "juniper_nat",
+            "interface" : "ge-0/0/0.0"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "1.0.0.1/31"
+          ],
+          "interfaceAddresses2" : [
+            "1.0.0.0/24"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "interface-reth",
+            "interface" : "ge-0/0/1.0"
+          },
+          "nodeInterface2" : {
+            "hostname" : "cisco_vrrp",
+            "interface" : "Ethernet0"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "1.2.3.0/24",
+            "1.2.3.1/24"
+          ],
+          "interfaceAddresses2" : [
+            "1.2.3.4/5"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "juniper_interfaces",
+            "interface" : "irb.5"
+          },
+          "nodeInterface2" : {
+            "hostname" : "aruba_interface",
+            "interface" : "GigabitEthernet0/0/0"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "1.2.3.0/24",
+            "1.2.3.1/24"
+          ],
+          "interfaceAddresses2" : [
+            "1.2.3.4/24"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "juniper_interfaces",
+            "interface" : "irb.5"
+          },
+          "nodeInterface2" : {
+            "hostname" : "nxos_interface",
+            "interface" : "Ethernet0/0"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "1.0.0.1/24"
+          ],
+          "interfaceAddresses2" : [
+            "1.0.0.0/24"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "juniper_nat",
+            "interface" : "ge-0/0/0.0"
+          },
+          "nodeInterface2" : {
+            "hostname" : "cisco_vrrp",
+            "interface" : "Ethernet0"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "1.0.0.1/24"
+          ],
+          "interfaceAddresses2" : [
+            "1.0.0.0/31"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "juniper_nat",
+            "interface" : "ge-0/0/0.0"
+          },
+          "nodeInterface2" : {
+            "hostname" : "interface-reth",
+            "interface" : "ge-0/0/0.0"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "1.1.1.1/24",
+            "2.2.2.2/24"
+          ],
+          "interfaceAddresses2" : [
+            "2.2.2.0/25",
+            "3.3.3.0/26",
+            "4.4.4.0/28",
+            "5.5.0.0/23"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "juniper_routing_policy",
+            "interface" : "ge-0/0/0.0"
+          },
+          "nodeInterface2" : {
+            "hostname" : "cadant_interface",
+            "interface" : "cable-mac1.2"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "1.1.1.1/24",
+            "2.2.2.2/24"
+          ],
+          "interfaceAddresses2" : [
+            "2.2.2.0/24"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "juniper_routing_policy",
+            "interface" : "ge-0/0/0.0"
+          },
+          "nodeInterface2" : {
+            "hostname" : "cisco_ospf_ipv6",
+            "interface" : "Ethernet0/0"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "1.1.1.1/24",
+            "2.2.2.2/24"
+          ],
+          "interfaceAddresses2" : [
+            "2.2.2.0/24"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "juniper_routing_policy",
+            "interface" : "ge-0/0/0.0"
+          },
+          "nodeInterface2" : {
+            "hostname" : "cisco_ospf_multi_process",
+            "interface" : "Ethernet0/0"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "1.1.1.1/24",
+            "2.2.2.2/24"
+          ],
+          "interfaceAddresses2" : [
+            "2.2.2.0/24"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "juniper_routing_policy",
+            "interface" : "ge-0/0/0.0"
+          },
+          "nodeInterface2" : {
+            "hostname" : "cisco_ospfv3",
+            "interface" : "Ethernet0/0"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "1.2.3.4/24"
+          ],
+          "interfaceAddresses2" : [
+            "1.2.3.0/30"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "nxos_interface",
+            "interface" : "Ethernet0/0"
+          },
+          "nodeInterface2" : {
+            "hostname" : "cadant_interface",
+            "interface" : "cable-mac1.1"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "1.2.3.4/24"
+          ],
+          "interfaceAddresses2" : [
+            "1.2.3.0/24",
+            "1.2.3.1/24"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "nxos_interface",
+            "interface" : "Ethernet0/0"
+          },
+          "nodeInterface2" : {
+            "hostname" : "juniper_interfaces",
+            "interface" : "irb.5"
+          }
+        },
+        {
+          "interfaceAddresses1" : [
+            "10.0.0.0/31"
+          ],
+          "interfaceAddresses2" : [
+            "10.0.0.1/24"
+          ],
+          "nodeInterface1" : {
+            "hostname" : "ospf-disable",
+            "interface" : "ge-0/0/0.0"
+          },
+          "nodeInterface2" : {
+            "hostname" : "f5_bigip_structured_net",
+            "interface" : "/Common/MYVLAN"
+          }
+        }
+      ]
+    },
     "nodes" : {
       "aaa_accounting" : {
         "configurationFormat" : "CISCO_IOS",
