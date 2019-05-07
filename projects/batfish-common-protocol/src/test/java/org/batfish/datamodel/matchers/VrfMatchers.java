@@ -1,6 +1,7 @@
 package org.batfish.datamodel.matchers;
 
-import static org.hamcrest.Matchers.hasValue;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
 
 import java.util.Map;
 import java.util.SortedSet;
@@ -63,13 +64,12 @@ public class VrfMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the provided {@code subMatcher} matches any one of the VRF's
-   * OSPF processes.
-   *
-   * <p>TODO: Require a process name in order to test more precisely
+   * Provides a matcher that matches if the VRF has an OSPF process named {@code name} that matches
+   * the provided {@code subMatcher}.
    */
-  public static HasOspfProcesses hasOspfProcess(Matcher<? super OspfProcess> subMatcher) {
-    return new HasOspfProcesses(hasValue(subMatcher));
+  public static HasOspfProcesses hasOspfProcess(
+      String name, Matcher<? super OspfProcess> subMatcher) {
+    return new HasOspfProcesses(hasEntry(equalTo(name), subMatcher));
   }
 
   /**

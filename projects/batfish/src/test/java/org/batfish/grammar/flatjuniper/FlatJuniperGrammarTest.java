@@ -259,6 +259,7 @@ import org.batfish.datamodel.matchers.StubSettingsMatchers;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
+import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
@@ -2111,11 +2112,12 @@ public final class FlatJuniperGrammarTest {
   public void testOspfReferenceBandwidth() throws IOException {
     String hostname = "ospf-reference-bandwidth";
     Configuration c = parseConfig(hostname);
-    assertThat(c, hasDefaultVrf(hasOspfProcess(hasReferenceBandwidth(equalTo(1E9D)))));
-    assertThat(c, hasVrf("vrf1", hasOspfProcess(hasReferenceBandwidth(equalTo(2E9D)))));
-    assertThat(c, hasVrf("vrf2", hasOspfProcess(hasReferenceBandwidth(equalTo(3E9D)))));
-    assertThat(c, hasVrf("vrf3", hasOspfProcess(hasReferenceBandwidth(equalTo(4E9D)))));
-    assertThat(c, hasVrf("vrf4", hasOspfProcess(hasReferenceBandwidth(equalTo(5E9D)))));
+    assertThat(
+        c, hasDefaultVrf(hasOspfProcess(DEFAULT_VRF_NAME, hasReferenceBandwidth(equalTo(1E9D)))));
+    assertThat(c, hasVrf("vrf1", hasOspfProcess("vrf1", hasReferenceBandwidth(equalTo(2E9D)))));
+    assertThat(c, hasVrf("vrf2", hasOspfProcess("vrf2", hasReferenceBandwidth(equalTo(3E9D)))));
+    assertThat(c, hasVrf("vrf3", hasOspfProcess("vrf3", hasReferenceBandwidth(equalTo(4E9D)))));
+    assertThat(c, hasVrf("vrf4", hasOspfProcess("vrf4", hasReferenceBandwidth(equalTo(5E9D)))));
   }
 
   @Test
@@ -2887,41 +2889,28 @@ public final class FlatJuniperGrammarTest {
   public void testJuniperOspfStubSettings() throws IOException {
     Configuration c = parseConfig("juniper-ospf-stub-settings");
 
+    // Get OSPF process
+    assertThat(c, hasDefaultVrf(hasOspfProcess(DEFAULT_VRF_NAME, notNullValue())));
+    OspfProcess proc = c.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get(DEFAULT_VRF_NAME);
+
     // Check correct stub types are assigned
-    assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(0L, hasStubType(StubType.NONE)))));
-    assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(1L, hasStubType(StubType.NSSA)))));
-    assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(2L, hasStubType(StubType.NSSA)))));
-    assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(3L, hasStubType(StubType.STUB)))));
-    assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(4L, hasStubType(StubType.STUB)))));
-    assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(5L, hasStubType(StubType.NONE)))));
-    assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(6L, hasStubType(StubType.STUB)))));
+    assertThat(proc, hasArea(0L, hasStubType(StubType.NONE)));
+    assertThat(proc, hasArea(1L, hasStubType(StubType.NSSA)));
+    assertThat(proc, hasArea(2L, hasStubType(StubType.NSSA)));
+    assertThat(proc, hasArea(3L, hasStubType(StubType.STUB)));
+    assertThat(proc, hasArea(4L, hasStubType(StubType.STUB)));
+    assertThat(proc, hasArea(5L, hasStubType(StubType.NONE)));
+    assertThat(proc, hasArea(6L, hasStubType(StubType.STUB)));
 
     // Check for stub subtype settings
     assertThat(
-        c,
-        hasDefaultVrf(
-            hasOspfProcess(
-                hasArea(
-                    1L, hasNssa(hasDefaultOriginateType(OspfDefaultOriginateType.INTER_AREA))))));
-    assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(1L, hasNssa(hasSuppressType3(false))))));
-    assertThat(
-        c,
-        hasDefaultVrf(
-            hasOspfProcess(
-                hasArea(2L, hasNssa(hasDefaultOriginateType(OspfDefaultOriginateType.NONE))))));
-    assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(2L, hasNssa(hasSuppressType3())))));
-    assertThat(
-        c,
-        hasDefaultVrf(
-            hasOspfProcess(hasArea(3L, hasStub(StubSettingsMatchers.hasSuppressType3(false))))));
-    assertThat(
-        c,
-        hasDefaultVrf(
-            hasOspfProcess(hasArea(4L, hasStub(StubSettingsMatchers.hasSuppressType3())))));
-    assertThat(
-        c,
-        hasDefaultVrf(
-            hasOspfProcess(hasArea(6L, hasStub(StubSettingsMatchers.hasSuppressType3())))));
+        proc, hasArea(1L, hasNssa(hasDefaultOriginateType(OspfDefaultOriginateType.INTER_AREA))));
+    assertThat(proc, hasArea(1L, hasNssa(hasSuppressType3(false))));
+    assertThat(proc, hasArea(2L, hasNssa(hasDefaultOriginateType(OspfDefaultOriginateType.NONE))));
+    assertThat(proc, hasArea(2L, hasNssa(hasSuppressType3())));
+    assertThat(proc, hasArea(3L, hasStub(StubSettingsMatchers.hasSuppressType3(false))));
+    assertThat(proc, hasArea(4L, hasStub(StubSettingsMatchers.hasSuppressType3())));
+    assertThat(proc, hasArea(6L, hasStub(StubSettingsMatchers.hasSuppressType3())));
   }
 
   @Test
@@ -3847,40 +3836,35 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         c,
         hasDefaultVrf(
-            hasOspfProcess(hasArea(0L, OspfAreaMatchers.hasInterfaces(hasItem("xe-0/0/0.0"))))));
+            hasOspfProcess(
+                DEFAULT_VRF_NAME,
+                hasArea(0L, OspfAreaMatchers.hasInterfaces(hasItem("xe-0/0/0.0"))))));
 
     assertThat(c, hasInterface("xe-0/0/0.1", hasOspfAreaName(1L)));
     assertThat(c, hasInterface("xe-0/0/0.1", isOspfPassive()));
     assertThat(
         c,
         hasDefaultVrf(
-            hasOspfProcess(hasArea(1L, OspfAreaMatchers.hasInterfaces(hasItem("xe-0/0/0.1"))))));
+            hasOspfProcess(
+                DEFAULT_VRF_NAME,
+                hasArea(1L, OspfAreaMatchers.hasInterfaces(hasItem("xe-0/0/0.1"))))));
 
     /* The following interfaces should be absent since they have no IP addresses assigned. */
     assertThat(c, hasInterface("xe-0/0/0.2", hasOspfAreaName(nullValue())));
-    assertThat(
-        c,
-        hasDefaultVrf(
-            hasOspfProcess(
-                hasArea(0L, OspfAreaMatchers.hasInterfaces(not(hasItem("xe-0/0/0.2")))))));
-
-    assertThat(
-        c,
-        hasDefaultVrf(
-            hasOspfProcess(
-                hasArea(0L, OspfAreaMatchers.hasInterfaces(not(hasItem("xe-0/0/0.3")))))));
-    assertThat(
-        c,
-        hasDefaultVrf(
-            hasOspfProcess(
-                hasArea(1L, OspfAreaMatchers.hasInterfaces(not(hasItem("xe-0/0/0.3")))))));
+    assertThat(c, hasDefaultVrf(hasOspfProcess(DEFAULT_VRF_NAME, notNullValue())));
+    OspfProcess proc = c.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get(DEFAULT_VRF_NAME);
+    assertThat(proc, hasArea(0L, OspfAreaMatchers.hasInterfaces(not(hasItem("xe-0/0/0.2")))));
+    assertThat(proc, hasArea(0L, OspfAreaMatchers.hasInterfaces(not(hasItem("xe-0/0/0.3")))));
+    assertThat(proc, hasArea(1L, OspfAreaMatchers.hasInterfaces(not(hasItem("xe-0/0/0.3")))));
   }
 
   @Test
   public void testOspfRouterId() throws IOException {
     Configuration c = parseConfig("ospf-router-id");
 
-    assertThat(c, hasVrf("default", hasOspfProcess(hasRouterId(equalTo(Ip.parse("1.0.0.0"))))));
+    assertThat(
+        c,
+        hasDefaultVrf(hasOspfProcess(DEFAULT_VRF_NAME, hasRouterId(equalTo(Ip.parse("1.0.0.0"))))));
   }
 
   @Test
@@ -3896,6 +3880,7 @@ public final class FlatJuniperGrammarTest {
         c,
         hasDefaultVrf(
             hasOspfProcess(
+                DEFAULT_VRF_NAME,
                 hasArea(
                     1L,
                     allOf(

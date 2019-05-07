@@ -2771,35 +2771,39 @@ public class CiscoGrammarTest {
     Configuration c = parseConfig("ios-ospf-stub-settings");
 
     // Check correct stub types are assigned
-    assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(0L, hasStubType(StubType.NONE)))));
-    assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(1L, hasStubType(StubType.NSSA)))));
-    assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(2L, hasStubType(StubType.NSSA)))));
-    assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(3L, hasStubType(StubType.STUB)))));
-    assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(4L, hasStubType(StubType.STUB)))));
-    assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(5L, hasStubType(StubType.NONE)))));
+    assertThat(c, hasDefaultVrf(hasOspfProcess("1", hasArea(0L, hasStubType(StubType.NONE)))));
+    assertThat(c, hasDefaultVrf(hasOspfProcess("1", hasArea(1L, hasStubType(StubType.NSSA)))));
+    assertThat(c, hasDefaultVrf(hasOspfProcess("1", hasArea(2L, hasStubType(StubType.NSSA)))));
+    assertThat(c, hasDefaultVrf(hasOspfProcess("1", hasArea(3L, hasStubType(StubType.STUB)))));
+    assertThat(c, hasDefaultVrf(hasOspfProcess("1", hasArea(4L, hasStubType(StubType.STUB)))));
+    assertThat(c, hasDefaultVrf(hasOspfProcess("1", hasArea(5L, hasStubType(StubType.NONE)))));
 
     // Check for stub subtype settings
     assertThat(
         c,
         hasDefaultVrf(
             hasOspfProcess(
+                "1",
                 hasArea(
                     1L, hasNssa(hasDefaultOriginateType(OspfDefaultOriginateType.INTER_AREA))))));
-    assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(1L, hasNssa(hasSuppressType3(false))))));
+    assertThat(
+        c, hasDefaultVrf(hasOspfProcess("1", hasArea(1L, hasNssa(hasSuppressType3(false))))));
     assertThat(
         c,
         hasDefaultVrf(
             hasOspfProcess(
+                "1",
                 hasArea(2L, hasNssa(hasDefaultOriginateType(OspfDefaultOriginateType.NONE))))));
-    assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(2L, hasNssa(hasSuppressType3())))));
+    assertThat(c, hasDefaultVrf(hasOspfProcess("1", hasArea(2L, hasNssa(hasSuppressType3())))));
     assertThat(
         c,
         hasDefaultVrf(
-            hasOspfProcess(hasArea(3L, hasStub(StubSettingsMatchers.hasSuppressType3(false))))));
+            hasOspfProcess(
+                "1", hasArea(3L, hasStub(StubSettingsMatchers.hasSuppressType3(false))))));
     assertThat(
         c,
         hasDefaultVrf(
-            hasOspfProcess(hasArea(4L, hasStub(StubSettingsMatchers.hasSuppressType3())))));
+            hasOspfProcess("1", hasArea(4L, hasStub(StubSettingsMatchers.hasSuppressType3())))));
   }
 
   @Test
@@ -3162,23 +3166,27 @@ public class CiscoGrammarTest {
         manual,
         hasDefaultVrf(
             hasOspfProcess(
+                "1",
                 hasArea(
                     1L, hasSummary(Prefix.parse("10.0.0.0/16"), isAdvertised(equalTo(false)))))));
     assertThat(
         manual,
         hasDefaultVrf(
-            hasOspfProcess(hasArea(1L, hasSummary(Prefix.parse("10.0.0.0/16"), hasMetric(100L))))));
+            hasOspfProcess(
+                "1", hasArea(1L, hasSummary(Prefix.parse("10.0.0.0/16"), hasMetric(100L))))));
 
     Configuration defaults = parseConfig("iosOspfCostDefaults");
 
     assertThat(
         defaults,
         hasDefaultVrf(
-            hasOspfProcess(hasArea(1L, hasSummary(Prefix.parse("10.0.0.0/16"), isAdvertised())))));
+            hasOspfProcess(
+                "1", hasArea(1L, hasSummary(Prefix.parse("10.0.0.0/16"), isAdvertised())))));
     assertThat(
         defaults,
         hasDefaultVrf(
             hasOspfProcess(
+                "1",
                 hasArea(1L, hasSummary(Prefix.parse("10.0.0.0/16"), hasMetric(nullValue()))))));
   }
 
@@ -4266,7 +4274,7 @@ public class CiscoGrammarTest {
     /* Ensure bidirectional references between OSPF area and interface */
     assertThat(configurations, hasKey(hostname));
     Configuration c = configurations.get(hostname);
-    assertThat(c, hasDefaultVrf(hasOspfProcess(hasAreas(hasKey(areaNum)))));
+    assertThat(c, hasDefaultVrf(hasOspfProcess("1", hasAreas(hasKey(areaNum)))));
     OspfArea area = c.getDefaultVrf().getOspfProcesses().get("1").getAreas().get(areaNum);
     assertThat(area, OspfAreaMatchers.hasInterfaces(hasItem(ifaceName)));
     assertThat(c, hasInterface(ifaceName, hasOspfArea(sameInstance(area))));
@@ -4296,7 +4304,7 @@ public class CiscoGrammarTest {
     Configuration c = configurations.get(hostname);
     assertThat(c, hasVrfs(hasKey(vrfName)));
     Vrf vrf = c.getVrfs().get(vrfName);
-    assertThat(vrf, hasOspfProcess(hasAreas(hasKey(areaNum))));
+    assertThat(vrf, hasOspfProcess("1", hasAreas(hasKey(areaNum))));
     OspfArea area = vrf.getOspfProcesses().get("1").getAreas().get(areaNum);
     assertThat(area, OspfAreaMatchers.hasInterfaces(hasItem(ifaceName)));
     assertThat(c, hasInterface(ifaceName, hasVrf(sameInstance(vrf))));
