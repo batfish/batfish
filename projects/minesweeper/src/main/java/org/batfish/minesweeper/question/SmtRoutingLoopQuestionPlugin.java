@@ -1,12 +1,15 @@
-package org.batfish.question;
+package org.batfish.minesweeper.question;
 
 import com.google.auto.service.AutoService;
 import org.batfish.common.Answerer;
+import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
+import org.batfish.minesweeper.smt.PropertyChecker;
+import org.batfish.question.QuestionPlugin;
 
 @AutoService(Plugin.class)
 public class SmtRoutingLoopQuestionPlugin extends QuestionPlugin {
@@ -20,7 +23,8 @@ public class SmtRoutingLoopQuestionPlugin extends QuestionPlugin {
     @Override
     public AnswerElement answer() {
       RoutingLoopQuestion q = (RoutingLoopQuestion) _question;
-      return _batfish.smtRoutingLoop(q);
+      PropertyChecker p = new PropertyChecker(new BDDPacket(), _batfish);
+      return p.checkRoutingLoop(q);
     }
   }
 

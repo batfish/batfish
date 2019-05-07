@@ -31,7 +31,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.minesweeper.answers.SmtReachabilityAnswerElement;
-import org.batfish.question.SmtReachabilityQuestionPlugin.ReachabilityQuestion;
+import org.batfish.minesweeper.question.SmtReachabilityQuestionPlugin.ReachabilityQuestion;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;

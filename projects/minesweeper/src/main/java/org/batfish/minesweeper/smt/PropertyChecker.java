@@ -30,7 +30,6 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.config.Settings;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
@@ -73,13 +72,11 @@ public class PropertyChecker {
 
   private BDDPacket _bddPacket;
   private IBatfish _batfish;
-  private final Settings _settings;
   private final Object _lock;
 
-  public PropertyChecker(BDDPacket bddPacket, IBatfish batfish, Settings settings) {
+  public PropertyChecker(BDDPacket bddPacket, IBatfish batfish) {
     this._bddPacket = bddPacket;
     this._batfish = batfish;
-    this._settings = settings;
     this._lock = new Object();
   }
 
@@ -325,7 +322,7 @@ public class PropertyChecker {
     q = new HeaderQuestion(q);
     q.setHeaderSpace(slice.getHeaderSpace());
     long timeEncoding = System.currentTimeMillis();
-    Encoder encoder = new Encoder(_settings, g, q);
+    Encoder encoder = new Encoder(g, q);
     encoder.computeEncoding();
     addEnvironmentConstraints(encoder, q.getBaseEnvironmentType());
     timeEncoding = System.currentTimeMillis() - timeEncoding;
@@ -406,7 +403,7 @@ public class PropertyChecker {
                 Set<String> srcRouters = mapConcreteToAbstract(slice, sourceRouters);
 
                 long timeEncoding = System.currentTimeMillis();
-                Encoder enc = new Encoder(_settings, g, question);
+                Encoder enc = new Encoder(g, question);
                 enc.computeEncoding();
                 timeEncoding = System.currentTimeMillis() - timeEncoding;
 
@@ -659,7 +656,7 @@ public class PropertyChecker {
    */
   public AnswerElement checkDeterminism(HeaderQuestion q) {
     Graph graph = new Graph(_batfish);
-    Encoder enc1 = new Encoder(_settings, graph, q);
+    Encoder enc1 = new Encoder(graph, q);
     Encoder enc2 = new Encoder(enc1, graph, q);
     enc1.computeEncoding();
     enc2.computeEncoding();
@@ -734,7 +731,7 @@ public class PropertyChecker {
    */
   public AnswerElement checkBlackHole(HeaderQuestion q) {
     Graph graph = new Graph(_batfish);
-    Encoder enc = new Encoder(_settings, graph, q);
+    Encoder enc = new Encoder(graph, q);
     enc.computeEncoding();
     Context ctx = enc.getCtx();
     EncoderSlice slice = enc.getMainSlice();
@@ -800,7 +797,7 @@ public class PropertyChecker {
     Set<GraphEdge> destPorts = findFinalInterfaces(graph, p);
     inferDestinationHeaderSpace(graph, destPorts, q);
 
-    Encoder enc = new Encoder(_settings, graph, q);
+    Encoder enc = new Encoder(graph, q);
     enc.computeEncoding();
     EncoderSlice slice = enc.getMainSlice();
 
@@ -866,7 +863,7 @@ public class PropertyChecker {
         routers.add(router);
       }
     }
-    Encoder enc = new Encoder(_settings, graph, q);
+    Encoder enc = new Encoder(graph, q);
     enc.computeEncoding();
     Context ctx = enc.getCtx();
     EncoderSlice slice = enc.getMainSlice();
@@ -920,7 +917,7 @@ public class PropertyChecker {
       Set<String> toModel1 = new TreeSet<>();
       toModel1.add(r1);
       Graph g1 = new Graph(_batfish, null, toModel1);
-      Encoder e1 = new Encoder(_settings, g1, q);
+      Encoder e1 = new Encoder(g1, q);
       e1.computeEncoding();
 
       Context ctx = e1.getCtx();

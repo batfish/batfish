@@ -24,7 +24,6 @@ import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
-import org.batfish.config.Settings;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.HeaderSpace;
@@ -85,16 +84,13 @@ public class Encoder {
 
   private UnsatCore _unsatCore;
 
-  private Settings _settings;
-
   /**
    * Create an encoder object that will consider all packets in the provided headerspace.
    *
-   * @param settings The Batfish configuration settings object
    * @param graph The network graph
    */
-  Encoder(Settings settings, Graph graph, HeaderQuestion q) {
-    this(settings, null, graph, q, null, null, null, 0);
+  Encoder(Graph graph, HeaderQuestion q) {
+    this(null, graph, q, null, null, null, 0);
   }
 
   /**
@@ -104,15 +100,7 @@ public class Encoder {
    * @param g An existing network graph
    */
   Encoder(Encoder e, Graph g) {
-    this(
-        e._settings,
-        e,
-        g,
-        e._question,
-        e.getCtx(),
-        e.getSolver(),
-        e.getAllVariables(),
-        e.getId() + 1);
+    this(e, g, e._question, e.getCtx(), e.getSolver(), e.getAllVariables(), e.getId() + 1);
   }
 
   /**
@@ -123,7 +111,7 @@ public class Encoder {
    * @param q A header question
    */
   Encoder(Encoder e, Graph g, HeaderQuestion q) {
-    this(e._settings, e, g, q, e.getCtx(), e.getSolver(), e.getAllVariables(), e.getId() + 1);
+    this(e, g, q, e.getCtx(), e.getSolver(), e.getAllVariables(), e.getId() + 1);
   }
 
   /**
@@ -131,7 +119,6 @@ public class Encoder {
    * context and solver are null, then a new encoder is created. Otherwise the old encoder is used.
    */
   private Encoder(
-      Settings settings,
       @Nullable Encoder enc,
       Graph graph,
       HeaderQuestion q,
@@ -139,7 +126,6 @@ public class Encoder {
       @Nullable Solver solver,
       @Nullable Map<String, Expr> vars,
       int id) {
-    _settings = settings;
     _graph = graph;
     _previousEncoder = enc;
     _modelIgp = true;
@@ -155,8 +141,6 @@ public class Encoder {
       cfg.put("proof", "true");
       cfg.put("auto-config", "false");
     }
-
-    cfg.put("timeout", String.valueOf(_settings.getZ3timeout()));
 
     _ctx = (ctx == null ? new Context(cfg) : ctx);
 

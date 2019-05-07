@@ -1,4 +1,4 @@
-package org.batfish.question;
+package org.batfish.minesweeper.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
@@ -10,6 +10,8 @@ import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.EquivalenceType;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
+import org.batfish.minesweeper.abstraction.Roles;
+import org.batfish.question.QuestionPlugin;
 
 @AutoService(Plugin.class)
 public class SmtRoleQuestionPlugin extends QuestionPlugin {
@@ -23,8 +25,8 @@ public class SmtRoleQuestionPlugin extends QuestionPlugin {
     @Override
     public AnswerElement answer() {
       RoleQuestion q = (RoleQuestion) _question;
-      return _batfish.smtRoles(q);
-      // return _batfish.smtRoles(q.getType(), q.getNodes());
+      Roles roles = Roles.create(_batfish, q.getDstIps(), new NodesSpecifier(q.getNodeRegex()));
+      return roles.asAnswer(q.getType());
     }
   }
 
