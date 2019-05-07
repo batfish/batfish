@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import org.batfish.common.Answerer;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
@@ -88,7 +89,7 @@ public class SmtReachabilityTwoLinkPerDstIpTest {
     question.setIngressNodeRegex(_srcNode.getHostname());
     question.setFinalNodeRegex(_dstNode.getHostname());
     question.setDstIps(ImmutableSet.of(new IpWildcard(_dstIp)));
-    final AnswerElement answer = _batfish.smtReachability(question);
+    final AnswerElement answer = Answerer.create(question, _batfish).answer();
     assertThat(answer, instanceOf(SmtReachabilityAnswerElement.class));
 
     final SmtReachabilityAnswerElement smtAnswer = (SmtReachabilityAnswerElement) answer;
@@ -112,7 +113,7 @@ public class SmtReachabilityTwoLinkPerDstIpTest {
     question.setNegate(true);
 
     question.setDstIps(ImmutableSet.of(new IpWildcard(_dstIp)));
-    final AnswerElement answer = _batfish.smtReachability(question);
+    final AnswerElement answer = Answerer.create(question, _batfish).answer();
     assertThat(answer, instanceOf(SmtReachabilityAnswerElement.class));
 
     final SmtReachabilityAnswerElement smtAnswer = (SmtReachabilityAnswerElement) answer;
@@ -141,7 +142,7 @@ public class SmtReachabilityTwoLinkPerDstIpTest {
     question.setDstIps(ImmutableSet.of(new IpWildcard(_dstIp)));
     question.setFailures(1); // at most 1 failure
 
-    final AnswerElement answer = _batfish.smtReachability(question);
+    final AnswerElement answer = Answerer.create(question, _batfish).answer();
     assertThat(answer, instanceOf(SmtReachabilityAnswerElement.class));
 
     final SmtReachabilityAnswerElement smtAnswer = (SmtReachabilityAnswerElement) answer;
@@ -166,7 +167,7 @@ public class SmtReachabilityTwoLinkPerDstIpTest {
     question.setFailures(1);
     question.setNegate(true);
 
-    final AnswerElement answer = _batfish.smtReachability(question);
+    final AnswerElement answer = Answerer.create(question, _batfish).answer();
     assertThat(answer, instanceOf(SmtReachabilityAnswerElement.class));
 
     final SmtReachabilityAnswerElement smtAnswer = (SmtReachabilityAnswerElement) answer;
@@ -183,7 +184,7 @@ public class SmtReachabilityTwoLinkPerDstIpTest {
     question.setNotDstIps(ImmutableSet.of(new IpWildcard(_dstIp)));
     question.setFailures(1);
 
-    final AnswerElement answer = _batfish.smtReachability(question);
+    final AnswerElement answer = Answerer.create(question, _batfish).answer();
     assertThat(answer, instanceOf(SmtReachabilityAnswerElement.class));
 
     final SmtReachabilityAnswerElement smtAnswer = (SmtReachabilityAnswerElement) answer;
