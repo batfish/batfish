@@ -4009,6 +4009,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentFwTerm.getThens().add(then);
     _currentFwTerm.getThens().add(FwThenAccept.INSTANCE);
     _currentFilter.setUsedForFBF(true);
+    todo(ctx, "Filter-based forwarding with next-hop-ip is not currently supported");
   }
 
   @Override

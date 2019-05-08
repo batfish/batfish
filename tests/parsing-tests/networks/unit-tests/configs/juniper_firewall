@@ -32,6 +32,8 @@ set firewall family inet filter blah term blorp from icmp-code 2
 #
 set firewall family inet filter blah term t2 then routing-instance OTHER_INSTANCE
 #
+set firewall family inet filter blah term t3 then next-ip 1.2.3.4/5
+#
 set firewall family inet6 filter blah6 term blorp6 from icmp-type packet-too-big
 set firewall family inet6 filter blah6 term blorp6 from icmp-type neighbor-advertisement
 set firewall family inet6 filter blah6 term blorp6 from icmp-type neighbor-solicit
