@@ -74612,6 +74612,22 @@
             }
           ]
         },
+        "configs/ios_bgp" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "BGP advertise-map is not currently supported",
+              "Line" : 5,
+              "Parser_Context" : "[advertise_map_bgp_tail bgp_tail neighbor_flat_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
+              "Text" : "advertise-map ADVERTISE_MAP exist-map EXIST_MAP"
+            },
+            {
+              "Comment" : "BGP exist-map is not currently supported",
+              "Line" : 5,
+              "Parser_Context" : "[advertise_map_bgp_tail bgp_tail neighbor_flat_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
+              "Text" : "advertise-map ADVERTISE_MAP exist-map EXIST_MAP"
+            }
+          ]
+        },
         "configs/ios_xr_bgp_neighbor_group" : {
           "Parse warnings" : [
             {
