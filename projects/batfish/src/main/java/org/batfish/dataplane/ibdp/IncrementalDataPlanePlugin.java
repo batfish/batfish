@@ -3,14 +3,10 @@ package org.batfish.dataplane.ibdp;
 import com.google.auto.service.AutoService;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.SortedSet;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.Plugin;
-import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.IncrementalBdpAnswerElement;
 
@@ -84,11 +80,6 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
         new IncrementalBdpEngine(
             new IncrementalDataPlaneSettings(_batfish.getSettingsConfiguration()),
             _batfish.getLogger());
-  }
-
-  @Override
-  public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(DataPlane dp) {
-    return IncrementalBdpEngine.getRoutes((IncrementalDataPlane) dp);
   }
 
   @Override

@@ -1,10 +1,7 @@
 package org.batfish.common.plugin;
 
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.SortedSet;
 import org.batfish.common.topology.TopologyContainer;
-import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Topology;
@@ -75,9 +72,6 @@ public abstract class DataPlanePlugin extends BatfishPlugin implements IDataPlan
       boolean differentialContext, Map<String, Configuration> configurations, Topology topology);
 
   protected void dataPlanePluginInitialize() {}
-
-  public abstract SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(
-      DataPlane dataPlane);
 
   /** Return the name of this plugin */
   public abstract String getName();
