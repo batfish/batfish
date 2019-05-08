@@ -107,6 +107,7 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.vxlan.VxlanNode;
 import org.batfish.datamodel.vxlan.VxlanTopology;
+import org.batfish.datamodel.vxlan.VxlanTopologyUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -485,7 +486,7 @@ public class EdgesAnswererTest {
   public void testGetVxlanEdges() {
     NetworkConfigurations nc = buildVxlanNetworkConfigurations();
     Map<String, Configuration> configurations = nc.getMap();
-    VxlanTopology vxlanTopology = new VxlanTopology(nc.getMap());
+    VxlanTopology vxlanTopology = VxlanTopologyUtils.initialVxlanTopology(nc.getMap());
     Set<String> includeNodes = configurations.keySet();
     Set<String> includeRemoteNodes = configurations.keySet();
 
