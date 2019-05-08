@@ -53,6 +53,7 @@ import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.Bgpv4Route;
@@ -144,6 +145,13 @@ public class VirtualRouter implements Serializable {
   private transient SortedMap<
           CrossVrfEdgeId, Queue<RouteAdvertisement<AnnotatedRoute<AbstractRoute>>>>
       _crossVrfIncomingRoutes;
+
+  /**
+   * Queues containing BGP routes that are coming in from other VRFs (as a result of EVPN
+   * configuration)
+   */
+  private transient SortedMap<CrossVrfEdgeId, Queue<RouteAdvertisement<AnnotatedRoute<BgpRoute>>>>
+      _crossVrfIncomingBgpRoutes;
 
   /** Helper RIB containing all paths obtained with external BGP */
   transient Bgpv4Rib _ebgpRib;
