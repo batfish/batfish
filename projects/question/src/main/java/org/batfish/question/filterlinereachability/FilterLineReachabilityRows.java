@@ -1,4 +1,4 @@
-package org.batfish.datamodel.answers;
+package org.batfish.question.filterlinereachability;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 
@@ -15,6 +15,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.acl.CanonicalAcl;
+import org.batfish.datamodel.answers.AclSpecs;
+import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;

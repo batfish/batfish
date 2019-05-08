@@ -1,7 +1,7 @@
 package org.batfish.question.filterlinereachability;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
-import static org.batfish.datamodel.answers.FilterLineReachabilityRows.createMetadata;
+import static org.batfish.question.filterlinereachability.FilterLineReachabilityRows.createMetadata;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -44,7 +44,6 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TypeMatchExprsCollector;
 import org.batfish.datamodel.acl.UndefinedReferenceException;
 import org.batfish.datamodel.answers.AclSpecs;
-import org.batfish.datamodel.answers.FilterLineReachabilityRows;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.specifier.FilterSpecifier;
