@@ -45,6 +45,7 @@ import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.vxlan.VxlanTopology;
+import org.batfish.datamodel.vxlan.VxlanTopologyUtils;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
@@ -141,7 +142,7 @@ public class IBatfishTestAdapter implements IBatfish {
 
     @Override
     public VxlanTopology getInitialVxlanTopology(NetworkSnapshot snapshot) {
-      return new VxlanTopology(_batfish.loadConfigurations(snapshot));
+      return VxlanTopologyUtils.initialVxlanTopology(_batfish.loadConfigurations(snapshot));
     }
   }
 
