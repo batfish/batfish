@@ -11,7 +11,7 @@ public class EigrpInternalRib extends AbstractRib<EigrpInternalRoute> {
   private static final long serialVersionUID = 1L;
 
   public EigrpInternalRib() {
-    super(null);
+    super();
   }
 
   @Override

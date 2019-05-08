@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -56,12 +55,12 @@ public abstract class BgpRib<R extends BgpRoute> extends AbstractRib<R> {
   protected Map<R, Long> _logicalArrivalTime;
 
   protected BgpRib(
-      @Nullable Map<Prefix, SortedSet<R>> backupRoutes,
       @Nullable Rib mainRib,
       BgpTieBreaker tieBreaker,
       @Nullable Integer maxPaths,
-      @Nullable MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode) {
-    super(backupRoutes);
+      @Nullable MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode,
+      boolean withBackups) {
+    super(withBackups);
     _mainRib = mainRib;
     _tieBreaker = tieBreaker;
     checkArgument(maxPaths == null || maxPaths > 0, "Invalid max-paths value %s", maxPaths);

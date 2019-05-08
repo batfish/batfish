@@ -1,11 +1,11 @@
 package org.batfish.dataplane.rib;
 
 import com.google.common.collect.ImmutableSet;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -39,12 +39,17 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
   /**
    * Keep a Sorted Set of alternative routes. Used to update the RIB if best routes are withdrawn
    */
-  @Nullable protected final Map<Prefix, SortedSet<R>> _backupRoutes;
+  @Nullable protected final Map<Prefix, Set<R>> _backupRoutes;
 
-  public AbstractRib(@Nullable Map<Prefix, SortedSet<R>> backupRoutes) {
+  protected AbstractRib(boolean withBackupRoutes) {
     _allRoutes = ImmutableSet.of();
-    _backupRoutes = backupRoutes;
+    _backupRoutes = withBackupRoutes ? new HashMap<>(0) : null;
     _tree = new RibTree<>(this);
+  }
+
+  /** Create an AbstractRib without backup routes */
+  protected AbstractRib() {
+    this(false);
   }
 
   /**
@@ -111,9 +116,9 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
    *
    * @param route Route to add
    */
-  public final void addBackupRoute(R route) {
+  private void addBackupRoute(R route) {
     if (_backupRoutes != null) {
-      _backupRoutes.computeIfAbsent(route.getNetwork(), k -> new TreeSet<>()).add(route);
+      _backupRoutes.computeIfAbsent(route.getNetwork(), k -> new HashSet<>(0)).add(route);
     }
   }
 
@@ -149,9 +154,9 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
    *
    * @param route Route to remove
    */
-  public final void removeBackupRoute(R route) {
+  private void removeBackupRoute(R route) {
     if (_backupRoutes != null) {
-      SortedSet<R> routes = _backupRoutes.get(route.getNetwork());
+      Set<R> routes = _backupRoutes.get(route.getNetwork());
       if (routes != null) {
         routes.remove(route);
       }
@@ -181,6 +186,7 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
   @Nonnull
   public RibDelta<R> mergeRouteGetDelta(R route) {
     RibDelta<R> delta = _tree.mergeRoute(route);
+    addBackupRoute(route);
     if (!delta.isEmpty()) {
       // A change to routes has been made
       _allRoutes = null;
@@ -210,6 +216,8 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
    */
   @Nonnull
   public RibDelta<R> removeRouteGetDelta(R route, Reason reason) {
+    // Remove the backup route first, then remove route from rib
+    removeBackupRoute(route);
     RibDelta<R> delta = _tree.removeRouteGetDelta(route, reason);
     if (!delta.isEmpty()) {
       // A change to routes has been made

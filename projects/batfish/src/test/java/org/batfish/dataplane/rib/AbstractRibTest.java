@@ -15,8 +15,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.batfish.datamodel.BgpTieBreaker;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RipInternalRoute;
@@ -469,5 +473,42 @@ public class AbstractRibTest {
     _rib.clear();
     assertThat(_rib.getRoutes(), empty());
     assertThat(_rib.getTypedRoutes(), empty());
+  }
+
+  @Test
+  public void testBackupLogic() {
+    // Use concrete BGP rib, BGP has easy preference knobs
+    Bgpv4Rib bestPathRib =
+        new Bgpv4Rib(
+            null, BgpTieBreaker.ROUTER_ID, 1, MultipathEquivalentAsPathMatchMode.EXACT_PATH, true);
+    Ip originator1 = Ip.parse("1.1.1.1");
+    Ip originator2 = Ip.parse("2.2.2.2");
+    Bgpv4Route.Builder routeBuilder =
+        new Bgpv4Route.Builder()
+            .setNetwork(Prefix.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setOriginatorIp(originator1)
+            .setProtocol(RoutingProtocol.IBGP)
+            .setReceivedFromIp(originator1);
+
+    Bgpv4Route route1 = routeBuilder.build();
+    Bgpv4Route route2 =
+        routeBuilder
+            .setLocalPreference(2000)
+            .setOriginatorIp(originator2)
+            .setReceivedFromIp(originator2)
+            .build();
+
+    bestPathRib.mergeRoute(route1);
+    bestPathRib.mergeRoute(route2);
+    // Route 2 is preferred so it replaces route 1
+    assertThat(bestPathRib.getTypedRoutes(), contains(route2));
+    RibDelta<Bgpv4Route> delta = bestPathRib.removeRouteGetDelta(route2);
+    // Route 2 is removed but route 1 fills the gap as the next-available route
+    assertThat(bestPathRib.getTypedRoutes(), contains(route1));
+    assertThat(
+        delta.getActions().collect(Collectors.toList()),
+        contains(
+            new RouteAdvertisement<>(route2, Reason.WITHDRAW), new RouteAdvertisement<>(route1)));
   }
 }
