@@ -4703,10 +4703,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitAdvertise_map_bgp_tail(Advertise_map_bgp_tailContext ctx) {
     // TODO: https://github.com/batfish/batfish/issues/1836
+    todo(ctx, "BGP advertise-map is not currently supported");
     String advertiseMapName = ctx.am_name.getText();
     _configuration.referenceStructure(
         ROUTE_MAP, advertiseMapName, BGP_ROUTE_MAP_ADVERTISE, ctx.am_name.getStart().getLine());
     if (ctx.em_name != null) {
+      todo(ctx, "BGP exist-map is not currently supported");
       String existMapName = ctx.em_name.getText();
       _configuration.referenceStructure(
           ROUTE_MAP, existMapName, BGP_ADVERTISE_MAP_EXIST_MAP, ctx.em_name.getStart().getLine());
