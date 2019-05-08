@@ -8,7 +8,6 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
@@ -38,10 +37,7 @@ public class PacketPolicyToBddTest {
     _bddPacket = new BDDPacket();
     _ipAccessListToBdd =
         new IpAccessListToBddImpl(
-            _bddPacket,
-            BDDSourceManager.forInterfaces(_bddPacket, ImmutableSet.of()),
-            ImmutableMap.of(),
-            ImmutableMap.of());
+            _bddPacket, BDDSourceManager.empty(_bddPacket), ImmutableMap.of(), ImmutableMap.of());
   }
 
   @Test

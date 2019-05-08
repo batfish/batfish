@@ -87,10 +87,7 @@ public class IpAccessListToBddVisitorTest {
                 .build());
     IpAccessListToBdd toBDD =
         new IpAccessListToBddImpl(
-            _pkt,
-            BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of()),
-            namedAclBDDs,
-            ImmutableMap.of());
+            _pkt, BDDSourceManager.empty(_pkt), namedAclBDDs, ImmutableMap.of());
     exception.expect(BatfishException.class);
     exception.expectMessage("Circular PermittedByAcl reference: foo");
     toBDD.toBdd(permittedByAcl);

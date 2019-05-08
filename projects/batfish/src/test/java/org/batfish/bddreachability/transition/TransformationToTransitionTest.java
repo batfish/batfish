@@ -15,7 +15,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDPacket;
@@ -49,10 +48,7 @@ public class TransformationToTransitionTest {
         new TransformationToTransition(
             _pkt,
             new IpAccessListToBddImpl(
-                _pkt,
-                BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of()),
-                ImmutableMap.of(),
-                ImmutableMap.of()));
+                _pkt, BDDSourceManager.empty(_pkt), ImmutableMap.of(), ImmutableMap.of()));
   }
 
   @Test
@@ -403,10 +399,7 @@ public class TransformationToTransitionTest {
   public void testReturnFlowTransition() {
     IpAccessListToBddImpl aclToBdd =
         new IpAccessListToBddImpl(
-            _pkt,
-            BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of()),
-            ImmutableMap.of(),
-            ImmutableMap.of());
+            _pkt, BDDSourceManager.empty(_pkt), ImmutableMap.of(), ImmutableMap.of());
     TransformationToTransition toTransition = new TransformationToTransition(_pkt, aclToBdd);
     IpSpaceToBDD dstToBdd = aclToBdd.getHeaderSpaceToBDD().getDstIpSpaceToBdd();
 

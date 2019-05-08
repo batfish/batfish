@@ -97,7 +97,7 @@ public final class BidirectionalReachabilityAnalysis {
         IpAccessListToBdd ipAccessListToBdd =
             new IpAccessListToBddImpl(
                 _bddPacket,
-                BDDSourceManager.forInterfaces(_bddPacket, ImmutableSet.of()),
+                BDDSourceManager.empty(_bddPacket),
                 ImmutableMap.of(),
                 ImmutableMap.of());
         BDD initialForwardHeaderSpaceBdd = ipAccessListToBdd.toBdd(initialForwardHeaderSpace);

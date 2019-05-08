@@ -98,6 +98,11 @@ public final class BDDSourceManager {
     return new BDDSourceManager(new BDDFiniteDomain<>(var, sources), ImmutableSet.of());
   }
 
+  /** Create a {@link BDDSourceManager} for the empty set of sources. */
+  public static BDDSourceManager empty(BDDPacket pkt) {
+    return forSourcesInternal(pkt, ImmutableSet.of(), ImmutableSet.of());
+  }
+
   public static BDDSourceManager forIpAccessList(
       BDDPacket pkt, Configuration config, IpAccessList acl) {
     return forIpAccessList(
