@@ -513,7 +513,9 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sep_globalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctx_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxpm_applicationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxpm_destination_addressContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxpm_destination_address_excludedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxpm_source_addressContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxpm_source_address_excludedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxpm_source_identityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxpt_denyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxpt_permitContext;
@@ -5587,6 +5589,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void exitSepctxpm_destination_address_excluded(
+      Sepctxpm_destination_address_excludedContext ctx) {
+    // This should change the meaning of the from dstIp clause to deny all that match.
+    todo(ctx);
+  }
+
+  @Override
   public void exitSepctxpm_source_address(Sepctxpm_source_addressContext ctx) {
     if (ctx.address_specifier().ANY() != null) {
       return;
@@ -5604,6 +5613,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else {
       throw new BatfishException("Invalid address-specifier");
     }
+  }
+
+  @Override
+  public void exitSepctxpm_source_address_excluded(Sepctxpm_source_address_excludedContext ctx) {
+    // This should change the meaning of the from srcIp clause to deny all that match.
+    todo(ctx);
   }
 
   @Override

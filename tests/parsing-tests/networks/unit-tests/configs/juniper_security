@@ -14,6 +14,7 @@ set security ike proposal PROPOSAL description "IKE proposal"
 set security ike policy 1.2.3.4 proposals [ PROPOSAL ]
 #
 set security policies global policy p1 match destination-address-excluded
+set security policies global policy p1 match source-address-excluded
 #
 set security policies from-zone A to-zone B policy 123-4 description "123-4 description"
 set security policies from-zone A to-zone B policy 123-4 then count
