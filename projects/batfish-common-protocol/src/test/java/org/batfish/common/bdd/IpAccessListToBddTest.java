@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -79,7 +78,7 @@ public class IpAccessListToBddTest {
             aclWithLines(accepting(new PermittedByAcl("acl"))),
             namedAcls,
             ImmutableMap.of(),
-            BDDSourceManager.forSources(_pkt, ImmutableSet.of(), ImmutableSet.of()));
+            BDDSourceManager.empty(_pkt));
     assertThat(bdd, equalTo(fooIpBDD));
   }
 
@@ -92,11 +91,7 @@ public class IpAccessListToBddTest {
     Map<String, IpAccessList> namedAcls = ImmutableMap.of("foo", fooAcl);
     IpAccessList acl = aclWithLines(accepting(new PermittedByAcl("foo")));
     BDD bdd =
-        new IpAccessListToBddImpl(
-                _pkt,
-                BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of()),
-                namedAcls,
-                ImmutableMap.of())
+        new IpAccessListToBddImpl(_pkt, BDDSourceManager.empty(_pkt), namedAcls, ImmutableMap.of())
             .toBdd(acl);
     assertThat(bdd, equalTo(fooIpBDD));
   }
@@ -106,10 +101,7 @@ public class IpAccessListToBddTest {
     IpAccessList acl = aclWithLines(accepting(new PermittedByAcl("foo")));
     IpAccessListToBdd ipAccessListToBdd =
         new IpAccessListToBddImpl(
-            _pkt,
-            BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of()),
-            ImmutableMap.of(),
-            ImmutableMap.of());
+            _pkt, BDDSourceManager.empty(_pkt), ImmutableMap.of(), ImmutableMap.of());
     exception.expect(IllegalArgumentException.class);
     exception.expectMessage("Undefined PermittedByAcl reference: foo");
     ipAccessListToBdd.toBdd(acl);
@@ -121,11 +113,7 @@ public class IpAccessListToBddTest {
     IpAccessList fooAcl = aclWithLines(accepting(permittedByAcl));
     Map<String, IpAccessList> namedAcls = ImmutableMap.of("foo", fooAcl);
     IpAccessListToBdd ipAccessListToBdd =
-        new IpAccessListToBddImpl(
-            _pkt,
-            BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of()),
-            namedAcls,
-            ImmutableMap.of());
+        new IpAccessListToBddImpl(_pkt, BDDSourceManager.empty(_pkt), namedAcls, ImmutableMap.of());
     exception.expect(BatfishException.class);
     exception.expectMessage("Circular PermittedByAcl reference: foo");
     ipAccessListToBdd.toBdd(fooAcl);
@@ -140,10 +128,7 @@ public class IpAccessListToBddTest {
 
     IpAccessListToBdd aclToBdd =
         new IpAccessListToBddImpl(
-            _pkt,
-            BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of()),
-            ImmutableMap.of(),
-            ImmutableMap.of());
+            _pkt, BDDSourceManager.empty(_pkt), ImmutableMap.of(), ImmutableMap.of());
     IpSpaceToBDD dstToBdd = aclToBdd.getHeaderSpaceToBDD().getDstIpSpaceToBdd();
 
     BDD bdd32 = dstToBdd.toBDD(p32);

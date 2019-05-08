@@ -11,7 +11,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
@@ -34,10 +33,7 @@ public class ConjunctsBuilderTest {
     BDDPacket pkt = new BDDPacket();
     IpAccessListToBdd toBDD =
         new IpAccessListToBddImpl(
-            pkt,
-            BDDSourceManager.forInterfaces(pkt, ImmutableSet.of()),
-            ImmutableMap.of(),
-            ImmutableMap.of());
+            pkt, BDDSourceManager.empty(pkt), ImmutableMap.of(), ImmutableMap.of());
     _andBuilder = new ConjunctsBuilder(toBDD);
   }
 

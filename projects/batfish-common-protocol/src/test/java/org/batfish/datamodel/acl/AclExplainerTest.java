@@ -40,7 +40,7 @@ public class AclExplainerTest {
   @Before
   public void setup() {
     _pkt = new BDDPacket();
-    _mgr = BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of());
+    _mgr = BDDSourceManager.empty(_pkt);
   }
 
   private AclLineMatchExpr explain(IpAccessList acl) {
