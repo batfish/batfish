@@ -12,11 +12,9 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.topology.UndirectedEdge;
 
 /** VXLAN topology with edges for each compatible VNI-endpoint pair */
-@ParametersAreNonnullByDefault
 public final class VxlanTopology {
 
   public static final VxlanTopology EMPTY =
