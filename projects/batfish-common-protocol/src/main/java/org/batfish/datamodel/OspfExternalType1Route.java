@@ -81,11 +81,6 @@ public class OspfExternalType1Route extends OspfExternalRoute {
   }
 
   @Override
-  public int routeCompare(@Nonnull AbstractRoute rhs) {
-    return 0;
-  }
-
-  @Override
   public OspfExternalRoute.Builder toBuilder() {
     return OspfExternalRoute.builder()
         // AbstractRoute properties

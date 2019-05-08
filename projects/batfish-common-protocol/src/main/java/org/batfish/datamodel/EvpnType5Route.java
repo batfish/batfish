@@ -273,12 +273,4 @@ public final class EvpnType5Route extends EvpnRoute {
     }
     return h;
   }
-
-  @Override
-  public int routeCompare(@Nonnull AbstractRoute rhs) {
-    if (getClass() != rhs.getClass()) {
-      return 0;
-    }
-    return COMPARATOR.compare(this, (EvpnType5Route) rhs);
-  }
 }

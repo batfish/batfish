@@ -18,7 +18,7 @@ public class MockRib implements GenericRib<AbstractRoute> {
     private Builder() {
       _longestPrefixMatchResults = ImmutableMap.of();
       _mergeRouteTrues = ImmutableSet.of();
-      _routePreferenceComparator = Comparator.naturalOrder();
+      _routePreferenceComparator = (a, b) -> 0;
       _routes = ImmutableSet.of();
     }
 

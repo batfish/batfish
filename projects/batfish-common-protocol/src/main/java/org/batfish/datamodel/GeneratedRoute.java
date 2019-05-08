@@ -21,7 +21,26 @@ import org.batfish.datamodel.bgp.community.Community;
 
 /** A generated/aggregate IPV4 route. */
 @ParametersAreNonnullByDefault
-public final class GeneratedRoute extends AbstractRoute {
+public final class GeneratedRoute extends AbstractRoute implements Comparable<GeneratedRoute> {
+
+  // The comparator has no impact on route preference in RIBs and should not be used as such
+  private static final Comparator<GeneratedRoute> COMPARATOR =
+      Comparator.comparing(GeneratedRoute::getNetwork)
+          .thenComparing(GeneratedRoute::getNextHopIp)
+          .thenComparing(GeneratedRoute::getNextHopInterface)
+          .thenComparing(GeneratedRoute::getMetric)
+          .thenComparing(GeneratedRoute::getAdministrativeCost)
+          .thenComparing(GeneratedRoute::getTag)
+          .thenComparing(GeneratedRoute::getNonRouting)
+          .thenComparing(GeneratedRoute::getNonForwarding)
+          .thenComparing(GeneratedRoute::getAsPath)
+          .thenComparing(
+              GeneratedRoute::getAttributePolicy, Comparator.nullsLast(String::compareTo))
+          .thenComparing(
+              GeneratedRoute::getCommunities, Comparators.lexicographical(Ordering.natural()))
+          .thenComparing(GeneratedRoute::getDiscard)
+          .thenComparing(
+              GeneratedRoute::getGenerationPolicy, Comparator.nullsLast(String::compareTo));
 
   /** A {@link GeneratedRoute} builder */
   public static class Builder extends AbstractRouteBuilder<Builder, GeneratedRoute> {
@@ -295,18 +314,9 @@ public final class GeneratedRoute extends AbstractRoute {
   }
 
   @Override
-  public int routeCompare(@Nonnull AbstractRoute rhs) {
-    if (getClass() != rhs.getClass()) {
-      return 0;
-    }
-    GeneratedRoute castRhs = (GeneratedRoute) rhs;
-    return Comparator.comparing(GeneratedRoute::getAsPath)
-        .thenComparing(GeneratedRoute::getAttributePolicy, Comparator.nullsLast(String::compareTo))
-        .thenComparing(
-            GeneratedRoute::getCommunities, Comparators.lexicographical(Ordering.natural()))
-        .thenComparing(GeneratedRoute::getDiscard)
-        .thenComparing(GeneratedRoute::getGenerationPolicy, Comparator.nullsLast(String::compareTo))
-        .compare(this, castRhs);
+  public int compareTo(GeneratedRoute rhs) {
+    // The comparator has no impact on route preference in RIBs and should not be used as such
+    return COMPARATOR.compare(this, rhs);
   }
 
   @Override

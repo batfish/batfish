@@ -24,20 +24,6 @@ public final class AnnotatedRoute<R extends AbstractRoute>
   }
 
   @Override
-  public final int compareTo(AbstractRouteDecorator o) {
-    int routeComparison = _route.compareTo(o.getAbstractRoute());
-    if (routeComparison != 0) {
-      return routeComparison;
-    }
-    if (!(o instanceof AnnotatedRoute)) {
-      // Routes are equal; AbstractRoutes arbitrarily come before AnnotatedRoutes
-      return 1;
-    }
-    AnnotatedRoute<?> other = (AnnotatedRoute<?>) o;
-    return _sourceVrf.compareTo(other._sourceVrf);
-  }
-
-  @Override
   public AbstractRoute getAbstractRoute() {
     return _route;
   }

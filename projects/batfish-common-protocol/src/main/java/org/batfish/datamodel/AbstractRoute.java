@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.io.Serializable;
-import java.util.Comparator;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -18,8 +17,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * of route.
  *
  * <p><i>Note:</i> This class implements {@link Comparable} because we put AbstractRoute in ordered
- * collections all throughout the codebase. {@link #compareTo(AbstractRouteDecorator)} has <b>NO</b>
- * impact on route preference.
+ * collections all throughout the codebase.
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 @ParametersAreNonnullByDefault
@@ -45,18 +43,6 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
   private final boolean _nonRouting;
   private final boolean _nonForwarding;
 
-  /** The composite comparator for this class. */
-  private static final Comparator<AbstractRoute> COMPARATOR =
-      Comparator.comparing(AbstractRoute::getNetwork)
-          .thenComparingInt(AbstractRoute::getAdministrativeCost)
-          .thenComparing(AbstractRoute::getMetric)
-          .thenComparing(AbstractRoute::routeCompare)
-          .thenComparing(AbstractRoute::getNextHopIp)
-          .thenComparing(AbstractRoute::getNextHopInterface)
-          .thenComparingInt(AbstractRoute::getTag)
-          .thenComparing(AbstractRoute::getNonRouting)
-          .thenComparing(AbstractRoute::getNonForwarding);
-
   @JsonCreator
   protected AbstractRoute(
       @Nullable Prefix network, int admin, boolean nonRouting, boolean nonForwarding) {
@@ -71,19 +57,6 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
   /** Backwards compatible API */
   protected AbstractRoute(@Nonnull Prefix network) {
     this(network, 1, false, false);
-  }
-
-  @Override
-  public final int compareTo(AbstractRouteDecorator rhs) {
-    if (this == rhs) {
-      return 0;
-    }
-    int routeComparison = COMPARATOR.compare(this, rhs.getAbstractRoute());
-    if (routeComparison != 0) {
-      return routeComparison;
-    }
-    // Routes are equal; AbstractRoutes arbitrarily come before AnnotatedRoutes
-    return rhs instanceof AbstractRoute ? 0 : -1;
   }
 
   @Override
@@ -148,18 +121,6 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
   /** Return the route's tag or {@link #NO_TAG} if no tag is present */
   @JsonIgnore
   public abstract int getTag();
-
-  /**
-   * Helps implement the {@link Comparable} interface. Implement this function to establish ordering
-   * for a particular type of route (presumably with more properties than only {@link #_network} and
-   * {@link #_admin}).
-   *
-   * <p>Guiding principle: comparison with routes of a different type should return 0.
-   *
-   * <p><b>Note</b>: this does nothing for route preference computation, that's the job of a {@link
-   * GenericRib}.
-   */
-  public abstract int routeCompare(@Nonnull AbstractRoute rhs);
 
   @Override
   public String toString() {

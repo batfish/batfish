@@ -205,14 +205,6 @@ public final class Bgpv4Route extends BgpRoute {
           .thenComparing(Bgpv4Route::getWeight);
 
   @Override
-  public int routeCompare(@Nonnull AbstractRoute rhs) {
-    if (getClass() != rhs.getClass()) {
-      return 0;
-    }
-    return COMPARATOR.compare(this, (Bgpv4Route) rhs);
-  }
-
-  @Override
   public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
