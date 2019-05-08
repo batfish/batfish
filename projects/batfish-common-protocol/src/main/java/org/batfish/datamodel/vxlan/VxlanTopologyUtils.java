@@ -148,6 +148,7 @@ public final class VxlanTopologyUtils {
       TracerouteEngine tracerouteEngine) {
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("VxlanTopologyUtils.prunedVxlanTopology").startActive()) {
+      assert span != null;
       NetworkConfigurations nc = NetworkConfigurations.of(configurations);
       MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
       initialVxlanTopology.getGraph().edges().stream()
