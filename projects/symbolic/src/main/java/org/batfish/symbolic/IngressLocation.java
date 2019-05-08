@@ -2,6 +2,8 @@ package org.batfish.symbolic;
 
 import static org.batfish.datamodel.Names.escapeNameIfNeeded;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -39,6 +41,7 @@ public final class IngressLocation implements Comparable<IngressLocation> {
     return _pointType == Type.VRF;
   }
 
+  @JsonIgnore
   public @Nonnull String getInterface() {
     if (_pointType == Type.INTERFACE_LINK) {
       return _pointWithinNode;
@@ -50,6 +53,7 @@ public final class IngressLocation implements Comparable<IngressLocation> {
     return _node;
   }
 
+  @JsonProperty("pointWithinNode")
   private @Nonnull String getPointWithinNode() {
     return _pointWithinNode;
   }
@@ -58,6 +62,7 @@ public final class IngressLocation implements Comparable<IngressLocation> {
     return _pointType;
   }
 
+  @JsonIgnore
   public @Nonnull String getVrf() {
     if (_pointType == Type.VRF) {
       return _pointWithinNode;

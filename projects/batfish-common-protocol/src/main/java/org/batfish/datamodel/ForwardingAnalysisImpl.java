@@ -1062,7 +1062,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   @VisibleForTesting
-  static Map<String, Map<String, IpSpace>> computeInterfaceHostSubnetIps(
+  public static Map<String, Map<String, IpSpace>> computeInterfaceHostSubnetIps(
       Map<String, Configuration> configs, boolean excludeInactive) {
     try (ActiveSpan span =
         GlobalTracer.get()
