@@ -28,6 +28,7 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.vxlan.VxlanTopology;
+import org.batfish.datamodel.vxlan.VxlanTopologyUtils;
 import org.batfish.storage.StorageProvider;
 
 @ParametersAreNonnullByDefault
@@ -166,7 +167,7 @@ public final class TopologyProviderImpl implements TopologyProvider {
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("TopologyProviderImpl::computeVxlanTopology").startActive()) {
       assert span != null; // avoid unused warning
-      return new VxlanTopology(_batfish.loadConfigurations(snapshot));
+      return VxlanTopologyUtils.initialVxlanTopology(_batfish.loadConfigurations(snapshot));
     }
   }
 
