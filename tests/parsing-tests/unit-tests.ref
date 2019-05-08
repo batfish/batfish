@@ -58765,6 +58765,31 @@
             "            FIREWALL:'firewall'",
             "            (f_family",
             "              FAMILY:'family'",
+            "              INET:'inet'",
+            "              (f_common",
+            "                (f_filter",
+            "                  FILTER:'filter'",
+            "                  name = (variable",
+            "                    text = VARIABLE:'blah')",
+            "                  (ff_term",
+            "                    TERM:'term'",
+            "                    name = (variable",
+            "                      text = VARIABLE:'t3')",
+            "                    (fft_then",
+            "                      THEN:'then'",
+            "                      (fftt_next_ip",
+            "                        NEXT_IP:'next-ip'",
+            "                        prefix = IP_PREFIX:'1.2.3.4/5'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_firewall",
+            "            FIREWALL:'firewall'",
+            "            (f_family",
+            "              FAMILY:'family'",
             "              INET6:'inet6'",
             "              (f_common",
             "                (f_filter",
@@ -74727,6 +74752,14 @@
           ]
         },
         "configs/juniper_firewall" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "Filter-based forwarding with next-hop-ip is not currently supported",
+              "Line" : 35,
+              "Parser_Context" : "[fftt_next_ip fft_then ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "next-ip 1.2.3.4/5"
+            }
+          ],
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
@@ -80297,7 +80330,7 @@
           "firewall filter" : {
             "ISP-INBOUND-L2" : {
               "definitionLines" : [
-                40
+                42
               ],
               "numReferrers" : 0
             },
@@ -80328,15 +80361,16 @@
                 27,
                 30,
                 31,
-                33
+                33,
+                35
               ],
               "numReferrers" : 0
             },
             "blah6" : {
               "definitionLines" : [
-                35,
-                36,
-                37
+                37,
+                38,
+                39
               ],
               "numReferrers" : 0
             },
