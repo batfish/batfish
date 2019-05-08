@@ -64953,6 +64953,26 @@
             "            SECURITY:'security'",
             "            (se_policies",
             "              POLICIES:'policies'",
+            "              (sep_global",
+            "                GLOBAL:'global'",
+            "                (sepctx_policy",
+            "                  POLICY:'policy'",
+            "                  name = (variable_policy",
+            "                    text = VARIABLE:'p1')",
+            "                  (sepctxp_match",
+            "                    MATCH:'match'",
+            "                    (sepctxpm_source_address_excluded",
+            "                      SOURCE_ADDRESS_EXCLUDED:'source-address-excluded')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_security",
+            "            SECURITY:'security'",
+            "            (se_policies",
+            "              POLICIES:'policies'",
             "              (sep_from_zone",
             "                FROM_ZONE:'from-zone'",
             "                from = (zone",
@@ -74819,6 +74839,22 @@
               "Line" : 10,
               "Parser_Context" : "[ro_confederation s_routing_options s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "confederation 11111 members 22222"
+            }
+          ]
+        },
+        "configs/juniper_security" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 16,
+              "Parser_Context" : "[sepctxpm_destination_address_excluded sepctxp_match sepctx_policy sep_global se_policies s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "destination-address-excluded"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 17,
+              "Parser_Context" : "[sepctxpm_source_address_excluded sepctxp_match sepctx_policy sep_global se_policies s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "source-address-excluded"
             }
           ]
         },
