@@ -11,8 +11,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.common.topology.TopologyUtil;
@@ -61,13 +61,11 @@ public class RouteReflectionTest {
   private static final String RR2_NAME = "rr2";
 
   private static <T extends AbstractRoute> void assertIbgpRoute(
-      SortedMap<String, SortedMap<String, SortedSet<T>>> routesByNode,
-      String hostname,
-      Prefix prefix) {
+      SortedMap<String, SortedMap<String, Set<T>>> routesByNode, String hostname, Prefix prefix) {
     assertThat(routesByNode, hasKey(hostname));
-    SortedMap<String, SortedSet<T>> routesByVrf = routesByNode.get(hostname);
+    SortedMap<String, Set<T>> routesByVrf = routesByNode.get(hostname);
     assertThat(routesByVrf, hasKey(Configuration.DEFAULT_VRF_NAME));
-    SortedSet<T> routes = routesByVrf.get(Configuration.DEFAULT_VRF_NAME);
+    Set<T> routes = routesByVrf.get(Configuration.DEFAULT_VRF_NAME);
     assertThat(routes, hasItem(hasPrefix(prefix)));
     AbstractRoute route =
         routes.stream().filter(r -> r.getNetwork().equals(prefix)).findAny().get();
@@ -75,13 +73,11 @@ public class RouteReflectionTest {
   }
 
   private static <T extends AbstractRoute> void assertNoRoute(
-      SortedMap<String, SortedMap<String, SortedSet<T>>> routesByNode,
-      String hostname,
-      Prefix prefix) {
+      SortedMap<String, SortedMap<String, Set<T>>> routesByNode, String hostname, Prefix prefix) {
     assertThat(routesByNode, hasKey(hostname));
-    SortedMap<String, SortedSet<T>> routesByVrf = routesByNode.get(hostname);
+    SortedMap<String, Set<T>> routesByVrf = routesByNode.get(hostname);
     assertThat(routesByVrf, hasKey(Configuration.DEFAULT_VRF_NAME));
-    SortedSet<T> routes = routesByVrf.get(Configuration.DEFAULT_VRF_NAME);
+    Set<T> routes = routesByVrf.get(Configuration.DEFAULT_VRF_NAME);
     assertThat(routes, not(hasItem(hasPrefix(prefix))));
   }
 
@@ -106,7 +102,7 @@ public class RouteReflectionTest {
   /*
    * See documentation of calling functions for information description of produced network
    */
-  private SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> generateRoutesOneReflector(
+  private SortedMap<String, SortedMap<String, Set<AbstractRoute>>> generateRoutesOneReflector(
       boolean edge1RouteReflectorClient, boolean edge2RouteReflectorClient) {
     Ip as1PeeringIp = Ip.parse("10.12.11.1");
     Ip edge1EbgpIfaceIp = Ip.parse("10.12.11.2");
@@ -244,8 +240,8 @@ public class RouteReflectionTest {
     return IncrementalBdpEngine.getRoutes((IncrementalDataPlane) dpResult._dataPlane);
   }
 
-  private SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>>
-      generateRoutesTwoReflectors(boolean useSameClusterIds) {
+  private SortedMap<String, SortedMap<String, Set<AbstractRoute>>> generateRoutesTwoReflectors(
+      boolean useSameClusterIds) {
     Ip as1PeeringIp = Ip.parse("10.12.11.1");
     Ip edge1EbgpIfaceIp = Ip.parse("10.12.11.2");
     Ip edge1IbgpIfaceIp = Ip.parse("10.1.12.1");
@@ -405,7 +401,7 @@ public class RouteReflectionTest {
    */
   @Test
   public void testAcceptDifferentCluster() {
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+    SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         generateRoutesTwoReflectors(false);
 
     assertIbgpRoute(routes, RR1_NAME, AS1_PREFIX);
@@ -418,7 +414,7 @@ public class RouteReflectionTest {
    */
   @Test
   public void testNoRouteReflection() {
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+    SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         generateRoutesOneReflector(false, false);
 
     assertNoRoute(routes, EDGE1_NAME, AS3_PREFIX);
@@ -433,7 +429,7 @@ public class RouteReflectionTest {
    */
   @Test
   public void testRejectSameCluster() {
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+    SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         generateRoutesTwoReflectors(true);
 
     assertIbgpRoute(routes, RR1_NAME, AS1_PREFIX);
@@ -446,7 +442,7 @@ public class RouteReflectionTest {
    */
   @Test
   public void testSingleReflectorOneClient() {
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+    SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         generateRoutesOneReflector(true, false);
 
     assertIbgpRoute(routes, EDGE1_NAME, AS3_PREFIX);
@@ -461,7 +457,7 @@ public class RouteReflectionTest {
    */
   @Test
   public void testSingleReflectorTwoClients() {
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+    SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         generateRoutesOneReflector(true, true);
 
     assertIbgpRoute(routes, EDGE1_NAME, AS3_PREFIX);

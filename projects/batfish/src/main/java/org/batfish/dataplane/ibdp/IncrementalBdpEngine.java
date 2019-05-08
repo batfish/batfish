@@ -7,7 +7,8 @@ import static org.batfish.common.util.CommonUtil.toImmutableSortedMap;
 import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
 
-import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.util.HashMap;
@@ -704,7 +705,8 @@ class IncrementalBdpEngine {
    * Return the main RIB routes for each node. Map structure: Hostname -&gt; VRF name -&gt; Set of
    * routes
    */
-  static SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(
+  @VisibleForTesting
+  static SortedMap<String, SortedMap<String, Set<AbstractRoute>>> getRoutes(
       IncrementalDataPlane dp) {
     // Scan through all Nodes and their virtual routers, retrieve main rib routes
     return toImmutableSortedMap(
@@ -714,8 +716,7 @@ class IncrementalBdpEngine {
             toImmutableSortedMap(
                 nodeEntry.getValue().getVirtualRouters(),
                 Entry::getKey,
-                vrfEntry ->
-                    ImmutableSortedSet.copyOf(vrfEntry.getValue().getMainRib().getRoutes())));
+                vrfEntry -> ImmutableSet.copyOf(vrfEntry.getValue().getMainRib().getRoutes())));
   }
 
   /**
