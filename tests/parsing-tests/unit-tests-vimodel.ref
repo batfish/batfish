@@ -21684,6 +21684,16 @@
                   }
                 },
                 "name" : "blorp"
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "negate" : false
+                  }
+                },
+                "name" : "t3"
               }
             ],
             "sourceName" : "blah",
@@ -21799,6 +21809,28 @@
                   "expression" : {
                     "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                     "description" : "Firewall filter term t2",
+                    "headerSpace" : {
+                      "negate" : false
+                    }
+                  }
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.packet_policy.If",
+                "actions" : [
+                  {
+                    "class" : "org.batfish.datamodel.packet_policy.Return",
+                    "action" : {
+                      "class" : "org.batfish.datamodel.packet_policy.FibLookup",
+                      "vrfName" : "default"
+                    }
+                  }
+                ],
+                "trueStatements" : {
+                  "class" : "org.batfish.datamodel.packet_policy.PacketMatchExpr",
+                  "expression" : {
+                    "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                    "description" : "Firewall filter term t3",
                     "headerSpace" : {
                       "negate" : false
                     }
