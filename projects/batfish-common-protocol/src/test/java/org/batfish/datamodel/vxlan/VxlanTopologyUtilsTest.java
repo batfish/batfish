@@ -88,7 +88,7 @@ public final class VxlanTopologyUtilsTest {
           .collect(
               ImmutableSortedMap.toImmutableSortedMap(
                   Comparator.naturalOrder(),
-                  Function.identity(),
+                  Function.<Flow>identity(),
                   flow -> _results.get(flow.getIngressNode())));
     }
 
