@@ -1243,7 +1243,6 @@ public class VirtualRouter implements Serializable {
                 routeLevel == IsisLevel.LEVEL_1 ? RoutingProtocol.ISIS_L1 : RoutingProtocol.ISIS_L2;
             RibDelta.Builder<IsisRoute> deltaBuilder =
                 routeLevel == IsisLevel.LEVEL_1 ? l1DeltaBuilder : l2DeltaBuilder;
-            IsisLevelRib levelRib = routeLevel == IsisLevel.LEVEL_1 ? _isisL1Rib : _isisL2Rib;
             long incrementalMetric =
                 firstNonNull(isisLevelSettings.getCost(), IsisRoute.DEFAULT_METRIC);
             IsisRoute newRoute =
