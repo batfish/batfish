@@ -60,7 +60,7 @@ public final class VxlanTopologyUtilsTest {
 
   private static class TestTracerouteEngine implements TracerouteEngine {
 
-    Map<String, List<Trace>> _results;
+    private final Map<String, List<Trace>> _results;
 
     private TestTracerouteEngine(Map<String, TestTracerouteEngineResult> results) {
       _results =
@@ -119,14 +119,12 @@ public final class VxlanTopologyUtilsTest {
   private static final Ip SRC_IP2 = Ip.parse("10.0.0.1");
   private static final int UDP_PORT = 5555;
   private static final int VLAN1 = 1;
-
   private static final int VLAN2 = 2;
   private static final int VNI = 5000;
+
   private Configuration _c1;
   private Configuration _c2;
-
   private Vrf _v1;
-
   private Vrf _v2;
 
   private Map<String, Configuration> compatibleVxlanConfigs() {
