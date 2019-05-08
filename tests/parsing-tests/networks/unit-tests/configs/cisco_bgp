@@ -24,6 +24,7 @@ router bgp 1
  bgp maxas-limit 50
  bgp scan-time 5
  bgp bestpath med always
+ bgp redistribute-internal
  redistribute connected route-map bloop
  redistribute eigrp 1
  redistribute ospf abc

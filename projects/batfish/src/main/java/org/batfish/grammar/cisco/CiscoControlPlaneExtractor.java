@@ -498,6 +498,7 @@ import org.batfish.grammar.cisco.CiscoParser.Bgp_advertise_inactive_rb_stanzaCon
 import org.batfish.grammar.cisco.CiscoParser.Bgp_asnContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_confederation_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_listen_range_rb_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Bgp_redistribute_internal_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Boolean_and_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Boolean_apply_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Boolean_as_path_in_rp_stanzaContext;
@@ -4861,6 +4862,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         pg.setRemoteAs(remoteAs);
       }
     }
+  }
+
+  @Override
+  public void exitBgp_redistribute_internal_rb_stanza(
+      Bgp_redistribute_internal_rb_stanzaContext ctx) {
+    todo(ctx); // TODO(https://github.com/batfish/batfish/issues/3230)
   }
 
   @Override
