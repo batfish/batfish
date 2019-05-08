@@ -16,8 +16,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.topology.TopologyUtil;
@@ -515,7 +515,7 @@ public class EigrpTest {
             EigrpProcessMode.CLASSIC,
             EigrpProcessMode.CLASSIC,
             "GigabitEthernet");
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+    SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dp);
 
     long scale = 256L;
@@ -571,7 +571,7 @@ public class EigrpTest {
             EigrpProcessMode.CLASSIC,
             "GigabitEthernet",
             OSPF);
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+    SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dp);
 
     long scale = 256L;
@@ -630,7 +630,7 @@ public class EigrpTest {
             EigrpProcessMode.CLASSIC,
             "GigabitEthernet",
             RoutingProtocol.EIGRP);
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+    SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dp);
 
     long scale = 256L;
@@ -677,7 +677,7 @@ public class EigrpTest {
             EigrpProcessMode.NAMED,
             EigrpProcessMode.NAMED,
             "GigabitEthernet");
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+    SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dp);
 
     // named scale / rib scale
@@ -739,7 +739,7 @@ public class EigrpTest {
             EigrpProcessMode.CLASSIC,
             EigrpProcessMode.NAMED,
             "GigabitEthernet");
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+    SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dp);
 
     // r1
