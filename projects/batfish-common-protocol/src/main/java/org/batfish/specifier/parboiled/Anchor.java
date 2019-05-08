@@ -121,7 +121,7 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
      * Denotes a set operation for ipSpaceSpec. The full description is filled in {@link
      * ParboiledAutoCompleteSuggestion#completeDescriptionIfNeeded}.
      */
-    IP_SPACE_PARENS("IP_SPACE_PARENS", "IP space", "ipSpec", SuggestionType.OPEN_PARENS),
+    IP_SPACE_PARENS("IP_SPACE_PARENS", "IP space", "ipSpec)", SuggestionType.OPEN_PARENS),
     IP_SPACE_SET_OP("IP_SPACE_SET_OP", " of IP spaces", "ipSpec", SuggestionType.SET_OPERATOR),
     /** IPv4 wildcard ip1:ip2 */
     IP_WILDCARD("IP_WILDCARD", "IP wildcard", null, SuggestionType.ADDRESS_LITERAL),
