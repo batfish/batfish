@@ -1526,7 +1526,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
          * repair if necessary. However, it might not be cached if it was not
          * repaired, so we still might need to load it from disk.
          */
-        loadDataPlaneAnswerElement(false);
+        loadDataPlaneAnswerElement();
         dp = _cachedDataPlanes.getIfPresent(snapshot);
         if (dp == null) {
           newBatch("Loading data plane from disk", 0);
@@ -1539,20 +1539,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private DataPlaneAnswerElement loadDataPlaneAnswerElement() {
-    return loadDataPlaneAnswerElement(true);
-  }
-
-  private DataPlaneAnswerElement loadDataPlaneAnswerElement(boolean firstAttempt) {
     DataPlaneAnswerElement bae =
         deserializeObject(_testrigSettings.getDataPlaneAnswerPath(), DataPlaneAnswerElement.class);
     if (!Version.isCompatibleVersion("Service", "Old data plane", bae.getVersion())) {
-      if (firstAttempt) {
-        repairDataPlane();
-        return loadDataPlaneAnswerElement(false);
-      } else {
-        throw new BatfishException(
-            "Version error repairing data plane for data plane answer element");
-      }
+      throw new BatfishException(
+          "Version error repairing data plane for data plane answer element");
     } else {
       return bae;
     }
@@ -2331,13 +2322,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     Path inputPath = _testrigSettings.getSerializeVendorPath();
     serializeIndependentConfigs(inputPath);
-  }
-
-  private void repairDataPlane() {
-    CommonUtil.deleteIfExists(_testrigSettings.getDataPlanePath());
-    CommonUtil.deleteIfExists(_testrigSettings.getDataPlaneAnswerPath());
-
-    computeDataPlane();
   }
 
   /**
