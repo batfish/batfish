@@ -1089,8 +1089,8 @@ public class VirtualRouter implements Serializable {
     _ibgpStagingRib = new Bgpv4Rib(_mainRib, tieBreaker, null, mpTieBreaker, false);
 
     // EVPN
-    _ebgpEvpnRib = new EvpnRib<>(null, _mainRib, tieBreaker, null, mpTieBreaker);
-    _ibgpEvpnRib = new EvpnRib<>(null, _mainRib, tieBreaker, null, mpTieBreaker);
+    _ebgpEvpnRib = new EvpnRib<>(_mainRib, tieBreaker, null, mpTieBreaker);
+    _ibgpEvpnRib = new EvpnRib<>(_mainRib, tieBreaker, null, mpTieBreaker);
 
     // ISIS
     _isisRib = new IsisRib(isL1Only());
