@@ -6,8 +6,9 @@
   "filterSpecifierInput" : "input",
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Show the resolved values for filter specifier",
+    "description" : "Returns resolved values for filter specifier.",
     "instanceName" : "qname",
+    "longDescription" : "Helper question that shows how specified filterSpec values resolve to the filters in the network.",
     "tags" : [
       "specifiers"
     ],
