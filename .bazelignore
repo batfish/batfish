@@ -6,5 +6,7 @@ projects/batfish-client/target
 projects/batfish-common-protocol/target
 projects/bdd/target
 projects/build-tools/target
+projects/minesweeper/target
 projects/question/target
+projects/symbolic/target
 
