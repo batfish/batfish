@@ -297,7 +297,7 @@ public class VirtualRouterTest {
 
     Ip vniSourceAddress = Ip.parse("2.2.2.2");
     assertThat(
-        vr._evpnRibEbgp.getTypedRoutes(),
+        vr._ebgpEvpnRib.getTypedRoutes(),
         equalTo(
             ImmutableSet.of(
                 EvpnType3Route.builder()

@@ -170,10 +170,10 @@ public class VirtualRouter implements Serializable {
   transient Bgpv4Rib _ibgpStagingRib;
 
   /** Helper RIB containing paths obtained with EVPN over eBGP */
-  transient EvpnRib<EvpnRoute> _evpnRibEbgp;
+  transient EvpnRib<EvpnRoute> _ebgpEvpnRib;
 
   /** Helper RIB containing paths obtained with EVPN over iBGP */
-  transient EvpnRib<EvpnRoute> _evpnRibIbgp;
+  transient EvpnRib<EvpnRoute> _ibgpEvpnRib;
 
   /**
    * The independent RIB contains connected and static routes, which are unaffected by BDP
@@ -807,8 +807,12 @@ public class VirtualRouter implements Serializable {
               layer3VniConfig -> {
                 boolean ebgp =
                     !peerConfig.getRemoteAsns().equals(LongSpace.of(peerConfig.getLocalAs()));
-                EvpnRib<EvpnRoute> ribForThisRoute = ebgp ? _evpnRibEbgp : _evpnRibIbgp;
+                EvpnRib<EvpnRoute> ribForThisRoute = ebgp ? _ebgpEvpnRib : _ibgpEvpnRib;
                 VniSettings vniSettings = _vrf.getVniSettings().get(layer3VniConfig.getVni());
+                checkState(
+                    vniSettings != null,
+                    String.format(
+                        "Cannot find VNI settings for VNI: %s", layer3VniConfig.getVni()));
                 EvpnType3Route.Builder type3RouteBuilder = EvpnType3Route.builder();
                 type3RouteBuilder.setAdmin(ebgp ? ebgpAdmin : ibgpAdmin);
                 type3RouteBuilder.setCommunities(ImmutableSet.of(layer3VniConfig.getRouteTarget()));
@@ -1085,8 +1089,8 @@ public class VirtualRouter implements Serializable {
     _ibgpStagingRib = new Bgpv4Rib(null, _mainRib, tieBreaker, null, mpTieBreaker);
 
     // EVPN
-    _evpnRibEbgp = new EvpnRib<>(null, _mainRib, tieBreaker, null, mpTieBreaker);
-    _evpnRibIbgp = new EvpnRib<>(null, _mainRib, tieBreaker, null, mpTieBreaker);
+    _ebgpEvpnRib = new EvpnRib<>(null, _mainRib, tieBreaker, null, mpTieBreaker);
+    _ibgpEvpnRib = new EvpnRib<>(null, _mainRib, tieBreaker, null, mpTieBreaker);
 
     // ISIS
     _isisRib = new IsisRib(isL1Only());
