@@ -732,7 +732,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       NetworkSnapshot networkSnapshot = getNetworkSnapshot();
       _storage.storeBgpTopology(topologies.getBgpTopology(), networkSnapshot);
       _storage.storeEigrpTopology(topologies.getEigrpTopology(), networkSnapshot);
-      _storage.storeLayer2Topology(topologies.getLayer2Topology(), networkSnapshot);
+      _storage.storeLayer2Topology(topologies.getLayer2Topology().orElse(null), networkSnapshot);
       _storage.storeLayer3Topology(topologies.getLayer3Topology(), networkSnapshot);
       _storage.storeOspfTopology(topologies.getOspfTopology(), networkSnapshot);
       _storage.storeVxlanTopology(topologies.getVxlanTopology(), networkSnapshot);

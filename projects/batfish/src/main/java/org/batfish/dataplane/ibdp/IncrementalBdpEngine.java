@@ -2,9 +2,13 @@ package org.batfish.dataplane.ibdp;
 
 import static org.batfish.common.topology.TopologyUtil.computeIpNodeOwners;
 import static org.batfish.common.topology.TopologyUtil.computeIpVrfOwners;
+import static org.batfish.common.topology.TopologyUtil.computeLayer2Topology;
+import static org.batfish.common.topology.TopologyUtil.computeLayer3Topology;
 import static org.batfish.common.topology.TopologyUtil.computeNodeInterfaces;
+import static org.batfish.common.topology.TopologyUtil.computeRawLayer3Topology;
 import static org.batfish.common.util.CommonUtil.toImmutableSortedMap;
 import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
+import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.prunedVxlanTopology;
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -36,6 +40,8 @@ import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.isis.IsisTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
+import org.batfish.datamodel.vxlan.VxlanTopology;
+import org.batfish.datamodel.vxlan.VxlanTopologyUtils;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.dataplane.ibdp.schedule.IbdpSchedule;
 import org.batfish.dataplane.ibdp.schedule.IbdpSchedule.Schedule;
@@ -79,6 +85,7 @@ class IncrementalBdpEngine {
               .setIsisTopology(
                   IsisTopology.initIsisTopology(
                       configurations, callerTopologyContext.getLayer3Topology()))
+              .setVxlanTopology(VxlanTopologyUtils.initialVxlanTopology(configurations))
               .build();
 
       // Generate our nodes, keyed by name, sorted for determinism
@@ -119,6 +126,46 @@ class IncrementalBdpEngine {
                   .setLayer3Topology(currentTopologyContext.getLayer3Topology())
                   .build();
 
+          // Update topologies
+          TopologyContext newTopologyContext = currentTopologyContext;
+
+          // VXLAN
+          newTopologyContext =
+              newTopologyContext
+                  .toBuilder()
+                  .setVxlanTopology(
+                      prunedVxlanTopology(
+                          initialTopologyContext.getVxlanTopology(),
+                          configurations,
+                          new TracerouteEngineImpl(
+                              partialDataplane, newTopologyContext.getLayer3Topology())))
+                  .build();
+          // Layer-2
+          final VxlanTopology vxlanTopology = newTopologyContext.getVxlanTopology();
+          newTopologyContext =
+              newTopologyContext
+                  .toBuilder()
+                  .setLayer2Topology(
+                      newTopologyContext
+                          .getLayer1LogicalTopology()
+                          .map(l1 -> computeLayer2Topology(l1, vxlanTopology, configurations)))
+                  .build();
+          // Layer-3
+          newTopologyContext =
+              newTopologyContext
+                  .toBuilder()
+                  .setLayer3Topology(
+                      computeLayer3Topology(
+                          computeRawLayer3Topology(
+                              newTopologyContext.getRawLayer1PhysicalTopology(),
+                              newTopologyContext.getLayer2Topology(),
+                              configurations),
+                          newTopologyContext.getEdgeBlacklist(),
+                          newTopologyContext.getNodeBlacklist(),
+                          newTopologyContext.getInterfaceBlacklist(),
+                          configurations))
+                  .build();
+
           // Initialize BGP topology
           BgpTopology bgpTopology =
               initBgpTopology(
@@ -127,10 +174,9 @@ class IncrementalBdpEngine {
                   false,
                   true,
                   new TracerouteEngineImpl(
-                      partialDataplane, currentTopologyContext.getLayer3Topology()),
-                  initialTopologyContext.getLayer2Topology());
-          TopologyContext newTopologyContext =
-              currentTopologyContext.toBuilder().setBgpTopology(bgpTopology).build();
+                      partialDataplane, newTopologyContext.getLayer3Topology()),
+                  initialTopologyContext.getLayer2Topology().orElse(null));
+          newTopologyContext = newTopologyContext.toBuilder().setBgpTopology(bgpTopology).build();
 
           boolean isOscillating =
               computeNonMonotonicPortionOfDataPlane(

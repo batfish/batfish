@@ -3,14 +3,19 @@ package org.batfish.common.topology;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.ImmutableNetwork;
 import com.google.common.graph.MutableNetwork;
 import com.google.common.graph.NetworkBuilder;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 
+/** Represents physical (logical) wiring between physical (logical) interfaces. */
+@ParametersAreNonnullByDefault
 public final class Layer1Topology {
+  public static final Layer1Topology EMPTY = new Layer1Topology(ImmutableList.of());
   private static final String PROP_EDGES = "edges";
 
   @JsonCreator
@@ -33,6 +38,16 @@ public final class Layer1Topology {
     _graph = ImmutableNetwork.copyOf(graph);
   }
 
+  @JsonIgnore
+  public @Nonnull ImmutableNetwork<Layer1Node, Layer1Edge> getGraph() {
+    return _graph;
+  }
+
+  @JsonProperty(PROP_EDGES)
+  private SortedSet<Layer1Edge> getJsonEdges() {
+    return ImmutableSortedSet.copyOf(_graph.edges());
+  }
+
   @Override
   public boolean equals(Object obj) {
     if (this == obj) {
@@ -42,16 +57,6 @@ public final class Layer1Topology {
       return false;
     }
     return _graph.equals(((Layer1Topology) obj)._graph);
-  }
-
-  @JsonIgnore
-  public @Nonnull ImmutableNetwork<Layer1Node, Layer1Edge> getGraph() {
-    return _graph;
-  }
-
-  @JsonProperty(PROP_EDGES)
-  private SortedSet<Layer1Edge> getJsonEdges() {
-    return ImmutableSortedSet.copyOf(_graph.edges());
   }
 
   @Override
