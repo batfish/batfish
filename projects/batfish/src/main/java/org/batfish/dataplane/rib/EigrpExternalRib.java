@@ -1,7 +1,6 @@
 package org.batfish.dataplane.rib;
 
 import java.util.Comparator;
-import java.util.TreeMap;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.EigrpExternalRoute;
 
@@ -12,7 +11,7 @@ public class EigrpExternalRib extends AbstractRib<EigrpExternalRoute> {
   private static final long serialVersionUID = 1L;
 
   public EigrpExternalRib() {
-    super(new TreeMap<>());
+    super(true);
   }
 
   @Override

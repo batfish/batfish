@@ -10,7 +10,7 @@ public class LocalRib extends AnnotatedRib<LocalRoute> {
   private static final long serialVersionUID = 1L;
 
   public LocalRib() {
-    super(null);
+    super();
   }
 
   @Override

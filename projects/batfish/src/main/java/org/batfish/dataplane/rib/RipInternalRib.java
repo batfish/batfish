@@ -10,7 +10,7 @@ public class RipInternalRib extends AbstractRib<RipInternalRoute> {
   private static final long serialVersionUID = 1L;
 
   public RipInternalRib() {
-    super(null);
+    super();
   }
 
   @Override

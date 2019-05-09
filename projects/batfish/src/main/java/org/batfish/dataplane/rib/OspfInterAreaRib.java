@@ -9,7 +9,7 @@ public class OspfInterAreaRib extends AbstractRib<OspfInterAreaRoute> {
   private static final long serialVersionUID = 1L;
 
   public OspfInterAreaRib() {
-    super(null);
+    super();
   }
 
   @Override
