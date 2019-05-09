@@ -25,7 +25,7 @@
           "schema" : "Prefix"
         },
         {
-          "description" : "Route's Next Hop's Hostname",
+          "description" : "Inferred hostname of the next hop",
           "isKey" : false,
           "isValue" : true,
           "name" : "Next_Hop",

@@ -11,35 +11,35 @@
           "schema" : "List<String>"
         },
         {
-          "description" : "Unreachable line",
+          "description" : "Filter line that cannot be matched (i.e., unreachable)",
           "isKey" : true,
           "isValue" : false,
           "name" : "Unreachable_Line",
           "schema" : "String"
         },
         {
-          "description" : "Unreachable line action",
+          "description" : "Action performed by the unreachable line (e.g., PERMIT or DENY)",
           "isKey" : true,
           "isValue" : false,
           "name" : "Unreachable_Line_Action",
           "schema" : "String"
         },
         {
-          "description" : "Blocking lines",
+          "description" : "Lines that, when combined, cover the unreachable line",
           "isKey" : false,
           "isValue" : true,
           "name" : "Blocking_Lines",
           "schema" : "List<String>"
         },
         {
-          "description" : "Different action",
+          "description" : "Whether unreachable line has an action different from the blocking line(s)",
           "isKey" : false,
           "isValue" : true,
           "name" : "Different_Action",
           "schema" : "Boolean"
         },
         {
-          "description" : "Reason unreachable",
+          "description" : "The reason a line is unreachable",
           "isKey" : false,
           "isValue" : true,
           "name" : "Reason",
