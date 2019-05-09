@@ -2,9 +2,9 @@
     "class": "org.batfish.question.edges.EdgesQuestion",
     "differential": false,
     "instance": {
-        "description": "Lists different types of edges in a snapshot",
+        "description": "Returns different types of network adjacencies in a snapshot.",
         "instanceName": "edges",
-        "longDescription": "Lists neighbor relationships of the specified type (layer3, BGP, ospf, etc. in the form of edges)",
+        "longDescription": "Lists network adjacencies of different types (e.g., layer3, BGP, OSPF) in the form of edges.",
         "tags": [
             "topology"
         ],

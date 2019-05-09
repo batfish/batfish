@@ -7,7 +7,7 @@
     "instance": {
         "description": "Validate multipath consistency.",
         "instanceName": "multipathConsistency",
-        "longDescription": "Finds flows that are treated differently by different paths in the presence of multipath routing",
+        "longDescription": "Searches across all flows in the network and returns examples flows that are treated differently by different paths in the presence of multipath routing.",
         "tags": [
             "dataPlane",
             "reachability",

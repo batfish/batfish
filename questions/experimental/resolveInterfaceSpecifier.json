@@ -5,8 +5,9 @@
     "queryType": "interface",
     "specifierFactoryVersion": "${grammarVersion}", 
     "instance": {
-        "description": "Show the resolved values for interface specifier",
+        "description": "Returns resolved values for interface specifier.",
         "instanceName": "resolveInterfaceSpecifier",
+        "longDescription": "Helper question that shows how specified interfaceSpec values resolve to the interfaces in the network.",
         "tags": [
             "specifiers"
         ],

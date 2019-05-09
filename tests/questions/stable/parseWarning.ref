@@ -4,7 +4,7 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Return a table of the Batfish warnings that occurred parsing this snapshot",
+    "description" : "Return warnings that occurred when parsing the snapshot",
     "instanceName" : "qname",
     "tags" : [
       "file",

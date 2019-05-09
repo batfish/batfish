@@ -4,8 +4,9 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Returns the mapping of IP address, interface, node and VRF for all devices in the snapshot",
+    "description" : "Returns where IP addresses are attached in the network.",
     "instanceName" : "qname",
+    "longDescription" : "For each device, lists the mapping from IPs to corresponding interface(s) and VRF(s).",
     "tags" : [
       "configuration",
       "ip"
