@@ -3,6 +3,7 @@ package org.batfish.question.bgpsessionstatus;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
+import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswerer.COL_REMOTE_INTERFACE;
 import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.COL_ESTABLISHED_STATUS;
 import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.COL_LOCAL_AS;
@@ -31,8 +32,13 @@ import com.google.common.graph.ValueGraph;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import org.batfish.common.NetworkSnapshot;
+import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.common.topology.Layer2Edge;
 import org.batfish.common.topology.Layer2Topology;
+import org.batfish.common.topology.TopologyProvider;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
@@ -52,12 +58,17 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.SelfDescribingObject;
+import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
+import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.SessionStatus;
+import org.batfish.specifier.MockSpecifierContext;
+import org.batfish.specifier.SpecifierContext;
 import org.hamcrest.Matcher;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /** Tests of {@link BgpSessionStatusAnswerer} */
@@ -73,8 +84,8 @@ public class BgpSessionStatusAnswererTest {
   This results in four rows, represented by ROW_1, ROW_2, ROW_3, and ROW_4.
    */
 
-  private final Map<String, Configuration> _configurations;
-  private final ValueGraph<BgpPeerConfigId, BgpSessionProperties> _topology;
+  private static SortedMap<String, Configuration> CONFIGURATIONS;
+  private static ValueGraph<BgpPeerConfigId, BgpSessionProperties> TOPOLOGY;
 
   private static final Ip IP1 = Ip.parse("1.1.1.1");
   private static final Ip IP2 = Ip.parse("2.2.2.2");
@@ -151,7 +162,8 @@ public class BgpSessionStatusAnswererTest {
           .put(COL_VRF, "vrf")
           .build();
 
-  public BgpSessionStatusAnswererTest() {
+  @BeforeClass
+  public static void initConfigsAndTopology() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -163,7 +175,7 @@ public class BgpSessionStatusAnswererTest {
         createConfigurationWithDynamicSession(
             cb, IP4, Prefix.create(IP3, 24), ImmutableList.of(3L));
 
-    _configurations = ImmutableSortedMap.of(NODE1, node1, NODE2, node2, NODE3, node3, NODE4, node4);
+    CONFIGURATIONS = ImmutableSortedMap.of(NODE1, node1, NODE2, node2, NODE3, node3, NODE4, node4);
 
     Map<Ip, Set<String>> ipOwners =
         ImmutableMap.of(
@@ -175,7 +187,7 @@ public class BgpSessionStatusAnswererTest {
             ImmutableSet.of(NODE3),
             IP4,
             ImmutableSet.of(NODE4));
-    _topology = initBgpTopology(_configurations, ipOwners, false, null).getGraph();
+    TOPOLOGY = initBgpTopology(CONFIGURATIONS, ipOwners, false, null).getGraph();
   }
 
   private static Configuration createConfiguration(
@@ -243,13 +255,13 @@ public class BgpSessionStatusAnswererTest {
     List<Row> rows =
         getRows(
             q,
-            _configurations,
+            CONFIGURATIONS,
             ALL_NODES,
             ALL_NODES,
             METADATA_MAP,
             ImmutableSet.of(),
-            _topology,
-            _topology);
+            TOPOLOGY,
+            TOPOLOGY);
     assertThat(rows, contains(ROW_1, ROW_2, ROW_3, ROW_4));
   }
 
@@ -259,13 +271,13 @@ public class BgpSessionStatusAnswererTest {
     List<Row> rows =
         getRows(
             q,
-            _configurations,
+            CONFIGURATIONS,
             ImmutableSet.of(NODE1),
             ALL_NODES,
             METADATA_MAP,
             ImmutableSet.of(),
-            _topology,
-            _topology);
+            TOPOLOGY,
+            TOPOLOGY);
     assertThat(rows, contains(ROW_1));
   }
 
@@ -275,13 +287,13 @@ public class BgpSessionStatusAnswererTest {
     List<Row> rows =
         getRows(
             q,
-            _configurations,
+            CONFIGURATIONS,
             ALL_NODES,
             ImmutableSet.of(NODE1),
             METADATA_MAP,
             ImmutableSet.of(),
-            _topology,
-            _topology);
+            TOPOLOGY,
+            TOPOLOGY);
     assertThat(rows, contains(ROW_2));
   }
 
@@ -293,26 +305,26 @@ public class BgpSessionStatusAnswererTest {
     List<Row> rows =
         getRows(
             q,
-            _configurations,
+            CONFIGURATIONS,
             ALL_NODES,
             ALL_NODES,
             METADATA_MAP,
             ImmutableSet.of(),
-            _topology,
-            _topology);
+            TOPOLOGY,
+            TOPOLOGY);
     assertThat(rows, contains(ROW_1, ROW_2, ROW_3, ROW_4));
 
     q = new BgpSessionStatusQuestion(null, null, SessionStatus.NOT_COMPATIBLE.name(), null);
     rows =
         getRows(
             q,
-            _configurations,
+            CONFIGURATIONS,
             ALL_NODES,
             ALL_NODES,
             METADATA_MAP,
             ImmutableSet.of(),
-            _topology,
-            _topology);
+            TOPOLOGY,
+            TOPOLOGY);
     assertThat(rows, empty());
   }
 
@@ -324,13 +336,13 @@ public class BgpSessionStatusAnswererTest {
     List<Row> rows =
         getRows(
             q,
-            _configurations,
+            CONFIGURATIONS,
             ALL_NODES,
             ALL_NODES,
             METADATA_MAP,
             ImmutableSet.of(),
-            _topology,
-            _topology);
+            TOPOLOGY,
+            TOPOLOGY);
     assertThat(rows, contains(ROW_1, ROW_2));
 
     // Session between nodes 3 and 4 has type IBGP
@@ -338,13 +350,13 @@ public class BgpSessionStatusAnswererTest {
     rows =
         getRows(
             q,
-            _configurations,
+            CONFIGURATIONS,
             ALL_NODES,
             ALL_NODES,
             METADATA_MAP,
             ImmutableSet.of(),
-            _topology,
-            _topology);
+            TOPOLOGY,
+            TOPOLOGY);
     assertThat(rows, containsInAnyOrder(ROW_3, ROW_4));
   }
 
@@ -431,5 +443,51 @@ public class BgpSessionStatusAnswererTest {
                 hasColumn(COL_LOCAL_INTERFACE, nip2, Schema.INTERFACE),
                 hasColumn(COL_REMOTE_NODE, new Node(NODE1), Schema.NODE),
                 hasColumn(COL_REMOTE_INTERFACE, nip1, Schema.INTERFACE))));
+  }
+
+  @Test
+  public void testFullEndToEndAnswer() {
+    BgpSessionStatusAnswerer answerer =
+        new BgpSessionStatusAnswerer(new BgpSessionStatusQuestion(), new MockBatfish());
+    assertThat(
+        (TableAnswerElement) answerer.answer(),
+        hasRows(containsInAnyOrder(ROW_1, ROW_2, ROW_3, ROW_4)));
+  }
+
+  static class MockBatfish extends IBatfishTestAdapter {
+    @Override
+    public SortedMap<String, Configuration> loadConfigurations() {
+      return CONFIGURATIONS;
+    }
+
+    @Override
+    public SpecifierContext specifierContext() {
+      return MockSpecifierContext.builder().setConfigs(CONFIGURATIONS).build();
+    }
+
+    @Override
+    public TopologyProvider getTopologyProvider() {
+      return new MockTopologyProvider(this);
+    }
+
+    /**
+     * Provides empty layer 2 topology and BGP topology based on {@link
+     * BgpSessionStatusAnswererTest#TOPOLOGY}.
+     */
+    static class MockTopologyProvider extends TopologyProviderTestAdapter {
+      MockTopologyProvider(IBatfish bf) {
+        super(bf);
+      }
+
+      @Override
+      public Layer2Topology getLayer2Topology(NetworkSnapshot networkSnapshot) {
+        return Layer2Topology.EMPTY;
+      }
+
+      @Override
+      public BgpTopology getBgpTopology(NetworkSnapshot snapshot) {
+        return new BgpTopology(TOPOLOGY);
+      }
+    }
   }
 }

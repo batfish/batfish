@@ -21,21 +21,25 @@ import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 @ParametersAreNonnullByDefault
 public final class Layer3VniConfig implements Serializable, Comparable<Layer3VniConfig> {
   private static final long serialVersionUID = 1L;
+  private static final String PROP_VNI = "vni";
   private static final String PROP_VRF = "vrf";
   private static final String PROP_ROUTE_DISTINGUISHER = "routeDistinguisher";
   private static final String PROP_ROUTE_TARGET = "routeTarget";
   private static final String PROP_ADVERTISE_V4_UNICAST = "advertiseV4UnicastRoutes";
 
+  private final int _vni;
   @Nonnull private final String _vrf;
   @Nonnull private final RouteDistinguisher _rd;
   @Nonnull private final ExtendedCommunity _routeTarget;
   private final boolean _advertisev4Unicast;
 
   public Layer3VniConfig(
+      int vni,
       String vrf,
       RouteDistinguisher rd,
       ExtendedCommunity routeTarget,
       boolean advertisev4Unicast) {
+    _vni = vni;
     _vrf = vrf;
     _rd = rd;
     _routeTarget = routeTarget;
@@ -44,15 +48,22 @@ public final class Layer3VniConfig implements Serializable, Comparable<Layer3Vni
 
   @JsonCreator
   private static Layer3VniConfig create(
+      @Nullable @JsonProperty(PROP_VNI) Integer vni,
       @Nullable @JsonProperty(PROP_VRF) String vrf,
       @Nullable @JsonProperty(PROP_ROUTE_DISTINGUISHER) RouteDistinguisher rd,
       @Nullable @JsonProperty(PROP_ROUTE_TARGET) ExtendedCommunity routeTarget,
       @Nullable @JsonProperty(PROP_ADVERTISE_V4_UNICAST) Boolean advertisev4Unicast) {
+    checkArgument(vni != null, "Missing %s", PROP_VNI);
     checkArgument(vrf != null, "Missing %s", PROP_VRF);
     checkArgument(rd != null, "Missing %s", PROP_ROUTE_DISTINGUISHER);
     checkArgument(routeTarget != null, "Missing %s", PROP_ROUTE_TARGET);
     return new Layer3VniConfig(
-        vrf, rd, routeTarget, firstNonNull(advertisev4Unicast, Boolean.FALSE));
+        vni, vrf, rd, routeTarget, firstNonNull(advertisev4Unicast, Boolean.FALSE));
+  }
+
+  @JsonProperty(PROP_VNI)
+  public int getVni() {
+    return _vni;
   }
 
   /** The VRF to which this VNI belongs */
@@ -94,7 +105,8 @@ public final class Layer3VniConfig implements Serializable, Comparable<Layer3Vni
       return false;
     }
     Layer3VniConfig vniConfig = (Layer3VniConfig) o;
-    return Objects.equals(_vrf, vniConfig._vrf)
+    return _vni == vniConfig._vni
+        && Objects.equals(_vrf, vniConfig._vrf)
         && Objects.equals(_rd, vniConfig._rd)
         && Objects.equals(_routeTarget, vniConfig._routeTarget)
         && _advertisev4Unicast == vniConfig._advertisev4Unicast;
@@ -102,7 +114,7 @@ public final class Layer3VniConfig implements Serializable, Comparable<Layer3Vni
 
   @Override
   public int hashCode() {
-    return Objects.hash(_vrf, _rd, _routeTarget);
+    return Objects.hash(_vni, _vrf, _rd, _routeTarget);
   }
 
   @Override
@@ -117,6 +129,7 @@ public final class Layer3VniConfig implements Serializable, Comparable<Layer3Vni
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this)
+        .add(PROP_VNI, _vni)
         .add(PROP_VRF, _vrf)
         .add(PROP_ROUTE_DISTINGUISHER, _rd)
         .add(PROP_ROUTE_TARGET, _routeTarget)

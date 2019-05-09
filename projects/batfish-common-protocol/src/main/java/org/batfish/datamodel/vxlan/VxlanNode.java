@@ -8,10 +8,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 
 /** A VXLAN endpoint. */
-@ParametersAreNonnullByDefault
 public final class VxlanNode {
 
   private static final String PROP_HOSTNAME = "hostname";

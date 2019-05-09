@@ -15203,6 +15203,11 @@
             "              ALWAYS:'always'",
             "              NEWLINE:'\\n'))))",
             "      (router_bgp_stanza_tail",
+            "        (bgp_redistribute_internal_rb_stanza",
+            "          BGP:'bgp'",
+            "          REDISTRIBUTE_INTERNAL:'redistribute-internal'",
+            "          NEWLINE:'\\n'))",
+            "      (router_bgp_stanza_tail",
             "        (bgp_tail",
             "          (redistribute_connected_bgp_tail",
             "            REDISTRIBUTE:'redistribute'",
@@ -58765,6 +58770,31 @@
             "            FIREWALL:'firewall'",
             "            (f_family",
             "              FAMILY:'family'",
+            "              INET:'inet'",
+            "              (f_common",
+            "                (f_filter",
+            "                  FILTER:'filter'",
+            "                  name = (variable",
+            "                    text = VARIABLE:'blah')",
+            "                  (ff_term",
+            "                    TERM:'term'",
+            "                    name = (variable",
+            "                      text = VARIABLE:'t3')",
+            "                    (fft_then",
+            "                      THEN:'then'",
+            "                      (fftt_next_ip",
+            "                        NEXT_IP:'next-ip'",
+            "                        prefix = IP_PREFIX:'1.2.3.4/5'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_firewall",
+            "            FIREWALL:'firewall'",
+            "            (f_family",
+            "              FAMILY:'family'",
             "              INET6:'inet6'",
             "              (f_common",
             "                (f_filter",
@@ -72646,21 +72676,33 @@
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 29,
-              "Parser_Context" : "[redistribute_ospf_bgp_tail bgp_tail router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
-              "Text" : "redistribute ospf abc"
+              "Line" : 27,
+              "Parser_Context" : "[bgp_redistribute_internal_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
+              "Text" : "bgp redistribute-internal"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 30,
               "Parser_Context" : "[redistribute_ospf_bgp_tail bgp_tail router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
-              "Text" : "redistribute ospf 2"
+              "Text" : "redistribute ospf abc"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 31,
               "Parser_Context" : "[redistribute_ospf_bgp_tail bgp_tail router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
+              "Text" : "redistribute ospf 2"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 32,
+              "Parser_Context" : "[redistribute_ospf_bgp_tail bgp_tail router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
               "Text" : "redistribute ospf 2 vrf vrf1"
+            },
+            {
+              "Comment" : "BGP unusuppress-map is not currently supported",
+              "Line" : 40,
+              "Parser_Context" : "[unsuppress_map_bgp_tail bgp_tail neighbor_flat_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
+              "Text" : "unsuppress-map UNSUPP-MAP"
             }
           ]
         },
@@ -74612,6 +74654,22 @@
             }
           ]
         },
+        "configs/ios_bgp" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "BGP advertise-map is not currently supported",
+              "Line" : 5,
+              "Parser_Context" : "[advertise_map_bgp_tail bgp_tail neighbor_flat_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
+              "Text" : "advertise-map ADVERTISE_MAP exist-map EXIST_MAP"
+            },
+            {
+              "Comment" : "BGP exist-map is not currently supported",
+              "Line" : 5,
+              "Parser_Context" : "[advertise_map_bgp_tail bgp_tail neighbor_flat_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
+              "Text" : "advertise-map ADVERTISE_MAP exist-map EXIST_MAP"
+            }
+          ]
+        },
         "configs/ios_xr_bgp_neighbor_group" : {
           "Parse warnings" : [
             {
@@ -74705,6 +74763,14 @@
           ]
         },
         "configs/juniper_firewall" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "Filter-based forwarding with next-hop-ip is not currently supported",
+              "Line" : 35,
+              "Parser_Context" : "[fftt_next_ip fft_then ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "next-ip 1.2.3.4/5"
+            }
+          ],
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
@@ -76069,10 +76135,10 @@
           "bgp template peer-policy" : {
             "p1" : {
               "definitionLines" : [
-                34,
                 35,
                 36,
-                37
+                37,
+                38
               ],
               "numReferrers" : 0
             }
@@ -76080,25 +76146,25 @@
           "route-map" : {
             "AGGREGATE-MAP" : {
               "definitionLines" : [
-                56
+                57
               ],
               "numReferrers" : 1
             },
             "CONNECTED-TO-BGP" : {
               "definitionLines" : [
-                54
+                55
               ],
               "numReferrers" : 1
             },
             "UNSUPP-MAP" : {
               "definitionLines" : [
-                58
+                59
               ],
               "numReferrers" : 1
             },
             "ospfv3_map" : {
               "definitionLines" : [
-                52
+                53
               ],
               "numReferrers" : 1
             }
@@ -76106,7 +76172,7 @@
           "standard ipv4 access-list" : {
             "5" : {
               "definitionLines" : [
-                60
+                61
               ],
               "numReferrers" : 2
             }
@@ -80275,7 +80341,7 @@
           "firewall filter" : {
             "ISP-INBOUND-L2" : {
               "definitionLines" : [
-                40
+                42
               ],
               "numReferrers" : 0
             },
@@ -80306,15 +80372,16 @@
                 27,
                 30,
                 31,
-                33
+                33,
+                35
               ],
               "numReferrers" : 0
             },
             "blah6" : {
               "definitionLines" : [
-                35,
-                36,
-                37
+                37,
+                38,
+                39
               ],
               "numReferrers" : 0
             },
@@ -83132,69 +83199,69 @@
           "bgp template peer-policy" : {
             "p2" : {
               "inherited BGP peer-policy" : [
-                35
+                36
               ]
             },
             "p3" : {
               "inherited BGP peer-policy" : [
-                36
+                37
               ]
             }
           },
           "ipv4 acl" : {
             "5" : {
               "bgp neighbor distribute-list access-list in" : [
-                40
+                41
               ],
               "bgp neighbor distribute-list access-list out" : [
-                41
+                42
               ]
             }
           },
           "route-map" : {
             "AGGREGATE-MAP" : {
               "bgp vrf aggregate-address attribute-map" : [
-                48
+                49
               ]
             },
             "CONNECTED-TO-BGP" : {
               "bgp redistribute connected route-map" : [
-                49
+                50
               ]
             },
             "UNSUPP-MAP" : {
               "bgp unsuppress-map" : [
-                39
+                40
               ]
             },
             "abcdefg" : {
               "bgp redistribute static route-map" : [
-                32
+                33
               ]
             },
             "blah" : {
               "bgp redistribute rip route-map" : [
-                33
+                34
               ]
             },
             "bloop" : {
               "bgp redistribute connected route-map" : [
-                27
+                28
               ]
             },
             "ospfv3_map" : {
               "bgp redistribute ospfv3 route-map" : [
-                44
+                45
               ]
             }
           },
           "undeclared bgp peer" : {
             "10.0.0.1" : {
               "bgp neighbor without remote-as" : [
-                38,
                 39,
                 40,
-                41
+                41,
+                42
               ]
             },
             "10.20.2.2" : {
@@ -87267,39 +87334,39 @@
           "bgp template peer-policy" : {
             "p2" : {
               "inherited BGP peer-policy" : [
-                35
+                36
               ]
             },
             "p3" : {
               "inherited BGP peer-policy" : [
-                36
+                37
               ]
             }
           },
           "route-map" : {
             "abcdefg" : {
               "bgp redistribute static route-map" : [
-                32
+                33
               ]
             },
             "blah" : {
               "bgp redistribute rip route-map" : [
-                33
+                34
               ]
             },
             "bloop" : {
               "bgp redistribute connected route-map" : [
-                27
+                28
               ]
             }
           },
           "undeclared bgp peer" : {
             "10.0.0.1" : {
               "bgp neighbor without remote-as" : [
-                38,
                 39,
                 40,
-                41
+                41,
+                42
               ]
             },
             "10.20.2.2" : {

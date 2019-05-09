@@ -2,7 +2,7 @@
     "class": "org.batfish.question.aaaauthenticationlogin.AaaAuthenticationLoginQuestion",
     "differential": false,
     "instance": {
-        "description": "Return nodes that do not require authentication on all lines",
+        "description": "Return nodes that do not require authentication on all virtual terminal lines",
         "instanceName": "aaaAuthenticationLogin",
         "tags": [
             "aaa",
