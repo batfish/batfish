@@ -1,6 +1,5 @@
 package org.batfish.dataplane.rib;
 
-import com.google.common.annotations.VisibleForTesting;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.BgpTieBreaker;
@@ -20,15 +19,5 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
       @Nullable MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode,
       boolean withBackups) {
     super(mainRib, tieBreaker, maxPaths, multipathEquivalentAsPathMatchMode, withBackups);
-  }
-
-  /** Shortcut constructor for testing only */
-  @VisibleForTesting
-  Bgpv4Rib(
-      @Nullable Rib mainRib,
-      BgpTieBreaker tieBreaker,
-      @Nullable Integer maxPaths,
-      @Nullable MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode) {
-    super(mainRib, tieBreaker, maxPaths, multipathEquivalentAsPathMatchMode, false);
   }
 }

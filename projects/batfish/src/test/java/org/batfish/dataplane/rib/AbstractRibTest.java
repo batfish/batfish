@@ -486,6 +486,7 @@ public class AbstractRibTest {
     Bgpv4Route.Builder routeBuilder =
         new Bgpv4Route.Builder()
             .setNetwork(Prefix.ZERO)
+            .setLocalPreference(100)
             .setOriginType(OriginType.INCOMPLETE)
             .setOriginatorIp(originator1)
             .setProtocol(RoutingProtocol.IBGP)
@@ -498,13 +499,15 @@ public class AbstractRibTest {
             .setOriginatorIp(originator2)
             .setReceivedFromIp(originator2)
             .build();
+    Bgpv4Route route3 = routeBuilder.setLocalPreference(1).build();
 
     bestPathRib.mergeRoute(route1);
     bestPathRib.mergeRoute(route2);
+    bestPathRib.mergeRoute(route3);
     // Route 2 is preferred so it replaces route 1
     assertThat(bestPathRib.getTypedRoutes(), contains(route2));
     RibDelta<Bgpv4Route> delta = bestPathRib.removeRouteGetDelta(route2);
-    // Route 2 is removed but route 1 fills the gap as the next-available route
+    // Route 2 is removed but route 1 fills the gap as the next-best route
     assertThat(bestPathRib.getTypedRoutes(), contains(route1));
     assertThat(
         delta.getActions().collect(Collectors.toList()),

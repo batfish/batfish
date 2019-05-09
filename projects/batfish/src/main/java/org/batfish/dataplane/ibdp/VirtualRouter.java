@@ -1021,10 +1021,10 @@ public class VirtualRouter implements Serializable {
 
     // ISIS
     _isisRib = new IsisRib(isL1Only());
-    _isisL1Rib = new IsisLevelRib();
-    _isisL2Rib = new IsisLevelRib();
-    _isisL1StagingRib = new IsisLevelRib();
-    _isisL2StagingRib = new IsisLevelRib();
+    _isisL1Rib = new IsisLevelRib(true);
+    _isisL2Rib = new IsisLevelRib(true);
+    _isisL1StagingRib = new IsisLevelRib(false);
+    _isisL2StagingRib = new IsisLevelRib(false);
 
     // RIP
     _ripInternalRib = new RipInternalRib();

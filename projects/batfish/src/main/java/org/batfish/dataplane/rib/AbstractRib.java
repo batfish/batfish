@@ -118,7 +118,7 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
    */
   private void addBackupRoute(R route) {
     if (_backupRoutes != null) {
-      _backupRoutes.computeIfAbsent(route.getNetwork(), k -> new HashSet<>(0)).add(route);
+      _backupRoutes.computeIfAbsent(route.getNetwork(), k -> new HashSet<>(1)).add(route);
     }
   }
 
