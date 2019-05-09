@@ -9,7 +9,7 @@
     "instance": {
         "description": "Return named structure definitions",
         "instanceName": "namedStructures",
-        "longDescription": "Return definitions of structures defined in the configurations in a vendor-independent JSON format.",
+        "longDescription": "Return structures defined in the configurations, represented in a vendor-independent JSON format.",
         "tags": [],
         "variables": {
             "ignoreGenerated": {
