@@ -52,11 +52,23 @@ public class LpmRoutesAnswererTest {
         metadata,
         equalTo(
             ImmutableList.of(
-                new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false),
-                new ColumnMetadata(COL_VRF, Schema.STRING, "Node", true, false),
-                new ColumnMetadata(COL_IP, Schema.IP, "Node", true, false),
-                new ColumnMetadata(COL_NETWORK, Schema.PREFIX, "Node", false, true),
-                new ColumnMetadata(COL_NUM_ROUTES, Schema.INTEGER, "Node", false, true))));
+                new ColumnMetadata(
+                    COL_NODE, Schema.NODE, "Node where the route is present", true, false),
+                new ColumnMetadata(
+                    COL_VRF, Schema.STRING, "VRF where the route is present", true, false),
+                new ColumnMetadata(COL_IP, Schema.IP, "IP that was being matched on", true, false),
+                new ColumnMetadata(
+                    COL_NETWORK,
+                    Schema.PREFIX,
+                    "The longest-prefix network that matched",
+                    false,
+                    true),
+                new ColumnMetadata(
+                    COL_NUM_ROUTES,
+                    Schema.INTEGER,
+                    "Number of routes that matched (in case of ECMP)",
+                    false,
+                    true))));
   }
 
   @Test
