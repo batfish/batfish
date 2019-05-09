@@ -312,6 +312,7 @@ public final class Configuration implements Serializable {
 
   /** Dictionary of all AS-path access-lists for this node. */
   @JsonProperty(PROP_AS_PATH_ACCESS_LISTS)
+  @PropertySpec(name = "property", description = "My property description", schema = "String")
   public NavigableMap<String, AsPathAccessList> getAsPathAccessLists() {
     return _asPathAccessLists;
   }

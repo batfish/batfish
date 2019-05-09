@@ -4,15 +4,20 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.util.ComparableStructure;
+import org.batfish.datamodel.PropertySpec;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.Schema.Type;
 import org.batfish.datamodel.table.Row.RowBuilder;
@@ -23,19 +28,56 @@ public abstract class PropertySpecifier {
   public static class PropertyDescriptor<T> {
     @Nonnull Function<T, Object> _getter;
     @Nonnull Schema _schema;
+    @Nullable String _description;
 
     public PropertyDescriptor(Function<T, Object> getter, Schema schema) {
-      _getter = getter;
-      _schema = schema;
+      this(getter, schema, null);
     }
 
+    public PropertyDescriptor(
+        Function<T, Object> getter, Schema schema, @Nullable String description) {
+      _getter = getter;
+      _schema = schema;
+      _description = description;
+    }
+
+    @Nullable
+    public String getDescription() {
+      return _description;
+    }
+
+    @Nonnull
     public Function<T, Object> getGetter() {
       return _getter;
     }
 
+    @Nonnull
     public Schema getSchema() {
       return _schema;
     }
+  }
+
+  protected static <T> Map<String, PropertyDescriptor<T>> initPropertyMap(Class<?> t) {
+    ImmutableMap.Builder<String, PropertyDescriptor<T>> builder = ImmutableMap.builder();
+    for (Method method : t.getMethods()) {
+      PropertySpec annotation = method.getAnnotation(PropertySpec.class);
+      if (annotation != null) {
+        PropertyDescriptor<T> propertyDescriptor =
+            new PropertyDescriptor<>(
+                o -> {
+                  try {
+                    return method.invoke(o);
+                  } catch (IllegalAccessException | InvocationTargetException e) {
+                    e.printStackTrace();
+                  }
+                  return null;
+                },
+                new Schema(annotation.schema()),
+                annotation.description());
+        builder.put(annotation.name(), propertyDescriptor);
+      }
+    }
+    return builder.build();
   }
 
   /** Converts {@code propertyValue} to {@code targetSchema} if needed */

@@ -3,14 +3,12 @@ package org.batfish.datamodel.questions;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.answers.Schema;
 
 /**
  * Enables specification a set of node properties.
@@ -65,115 +63,129 @@ public class NodePropertySpecifier extends PropertySpecifier {
   public static final String ZONES = "Zones";
 
   public static Map<String, PropertyDescriptor<Configuration>> JAVA_MAP =
-      new ImmutableMap.Builder<String, PropertyDescriptor<Configuration>>()
-          .put(
-              AS_PATH_ACCESS_LISTS,
-              new PropertyDescriptor<>(
-                  Configuration::getAsPathAccessLists, Schema.set(Schema.STRING)))
-          .put(
-              AUTHENTICATION_KEY_CHAINS,
-              new PropertyDescriptor<>(
-                  Configuration::getAuthenticationKeyChains, Schema.set(Schema.STRING)))
-          .put(CANONICAL_IP, new PropertyDescriptor<>(Configuration::getCanonicalIp, Schema.IP))
-          .put(
-              COMMUNITY_LISTS,
-              new PropertyDescriptor<>(Configuration::getCommunityLists, Schema.set(Schema.STRING)))
-          .put(
-              CONFIGURATION_FORMAT,
-              new PropertyDescriptor<>(Configuration::getConfigurationFormat, Schema.STRING))
-          .put(
-              DEFAULT_CROSS_ZONE_ACTION,
-              new PropertyDescriptor<>(Configuration::getDefaultCrossZoneAction, Schema.STRING))
-          .put(
-              DEFAULT_INBOUND_ACTION,
-              new PropertyDescriptor<>(Configuration::getDefaultInboundAction, Schema.STRING))
-          .put(DEVICE_TYPE, new PropertyDescriptor<>(Configuration::getDeviceType, Schema.STRING))
-          .put(
-              DNS_SERVERS,
-              new PropertyDescriptor<>(Configuration::getDnsServers, Schema.set(Schema.STRING)))
-          .put(
-              DNS_SOURCE_INTERFACE,
-              new PropertyDescriptor<>(Configuration::getDnsSourceInterface, Schema.STRING))
-          .put(DOMAIN_NAME, new PropertyDescriptor<>(Configuration::getDomainName, Schema.STRING))
-          .put(HOSTNAME, new PropertyDescriptor<>(Configuration::getHostname, Schema.STRING))
-          .put(
-              IKE_PHASE1_KEYS,
-              new PropertyDescriptor<>(Configuration::getIkePhase1Keys, Schema.set(Schema.STRING)))
-          .put(
-              IKE_PHASE1_POLICIES,
-              new PropertyDescriptor<>(
-                  Configuration::getIkePhase1Policies, Schema.set(Schema.STRING)))
-          .put(
-              IKE_PHASE1_PROPOSALS,
-              new PropertyDescriptor<>(
-                  Configuration::getIkePhase1Proposals, Schema.set(Schema.STRING)))
-          .put(
-              INTERFACES,
-              new PropertyDescriptor<>(Configuration::getAllInterfaces, Schema.set(Schema.STRING)))
-          .put(
-              IP_ACCESS_LISTS,
-              new PropertyDescriptor<>(Configuration::getIpAccessLists, Schema.set(Schema.STRING)))
-          .put(
-              IP_SPACES,
-              new PropertyDescriptor<>(Configuration::getIpSpaces, Schema.set(Schema.STRING)))
-          .put(
-              IP_6_ACCESS_LISTS,
-              new PropertyDescriptor<>(Configuration::getIp6AccessLists, Schema.set(Schema.STRING)))
-          .put(
-              IPSEC_PEER_CONFIGS,
-              new PropertyDescriptor<>(
-                  Configuration::getIpsecPeerConfigs, Schema.set(Schema.STRING)))
-          .put(
-              IPSEC_PHASE2_POLICIES,
-              new PropertyDescriptor<>(
-                  Configuration::getIpsecPhase2Policies, Schema.set(Schema.STRING)))
-          .put(
-              IPSEC_PHASE2_PROPOSALS,
-              new PropertyDescriptor<>(
-                  Configuration::getIpsecPhase2Proposals, Schema.set(Schema.STRING)))
-          .put(
-              LOGGING_SERVERS,
-              new PropertyDescriptor<>(Configuration::getLoggingServers, Schema.set(Schema.STRING)))
-          .put(
-              LOGGING_SOURCE_INTERFACE,
-              new PropertyDescriptor<>(Configuration::getLoggingSourceInterface, Schema.STRING))
-          .put(
-              NTP_SERVERS,
-              new PropertyDescriptor<>(Configuration::getNtpServers, Schema.set(Schema.STRING)))
-          .put(
-              NTP_SOURCE_INTERFACE,
-              new PropertyDescriptor<>(Configuration::getNtpSourceInterface, Schema.STRING))
-          .put(
-              ROUTE_FILTER_LISTS,
-              new PropertyDescriptor<>(
-                  Configuration::getRouteFilterLists, Schema.set(Schema.STRING)))
-          .put(
-              ROUTE_6_FILTER_LISTS,
-              new PropertyDescriptor<>(
-                  Configuration::getRoute6FilterLists, Schema.set(Schema.STRING)))
-          .put(
-              ROUTING_POLICIES,
-              new PropertyDescriptor<>(
-                  Configuration::getRoutingPolicies, Schema.set(Schema.STRING)))
-          .put(
-              SNMP_SOURCE_INTERFACE,
-              new PropertyDescriptor<>(Configuration::getSnmpSourceInterface, Schema.STRING))
-          .put(
-              SNMP_TRAP_SERVERS,
-              new PropertyDescriptor<>(
-                  Configuration::getSnmpTrapServers, Schema.set(Schema.STRING)))
-          .put(
-              TACACS_SERVERS,
-              new PropertyDescriptor<>(Configuration::getTacacsServers, Schema.set(Schema.STRING)))
-          .put(
-              TACACS_SOURCE_INTERFACE,
-              new PropertyDescriptor<>(Configuration::getTacacsSourceInterface, Schema.STRING))
-          .put(
-              VENDOR_FAMILY,
-              new PropertyDescriptor<>(Configuration::getVendorFamily, Schema.STRING))
-          .put(VRFS, new PropertyDescriptor<>(Configuration::getVrfs, Schema.set(Schema.STRING)))
-          .put(ZONES, new PropertyDescriptor<>(Configuration::getZones, Schema.set(Schema.STRING)))
-          .build();
+      initPropertyMap(Configuration.class);
+
+  //  public static Map<String, PropertyDescriptor<Configuration>> JAVA_MAP =
+  //      new ImmutableMap.Builder<String, PropertyDescriptor<Configuration>>()
+  //          .put(
+  //              AS_PATH_ACCESS_LISTS,
+  //              new PropertyDescriptor<>(
+  //                  Configuration::getAsPathAccessLists, Schema.set(Schema.STRING)))
+  //          .put(
+  //              AUTHENTICATION_KEY_CHAINS,
+  //              new PropertyDescriptor<>(
+  //                  Configuration::getAuthenticationKeyChains, Schema.set(Schema.STRING)))
+  //          .put(CANONICAL_IP, new PropertyDescriptor<>(Configuration::getCanonicalIp, Schema.IP))
+  //          .put(
+  //              COMMUNITY_LISTS,
+  //              new PropertyDescriptor<>(Configuration::getCommunityLists,
+  // Schema.set(Schema.STRING)))
+  //          .put(
+  //              CONFIGURATION_FORMAT,
+  //              new PropertyDescriptor<>(Configuration::getConfigurationFormat, Schema.STRING))
+  //          .put(
+  //              DEFAULT_CROSS_ZONE_ACTION,
+  //              new PropertyDescriptor<>(Configuration::getDefaultCrossZoneAction, Schema.STRING))
+  //          .put(
+  //              DEFAULT_INBOUND_ACTION,
+  //              new PropertyDescriptor<>(Configuration::getDefaultInboundAction, Schema.STRING))
+  //          .put(DEVICE_TYPE, new PropertyDescriptor<>(Configuration::getDeviceType,
+  // Schema.STRING))
+  //          .put(
+  //              DNS_SERVERS,
+  //              new PropertyDescriptor<>(Configuration::getDnsServers, Schema.set(Schema.STRING)))
+  //          .put(
+  //              DNS_SOURCE_INTERFACE,
+  //              new PropertyDescriptor<>(Configuration::getDnsSourceInterface, Schema.STRING))
+  //          .put(DOMAIN_NAME, new PropertyDescriptor<>(Configuration::getDomainName,
+  // Schema.STRING))
+  //          .put(HOSTNAME, new PropertyDescriptor<>(Configuration::getHostname, Schema.STRING))
+  //          .put(
+  //              IKE_PHASE1_KEYS,
+  //              new PropertyDescriptor<>(Configuration::getIkePhase1Keys,
+  // Schema.set(Schema.STRING)))
+  //          .put(
+  //              IKE_PHASE1_POLICIES,
+  //              new PropertyDescriptor<>(
+  //                  Configuration::getIkePhase1Policies, Schema.set(Schema.STRING)))
+  //          .put(
+  //              IKE_PHASE1_PROPOSALS,
+  //              new PropertyDescriptor<>(
+  //                  Configuration::getIkePhase1Proposals, Schema.set(Schema.STRING)))
+  //          .put(
+  //              INTERFACES,
+  //              new PropertyDescriptor<>(Configuration::getAllInterfaces,
+  // Schema.set(Schema.STRING)))
+  //          .put(
+  //              IP_ACCESS_LISTS,
+  //              new PropertyDescriptor<>(Configuration::getIpAccessLists,
+  // Schema.set(Schema.STRING)))
+  //          .put(
+  //              IP_SPACES,
+  //              new PropertyDescriptor<>(Configuration::getIpSpaces, Schema.set(Schema.STRING)))
+  //          .put(
+  //              IP_6_ACCESS_LISTS,
+  //              new PropertyDescriptor<>(Configuration::getIp6AccessLists,
+  // Schema.set(Schema.STRING)))
+  //          .put(
+  //              IPSEC_PEER_CONFIGS,
+  //              new PropertyDescriptor<>(
+  //                  Configuration::getIpsecPeerConfigs, Schema.set(Schema.STRING)))
+  //          .put(
+  //              IPSEC_PHASE2_POLICIES,
+  //              new PropertyDescriptor<>(
+  //                  Configuration::getIpsecPhase2Policies, Schema.set(Schema.STRING)))
+  //          .put(
+  //              IPSEC_PHASE2_PROPOSALS,
+  //              new PropertyDescriptor<>(
+  //                  Configuration::getIpsecPhase2Proposals, Schema.set(Schema.STRING)))
+  //          .put(
+  //              LOGGING_SERVERS,
+  //              new PropertyDescriptor<>(Configuration::getLoggingServers,
+  // Schema.set(Schema.STRING)))
+  //          .put(
+  //              LOGGING_SOURCE_INTERFACE,
+  //              new PropertyDescriptor<>(Configuration::getLoggingSourceInterface, Schema.STRING))
+  //          .put(
+  //              NTP_SERVERS,
+  //              new PropertyDescriptor<>(Configuration::getNtpServers, Schema.set(Schema.STRING)))
+  //          .put(
+  //              NTP_SOURCE_INTERFACE,
+  //              new PropertyDescriptor<>(Configuration::getNtpSourceInterface, Schema.STRING))
+  //          .put(
+  //              ROUTE_FILTER_LISTS,
+  //              new PropertyDescriptor<>(
+  //                  Configuration::getRouteFilterLists, Schema.set(Schema.STRING)))
+  //          .put(
+  //              ROUTE_6_FILTER_LISTS,
+  //              new PropertyDescriptor<>(
+  //                  Configuration::getRoute6FilterLists, Schema.set(Schema.STRING)))
+  //          .put(
+  //              ROUTING_POLICIES,
+  //              new PropertyDescriptor<>(
+  //                  Configuration::getRoutingPolicies, Schema.set(Schema.STRING)))
+  //          .put(
+  //              SNMP_SOURCE_INTERFACE,
+  //              new PropertyDescriptor<>(Configuration::getSnmpSourceInterface, Schema.STRING))
+  //          .put(
+  //              SNMP_TRAP_SERVERS,
+  //              new PropertyDescriptor<>(
+  //                  Configuration::getSnmpTrapServers, Schema.set(Schema.STRING)))
+  //          .put(
+  //              TACACS_SERVERS,
+  //              new PropertyDescriptor<>(Configuration::getTacacsServers,
+  // Schema.set(Schema.STRING)))
+  //          .put(
+  //              TACACS_SOURCE_INTERFACE,
+  //              new PropertyDescriptor<>(Configuration::getTacacsSourceInterface, Schema.STRING))
+  //          .put(
+  //              VENDOR_FAMILY,
+  //              new PropertyDescriptor<>(Configuration::getVendorFamily, Schema.STRING))
+  //          .put(VRFS, new PropertyDescriptor<>(Configuration::getVrfs,
+  // Schema.set(Schema.STRING)))
+  //          .put(ZONES, new PropertyDescriptor<>(Configuration::getZones,
+  // Schema.set(Schema.STRING)))
+  //          .build();
 
   public static final NodePropertySpecifier ALL = new NodePropertySpecifier(".*");
 

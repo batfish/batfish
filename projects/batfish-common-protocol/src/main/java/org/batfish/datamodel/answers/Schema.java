@@ -105,7 +105,11 @@ public class Schema {
   @Nonnull private final Type _type;
 
   @JsonCreator
-  Schema(String schema) {
+  private static Schema create(String schema) {
+    return new Schema(schema);
+  }
+
+  public Schema(String schema) {
 
     // base case
     Schema innerSchema = null;
