@@ -16,25 +16,28 @@ public class Layer3VniConfigTest {
   public void testEquals() {
     Layer3VniConfig vni =
         new Layer3VniConfig(
-            "v", RouteDistinguisher.from(65555L, 1), ExtendedCommunity.of(0, 1, 1), false);
+            1, "v", RouteDistinguisher.from(65555L, 1), ExtendedCommunity.of(0, 1, 1), false);
     new EqualsTester()
         .addEqualityGroup(
             vni,
             vni,
             new Layer3VniConfig(
-                "v", RouteDistinguisher.from(65555L, 1), ExtendedCommunity.of(0, 1, 1), false))
+                1, "v", RouteDistinguisher.from(65555L, 1), ExtendedCommunity.of(0, 1, 1), false))
         .addEqualityGroup(
             new Layer3VniConfig(
-                "v2", RouteDistinguisher.from(65555L, 1), ExtendedCommunity.of(0, 1, 1), false))
+                2, "v", RouteDistinguisher.from(65555L, 1), ExtendedCommunity.of(0, 1, 1), false))
         .addEqualityGroup(
             new Layer3VniConfig(
-                "v", RouteDistinguisher.from(65555L, 2), ExtendedCommunity.of(0, 1, 1), false))
+                1, "v2", RouteDistinguisher.from(65555L, 1), ExtendedCommunity.of(0, 1, 1), false))
         .addEqualityGroup(
             new Layer3VniConfig(
-                "v", RouteDistinguisher.from(65555L, 0), ExtendedCommunity.of(0, 2, 1), false))
+                1, "v", RouteDistinguisher.from(65555L, 2), ExtendedCommunity.of(0, 1, 1), false))
         .addEqualityGroup(
             new Layer3VniConfig(
-                "v", RouteDistinguisher.from(65555L, 0), ExtendedCommunity.of(0, 1, 1), true))
+                1, "v", RouteDistinguisher.from(65555L, 0), ExtendedCommunity.of(0, 2, 1), false))
+        .addEqualityGroup(
+            new Layer3VniConfig(
+                1, "v", RouteDistinguisher.from(65555L, 0), ExtendedCommunity.of(0, 1, 1), true))
         .testEquals();
   }
 
@@ -42,7 +45,7 @@ public class Layer3VniConfigTest {
   public void testJavaSerialization() {
     Layer3VniConfig vni =
         new Layer3VniConfig(
-            "v", RouteDistinguisher.from(65555L, 1), ExtendedCommunity.of(0, 1, 1), false);
+            1, "v", RouteDistinguisher.from(65555L, 1), ExtendedCommunity.of(0, 1, 1), false);
     assertThat(SerializationUtils.clone(vni), equalTo(vni));
   }
 
@@ -50,7 +53,7 @@ public class Layer3VniConfigTest {
   public void testJsonSerialization() throws IOException {
     Layer3VniConfig vni =
         new Layer3VniConfig(
-            "v", RouteDistinguisher.from(65555L, 1), ExtendedCommunity.of(0, 1, 1), false);
+            1, "v", RouteDistinguisher.from(65555L, 1), ExtendedCommunity.of(0, 1, 1), false);
     assertThat(BatfishObjectMapper.clone(vni, Layer3VniConfig.class), equalTo(vni));
   }
 }
