@@ -50,25 +50,39 @@ public class FilterLineReachabilityRows {
           .put(
               COL_UNREACHABLE_LINE,
               new ColumnMetadata(
-                  COL_UNREACHABLE_LINE, Schema.STRING, "Unreachable line", true, false))
+                  COL_UNREACHABLE_LINE,
+                  Schema.STRING,
+                  "Filter line that cannot be matched (i.e., unreachable)",
+                  true,
+                  false))
           .put(
               COL_UNREACHABLE_LINE_ACTION,
               new ColumnMetadata(
                   COL_UNREACHABLE_LINE_ACTION,
                   Schema.STRING,
-                  "Unreachable line action",
+                  "Action performed by the unreachable line (e.g., PERMIT or DENY)",
                   true,
                   false))
           .put(
               COL_BLOCKING_LINES,
               new ColumnMetadata(
-                  COL_BLOCKING_LINES, Schema.list(Schema.STRING), "Blocking lines", false, true))
+                  COL_BLOCKING_LINES,
+                  Schema.list(Schema.STRING),
+                  "Lines that, when combined, cover the unreachable line",
+                  false,
+                  true))
           .put(
               COL_DIFF_ACTION,
-              new ColumnMetadata(COL_DIFF_ACTION, Schema.BOOLEAN, "Different action", false, true))
+              new ColumnMetadata(
+                  COL_DIFF_ACTION,
+                  Schema.BOOLEAN,
+                  "Whether unreachable line has an action different from the blocking line(s)",
+                  false,
+                  true))
           .put(
               COL_REASON,
-              new ColumnMetadata(COL_REASON, Schema.STRING, "Reason unreachable", false, true))
+              new ColumnMetadata(
+                  COL_REASON, Schema.STRING, "The reason a line is unreachable", false, true))
           .put(
               COL_ADDITIONAL_INFO,
               new ColumnMetadata(

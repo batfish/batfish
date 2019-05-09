@@ -100,8 +100,7 @@ class IpOwnersAnswerer extends Answerer {
         new ColumnMetadata(COL_VRFNAME, Schema.STRING, "VRF name"),
         new ColumnMetadata(COL_INTERFACE_NAME, Schema.STRING, "Interface name"),
         new ColumnMetadata(COL_IP, Schema.IP, "IP address"),
-        new ColumnMetadata(COL_MASK, Schema.INTEGER, "IP address"),
-        new ColumnMetadata(
-            COL_ACTIVE, Schema.BOOLEAN, "Whether the interface with given IP is active"));
+        new ColumnMetadata(COL_MASK, Schema.INTEGER, "Network mask length"),
+        new ColumnMetadata(COL_ACTIVE, Schema.BOOLEAN, "Whether the interface is active"));
   }
 }

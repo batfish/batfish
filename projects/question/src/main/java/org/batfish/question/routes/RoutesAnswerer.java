@@ -220,7 +220,7 @@ public class RoutesAnswerer extends Answerer {
                 new ColumnMetadata(
                     COL_NEXT_HOP,
                     Schema.STRING,
-                    "Route's Next Hop's Hostname",
+                    "Inferred hostname of the next hop",
                     Boolean.FALSE,
                     Boolean.TRUE))
             .add(
