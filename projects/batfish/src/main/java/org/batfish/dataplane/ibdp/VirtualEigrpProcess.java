@@ -270,10 +270,8 @@ class VirtualEigrpProcess {
 
             if (routeAdvert.isWithdrawn()) {
               deltaBuilder.remove(newRoute, Reason.WITHDRAW);
-              _externalRib.removeBackupRoute(newRoute);
             } else {
               deltaBuilder.from(_externalStagingRib.mergeRouteGetDelta(newRoute));
-              _externalRib.addBackupRoute(newRoute);
             }
           }
         });

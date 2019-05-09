@@ -1064,29 +1064,29 @@ public class VirtualRouter implements Serializable {
     BgpTieBreaker tieBreaker = getBestPathTieBreaker();
     _ebgpRib =
         new Bgpv4Rib(
-            null,
             _mainRib,
             tieBreaker,
             proc == null || proc.getMultipathEbgp() ? null : 1,
-            mpTieBreaker);
+            mpTieBreaker,
+            false);
     _ibgpRib =
         new Bgpv4Rib(
-            null,
             _mainRib,
             tieBreaker,
             proc == null || proc.getMultipathIbgp() ? null : 1,
-            mpTieBreaker);
+            mpTieBreaker,
+            false);
     _bgpRib =
         new Bgpv4Rib(
-            null,
             _mainRib,
             tieBreaker,
             proc == null || proc.getMultipathEbgp() || proc.getMultipathIbgp() ? null : 1,
-            mpTieBreaker);
+            mpTieBreaker,
+            false);
     _bgpDeltaBuilder = RibDelta.builder();
 
-    _ebgpStagingRib = new Bgpv4Rib(null, _mainRib, tieBreaker, null, mpTieBreaker);
-    _ibgpStagingRib = new Bgpv4Rib(null, _mainRib, tieBreaker, null, mpTieBreaker);
+    _ebgpStagingRib = new Bgpv4Rib(_mainRib, tieBreaker, null, mpTieBreaker, false);
+    _ibgpStagingRib = new Bgpv4Rib(_mainRib, tieBreaker, null, mpTieBreaker, false);
 
     // EVPN
     _ebgpEvpnRib = new EvpnRib<>(null, _mainRib, tieBreaker, null, mpTieBreaker);
@@ -1094,10 +1094,10 @@ public class VirtualRouter implements Serializable {
 
     // ISIS
     _isisRib = new IsisRib(isL1Only());
-    _isisL1Rib = new IsisLevelRib(new TreeMap<>());
-    _isisL2Rib = new IsisLevelRib(new TreeMap<>());
-    _isisL1StagingRib = new IsisLevelRib(null);
-    _isisL2StagingRib = new IsisLevelRib(null);
+    _isisL1Rib = new IsisLevelRib(true);
+    _isisL2Rib = new IsisLevelRib(true);
+    _isisL1StagingRib = new IsisLevelRib(false);
+    _isisL2StagingRib = new IsisLevelRib(false);
 
     // RIP
     _ripInternalRib = new RipInternalRib();
@@ -1250,12 +1250,10 @@ public class VirtualRouter implements Serializable {
           // Note this route was removed
           ribDeltas.get(targetRib).remove(transformedIncomingRoute, Reason.WITHDRAW);
           perNeighborDeltaForRibGroups.remove(annotatedTransformedRoute, Reason.WITHDRAW);
-          _bgpRib.removeBackupRoute(transformedIncomingRoute);
         } else {
           // Merge into staging rib, note delta
           ribDeltas.get(targetRib).from(targetRib.mergeRouteGetDelta(transformedIncomingRoute));
           perNeighborDeltaForRibGroups.add(annotatedTransformedRoute);
-          _bgpRib.addBackupRoute(transformedIncomingRoute);
           _prefixTracer.installed(
               transformedIncomingRoute.getNetwork(),
               remoteConfigId.getHostname(),
@@ -1318,7 +1316,6 @@ public class VirtualRouter implements Serializable {
                 routeLevel == IsisLevel.LEVEL_1 ? RoutingProtocol.ISIS_L1 : RoutingProtocol.ISIS_L2;
             RibDelta.Builder<IsisRoute> deltaBuilder =
                 routeLevel == IsisLevel.LEVEL_1 ? l1DeltaBuilder : l2DeltaBuilder;
-            IsisLevelRib levelRib = routeLevel == IsisLevel.LEVEL_1 ? _isisL1Rib : _isisL2Rib;
             long incrementalMetric =
                 firstNonNull(isisLevelSettings.getCost(), IsisRoute.DEFAULT_METRIC);
             IsisRoute newRoute =
@@ -1332,12 +1329,10 @@ public class VirtualRouter implements Serializable {
                     .build();
             if (withdraw) {
               deltaBuilder.remove(newRoute, Reason.WITHDRAW);
-              levelRib.removeBackupRoute(newRoute);
             } else {
               IsisLevelRib levelStagingRib =
                   routeLevel == IsisLevel.LEVEL_1 ? _isisL1StagingRib : _isisL2StagingRib;
               deltaBuilder.from(levelStagingRib.mergeRouteGetDelta(newRoute));
-              levelRib.addBackupRoute(newRoute);
             }
           }
         });
@@ -1721,8 +1716,8 @@ public class VirtualRouter implements Serializable {
      */
     BgpTieBreaker tieBreaker = getBestPathTieBreaker();
     MultipathEquivalentAsPathMatchMode mpTieBreaker = getBgpMpTieBreaker();
-    _ebgpStagingRib = new Bgpv4Rib(null, _mainRib, tieBreaker, null, mpTieBreaker);
-    _ibgpStagingRib = new Bgpv4Rib(null, _mainRib, tieBreaker, null, mpTieBreaker);
+    _ebgpStagingRib = new Bgpv4Rib(_mainRib, tieBreaker, null, mpTieBreaker, false);
+    _ibgpStagingRib = new Bgpv4Rib(_mainRib, tieBreaker, null, mpTieBreaker, false);
 
     /*
      * Add routes that cannot change (does not affect below computation)

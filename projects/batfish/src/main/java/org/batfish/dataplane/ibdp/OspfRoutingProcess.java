@@ -10,7 +10,6 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Streams;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
@@ -136,8 +135,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
 
     _intraAreaRib = new OspfIntraAreaRib();
     _interAreaRib = new OspfInterAreaRib();
-    _type1Rib = new OspfExternalType1Rib(_c.getHostname(), new HashMap<>(0));
-    _type2Rib = new OspfExternalType2Rib(_c.getHostname(), new HashMap<>(0));
+    _type1Rib = new OspfExternalType1Rib(_c.getHostname());
+    _type2Rib = new OspfExternalType2Rib(_c.getHostname());
     _ospfRib = new OspfRib();
 
     updateQueues(topology);
@@ -418,10 +417,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   private static <R extends AbstractRoute, T extends R> RibDelta<R> processRouteAdvertisement(
       RouteAdvertisement<T> ra, AbstractRib<R> rib) {
     if (ra.isWithdrawn()) {
-      rib.removeBackupRoute(ra.getRoute());
       return rib.removeRouteGetDelta(ra.getRoute(), ra.getReason());
     } else {
-      rib.addBackupRoute(ra.getRoute());
       return rib.mergeRouteGetDelta(ra.getRoute());
     }
   }

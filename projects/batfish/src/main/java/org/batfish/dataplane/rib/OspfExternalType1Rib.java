@@ -1,12 +1,8 @@
 package org.batfish.dataplane.rib;
 
-import java.util.Map;
-import java.util.SortedSet;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.OspfExternalType1Route;
-import org.batfish.datamodel.Prefix;
 
 @ParametersAreNonnullByDefault
 public class OspfExternalType1Rib extends AbstractRib<OspfExternalType1Route> {
@@ -15,9 +11,8 @@ public class OspfExternalType1Rib extends AbstractRib<OspfExternalType1Route> {
 
   private final String _hostname;
 
-  public OspfExternalType1Rib(
-      String hostname, @Nullable Map<Prefix, SortedSet<OspfExternalType1Route>> backupRoutes) {
-    super(backupRoutes);
+  public OspfExternalType1Rib(String hostname) {
+    super(true);
     _hostname = hostname;
   }
 
