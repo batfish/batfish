@@ -2,6 +2,7 @@ package org.batfish.question.bgpsessionstatus;
 
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
+import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswerer.COL_REMOTE_INTERFACE;
 import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.COL_CONFIGURED_STATUS;
 import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.COL_LOCAL_AS;
@@ -28,9 +29,15 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.SortedMap;
+import org.batfish.common.NetworkSnapshot;
+import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.common.topology.Layer2Edge;
 import org.batfish.common.topology.Layer2Topology;
+import org.batfish.common.topology.TopologyProvider;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -53,7 +60,11 @@ import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.ConfiguredSessionStatus;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
+import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.specifier.MockSpecifierContext;
+import org.batfish.specifier.SpecifierContext;
 import org.hamcrest.Matcher;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class BgpSessionCompatibilityAnswererTest {
@@ -68,7 +79,7 @@ public class BgpSessionCompatibilityAnswererTest {
   This results in four rows, represented by ROW_1, ROW_2, ROW_3, and ROW_4.
    */
 
-  private final Map<String, Configuration> _configurations;
+  private static SortedMap<String, Configuration> CONFIGURATIONS;
 
   private static final Ip IP1 = Ip.parse("1.1.1.1");
   private static final Ip IP2 = Ip.parse("2.2.2.2");
@@ -145,7 +156,8 @@ public class BgpSessionCompatibilityAnswererTest {
           .put(COL_VRF, "vrf")
           .build();
 
-  public BgpSessionCompatibilityAnswererTest() {
+  @BeforeClass
+  public static void initConfigs() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -157,7 +169,7 @@ public class BgpSessionCompatibilityAnswererTest {
         createConfigurationWithDynamicSession(
             cb, IP4, Prefix.create(IP3, 24), ImmutableList.of(3L));
 
-    _configurations = ImmutableSortedMap.of(NODE1, node1, NODE2, node2, NODE3, node3, NODE4, node4);
+    CONFIGURATIONS = ImmutableSortedMap.of(NODE1, node1, NODE2, node2, NODE3, node3, NODE4, node4);
   }
 
   private static Configuration createConfiguration(
@@ -222,7 +234,7 @@ public class BgpSessionCompatibilityAnswererTest {
   @Test
   public void testAnswer() {
     BgpSessionCompatibilityQuestion q = new BgpSessionCompatibilityQuestion();
-    List<Row> rows = getRows(q, _configurations, ALL_NODES, ALL_NODES, METADATA_MAP, null);
+    List<Row> rows = getRows(q, CONFIGURATIONS, ALL_NODES, ALL_NODES, METADATA_MAP, null);
     assertThat(rows, contains(ROW_1, ROW_2, ROW_3, ROW_4));
   }
 
@@ -231,7 +243,7 @@ public class BgpSessionCompatibilityAnswererTest {
     BgpSessionCompatibilityQuestion q =
         new BgpSessionCompatibilityQuestion(NODE1, null, null, null);
     List<Row> rows =
-        getRows(q, _configurations, ImmutableSet.of(NODE1), ALL_NODES, METADATA_MAP, null);
+        getRows(q, CONFIGURATIONS, ImmutableSet.of(NODE1), ALL_NODES, METADATA_MAP, null);
     assertThat(rows, contains(ROW_1));
   }
 
@@ -240,7 +252,7 @@ public class BgpSessionCompatibilityAnswererTest {
     BgpSessionCompatibilityQuestion q =
         new BgpSessionCompatibilityQuestion(null, NODE1, null, null);
     List<Row> rows =
-        getRows(q, _configurations, ALL_NODES, ImmutableSet.of(NODE1), METADATA_MAP, null);
+        getRows(q, CONFIGURATIONS, ALL_NODES, ImmutableSet.of(NODE1), METADATA_MAP, null);
     assertThat(rows, contains(ROW_2));
   }
 
@@ -250,13 +262,13 @@ public class BgpSessionCompatibilityAnswererTest {
     BgpSessionCompatibilityQuestion q =
         new BgpSessionCompatibilityQuestion(
             null, null, ConfiguredSessionStatus.UNIQUE_MATCH.name(), null);
-    List<Row> rows = getRows(q, _configurations, ALL_NODES, ALL_NODES, METADATA_MAP, null);
+    List<Row> rows = getRows(q, CONFIGURATIONS, ALL_NODES, ALL_NODES, METADATA_MAP, null);
     assertThat(rows, contains(ROW_1, ROW_2, ROW_3));
 
     q =
         new BgpSessionCompatibilityQuestion(
             null, null, ConfiguredSessionStatus.UNKNOWN_REMOTE.name(), null);
-    rows = getRows(q, _configurations, ALL_NODES, ALL_NODES, METADATA_MAP, null);
+    rows = getRows(q, CONFIGURATIONS, ALL_NODES, ALL_NODES, METADATA_MAP, null);
     assertThat(rows, empty());
   }
 
@@ -265,12 +277,12 @@ public class BgpSessionCompatibilityAnswererTest {
     // Session between nodes 1 and 2 has type EBGP_SINGLEHOP
     BgpSessionCompatibilityQuestion q =
         new BgpSessionCompatibilityQuestion(null, null, null, SessionType.EBGP_SINGLEHOP.name());
-    List<Row> rows = getRows(q, _configurations, ALL_NODES, ALL_NODES, METADATA_MAP, null);
+    List<Row> rows = getRows(q, CONFIGURATIONS, ALL_NODES, ALL_NODES, METADATA_MAP, null);
     assertThat(rows, contains(ROW_1, ROW_2));
 
     // Session between nodes 3 and 4 has type IBGP
     q = new BgpSessionCompatibilityQuestion(null, null, null, SessionType.IBGP.name());
-    rows = getRows(q, _configurations, ALL_NODES, ALL_NODES, METADATA_MAP, null);
+    rows = getRows(q, CONFIGURATIONS, ALL_NODES, ALL_NODES, METADATA_MAP, null);
     assertThat(rows, containsInAnyOrder(ROW_3, ROW_4));
   }
 
@@ -350,5 +362,44 @@ public class BgpSessionCompatibilityAnswererTest {
                 hasColumn(COL_LOCAL_INTERFACE, nip2, Schema.INTERFACE),
                 hasColumn(COL_REMOTE_NODE, new Node(NODE1), Schema.NODE),
                 hasColumn(COL_REMOTE_INTERFACE, nip1, Schema.INTERFACE))));
+  }
+
+  @Test
+  public void testFullEndToEndAnswer() {
+    BgpSessionCompatibilityAnswerer answerer =
+        new BgpSessionCompatibilityAnswerer(
+            new BgpSessionCompatibilityQuestion(), new MockBatfish());
+    assertThat(
+        (TableAnswerElement) answerer.answer(),
+        hasRows(containsInAnyOrder(ROW_1, ROW_2, ROW_3, ROW_4)));
+  }
+
+  static class MockBatfish extends IBatfishTestAdapter {
+    @Override
+    public SortedMap<String, Configuration> loadConfigurations() {
+      return CONFIGURATIONS;
+    }
+
+    @Override
+    public SpecifierContext specifierContext() {
+      return MockSpecifierContext.builder().setConfigs(CONFIGURATIONS).build();
+    }
+
+    @Override
+    public TopologyProvider getTopologyProvider() {
+      return new MockLayer2TopologyProvider(this);
+    }
+
+    /** Mock topology provider that provides empty initial layer 2 topology */
+    static class MockLayer2TopologyProvider extends TopologyProviderTestAdapter {
+      MockLayer2TopologyProvider(IBatfish bf) {
+        super(bf);
+      }
+
+      @Override
+      public Optional<Layer2Topology> getInitialLayer2Topology(NetworkSnapshot networkSnapshot) {
+        return Optional.empty();
+      }
+    }
   }
 }
