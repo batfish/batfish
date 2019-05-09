@@ -29,6 +29,7 @@ public class EvpnAddressFamilyTest {
                 ImmutableSet.of(),
                 ImmutableSet.of(
                     new Layer3VniConfig(
+                        1,
                         "v",
                         RouteDistinguisher.from(1L, 1),
                         ExtendedCommunity.of(0, 1, 1),

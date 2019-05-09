@@ -205,7 +205,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
                 l2Vnis.add(new Layer2VniConfig(vxlan.getId(), bgpVrf.getVrfName(), rd, rt));
                 if (evpnConfig.getAdvertiseDefaultGw()) {
                   // Advertise VTEP gateway IP address for the L2 VNI as type 3 route
-                  l3Vnis.add(new Layer3VniConfig(bgpVrf.getVrfName(), rd, rt, false));
+                  l3Vnis.add(
+                      new Layer3VniConfig(vxlan.getId(), bgpVrf.getVrfName(), rd, rt, false));
                 }
               }
             });
@@ -226,6 +227,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
                   ExtendedCommunity rt = ExtendedCommunity.target(localAs, l3Vni);
                   l3Vnis.add(
                       new Layer3VniConfig(
+                          l3Vni,
                           aBgpVrf.getVrfName(),
                           rd,
                           rt,
