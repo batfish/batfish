@@ -1859,7 +1859,7 @@ public class Client extends AbstractClient implements IClient {
 
     // try to load local questions whenever local disk path is provided
     if (!parameters.isEmpty()) {
-      Multimap<String, String> localQuestions = loadQuestionsFromDir(parameters.get(0));
+      Multimap<String, String> localQuestions = loadQuestionsFromDir(parameters.get(0), _logger);
       // merging local questions to bfq and updating answer element
       mergeQuestions(localQuestions, bfq, ae);
     }
@@ -1915,11 +1915,13 @@ public class Client extends AbstractClient implements IClient {
    * Loads questions from a local directory containing questions
    *
    * @param questionsPathStr Path of directory
+   * @param logger
    * @return loadedQuestions {@link Multimap} containing loaded question names and content
    * @throws BatfishException if loading of any of the question is not successful or if cannot walk
    *     the directory provided
    */
-  static Multimap<String, String> loadQuestionsFromDir(String questionsPathStr) {
+  static Multimap<String, String> loadQuestionsFromDir(
+      String questionsPathStr, @Nullable BatfishLogger logger) {
     Path questionsPath = Paths.get(questionsPathStr);
     SortedSet<Path> jsonQuestionFiles = new TreeSet<>();
     try {
@@ -1942,9 +1944,15 @@ public class Client extends AbstractClient implements IClient {
     }
     Multimap<String, String> loadedQuestions = HashMultimap.create();
     for (Path jsonQuestionFile : jsonQuestionFiles) {
-      JSONObject questionJSON = loadQuestionFromFile(jsonQuestionFile);
-      loadedQuestions.put(
-          getQuestionName(questionJSON, jsonQuestionFile.toString()), questionJSON.toString());
+      try {
+        JSONObject questionJSON = loadQuestionFromFile(jsonQuestionFile);
+        loadedQuestions.put(
+            getQuestionName(questionJSON, jsonQuestionFile.toString()), questionJSON.toString());
+      } catch (Exception e) {
+        if (logger != null) {
+          logger.errorf("Could not load template from %s: %s", jsonQuestionFile, e);
+        }
+      }
     }
     return loadedQuestions;
   }
