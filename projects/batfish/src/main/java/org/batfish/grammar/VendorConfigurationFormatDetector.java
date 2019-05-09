@@ -49,7 +49,7 @@ public final class VendorConfigurationFormatDetector {
   private static final Pattern RANCID_FOUNDRY_PATTERN =
       Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: foundry$");
   private static final Pattern RANCID_JUNIPER_PATTERN =
-      Pattern.compile("(?m)^[!#]RANCID-CONTENT-TYPE: juniper$");
+      Pattern.compile("(?m)^[!#]RANCID-CONTENT-TYPE: juniper(-srx)?$");
   private static final Pattern RANCID_MRV_PATTERN =
       Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: mrv$");
   private static final Pattern RANCID_PALO_ALTO_PATTERN =
