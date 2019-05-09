@@ -158,10 +158,10 @@ public class RibDeltaTest {
     Bgpv4Rib rib =
         new Bgpv4Rib(
             null,
-            null,
             BgpTieBreaker.CLUSTER_LIST_LENGTH,
             null,
-            MultipathEquivalentAsPathMatchMode.EXACT_PATH);
+            MultipathEquivalentAsPathMatchMode.EXACT_PATH,
+            false);
     Bgpv4Route.Builder routeBuilder = new Bgpv4Route.Builder();
     routeBuilder
         .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), Prefix.MAX_PREFIX_LENGTH))
@@ -195,10 +195,10 @@ public class RibDeltaTest {
     Bgpv4Rib rib =
         new Bgpv4Rib(
             null,
-            null,
             BgpTieBreaker.ROUTER_ID,
             null,
-            MultipathEquivalentAsPathMatchMode.EXACT_PATH);
+            MultipathEquivalentAsPathMatchMode.EXACT_PATH,
+            false);
     Bgpv4Route r1 =
         new Bgpv4Route.Builder()
             .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), Prefix.MAX_PREFIX_LENGTH))

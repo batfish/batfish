@@ -1,13 +1,9 @@
 package org.batfish.dataplane.rib;
 
 import java.io.Serializable;
-import java.util.Map;
-import java.util.SortedSet;
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
-import org.batfish.datamodel.Prefix;
 
 /**
  * An {@link AbstractRib} in which all routes are of type {@link AnnotatedRoute} to preserve
@@ -21,8 +17,8 @@ public abstract class AnnotatedRib<R extends AbstractRoute> extends AbstractRib<
 
   private static final long serialVersionUID = 1L;
 
-  AnnotatedRib(@Nullable Map<Prefix, SortedSet<AnnotatedRoute<R>>> backupRoutes) {
-    super(backupRoutes);
+  AnnotatedRib() {
+    super();
   }
 
   /*

@@ -34,7 +34,7 @@ public class IsisRib extends AbstractRib<IsisRoute> {
   private final boolean _l1Only;
 
   public IsisRib(boolean l1Only) {
-    super(null);
+    super();
     _l1Only = l1Only;
   }
 

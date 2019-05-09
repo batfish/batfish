@@ -76,33 +76,33 @@ public class VendorConfigurationFormatDetectorTest {
 
   @Test
   public void testJuniper() {
-    String firewall = "firewall {\n}\n";
-    String policyOptions = "policy-options {\n}\n";
-    String rancid = "!RANCID-CONTENT-TYPE: juniper\n!\nsomething {\n blah;\n}\n";
-    String rancid2 = "#RANCID-CONTENT-TYPE: juniper\n!\nsomething {\n blah;\n}\n";
-    String snmp = "snmp {\n}\n";
-
-    String flatHostname = "#\nset system host-name blah";
-    String flatRancid = "!RANCID-CONTENT-TYPE: juniper\n!\nset blah\n";
-    String flatRancid2 = "#RANCID-CONTENT-TYPE: juniper\n!\nset blah\n";
-    String flatSet = "#\nset apply-groups blah\n";
-    String flattened = "####BATFISH FLATTENED JUNIPER CONFIG####\n";
-
-    String flatSwitch = "set hostname\n";
 
     /* Confirm hierarchical configs are correctly identified */
-    for (String fileText : ImmutableList.of(firewall, policyOptions, rancid, rancid2, snmp)) {
+    for (String fileText :
+        ImmutableList.of(
+            "firewall {\n}\n",
+            "policy-options {\n}\n",
+            "!RANCID-CONTENT-TYPE: juniper\n!\nsomething {\n blah;\n}\n",
+            "#RANCID-CONTENT-TYPE: juniper\n!\nsomething {\n blah;\n}\n",
+            "#RANCID-CONTENT-TYPE: juniper-srx\n!\nsomething {\n blah;\n}\n",
+            "snmp {\n}\n")) {
       assertThat(identifyConfigurationFormat(fileText), equalTo(JUNIPER));
     }
 
     /* Confirm flat (set-style) configs are correctly identified */
     for (String fileText :
-        ImmutableList.of(flatHostname, flatRancid, flatRancid2, flatSet, flattened)) {
+        ImmutableList.of(
+            "#\nset system host-name blah",
+            "!RANCID-CONTENT-TYPE: juniper\n!\nset blah\n",
+            "#RANCID-CONTENT-TYPE: juniper\n!\nset blah\n",
+            "#RANCID-CONTENT-TYPE: juniper-srx\n!\nset blah\n",
+            "#\nset apply-groups blah\n",
+            "####BATFISH FLATTENED JUNIPER CONFIG####\n")) {
       assertThat(identifyConfigurationFormat(fileText), equalTo(FLAT_JUNIPER));
     }
 
     /* Confirm Juniper switch format is detected */
-    assertThat(identifyConfigurationFormat(flatSwitch), equalTo(JUNIPER_SWITCH));
+    assertThat(identifyConfigurationFormat("set hostname\n"), equalTo(JUNIPER_SWITCH));
   }
 
   @Test

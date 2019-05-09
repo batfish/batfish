@@ -18,7 +18,7 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
 
   /** Create a new empty RIB. */
   public Rib() {
-    super(null);
+    super();
   }
 
   @Override

@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.Set;
-import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -53,13 +52,13 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
     Builder<R> b = RibDelta.builder();
     b.remove(route, reason);
     if (_root.get(route.getNetwork()).isEmpty() && _owner._backupRoutes != null) {
-      SortedSet<? extends R> backups =
+      Set<? extends R> backups =
           _owner._backupRoutes.getOrDefault(route.getNetwork(), ImmutableSortedSet.of());
       if (backups.isEmpty()) {
         return b.build();
       }
-      _root.put(route.getNetwork(), backups.first());
-      b.add(backups.first());
+      // re-merge any backups we have
+      backups.forEach(r -> b.from(mergeRoute(r)));
     }
     // Return new delta
     return b.build();
