@@ -92,11 +92,6 @@ public final class ConnectedRoute extends AbstractRoute {
   }
 
   @Override
-  public int routeCompare(@Nonnull AbstractRoute rhs) {
-    return 0;
-  }
-
-  @Override
   public Builder toBuilder() {
     return builder()
         .setNetwork(getNetwork())

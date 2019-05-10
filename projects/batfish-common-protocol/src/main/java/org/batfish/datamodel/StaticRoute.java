@@ -7,14 +7,20 @@ import static java.util.Objects.requireNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-/** A static route */
+/**
+ * A static route.
+ *
+ * <p>Implements {@link Comparable}, but {@link #compareTo(StaticRoute)} <em>should not</em> be used
+ * for determining route preference in RIBs.
+ */
 @ParametersAreNonnullByDefault
-public class StaticRoute extends AbstractRoute {
+public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute> {
 
   static final long DEFAULT_STATIC_ROUTE_METRIC = 0L;
   private static final long serialVersionUID = 1L;
@@ -24,6 +30,16 @@ public class StaticRoute extends AbstractRoute {
   @Nonnull private final String _nextHopInterface;
   @Nonnull private final Ip _nextHopIp;
   private final int _tag;
+  // The comparator has no impact on route preference in RIBs and should not be used as such
+  private static final Comparator<StaticRoute> COMPARATOR =
+      Comparator.comparing(StaticRoute::getNetwork)
+          .thenComparing(StaticRoute::getNextHopIp)
+          .thenComparing(StaticRoute::getNextHopInterface)
+          .thenComparing(StaticRoute::getMetric)
+          .thenComparing(StaticRoute::getAdministrativeCost)
+          .thenComparing(StaticRoute::getTag)
+          .thenComparing(StaticRoute::getNonRouting)
+          .thenComparing(StaticRoute::getNonForwarding);
 
   private transient int _hashCode;
 
@@ -139,8 +155,9 @@ public class StaticRoute extends AbstractRoute {
   }
 
   @Override
-  public int routeCompare(AbstractRoute rhs) {
-    return 0;
+  public int compareTo(StaticRoute o) {
+    // The comparator has no impact on route preference in RIBs and should not be used as such
+    return COMPARATOR.compare(this, o);
   }
 
   @Override

@@ -5,9 +5,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Comparators;
-import com.google.common.collect.Ordering;
-import java.util.Comparator;
 import java.util.Objects;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -186,30 +183,6 @@ public final class Bgpv4Route extends BgpRoute {
         .setReceivedFromRouteReflectorClient(_receivedFromRouteReflectorClient)
         .setSrcProtocol(_srcProtocol)
         .setWeight(_weight);
-  }
-
-  private static final Comparator<Bgpv4Route> COMPARATOR =
-      Comparator.comparing(Bgpv4Route::getAsPath)
-          .thenComparing(
-              Bgpv4Route::getClusterList, Comparators.lexicographical(Ordering.natural()))
-          .thenComparing(
-              Bgpv4Route::getCommunities, Comparators.lexicographical(Ordering.natural()))
-          .thenComparing(Bgpv4Route::getDiscard)
-          .thenComparing(Bgpv4Route::getLocalPreference)
-          .thenComparing(Bgpv4Route::getNextHopInterface)
-          .thenComparing(Bgpv4Route::getOriginType)
-          .thenComparing(Bgpv4Route::getOriginatorIp)
-          .thenComparing(Bgpv4Route::getReceivedFromIp)
-          .thenComparing(Bgpv4Route::getReceivedFromRouteReflectorClient)
-          .thenComparing(Bgpv4Route::getSrcProtocol)
-          .thenComparing(Bgpv4Route::getWeight);
-
-  @Override
-  public int routeCompare(@Nonnull AbstractRoute rhs) {
-    if (getClass() != rhs.getClass()) {
-      return 0;
-    }
-    return COMPARATOR.compare(this, (Bgpv4Route) rhs);
   }
 
   @Override
