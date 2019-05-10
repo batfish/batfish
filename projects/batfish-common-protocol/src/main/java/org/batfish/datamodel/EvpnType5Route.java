@@ -5,10 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Ordering;
-import java.util.Comparator;
 import java.util.Objects;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -72,23 +69,6 @@ public final class EvpnType5Route extends EvpnRoute {
       return this;
     }
   }
-
-  private static final Comparator<EvpnType5Route> COMPARATOR =
-      Comparator.comparing(EvpnType5Route::getAsPath)
-          .thenComparing(
-              EvpnType5Route::getClusterList, Comparators.lexicographical(Ordering.natural()))
-          .thenComparing(
-              EvpnType5Route::getCommunities, Comparators.lexicographical(Ordering.natural()))
-          .thenComparing(EvpnType5Route::getDiscard)
-          .thenComparing(EvpnType5Route::getLocalPreference)
-          .thenComparing(EvpnType5Route::getNextHopInterface)
-          .thenComparing(EvpnType5Route::getOriginType)
-          .thenComparing(EvpnType5Route::getOriginatorIp)
-          .thenComparing(EvpnType5Route::getReceivedFromIp)
-          .thenComparing(EvpnType5Route::getReceivedFromRouteReflectorClient)
-          .thenComparing(EvpnType5Route::getRouteDistinguisher)
-          .thenComparing(EvpnType5Route::getSrcProtocol)
-          .thenComparing(EvpnType5Route::getWeight);
 
   /* Cache the hashcode */
   private transient int _hashCode = 0;

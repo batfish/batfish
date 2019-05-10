@@ -5,10 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Ordering;
-import java.util.Comparator;
 import java.util.Objects;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -100,25 +97,6 @@ public final class EvpnType2Route extends EvpnRoute {
 
   private static final String PROP_IP = "ip";
   private static final String PROP_MAC_ADDRESS = "macAddress";
-
-  private static final Comparator<EvpnType2Route> COMPARATOR =
-      Comparator.comparing(EvpnType2Route::getAsPath)
-          .thenComparing(
-              EvpnType2Route::getClusterList, Comparators.lexicographical(Ordering.natural()))
-          .thenComparing(
-              EvpnType2Route::getCommunities, Comparators.lexicographical(Ordering.natural()))
-          .thenComparing(EvpnType2Route::getDiscard)
-          .thenComparing(EvpnType2Route::getIp)
-          .thenComparing(EvpnType2Route::getLocalPreference)
-          .thenComparing(EvpnType2Route::getMacAddress)
-          .thenComparing(EvpnType2Route::getNextHopInterface)
-          .thenComparing(EvpnType2Route::getOriginType)
-          .thenComparing(EvpnType2Route::getOriginatorIp)
-          .thenComparing(EvpnType2Route::getReceivedFromIp)
-          .thenComparing(EvpnType2Route::getReceivedFromRouteReflectorClient)
-          .thenComparing(EvpnType2Route::getRouteDistinguisher)
-          .thenComparing(EvpnType2Route::getSrcProtocol)
-          .thenComparing(EvpnType2Route::getWeight);
 
   @Nonnull private final Ip _ip;
   @Nullable private final MacAddress _macAddress;
