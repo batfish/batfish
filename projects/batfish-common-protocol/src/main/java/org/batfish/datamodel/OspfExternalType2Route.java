@@ -81,15 +81,6 @@ public class OspfExternalType2Route extends OspfExternalRoute {
   }
 
   @Override
-  public int routeCompare(AbstractRoute rhs) {
-    if (getClass() != rhs.getClass()) {
-      return 0;
-    }
-    OspfExternalType2Route castRhs = (OspfExternalType2Route) rhs;
-    return Long.compare(getCostToAdvertiser(), castRhs.getCostToAdvertiser());
-  }
-
-  @Override
   public OspfExternalRoute.Builder toBuilder() {
     return OspfExternalRoute.builder()
         // AbstractRoute properties

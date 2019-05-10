@@ -84,9 +84,4 @@ public abstract class EigrpRoute extends AbstractRoute {
     // https://github.com/batfish/batfish/issues/1945
     return NO_TAG;
   }
-
-  @Override
-  public int routeCompare(@Nonnull AbstractRoute rhs) {
-    return 0;
-  }
 }
