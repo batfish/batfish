@@ -5,8 +5,9 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Show the resolved values for IP space specifier",
+    "description" : "Returns resolved values for IP space specifier.",
     "instanceName" : "qname",
+    "longDescription" : "Helper question that shows how specified ipSpec values resolve to IPs.",
     "tags" : [
       "specifiers"
     ],

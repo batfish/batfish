@@ -1,5 +1,6 @@
 package org.batfish.common.topology;
 
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.bgp.BgpTopology;
@@ -22,7 +23,7 @@ public interface TopologyContainer {
   IsisTopology getIsisTopology();
 
   @Nonnull
-  Layer2Topology getLayer2Topology();
+  Optional<Layer2Topology> getLayer2Topology();
 
   @Nonnull
   Topology getLayer3Topology();

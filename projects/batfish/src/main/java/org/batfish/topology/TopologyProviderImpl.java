@@ -6,13 +6,11 @@ import static org.batfish.datamodel.ospf.OspfTopologyUtils.computeOspfTopology;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -24,13 +22,10 @@ import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.topology.TopologyUtil;
-import org.batfish.common.util.IpsecUtil;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.bgp.BgpTopology;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.datamodel.vxlan.VxlanTopologyUtils;
@@ -131,18 +126,12 @@ public final class TopologyProviderImpl implements TopologyProvider {
       NetworkId network = networkSnapshot.getNetwork();
       SnapshotId snapshot = networkSnapshot.getSnapshot();
       Map<String, Configuration> configurations = _batfish.loadConfigurations(networkSnapshot);
-      Topology topology = getInitialRawLayer3Topology(networkSnapshot);
-      Set<Edge> edgeBlacklist =
-          firstNonNull(_storage.loadEdgeBlacklist(network, snapshot), ImmutableSet.of());
-      Set<Edge> failedIpsecSessionEdges =
-          IpsecUtil.computeFailedIpsecSessionEdges(
-              topology.getEdges(), IpsecUtil.initIpsecTopology(configurations), configurations);
-      Set<String> nodeBlacklist =
-          firstNonNull(_storage.loadNodeBlacklist(network, snapshot), ImmutableSet.of());
-      Set<NodeInterfacePair> interfaceBlacklist =
-          firstNonNull(_storage.loadInterfaceBlacklist(network, snapshot), ImmutableSet.of());
-      return topology.prune(
-          Sets.union(failedIpsecSessionEdges, edgeBlacklist), nodeBlacklist, interfaceBlacklist);
+      return TopologyUtil.computeLayer3Topology(
+          getInitialRawLayer3Topology(networkSnapshot),
+          firstNonNull(_storage.loadEdgeBlacklist(network, snapshot), ImmutableSet.of()),
+          firstNonNull(_storage.loadNodeBlacklist(network, snapshot), ImmutableSet.of()),
+          firstNonNull(_storage.loadInterfaceBlacklist(network, snapshot), ImmutableSet.of()),
+          configurations);
     }
   }
 
@@ -158,21 +147,17 @@ public final class TopologyProviderImpl implements TopologyProvider {
     }
   }
 
-  private Topology computeRawLayer3Topology(NetworkSnapshot networkSnapshot) {
+  private @Nonnull Topology computeRawLayer3Topology(NetworkSnapshot networkSnapshot) {
     try (ActiveSpan span =
         GlobalTracer.get()
             .buildSpan("TopologyProviderImpl::computeRawLayer3Topology")
             .startActive()) {
       assert span != null; // avoid unused warning
       Map<String, Configuration> configurations = _batfish.loadConfigurations(networkSnapshot);
-      return getRawLayer1PhysicalTopology(networkSnapshot)
-          .map(
-              rawLayer1PhysicalTopology ->
-                  TopologyUtil.computeLayer3Topology(
-                      rawLayer1PhysicalTopology,
-                      computeInitialLayer2Topology(networkSnapshot).get(),
-                      configurations))
-          .orElse(TopologyUtil.synthesizeL3Topology(configurations));
+      return TopologyUtil.computeRawLayer3Topology(
+          getRawLayer1PhysicalTopology(networkSnapshot),
+          getInitialLayer2Topology(networkSnapshot),
+          configurations);
     }
   }
 
@@ -288,7 +273,7 @@ public final class TopologyProviderImpl implements TopologyProvider {
   }
 
   @Override
-  public @Nonnull Layer2Topology getLayer2Topology(NetworkSnapshot snapshot) {
+  public @Nonnull Optional<Layer2Topology> getLayer2Topology(NetworkSnapshot snapshot) {
     try {
       return _storage.loadLayer2Topology(snapshot);
     } catch (IOException e) {

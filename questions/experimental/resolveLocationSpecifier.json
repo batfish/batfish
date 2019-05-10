@@ -4,8 +4,9 @@
     "queryType": "location",
     "specifierFactoryVersion": "${grammarVersion}", 
     "instance": {
-        "description": "Show the resolved values for location specifier",
+        "description": "Returns resolved values for location specifier.",
         "instanceName": "resolveLocationSpecifier",
+        "longDescription": "Helper question that shows how specified locationSpec values resolve to the locations in the network.",
         "tags": [
             "specifiers"
         ],

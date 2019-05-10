@@ -9,9 +9,9 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Evaluate the processing of a flow by a given filter/ACL",
+    "description" : "Returns how a flow is processed by a filter (ACLs, firewall rules).",
     "instanceName" : "qname",
-    "longDescription" : "Find how the specified flow is processed through the specified filters/ACLs.",
+    "longDescription" : "Shows how the specified flow is processed through the specified filters, returning its permit/deny status as well as the line(s) it matched.",
     "tags" : [
       "dataPlane",
       "filter",

@@ -4,8 +4,9 @@
     "queryType": "ip_space_of_location",
     "specifierFactoryVersion": "${grammarVersion}", 
     "instance": {
-        "description": "Show IPs that are auto-assigned to locations",
+        "description": "Returns IPs that are auto-assigned to locations.",
         "instanceName": "resolveIpsOfLocationSpecifier",
+        "longDescription": "Helper question that shows IPs that will be assigned to specified locationSpec values by questions are automatically pick IPs based on locations.",
         "tags": [
             "specifiers"
         ],

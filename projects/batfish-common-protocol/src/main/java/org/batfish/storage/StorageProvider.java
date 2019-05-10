@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -524,13 +525,13 @@ public interface StorageProvider {
   EigrpTopology loadEigrpTopology(NetworkSnapshot networkSnapshot) throws IOException;
 
   /**
-   * Loads the {@link Layer2Topology} corresponding to the converged {@link
+   * Loads the optional {@link Layer2Topology} corresponding to the converged {@link
    * org.batfish.datamodel.DataPlane} for the provided {@link NetworkSnapshot}.
    *
    * @throws IOException if there is an error reading the {@link Layer2Topology}
    */
   @Nonnull
-  Layer2Topology loadLayer2Topology(NetworkSnapshot networkSnapshot) throws IOException;
+  Optional<Layer2Topology> loadLayer2Topology(NetworkSnapshot networkSnapshot) throws IOException;
 
   /**
    * Loads the layer-3 {@link Topology} corresponding to the converged {@link
@@ -578,12 +579,12 @@ public interface StorageProvider {
       throws IOException;
 
   /**
-   * Stores the provided {@code layer2Topology} corresponding to the converged {@link
+   * Stores the provided optional {@code layer2Topology} corresponding to the converged {@link
    * org.batfish.datamodel.DataPlane} for the provided {@link NetworkSnapshot}.
    *
    * @throws IOException if there is an error writing the {@code layer2Topology}
    */
-  void storeLayer2Topology(Layer2Topology layer2Topology, NetworkSnapshot networkSnapshot)
+  void storeLayer2Topology(Optional<Layer2Topology> layer2Topology, NetworkSnapshot networkSnapshot)
       throws IOException;
 
   /**

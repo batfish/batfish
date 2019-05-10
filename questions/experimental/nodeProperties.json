@@ -4,8 +4,9 @@
     "nodes": "${nodes}",
     "properties": "${properties}",
     "instance": {
-        "description": "Return configuration properties of nodes",
+        "description": "Return configuration settings of nodes",
         "instanceName": "nodeProperties",
+        "longDescription": "Lists global settings of devices in the network. Settings that are specific to interfaces, routing protocols, etc. are available via other questions.",
         "tags": [],
         "variables": {
             "nodes": {

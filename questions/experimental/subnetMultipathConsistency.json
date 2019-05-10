@@ -11,7 +11,7 @@
     "instance": {
         "description": "Validate multipath consistency between all pairs of subnets.",
         "instanceName": "subnetMultipathConsistency",
-        "longDescription": "Finds flows between subnets that are treated differently by different paths in the presence of multipath routing",
+        "longDescription": "Searches across all flows between subnets that are treated differently (i.e., dropped versus forwarded) by different paths in the network and returns example flows.",
         "tags": [
             "dataPlane",
             "reachability",
