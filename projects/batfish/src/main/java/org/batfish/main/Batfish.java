@@ -3371,4 +3371,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     AnswererCreator creator = _answererCreators.get(question.getName());
     return creator != null ? creator.create(question, this) : null;
   }
+
+  @Override
+  public String getSnapshotName() {
+    return _settings.getSnapshotName();
+  }
 }

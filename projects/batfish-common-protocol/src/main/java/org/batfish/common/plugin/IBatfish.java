@@ -102,6 +102,9 @@ public interface IBatfish extends IPluginConsumer {
    */
   ImmutableConfiguration getSettingsConfiguration();
 
+  /** Get user-facing snapshot name */
+  String getSnapshotName();
+
   String getTaskId();
 
   SnapshotId getTestrigName();

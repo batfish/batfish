@@ -414,4 +414,9 @@ public class IBatfishTestAdapter implements IBatfish {
       BDDPacket bddPacket, ReachabilityParameters parameters) {
     throw new UnsupportedOperationException();
   }
+
+  @Override
+  public String getSnapshotName() {
+    throw new UnsupportedOperationException();
+  }
 }
