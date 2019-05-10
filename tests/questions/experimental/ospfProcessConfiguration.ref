@@ -7,7 +7,7 @@
   "instance" : {
     "description" : "Return configuration parameters for OSPF routing processes",
     "instanceName" : "qname",
-    "longDescription" : "This question returns the values of important properties for all OSPF processes running on a router. In particular, these properties include OSPF areas, reference bandwidth, router ID, export polices and information about whether the router running the process is an area border router.",
+    "longDescription" : "Returns the values of important properties for all OSPF processes running across the network.",
     "orderedVariableNames" : [
       "nodes",
       "properties"

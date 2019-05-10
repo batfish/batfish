@@ -7,7 +7,7 @@
   "instance" : {
     "description" : "Return configuration parameters for OSPF routing processes",
     "instanceName" : "qname",
-    "longDescription" : "This question returns all properties of all OSPF processes present in the network. ospfProcessConfiguration question should be used instead as this question is deprecated and will be removed in the future.",
+    "longDescription" : "Returns all properties of all OSPF processes present in the network. ospfProcessConfiguration question should be used instead as this question is deprecated and will be removed in the future.",
     "tags" : [
       "ospf"
     ],

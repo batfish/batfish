@@ -7,7 +7,7 @@
   "instance" : {
     "description" : "Returns compatible OSPF sessions",
     "instanceName" : "qname",
-    "longDescription" : "This question returns compatible OSPF sessions in the network. Answer contains local and remote interfaces, VRFs, IPs and areas for the compatible OSPF sessions.",
+    "longDescription" : "Returns compatible OSPF sessions in the network. A session is compatible if the interfaces involved are not shutdown and do run OSPF, are not OSPF passive and are associated with the same OSPF area.",
     "orderedVariableNames" : [
       "nodes",
       "remoteNodes"
