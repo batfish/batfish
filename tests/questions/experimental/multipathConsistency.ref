@@ -16,7 +16,7 @@
   "instance" : {
     "description" : "Validate multipath consistency.",
     "instanceName" : "qname",
-    "longDescription" : "Searches across all flows in the network and returns examples flows that are treated differently by different paths in the presence of multipath routing.",
+    "longDescription" : "Searches across all flows in the network and returns example flows that are treated differently (i.e., dropped versus forwarded) by different paths in the presence of multipath routing.",
     "tags" : [
       "dataPlane",
       "multipath consistency",
