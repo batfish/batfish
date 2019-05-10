@@ -18,6 +18,7 @@ import io.opentracing.util.GlobalTracer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -27,6 +28,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BdpOscillationException;
 import org.batfish.common.Version;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
+import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Bgpv4Route;
@@ -127,56 +129,47 @@ class IncrementalBdpEngine {
                   .build();
 
           // Update topologies
-          TopologyContext newTopologyContext = currentTopologyContext;
-
           // VXLAN
-          newTopologyContext =
-              newTopologyContext
-                  .toBuilder()
-                  .setVxlanTopology(
-                      prunedVxlanTopology(
-                          initialTopologyContext.getVxlanTopology(),
-                          configurations,
-                          new TracerouteEngineImpl(
-                              partialDataplane, newTopologyContext.getLayer3Topology())))
-                  .build();
+          VxlanTopology newVxlanTopology =
+              prunedVxlanTopology(
+                  initialTopologyContext.getVxlanTopology(),
+                  configurations,
+                  new TracerouteEngineImpl(
+                      partialDataplane, currentTopologyContext.getLayer3Topology()));
           // Layer-2
-          final VxlanTopology vxlanTopology = newTopologyContext.getVxlanTopology();
-          newTopologyContext =
-              newTopologyContext
-                  .toBuilder()
-                  .setLayer2Topology(
-                      newTopologyContext
-                          .getLayer1LogicalTopology()
-                          .map(l1 -> computeLayer2Topology(l1, vxlanTopology, configurations)))
-                  .build();
+          Optional<Layer2Topology> newLayer2Topology =
+              currentTopologyContext
+                  .getLayer1LogicalTopology()
+                  .map(l1 -> computeLayer2Topology(l1, newVxlanTopology, configurations));
           // Layer-3
-          newTopologyContext =
-              newTopologyContext
-                  .toBuilder()
-                  .setLayer3Topology(
-                      computeLayer3Topology(
-                          computeRawLayer3Topology(
-                              newTopologyContext.getRawLayer1PhysicalTopology(),
-                              newTopologyContext.getLayer2Topology(),
-                              configurations),
-                          newTopologyContext.getEdgeBlacklist(),
-                          newTopologyContext.getNodeBlacklist(),
-                          newTopologyContext.getInterfaceBlacklist(),
-                          configurations))
-                  .build();
+          Topology newLayer3Topology =
+              computeLayer3Topology(
+                  computeRawLayer3Topology(
+                      initialTopologyContext.getRawLayer1PhysicalTopology(),
+                      newLayer2Topology,
+                      configurations),
+                  initialTopologyContext.getEdgeBlacklist(),
+                  initialTopologyContext.getNodeBlacklist(),
+                  initialTopologyContext.getInterfaceBlacklist(),
+                  configurations);
 
           // Initialize BGP topology
-          BgpTopology bgpTopology =
+          BgpTopology newBgpTopology =
               initBgpTopology(
                   configurations,
                   ipOwners,
                   false,
                   true,
-                  new TracerouteEngineImpl(
-                      partialDataplane, newTopologyContext.getLayer3Topology()),
+                  new TracerouteEngineImpl(partialDataplane, newLayer3Topology),
                   initialTopologyContext.getLayer2Topology().orElse(null));
-          newTopologyContext = newTopologyContext.toBuilder().setBgpTopology(bgpTopology).build();
+          TopologyContext newTopologyContext =
+              currentTopologyContext
+                  .toBuilder()
+                  .setBgpTopology(newBgpTopology)
+                  .setLayer2Topology(newLayer2Topology)
+                  .setLayer3Topology(newLayer3Topology)
+                  .setVxlanTopology(newVxlanTopology)
+                  .build();
 
           boolean isOscillating =
               computeNonMonotonicPortionOfDataPlane(

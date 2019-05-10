@@ -6,6 +6,7 @@ import java.util.Set;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.Plugin;
+import org.batfish.common.topology.TopologyProvider;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Topology;
@@ -40,16 +41,15 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
       Map<String, Configuration> configurations, Topology topology) {
     Set<BgpAdvertisement> externalAdverts = _batfish.loadExternalBgpAnnouncements(configurations);
     NetworkSnapshot networkSnapshot = _batfish.getNetworkSnapshot();
+    TopologyProvider topologyProvider = _batfish.getTopologyProvider();
     TopologyContext topologyContext =
         TopologyContext.builder()
-            .setLayer1LogicalTopology(
-                _batfish.getTopologyProvider().getLayer1LogicalTopology(networkSnapshot))
-            .setLayer2Topology(
-                _batfish.getTopologyProvider().getInitialLayer2Topology(networkSnapshot))
+            .setLayer1LogicalTopology(topologyProvider.getLayer1LogicalTopology(networkSnapshot))
+            .setLayer2Topology(topologyProvider.getInitialLayer2Topology(networkSnapshot))
             .setLayer3Topology(topology)
-            .setOspfTopology(_batfish.getTopologyProvider().getInitialOspfTopology(networkSnapshot))
+            .setOspfTopology(topologyProvider.getInitialOspfTopology(networkSnapshot))
             .setRawLayer1PhysicalTopology(
-                _batfish.getTopologyProvider().getRawLayer1PhysicalTopology(networkSnapshot))
+                topologyProvider.getRawLayer1PhysicalTopology(networkSnapshot))
             .build();
 
     ComputeDataPlaneResult answer =

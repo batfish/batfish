@@ -50,7 +50,6 @@ import org.junit.rules.TemporaryFolder;
 public final class FixedPointTopologyTest {
 
   private static final String E1_NAME = "E1";
-
   private static final String E12_NAME = "E12";
   private static final String E2_NAME = "E2";
   private static final String E21_NAME = "E21";
