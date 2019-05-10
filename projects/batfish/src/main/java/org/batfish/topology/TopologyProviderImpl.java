@@ -12,6 +12,7 @@ import io.opentracing.util.GlobalTracer;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -25,9 +26,11 @@ import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.IpsecUtil;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.bgp.BgpTopology;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.datamodel.vxlan.VxlanTopologyUtils;
@@ -129,13 +132,17 @@ public final class TopologyProviderImpl implements TopologyProvider {
       SnapshotId snapshot = networkSnapshot.getSnapshot();
       Map<String, Configuration> configurations = _batfish.loadConfigurations(networkSnapshot);
       Topology topology = getInitialRawLayer3Topology(networkSnapshot);
+      Set<Edge> edgeBlacklist =
+          firstNonNull(_storage.loadEdgeBlacklist(network, snapshot), ImmutableSet.of());
+      Set<Edge> failedIpsecSessionEdges =
+          IpsecUtil.computeFailedIpsecSessionEdges(
+              topology.getEdges(), IpsecUtil.initIpsecTopology(configurations), configurations);
+      Set<String> nodeBlacklist =
+          firstNonNull(_storage.loadNodeBlacklist(network, snapshot), ImmutableSet.of());
+      Set<NodeInterfacePair> interfaceBlacklist =
+          firstNonNull(_storage.loadInterfaceBlacklist(network, snapshot), ImmutableSet.of());
       return topology.prune(
-          Sets.union(
-              IpsecUtil.computeFailedIpsecSessionEdges(
-                  topology.getEdges(), IpsecUtil.initIpsecTopology(configurations), configurations),
-              firstNonNull(_storage.loadEdgeBlacklist(network, snapshot), ImmutableSet.of())),
-          firstNonNull(_storage.loadNodeBlacklist(network, snapshot), ImmutableSet.of()),
-          firstNonNull(_storage.loadInterfaceBlacklist(network, snapshot), ImmutableSet.of()));
+          Sets.union(failedIpsecSessionEdges, edgeBlacklist), nodeBlacklist, interfaceBlacklist);
     }
   }
 

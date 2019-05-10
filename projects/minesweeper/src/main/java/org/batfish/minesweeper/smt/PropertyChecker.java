@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
+import org.batfish.common.BfConsts;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AclIpSpace;
@@ -563,7 +564,8 @@ public class PropertyChecker {
           } else {
             FlowHistory fh;
             CounterExample ce = new CounterExample(vp.getModel());
-            String testrigName = _batfish.getTestrigName().getId();
+            String testrigName =
+                _batfish.getSettingsConfiguration().getString(BfConsts.ARG_SNAPSHOT_NAME);
             if (q.getDiffType() != null) {
               fh =
                   ce.buildFlowHistoryDiff(
