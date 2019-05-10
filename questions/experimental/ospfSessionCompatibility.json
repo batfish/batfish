@@ -5,6 +5,7 @@
     "remoteNodes": "${remoteNodes}",
     "instance": {
         "description": "Returns compatible OSPF sessions",
+        "longDescription": "This question returns compatible OSPF sessions in the network. Answer contains local and remote interfaces, VRFs, IPs and areas for the compatible OSPF sessions.",
         "instanceName": "ospfSessionCompatibility",
          "orderedVariableNames": [
             "nodes",

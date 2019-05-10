@@ -6,6 +6,7 @@
   "instance" : {
     "description" : "Return configuration parameters of OSPF areas",
     "instanceName" : "qname",
+    "longDescription" : "This question returns information about all OSPF areas defined across the network. In particular, it lists down the area number, area type and the list of active and passive interfaces in that area. The answer also contains the node, VRF and OSPF process containing each area.",
     "orderedVariableNames" : [
       "nodes"
     ],

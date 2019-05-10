@@ -5,6 +5,7 @@
     "properties": "${properties}",
     "instance": {
         "description": "Returns OSPF configuration of interfaces",
+        "longDescription": "This question returns the interface level OSPF configuration details. Specifically it lists down, for every interface, its OSPF area, whether it is running OSPF passive, its OSPF cost, its value of OSPF hello mutiplier and also if OSPF point to point is configured.",
         "instanceName": "ospfInterfaceConfiguration",
          "orderedVariableNames": [
             "nodes",
