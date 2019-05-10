@@ -426,7 +426,7 @@ public final class TopologyUtil {
 
   /**
    * Compute the pruned layer-3 topology from the raw layer-3 topology, configuration information,
-   * and blacklists.
+   * and failed edges.
    */
   public static @Nonnull Topology computeLayer3Topology(
       Topology rawLayer3Topology, Map<String, Configuration> configurations) {
