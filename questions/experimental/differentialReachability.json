@@ -8,9 +8,9 @@
     "invertSearch": "${invertSearch}",
     "pathConstraints": "${pathConstraints}",
     "instance": {
-        "description": "Detect differential reachability.",
+        "description": "Returns flows that are successful in one snapshot but not in another.",
         "instanceName": "differentialReachability",
-        "longDescription": "Finds flows that are accepted in one snapshot but dropped in another",
+        "longDescription": "Searches across all possible flows in the network, with the specified header and path constraints, and returns example flows that are successful in one snapshot and not the other. This is a differential question and the reference snapshot to compare against must be provided in the call to answer().",
         "tags": [
             "dataPlane",
             "reachability",

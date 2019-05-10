@@ -3,8 +3,9 @@
     "differential": false,
     "nodes": "${nodes}",
     "instance": {
-        "description": "Report VIP mappings of F5 BIG-IP configurations",
+        "description": "Returns VIP configuration of F5 BIG-IP devices.",
         "instanceName": "f5BigipVipConfiguration",
+        "longDescription": "Lists all the VIP to server IP mappings contained in F5 BIP-IP configurations.",
         "orderedVariableNames": [
           "nodes"
         ],
