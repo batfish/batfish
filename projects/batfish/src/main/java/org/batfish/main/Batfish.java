@@ -1,5 +1,6 @@
 package org.batfish.main;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Verify.verify;
@@ -1047,15 +1048,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public Environment getEnvironment() {
-    SortedSet<Edge> edgeBlackList = getEdgeBlacklist();
-    SortedSet<NodeInterfacePair> interfaceBlackList = getInterfaceBlacklist();
-    SortedSet<String> nodeBlackList = getNodeBlacklist();
-    // TODO: add bgp tables and external announcements as well
+    // TODO: delete entirely
     return new Environment(
         _settings.getSnapshotName(),
-        edgeBlackList,
-        interfaceBlackList,
-        nodeBlackList,
+        ImmutableSortedSet.of(),
+        ImmutableSortedSet.of(),
+        ImmutableSortedSet.of(),
         null,
         null,
         null);
@@ -1100,51 +1098,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  @Override
-  @Nonnull
-  public SortedSet<Edge> getEdgeBlacklist(@Nonnull NetworkSnapshot networkSnapshot) {
-    SortedSet<Edge> blacklistEdges =
-        _storage.loadEdgeBlacklist(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
-    if (blacklistEdges == null) {
-      return Collections.emptySortedSet();
-    }
-    return blacklistEdges;
-  }
-
-  @Override
-  @Nonnull
-  public SortedSet<NodeInterfacePair> getInterfaceBlacklist(
-      @Nonnull NetworkSnapshot networkSnapshot) {
-    SortedSet<NodeInterfacePair> blacklistInterfaces =
-        _storage.loadInterfaceBlacklist(
-            networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
-    if (blacklistInterfaces == null) {
-      return Collections.emptySortedSet();
-    }
-    return blacklistInterfaces;
-  }
-
-  @Override
-  @Nonnull
-  public SortedSet<String> getNodeBlacklist(@Nonnull NetworkSnapshot networkSnapshot) {
-    SortedSet<String> blacklistNodes =
-        _storage.loadNodeBlacklist(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
-    if (blacklistNodes == null) {
-      return Collections.emptySortedSet();
-    }
-    return blacklistNodes;
-  }
-
-  @Nonnull
-  private SortedSet<Edge> getEdgeBlacklist() {
-    return getEdgeBlacklist(getNetworkSnapshot());
-  }
-
-  @Nonnull
-  private SortedSet<NodeInterfacePair> getInterfaceBlacklist() {
-    return getInterfaceBlacklist(getNetworkSnapshot());
-  }
-
   @Nonnull
   private Map<String, Configuration> getIspConfigurations(
       Map<String, Configuration> configurations, Map<String, Warnings> warningsByHost) {
@@ -1159,11 +1112,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
             IspModelingUtils.INTERNET_HOST_NAME, k -> buildWarnings(_settings));
     return IspModelingUtils.getInternetAndIspNodes(
         configurations, ispConfiguration, _logger, warnings);
-  }
-
-  @Nonnull
-  private SortedSet<String> getNodeBlacklist() {
-    return getNodeBlacklist(getNetworkSnapshot());
   }
 
   @Override
@@ -2326,8 +2274,19 @@ public class Batfish extends PluginConsumer implements IBatfish {
    */
   private void updateBlacklistedAndInactiveConfigs(Map<String, Configuration> configurations) {
     NetworkConfigurations nc = NetworkConfigurations.of(configurations);
-    processInterfaceBlacklist(nodeToInterfaceBlacklist(getNodeBlacklist(), nc), nc);
-    processInterfaceBlacklist(getInterfaceBlacklist(), nc);
+    NetworkSnapshot networkSnapshot = getNetworkSnapshot();
+    NetworkId networkId = networkSnapshot.getNetwork();
+    SnapshotId snapshotId = networkSnapshot.getSnapshot();
+
+    processInterfaceBlacklist(
+        nodeToInterfaceBlacklist(
+            firstNonNull(
+                _storage.loadNodeBlacklist(networkId, snapshotId), ImmutableSortedSet.of()),
+            nc),
+        nc);
+    processInterfaceBlacklist(
+        firstNonNull(_storage.loadInterfaceBlacklist(networkId, snapshotId), ImmutableSet.of()),
+        nc);
     if (_settings.ignoreManagementInterfaces()) {
       processManagementInterfaces(configurations);
     }

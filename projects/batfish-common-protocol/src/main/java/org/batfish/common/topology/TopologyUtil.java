@@ -47,7 +47,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.VniSettings;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.vxlan.VxlanNode;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 
@@ -427,23 +426,17 @@ public final class TopologyUtil {
 
   /**
    * Compute the pruned layer-3 topology from the raw layer-3 topology, configuration information,
-   * and blacklists.
+   * and failed edges.
    */
   public static @Nonnull Topology computeLayer3Topology(
-      Topology rawLayer3Topology,
-      Set<Edge> edgeBlacklist,
-      Set<String> nodeBlacklist,
-      Set<NodeInterfacePair> interfaceBlacklist,
-      Map<String, Configuration> configurations) {
+      Topology rawLayer3Topology, Map<String, Configuration> configurations) {
     return rawLayer3Topology.prune(
-        Sets.union(
-            IpsecUtil.computeFailedIpsecSessionEdges(
-                rawLayer3Topology.getEdges(),
-                IpsecUtil.initIpsecTopology(configurations),
-                configurations),
-            edgeBlacklist),
-        nodeBlacklist,
-        interfaceBlacklist);
+        IpsecUtil.computeFailedIpsecSessionEdges(
+            rawLayer3Topology.getEdges(),
+            IpsecUtil.initIpsecTopology(configurations),
+            configurations),
+        ImmutableSet.of(),
+        ImmutableSet.of());
   }
 
   private static @Nullable Configuration getConfiguration(
