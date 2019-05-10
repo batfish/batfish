@@ -7,7 +7,7 @@ public class StaticRib extends AbstractRib<StaticRoute> {
   private static final long serialVersionUID = 1L;
 
   public StaticRib() {
-    super(null);
+    super();
   }
 
   @Override

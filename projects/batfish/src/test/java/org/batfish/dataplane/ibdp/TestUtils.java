@@ -12,8 +12,8 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import java.util.List;
+import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AbstractRoute;
@@ -31,25 +31,23 @@ import org.hamcrest.Matchers;
 
 public class TestUtils {
   public static <T extends AbstractRouteDecorator> void assertNoRoute(
-      SortedMap<String, SortedMap<String, SortedSet<T>>> routesByNode,
+      SortedMap<String, SortedMap<String, Set<T>>> routesByNode,
       String hostname,
       InterfaceAddress address) {
     assertNoRoute(routesByNode, hostname, address.getPrefix());
   }
 
   public static <T extends AbstractRouteDecorator> void assertNoRoute(
-      SortedMap<String, SortedMap<String, SortedSet<T>>> routesByNode,
-      String hostname,
-      Prefix prefix) {
+      SortedMap<String, SortedMap<String, Set<T>>> routesByNode, String hostname, Prefix prefix) {
     assertThat(routesByNode, hasKey(hostname));
-    SortedMap<String, SortedSet<T>> routesByVrf = routesByNode.get(hostname);
+    SortedMap<String, Set<T>> routesByVrf = routesByNode.get(hostname);
     assertThat(routesByVrf, hasKey(Configuration.DEFAULT_VRF_NAME));
-    SortedSet<T> routes = routesByVrf.get(Configuration.DEFAULT_VRF_NAME);
+    Set<T> routes = routesByVrf.get(Configuration.DEFAULT_VRF_NAME);
     assertThat(routes, not(hasItem(hasPrefix(prefix))));
   }
 
   public static void assertRoute(
-      SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByNode,
+      SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routesByNode,
       RoutingProtocol protocol,
       String hostname,
       InterfaceAddress address,
@@ -58,7 +56,7 @@ public class TestUtils {
   }
 
   public static void assertIsisRoute(
-      SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByNode,
+      SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routesByNode,
       RoutingProtocol protocol,
       String hostname,
       Prefix prefix,
@@ -73,7 +71,7 @@ public class TestUtils {
   }
 
   public static void assertRoute(
-      SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByNode,
+      SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routesByNode,
       RoutingProtocol protocol,
       String hostname,
       Prefix prefix,
@@ -82,7 +80,7 @@ public class TestUtils {
   }
 
   public static void assertRoute(
-      SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByNode,
+      SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routesByNode,
       RoutingProtocol protocol,
       String hostname,
       Prefix prefix,
@@ -99,13 +97,13 @@ public class TestUtils {
   }
 
   private static List<AbstractRoute> getRoutesForPrefix(
-      SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByNode,
+      SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routesByNode,
       String hostname,
       Prefix prefix) {
     assertThat(routesByNode, hasKey(hostname));
-    SortedMap<String, SortedSet<AbstractRoute>> routesByVrf = routesByNode.get(hostname);
+    SortedMap<String, Set<AbstractRoute>> routesByVrf = routesByNode.get(hostname);
     assertThat(routesByVrf, hasKey(Configuration.DEFAULT_VRF_NAME));
-    SortedSet<AbstractRoute> routes = routesByVrf.get(Configuration.DEFAULT_VRF_NAME);
+    Set<AbstractRoute> routes = routesByVrf.get(Configuration.DEFAULT_VRF_NAME);
     assertThat(routes, hasItem(hasPrefix(prefix)));
     return routes.stream().filter(r -> r.getNetwork().equals(prefix)).collect(Collectors.toList());
   }

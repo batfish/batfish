@@ -7,8 +7,9 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Returns configuration properties of interfaces",
+    "description" : "Returns configuration settings of interfaces.",
     "instanceName" : "qname",
+    "longDescription" : "Lists interface-level settings of interfaces. Settings for routing protocols, VRFs, and zones etc. that are attached to interfaces are available via other questions.",
     "tags" : [
       "configuration",
       "interfaces"

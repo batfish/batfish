@@ -1405,22 +1405,26 @@ public final class CumulusNcluGrammarTest {
         ImmutableSortedSet.of(
             // All defined VXLAN VNIs as l3 because of advertise-default-gw
             new Layer3VniConfig(
+                10001,
                 DEFAULT_VRF_NAME,
                 RouteDistinguisher.from(routerId, 0),
                 ExtendedCommunity.target(65500, 10001),
                 false),
             new Layer3VniConfig(
+                10002,
                 DEFAULT_VRF_NAME,
                 RouteDistinguisher.from(routerId, 1),
                 ExtendedCommunity.target(65500, 10002),
                 false),
             new Layer3VniConfig(
+                10004,
                 DEFAULT_VRF_NAME,
                 RouteDistinguisher.from(routerId, 2),
                 ExtendedCommunity.target(65500, 10004),
                 false),
             // VRF1's explicitly defined l3-VNI with advertise-ipv4-unicast
             new Layer3VniConfig(
+                10004,
                 "vrf1",
                 RouteDistinguisher.from(Ip.parse("192.0.1.1"), 2),
                 ExtendedCommunity.target(65500, 10004),

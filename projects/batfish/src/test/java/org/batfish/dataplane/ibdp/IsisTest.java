@@ -24,7 +24,6 @@ import com.google.common.collect.Sets;
 import java.util.Collections;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.AbstractRoute;
@@ -66,14 +65,14 @@ public class IsisTest {
   private static final int INTERFACE_PREFIX_LENGTH = 24;
 
   private static void assertInterAreaRoute(
-      SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByNode,
+      SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routesByNode,
       String hostname,
       Prefix prefix,
       long expectedCost) {
     assertThat(routesByNode, hasKey(hostname));
-    SortedMap<String, SortedSet<AbstractRoute>> routesByVrf = routesByNode.get(hostname);
+    SortedMap<String, Set<AbstractRoute>> routesByVrf = routesByNode.get(hostname);
     assertThat(routesByVrf, hasKey(DEFAULT_VRF_NAME));
-    SortedSet<AbstractRoute> routes = routesByVrf.get(DEFAULT_VRF_NAME);
+    Set<AbstractRoute> routes = routesByVrf.get(DEFAULT_VRF_NAME);
     assertThat(routes, hasItem(hasPrefix(prefix)));
     AbstractRoute route =
         routes.stream().filter(r -> r.getNetwork().equals(prefix)).findAny().get();
@@ -207,7 +206,7 @@ public class IsisTest {
                 isisRouteWith(isisInterfacePrefix, R1_INTERFACE_IP, 10))));
 
     // Both nodes have an L2 route to the other's loopback
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+    SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dp);
     assertRoute(routes, ISIS_L2, R1, r2LoopbackPrefix, 10L);
     assertRoute(routes, ISIS_L2, R2, r1LoopbackPrefix, 10L);
@@ -264,7 +263,7 @@ public class IsisTest {
                 isisRouteWith(isisInterfacePrefix, R2_INTERFACE_IP, 10))));
 
     // Both nodes have an L1 route to the other's loopback
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+    SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dp);
     assertRoute(routes, ISIS_L1, R1, r2LoopbackPrefix, 10L);
     assertRoute(routes, ISIS_L1, R2, r1LoopbackPrefix, 10L);
@@ -436,7 +435,7 @@ public class IsisTest {
   @Test
   public void testL1AndL2Routes() {
     IncrementalDataPlane dp = computeDataPlane();
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+    SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dp);
 
     // r1
@@ -618,7 +617,7 @@ public class IsisTest {
     */
 
     IncrementalDataPlane dp = setUpOverloadIsis();
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+    SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dp);
     Prefix r1LoopbackPrefix = Prefix.create(R1_LOOPBACK_IP, Prefix.MAX_PREFIX_LENGTH);
     Prefix r2LoopbackPrefix = Prefix.create(R2_LOOPBACK_IP, Prefix.MAX_PREFIX_LENGTH);
@@ -671,7 +670,7 @@ public class IsisTest {
   @Test
   public void testLeakedRoutes() {
     IncrementalDataPlane dp = computeDataPlane();
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+    SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dp);
 
     assertInterAreaRoute(routes, R4, Prefix.parse("10.1.1.1/32"), 148L);
@@ -691,7 +690,7 @@ public class IsisTest {
   @Test
   public void testRedistributedRoutes() {
     IncrementalDataPlane dp = computeDataPlane();
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+    SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dp);
 
     assertRoute(routes, ISIS_L2, R1, Prefix.parse("10.3.3.100/32"), 10L);

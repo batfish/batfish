@@ -21,7 +21,6 @@ import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.topology.TopologyUtil;
-import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
@@ -46,6 +45,7 @@ import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.vxlan.VxlanTopology;
+import org.batfish.datamodel.vxlan.VxlanTopologyUtils;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
@@ -142,7 +142,7 @@ public class IBatfishTestAdapter implements IBatfish {
 
     @Override
     public VxlanTopology getInitialVxlanTopology(NetworkSnapshot snapshot) {
-      return new VxlanTopology(_batfish.loadConfigurations(snapshot));
+      return VxlanTopologyUtils.initialVxlanTopology(_batfish.loadConfigurations(snapshot));
     }
   }
 
@@ -224,11 +224,6 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public Map<String, String> getQuestionTemplates(boolean verbose) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes() {
     throw new UnsupportedOperationException();
   }
 

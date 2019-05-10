@@ -498,6 +498,7 @@ import org.batfish.grammar.cisco.CiscoParser.Bgp_advertise_inactive_rb_stanzaCon
 import org.batfish.grammar.cisco.CiscoParser.Bgp_asnContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_confederation_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_listen_range_rb_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Bgp_redistribute_internal_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Boolean_and_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Boolean_apply_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Boolean_as_path_in_rp_stanzaContext;
@@ -4703,10 +4704,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitAdvertise_map_bgp_tail(Advertise_map_bgp_tailContext ctx) {
     // TODO: https://github.com/batfish/batfish/issues/1836
+    todo(ctx, "BGP advertise-map is not currently supported");
     String advertiseMapName = ctx.am_name.getText();
     _configuration.referenceStructure(
         ROUTE_MAP, advertiseMapName, BGP_ROUTE_MAP_ADVERTISE, ctx.am_name.getStart().getLine());
     if (ctx.em_name != null) {
+      todo(ctx, "BGP exist-map is not currently supported");
       String existMapName = ctx.em_name.getText();
       _configuration.referenceStructure(
           ROUTE_MAP, existMapName, BGP_ADVERTISE_MAP_EXIST_MAP, ctx.em_name.getStart().getLine());
@@ -4859,6 +4862,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         pg.setRemoteAs(remoteAs);
       }
     }
+  }
+
+  @Override
+  public void exitBgp_redistribute_internal_rb_stanza(
+      Bgp_redistribute_internal_rb_stanzaContext ctx) {
+    todo(ctx); // TODO(https://github.com/batfish/batfish/issues/3230)
   }
 
   @Override
@@ -10101,6 +10110,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.mapname.getText();
     _configuration.referenceStructure(
         ROUTE_MAP, name, BGP_ROUTE_MAP_UNSUPPRESS, ctx.getStart().getLine());
+    todo(ctx, "BGP unusuppress-map is not currently supported");
   }
 
   @Override

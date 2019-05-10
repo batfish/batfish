@@ -445,10 +445,10 @@
         "Source_Lines" : {
           "filename" : "configs/cisco_bgp",
           "lines" : [
-            34,
             35,
             36,
-            37
+            37,
+            38
           ]
         }
       },
@@ -2625,7 +2625,7 @@
         "Source_Lines" : {
           "filename" : "configs/juniper_firewall",
           "lines" : [
-            40
+            42
           ]
         }
       },
@@ -2660,7 +2660,8 @@
             27,
             30,
             31,
-            33
+            33,
+            35
           ]
         }
       },
@@ -2670,9 +2671,9 @@
         "Source_Lines" : {
           "filename" : "configs/juniper_firewall",
           "lines" : [
-            35,
-            36,
-            37
+            37,
+            38,
+            39
           ]
         }
       },

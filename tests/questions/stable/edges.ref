@@ -6,9 +6,9 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Lists different types of edges in a snapshot",
+    "description" : "Returns different types of network adjacencies in a snapshot.",
     "instanceName" : "qname",
-    "longDescription" : "Lists neighbor relationships of the specified type (layer3, BGP, ospf, etc. in the form of edges)",
+    "longDescription" : "Lists network adjacencies of different types (e.g., Layer 3, BGP, OSPF) in the form of edges.",
     "tags" : [
       "topology"
     ],

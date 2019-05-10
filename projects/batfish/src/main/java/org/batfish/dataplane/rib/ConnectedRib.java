@@ -11,7 +11,7 @@ public class ConnectedRib extends AnnotatedRib<ConnectedRoute> {
   private static final long serialVersionUID = 1L;
 
   public ConnectedRib() {
-    super(null);
+    super();
   }
 
   @Override

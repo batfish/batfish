@@ -15,7 +15,6 @@ import org.batfish.common.Answerer;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.topology.TopologyProvider;
-import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
@@ -101,8 +100,6 @@ public interface IBatfish extends IPluginConsumer {
   TopologyProvider getTopologyProvider();
 
   Map<String, String> getQuestionTemplates(boolean verbose);
-
-  SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes();
 
   /**
    * Get batfish settings

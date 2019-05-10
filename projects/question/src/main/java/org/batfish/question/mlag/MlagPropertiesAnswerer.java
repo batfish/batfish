@@ -76,7 +76,7 @@ public final class MlagPropertiesAnswerer extends Answerer {
     Builder<ColumnMetadata> b = ImmutableList.builder();
     b.add(
         new ColumnMetadata(COL_NODE, Schema.NODE, "Node name", true, false),
-        new ColumnMetadata(COL_MLAG_ID, Schema.STRING, "MLAG ID", true, false),
+        new ColumnMetadata(COL_MLAG_ID, Schema.STRING, "MLAG domain ID", true, false),
         new ColumnMetadata(COL_MLAG_PEER_ADDRESS, Schema.IP, "Peer's IP address", false, true),
         new ColumnMetadata(
             COL_MLAG_PEER_INTERFACE,

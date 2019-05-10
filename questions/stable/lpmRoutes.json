@@ -4,7 +4,7 @@
     "instance": {
         "description": "Show routes which are longest prefix match for a given IP address",
         "instanceName": "lpmRoutes",
-        "longDescription": "Return longest prefix match routes for a given IP in the RIBs of specified node/VRF.",
+        "longDescription": "Return longest prefix match routes for a given IP in the RIBs of specified nodes and VRFs.",
         "tags": [
             "dataPlane",
             "route"

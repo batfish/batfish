@@ -5,8 +5,9 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Show the resolved values for location specifier",
+    "description" : "Returns resolved values for location specifier.",
     "instanceName" : "qname",
+    "longDescription" : "Helper question that shows how specified locationSpec values resolve to the locations in the network.",
     "tags" : [
       "specifiers"
     ],

@@ -7,11 +7,12 @@ import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.stream.Collectors;
-import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.main.Batfish;
@@ -41,12 +42,12 @@ public class RipAndBgpTest {
                 .build(),
             _folder);
     batfish.computeDataPlane();
-    DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
-        dataPlanePlugin.getRoutes(batfish.loadDataPlane());
-    Set<AbstractRoute> r1Routes = routes.get("r1").get(Configuration.DEFAULT_VRF_NAME);
-    Set<AbstractRoute> r2Routes = routes.get("r2").get(Configuration.DEFAULT_VRF_NAME);
-    Set<AbstractRoute> r3Routes = routes.get("r3").get(Configuration.DEFAULT_VRF_NAME);
+    DataPlane dp = batfish.loadDataPlane();
+    SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs =
+        dp.getRibs();
+    Set<AbstractRoute> r1Routes = ribs.get("r1").get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r2Routes = ribs.get("r2").get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r3Routes = ribs.get("r3").get(Configuration.DEFAULT_VRF_NAME).getRoutes();
     Set<Prefix> r1Prefixes =
         r1Routes.stream()
             .filter(route -> route.getProtocol() != RoutingProtocol.LOCAL)

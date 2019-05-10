@@ -6,7 +6,7 @@
   "instance" : {
     "description" : "Identify undefined references in configuration",
     "instanceName" : "qname",
-    "longDescription" : "This question finds configurations that have references to named structures (e.g., ACLs) that are not defined. Such occurrences indicate errors and can have serious consequences in some cases.",
+    "longDescription" : "Finds configurations that have references to named structures (e.g., ACLs) that are not defined. Such occurrences indicate errors and can have serious consequences in some cases.",
     "tags" : [
       "default"
     ],

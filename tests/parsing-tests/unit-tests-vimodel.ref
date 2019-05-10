@@ -14419,12 +14419,14 @@
                         "advertiseV4UnicastRoutes" : false,
                         "routeDistinguisher" : "192.0.2.2:1",
                         "routeTarget" : "2:65500:10004",
+                        "vni" : 10004,
                         "vrf" : "default"
                       },
                       {
                         "advertiseV4UnicastRoutes" : true,
                         "routeDistinguisher" : "192.0.2.3:0",
                         "routeTarget" : "2:65500:10001",
+                        "vni" : 10001,
                         "vrf" : "vrf1"
                       }
                     ]
@@ -21684,6 +21686,16 @@
                   }
                 },
                 "name" : "blorp"
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "negate" : false
+                  }
+                },
+                "name" : "t3"
               }
             ],
             "sourceName" : "blah",
@@ -21799,6 +21811,28 @@
                   "expression" : {
                     "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                     "description" : "Firewall filter term t2",
+                    "headerSpace" : {
+                      "negate" : false
+                    }
+                  }
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.packet_policy.If",
+                "actions" : [
+                  {
+                    "class" : "org.batfish.datamodel.packet_policy.Return",
+                    "action" : {
+                      "class" : "org.batfish.datamodel.packet_policy.FibLookup",
+                      "vrfName" : "default"
+                    }
+                  }
+                ],
+                "trueStatements" : {
+                  "class" : "org.batfish.datamodel.packet_policy.PacketMatchExpr",
+                  "expression" : {
+                    "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                    "description" : "Firewall filter term t3",
                     "headerSpace" : {
                       "negate" : false
                     }

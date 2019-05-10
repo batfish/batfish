@@ -12,7 +12,7 @@ public class EigrpRib extends AbstractRib<EigrpRoute> {
   private static final long serialVersionUID = 1L;
 
   public EigrpRib() {
-    super(null);
+    super();
   }
 
   private static int getTypeCost(EigrpRoute route) {
