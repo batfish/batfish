@@ -1441,7 +1441,9 @@ public final class JFactory extends BDDFactory {
         }
         break;
       case bddop_imp:
-        if (ISZERO(l)) {
+        if (l == r) {
+          return BDDONE;
+        } else if (ISZERO(l)) {
           return BDDONE;
         } else if (ISONE(l)) {
           return r;
