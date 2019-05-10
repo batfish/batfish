@@ -6,6 +6,7 @@
   "instance" : {
     "description" : "Return configuration parameters of OSPF areas",
     "instanceName" : "qname",
+    "longDescription" : "Returns information about all OSPF areas defined across the network.",
     "orderedVariableNames" : [
       "nodes"
     ],
