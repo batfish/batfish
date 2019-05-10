@@ -40,57 +40,32 @@ The [Batfish YouTube channel](https://www.youtube.com/channel/UCA-OUW_3IOt9U_s60
 
 ## How do I get started?
 
-Getting started with Batfish is easy, just grab the latest `allinone` Batfish Docker container:
+#### 1. Run the Batfish service
+Getting started with Batfish is easy. Just pull and run the latest `allinone` Docker container that includes Batfish as well as example Jupyter notebooks. 
 
-  `docker pull batfish/allinone`
+   `docker pull batfish/allinone`
+   `docker run -v -p 8888:8888 -p 9997:9997 -p 9996:9996 batfish/allinone`
 
-The container has:
-* Batfish server
-* Jupyter notebook [server](http://jupyter.org/)
-* Example [Jupyter notebooks](https://github.com/batfish/pybatfish/tree/master/jupyter_notebooks)
+The second command starts the Batfish service and maps the TCP ports needed by it. 
 
-Once you have installed the container, the first thing we recommend is walking through the Jupyter notebooks. Each notebook highlights different capabilities of Batfish and shows you how to exercise it. Check-out this [README](https://github.com/batfish/pybatfish/tree/master/jupyter_notebooks) for the detailed list of notebooks.
+**Browse example notebooks (optional)** If you are new to Batfish, consider walking through our notebooks which highlight different capabilities and use cases of Batfish. This [README](https://github.com/batfish/pybatfish/tree/master/jupyter_notebooks) lists the notebooks. "Getting Started with Batfish" is a good one to start with.  
 
-### Running the example notebooks
+To browse a notebook, point your browser to [http://localhost:8888](http://localhost:8888). In the `Password or token:` prompt, enter the token that Jupyter showed when the container started (e.g. **token=abcdef123456...**). 
 
-To run through the example Jupyter notebooks, start the docker container:
+#### 2. Install Pybatfish
 
-  `docker run -p 8888:8888 batfish/allinone`
+To analyze your network configurations, you also need [Pybatfish](https://www.github.com/batfish/pybatfish), a Python SDK to interact with the Batfish service. Though not strictly necessary, we recommend that you install Pybatfish in a [Python 3 virtual environment](https://docs.python.org/3/library/venv.html). 
 
-When this container starts, Jupyter will show a token required for access (e.g. **token=abcdef123456...**). Make note of this, as you will need it to access the Jupyter server.
+To install Pybatfish run the following commands (in a virtual environment if applicable):
 
-Now just open your web-browser and navigate to [http://localhost:8888](http://localhost:8888) enter the token in the Password or token: prompt to access the notebooks.
+    `python -m pip install --upgrade pip`
+    `python -m pip install --upgrade git+https://github.com/batfish/pybatfish.git`
 
+#### 3. Develop your analysis 
 
-## Evaluate your own network configurations
+Afer installing Pybatfish, use your Python environment of choice (e.g., PyCharm, interactive Python shell, Jupyter, ..) to interact with Batfish. The [notebooks](https://github.com/batfish/pybatfish/tree/master/jupyter_notebooks) provide examples of such scripts. 
 
-Now that you are familiar with the capabilities of Batfish, you are ready to analyze your network configurations. The first thing to do is create a local data directory. This is a folder on the host machine running the docker container, where Batfish will persist data across container reboots.
-
-  `mkdir -p data`
-
-Stop and restart the container.
-
-  `docker stop $(docker ps -f "ancestor=batfish/allinone" -q)`
-
-  `docker run -v $(pwd)/data:/data -p 9997:9997 -p 9996:9996 batfish/allinone`
-
-
-This starts the service after mapping the local data folder to the data folder within the container and exposing the TCP ports required by the Batfish service.
-
-Next, you need to install [Pybatfish](https://www.github.com/batfish/pybatfish) (the Python SDK) in order to interact with the service.
-
-## Install Pybatfish
-We highly recommend that you install Pybatfish in a Python 3 virtual environment. Details on how to set one up can be found [here](https://docs.python.org/3/library/venv.html). Once your virtual environment is setup and activated, upgrade `pip` and then install `pybatfish`.
-
-    python3 -m pip install --upgrade pip
-    python3 -m pip install --upgrade git+https://github.com/batfish/pybatfish.git
-
-Now, you are ready to evaluate your own network with Batfish. We encourage you to use Jupyter notebooks as your starting point, but you can use other methods that you are a comfortable with, e.g., an IDE like PyCharm or an interactive Python shell. If you choose to use Jupyter notebooks as your starting point, you need to install Jupyter in your virtual environment. Jupyter documentation can be found [here](http://jupyter.org/install) - but the commands below will get you going.
-
-    python3 -m pip install jupyter
-    jupyter notebook
-
-Our notebooks provide a quick start guide for different use cases. Beyond that, the complete documentation is available on [readthedocs](https://pybatfish.readthedocs.io/en/latest/quickstart.html).
+See complete documentation of Pybatfish on [readthedocs](https://pybatfish.readthedocs.io/en/latest/quickstart.html).
 
 
 ## System Requirements for running Batfish
