@@ -960,7 +960,7 @@ public final class ClientTest {
     Path questionJsonPath = _folder.newFile("testquestion.json").toPath();
     CommonUtil.writeFile(questionJsonPath, testQuestion.toString());
     Multimap<String, String> loadedQuestions =
-        Client.loadQuestionsFromDir(questionJsonPath.toString());
+        Client.loadQuestionsFromDir(questionJsonPath.toString(), null);
     Multimap<String, String> expectedMap = HashMultimap.create();
     expectedMap.put("testQuestionName", testQuestion.toString());
 
