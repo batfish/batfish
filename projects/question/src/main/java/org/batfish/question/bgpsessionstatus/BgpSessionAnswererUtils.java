@@ -1,6 +1,7 @@
 package org.batfish.question.bgpsessionstatus;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.graph.ValueGraph;
 import java.util.Map;
 import java.util.Set;
@@ -47,10 +48,10 @@ public class BgpSessionAnswererUtils {
   }
 
   static @Nonnull ConfiguredSessionStatus getConfiguredStatus(
-      BgpPeerConfigId bgpPeerConfigId,
+      BgpPeerConfigId peerId,
       BgpActivePeerConfig activePeerConfig,
       SessionType sessionType,
-      Set<Ip> allInterfaceIps,
+      Map<Ip, Set<String>> ipOwners,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredBgpTopology) {
     ConfiguredSessionStatus brokenStatus = getLocallyBrokenStatus(activePeerConfig, sessionType);
     if (brokenStatus != null) {
@@ -60,13 +61,13 @@ public class BgpSessionAnswererUtils {
     Ip localIp = activePeerConfig.getLocalIp();
     Ip remoteIp = activePeerConfig.getPeerAddress();
 
-    if (!allInterfaceIps.contains(localIp)) {
+    if (!ipOwners.getOrDefault(localIp, ImmutableSet.of()).contains(peerId.getHostname())) {
       return ConfiguredSessionStatus.INVALID_LOCAL_IP;
-    } else if (!allInterfaceIps.contains(remoteIp)) {
+    } else if (!ipOwners.containsKey(remoteIp)) {
       return ConfiguredSessionStatus.UNKNOWN_REMOTE;
-    } else if (configuredBgpTopology.adjacentNodes(bgpPeerConfigId).isEmpty()) {
+    } else if (configuredBgpTopology.adjacentNodes(peerId).isEmpty()) {
       return ConfiguredSessionStatus.HALF_OPEN;
-    } else if (configuredBgpTopology.outDegree(bgpPeerConfigId) > 1) {
+    } else if (configuredBgpTopology.outDegree(peerId) > 1) {
       return ConfiguredSessionStatus.MULTIPLE_REMOTES;
     }
     return ConfiguredSessionStatus.UNIQUE_MATCH;

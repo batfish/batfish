@@ -259,7 +259,7 @@ public class BgpSessionStatusAnswererTest {
             ALL_NODES,
             ALL_NODES,
             METADATA_MAP,
-            ImmutableSet.of(),
+            ImmutableMap.of(),
             TOPOLOGY,
             TOPOLOGY);
     assertThat(rows, contains(ROW_1, ROW_2, ROW_3, ROW_4));
@@ -275,7 +275,7 @@ public class BgpSessionStatusAnswererTest {
             ImmutableSet.of(NODE1),
             ALL_NODES,
             METADATA_MAP,
-            ImmutableSet.of(),
+            ImmutableMap.of(),
             TOPOLOGY,
             TOPOLOGY);
     assertThat(rows, contains(ROW_1));
@@ -291,7 +291,7 @@ public class BgpSessionStatusAnswererTest {
             ALL_NODES,
             ImmutableSet.of(NODE1),
             METADATA_MAP,
-            ImmutableSet.of(),
+            ImmutableMap.of(),
             TOPOLOGY,
             TOPOLOGY);
     assertThat(rows, contains(ROW_2));
@@ -309,7 +309,7 @@ public class BgpSessionStatusAnswererTest {
             ALL_NODES,
             ALL_NODES,
             METADATA_MAP,
-            ImmutableSet.of(),
+            ImmutableMap.of(),
             TOPOLOGY,
             TOPOLOGY);
     assertThat(rows, contains(ROW_1, ROW_2, ROW_3, ROW_4));
@@ -322,7 +322,7 @@ public class BgpSessionStatusAnswererTest {
             ALL_NODES,
             ALL_NODES,
             METADATA_MAP,
-            ImmutableSet.of(),
+            ImmutableMap.of(),
             TOPOLOGY,
             TOPOLOGY);
     assertThat(rows, empty());
@@ -340,7 +340,7 @@ public class BgpSessionStatusAnswererTest {
             ALL_NODES,
             ALL_NODES,
             METADATA_MAP,
-            ImmutableSet.of(),
+            ImmutableMap.of(),
             TOPOLOGY,
             TOPOLOGY);
     assertThat(rows, contains(ROW_1, ROW_2));
@@ -354,7 +354,7 @@ public class BgpSessionStatusAnswererTest {
             ALL_NODES,
             ALL_NODES,
             METADATA_MAP,
-            ImmutableSet.of(),
+            ImmutableMap.of(),
             TOPOLOGY,
             TOPOLOGY);
     assertThat(rows, containsInAnyOrder(ROW_3, ROW_4));
@@ -410,7 +410,7 @@ public class BgpSessionStatusAnswererTest {
             ALL_NODES,
             ALL_NODES,
             METADATA_MAP,
-            ImmutableSet.of(),
+            ImmutableMap.of(),
             bgpTopology,
             bgpTopology);
 

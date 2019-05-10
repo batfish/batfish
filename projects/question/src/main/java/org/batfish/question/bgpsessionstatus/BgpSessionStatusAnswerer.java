@@ -94,7 +94,6 @@ public class BgpSessionStatusAnswerer extends Answerer {
     Set<String> remoteNodes =
         question.getRemoteNodeSpecifier().resolve(_batfish.specifierContext());
     Map<Ip, Set<String>> ipOwners = TopologyUtil.computeIpNodeOwners(configurations, true);
-    Set<Ip> allInterfaceIps = ipOwners.keySet();
     Layer2Topology layer2Topology =
         _batfish.getTopologyProvider().getLayer2Topology(_batfish.getNetworkSnapshot());
 
@@ -110,7 +109,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
         nodes,
         remoteNodes,
         metadataMap,
-        allInterfaceIps,
+        ipOwners,
         configuredBgpTopology.getGraph(),
         establishedBgpTopology.getGraph());
   }
@@ -122,7 +121,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
       Set<String> nodes,
       Set<String> remoteNodes,
       Map<String, ColumnMetadata> metadataMap,
-      Set<Ip> allInterfaceIps,
+      Map<Ip, Set<String>> ipOwners,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredBgpTopology,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> establishedBgpTopology) {
 
@@ -147,7 +146,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
                       && establishedBgpTopology.outDegree(neighbor) == 1) {
                     status = ESTABLISHED;
                   } else if (getConfiguredStatus(
-                          neighbor, activePeer, type, allInterfaceIps, configuredBgpTopology)
+                          neighbor, activePeer, type, ipOwners, configuredBgpTopology)
                       == UNIQUE_MATCH) {
                     status = NOT_ESTABLISHED;
                   }
@@ -394,19 +393,9 @@ public class BgpSessionStatusAnswerer extends Answerer {
         .build();
   }
 
-  static boolean matchesQuestionFilters(
+  private static boolean matchesQuestionFilters(
       Row row, Set<String> nodes, Set<String> remoteNodes, BgpSessionQuestion question) {
-    if (!matchesNodesAndType(row, nodes, remoteNodes, question)) {
-      return false;
-    }
-
-    // Check session status
-    String statusName = (String) row.get(COL_ESTABLISHED_STATUS, Schema.STRING);
-    SessionStatus status = statusName == null ? null : SessionStatus.valueOf(statusName);
-    if (!question.matchesStatus(status)) {
-      return false;
-    }
-
-    return true;
+    return matchesNodesAndType(row, nodes, remoteNodes, question)
+        && question.matchesStatus((String) row.get(COL_ESTABLISHED_STATUS, Schema.STRING));
   }
 }
