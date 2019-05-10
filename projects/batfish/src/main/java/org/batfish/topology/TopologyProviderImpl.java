@@ -1,9 +1,11 @@
 package org.batfish.topology;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.ospf.OspfTopologyUtils.computeOspfTopology;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
@@ -29,6 +31,8 @@ import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.datamodel.vxlan.VxlanTopologyUtils;
+import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.SnapshotId;
 import org.batfish.storage.StorageProvider;
 
 @ParametersAreNonnullByDefault
@@ -121,15 +125,17 @@ public final class TopologyProviderImpl implements TopologyProvider {
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("TopologyProviderImpl::computeLayer3Topology").startActive()) {
       assert span != null; // avoid unused warning
+      NetworkId network = networkSnapshot.getNetwork();
+      SnapshotId snapshot = networkSnapshot.getSnapshot();
       Map<String, Configuration> configurations = _batfish.loadConfigurations(networkSnapshot);
       Topology topology = getInitialRawLayer3Topology(networkSnapshot);
       return topology.prune(
           Sets.union(
               IpsecUtil.computeFailedIpsecSessionEdges(
                   topology.getEdges(), IpsecUtil.initIpsecTopology(configurations), configurations),
-              _batfish.getEdgeBlacklist(networkSnapshot)),
-          _batfish.getNodeBlacklist(networkSnapshot),
-          _batfish.getInterfaceBlacklist(networkSnapshot));
+              firstNonNull(_storage.loadEdgeBlacklist(network, snapshot), ImmutableSet.of())),
+          firstNonNull(_storage.loadNodeBlacklist(network, snapshot), ImmutableSet.of()),
+          firstNonNull(_storage.loadInterfaceBlacklist(network, snapshot), ImmutableSet.of()));
     }
   }
 
