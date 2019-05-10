@@ -6,7 +6,6 @@ import static com.google.common.collect.Ordering.natural;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
@@ -27,6 +26,7 @@ import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.bdd.MemoizedIpSpaceToBDD;
+import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
@@ -72,6 +72,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       // TODO accept IpSpaceToBDD as parameter
       IpSpaceToBDD ipSpaceToBDD =
           new MemoizedIpSpaceToBDD(new BDDPacket().getDstIp(), ImmutableMap.of());
+
+      IpOwners ipOwners = new IpOwners(configurations);
 
       // IPs belonging to any interface in the network, even inactive interfaces
       // node -> interface -> IPs owned by that interface
@@ -207,7 +209,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       // mapping: hostname -> interface -> ips belonging to a subnet of interface
       // active interfaces only.
       Map<String, Map<String, IpSpace>> interfaceHostSubnetIps =
-          computeInterfaceHostSubnetIps(configurations, /*excludeInactive=*/ true);
+          ipOwners.getActiveInterfaceHostIps();
 
       _deliveredToSubnet =
           computeDeliveredToSubnet(arpFalseDestIp, interfaceHostSubnetIps, ownedIps);
@@ -227,9 +229,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
               ownedIps);
 
       // ips belonging to any subnet in the network, including inactive interfaces.
-      IpSpace internalIps =
-          computeInternalIps(
-              computeInterfaceHostSubnetIps(configurations, /*excludeInactive=*/ false));
+      IpSpace internalIps = computeInternalIps(ipOwners.getAllInterfaceHostIps());
 
       _insufficientInfo =
           computeInsufficientInfo(
@@ -1058,34 +1058,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                               ifaceEntry.getValue(), vrfIpSpaces2.get(ifaceEntry.getKey())));
                 });
           });
-    }
-  }
-
-  @VisibleForTesting
-  static Map<String, Map<String, IpSpace>> computeInterfaceHostSubnetIps(
-      Map<String, Configuration> configs, boolean excludeInactive) {
-    try (ActiveSpan span =
-        GlobalTracer.get()
-            .buildSpan("ForwardingAnalysisImpl.computeInterfaceHostSubnetIps")
-            .startActive()) {
-      assert span != null; // avoid unused warning
-      return toImmutableMap(
-          configs,
-          Entry::getKey, /* hostname */
-          nodeEntry ->
-              toImmutableMap(
-                  excludeInactive
-                      ? nodeEntry.getValue().getActiveInterfaces()
-                      : nodeEntry.getValue().getAllInterfaces(),
-                  Entry::getKey, /* interface */
-                  ifaceEntry ->
-                      firstNonNull(
-                          AclIpSpace.union(
-                              ifaceEntry.getValue().getAllAddresses().stream()
-                                  .map(InterfaceAddress::getPrefix)
-                                  .map(Prefix::toHostIpSpace)
-                                  .collect(ImmutableList.toImmutableList())),
-                          EmptyIpSpace.INSTANCE)));
     }
   }
 
