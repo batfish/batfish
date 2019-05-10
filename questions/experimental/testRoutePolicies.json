@@ -6,9 +6,9 @@
     "inputRoutes": "${inputRoutes}",
     "direction": "${direction}",
     "instance": {
-        "description": "Evaluate the processing of a route by a given policy",
+        "description": "Evaluate the processing of a route by a given policy.",
         "instanceName": "testRoutePolicies",
-        "longDescription": "Find how the specified route is processed through the specified policies.",
+        "longDescription": "Find how the specified route is processed through the specified routing policies.",
         "orderedVariableNames": [
             "nodes",
             "policies",

@@ -10,6 +10,7 @@
   "instance" : {
     "description" : "Return named structure definitions",
     "instanceName" : "qname",
+    "longDescription" : "Return structures defined in the configurations, represented in a vendor-independent JSON format.",
     "variables" : {
       "ignoreGenerated" : {
         "description" : "Whether to ignore auto-generated structures",

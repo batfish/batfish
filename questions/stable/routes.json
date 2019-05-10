@@ -2,9 +2,9 @@
     "class": "org.batfish.question.routes.RoutesQuestion",
     "differential": false,
     "instance": {
-        "description": "Show routing tables",
+        "description": "Returns routing tables.",
         "instanceName": "routes",
-        "longDescription": "Return routes for the specified RIB for specified VRF for specified node(s).",
+        "longDescription": "Shows routes for specified RIB, VRF, and node(s).",
         "tags": [
             "dataPlane",
             "route"

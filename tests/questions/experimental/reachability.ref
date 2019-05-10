@@ -17,8 +17,9 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Find flows that match the ingress and egress location, src and dest ip address and disposition constraints, as described by the input specifiers.",
+    "description" : "Find flows that match the specified path and header space conditions.",
     "instanceName" : "qname",
+    "longDescription" : "Searches across all flows that match the specified conditions and returns examples of such flows. This question can be used to ensure that certain services are globally accessible and parts of the network are perfectly isolated from each other.",
     "orderedVariableNames" : [
       "pathConstraints",
       "headers",

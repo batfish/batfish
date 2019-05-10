@@ -4,8 +4,9 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Report VIP mappings of F5 BIG-IP configurations",
+    "description" : "Returns VIP configuration of F5 BIG-IP devices.",
     "instanceName" : "qname",
+    "longDescription" : "Lists all the VIP to server IP mappings contained in F5 BIP-IP configurations.",
     "orderedVariableNames" : [
       "nodes"
     ],
