@@ -3,8 +3,10 @@ package org.batfish.dataplane.ibdp;
 import com.google.auto.service.AutoService;
 import java.util.Map;
 import java.util.Set;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.Plugin;
+import org.batfish.common.topology.TopologyProvider;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Topology;
@@ -38,20 +40,20 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
   public ComputeDataPlaneResult computeDataPlane(
       Map<String, Configuration> configurations, Topology topology) {
     Set<BgpAdvertisement> externalAdverts = _batfish.loadExternalBgpAnnouncements(configurations);
-    TopologyContext.Builder topologyContext =
+    NetworkSnapshot networkSnapshot = _batfish.getNetworkSnapshot();
+    TopologyProvider topologyProvider = _batfish.getTopologyProvider();
+    TopologyContext topologyContext =
         TopologyContext.builder()
+            .setLayer1LogicalTopology(topologyProvider.getLayer1LogicalTopology(networkSnapshot))
+            .setLayer2Topology(topologyProvider.getInitialLayer2Topology(networkSnapshot))
             .setLayer3Topology(topology)
-            .setOspfTopology(
-                _batfish
-                    .getTopologyProvider()
-                    .getInitialOspfTopology(_batfish.getNetworkSnapshot()));
-    _batfish
-        .getTopologyProvider()
-        .getInitialLayer2Topology(_batfish.getNetworkSnapshot())
-        .ifPresent(topologyContext::setLayer2Topology);
+            .setOspfTopology(topologyProvider.getInitialOspfTopology(networkSnapshot))
+            .setRawLayer1PhysicalTopology(
+                topologyProvider.getRawLayer1PhysicalTopology(networkSnapshot))
+            .build();
 
     ComputeDataPlaneResult answer =
-        _engine.computeDataPlane(configurations, topologyContext.build(), externalAdverts);
+        _engine.computeDataPlane(configurations, topologyContext, externalAdverts);
     double averageRoutes =
         ((IncrementalDataPlane) answer._dataPlane)
             .getNodes().values().stream()

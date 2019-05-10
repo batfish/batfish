@@ -30,6 +30,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -58,7 +59,6 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
@@ -186,26 +186,6 @@ public final class FileBasedStorage implements StorageProvider {
       _logger.errorf(
           "Failed to deserialize ConvertConfigurationAnswerElement: %s",
           Throwables.getStackTraceAsString(e));
-      return null;
-    }
-  }
-
-  @Override
-  public @Nullable SortedSet<Edge> loadEdgeBlacklist(NetworkId network, SnapshotId snapshot) {
-    Path path =
-        _d.getSnapshotDir(network, snapshot)
-            .resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_EDGE_BLACKLIST_FILE));
-    if (!Files.exists(path)) {
-      return null;
-    }
-    String fileText = CommonUtil.readFile(path);
-    try {
-      return BatfishObjectMapper.mapper()
-          .readValue(fileText, new TypeReference<SortedSet<Edge>>() {});
-    } catch (IOException e) {
-      _logger.warnf(
-          "Unexpected exception caught while loading edge blacklist for snapshot %s: %s",
-          snapshot, Throwables.getStackTraceAsString(e));
       return null;
     }
   }
@@ -1034,11 +1014,12 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public @Nonnull Layer2Topology loadLayer2Topology(NetworkSnapshot networkSnapshot)
+  public @Nonnull Optional<Layer2Topology> loadLayer2Topology(NetworkSnapshot networkSnapshot)
       throws IOException {
-    return BatfishObjectMapper.mapper()
-        .readValue(
-            CommonUtil.readFile(getLayer2TopologyPath(networkSnapshot)), Layer2Topology.class);
+    return Optional.ofNullable(
+        BatfishObjectMapper.mapper()
+            .readValue(
+                CommonUtil.readFile(getLayer2TopologyPath(networkSnapshot)), Layer2Topology.class));
   }
 
   @Override
@@ -1078,11 +1059,12 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public void storeLayer2Topology(Layer2Topology layer2Topology, NetworkSnapshot networkSnapshot)
-      throws IOException {
+  public void storeLayer2Topology(
+      Optional<Layer2Topology> layer2Topology, NetworkSnapshot networkSnapshot) throws IOException {
     Path path = getLayer2TopologyPath(networkSnapshot);
     mkdirs(path.getParent());
-    FileUtils.write(path.toFile(), BatfishObjectMapper.writeString(layer2Topology), UTF_8);
+    FileUtils.write(
+        path.toFile(), BatfishObjectMapper.writeString(layer2Topology.orElse(null)), UTF_8);
   }
 
   @Override

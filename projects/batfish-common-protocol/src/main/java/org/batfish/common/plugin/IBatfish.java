@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import javax.annotation.Nonnull;
@@ -18,7 +17,6 @@ import org.batfish.common.topology.TopologyProvider;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Topology;
@@ -31,7 +29,6 @@ import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.pojo.Environment;
@@ -189,18 +186,6 @@ public interface IBatfish extends IPluginConsumer {
 
   @Nullable
   String loadQuestionSettings(@Nonnull Question question);
-
-  /** Returns edge blacklist for given snapshot or empty set if absent. */
-  @Nonnull
-  SortedSet<Edge> getEdgeBlacklist(@Nonnull NetworkSnapshot networkSnapshot);
-
-  /** Returns interface blacklist for given snapshot or empty set if absent. */
-  @Nonnull
-  SortedSet<NodeInterfacePair> getInterfaceBlacklist(@Nonnull NetworkSnapshot networkSnapshot);
-
-  /** Returns node blacklist for given snapshot or empty set if absent. */
-  @Nonnull
-  SortedSet<String> getNodeBlacklist(@Nonnull NetworkSnapshot networkSnapshot);
 
   /** Performs bidirectional reachability analysis. */
   @Nonnull
