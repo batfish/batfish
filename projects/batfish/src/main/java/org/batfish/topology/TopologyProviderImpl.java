@@ -1,11 +1,9 @@
 package org.batfish.topology;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.ospf.OspfTopologyUtils.computeOspfTopology;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.collect.ImmutableSet;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.io.IOException;
@@ -29,8 +27,6 @@ import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.datamodel.vxlan.VxlanTopologyUtils;
-import org.batfish.identifiers.NetworkId;
-import org.batfish.identifiers.SnapshotId;
 import org.batfish.storage.StorageProvider;
 
 @ParametersAreNonnullByDefault
@@ -122,16 +118,10 @@ public final class TopologyProviderImpl implements TopologyProvider {
   private Topology computeLayer3Topology(NetworkSnapshot networkSnapshot) {
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("TopologyProviderImpl::computeLayer3Topology").startActive()) {
-      NetworkId network = networkSnapshot.getNetwork();
-      SnapshotId snapshot = networkSnapshot.getSnapshot();
       assert span != null; // avoid unused warning
       Map<String, Configuration> configurations = _batfish.loadConfigurations(networkSnapshot);
       return TopologyUtil.computeLayer3Topology(
-          getInitialRawLayer3Topology(networkSnapshot),
-          firstNonNull(_storage.loadEdgeBlacklist(network, snapshot), ImmutableSet.of()),
-          firstNonNull(_storage.loadNodeBlacklist(network, snapshot), ImmutableSet.of()),
-          firstNonNull(_storage.loadInterfaceBlacklist(network, snapshot), ImmutableSet.of()),
-          configurations);
+          getInitialRawLayer3Topology(networkSnapshot), configurations);
     }
   }
 

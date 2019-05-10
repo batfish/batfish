@@ -59,7 +59,6 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
@@ -187,26 +186,6 @@ public final class FileBasedStorage implements StorageProvider {
       _logger.errorf(
           "Failed to deserialize ConvertConfigurationAnswerElement: %s",
           Throwables.getStackTraceAsString(e));
-      return null;
-    }
-  }
-
-  @Override
-  public @Nullable SortedSet<Edge> loadEdgeBlacklist(NetworkId network, SnapshotId snapshot) {
-    Path path =
-        _d.getSnapshotDir(network, snapshot)
-            .resolve(Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_EDGE_BLACKLIST_FILE));
-    if (!Files.exists(path)) {
-      return null;
-    }
-    String fileText = CommonUtil.readFile(path);
-    try {
-      return BatfishObjectMapper.mapper()
-          .readValue(fileText, new TypeReference<SortedSet<Edge>>() {});
-    } catch (IOException e) {
-      _logger.warnf(
-          "Unexpected exception caught while loading edge blacklist for snapshot %s: %s",
-          snapshot, Throwables.getStackTraceAsString(e));
       return null;
     }
   }

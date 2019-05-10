@@ -720,8 +720,6 @@ public final class WorkMgrTest {
         _storage.loadInterfaceBlacklist(networkId, snapshotId1),
         containsInAnyOrder(interfaces.toArray()));
     assertThat(
-        _storage.loadEdgeBlacklist(networkId, snapshotId1), containsInAnyOrder(links.toArray()));
-    assertThat(
         _storage.loadNodeBlacklist(networkId, snapshotId1), containsInAnyOrder(nodes.toArray()));
 
     // Remove blacklisted items from a fork of the first fork
@@ -735,7 +733,6 @@ public final class WorkMgrTest {
     assertThat(_manager.getLatestSnapshot(networkName), equalTo(Optional.of(snapshotNewName2)));
     // Confirm the blacklists are empty
     assertThat(_storage.loadInterfaceBlacklist(networkId, snapshotId2), iterableWithSize(0));
-    assertThat(_storage.loadEdgeBlacklist(networkId, snapshotId2), iterableWithSize(0));
     assertThat(_storage.loadNodeBlacklist(networkId, snapshotId2), iterableWithSize(0));
   }
 

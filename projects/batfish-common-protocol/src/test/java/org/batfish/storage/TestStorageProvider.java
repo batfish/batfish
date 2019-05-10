@@ -16,7 +16,6 @@ import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
@@ -49,12 +48,6 @@ public class TestStorageProvider implements StorageProvider {
   @Override
   public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement(
       NetworkId network, SnapshotId snapshot) {
-    throw new UnsupportedOperationException("no implementation for generated method");
-  }
-
-  @Nullable
-  @Override
-  public SortedSet<Edge> loadEdgeBlacklist(NetworkId network, SnapshotId snapshot) {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
