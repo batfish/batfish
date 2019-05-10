@@ -30,7 +30,6 @@ public class IpOwnersTest {
   private Vrf.Builder _vb;
   private static final Prefix P1 = Prefix.parse("1.0.0.0/8");
   private static final Prefix P2 = Prefix.parse("2.0.0.0/16");
-  private static final Prefix P3 = Prefix.parse("3.0.0.0/24");
 
   @Before
   public void setup() {
