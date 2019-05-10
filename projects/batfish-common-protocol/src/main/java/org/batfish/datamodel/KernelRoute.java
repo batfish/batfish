@@ -12,8 +12,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 /**
  * Non-routing virtual route used for advertisement.
  *
- * <p>Implements {@link Comparable}, but {@link #compareTo(KernelRoute)} <emph>should not</emph> be
- * used for determining route preference in RIBs.
+ * <p>Implements {@link Comparable}, but {@link #compareTo(KernelRoute)} <em>should not</em> be used
+ * for determining route preference in RIBs.
  */
 @ParametersAreNonnullByDefault
 public final class KernelRoute extends AbstractRoute implements Comparable<KernelRoute> {

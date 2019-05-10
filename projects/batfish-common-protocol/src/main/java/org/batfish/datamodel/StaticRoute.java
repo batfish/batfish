@@ -16,8 +16,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 /**
  * A static route.
  *
- * <p>Implements {@link Comparable}, but {@link #compareTo(StaticRoute)} <emph>should not</emph> be
- * used for determining route preference in RIBs.
+ * <p>Implements {@link Comparable}, but {@link #compareTo(StaticRoute)} <em>should not</em> be used
+ * for determining route preference in RIBs.
  */
 @ParametersAreNonnullByDefault
 public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute> {
