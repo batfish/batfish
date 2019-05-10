@@ -419,6 +419,7 @@ class IncrementalBdpEngine {
           .flatMap(n -> n.getVirtualRouters().values().stream())
           .forEach(
               vr -> {
+                vr.bgpIteration(allNodes);
                 Map<Bgpv4Rib, RibDelta<Bgpv4Route>> deltas =
                     vr.processBgpMessages(bgpTopology, networkConfigurations, nodes);
                 vr.finalizeBgpRoutesAndQueueOutgoingMessages(
@@ -717,14 +718,14 @@ class IncrementalBdpEngine {
       int numBgpBestPathRibRoutes =
           nodes.values().stream()
               .flatMap(n -> n.getVirtualRouters().values().stream())
-              .mapToInt(vr -> vr.getBgpRib().getBestPathRoutes().size())
+              .mapToInt(VirtualRouter::getNumBgpBestPaths)
               .sum();
       ae.getBgpBestPathRibRoutesByIteration()
           .put(dependentRoutesIterations, numBgpBestPathRibRoutes);
       int numBgpMultipathRibRoutes =
           nodes.values().stream()
               .flatMap(n -> n.getVirtualRouters().values().stream())
-              .mapToInt(vr -> vr.getBgpRib().getTypedRoutes().size())
+              .mapToInt(VirtualRouter::getNumBgpPaths)
               .sum();
       ae.getBgpMultipathRibRoutesByIteration()
           .put(dependentRoutesIterations, numBgpMultipathRibRoutes);
