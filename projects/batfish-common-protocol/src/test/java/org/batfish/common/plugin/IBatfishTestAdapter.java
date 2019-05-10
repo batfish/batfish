@@ -100,7 +100,7 @@ public class IBatfishTestAdapter implements IBatfish {
     }
 
     @Override
-    public Layer2Topology getLayer2Topology(NetworkSnapshot networkSnapshot) {
+    public Optional<Layer2Topology> getLayer2Topology(NetworkSnapshot networkSnapshot) {
       throw new UnsupportedOperationException();
     }
 

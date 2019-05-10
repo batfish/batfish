@@ -13,6 +13,9 @@ import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.NetworkBuilder;
 import com.google.common.graph.ValueGraphBuilder;
 import com.google.common.testing.EqualsTester;
+import java.util.Optional;
+import org.batfish.common.topology.Layer1Edge;
+import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Node;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.BgpPeerConfigId;
@@ -20,6 +23,7 @@ import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.bgp.BgpTopology;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.eigrp.EigrpEdge;
 import org.batfish.datamodel.eigrp.EigrpInterface;
 import org.batfish.datamodel.eigrp.EigrpTopology;
@@ -58,19 +62,37 @@ public final class TopologyContextTest {
         .addEqualityGroup(new Object())
         .addEqualityGroup(base, base, builder.build())
         .addEqualityGroup(builder.setBgpTopology(new BgpTopology(bgpTopology)).build())
+        .addEqualityGroup(
+            builder.setEdgeBlacklist(ImmutableSet.of(Edge.of("a", "b", "c", "d"))).build())
         .addEqualityGroup(builder.setEigrpTopology(new EigrpTopology(eigrpTopology)).build())
+        .addEqualityGroup(
+            builder.setInterfaceBlacklist(ImmutableSet.of(new NodeInterfacePair("a", "b"))).build())
         .addEqualityGroup(builder.setIsisTopology(new IsisTopology(isisTopology)).build())
         .addEqualityGroup(
             builder
+                .setLayer1LogicalTopology(
+                    Optional.of(
+                        new Layer1Topology(ImmutableList.of(new Layer1Edge("a", "b", "c", "d")))))
+                .build())
+        .addEqualityGroup(
+            builder
                 .setLayer2Topology(
-                    Layer2Topology.fromDomains(
-                        ImmutableList.of(ImmutableSet.of(new Layer2Node("a", "b", 5)))))
+                    Optional.of(
+                        Layer2Topology.fromDomains(
+                            ImmutableList.of(ImmutableSet.of(new Layer2Node("a", "b", 5))))))
                 .build())
         .addEqualityGroup(
             builder
                 .setLayer3Topology(new Topology(ImmutableSortedSet.of(Edge.of("a", "b", "c", "d"))))
                 .build())
+        .addEqualityGroup(builder.setNodeBlacklist(ImmutableSet.of("a")).build())
         .addEqualityGroup(builder.setOspfTopology(new OspfTopology(ospfTopology)).build())
+        .addEqualityGroup(
+            builder
+                .setRawLayer1PhysicalTopology(
+                    Optional.of(
+                        new Layer1Topology(ImmutableList.of(new Layer1Edge("a", "b", "c", "d")))))
+                .build())
         .addEqualityGroup(builder.setVxlanTopology(new VxlanTopology(vxlanTopology)).build())
         .testEquals();
   }
@@ -93,13 +115,21 @@ public final class TopologyContextTest {
     vxlanTopology.addNode(new VxlanNode("a", 5));
     builder
         .setBgpTopology(new BgpTopology(bgpTopology))
+        .setEdgeBlacklist(ImmutableSet.of(Edge.of("a", "b", "c", "d")))
         .setEigrpTopology(new EigrpTopology(eigrpTopology))
+        .setInterfaceBlacklist(ImmutableSet.of(new NodeInterfacePair("a", "b")))
         .setIsisTopology(new IsisTopology(isisTopology))
+        .setLayer1LogicalTopology(
+            Optional.of(new Layer1Topology(ImmutableList.of(new Layer1Edge("a", "b", "c", "d")))))
         .setLayer2Topology(
-            Layer2Topology.fromDomains(
-                ImmutableList.of(ImmutableSet.of(new Layer2Node("a", "b", 5)))))
+            Optional.of(
+                Layer2Topology.fromDomains(
+                    ImmutableList.of(ImmutableSet.of(new Layer2Node("a", "b", 5))))))
         .setLayer3Topology(new Topology(ImmutableSortedSet.of(Edge.of("a", "b", "c", "d"))))
+        .setNodeBlacklist(ImmutableSet.of("a"))
         .setOspfTopology(new OspfTopology(ospfTopology))
+        .setRawLayer1PhysicalTopology(
+            Optional.of(new Layer1Topology(ImmutableList.of(new Layer1Edge("a", "b", "c", "d")))))
         .setVxlanTopology(new VxlanTopology(vxlanTopology));
 
     assertThat(builder.build(), equalTo(builder.build().toBuilder().build()));

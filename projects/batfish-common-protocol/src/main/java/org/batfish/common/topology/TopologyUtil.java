@@ -32,6 +32,7 @@ import javax.annotation.Nullable;
 import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.batfish.common.Pair;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.IpsecUtil;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
@@ -46,6 +47,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.VniSettings;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.vxlan.VxlanNode;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 
@@ -386,10 +388,11 @@ public final class TopologyUtil {
   }
 
   /**
-   * Compute the layer 3 topology from the layer-2 topology and layer-3 information contained in the
-   * configurations.
+   * Compute the raw layer 3 topology from the layer-1 and layer-2 topologies, and layer-3
+   * information contained in the configurations.
    */
-  public static @Nonnull Topology computeLayer3Topology(
+  @VisibleForTesting
+  static @Nonnull Topology computeRawLayer3Topology(
       @Nonnull Layer1Topology rawLayer1Topology,
       @Nonnull Layer2Topology layer2Topology,
       @Nonnull Map<String, Configuration> configurations) {
@@ -407,6 +410,40 @@ public final class TopologyUtil {
                         || !rawLayer1TailNodes.contains(edge.getNode2())
                         || layer2Topology.inSameBroadcastDomain(edge.getHead(), edge.getTail()))
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
+  }
+
+  /**
+   * Compute the raw layer 3 topology from information contained in the configurations, and also the
+   * layer-1 and layer-2 topologies if present.
+   */
+  public static @Nonnull Topology computeRawLayer3Topology(
+      @Nonnull Optional<Layer1Topology> rawLayer1PhysicalTopology,
+      @Nonnull Optional<Layer2Topology> layer2Topology,
+      @Nonnull Map<String, Configuration> configurations) {
+    return rawLayer1PhysicalTopology
+        .map(l1 -> computeRawLayer3Topology(l1, layer2Topology.get(), configurations))
+        .orElse(synthesizeL3Topology(configurations));
+  }
+
+  /**
+   * Compute the pruned layer-3 topology from the raw layer-3 topology, configuration information,
+   * and blacklists.
+   */
+  public static @Nonnull Topology computeLayer3Topology(
+      Topology rawLayer3Topology,
+      Set<Edge> edgeBlacklist,
+      Set<String> nodeBlacklist,
+      Set<NodeInterfacePair> interfaceBlacklist,
+      Map<String, Configuration> configurations) {
+    return rawLayer3Topology.prune(
+        Sets.union(
+            IpsecUtil.computeFailedIpsecSessionEdges(
+                rawLayer3Topology.getEdges(),
+                IpsecUtil.initIpsecTopology(configurations),
+                configurations),
+            edgeBlacklist),
+        nodeBlacklist,
+        interfaceBlacklist);
   }
 
   private static @Nullable Configuration getConfiguration(

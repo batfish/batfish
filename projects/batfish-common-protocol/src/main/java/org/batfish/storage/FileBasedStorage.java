@@ -30,6 +30,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -1034,11 +1035,12 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public @Nonnull Layer2Topology loadLayer2Topology(NetworkSnapshot networkSnapshot)
+  public @Nonnull Optional<Layer2Topology> loadLayer2Topology(NetworkSnapshot networkSnapshot)
       throws IOException {
-    return BatfishObjectMapper.mapper()
-        .readValue(
-            CommonUtil.readFile(getLayer2TopologyPath(networkSnapshot)), Layer2Topology.class);
+    return Optional.ofNullable(
+        BatfishObjectMapper.mapper()
+            .readValue(
+                CommonUtil.readFile(getLayer2TopologyPath(networkSnapshot)), Layer2Topology.class));
   }
 
   @Override
@@ -1078,11 +1080,12 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public void storeLayer2Topology(Layer2Topology layer2Topology, NetworkSnapshot networkSnapshot)
-      throws IOException {
+  public void storeLayer2Topology(
+      Optional<Layer2Topology> layer2Topology, NetworkSnapshot networkSnapshot) throws IOException {
     Path path = getLayer2TopologyPath(networkSnapshot);
     mkdirs(path.getParent());
-    FileUtils.write(path.toFile(), BatfishObjectMapper.writeString(layer2Topology), UTF_8);
+    FileUtils.write(
+        path.toFile(), BatfishObjectMapper.writeString(layer2Topology.orElse(null)), UTF_8);
   }
 
   @Override
