@@ -15,9 +15,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * A base class for all types of routes supported in the dataplane computation, making this the most
  * general route type available. "Main" non-protocol-specific RIBs store and reason about this type
  * of route.
- *
- * <p><i>Note:</i> This class implements {@link Comparable} because we put AbstractRoute in ordered
- * collections all throughout the codebase.
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 @ParametersAreNonnullByDefault

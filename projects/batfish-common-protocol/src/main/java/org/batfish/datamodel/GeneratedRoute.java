@@ -19,7 +19,12 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.bgp.community.Community;
 
-/** A generated/aggregate IPV4 route. */
+/**
+ * A generated/aggregate IPV4 route.
+ *
+ * <p>Implements {@link Comparable}, but {@link #compareTo(GeneratedRoute)} <emph>should not</emph>
+ * be used for determining route preference in RIBs.
+ */
 @ParametersAreNonnullByDefault
 public final class GeneratedRoute extends AbstractRoute implements Comparable<GeneratedRoute> {
 
