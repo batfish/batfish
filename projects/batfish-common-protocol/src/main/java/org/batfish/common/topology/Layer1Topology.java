@@ -12,7 +12,7 @@ import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-/** Represents physical (logical) wiring between physical (logical) interfaces. */
+/** Represents connections between physical or logical interfaces. */
 @ParametersAreNonnullByDefault
 public final class Layer1Topology {
   public static final Layer1Topology EMPTY = new Layer1Topology(ImmutableList.of());

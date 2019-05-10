@@ -267,7 +267,7 @@ public final class TopologyProviderImpl implements TopologyProvider {
   }
 
   @Override
-  public @Nonnull Layer2Topology getLayer2Topology(NetworkSnapshot snapshot) {
+  public @Nonnull Optional<Layer2Topology> getLayer2Topology(NetworkSnapshot snapshot) {
     try {
       return _storage.loadLayer2Topology(snapshot);
     } catch (IOException e) {

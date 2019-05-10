@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -343,7 +344,7 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
-  public Layer2Topology loadLayer2Topology(NetworkSnapshot networkSnapshot) {
+  public Optional<Layer2Topology> loadLayer2Topology(NetworkSnapshot networkSnapshot) {
     throw new UnsupportedOperationException();
   }
 
@@ -373,7 +374,8 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
-  public void storeLayer2Topology(Layer2Topology layer2Topology, NetworkSnapshot networkSnapshot) {
+  public void storeLayer2Topology(
+      Optional<Layer2Topology> layer2Topology, NetworkSnapshot networkSnapshot) {
     throw new UnsupportedOperationException();
   }
 
