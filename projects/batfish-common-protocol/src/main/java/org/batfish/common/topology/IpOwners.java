@@ -43,7 +43,7 @@ public final class IpOwners {
   private final Map<Ip, Map<String, Set<String>>> _activeDeviceOwnedIps;
 
   /** Mapping from hostname to interface name to IpSpace owned by that interface */
-  private final Map<String, Map<String, IpSpace>> _activeInterfaceOwnedIps;
+  private final Map<String, Map<String, IpSpace>> _hostToInterfaceToIpSpace;
 
   /**
    * Mapping from hostname to interface name to host IP subnet.
@@ -65,7 +65,7 @@ public final class IpOwners {
     _allDeviceOwnedIps = ImmutableMap.copyOf(computeIpInterfaceOwners(_allInterfaces, false));
     _activeDeviceOwnedIps = ImmutableMap.copyOf(computeIpInterfaceOwners(_allInterfaces, true));
 
-    _activeInterfaceOwnedIps =
+    _hostToInterfaceToIpSpace =
         ImmutableMap.copyOf(computeInterfaceOwnedIpSpaces(_activeDeviceOwnedIps));
 
     _allInterfaceHostIps = computeInterfaceHostSubnetIps(configurations, false);
@@ -159,6 +159,6 @@ public final class IpOwners {
    * active interfaces only
    */
   public Map<String, Map<String, IpSpace>> getInterfaceOwnedIpSpaces() {
-    return _activeInterfaceOwnedIps;
+    return _hostToInterfaceToIpSpace;
   }
 }
