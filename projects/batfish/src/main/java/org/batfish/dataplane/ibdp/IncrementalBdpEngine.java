@@ -148,9 +148,6 @@ class IncrementalBdpEngine {
                       initialTopologyContext.getRawLayer1PhysicalTopology(),
                       newLayer2Topology,
                       configurations),
-                  initialTopologyContext.getEdgeBlacklist(),
-                  initialTopologyContext.getNodeBlacklist(),
-                  initialTopologyContext.getInterfaceBlacklist(),
                   configurations);
 
           // Initialize BGP topology
