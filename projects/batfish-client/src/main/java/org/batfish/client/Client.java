@@ -1915,7 +1915,7 @@ public class Client extends AbstractClient implements IClient {
    * Loads questions from a local directory containing questions
    *
    * @param questionsPathStr Path of directory
-   * @param logger
+   * @param logger {@link BatfishLogger} object to write any failure messages
    * @return loadedQuestions {@link Multimap} containing loaded question names and content
    * @throws BatfishException if loading of any of the question is not successful or if cannot walk
    *     the directory provided
