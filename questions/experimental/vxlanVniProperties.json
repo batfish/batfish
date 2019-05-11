@@ -6,7 +6,7 @@
     "instance": {
         "description": "Returns configuration settings of VXLANs.",
         "instanceName": "vxlanVniProperties",
-        "longDescription": "Lists VNI-level VXLAN network segment settings configured for the specified nodes.",
+        "longDescription": "Lists VNI-level network segment settings configured for VXLANs.",
         "tags": [
             "configuration",
             "tunnel"
