@@ -7,8 +7,9 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Returns configuration properties of switched VLANs",
+    "description": "Returns configuration settings of switched VLANs",
     "instanceName" : "qname",
+    "longDescription": "Lists the VXLAN VNI and switched interfaces carrying traffic for each switched VLAN.",
     "tags" : [
       "configuration",
       "interfaces",
