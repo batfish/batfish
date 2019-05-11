@@ -6,7 +6,7 @@ import static org.batfish.common.topology.TopologyUtil.computeLayer1LogicalTopol
 import static org.batfish.common.topology.TopologyUtil.computeLayer1PhysicalTopology;
 import static org.batfish.common.topology.TopologyUtil.computeLayer2SelfEdges;
 import static org.batfish.common.topology.TopologyUtil.computeLayer2Topology;
-import static org.batfish.common.topology.TopologyUtil.computeLayer3Topology;
+import static org.batfish.common.topology.TopologyUtil.computeRawLayer3Topology;
 import static org.batfish.common.topology.TopologyUtil.computeVniInterNodeEdges;
 import static org.batfish.common.topology.TopologyUtil.computeVniName;
 import static org.batfish.datamodel.matchers.EdgeMatchers.hasHead;
@@ -873,7 +873,7 @@ public final class TopologyUtilTest {
       _ib.setOwner(c2).setVrf(v2).setName(c2i1Name).setAddress(p1Addr2).build();
 
       Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2);
-      Topology layer3Topology = computeLayer3Topology(rawL1AllPresent, sameDomain, configs);
+      Topology layer3Topology = computeRawLayer3Topology(rawL1AllPresent, sameDomain, configs);
       assertThat(layer3Topology.getEdges(), containsInAnyOrder(c1i1c2i1, c2i1c1i1));
     }
 
@@ -883,7 +883,8 @@ public final class TopologyUtilTest {
       _ib.setOwner(c2).setVrf(v2).setName(c2i1Name).setAddress(p2Addr1).build();
 
       Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2);
-      Topology layer3Topology = computeLayer3Topology(rawL1AllPresent, differentDomains, configs);
+      Topology layer3Topology =
+          computeRawLayer3Topology(rawL1AllPresent, differentDomains, configs);
       assertThat(layer3Topology.getEdges(), empty());
     }
 
@@ -893,7 +894,7 @@ public final class TopologyUtilTest {
       _ib.setOwner(c2).setVrf(v2).setName(c2i1Name).setAddress(p2Addr1).build();
 
       Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2);
-      Topology layer3Topology = computeLayer3Topology(rawL1AllPresent, sameDomain, configs);
+      Topology layer3Topology = computeRawLayer3Topology(rawL1AllPresent, sameDomain, configs);
       assertThat(layer3Topology.getEdges(), empty());
     }
 
@@ -903,7 +904,8 @@ public final class TopologyUtilTest {
       _ib.setOwner(c2).setVrf(v2).setName(c2i1Name).setAddress(p1Addr2).build();
 
       Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2);
-      Topology layer3Topology = computeLayer3Topology(rawL1AllPresent, differentDomains, configs);
+      Topology layer3Topology =
+          computeRawLayer3Topology(rawL1AllPresent, differentDomains, configs);
       assertThat(layer3Topology.getEdges(), empty());
     }
 
@@ -914,7 +916,8 @@ public final class TopologyUtilTest {
       _ib.setOwner(c2).setVrf(v2).setName(c2i1Name).setAddress(p1Addr2).build();
 
       Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2);
-      Topology layer3Topology = computeLayer3Topology(rawL1NonePresent, differentDomains, configs);
+      Topology layer3Topology =
+          computeRawLayer3Topology(rawL1NonePresent, differentDomains, configs);
       assertThat(layer3Topology.getEdges(), containsInAnyOrder(c1i1c2i1, c2i1c1i1));
     }
   }
@@ -1028,7 +1031,7 @@ public final class TopologyUtilTest {
             new Layer1Edge(l1H2, l1B2)));
 
     Topology layer3Topology =
-        computeLayer3Topology(
+        computeRawLayer3Topology(
             rawLayer1Topology,
             computeLayer2Topology(
                 computeLayer1LogicalTopology(layer1PhysicalTopology, configurations),
@@ -1165,7 +1168,7 @@ public final class TopologyUtilTest {
         containsInAnyOrder(new Layer1Edge(l1n1, l1n2), new Layer1Edge(l1n2, l1n1)));
 
     Topology layer3Topology =
-        computeLayer3Topology(
+        computeRawLayer3Topology(
             rawLayer1Topology,
             computeLayer2Topology(
                 computeLayer1LogicalTopology(layer1PhysicalTopology, configurations),

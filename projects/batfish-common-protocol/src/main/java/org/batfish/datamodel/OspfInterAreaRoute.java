@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
-import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -71,15 +70,6 @@ public final class OspfInterAreaRoute extends OspfInternalRoute {
   @Override
   public int hashCode() {
     return Objects.hash(_network, _admin, _area, _metric, _nextHopIp);
-  }
-
-  @Override
-  public int routeCompare(AbstractRoute rhs) {
-    if (getClass() != rhs.getClass()) {
-      return 0;
-    }
-    OspfInterAreaRoute castRhs = (OspfInterAreaRoute) rhs;
-    return Comparator.comparing(OspfInterAreaRoute::getArea).compare(this, castRhs);
   }
 
   @Override

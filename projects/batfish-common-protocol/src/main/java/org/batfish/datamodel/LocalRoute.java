@@ -116,14 +116,6 @@ public final class LocalRoute extends AbstractRoute {
   }
 
   @Override
-  public int routeCompare(@Nonnull AbstractRoute rhs) {
-    if (getClass() != rhs.getClass()) {
-      return 0;
-    }
-    return Integer.compare(_sourcePrefixLength, ((LocalRoute) rhs)._sourcePrefixLength);
-  }
-
-  @Override
   public AbstractRouteBuilder<Builder, LocalRoute> toBuilder() {
     return builder()
         .setNetwork(getNetwork())

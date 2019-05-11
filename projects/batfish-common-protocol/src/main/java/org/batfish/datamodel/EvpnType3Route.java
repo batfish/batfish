@@ -5,10 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Ordering;
-import java.util.Comparator;
 import java.util.Objects;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -86,24 +83,6 @@ public final class EvpnType3Route extends EvpnRoute {
   }
 
   private static final String PROP_VNI_IP = "vniIp";
-
-  private static final Comparator<EvpnType3Route> COMPARATOR =
-      Comparator.comparing(EvpnType3Route::getAsPath)
-          .thenComparing(
-              EvpnType3Route::getClusterList, Comparators.lexicographical(Ordering.natural()))
-          .thenComparing(
-              EvpnType3Route::getCommunities, Comparators.lexicographical(Ordering.natural()))
-          .thenComparing(EvpnType3Route::getDiscard)
-          .thenComparing(EvpnType3Route::getLocalPreference)
-          .thenComparing(EvpnType3Route::getNextHopInterface)
-          .thenComparing(EvpnType3Route::getOriginType)
-          .thenComparing(EvpnType3Route::getOriginatorIp)
-          .thenComparing(EvpnType3Route::getReceivedFromIp)
-          .thenComparing(EvpnType3Route::getReceivedFromRouteReflectorClient)
-          .thenComparing(EvpnType3Route::getRouteDistinguisher)
-          .thenComparing(EvpnType3Route::getSrcProtocol)
-          .thenComparing(EvpnType3Route::getVniIp)
-          .thenComparing(EvpnType3Route::getWeight);
 
   @Nonnull private final Ip _vniIp;
 
@@ -301,13 +280,5 @@ public final class EvpnType3Route extends EvpnRoute {
       _hashCode = h;
     }
     return h;
-  }
-
-  @Override
-  public int routeCompare(@Nonnull AbstractRoute rhs) {
-    if (getClass() != rhs.getClass()) {
-      return 0;
-    }
-    return COMPARATOR.compare(this, (EvpnType3Route) rhs);
   }
 }

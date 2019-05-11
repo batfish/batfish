@@ -4,7 +4,6 @@ import static org.batfish.datamodel.ospf.OspfTopologyUtils.computeOspfTopology;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.collect.Sets;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.io.IOException;
@@ -21,7 +20,6 @@ import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.topology.TopologyUtil;
-import org.batfish.common.util.IpsecUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Topology;
@@ -122,14 +120,8 @@ public final class TopologyProviderImpl implements TopologyProvider {
         GlobalTracer.get().buildSpan("TopologyProviderImpl::computeLayer3Topology").startActive()) {
       assert span != null; // avoid unused warning
       Map<String, Configuration> configurations = _batfish.loadConfigurations(networkSnapshot);
-      Topology topology = getInitialRawLayer3Topology(networkSnapshot);
-      return topology.prune(
-          Sets.union(
-              IpsecUtil.computeFailedIpsecSessionEdges(
-                  topology.getEdges(), IpsecUtil.initIpsecTopology(configurations), configurations),
-              _batfish.getEdgeBlacklist(networkSnapshot)),
-          _batfish.getNodeBlacklist(networkSnapshot),
-          _batfish.getInterfaceBlacklist(networkSnapshot));
+      return TopologyUtil.computeLayer3Topology(
+          getInitialRawLayer3Topology(networkSnapshot), configurations);
     }
   }
 
@@ -145,21 +137,17 @@ public final class TopologyProviderImpl implements TopologyProvider {
     }
   }
 
-  private Topology computeRawLayer3Topology(NetworkSnapshot networkSnapshot) {
+  private @Nonnull Topology computeRawLayer3Topology(NetworkSnapshot networkSnapshot) {
     try (ActiveSpan span =
         GlobalTracer.get()
             .buildSpan("TopologyProviderImpl::computeRawLayer3Topology")
             .startActive()) {
       assert span != null; // avoid unused warning
       Map<String, Configuration> configurations = _batfish.loadConfigurations(networkSnapshot);
-      return getRawLayer1PhysicalTopology(networkSnapshot)
-          .map(
-              rawLayer1PhysicalTopology ->
-                  TopologyUtil.computeLayer3Topology(
-                      rawLayer1PhysicalTopology,
-                      computeInitialLayer2Topology(networkSnapshot).get(),
-                      configurations))
-          .orElse(TopologyUtil.synthesizeL3Topology(configurations));
+      return TopologyUtil.computeRawLayer3Topology(
+          getRawLayer1PhysicalTopology(networkSnapshot),
+          getInitialLayer2Topology(networkSnapshot),
+          configurations);
     }
   }
 
@@ -275,7 +263,7 @@ public final class TopologyProviderImpl implements TopologyProvider {
   }
 
   @Override
-  public @Nonnull Layer2Topology getLayer2Topology(NetworkSnapshot snapshot) {
+  public @Nonnull Optional<Layer2Topology> getLayer2Topology(NetworkSnapshot snapshot) {
     try {
       return _storage.loadLayer2Topology(snapshot);
     } catch (IOException e) {

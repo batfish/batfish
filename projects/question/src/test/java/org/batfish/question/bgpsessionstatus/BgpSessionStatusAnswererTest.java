@@ -31,6 +31,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.graph.ValueGraph;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.common.NetworkSnapshot;
@@ -480,8 +481,8 @@ public class BgpSessionStatusAnswererTest {
       }
 
       @Override
-      public Layer2Topology getLayer2Topology(NetworkSnapshot networkSnapshot) {
-        return Layer2Topology.EMPTY;
+      public Optional<Layer2Topology> getLayer2Topology(NetworkSnapshot networkSnapshot) {
+        return Optional.empty();
       }
 
       @Override

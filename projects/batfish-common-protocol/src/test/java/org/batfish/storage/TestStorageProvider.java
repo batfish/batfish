@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -15,7 +16,6 @@ import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
@@ -48,12 +48,6 @@ public class TestStorageProvider implements StorageProvider {
   @Override
   public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement(
       NetworkId network, SnapshotId snapshot) {
-    throw new UnsupportedOperationException("no implementation for generated method");
-  }
-
-  @Nullable
-  @Override
-  public SortedSet<Edge> loadEdgeBlacklist(NetworkId network, SnapshotId snapshot) {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
@@ -343,7 +337,7 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
-  public Layer2Topology loadLayer2Topology(NetworkSnapshot networkSnapshot) {
+  public Optional<Layer2Topology> loadLayer2Topology(NetworkSnapshot networkSnapshot) {
     throw new UnsupportedOperationException();
   }
 
@@ -373,7 +367,8 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
-  public void storeLayer2Topology(Layer2Topology layer2Topology, NetworkSnapshot networkSnapshot) {
+  public void storeLayer2Topology(
+      Optional<Layer2Topology> layer2Topology, NetworkSnapshot networkSnapshot) {
     throw new UnsupportedOperationException();
   }
 

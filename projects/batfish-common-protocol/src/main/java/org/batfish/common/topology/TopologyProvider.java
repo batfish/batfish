@@ -97,10 +97,11 @@ public interface TopologyProvider {
 
   /**
    * Returns the {@link Layer2Topology} corresponding to the converged {@link
-   * org.batfish.datamodel.DataPlane}.
+   * org.batfish.datamodel.DataPlane}, or {@link Optional#empty()} if raw layer-1 physical topology
+   * is absent.
    */
   @Nonnull
-  Layer2Topology getLayer2Topology(NetworkSnapshot snapshot);
+  Optional<Layer2Topology> getLayer2Topology(NetworkSnapshot snapshot);
 
   /**
    * Returns the layer-3 {@link Topology} corresponding to the converged {@link

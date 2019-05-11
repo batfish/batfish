@@ -1,9 +1,11 @@
 package org.batfish.dataplane.ibdp;
 
 import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyContainer;
 import org.batfish.datamodel.Topology;
@@ -22,9 +24,11 @@ public final class TopologyContext implements TopologyContainer {
     private @Nonnull BgpTopology _bgpTopology;
     private @Nonnull EigrpTopology _eigrpTopology;
     private @Nonnull IsisTopology _isisTopology;
-    private @Nonnull Layer2Topology _layer2Topology;
+    private @Nonnull Optional<Layer1Topology> _layer1LogicalTopology;
+    private @Nonnull Optional<Layer2Topology> _layer2Topology;
     private @Nonnull Topology _layer3Topology;
     private @Nonnull OspfTopology _ospfTopology;
+    private @Nonnull Optional<Layer1Topology> _rawLayer1PhysicalTopology;
     private @Nonnull VxlanTopology _vxlanTopology;
 
     public @Nonnull TopologyContext build() {
@@ -32,9 +36,11 @@ public final class TopologyContext implements TopologyContainer {
           _bgpTopology,
           _eigrpTopology,
           _isisTopology,
+          _layer1LogicalTopology,
           _layer2Topology,
           _layer3Topology,
           _ospfTopology,
+          _rawLayer1PhysicalTopology,
           _vxlanTopology);
     }
 
@@ -42,38 +48,12 @@ public final class TopologyContext implements TopologyContainer {
       _bgpTopology = BgpTopology.EMPTY;
       _eigrpTopology = EigrpTopology.EMPTY;
       _isisTopology = IsisTopology.EMPTY;
-      _layer2Topology = Layer2Topology.EMPTY;
+      _layer1LogicalTopology = Optional.empty();
+      _layer2Topology = Optional.empty();
       _layer3Topology = Topology.EMPTY;
       _ospfTopology = OspfTopology.EMPTY;
+      _rawLayer1PhysicalTopology = Optional.empty();
       _vxlanTopology = VxlanTopology.EMPTY;
-    }
-
-    public @Nonnull BgpTopology getBgpTopology() {
-      return _bgpTopology;
-    }
-
-    public @Nonnull EigrpTopology getEigrpTopology() {
-      return _eigrpTopology;
-    }
-
-    public @Nonnull IsisTopology getIsisTopology() {
-      return _isisTopology;
-    }
-
-    public @Nonnull Layer2Topology getLayer2Topology() {
-      return _layer2Topology;
-    }
-
-    public @Nonnull Topology getLayer3Topology() {
-      return _layer3Topology;
-    }
-
-    public @Nonnull OspfTopology getOspfTopology() {
-      return _ospfTopology;
-    }
-
-    public @Nonnull VxlanTopology getVxlanTopology() {
-      return _vxlanTopology;
     }
 
     public @Nonnull Builder setBgpTopology(BgpTopology bgpTopology) {
@@ -91,7 +71,13 @@ public final class TopologyContext implements TopologyContainer {
       return this;
     }
 
-    public @Nonnull Builder setLayer2Topology(Layer2Topology layer2Topology) {
+    public @Nonnull Builder setLayer1LogicalTopology(
+        Optional<Layer1Topology> layer1LogicalTopology) {
+      _layer1LogicalTopology = layer1LogicalTopology;
+      return this;
+    }
+
+    public @Nonnull Builder setLayer2Topology(Optional<Layer2Topology> layer2Topology) {
       _layer2Topology = layer2Topology;
       return this;
     }
@@ -103,6 +89,12 @@ public final class TopologyContext implements TopologyContainer {
 
     public @Nonnull Builder setOspfTopology(OspfTopology ospfTopology) {
       _ospfTopology = ospfTopology;
+      return this;
+    }
+
+    public @Nonnull Builder setRawLayer1PhysicalTopology(
+        Optional<Layer1Topology> rawLayer1PhysicalTopology) {
+      _rawLayer1PhysicalTopology = rawLayer1PhysicalTopology;
       return this;
     }
 
@@ -119,25 +111,31 @@ public final class TopologyContext implements TopologyContainer {
   private final @Nonnull BgpTopology _bgpTopology;
   private final @Nonnull EigrpTopology _eigrpTopology;
   private final @Nonnull IsisTopology _isisTopology;
-  private final @Nonnull Layer2Topology _layer2Topology;
+  private final @Nonnull Optional<Layer1Topology> _layer1LogicalTopology;
+  private final @Nonnull Optional<Layer2Topology> _layer2Topology;
   private final @Nonnull Topology _layer3Topology;
   private final @Nonnull OspfTopology _ospfTopology;
+  private final @Nonnull Optional<Layer1Topology> _rawLayer1PhysicalTopology;
   private final @Nonnull VxlanTopology _vxlanTopology;
 
   private TopologyContext(
       BgpTopology bgpTopology,
       EigrpTopology eigrpTopology,
       IsisTopology isisTopology,
-      Layer2Topology layer2Topology,
+      Optional<Layer1Topology> layer1LogicalTopology,
+      Optional<Layer2Topology> layer2Topology,
       Topology layer3Topology,
       OspfTopology ospfTopology,
+      Optional<Layer1Topology> rawLayer1PhysicalTopology,
       VxlanTopology vxlanTopology) {
     _bgpTopology = bgpTopology;
     _eigrpTopology = eigrpTopology;
     _isisTopology = isisTopology;
+    _layer1LogicalTopology = layer1LogicalTopology;
     _layer2Topology = layer2Topology;
     _layer3Topology = layer3Topology;
     _ospfTopology = ospfTopology;
+    _rawLayer1PhysicalTopology = rawLayer1PhysicalTopology;
     _vxlanTopology = vxlanTopology;
   }
 
@@ -156,8 +154,12 @@ public final class TopologyContext implements TopologyContainer {
     return _isisTopology;
   }
 
+  public @Nonnull Optional<Layer1Topology> getLayer1LogicalTopology() {
+    return _layer1LogicalTopology;
+  }
+
   @Override
-  public @Nonnull Layer2Topology getLayer2Topology() {
+  public @Nonnull Optional<Layer2Topology> getLayer2Topology() {
     return _layer2Topology;
   }
 
@@ -169,6 +171,10 @@ public final class TopologyContext implements TopologyContainer {
   @Override
   public @Nonnull OspfTopology getOspfTopology() {
     return _ospfTopology;
+  }
+
+  public @Nonnull Optional<Layer1Topology> getRawLayer1PhysicalTopology() {
+    return _rawLayer1PhysicalTopology;
   }
 
   @Override
@@ -188,9 +194,11 @@ public final class TopologyContext implements TopologyContainer {
     return _bgpTopology.equals(rhs._bgpTopology)
         && _eigrpTopology.equals(rhs._eigrpTopology)
         && _isisTopology.equals(rhs._isisTopology)
+        && _layer1LogicalTopology.equals(rhs._layer1LogicalTopology)
         && _layer2Topology.equals(rhs._layer2Topology)
         && _layer3Topology.equals(rhs._layer3Topology)
         && _ospfTopology.equals(rhs._ospfTopology)
+        && _rawLayer1PhysicalTopology.equals(rhs._rawLayer1PhysicalTopology)
         && _vxlanTopology.equals(rhs._vxlanTopology);
   }
 
@@ -200,9 +208,11 @@ public final class TopologyContext implements TopologyContainer {
         _bgpTopology,
         _eigrpTopology,
         _isisTopology,
+        _layer1LogicalTopology,
         _layer2Topology,
         _layer3Topology,
         _ospfTopology,
+        _rawLayer1PhysicalTopology,
         _vxlanTopology);
   }
 
@@ -211,9 +221,11 @@ public final class TopologyContext implements TopologyContainer {
         .setBgpTopology(_bgpTopology)
         .setEigrpTopology(_eigrpTopology)
         .setIsisTopology(_isisTopology)
+        .setLayer1LogicalTopology(_layer1LogicalTopology)
         .setLayer2Topology(_layer2Topology)
         .setLayer3Topology(_layer3Topology)
         .setOspfTopology(_ospfTopology)
+        .setRawLayer1PhysicalTopology(_rawLayer1PhysicalTopology)
         .setVxlanTopology(_vxlanTopology);
   }
 }

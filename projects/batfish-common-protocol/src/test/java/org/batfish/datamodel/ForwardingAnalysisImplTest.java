@@ -10,7 +10,6 @@ import static org.batfish.datamodel.ForwardingAnalysisImpl.computeDeliveredToSub
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeExitsNetwork;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeInsufficientInfo;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeInterfaceArpReplies;
-import static org.batfish.datamodel.ForwardingAnalysisImpl.computeInterfaceHostSubnetIps;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeIpsAssignedToThisInterface;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeIpsRoutedOutInterfaces;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeMatchingIps;
@@ -25,7 +24,6 @@ import static org.batfish.datamodel.ForwardingAnalysisImpl.union;
 import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.hasLines;
 import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.isAclIpSpaceThat;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
-import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -1186,83 +1184,6 @@ public class ForwardingAnalysisImplTest {
     /* IPs not allowed by neighbor should not appear */
     assertThat(
         result, hasEntry(equalTo(c1), hasEntry(equalTo(i1), not(containsIp(P2.getStartIp())))));
-  }
-
-  @Test
-  public void testComputeInterfaceHostSubnetIps() {
-    Configuration c1 = _cb.build();
-    Map<String, Configuration> configs = ImmutableMap.of(c1.getHostname(), c1);
-    Vrf vrf1 = _vb.setOwner(c1).build();
-    Interface i1 =
-        _ib.setOwner(c1)
-            .setVrf(vrf1)
-            .setAddress(new InterfaceAddress(P1.getStartIp(), P1.getPrefixLength()))
-            .build();
-    Interface i2 =
-        _ib.setOwner(c1)
-            .setVrf(vrf1)
-            .setAddress(new InterfaceAddress(P2.getStartIp(), P2.getPrefixLength()))
-            .setActive(false)
-            .build();
-
-    // Test with only active IPs.
-    assertThat(
-        computeInterfaceHostSubnetIps(configs, true),
-        hasEntry(
-            equalTo(c1.getHostname()),
-            allOf(
-                hasEntry(
-                    equalTo(i1.getName()),
-                    allOf(
-                        not(containsIp(P1.getStartIp())),
-                        containsIp(Ip.create(P1.getStartIp().asLong() + 1)),
-                        containsIp(Ip.create(P1.getEndIp().asLong() - 1)),
-                        not(containsIp(P1.getEndIp())))),
-                not(hasKey(i2.getName())))));
-
-    // Test including inactive IPs.
-    assertThat(
-        computeInterfaceHostSubnetIps(configs, false),
-        hasEntry(
-            equalTo(c1.getHostname()),
-            allOf(
-                hasEntry(
-                    equalTo(i1.getName()),
-                    allOf(
-                        not(containsIp(P1.getStartIp())),
-                        containsIp(Ip.create(P1.getStartIp().asLong() + 1)),
-                        containsIp(Ip.create(P1.getEndIp().asLong() - 1)),
-                        not(containsIp(P1.getEndIp())))),
-                hasEntry(
-                    equalTo(i2.getName()),
-                    allOf(
-                        not(containsIp(P2.getStartIp())),
-                        containsIp(Ip.create(P2.getStartIp().asLong() + 1)),
-                        containsIp(Ip.create(P2.getEndIp().asLong() - 1)),
-                        not(containsIp(P2.getEndIp())))))));
-  }
-
-  @Test
-  public void testComputeInterfaceHostSubnetIpsWithPrefixLength31() {
-    Configuration c1 = _cb.build();
-    Map<String, Configuration> configs = ImmutableMap.of(c1.getHostname(), c1);
-    Vrf vrf1 = _vb.setOwner(c1).build();
-    Prefix prefix = Prefix.parse("1.0.0.1/31");
-    Interface i1 =
-        _ib.setOwner(c1)
-            .setVrf(vrf1)
-            .setAddress(new InterfaceAddress(prefix.getStartIp(), prefix.getPrefixLength()))
-            .build();
-    Map<String, Map<String, IpSpace>> interfaceHostSubnetIps =
-        computeInterfaceHostSubnetIps(configs, false);
-
-    assertThat(
-        interfaceHostSubnetIps,
-        hasEntry(
-            equalTo(c1.getHostname()),
-            hasEntry(
-                equalTo(i1.getName()),
-                allOf(containsIp(prefix.getStartIp()), containsIp(prefix.getEndIp())))));
   }
 
   @Test
