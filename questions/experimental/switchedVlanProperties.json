@@ -6,9 +6,9 @@
     "nodes": "${nodes}",
     "vlans": "${vlans}",
     "instance": {
-        "description": "Returns configuration settings of switched VLANs",
+        "description": "Returns configuration settings of switched VLANs.",
         "instanceName": "switchedVlanProperties",
-        "longDescription": "Lists the VXLAN VNI and switched interfaces carrying traffic for each switched VLAN.",
+        "longDescription": "Lists information about configured switched VLANs.",
         "tags": [
             "configuration",
             "interfaces",

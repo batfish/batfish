@@ -5,7 +5,7 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description": "Returns configuration settings of VXLANs",
+    "description": "Returns configuration settings of VXLANs.",
     "instanceName" : "qname",
     "longDescription": "Lists VNI-level VXLAN network segment settings configured for the specified nodes.",
     "tags" : [
