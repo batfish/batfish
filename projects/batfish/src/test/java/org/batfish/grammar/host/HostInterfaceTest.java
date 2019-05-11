@@ -1,11 +1,13 @@
 package org.batfish.grammar.host;
 
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isProxyArp;
 import static org.batfish.datamodel.transformation.Transformation.always;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
@@ -111,5 +113,20 @@ public class HostInterfaceTest {
         equalTo(always().apply(assignSourceIp(sharedIp, sharedIp)).build()));
     assertThat(nonShared1Interface.getOutgoingTransformation(), nullValue());
     assertThat(nonShared2Interface.getOutgoingTransformation(), nullValue());
+  }
+
+  @Test
+  public void testEncapsulationVlan() throws IOException {
+    Integer encapsulationVlan = 5;
+    HostInterface hi = new HostInterface("e0");
+    hi.setEncapsulationVlan(encapsulationVlan);
+    HostInterface des = BatfishObjectMapper.clone(hi, HostInterface.class);
+
+    assertEquals(des.getEncapsulationVlan(), encapsulationVlan);
+
+    Configuration c = new Configuration("h1", ConfigurationFormat.HOST);
+    Interface i = des.toInterface(c, new Warnings());
+
+    assertThat(i, hasEncapsulationVlan(encapsulationVlan));
   }
 }

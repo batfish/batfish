@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.Set;
 import java.util.TreeSet;
+import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
@@ -18,14 +19,15 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Vrf;
 
 public class HostInterface implements Serializable {
+
   private static final String PROP_BANDWIDTH = "bandwidth";
+  private static final String PROP_ENCAPSULATION_VLAN = "encapsulationVlan";
   private static final String PROP_GATEWAY = "gateway";
   private static final String PROP_NAME = "name";
   private static final String PROP_OTHER_PREFIXES = "otherPrefixes";
   private static final String PROP_PREFIX = "prefix";
   private static final String PROP_SHARED = "shared";
   private static final String PROP_VRF = "vrf";
-
   private static final long serialVersionUID = 1L;
 
   private Double _bandwidth = 1000 * 1000 * 1000.0; // default is 1 Gbps
@@ -39,6 +41,8 @@ public class HostInterface implements Serializable {
   private Set<InterfaceAddress> _otherAddresses;
 
   private InterfaceAddress _address;
+
+  private @Nullable Integer _encapsulationVlan;
 
   private boolean _shared;
 
@@ -63,6 +67,11 @@ public class HostInterface implements Serializable {
   @JsonIgnore
   public String getCanonicalName() {
     return _canonicalName;
+  }
+
+  @JsonProperty(PROP_ENCAPSULATION_VLAN)
+  public @Nullable Integer getEncapsulationVlan() {
+    return _encapsulationVlan;
   }
 
   @JsonProperty(PROP_GATEWAY)
@@ -100,6 +109,11 @@ public class HostInterface implements Serializable {
     _canonicalName = canonicalName;
   }
 
+  @JsonProperty(PROP_ENCAPSULATION_VLAN)
+  public void setEncapsulationVlan(@Nullable Integer encapsulationVlan) {
+    _encapsulationVlan = encapsulationVlan;
+  }
+
   @JsonProperty(PROP_GATEWAY)
   public void setGateway(Ip gateway) {
     _gateway = gateway;
@@ -134,6 +148,7 @@ public class HostInterface implements Serializable {
             .setAddresses(_address, _otherAddresses)
             .setBandwidth(_bandwidth)
             .setDeclaredNames(ImmutableSortedSet.of(_name))
+            .setEncapsulationVlan(_encapsulationVlan)
             .setProxyArp(false)
             .setVrf(configuration.getDefaultVrf());
     if (_shared) {
