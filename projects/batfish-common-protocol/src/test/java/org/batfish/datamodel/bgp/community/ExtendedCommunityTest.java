@@ -178,4 +178,11 @@ public final class ExtendedCommunityTest {
     assertThat(ExtendedCommunity.target(1, 65555).toString(), equalTo("2:1:65555"));
     assertThat(ExtendedCommunity.target(65555, 1).toString(), equalTo("514:65555L:1"));
   }
+
+  @Test
+  public void testIsRouteTarget() {
+    assertTrue(ExtendedCommunity.target(1, 1).isRouteTarget());
+    assertTrue(ExtendedCommunity.parse("514:65555L:1").isRouteTarget());
+    assertFalse(ExtendedCommunity.of(1, 1, 1).isRouteTarget());
+  }
 }
