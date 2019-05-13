@@ -538,7 +538,7 @@ public final class BDDReachabilityAnalysisFactory {
               OriginateInterfaceLink originateInterfaceLink =
                   (OriginateInterfaceLink) entry.getKey();
               String hostname = originateInterfaceLink.getHostname();
-              String iface = originateInterfaceLink.getIface();
+              String iface = originateInterfaceLink.getInterface();
               PreInInterface preInInterface = new PreInInterface(hostname, iface);
 
               BDD rootBdd = entry.getValue();

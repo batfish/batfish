@@ -344,7 +344,7 @@ public class BDDReachabilityAnalysis {
     } else {
       OriginateInterfaceLink originateInterfaceLink = (OriginateInterfaceLink) stateExpr;
       return IngressLocation.interfaceLink(
-          originateInterfaceLink.getHostname(), originateInterfaceLink.getIface());
+          originateInterfaceLink.getHostname(), originateInterfaceLink.getInterface());
     }
   }
 
