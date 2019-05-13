@@ -7,8 +7,9 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Returns configuration properties of switched VLANs",
+    "description" : "Returns configuration settings of switched VLANs.",
     "instanceName" : "qname",
+    "longDescription" : "Lists information about implicitly and explicitly configured switched VLANs.",
     "tags" : [
       "configuration",
       "interfaces",
