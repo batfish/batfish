@@ -2,7 +2,8 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Optional;
+import com.google.common.collect.ImmutableSet;
+import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -94,12 +95,13 @@ public abstract class EvpnRoute extends BgpRoute {
     return _routeDistinguisher;
   }
 
+  /** Return extended communities that are route targets for this route */
   @JsonIgnore
-  public Optional<ExtendedCommunity> getRouteTarget() {
+  public Set<ExtendedCommunity> getRouteTargets() {
     return _communities.stream()
         .filter(c -> c instanceof ExtendedCommunity)
         .map(ExtendedCommunity.class::cast)
         .filter(ExtendedCommunity::isRouteTarget)
-        .findFirst();
+        .collect(ImmutableSet.toImmutableSet());
   }
 }

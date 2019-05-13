@@ -1,8 +1,8 @@
 package org.batfish.datamodel;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
 
 import com.google.common.collect.ImmutableSet;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
@@ -24,33 +24,41 @@ public class EvpnRouteTest {
             .setProtocol(RoutingProtocol.BGP)
             .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("1.1.1.1"), 2));
 
-    assertFalse(builder.build().getRouteTarget().isPresent());
-    assertFalse(
+    assertThat(builder.build().getRouteTargets(), empty());
+    assertThat(
         builder
             .setCommunities(ImmutableSet.of(StandardCommunity.of(1, 1)))
             .build()
-            .getRouteTarget()
-            .isPresent());
-    assertFalse(
+            .getRouteTargets(),
+        empty());
+    assertThat(
         builder
             .setCommunities(ImmutableSet.of(ExtendedCommunity.of(1, 1, 1)))
             .build()
-            .getRouteTarget()
-            .isPresent());
+            .getRouteTargets(),
+        empty());
     assertThat(
         builder
             .setCommunities(ImmutableSet.of(ExtendedCommunity.target(1, 1)))
             .build()
-            .getRouteTarget()
-            .get(),
-        equalTo(ExtendedCommunity.target(1, 1)));
+            .getRouteTargets(),
+        equalTo(ImmutableSet.of(ExtendedCommunity.target(1, 1))));
     assertThat(
         builder
             .setCommunities(
                 ImmutableSet.of(ExtendedCommunity.target(1, 1), StandardCommunity.of(1, 1)))
             .build()
-            .getRouteTarget()
-            .get(),
-        equalTo(ExtendedCommunity.target(1, 1)));
+            .getRouteTargets(),
+        equalTo(ImmutableSet.of(ExtendedCommunity.target(1, 1))));
+    assertThat(
+        builder
+            .setCommunities(
+                ImmutableSet.of(
+                    ExtendedCommunity.target(1, 1),
+                    StandardCommunity.of(1, 1),
+                    ExtendedCommunity.target(2, 2)))
+            .build()
+            .getRouteTargets(),
+        equalTo(ImmutableSet.of(ExtendedCommunity.target(1, 1), ExtendedCommunity.target(2, 2))));
   }
 }
