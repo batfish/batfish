@@ -10,6 +10,7 @@ java_library(
     srcs = ["IngressLocation.java"],
     deps = [
         "//projects/batfish-common-protocol:common",
+        "@jackson_annotations//:compile",
         "@jsr305//:compile",
     ],
 )
