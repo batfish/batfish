@@ -184,6 +184,11 @@ public final class ExtendedCommunity extends Community {
     return (_type & (byte) 0x40) != 0;
   }
 
+  /** Check whether this community represents an BGP VPN/MPLS route target */
+  public boolean isRouteTarget() {
+    return _subType == 0x02;
+  }
+
   @Override
   public boolean equals(@Nullable Object o) {
     if (this == o) {

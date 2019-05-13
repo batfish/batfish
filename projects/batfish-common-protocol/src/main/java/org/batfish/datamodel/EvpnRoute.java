@@ -1,12 +1,16 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableSet;
+import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.Community;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 
 /**
  * A generic EVPN route containing the common properties among the different types of EVPN routes
@@ -30,6 +34,10 @@ public abstract class EvpnRoute extends BgpRoute {
       _routeDistinguisher = routeDistinguisher;
       return getThis();
     }
+
+    @Nonnull
+    @Override
+    public abstract R build();
   }
 
   private static final long serialVersionUID = 1L;
@@ -85,5 +93,15 @@ public abstract class EvpnRoute extends BgpRoute {
   @JsonProperty(PROP_ROUTE_DISTINGUISHER)
   public RouteDistinguisher getRouteDistinguisher() {
     return _routeDistinguisher;
+  }
+
+  /** Return extended communities that are route targets for this route */
+  @JsonIgnore
+  public Set<ExtendedCommunity> getRouteTargets() {
+    return _communities.stream()
+        .filter(c -> c instanceof ExtendedCommunity)
+        .map(ExtendedCommunity.class::cast)
+        .filter(ExtendedCommunity::isRouteTarget)
+        .collect(ImmutableSet.toImmutableSet());
   }
 }
