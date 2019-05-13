@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -267,10 +268,11 @@ public class AclIpSpace extends IpSpace {
     }
   }
 
-  private final List<AclIpSpaceLine> _lines;
+  @Nonnull private final List<AclIpSpaceLine> _lines;
 
   @JsonCreator
-  private AclIpSpace(@JsonProperty(PROP_LINES) List<AclIpSpaceLine> lines) {
+  private AclIpSpace(@Nullable @JsonProperty(PROP_LINES) List<AclIpSpaceLine> lines) {
+    checkArgument(lines != null, "Missing %s", PROP_LINES);
     _lines = lines;
   }
 
@@ -300,9 +302,10 @@ public class AclIpSpace extends IpSpace {
 
   @Override
   protected boolean exprEquals(Object o) {
-    return Objects.equals(_lines, ((AclIpSpace) o)._lines);
+    return _lines.equals(((AclIpSpace) o)._lines);
   }
 
+  @Nonnull
   @JsonProperty(PROP_LINES)
   public List<AclIpSpaceLine> getLines() {
     return _lines;
