@@ -6,7 +6,8 @@
     "status": "${status}",
     "type": "${type}",
     "instance": {
-        "description": "Return the status of configured BGP sessions",
+        "description": "Return the dynamic status of configured BGP sessions.",
+        "longDescription": "Checks whether configured BGP peerings can be established. Each row represents one configured BGP peering and contains information about the session it is configured to establish. For dynamic peerings, one row is shown per compatible remote peer. Possible statuses for each session are NOT_COMPATIBLE, ESTABLISHED, and NOT_ESTABLISHED. NOT_COMPATIBLE sessions are those where one or both peers are misconfigured; the BgpSessionCompatibility question provides further insight into the nature of the configuration error. NOT_ESTABLISHED sessions are those that are configured compatibly but will not come up because peers cannot reach each other (e.g., due to being blocked by an ACL). ESTABLISHED sessions are those that are compatible and are expected to come up.",
         "instanceName": "bgpSessionStatus",
         "tags": [
             "bgp",

@@ -6,8 +6,9 @@
     "status": "${status}",
     "type": "${type}",
     "instance": {
-        "description": "Return the status of configured BGP sessions, independent of remote peer configurations",
-        "instanceName": "bgpSessionCompatibility",
+        "description": "Return the compatibility of configured BGP sessions.",
+        "longDescription": "Checks the settings of each configured BGP peering and reports any issue with those settings locally or incompatiblity with its remote counterparts. Each row represents one configured BGP peering on a node and contains information about the session it is meant to establish. For dynamic peers, there is one row per compatible remote peer. Statuses that indicate an independently misconfigured peerings include NO_LOCAL_AS, NO_REMOTE_AS, NO_LOCAL_IP (for eBGP single-hop peerings), LOCAL_IP_UNKNOWN_STATICALLY (for iBGP or eBGP multi-hop peerings), NO_REMOTE_IP (for point-to-point peerings), and NO_REMOTE_PREFIX (for dynamic peerings). INVALID_LOCAL_IP indicates that the peering's configured local IP does not belong to any active interface on the node; UNKNOWN_REMOTE indicates that the configured remote IP is not present in the network. A locally valid point-to-point peering is deemed HALF_OPEN if it has no compatible remote peers, UNIQUE_MATCH if it has exactly one compatible remote peer, or MULTIPLE_REMOTES if it has multiple compatible remote peers. A locally valid dynamic peering is deemed NO_MATCH_FOUND if it has no compatible remote peers, or DYNAMIC_MATCH if it has at least one compatible remote peer.",
+        "instanceName": "bgpSessionCompatibility", 
         "tags": [
             "bgp",
             "status"
