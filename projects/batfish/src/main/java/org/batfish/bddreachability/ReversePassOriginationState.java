@@ -122,12 +122,12 @@ public class ReversePassOriginationState implements StateExprVisitor<StateExpr> 
 
   @Override
   public StateExpr visitNodeInterfaceDeliveredToSubnet(NodeInterfaceDeliveredToSubnet state) {
-    return new OriginateInterfaceLink(state.getHostname(), state.getIface());
+    return new OriginateInterfaceLink(state.getHostname(), state.getInterface());
   }
 
   @Override
   public StateExpr visitNodeInterfaceExitsNetwork(NodeInterfaceExitsNetwork state) {
-    return new OriginateInterfaceLink(state.getHostname(), state.getIface());
+    return new OriginateInterfaceLink(state.getHostname(), state.getInterface());
   }
 
   @Override

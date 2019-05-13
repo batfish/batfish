@@ -139,7 +139,7 @@ public class OriginationStateToTerminationState implements StateExprVisitor<List
   @Override
   public List<StateExpr> visitOriginateInterfaceLink(OriginateInterfaceLink state) {
     String hostname = state.getHostname();
-    String iface = state.getIface();
+    String iface = state.getInterface();
     return ImmutableList.of(
         new NodeInterfaceDeliveredToSubnet(hostname, iface),
         new NodeInterfaceExitsNetwork(hostname, iface),
