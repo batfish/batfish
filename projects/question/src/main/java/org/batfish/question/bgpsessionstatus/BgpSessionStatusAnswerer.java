@@ -2,6 +2,20 @@ package org.batfish.question.bgpsessionstatus;
 
 import static org.batfish.datamodel.BgpSessionProperties.getSessionType;
 import static org.batfish.datamodel.questions.ConfiguredSessionStatus.UNIQUE_MATCH;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_LOCAL_AS;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_LOCAL_INTERFACE;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_LOCAL_IP;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_NODE;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_REMOTE_AS;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_REMOTE_INTERFACE;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_REMOTE_IP;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_REMOTE_NODE;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_SESSION_TYPE;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_VRF;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.getBgpPeerConfig;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.getConfiguredStatus;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.getLocallyBrokenStatus;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.matchesNodesAndType;
 import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.SessionStatus.ESTABLISHED;
 import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.SessionStatus.NOT_COMPATIBLE;
 import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.SessionStatus.NOT_ESTABLISHED;
@@ -16,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.topology.Layer2Topology;
@@ -45,7 +60,7 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 
-public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
+public class BgpSessionStatusAnswerer extends Answerer {
 
   public enum SessionStatus {
     ESTABLISHED,
@@ -72,7 +87,6 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
    * Return the answer for {@link BgpSessionStatusQuestion} -- a set of BGP sessions and their
    * status.
    */
-  @Override
   public List<Row> getRows(BgpSessionQuestion question) {
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
     Map<String, ColumnMetadata> metadataMap = createMetadata(question).toColumnMap();
@@ -80,7 +94,6 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
     Set<String> remoteNodes =
         question.getRemoteNodeSpecifier().resolve(_batfish.specifierContext());
     Map<Ip, Set<String>> ipOwners = TopologyUtil.computeIpNodeOwners(configurations, true);
-    Set<Ip> allInterfaceIps = ipOwners.keySet();
     Layer2Topology layer2Topology =
         _batfish
             .getTopologyProvider()
@@ -99,7 +112,7 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
         nodes,
         remoteNodes,
         metadataMap,
-        allInterfaceIps,
+        ipOwners,
         configuredBgpTopology.getGraph(),
         establishedBgpTopology.getGraph());
   }
@@ -111,7 +124,7 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
       Set<String> nodes,
       Set<String> remoteNodes,
       Map<String, ColumnMetadata> metadataMap,
-      Set<Ip> allInterfaceIps,
+      Map<Ip, Set<String>> ipOwners,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredBgpTopology,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> establishedBgpTopology) {
 
@@ -136,7 +149,7 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
                       && establishedBgpTopology.outDegree(neighbor) == 1) {
                     status = ESTABLISHED;
                   } else if (getConfiguredStatus(
-                          neighbor, activePeer, type, allInterfaceIps, configuredBgpTopology)
+                          neighbor, activePeer, type, ipOwners, configuredBgpTopology)
                       == UNIQUE_MATCH) {
                     status = NOT_ESTABLISHED;
                   }
@@ -383,19 +396,9 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
         .build();
   }
 
-  static boolean matchesQuestionFilters(
+  private static boolean matchesQuestionFilters(
       Row row, Set<String> nodes, Set<String> remoteNodes, BgpSessionQuestion question) {
-    if (!matchesNodesAndType(row, nodes, remoteNodes, question)) {
-      return false;
-    }
-
-    // Check session status
-    String statusName = (String) row.get(COL_ESTABLISHED_STATUS, Schema.STRING);
-    SessionStatus status = statusName == null ? null : SessionStatus.valueOf(statusName);
-    if (!question.matchesStatus(status)) {
-      return false;
-    }
-
-    return true;
+    return matchesNodesAndType(row, nodes, remoteNodes, question)
+        && question.matchesStatus((String) row.get(COL_ESTABLISHED_STATUS, Schema.STRING));
   }
 }
