@@ -114,12 +114,12 @@ final class SessionCreationNodeVisitor implements StateExprVisitor<NodeInterface
   @Override
   public NodeInterfacePair visitNodeInterfaceDeliveredToSubnet(
       NodeInterfaceDeliveredToSubnet expr) {
-    return new NodeInterfacePair(expr.getHostname(), expr.getIface());
+    return new NodeInterfacePair(expr.getHostname(), expr.getInterface());
   }
 
   @Override
   public NodeInterfacePair visitNodeInterfaceExitsNetwork(NodeInterfaceExitsNetwork expr) {
-    return new NodeInterfacePair(expr.getHostname(), expr.getIface());
+    return new NodeInterfacePair(expr.getHostname(), expr.getInterface());
   }
 
   @Override

@@ -28,11 +28,6 @@ public abstract class InterfaceStateExpr implements StateExpr {
     return _interface;
   }
 
-  @Nonnull
-  public final String getIface() {
-    return _interface;
-  }
-
   @Override
   public final boolean equals(Object other) {
     if (this == other) {
