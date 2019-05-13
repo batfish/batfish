@@ -4,8 +4,9 @@
     "nodes": "${nodes}",
     "properties": "${properties}",
     "instance": {
-        "description": "Return BGP peer configuration properties",
+        "description": "Return configuration settings for BGP peerings.",
         "instanceName": "bgpPeerConfiguration",
+        "longDescription": "Reports configuration settings for each configured BGP peering on each node in the network. This question reports peer-specific settings. Settings that are process-wide are reported by the bgpProcessConfiguration question.",
         "tags": [
             "bgp",
             "configuration"

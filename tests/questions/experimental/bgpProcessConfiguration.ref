@@ -5,8 +5,9 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Return BGP process configuration properties",
+    "description" : "Return configuration settings of BGP processes.",
     "instanceName" : "qname",
+    "longDescription" : "Reports configuration settings for each BGP process on each node and VRF in the network. This question reports only process-wide settings. Peer-specific settings are reported by the bgpPeerConfiguration question.",
     "tags" : [
       "bgp",
       "configuration"
