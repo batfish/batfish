@@ -11,7 +11,9 @@ import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_REMOTE_NODE;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_SESSION_TYPE;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_VRF;
+import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.COLUMN_METADATA;
 import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.COL_CONFIGURED_STATUS;
+import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.createMetadata;
 import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.getActivePeerRow;
 import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.getPassivePeerRows;
 import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.getUnnumberedPeerRow;
@@ -63,14 +65,32 @@ import org.batfish.datamodel.answers.SelfDescribingObject;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.ConfiguredSessionStatus;
+import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.SpecifierContext;
 import org.junit.Test;
 
 /** Tests of {@link BgpSessionCompatibilityAnswerer} */
 public class BgpSessionCompatibilityAnswererTest {
+
+  @Test
+  public void testCreateMetadata() {
+    BgpSessionCompatibilityQuestion q = new BgpSessionCompatibilityQuestion();
+    TableMetadata metadata = createMetadata(q);
+    assertThat(
+        metadata.getTextDesc(),
+        equalTo(
+            "On ${Node} session ${VRF}:${Remote_IP} has configured status ${Configured_Status}."));
+    assertThat(metadata.getColumnMetadata(), equalTo(COLUMN_METADATA));
+
+    q.setDisplayHints(new DisplayHints(null, null, "display hints"));
+    metadata = createMetadata(q);
+    assertThat(metadata.getTextDesc(), equalTo("display hints"));
+    assertThat(metadata.getColumnMetadata(), equalTo(COLUMN_METADATA));
+  }
 
   @Test
   public void testGetActivePeerRowNoLocalIp() {
