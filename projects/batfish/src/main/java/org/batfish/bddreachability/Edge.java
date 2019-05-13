@@ -45,9 +45,9 @@ final class Edge {
       return false;
     }
     Edge edge = (Edge) o;
-    return Objects.equals(_postState, edge._postState)
-        && Objects.equals(_preState, edge._preState)
-        && Objects.equals(_transition, edge._transition);
+    return _postState.equals(edge._postState)
+        && _preState.equals(edge._preState)
+        && _transition.equals(edge._transition);
   }
 
   @Override

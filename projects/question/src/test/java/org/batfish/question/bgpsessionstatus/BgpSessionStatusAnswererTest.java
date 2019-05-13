@@ -4,17 +4,17 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
-import static org.batfish.question.bgpsessionstatus.BgpSessionAnswerer.COL_REMOTE_INTERFACE;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_LOCAL_AS;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_LOCAL_INTERFACE;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_LOCAL_IP;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_NODE;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_REMOTE_AS;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_REMOTE_INTERFACE;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_REMOTE_IP;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_REMOTE_NODE;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_SESSION_TYPE;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_VRF;
 import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.COL_ESTABLISHED_STATUS;
-import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.COL_LOCAL_AS;
-import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.COL_LOCAL_INTERFACE;
-import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.COL_LOCAL_IP;
-import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.COL_NODE;
-import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.COL_REMOTE_AS;
-import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.COL_REMOTE_IP;
-import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.COL_REMOTE_NODE;
-import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.COL_SESSION_TYPE;
-import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.COL_VRF;
 import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.createMetadata;
 import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.getRows;
 import static org.hamcrest.Matchers.allOf;
@@ -260,7 +260,7 @@ public class BgpSessionStatusAnswererTest {
             ALL_NODES,
             ALL_NODES,
             METADATA_MAP,
-            ImmutableSet.of(),
+            ImmutableMap.of(),
             TOPOLOGY,
             TOPOLOGY);
     assertThat(rows, contains(ROW_1, ROW_2, ROW_3, ROW_4));
@@ -276,7 +276,7 @@ public class BgpSessionStatusAnswererTest {
             ImmutableSet.of(NODE1),
             ALL_NODES,
             METADATA_MAP,
-            ImmutableSet.of(),
+            ImmutableMap.of(),
             TOPOLOGY,
             TOPOLOGY);
     assertThat(rows, contains(ROW_1));
@@ -292,7 +292,7 @@ public class BgpSessionStatusAnswererTest {
             ALL_NODES,
             ImmutableSet.of(NODE1),
             METADATA_MAP,
-            ImmutableSet.of(),
+            ImmutableMap.of(),
             TOPOLOGY,
             TOPOLOGY);
     assertThat(rows, contains(ROW_2));
@@ -310,7 +310,7 @@ public class BgpSessionStatusAnswererTest {
             ALL_NODES,
             ALL_NODES,
             METADATA_MAP,
-            ImmutableSet.of(),
+            ImmutableMap.of(),
             TOPOLOGY,
             TOPOLOGY);
     assertThat(rows, contains(ROW_1, ROW_2, ROW_3, ROW_4));
@@ -323,7 +323,7 @@ public class BgpSessionStatusAnswererTest {
             ALL_NODES,
             ALL_NODES,
             METADATA_MAP,
-            ImmutableSet.of(),
+            ImmutableMap.of(),
             TOPOLOGY,
             TOPOLOGY);
     assertThat(rows, empty());
@@ -341,7 +341,7 @@ public class BgpSessionStatusAnswererTest {
             ALL_NODES,
             ALL_NODES,
             METADATA_MAP,
-            ImmutableSet.of(),
+            ImmutableMap.of(),
             TOPOLOGY,
             TOPOLOGY);
     assertThat(rows, contains(ROW_1, ROW_2));
@@ -355,7 +355,7 @@ public class BgpSessionStatusAnswererTest {
             ALL_NODES,
             ALL_NODES,
             METADATA_MAP,
-            ImmutableSet.of(),
+            ImmutableMap.of(),
             TOPOLOGY,
             TOPOLOGY);
     assertThat(rows, containsInAnyOrder(ROW_3, ROW_4));
@@ -411,7 +411,7 @@ public class BgpSessionStatusAnswererTest {
             ALL_NODES,
             ALL_NODES,
             METADATA_MAP,
-            ImmutableSet.of(),
+            ImmutableMap.of(),
             bgpTopology,
             bgpTopology);
 
