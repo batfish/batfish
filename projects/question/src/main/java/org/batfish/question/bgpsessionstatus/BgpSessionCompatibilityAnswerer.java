@@ -61,7 +61,8 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
 
   public static final String COL_CONFIGURED_STATUS = "Configured_Status";
 
-  private static final List<ColumnMetadata> COLUMN_METADATA =
+  @VisibleForTesting
+  static final List<ColumnMetadata> COLUMN_METADATA =
       ImmutableList.of(
           new ColumnMetadata(
               COL_NODE, Schema.NODE, "The node where this session is configured", true, false),
@@ -284,7 +285,7 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
         .build();
   }
 
-  private static TableMetadata createMetadata(Question question) {
+  public static TableMetadata createMetadata(Question question) {
     String textDesc =
         String.format(
             "On ${%s} session ${%s}:${%s} has configured status ${%s}.",
