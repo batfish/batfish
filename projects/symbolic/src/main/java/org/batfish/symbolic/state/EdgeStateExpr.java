@@ -8,8 +8,8 @@ import javax.annotation.Nonnull;
  * and destination pair of {@link String} {@code hostname} and a {@link String} {@code interface}
  * name.
  *
- * <p>This class provides default implementations for {@link #equals(Object)} and {@link
- * #hashCode()}, where {@link #hashCode()} is different for different types.
+ * <p>This class provides the implementations for {@link #equals(Object)} and {@link #hashCode()},
+ * where {@link #hashCode()} is different for different types.
  */
 public abstract class EdgeStateExpr implements StateExpr {
   @Nonnull private final String _srcHostname;

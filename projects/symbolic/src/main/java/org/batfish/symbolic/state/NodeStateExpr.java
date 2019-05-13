@@ -6,8 +6,8 @@ import javax.annotation.Nonnull;
  * A base class for a {@link StateExpr} for which the only property is a {@link String} {@code
  * hostname}.
  *
- * <p>This class provides default implementations for {@link #equals(Object)} and {@link
- * #hashCode()}, where {@link #hashCode()} is different for different types.
+ * <p>This class provides the implementations for {@link #equals(Object)} and {@link #hashCode()},
+ * where {@link #hashCode()} is different for different types.
  */
 public abstract class NodeStateExpr implements StateExpr {
   @Nonnull private final String _hostname;
