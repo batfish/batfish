@@ -27,7 +27,7 @@ import org.batfish.specifier.AllNodesNodeSpecifier;
  * Shared utility methods for {@link BgpSessionCompatibilityAnswerer} and {@link
  * BgpSessionStatusAnswerer}.
  */
-public class BgpSessionAnswererUtils {
+public final class BgpSessionAnswererUtils {
 
   /* Common column names for both BGP session questions*/
   public static final String COL_LOCAL_INTERFACE = "Local_Interface";
