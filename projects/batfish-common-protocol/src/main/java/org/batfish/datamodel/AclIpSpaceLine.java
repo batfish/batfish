@@ -6,7 +6,6 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import java.io.Serializable;
 import java.util.Comparator;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -65,9 +64,9 @@ public class AclIpSpaceLine implements Comparable<AclIpSpaceLine>, Serializable 
     return builder().setIpSpace(ipSpace).setAction(LineAction.DENY).build();
   }
 
-  private final LineAction _action;
+  @Nonnull private final LineAction _action;
 
-  private final IpSpace _ipSpace;
+  @Nonnull private final IpSpace _ipSpace;
 
   private final String _srcText;
 
@@ -92,19 +91,20 @@ public class AclIpSpaceLine implements Comparable<AclIpSpaceLine>, Serializable 
   public boolean equals(Object o) {
     if (this == o) {
       return true;
-    }
-    if (o == null || !(o instanceof AclIpSpaceLine)) {
+    } else if (!(o instanceof AclIpSpaceLine)) {
       return false;
     }
     AclIpSpaceLine rhs = (AclIpSpaceLine) o;
-    return Objects.equals(_action, rhs._action) && Objects.equals(_ipSpace, rhs._ipSpace);
+    return _action == rhs._action && _ipSpace.equals(rhs._ipSpace);
   }
 
+  @Nonnull
   @JsonProperty(PROP_ACTION)
   public LineAction getAction() {
     return _action;
   }
 
+  @Nonnull
   @JsonProperty(PROP_IP_SPACE)
   public IpSpace getIpSpace() {
     return _ipSpace;
@@ -117,7 +117,7 @@ public class AclIpSpaceLine implements Comparable<AclIpSpaceLine>, Serializable 
 
   @Override
   public int hashCode() {
-    return Objects.hash(_action.ordinal(), _ipSpace);
+    return 31 * _action.ordinal() + _ipSpace.hashCode();
   }
 
   public Builder toBuilder() {

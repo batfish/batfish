@@ -9,7 +9,6 @@ import com.google.common.collect.Ordering;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -69,9 +68,9 @@ public final class IpWildcardSetIpSpace extends IpSpace {
     return new Builder();
   }
 
-  private final SortedSet<IpWildcard> _blacklist;
+  @Nonnull private final SortedSet<IpWildcard> _blacklist;
 
-  private final SortedSet<IpWildcard> _whitelist;
+  @Nonnull private final SortedSet<IpWildcard> _whitelist;
 
   public IpWildcardSetIpSpace(
       @Nonnull Set<IpWildcard> blacklist, @Nonnull Set<IpWildcard> whitelist) {
@@ -111,14 +110,16 @@ public final class IpWildcardSetIpSpace extends IpSpace {
   @Override
   protected boolean exprEquals(Object o) {
     IpWildcardSetIpSpace rhs = (IpWildcardSetIpSpace) o;
-    return Objects.equals(_blacklist, rhs._blacklist) && Objects.equals(_whitelist, rhs._whitelist);
+    return _blacklist.equals(rhs._blacklist) && _whitelist.equals(rhs._whitelist);
   }
 
+  @Nonnull
   @JsonProperty(PROP_BLACKLIST)
   public SortedSet<IpWildcard> getBlacklist() {
     return _blacklist;
   }
 
+  @Nonnull
   @JsonProperty(PROP_WHITELIST)
   public SortedSet<IpWildcard> getWhitelist() {
     return _whitelist;
