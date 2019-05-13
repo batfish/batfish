@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -123,7 +124,13 @@ public class TableMetadata {
   /** Returns a map from column name to {@link ColumnMetadata} */
   @Nonnull
   public Map<String, ColumnMetadata> toColumnMap() {
-    return _columnMetadata.stream()
-        .collect(ImmutableMap.toImmutableMap(ColumnMetadata::getName, cm -> cm));
+    return toColumnMap(_columnMetadata);
+  }
+
+  /** Returns a map from column name to {@link ColumnMetadata} */
+  @Nonnull
+  public static Map<String, ColumnMetadata> toColumnMap(List<ColumnMetadata> columnMetadata) {
+    return columnMetadata.stream()
+        .collect(ImmutableMap.toImmutableMap(ColumnMetadata::getName, Function.identity()));
   }
 }

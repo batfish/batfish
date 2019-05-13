@@ -1,7 +1,7 @@
 package org.batfish.question.bgpsessionstatus;
 
-import static org.batfish.question.bgpsessionstatus.BgpSessionAnswerer.getConfiguredStatus;
-import static org.batfish.question.bgpsessionstatus.BgpSessionAnswerer.getLocallyBrokenStatus;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.getConfiguredStatus;
+import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.getLocallyBrokenStatus;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -21,8 +21,8 @@ import org.batfish.datamodel.questions.ConfiguredSessionStatus;
 import org.junit.Before;
 import org.junit.Test;
 
-/** Tests of static methods of {@link BgpSessionAnswerer} */
-public final class BgpSessionAnswererTest {
+/** Tests of static methods of {@link BgpSessionAnswererUtils} */
+public final class BgpSessionAnswererUtilsTest {
 
   private NetworkFactory _nf;
 
