@@ -9,7 +9,8 @@
     "instanceName" : "qname",
     "longDescription" : "Shows how prefixes are treated by devices in the network during routing.",
     "tags" : [
-      "dataplane"
+      "dataplane",
+      "routing"
     ],
     "variables" : {
       "nodes" : {

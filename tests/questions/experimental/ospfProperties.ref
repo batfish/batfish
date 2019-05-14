@@ -9,6 +9,7 @@
     "instanceName" : "qname",
     "longDescription" : "Returns all properties of all OSPF processes present in the network. ospfProcessConfiguration question should be used instead as this question is deprecated and will be removed in the future.",
     "tags" : [
+      "configuration",
       "ospf"
     ],
     "variables" : {

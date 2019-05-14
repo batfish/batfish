@@ -20,7 +20,7 @@
         "longDescription": "For example, if comparator is '<' and mtuBytes is 1500, then only interfaces where the configured MTU is less than 1500 bytes will be returned.",
         "instanceName": "interfaceMtu",
         "tags": [
-            "configuration"
+            "hygiene"
         ],
         "variables": {
             "comparator": {

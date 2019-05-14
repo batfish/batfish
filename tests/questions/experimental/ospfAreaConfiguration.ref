@@ -11,6 +11,7 @@
       "nodes"
     ],
     "tags" : [
+      "configuration",
       "ospf"
     ],
     "variables" : {

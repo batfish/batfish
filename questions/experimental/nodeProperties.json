@@ -7,7 +7,7 @@
         "description": "Returns configuration settings of nodes.",
         "instanceName": "nodeProperties",
         "longDescription": "Lists global settings of devices in the network. Settings that are specific to interfaces, routing protocols, etc. are available via other questions.",
-        "tags": [],
+        "tags": ["configuration"],
         "variables": {
             "nodes": {
                 "description": "Include nodes matching this name or regex",

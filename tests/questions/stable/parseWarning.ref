@@ -8,9 +8,7 @@
     "instanceName" : "qname",
     "longDescription" : "Return warnings such as failure to recognize certain lines and lack of support for certain features.",
     "tags" : [
-      "file",
-      "initialization",
-      "parse"
+      "initialization"
     ],
     "variables" : {
       "aggregateDuplicates" : {

@@ -16,8 +16,7 @@
             "ignoreFilters"
         ],
         "tags": [
-            "dataPlane",
-            "reachability",
+            "dataplane",
             "traceroute"
         ],
         "variables": {

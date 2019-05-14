@@ -6,8 +6,8 @@
         "instanceName": "lpmRoutes",
         "longDescription": "Return longest prefix match routes for a given IP in the RIBs of specified nodes and VRFs.",
         "tags": [
-            "dataPlane",
-            "route"
+            "dataplane",
+            "routing"
         ],
         "variables": {
             "ip": {

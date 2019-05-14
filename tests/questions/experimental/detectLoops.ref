@@ -8,8 +8,7 @@
     "instanceName" : "qname",
     "longDescription" : "Searches across all possible flows in the network and returns example flows that will experience forwarding loops.",
     "tags" : [
-      "dataPlane",
-      "loop",
+      "dataplane",
       "reachability"
     ],
     "variables" : {

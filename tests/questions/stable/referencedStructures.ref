@@ -9,6 +9,9 @@
     "description" : "Lists the references in configuration files to vendor-specific structures.",
     "instanceName" : "qname",
     "longDescription" : "Lists the references in configuration files to vendor-specific structures, along with the line number, the name and the type of the structure referenced, and configuration context in which each reference occurs.",
+    "tags" : [
+      "configuration"
+    ],
     "variables" : {
       "names" : {
         "description" : "Include structures whose name matches this string or regex",
