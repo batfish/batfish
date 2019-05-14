@@ -21,9 +21,9 @@ public final class Route4FilterLineThrough extends Route4FilterLine {
   public void applyTo(RouteFilterList rfl) {
     int low = _prefix.getPrefixLength();
     int high = _throughPrefix.getPrefixLength();
+    Ip startIp = _throughPrefix.getStartIp();
     for (int i = low; i <= high; i++) {
-      Ip currentNetworkAddress = _throughPrefix.getStartIp().getNetworkAddress(i);
-      Prefix currentPrefix = Prefix.create(currentNetworkAddress, i);
+      Prefix currentPrefix = Prefix.create(startIp, i);
       org.batfish.datamodel.RouteFilterLine line =
           new org.batfish.datamodel.RouteFilterLine(
               LineAction.PERMIT, currentPrefix, new SubRange(i, i));
