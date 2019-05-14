@@ -7,9 +7,7 @@
     "instanceName" : "qname",
     "longDescription" : "For each file in a snapshot, returns the host(s) that were produced by the file and the parse status: pass, fail, partially parsed.",
     "tags" : [
-      "file",
-      "initialization",
-      "parse"
+      "initialization"
     ]
   }
 }

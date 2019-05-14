@@ -7,9 +7,7 @@
         "instanceName": "parseWarning",
         "longDescription": "Return warnings such as failure to recognize certain lines and lack of support for certain features.",
         "tags": [
-            "initialization",
-            "parse",
-            "file"
+            "initialization"
         ],
         "variables": {
             "aggregateDuplicates": {

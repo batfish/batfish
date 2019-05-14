@@ -11,8 +11,7 @@
       "nodes"
     ],
     "tags" : [
-      "bigip",
-      "f5",
+      "configuration",
       "vip"
     ],
     "variables" : {

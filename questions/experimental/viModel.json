@@ -6,7 +6,7 @@
         "instanceName": "viModel",
         "longDescription": "Returns a JSON dictionary with all of the configuration parameters and neighbor relations stored in the vendor independent data-model.",
         "tags": [
-            "dataModel"
+            "configuration"
         ],
         "variables": {}
     }

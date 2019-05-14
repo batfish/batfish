@@ -14,8 +14,9 @@
             "ignoreComposites"
         ],
         "tags": [
-            "dataPlane",
-            "acl"
+            "dataplane",
+            "acl",
+            "differential"
         ],
         "variables": {
             "filters": {

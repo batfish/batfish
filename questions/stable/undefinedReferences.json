@@ -7,7 +7,7 @@
         "instanceName": "undefinedReferences",
         "longDescription": "Finds configurations that have references to named structures (e.g., ACLs) that are not defined. Such occurrences indicate errors and can have serious consequences in some cases.",
         "tags": [
-            "default"
+            "hygiene"
         ],
         "variables": {
             "nodes": {

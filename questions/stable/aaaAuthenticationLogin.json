@@ -6,10 +6,7 @@
         "instanceName": "aaaAuthenticationLogin",
         "longDescription": "Lists all nodes in the network for which there is a virtual terminal line that does not require authentication.",
         "tags": [
-            "aaa",
-            "authentication",
-            "ciscoFamily",
-            "dataModel"
+            "configuration"
         ],
         "variables": {
             "nodes": {

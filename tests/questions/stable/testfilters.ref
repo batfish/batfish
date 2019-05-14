@@ -13,10 +13,7 @@
     "instanceName" : "qname",
     "longDescription" : "Shows how the specified flow is processed through the specified filters, returning its permit/deny status as well as the line(s) it matched.",
     "tags" : [
-      "dataPlane",
-      "filter",
-      "flow",
-      "trace"
+      "acl"
     ],
     "variables" : {
       "filters" : {

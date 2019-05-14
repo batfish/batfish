@@ -10,8 +10,7 @@
     "instanceName" : "qname",
     "longDescription" : "Finds all lines in the specified filters that will not match any packet, either because of being shadowed by prior lines or because of its match condition being empty.",
     "tags" : [
-      "acl",
-      "default"
+      "acl"
     ],
     "variables" : {
       "filters" : {

@@ -9,7 +9,7 @@
         "instanceName": "bidirectionalReachability",
         "longDescription": "Performs two reachability analyses, first originating from specified sources, then returning back to those sources. After the first (forward) pass, sets up sessions in the network and creates returning flows for each successfully delivered forward flow. The second pass searches for return flows that can be successfully delivered in the presence of the setup sessions.",
         "tags": [
-            "dataPlane",
+            "dataplane",
             "reachability"
         ],
         "orderedVariableNames": ["headers", "pathConstraints", "returnFlowType"],

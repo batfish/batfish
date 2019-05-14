@@ -12,7 +12,7 @@
         "instanceName": "differentialReachability",
         "longDescription": "Searches across all possible flows in the network, with the specified header and path constraints, and returns example flows that are successful in one snapshot and not the other. This is a differential question and the reference snapshot to compare against must be provided in the call to answer().",
         "tags": [
-            "dataPlane",
+            "dataplane",
             "reachability",
             "differential"
         ],

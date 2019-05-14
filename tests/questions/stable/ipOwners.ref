@@ -8,8 +8,7 @@
     "instanceName" : "qname",
     "longDescription" : "For each device, lists the mapping from IPs to corresponding interface(s) and VRF(s).",
     "tags" : [
-      "configuration",
-      "ip"
+      "configuration"
     ],
     "variables" : {
       "duplicatesOnly" : {

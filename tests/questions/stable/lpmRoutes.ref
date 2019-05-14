@@ -16,8 +16,8 @@
       "vrfs"
     ],
     "tags" : [
-      "dataPlane",
-      "route"
+      "dataplane",
+      "routing"
     ],
     "variables" : {
       "ip" : {
