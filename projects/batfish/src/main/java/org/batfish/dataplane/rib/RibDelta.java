@@ -180,12 +180,7 @@ public final class RibDelta<R> {
           _actions.entrySet().stream()
               .collect(
                   ImmutableMap.toImmutableMap(
-                      Entry::getKey,
-                      e ->
-                          // Iteration order is predictable here
-                          e.getValue().values().stream()
-                              .distinct() // Collapse any duplicate actions
-                              .collect(ImmutableList.toImmutableList()))));
+                      Entry::getKey, e -> ImmutableList.copyOf(e.getValue().values()))));
     }
 
     /** Process all added and removed routes from a given delta */
