@@ -46,7 +46,7 @@ public class BgpProtocolHelper {
       BgpPeerConfig fromNeighbor,
       BgpPeerConfig toNeighbor,
       BgpSessionProperties sessionProperties,
-      BgpProcess fromBgpPprocess,
+      BgpProcess fromBgpProcess,
       BgpProcess toBgpProcess,
       AbstractRoute route,
       B builder) {
@@ -69,7 +69,7 @@ public class BgpProtocolHelper {
       Bgpv4Route bgpRemoteRoute = (Bgpv4Route) route;
       originatorIp = bgpRemoteRoute.getOriginatorIp();
     } else {
-      originatorIp = fromBgpPprocess.getRouterId();
+      originatorIp = fromBgpProcess.getRouterId();
     }
     builder.setOriginatorIp(originatorIp);
 
@@ -148,7 +148,7 @@ public class BgpProtocolHelper {
           // we are reflecting, so we need to get the clusterid associated with the
           // remoteRoute
           BgpPeerConfig remoteReceivedFromSession =
-              fromBgpPprocess
+              fromBgpProcess
                   .getActiveNeighbors()
                   .get(Prefix.create(remoteReceivedFromIp, Prefix.MAX_PREFIX_LENGTH));
           long newClusterId = remoteReceivedFromSession.getClusterId();
