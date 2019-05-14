@@ -5,7 +5,7 @@
     "queryType": "filter",
     "specifierFactoryVersion": "${grammarVersion}", 
     "instance": {
-        "description": "Returns resolved values for filter specifier.",
+        "description": "Returns the set of filters corresponding to a filterSpec value.",
         "instanceName": "resolveFilterSpecifier",
         "longDescription": "Helper question that shows how specified filterSpec values resolve to the filters in the network.",
         "tags": [

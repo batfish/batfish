@@ -4,7 +4,7 @@
     "queryType": "node",
     "specifierFactoryVersion": "${grammarVersion}", 
     "instance": {
-        "description": "Returns resolved values for node specifier.",
+        "description": "Returns the set of nodes corresponding to a nodeSpec value.",
         "instanceName": "resolveNodeSpecifier",
         "longDescription": "Helper question that shows how specified nodeSpec values resolve to the nodes in the network.",
         "tags": [

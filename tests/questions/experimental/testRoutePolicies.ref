@@ -19,7 +19,7 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Evaluate the processing of a route by a given policy.",
+    "description" : "Evaluates the processing of a route by a given policy.",
     "instanceName" : "qname",
     "longDescription" : "Find how the specified route is processed through the specified routing policies.",
     "orderedVariableNames" : [
