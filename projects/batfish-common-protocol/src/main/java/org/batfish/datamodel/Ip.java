@@ -4,11 +4,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import java.io.Serializable;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -18,8 +18,8 @@ public class Ip implements Comparable<Ip>, Serializable {
   // Soft values: let it be garbage collected in times of pressure.
   // Maximum size 2^20: Just some upper bound on cache size, well less than GiB.
   //   (8 bytes seems smallest possible entry (long), would be 8 MiB total).
-  private static final Cache<Long, Ip> CACHE =
-      CacheBuilder.newBuilder().softValues().maximumSize(1 << 20).build();
+  private static final LoadingCache<Ip, Ip> CACHE =
+      CacheBuilder.newBuilder().softValues().maximumSize(1 << 20).build(CacheLoader.from(x -> x));
 
   public static final Ip AUTO = create(-1L);
 
@@ -133,12 +133,8 @@ public class Ip implements Comparable<Ip>, Serializable {
 
   public static Ip create(long ipAsLong) {
     checkArgument(ipAsLong <= 0xFFFFFFFFL, "Invalid IP value: %d", ipAsLong);
-    try {
-      return CACHE.get(ipAsLong, () -> new Ip(ipAsLong));
-    } catch (ExecutionException e) {
-      // This shouldn't happen, but handle anyway.
-      return new Ip(ipAsLong);
-    }
+    Ip ip = new Ip(ipAsLong);
+    return CACHE.getUnchecked(ip);
   }
 
   public long asLong() {
@@ -192,20 +188,11 @@ public class Ip implements Comparable<Ip>, Serializable {
   }
 
   public Ip getNetworkAddress(int subnetBits) {
-    long mask = numSubnetBitsToSubnetLong(subnetBits);
-    return create(_ip & mask);
-  }
-
-  public Ip getNetworkAddress(Ip mask) {
-    return create(_ip & mask.asLong());
-  }
-
-  public Ip getSubnetEnd(Ip mask) {
-    return create(_ip | mask.inverted().asLong());
-  }
-
-  public Ip getWildcardEndIp(Ip wildcard) {
-    return create(_ip | wildcard.asLong());
+    long masked = _ip & numSubnetBitsToSubnetLong(subnetBits);
+    if (masked == _ip) {
+      return this;
+    }
+    return create(masked);
   }
 
   @Override
@@ -216,14 +203,6 @@ public class Ip implements Comparable<Ip>, Serializable {
   public Ip inverted() {
     long invertedLong = (~_ip) & 0xFFFFFFFFL;
     return create(invertedLong);
-  }
-
-  public String networkString(int prefixLength) {
-    return toString() + "/" + prefixLength;
-  }
-
-  public String networkString(Ip mask) {
-    return toString() + "/" + mask.numSubnetBits();
   }
 
   public int numSubnetBits() {
