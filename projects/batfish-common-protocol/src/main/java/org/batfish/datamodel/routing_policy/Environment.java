@@ -1,6 +1,7 @@
 package org.batfish.datamodel.routing_policy;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
@@ -347,7 +348,7 @@ public class Environment {
     private Builder() {}
 
     public Builder setAsPathAccessLists(Map<String, AsPathAccessList> asPathAccessLists) {
-      _asPathAccessLists = ImmutableMap.copyOf(asPathAccessLists);
+      _asPathAccessLists = toImmutableMap(asPathAccessLists);
       return this;
     }
 
@@ -372,7 +373,7 @@ public class Environment {
     }
 
     public Builder setCommunityLists(Map<String, CommunityList> communityLists) {
-      _communityLists = ImmutableMap.copyOf(communityLists);
+      _communityLists = toImmutableMap(communityLists);
       return this;
     }
 
@@ -402,12 +403,12 @@ public class Environment {
     }
 
     public Builder setIp6AccessLists(Map<String, Ip6AccessList> ip6AccessLists) {
-      _ip6AccessLists = ImmutableMap.copyOf(ip6AccessLists);
+      _ip6AccessLists = toImmutableMap(ip6AccessLists);
       return this;
     }
 
     public Builder setIpAccessLists(Map<String, IpAccessList> ipAccessLists) {
-      _ipAccessLists = ImmutableMap.copyOf(ipAccessLists);
+      _ipAccessLists = toImmutableMap(ipAccessLists);
       return this;
     }
 
@@ -417,7 +418,7 @@ public class Environment {
     }
 
     public Builder setRoutingPolicies(Map<String, RoutingPolicy> routingPolicies) {
-      _routingPolicies = ImmutableMap.copyOf(routingPolicies);
+      _routingPolicies = toImmutableMap(routingPolicies);
       return this;
     }
 
@@ -486,12 +487,12 @@ public class Environment {
     }
 
     public Builder setRoute6FilterLists(Map<String, Route6FilterList> route6FilterLists) {
-      _route6FilterLists = ImmutableMap.copyOf(route6FilterLists);
+      _route6FilterLists = toImmutableMap(route6FilterLists);
       return this;
     }
 
     public Builder setRouteFilterLists(Map<String, RouteFilterList> routeFilterLists) {
-      _routeFilterLists = ImmutableMap.copyOf(routeFilterLists);
+      _routeFilterLists = toImmutableMap(routeFilterLists);
       return this;
     }
 
