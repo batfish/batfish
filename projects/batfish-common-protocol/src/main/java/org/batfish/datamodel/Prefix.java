@@ -4,11 +4,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import java.io.Serializable;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -20,8 +20,8 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
   // Soft values: let it be garbage collected in times of pressure.
   // Maximum size 2^20: Just some upper bound on cache size, well less than GiB.
   //   (12 bytes seems smallest possible entry (long + int), would be 12 MiB total).
-  private static final Cache<Prefix, Prefix> CACHE =
-      CacheBuilder.newBuilder().softValues().maximumSize(1 << 20).build();
+  private static final LoadingCache<Prefix, Prefix> CACHE =
+      CacheBuilder.newBuilder().softValues().maximumSize(1 << 20).build(CacheLoader.from(x -> x));
 
   /** Maximum prefix length (number of bits) for a IPv4 address, which is 32 */
   public static final int MAX_PREFIX_LENGTH = 32;
@@ -32,15 +32,11 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
   public static final Prefix ZERO = create(Ip.ZERO, 0);
 
   private static long getNetworkEnd(long networkStart, int prefixLength) {
-    return networkStart | ((1L << (32 - prefixLength)) - 1);
+    return networkStart | numWildcardBitsToWildcardLong(MAX_PREFIX_LENGTH - prefixLength);
   }
 
   private static long numWildcardBitsToWildcardLong(int numBits) {
-    long wildcard = 0;
-    for (int i = 0; i < numBits; i++) {
-      wildcard |= (1L << i);
-    }
-    return wildcard;
+    return (1L << numBits) - 1;
   }
 
   /** Parse a {@link Prefix} from a string. */
@@ -104,12 +100,7 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
 
   public static Prefix create(Ip ip, int prefixLength) {
     Prefix p = new Prefix(ip, prefixLength);
-    try {
-      return CACHE.get(p, () -> p);
-    } catch (ExecutionException e) {
-      // This shouldn't happen, but handle anyway.
-      return p;
-    }
+    return CACHE.getUnchecked(p);
   }
 
   public static Prefix create(Ip address, Ip mask) {
@@ -133,6 +124,9 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
 
   @Override
   public int compareTo(Prefix rhs) {
+    if (this == rhs) {
+      return 0;
+    }
     int ret = _ip.compareTo(rhs._ip);
     if (ret != 0) {
       return ret;
@@ -173,8 +167,7 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
 
   @Nonnull
   public Ip getPrefixWildcard() {
-    int numWildcardBits = MAX_PREFIX_LENGTH - _prefixLength;
-    long wildcardLong = numWildcardBitsToWildcardLong(numWildcardBits);
+    long wildcardLong = numWildcardBitsToWildcardLong(MAX_PREFIX_LENGTH - _prefixLength);
     return Ip.create(wildcardLong);
   }
 
