@@ -82,7 +82,7 @@ public final class FlexibleIpSpaceSpecifierFactory implements IpSpaceSpecifierFa
     String[] wildcardStrs = wildcardsStr.split(",");
     return Arrays.stream(wildcardStrs)
         .map(String::trim)
-        .map(IpWildcard::new)
+        .map(IpWildcard::parse)
         .collect(ImmutableList.toImmutableList());
   }
 

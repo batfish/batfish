@@ -157,7 +157,7 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
     configuration.getAllInterfaces().values().stream()
         .flatMap(iface -> iface.getAllAddresses().stream())
         .map(InterfaceAddress::getIp)
-        .map(IpWildcard::new)
+        .map(IpWildcard::create)
         .forEach(ipWildcard -> getUsersIpSpace().add(ipWildcard));
   }
 

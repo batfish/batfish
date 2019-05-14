@@ -56,9 +56,9 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
         HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();
         if (!prefix.equals(Prefix.ZERO)) {
           if (isEgress) {
-            headerSpaceBuilder.setDstIps(ImmutableSortedSet.of(new IpWildcard(prefix)));
+            headerSpaceBuilder.setDstIps(ImmutableSortedSet.of(IpWildcard.create(prefix)));
           } else {
-            headerSpaceBuilder.setSrcIps(ImmutableSortedSet.of(new IpWildcard(prefix)));
+            headerSpaceBuilder.setSrcIps(ImmutableSortedSet.of(IpWildcard.create(prefix)));
           }
         }
         IpProtocol protocol = IpPermissions.toIpProtocol(entry.getProtocol());

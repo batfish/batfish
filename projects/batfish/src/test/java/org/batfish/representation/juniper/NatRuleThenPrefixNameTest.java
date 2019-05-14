@@ -40,7 +40,7 @@ public class NatRuleThenPrefixNameTest {
     String prefixName = "entry";
     Prefix prefix = Prefix.parse("1.1.1.1/24");
     Map<String, AddressBookEntry> entryMap =
-        ImmutableMap.of("entry", new AddressAddressBookEntry("entry", new IpWildcard(prefix)));
+        ImmutableMap.of("entry", new AddressAddressBookEntry("entry", IpWildcard.create(prefix)));
 
     NatRuleThenPrefixName then = new NatRuleThenPrefixName(prefixName, DESTINATION);
     List<TransformationStep> steps =

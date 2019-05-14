@@ -102,7 +102,7 @@ public class DestinationClasses {
     catchAll.setNotDstIps(
         Stream.concat(
                 notDstIps.stream(), destinationMap.values().stream().flatMap(Collection::stream))
-            .map(IpWildcard::new)
+            .map(IpWildcard::create)
             .collect(Collectors.toSet()));
 
     if (_headerspace != null) {
@@ -245,7 +245,7 @@ public class DestinationClasses {
    */
   private HeaderSpace createHeaderSpace(List<Prefix> prefixes) {
     HeaderSpace h = new HeaderSpace();
-    h.setDstIps(prefixes.stream().map(IpWildcard::new).collect(Collectors.toSet()));
+    h.setDstIps(prefixes.stream().map(IpWildcard::create).collect(Collectors.toSet()));
     return h;
   }
 

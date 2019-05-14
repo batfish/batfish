@@ -107,8 +107,11 @@ public class ForwardingAnalysisImplTest {
     i1.setAdditionalArpIps(additionalIp.toIpSpace());
     i2.setAdditionalArpIps(additionalIp.toIpSpace());
     IpSpace ipsRoutedOutI1 =
-        IpWildcardSetIpSpace.builder().including(new IpWildcard(P1), new IpWildcard(P3)).build();
-    IpSpace ipsRoutedOutI2 = IpWildcardSetIpSpace.builder().including(new IpWildcard(P2)).build();
+        IpWildcardSetIpSpace.builder()
+            .including(IpWildcard.create(P1), IpWildcard.create(P3))
+            .build();
+    IpSpace ipsRoutedOutI2 =
+        IpWildcardSetIpSpace.builder().including(IpWildcard.create(P2)).build();
     Map<String, Configuration> configurations =
         ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
     Map<String, Map<String, IpSpace>> routableIps =
@@ -199,8 +202,11 @@ public class ForwardingAnalysisImplTest {
             .build();
     Interface i3 = _ib.setAddress(null).setProxyArp(true).build();
     IpSpace ipsRoutedOutI1 =
-        IpWildcardSetIpSpace.builder().including(new IpWildcard(P1), new IpWildcard(P3)).build();
-    IpSpace ipsRoutedOutI2 = IpWildcardSetIpSpace.builder().including(new IpWildcard(P2)).build();
+        IpWildcardSetIpSpace.builder()
+            .including(IpWildcard.create(P1), IpWildcard.create(P3))
+            .build();
+    IpSpace ipsRoutedOutI2 =
+        IpWildcardSetIpSpace.builder().including(IpWildcard.create(P2)).build();
     IpSpace ipsRoutedOutI3 = EmptyIpSpace.INSTANCE;
     Map<String, Interface> interfaces =
         ImmutableMap.of(i1.getName(), i1, i2.getName(), i2, i3.getName(), i3);
@@ -277,7 +283,7 @@ public class ForwardingAnalysisImplTest {
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
         TopologyUtil.computeInterfaceOwnedIps(configs, false);
 
-    IpSpace p1IpSpace = new IpWildcard(P1).toIpSpace();
+    IpSpace p1IpSpace = IpWildcard.create(P1).toIpSpace();
     IpSpace i1ArpReplies =
         computeInterfaceArpReplies(i1, UniverseIpSpace.INSTANCE, p1IpSpace, interfaceOwnedIps);
     IpSpace i2ArpReplies =
@@ -478,7 +484,9 @@ public class ForwardingAnalysisImplTest {
     Interface iProxyArp = _ib.setProxyArp(true).build();
     IpSpace routableIpsForThisVrf = UniverseIpSpace.INSTANCE;
     IpSpace ipsRoutedThroughInterface =
-        IpWildcardSetIpSpace.builder().including(new IpWildcard(P1), new IpWildcard(P2)).build();
+        IpWildcardSetIpSpace.builder()
+            .including(IpWildcard.create(P1), IpWildcard.create(P2))
+            .build();
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
         TopologyUtil.computeInterfaceOwnedIps(ImmutableMap.of(config.getHostname(), config), false);
     IpSpace noProxyArpResult =
@@ -851,7 +859,7 @@ public class ForwardingAnalysisImplTest {
                 c1,
                 ImmutableMap.of(
                     v1,
-                    IpWildcardSetIpSpace.builder().including(new IpWildcard(prefix)).build()))));
+                    IpWildcardSetIpSpace.builder().including(IpWildcard.create(prefix)).build()))));
   }
 
   @Test

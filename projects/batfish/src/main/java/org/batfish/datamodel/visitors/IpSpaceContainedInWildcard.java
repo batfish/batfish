@@ -64,7 +64,7 @@ public class IpSpaceContainedInWildcard implements GenericIpSpaceVisitor<Boolean
 
   @Override
   public Boolean visitPrefixIpSpace(PrefixIpSpace prefixIpSpace) {
-    return _ipWildcard.supersetOf(new IpWildcard(prefixIpSpace.getPrefix()));
+    return _ipWildcard.supersetOf(IpWildcard.create(prefixIpSpace.getPrefix()));
   }
 
   @Override

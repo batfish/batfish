@@ -17,23 +17,21 @@ public class RouteFilterLineTest {
   @Test
   public void testEquals() {
     RouteFilterLine rfl =
-        new RouteFilterLine(
-            LineAction.PERMIT, new IpWildcard(Ip.parse("1.1.1.1")), new SubRange(30, 32));
+        new RouteFilterLine(LineAction.PERMIT, IpWildcard.parse("1.1.1.1"), new SubRange(30, 32));
     new EqualsTester()
         .addEqualityGroup(
             rfl,
             rfl,
             new RouteFilterLine(
-                LineAction.PERMIT, new IpWildcard(Ip.parse("1.1.1.1")), new SubRange(30, 32)))
+                LineAction.PERMIT, IpWildcard.parse("1.1.1.1"), new SubRange(30, 32)))
+        .addEqualityGroup(
+            new RouteFilterLine(LineAction.DENY, IpWildcard.parse("1.1.1.1"), new SubRange(30, 32)))
         .addEqualityGroup(
             new RouteFilterLine(
-                LineAction.DENY, new IpWildcard(Ip.parse("1.1.1.1")), new SubRange(30, 32)))
+                LineAction.PERMIT, IpWildcard.parse("2.2.2.2"), new SubRange(30, 32)))
         .addEqualityGroup(
             new RouteFilterLine(
-                LineAction.PERMIT, new IpWildcard(Ip.parse("2.2.2.2")), new SubRange(30, 32)))
-        .addEqualityGroup(
-            new RouteFilterLine(
-                LineAction.PERMIT, new IpWildcard(Ip.parse("2.2.2.2")), new SubRange(29, 32)))
+                LineAction.PERMIT, IpWildcard.parse("2.2.2.2"), new SubRange(29, 32)))
         .addEqualityGroup(new Object())
         .testEquals();
   }
@@ -41,16 +39,14 @@ public class RouteFilterLineTest {
   @Test
   public void testJavaSerialization() {
     RouteFilterLine rfl =
-        new RouteFilterLine(
-            LineAction.PERMIT, new IpWildcard(Ip.parse("1.1.1.1")), new SubRange(30, 32));
+        new RouteFilterLine(LineAction.PERMIT, IpWildcard.parse("1.1.1.1"), new SubRange(30, 32));
     assertThat(SerializationUtils.clone(rfl), equalTo(rfl));
   }
 
   @Test
   public void testJsonSerialization() throws IOException {
     RouteFilterLine rfl =
-        new RouteFilterLine(
-            LineAction.PERMIT, new IpWildcard(Ip.parse("1.1.1.1")), new SubRange(30, 32));
+        new RouteFilterLine(LineAction.PERMIT, IpWildcard.parse("1.1.1.1"), new SubRange(30, 32));
     assertThat(BatfishObjectMapper.clone(rfl, RouteFilterLine.class), equalTo(rfl));
   }
 

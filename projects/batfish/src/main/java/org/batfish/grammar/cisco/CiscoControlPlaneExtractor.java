@@ -2101,7 +2101,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitCisprf_match(Cisprf_matchContext ctx) {
     _currentIsakmpProfile.setMatchIdentity(
-        new IpWildcard(toIp(ctx.address), toIp(ctx.mask).inverted()));
+        IpWildcard.ipWithWildcardMask(toIp(ctx.address), toIp(ctx.mask).inverted()));
   }
 
   @Override
@@ -2133,7 +2133,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentKeyring.setKey(
         CommonUtil.sha256Digest(ctx.variable_permissive().getText() + CommonUtil.salt()));
     _currentKeyring.setRemoteIdentity(
-        new IpWildcard(toIp(ctx.ip_address), wildCardMask.inverted()));
+        IpWildcard.ipWithWildcardMask(toIp(ctx.ip_address), wildCardMask.inverted()));
   }
 
   @Override
@@ -3039,28 +3039,31 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitOgn_host_ip(Ogn_host_ipContext ctx) {
-    _currentNetworkObjectGroup.getLines().add(new IpWildcard(toIp(ctx.ip)).toIpSpace());
+    _currentNetworkObjectGroup.getLines().add(IpWildcard.create(toIp(ctx.ip)).toIpSpace());
   }
 
   @Override
   public void exitOgn_ip_with_mask(Ogn_ip_with_maskContext ctx) {
     Ip ip = toIp(ctx.ip);
     Ip mask = toIp(ctx.mask);
-    _currentNetworkObjectGroup.getLines().add(new IpWildcard(Prefix.create(ip, mask)).toIpSpace());
+    _currentNetworkObjectGroup
+        .getLines()
+        .add(IpWildcard.create(Prefix.create(ip, mask)).toIpSpace());
   }
 
   @Override
   public void exitOgn_network_object(Ogn_network_objectContext ctx) {
     IpSpace ipSpace = null;
     if (ctx.prefix != null) {
-      ipSpace = new IpWildcard(ctx.prefix.getText()).toIpSpace();
+      ipSpace = IpWildcard.parse(ctx.prefix.getText()).toIpSpace();
     } else if (ctx.wildcard_address != null && ctx.wildcard_mask != null) {
       // Mask needs to be inverted since zeros are don't-cares in this context
       ipSpace =
-          new IpWildcard(toIp(ctx.wildcard_address), toIp(ctx.wildcard_mask).inverted())
+          IpWildcard.ipWithWildcardMask(
+                  toIp(ctx.wildcard_address), toIp(ctx.wildcard_mask).inverted())
               .toIpSpace();
     } else if (ctx.address != null) {
-      ipSpace = new IpWildcard(ctx.address.getText()).toIpSpace();
+      ipSpace = IpWildcard.parse(ctx.address.getText()).toIpSpace();
     } else if (ctx.name != null) {
       String name = ctx.name.getText();
       ipSpace = new IpSpaceReference(name);
@@ -3262,7 +3265,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.host_ip != null) {
       // mappedSource will have the same prefix length as the real source, which may not be
       // defined yet.
-      mappedSource = new WildcardAddressSpecifier(new IpWildcard(Ip.parse(ctx.host_ip.getText())));
+      mappedSource =
+          new WildcardAddressSpecifier(IpWildcard.create(Ip.parse(ctx.host_ip.getText())));
     } else {
       mappedSource =
           referenceNetworkObjectOrGroup(
@@ -5693,15 +5697,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         if (_format == CISCO_ASA) {
           wildcard = wildcard.inverted();
         }
-        return new WildcardAddressSpecifier(new IpWildcard(toIp(ctx.ip), wildcard));
+        return new WildcardAddressSpecifier(IpWildcard.ipWithWildcardMask(toIp(ctx.ip), wildcard));
       } else {
         // Just IP. Same as if 'host' was specified
-        return new WildcardAddressSpecifier(new IpWildcard(toIp(ctx.ip)));
+        return new WildcardAddressSpecifier(IpWildcard.create(toIp(ctx.ip)));
       }
     } else if (ctx.ANY() != null || ctx.ANY4() != null) {
       return new WildcardAddressSpecifier(IpWildcard.ANY);
     } else if (ctx.prefix != null) {
-      return new WildcardAddressSpecifier(new IpWildcard(Prefix.parse(ctx.prefix.getText())));
+      return new WildcardAddressSpecifier(IpWildcard.create(Prefix.parse(ctx.prefix.getText())));
     } else if (ctx.address_group != null) {
       todo(ctx);
       return new WildcardAddressSpecifier(IpWildcard.ANY);
@@ -6904,7 +6908,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Ip first = toIp(ctx.first);
     Ip last = toIp(ctx.last);
     if (ctx.mask != null) {
-      Prefix subnet = new IpWildcard(first, toIp(ctx.mask).inverted()).toPrefix();
+      Prefix subnet = IpWildcard.ipWithWildcardMask(first, toIp(ctx.mask).inverted()).toPrefix();
       createNatPool(name, first, last, subnet, ctx);
     } else if (ctx.prefix_length != null) {
       Prefix subnet = Prefix.create(first, Integer.parseInt(ctx.prefix_length.getText()));
@@ -7692,7 +7696,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (_format == CISCO_ASA) {
       mask = mask.inverted();
     }
-    _currentEigrpProcess.getWildcardNetworks().add(new IpWildcard(address, mask));
+    _currentEigrpProcess.getWildcardNetworks().add(IpWildcard.ipWithWildcardMask(address, mask));
   }
 
   @Override

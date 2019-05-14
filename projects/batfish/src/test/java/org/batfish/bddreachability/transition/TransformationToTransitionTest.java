@@ -81,7 +81,8 @@ public class TransformationToTransitionTest {
 
     // backward -- constrained
     expectedIn =
-        _dstIpSpaceToBdd.toBDD(new IpWildcard(Ip.parse("0.0.3.0"), Ip.parse("255.255.0.255")));
+        _dstIpSpaceToBdd.toBDD(
+            IpWildcard.ipWithWildcardMask(Ip.parse("0.0.3.0"), Ip.parse("255.255.0.255")));
     actualIn = transition.transitBackward(expectedOut);
     assertThat(actualIn, equalTo(expectedIn));
   }
@@ -116,7 +117,7 @@ public class TransformationToTransitionTest {
     Ip address = Ip.parse("0.0.0.12");
     // all bits wild except 28,29,30
     Ip mask = Ip.parse("255.255.255.227");
-    expectedIn = _dstIpSpaceToBdd.toBDD(new IpWildcard(address, mask));
+    expectedIn = _dstIpSpaceToBdd.toBDD(IpWildcard.ipWithWildcardMask(address, mask));
     actualIn = transition.transitBackward(expectedOut);
     assertThat(actualIn, equalTo(expectedIn));
   }
@@ -189,7 +190,8 @@ public class TransformationToTransitionTest {
     BDD out = _dstIpSpaceToBdd.toBDD(Prefix.parse("5.5.3.0/24"));
     expectedIn =
         out.or(
-            _dstIpSpaceToBdd.toBDD(new IpWildcard(Ip.parse("1.0.3.0"), Ip.parse("0.255.0.255"))));
+            _dstIpSpaceToBdd.toBDD(
+                IpWildcard.ipWithWildcardMask(Ip.parse("1.0.3.0"), Ip.parse("0.255.0.255"))));
     actualIn = transition.transitBackward(out);
     assertThat(actualIn, equalTo(expectedIn));
   }
@@ -230,7 +232,7 @@ public class TransformationToTransitionTest {
     // backward -- matched and transformed or not matched
     BDD out = _dstIpSpaceToBdd.toBDD(Prefix.parse("5.5.3.0/24"));
     IpWildcard preTransformationDestIps =
-        new IpWildcard(Ip.parse("0.0.3.0"), Ip.parse("255.255.0.255"));
+        IpWildcard.ipWithWildcardMask(Ip.parse("0.0.3.0"), Ip.parse("255.255.0.255"));
     expectedIn = guardBdd.ite(_dstIpSpaceToBdd.toBDD(preTransformationDestIps), out);
     actualIn = transition.transitBackward(out);
     assertThat(actualIn, equalTo(expectedIn));
@@ -414,7 +416,9 @@ public class TransformationToTransitionTest {
       assertThat(transition.transitForward(dstToBdd.toBDD(shiftPrefix).not()), equalTo(_zero));
       assertThat(
           transition.transitForward(dstToBdd.toBDD(Ip.parse("6.6.6.6"))),
-          equalTo(dstToBdd.toBDD(new IpWildcard(Ip.parse("0.0.6.6"), Ip.parse("255.255.0.0")))));
+          equalTo(
+              dstToBdd.toBDD(
+                  IpWildcard.ipWithWildcardMask(Ip.parse("0.0.6.6"), Ip.parse("255.255.0.0")))));
 
       assertEquals(
           transition.transitBackward(dstToBdd.toBDD(Ip.parse("5.5.6.6"))),

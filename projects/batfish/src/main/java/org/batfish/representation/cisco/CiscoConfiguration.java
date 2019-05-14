@@ -2617,14 +2617,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
         summaryFilter.addLine(
             new RouteFilterLine(
                 LineAction.DENY,
-                new IpWildcard(prefix),
+                IpWildcard.create(prefix),
                 new SubRange(filterMinPrefixLength, Prefix.MAX_PREFIX_LENGTH)));
       }
       area.addSummaries(ImmutableSortedMap.copyOf(summaries));
       summaryFilter.addLine(
           new RouteFilterLine(
               LineAction.PERMIT,
-              new IpWildcard(Prefix.ZERO),
+              IpWildcard.create(Prefix.ZERO),
               new SubRange(0, Prefix.MAX_PREFIX_LENGTH)));
     }
     newProcess.setAreas(toImmutableSortedMap(areas, Entry::getKey, e -> e.getValue().build()));

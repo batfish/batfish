@@ -118,7 +118,7 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
 
   public BDD toBDD(IpWildcard ipWildcard) {
     long ip = ipWildcard.getIp().asLong();
-    long wildcard = ipWildcard.getWildcard().asLong();
+    long wildcard = ipWildcard.getWildcardMask();
     BDD acc = _one;
     BDD[] bitBDDs = _bddInteger.getBitvec();
     for (int i = Prefix.MAX_PREFIX_LENGTH - 1; i >= 0; i--) {

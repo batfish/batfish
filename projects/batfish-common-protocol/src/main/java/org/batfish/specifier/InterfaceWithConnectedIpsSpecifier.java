@@ -85,7 +85,7 @@ public final class InterfaceWithConnectedIpsSpecifier implements InterfaceSpecif
           "%s requires an IP address, prefix, or wildcard provided as a string input, not %s",
           NAME,
           input);
-      return new InterfaceWithConnectedIpsSpecifier(new IpWildcard((String) input).toIpSpace());
+      return new InterfaceWithConnectedIpsSpecifier(IpWildcard.parse((String) input).toIpSpace());
     }
   }
 }

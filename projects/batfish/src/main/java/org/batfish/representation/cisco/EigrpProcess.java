@@ -55,7 +55,7 @@ public class EigrpProcess implements Serializable {
       for (IpWildcard wn : _wildcardNetworks) {
         // Check if the interface IP address matches the eigrp network
         // when the wildcard is ORed to both
-        long wildcardLong = wn.getWildcard().asLong();
+        long wildcardLong = wn.getWildcardMask();
         long eigrpNetworkLong = wn.getIp().asLong();
         long intIpLong = address.getIp().asLong();
         long wildcardedNetworkLong = eigrpNetworkLong | wildcardLong;

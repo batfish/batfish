@@ -895,7 +895,7 @@ public class CiscoGrammarTest {
 
     // ASN is 1
     EigrpProcess eigrpProcess = config.getDefaultVrf().getEigrpProcesses().get(1L);
-    assertThat(eigrpProcess.getWildcardNetworks(), contains(new IpWildcard("10.0.0.0/24")));
+    assertThat(eigrpProcess.getWildcardNetworks(), contains(IpWildcard.parse("10.0.0.0/24")));
   }
 
   @Test
@@ -3711,16 +3711,16 @@ public class CiscoGrammarTest {
                 .setMatchCondition(
                     new MatchHeaderSpace(
                         HeaderSpace.builder()
-                            .setSrcIps(new IpWildcard("1.1.1.1").toIpSpace())
-                            .setDstIps(new IpWildcard("2.2.2.2").toIpSpace())
+                            .setSrcIps(IpWildcard.parse("1.1.1.1").toIpSpace())
+                            .setDstIps(IpWildcard.parse("2.2.2.2").toIpSpace())
                             .build()))
                 .build(),
             IpAccessListLine.accepting()
                 .setMatchCondition(
                     new MatchHeaderSpace(
                         HeaderSpace.builder()
-                            .setSrcIps(new IpWildcard("2.2.2.2").toIpSpace())
-                            .setDstIps(new IpWildcard("1.1.1.1").toIpSpace())
+                            .setSrcIps(IpWildcard.parse("2.2.2.2").toIpSpace())
+                            .setDstIps(IpWildcard.parse("1.1.1.1").toIpSpace())
                             .build()))
                 .build());
 

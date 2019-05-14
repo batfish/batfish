@@ -254,7 +254,7 @@ public class Encoder {
 
           // Make sure messages are sent to this destination IP
           SortedSet<IpWildcard> ips = new TreeSet<>();
-          ips.add(new IpWildcard(n.getLocalIp()));
+          ips.add(IpWildcard.create(n.getLocalIp()));
           hs.setDstIps(ips);
 
           // Make sure messages use TCP port 179

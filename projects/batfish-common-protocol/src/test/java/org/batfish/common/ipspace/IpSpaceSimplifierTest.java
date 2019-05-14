@@ -115,7 +115,8 @@ public class IpSpaceSimplifierTest {
   public void testVisitIpWildcard() {
     assertThat(SIMPLIFIER.simplify(IpWildcard.ANY.toIpSpace()), equalTo(UniverseIpSpace.INSTANCE));
 
-    IpWildcard ipWildcard = new IpWildcard(Ip.parse("1.2.0.5"), Ip.create(0xFFFF00FFL));
+    IpWildcard ipWildcard =
+        IpWildcard.ipWithWildcardMask(Ip.parse("1.2.0.5"), Ip.create(0xFFFF00FFL));
     assertThat(SIMPLIFIER.simplify(ipWildcard.toIpSpace()), equalTo(ipWildcard.toIpSpace()));
   }
 
@@ -126,7 +127,7 @@ public class IpSpaceSimplifierTest {
         equalTo(EmptyIpSpace.INSTANCE));
     assertThat(
         SIMPLIFIER.simplify(
-            IpWildcardSetIpSpace.builder().excluding(new IpWildcard("1.2.3.0/24")).build()),
+            IpWildcardSetIpSpace.builder().excluding(IpWildcard.parse("1.2.3.0/24")).build()),
         equalTo(EmptyIpSpace.INSTANCE));
 
     assertThat(
@@ -143,24 +144,24 @@ public class IpSpaceSimplifierTest {
     // whitelisted wildcards that are covered by a blacklisted wildcard are removed
     IpWildcardSetIpSpace ipSpace =
         IpWildcardSetIpSpace.builder()
-            .including(new IpWildcard("1.2.1.0/24"), new IpWildcard("2.2.2.2"))
-            .excluding(new IpWildcard("1.2.0.0/16"))
+            .including(IpWildcard.parse("1.2.1.0/24"), IpWildcard.parse("2.2.2.2"))
+            .excluding(IpWildcard.parse("1.2.0.0/16"))
             .build();
-    IpSpace simplifiedIpSpace = new IpWildcard("2.2.2.2").toIpSpace();
+    IpSpace simplifiedIpSpace = IpWildcard.parse("2.2.2.2").toIpSpace();
     assertThat(SIMPLIFIER.simplify(ipSpace), equalTo(simplifiedIpSpace));
 
     // blacklisted wildcards that don't overlap whitelisted wildcards are removed
     ipSpace =
         IpWildcardSetIpSpace.builder()
-            .including(new IpWildcard("2.2.2.2"))
-            .excluding(new IpWildcard("1.0.0.0/8"))
+            .including(IpWildcard.parse("2.2.2.2"))
+            .excluding(IpWildcard.parse("1.0.0.0/8"))
             .build();
     assertThat(SIMPLIFIER.simplify(ipSpace), equalTo(simplifiedIpSpace));
   }
 
   @Test
   public void testVisitIpWildcardSetIpSpace_whitelistOne() {
-    IpWildcard ipWildcard = new IpWildcard("1.2.3.4");
+    IpWildcard ipWildcard = IpWildcard.parse("1.2.3.4");
     assertThat(
         SIMPLIFIER.simplify(IpWildcardSetIpSpace.builder().including(ipWildcard).build()),
         equalTo(ipWildcard.toIpSpace()));

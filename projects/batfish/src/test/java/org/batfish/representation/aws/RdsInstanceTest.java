@@ -158,14 +158,14 @@ public class RdsInstanceTest {
                               .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                               .setDstIps(
                                   Sets.newHashSet(
-                                      new IpWildcard("1.2.3.4/32"),
-                                      new IpWildcard("10.193.16.105/32")))
+                                      IpWildcard.parse("1.2.3.4/32"),
+                                      IpWildcard.parse("10.193.16.105/32")))
                               .setSrcPorts(Sets.newHashSet(new SubRange(45, 50)))
                               .setTcpFlags(ImmutableSet.of(TcpFlagsMatchConditions.ACK_TCP_FLAG))
                               .build()),
                       IpAccessListLine.acceptingHeaderSpace(
                           HeaderSpace.builder()
-                              .setDstIps(Sets.newHashSet(new IpWildcard("0.0.0.0/0")))
+                              .setDstIps(Sets.newHashSet(IpWildcard.parse("0.0.0.0/0")))
                               .build())))));
       assertThat(
           iface.getIncomingFilter(),
@@ -174,7 +174,7 @@ public class RdsInstanceTest {
                   ImmutableList.of(
                       IpAccessListLine.acceptingHeaderSpace(
                           HeaderSpace.builder()
-                              .setSrcIps(Sets.newHashSet(new IpWildcard("0.0.0.0/0")))
+                              .setSrcIps(Sets.newHashSet(IpWildcard.parse("0.0.0.0/0")))
                               .setTcpFlags(ImmutableSet.of(TcpFlagsMatchConditions.ACK_TCP_FLAG))
                               .build()),
                       IpAccessListLine.acceptingHeaderSpace(
@@ -182,8 +182,8 @@ public class RdsInstanceTest {
                               .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                               .setSrcIps(
                                   Sets.newHashSet(
-                                      new IpWildcard("1.2.3.4/32"),
-                                      new IpWildcard("10.193.16.105/32")))
+                                      IpWildcard.parse("1.2.3.4/32"),
+                                      IpWildcard.parse("10.193.16.105/32")))
                               .setDstPorts(Sets.newHashSet(new SubRange(45, 50)))
                               .build())))));
     }

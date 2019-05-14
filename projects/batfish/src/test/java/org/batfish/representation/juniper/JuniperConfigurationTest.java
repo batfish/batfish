@@ -43,7 +43,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
@@ -70,7 +69,7 @@ public class JuniperConfigurationTest {
 
     FwTerm term = new FwTerm("term");
     String ipAddrPrefix = "1.2.3.0/24";
-    term.getFroms().add(new FwFromSourceAddress(new IpWildcard(Prefix.parse(ipAddrPrefix))));
+    term.getFroms().add(new FwFromSourceAddress(IpWildcard.parse(ipAddrPrefix)));
     term.getThens().add(FwThenAccept.INSTANCE);
     filter.getTerms().put("term", term);
     IpAccessList headerSpaceAcl = config.toIpAccessList(filter);
@@ -113,7 +112,7 @@ public class JuniperConfigurationTest {
                         new MatchSrcInterface(ImmutableList.of(interface1Name, interface2Name)),
                         new MatchHeaderSpace(
                             HeaderSpace.builder()
-                                .setSrcIps(new IpWildcard(Prefix.parse(ipAddrPrefix)).toIpSpace())
+                                .setSrcIps(IpWildcard.parse(ipAddrPrefix).toIpSpace())
                                 .build()))))));
   }
 

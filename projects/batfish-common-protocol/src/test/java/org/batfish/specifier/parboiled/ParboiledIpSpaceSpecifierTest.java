@@ -46,7 +46,7 @@ public class ParboiledIpSpaceSpecifierTest {
             new AddressGroupIpSpaceAstNode(
                 new StringAstNode(book), new StringAstNode(addressGroup)),
             ctxt),
-        equalTo(new IpWildcard(ip).toIpSpace()));
+        equalTo(IpWildcard.parse(ip).toIpSpace()));
 
     // reverse also works
     assertThat(
@@ -54,7 +54,7 @@ public class ParboiledIpSpaceSpecifierTest {
             new AddressGroupIpSpaceAstNode(
                 new StringAstNode(addressGroup), new StringAstNode(book)),
             ctxt),
-        equalTo(new IpWildcard(ip).toIpSpace()));
+        equalTo(IpWildcard.parse(ip).toIpSpace()));
   }
 
   @Test
@@ -103,7 +103,7 @@ public class ParboiledIpSpaceSpecifierTest {
 
   @Test
   public void testComputeIpSpaceIpWildcard() {
-    IpWildcard wildcard = new IpWildcard("1.1.1.1:255.255.255.255");
+    IpWildcard wildcard = IpWildcard.parse("1.1.1.1:255.255.255.255");
     assertThat(
         computeIpSpace(new IpWildcardAstNode(wildcard), _emptyCtxt), equalTo(wildcard.toIpSpace()));
   }

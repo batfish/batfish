@@ -9,10 +9,8 @@ import org.junit.Test;
 public class IpWildcardSetIpSpaceTest {
   private static final IpSpace ipSpace =
       IpWildcardSetIpSpace.builder()
-          .including(
-              new IpWildcard(Prefix.parse("1.1.1.0/24")),
-              new IpWildcard(Prefix.parse("1.1.2.0/24")))
-          .excluding(new IpWildcard(Prefix.parse("1.1.1.1/32")))
+          .including(IpWildcard.parse("1.1.1.0/24"), IpWildcard.parse("1.1.2.0/24"))
+          .excluding(IpWildcard.parse("1.1.1.1/32"))
           .build();
 
   @Test

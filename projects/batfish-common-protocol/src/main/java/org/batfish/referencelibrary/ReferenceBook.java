@@ -295,7 +295,7 @@ public class ReferenceBook implements Comparable<ReferenceBook>, Serializable {
     return allGroupNames.stream()
         // get() is safe because we got names from the book itself
         .flatMap(groupName -> getAddressGroup(groupName).get().getAddresses().stream())
-        .map(IpWildcard::new)
+        .map(IpWildcard::parse)
         .collect(ImmutableSet.toImmutableSet());
   }
 

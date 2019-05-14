@@ -18,7 +18,7 @@ public class FlexibleInterfaceSpecifierFactoryTest {
   public void testConnectedTo() {
     assertThat(
         new FlexibleInterfaceSpecifierFactory().buildInterfaceSpecifier("connectedTo(1.2.3.4)"),
-        equalTo(new InterfaceWithConnectedIpsSpecifier(new IpWildcard("1.2.3.4").toIpSpace())));
+        equalTo(new InterfaceWithConnectedIpsSpecifier(IpWildcard.parse("1.2.3.4").toIpSpace())));
   }
 
   @Test

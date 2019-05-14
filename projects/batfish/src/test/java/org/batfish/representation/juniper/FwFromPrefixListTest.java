@@ -49,7 +49,7 @@ public class FwFromPrefixListTest {
   @Test
   public void testApplyTo() {
     IpSpace additionalIpSpace = Ip.parse("2.2.2.2").toIpSpace();
-    IpSpace baseIpSpace = new IpWildcard(BASE_IP_PREFIX).toIpSpace();
+    IpSpace baseIpSpace = IpWildcard.parse(BASE_IP_PREFIX).toIpSpace();
 
     HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();
     HeaderSpace.Builder headerSpaceBuilderWithIpSpaceFilter =

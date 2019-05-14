@@ -61,7 +61,7 @@ public class IpSpaceToBoolExpr implements GenericIpSpaceVisitor<BoolExpr> {
 
   private BoolExpr toBoolExpr(IpWildcard ipWildcard) {
     BitVecExpr ip = _context.mkBV(ipWildcard.getIp().asLong(), 32);
-    BitVecExpr mask = _context.mkBV(~ipWildcard.getWildcard().asLong(), 32);
+    BitVecExpr mask = _context.mkBV(~ipWildcard.getWildcardMask(), 32);
     return _context.mkEq(_context.mkBVAND(_var, mask), _context.mkBVAND(ip, mask));
   }
 
@@ -84,7 +84,7 @@ public class IpSpaceToBoolExpr implements GenericIpSpaceVisitor<BoolExpr> {
 
   @Override
   public BoolExpr visitPrefixIpSpace(PrefixIpSpace prefixIpSpace) {
-    return toBoolExpr(new IpWildcard(prefixIpSpace.getPrefix()));
+    return toBoolExpr(IpWildcard.create(prefixIpSpace.getPrefix()));
   }
 
   @Override
