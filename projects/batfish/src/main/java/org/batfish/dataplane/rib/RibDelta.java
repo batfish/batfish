@@ -173,10 +173,7 @@ public final class RibDelta<R> {
           _actions.entrySet().stream()
               .collect(
                   ImmutableMap.toImmutableMap(
-                      Entry::getKey,
-                      e ->
-                          // TODO: convert to set after all route types properly implement equality
-                          ImmutableList.copyOf(e.getValue().values()))));
+                      Entry::getKey, e -> ImmutableList.copyOf(e.getValue().values()))));
     }
 
     /** Process all added and removed routes from a given delta */
@@ -282,9 +279,8 @@ public final class RibDelta<R> {
         .forEach(
             (prefix, actions) ->
                 actions.stream()
-                    // TODO: uncomment after all route types properly implement equality
-                    // .distinct()
-                    .forEachOrdered(
+                    .distinct()
+                    .forEach(
                         uRouteAdvertisement -> {
                           T tRoute = converter.apply(uRouteAdvertisement.getRoute());
                           if (uRouteAdvertisement.isWithdrawn()) {
