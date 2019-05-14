@@ -16,6 +16,7 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
@@ -26,7 +27,6 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 
@@ -46,8 +46,8 @@ public class BgpProtocolHelper {
       BgpPeerConfig fromNeighbor,
       BgpPeerConfig toNeighbor,
       BgpSessionProperties sessionProperties,
-      Vrf fromVrf,
-      Vrf toVrf,
+      BgpProcess fromBgpPprocess,
+      BgpProcess toBgpProcess,
       AbstractRoute route,
       B builder) {
 
@@ -69,7 +69,7 @@ public class BgpProtocolHelper {
       Bgpv4Route bgpRemoteRoute = (Bgpv4Route) route;
       originatorIp = bgpRemoteRoute.getOriginatorIp();
     } else {
-      originatorIp = fromVrf.getBgpProcess().getRouterId();
+      originatorIp = fromBgpPprocess.getRouterId();
     }
     builder.setOriginatorIp(originatorIp);
 
@@ -122,8 +122,7 @@ public class BgpProtocolHelper {
        *  iBGP speaker should not send out routes to iBGP neighbor whose router-id is
        *  same as originator id of advertisement
        */
-      if (!sessionProperties.isEbgp()
-          && toVrf.getBgpProcess().getRouterId().equals(remoteOriginatorIp)) {
+      if (!sessionProperties.isEbgp() && toBgpProcess.getRouterId().equals(remoteOriginatorIp)) {
         return null;
       }
       if (remoteRouteProtocol.equals(RoutingProtocol.IBGP) && !sessionProperties.isEbgp()) {
@@ -149,14 +148,13 @@ public class BgpProtocolHelper {
           // we are reflecting, so we need to get the clusterid associated with the
           // remoteRoute
           BgpPeerConfig remoteReceivedFromSession =
-              fromVrf
-                  .getBgpProcess()
+              fromBgpPprocess
                   .getActiveNeighbors()
                   .get(Prefix.create(remoteReceivedFromIp, Prefix.MAX_PREFIX_LENGTH));
           long newClusterId = remoteReceivedFromSession.getClusterId();
           builder.addToClusterList(newClusterId);
         }
-        Set<Long> localClusterIds = toVrf.getBgpProcess().getClusterIds();
+        Set<Long> localClusterIds = toBgpProcess.getClusterIds();
         Set<Long> outgoingClusterList = builder.getClusterList();
         if (localClusterIds.stream().anyMatch(outgoingClusterList::contains)) {
           /*

@@ -1854,8 +1854,8 @@ public class VirtualRouter implements Serializable {
             ourConfig,
             remoteConfig,
             sessionProperties,
-            _vrf,
-            requireNonNull(getRemoteBgpNeighborVR(remoteConfigId, allNodes))._vrf,
+            _vrf.getBgpProcess(),
+            requireNonNull(getRemoteBgpNeighborVR(remoteConfigId, allNodes))._vrf.getBgpProcess(),
             exportCandidate.getAbstractRoute(),
             builder);
     if (transformedOutgoingRouteBuilder == null) {
