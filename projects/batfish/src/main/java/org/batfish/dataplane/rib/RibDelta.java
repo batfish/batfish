@@ -33,7 +33,7 @@ public final class RibDelta<R> {
   /** Sorted for deterministic iteration order */
   private SortedMap<Prefix, List<RouteAdvertisement<R>>> _actions;
 
-  private static final RibDelta<Object> EMPTY = new RibDelta<>(ImmutableMap.of());
+  private static final RibDelta<Object> EMPTY = new RibDelta<>(ImmutableSortedMap.of());
 
   private RibDelta(Map<Prefix, List<RouteAdvertisement<R>>> actions) {
     _actions = ImmutableSortedMap.copyOf(actions);
@@ -61,7 +61,7 @@ public final class RibDelta<R> {
 
   /** Check whether this delta is empty (has no outstanding actions) */
   public boolean isEmpty() {
-    return _actions.isEmpty() || _actions.values().stream().allMatch(List::isEmpty);
+    return _actions.isEmpty();
   }
 
   /**
