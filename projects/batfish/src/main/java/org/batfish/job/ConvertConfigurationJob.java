@@ -1,5 +1,6 @@
 package org.batfish.job;
 
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multimap;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,6 +46,12 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     }
     c.simplifyRoutingPolicies();
     c.computeRoutingPolicySources(w);
+    c.setAsPathAccessLists(ImmutableSortedMap.copyOf(c.getAsPathAccessLists()));
+    c.setCommunityLists(ImmutableSortedMap.copyOf(c.getCommunityLists()));
+    c.setIpAccessLists(ImmutableSortedMap.copyOf(c.getIpAccessLists()));
+    c.setIp6AccessLists(ImmutableSortedMap.copyOf(c.getIp6AccessLists()));
+    c.setRouteFilterLists(ImmutableSortedMap.copyOf(c.getRouteFilterLists()));
+    c.setRoute6FilterLists(ImmutableSortedMap.copyOf(c.getRoute6FilterLists()));
   }
 
   @Override
