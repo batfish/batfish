@@ -83,6 +83,10 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
     return routes.stream().anyMatch(r -> !r.getAbstractRoute().getNonForwarding());
   }
 
+  private boolean onlyForwardingRoutes(Set<R> routes) {
+    return routes.stream().noneMatch(r -> r.getAbstractRoute().getNonForwarding());
+  }
+
   /**
    * Returns a set of routes in this tree which 1) are forwarding routes, 2) match the given IP
    * address, and 3) have the longest prefix length within the specified maximum.
@@ -94,6 +98,9 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
     for (int pl = maxPrefixLength; pl >= 0; pl--) {
       Set<R> routes = _root.longestPrefixMatch(address, pl);
       if (hasForwardingRoute(routes)) {
+        if (onlyForwardingRoutes(routes)) {
+          return routes;
+        }
         return routes.stream()
             .filter(r -> !r.getAbstractRoute().getNonForwarding())
             .collect(ImmutableSet.toImmutableSet());

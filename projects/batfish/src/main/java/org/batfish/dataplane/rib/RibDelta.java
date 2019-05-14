@@ -33,7 +33,7 @@ public final class RibDelta<R> {
   /** Sorted for deterministic iteration order */
   private SortedMap<Prefix, List<RouteAdvertisement<R>>> _actions;
 
-  private static final RibDelta<Object> EMPTY = new RibDelta<>(ImmutableMap.of());
+  private static final RibDelta<Object> EMPTY = new RibDelta<>(ImmutableSortedMap.of());
 
   private RibDelta(Map<Prefix, List<RouteAdvertisement<R>>> actions) {
     _actions = ImmutableSortedMap.copyOf(actions);
@@ -61,7 +61,7 @@ public final class RibDelta<R> {
 
   /** Check whether this delta is empty (has no outstanding actions) */
   public boolean isEmpty() {
-    return _actions.values().stream().allMatch(List::isEmpty);
+    return _actions.isEmpty();
   }
 
   /**
@@ -162,6 +162,10 @@ public final class RibDelta<R> {
       return this;
     }
 
+    public boolean isEmpty() {
+      return _actions.isEmpty();
+    }
+
     /**
      * Create a new RIB delta.
      *
@@ -169,15 +173,18 @@ public final class RibDelta<R> {
      */
     @Nonnull
     public RibDelta<R> build() {
+      if (isEmpty()) {
+        return empty();
+      }
       return new RibDelta<>(
           _actions.entrySet().stream()
               .collect(
                   ImmutableMap.toImmutableMap(
                       Entry::getKey,
                       e ->
+                          // Iteration order is predictable here
                           e.getValue().values().stream()
-                              // TODO: uncomment after all route types properly implement equality
-                              // .distinct()
+                              .distinct() // Collapse any duplicate actions
                               .collect(ImmutableList.toImmutableList()))));
     }
 
@@ -284,9 +291,8 @@ public final class RibDelta<R> {
         .forEach(
             (prefix, actions) ->
                 actions.stream()
-                    // TODO: uncomment after all route types properly implement equality
-                    // .distinct()
-                    .forEachOrdered(
+                    .distinct()
+                    .forEach(
                         uRouteAdvertisement -> {
                           T tRoute = converter.apply(uRouteAdvertisement.getRoute());
                           if (uRouteAdvertisement.isWithdrawn()) {

@@ -15,7 +15,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -171,9 +170,15 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
     /** Returns the list of non-null children for this node */
     @Nonnull
     List<Node<T>> getChildren() {
-      return Stream.of(_left, _right)
-          .filter(Objects::nonNull)
-          .collect(ImmutableList.toImmutableList());
+      if (_left == null && _right == null) {
+        return ImmutableList.of();
+      } else if (_left == null) {
+        return ImmutableList.of(_right);
+      } else if (_right == null) {
+        return ImmutableList.of(_left);
+      } else {
+        return ImmutableList.of(_left, _right);
+      }
     }
 
     @Override
