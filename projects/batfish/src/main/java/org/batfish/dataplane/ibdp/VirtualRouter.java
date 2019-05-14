@@ -769,7 +769,7 @@ public class VirtualRouter implements Serializable {
     // Propagate received routes through all the RIBs and send out appropriate messages to neighbors
     Map<Bgpv4Rib, RibDelta<Bgpv4Route>> deltas =
         ribDeltas.entrySet().stream()
-            .filter(e -> !e.getValue().build().isEmpty())
+            .filter(e -> !e.getValue().isEmpty())
             .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().build()));
     finalizeBgpRoutesAndQueueOutgoingMessages(deltas, allNodes, bgpTopology, networkConfigurations);
   }
@@ -2101,8 +2101,8 @@ public class VirtualRouter implements Serializable {
   boolean isDirty() {
     return
     // Route Deltas
-    !_mainRibRouteDeltaBuilder.build().isEmpty()
-        || !_bgpDeltaBuilder.build().isEmpty()
+    !_mainRibRouteDeltaBuilder.isEmpty()
+        || !_bgpDeltaBuilder.isEmpty()
         // Message queues
         || !_bgpIncomingRoutes.values().stream().allMatch(Queue::isEmpty)
         || !_isisIncomingRoutes.values().stream().allMatch(Queue::isEmpty)
