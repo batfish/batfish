@@ -10,7 +10,7 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Validate multipath consistency between all pairs of loopbacks.",
+    "description" : "Validates multipath consistency between all pairs of loopbacks.",
     "instanceName" : "qname",
     "longDescription" : "Finds flows between loopbacks that are treated differently (i.e., dropped versus forwarded) by different paths in the presence of multipath routing.",
     "tags" : [

@@ -5,7 +5,7 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Return configuration parameters for OSPF routing processes",
+    "description" : "Returns configuration parameters for OSPF routing processes.",
     "instanceName" : "qname",
     "longDescription" : "Returns the values of important properties for all OSPF processes running across the network.",
     "orderedVariableNames" : [

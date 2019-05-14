@@ -4,7 +4,7 @@
     "nodes": "${nodes}",
     "properties": "${properties}",
     "instance": {
-        "description": "Returns OSPF configuration of interfaces",
+        "description": "Returns OSPF configuration of interfaces.",
         "longDescription": "Returns the interface level OSPF configuration details for the interfaces in the network which run OSPF.",
         "instanceName": "ospfInterfaceConfiguration",
          "orderedVariableNames": [

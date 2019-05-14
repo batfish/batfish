@@ -4,7 +4,7 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Return warnings that occurred when parsing the snapshot.",
+    "description" : "Returns warnings that occurred when parsing the snapshot.",
     "instanceName" : "qname",
     "longDescription" : "Return warnings such as failure to recognize certain lines and lack of support for certain features.",
     "tags" : [

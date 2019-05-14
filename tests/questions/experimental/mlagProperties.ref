@@ -5,8 +5,9 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Returns configuration properties of MLAGs",
+    "description" : "Returns MLAG configuration.",
     "instanceName" : "qname",
+    "longDescription" : "Lists the configuration settings for each MLAG domain in the network.",
     "tags" : [
       "configuration",
       "link aggregation",

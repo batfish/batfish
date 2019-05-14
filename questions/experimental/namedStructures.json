@@ -7,7 +7,7 @@
     "structureNames": "${structureNames}",
     "structureTypes": "${structureTypes}",
     "instance": {
-        "description": "Return named structure definitions",
+        "description": "Returns named structure definitions.",
         "instanceName": "namedStructures",
         "longDescription": "Return structures defined in the configurations, represented in a vendor-independent JSON format.",
         "tags": [],

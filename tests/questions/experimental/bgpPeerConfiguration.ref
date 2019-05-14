@@ -5,7 +5,7 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Return configuration settings for BGP peerings.",
+    "description" : "Returns configuration settings for BGP peerings.",
     "instanceName" : "qname",
     "longDescription" : "Reports configuration settings for each configured BGP peering on each node in the network. This question reports peer-specific settings. Settings that are process-wide are reported by the bgpProcessConfiguration question.",
     "tags" : [

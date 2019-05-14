@@ -4,7 +4,7 @@
     "queryType": "ip_space",
     "specifierFactoryVersion": "${grammarVersion}", 
     "instance": {
-        "description": "Returns resolved values for IP space specifier.",
+        "description": "Returns the IP address space corresponding to an ipSpec value..",
         "instanceName": "resolveIpSpecifier",
         "longDescription": "Helper question that shows how specified ipSpec values resolve to IPs.",
         "tags": [

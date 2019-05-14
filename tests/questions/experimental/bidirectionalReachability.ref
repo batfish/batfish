@@ -10,7 +10,7 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Search for successfully delivered flows that can successfully receive a response.",
+    "description" : "Searches for successfully delivered flows that can successfully receive a response.",
     "instanceName" : "qname",
     "longDescription" : "Performs two reachability analyses, first originating from specified sources, then returning back to those sources. After the first (forward) pass, sets up sessions in the network and creates returning flows for each successfully delivered forward flow. The second pass searches for return flows that can be successfully delivered in the presence of the setup sessions.",
     "orderedVariableNames" : [

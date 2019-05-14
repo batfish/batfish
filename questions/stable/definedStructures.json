@@ -2,7 +2,7 @@
     "class": "org.batfish.question.definedstructures.DefinedStructuresQuestion",
     "differential": false,
     "instance": {
-        "description": "Lists the structures defined in the network",
+        "description": "Lists the structures defined in the network.",
         "instanceName": "definedStructures",
         "longDescription": "Lists the structures defined in the network, along with the files and line numbers in which they are defined.",
         "variables": {

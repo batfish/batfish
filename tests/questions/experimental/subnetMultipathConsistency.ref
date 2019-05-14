@@ -10,7 +10,7 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Validate multipath consistency between all pairs of subnets.",
+    "description" : "Validates multipath consistency between all pairs of subnets.",
     "instanceName" : "qname",
     "longDescription" : "Searches across all flows between subnets that are treated differently (i.e., dropped versus forwarded) by different paths in the network and returns example flows.",
     "tags" : [

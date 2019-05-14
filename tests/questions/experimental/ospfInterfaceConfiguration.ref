@@ -5,7 +5,7 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Returns OSPF configuration of interfaces",
+    "description" : "Returns OSPF configuration of interfaces.",
     "instanceName" : "qname",
     "longDescription" : "Returns the interface level OSPF configuration details for the interfaces in the network which run OSPF.",
     "orderedVariableNames" : [

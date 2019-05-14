@@ -4,7 +4,7 @@
     "nodes": "${nodes}",
     "properties": "${properties}",
     "instance": {
-        "description": "Return configuration parameters for OSPF routing processes",
+        "description": "Returns configuration parameters for OSPF routing processes.",
         "longDescription": "Returns the values of important properties for all OSPF processes running across the network.",
         "instanceName": "ospfProcessConfiguration",
          "orderedVariableNames": [

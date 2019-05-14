@@ -5,7 +5,7 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Trace prefix propagation through the network",
+    "description" : "Traces prefix propagation through the network.",
     "instanceName" : "qname",
     "longDescription" : "Shows how prefixes are treated by devices in the network during routing.",
     "tags" : [
