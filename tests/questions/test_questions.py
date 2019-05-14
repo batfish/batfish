@@ -44,7 +44,9 @@ def test_description(question_path, question):
     # the first letter should be capitalized
     assert description[0].isupper()
     # the description should end with a period
-    assert description[-1] == "."
+    assert description.endswith(".")
+    # the description should not have two periods at the end
+    assert not description.endswith("..")
     # the last letter of the first word should be 's'
     assert words[0][-1] == "s"
 
