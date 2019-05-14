@@ -74,8 +74,6 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
         for (Configuration configuration :
             vendorConfiguration.toVendorIndependentConfigurations()) {
 
-          finalizeConfiguration(configuration, warnings);
-
           // get iptables if applicable
           IptablesVendorConfiguration iptablesConfig = null;
           VendorConfiguration ov = vendorConfiguration.getOverlayConfiguration();
@@ -93,6 +91,8 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
             iptablesConfig.addAsIpAccessLists(configuration, vendorConfiguration, warnings);
             iptablesConfig.applyAsOverlay(configuration, warnings);
           }
+
+          finalizeConfiguration(configuration, warnings);
 
           String hostname = configuration.getHostname();
           configurations.put(hostname, configuration);
