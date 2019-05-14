@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 
 /** Utility functions for dealing with collections. */
-public class CollectionUtil {
+public final class CollectionUtil {
   /**
    * Create a new {@link com.google.common.collect.ImmutableMap} from the given {@link Map}, unless
    * that map is already an immutable map.
@@ -17,7 +17,8 @@ public class CollectionUtil {
   public static <K, V> Map<K, V> toImmutableMap(Map<K, V> map) {
     if (map instanceof ImmutableMap) {
       return map;
-    } else return ImmutableMap.copyOf(map);
+    }
+    return ImmutableMap.copyOf(map);
   }
 
   private CollectionUtil() {} // prevent instantiation
