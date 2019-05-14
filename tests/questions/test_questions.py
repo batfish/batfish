@@ -116,8 +116,10 @@ def test_long_description(question_path, question):
     assert len(words) >= 5
     # the first letter should be capitalized
     assert longDescription[0].isupper()
-    # the description should end with a period
-    assert longDescription[-1] == "."
+    # long description should end with a period
+    assert longDescription.endswith(".")
+    # long description should not have two periods at the end
+    assert not longDescription.endswith("..")
     # description should not be the same as long description
     assert longDescription != description
 
