@@ -4,15 +4,15 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.commons.lang3.StringUtils;
@@ -44,8 +44,11 @@ public final class AsPath implements Serializable, Comparable<AsPath> {
   // Soft values: let it be garbage collected in times of pressure.
   // Maximum size 2^16: Just some upper bound on cache size, well less than GiB.
   //   (24 bytes seems smallest possible entry (list(set(long)), would be 1.5 MiB total).
-  private static final Cache<List<AsSet>, AsPath> CACHE =
-      CacheBuilder.newBuilder().softValues().maximumSize(1 << 16).build();
+  private static final LoadingCache<ImmutableList<AsSet>, AsPath> CACHE =
+      CacheBuilder.newBuilder()
+          .softValues()
+          .maximumSize(1 << 16)
+          .build(CacheLoader.from(AsPath::new));
 
   private AsPath(ImmutableList<AsSet> asSets) {
     _asSets = asSets;
@@ -72,12 +75,7 @@ public final class AsPath implements Serializable, Comparable<AsPath> {
       return empty();
     }
     ImmutableList<AsSet> immutableValue = ImmutableList.copyOf(asSets);
-    try {
-      return CACHE.get(immutableValue, () -> new AsPath(immutableValue));
-    } catch (ExecutionException e) {
-      // This shouldn't happen, but handle anyway.
-      return new AsPath(immutableValue);
-    }
+    return CACHE.getUnchecked(immutableValue);
   }
 
   /**
