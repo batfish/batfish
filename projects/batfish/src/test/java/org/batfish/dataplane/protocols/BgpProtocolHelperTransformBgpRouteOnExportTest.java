@@ -15,6 +15,7 @@ import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
@@ -39,8 +40,8 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
   private BgpActivePeerConfig _fromNeighbor;
   private BgpPeerConfig _toNeighbor;
   private BgpSessionProperties _sessionProperties;
-  private Vrf _fromVrf;
-  private Vrf _toVrf;
+  private BgpProcess _fromBgpProcess;
+  private BgpProcess _toBgpProcess;
 
   private GeneratedRoute.Builder _baseAggRouteBuilder;
   private Bgpv4Route.Builder _baseBgpRouteBuilder;
@@ -96,10 +97,10 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
             .setLocalIp(DEST_IP)
             .build();
     _sessionProperties = BgpSessionProperties.from(_fromNeighbor, _toNeighbor, false);
-    _fromVrf = _nf.vrfBuilder().setOwner(c1).build();
-    _nf.bgpProcessBuilder().setVrf(_fromVrf).setRouterId(SOURCE_IP).build();
-    _toVrf = _nf.vrfBuilder().setOwner(c2).build();
-    _nf.bgpProcessBuilder().setVrf(_toVrf).setRouterId(DEST_IP).build();
+    Vrf fromVrf = _nf.vrfBuilder().setOwner(c1).build();
+    _fromBgpProcess = _nf.bgpProcessBuilder().setVrf(fromVrf).setRouterId(SOURCE_IP).build();
+    Vrf toVrf = _nf.vrfBuilder().setOwner(c2).build();
+    _toBgpProcess = _nf.bgpProcessBuilder().setVrf(toVrf).setRouterId(DEST_IP).build();
   }
 
   /**
@@ -111,8 +112,8 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
         _fromNeighbor,
         _toNeighbor,
         _sessionProperties,
-        _fromVrf.getBgpProcess(),
-        _toVrf.getBgpProcess(),
+        _fromBgpProcess,
+        _toBgpProcess,
         route,
         Bgpv4Route.builder());
   }
