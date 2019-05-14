@@ -7,9 +7,8 @@
         "instanceName": "detectLoops",
         "longDescription": "Searches across all possible flows in the network and returns example flows that will experience forwarding loops.",
         "tags": [
-            "dataPlane",
-            "reachability",
-            "loop"
+            "dataplane",
+            "reachability"
         ],
         "variables": {
              "maxTraces": {

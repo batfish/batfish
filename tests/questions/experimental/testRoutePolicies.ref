@@ -29,10 +29,7 @@
       "direction"
     ],
     "tags" : [
-      "control plane",
-      "policies",
-      "routing",
-      "trace"
+      "routing"
     ],
     "variables" : {
       "direction" : {

@@ -6,8 +6,8 @@
         "instanceName": "routes",
         "longDescription": "Shows routes for specified RIB, VRF, and node(s).",
         "tags": [
-            "dataPlane",
-            "route"
+            "dataplane",
+            "routing"
         ],
         "variables": {
             "nodes": {

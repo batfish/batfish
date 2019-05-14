@@ -10,8 +10,7 @@
     "longDescription" : "Lists the configuration settings for each MLAG domain in the network.",
     "tags" : [
       "configuration",
-      "link aggregation",
-      "multi-chassis"
+      "mlag"
     ],
     "variables" : {
       "idRegex" : {

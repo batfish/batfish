@@ -12,6 +12,7 @@
             "properties"
         ],
         "tags": [
+            "configuration",
             "ospf"
         ],
         "variables": {

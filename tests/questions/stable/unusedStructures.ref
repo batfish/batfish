@@ -8,7 +8,7 @@
     "instanceName" : "qname",
     "longDescription" : "Return nodes with structures such as ACLs, routes, etc. that are defined but not used. This may represent a bug in the configuration, which may have occurred because a final step in a template or MOP was not completed. Or it could be harmless extra configuration generated from a master template that is not meant to be used on those nodes.",
     "tags" : [
-      "default"
+      "hygiene"
     ],
     "variables" : {
       "nodes" : {

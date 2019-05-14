@@ -29,7 +29,7 @@
       "ignoreFilters"
     ],
     "tags" : [
-      "dataPlane",
+      "dataplane",
       "reachability"
     ],
     "variables" : {

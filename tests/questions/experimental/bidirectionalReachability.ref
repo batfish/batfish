@@ -19,7 +19,7 @@
       "returnFlowType"
     ],
     "tags" : [
-      "dataPlane",
+      "dataplane",
       "reachability"
     ],
     "variables" : {

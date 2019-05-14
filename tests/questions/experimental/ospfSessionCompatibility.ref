@@ -13,7 +13,8 @@
       "remoteNodes"
     ],
     "tags" : [
-      "ospf"
+      "ospf",
+      "status"
     ],
     "variables" : {
       "nodes" : {

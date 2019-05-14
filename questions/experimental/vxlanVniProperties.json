@@ -9,7 +9,7 @@
         "longDescription": "Lists VNI-level network segment settings configured for VXLANs.",
         "tags": [
             "configuration",
-            "tunnel"
+            "vxlan"
         ],
         "variables": {
             "nodes": {

@@ -12,9 +12,7 @@
     "longDescription" : "Lists information about implicitly and explicitly configured switched VLANs.",
     "tags" : [
       "configuration",
-      "interfaces",
-      "vlan",
-      "vni"
+      "vlan"
     ],
     "variables" : {
       "excludeShutInterfaces" : {
