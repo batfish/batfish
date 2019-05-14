@@ -1833,7 +1833,7 @@ public class VirtualRouter implements Serializable {
    * @param allNodes all nodes in the network
    * @param sessionProperties {@link BgpSessionProperties} representing the <em>incoming</em> edge:
    *     i.e. the edge from {@code remoteConfig} to {@code ourConfig}
-   * @param builder
+   * @param builder a builder for the output route, of the desired route type
    * @return The transformed route as a {@link Bgpv4Route}, or {@code null} if the route should not
    *     be exported.
    */

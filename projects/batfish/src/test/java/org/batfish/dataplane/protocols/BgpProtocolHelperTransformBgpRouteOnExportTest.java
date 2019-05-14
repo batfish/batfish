@@ -15,7 +15,6 @@ import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
-import org.batfish.datamodel.BgpRoute.Builder;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
@@ -34,8 +33,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Tests of {@link BgpProtocolHelper#transformBgpRoutePreExport(BgpPeerConfig, BgpPeerConfig,
- * BgpSessionProperties, Vrf, Vrf, AbstractRoute, Builder)
+ * Tests of {@link BgpProtocolHelper#transformBgpRoutePreExport}
  * BgpProtocolHelper.transformBgpRouteOnExport}.
  */
 public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
@@ -79,8 +77,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
 
   /**
    * Sets up the class variables to represent a BGP peer relationship. Then they may be used as
-   * parameters to {@link BgpProtocolHelper#transformBgpRoutePreExport(BgpPeerConfig, BgpPeerConfig,
-   * BgpSessionProperties, Vrf, Vrf, AbstractRoute, Builder) transformBgpRouteOnExport}.
+   * parameters to {@link BgpProtocolHelper#transformBgpRoutePreExport}.
    *
    * @param ibgp Whether to make the peer relationship IBGP
    */
@@ -109,9 +106,8 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
   }
 
   /**
-   * Calls {@link BgpProtocolHelper#transformBgpRoutePreExport(BgpPeerConfig, BgpPeerConfig,
-   * BgpSessionProperties, Vrf, Vrf, AbstractRoute, Builder) transformBgpRoutePreExport} with the
-   * given {@code route} and the class variables representing the BGP session.
+   * Calls {@link BgpProtocolHelper#transformBgpRoutePreExport} with the given {@code route} and the
+   * class variables representing the BGP session.
    */
   private Bgpv4Route.Builder runTransformBgpRoutePreExport(AbstractRoute route) {
     return BgpProtocolHelper.transformBgpRoutePreExport(
@@ -125,9 +121,8 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
   }
 
   /**
-   * Calls {@link BgpProtocolHelper#transformBgpRoutePostExport(Builder, BgpPeerConfig,
-   * BgpSessionProperties) transformBgpRoutePostExport} with the given {@code routeBuilder} and the
-   * class variables representing the BGP session.
+   * Calls {@link BgpProtocolHelper#transformBgpRoutePostExport} with the given {@code routeBuilder}
+   * and the class variables representing the BGP session.
    */
   private void runTransformBgpRoutePostExport(Bgpv4Route.Builder routeBuilder) {
     BgpProtocolHelper.transformBgpRoutePostExport(routeBuilder, _fromNeighbor, _sessionProperties);
