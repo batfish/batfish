@@ -157,11 +157,9 @@ def test_tags(question):
     # there should be at least one tag
     assert len(tags) >= 1
     # each tags should be in VALID_TAGS
-    extra_tags = tags - VALID_TAGS
-    assert len(extra_tags) == 0
+    assert len(tags - VALID_TAGS) == 0
     # there should be exactly one category-defining tag
-    category_tags = tags.intersection(CATEGORY_TAGS)
-    assert len(category_tags) == 1
+    assert len(tags.intersection(CATEGORY_TAGS)) == 1
 
 
 def test_types(question):
