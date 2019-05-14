@@ -6,9 +6,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -25,16 +27,18 @@ public final class TableAnswerElement extends AnswerElement {
   private static final String PROP_ROWS = "rows";
 
   private List<ExcludedRows> _excludedRows;
-
+  private Set<String> _columnNames;
   private Rows _rows;
-
   private List<Row> _rowsList;
-
   private TableMetadata _tableMetadata;
 
   @JsonCreator
   public TableAnswerElement(@Nonnull @JsonProperty(PROP_METADATA) TableMetadata tableMetadata) {
     _tableMetadata = tableMetadata;
+    _columnNames =
+        tableMetadata.getColumnMetadata().stream()
+            .map(ColumnMetadata::getName)
+            .collect(ImmutableSet.toImmutableSet());
     _rows = new Rows();
     _rowsList = new LinkedList<>();
     _excludedRows = new LinkedList<>();
@@ -47,10 +51,10 @@ public final class TableAnswerElement extends AnswerElement {
    */
   public @Nonnull TableAnswerElement addRow(Row row) {
     checkArgument(
-        row.getColumnNames().equals(_tableMetadata.toColumnMap().keySet()),
+        row.getColumnNames().equals(_columnNames),
         "Row columns %s do not match metadata columns metadata %s",
         row.getColumnNames(),
-        _tableMetadata.toColumnMap().keySet());
+        _columnNames);
     _rows.add(row);
     _rowsList.add(row);
     return this;
@@ -63,10 +67,10 @@ public final class TableAnswerElement extends AnswerElement {
    */
   public @Nonnull TableAnswerElement addExcludedRow(Row row, String exclusionName) {
     checkArgument(
-        row.getColumnNames().equals(_tableMetadata.toColumnMap().keySet()),
+        row.getColumnNames().equals(_columnNames),
         "Row columns %s do not match metadata columns metadata %s",
         row.getColumnNames(),
-        row);
+        _columnNames);
     for (ExcludedRows exRows : _excludedRows) {
       if (exRows.getExclusionName().equals(exclusionName)) {
         exRows.addRow(row);
