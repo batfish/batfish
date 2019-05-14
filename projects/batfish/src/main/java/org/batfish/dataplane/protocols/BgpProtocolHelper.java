@@ -193,7 +193,9 @@ public class BgpProtocolHelper {
       if (fromNeighbor instanceof BgpPassivePeerConfig) {
         nextHopIp = ((BgpActivePeerConfig) toNeighbor).getPeerAddress();
       } else {
-        // we somehow ended up with a BGP route that has no next-hop IP
+        // we somehow ended up with a BGP route that has no next-hop IP. This shouldn't happen,
+        // so make an assert. This will be a graceful ignore in prod.
+        assert !nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP);
         return null;
       }
     }
