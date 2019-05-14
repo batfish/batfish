@@ -89,7 +89,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Ordering;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -6121,10 +6120,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     if (ctx.bgp_asn() != null) {
       return AsSet.of(toAsNum(ctx.bgp_asn()));
     } else {
-      return AsSet.of(
-          ctx.as_set().items.stream()
-              .map(this::toAsNum)
-              .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural())));
+      return AsSet.of(ctx.as_set().items.stream().mapToLong(this::toAsNum).toArray());
     }
   }
 
