@@ -29,7 +29,7 @@ import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.CollectionUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
@@ -346,7 +346,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
     Set<String> specifiedNodes = question.nodeSpecifier().resolve(ctxt);
     FilterSpecifier filterSpecifier = question.getFilterSpecifier();
 
-    return CommonUtil.toImmutableMap(
+    return CollectionUtil.toImmutableMap(
         specifiedNodes,
         Function.identity(),
         node ->

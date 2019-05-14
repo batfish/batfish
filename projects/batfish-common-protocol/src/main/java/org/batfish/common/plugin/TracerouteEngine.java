@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.CollectionUtil;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Trace;
@@ -26,7 +26,7 @@ public interface TracerouteEngine {
    * @return {@link SortedMap} of {@link Flow}s to {@link List} of {@link Trace}s
    */
   default SortedMap<Flow, List<Trace>> computeTraces(Set<Flow> flows, boolean ignoreFilters) {
-    return CommonUtil.toImmutableSortedMap(
+    return CollectionUtil.toImmutableSortedMap(
         computeTracesAndReverseFlows(flows, ignoreFilters),
         Entry::getKey,
         entry ->

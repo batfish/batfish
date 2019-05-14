@@ -1,6 +1,6 @@
 package org.batfish.datamodel.acl;
 
-import static org.batfish.common.util.CommonUtil.toImmutableMap;
+import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Map;

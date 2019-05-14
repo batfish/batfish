@@ -23,7 +23,7 @@ import java.util.SortedMap;
 import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.CollectionUtil;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.Configuration;
@@ -746,7 +746,7 @@ public class FilterLineReachabilityAnswererTest {
   private List<AclSpecs> getAclSpecs(Set<String> configNames) {
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of("c1", _c1, "c2", _c2);
     Map<String, Set<IpAccessList>> acls =
-        CommonUtil.toImmutableMap(
+        CollectionUtil.toImmutableMap(
             configs,
             Entry::getKey,
             entry ->

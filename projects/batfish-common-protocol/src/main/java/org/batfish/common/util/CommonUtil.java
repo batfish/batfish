@@ -416,6 +416,7 @@ public class CommonUtil {
         new SSLEngineConfigurator(sslCon, false, verifyClient, false));
   }
 
+  @Deprecated
   public static <K1, K2, V1, V2> Map<K2, V2> toImmutableMap(
       Map<K1, V1> map,
       Function<Entry<K1, V1>, K2> keyFunction,
@@ -423,11 +424,13 @@ public class CommonUtil {
     return map.entrySet().stream().collect(ImmutableMap.toImmutableMap(keyFunction, valueFunction));
   }
 
+  @Deprecated
   public static <E, K, V> Map<K, V> toImmutableMap(
       Collection<E> set, Function<E, K> keyFunction, Function<E, V> valueFunction) {
     return set.stream().collect(ImmutableMap.toImmutableMap(keyFunction, valueFunction));
   }
 
+  @Deprecated
   public static <K1, K2 extends Comparable<? super K2>, V1, V2>
       SortedMap<K2, V2> toImmutableSortedMap(
           Map<K1, V1> map,
@@ -439,6 +442,7 @@ public class CommonUtil {
                 Comparator.naturalOrder(), keyFunction, valueFunction));
   }
 
+  @Deprecated
   public static <T, K extends Comparable<? super K>, V>
       Collector<T, ?, ImmutableSortedMap<K, V>> toImmutableSortedMap(
           Function<? super T, ? extends K> keyFunction,
@@ -447,6 +451,7 @@ public class CommonUtil {
         Comparator.naturalOrder(), keyFunction, valueFunction);
   }
 
+  @Deprecated
   public static <E, K extends Comparable<? super K>, V> NavigableMap<K, V> toImmutableSortedMap(
       Collection<E> set, Function<E, K> keyFunction, Function<E, V> valueFunction) {
     return set.stream()
@@ -460,6 +465,7 @@ public class CommonUtil {
    *
    * <p>Equivalent to to collecting elements into a list and calling {@link List#hashCode()}
    */
+  @Deprecated
   public static <T> Collector<T, ?, Integer> toOrderedHashCode() {
     // See https://stackoverflow.com/a/39396614 for mode detail
     return Collector.of(
@@ -485,6 +491,7 @@ public class CommonUtil {
    *
    * <p>Equivalent to collecting elements into a set and calling {@link Set#hashCode()}
    */
+  @Deprecated
   public static <T> Collector<T, ?, Integer> toUnorderedHashCode() {
     return Collectors.summingInt(Objects::hashCode);
   }

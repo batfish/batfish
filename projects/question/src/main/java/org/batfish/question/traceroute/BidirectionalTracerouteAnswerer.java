@@ -1,6 +1,6 @@
 package org.batfish.question.traceroute;
 
-import static org.batfish.common.util.CommonUtil.toImmutableMap;
+import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.flow.BidirectionalTracePruner.prune;
 
 import com.google.common.annotations.VisibleForTesting;
