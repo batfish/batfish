@@ -111,8 +111,8 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
         _fromNeighbor,
         _toNeighbor,
         _sessionProperties,
-        _fromVrf,
-        _toVrf,
+        _fromVrf.getBgpProcess(),
+        _toVrf.getBgpProcess(),
         route,
         Bgpv4Route.builder());
   }
