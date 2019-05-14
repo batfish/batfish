@@ -61,7 +61,7 @@ public final class RibDelta<R> {
 
   /** Check whether this delta is empty (has no outstanding actions) */
   public boolean isEmpty() {
-    return _actions.values().stream().allMatch(List::isEmpty);
+    return _actions.isEmpty() || _actions.values().stream().allMatch(List::isEmpty);
   }
 
   /**
@@ -162,6 +162,10 @@ public final class RibDelta<R> {
       return this;
     }
 
+    public boolean isEmpty() {
+      return _actions.isEmpty();
+    }
+
     /**
      * Create a new RIB delta.
      *
@@ -169,6 +173,9 @@ public final class RibDelta<R> {
      */
     @Nonnull
     public RibDelta<R> build() {
+      if (isEmpty()) {
+        return empty();
+      }
       return new RibDelta<>(
           _actions.entrySet().stream()
               .collect(
