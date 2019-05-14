@@ -155,7 +155,12 @@ public class BgpSessionStatusAnswerer extends Answerer {
                   }
 
                   return buildActivePeerRow(
-                      neighbor, activePeer, status, metadataMap, configuredBgpTopology);
+                      neighbor,
+                      activePeer,
+                      status,
+                      metadataMap,
+                      configuredBgpTopology,
+                      establishedBgpTopology);
                 })
             .filter(
                 row -> row != null && matchesQuestionFilters(row, nodes, remoteNodes, question));
@@ -298,9 +303,20 @@ public class BgpSessionStatusAnswerer extends Answerer {
       BgpActivePeerConfig activePeer,
       SessionStatus status,
       Map<String, ColumnMetadata> metadataMap,
-      ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredBgpTopology) {
+      ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredBgpTopology,
+      ValueGraph<BgpPeerConfigId, BgpSessionProperties> establishedBgpTopology) {
     Node remoteNode = null;
-    if (status != NOT_COMPATIBLE) {
+    if (status == ESTABLISHED) {
+      /*
+      Find the remote node with which the session was established. Note that this is NOT necessarily
+      the same as the remote node we would find from the configured topology, because the peer could
+      have multiple compatible remotes of which only one turned out to be reachable.
+       */
+      String remoteNodeName =
+          establishedBgpTopology.adjacentNodes(activeId).iterator().next().getHostname();
+      remoteNode = new Node(remoteNodeName);
+    } else if (status == NOT_ESTABLISHED) {
+      // This peer has a unique match, but it's unreachable. Show that remote peer's node.
       String remoteNodeName =
           configuredBgpTopology.adjacentNodes(activeId).iterator().next().getHostname();
       remoteNode = new Node(remoteNodeName);
