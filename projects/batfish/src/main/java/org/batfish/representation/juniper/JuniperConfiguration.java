@@ -41,7 +41,7 @@ import org.apache.commons.collections4.list.TreeList;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.CollectionUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AuthenticationKey;
@@ -816,7 +816,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
             });
     // areas
     Map<Long, org.batfish.datamodel.ospf.OspfArea.Builder> newAreaBuilders =
-        CommonUtil.toImmutableMap(
+        CollectionUtil.toImmutableMap(
             routingInstance.getOspfAreas(),
             Entry::getKey,
             e -> {

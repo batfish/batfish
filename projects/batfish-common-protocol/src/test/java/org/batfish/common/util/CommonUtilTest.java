@@ -1,9 +1,9 @@
 package org.batfish.common.util;
 
+import static org.batfish.common.util.CollectionUtil.toOrderedHashCode;
+import static org.batfish.common.util.CollectionUtil.toUnorderedHashCode;
 import static org.batfish.common.util.CommonUtil.asNegativeIpWildcards;
 import static org.batfish.common.util.CommonUtil.asPositiveIpWildcards;
-import static org.batfish.common.util.CommonUtil.toOrderedHashCode;
-import static org.batfish.common.util.CommonUtil.toUnorderedHashCode;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;

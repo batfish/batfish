@@ -1,7 +1,7 @@
 package org.batfish.dataplane.ibdp;
 
 import static java.util.Objects.requireNonNull;
-import static org.batfish.common.util.CommonUtil.toImmutableSortedMap;
+import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
 import static org.batfish.dataplane.rib.RibDelta.importRibDelta;
 

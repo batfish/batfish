@@ -3,7 +3,7 @@ package org.batfish.common.topology;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.common.topology.TopologyUtil.computeIpInterfaceOwners;
 import static org.batfish.common.topology.TopologyUtil.computeNodeInterfaces;
-import static org.batfish.common.util.CommonUtil.toImmutableMap;
+import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.CollectionUtil;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
@@ -78,11 +78,11 @@ public final class IpOwners {
    */
   private static Map<String, Map<String, IpSpace>> computeInterfaceOwnedIpSpaces(
       Map<Ip, Map<String, Set<String>>> ipInterfaceOwners) {
-    return CommonUtil.toImmutableMap(
+    return CollectionUtil.toImmutableMap(
         TopologyUtil.computeInterfaceOwnedIps(ipInterfaceOwners),
         Entry::getKey, /* host */
         hostEntry ->
-            CommonUtil.toImmutableMap(
+            CollectionUtil.toImmutableMap(
                 hostEntry.getValue(),
                 Entry::getKey, /* interface */
                 ifaceEntry ->

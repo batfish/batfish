@@ -1,7 +1,7 @@
 package org.batfish.dataplane.ibdp;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static org.batfish.common.util.CommonUtil.toOrderedHashCode;
+import static org.batfish.common.util.CollectionUtil.toOrderedHashCode;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;

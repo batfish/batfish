@@ -31,6 +31,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.batfish.common.Pair;
+import org.batfish.common.util.CollectionUtil;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.IpsecUtil;
 import org.batfish.datamodel.AclIpSpace;
@@ -218,7 +219,7 @@ public final class TopologyUtil {
               }
             });
     Map<Integer, List<String>> switchportsByVlan =
-        CommonUtil.toImmutableMap(
+        CollectionUtil.toImmutableMap(
             switchportsByVlanBuilder, Entry::getKey, e -> e.getValue().build());
     switchportsByVlan.forEach(
         (vlanId, interfaceNames) -> {
@@ -383,7 +384,7 @@ public final class TopologyUtil {
                                             n -> ImmutableSet.builder())
                                         .add(new Layer1Node(hostname, iName)))));
     // finalize and freeze
-    return CommonUtil.toImmutableMap(builderMap, Entry::getKey, e -> e.getValue().build());
+    return CollectionUtil.toImmutableMap(builderMap, Entry::getKey, e -> e.getValue().build());
   }
 
   /**
@@ -499,11 +500,11 @@ public final class TopologyUtil {
                                 .add(ip))));
 
     // freeze
-    return CommonUtil.toImmutableMap(
+    return CollectionUtil.toImmutableMap(
         ownedIps,
         Entry::getKey, /* host */
         hostEntry ->
-            CommonUtil.toImmutableMap(
+            CollectionUtil.toImmutableMap(
                 hostEntry.getValue(),
                 Entry::getKey, /* interface */
                 ifaceEntry -> ImmutableSet.copyOf(ifaceEntry.getValue())));
@@ -525,7 +526,7 @@ public final class TopologyUtil {
             .startActive()) {
       assert span != null; // avoid unused warning
 
-      return CommonUtil.toImmutableMap(
+      return CollectionUtil.toImmutableMap(
           computeIpInterfaceOwners(computeNodeInterfaces(configurations), excludeInactive),
           Entry::getKey, /* Ip */
           ipInterfaceOwnersEntry ->
@@ -604,11 +605,11 @@ public final class TopologyUtil {
         });
 
     // freeze
-    return CommonUtil.toImmutableMap(
+    return CollectionUtil.toImmutableMap(
         ipOwners,
         Entry::getKey,
         ipOwnersEntry ->
-            CommonUtil.toImmutableMap(
+            CollectionUtil.toImmutableMap(
                 ipOwnersEntry.getValue(),
                 Entry::getKey, // hostname
                 hostIpOwnersEntry -> ImmutableSet.copyOf(hostIpOwnersEntry.getValue())));
@@ -627,7 +628,7 @@ public final class TopologyUtil {
       boolean excludeInactive, Map<String, Set<Interface>> enabledInterfaces) {
 
     Map<String, Map<String, String>> interfaceVrfs =
-        CommonUtil.toImmutableMap(
+        CollectionUtil.toImmutableMap(
             enabledInterfaces,
             Entry::getKey, /* hostname */
             nodeInterfaces ->
@@ -635,11 +636,11 @@ public final class TopologyUtil {
                     .collect(
                         ImmutableMap.toImmutableMap(Interface::getName, Interface::getVrfName)));
 
-    return CommonUtil.toImmutableMap(
+    return CollectionUtil.toImmutableMap(
         computeIpInterfaceOwners(enabledInterfaces, excludeInactive),
         Entry::getKey, /* Ip */
         ipInterfaceOwnersEntry ->
-            CommonUtil.toImmutableMap(
+            CollectionUtil.toImmutableMap(
                 ipInterfaceOwnersEntry.getValue(),
                 Entry::getKey, /* Hostname */
                 ipNodeInterfaceOwnersEntry ->
@@ -654,11 +655,11 @@ public final class TopologyUtil {
    */
   public static Map<Ip, Map<String, Set<String>>> computeIpVrfOwners(
       Map<Ip, Map<String, Set<String>>> ipInterfaceOwners, Map<String, Configuration> configs) {
-    return CommonUtil.toImmutableMap(
+    return CollectionUtil.toImmutableMap(
         ipInterfaceOwners,
         Entry::getKey, /* ip */
         ipEntry ->
-            CommonUtil.toImmutableMap(
+            CollectionUtil.toImmutableMap(
                 ipEntry.getValue(),
                 Entry::getKey, /* node */
                 nodeEntry ->
@@ -692,11 +693,11 @@ public final class TopologyUtil {
                                 .computeIfAbsent(vrf, k -> AclIpSpace.builder())
                                 .thenPermitting(ip.toIpSpace()))));
 
-    return CommonUtil.toImmutableMap(
+    return CollectionUtil.toImmutableMap(
         builders,
         Entry::getKey, /* node */
         nodeEntry ->
-            CommonUtil.toImmutableMap(
+            CollectionUtil.toImmutableMap(
                 nodeEntry.getValue(),
                 Entry::getKey, /* vrf */
                 vrfEntry -> vrfEntry.getValue().build()));
@@ -710,7 +711,7 @@ public final class TopologyUtil {
    */
   public static Map<String, Set<Interface>> computeNodeInterfaces(
       Map<String, Configuration> configurations) {
-    return CommonUtil.toImmutableMap(
+    return CollectionUtil.toImmutableMap(
         configurations,
         Entry::getKey,
         e -> ImmutableSet.copyOf(e.getValue().getAllInterfaces().values()));
