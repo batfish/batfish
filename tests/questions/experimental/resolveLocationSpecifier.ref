@@ -5,7 +5,7 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Returns resolved values for location specifier.",
+    "description" : "Returns the set of locations corresponding to a locationSpec value.",
     "instanceName" : "qname",
     "longDescription" : "Helper question that shows how specified locationSpec values resolve to the locations in the network.",
     "tags" : [

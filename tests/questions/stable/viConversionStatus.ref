@@ -3,7 +3,7 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Display vendor independent conversion status",
+    "description" : "Displays vendor independent conversion status.",
     "instanceName" : "qname",
     "longDescription" : "For each node in a snapshot, returns the vendor independent conversion status: pass, fail, converted with warnings.",
     "tags" : [

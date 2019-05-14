@@ -20,9 +20,9 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Find interfaces where the configured MTU matches the specified comparator and mtuBytes.",
+    "description" : "Finds interfaces where the configured MTU matches the specified comparator and mtuBytes.",
     "instanceName" : "qname",
-    "longDescription" : "For example, if comparator is '<' and mtuBytes is 1500, then only interfaces where the configured MTU is less than 1500 bytes will be returned",
+    "longDescription" : "For example, if comparator is '<' and mtuBytes is 1500, then only interfaces where the configured MTU is less than 1500 bytes will be returned.",
     "tags" : [
       "configuration"
     ],

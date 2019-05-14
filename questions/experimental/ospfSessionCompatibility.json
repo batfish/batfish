@@ -4,7 +4,7 @@
     "nodes": "${nodes}",
     "remoteNodes": "${remoteNodes}",
     "instance": {
-        "description": "Returns compatible OSPF sessions",
+        "description": "Returns compatible OSPF sessions.",
         "longDescription": "Returns compatible OSPF sessions in the network. A session is compatible if the interfaces involved are not shutdown and do run OSPF, are not OSPF passive and are associated with the same OSPF area.",
         "instanceName": "ospfSessionCompatibility",
          "orderedVariableNames": [

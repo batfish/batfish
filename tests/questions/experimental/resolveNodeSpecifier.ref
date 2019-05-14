@@ -5,7 +5,7 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Returns resolved values for node specifier.",
+    "description" : "Returns the set of nodes corresponding to a nodeSpec value.",
     "instanceName" : "qname",
     "longDescription" : "Helper question that shows how specified nodeSpec values resolve to the nodes in the network.",
     "tags" : [

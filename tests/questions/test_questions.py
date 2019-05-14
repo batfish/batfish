@@ -32,6 +32,25 @@ def question(question_path):
     return q
 
 
+def test_description(question_path, question):
+    """Tests that all questions have a non-trivial description."""
+    assert 'description' in question['instance']
+    description = question['instance']['description']
+    # there shouldn't be whitespace at the beginning or end
+    assert description.strip() == description
+    words = description.split()
+    # we should have at least three words
+    assert len(words) >= 3
+    # the first letter should be capitalized
+    assert description[0].isupper()
+    # the description should end with a period
+    assert description.endswith(".")
+    # the description should not have two periods at the end
+    assert not description.endswith("..")
+    # the last letter of the first word should be 's'
+    assert words[0][-1] == "s"
+
+
 def test_name_and_filename_match(question_path, question):
     """Tests that all questions have filenames that match their instance name."""
     assert 'instanceName' in question['instance']
@@ -82,6 +101,27 @@ def test_instance_vars_with_values(question):
 
         for value in var.get('values', []):
             assert 'description' in value, 'add description to {} or whitelist it'.format(name)
+
+
+def test_long_description(question_path, question):
+    """Tests that all questions have a non-trivial long descriptions."""
+    assert 'description' in question['instance']
+    assert 'longDescription' in question['instance']
+    description = question['instance']['description']
+    longDescription = question['instance']['longDescription']
+    # there shouldn't be whitespace at the beginning or end
+    assert longDescription.strip() == longDescription
+    words = longDescription.split()
+    # we should have at least five words
+    assert len(words) >= 5
+    # the first letter should be capitalized
+    assert longDescription[0].isupper()
+    # long description should end with a period
+    assert longDescription.endswith(".")
+    # long description should not have two periods at the end
+    assert not longDescription.endswith("..")
+    # description should not be the same as long description
+    assert longDescription != description
 
 
 def test_types(question):

@@ -4,7 +4,7 @@
     "prefix": "${prefix}",
     "nodes": "${nodes}",
     "instance": {
-        "description": "Trace prefix propagation through the network",
+        "description": "Traces prefix propagation through the network.",
         "instanceName": "prefixTracer",
         "longDescription": "Shows how prefixes are treated by devices in the network during routing.",
         "tags": [

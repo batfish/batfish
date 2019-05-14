@@ -9,7 +9,7 @@
     "maxTraces": "${maxTraces}",
     "pathConstraints": "${pathConstraints}",
     "instance": {
-        "description": "Find flows that match the specified path and header space conditions.",
+        "description": "Finds flows that match the specified path and header space conditions.",
         "instanceName": "reachability",
         "longDescription": "Searches across all flows that match the specified conditions and returns examples of such flows. This question can be used to ensure that certain services are globally accessible and parts of the network are perfectly isolated from each other.",
         "orderedVariableNames": [

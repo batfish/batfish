@@ -7,7 +7,7 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Show routes which are longest prefix match for a given IP address",
+    "description" : "Returns routes that are longest prefix match for a given IP address.",
     "instanceName" : "qname",
     "longDescription" : "Return longest prefix match routes for a given IP in the RIBs of specified nodes and VRFs.",
     "orderedVariableNames" : [

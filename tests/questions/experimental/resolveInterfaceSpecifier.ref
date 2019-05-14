@@ -5,7 +5,7 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Returns resolved values for interface specifier.",
+    "description" : "Returns the set of interfaces corresponding to an interfaceSpec value.",
     "instanceName" : "qname",
     "longDescription" : "Helper question that shows how specified interfaceSpec values resolve to the interfaces in the network.",
     "tags" : [

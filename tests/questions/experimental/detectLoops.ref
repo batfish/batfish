@@ -4,7 +4,7 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Detect forwarding loops.",
+    "description" : "Detects forwarding loops.",
     "instanceName" : "qname",
     "longDescription" : "Searches across all possible flows in the network and returns example flows that will experience forwarding loops.",
     "tags" : [

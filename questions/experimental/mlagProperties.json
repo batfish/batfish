@@ -4,8 +4,9 @@
     "nodes": "${nodes}",
     "idRegex": "${idRegex}",
     "instance": {
-        "description": "Returns configuration properties of MLAGs",
+        "description": "Returns MLAG configuration.",
         "instanceName": "mlagProperties",
+        "longDescription": "Lists the configuration settings for each MLAG domain in the network.",
         "tags": [
             "configuration",
             "link aggregation",
