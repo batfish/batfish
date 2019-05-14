@@ -32,10 +32,7 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.junit.Before;
 import org.junit.Test;
 
-/**
- * Tests of {@link BgpProtocolHelper#transformBgpRoutePreExport}
- * BgpProtocolHelper.transformBgpRouteOnExport}.
- */
+/** Tests of {@link BgpProtocolHelper#transformBgpRoutePreExport} */
 public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
 
   private final NetworkFactory _nf = new NetworkFactory();
