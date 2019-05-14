@@ -306,7 +306,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
 
   @Override
   public boolean isDirty() {
-    return !_changeset.build().isEmpty()
+    return !_changeset.isEmpty()
         || !_queuedForRedistribution.isEmpty()
         || !_activatedGeneratedRoutes.isEmpty()
         || !_interAreaIncomingRoutes.values().stream().allMatch(Queue::isEmpty)
