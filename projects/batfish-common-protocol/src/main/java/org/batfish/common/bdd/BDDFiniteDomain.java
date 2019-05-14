@@ -3,8 +3,8 @@ package org.batfish.common.bdd;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.batfish.common.bdd.BDDUtils.isAssignment;
+import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.common.util.CommonUtil.forEachWithIndex;
-import static org.batfish.common.util.CommonUtil.toImmutableMap;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.math.LongMath;

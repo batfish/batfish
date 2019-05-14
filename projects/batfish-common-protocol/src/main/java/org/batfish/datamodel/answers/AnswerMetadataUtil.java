@@ -15,7 +15,7 @@ import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.CollectionUtil;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.ExcludedRows;
 import org.batfish.datamodel.table.Row;
@@ -73,11 +73,11 @@ public final class AnswerMetadataUtil {
                     .computeIfAbsent(
                         columnAggregationResult.getAggregation(),
                         a -> columnAggregationResult.getValue()));
-    return CommonUtil.toImmutableMap(
+    return CollectionUtil.toImmutableMap(
         columnAggregations,
         Entry::getKey,
         columnAggregationsByColumnEntry ->
-            CommonUtil.toImmutableMap(
+            CollectionUtil.toImmutableMap(
                 columnAggregationsByColumnEntry.getValue(), Entry::getKey, Entry::getValue));
   }
 
@@ -140,7 +140,7 @@ public final class AnswerMetadataUtil {
                     .add(
                         new MinorIssueConfig(
                             issue.getType().getMinor(), issue.getSeverity(), issue.getUrl())));
-    return CommonUtil.toImmutableMap(
+    return CollectionUtil.toImmutableMap(
         majorIssueConfigs,
         Entry::getKey, // major issue type
         e -> new MajorIssueConfig(e.getKey(), e.getValue().build()));

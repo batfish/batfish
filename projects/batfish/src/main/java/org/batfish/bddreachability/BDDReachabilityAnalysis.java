@@ -2,7 +2,7 @@ package org.batfish.bddreachability;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.bddreachability.BDDReachabilityUtils.computeForwardEdgeTable;
-import static org.batfish.common.util.CommonUtil.toImmutableMap;
+import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;

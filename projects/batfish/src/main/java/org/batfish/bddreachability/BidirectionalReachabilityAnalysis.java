@@ -4,7 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static org.batfish.bddreachability.BDDReachabilityAnalysisSessionFactory.computeInitializedSesssions;
 import static org.batfish.bddreachability.OriginationStateToTerminationState.originationStateToTerminationState;
 import static org.batfish.bddreachability.ReversePassOriginationState.reverseTraceOriginationState;
-import static org.batfish.common.util.CommonUtil.toImmutableMap;
+import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.FlowDisposition.LOOP;
 
 import com.google.common.annotations.VisibleForTesting;

@@ -88,6 +88,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.WorkItem;
 import org.batfish.common.plugin.AbstractCoordinator;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.common.util.CollectionUtil;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.UnzipUtility;
 import org.batfish.common.util.WorkItemBuilder;
@@ -2370,7 +2371,7 @@ public class WorkMgr extends AbstractCoordinator {
    */
   public Map<String, Answer> processAnalysisAnswers(
       Map<String, String> rawAnswers, Map<String, AnswerRowsOptions> answersRowsOptions) {
-    return CommonUtil.toImmutableMap(
+    return CollectionUtil.toImmutableMap(
         rawAnswers,
         Entry::getKey,
         rawAnswersEntry ->

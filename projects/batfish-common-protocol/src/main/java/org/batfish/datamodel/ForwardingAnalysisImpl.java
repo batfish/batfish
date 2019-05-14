@@ -3,7 +3,7 @@ package org.batfish.datamodel;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Ordering.natural;
-import static org.batfish.common.util.CommonUtil.toImmutableMap;
+import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;

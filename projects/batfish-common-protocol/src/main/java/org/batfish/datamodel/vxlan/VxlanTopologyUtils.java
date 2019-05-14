@@ -1,6 +1,6 @@
 package org.batfish.datamodel.vxlan;
 
-import static org.batfish.common.util.CommonUtil.toImmutableMap;
+import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;

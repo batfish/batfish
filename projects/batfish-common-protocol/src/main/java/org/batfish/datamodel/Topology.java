@@ -15,7 +15,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.CollectionUtil;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /**
@@ -56,7 +56,7 @@ public final class Topology implements Serializable {
             builders
                 .computeIfAbsent(edge.getTail(), k -> ImmutableSortedSet.naturalOrder())
                 .add(edge.getHead()));
-    return CommonUtil.toImmutableSortedMap(
+    return CollectionUtil.toImmutableSortedMap(
         builders, Entry::getKey, entry -> entry.getValue().build());
   }
 
@@ -69,7 +69,7 @@ public final class Topology implements Serializable {
       builders.computeIfAbsent(node1, k -> ImmutableSortedSet.naturalOrder()).add(edge);
       builders.computeIfAbsent(node2, k -> ImmutableSortedSet.naturalOrder()).add(edge);
     }
-    return CommonUtil.toImmutableSortedMap(
+    return CollectionUtil.toImmutableSortedMap(
         builders, Entry::getKey, entry -> entry.getValue().build());
   }
 

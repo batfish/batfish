@@ -1,7 +1,7 @@
 package org.batfish.common.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.common.util.CommonUtil.toImmutableMap;
+import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;

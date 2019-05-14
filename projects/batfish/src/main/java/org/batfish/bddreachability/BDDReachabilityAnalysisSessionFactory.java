@@ -7,7 +7,7 @@ import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.LastHopOutgoingInterfaceManager.NO_LAST_HOP;
 import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
-import static org.batfish.common.util.CommonUtil.toImmutableMap;
+import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 
 import com.google.common.collect.ImmutableList;

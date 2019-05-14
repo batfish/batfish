@@ -1,7 +1,7 @@
 package org.batfish.dataplane.ibdp;
 
-import static org.batfish.common.util.CommonUtil.toImmutableMap;
-import static org.batfish.common.util.CommonUtil.toImmutableSortedMap;
+import static org.batfish.common.util.CollectionUtil.toImmutableMap;
+import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
