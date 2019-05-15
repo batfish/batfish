@@ -2,8 +2,8 @@ package org.batfish.dataplane.rib;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Ordering;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -31,12 +30,12 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 public final class RibDelta<R> {
 
   /** Sorted for deterministic iteration order */
-  private SortedMap<Prefix, List<RouteAdvertisement<R>>> _actions;
+  private ImmutableSortedMap<Prefix, List<RouteAdvertisement<R>>> _actions;
 
   private static final RibDelta<Object> EMPTY = new RibDelta<>(ImmutableSortedMap.of());
 
-  private RibDelta(Map<Prefix, List<RouteAdvertisement<R>>> actions) {
-    _actions = ImmutableSortedMap.copyOf(actions);
+  private RibDelta(ImmutableSortedMap<Prefix, List<RouteAdvertisement<R>>> actions) {
+    _actions = actions;
   }
 
   /**
@@ -179,8 +178,10 @@ public final class RibDelta<R> {
       return new RibDelta<>(
           _actions.entrySet().stream()
               .collect(
-                  ImmutableMap.toImmutableMap(
-                      Entry::getKey, e -> ImmutableList.copyOf(e.getValue().values()))));
+                  ImmutableSortedMap.toImmutableSortedMap(
+                      Ordering.natural(),
+                      Entry::getKey,
+                      e -> ImmutableList.copyOf(e.getValue().values()))));
     }
 
     /** Process all added and removed routes from a given delta */
