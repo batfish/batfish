@@ -39,7 +39,7 @@ public class ReferenceAddressGroupIpSpaceSpecifierTest {
         resolvedSpace,
         equalTo(
             AclIpSpace.union(
-                new IpWildcard("1.1.1.1").toIpSpace(),
-                new IpWildcard("2.2.2.2:0.0.0.8").toIpSpace())));
+                IpWildcard.parse("1.1.1.1").toIpSpace(),
+                IpWildcard.parse("2.2.2.2:0.0.0.8").toIpSpace())));
   }
 }

@@ -58,9 +58,9 @@ public class CiscoConversionsTest {
                         .setMatchCondition(
                             new MatchHeaderSpace(
                                 HeaderSpace.builder()
-                                    .setSrcIps(new IpWildcard("1.1.1.1").toIpSpace())
-                                    .setDstIps(new IpWildcard("2.2.2.2").toIpSpace())
-                                    .setNotSrcIps(new IpWildcard("3.3.3.3").toIpSpace())
+                                    .setSrcIps(IpWildcard.parse("1.1.1.1").toIpSpace())
+                                    .setDstIps(IpWildcard.parse("2.2.2.2").toIpSpace())
+                                    .setNotSrcIps(IpWildcard.parse("3.3.3.3").toIpSpace())
                                     .setIpProtocols(ImmutableSet.of(IpProtocol.IP))
                                     .build()))
                         .build()))
@@ -161,13 +161,13 @@ public class CiscoConversionsTest {
     // Empty interfaceName value represents incorrect local-address value
     isakmpProfile.setLocalInterfaceName("local_interface");
     isakmpProfile.setKeyring("IKE_Phase1_Key");
-    isakmpProfile.setMatchIdentity(new IpWildcard("1.2.3.4:0.0.0.0"));
+    isakmpProfile.setMatchIdentity(IpWildcard.parse("1.2.3.4:0.0.0.0"));
 
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
     ikePhase1Key.setKeyHash("test_key");
     ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
     ikePhase1Key.setLocalInterface("local_interface");
-    ikePhase1Key.setRemoteIdentity(new IpWildcard("1.2.3.4:0.0.0.0").toIpSpace());
+    ikePhase1Key.setRemoteIdentity(IpWildcard.parse("1.2.3.4:0.0.0.0").toIpSpace());
 
     IkePhase1Key matchingKey =
         getMatchingPsk(isakmpProfile, _warnings, ImmutableMap.of(IKE_PHASE1_KEY, ikePhase1Key));
@@ -181,13 +181,13 @@ public class CiscoConversionsTest {
     // Empty interfaceName value represents incorrect local-address value
     isakmpProfile.setLocalInterfaceName("local_interface");
     isakmpProfile.setKeyring("IKE_Phase1_Key");
-    isakmpProfile.setMatchIdentity(new IpWildcard("2.4.3.4:255.255.0.0"));
+    isakmpProfile.setMatchIdentity(IpWildcard.parse("2.4.3.4:255.255.0.0"));
 
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
     ikePhase1Key.setKeyHash("test_key");
     ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
     ikePhase1Key.setLocalInterface("local_interface");
-    ikePhase1Key.setRemoteIdentity(new IpWildcard("1.2.3.5:0.0.0.0").toIpSpace());
+    ikePhase1Key.setRemoteIdentity(IpWildcard.parse("1.2.3.5:0.0.0.0").toIpSpace());
 
     IkePhase1Key matchingKey =
         getMatchingPsk(isakmpProfile, _warnings, ImmutableMap.of(IKE_PHASE1_KEY, ikePhase1Key));

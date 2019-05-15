@@ -87,7 +87,7 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
   private Prefix(Ip ip, int prefixLength) {
     checkArgument(
         prefixLength >= 0 && prefixLength <= MAX_PREFIX_LENGTH,
-        "Invalid prefix length %d",
+        "Invalid prefix length %s",
         prefixLength);
     if (ip.valid()) {
       // TODO: stop using Ip as a holder for invalid values.

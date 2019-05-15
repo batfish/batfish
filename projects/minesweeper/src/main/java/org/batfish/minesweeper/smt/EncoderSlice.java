@@ -407,7 +407,7 @@ class EncoderSlice {
     if (_headerSpace.getDstIps() == null) {
       return true;
     }
-    return new IpSpaceMayIntersectWildcard(new IpWildcard(p), ImmutableMap.of())
+    return new IpSpaceMayIntersectWildcard(IpWildcard.create(p), ImmutableMap.of())
         .visit(_headerSpace.getDstIps());
   }
 

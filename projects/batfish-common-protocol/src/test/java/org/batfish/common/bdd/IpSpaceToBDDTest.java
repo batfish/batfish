@@ -111,7 +111,8 @@ public class IpSpaceToBDDTest {
 
   @Test
   public void testIpWildcard() {
-    IpSpace ipSpace = new IpWildcard(Ip.parse("255.0.255.0"), Ip.parse("0.255.0.255")).toIpSpace();
+    IpSpace ipSpace =
+        IpWildcard.ipWithWildcardMask(Ip.parse("255.0.255.0"), Ip.parse("0.255.0.255")).toIpSpace();
     BDD bdd = ipSpace.accept(_ipSpaceToBdd);
     assertThat(
         bdd,
@@ -126,7 +127,7 @@ public class IpSpaceToBDDTest {
   @Test
   public void testIpWildcard_prefix() {
     IpSpace ipWildcardIpSpace =
-        new IpWildcard(Ip.parse("123.0.0.0"), Ip.parse("0.255.255.255")).toIpSpace();
+        IpWildcard.ipWithWildcardMask(Ip.parse("123.0.0.0"), Ip.parse("0.255.255.255")).toIpSpace();
     IpSpace prefixIpSpace = Prefix.parse("123.0.0.0/8").toIpSpace();
     BDD bdd1 = ipWildcardIpSpace.accept(_ipSpaceToBdd);
     BDD bdd2 = prefixIpSpace.accept(_ipSpaceToBdd);
@@ -201,13 +202,13 @@ public class IpSpaceToBDDTest {
     Prefix exclude4 = Prefix.parse("1.1.3.3/32");
     IpWildcardSetIpSpace ipSpace =
         IpWildcardSetIpSpace.builder()
-            .including(new IpWildcard(include1))
-            .including(new IpWildcard(include2))
-            .including(new IpWildcard(include3))
-            .excluding(new IpWildcard(exclude1))
-            .excluding(new IpWildcard(exclude2))
-            .excluding(new IpWildcard(exclude3))
-            .excluding(new IpWildcard(exclude4))
+            .including(IpWildcard.create(include1))
+            .including(IpWildcard.create(include2))
+            .including(IpWildcard.create(include3))
+            .excluding(IpWildcard.create(exclude1))
+            .excluding(IpWildcard.create(exclude2))
+            .excluding(IpWildcard.create(exclude3))
+            .excluding(IpWildcard.create(exclude4))
             .build();
 
     BDD include1Bdd = _ipSpaceToBdd.toBDD(include1);

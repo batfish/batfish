@@ -47,7 +47,7 @@ public class SecurityGroupsTest {
     _allowAllReverseOutboundRule =
         IpAccessListLine.acceptingHeaderSpace(
             HeaderSpace.builder()
-                .setSrcIps(Sets.newHashSet(new IpWildcard("0.0.0.0/0")))
+                .setSrcIps(Sets.newHashSet(IpWildcard.parse("0.0.0.0/0")))
                 .setTcpFlags(ImmutableSet.of(TcpFlagsMatchConditions.ACK_TCP_FLAG))
                 .build());
     _region = new Region("test");
@@ -72,7 +72,7 @@ public class SecurityGroupsTest {
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                        .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
+                        .setSrcIps(Sets.newHashSet(IpWildcard.parse("1.2.3.4/32")))
                         .setDstPorts(Sets.newHashSet(new SubRange(22, 22)))
                         .build()))));
   }
@@ -94,7 +94,7 @@ public class SecurityGroupsTest {
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                        .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
+                        .setSrcIps(Sets.newHashSet(IpWildcard.parse("1.2.3.4/32")))
                         .setDstPorts(Sets.newHashSet(new SubRange(0, 22)))
                         .build()))));
   }
@@ -116,7 +116,7 @@ public class SecurityGroupsTest {
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                        .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
+                        .setSrcIps(Sets.newHashSet(IpWildcard.parse("1.2.3.4/32")))
                         .setDstPorts(Sets.newHashSet(new SubRange(65530, 65535)))
                         .build()))));
   }
@@ -138,7 +138,7 @@ public class SecurityGroupsTest {
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                        .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
+                        .setSrcIps(Sets.newHashSet(IpWildcard.parse("1.2.3.4/32")))
                         .build()))));
   }
 
@@ -158,7 +158,7 @@ public class SecurityGroupsTest {
                 _allowAllReverseOutboundRule,
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
-                        .setSrcIps(Sets.newHashSet(new IpWildcard("0.0.0.0/0")))
+                        .setSrcIps(Sets.newHashSet(IpWildcard.parse("0.0.0.0/0")))
                         .setDstPorts(Sets.newHashSet())
                         .build()))));
   }
@@ -180,7 +180,7 @@ public class SecurityGroupsTest {
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                        .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
+                        .setSrcIps(Sets.newHashSet(IpWildcard.parse("1.2.3.4/32")))
                         .setDstPorts(Sets.newHashSet(new SubRange(45, 50)))
                         .build()))));
   }
@@ -202,7 +202,7 @@ public class SecurityGroupsTest {
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                        .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
+                        .setSrcIps(Sets.newHashSet(IpWildcard.parse("1.2.3.4/32")))
                         .setDstPorts(Sets.newHashSet(new SubRange(0, 50)))
                         .build()))));
   }
@@ -224,7 +224,7 @@ public class SecurityGroupsTest {
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                        .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
+                        .setSrcIps(Sets.newHashSet(IpWildcard.parse("1.2.3.4/32")))
                         .setDstPorts(Sets.newHashSet(new SubRange(30, 65535)))
                         .build()))));
   }
@@ -246,14 +246,14 @@ public class SecurityGroupsTest {
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                        .setSrcIps(Sets.newHashSet(new IpWildcard("5.6.7.8/32")))
+                        .setSrcIps(Sets.newHashSet(IpWildcard.parse("5.6.7.8/32")))
                         .setSrcPorts(Sets.newHashSet(new SubRange(80, 80)))
                         .setTcpFlags(ImmutableSet.of(TcpFlagsMatchConditions.ACK_TCP_FLAG))
                         .build()),
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                        .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
+                        .setSrcIps(Sets.newHashSet(IpWildcard.parse("1.2.3.4/32")))
                         .setDstPorts(Sets.newHashSet(new SubRange(22, 22)))
                         .build()))));
     assertThat(
@@ -264,14 +264,14 @@ public class SecurityGroupsTest {
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                        .setDstIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
+                        .setDstIps(Sets.newHashSet(IpWildcard.parse("1.2.3.4/32")))
                         .setSrcPorts(Sets.newHashSet(new SubRange(22, 22)))
                         .setTcpFlags(ImmutableSet.of(TcpFlagsMatchConditions.ACK_TCP_FLAG))
                         .build()),
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                        .setDstIps(Sets.newHashSet(new IpWildcard("5.6.7.8/32")))
+                        .setDstIps(Sets.newHashSet(IpWildcard.parse("5.6.7.8/32")))
                         .setDstPorts(Sets.newHashSet(new SubRange(80, 80)))
                         .build()))));
   }

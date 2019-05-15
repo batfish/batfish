@@ -106,21 +106,21 @@ public class PropertyChecker {
       // If we don't know what is on the other end
       if (ge.getPeer() == null) {
         Prefix pfx = ge.getStart().getAddress().getPrefix();
-        IpWildcard dst = new IpWildcard(pfx);
+        IpWildcard dst = IpWildcard.create(pfx);
         headerSpace.setDstIps(AclIpSpace.union(headerSpace.getDstIps(), dst.toIpSpace()));
       } else {
         // If host, add the subnet but not the neighbor's address
         if (g.isHost(ge.getRouter())) {
           Prefix pfx = ge.getStart().getAddress().getPrefix();
-          IpWildcard dst = new IpWildcard(pfx);
+          IpWildcard dst = IpWildcard.create(pfx);
           headerSpace.setDstIps(AclIpSpace.union(headerSpace.getDstIps(), dst.toIpSpace()));
           Ip ip = ge.getEnd().getAddress().getIp();
-          IpWildcard dst2 = new IpWildcard(ip);
+          IpWildcard dst2 = IpWildcard.create(ip);
           headerSpace.setNotDstIps(AclIpSpace.union(headerSpace.getNotDstIps(), dst2.toIpSpace()));
         } else {
           // Otherwise, we add the exact address
           Ip ip = ge.getStart().getAddress().getIp();
-          IpWildcard dst = new IpWildcard(ip);
+          IpWildcard dst = IpWildcard.create(ip);
           headerSpace.setDstIps(AclIpSpace.union(headerSpace.getDstIps(), dst.toIpSpace()));
         }
       }
@@ -849,7 +849,7 @@ public class PropertyChecker {
 
     SortedSet<IpWildcard> pfxs = new TreeSet<>();
     for (Prefix prefix : prefixes) {
-      pfxs.add(new IpWildcard(prefix));
+      pfxs.add(IpWildcard.create(prefix));
     }
     q.getHeaderSpace().setDstIps(pfxs);
 

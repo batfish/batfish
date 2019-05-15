@@ -471,11 +471,11 @@ public class IpsecUtil {
               .collect(ImmutableSet.toImmutableSet());
       Set<IpWildcard> blacklist =
           nonNattedInterfaceAddresses.stream()
-              .map(address -> new IpWildcard(address.getIp(), Ip.ZERO))
+              .map(address -> IpWildcard.create(address.getIp()))
               .collect(ImmutableSet.toImmutableSet());
       Set<IpWildcard> whitelist =
           nonNattedInterfaceAddresses.stream()
-              .map(address -> new IpWildcard(address.getPrefix()))
+              .map(address -> IpWildcard.create(address.getPrefix()))
               .collect(ImmutableSet.toImmutableSet());
       IpWildcardSetIpSpace ipSpace =
           IpWildcardSetIpSpace.builder().including(whitelist).excluding(blacklist).build();

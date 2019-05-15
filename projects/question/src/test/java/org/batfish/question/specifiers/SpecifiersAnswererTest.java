@@ -151,7 +151,7 @@ public class SpecifiersAnswererTest {
                     COL_IP_SPACE,
                     SpecifierFactories.ACTIVE_VERSION == Version.V1
                         ? IpWildcardSetIpSpace.builder()
-                            .including(new IpWildcard(prefix))
+                            .including(IpWildcard.parse(prefix))
                             .build()
                             .toString()
                         : Prefix.parse(prefix).toIpSpace().toString()))));

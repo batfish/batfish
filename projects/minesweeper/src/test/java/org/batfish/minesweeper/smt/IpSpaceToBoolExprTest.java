@@ -78,7 +78,7 @@ public class IpSpaceToBoolExprTest {
   public void testIpWildcardIpSpace() {
     Ip ip = Ip.create(0x01000200);
     Ip mask = Ip.create(0x00FF00FF);
-    IpWildcard ipWildcard = new IpWildcard(ip, mask);
+    IpWildcard ipWildcard = IpWildcard.ipWithWildcardMask(ip, mask);
     BitVecExpr ipBV = CONTEXT.mkBV(ip.asLong(), 32);
     BitVecExpr maskBV = CONTEXT.mkBV(mask.inverted().asLong(), 32);
     assertThat(

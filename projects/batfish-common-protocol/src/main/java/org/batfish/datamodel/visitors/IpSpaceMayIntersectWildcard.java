@@ -92,7 +92,7 @@ public class IpSpaceMayIntersectWildcard implements GenericIpSpaceVisitor<Boolea
 
   @Override
   public Boolean visitPrefixIpSpace(PrefixIpSpace prefixIpSpace) {
-    return new IpWildcard(prefixIpSpace.getPrefix()).intersects(_ipWildcard);
+    return IpWildcard.create(prefixIpSpace.getPrefix()).intersects(_ipWildcard);
   }
 
   @Override

@@ -2396,11 +2396,11 @@ public final class FlatJuniperGrammarTest {
                                     HeaderSpace.builder()
                                         .setSrcIps(
                                             AclIpSpace.union(
-                                                new IpWildcard(
+                                                IpWildcard.ipWithWildcardMask(
                                                         Ip.parse("1.0.3.0"),
                                                         Ip.parse("0.255.0.255"))
                                                     .toIpSpace(),
-                                                new IpWildcard("2.3.4.5/24").toIpSpace()))
+                                                IpWildcard.parse("2.3.4.5/24").toIpSpace()))
                                         .build()))
                             .setName("TERM")
                             .build())))));
@@ -2680,11 +2680,11 @@ public final class FlatJuniperGrammarTest {
                                     HeaderSpace.builder()
                                         .setDstIps(
                                             AclIpSpace.union(
-                                                new IpWildcard(
+                                                IpWildcard.ipWithWildcardMask(
                                                         Ip.parse("1.0.3.0"),
                                                         Ip.parse("0.255.0.255"))
                                                     .toIpSpace(),
-                                                new IpWildcard("2.3.4.5/24").toIpSpace()))
+                                                IpWildcard.parse("2.3.4.5/24").toIpSpace()))
                                         .build()))
                             .setName("TERM")
                             .build())))));
@@ -4028,7 +4028,7 @@ public final class FlatJuniperGrammarTest {
                     LineAction.PERMIT, Prefix.parse("1.7.0.0/17"), new SubRange(17, 17)),
                 new RouteFilterLine(
                     LineAction.PERMIT,
-                    new IpWildcard("1.0.0.0:0.255.0.255"),
+                    IpWildcard.parse("1.0.0.0:0.255.0.255"),
                     new SubRange(16, 16)))));
   }
 
@@ -4392,7 +4392,7 @@ public final class FlatJuniperGrammarTest {
                             LineAction.PERMIT,
                             AclLineMatchExprs.match(
                                 HeaderSpace.builder()
-                                    .setSrcIps(new IpWildcard(Ip.parse("1.2.3.6")).toIpSpace())
+                                    .setSrcIps(IpWildcard.parse("1.2.3.6").toIpSpace())
                                     .build()),
                             "TERM")))
                 .build()));

@@ -883,13 +883,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
       summaryFilter.addLine(
           new org.batfish.datamodel.RouteFilterLine(
               LineAction.DENY,
-              new IpWildcard(prefix),
+              IpWildcard.create(prefix),
               new SubRange(filterMinPrefixLength, Prefix.MAX_PREFIX_LENGTH)));
     }
     summaryFilter.addLine(
         new org.batfish.datamodel.RouteFilterLine(
             LineAction.PERMIT,
-            new IpWildcard(Prefix.ZERO),
+            IpWildcard.create(Prefix.ZERO),
             new SubRange(0, Prefix.MAX_PREFIX_LENGTH)));
     newAreaBuilder.setSummaryFilter(summaryFilter.getName());
     return newAreaBuilder;

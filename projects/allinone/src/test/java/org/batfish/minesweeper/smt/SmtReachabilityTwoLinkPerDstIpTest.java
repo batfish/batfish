@@ -88,7 +88,7 @@ public class SmtReachabilityTwoLinkPerDstIpTest {
     final ReachabilityQuestion question = new ReachabilityQuestion();
     question.setIngressNodeRegex(_srcNode.getHostname());
     question.setFinalNodeRegex(_dstNode.getHostname());
-    question.setDstIps(ImmutableSet.of(new IpWildcard(_dstIp)));
+    question.setDstIps(ImmutableSet.of(IpWildcard.create(_dstIp)));
     final AnswerElement answer = Answerer.create(question, _batfish).answer();
     assertThat(answer, instanceOf(SmtReachabilityAnswerElement.class));
 
@@ -112,7 +112,7 @@ public class SmtReachabilityTwoLinkPerDstIpTest {
     // verify unreachability, which is false (we'll get a counterexample).
     question.setNegate(true);
 
-    question.setDstIps(ImmutableSet.of(new IpWildcard(_dstIp)));
+    question.setDstIps(ImmutableSet.of(IpWildcard.create(_dstIp)));
     final AnswerElement answer = Answerer.create(question, _batfish).answer();
     assertThat(answer, instanceOf(SmtReachabilityAnswerElement.class));
 
@@ -139,7 +139,7 @@ public class SmtReachabilityTwoLinkPerDstIpTest {
     final ReachabilityQuestion question = new ReachabilityQuestion();
     question.setIngressNodeRegex(_srcNode.getHostname());
     question.setFinalNodeRegex(_dstNode.getHostname());
-    question.setDstIps(ImmutableSet.of(new IpWildcard(_dstIp)));
+    question.setDstIps(ImmutableSet.of(IpWildcard.create(_dstIp)));
     question.setFailures(1); // at most 1 failure
 
     final AnswerElement answer = Answerer.create(question, _batfish).answer();
@@ -163,7 +163,7 @@ public class SmtReachabilityTwoLinkPerDstIpTest {
     final ReachabilityQuestion question = new ReachabilityQuestion();
     question.setIngressNodeRegex(_srcNode.getHostname());
     question.setFinalNodeRegex(_dstNode.getHostname());
-    question.setDstIps(ImmutableSet.of(new IpWildcard(_dstIp)));
+    question.setDstIps(ImmutableSet.of(IpWildcard.create(_dstIp)));
     question.setFailures(1);
     question.setNegate(true);
 
@@ -181,7 +181,7 @@ public class SmtReachabilityTwoLinkPerDstIpTest {
     final ReachabilityQuestion question = new ReachabilityQuestion();
     question.setIngressNodeRegex(_srcNode.getHostname());
     question.setFinalNodeRegex(_dstNode.getHostname());
-    question.setNotDstIps(ImmutableSet.of(new IpWildcard(_dstIp)));
+    question.setNotDstIps(ImmutableSet.of(IpWildcard.create(_dstIp)));
     question.setFailures(1);
 
     final AnswerElement answer = Answerer.create(question, _batfish).answer();

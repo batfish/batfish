@@ -522,7 +522,7 @@ public class Client extends AbstractClient implements IClient {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
-        new IpWildcard(value.textValue());
+        IpWildcard.parse(value.textValue());
         break;
       case IPSEC_SESSION_STATUS:
         if (!value.isTextual()) {

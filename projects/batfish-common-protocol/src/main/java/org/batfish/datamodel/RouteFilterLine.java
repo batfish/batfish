@@ -47,12 +47,12 @@ public final class RouteFilterLine implements Serializable {
 
   public RouteFilterLine(LineAction action, Prefix prefix, SubRange lengthRange) {
     _action = action;
-    _ipWildcard = new IpWildcard(prefix);
+    _ipWildcard = IpWildcard.create(prefix);
     _lengthRange = lengthRange;
   }
 
   public RouteFilterLine(LineAction action, PrefixRange prefixRange) {
-    this(action, new IpWildcard(prefixRange.getPrefix()), prefixRange.getLengthRange());
+    this(action, IpWildcard.create(prefixRange.getPrefix()), prefixRange.getLengthRange());
   }
 
   @Override

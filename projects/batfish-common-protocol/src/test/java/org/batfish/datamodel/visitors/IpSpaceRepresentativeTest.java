@@ -19,7 +19,7 @@ import org.junit.Test;
 
 public class IpSpaceRepresentativeTest {
   private static final IpWildcard EVEN_IPS =
-      new IpWildcard(Ip.parse("0.0.0.0"), Ip.parse("255.255.255.254"));
+      IpWildcard.ipWithWildcardMask(Ip.parse("0.0.0.0"), Ip.parse("255.255.255.254"));
 
   private IpSpaceRepresentative _ipSpaceRepresentative;
 
@@ -86,7 +86,7 @@ public class IpSpaceRepresentativeTest {
   public void testIpWildcardIpSpace() {
     Ip ip = Ip.parse("1.0.2.0");
     Ip mask = Ip.parse("0.255.0.255");
-    IpWildcard wc = new IpWildcard(ip, mask);
+    IpWildcard wc = IpWildcard.ipWithWildcardMask(ip, mask);
     assertThat(_ipSpaceRepresentative.getRepresentative(wc.toIpSpace()), equalTo(Optional.of(ip)));
   }
 
@@ -94,7 +94,7 @@ public class IpSpaceRepresentativeTest {
   public void testIpWildcardSetIpSpace() {
     IpSpace ipSpace =
         IpWildcardSetIpSpace.builder()
-            .including(new IpWildcard("1.2.3.0/24"))
+            .including(IpWildcard.parse("1.2.3.0/24"))
             .excluding(EVEN_IPS)
             .build();
     assertThat(
