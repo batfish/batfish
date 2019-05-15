@@ -224,17 +224,4 @@ public final class IpWildcard implements Serializable, Comparable<IpWildcard> {
     _ip = (canonicalIp == inputIp) ? address : Ip.create(canonicalIp);
     _wildcardMask = wildcardMask;
   }
-
-  // Old constructor, visible for transitioning off it.
-  public IpWildcard(Prefix prefix) {
-    int wildcardBits = Prefix.MAX_PREFIX_LENGTH - prefix.getPrefixLength();
-    _wildcardMask = (1L << wildcardBits) - 1L;
-    _ip = prefix.getStartIp();
-  }
-
-  // Old constructor, visible for transitioning off it.
-  public IpWildcard(String str) {
-    _ip = parseAddress(str);
-    _wildcardMask = parseMask(str).asLong();
-  }
 }
