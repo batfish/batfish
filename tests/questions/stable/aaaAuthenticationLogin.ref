@@ -8,7 +8,7 @@
     "instanceName" : "qname",
     "longDescription" : "Lists all nodes in the network for which there is a virtual terminal line that does not require authentication.",
     "tags" : [
-      "configuration"
+      "hygiene"
     ],
     "variables" : {
       "nodes" : {
