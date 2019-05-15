@@ -26,7 +26,7 @@ public class FlexibleIpSpaceSpecifierFactoryTest {
         parse("1.2.3.4"),
         equalTo(
             new ConstantIpSpaceSpecifier(
-                IpWildcardSetIpSpace.builder().including(new IpWildcard("1.2.3.4")).build())));
+                IpWildcardSetIpSpace.builder().including(IpWildcard.parse("1.2.3.4")).build())));
     assertThat(
         parse("ref.addressgroup(foo,bar)"),
         equalTo(new ReferenceAddressGroupIpSpaceSpecifier("foo", "bar")));
@@ -47,7 +47,8 @@ public class FlexibleIpSpaceSpecifierFactoryTest {
         parseIpSpace("1.0.0.0,2.0.0.0/8"),
         equalTo(
             IpWildcardSetIpSpace.builder()
-                .including(ImmutableList.of(new IpWildcard("1.0.0.0"), new IpWildcard("2.0.0.0/8")))
+                .including(
+                    ImmutableList.of(IpWildcard.parse("1.0.0.0"), IpWildcard.parse("2.0.0.0/8")))
                 .build()));
   }
 
@@ -57,9 +58,10 @@ public class FlexibleIpSpaceSpecifierFactoryTest {
         parseIpSpace("1.0.0.0,2.0.0.0/8 - 3.0.0.0,4.0.0.0/32"),
         equalTo(
             IpWildcardSetIpSpace.builder()
-                .including(ImmutableList.of(new IpWildcard("1.0.0.0"), new IpWildcard("2.0.0.0/8")))
+                .including(
+                    ImmutableList.of(IpWildcard.parse("1.0.0.0"), IpWildcard.parse("2.0.0.0/8")))
                 .excluding(
-                    ImmutableList.of(new IpWildcard("3.0.0.0"), new IpWildcard("4.0.0.0/32")))
+                    ImmutableList.of(IpWildcard.parse("3.0.0.0"), IpWildcard.parse("4.0.0.0/32")))
                 .build()));
   }
 
@@ -69,9 +71,10 @@ public class FlexibleIpSpaceSpecifierFactoryTest {
         parseIpSpace("1.0.0.0,2.0.0.0/8 \\ 3.0.0.0,4.0.0.0/32"),
         equalTo(
             IpWildcardSetIpSpace.builder()
-                .including(ImmutableList.of(new IpWildcard("1.0.0.0"), new IpWildcard("2.0.0.0/8")))
+                .including(
+                    ImmutableList.of(IpWildcard.parse("1.0.0.0"), IpWildcard.parse("2.0.0.0/8")))
                 .excluding(
-                    ImmutableList.of(new IpWildcard("3.0.0.0"), new IpWildcard("4.0.0.0/32")))
+                    ImmutableList.of(IpWildcard.parse("3.0.0.0"), IpWildcard.parse("4.0.0.0/32")))
                 .build()));
   }
 
@@ -89,13 +92,14 @@ public class FlexibleIpSpaceSpecifierFactoryTest {
 
   @Test
   public void testParseWildcards_one() {
-    assertThat(parseWildcards("1.0.0.0/8"), equalTo(ImmutableList.of(new IpWildcard("1.0.0.0/8"))));
+    assertThat(
+        parseWildcards("1.0.0.0/8"), equalTo(ImmutableList.of(IpWildcard.parse("1.0.0.0/8"))));
   }
 
   @Test
   public void testParseWildcards_two() {
     assertThat(
         parseWildcards("1.0.0.0/8, 2.0.0.0/8"),
-        equalTo(ImmutableList.of(new IpWildcard("1.0.0.0/8"), new IpWildcard("2.0.0.0/8"))));
+        equalTo(ImmutableList.of(IpWildcard.parse("1.0.0.0/8"), IpWildcard.parse("2.0.0.0/8"))));
   }
 }

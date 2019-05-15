@@ -180,7 +180,7 @@ public enum HostProtocol {
               .setIpProtocols(ImmutableSet.of(IpProtocol.UDP))
               .setDstPorts(
                   ImmutableSet.of(new SubRange(NamedPort.SAP.number(), NamedPort.SAP.number())))
-              .setDstIps(ImmutableSet.of(new IpWildcard(Prefix.parse("224.2.127.254/32"))));
+              .setDstIps(ImmutableSet.of(IpWildcard.create(Prefix.parse("224.2.127.254/32"))));
           break;
         }
 

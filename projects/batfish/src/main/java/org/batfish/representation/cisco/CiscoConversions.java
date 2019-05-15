@@ -1230,7 +1230,7 @@ class CiscoConversions {
             .map(
                 l ->
                     new RouteFilterLine(
-                        l.getAction(), new IpWildcard(l.getPrefix()), l.getLengthRange()))
+                        l.getAction(), IpWildcard.create(l.getPrefix()), l.getLengthRange()))
             .collect(ImmutableList.toImmutableList());
     newRouteFilterList.setLines(newLines);
     return newRouteFilterList;
@@ -1437,14 +1437,14 @@ class CiscoConversions {
     IpWildcard dstIpWildcard =
         ((WildcardAddressSpecifier) fromLine.getDestinationAddressSpecifier()).getIpWildcard();
     long minSubnet = dstIpWildcard.getIp().asLong();
-    long maxSubnet = minSubnet | dstIpWildcard.getWildcard().asLong();
+    long maxSubnet = minSubnet | dstIpWildcard.getWildcardMask();
     int minPrefixLength = dstIpWildcard.getIp().numSubnetBits();
     int maxPrefixLength = Ip.create(maxSubnet).numSubnetBits();
-    int statedPrefixLength = srcIpWildcard.getWildcard().inverted().numSubnetBits();
+    int statedPrefixLength = srcIpWildcard.getWildcardMaskAsIp().inverted().numSubnetBits();
     int prefixLength = Math.min(statedPrefixLength, minPrefixLength);
     Prefix prefix = Prefix.create(ip, prefixLength);
     return new RouteFilterLine(
-        action, new IpWildcard(prefix), new SubRange(minPrefixLength, maxPrefixLength));
+        action, IpWildcard.create(prefix), new SubRange(minPrefixLength, maxPrefixLength));
   }
 
   /** Convert a standard access list line to a route filter list line */
@@ -1460,7 +1460,7 @@ class CiscoConversions {
 
     return new RouteFilterLine(
         action,
-        new IpWildcard(prefix),
+        IpWildcard.create(prefix),
         new SubRange(prefix.getPrefixLength(), Prefix.MAX_PREFIX_LENGTH));
   }
 

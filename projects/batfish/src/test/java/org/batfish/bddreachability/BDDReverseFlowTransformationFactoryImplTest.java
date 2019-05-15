@@ -213,7 +213,7 @@ public class BDDReverseFlowTransformationFactoryImplTest {
     BDD shiftPrefixBdd = srcBdd(shiftPrefix);
 
     IpWildcard preshiftMatchWildcard =
-        new IpWildcard(Ip.create(0x00000001L), Ip.create(0xFFFFFF00L));
+        IpWildcard.ipWithWildcardMask(Ip.create(0x00000001L), Ip.create(0xFFFFFF00L));
     BDD preshiftMatchBdd = srcBdd(preshiftMatchWildcard);
 
     Transition transition = factory.reverseFlowIncomingTransformation(HOSTNAME, i.getName());

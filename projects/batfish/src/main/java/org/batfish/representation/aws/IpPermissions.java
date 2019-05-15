@@ -87,7 +87,7 @@ public class IpPermissions implements Serializable {
     ImmutableSortedSet.Builder<IpWildcard> ipWildcardBuilder =
         new ImmutableSortedSet.Builder<>(Comparator.naturalOrder());
 
-    _ipRanges.stream().map(IpWildcard::new).forEach(ipWildcardBuilder::add);
+    _ipRanges.stream().map(IpWildcard::create).forEach(ipWildcardBuilder::add);
 
     _securityGroups.stream()
         .map(sgID -> region.getSecurityGroups().get(sgID))

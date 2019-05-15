@@ -90,7 +90,7 @@ public class NatRuleTest {
 
     rule.setThen(new NatRuleThenPrefixName("prefix", DESTINATION));
     Map<String, AddressBookEntry> entryMap =
-        ImmutableMap.of("prefix", new AddressAddressBookEntry("prefix", new IpWildcard(prefix)));
+        ImmutableMap.of("prefix", new AddressAddressBookEntry("prefix", IpWildcard.create(prefix)));
 
     assertThat(
         rule.toTransformationBuilder(staticNat, entryMap, interfaceIp, null).map(Builder::build),

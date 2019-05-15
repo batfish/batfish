@@ -329,7 +329,7 @@ public final class FibImpl implements Fib {
               return subTriePrefixes;
             }
 
-            IpWildcard wc = new IpWildcard(prefix);
+            IpWildcard wc = IpWildcard.create(prefix);
 
             if (subTriePrefixes.isEmpty()) {
               builder.put(prefix, prefix.toIpSpace());

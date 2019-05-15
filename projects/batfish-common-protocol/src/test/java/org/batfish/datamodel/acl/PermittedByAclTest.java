@@ -40,7 +40,7 @@ public class PermittedByAclTest {
             .setMatchCondition(
                 new MatchHeaderSpace(
                     HeaderSpace.builder()
-                        .setSrcIps(ImmutableSet.of(new IpWildcard(srcIpWildcard)))
+                        .setSrcIps(ImmutableSet.of(IpWildcard.parse(srcIpWildcard)))
                         .build()))
             .setAction(lineAction)
             .build();

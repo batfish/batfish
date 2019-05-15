@@ -23,7 +23,7 @@ public class RouteFilterListTest {
             ImmutableList.of(
                 new RouteFilterLine(
                     LineAction.PERMIT,
-                    new IpWildcard("1.2.3.4:0.255.0.255"),
+                    IpWildcard.parse("1.2.3.4:0.255.0.255"),
                     new SubRange(24, 24))));
     _rfPrefixMoreSpecific =
         new RouteFilterList(
@@ -31,7 +31,7 @@ public class RouteFilterListTest {
             ImmutableList.of(
                 new RouteFilterLine(
                     LineAction.PERMIT,
-                    new IpWildcard("1.2.3.4:0.0.255.255"),
+                    IpWildcard.parse("1.2.3.4:0.0.255.255"),
                     new SubRange(26, 32))));
     _rfPrefixExact =
         new RouteFilterList(
@@ -39,7 +39,7 @@ public class RouteFilterListTest {
             ImmutableList.of(
                 new RouteFilterLine(
                     LineAction.PERMIT,
-                    new IpWildcard("1.2.3.4:0.0.255.255"),
+                    IpWildcard.parse("1.2.3.4:0.0.255.255"),
                     new SubRange(26, 26))));
   }
 

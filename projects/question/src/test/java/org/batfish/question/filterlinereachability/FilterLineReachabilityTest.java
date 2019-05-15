@@ -123,15 +123,18 @@ public class FilterLineReachabilityTest {
         ImmutableList.of(
             IpAccessListLine.acceptingHeaderSpace(
                 HeaderSpace.builder()
-                    .setSrcIps(new IpWildcard(Prefix.create(Ip.parse("1.2.3.4"), 30)).toIpSpace())
+                    .setSrcIps(
+                        IpWildcard.create(Prefix.create(Ip.parse("1.2.3.4"), 30)).toIpSpace())
                     .build()),
             IpAccessListLine.acceptingHeaderSpace(
                 HeaderSpace.builder()
-                    .setSrcIps(new IpWildcard(Prefix.create(Ip.parse("1.2.3.4"), 32)).toIpSpace())
+                    .setSrcIps(
+                        IpWildcard.create(Prefix.create(Ip.parse("1.2.3.4"), 32)).toIpSpace())
                     .build()),
             IpAccessListLine.acceptingHeaderSpace(
                 HeaderSpace.builder()
-                    .setSrcIps(new IpWildcard(Prefix.create(Ip.parse("1.2.3.4"), 28)).toIpSpace())
+                    .setSrcIps(
+                        IpWildcard.create(Prefix.create(Ip.parse("1.2.3.4"), 28)).toIpSpace())
                     .build()));
     _aclb.setLines(lines).setName("acl").build();
     List<String> lineNames = lines.stream().map(Object::toString).collect(Collectors.toList());
@@ -320,15 +323,15 @@ public class FilterLineReachabilityTest {
         ImmutableList.of(
             acceptingHeaderSpace(
                 HeaderSpace.builder()
-                    .setSrcIps(new IpWildcard("1.0.0.0:0.0.0.0").toIpSpace())
+                    .setSrcIps(IpWildcard.parse("1.0.0.0:0.0.0.0").toIpSpace())
                     .build()),
             acceptingHeaderSpace(
                 HeaderSpace.builder()
-                    .setSrcIps(new IpWildcard("1.0.0.1:0.0.0.0").toIpSpace())
+                    .setSrcIps(IpWildcard.parse("1.0.0.1:0.0.0.0").toIpSpace())
                     .build()),
             acceptingHeaderSpace(
                 HeaderSpace.builder()
-                    .setSrcIps(new IpWildcard("1.0.0.0:0.0.0.1").toIpSpace())
+                    .setSrcIps(IpWildcard.parse("1.0.0.0:0.0.0.1").toIpSpace())
                     .build()));
     IpAccessList acl = _aclb.setLines(aclLines).setName("acl").build();
     List<String> lineNames = aclLines.stream().map(Object::toString).collect(Collectors.toList());

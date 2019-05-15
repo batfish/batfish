@@ -154,7 +154,7 @@ public final class IpSpaceDescriberTest {
 
   @Test
   public void testVisitIpWildcardIpSpace() {
-    IpSpace ipSpace = new IpWildcard("1.0.1.4:4.3.2.1").toIpSpace();
+    IpSpace ipSpace = IpWildcard.parse("1.0.1.4:4.3.2.1").toIpSpace();
     IpSpaceDescriber describerWithMetadata =
         new IpSpaceDescriber(
             new AclTracer(
@@ -172,8 +172,8 @@ public final class IpSpaceDescriberTest {
   public void testVisitIpWildcardSetIpSpace() {
     IpSpace ipSpace =
         IpWildcardSetIpSpace.builder()
-            .including(new IpWildcard("1.0.0.0:1.0.1.0"))
-            .excluding(new IpWildcard("2.0.0.0:0.1.0.1"))
+            .including(IpWildcard.parse("1.0.0.0:1.0.1.0"))
+            .excluding(IpWildcard.parse("2.0.0.0:0.1.0.1"))
             .build();
     IpSpaceDescriber describerWithMetadata =
         new IpSpaceDescriber(

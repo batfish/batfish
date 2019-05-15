@@ -29,7 +29,7 @@ public class IkePhase1Key implements Serializable {
 
   @JsonCreator
   public IkePhase1Key() {
-    _remoteIdentity = new IpWildcard("0.0.0.0:0.0.0.0").toIpSpace();
+    _remoteIdentity = IpWildcard.parse("0.0.0.0:0.0.0.0").toIpSpace();
     _localInterface = UNSET_LOCAL_INTERFACE;
   }
 
@@ -91,7 +91,7 @@ public class IkePhase1Key implements Serializable {
 
   @JsonProperty(PROP_REMOTE_IDENTITY)
   public void setRemoteIdentity(@Nullable IpSpace remoteIdentity) {
-    _remoteIdentity = firstNonNull(remoteIdentity, new IpWildcard("0.0.0.0:0.0.0.0").toIpSpace());
+    _remoteIdentity = firstNonNull(remoteIdentity, IpWildcard.parse("0.0.0.0:0.0.0.0").toIpSpace());
   }
 
   @JsonProperty(PROP_LOCAL_INTERFACE)

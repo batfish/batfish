@@ -55,7 +55,7 @@ public class AddressGroup implements Comparable<AddressGroup>, Serializable {
     _childGroupNames = firstNonNull(childGroupNames, new TreeSet<>());
 
     // check if all the input address strings can be mapped to an IpWildCard
-    _addresses.forEach(IpWildcard::new);
+    _addresses.forEach(IpWildcard::parse);
   }
 
   @Override

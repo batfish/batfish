@@ -3084,11 +3084,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       AddressBookEntry addressEntry = new AddressAddressBookEntry(name, ipWildcard);
       _currentAddressBook.getEntries().put(name, addressEntry);
     } else if (ctx.address != null) {
-      IpWildcard ipWildcard = new IpWildcard(Ip.parse(ctx.address.getText()));
+      IpWildcard ipWildcard = IpWildcard.create(Ip.parse(ctx.address.getText()));
       AddressBookEntry addressEntry = new AddressAddressBookEntry(name, ipWildcard);
       _currentAddressBook.getEntries().put(name, addressEntry);
     } else if (ctx.prefix != null) {
-      IpWildcard ipWildcard = new IpWildcard(Prefix.parse(ctx.prefix.getText()));
+      IpWildcard ipWildcard = IpWildcard.create(Prefix.parse(ctx.prefix.getText()));
       AddressBookEntry addressEntry = new AddressAddressBookEntry(name, ipWildcard);
       _currentAddressBook.getEntries().put(name, addressEntry);
     } else if (ctx.DESCRIPTION() != null) {
@@ -5667,7 +5667,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     Ip address = Ip.parse(ctx.ip_address.getText());
     Ip mask = Ip.parse(ctx.wildcard_mask.getText());
     // Mask needs to be inverted since 0's are don't-cares in this context
-    return new IpWildcard(address, mask.inverted());
+    return IpWildcard.ipWithWildcardMask(address, mask.inverted());
   }
 
   @Override
@@ -5677,9 +5677,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     if (ctx.wildcard_address() != null) {
       ipWildcard = toIpWildcard(ctx.wildcard_address());
     } else if (ctx.address != null) {
-      ipWildcard = new IpWildcard(Ip.parse(ctx.address.getText()));
+      ipWildcard = IpWildcard.create(Ip.parse(ctx.address.getText()));
     } else if (ctx.prefix != null) {
-      ipWildcard = new IpWildcard(Prefix.parse(ctx.prefix.getText()));
+      ipWildcard = IpWildcard.create(Prefix.parse(ctx.prefix.getText()));
     } else {
       throw convError(IpWildcard.class, ctx);
     }
@@ -5896,13 +5896,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else if (ctx.ip_address != null && ctx.wildcard_mask != null) {
       Ip ipAddress = Ip.parse(ctx.ip_address.getText());
       Ip mask = Ip.parse(ctx.wildcard_mask.getText());
-      ipWildcard = new IpWildcard(ipAddress, mask.inverted());
+      ipWildcard = IpWildcard.ipWithWildcardMask(ipAddress, mask.inverted());
     } else if (ctx.ip_address != null) {
       ipWildcard =
-          new IpWildcard(
+          IpWildcard.create(
               Prefix.create(Ip.parse(ctx.ip_address.getText()), Prefix.MAX_PREFIX_LENGTH));
     } else if (ctx.IP_PREFIX() != null) {
-      ipWildcard = new IpWildcard(Prefix.parse(ctx.IP_PREFIX().getText()));
+      ipWildcard = IpWildcard.create(Prefix.parse(ctx.IP_PREFIX().getText()));
     }
     return ipWildcard;
   }

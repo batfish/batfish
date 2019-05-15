@@ -13,13 +13,13 @@ final class IpWildcardAstNode implements IpSpaceAstNode {
   }
 
   IpWildcardAstNode(String ipWildcard) {
-    _ipWildcard = new IpWildcard(ipWildcard);
+    _ipWildcard = IpWildcard.parse(ipWildcard);
   }
 
   IpWildcardAstNode(AstNode addressNode, AstNode maskNode) {
     Ip address = ((IpAstNode) addressNode).getIp();
     Ip mask = ((IpAstNode) maskNode).getIp();
-    _ipWildcard = new IpWildcard(address, mask);
+    _ipWildcard = IpWildcard.ipWithWildcardMask(address, mask);
   }
 
   @Override

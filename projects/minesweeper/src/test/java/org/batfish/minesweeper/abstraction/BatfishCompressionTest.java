@@ -313,9 +313,7 @@ public class BatfishCompressionTest {
   @Test
   public void testCompressionFibs_diamondNetwork() throws IOException {
     HeaderSpace line =
-        HeaderSpace.builder()
-            .setDstIps(ImmutableList.of(new IpWildcard(Prefix.parse("4.4.4.4/32"))))
-            .build();
+        HeaderSpace.builder().setDstIps(ImmutableList.of(IpWildcard.parse("4.4.4.4/32"))).build();
     SortedMap<String, Configuration> origConfigs = diamondNetwork();
     Batfish batfish = getBatfish(origConfigs);
     DataPlane origDataPlane = batfish.loadDataPlane();

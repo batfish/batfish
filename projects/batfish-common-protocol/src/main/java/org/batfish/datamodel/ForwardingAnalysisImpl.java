@@ -449,7 +449,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       return EmptyIpSpace.INSTANCE;
     }
     IpWildcardSetIpSpace.Builder ipsAssignedToThisInterfaceBuilder = IpWildcardSetIpSpace.builder();
-    ips.forEach(ip -> ipsAssignedToThisInterfaceBuilder.including(new IpWildcard(ip)));
+    ips.forEach(ip -> ipsAssignedToThisInterfaceBuilder.including(IpWildcard.create(ip)));
     return ipsAssignedToThisInterfaceBuilder.build();
   }
 
@@ -635,7 +635,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                           vrfEntry.getValue().allEntries().stream()
                               .map(
                                   fibEntry ->
-                                      new IpWildcard(fibEntry.getTopLevelRoute().getNetwork()))
+                                      IpWildcard.create(fibEntry.getTopLevelRoute().getNetwork()))
                               .collect(ImmutableSortedSet.toImmutableSortedSet(natural())))));
     }
   }
@@ -1398,7 +1398,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
               interfaceOwnedIps.values().stream()
                   .flatMap(ifaceMap -> ifaceMap.values().stream())
                   .flatMap(Collection::stream)
-                  .map(IpWildcard::new)
+                  .map(IpWildcard::create)
                   .collect(Collectors.toList()))
           .build();
     }

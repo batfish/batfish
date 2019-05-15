@@ -166,7 +166,7 @@ public class ReferenceBookTest {
     // should include addresses from a and b; no addresses in c shouldn't matter
     assertThat(
         book.getAddressesRecursive("a"),
-        equalTo(ImmutableSet.of(new IpWildcard("1.1.1.1"), new IpWildcard("2.2.2.2"))));
+        equalTo(ImmutableSet.of(IpWildcard.parse("1.1.1.1"), IpWildcard.parse("2.2.2.2"))));
   }
 
   @Test

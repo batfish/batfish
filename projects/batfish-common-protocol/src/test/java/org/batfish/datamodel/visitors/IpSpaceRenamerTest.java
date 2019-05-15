@@ -29,11 +29,11 @@ public class IpSpaceRenamerTest {
   private static final IpSpaceRenamer RENAMER = new IpSpaceRenamer(ImmutableMap.of(FOO, BAR)::get);
   private static final IpSpace PREFIX_IP_SPACE = Prefix.parse("1.0.0.0/8").toIpSpace();
   private static final IpWildcardIpSpace IP_WILDCARD_IP_SPACE =
-      new IpWildcard("1.2.0.0/16").toIpSpace();
+      IpWildcard.parse("1.2.0.0/16").toIpSpace();
   private static final IpWildcardSetIpSpace IP_WILDCARD_SET_IP_SPACE =
       IpWildcardSetIpSpace.builder()
-          .including(new IpWildcard("1.2.3.4"))
-          .excluding(new IpWildcard("5.6.7.8"))
+          .including(IpWildcard.parse("1.2.3.4"))
+          .excluding(IpWildcard.parse("5.6.7.8"))
           .build();
 
   @Test

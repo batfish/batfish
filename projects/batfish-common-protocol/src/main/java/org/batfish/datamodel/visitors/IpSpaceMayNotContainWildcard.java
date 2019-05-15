@@ -80,7 +80,7 @@ public class IpSpaceMayNotContainWildcard implements GenericIpSpaceVisitor<Boole
 
   @Override
   public Boolean visitIpIpSpace(IpIpSpace ipIpSpace) {
-    return !new IpWildcard(ipIpSpace.getIp()).equals(_ipWildcard);
+    return !IpWildcard.create(ipIpSpace.getIp()).equals(_ipWildcard);
   }
 
   @Override
@@ -104,7 +104,7 @@ public class IpSpaceMayNotContainWildcard implements GenericIpSpaceVisitor<Boole
 
   @Override
   public Boolean visitPrefixIpSpace(PrefixIpSpace prefixIpSpace) {
-    return !new IpWildcard(prefixIpSpace.getPrefix()).supersetOf(_ipWildcard);
+    return !IpWildcard.create(prefixIpSpace.getPrefix()).supersetOf(_ipWildcard);
   }
 
   @Override

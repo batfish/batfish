@@ -84,7 +84,7 @@ public class SpecifiersReachabilityQuestionTest {
                     locations,
                     SpecifierFactories.ACTIVE_VERSION == Version.V1
                         ? IpWildcardSetIpSpace.builder()
-                            .including(new IpWildcard("1.2.3.0/24"), new IpWildcard("1.2.3.4"))
+                            .including(IpWildcard.parse("1.2.3.0/24"), IpWildcard.parse("1.2.3.4"))
                             .build()
                         : AclIpSpace.union(
                             Prefix.parse("1.2.3.0/24").toIpSpace(),
@@ -141,8 +141,8 @@ public class SpecifiersReachabilityQuestionTest {
                     locations,
                     SpecifierFactories.ACTIVE_VERSION == Version.V1
                         ? IpWildcardSetIpSpace.builder()
-                            .including(new IpWildcard("1.2.3.3"))
-                            .excluding(new IpWildcard("1.2.3.4"))
+                            .including(IpWildcard.parse("1.2.3.3"))
+                            .excluding(IpWildcard.parse("1.2.3.4"))
                             .build()
                         : IpRange.range(Ip.parse("1.2.3.3"), Ip.parse("1.2.3.4")))
                 .build()));
