@@ -112,7 +112,7 @@ public final class OspfNeighborConfigId implements Serializable {
         .add("hostname", _hostname)
         .add("vrfName", _vrfName)
         .add("procName", _procName)
-        .add("intefaceName", _interfaceName)
+        .add("interfaceName", _interfaceName)
         .toString();
   }
 }

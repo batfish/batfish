@@ -38,11 +38,11 @@ public final class FirewallSessionInterfaceInfo implements Serializable {
 
   @JsonCreator
   private static FirewallSessionInterfaceInfo jsonCreator(
-      @JsonProperty(PROP_SESSION_INTERFACES) @Nullable Set<String> sessionIntefaces,
+      @JsonProperty(PROP_SESSION_INTERFACES) @Nullable Set<String> sessionInterfaces,
       @JsonProperty(PROP_INCOMING_ACL_NAME) @Nullable String incomingAclName,
       @JsonProperty(PROP_OUTGOING_ACL_NAME) @Nullable String outgoingAclName) {
-    checkNotNull(sessionIntefaces, PROP_SESSION_INTERFACES + " cannot be null");
-    return new FirewallSessionInterfaceInfo(sessionIntefaces, incomingAclName, outgoingAclName);
+    checkNotNull(sessionInterfaces, PROP_SESSION_INTERFACES + " cannot be null");
+    return new FirewallSessionInterfaceInfo(sessionInterfaces, incomingAclName, outgoingAclName);
   }
 
   @Override
