@@ -28,12 +28,15 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraph;
+import com.google.common.graph.ValueGraphBuilder;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
+import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.IBatfishTestAdapter;
@@ -42,7 +45,9 @@ import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
+import org.batfish.datamodel.BgpPeerConfigId.BgpPeerConfigType;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
@@ -444,6 +449,126 @@ public class BgpSessionStatusAnswererTest {
                 hasColumn(COL_LOCAL_INTERFACE, nip2, Schema.INTERFACE),
                 hasColumn(COL_REMOTE_NODE, new Node(NODE1), Schema.NODE),
                 hasColumn(COL_REMOTE_INTERFACE, nip1, Schema.INTERFACE))));
+  }
+
+  @Test
+  public void testEstablishedWithMultipleRemotes() {
+    /*
+    Setup: Peer X will have multiple compatible remotes, but only one reachable remote. Should see
+    the one reachable remote listed as the remote node.
+
+    This test leaves the reachable remote peer out of the configured topology to be sure that the
+    logic is finding the remote peer in the established topology rather than using the first
+    adjacent node in the configured topology.
+     */
+    Ip localIp = Ip.parse("1.1.1.1");
+    Ip remoteIp = Ip.parse("2.2.2.2");
+    BgpPeerConfigId peerXId =
+        new BgpPeerConfigId(
+            "c", DEFAULT_VRF_NAME, Prefix.create(remoteIp, Prefix.MAX_PREFIX_LENGTH), false);
+    BgpActivePeerConfig peerX =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(localIp)
+            .setPeerAddress(remoteIp)
+            .setLocalAs(1L)
+            .setRemoteAs(2L)
+            .build();
+
+    // Two compatible (but unreachable) remote peers
+    BgpPeerConfigId compat1Id =
+        new BgpPeerConfigId(
+            "c2", DEFAULT_VRF_NAME, Prefix.create(remoteIp, Prefix.MAX_PREFIX_LENGTH), false);
+    BgpPeerConfigId compat2Id =
+        new BgpPeerConfigId(
+            "c3", DEFAULT_VRF_NAME, Prefix.create(remoteIp, Prefix.MAX_PREFIX_LENGTH), false);
+
+    // One compatible AND reachable remote peer
+    BgpPeerConfigId establishedId =
+        new BgpPeerConfigId(
+            "c4", DEFAULT_VRF_NAME, Prefix.create(remoteIp, Prefix.MAX_PREFIX_LENGTH), false);
+
+    // Recycle the same compatible remote config for all the remotes
+    BgpActivePeerConfig remotePeer =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(remoteIp)
+            .setPeerAddress(localIp)
+            .setLocalAs(2L)
+            .setRemoteAs(1L)
+            .build();
+
+    // Configured topology: Peer X has edges with both compatible remotes
+    MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredTopology =
+        ValueGraphBuilder.directed().allowsSelfLoops(false).build();
+    configuredTopology.putEdgeValue(
+        peerXId, compat1Id, BgpSessionProperties.from(peerX, remotePeer, false));
+    configuredTopology.putEdgeValue(
+        compat1Id, peerXId, BgpSessionProperties.from(peerX, remotePeer, true));
+    configuredTopology.putEdgeValue(
+        peerXId, compat2Id, BgpSessionProperties.from(peerX, remotePeer, false));
+    configuredTopology.putEdgeValue(
+        compat2Id, peerXId, BgpSessionProperties.from(peerX, remotePeer, true));
+
+    // Established topology: Peer X has edge with established remote
+    MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> establishedTopology =
+        ValueGraphBuilder.directed().allowsSelfLoops(false).build();
+    establishedTopology.putEdgeValue(
+        peerXId, establishedId, BgpSessionProperties.from(peerX, remotePeer, false));
+    establishedTopology.putEdgeValue(
+        establishedId, peerXId, BgpSessionProperties.from(peerX, remotePeer, true));
+
+    SortedMap<String, Configuration> configs =
+        ImmutableSortedMap.of(
+            "c",
+            createConfig(peerXId, peerX),
+            "c2",
+            createConfig(compat1Id, remotePeer),
+            "c3",
+            createConfig(compat2Id, remotePeer),
+            "c4",
+            createConfig(establishedId, remotePeer));
+    Set<String> remoteNodeNames = ImmutableSet.of("c2", "c3", "c4");
+    Map<Ip, Set<String>> ipOwners =
+        ImmutableMap.of(localIp, ImmutableSet.of("c"), remoteIp, remoteNodeNames);
+
+    List<Row> rows =
+        getRows(
+            new BgpSessionStatusQuestion("c", null, null, null),
+            configs,
+            ImmutableSet.of("c"),
+            remoteNodeNames,
+            METADATA_MAP,
+            ipOwners,
+            configuredTopology,
+            establishedTopology);
+    assertThat(rows, contains(hasColumn(COL_REMOTE_NODE, new Node("c4"), Schema.NODE)));
+  }
+
+  private Configuration createConfig(BgpPeerConfigId id, BgpPeerConfig peer) {
+    NetworkFactory nf = new NetworkFactory();
+    // Create a configuration with a BgpProcess
+    Configuration c =
+        nf.configurationBuilder()
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setHostname(id.getHostname())
+            .build();
+    Vrf vrf = nf.vrfBuilder().setOwner(c).setName(id.getVrfName()).build();
+    BgpProcess bgpProc = nf.bgpProcessBuilder().setVrf(vrf).build();
+
+    // Add peer in the appropriate map in the BgpProcess
+    if (id.getType() == BgpPeerConfigType.ACTIVE) {
+      bgpProc.setNeighbors(
+          ImmutableSortedMap.of(id.getRemotePeerPrefix(), (BgpActivePeerConfig) peer));
+    } else if (id.getType() == BgpPeerConfigType.DYNAMIC) {
+      bgpProc.setPassiveNeighbors(
+          ImmutableSortedMap.of(id.getRemotePeerPrefix(), (BgpPassivePeerConfig) peer));
+    } else if (id.getType() == BgpPeerConfigType.UNNUMBERED) {
+      bgpProc.setInterfaceNeighbors(
+          ImmutableSortedMap.of(id.getPeerInterface(), (BgpUnnumberedPeerConfig) peer));
+    } else {
+      throw new BatfishException(String.format("Unhandled peer type %s", id.getType()));
+    }
+
+    return c;
   }
 
   @Test
