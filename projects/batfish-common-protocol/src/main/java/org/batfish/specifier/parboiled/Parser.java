@@ -769,7 +769,7 @@ public class Parser extends CommonParser {
    *
    *   locationTerm := locationInterface
    *               | @enter(locationInterface)   // non-@ versions also supported
-   *               | @exit(locationInteface)
+   *               | @exit(locationInterface)
    *               | ( locationTerm )
    *
    *   locationInterface := nodeTerm[interfaceTerm]

@@ -882,7 +882,7 @@ public class PropertyChecker {
 
   /*
    * Computes whether or not two routers are equivalent.
-   * To be equivalent, each router must have identical intefaces.
+   * To be equivalent, each router must have identical interfaces.
    *
    * We then relate the environments on each interface for each router
    * so that they are required to be equal.
