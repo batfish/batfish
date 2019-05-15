@@ -1,4 +1,4 @@
-package org.batfish.datamodel.visitors;
+package org.batfish.minesweeper.utils;
 
 import java.util.Map;
 import org.batfish.datamodel.AclIpSpace;
@@ -13,6 +13,7 @@ import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.PrefixIpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
 /**
  * Test if it's possible (or certain) that {@code _ipWildcard} might not be contained within an

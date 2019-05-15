@@ -1,4 +1,4 @@
-package org.batfish.datamodel.visitors;
+package org.batfish.minesweeper.utils;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
@@ -14,6 +14,7 @@ import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.PrefixIpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
 public class IpSpaceMayIntersectWildcard implements GenericIpSpaceVisitor<Boolean> {
   private final IpWildcard _ipWildcard;
