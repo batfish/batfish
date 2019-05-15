@@ -2,6 +2,7 @@ package org.batfish.question.bgpsessionstatus;
 
 import static org.batfish.datamodel.BgpSessionProperties.getSessionType;
 import static org.batfish.datamodel.questions.ConfiguredSessionStatus.UNIQUE_MATCH;
+import static org.batfish.datamodel.table.TableMetadata.toColumnMap;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_LOCAL_AS;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_LOCAL_INTERFACE;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_LOCAL_IP;
@@ -70,6 +71,44 @@ public class BgpSessionStatusAnswerer extends Answerer {
 
   public static final String COL_ESTABLISHED_STATUS = "Established_Status";
 
+  private static final List<ColumnMetadata> COLUMN_METADATA =
+      ImmutableList.of(
+          new ColumnMetadata(
+              COL_NODE, Schema.NODE, "The node where this session is configured", true, false),
+          new ColumnMetadata(
+              COL_VRF, Schema.STRING, "The VRF in which this session is configured", true, false),
+          new ColumnMetadata(
+              COL_LOCAL_AS, Schema.LONG, "The local AS of the session", false, false),
+          new ColumnMetadata(
+              COL_LOCAL_INTERFACE, Schema.INTERFACE, "Local interface of the session", false, true),
+          new ColumnMetadata(COL_LOCAL_IP, Schema.IP, "The local IP of the session", false, false),
+          new ColumnMetadata(
+              COL_REMOTE_AS,
+              Schema.STRING,
+              "The remote AS or list of ASes of the session",
+              false,
+              false),
+          new ColumnMetadata(
+              COL_REMOTE_NODE, Schema.NODE, "Remote node for this session", false, false),
+          new ColumnMetadata(
+              COL_REMOTE_INTERFACE,
+              Schema.INTERFACE,
+              "Remote interface for this session",
+              false,
+              false),
+          new ColumnMetadata(
+              COL_REMOTE_IP,
+              Schema.SELF_DESCRIBING,
+              "Remote IP or prefix for this session",
+              true,
+              false),
+          new ColumnMetadata(
+              COL_SESSION_TYPE, Schema.STRING, "The type of this session", false, false),
+          new ColumnMetadata(
+              COL_ESTABLISHED_STATUS, Schema.STRING, "Established status", false, true));
+
+  private static final Map<String, ColumnMetadata> METADATA_MAP = toColumnMap(COLUMN_METADATA);
+
   /** Answerer for the BGP Session status question (new version). */
   public BgpSessionStatusAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
@@ -89,7 +128,6 @@ public class BgpSessionStatusAnswerer extends Answerer {
    */
   public List<Row> getRows(BgpSessionQuestion question) {
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Map<String, ColumnMetadata> metadataMap = createMetadata(question).toColumnMap();
     Set<String> nodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
     Set<String> remoteNodes =
         question.getRemoteNodeSpecifier().resolve(_batfish.specifierContext());
@@ -111,7 +149,6 @@ public class BgpSessionStatusAnswerer extends Answerer {
         configurations,
         nodes,
         remoteNodes,
-        metadataMap,
         ipOwners,
         configuredBgpTopology.getGraph(),
         establishedBgpTopology.getGraph());
@@ -123,7 +160,6 @@ public class BgpSessionStatusAnswerer extends Answerer {
       Map<String, Configuration> configurations,
       Set<String> nodes,
       Set<String> remoteNodes,
-      Map<String, ColumnMetadata> metadataMap,
       Map<Ip, Set<String>> ipOwners,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredBgpTopology,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> establishedBgpTopology) {
@@ -155,12 +191,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
                   }
 
                   return buildActivePeerRow(
-                      neighbor,
-                      activePeer,
-                      status,
-                      metadataMap,
-                      configuredBgpTopology,
-                      establishedBgpTopology);
+                      neighbor, activePeer, status, configuredBgpTopology, establishedBgpTopology);
                 })
             .filter(
                 row -> row != null && matchesQuestionFilters(row, nodes, remoteNodes, question));
@@ -184,8 +215,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
                     status = NOT_ESTABLISHED;
                   }
 
-                  return buildUnnumPeerRow(
-                      neighbor, unnumPeer, status, metadataMap, configuredBgpTopology);
+                  return buildUnnumPeerRow(neighbor, unnumPeer, status, configuredBgpTopology);
                 })
             .filter(
                 row -> row != null && matchesQuestionFilters(row, nodes, remoteNodes, question));
@@ -204,8 +234,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
                   ConfiguredSessionStatus brokenStatus = getLocallyBrokenStatus(passivePeer);
                   if (brokenStatus != null) {
                     return Stream.of(
-                        buildPassivePeerWithoutRemoteRow(
-                            metadataMap, neighbor, passivePeer, NOT_COMPATIBLE));
+                        buildPassivePeerWithoutRemoteRow(neighbor, passivePeer, NOT_COMPATIBLE));
                   }
 
                   // Find all correctly configured remote peers compatible with this peer
@@ -215,8 +244,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
                   // If no compatible neighbors exist, generate one NOT_ESTABLISHED row
                   if (compatibleRemotes.isEmpty()) {
                     return Stream.of(
-                        buildPassivePeerWithoutRemoteRow(
-                            metadataMap, neighbor, passivePeer, NOT_ESTABLISHED));
+                        buildPassivePeerWithoutRemoteRow(neighbor, passivePeer, NOT_ESTABLISHED));
                   }
 
                   // Find all remote peers that established a session with this peer. Node will not
@@ -232,7 +260,6 @@ public class BgpSessionStatusAnswerer extends Answerer {
                       .map(
                           remoteId ->
                               buildDynamicMatchRow(
-                                  metadataMap,
                                   neighbor,
                                   passivePeer,
                                   remoteId,
@@ -246,47 +273,6 @@ public class BgpSessionStatusAnswerer extends Answerer {
   }
 
   public static TableMetadata createMetadata(Question question) {
-    List<ColumnMetadata> columnMetadata =
-        ImmutableList.of(
-            new ColumnMetadata(
-                COL_NODE, Schema.NODE, "The node where this session is configured", true, false),
-            new ColumnMetadata(
-                COL_VRF, Schema.STRING, "The VRF in which this session is configured", true, false),
-            new ColumnMetadata(
-                COL_LOCAL_AS, Schema.LONG, "The local AS of the session", false, false),
-            new ColumnMetadata(
-                COL_LOCAL_INTERFACE,
-                Schema.INTERFACE,
-                "Local interface of the session",
-                false,
-                true),
-            new ColumnMetadata(
-                COL_LOCAL_IP, Schema.IP, "The local IP of the session", false, false),
-            new ColumnMetadata(
-                COL_REMOTE_AS,
-                Schema.STRING,
-                "The remote AS or list of ASes of the session",
-                false,
-                false),
-            new ColumnMetadata(
-                COL_REMOTE_NODE, Schema.NODE, "Remote node for this session", false, false),
-            new ColumnMetadata(
-                COL_REMOTE_INTERFACE,
-                Schema.INTERFACE,
-                "Remote interface for this session",
-                false,
-                false),
-            new ColumnMetadata(
-                COL_REMOTE_IP,
-                Schema.SELF_DESCRIBING,
-                "Remote IP or prefix for this session",
-                true,
-                false),
-            new ColumnMetadata(
-                COL_SESSION_TYPE, Schema.STRING, "The type of this session", false, false),
-            new ColumnMetadata(
-                COL_ESTABLISHED_STATUS, Schema.STRING, "Established status", false, true));
-
     String textDesc =
         String.format(
             "On ${%s} session ${%s}:${%s} has status ${%s}.",
@@ -295,14 +281,13 @@ public class BgpSessionStatusAnswerer extends Answerer {
     if (dhints != null && dhints.getTextDesc() != null) {
       textDesc = dhints.getTextDesc();
     }
-    return new TableMetadata(columnMetadata, textDesc);
+    return new TableMetadata(COLUMN_METADATA, textDesc);
   }
 
   private static @Nonnull Row buildActivePeerRow(
       BgpPeerConfigId activeId,
       BgpActivePeerConfig activePeer,
       SessionStatus status,
-      Map<String, ColumnMetadata> metadataMap,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredBgpTopology,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> establishedBgpTopology) {
     Node remoteNode = null;
@@ -322,7 +307,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
       remoteNode = new Node(remoteNodeName);
     }
 
-    return Row.builder(metadataMap)
+    return Row.builder(METADATA_MAP)
         .put(COL_ESTABLISHED_STATUS, status)
         .put(COL_LOCAL_INTERFACE, null)
         .put(COL_LOCAL_AS, activePeer.getLocalAs())
@@ -341,7 +326,6 @@ public class BgpSessionStatusAnswerer extends Answerer {
       BgpPeerConfigId unnumId,
       BgpUnnumberedPeerConfig unnumPeer,
       SessionStatus status,
-      Map<String, ColumnMetadata> metadataMap,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredBgpTopology) {
     Node remoteNode = null;
     NodeInterfacePair remoteInterface = null;
@@ -351,7 +335,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
       remoteInterface = new NodeInterfacePair(remoteId.getHostname(), remoteId.getPeerInterface());
     }
 
-    return Row.builder(metadataMap)
+    return Row.builder(METADATA_MAP)
         .put(COL_ESTABLISHED_STATUS, status)
         .put(
             COL_LOCAL_INTERFACE,
@@ -370,11 +354,8 @@ public class BgpSessionStatusAnswerer extends Answerer {
 
   // Creates a row representing the given malformed passive peer
   private static @Nonnull Row buildPassivePeerWithoutRemoteRow(
-      Map<String, ColumnMetadata> metadataMap,
-      BgpPeerConfigId passiveId,
-      BgpPassivePeerConfig passivePeer,
-      SessionStatus status) {
-    return Row.builder(metadataMap)
+      BgpPeerConfigId passiveId, BgpPassivePeerConfig passivePeer, SessionStatus status) {
+    return Row.builder(METADATA_MAP)
         .put(COL_ESTABLISHED_STATUS, status)
         .put(COL_LOCAL_INTERFACE, null)
         .put(COL_LOCAL_AS, passivePeer.getLocalAs())
@@ -391,13 +372,12 @@ public class BgpSessionStatusAnswerer extends Answerer {
 
   // Creates a row representing the session from passivePeer to activePeer with given status
   private static @Nonnull Row buildDynamicMatchRow(
-      Map<String, ColumnMetadata> metadataMap,
       BgpPeerConfigId passiveId,
       BgpPassivePeerConfig passivePeer,
       BgpPeerConfigId activeId,
       BgpActivePeerConfig activePeer,
       boolean established) {
-    return Row.builder(metadataMap)
+    return Row.builder(METADATA_MAP)
         .put(COL_ESTABLISHED_STATUS, established ? ESTABLISHED : NOT_ESTABLISHED)
         .put(COL_LOCAL_INTERFACE, null)
         .put(COL_LOCAL_AS, passivePeer.getLocalAs())

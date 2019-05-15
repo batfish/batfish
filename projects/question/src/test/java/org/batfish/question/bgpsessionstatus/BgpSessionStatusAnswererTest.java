@@ -15,7 +15,6 @@ import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_SESSION_TYPE;
 import static org.batfish.question.bgpsessionstatus.BgpSessionAnswererUtils.COL_VRF;
 import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.COL_ESTABLISHED_STATUS;
-import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.createMetadata;
 import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.getRows;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
@@ -67,7 +66,6 @@ import org.batfish.datamodel.answers.SelfDescribingObject;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
-import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.SessionStatus;
@@ -104,9 +102,6 @@ public class BgpSessionStatusAnswererTest {
   private static final String NODE3 = "node3";
   private static final String NODE4 = "node4";
   private static final Set<String> ALL_NODES = ImmutableSet.of(NODE1, NODE2, NODE3, NODE4);
-
-  private static final Map<String, ColumnMetadata> METADATA_MAP =
-      createMetadata(new BgpSessionStatusQuestion()).toColumnMap();
 
   private static final Row ROW_1 =
       Row.builder()
@@ -259,15 +254,7 @@ public class BgpSessionStatusAnswererTest {
   public void testAnswer() {
     BgpSessionStatusQuestion q = new BgpSessionStatusQuestion();
     List<Row> rows =
-        getRows(
-            q,
-            CONFIGURATIONS,
-            ALL_NODES,
-            ALL_NODES,
-            METADATA_MAP,
-            ImmutableMap.of(),
-            TOPOLOGY,
-            TOPOLOGY);
+        getRows(q, CONFIGURATIONS, ALL_NODES, ALL_NODES, ImmutableMap.of(), TOPOLOGY, TOPOLOGY);
     assertThat(rows, contains(ROW_1, ROW_2, ROW_3, ROW_4));
   }
 
@@ -280,7 +267,6 @@ public class BgpSessionStatusAnswererTest {
             CONFIGURATIONS,
             ImmutableSet.of(NODE1),
             ALL_NODES,
-            METADATA_MAP,
             ImmutableMap.of(),
             TOPOLOGY,
             TOPOLOGY);
@@ -296,7 +282,6 @@ public class BgpSessionStatusAnswererTest {
             CONFIGURATIONS,
             ALL_NODES,
             ImmutableSet.of(NODE1),
-            METADATA_MAP,
             ImmutableMap.of(),
             TOPOLOGY,
             TOPOLOGY);
@@ -309,28 +294,11 @@ public class BgpSessionStatusAnswererTest {
     BgpSessionStatusQuestion q =
         new BgpSessionStatusQuestion(null, null, SessionStatus.ESTABLISHED.name(), null);
     List<Row> rows =
-        getRows(
-            q,
-            CONFIGURATIONS,
-            ALL_NODES,
-            ALL_NODES,
-            METADATA_MAP,
-            ImmutableMap.of(),
-            TOPOLOGY,
-            TOPOLOGY);
+        getRows(q, CONFIGURATIONS, ALL_NODES, ALL_NODES, ImmutableMap.of(), TOPOLOGY, TOPOLOGY);
     assertThat(rows, contains(ROW_1, ROW_2, ROW_3, ROW_4));
 
     q = new BgpSessionStatusQuestion(null, null, SessionStatus.NOT_COMPATIBLE.name(), null);
-    rows =
-        getRows(
-            q,
-            CONFIGURATIONS,
-            ALL_NODES,
-            ALL_NODES,
-            METADATA_MAP,
-            ImmutableMap.of(),
-            TOPOLOGY,
-            TOPOLOGY);
+    rows = getRows(q, CONFIGURATIONS, ALL_NODES, ALL_NODES, ImmutableMap.of(), TOPOLOGY, TOPOLOGY);
     assertThat(rows, empty());
   }
 
@@ -340,29 +308,12 @@ public class BgpSessionStatusAnswererTest {
     BgpSessionStatusQuestion q =
         new BgpSessionStatusQuestion(null, null, null, SessionType.EBGP_SINGLEHOP.name());
     List<Row> rows =
-        getRows(
-            q,
-            CONFIGURATIONS,
-            ALL_NODES,
-            ALL_NODES,
-            METADATA_MAP,
-            ImmutableMap.of(),
-            TOPOLOGY,
-            TOPOLOGY);
+        getRows(q, CONFIGURATIONS, ALL_NODES, ALL_NODES, ImmutableMap.of(), TOPOLOGY, TOPOLOGY);
     assertThat(rows, contains(ROW_1, ROW_2));
 
     // Session between nodes 3 and 4 has type IBGP
     q = new BgpSessionStatusQuestion(null, null, null, SessionType.IBGP.name());
-    rows =
-        getRows(
-            q,
-            CONFIGURATIONS,
-            ALL_NODES,
-            ALL_NODES,
-            METADATA_MAP,
-            ImmutableMap.of(),
-            TOPOLOGY,
-            TOPOLOGY);
+    rows = getRows(q, CONFIGURATIONS, ALL_NODES, ALL_NODES, ImmutableMap.of(), TOPOLOGY, TOPOLOGY);
     assertThat(rows, containsInAnyOrder(ROW_3, ROW_4));
   }
 
@@ -415,7 +366,6 @@ public class BgpSessionStatusAnswererTest {
             ImmutableMap.of(NODE1, c1, NODE2, c2),
             ALL_NODES,
             ALL_NODES,
-            METADATA_MAP,
             ImmutableMap.of(),
             bgpTopology,
             bgpTopology);
@@ -536,7 +486,6 @@ public class BgpSessionStatusAnswererTest {
             configs,
             ImmutableSet.of("c"),
             remoteNodeNames,
-            METADATA_MAP,
             ipOwners,
             configuredTopology,
             establishedTopology);
