@@ -37,13 +37,13 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.batfish.datamodel.visitors.IpSpaceMayIntersectWildcard;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.Graph;
 import org.batfish.minesweeper.GraphEdge;
 import org.batfish.minesweeper.OspfType;
 import org.batfish.minesweeper.Protocol;
 import org.batfish.minesweeper.collections.Table2;
+import org.batfish.minesweeper.utils.IpSpaceMayIntersectWildcard;
 
 /**
  * A class responsible for building a symbolic encoding of the network for a particular packet. The

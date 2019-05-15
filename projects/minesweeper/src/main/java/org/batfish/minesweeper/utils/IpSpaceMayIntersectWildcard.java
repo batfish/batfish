@@ -1,8 +1,9 @@
-package org.batfish.datamodel.visitors;
+package org.batfish.minesweeper.utils;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpIpSpace;
 import org.batfish.datamodel.IpSpace;
@@ -13,16 +14,28 @@ import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.PrefixIpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
-/** False-negatives are ok, but false-positives are not. */
-public class IpSpaceContainedInWildcard implements GenericIpSpaceVisitor<Boolean> {
+public class IpSpaceMayIntersectWildcard implements GenericIpSpaceVisitor<Boolean> {
   private final IpWildcard _ipWildcard;
+
+  private final IpSpaceMayNotContainWildcard _mayNotContain;
 
   private final Map<String, IpSpace> _namedIpSpaces;
 
-  public IpSpaceContainedInWildcard(IpWildcard ipWildcard, Map<String, IpSpace> namedIpSpaces) {
-    _namedIpSpaces = ImmutableMap.copyOf(namedIpSpaces);
+  public IpSpaceMayIntersectWildcard(IpWildcard ipWildcard, Map<String, IpSpace> namedIpSpaces) {
     _ipWildcard = ipWildcard;
+    _mayNotContain = new IpSpaceMayNotContainWildcard(ipWildcard, namedIpSpaces, this);
+    _namedIpSpaces = ImmutableMap.copyOf(namedIpSpaces);
+  }
+
+  public IpSpaceMayIntersectWildcard(
+      IpWildcard ipWildcard,
+      Map<String, IpSpace> namedIpSpaces,
+      IpSpaceMayNotContainWildcard mayNotContain) {
+    _ipWildcard = ipWildcard;
+    _mayNotContain = mayNotContain;
+    _namedIpSpaces = namedIpSpaces;
   }
 
   @Override
@@ -30,16 +43,31 @@ public class IpSpaceContainedInWildcard implements GenericIpSpaceVisitor<Boolean
     return (Boolean) o;
   }
 
+  private boolean ipSpaceContainsWildcard(IpSpace ipSpace) {
+    return !ipSpace.accept(_mayNotContain);
+  }
+
+  private boolean ipSpaceMayIntersectWildcard(IpSpace ipSpace) {
+    return ipSpace.accept(this);
+  }
+
   @Override
   public Boolean visitAclIpSpace(AclIpSpace aclIpSpace) {
-    return aclIpSpace.getLines().stream()
-        .filter(line -> line.getAction() == LineAction.PERMIT)
-        .allMatch(line -> line.getIpSpace().accept(this));
+    for (AclIpSpaceLine line : aclIpSpace.getLines()) {
+      if (line.getAction() == LineAction.PERMIT && ipSpaceMayIntersectWildcard(line.getIpSpace())) {
+        return true;
+      }
+
+      if (line.getAction() == LineAction.DENY && ipSpaceContainsWildcard(line.getIpSpace())) {
+        return false;
+      }
+    }
+    return false;
   }
 
   @Override
   public Boolean visitEmptyIpSpace(EmptyIpSpace emptyIpSpace) {
-    return true;
+    return false;
   }
 
   @Override
@@ -54,21 +82,22 @@ public class IpSpaceContainedInWildcard implements GenericIpSpaceVisitor<Boolean
 
   @Override
   public Boolean visitIpWildcardIpSpace(IpWildcardIpSpace ipWildcardIpSpace) {
-    return _ipWildcard.supersetOf(ipWildcardIpSpace.getIpWildcard());
+    return _ipWildcard.intersects(ipWildcardIpSpace.getIpWildcard());
   }
 
   @Override
   public Boolean visitIpWildcardSetIpSpace(IpWildcardSetIpSpace ipWildcardSetIpSpace) {
-    return ipWildcardSetIpSpace.getWhitelist().stream().allMatch(_ipWildcard::supersetOf);
+    return ipWildcardSetIpSpace.getBlacklist().stream().noneMatch(_ipWildcard::subsetOf)
+        && ipWildcardSetIpSpace.getWhitelist().stream().anyMatch(_ipWildcard::intersects);
   }
 
   @Override
   public Boolean visitPrefixIpSpace(PrefixIpSpace prefixIpSpace) {
-    return _ipWildcard.supersetOf(IpWildcard.create(prefixIpSpace.getPrefix()));
+    return IpWildcard.create(prefixIpSpace.getPrefix()).intersects(_ipWildcard);
   }
 
   @Override
   public Boolean visitUniverseIpSpace(UniverseIpSpace universeIpSpace) {
-    return _ipWildcard.equals(IpWildcard.ANY);
+    return true;
   }
 }
