@@ -31,12 +31,9 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
   /** A "0.0.0.0/0" prefix */
   public static final Prefix ZERO = create(Ip.ZERO, 0);
 
-  private static long getNetworkEnd(long networkStart, int prefixLength) {
-    return networkStart | numWildcardBitsToWildcardLong(MAX_PREFIX_LENGTH - prefixLength);
-  }
-
-  private static long numWildcardBitsToWildcardLong(int numBits) {
-    return (1L << numBits) - 1;
+  private static long wildcardMaskForPrefixLength(int prefixLength) {
+    assert 0 <= prefixLength && prefixLength <= Prefix.MAX_PREFIX_LENGTH;
+    return (1L << (Prefix.MAX_PREFIX_LENGTH - prefixLength)) - 1;
   }
 
   /** Parse a {@link Prefix} from a string. */
@@ -135,14 +132,12 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
   }
 
   public boolean containsIp(Ip ip) {
-    long start = _ip.asLong();
-    long end = getNetworkEnd(start, _prefixLength);
-    long ipAsLong = ip.asLong();
-    return start <= ipAsLong && ipAsLong <= end;
+    long masked = ip.asLong() & ~wildcardMaskForPrefixLength(_prefixLength);
+    return masked == _ip.asLong();
   }
 
   public boolean containsPrefix(Prefix prefix) {
-    return containsIp(prefix._ip) && _prefixLength <= prefix._prefixLength;
+    return _prefixLength <= prefix._prefixLength && containsIp(prefix._ip);
   }
 
   @Override
@@ -158,7 +153,8 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
 
   @Nonnull
   public Ip getEndIp() {
-    return Ip.create(getNetworkEnd(_ip.asLong(), _prefixLength));
+    long networkEnd = _ip.asLong() | wildcardMaskForPrefixLength(_prefixLength);
+    return Ip.create(networkEnd);
   }
 
   public int getPrefixLength() {
@@ -167,7 +163,7 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
 
   @Nonnull
   public Ip getPrefixWildcard() {
-    long wildcardLong = numWildcardBitsToWildcardLong(MAX_PREFIX_LENGTH - _prefixLength);
+    long wildcardLong = wildcardMaskForPrefixLength(_prefixLength);
     return Ip.create(wildcardLong);
   }
 
