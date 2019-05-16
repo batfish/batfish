@@ -12,7 +12,9 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.batfish.bddreachability.transition.Transition;
 import org.batfish.bddreachability.transition.Transitions;
+import org.batfish.bddreachability.transition.Zero;
 import org.batfish.symbolic.state.StateExpr;
 
 /**
@@ -53,23 +55,20 @@ final class BDDReachabilityUtils {
         s -> {
           StateExpr preS = Iterables.getOnlyElement(revMap.get(s));
           StateExpr postS = Iterables.getOnlyElement(fwdMap.get(s));
-          Edge inbound = initial.remove(preS, s);
-          assert inbound != null;
-          assert inbound.getPreState() == preS;
-          Edge outbound = initial.remove(s, postS);
-          assert outbound != null;
-          assert outbound.getPostState() == postS;
-          initial.put(
-              preS,
-              postS,
-              new Edge(
-                  preS,
-                  postS,
-                  Transitions.compose(inbound.getTransition(), outbound.getTransition())));
           fwdMap.remove(preS, s);
           fwdMap.put(preS, postS);
           revMap.remove(postS, s);
           revMap.put(postS, preS);
+          Edge inbound = initial.remove(preS, s);
+          Edge outbound = initial.remove(s, postS);
+          if (inbound == null || outbound == null) {
+            // We compressed an earlier edge to Zero
+            return;
+          }
+          Transition t = Transitions.compose(inbound.getTransition(), outbound.getTransition());
+          if (!(t instanceof Zero)) {
+            initial.put(preS, postS, new Edge(preS, postS, t));
+          }
         });
     System.err.println("Final size: " + initial.size());
 
