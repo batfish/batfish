@@ -1,6 +1,6 @@
 package org.batfish.minesweeper.abstraction;
 
-import static org.batfish.common.util.CommonUtil.asPositiveIpWildcards;
+import static org.batfish.minesweeper.utils.PrefixUtils.asPositiveIpWildcards;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
