@@ -1,5 +1,7 @@
 package org.batfish.datamodel.matchers;
 
+import static org.hamcrest.Matchers.equalTo;
+
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Ip;
@@ -9,6 +11,7 @@ import org.batfish.datamodel.matchers.VniSettingsMatchersImpl.HasBumTransportMet
 import org.batfish.datamodel.matchers.VniSettingsMatchersImpl.HasSourceAddress;
 import org.batfish.datamodel.matchers.VniSettingsMatchersImpl.HasUdpPort;
 import org.batfish.datamodel.matchers.VniSettingsMatchersImpl.HasVlan;
+import org.batfish.datamodel.matchers.VniSettingsMatchersImpl.HasVni;
 import org.hamcrest.Matcher;
 
 public class VniSettingsMatchers {
@@ -58,5 +61,13 @@ public class VniSettingsMatchers {
   public static @Nonnull Matcher<VniSettings> hasVlan(
       @Nonnull Matcher<? super Integer> subMatcher) {
     return new HasVlan(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the {@link VniSettings}'s VLAN number matches the {@code
+   * vni}.
+   */
+  public static @Nonnull Matcher<VniSettings> hasVni(int vni) {
+    return new HasVni(equalTo(vni));
   }
 }
