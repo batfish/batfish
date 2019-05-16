@@ -493,7 +493,7 @@ public class BgpSessionCompatibilityAnswererTest {
    * Given equally sized lists of {@link BgpPeerConfigId}s and {@link BgpPeerConfig}s, creates one
    * {@link Configuration} per ID/peer pair and returns the resulting configurations.
    */
-  private static SortedMap<String, Configuration> createConfigurations(
+  static SortedMap<String, Configuration> createConfigurations(
       List<BgpPeerConfigId> ids, List<BgpPeerConfig> peers) {
     assert ids.size() == peers.size();
     SortedMap<String, Configuration> configs = new TreeMap<>();
