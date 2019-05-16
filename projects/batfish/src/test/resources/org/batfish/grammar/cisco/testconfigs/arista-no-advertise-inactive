@@ -1,0 +1,7 @@
+!
+boot system flash eos.swi
+hostname arista-no-advertise-inactive
+!
+router bgp 1
+ neighbor 1.1.1.1 remote-as 1
+!

@@ -1947,7 +1947,21 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newNeighborBuilder.setAdditionalPathsReceive(lpg.getAdditionalPathsReceive());
       newNeighborBuilder.setAdditionalPathsSelectAll(lpg.getAdditionalPathsSelectAll());
       newNeighborBuilder.setAdditionalPathsSend(lpg.getAdditionalPathsSend());
-      newNeighborBuilder.setAdvertiseInactive(lpg.getAdvertiseInactive());
+      /*
+       * On Arista EOS, advertise-inactive is a command that we parse and extract;
+       *
+       * On Cisco IOS & NXOS, advertise-inactive is true by default. This can be modified by
+       * "bgp suppress-inactive" command,
+       * which we currently do not parse/extract. So we choose the default value here.
+       *
+       * For other Cisco OS variations (e.g., IOS-XR) we did not find a similar command and for now,
+       * we assume behavior to be identical to IOS/NXOS family.
+       */
+      if (_vendor.equals(ConfigurationFormat.ARISTA)) {
+        newNeighborBuilder.setAdvertiseInactive(lpg.getAdvertiseInactive());
+      } else {
+        newNeighborBuilder.setAdvertiseInactive(true);
+      }
       newNeighborBuilder.setAllowLocalAsIn(lpg.getAllowAsIn());
       newNeighborBuilder.setAllowRemoteAsOut(
           firstNonNull(lpg.getDisablePeerAsCheck(), Boolean.TRUE));

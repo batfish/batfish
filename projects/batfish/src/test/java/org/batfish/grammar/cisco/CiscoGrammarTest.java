@@ -5765,4 +5765,40 @@ public class CiscoGrammarTest {
             "Port-Channel1.1",
             allOf(hasInterfaceType(InterfaceType.AGGREGATE_CHILD), isActive(true))));
   }
+
+  @Test
+  public void testAristaAdvertiseInactive() throws IOException {
+    Configuration config = parseConfig("arista-advertise-inactive");
+    assertTrue(
+        config
+            .getDefaultVrf()
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Prefix.parse("1.1.1.1/32"))
+            .getAdvertiseInactive());
+  }
+
+  @Test
+  public void testAristaNoAdvertiseInactive() throws IOException {
+    Configuration config = parseConfig("arista-no-advertise-inactive");
+    assertFalse(
+        config
+            .getDefaultVrf()
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Prefix.parse("1.1.1.1/32"))
+            .getAdvertiseInactive());
+  }
+
+  @Test
+  public void testIosAdvertiseInactive() throws IOException {
+    Configuration config = parseConfig("ios-advertise-inactive");
+    assertTrue(
+        config
+            .getDefaultVrf()
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Prefix.parse("1.1.1.1/32"))
+            .getAdvertiseInactive());
+  }
 }
