@@ -2,29 +2,29 @@
     "class": "org.batfish.question.edges.EdgesQuestion",
     "differential": false,
     "instance": {
-        "description": "Returns EIGRP adjacencies.",
-        "instanceName": "edgesEigrp",
-        "longDescription": "Lists all EIGRP adjacencies in the network.",
+        "description": "Returns VXLAN edges.",
+        "instanceName": "vxlanEdges",
+        "longDescription": "Lists all VXLAN edges in the network.",
         "tags": [
             "topology",
-            "eigrp"
+            "vxlan"
         ],
         "variables": {
             "nodes": {
-                "description": "Include adjacencies whose first node matches this name or regex",
+                "description": "Include edges whose first node matches this name or regex",
                 "type": "nodeSpec",
                 "value": ".*",
                 "displayName": "Nodes"
             },
             "remoteNodes": {
-                "description": "Include adjacencies whose second node matches this name or regex",
+                "description": "Include edges whose second node matches this name or regex",
                 "type": "nodeSpec",
                 "value": ".*",
                 "displayName": "Remote Nodes"
             }
         }
     },
-    "edgeType": "eigrp",
+    "edgeType": "vxlan",
     "nodes": "${nodes}",
     "remoteNodes": "${remoteNodes}"
 }

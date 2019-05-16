@@ -2,29 +2,28 @@
     "class": "org.batfish.question.edges.EdgesQuestion",
     "differential": false,
     "instance": {
-        "description": "Returns VXLAN edges.",
-        "instanceName": "edgesVxlan",
-        "longDescription": "Lists all VXLAN edges in the network.",
+        "description": "Returns Layer 3 links.",
+        "instanceName": "layer3Edges",
+        "longDescription": "Lists all Layer 3 links in the network.",
         "tags": [
-            "topology",
-            "vxlan"
+            "topology"
         ],
         "variables": {
             "nodes": {
-                "description": "Include edges whose first node matches this name or regex",
+                "description": "Include links whose first node matches this name or regex",
                 "type": "nodeSpec",
                 "value": ".*",
                 "displayName": "Nodes"
             },
             "remoteNodes": {
-                "description": "Include edges whose second node matches this name or regex",
+                "description": "Include links whose second node matches this name or regex",
                 "type": "nodeSpec",
                 "value": ".*",
                 "displayName": "Remote Nodes"
             }
         }
     },
-    "edgeType": "vxlan",
+    "edgeType": "layer3",
     "nodes": "${nodes}",
     "remoteNodes": "${remoteNodes}"
 }

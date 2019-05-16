@@ -2,29 +2,28 @@
     "class": "org.batfish.question.edges.EdgesQuestion",
     "differential": false,
     "instance": {
-        "description": "Returns RIP adjacencies.",
-        "instanceName": "edgesRip",
-        "longDescription": "Lists all RIP adjacencies in the network.",
+        "description": "Returns Layer 1 links.",
+        "instanceName": "layer1Edges",
+        "longDescription": "Lists all Layer 1 links in the network.",
         "tags": [
-            "topology",
-            "rip"
+            "topology"
         ],
         "variables": {
             "nodes": {
-                "description": "Include adjacencies whose first node matches this name or regex",
+                "description": "Include links whose first node matches this name or regex",
                 "type": "nodeSpec",
                 "value": ".*",
                 "displayName": "Nodes"
             },
             "remoteNodes": {
-                "description": "Include adjacencies whose second node matches this name or regex",
+                "description": "Include links whose second node matches this name or regex",
                 "type": "nodeSpec",
                 "value": ".*",
                 "displayName": "Remote Nodes"
             }
         }
     },
-    "edgeType": "rip",
+    "edgeType": "layer1",
     "nodes": "${nodes}",
     "remoteNodes": "${remoteNodes}"
 }

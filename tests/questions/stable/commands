@@ -18,35 +18,32 @@ test -raw tests/questions/stable/initIssues.ref validate-template initIssues
 # validate edges
 test -raw tests/questions/stable/edges.ref validate-template edges edgeType="bgp", nodes=".*", remoteNodes=".*"
 
-# validate edgesBgp
-test -raw tests/questions/stable/edgesBgp.ref validate-template edgesBgp nodes=".*", remoteNodes=".*"
+# validate bgpEdges
+test -raw tests/questions/stable/bgpEdges.ref validate-template bgpEdges nodes=".*", remoteNodes=".*"
 
-# validate edgesEigrp
-test -raw tests/questions/stable/edgesEigrp.ref validate-template edgesEigrp nodes=".*", remoteNodes=".*"
+# validate eigrpEdges
+test -raw tests/questions/stable/eigrpEdges.ref validate-template eigrpEdges nodes=".*", remoteNodes=".*"
 
-# validate edgesIpsec
-test -raw tests/questions/stable/edgesIpsec.ref validate-template edgesIpsec nodes=".*", remoteNodes=".*"
+# validate ipsecEdges
+test -raw tests/questions/stable/ipsecEdges.ref validate-template ipsecEdges nodes=".*", remoteNodes=".*"
 
 # validate edgesIsis
 test -raw tests/questions/stable/edgesIsis.ref validate-template edgesIsis nodes=".*", remoteNodes=".*"
 
-# validate edgesLayer1
-test -raw tests/questions/stable/edgesLayer1.ref validate-template edgesLayer1 nodes=".*", remoteNodes=".*"
+# validate layer1Edges
+test -raw tests/questions/stable/layer1Edges.ref validate-template layer1Edges nodes=".*", remoteNodes=".*"
 
-# validate edgesLayer2
-test -raw tests/questions/stable/edgesLayer2.ref validate-template edgesLayer2 nodes=".*", remoteNodes=".*"
+# validate layer3Edges
+test -raw tests/questions/stable/layer3Edges.ref validate-template layer3Edges nodes=".*", remoteNodes=".*"
 
-# validate edgesLayer3
-test -raw tests/questions/stable/edgesLayer3.ref validate-template edgesLayer3 nodes=".*", remoteNodes=".*"
+# validate ospfEdges
+test -raw tests/questions/stable/ospfEdges.ref validate-template ospfEdges nodes=".*", remoteNodes=".*"
 
-# validate edgesOspf
-test -raw tests/questions/stable/edgesOspf.ref validate-template edgesOspf nodes=".*", remoteNodes=".*"
+# validate ripEdges
+test -raw tests/questions/stable/ripEdges.ref validate-template ripEdges nodes=".*", remoteNodes=".*"
 
-# validate edgesRip
-test -raw tests/questions/stable/edgesRip.ref validate-template edgesRip nodes=".*", remoteNodes=".*"
-
-# validate edgesVxlan
-test -raw tests/questions/stable/edgesVxlan.ref validate-template edgesVxlan nodes=".*", remoteNodes=".*"
+# validate vxlanEdges
+test -raw tests/questions/stable/vxlanEdges.ref validate-template vxlanEdges nodes=".*", remoteNodes=".*"
 
 # validate ipsecSessionStatus
 test -raw tests/questions/stable/ipsecSessionStatus.ref validate-template ipsecSessionStatus nodes="n1", remoteNodes="n2", status=".*"

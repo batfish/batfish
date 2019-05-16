@@ -2,28 +2,29 @@
     "class": "org.batfish.question.edges.EdgesQuestion",
     "differential": false,
     "instance": {
-        "description": "Returns Layer 1 links.",
-        "instanceName": "edgesLayer1",
-        "longDescription": "Lists all Layer 1 links in the network.",
+        "description": "Returns EIGRP adjacencies.",
+        "instanceName": "eigrpEdges",
+        "longDescription": "Lists all EIGRP adjacencies in the network.",
         "tags": [
-            "topology"
+            "topology",
+            "eigrp"
         ],
         "variables": {
             "nodes": {
-                "description": "Include links whose first node matches this name or regex",
+                "description": "Include adjacencies whose first node matches this name or regex",
                 "type": "nodeSpec",
                 "value": ".*",
                 "displayName": "Nodes"
             },
             "remoteNodes": {
-                "description": "Include links whose second node matches this name or regex",
+                "description": "Include adjacencies whose second node matches this name or regex",
                 "type": "nodeSpec",
                 "value": ".*",
                 "displayName": "Remote Nodes"
             }
         }
     },
-    "edgeType": "layer1",
+    "edgeType": "eigrp",
     "nodes": "${nodes}",
     "remoteNodes": "${remoteNodes}"
 }

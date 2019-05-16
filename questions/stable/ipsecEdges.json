@@ -2,29 +2,29 @@
     "class": "org.batfish.question.edges.EdgesQuestion",
     "differential": false,
     "instance": {
-        "description": "Returns ISIS adjacencies.",
-        "instanceName": "edgesIsis",
-        "longDescription": "Lists all ISIS adjacencies in the network.",
+        "description": "Returns IPSec tunnels.",
+        "instanceName": "ipsecEdges",
+        "longDescription": "Lists all IPSec tunnels in the network.",
         "tags": [
             "topology",
-            "isis"
+            "ipsec"
         ],
         "variables": {
             "nodes": {
-                "description": "Include adjacencies whose first node matches this name or regex",
+                "description": "Include tunnels whose first node matches this name or regex",
                 "type": "nodeSpec",
                 "value": ".*",
                 "displayName": "Nodes"
             },
             "remoteNodes": {
-                "description": "Include adjacencies whose second node matches this name or regex",
+                "description": "Include tunnels whose second node matches this name or regex",
                 "type": "nodeSpec",
                 "value": ".*",
                 "displayName": "Remote Nodes"
             }
         }
     },
-    "edgeType": "isis",
+    "edgeType": "ipsec",
     "nodes": "${nodes}",
     "remoteNodes": "${remoteNodes}"
 }

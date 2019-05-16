@@ -3,7 +3,7 @@
     "differential": false,
     "instance": {
         "description": "Returns BGP adjacencies.",
-        "instanceName": "edgesBgp",
+        "instanceName": "bgpEdges",
         "longDescription": "Lists all BGP adjacencies in the network.",
         "tags": [
             "topology",

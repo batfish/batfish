@@ -2,28 +2,29 @@
     "class": "org.batfish.question.edges.EdgesQuestion",
     "differential": false,
     "instance": {
-        "description": "Returns Layer 3 links.",
-        "instanceName": "edgesLayer3",
-        "longDescription": "Lists all Layer 3 links in the network.",
+        "description": "Returns OSPF adjacencies.",
+        "instanceName": "ospfEdges",
+        "longDescription": "Lists all OSPF adjacencies in the network.",
         "tags": [
-            "topology"
+            "topology",
+            "ospf"
         ],
         "variables": {
             "nodes": {
-                "description": "Include links whose first node matches this name or regex",
+                "description": "Include adjacencies whose first node matches this name or regex",
                 "type": "nodeSpec",
                 "value": ".*",
                 "displayName": "Nodes"
             },
             "remoteNodes": {
-                "description": "Include links whose second node matches this name or regex",
+                "description": "Include edges whose second node matches this name or regex",
                 "type": "nodeSpec",
                 "value": ".*",
                 "displayName": "Remote Nodes"
             }
         }
     },
-    "edgeType": "layer3",
+    "edgeType": "ospf",
     "nodes": "${nodes}",
     "remoteNodes": "${remoteNodes}"
 }

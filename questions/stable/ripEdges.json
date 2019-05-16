@@ -2,12 +2,12 @@
     "class": "org.batfish.question.edges.EdgesQuestion",
     "differential": false,
     "instance": {
-        "description": "Returns OSPF adjacencies.",
-        "instanceName": "edgesOspf",
-        "longDescription": "Lists all OSPF adjacencies in the network.",
+        "description": "Returns RIP adjacencies.",
+        "instanceName": "ripEdges",
+        "longDescription": "Lists all RIP adjacencies in the network.",
         "tags": [
             "topology",
-            "ospf"
+            "rip"
         ],
         "variables": {
             "nodes": {
@@ -17,14 +17,14 @@
                 "displayName": "Nodes"
             },
             "remoteNodes": {
-                "description": "Include edges whose second node matches this name or regex",
+                "description": "Include adjacencies whose second node matches this name or regex",
                 "type": "nodeSpec",
                 "value": ".*",
                 "displayName": "Remote Nodes"
             }
         }
     },
-    "edgeType": "ospf",
+    "edgeType": "rip",
     "nodes": "${nodes}",
     "remoteNodes": "${remoteNodes}"
 }

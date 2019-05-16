@@ -8,7 +8,7 @@
   "instance" : {
     "description" : "Returns different types of network adjacencies in a snapshot.",
     "instanceName" : "qname",
-    "longDescription" : "Lists network adjacencies of different types (e.g., Layer 3, BGP, OSPF) in the form of edges. This question is deprecated. Use one of the more specific edges question (e.g., edgesBgp).",
+    "longDescription" : "Lists network adjacencies of different types (e.g., Layer 3, BGP, OSPF) in the form of edges. This question is deprecated in favor of specific edges question such as bgpEdges and layer3Edges.",
     "tags" : [
       "topology"
     ],
@@ -20,7 +20,6 @@
           "ipsec",
           "isis",
           "layer1",
-          "layer2",
           "layer3",
           "ospf",
           "rip",
@@ -28,7 +27,7 @@
         ],
         "description" : "Types of edges to include. Default is layer3.",
         "displayName" : "Edge Type",
-        "optional" : true,
+        "optional" : false,
         "type" : "string",
         "value" : "bgp",
         "values" : [
@@ -46,9 +45,6 @@
           },
           {
             "name" : "layer1"
-          },
-          {
-            "name" : "layer2"
           },
           {
             "name" : "layer3"
