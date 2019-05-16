@@ -65,4 +65,15 @@ public class VniSettingsMatchersImpl {
       return actual.getVlan();
     }
   }
+
+  static final class HasVni extends FeatureMatcher<VniSettings, Integer> {
+    HasVni(@Nonnull Matcher<? super Integer> subMatcher) {
+      super(subMatcher, "VniSettings with VLAN number:", "vlan");
+    }
+
+    @Override
+    protected Integer featureValueOf(VniSettings actual) {
+      return actual.getVni();
+    }
+  }
 }

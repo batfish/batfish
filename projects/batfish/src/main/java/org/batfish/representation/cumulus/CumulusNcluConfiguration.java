@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -32,6 +33,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
+import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IntegerSpace;
@@ -44,11 +46,13 @@ import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Mlag;
+import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Layer2VniConfig;
@@ -509,6 +513,58 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     _vrfs.forEach(this::initVrf);
   }
 
+  /**
+   * Converts {@link Vxlan} into appropriate {@link VniSettings} for each VRF. Requires VI Vrfs to
+   * already be properly initialized
+   */
+  private void convertVxlans() {
+    if (_vxlans.isEmpty()) {
+      return;
+    }
+
+    // Compute explicit VNI -> VRF mappings:
+    Map<Integer, String> vniToVrf =
+        _vrfs.values().stream()
+            .filter(vrf -> vrf.getVni() != null)
+            .collect(ImmutableMap.toImmutableMap(Vrf::getVni, Vrf::getName));
+
+    // Put all valid VXLAN VNIs into appropriate VRF
+    Map<String, Set<VniSettings>> vrfToVniSettings = new HashMap<>(0);
+    _vxlans
+        .values()
+        .forEach(
+            vxlan -> {
+              if (vxlan.getId() == null
+                  || vxlan.getLocalTunnelip() == null
+                  || vxlan.getBridgeAccessVlan() == null) {
+                // Not a valid VNI configuration
+                return;
+              }
+              String vrfName = vniToVrf.getOrDefault(vxlan.getId(), Configuration.DEFAULT_VRF_NAME);
+              vrfToVniSettings
+                  .computeIfAbsent(vrfName, k -> new HashSet<>())
+                  .add(
+                      VniSettings.builder()
+                          .setVni(vxlan.getId())
+                          .setVlan(vxlan.getBridgeAccessVlan())
+                          .setSourceAddress(vxlan.getLocalTunnelip())
+                          .setUdpPort(NamedPort.VXLAN.number())
+                          .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
+                          .build());
+            });
+    vrfToVniSettings.forEach(
+        (vrfName, vnis) ->
+            _c.getVrfs()
+                .get(vrfName)
+                .setVniSettings(
+                    vnis.stream()
+                        .collect(
+                            ImmutableSortedMap.toImmutableSortedMap(
+                                Comparator.naturalOrder(),
+                                VniSettings::getVni,
+                                Function.identity()))));
+  }
+
   public @Nullable BgpProcess getBgpProcess() {
     return _bgpProcess;
   }
@@ -890,6 +946,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     convertRouteMaps();
     convertDnsServers();
     convertClags();
+    convertVxlans();
     convertBgpProcess();
 
     initVendorFamily();

@@ -30,12 +30,17 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isSwitchport;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
+import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasBumTransportMethod;
+import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasSourceAddress;
+import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasUdpPort;
+import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasVni;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.representation.cumulus.BgpProcess.BGP_UNNUMBERED_IP;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.CUMULUS_CLAG_DOMAIN_ID;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.computeBgpPeerExportPolicyName;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.contains;
@@ -73,6 +78,7 @@ import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.IntegerSpace;
@@ -85,6 +91,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.Mlag;
+import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
@@ -96,6 +103,7 @@ import org.batfish.datamodel.bgp.Layer2VniConfig;
 import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
+import org.batfish.datamodel.matchers.VniSettingsMatchers;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -1362,6 +1370,32 @@ public final class CumulusNcluGrammarTest {
     assertThat(vc.getVxlans().get("v8").getLocalTunnelip(), equalTo(expectedLocalTunnelip));
     assertThat(vc.getVxlans().get("v9").getLocalTunnelip(), nullValue()); // missing
     assertThat(vc.getVxlans().get("v10").getLocalTunnelip(), equalTo(expectedLocalTunnelip));
+  }
+
+  @Test
+  public void testVxlanConversion() throws IOException {
+    Configuration c = parseConfig("cumulus_nclu_vxlan_vrfs");
+    assertThat(
+        c.getDefaultVrf().getVniSettings(),
+        hasEntry(
+            equalTo(102000),
+            allOf(
+                hasVni(102000),
+                hasBumTransportMethod(equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP)),
+                VniSettingsMatchers.hasVlan(equalTo(2000)),
+                hasSourceAddress(equalTo(Ip.parse("1.1.1.1"))),
+                hasUdpPort(equalTo(NamedPort.VXLAN.number())))));
+
+    assertThat(
+        c.getVrfs().get("VRF1").getVniSettings(),
+        hasEntry(
+            equalTo(101000),
+            allOf(
+                hasVni(101000),
+                hasBumTransportMethod(equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP)),
+                VniSettingsMatchers.hasVlan(equalTo(1000)),
+                hasSourceAddress(equalTo(Ip.parse("1.1.1.1"))),
+                hasUdpPort(equalTo(NamedPort.VXLAN.number())))));
   }
 
   @Test
