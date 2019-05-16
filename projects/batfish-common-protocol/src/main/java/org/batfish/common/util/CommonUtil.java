@@ -1,10 +1,6 @@
 package org.batfish.common.util;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.hash.Hashing;
-import com.google.common.math.IntMath;
 import com.ibm.icu.text.CharsetDetector;
 import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
 import io.opentracing.util.GlobalTracer;
@@ -23,23 +19,10 @@ import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.NavigableMap;
-import java.util.Objects;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.net.ssl.HostnameVerifier;
@@ -55,12 +38,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
-import org.batfish.datamodel.EmptyIpSpace;
-import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.IpWildcardIpSpace;
-import org.batfish.datamodel.IpWildcardSetIpSpace;
-import org.batfish.datamodel.UniverseIpSpace;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
@@ -68,38 +45,6 @@ import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 
 public class CommonUtil {
-
-  public static SortedSet<IpWildcard> asPositiveIpWildcards(IpSpace ipSpace) {
-    // TODO use an IpSpace visitor
-    if (ipSpace == null) {
-      return null;
-    } else if (ipSpace instanceof IpWildcardIpSpace) {
-      return ImmutableSortedSet.of(((IpWildcardIpSpace) ipSpace).getIpWildcard());
-    } else if (ipSpace instanceof IpWildcardSetIpSpace) {
-      return ((IpWildcardSetIpSpace) ipSpace).getWhitelist();
-    } else if (ipSpace instanceof UniverseIpSpace) {
-      return ImmutableSortedSet.of();
-    } else {
-      throw new BatfishException(
-          String.format("Cannot represent as SortedSet<IpWildcard>: %s", ipSpace));
-    }
-  }
-
-  public static SortedSet<IpWildcard> asNegativeIpWildcards(IpSpace ipSpace) {
-    // TODO use an IpSpace visitor
-    if (ipSpace == null) {
-      return null;
-    } else if (ipSpace instanceof IpWildcardIpSpace) {
-      return ImmutableSortedSet.of(((IpWildcardIpSpace) ipSpace).getIpWildcard());
-    } else if (ipSpace instanceof IpWildcardSetIpSpace) {
-      return ((IpWildcardSetIpSpace) ipSpace).getWhitelist();
-    } else if (ipSpace instanceof EmptyIpSpace) {
-      return ImmutableSortedSet.of();
-    } else {
-      throw new BatfishException(
-          String.format("Cannot represent as SortedSet<IpWildcard>: %s", ipSpace));
-    }
-  }
 
   private static class TrustAllHostNameVerifier implements HostnameVerifier {
     @Override
@@ -292,14 +237,6 @@ public class CommonUtil {
     }
   }
 
-  public static <S extends Set<T>, T> S difference(
-      Set<T> minuendSet, Set<T> subtrahendSet, Supplier<S> setConstructor) {
-    S differenceSet = setConstructor.get();
-    differenceSet.addAll(minuendSet);
-    differenceSet.removeAll(subtrahendSet);
-    return differenceSet;
-  }
-
   public static <T> void forEachWithIndex(Iterable<T> ts, BiConsumer<Integer, T> biConsumer) {
     int i = 0;
     for (T t : ts) {
@@ -320,14 +257,6 @@ public class CommonUtil {
       }
     }
     return null;
-  }
-
-  public static <S extends Set<T>, T> S intersection(
-      Set<T> set1, Collection<T> set2, Supplier<S> setConstructor) {
-    S intersectionSet = setConstructor.get();
-    intersectionSet.addAll(set1);
-    intersectionSet.retainAll(set2);
-    return intersectionSet;
   }
 
   @Nonnull
@@ -414,86 +343,6 @@ public class CommonUtil {
         resourceConfig,
         true,
         new SSLEngineConfigurator(sslCon, false, verifyClient, false));
-  }
-
-  @Deprecated
-  public static <K1, K2, V1, V2> Map<K2, V2> toImmutableMap(
-      Map<K1, V1> map,
-      Function<Entry<K1, V1>, K2> keyFunction,
-      Function<Entry<K1, V1>, V2> valueFunction) {
-    return map.entrySet().stream().collect(ImmutableMap.toImmutableMap(keyFunction, valueFunction));
-  }
-
-  @Deprecated
-  public static <E, K, V> Map<K, V> toImmutableMap(
-      Collection<E> set, Function<E, K> keyFunction, Function<E, V> valueFunction) {
-    return set.stream().collect(ImmutableMap.toImmutableMap(keyFunction, valueFunction));
-  }
-
-  @Deprecated
-  public static <K1, K2 extends Comparable<? super K2>, V1, V2>
-      SortedMap<K2, V2> toImmutableSortedMap(
-          Map<K1, V1> map,
-          Function<Entry<K1, V1>, K2> keyFunction,
-          Function<Entry<K1, V1>, V2> valueFunction) {
-    return map.entrySet().stream()
-        .collect(
-            ImmutableSortedMap.toImmutableSortedMap(
-                Comparator.naturalOrder(), keyFunction, valueFunction));
-  }
-
-  @Deprecated
-  public static <T, K extends Comparable<? super K>, V>
-      Collector<T, ?, ImmutableSortedMap<K, V>> toImmutableSortedMap(
-          Function<? super T, ? extends K> keyFunction,
-          Function<? super T, ? extends V> valueFunction) {
-    return ImmutableSortedMap.toImmutableSortedMap(
-        Comparator.naturalOrder(), keyFunction, valueFunction);
-  }
-
-  @Deprecated
-  public static <E, K extends Comparable<? super K>, V> NavigableMap<K, V> toImmutableSortedMap(
-      Collection<E> set, Function<E, K> keyFunction, Function<E, V> valueFunction) {
-    return set.stream()
-        .collect(
-            ImmutableSortedMap.toImmutableSortedMap(
-                Comparator.naturalOrder(), keyFunction, valueFunction));
-  }
-
-  /**
-   * A collector that returns a hashcode of all the objects in a stream (order-dependent).
-   *
-   * <p>Equivalent to to collecting elements into a list and calling {@link List#hashCode()}
-   */
-  @Deprecated
-  public static <T> Collector<T, ?, Integer> toOrderedHashCode() {
-    // See https://stackoverflow.com/a/39396614 for mode detail
-    return Collector.of(
-        // Initial state: [0] - current hashcode, [1] - number of elements encountered
-        () -> new int[2],
-        // accumulator: single element added to hashcode
-        (a, o) -> {
-          a[0] = a[0] * 31 + Objects.hashCode(o);
-          a[1]++;
-        },
-        // combiner: merge two hashcodes
-        (a1, a2) -> {
-          a1[0] = a1[0] * IntMath.pow(31, a2[1]) + a2[0];
-          a1[1] += a2[1];
-          return a1;
-        },
-        // finisher: collapse the state to a single int
-        a -> IntMath.pow(31, a[1]) + a[0]);
-  }
-
-  /**
-   * A collector that returns a hashcode of all the objects in a stream (order-independent).
-   *
-   * <p>Equivalent to collecting elements into a set and calling {@link Set#hashCode()}
-   */
-  @Deprecated
-  public static <T> Collector<T, ?, Integer> toUnorderedHashCode() {
-    return Collectors.summingInt(Objects::hashCode);
   }
 
   public static void writeFile(Path outputPath, String output) {

@@ -1,30 +1,19 @@
 package org.batfish.minesweeper.utils;
 
-import static org.batfish.common.util.CommonUtil.asPositiveIpWildcards;
-
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.Collection;
+import java.util.SortedSet;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.HeaderSpace;
+import org.batfish.common.BatfishException;
+import org.batfish.datamodel.EmptyIpSpace;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardIpSpace;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.UniverseIpSpace;
 
 public class PrefixUtils {
-
-  /*
-   * Checks if a prefix overlaps with the destination in a headerspace
-   */
-  public static boolean overlap(HeaderSpace h, Prefix p) {
-    if (h.getDstIps() == null) {
-      return true;
-    }
-    for (IpWildcard ipWildcard : asPositiveIpWildcards(h.getDstIps())) {
-      Prefix p2 = ipWildcard.toPrefix();
-      if (overlap(p, p2)) {
-        return true;
-      }
-    }
-    return false;
-  }
 
   /*
    * Checks if two prefixes ever overlap
@@ -59,5 +48,37 @@ public class PrefixUtils {
       }
     }
     return false;
+  }
+
+  public static SortedSet<IpWildcard> asPositiveIpWildcards(IpSpace ipSpace) {
+    // TODO use an IpSpace visitor
+    if (ipSpace == null) {
+      return null;
+    } else if (ipSpace instanceof IpWildcardIpSpace) {
+      return ImmutableSortedSet.of(((IpWildcardIpSpace) ipSpace).getIpWildcard());
+    } else if (ipSpace instanceof IpWildcardSetIpSpace) {
+      return ((IpWildcardSetIpSpace) ipSpace).getWhitelist();
+    } else if (ipSpace instanceof UniverseIpSpace) {
+      return ImmutableSortedSet.of();
+    } else {
+      throw new BatfishException(
+          String.format("Cannot represent as SortedSet<IpWildcard>: %s", ipSpace));
+    }
+  }
+
+  public static SortedSet<IpWildcard> asNegativeIpWildcards(IpSpace ipSpace) {
+    // TODO use an IpSpace visitor
+    if (ipSpace == null) {
+      return null;
+    } else if (ipSpace instanceof IpWildcardIpSpace) {
+      return ImmutableSortedSet.of(((IpWildcardIpSpace) ipSpace).getIpWildcard());
+    } else if (ipSpace instanceof IpWildcardSetIpSpace) {
+      return ((IpWildcardSetIpSpace) ipSpace).getWhitelist();
+    } else if (ipSpace instanceof EmptyIpSpace) {
+      return ImmutableSortedSet.of();
+    } else {
+      throw new BatfishException(
+          String.format("Cannot represent as SortedSet<IpWildcard>: %s", ipSpace));
+    }
   }
 }

@@ -1,7 +1,7 @@
-package org.batfish.datamodel.questions.smt;
+package org.batfish.minesweeper.question;
 
-import static org.batfish.common.util.CommonUtil.asNegativeIpWildcards;
-import static org.batfish.common.util.CommonUtil.asPositiveIpWildcards;
+import static org.batfish.minesweeper.utils.PrefixUtils.asNegativeIpWildcards;
+import static org.batfish.minesweeper.utils.PrefixUtils.asPositiveIpWildcards;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -18,6 +18,9 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.questions.smt.BgpDecisionVariable;
+import org.batfish.datamodel.questions.smt.DiffType;
+import org.batfish.datamodel.questions.smt.EnvironmentType;
 
 public class HeaderQuestion extends Question {
   private static final String PROP_DST_IPS = "dstIps";
