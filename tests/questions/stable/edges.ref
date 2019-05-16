@@ -26,7 +26,7 @@
           "rip",
           "vxlan"
         ],
-        "description" : "Types of edges to include. Default if layer3.",
+        "description" : "Types of edges to include. Default is layer3.",
         "displayName" : "Edge Type",
         "optional" : true,
         "type" : "string",

@@ -42,7 +42,7 @@
                         "name": "vxlan"
                     }
                 ],
-                "description": "Types of edges to include. Default if layer3.",
+                "description": "Types of edges to include. Default is layer3.",
                 "optional": true,
                 "type": "string",
                 "displayName": "Edge Type"
