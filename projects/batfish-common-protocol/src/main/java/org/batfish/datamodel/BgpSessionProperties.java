@@ -196,8 +196,8 @@ public final class BgpSessionProperties {
             && listener.getAdditionalPathsReceive()
             && initiator.getAdditionalPathsSend()
             && initiator.getAdditionalPathsSelectAll(),
-        SessionType.isEbgp(sessionType) && initiator.getAdvertiseInactive(),
         !SessionType.isEbgp(sessionType) && initiator.getAdvertiseExternal(),
+        SessionType.isEbgp(sessionType) && initiator.getAdvertiseInactive(),
         reverseDirection ? listenerIp : initiatorIp,
         reverseDirection ? initiatorIp : listenerIp,
         sessionType);
