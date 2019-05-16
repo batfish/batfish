@@ -1381,7 +1381,7 @@ public final class CumulusNcluGrammarTest {
             equalTo(102000),
             allOf(
                 hasVni(102000),
-                hasBumTransportMethod(equalTo(BumTransportMethod.MULTICAST_GROUP)),
+                hasBumTransportMethod(equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP)),
                 VniSettingsMatchers.hasVlan(equalTo(2000)),
                 hasSourceAddress(equalTo(Ip.parse("1.1.1.1"))),
                 hasUdpPort(equalTo(NamedPort.VXLAN.number())))));
@@ -1392,7 +1392,7 @@ public final class CumulusNcluGrammarTest {
             equalTo(101000),
             allOf(
                 hasVni(101000),
-                hasBumTransportMethod(equalTo(BumTransportMethod.MULTICAST_GROUP)),
+                hasBumTransportMethod(equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP)),
                 VniSettingsMatchers.hasVlan(equalTo(1000)),
                 hasSourceAddress(equalTo(Ip.parse("1.1.1.1"))),
                 hasUdpPort(equalTo(NamedPort.VXLAN.number())))));

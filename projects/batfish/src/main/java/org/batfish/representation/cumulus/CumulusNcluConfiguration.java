@@ -549,7 +549,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
                           .setVlan(vxlan.getBridgeAccessVlan())
                           .setSourceAddress(vxlan.getLocalTunnelip())
                           .setUdpPort(NamedPort.VXLAN.number())
-                          .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
+                          .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
                           .build());
             });
     vrfToVniSettings.forEach(
