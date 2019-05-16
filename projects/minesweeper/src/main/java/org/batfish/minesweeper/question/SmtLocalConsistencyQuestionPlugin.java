@@ -11,7 +11,6 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.minesweeper.smt.PropertyChecker;
 import org.batfish.question.QuestionPlugin;
 

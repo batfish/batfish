@@ -1,14 +1,14 @@
-package org.batfish.common.util;
+package org.batfish.minesweeper.utils;
 
-import static org.batfish.common.util.CommonUtil.asNegativeIpWildcards;
-import static org.batfish.common.util.CommonUtil.asPositiveIpWildcards;
+import static org.batfish.minesweeper.utils.PrefixUtils.asNegativeIpWildcards;
+import static org.batfish.minesweeper.utils.PrefixUtils.asPositiveIpWildcards;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
-/** Tests of utility methods from {@link org.batfish.common.util.CommonUtil} */
-public class CommonUtilTest {
+/** Tests of utility methods from {@link PrefixUtils} */
+public class PrefixUtilsTest {
 
   /** Test that asPositiveIpWildcards handles null */
   @Test

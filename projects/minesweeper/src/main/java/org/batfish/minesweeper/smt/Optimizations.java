@@ -16,7 +16,6 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
-import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -30,6 +29,7 @@ import org.batfish.minesweeper.Graph;
 import org.batfish.minesweeper.GraphEdge;
 import org.batfish.minesweeper.Protocol;
 import org.batfish.minesweeper.collections.Table2;
+import org.batfish.minesweeper.question.HeaderQuestion;
 
 /**
  * A class containing all the information pertinent for optimizations of the network encoding.

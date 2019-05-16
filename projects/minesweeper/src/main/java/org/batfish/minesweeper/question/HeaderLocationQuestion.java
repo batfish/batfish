@@ -1,4 +1,4 @@
-package org.batfish.datamodel.questions.smt;
+package org.batfish.minesweeper.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

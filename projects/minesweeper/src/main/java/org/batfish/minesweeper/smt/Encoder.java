@@ -33,12 +33,12 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.Graph;
 import org.batfish.minesweeper.GraphEdge;
 import org.batfish.minesweeper.OspfType;
 import org.batfish.minesweeper.Protocol;
+import org.batfish.minesweeper.question.HeaderQuestion;
 import org.batfish.minesweeper.utils.Tuple;
 
 /**
