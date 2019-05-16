@@ -4,7 +4,7 @@
     "instance": {
         "description": "Returns different types of network adjacencies in a snapshot.",
         "instanceName": "edges",
-        "longDescription": "Lists network adjacencies of different types (e.g., Layer 3, BGP, OSPF) in the form of edges.",
+        "longDescription": "Lists network adjacencies of different types (e.g., Layer 3, BGP, OSPF) in the form of edges. This question is deprecated. Use one of the more specific edges question (e.g., edgesBgp).",
         "tags": [
             "topology"
         ],
@@ -42,7 +42,7 @@
                         "name": "vxlan"
                     }
                 ],
-                "description": "Types of edges to include",
+                "description": "Types of edges to include. Default if layer3.",
                 "optional": true,
                 "type": "string",
                 "displayName": "Edge Type"

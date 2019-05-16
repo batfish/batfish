@@ -16,12 +16,16 @@ VALID_TAGS = {"acl",  # acl and firewall related
               "configuration",  # produce configuration data
               "differential",  # differential question
               "dataplane",  # need dataplane computation
+              "eigrp",  # EIGRP related
               "hygiene",  # hygiene type check on configs
+              "ipsec",  # IPSec related
+              "isis",  # isis related
               "initialization",  # shows information related to snapshot initialization
               "mlag",  # MLAG related
               "ospf",  # ospf related
               "other",  # does not fit in any other group
               "reachability",  # reachability or flow search type question
+              "rip",  # RIP related
               "routing",  # helps analyze routing
               "specifiers",  # resolves a specifier
               "status",  # checks for pairwise compatibility
@@ -176,6 +180,16 @@ def test_types(question):
 NO_ORDERED_VARIABLE_NAMES_QUESTIONS = {
     'questions/stable/definedStructures.json',
     'questions/stable/edges.json',
+    'questions/stable/edgesBgp.json',
+    'questions/stable/edgesEigrp.json',
+    'questions/stable/edgesIpsec.json',
+    'questions/stable/edgesIsis.json',
+    'questions/stable/edgesLayer1.json',
+    'questions/stable/edgesLayer2.json',
+    'questions/stable/edgesLayer3.json',
+    'questions/stable/edgesOspf.json',
+    'questions/stable/edgesRip.json',
+    'questions/stable/edgesVxlan.json',
     'questions/stable/ipsecSessionStatus.json',
     'questions/stable/referencedStructures.json',
     'questions/stable/routes.json',
