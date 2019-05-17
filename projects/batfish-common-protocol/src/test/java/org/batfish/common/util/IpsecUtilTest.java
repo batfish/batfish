@@ -159,7 +159,7 @@ public class IpsecUtilTest {
   }
 
   @Test
-  public void testPruneFailedIpsecSessionEdges() {
+  public void testRetainCompatibleTunnelEdges() {
     Set<Edge> compatibleIpsecEdges =
         toEdgeSet(retainCompatibleTunnelEdges(_ipsecTopology, _configurations), _configurations);
 

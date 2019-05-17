@@ -107,11 +107,23 @@ public final class Topology implements Serializable {
             .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural())));
   }
 
+  /**
+   * Adds overlay edges to the topology
+   *
+   * @param overlayEdges overlay edges to be added
+   * @return updated {@link Topology}
+   */
   public Topology addOverlayEdges(@Nonnull Set<Edge> overlayEdges) {
     return new Topology(
         ImmutableSortedSet.<Edge>naturalOrder().addAll(_edges).addAll(overlayEdges).build());
   }
 
+  /**
+   * Removes overlay edges from the topology
+   *
+   * @param configurations configurations for this topology
+   * @return updated {@link Topology}
+   */
   public Topology removeOverlayEdges(@Nonnull Map<String, Configuration> configurations) {
     return new Topology(
         _edges.stream()
@@ -119,6 +131,10 @@ public final class Topology implements Serializable {
             .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural())));
   }
 
+  /**
+   * Checks whether a given {@link Edge} is an overlay edge, overlay edge is an edge between a
+   * Tunnel/VPN interface type to a Tunnel/VPN interface type
+   */
   @VisibleForTesting
   static boolean isAnOverlayEdge(
       @Nonnull Edge edge, @Nonnull Map<String, Configuration> configurations) {

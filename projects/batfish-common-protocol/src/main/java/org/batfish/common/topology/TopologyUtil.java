@@ -413,7 +413,8 @@ public final class TopologyUtil {
 
   /**
    * Compute the raw layer 3 topology from information contained in the configurations, and also the
-   * layer-1 and layer-2 topologies if present.
+   * layer-1 and layer-2 topologies if present. It also removes the overlay edges from the computed
+   * layer 3 edges.
    */
   public static @Nonnull Topology computeRawLayer3Topology(
       @Nonnull Optional<Layer1Topology> rawLayer1PhysicalTopology,
@@ -426,8 +427,13 @@ public final class TopologyUtil {
   }
 
   /**
-   * Compute the pruned layer-3 topology from the raw layer-3 topology, configuration information,
-   * and failed edges.
+   * Compute the layer-3 topology from the raw layer-3 topology, configuration information, and
+   * overlay edges.
+   *
+   * @param rawLayer3Topology raw layer 3 {@link Topology}
+   * @param overlayEdges overlay edges to be added to the rawLayer3Topology
+   * @param configurations configurations for which these edges exist
+   * @return
    */
   public static @Nonnull Topology computeLayer3Topology(
       Topology rawLayer3Topology,

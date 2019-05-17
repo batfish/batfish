@@ -386,7 +386,7 @@ public class IpsecUtil {
 
   /**
    * Given a {@link ValueGraph} representing the IPsec topology, prunes the edges which are not
-   * between Tunnel interfaces and the edges which do not have a compatible IPsec session
+   * between Tunnel interfaces and do not have a compatible IPsec session
    *
    * @param ipsecTopology original IPsec topology's {@link ValueGraph}
    * @param configurations {@link Map} of {@link Configuration} to configuration names
@@ -475,6 +475,13 @@ public class IpsecUtil {
     return builder.build();
   }
 
+  /**
+   * Helper to convert IPsec topology to a set of edges
+   *
+   * @param ipsecTopology {@link ValueGraph} for IPsec topology
+   * @param configurations {@link Map} of configuration objects
+   * @return {@link Set} of {@link Edge}s
+   */
   public static Set<Edge> toEdgeSet(
       @Nonnull ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology,
       @Nonnull Map<String, Configuration> configurations) {

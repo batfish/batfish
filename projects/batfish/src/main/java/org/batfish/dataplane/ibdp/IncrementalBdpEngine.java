@@ -155,7 +155,7 @@ class IncrementalBdpEngine {
                       configurations),
                   prunedIpsecGraphEdges,
                   configurations);
-          // TODO: update prunedIpsecGraphEdges using reachability check using newLayer3Topology
+          // TODO: update prunedIpsecGraphEdges by traceroute using newLayer3Topology
 
           // Initialize BGP topology
           BgpTopology newBgpTopology =
