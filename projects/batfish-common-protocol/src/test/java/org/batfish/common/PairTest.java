@@ -9,20 +9,11 @@ import org.junit.Test;
 
 /** Tests of {@link Pair} */
 public class PairTest {
-
-  private static class PairImpl extends Pair<Integer, Integer> {
-    private static final long serialVersionUID = 1L;
-
-    PairImpl(Integer i1, Integer i2) {
-      super(i1, i2);
-    }
-  }
-
   @Test
   public void testCompareToWithNullSecond() {
-    List<PairImpl> ordered =
+    List<Pair<Integer, Integer>> ordered =
         ImmutableList.of(
-            new PairImpl(1, null), new PairImpl(1, 2), new PairImpl(2, null), new PairImpl(2, 2));
+            new Pair<>(1, null), new Pair<>(1, 2), new Pair<>(2, null), new Pair<>(2, 2));
     for (int i = 0; i < ordered.size(); i++) {
       for (int j = 0; j < ordered.size(); j++) {
         assertThat(
