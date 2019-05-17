@@ -5,6 +5,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
@@ -118,7 +119,8 @@ public final class Topology implements Serializable {
             .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural())));
   }
 
-  private static boolean isAnOverlayEdge(
+  @VisibleForTesting
+  static boolean isAnOverlayEdge(
       @Nonnull Edge edge, @Nonnull Map<String, Configuration> configurations) {
     InterfaceType interfaceType1 =
         configurations

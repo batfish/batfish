@@ -21,13 +21,11 @@ import org.batfish.datamodel.IpsecPeerConfigId;
 import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
-import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.junit.Before;
 import org.junit.Test;
 
 public class IpsecUtilTest {
-  private Topology _topology;
   private ValueGraph<IpsecPeerConfigId, IpsecSession> _ipsecTopology;
   private Map<String, Configuration> _configurations = new HashMap<>();
 

@@ -2,7 +2,9 @@ package org.batfish.datamodel;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -158,5 +160,44 @@ public class TopologyTest {
   public void testJacksonSerialization() throws IOException {
     Topology topo = new Topology(_bothEdges);
     assertEquals(BatfishObjectMapper.clone(topo, Topology.class), topo);
+  }
+
+  @Test
+  public void testAddOverLayEdges() {
+    Topology topo = new Topology(ImmutableSortedSet.copyOf(_edge1to2Set));
+    Topology topoWithOverlay = topo.addOverlayEdges(_edge2to3Set);
+
+    assertThat(topoWithOverlay.getEdges(), equalTo(_bothEdges));
+  }
+
+  @Test
+  public void testIsAnOverlayEdge() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration conf =
+        nf.configurationBuilder()
+            .setHostname("c")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    nf.interfaceBuilder().setOwner(conf).setName("e1").build();
+    nf.interfaceBuilder().setOwner(conf).setName("e2").build();
+    Interface tunnel1 = nf.interfaceBuilder().setOwner(conf).setName("t1").build();
+    Interface tunnel2 = nf.interfaceBuilder().setOwner(conf).setName("t2").build();
+    Interface vpn = nf.interfaceBuilder().setOwner(conf).setName("v").build();
+    tunnel1.setInterfaceType(InterfaceType.TUNNEL);
+    tunnel2.setInterfaceType(InterfaceType.TUNNEL);
+    vpn.setInterfaceType(InterfaceType.VPN);
+
+    assertTrue(
+        Topology.isAnOverlayEdge(
+            new Edge(new NodeInterfacePair("c", "t1"), new NodeInterfacePair("c", "t2")),
+            ImmutableMap.of("c", conf)));
+    assertTrue(
+        Topology.isAnOverlayEdge(
+            new Edge(new NodeInterfacePair("c", "v"), new NodeInterfacePair("c", "t1")),
+            ImmutableMap.of("c", conf)));
+    assertFalse(
+        Topology.isAnOverlayEdge(
+            new Edge(new NodeInterfacePair("c", "e1"), new NodeInterfacePair("c", "e2")),
+            ImmutableMap.of("c", conf)));
   }
 }

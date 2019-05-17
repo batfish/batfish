@@ -93,10 +93,7 @@ class IncrementalBdpEngine {
               .build();
 
       Set<Edge> prunedIpsecGraphEdges =
-          IpsecUtil.toEdgeSet(
-              IpsecUtil.retainCompatibleTunnelEdges(
-                  IpsecUtil.initIpsecTopology(configurations), configurations),
-              configurations);
+          IpsecUtil.toEdgeSet(initialTopologyContext.getIpsecTopology(), configurations);
 
       // Generate our nodes, keyed by name, sorted for determinism
       SortedMap<String, Node> nodes =
@@ -158,6 +155,7 @@ class IncrementalBdpEngine {
                       configurations),
                   prunedIpsecGraphEdges,
                   configurations);
+          // TODO: update prunedIpsecGraphEdges using reachability check using newLayer3Topology
 
           // Initialize BGP topology
           BgpTopology newBgpTopology =

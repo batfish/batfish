@@ -1,5 +1,8 @@
 package org.batfish.dataplane.ibdp;
 
+import com.google.common.graph.ImmutableValueGraph;
+import com.google.common.graph.ValueGraph;
+import com.google.common.graph.ValueGraphBuilder;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
@@ -8,6 +11,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyContainer;
+import org.batfish.datamodel.IpsecPeerConfigId;
+import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.eigrp.EigrpTopology;
@@ -23,6 +28,7 @@ public final class TopologyContext implements TopologyContainer {
 
     private @Nonnull BgpTopology _bgpTopology;
     private @Nonnull EigrpTopology _eigrpTopology;
+    private @Nonnull ValueGraph<IpsecPeerConfigId, IpsecSession> _ipsecTopology;
     private @Nonnull IsisTopology _isisTopology;
     private @Nonnull Optional<Layer1Topology> _layer1LogicalTopology;
     private @Nonnull Optional<Layer2Topology> _layer2Topology;
@@ -35,6 +41,7 @@ public final class TopologyContext implements TopologyContainer {
       return new TopologyContext(
           _bgpTopology,
           _eigrpTopology,
+          _ipsecTopology,
           _isisTopology,
           _layer1LogicalTopology,
           _layer2Topology,
@@ -47,6 +54,8 @@ public final class TopologyContext implements TopologyContainer {
     private Builder() {
       _bgpTopology = BgpTopology.EMPTY;
       _eigrpTopology = EigrpTopology.EMPTY;
+      _ipsecTopology =
+          ImmutableValueGraph.copyOf(ValueGraphBuilder.directed().allowsSelfLoops(false).build());
       _isisTopology = IsisTopology.EMPTY;
       _layer1LogicalTopology = Optional.empty();
       _layer2Topology = Optional.empty();
@@ -63,6 +72,12 @@ public final class TopologyContext implements TopologyContainer {
 
     public @Nonnull Builder setEigrpTopology(EigrpTopology eigrpTopology) {
       _eigrpTopology = eigrpTopology;
+      return this;
+    }
+
+    public @Nonnull Builder setIpsecTopology(
+        @Nonnull ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology) {
+      _ipsecTopology = ipsecTopology;
       return this;
     }
 
@@ -110,6 +125,7 @@ public final class TopologyContext implements TopologyContainer {
 
   private final @Nonnull BgpTopology _bgpTopology;
   private final @Nonnull EigrpTopology _eigrpTopology;
+  private final @Nonnull ValueGraph<IpsecPeerConfigId, IpsecSession> _ipsecTopology;
   private final @Nonnull IsisTopology _isisTopology;
   private final @Nonnull Optional<Layer1Topology> _layer1LogicalTopology;
   private final @Nonnull Optional<Layer2Topology> _layer2Topology;
@@ -121,6 +137,7 @@ public final class TopologyContext implements TopologyContainer {
   private TopologyContext(
       BgpTopology bgpTopology,
       EigrpTopology eigrpTopology,
+      ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology,
       IsisTopology isisTopology,
       Optional<Layer1Topology> layer1LogicalTopology,
       Optional<Layer2Topology> layer2Topology,
@@ -130,6 +147,7 @@ public final class TopologyContext implements TopologyContainer {
       VxlanTopology vxlanTopology) {
     _bgpTopology = bgpTopology;
     _eigrpTopology = eigrpTopology;
+    _ipsecTopology = ipsecTopology;
     _isisTopology = isisTopology;
     _layer1LogicalTopology = layer1LogicalTopology;
     _layer2Topology = layer2Topology;
@@ -147,6 +165,11 @@ public final class TopologyContext implements TopologyContainer {
   @Override
   public @Nonnull EigrpTopology getEigrpTopology() {
     return _eigrpTopology;
+  }
+
+  @Override
+  public @Nonnull ValueGraph<IpsecPeerConfigId, IpsecSession> getIpsecTopology() {
+    return _ipsecTopology;
   }
 
   @Override
@@ -193,6 +216,7 @@ public final class TopologyContext implements TopologyContainer {
     TopologyContext rhs = (TopologyContext) obj;
     return _bgpTopology.equals(rhs._bgpTopology)
         && _eigrpTopology.equals(rhs._eigrpTopology)
+        && _ipsecTopology.equals(rhs._ipsecTopology)
         && _isisTopology.equals(rhs._isisTopology)
         && _layer1LogicalTopology.equals(rhs._layer1LogicalTopology)
         && _layer2Topology.equals(rhs._layer2Topology)
@@ -207,6 +231,7 @@ public final class TopologyContext implements TopologyContainer {
     return Objects.hash(
         _bgpTopology,
         _eigrpTopology,
+        _ipsecTopology,
         _isisTopology,
         _layer1LogicalTopology,
         _layer2Topology,
@@ -220,6 +245,7 @@ public final class TopologyContext implements TopologyContainer {
     return builder()
         .setBgpTopology(_bgpTopology)
         .setEigrpTopology(_eigrpTopology)
+        .setIpsecTopology(_ipsecTopology)
         .setIsisTopology(_isisTopology)
         .setLayer1LogicalTopology(_layer1LogicalTopology)
         .setLayer2Topology(_layer2Topology)

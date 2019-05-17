@@ -7,6 +7,7 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.common.topology.TopologyProvider;
+import org.batfish.common.util.IpsecUtil;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Topology;
@@ -44,6 +45,9 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
     TopologyProvider topologyProvider = _batfish.getTopologyProvider();
     TopologyContext topologyContext =
         TopologyContext.builder()
+            .setIpsecTopology(
+                IpsecUtil.retainCompatibleTunnelEdges(
+                    IpsecUtil.initIpsecTopology(configurations), configurations))
             .setLayer1LogicalTopology(topologyProvider.getLayer1LogicalTopology(networkSnapshot))
             .setLayer2Topology(topologyProvider.getInitialLayer2Topology(networkSnapshot))
             .setLayer3Topology(topology)

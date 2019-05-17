@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.GraphBuilder;
+import com.google.common.graph.ImmutableValueGraph;
 import com.google.common.graph.MutableGraph;
 import com.google.common.graph.MutableNetwork;
 import com.google.common.graph.MutableValueGraph;
@@ -21,6 +22,8 @@ import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.IpsecPeerConfigId;
+import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.eigrp.EigrpEdge;
@@ -46,6 +49,12 @@ public final class TopologyContextTest {
     MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
         ValueGraphBuilder.directed().build();
     bgpTopology.addNode(new BgpPeerConfigId("a", "b", "c"));
+    MutableValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology =
+        ValueGraphBuilder.directed().allowsSelfLoops(false).build();
+    ipsecTopology.putEdgeValue(
+        new IpsecPeerConfigId("a", "b"),
+        new IpsecPeerConfigId("c", "d"),
+        IpsecSession.builder().build());
     MutableNetwork<EigrpInterface, EigrpEdge> eigrpTopology = NetworkBuilder.directed().build();
     eigrpTopology.addNode(new EigrpInterface("a", "b", "c"));
     MutableNetwork<IsisNode, IsisEdge> isisTopology = NetworkBuilder.directed().build();
@@ -62,6 +71,7 @@ public final class TopologyContextTest {
         .addEqualityGroup(base, base, builder.build())
         .addEqualityGroup(builder.setBgpTopology(new BgpTopology(bgpTopology)).build())
         .addEqualityGroup(builder.setEigrpTopology(new EigrpTopology(eigrpTopology)).build())
+        .addEqualityGroup(builder.setIpsecTopology(ImmutableValueGraph.copyOf(ipsecTopology)))
         .addEqualityGroup(builder.setIsisTopology(new IsisTopology(isisTopology)).build())
         .addEqualityGroup(
             builder
@@ -99,6 +109,12 @@ public final class TopologyContextTest {
     bgpTopology.addNode(new BgpPeerConfigId("a", "b", "c"));
     MutableNetwork<EigrpInterface, EigrpEdge> eigrpTopology = NetworkBuilder.directed().build();
     eigrpTopology.addNode(new EigrpInterface("a", "b", "c"));
+    MutableValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology =
+        ValueGraphBuilder.directed().allowsSelfLoops(false).build();
+    ipsecTopology.putEdgeValue(
+        new IpsecPeerConfigId("a", "b"),
+        new IpsecPeerConfigId("c", "d"),
+        IpsecSession.builder().build());
     MutableNetwork<IsisNode, IsisEdge> isisTopology = NetworkBuilder.directed().build();
     isisTopology.addNode(new IsisNode("a", "b"));
     MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> ospfTopology =
@@ -111,6 +127,7 @@ public final class TopologyContextTest {
         .setBgpTopology(new BgpTopology(bgpTopology))
         .setEigrpTopology(new EigrpTopology(eigrpTopology))
         .setIsisTopology(new IsisTopology(isisTopology))
+        .setIpsecTopology(ImmutableValueGraph.copyOf(ipsecTopology))
         .setLayer1LogicalTopology(
             Optional.of(new Layer1Topology(ImmutableList.of(new Layer1Edge("a", "b", "c", "d")))))
         .setLayer2Topology(

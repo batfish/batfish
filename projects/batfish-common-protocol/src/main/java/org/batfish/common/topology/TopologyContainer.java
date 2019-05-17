@@ -1,7 +1,10 @@
 package org.batfish.common.topology;
 
+import com.google.common.graph.ValueGraph;
 import java.util.Optional;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.IpsecPeerConfigId;
+import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.eigrp.EigrpTopology;
@@ -18,6 +21,9 @@ public interface TopologyContainer {
 
   @Nonnull
   EigrpTopology getEigrpTopology();
+
+  @Nonnull
+  ValueGraph<IpsecPeerConfigId, IpsecSession> getIpsecTopology();
 
   @Nonnull
   IsisTopology getIsisTopology();

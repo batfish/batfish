@@ -5,6 +5,7 @@ import static org.batfish.common.topology.TopologyUtil.computeLayer3Topology;
 import static org.batfish.common.topology.TopologyUtil.computeRawLayer3Topology;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
@@ -14,8 +15,12 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.EndpointPair;
+import com.google.common.graph.ImmutableValueGraph;
+import com.google.common.graph.MutableValueGraph;
+import com.google.common.graph.ValueGraphBuilder;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nonnull;
@@ -34,8 +39,14 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpsecPeerConfigId;
+import org.batfish.datamodel.IpsecPhase2Proposal;
+import org.batfish.datamodel.IpsecSession;
+import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.ospf.OspfTopology;
@@ -205,5 +216,111 @@ public final class FixedPointTopologyTest {
     assertThat(
         topologies.getLayer3Topology().getEdges(),
         hasItem(Edge.of(H1_NAME, E1_NAME, H2_NAME, E2_NAME)));
+  }
+
+  @Test
+  public void testFixedPointIpsecTopology() {
+    // the setup network contains bidirectional underlay edges between host1:interface1 and
+    // host2:interface2, and also overlay edges between host1:Tunnel1 and host2:Tunnel2
+    IpsecStaticPeerConfig ipsecPeerConfig1 =
+        IpsecStaticPeerConfig.builder()
+            .setSourceInterface("Interface1")
+            .setTunnelInterface("Tunnel1")
+            .build();
+    IpsecStaticPeerConfig ipsecPeerConfig2 =
+        IpsecStaticPeerConfig.builder()
+            .setSourceInterface("Interface2")
+            .setTunnelInterface("Tunnel2")
+            .build();
+    MutableValueGraph<IpsecPeerConfigId, IpsecSession> graph =
+        ValueGraphBuilder.directed().allowsSelfLoops(false).build();
+    IpsecSession establishedSession =
+        IpsecSession.builder().setNegotiatedIpsecP2Proposal(new IpsecPhase2Proposal()).build();
+    // populate IPsec topology
+    graph.putEdgeValue(
+        new IpsecPeerConfigId("peer1", "host1"),
+        new IpsecPeerConfigId("peer2", "host2"),
+        establishedSession);
+    graph.putEdgeValue(
+        new IpsecPeerConfigId("peer2", "host2"),
+        new IpsecPeerConfigId("peer1", "host1"),
+        establishedSession);
+
+    NetworkFactory nf = new NetworkFactory();
+
+    Configuration host1 =
+        nf.configurationBuilder()
+            .setHostname("host1")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    Configuration host2 =
+        nf.configurationBuilder()
+            .setHostname("host2")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    Vrf vrf1 = nf.vrfBuilder().setOwner(host1).build();
+    Vrf vrf2 = nf.vrfBuilder().setOwner(host2).build();
+    Interface iface1 =
+        nf.interfaceBuilder()
+            .setName("Interface1")
+            .setOwner(host1)
+            .setVrf(vrf1)
+            .setAddress(new InterfaceAddress(Ip.parse("1.1.1.1"), 24))
+            .build();
+    Interface tunnel1 =
+        nf.interfaceBuilder()
+            .setName("Tunnel1")
+            .setOwner(host1)
+            .setVrf(vrf1)
+            .setAddress(new InterfaceAddress(Ip.parse("11.12.13.1"), 24))
+            .build();
+    tunnel1.setInterfaceType(InterfaceType.TUNNEL);
+    Interface iface2 =
+        nf.interfaceBuilder()
+            .setName("Interface2")
+            .setOwner(host2)
+            .setVrf(vrf2)
+            .setAddress(new InterfaceAddress(Ip.parse("1.1.1.2"), 24))
+            .build();
+    Interface tunnel2 =
+        nf.interfaceBuilder()
+            .setName("Tunnel2")
+            .setOwner(host2)
+            .setVrf(vrf2)
+            .setAddress(new InterfaceAddress(Ip.parse("11.12.13.2"), 24))
+            .build();
+    tunnel2.setInterfaceType(InterfaceType.TUNNEL);
+    host1.setIpsecPeerConfigs(ImmutableSortedMap.of("peer1", ipsecPeerConfig1));
+    host2.setIpsecPeerConfigs(ImmutableSortedMap.of("peer2", ipsecPeerConfig2));
+
+    Topology layer3Topology = new Topology(ImmutableSortedSet.of(new Edge(iface1, iface2)));
+
+    TopologyContext topologyContext =
+        TopologyContext.builder()
+            .setIpsecTopology(ImmutableValueGraph.copyOf(graph))
+            .setLayer3Topology(layer3Topology)
+            .build();
+    IncrementalBdpEngine engine =
+        new IncrementalBdpEngine(
+            new IncrementalDataPlaneSettings(),
+            new BatfishLogger(BatfishLogger.LEVELSTR_DEBUG, false));
+
+    ComputeDataPlaneResult dp =
+        engine.computeDataPlane(
+            ImmutableMap.of("host1", host1, "host2", host2), topologyContext, ImmutableSet.of());
+    TopologyContainer topologies = dp._topologies;
+
+    // Ipsec topology should not change after fixed point since we are not pruning based on
+    // reachability
+    assertThat(topologies.getIpsecTopology(), equalTo(topologyContext.getIpsecTopology()));
+    // Layer 3 topology should now contain the overlay IPsec tunnel edges
+    assertThat(
+        topologies.getLayer3Topology().getEdges(),
+        equalTo(
+            ImmutableSortedSet.of(
+                new Edge(iface1, iface2),
+                new Edge(iface2, iface1),
+                new Edge(tunnel1, tunnel2),
+                new Edge(tunnel2, tunnel1))));
   }
 }
