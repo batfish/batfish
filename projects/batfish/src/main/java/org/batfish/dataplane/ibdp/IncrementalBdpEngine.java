@@ -29,10 +29,12 @@ import org.batfish.common.BdpOscillationException;
 import org.batfish.common.Version;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.common.topology.Layer2Topology;
+import org.batfish.common.util.IpsecUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.NetworkConfigurations;
@@ -89,6 +91,12 @@ class IncrementalBdpEngine {
                       configurations, callerTopologyContext.getLayer3Topology()))
               .setVxlanTopology(VxlanTopologyUtils.initialVxlanTopology(configurations))
               .build();
+
+      Set<Edge> prunedIpsecGraphEdges =
+          IpsecUtil.toEdgeSet(
+              IpsecUtil.retainCompatibleTunnelEdges(
+                  IpsecUtil.initIpsecTopology(configurations), configurations),
+              configurations);
 
       // Generate our nodes, keyed by name, sorted for determinism
       SortedMap<String, Node> nodes =
@@ -148,6 +156,7 @@ class IncrementalBdpEngine {
                       initialTopologyContext.getRawLayer1PhysicalTopology(),
                       newLayer2Topology,
                       configurations),
+                  prunedIpsecGraphEdges,
                   configurations);
 
           // Initialize BGP topology

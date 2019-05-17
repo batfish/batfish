@@ -1,5 +1,6 @@
 package org.batfish.common.util;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.transformation.TransformationUtil.hasSourceNat;
 import static org.batfish.datamodel.transformation.TransformationUtil.sourceNatPoolIps;
 
@@ -8,6 +9,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Streams;
+import com.google.common.graph.EndpointPair;
 import com.google.common.graph.ImmutableValueGraph;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraph;
@@ -19,9 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -43,7 +43,6 @@ import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.NetworkConfigurations;
-import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
 public class IpsecUtil {
@@ -386,24 +385,19 @@ public class IpsecUtil {
   }
 
   /**
-   * Given a {@link ValueGraph} between {@link IpsecPeerConfigId}s, trims the edges in current
-   * {@link Topology} which are not fully established in the IPsec topology (e.g. they do not have a
-   * negotiated {@link IpsecPhase2Proposal})
+   * Given a {@link ValueGraph} representing the IPsec topology, prunes the edges which are not
+   * between Tunnel interfaces and the edges which do not have a compatible IPsec session
    *
-   * @param edges the network's {@link Topology} edges
    * @param ipsecTopology original IPsec topology's {@link ValueGraph}
    * @param configurations {@link Map} of {@link Configuration} to configuration names
    */
-  public static Set<Edge> computeFailedIpsecSessionEdges(
-      SortedSet<Edge> edges,
+  public static ValueGraph<IpsecPeerConfigId, IpsecSession> retainCompatibleTunnelEdges(
       ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology,
       Map<String, Configuration> configurations) {
     NetworkConfigurations networkConfigurations = NetworkConfigurations.of(configurations);
 
-    // Set of successful IPsec edges
-    Set<Edge> successfulIPsecEdges = new HashSet<>();
-    // NodeInterface pairs running IPsec peering on tunnel interfaces
-    Set<NodeInterfacePair> tunnelIpsecEndpoints = new HashSet<>();
+    MutableValueGraph<IpsecPeerConfigId, IpsecSession> pruneIpsecTopology =
+        ValueGraphBuilder.directed().allowsSelfLoops(false).build();
 
     for (IpsecPeerConfigId endPointU : ipsecTopology.nodes()) {
       IpsecPeerConfig ipsecPeerU = networkConfigurations.getIpsecPeerConfig(endPointU);
@@ -411,10 +405,6 @@ public class IpsecUtil {
       if (ipsecPeerU == null || ipsecPeerU.getTunnelInterface() == null) {
         continue;
       }
-
-      NodeInterfacePair tunnelEndPointU =
-          new NodeInterfacePair(endPointU.getHostName(), ipsecPeerU.getTunnelInterface());
-      tunnelIpsecEndpoints.add(tunnelEndPointU);
 
       for (IpsecPeerConfigId endPointV : ipsecTopology.adjacentNodes(endPointU)) {
         IpsecPeerConfig ipsecPeerV = networkConfigurations.getIpsecPeerConfig(endPointV);
@@ -424,31 +414,30 @@ public class IpsecUtil {
           continue;
         }
 
-        NodeInterfacePair tunnelEndPointV =
-            new NodeInterfacePair(endPointV.getHostName(), ipsecPeerV.getTunnelInterface());
-
         // checking IPsec session and adding edge
-        Optional<IpsecSession> edgeIpsecSession = ipsecTopology.edgeValue(endPointU, endPointV);
-        if (edgeIpsecSession.isPresent()
-            && edgeIpsecSession.get().getNegotiatedIpsecP2Proposal() != null) {
-          successfulIPsecEdges.add(new Edge(tunnelEndPointU, tunnelEndPointV));
-        }
+        ipsecTopology
+            .edgeValue(endPointU, endPointV)
+            .filter(ipsecSession -> ipsecSession.getNegotiatedIpsecP2Proposal() != null)
+            .ifPresent(
+                ipsecSession ->
+                    pruneIpsecTopology.putEdgeValue(endPointU, endPointV, ipsecSession));
       }
     }
 
-    Set<Edge> failedIpsecEdges = new HashSet<>();
+    MutableValueGraph<IpsecPeerConfigId, IpsecSession> bidirCompatibleEdges =
+        ValueGraphBuilder.directed().allowsSelfLoops(false).build();
 
-    for (Edge edge : edges) {
-      NodeInterfacePair tail = edge.getTail();
-      NodeInterfacePair head = edge.getHead();
-      if ((tunnelIpsecEndpoints.contains(tail) || tunnelIpsecEndpoints.contains(head))
-          && (!successfulIPsecEdges.contains(edge)
-              || !successfulIPsecEdges.contains(edge.reverse()))) {
-        failedIpsecEdges.add(edge);
+    for (EndpointPair<IpsecPeerConfigId> endpointPair : pruneIpsecTopology.edges()) {
+      // if reverse edge exists
+      IpsecPeerConfigId nodeU = endpointPair.nodeU();
+      IpsecPeerConfigId nodeV = endpointPair.nodeV();
+      if (pruneIpsecTopology.hasEdgeConnecting(nodeV, nodeU)) {
+        bidirCompatibleEdges.putEdgeValue(
+            nodeU, nodeV, pruneIpsecTopology.edgeValue(nodeU, nodeV).get());
       }
     }
 
-    return failedIpsecEdges;
+    return ImmutableValueGraph.copyOf(bidirCompatibleEdges);
   }
 
   private static SetMultimap<Ip, IpWildcardSetIpSpace> initPrivateIpsByPublicIp(
@@ -484,5 +473,25 @@ public class IpsecUtil {
           .forEach(currentPoolIp -> builder.put(currentPoolIp, ipSpace));
     }
     return builder.build();
+  }
+
+  public static Set<Edge> toEdgeSet(
+      @Nonnull ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology,
+      @Nonnull Map<String, Configuration> configurations) {
+    NetworkConfigurations nf = NetworkConfigurations.of(configurations);
+    return ipsecTopology.edges().stream()
+        .map(
+            endPoint -> {
+              IpsecPeerConfig peerU = nf.getIpsecPeerConfig(endPoint.nodeU());
+              IpsecPeerConfig peerV = nf.getIpsecPeerConfig(endPoint.nodeV());
+              return new Edge(
+                  new NodeInterfacePair(
+                      endPoint.nodeU().getHostName(),
+                      firstNonNull(peerU.getTunnelInterface(), peerU.getSourceInterface())),
+                  new NodeInterfacePair(
+                      endPoint.nodeV().getHostName(),
+                      firstNonNull(peerV.getTunnelInterface(), peerV.getSourceInterface())));
+            })
+        .collect(ImmutableSet.toImmutableSet());
   }
 }

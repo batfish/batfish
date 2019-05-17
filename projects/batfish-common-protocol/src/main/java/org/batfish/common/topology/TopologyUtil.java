@@ -33,7 +33,6 @@ import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.batfish.common.Pair;
 import org.batfish.common.util.CollectionUtil;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.common.util.IpsecUtil;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
@@ -422,7 +421,8 @@ public final class TopologyUtil {
       @Nonnull Map<String, Configuration> configurations) {
     return rawLayer1PhysicalTopology
         .map(l1 -> computeRawLayer3Topology(l1, layer2Topology.get(), configurations))
-        .orElse(synthesizeL3Topology(configurations));
+        .orElse(synthesizeL3Topology(configurations))
+        .removeOverlayEdges(configurations);
   }
 
   /**
@@ -430,14 +430,10 @@ public final class TopologyUtil {
    * and failed edges.
    */
   public static @Nonnull Topology computeLayer3Topology(
-      Topology rawLayer3Topology, Map<String, Configuration> configurations) {
-    return rawLayer3Topology.prune(
-        IpsecUtil.computeFailedIpsecSessionEdges(
-            rawLayer3Topology.getEdges(),
-            IpsecUtil.initIpsecTopology(configurations),
-            configurations),
-        ImmutableSet.of(),
-        ImmutableSet.of());
+      Topology rawLayer3Topology,
+      Set<Edge> overlayEdges,
+      Map<String, Configuration> configurations) {
+    return rawLayer3Topology.addOverlayEdges(overlayEdges);
   }
 
   private static @Nullable Configuration getConfiguration(

@@ -783,38 +783,6 @@
         },
         {
           "interfaceAddresses1" : [
-            "240.0.0.6/31"
-          ],
-          "interfaceAddresses2" : [
-            "240.0.0.7/31"
-          ],
-          "nodeInterface1" : {
-            "hostname" : "vgw-81fd279f",
-            "interface" : "vpc-815775e7"
-          },
-          "nodeInterface2" : {
-            "hostname" : "vpc-815775e7",
-            "interface" : "vgw-81fd279f"
-          }
-        },
-        {
-          "interfaceAddresses1" : [
-            "240.0.0.7/31"
-          ],
-          "interfaceAddresses2" : [
-            "240.0.0.6/31"
-          ],
-          "nodeInterface1" : {
-            "hostname" : "vpc-815775e7",
-            "interface" : "vgw-81fd279f"
-          },
-          "nodeInterface2" : {
-            "hostname" : "vgw-81fd279f",
-            "interface" : "vpc-815775e7"
-          }
-        },
-        {
-          "interfaceAddresses1" : [
             "240.0.0.1/31"
           ],
           "interfaceAddresses2" : [

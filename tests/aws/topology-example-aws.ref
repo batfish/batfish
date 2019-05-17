@@ -42,12 +42,10 @@
       "contents" : [
         "node-igw-9b93ddfc",
         "aggregate-vpc-f8fad69d",
-        "aggregate-vpc-815775e7",
         "node-igw-068fee63",
         "aggregate-vpc-925131f4",
         "aggregate-vpc-b390fad5",
-        "node-igw-fac5839d",
-        "node-vgw-81fd279f"
+        "node-igw-fac5839d"
       ],
       "id" : "aggregate-us-west-2",
       "type" : "REGION"
@@ -67,14 +65,6 @@
       ],
       "id" : "aggregate-subnet-d9cafabc",
       "type" : "SUBNET"
-    },
-    {
-      "name" : "vpc-815775e7",
-      "contents" : [
-        "node-vpc-815775e7"
-      ],
-      "id" : "aggregate-vpc-815775e7",
-      "type" : "VNET"
     },
     {
       "name" : "aws",
@@ -272,34 +262,16 @@
       "type" : "UNKNOWN"
     },
     {
-      "id" : "interface-node-vgw-81fd279f-vpn1",
-      "name" : "vpn1",
-      "nodeId" : "node-vgw-81fd279f",
-      "type" : "VPN"
-    },
-    {
       "id" : "interface-node-vpc-b390fad5-subnet-1641fa70",
       "name" : "subnet-1641fa70",
       "nodeId" : "node-vpc-b390fad5",
       "type" : "PHYSICAL"
     },
     {
-      "id" : "interface-node-vgw-81fd279f-vpn2",
-      "name" : "vpn2",
-      "nodeId" : "node-vgw-81fd279f",
-      "type" : "VPN"
-    },
-    {
       "id" : "interface-node-vpc-f8fad69d-subnet-d9cafabc",
       "name" : "subnet-d9cafabc",
       "nodeId" : "node-vpc-f8fad69d",
       "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-vgw-81fd279f-vpc-815775e7",
-      "name" : "vpc-815775e7",
-      "nodeId" : "node-vgw-81fd279f",
-      "type" : "VPN"
     },
     {
       "id" : "interface-node-igw-fac5839d-vpc-925131f4",
@@ -362,18 +334,6 @@
       "type" : "UNKNOWN"
     },
     {
-      "id" : "interface-node-lhr-border-02-Tunnel1",
-      "name" : "Tunnel1",
-      "nodeId" : "node-lhr-border-02",
-      "type" : "TUNNEL"
-    },
-    {
-      "id" : "interface-node-lhr-border-02-Tunnel2",
-      "name" : "Tunnel2",
-      "nodeId" : "node-lhr-border-02",
-      "type" : "TUNNEL"
-    },
-    {
       "id" : "interface-node-vpc-925131f4-subnet-62f14104",
       "name" : "subnet-62f14104",
       "nodeId" : "node-vpc-925131f4",
@@ -396,12 +356,6 @@
       "name" : "vpc-b390fad5",
       "nodeId" : "node-subnet-1641fa70",
       "type" : "VPN"
-    },
-    {
-      "id" : "interface-node-vgw-81fd279f-vgw-81fd279f",
-      "name" : "vgw-81fd279f",
-      "nodeId" : "node-vgw-81fd279f",
-      "type" : "UNKNOWN"
     },
     {
       "id" : "interface-node-subnet-7044ff16-subnet-7044ff16",
@@ -464,28 +418,10 @@
       "type" : "UNKNOWN"
     },
     {
-      "id" : "interface-node-vpc-815775e7-vpc-815775e7",
-      "name" : "vpc-815775e7",
-      "nodeId" : "node-vpc-815775e7",
-      "type" : "UNKNOWN"
-    },
-    {
-      "id" : "interface-node-lhr-border-02-vpn2",
-      "name" : "vpn2",
-      "nodeId" : "node-lhr-border-02",
-      "type" : "UNKNOWN"
-    },
-    {
       "id" : "interface-node-es-domain-es-domain-subnet-7044ff16",
       "name" : "es-domain-subnet-7044ff16",
       "nodeId" : "node-es-domain",
       "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-lhr-border-02-vpn1",
-      "name" : "vpn1",
-      "nodeId" : "node-lhr-border-02",
-      "type" : "UNKNOWN"
     },
     {
       "id" : "interface-node-test-rds-test-rds-subnet-1641fa70",
@@ -500,28 +436,10 @@
       "type" : "PHYSICAL"
     },
     {
-      "id" : "interface-node-vpc-815775e7-vgw-81fd279f",
-      "name" : "vgw-81fd279f",
-      "nodeId" : "node-vpc-815775e7",
-      "type" : "VPN"
-    },
-    {
       "id" : "interface-node-subnet-1641fa70-subnet-1641fa70",
       "name" : "subnet-1641fa70",
       "nodeId" : "node-subnet-1641fa70",
       "type" : "PHYSICAL"
-    },
-    {
-      "id" : "interface-node-vgw-81fd279f-Tunnel1",
-      "name" : "Tunnel1",
-      "nodeId" : "node-vgw-81fd279f",
-      "type" : "UNKNOWN"
-    },
-    {
-      "id" : "interface-node-vgw-81fd279f-Tunnel2",
-      "name" : "Tunnel2",
-      "nodeId" : "node-vgw-81fd279f",
-      "type" : "UNKNOWN"
     },
     {
       "id" : "interface-node-subnet-9c8adceb-vpc-f8fad69d",
@@ -553,12 +471,6 @@
       "dstId" : "interface-node-es-domain-es-domain-subnet-7044ff16",
       "id" : "link-interface-node-es-domain-subnet-7044ff16-interface-node-es-domain-es-domain-subnet-7044ff16",
       "srcId" : "interface-node-es-domain-subnet-7044ff16",
-      "type" : "UNKNOWN"
-    },
-    {
-      "dstId" : "interface-node-lhr-border-02-Tunnel2",
-      "id" : "link-interface-node-vgw-81fd279f-vpn2-interface-node-lhr-border-02-Tunnel2",
-      "srcId" : "interface-node-vgw-81fd279f-vpn2",
       "type" : "UNKNOWN"
     },
     {
@@ -682,18 +594,6 @@
       "type" : "UNKNOWN"
     },
     {
-      "dstId" : "interface-node-vpc-815775e7-vgw-81fd279f",
-      "id" : "link-interface-node-vpc-815775e7-vpc-815775e7-interface-node-vpc-815775e7-vgw-81fd279f",
-      "srcId" : "interface-node-vpc-815775e7-vpc-815775e7",
-      "type" : "UNKNOWN"
-    },
-    {
-      "dstId" : "interface-node-vgw-81fd279f-vpc-815775e7",
-      "id" : "link-interface-node-vgw-81fd279f-vgw-81fd279f-interface-node-vgw-81fd279f-vpc-815775e7",
-      "srcId" : "interface-node-vgw-81fd279f-vgw-81fd279f",
-      "type" : "UNKNOWN"
-    },
-    {
       "dstId" : "interface-node-vpc-b390fad5-subnet-073b8061",
       "id" : "link-interface-node-subnet-073b8061-vpc-b390fad5-interface-node-vpc-b390fad5-subnet-073b8061",
       "srcId" : "interface-node-subnet-073b8061-vpc-b390fad5",
@@ -706,21 +606,9 @@
       "type" : "UNKNOWN"
     },
     {
-      "dstId" : "interface-node-vgw-81fd279f-vpn2",
-      "id" : "link-interface-node-lhr-border-02-Tunnel2-interface-node-vgw-81fd279f-vpn2",
-      "srcId" : "interface-node-lhr-border-02-Tunnel2",
-      "type" : "UNKNOWN"
-    },
-    {
       "dstId" : "interface-node-igw-068fee63-vpc-f8fad69d",
       "id" : "link-interface-node-vpc-f8fad69d-igw-068fee63-interface-node-igw-068fee63-vpc-f8fad69d",
       "srcId" : "interface-node-vpc-f8fad69d-igw-068fee63",
-      "type" : "UNKNOWN"
-    },
-    {
-      "dstId" : "interface-node-vgw-81fd279f-vpn1",
-      "id" : "link-interface-node-vgw-81fd279f-Tunnel1-interface-node-vgw-81fd279f-vpn1",
-      "srcId" : "interface-node-vgw-81fd279f-Tunnel1",
       "type" : "UNKNOWN"
     },
     {
@@ -733,12 +621,6 @@
       "dstId" : "interface-node-subnet-7044ff16-subnet-7044ff16",
       "id" : "link-interface-node-es-domain-es-domain-subnet-7044ff16-interface-node-subnet-7044ff16-subnet-7044ff16",
       "srcId" : "interface-node-es-domain-es-domain-subnet-7044ff16",
-      "type" : "UNKNOWN"
-    },
-    {
-      "dstId" : "interface-node-lhr-border-02-Tunnel2",
-      "id" : "link-interface-node-lhr-border-02-vpn2-interface-node-lhr-border-02-Tunnel2",
-      "srcId" : "interface-node-lhr-border-02-vpn2",
       "type" : "UNKNOWN"
     },
     {
@@ -781,12 +663,6 @@
       "dstId" : "interface-node-vpc-b390fad5-subnet-7044ff16",
       "id" : "link-interface-node-vpc-b390fad5-vpc-b390fad5-interface-node-vpc-b390fad5-subnet-7044ff16",
       "srcId" : "interface-node-vpc-b390fad5-vpc-b390fad5",
-      "type" : "UNKNOWN"
-    },
-    {
-      "dstId" : "interface-node-vgw-81fd279f-vpc-815775e7",
-      "id" : "link-interface-node-vpc-815775e7-vgw-81fd279f-interface-node-vgw-81fd279f-vpc-815775e7",
-      "srcId" : "interface-node-vpc-815775e7-vgw-81fd279f",
       "type" : "UNKNOWN"
     },
     {
@@ -850,12 +726,6 @@
       "type" : "UNKNOWN"
     },
     {
-      "dstId" : "interface-node-lhr-border-02-Tunnel1",
-      "id" : "link-interface-node-vgw-81fd279f-vpn1-interface-node-lhr-border-02-Tunnel1",
-      "srcId" : "interface-node-vgw-81fd279f-vpn1",
-      "type" : "UNKNOWN"
-    },
-    {
       "dstId" : "interface-node-subnet-30398256-vpc-b390fad5",
       "id" : "link-interface-node-subnet-30398256-subnet-30398256-interface-node-subnet-30398256-vpc-b390fad5",
       "srcId" : "interface-node-subnet-30398256-subnet-30398256",
@@ -865,12 +735,6 @@
       "dstId" : "interface-node-igw-9b93ddfc-vpc-b390fad5",
       "id" : "link-interface-node-vpc-b390fad5-igw-9b93ddfc-interface-node-igw-9b93ddfc-vpc-b390fad5",
       "srcId" : "interface-node-vpc-b390fad5-igw-9b93ddfc",
-      "type" : "UNKNOWN"
-    },
-    {
-      "dstId" : "interface-node-lhr-border-02-Tunnel1",
-      "id" : "link-interface-node-lhr-border-02-vpn1-interface-node-lhr-border-02-Tunnel1",
-      "srcId" : "interface-node-lhr-border-02-vpn1",
       "type" : "UNKNOWN"
     },
     {
@@ -910,12 +774,6 @@
       "type" : "UNKNOWN"
     },
     {
-      "dstId" : "interface-node-vgw-81fd279f-vpn1",
-      "id" : "link-interface-node-lhr-border-02-Tunnel1-interface-node-vgw-81fd279f-vpn1",
-      "srcId" : "interface-node-lhr-border-02-Tunnel1",
-      "type" : "UNKNOWN"
-    },
-    {
       "dstId" : "interface-node-subnet-1641fa70-subnet-1641fa70",
       "id" : "link-interface-node-subnet-1641fa70-test-rds-subnet-1641fa70-interface-node-subnet-1641fa70-subnet-1641fa70",
       "srcId" : "interface-node-subnet-1641fa70-test-rds-subnet-1641fa70",
@@ -934,21 +792,9 @@
       "type" : "UNKNOWN"
     },
     {
-      "dstId" : "interface-node-vgw-81fd279f-vpn2",
-      "id" : "link-interface-node-vgw-81fd279f-Tunnel2-interface-node-vgw-81fd279f-vpn2",
-      "srcId" : "interface-node-vgw-81fd279f-Tunnel2",
-      "type" : "UNKNOWN"
-    },
-    {
       "dstId" : "interface-node-vpc-f8fad69d-subnet-9c8adceb",
       "id" : "link-interface-node-subnet-9c8adceb-vpc-f8fad69d-interface-node-vpc-f8fad69d-subnet-9c8adceb",
       "srcId" : "interface-node-subnet-9c8adceb-vpc-f8fad69d",
-      "type" : "UNKNOWN"
-    },
-    {
-      "dstId" : "interface-node-vpc-815775e7-vgw-81fd279f",
-      "id" : "link-interface-node-vgw-81fd279f-vpc-815775e7-interface-node-vpc-815775e7-vgw-81fd279f",
-      "srcId" : "interface-node-vgw-81fd279f-vpc-815775e7",
       "type" : "UNKNOWN"
     },
     {
@@ -1071,14 +917,14 @@
       "type" : "SWITCH"
     },
     {
-      "id" : "node-lhr-border-02",
-      "name" : "lhr-border-02",
-      "type" : "ROUTER"
-    },
-    {
       "id" : "node-subnet-073b8061",
       "name" : "subnet-073b8061",
       "type" : "SWITCH"
+    },
+    {
+      "id" : "node-lhr-border-02",
+      "name" : "lhr-border-02",
+      "type" : "ROUTER"
     },
     {
       "id" : "node-subnet-1641fa70",

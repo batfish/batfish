@@ -5,6 +5,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import java.io.Serializable;
@@ -103,6 +104,36 @@ public final class Topology implements Serializable {
                         && !blacklistInterfaces.contains(edge.getTail())
                         && !blacklistInterfaces.contains(edge.getHead()))
             .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural())));
+  }
+
+  public Topology addOverlayEdges(@Nonnull Set<Edge> overlayEdges) {
+    return new Topology(
+        ImmutableSortedSet.<Edge>naturalOrder().addAll(_edges).addAll(overlayEdges).build());
+  }
+
+  public Topology removeOverlayEdges(@Nonnull Map<String, Configuration> configurations) {
+    return new Topology(
+        _edges.stream()
+            .filter(edge -> !isAnOverlayEdge(edge, configurations))
+            .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural())));
+  }
+
+  private static boolean isAnOverlayEdge(
+      @Nonnull Edge edge, @Nonnull Map<String, Configuration> configurations) {
+    InterfaceType interfaceType1 =
+        configurations
+            .get(edge.getNode1())
+            .getAllInterfaces()
+            .get(edge.getInt1())
+            .getInterfaceType();
+    InterfaceType interfaceType2 =
+        configurations
+            .get(edge.getNode2())
+            .getAllInterfaces()
+            .get(edge.getInt2())
+            .getInterfaceType();
+    Set<InterfaceType> tunnelIfaceTypes = ImmutableSet.of(InterfaceType.TUNNEL, InterfaceType.VPN);
+    return tunnelIfaceTypes.contains(interfaceType1) && tunnelIfaceTypes.contains(interfaceType2);
   }
 
   @JsonValue

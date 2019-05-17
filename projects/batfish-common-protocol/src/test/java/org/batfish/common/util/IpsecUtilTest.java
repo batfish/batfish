@@ -1,11 +1,11 @@
 package org.batfish.common.util;
 
-import static org.batfish.common.util.IpsecUtil.computeFailedIpsecSessionEdges;
+import static org.batfish.common.util.IpsecUtil.retainCompatibleTunnelEdges;
+import static org.batfish.common.util.IpsecUtil.toEdgeSet;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.ImmutableValueGraph;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraph;
@@ -85,10 +85,9 @@ public class IpsecUtilTest {
             .setTunnelInterface("Tunnel7")
             .build();
 
-    IpsecSession.Builder ipseeSessionBuilder = IpsecSession.builder();
+    IpsecSession establishedSession =
+        IpsecSession.builder().setNegotiatedIpsecP2Proposal(new IpsecPhase2Proposal()).build();
     IpsecSession unEstablishedSession = IpsecSession.builder().build();
-    ipseeSessionBuilder.setNegotiatedIpsecP2Proposal(new IpsecPhase2Proposal());
-    IpsecSession establishedSession = ipseeSessionBuilder.build();
 
     MutableValueGraph<IpsecPeerConfigId, IpsecSession> graph =
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
@@ -159,63 +158,21 @@ public class IpsecUtilTest {
 
     _configurations.put("host1", c1);
     _configurations.put("host2", c2);
-
-    // populating L3 topology
-    ImmutableSortedSet.Builder<Edge> edgeBuilder = ImmutableSortedSet.naturalOrder();
-    _topology =
-        new Topology(
-            edgeBuilder
-                .add(
-                    new Edge(
-                        new NodeInterfacePair("host1", "Tunnel1"),
-                        new NodeInterfacePair("host2", "Tunnel2")))
-                .add(
-                    new Edge(
-                        new NodeInterfacePair("host2", "Tunnel2"),
-                        new NodeInterfacePair("host1", "Tunnel1")))
-                .add(
-                    new Edge(
-                        new NodeInterfacePair("host1", "Tunnel3"),
-                        new NodeInterfacePair("host2", "Tunnel4")))
-                .add(
-                    new Edge(
-                        new NodeInterfacePair("host2", "Tunnel4"),
-                        new NodeInterfacePair("host1", "Tunnel3")))
-                // interface5->interface6 do not run IPsec on tunnel interfaces
-                .add(
-                    new Edge(
-                        new NodeInterfacePair("host1", "interface5"),
-                        new NodeInterfacePair("host2", "interface6")))
-                // Tunnel9-> Tunnel10 do not run IPsec at all
-                .add(
-                    new Edge(
-                        new NodeInterfacePair("host1", "Tunnel9"),
-                        new NodeInterfacePair("host2", "Tunnel10")))
-                // Tunnel7 is a dangling IPsec peer
-                .add(
-                    new Edge(
-                        new NodeInterfacePair("host1", "Tunnel7"),
-                        new NodeInterfacePair("host2", "Tunnel8")))
-                .build());
   }
 
   @Test
   public void testPruneFailedIpsecSessionEdges() {
-    Set<Edge> failedIpsecSessionEdges =
-        computeFailedIpsecSessionEdges(_topology.getEdges(), _ipsecTopology, _configurations);
+    Set<Edge> compatibleIpsecEdges =
+        toEdgeSet(retainCompatibleTunnelEdges(_ipsecTopology, _configurations), _configurations);
 
-    // Edges involving host1:Tunnel3, host2:Tunnel4, host1:Tunnel7 will be pruned
     assertThat(
-        failedIpsecSessionEdges,
+        compatibleIpsecEdges,
         containsInAnyOrder(
             new Edge(
-                new NodeInterfacePair("host1", "Tunnel3"),
-                new NodeInterfacePair("host2", "Tunnel4")),
+                new NodeInterfacePair("host1", "Tunnel1"),
+                new NodeInterfacePair("host2", "Tunnel2")),
             new Edge(
-                new NodeInterfacePair("host1", "Tunnel7"),
-                new NodeInterfacePair("host2", "Tunnel8")),
-            new Edge(
-                new NodeInterfacePair("host2", "Tunnel4"),
-                new NodeInterfacePair("host1", "Tunnel3"))));
+                new NodeInterfacePair("host2", "Tunnel2"),
+                new NodeInterfacePair("host1", "Tunnel1"))));
   }
 }

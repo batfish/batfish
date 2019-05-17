@@ -4,6 +4,7 @@ import static org.batfish.datamodel.ospf.OspfTopologyUtils.computeOspfTopology;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.ImmutableSet;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.io.IOException;
@@ -121,7 +122,7 @@ public final class TopologyProviderImpl implements TopologyProvider {
       assert span != null; // avoid unused warning
       Map<String, Configuration> configurations = _batfish.loadConfigurations(networkSnapshot);
       return TopologyUtil.computeLayer3Topology(
-          getInitialRawLayer3Topology(networkSnapshot), configurations);
+          getInitialRawLayer3Topology(networkSnapshot), ImmutableSet.of(), configurations);
     }
   }
 
