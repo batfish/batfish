@@ -28,7 +28,7 @@ test -raw tests/questions/stable/eigrpEdges.ref validate-template eigrpEdges nod
 test -raw tests/questions/stable/ipsecEdges.ref validate-template ipsecEdges nodes=".*", remoteNodes=".*"
 
 # validate isisEdges
-test -raw tests/questions/stable/edgesIsis.ref validate-template isisEdges nodes=".*", remoteNodes=".*"
+test -raw tests/questions/stable/isisEdges.ref validate-template isisEdges nodes=".*", remoteNodes=".*"
 
 # validate layer1Edges
 test -raw tests/questions/stable/layer1Edges.ref validate-template layer1Edges nodes=".*", remoteNodes=".*"
