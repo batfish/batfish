@@ -10,6 +10,7 @@ import com.google.common.graph.MutableNetwork;
 import com.google.common.graph.NetworkBuilder;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /** Represents connections between physical or logical interfaces. */
@@ -20,7 +21,7 @@ public final class Layer1Topology {
 
   @JsonCreator
   private static @Nonnull Layer1Topology create(
-      @JsonProperty(PROP_EDGES) Iterable<Layer1Edge> edges) {
+      @Nullable @JsonProperty(PROP_EDGES) Iterable<Layer1Edge> edges) {
     return new Layer1Topology(edges != null ? edges : ImmutableSortedSet.of());
   }
 
@@ -31,8 +32,10 @@ public final class Layer1Topology {
         NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build();
     edges.forEach(
         edge -> {
-          graph.addNode(edge.getNode1());
-          graph.addNode(edge.getNode2());
+          if (edge.getNode1().equals(edge.getNode2()) || graph.edges().contains(edge)) {
+            // Ignore self-loops and parallel edges
+            return;
+          }
           graph.addEdge(edge.getNode1(), edge.getNode2(), edge);
         });
     _graph = ImmutableNetwork.copyOf(graph);
