@@ -143,7 +143,7 @@ public class EdgesAnswerer extends Answerer {
         return getEigrpEdges(includeNodes, includeRemoteNodes, eigrpTopology);
       case IPSEC:
         ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology =
-            IpsecUtil.initIpsecTopology(configurations);
+            IpsecUtil.initIpsecTopology(configurations).getGraph();
         return getIpsecEdges(ipsecTopology, configurations);
       case ISIS:
         IsisTopology isisTopology = IsisTopology.initIsisTopology(configurations, topology);

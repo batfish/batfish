@@ -422,8 +422,7 @@ public final class TopologyUtil {
       @Nonnull Map<String, Configuration> configurations) {
     return rawLayer1PhysicalTopology
         .map(l1 -> computeRawLayer3Topology(l1, layer2Topology.get(), configurations))
-        .orElse(synthesizeL3Topology(configurations))
-        .removeOverlayEdges(configurations);
+        .orElse(synthesizeL3Topology(configurations));
   }
 
   /**
@@ -439,7 +438,11 @@ public final class TopologyUtil {
       Topology rawLayer3Topology,
       Set<Edge> overlayEdges,
       Map<String, Configuration> configurations) {
-    return rawLayer3Topology.addOverlayEdges(overlayEdges);
+    return new Topology(
+        ImmutableSortedSet.<Edge>naturalOrder()
+            .addAll(rawLayer3Topology.getEdges())
+            .addAll(overlayEdges)
+            .build());
   }
 
   private static @Nullable Configuration getConfiguration(
@@ -755,6 +758,7 @@ public final class TopologyUtil {
           }
         });
 
+    Set<InterfaceType> tunnelIfaceTypes = ImmutableSet.of(InterfaceType.TUNNEL, InterfaceType.VPN);
     ImmutableSortedSet.Builder<Edge> edges = ImmutableSortedSet.naturalOrder();
     for (Entry<Prefix, List<Interface>> bucketEntry : prefixInterfaces.entrySet()) {
       Prefix p = bucketEntry.getKey();
@@ -781,6 +785,11 @@ public final class TopologyUtil {
           }
           // don't connect interfaces that have any IP address in common
           if (haveIpInCommon(iface1, iface2)) {
+            continue;
+          }
+          // don't connect if two endpoint interfaces have Tunnel or VPN interfaceTypes
+          if (tunnelIfaceTypes.contains(iface1.getInterfaceType())
+              && tunnelIfaceTypes.contains(iface2.getInterfaceType())) {
             continue;
           }
           edges.add(new Edge(iface1, iface2));

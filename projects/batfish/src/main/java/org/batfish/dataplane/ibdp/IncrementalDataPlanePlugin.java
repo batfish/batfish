@@ -1,5 +1,8 @@
 package org.batfish.dataplane.ibdp;
 
+import static org.batfish.common.util.IpsecUtil.initIpsecTopology;
+import static org.batfish.common.util.IpsecUtil.retainCompatibleTunnelEdges;
+
 import com.google.auto.service.AutoService;
 import java.util.Map;
 import java.util.Set;
@@ -7,7 +10,6 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.common.topology.TopologyProvider;
-import org.batfish.common.util.IpsecUtil;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Topology;
@@ -46,8 +48,7 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
     TopologyContext topologyContext =
         TopologyContext.builder()
             .setIpsecTopology(
-                IpsecUtil.retainCompatibleTunnelEdges(
-                    IpsecUtil.initIpsecTopology(configurations), configurations))
+                retainCompatibleTunnelEdges(initIpsecTopology(configurations), configurations))
             .setLayer1LogicalTopology(topologyProvider.getLayer1LogicalTopology(networkSnapshot))
             .setLayer2Topology(topologyProvider.getInitialLayer2Topology(networkSnapshot))
             .setLayer3Topology(topology)

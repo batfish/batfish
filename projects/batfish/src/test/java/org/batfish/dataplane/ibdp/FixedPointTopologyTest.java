@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -18,7 +19,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.EndpointPair;
-import com.google.common.graph.ImmutableValueGraph;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import java.util.Map;
@@ -49,6 +49,7 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.vxlan.VxlanNode;
 import org.batfish.datamodel.vxlan.VxlanTopology;
@@ -297,7 +298,7 @@ public final class FixedPointTopologyTest {
 
     TopologyContext topologyContext =
         TopologyContext.builder()
-            .setIpsecTopology(ImmutableValueGraph.copyOf(graph))
+            .setIpsecTopology(new IpsecTopology(graph))
             .setLayer3Topology(layer3Topology)
             .build();
     IncrementalBdpEngine engine =
@@ -310,12 +311,14 @@ public final class FixedPointTopologyTest {
             ImmutableMap.of("host1", host1, "host2", host2), topologyContext, ImmutableSet.of());
     TopologyContainer topologies = dp._topologies;
 
+    assertThat(topologies, instanceOf(TopologyContext.class));
+    TopologyContext fixPointTopoContext = (TopologyContext) topologies;
     // Ipsec topology should not change after fixed point since we are not pruning based on
     // reachability
-    assertThat(topologies.getIpsecTopology(), equalTo(topologyContext.getIpsecTopology()));
+    assertThat(fixPointTopoContext.getIpsecTopology(), equalTo(topologyContext.getIpsecTopology()));
     // Layer 3 topology should now contain the overlay IPsec tunnel edges
     assertThat(
-        topologies.getLayer3Topology().getEdges(),
+        fixPointTopoContext.getLayer3Topology().getEdges(),
         equalTo(
             ImmutableSortedSet.of(
                 new Edge(iface1, iface2),

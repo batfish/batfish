@@ -7,7 +7,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.GraphBuilder;
-import com.google.common.graph.ImmutableValueGraph;
 import com.google.common.graph.MutableGraph;
 import com.google.common.graph.MutableNetwork;
 import com.google.common.graph.MutableValueGraph;
@@ -29,6 +28,7 @@ import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.eigrp.EigrpEdge;
 import org.batfish.datamodel.eigrp.EigrpInterface;
 import org.batfish.datamodel.eigrp.EigrpTopology;
+import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.batfish.datamodel.isis.IsisEdge;
 import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.isis.IsisTopology;
@@ -71,7 +71,7 @@ public final class TopologyContextTest {
         .addEqualityGroup(base, base, builder.build())
         .addEqualityGroup(builder.setBgpTopology(new BgpTopology(bgpTopology)).build())
         .addEqualityGroup(builder.setEigrpTopology(new EigrpTopology(eigrpTopology)).build())
-        .addEqualityGroup(builder.setIpsecTopology(ImmutableValueGraph.copyOf(ipsecTopology)))
+        .addEqualityGroup(builder.setIpsecTopology(new IpsecTopology(ipsecTopology)))
         .addEqualityGroup(builder.setIsisTopology(new IsisTopology(isisTopology)).build())
         .addEqualityGroup(
             builder
@@ -127,7 +127,7 @@ public final class TopologyContextTest {
         .setBgpTopology(new BgpTopology(bgpTopology))
         .setEigrpTopology(new EigrpTopology(eigrpTopology))
         .setIsisTopology(new IsisTopology(isisTopology))
-        .setIpsecTopology(ImmutableValueGraph.copyOf(ipsecTopology))
+        .setIpsecTopology(new IpsecTopology(ipsecTopology))
         .setLayer1LogicalTopology(
             Optional.of(new Layer1Topology(ImmutableList.of(new Layer1Edge("a", "b", "c", "d")))))
         .setLayer2Topology(

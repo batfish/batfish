@@ -5,8 +5,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import java.io.Serializable;
@@ -105,53 +103,6 @@ public final class Topology implements Serializable {
                         && !blacklistInterfaces.contains(edge.getTail())
                         && !blacklistInterfaces.contains(edge.getHead()))
             .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural())));
-  }
-
-  /**
-   * Adds overlay edges to the topology
-   *
-   * @param overlayEdges overlay edges to be added
-   * @return updated {@link Topology}
-   */
-  public Topology addOverlayEdges(@Nonnull Set<Edge> overlayEdges) {
-    return new Topology(
-        ImmutableSortedSet.<Edge>naturalOrder().addAll(_edges).addAll(overlayEdges).build());
-  }
-
-  /**
-   * Removes overlay edges from the topology
-   *
-   * @param configurations configurations for this topology
-   * @return updated {@link Topology}
-   */
-  public Topology removeOverlayEdges(@Nonnull Map<String, Configuration> configurations) {
-    return new Topology(
-        _edges.stream()
-            .filter(edge -> !isAnOverlayEdge(edge, configurations))
-            .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural())));
-  }
-
-  /**
-   * Checks whether a given {@link Edge} is an overlay edge, overlay edge is an edge between a
-   * Tunnel/VPN interface type to a Tunnel/VPN interface type
-   */
-  @VisibleForTesting
-  static boolean isAnOverlayEdge(
-      @Nonnull Edge edge, @Nonnull Map<String, Configuration> configurations) {
-    InterfaceType interfaceType1 =
-        configurations
-            .get(edge.getNode1())
-            .getAllInterfaces()
-            .get(edge.getInt1())
-            .getInterfaceType();
-    InterfaceType interfaceType2 =
-        configurations
-            .get(edge.getNode2())
-            .getAllInterfaces()
-            .get(edge.getInt2())
-            .getInterfaceType();
-    Set<InterfaceType> tunnelIfaceTypes = ImmutableSet.of(InterfaceType.TUNNEL, InterfaceType.VPN);
-    return tunnelIfaceTypes.contains(interfaceType1) && tunnelIfaceTypes.contains(interfaceType2);
   }
 
   @JsonValue

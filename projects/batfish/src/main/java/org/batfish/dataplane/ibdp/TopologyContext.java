@@ -1,8 +1,5 @@
 package org.batfish.dataplane.ibdp;
 
-import com.google.common.graph.ImmutableValueGraph;
-import com.google.common.graph.ValueGraph;
-import com.google.common.graph.ValueGraphBuilder;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
@@ -11,11 +8,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyContainer;
-import org.batfish.datamodel.IpsecPeerConfigId;
-import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.eigrp.EigrpTopology;
+import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.batfish.datamodel.isis.IsisTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.vxlan.VxlanTopology;
@@ -28,7 +24,7 @@ public final class TopologyContext implements TopologyContainer {
 
     private @Nonnull BgpTopology _bgpTopology;
     private @Nonnull EigrpTopology _eigrpTopology;
-    private @Nonnull ValueGraph<IpsecPeerConfigId, IpsecSession> _ipsecTopology;
+    private @Nonnull IpsecTopology _ipsecTopology;
     private @Nonnull IsisTopology _isisTopology;
     private @Nonnull Optional<Layer1Topology> _layer1LogicalTopology;
     private @Nonnull Optional<Layer2Topology> _layer2Topology;
@@ -54,8 +50,7 @@ public final class TopologyContext implements TopologyContainer {
     private Builder() {
       _bgpTopology = BgpTopology.EMPTY;
       _eigrpTopology = EigrpTopology.EMPTY;
-      _ipsecTopology =
-          ImmutableValueGraph.copyOf(ValueGraphBuilder.directed().allowsSelfLoops(false).build());
+      _ipsecTopology = IpsecTopology.EMPTY;
       _isisTopology = IsisTopology.EMPTY;
       _layer1LogicalTopology = Optional.empty();
       _layer2Topology = Optional.empty();
@@ -75,8 +70,7 @@ public final class TopologyContext implements TopologyContainer {
       return this;
     }
 
-    public @Nonnull Builder setIpsecTopology(
-        @Nonnull ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology) {
+    public @Nonnull Builder setIpsecTopology(@Nonnull IpsecTopology ipsecTopology) {
       _ipsecTopology = ipsecTopology;
       return this;
     }
@@ -125,7 +119,7 @@ public final class TopologyContext implements TopologyContainer {
 
   private final @Nonnull BgpTopology _bgpTopology;
   private final @Nonnull EigrpTopology _eigrpTopology;
-  private final @Nonnull ValueGraph<IpsecPeerConfigId, IpsecSession> _ipsecTopology;
+  private final @Nonnull IpsecTopology _ipsecTopology;
   private final @Nonnull IsisTopology _isisTopology;
   private final @Nonnull Optional<Layer1Topology> _layer1LogicalTopology;
   private final @Nonnull Optional<Layer2Topology> _layer2Topology;
@@ -137,7 +131,7 @@ public final class TopologyContext implements TopologyContainer {
   private TopologyContext(
       BgpTopology bgpTopology,
       EigrpTopology eigrpTopology,
-      ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology,
+      IpsecTopology ipsecTopology,
       IsisTopology isisTopology,
       Optional<Layer1Topology> layer1LogicalTopology,
       Optional<Layer2Topology> layer2Topology,
@@ -167,8 +161,7 @@ public final class TopologyContext implements TopologyContainer {
     return _eigrpTopology;
   }
 
-  @Override
-  public @Nonnull ValueGraph<IpsecPeerConfigId, IpsecSession> getIpsecTopology() {
+  public @Nonnull IpsecTopology getIpsecTopology() {
     return _ipsecTopology;
   }
 

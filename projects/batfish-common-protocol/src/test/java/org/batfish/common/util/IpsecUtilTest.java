@@ -6,9 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 
 import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.graph.ImmutableValueGraph;
 import com.google.common.graph.MutableValueGraph;
-import com.google.common.graph.ValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,11 +20,12 @@ import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.junit.Before;
 import org.junit.Test;
 
 public class IpsecUtilTest {
-  private ValueGraph<IpsecPeerConfigId, IpsecSession> _ipsecTopology;
+  private IpsecTopology _ipsecTopology;
   private Map<String, Configuration> _configurations = new HashMap<>();
 
   @Before
@@ -115,7 +114,7 @@ public class IpsecUtilTest {
         unEstablishedSession);
     // a dangling IPsec peer with no corresponding endpoint
     graph.addNode(new IpsecPeerConfigId("peer7", "host1"));
-    _ipsecTopology = ImmutableValueGraph.copyOf(graph);
+    _ipsecTopology = new IpsecTopology(graph);
 
     // populate Configurations to get IPsecPeerConfig objects from IPsecPeerConfigIds
     Configuration c1 = new Configuration("host1", ConfigurationFormat.CISCO_IOS);

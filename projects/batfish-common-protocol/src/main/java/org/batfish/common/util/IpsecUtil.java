@@ -10,7 +10,6 @@ import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Streams;
 import com.google.common.graph.EndpointPair;
-import com.google.common.graph.ImmutableValueGraph;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
@@ -44,18 +43,17 @@ import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.ipsec.IpsecTopology;
 
 public class IpsecUtil {
 
   /**
-   * Compute the IPSec topology -- a network of {@link IpsecPeerConfigId}s connected by {@link
-   * IpsecSession}s
+   * Compute the initial IPsec topology
    *
    * @param configurations {@link Configuration}s for which the topology has to be computed
-   * @return the constructed {@link ValueGraph} for the IPSec topology
+   * @return {@link IpsecTopology}
    */
-  public static ValueGraph<IpsecPeerConfigId, IpsecSession> initIpsecTopology(
-      Map<String, Configuration> configurations) {
+  public static IpsecTopology initIpsecTopology(Map<String, Configuration> configurations) {
 
     NetworkConfigurations networkConfigurations = NetworkConfigurations.of(configurations);
     Map<Ip, Set<IpsecPeerConfigId>> localIpIpsecPeerConfigIds = new HashMap<>();
@@ -124,7 +122,7 @@ public class IpsecUtil {
               });
     }
 
-    return ImmutableValueGraph.copyOf(graph);
+    return new IpsecTopology(graph);
   }
 
   /**
@@ -385,28 +383,28 @@ public class IpsecUtil {
   }
 
   /**
-   * Given a {@link ValueGraph} representing the IPsec topology, prunes the edges which are not
-   * between Tunnel interfaces and do not have a compatible IPsec session
+   * Given an {@link IpsecTopology}, returns a new {@link IpsecTopology} containing only the edges
+   * which use tunnel interfaces and are compatible
    *
    * @param ipsecTopology original IPsec topology's {@link ValueGraph}
    * @param configurations {@link Map} of {@link Configuration} to configuration names
+   * @return {@link IpsecTopology}
    */
-  public static ValueGraph<IpsecPeerConfigId, IpsecSession> retainCompatibleTunnelEdges(
-      ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology,
-      Map<String, Configuration> configurations) {
+  public static IpsecTopology retainCompatibleTunnelEdges(
+      IpsecTopology ipsecTopology, Map<String, Configuration> configurations) {
     NetworkConfigurations networkConfigurations = NetworkConfigurations.of(configurations);
 
     MutableValueGraph<IpsecPeerConfigId, IpsecSession> pruneIpsecTopology =
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
-
-    for (IpsecPeerConfigId endPointU : ipsecTopology.nodes()) {
+    ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecGraph = ipsecTopology.getGraph();
+    for (IpsecPeerConfigId endPointU : ipsecGraph.nodes()) {
       IpsecPeerConfig ipsecPeerU = networkConfigurations.getIpsecPeerConfig(endPointU);
       // not considering endpoints not based on Tunnel interfaces
       if (ipsecPeerU == null || ipsecPeerU.getTunnelInterface() == null) {
         continue;
       }
 
-      for (IpsecPeerConfigId endPointV : ipsecTopology.adjacentNodes(endPointU)) {
+      for (IpsecPeerConfigId endPointV : ipsecGraph.adjacentNodes(endPointU)) {
         IpsecPeerConfig ipsecPeerV = networkConfigurations.getIpsecPeerConfig(endPointV);
 
         // not considering endpoints not based on Tunnel interfaces
@@ -415,7 +413,7 @@ public class IpsecUtil {
         }
 
         // checking IPsec session and adding edge
-        ipsecTopology
+        ipsecGraph
             .edgeValue(endPointU, endPointV)
             .filter(ipsecSession -> ipsecSession.getNegotiatedIpsecP2Proposal() != null)
             .ifPresent(
@@ -437,7 +435,7 @@ public class IpsecUtil {
       }
     }
 
-    return ImmutableValueGraph.copyOf(bidirCompatibleEdges);
+    return new IpsecTopology(bidirCompatibleEdges);
   }
 
   private static SetMultimap<Ip, IpWildcardSetIpSpace> initPrivateIpsByPublicIp(
@@ -478,15 +476,14 @@ public class IpsecUtil {
   /**
    * Helper to convert IPsec topology to a set of edges
    *
-   * @param ipsecTopology {@link ValueGraph} for IPsec topology
+   * @param ipsecTopology {@link IpsecTopology} for which edges are to be computed
    * @param configurations {@link Map} of configuration objects
    * @return {@link Set} of {@link Edge}s
    */
   public static Set<Edge> toEdgeSet(
-      @Nonnull ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology,
-      @Nonnull Map<String, Configuration> configurations) {
+      @Nonnull IpsecTopology ipsecTopology, @Nonnull Map<String, Configuration> configurations) {
     NetworkConfigurations nf = NetworkConfigurations.of(configurations);
-    return ipsecTopology.edges().stream()
+    return ipsecTopology.getGraph().edges().stream()
         .map(
             endPoint -> {
               IpsecPeerConfig peerU = nf.getIpsecPeerConfig(endPoint.nodeU());
