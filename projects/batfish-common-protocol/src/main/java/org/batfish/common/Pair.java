@@ -25,8 +25,8 @@ public class Pair<T1 extends Comparable<? super T1>, T2 extends Comparable<? sup
 
   @Override
   public int compareTo(Pair<T1, T2> rhs) {
-    return Comparator.nullsFirst(
-            Comparator.comparing(Pair<T1, T2>::getFirst).thenComparing(Pair::getSecond))
+    return Comparator.comparing(Pair<T1, T2>::getFirst)
+        .thenComparing(Pair::getSecond, Comparator.nullsFirst(T2::compareTo))
         .compare(this, rhs);
   }
 
