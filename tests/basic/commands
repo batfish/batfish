@@ -22,7 +22,6 @@ test tests/basic/compareSameName.ref get compareSameName
 test tests/basic/error.ref -error get error
 test tests/basic/isisLoopbacks.ref get isisLoopbacks
 test tests/basic/ospfStatus.ref get ospfstatus interfaces="Loopback.*", status=".*passive"
-test tests/basic/selfAdjacencies.ref get selfAdjacencies
 test tests/basic/testfilters.ref get testFilters headers={"dstIps": "1.1.1.1"}, nodes="host.*", filters="filter.*"
 test tests/basic/traceroute-1-2.ref get traceroute startLocation="enter(as1core1)", headers={"dstIps": "ofLocation(host1)"}
 test tests/basic/traceroute-2-1.ref get traceroute startLocation="host2", headers={"dstIps": "1.0.1.1"}
