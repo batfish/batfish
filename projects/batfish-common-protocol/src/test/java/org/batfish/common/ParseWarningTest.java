@@ -10,8 +10,8 @@ import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
-/** Tests of {@link Warnings} */
-public class WarningsTest {
+/** Tests of {@link ParseWarning}. */
+public class ParseWarningTest {
   @Test
   public void testParseWarningsEquals() {
     ParseWarning pw = new ParseWarning(1, "", "", "");
