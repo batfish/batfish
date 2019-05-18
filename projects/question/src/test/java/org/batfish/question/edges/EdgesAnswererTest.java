@@ -48,6 +48,7 @@ import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Multiset;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.MutableNetwork;
@@ -427,19 +428,14 @@ public class EdgesAnswererTest {
                         Schema.INTERFACE)))));
   }
 
-  @SuppressWarnings("deprecation") // todo
   @Test
   public void testGetRipEdges() {
     RipProcess rip1 = new RipProcess();
     RipProcess rip2 = new RipProcess();
     RipNeighbor ripNeighbor1 = new RipNeighbor(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"));
     RipNeighbor ripNeighbor2 = new RipNeighbor(Ip.parse("2.2.2.2"), Ip.parse("1.1.1.1"));
-    rip1.setRipNeighbors(
-        ImmutableSortedMap.of(
-            new org.batfish.common.Pair<>(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2")), ripNeighbor1));
-    rip2.setRipNeighbors(
-        ImmutableSortedMap.of(
-            new org.batfish.common.Pair<>(Ip.parse("2.2.2.2"), Ip.parse("1.1.1.1")), ripNeighbor2));
+    rip1.setRipNeighbors(ImmutableTable.of(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"), ripNeighbor1));
+    rip2.setRipNeighbors(ImmutableTable.of(Ip.parse("2.2.2.2"), Ip.parse("1.1.1.1"), ripNeighbor2));
     ripNeighbor1.setOwner(_host1);
     ripNeighbor2.setOwner(_host2);
     ripNeighbor1.setIface(_host1.getAllInterfaces().get("int1"));

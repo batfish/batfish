@@ -25,6 +25,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -1317,7 +1318,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  @SuppressWarnings("deprecation") // todo: remove Pair
   @Override
   public void initRemoteRipNeighbors(
       Map<String, Configuration> configurations, Map<Ip, Set<String>> ipOwners, Topology topology) {
@@ -1328,7 +1328,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
         Vrf vrf = e2.getValue();
         RipProcess proc = vrf.getRipProcess();
         if (proc != null) {
-          proc.setRipNeighbors(new TreeMap<>());
+          if (proc.getRipNeighbors() == null) {
+            proc.setRipNeighbors(HashBasedTable.create());
+          }
           String vrfName = e2.getKey();
           for (String ifaceName : proc.getInterfaces()) {
             Interface iface = vrf.getInterfaces().get("ifaceName");
@@ -1346,12 +1348,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
               RipProcess remoteProc = remoteVrf.getRipProcess();
               if (remoteProc != null) {
                 if (remoteProc.getRipNeighbors() == null) {
-                  remoteProc.setRipNeighbors(new TreeMap<>());
+                  remoteProc.setRipNeighbors(HashBasedTable.create());
                 }
                 if (remoteProc.getInterfaces().contains(remoteIfaceName)) {
                   Ip remoteIp = remoteIface.getAddress().getIp();
-                  RipNeighbor neighbor =
-                      proc.getRipNeighbors().get(new org.batfish.common.Pair<>(localIp, remoteIp));
+                  RipNeighbor neighbor = proc.getRipNeighbors().get(localIp, remoteIp);
                   if (neighbor == null) {
                     hasNeighbor = true;
 
@@ -1360,17 +1361,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     neighbor.setVrf(vrfName);
                     neighbor.setOwner(c);
                     neighbor.setInterface(iface);
-                    proc.getRipNeighbors()
-                        .put(new org.batfish.common.Pair<>(localIp, remoteIp), neighbor);
+                    proc.getRipNeighbors().put(localIp, remoteIp, neighbor);
 
                     // initialize remote neighbor
                     RipNeighbor remoteNeighbor = new RipNeighbor(remoteIp, localIp);
                     remoteNeighbor.setVrf(remoteVrfName);
                     remoteNeighbor.setOwner(remoteNode);
                     remoteNeighbor.setInterface(remoteIface);
-                    remoteProc
-                        .getRipNeighbors()
-                        .put(new org.batfish.common.Pair<>(remoteIp, localIp), remoteNeighbor);
+                    remoteProc.getRipNeighbors().put(remoteIp, localIp, remoteNeighbor);
 
                     // link neighbors
                     neighbor.setRemoteRipNeighbor(remoteNeighbor);
@@ -1384,7 +1382,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               neighbor.setVrf(vrfName);
               neighbor.setOwner(c);
               neighbor.setInterface(iface);
-              proc.getRipNeighbors().put(new org.batfish.common.Pair<>(localIp, Ip.ZERO), neighbor);
+              proc.getRipNeighbors().put(localIp, Ip.ZERO, neighbor);
             }
           }
         }
