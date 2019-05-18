@@ -20,38 +20,6 @@ import org.junit.Test;
 public class BgpRibTest {
 
   @Test
-  public void testBestPathComparatorArrivalOrder() {
-    BgpRib<Bgpv4Route> rib = new Bgpv4Rib(null, BgpTieBreaker.ARRIVAL_ORDER, 1, null, false);
-
-    // Create routes to compare
-    Bgpv4Route.Builder rb =
-        Bgpv4Route.builder()
-            .setNetwork(Prefix.ZERO)
-            .setNextHopIp(Ip.ZERO)
-            .setOriginType(OriginType.IGP)
-            .setProtocol(RoutingProtocol.BGP);
-    Bgpv4Route r1 = rb.setOriginatorIp(Ip.ZERO).build();
-    Bgpv4Route r2 = rb.setOriginatorIp(Ip.parse("3.3.3.3")).build();
-    Bgpv4Route r3 = rb.setOriginatorIp(Ip.parse("1.1.1.1")).build();
-    Bgpv4Route unaddedRoute = rb.setOriginatorIp(Ip.parse("2.2.2.2")).build();
-
-    rib.mergeRoute(r1);
-    rib.mergeRoute(r2);
-    rib.mergeRoute(r3);
-
-    // Tiebreaker is arrival order, so route attributes shouldn't affect best path.
-    List<Bgpv4Route> ordered = ImmutableList.of(unaddedRoute, r3, r2, r1);
-
-    for (int i = 0; i < ordered.size(); i++) {
-      for (int j = 0; j < ordered.size(); j++) {
-        assertThat(
-            Integer.signum(rib.bestPathComparator(ordered.get(i), (ordered.get(j)))),
-            equalTo(Integer.signum(i - j)));
-      }
-    }
-  }
-
-  @Test
   public void testBestPathComparator() {
     BgpRib<Bgpv4Route> rib = new Bgpv4Rib(null, BgpTieBreaker.ROUTER_ID, 1, null, false);
     Bgpv4Route.Builder rb =
@@ -61,7 +29,7 @@ public class BgpRibTest {
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.IBGP);
     /*
-    Create routes to compare. Arrival order shouldn't matter; preference should be:
+    Create routes to compare. With non-ARRIVAL_ORDER tiebreaker, preference should be:
     1. Lowest originator IP
     2. Shortest cluster list
     3. Lowest receivedFromIp, nulls first (first two properties are nonnull)
@@ -80,9 +48,6 @@ public class BgpRibTest {
         }
       }
     }
-
-    // Add one arbitrary route to the RIB to ascertain that arrival order doesn't matter
-    rib.mergeRoute(ordered.get(2));
 
     for (int i = 0; i < ordered.size(); i++) {
       for (int j = 0; j < ordered.size(); j++) {
