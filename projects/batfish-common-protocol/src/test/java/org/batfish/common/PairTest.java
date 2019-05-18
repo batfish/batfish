@@ -8,6 +8,7 @@ import java.util.List;
 import org.junit.Test;
 
 /** Tests of {@link Pair} */
+@SuppressWarnings("deprecation") // tests of deprecated class
 public class PairTest {
   @Test
   public void testCompareToWithNullSecond() {

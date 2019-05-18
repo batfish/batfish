@@ -80,6 +80,7 @@ public enum Command {
 
   private static final Map<String, Command> _nameMap = buildNameMap();
 
+  @SuppressWarnings("deprecation") // Client is deprecated anyway
   private static final Map<Command, Pair<String, String>> _usageMap = buildUsageMap();
 
   private static Map<String, Command> buildNameMap() {
@@ -91,6 +92,7 @@ public enum Command {
     return map.build();
   }
 
+  @SuppressWarnings("deprecation") // Client is deprecated anyway
   private static Map<Command, Pair<String, String>> buildUsageMap() {
     Map<Command, Pair<String, String>> descs = new TreeMap<>();
     descs.put(
