@@ -214,29 +214,26 @@ public abstract class BgpRib<R extends BgpRoute> extends AbstractRib<R> {
    * for multipath equivalence, and thus have the same protocol (e/iBGP, same as path length, etc)
    */
   @VisibleForTesting
-  private int bestPathComparator(R lhs, R rhs) {
-    int result = 0;
-
+  int bestPathComparator(R lhs, R rhs) {
     // Skip arrival order unless requested
     if (_tieBreaker == BgpTieBreaker.ARRIVAL_ORDER) {
-      result =
+      int result =
           Comparator.<R, Long>comparing(
                   r -> _logicalArrivalTime.getOrDefault(r, _logicalClock),
                   Comparator.reverseOrder())
               .compare(lhs, rhs);
-    }
-    if (result != 0) {
-      return result;
+      if (result != 0) {
+        return result;
+      }
     }
 
     // Continue with remaining tie breakers
-    return Comparator.nullsFirst(
-            // Prefer lower originator router ID
-            Comparator.comparing(R::getOriginatorIp, Comparator.reverseOrder())
-                // Prefer lower cluster list length. Only applicable to iBGP
-                .thenComparing(r -> r.getClusterList().size(), Comparator.reverseOrder())
-                // Prefer lower neighbor IP
-                .thenComparing(R::getReceivedFromIp, Comparator.reverseOrder()))
+    // Prefer lower originator router ID
+    return Comparator.comparing(R::getOriginatorIp, Comparator.reverseOrder())
+        // Prefer lower cluster list length. Only applicable to iBGP
+        .thenComparing(r -> r.getClusterList().size(), Comparator.reverseOrder())
+        // Prefer lower neighbor IP
+        .thenComparing(R::getReceivedFromIp, Comparator.nullsFirst(Comparator.reverseOrder()))
         .compare(lhs, rhs);
   }
 
