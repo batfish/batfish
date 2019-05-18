@@ -23,7 +23,7 @@ public class Route6FilterListTest {
             ImmutableList.of(
                 new Route6FilterLine(
                     LineAction.PERMIT,
-                    new Ip6Wildcard(
+                    Ip6Wildcard.parse(
                         "2001:db8:1234:2345:3456:4567:5678:6789;0:ffff:0:0:0:ffff:ffff:ffff"),
                     new SubRange(64, 64))));
     _rfPrefixMoreSpecific =
@@ -32,7 +32,7 @@ public class Route6FilterListTest {
             ImmutableList.of(
                 new Route6FilterLine(
                     LineAction.PERMIT,
-                    new Ip6Wildcard(
+                    Ip6Wildcard.parse(
                         "2001:db8:1234:2345:3456:4567:5678:6789;0:0:0:0:ffff:ffff:ffff:ffff"),
                     new SubRange(65, 70))));
     _rfPrefixExact =
@@ -41,7 +41,7 @@ public class Route6FilterListTest {
             ImmutableList.of(
                 new Route6FilterLine(
                     LineAction.PERMIT,
-                    new Ip6Wildcard(
+                    Ip6Wildcard.parse(
                         "2001:db8:1234:2345:3456:4567:5678:6789;0:0:0:0:ffff:ffff:ffff:ffff"),
                     new SubRange(64, 64))));
   }
