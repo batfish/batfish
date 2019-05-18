@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
-import org.batfish.common.Pair;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
@@ -176,10 +175,12 @@ public class Subnet implements AwsVpcEntity, Serializable {
     Utils.newInterface(instancesIfaceName, cfgNode, instancesIfaceAddress);
 
     // generate a prefix for the link between the VPC router and the subnet
-    Pair<InterfaceAddress, InterfaceAddress> vpcSubnetLinkPrefix =
-        awsConfiguration.getNextGeneratedLinkSubnet();
-    InterfaceAddress subnetIfaceAddress = vpcSubnetLinkPrefix.getFirst();
-    InterfaceAddress vpcIfaceAddress = vpcSubnetLinkPrefix.getSecond();
+    Prefix vpcSubnetLinkPrefix = awsConfiguration.getNextGeneratedLinkSubnet();
+    InterfaceAddress subnetIfaceAddress =
+        new InterfaceAddress(
+            vpcSubnetLinkPrefix.getStartIp(), vpcSubnetLinkPrefix.getPrefixLength());
+    InterfaceAddress vpcIfaceAddress =
+        new InterfaceAddress(vpcSubnetLinkPrefix.getEndIp(), vpcSubnetLinkPrefix.getPrefixLength());
 
     // add an interface that faces the VPC router
     String subnetIfaceName = _vpcId;
