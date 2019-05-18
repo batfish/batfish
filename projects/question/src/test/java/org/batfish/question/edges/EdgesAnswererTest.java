@@ -59,7 +59,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
-import org.batfish.common.Pair;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Node;
 import org.batfish.common.topology.Layer1Topology;
@@ -428,18 +427,19 @@ public class EdgesAnswererTest {
                         Schema.INTERFACE)))));
   }
 
+  @SuppressWarnings("deprecation") // todo
   @Test
   public void testGetRipEdges() {
     RipProcess rip1 = new RipProcess();
     RipProcess rip2 = new RipProcess();
-    RipNeighbor ripNeighbor1 =
-        new RipNeighbor(new Pair<>(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2")));
-    RipNeighbor ripNeighbor2 =
-        new RipNeighbor(new Pair<>(Ip.parse("2.2.2.2"), Ip.parse("1.1.1.1")));
+    RipNeighbor ripNeighbor1 = new RipNeighbor(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"));
+    RipNeighbor ripNeighbor2 = new RipNeighbor(Ip.parse("2.2.2.2"), Ip.parse("1.1.1.1"));
     rip1.setRipNeighbors(
-        ImmutableSortedMap.of(new Pair<>(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2")), ripNeighbor1));
+        ImmutableSortedMap.of(
+            new org.batfish.common.Pair<>(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2")), ripNeighbor1));
     rip2.setRipNeighbors(
-        ImmutableSortedMap.of(new Pair<>(Ip.parse("2.2.2.2"), Ip.parse("1.1.1.1")), ripNeighbor2));
+        ImmutableSortedMap.of(
+            new org.batfish.common.Pair<>(Ip.parse("2.2.2.2"), Ip.parse("1.1.1.1")), ripNeighbor2));
     ripNeighbor1.setOwner(_host1);
     ripNeighbor2.setOwner(_host2);
     ripNeighbor1.setIface(_host1.getAllInterfaces().get("int1"));

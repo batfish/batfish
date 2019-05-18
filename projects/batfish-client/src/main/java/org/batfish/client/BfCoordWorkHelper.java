@@ -33,7 +33,6 @@ import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.CoordConstsV2;
-import org.batfish.common.Pair;
 import org.batfish.common.Version;
 import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -46,6 +45,7 @@ import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
+@SuppressWarnings("deprecation") // todo: remove Pair
 public class BfCoordWorkHelper {
 
   private final String _coordWorkMgr;
@@ -575,7 +575,7 @@ public class BfCoordWorkHelper {
   }
 
   @Nullable
-  public Pair<WorkStatusCode, String> getWorkStatus(UUID workId) {
+  org.batfish.common.Pair<WorkStatusCode, String> getWorkStatus(UUID workId) {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_WORKSTATUS);
 
@@ -603,7 +603,7 @@ public class BfCoordWorkHelper {
       }
       String taskStr = jObj.getString(CoordConsts.SVC_KEY_TASKSTATUS);
 
-      return new Pair<>(workStatus, taskStr);
+      return new org.batfish.common.Pair<>(workStatus, taskStr);
     } catch (Exception e) {
       _logger.errorf("exception: ");
       _logger.error(Throwables.getStackTraceAsString(e) + "\n");

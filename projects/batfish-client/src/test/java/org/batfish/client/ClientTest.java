@@ -106,7 +106,6 @@ import org.batfish.client.answer.LoadQuestionAnswerElement;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
-import org.batfish.common.Pair;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.InterfaceType;
@@ -374,11 +373,12 @@ public final class ClientTest {
     checkProcessCommandErrorMessage(GET, parameters, SNAPSHOT_NOT_SET);
   }
 
+  @SuppressWarnings("deprecation") // tests of deprecated code
   @Test
   public void testHelpInvalidParas() throws Exception {
     Command command = HELP;
     String[] parameters = new String[] {"-option1"};
-    Pair<String, String> usage = Command.getUsageMap().get(command);
+    org.batfish.common.Pair<String, String> usage = Command.getUsageMap().get(command);
     String expected =
         String.format(
             "Invalid arguments: %s []\n%s %s\n\t%s\n\n",
@@ -389,20 +389,22 @@ public final class ClientTest {
     checkProcessCommandErrorMessage(command, parameters, expected);
   }
 
+  @SuppressWarnings("deprecation") // tests of deprecated code
   @Test
   public void testHelpValidParas() throws Exception {
     String[] parameters = new String[] {"get"};
-    Pair<String, String> usage = Command.getUsageMap().get(GET);
+    org.batfish.common.Pair<String, String> usage = Command.getUsageMap().get(GET);
     String expected =
         String.format("%s %s\n\t%s\n\n", GET.commandName(), usage.getFirst(), usage.getSecond());
     testProcessCommandWithValidInput(HELP, parameters, expected);
   }
 
+  @SuppressWarnings("deprecation") // tests of deprecated code
   @Test
   public void testInitNetworkEmptyParasWithOption() throws Exception {
     Command command = INIT_NETWORK;
     String[] args = new String[] {"-setname"};
-    Pair<String, String> usage = Command.getUsageMap().get(command);
+    org.batfish.common.Pair<String, String> usage = Command.getUsageMap().get(command);
     String expected =
         String.format(
             "Invalid arguments: %s []\n%s %s\n\t%s\n\n",
@@ -410,12 +412,13 @@ public final class ClientTest {
     checkProcessCommandErrorMessage(command, args, expected);
   }
 
+  @SuppressWarnings("deprecation") // tests of deprecated code
   @Test
   public void testInitNetworkInvalidOptions() throws Exception {
     Command command = INIT_NETWORK;
     String invalidOption = "-setnetwork";
     String[] args = new String[] {invalidOption, "parameter1"};
-    Pair<String, String> usage = Command.getUsageMap().get(command);
+    org.batfish.common.Pair<String, String> usage = Command.getUsageMap().get(command);
     String expected =
         String.format(
             "Invalid arguments: %s %s\n%s %s\n\t%s\n\n",
@@ -550,9 +553,10 @@ public final class ClientTest {
     validateTypeWithInvalidInput(input, expectedMessage, expectedType);
   }
 
+  @SuppressWarnings("deprecation") // tests of deprecated code
   private void testInvalidInput(Command command, String[] options, String[] parameters)
       throws Exception {
-    Pair<String, String> usage = Command.getUsageMap().get(command);
+    org.batfish.common.Pair<String, String> usage = Command.getUsageMap().get(command);
     String expected =
         String.format(
             "Invalid arguments: %s %s\n%s %s\n\t%s\n\n",

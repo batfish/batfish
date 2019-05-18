@@ -70,7 +70,6 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConsts.WorkStatusCode;
-import org.batfish.common.Pair;
 import org.batfish.common.Task;
 import org.batfish.common.Task.Batch;
 import org.batfish.common.Version;
@@ -129,7 +128,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
 
-@SuppressWarnings("restriction")
+@SuppressWarnings({"restriction", "deprecation"}) // todo: remove Pair
 public class Client extends AbstractClient implements IClient {
 
   private static final Set<String> COMPARATORS =
@@ -1444,7 +1443,7 @@ public class Client extends AbstractClient implements IClient {
 
     UUID workId = UUID.fromString(parameters.get(0));
 
-    Pair<WorkStatusCode, String> response = _workHelper.getWorkStatus(workId);
+    org.batfish.common.Pair<WorkStatusCode, String> response = _workHelper.getWorkStatus(workId);
     if (response == null) {
       return false;
     }
@@ -2035,7 +2034,7 @@ public class Client extends AbstractClient implements IClient {
 
   private boolean pollWork(UUID wItemId) {
 
-    Pair<WorkStatusCode, String> response;
+    org.batfish.common.Pair<WorkStatusCode, String> response;
     try (ActiveSpan workStatusSpan =
         GlobalTracer.get().buildSpan("Waiting for work status").startActive()) {
       assert workStatusSpan != null; // avoid unused warning
@@ -2153,12 +2152,12 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private void printUsage(Command command) {
-    Pair<String, String> usage = Command.getUsageMap().get(command);
+    org.batfish.common.Pair<String, String> usage = Command.getUsageMap().get(command);
     _logger.outputf("%s %s\n\t%s\n\n", command.commandName(), usage.getFirst(), usage.getSecond());
   }
 
   private void printWorkStatusResponse(
-      Pair<WorkStatusCode, String> response, boolean unconditionalPrint) {
+      org.batfish.common.Pair<WorkStatusCode, String> response, boolean unconditionalPrint) {
 
     if (unconditionalPrint || _logger.getLogLevel() >= BatfishLogger.LEVEL_INFO) {
       WorkStatusCode status = response.getFirst();

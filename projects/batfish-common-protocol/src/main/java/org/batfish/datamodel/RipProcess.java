@@ -6,9 +6,9 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import org.batfish.common.Pair;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 
+@SuppressWarnings("deprecation") // todo
 public class RipProcess implements Serializable {
 
   public static class Builder extends NetworkFactoryBuilder<RipProcess> {
@@ -48,7 +48,7 @@ public class RipProcess implements Serializable {
 
   private SortedSet<String> _interfaces;
 
-  private transient Map<Pair<Ip, Ip>, RipNeighbor> _ripNeighbors;
+  private transient Map<org.batfish.common.Pair<Ip, Ip>, RipNeighbor> _ripNeighbors;
 
   public RipProcess() {
     _generatedRoutes = new TreeSet<>();
@@ -74,7 +74,7 @@ public class RipProcess implements Serializable {
   }
 
   @JsonIgnore
-  public Map<Pair<Ip, Ip>, RipNeighbor> getRipNeighbors() {
+  public Map<org.batfish.common.Pair<Ip, Ip>, RipNeighbor> getRipNeighbors() {
     return _ripNeighbors;
   }
 
@@ -96,7 +96,7 @@ public class RipProcess implements Serializable {
     _interfaces = interfaces;
   }
 
-  public void setRipNeighbors(Map<Pair<Ip, Ip>, RipNeighbor> ripNeighbors) {
+  public void setRipNeighbors(Map<org.batfish.common.Pair<Ip, Ip>, RipNeighbor> ripNeighbors) {
     _ripNeighbors = ripNeighbors;
   }
 }

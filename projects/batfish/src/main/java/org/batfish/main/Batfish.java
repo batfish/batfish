@@ -93,7 +93,6 @@ import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
 import org.batfish.common.ErrorDetails;
 import org.batfish.common.NetworkSnapshot;
-import org.batfish.common.Pair;
 import org.batfish.common.Version;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
@@ -1318,6 +1317,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
+  @SuppressWarnings("deprecation") // todo: remove Pair
   @Override
   public void initRemoteRipNeighbors(
       Map<String, Configuration> configurations, Map<Ip, Set<String>> ipOwners, Topology topology) {
@@ -1350,25 +1350,27 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 }
                 if (remoteProc.getInterfaces().contains(remoteIfaceName)) {
                   Ip remoteIp = remoteIface.getAddress().getIp();
-                  Pair<Ip, Ip> localKey = new Pair<>(localIp, remoteIp);
-                  RipNeighbor neighbor = proc.getRipNeighbors().get(localKey);
+                  RipNeighbor neighbor =
+                      proc.getRipNeighbors().get(new org.batfish.common.Pair<>(localIp, remoteIp));
                   if (neighbor == null) {
                     hasNeighbor = true;
 
                     // initialize local neighbor
-                    neighbor = new RipNeighbor(localKey);
+                    neighbor = new RipNeighbor(localIp, remoteIp);
                     neighbor.setVrf(vrfName);
                     neighbor.setOwner(c);
                     neighbor.setInterface(iface);
-                    proc.getRipNeighbors().put(localKey, neighbor);
+                    proc.getRipNeighbors()
+                        .put(new org.batfish.common.Pair<>(localIp, remoteIp), neighbor);
 
                     // initialize remote neighbor
-                    Pair<Ip, Ip> remoteKey = new Pair<>(remoteIp, localIp);
-                    RipNeighbor remoteNeighbor = new RipNeighbor(remoteKey);
+                    RipNeighbor remoteNeighbor = new RipNeighbor(remoteIp, localIp);
                     remoteNeighbor.setVrf(remoteVrfName);
                     remoteNeighbor.setOwner(remoteNode);
                     remoteNeighbor.setInterface(remoteIface);
-                    remoteProc.getRipNeighbors().put(remoteKey, remoteNeighbor);
+                    remoteProc
+                        .getRipNeighbors()
+                        .put(new org.batfish.common.Pair<>(remoteIp, localIp), remoteNeighbor);
 
                     // link neighbors
                     neighbor.setRemoteRipNeighbor(remoteNeighbor);
@@ -1378,12 +1380,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
               }
             }
             if (!hasNeighbor) {
-              Pair<Ip, Ip> key = new Pair<>(localIp, Ip.ZERO);
-              RipNeighbor neighbor = new RipNeighbor(key);
+              RipNeighbor neighbor = new RipNeighbor(localIp, Ip.ZERO);
               neighbor.setVrf(vrfName);
               neighbor.setOwner(c);
               neighbor.setInterface(iface);
-              proc.getRipNeighbors().put(key, neighbor);
+              proc.getRipNeighbors().put(new org.batfish.common.Pair<>(localIp, Ip.ZERO), neighbor);
             }
           }
         }
