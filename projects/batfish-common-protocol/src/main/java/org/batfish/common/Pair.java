@@ -10,13 +10,14 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 /** A generic pair of comparable objects */
 @ParametersAreNonnullByDefault
+@Deprecated // Don't be lazy.
 public class Pair<T1 extends Comparable<? super T1>, T2 extends Comparable<? super T2>>
     implements Serializable, Comparable<Pair<T1, T2>> {
 
   private static final long serialVersionUID = 1L;
 
-  @Nonnull protected final T1 _first;
-  @Nullable protected final T2 _second;
+  @Nonnull private final T1 _first;
+  @Nullable private final T2 _second;
 
   public Pair(T1 t1, @Nullable T2 t2) {
     _first = t1;
