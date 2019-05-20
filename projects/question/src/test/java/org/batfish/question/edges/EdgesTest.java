@@ -28,7 +28,6 @@ import org.batfish.common.topology.TopologyProvider;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.EdgeType;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
@@ -41,6 +40,7 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.question.edges.EdgesQuestion.EdgeType;
 import org.junit.Before;
 import org.junit.Test;
 
