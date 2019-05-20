@@ -39,9 +39,6 @@ test -raw tests/questions/stable/layer3Edges.ref validate-template layer3Edges n
 # validate ospfEdges
 test -raw tests/questions/stable/ospfEdges.ref validate-template ospfEdges nodes=".*", remoteNodes=".*"
 
-# validate ripEdges
-test -raw tests/questions/stable/ripEdges.ref validate-template ripEdges nodes=".*", remoteNodes=".*"
-
 # validate vxlanEdges
 test -raw tests/questions/stable/vxlanEdges.ref validate-template vxlanEdges nodes=".*", remoteNodes=".*"
 
