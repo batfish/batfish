@@ -3,10 +3,10 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.batfish.common.Pair;
 import org.batfish.common.util.ComparableStructure;
 
-public class RipNeighbor extends ComparableStructure<Pair<Ip, Ip>> {
+@SuppressWarnings("deprecation") // todo
+public class RipNeighbor extends ComparableStructure<org.batfish.common.Pair<Ip, Ip>> {
 
   public static final class RipNeighborSummary extends ComparableStructure<String> {
     private static final String PROP_LOCAL_IP = "localIp";
@@ -66,15 +66,15 @@ public class RipNeighbor extends ComparableStructure<Pair<Ip, Ip>> {
 
   private String _vrf;
 
-  public RipNeighbor(Pair<Ip, Ip> ipEdge) {
-    super(ipEdge);
+  public RipNeighbor(Ip head, Ip tail) {
+    super(new org.batfish.common.Pair<>(head, tail));
   }
 
   public Interface getIface() {
     return _iface;
   }
 
-  public Pair<Ip, Ip> getIpEdge() {
+  public org.batfish.common.Pair<Ip, Ip> getIpEdge() {
     return _key;
   }
 

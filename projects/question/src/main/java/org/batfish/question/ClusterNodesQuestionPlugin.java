@@ -13,7 +13,6 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.Answerer;
-import org.batfish.common.Pair;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -23,6 +22,7 @@ import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 
 @AutoService(Plugin.class)
+@SuppressWarnings("deprecation") // todo
 public class ClusterNodesQuestionPlugin extends QuestionPlugin {
 
   public static class ClusterNodesAnswerElement extends AnswerElement {
@@ -275,7 +275,8 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
 
     // find the element in choice[0..(i-1)] with the minimum hamming distance to s
     // return a pair of the index and hamming distance
-    private Pair<Integer, Integer> minHammingDistance(String s, String[] choices, int len) {
+    private org.batfish.common.Pair<Integer, Integer> minHammingDistance(
+        String s, String[] choices, int len) {
       int min = Integer.MAX_VALUE;
       int minIndex = -1;
       for (int i = 0; i < len; i++) {
@@ -285,7 +286,7 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
           minIndex = i;
         }
       }
-      return new Pair<>(minIndex, min);
+      return new org.batfish.common.Pair<>(minIndex, min);
     }
   }
 

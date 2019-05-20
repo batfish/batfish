@@ -1,12 +1,18 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import java.io.Serializable;
 import java.math.BigInteger;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
-import org.batfish.common.Pair;
 
-public class Ip6Wildcard extends Pair<Ip6, Ip6> {
+@ParametersAreNonnullByDefault
+public class Ip6Wildcard implements Serializable, Comparable<Ip6Wildcard> {
 
   public static final Ip6Wildcard ANY = new Ip6Wildcard(Ip6.ZERO, Ip6.MAX);
 
@@ -58,7 +64,8 @@ public class Ip6Wildcard extends Pair<Ip6, Ip6> {
   }
 
   public Ip6Wildcard(Ip6 address, Ip6 wildcardMask) {
-    super(address, wildcardMask);
+    this._ip = address;
+    this._wildcardMask = wildcardMask;
     if (!wildcardMask.valid()) {
       throw new BatfishException("Invalid wildcard: " + wildcardMask);
     }
@@ -68,9 +75,14 @@ public class Ip6Wildcard extends Pair<Ip6, Ip6> {
     this(prefix.getAddress(), prefix.getPrefixWildcard());
   }
 
+  public static Ip6Wildcard parse(String str) {
+    return new Ip6Wildcard(parseAddress(str), parseMask(str));
+  }
+
   @JsonCreator
-  public Ip6Wildcard(String str) {
-    super(parseAddress(str), parseMask(str));
+  private static Ip6Wildcard jsonCreator(@Nullable String str) {
+    checkArgument(str != null, "Ip6Wildcard cannot be null");
+    return parse(str);
   }
 
   public boolean contains(Ip6 ip) {
@@ -82,31 +94,18 @@ public class Ip6Wildcard extends Pair<Ip6, Ip6> {
     return maskedIpAsBigInteger.equals(maskedWildcard);
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (o == this) {
-      return true;
-    } else if (!(o instanceof Ip6Wildcard)) {
-      return false;
-    }
-    Ip6Wildcard other = (Ip6Wildcard) o;
-    if (other.getFirst().equals(this.getFirst()) && other.getSecond().equals(this.getSecond())) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
+  @Nonnull
   public Ip6 getIp() {
-    return _first;
+    return _ip;
   }
 
+  @Nonnull
   public Ip6 getWildcard() {
-    return _second;
+    return _wildcardMask;
   }
 
   public boolean isPrefix() {
-    BigInteger w = _second.asBigInteger();
+    BigInteger w = _wildcardMask.asBigInteger();
     BigInteger wp = w.add(BigInteger.ONE);
     int numTrailingZeros = wp.getLowestSetBit();
     BigInteger check = BigInteger.ONE.shiftLeft(numTrailingZeros);
@@ -115,21 +114,53 @@ public class Ip6Wildcard extends Pair<Ip6, Ip6> {
 
   public Prefix6 toPrefix() {
     if (isPrefix()) {
-      return new Prefix6(_first, _second.inverted());
+      return new Prefix6(_ip, _wildcardMask.inverted());
     } else {
-      throw new BatfishException("Invalid wildcard format for conversion to prefix: " + _second);
+      throw new BatfishException(
+          "Invalid wildcard format for conversion to prefix: " + _wildcardMask);
     }
+  }
+
+  @Nonnull private final Ip6 _ip;
+  @Nonnull private final Ip6 _wildcardMask;
+
+  @Override
+  public int compareTo(Ip6Wildcard o) {
+    if (o == this) {
+      return 0;
+    }
+    int ips = _ip.compareTo(o._ip);
+    if (ips != 0) {
+      return ips;
+    }
+    return _wildcardMask.compareTo(o._wildcardMask);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    } else if (!(o instanceof Ip6Wildcard)) {
+      return false;
+    }
+    Ip6Wildcard other = (Ip6Wildcard) o;
+    return _ip.equals(other._ip) && _wildcardMask.equals(other._wildcardMask);
+  }
+
+  @Override
+  public int hashCode() {
+    return 31 * _ip.hashCode() + _wildcardMask.hashCode();
   }
 
   @JsonValue
   @Override
   public String toString() {
-    if (_second.equals(Ip6.ZERO)) {
-      return _first.toString();
+    if (_wildcardMask.equals(Ip6.ZERO)) {
+      return _ip.toString();
     } else if (isPrefix()) {
       return toPrefix().toString();
     } else {
-      return _first + ";" + _second;
+      return _ip + ";" + _wildcardMask;
     }
   }
 }

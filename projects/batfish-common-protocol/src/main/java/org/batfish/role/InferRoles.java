@@ -21,19 +21,19 @@ import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.batfish.common.BatfishException;
-import org.batfish.common.Pair;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.RoleEdge;
 import org.batfish.datamodel.Topology;
 import org.batfish.role.NodeRoleDimension.Type;
 
+@SuppressWarnings("deprecation") // todo
 public final class InferRoles {
 
   private final Collection<String> _nodes;
   private final Topology _topology;
 
   // a tokenized version of _chosenNode
-  private List<Pair<String, Token>> _tokens;
+  private List<org.batfish.common.Pair<String, Token>> _tokens;
   // the regex produced by generalizing from _tokens
   private List<String> _regex;
   // the list of nodes that match _regex
@@ -148,7 +148,7 @@ public final class InferRoles {
 
     SortedSet<NodeRoleDimension> allDims;
 
-    Pair<Integer, Double> bestRegexAndScore = findBestRegex(candidateRegexes);
+    org.batfish.common.Pair<Integer, Double> bestRegexAndScore = findBestRegex(candidateRegexes);
 
     // select the regex of maximum score, if that score is above threshold
     Optional<NodeRoleDimension> optResult =
@@ -220,9 +220,9 @@ public final class InferRoles {
 
   // If delimiters (non-alphanumeric characters) are being used in the node names, we use them
   // to separate the different tokens.
-  private static List<Pair<String, Token>> preTokensToDelimitedTokens(
-      List<Pair<String, PreToken>> pretokens) {
-    List<Pair<String, Token>> tokens = new ArrayList<>();
+  private static List<org.batfish.common.Pair<String, Token>> preTokensToDelimitedTokens(
+      List<org.batfish.common.Pair<String, PreToken>> pretokens) {
+    List<org.batfish.common.Pair<String, Token>> tokens = new ArrayList<>();
     int size = pretokens.size();
     int i = 0;
     while (i < size) {
@@ -237,13 +237,13 @@ public final class InferRoles {
             next++;
           }
           i = next - 1;
-          tokens.add(new Pair<>(chars.toString(), Token.ALNUM_PLUS));
+          tokens.add(new org.batfish.common.Pair<>(chars.toString(), Token.ALNUM_PLUS));
           break;
         case DELIMITER:
-          tokens.add(new Pair<>(chars.toString(), Token.DELIMITER));
+          tokens.add(new org.batfish.common.Pair<>(chars.toString(), Token.DELIMITER));
           break;
         case DIGIT_PLUS:
-          tokens.add(new Pair<>(chars.toString(), Token.DIGIT_PLUS));
+          tokens.add(new org.batfish.common.Pair<>(chars.toString(), Token.DIGIT_PLUS));
           break;
         default:
           throw new BatfishException("Unknown pretoken " + pt);
@@ -255,9 +255,9 @@ public final class InferRoles {
 
   // If delimiters (non-alphanumeric characters) are not being used in the node names, we treat
   // each consecutive string matching alpha+digit+ as a distinct token.
-  private static List<Pair<String, Token>> preTokensToUndelimitedTokens(
-      List<Pair<String, PreToken>> pretokens) {
-    List<Pair<String, Token>> tokens = new ArrayList<>();
+  private static List<org.batfish.common.Pair<String, Token>> preTokensToUndelimitedTokens(
+      List<org.batfish.common.Pair<String, PreToken>> pretokens) {
+    List<org.batfish.common.Pair<String, Token>> tokens = new ArrayList<>();
     int size = pretokens.size();
     int i = 0;
     while (i < size) {
@@ -267,16 +267,16 @@ public final class InferRoles {
         case ALPHA_PLUS:
           int next = i + 1;
           if (next >= size) {
-            tokens.add(new Pair<>(chars, Token.ALPHA_PLUS));
+            tokens.add(new org.batfish.common.Pair<>(chars, Token.ALPHA_PLUS));
           } else {
             // the next token must be DIGIT_PLUS since we know there are no delimiters
             String bothChars = chars + pretokens.get(next).getFirst();
-            tokens.add(new Pair<>(bothChars, Token.ALPHA_PLUS_DIGIT_PLUS));
+            tokens.add(new org.batfish.common.Pair<>(bothChars, Token.ALPHA_PLUS_DIGIT_PLUS));
             i++;
           }
           break;
         case DIGIT_PLUS:
-          tokens.add(new Pair<>(chars, Token.DIGIT_PLUS));
+          tokens.add(new org.batfish.common.Pair<>(chars, Token.DIGIT_PLUS));
           break;
         default:
           throw new BatfishException("Unexpected pretoken " + pt);
@@ -286,8 +286,8 @@ public final class InferRoles {
     return tokens;
   }
 
-  private static List<Pair<String, Token>> tokenizeName(String name) {
-    List<Pair<String, PreToken>> pretokens = pretokenizeName(name);
+  private static List<org.batfish.common.Pair<String, Token>> tokenizeName(String name) {
+    List<org.batfish.common.Pair<String, PreToken>> pretokens = pretokenizeName(name);
     if (pretokens.stream().anyMatch((p) -> p.getSecond() == PreToken.DELIMITER)) {
       return preTokensToDelimitedTokens(pretokens);
     } else {
@@ -296,8 +296,8 @@ public final class InferRoles {
   }
 
   // tokenizes a name into a sequence of pretokens defined by the PreToken enum above
-  private static List<Pair<String, PreToken>> pretokenizeName(String name) {
-    List<Pair<String, PreToken>> pattern = new ArrayList<>();
+  private static List<org.batfish.common.Pair<String, PreToken>> pretokenizeName(String name) {
+    List<org.batfish.common.Pair<String, PreToken>> pattern = new ArrayList<>();
     char c = name.charAt(0);
     PreToken currPT = PreToken.charToPreToken(c);
     StringBuffer curr = new StringBuffer();
@@ -306,13 +306,13 @@ public final class InferRoles {
       c = name.charAt(i);
       PreToken newPT = PreToken.charToPreToken(c);
       if (newPT != currPT) {
-        pattern.add(new Pair<>(new String(curr), currPT));
+        pattern.add(new org.batfish.common.Pair<>(new String(curr), currPT));
         curr = new StringBuffer();
         currPT = newPT;
       }
       curr.append(c);
     }
-    pattern.add(new Pair<>(new String(curr), currPT));
+    pattern.add(new org.batfish.common.Pair<>(new String(curr), currPT));
     return pattern;
   }
 
@@ -489,17 +489,21 @@ public final class InferRoles {
   }
 
   // the list of candidates must have at least one element
-  private Pair<Integer, Double> findBestRegex(final List<List<String>> candidates) {
+  private org.batfish.common.Pair<Integer, Double> findBestRegex(
+      final List<List<String>> candidates) {
     // choose the candidate role regex with the maximal "role score"
     return IntStream.range(0, candidates.size())
-        .mapToObj(i -> new Pair<>(i, computeRoleScore(regexTokensToRegex(candidates.get(i)))))
-        .max(Comparator.comparingDouble(Pair::getSecond))
+        .mapToObj(
+            i ->
+                new org.batfish.common.Pair<>(
+                    i, computeRoleScore(regexTokensToRegex(candidates.get(i)))))
+        .max(Comparator.comparingDouble(org.batfish.common.Pair::getSecond))
         .orElseThrow(() -> new BatfishException("this exception should not be reachable"));
   }
 
   // the list of candidates must have at least one element
   private Optional<NodeRoleDimension> toPrimaryNodeRoleDimensionIfAboveThreshold(
-      Pair<Integer, Double> bestRegexAndScore, List<List<String>> candidates) {
+      org.batfish.common.Pair<Integer, Double> bestRegexAndScore, List<List<String>> candidates) {
     if (bestRegexAndScore.getSecond() >= ROLE_THRESHOLD) {
       NodeRoleDimension bestNRD =
           toNodeRoleDimension(
@@ -512,7 +516,9 @@ public final class InferRoles {
 
   // the list of candidates must have at least one element
   private NodeRoleDimension toNodeRoleDimension(
-      Pair<Integer, Double> bestRegexAndScore, List<List<String>> candidates, String dimName) {
+      org.batfish.common.Pair<Integer, Double> bestRegexAndScore,
+      List<List<String>> candidates,
+      String dimName) {
     List<String> bestRegexTokens = candidates.get(bestRegexAndScore.getFirst());
     String bestRegex = regexTokensToRegex(bestRegexTokens);
     return regexToNodeRoleDimension(bestRegex, dimName);

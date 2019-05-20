@@ -1,12 +1,19 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import java.io.Serializable;
 import java.math.BigInteger;
+import java.util.Comparator;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
-import org.batfish.common.Pair;
 
-public class Prefix6Range extends Pair<Prefix6, SubRange> {
+@ParametersAreNonnullByDefault
+public class Prefix6Range implements Serializable, Comparable<Prefix6Range> {
 
   private static final long serialVersionUID = 1L;
 
@@ -45,20 +52,28 @@ public class Prefix6Range extends Pair<Prefix6, SubRange> {
   }
 
   public Prefix6Range(Prefix6 prefix6, SubRange lengthRange) {
-    super(prefix6, lengthRange);
+    _prefix = prefix6;
+    _lengthRange = lengthRange;
   }
 
   @JsonCreator
-  public Prefix6Range(String str) {
-    super(prefix6FromStr(str), lengthRangeFromStr(str));
+  private static Prefix6Range jsonCreator(@Nullable String str) {
+    checkArgument(str != null, "Prefix6Range cannot be null");
+    return Prefix6Range.parse(str);
   }
 
+  public static Prefix6Range parse(String str) {
+    return new Prefix6Range(prefix6FromStr(str), lengthRangeFromStr(str));
+  }
+
+  @Nonnull
   public SubRange getLengthRange() {
-    return _second;
+    return _lengthRange;
   }
 
+  @Nonnull
   public Prefix6 getPrefix6() {
-    return _first;
+    return _prefix;
   }
 
   public boolean includesPrefix6(Prefix6 argPrefix6) {
@@ -93,16 +108,42 @@ public class Prefix6Range extends Pair<Prefix6, SubRange> {
         && lengthRange.getEnd() >= argLengthRange.getEnd();
   }
 
+  @Nonnull private final Prefix6 _prefix;
+  @Nonnull private final SubRange _lengthRange;
+
+  @Override
+  public int compareTo(Prefix6Range o) {
+    return Comparator.comparing(Prefix6Range::getPrefix6)
+        .thenComparing(Prefix6Range::getLengthRange)
+        .compare(this, o);
+  }
+
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (o == this) {
+      return true;
+    } else if (!(o instanceof Prefix6Range)) {
+      return false;
+    }
+    Prefix6Range r = (Prefix6Range) o;
+    return _prefix.equals(r._prefix) && _lengthRange.equals(r._lengthRange);
+  }
+
+  @Override
+  public int hashCode() {
+    return 31 * _prefix.hashCode() + _lengthRange.hashCode();
+  }
+
   @Override
   @JsonValue
   public String toString() {
-    int prefixLength = _first.getPrefixLength();
-    int low = _second.getStart();
-    int high = _second.getEnd();
+    int prefixLength = _prefix.getPrefixLength();
+    int low = _lengthRange.getStart();
+    int high = _lengthRange.getEnd();
     if (prefixLength == low && prefixLength == high) {
-      return _first.toString();
+      return _prefix.toString();
     } else {
-      return _first + ";" + low + "-" + high;
+      return _prefix + ";" + low + "-" + high;
     }
   }
 }

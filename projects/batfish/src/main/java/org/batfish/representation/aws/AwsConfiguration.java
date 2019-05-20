@@ -3,12 +3,11 @@ package org.batfish.representation.aws;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import org.batfish.common.Pair;
+import java.util.concurrent.atomic.AtomicLong;
 import org.batfish.common.Warnings;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.GenericConfigObject;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
@@ -23,7 +22,7 @@ public class AwsConfiguration implements Serializable, GenericConfigObject {
 
   private Map<String, Configuration> _configurationNodes = new HashMap<>();
 
-  private long _currentGeneratedIpAsLong;
+  private AtomicLong _currentGeneratedIpAsLong;
 
   private Map<String, Region> _regions = new HashMap<>();
 
@@ -32,7 +31,7 @@ public class AwsConfiguration implements Serializable, GenericConfigObject {
   private transient Map<String, Warnings> _warningsByHost;
 
   public AwsConfiguration() {
-    _currentGeneratedIpAsLong = INITIAL_GENERATED_IP;
+    _currentGeneratedIpAsLong = new AtomicLong(INITIAL_GENERATED_IP);
   }
 
   public void addConfigElement(
@@ -50,15 +49,10 @@ public class AwsConfiguration implements Serializable, GenericConfigObject {
     return _configurationNodes;
   }
 
-  public synchronized Pair<InterfaceAddress, InterfaceAddress> getNextGeneratedLinkSubnet() {
-    assert _currentGeneratedIpAsLong % 2 == 0;
-    InterfaceAddress val =
-        new InterfaceAddress(Ip.create(_currentGeneratedIpAsLong), Prefix.MAX_PREFIX_LENGTH - 1);
-    InterfaceAddress val2 =
-        new InterfaceAddress(
-            Ip.create(_currentGeneratedIpAsLong + 1), Prefix.MAX_PREFIX_LENGTH - 1);
-    _currentGeneratedIpAsLong += 2L;
-    return new Pair<>(val, val2);
+  public Prefix getNextGeneratedLinkSubnet() {
+    long base = _currentGeneratedIpAsLong.getAndAdd(2L);
+    assert base % 2 == 0;
+    return Prefix.create(Ip.create(base), Prefix.MAX_PREFIX_LENGTH - 1);
   }
 
   public Settings getSettings() {

@@ -1,27 +1,71 @@
 package org.batfish.common;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
+import java.util.Comparator;
+import java.util.Objects;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 
-public class Warning extends Pair<String, String> {
-
+@ParametersAreNonnullByDefault
+public class Warning implements Serializable, Comparable<Warning> {
   private static final long serialVersionUID = 1L;
 
   private static final String PROP_TAG = "tag";
   private static final String PROP_TEXT = "text";
 
-  @JsonCreator
-  public Warning(@JsonProperty(PROP_TEXT) String text, @JsonProperty(PROP_TAG) String tag) {
-    super(text, tag);
+  @Nonnull private final String _text;
+  @Nullable private final String _tag;
+
+  public Warning(String text, @Nullable String tag) {
+    _text = text;
+    _tag = tag;
   }
 
   @JsonProperty(PROP_TAG)
+  @Nullable
   public String getTag() {
-    return _second;
+    return _tag;
   }
 
   @JsonProperty(PROP_TEXT)
+  @Nonnull
   public String getText() {
-    return _first;
+    return _text;
+  }
+
+  @Override
+  public int compareTo(Warning o) {
+    return Comparator.comparing(Warning::getText)
+        .thenComparing(Warning::getTag, Comparator.nullsFirst(String::compareTo))
+        .compare(this, o);
+  }
+
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (this == o) {
+      return true;
+    } else if (!(o instanceof Warning)) {
+      return false;
+    }
+    Warning w = (Warning) o;
+    return _text.equals(w._text) && Objects.equals(_tag, w._tag);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_text, _tag);
+  }
+
+  @JsonCreator
+  private static Warning jsonCreator(
+      @Nullable @JsonProperty(PROP_TEXT) String text,
+      @Nullable @JsonProperty(PROP_TAG) String tag) {
+    checkArgument(text != null, "Missing %s", PROP_TEXT);
+    return new Warning(text, tag);
   }
 }

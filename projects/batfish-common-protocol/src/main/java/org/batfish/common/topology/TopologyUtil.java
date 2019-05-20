@@ -1,12 +1,14 @@
 package org.batfish.common.topology;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Table;
 import com.google.common.graph.EndpointPair;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
@@ -30,7 +32,6 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.configuration2.builder.fluent.Configurations;
-import org.batfish.common.Pair;
 import org.batfish.common.util.CollectionUtil;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.IpsecUtil;
@@ -324,8 +325,7 @@ public final class TopologyUtil {
     configurations.values().forEach(c -> computeLayer2SelfEdges(c, edges));
 
     // Finally add edges between connected VNIs on different nodes
-    computeVniInterNodeEdges(vxlanTopology, NetworkConfigurations.of(configurations))
-        .forEach(edges::add);
+    computeVniInterNodeEdges(vxlanTopology).forEach(edges::add);
 
     return Layer2Topology.fromEdges(edges.build());
   }
@@ -335,18 +335,15 @@ public final class TopologyUtil {
    * {@link VxlanTopology}.
    */
   @VisibleForTesting
-  static @Nonnull Stream<Layer2Edge> computeVniInterNodeEdges(
-      VxlanTopology vxlanTopology, NetworkConfigurations nc) {
-    return vxlanTopology.getGraph().edges().stream().flatMap(edge -> toVniVniEdges(edge, nc));
+  static @Nonnull Stream<Layer2Edge> computeVniInterNodeEdges(VxlanTopology vxlanTopology) {
+    return vxlanTopology.getGraph().edges().stream().flatMap(TopologyUtil::toVniVniEdges);
   }
 
   /**
    * Create pair of directional {@link Layer2Edge}s for undirected pair of inter-node {@link
    * VxlanNode}s.
    */
-  @VisibleForTesting
-  static @Nonnull Stream<Layer2Edge> toVniVniEdges(
-      EndpointPair<VxlanNode> edge, NetworkConfigurations nc) {
+  private static @Nonnull Stream<Layer2Edge> toVniVniEdges(EndpointPair<VxlanNode> edge) {
     VxlanNode n1 = edge.nodeU();
     VxlanNode n2 = edge.nodeV();
     String h1 = n1.getHostname();
@@ -548,7 +545,7 @@ public final class TopologyUtil {
   public static Map<Ip, Map<String, Set<String>>> computeIpInterfaceOwners(
       Map<String, Set<Interface>> allInterfaces, boolean excludeInactive) {
     Map<Ip, Map<String, Set<String>>> ipOwners = new HashMap<>();
-    Map<Pair<InterfaceAddress, Integer>, Set<Interface>> vrrpGroups = new HashMap<>();
+    Table<InterfaceAddress, Integer, Set<Interface>> vrrpGroups = HashBasedTable.create();
     allInterfaces.forEach(
         (hostname, interfaces) ->
             interfaces.forEach(
@@ -569,10 +566,11 @@ public final class TopologyUtil {
                                */
                               return;
                             }
-                            Pair<InterfaceAddress, Integer> key = new Pair<>(address, groupNum);
-                            Set<Interface> candidates =
-                                vrrpGroups.computeIfAbsent(
-                                    key, k -> Collections.newSetFromMap(new IdentityHashMap<>()));
+                            Set<Interface> candidates = vrrpGroups.get(address, groupNum);
+                            if (candidates == null) {
+                              candidates = Collections.newSetFromMap(new IdentityHashMap<>());
+                              vrrpGroups.put(address, groupNum, candidates);
+                            }
                             candidates.add(i);
                           });
                   // collect prefixes
@@ -585,24 +583,30 @@ public final class TopologyUtil {
                                   .computeIfAbsent(hostname, k -> new HashSet<>())
                                   .add(i.getName()));
                 }));
-    vrrpGroups.forEach(
-        (p, candidates) -> {
-          InterfaceAddress address = p.getFirst();
-          int groupNum = p.getSecond();
-          /*
-           * Compare priorities first. If tied, break tie based on highest interface IP.
-           */
-          Interface vrrpMaster =
-              Collections.max(
-                  candidates,
-                  Comparator.comparingInt(
-                          (Interface o) -> o.getVrrpGroups().get(groupNum).getPriority())
-                      .thenComparing(o -> o.getAddress().getIp()));
-          ipOwners
-              .computeIfAbsent(address.getIp(), k -> new HashMap<>())
-              .computeIfAbsent(vrrpMaster.getOwner().getHostname(), k -> new HashSet<>())
-              .add(vrrpMaster.getName());
-        });
+    vrrpGroups
+        .cellSet()
+        .forEach(
+            cell -> {
+              InterfaceAddress address = cell.getRowKey();
+              assert address != null;
+              Integer groupNum = cell.getColumnKey();
+              assert groupNum != null;
+              Set<Interface> candidates = cell.getValue();
+              assert candidates != null;
+              /*
+               * Compare priorities first. If tied, break tie based on highest interface IP.
+               */
+              Interface vrrpMaster =
+                  Collections.max(
+                      candidates,
+                      Comparator.comparingInt(
+                              (Interface o) -> o.getVrrpGroups().get(groupNum).getPriority())
+                          .thenComparing(o -> o.getAddress().getIp()));
+              ipOwners
+                  .computeIfAbsent(address.getIp(), k -> new HashMap<>())
+                  .computeIfAbsent(vrrpMaster.getOwner().getHostname(), k -> new HashSet<>())
+                  .add(vrrpMaster.getName());
+            });
 
     // freeze
     return CollectionUtil.toImmutableMap(

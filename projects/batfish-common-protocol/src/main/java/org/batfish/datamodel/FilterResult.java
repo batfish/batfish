@@ -1,20 +1,27 @@
 package org.batfish.datamodel;
 
-import org.batfish.common.Pair;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 
-public class FilterResult extends Pair<Integer, LineAction> {
+/** Represents the result of applying a Filter (ACL, etc.) to a flow. */
+@ParametersAreNonnullByDefault
+public class FilterResult {
+  @Nonnull private final LineAction _action;
+  @Nullable private final Integer _matchLine;
 
-  private static final long serialVersionUID = 1L;
-
-  public FilterResult(Integer t1, LineAction t2) {
-    super(t1, t2);
+  public FilterResult(@Nullable Integer matchLine, LineAction action) {
+    _action = action;
+    _matchLine = matchLine;
   }
 
+  @Nonnull
   public LineAction getAction() {
-    return _second;
+    return _action;
   }
 
+  @Nullable
   public Integer getMatchLine() {
-    return _first;
+    return _matchLine;
   }
 }
