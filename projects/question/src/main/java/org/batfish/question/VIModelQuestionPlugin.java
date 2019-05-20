@@ -34,8 +34,6 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkConfigurations;
-import org.batfish.datamodel.RipNeighbor;
-import org.batfish.datamodel.RipProcess;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -45,7 +43,6 @@ import org.batfish.datamodel.collections.IpEdge;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.VerboseBgpEdge;
 import org.batfish.datamodel.collections.VerboseEigrpEdge;
-import org.batfish.datamodel.collections.VerboseRipEdge;
 import org.batfish.datamodel.eigrp.EigrpEdge;
 import org.batfish.datamodel.eigrp.EigrpInterface;
 import org.batfish.datamodel.eigrp.EigrpTopology;
@@ -72,7 +69,6 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
       private static final String PROP_LAYER3 = "layer3";
       private static final String PROP_EIGRP = "eigrp";
       private static final String PROP_OSPF = "ospf";
-      private static final String PROP_RIP = "rip";
 
       private SortedSet<VerboseBgpEdge> _bgpEdges;
 
@@ -86,10 +82,8 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
 
       private SortedSet<OspfTopology.EdgeId> _ospfEdges;
 
-      private SortedSet<VerboseRipEdge> _ripEdges;
-
       private static Edges createEmpty() {
-        return new Edges(null, null, null, null, null, null, null);
+        return new Edges(null, null, null, null, null, null);
       }
 
       @JsonCreator
@@ -99,8 +93,7 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
           @JsonProperty(PROP_ISIS) SortedSet<IsisEdge> isisEdges,
           @JsonProperty(PROP_LAYER1) Layer1Topology layer1Edges,
           @JsonProperty(PROP_LAYER3) SortedSet<Layer3Edge> layer3Edges,
-          @JsonProperty(PROP_OSPF) SortedSet<OspfTopology.EdgeId> ospfEdges,
-          @JsonProperty(PROP_RIP) SortedSet<VerboseRipEdge> ripEdges) {
+          @JsonProperty(PROP_OSPF) SortedSet<OspfTopology.EdgeId> ospfEdges) {
         _bgpEdges = new TreeSet<>(VERBOSE_BGP_EDGE_COMPARATOR);
         _bgpEdges.addAll(firstNonNull(bgpEdges, ImmutableSet.of()));
         _eigrpEdges = firstNonNull(eigrpEdges, ImmutableSortedSet.of());
@@ -108,7 +101,6 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
         _layer1Edges = layer1Edges;
         _layer3Edges = firstNonNull(layer3Edges, ImmutableSortedSet.of());
         _ospfEdges = firstNonNull(ospfEdges, ImmutableSortedSet.of());
-        _ripEdges = firstNonNull(ripEdges, ImmutableSortedSet.of());
       }
 
       @JsonProperty(PROP_BGP)
@@ -140,11 +132,6 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
       public @Nonnull SortedSet<OspfTopology.EdgeId> getOspfEdges() {
         return _ospfEdges;
       }
-
-      @JsonProperty(PROP_RIP)
-      public @Nonnull SortedSet<VerboseRipEdge> getRipEdges() {
-        return _ripEdges;
-      }
     }
 
     private static final String PROP_NODES = "nodes";
@@ -169,10 +156,9 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
         SortedSet<IsisEdge> isis,
         Layer1Topology layer1,
         SortedSet<Layer3Edge> layer3,
-        SortedSet<OspfTopology.EdgeId> ospf,
-        SortedSet<VerboseRipEdge> rip) {
+        SortedSet<OspfTopology.EdgeId> ospf) {
       this._nodes = nodes;
-      this._edges = new Edges(bgp, eigrp, isis, layer1, layer3, ospf, rip);
+      this._edges = new Edges(bgp, eigrp, isis, layer1, layer3, ospf);
     }
 
     @JsonProperty(PROP_NODES)
@@ -198,7 +184,6 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
       Topology topology =
           _batfish.getTopologyProvider().getInitialLayer3Topology(_batfish.getNetworkSnapshot());
       Map<Ip, Set<String>> ipOwners = TopologyUtil.computeIpNodeOwners(configs, true);
-      _batfish.initRemoteRipNeighbors(configs, ipOwners, topology);
       Layer2Topology layer2Topology =
           _batfish
               .getTopologyProvider()
@@ -216,8 +201,9 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
               .orElse(null),
           getLayer3Edges(configs, topology),
           getOspfEdges(
-              _batfish.getTopologyProvider().getInitialOspfTopology(_batfish.getNetworkSnapshot())),
-          getRipEdges(configs));
+              _batfish
+                  .getTopologyProvider()
+                  .getInitialOspfTopology(_batfish.getNetworkSnapshot())));
     }
 
     private static SortedSet<VerboseBgpEdge> getBgpEdges(
@@ -298,30 +284,6 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
 
     private static SortedSet<OspfTopology.EdgeId> getOspfEdges(OspfTopology topology) {
       return ImmutableSortedSet.copyOf(Ordering.natural(), topology.edges());
-    }
-
-    private static SortedSet<VerboseRipEdge> getRipEdges(Map<String, Configuration> configs) {
-      SortedSet<VerboseRipEdge> ripEdges = new TreeSet<>();
-      for (Configuration c : configs.values()) {
-        String hostname = c.getHostname();
-        for (Vrf vrf : c.getVrfs().values()) {
-          RipProcess proc = vrf.getRipProcess();
-          if (proc != null) {
-            for (RipNeighbor ripNeighbor : proc.getRipNeighbors().values()) {
-              RipNeighbor remoteRipNeighbor = ripNeighbor.getRemoteRipNeighbor();
-              if (remoteRipNeighbor != null) {
-                Configuration remoteHost = remoteRipNeighbor.getOwner();
-                String remoteHostname = remoteHost.getHostname();
-                Ip localIp = ripNeighbor.getLocalIp();
-                Ip remoteIp = remoteRipNeighbor.getLocalIp();
-                IpEdge edge = new IpEdge(hostname, localIp, remoteHostname, remoteIp);
-                ripEdges.add(new VerboseRipEdge(ripNeighbor, remoteRipNeighbor, edge));
-              }
-            }
-          }
-        }
-      }
-      return ripEdges;
     }
   }
 

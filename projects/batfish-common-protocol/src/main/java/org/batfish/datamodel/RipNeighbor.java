@@ -1,99 +1,35 @@
 package org.batfish.datamodel;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.batfish.common.util.ComparableStructure;
-
-@SuppressWarnings("deprecation") // todo
-public class RipNeighbor extends ComparableStructure<org.batfish.common.Pair<Ip, Ip>> {
-
-  public static final class RipNeighborSummary extends ComparableStructure<String> {
-    private static final String PROP_LOCAL_IP = "localIp";
-    private static final String PROP_REMOTE_IP = "remoteIp";
-    private static final String PROP_VRF = "vrf";
-
-    private static final long serialVersionUID = 1L;
-
-    private final Ip _localIp;
-
-    private final Ip _remoteIp;
-
-    private final String _vrf;
-
-    public RipNeighborSummary(RipNeighbor ripNeighbor) {
-      super(ripNeighbor.getOwner().getHostname() + ":" + ripNeighbor._key);
-      _localIp = ripNeighbor._key.getFirst();
-      _remoteIp = ripNeighbor._key.getSecond();
-      _vrf = ripNeighbor._vrf;
-    }
-
-    @JsonCreator
-    public RipNeighborSummary(
-        @JsonProperty(PROP_NAME) String name,
-        @JsonProperty(PROP_LOCAL_IP) Ip localIp,
-        @JsonProperty(PROP_REMOTE_IP) Ip remoteIp,
-        @JsonProperty(PROP_VRF) String vrf) {
-      super(name);
-      _localIp = localIp;
-      _remoteIp = remoteIp;
-      _vrf = vrf;
-    }
-
-    @JsonProperty(PROP_LOCAL_IP)
-    public Ip getLocalIp() {
-      return _localIp;
-    }
-
-    @JsonProperty(PROP_REMOTE_IP)
-    public Ip getRemoteIp() {
-      return _remoteIp;
-    }
-
-    @JsonProperty(PROP_VRF)
-    public String getVrf() {
-      return _vrf;
-    }
-  }
-
-  private static final long serialVersionUID = 1L;
+public class RipNeighbor {
 
   private Interface _iface;
-
+  private final Ip _localIp;
+  private final Ip _remoteIp;
   private Configuration _owner;
-
   private transient RipNeighbor _remoteRipNeighbor;
-
   private String _vrf;
 
-  public RipNeighbor(Ip head, Ip tail) {
-    super(new org.batfish.common.Pair<>(head, tail));
+  public RipNeighbor(Ip localIp, Ip remoteIp) {
+    _localIp = localIp;
+    _remoteIp = remoteIp;
   }
 
   public Interface getIface() {
     return _iface;
   }
 
-  public org.batfish.common.Pair<Ip, Ip> getIpEdge() {
-    return _key;
-  }
-
-  @JsonIgnore
   public Ip getLocalIp() {
-    return _key.getFirst();
+    return _localIp;
   }
 
-  @JsonIgnore
   public Configuration getOwner() {
     return _owner;
   }
 
-  @JsonIgnore
   public Ip getRemoteIp() {
-    return _key.getSecond();
+    return _remoteIp;
   }
 
-  @JsonIgnore
   public RipNeighbor getRemoteRipNeighbor() {
     return _remoteRipNeighbor;
   }

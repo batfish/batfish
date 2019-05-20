@@ -36,9 +36,6 @@
                         "name": "ospf"
                     },
                     {
-                        "name": "rip"
-                    },
-                    {
                         "name": "vxlan"
                     }
                 ],

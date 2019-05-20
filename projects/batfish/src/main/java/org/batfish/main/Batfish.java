@@ -25,7 +25,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
-import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -127,14 +126,10 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkConfigurations;
-import org.batfish.datamodel.RipNeighbor;
-import org.batfish.datamodel.RipProcess;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
-import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -1315,78 +1310,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       pushDeltaSnapshot();
       prepareToAnswerQuestions(dp);
       popSnapshot();
-    }
-  }
-
-  @Override
-  public void initRemoteRipNeighbors(
-      Map<String, Configuration> configurations, Map<Ip, Set<String>> ipOwners, Topology topology) {
-    for (Entry<String, Configuration> e : configurations.entrySet()) {
-      String hostname = e.getKey();
-      Configuration c = e.getValue();
-      for (Entry<String, Vrf> e2 : c.getVrfs().entrySet()) {
-        Vrf vrf = e2.getValue();
-        RipProcess proc = vrf.getRipProcess();
-        if (proc != null) {
-          if (proc.getRipNeighbors() == null) {
-            proc.setRipNeighbors(HashBasedTable.create());
-          }
-          String vrfName = e2.getKey();
-          for (String ifaceName : proc.getInterfaces()) {
-            Interface iface = vrf.getInterfaces().get("ifaceName");
-            SortedSet<NodeInterfacePair> ifaceNeighbors =
-                topology.getNeighbors(new NodeInterfacePair(hostname, ifaceName));
-            boolean hasNeighbor = false;
-            Ip localIp = iface.getAddress().getIp();
-            for (NodeInterfacePair ifaceNeighbor : ifaceNeighbors) {
-              String remoteHostname = ifaceNeighbor.getHostname();
-              String remoteIfaceName = ifaceNeighbor.getInterface();
-              Configuration remoteNode = configurations.get(remoteHostname);
-              Interface remoteIface = remoteNode.getAllInterfaces().get(remoteIfaceName);
-              Vrf remoteVrf = remoteIface.getVrf();
-              String remoteVrfName = remoteVrf.getName();
-              RipProcess remoteProc = remoteVrf.getRipProcess();
-              if (remoteProc != null) {
-                if (remoteProc.getRipNeighbors() == null) {
-                  remoteProc.setRipNeighbors(HashBasedTable.create());
-                }
-                if (remoteProc.getInterfaces().contains(remoteIfaceName)) {
-                  Ip remoteIp = remoteIface.getAddress().getIp();
-                  RipNeighbor neighbor = proc.getRipNeighbors().get(localIp, remoteIp);
-                  if (neighbor == null) {
-                    hasNeighbor = true;
-
-                    // initialize local neighbor
-                    neighbor = new RipNeighbor(localIp, remoteIp);
-                    neighbor.setVrf(vrfName);
-                    neighbor.setOwner(c);
-                    neighbor.setInterface(iface);
-                    proc.getRipNeighbors().put(localIp, remoteIp, neighbor);
-
-                    // initialize remote neighbor
-                    RipNeighbor remoteNeighbor = new RipNeighbor(remoteIp, localIp);
-                    remoteNeighbor.setVrf(remoteVrfName);
-                    remoteNeighbor.setOwner(remoteNode);
-                    remoteNeighbor.setInterface(remoteIface);
-                    remoteProc.getRipNeighbors().put(remoteIp, localIp, remoteNeighbor);
-
-                    // link neighbors
-                    neighbor.setRemoteRipNeighbor(remoteNeighbor);
-                    remoteNeighbor.setRemoteRipNeighbor(neighbor);
-                  }
-                }
-              }
-            }
-            if (!hasNeighbor) {
-              RipNeighbor neighbor = new RipNeighbor(localIp, Ip.ZERO);
-              neighbor.setVrf(vrfName);
-              neighbor.setOwner(c);
-              neighbor.setInterface(iface);
-              proc.getRipNeighbors().put(localIp, Ip.ZERO, neighbor);
-            }
-          }
-        }
-      }
     }
   }
 
