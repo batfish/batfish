@@ -61,6 +61,7 @@ import javax.ws.rs.core.MediaType;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
+import org.batfish.client.BfCoordWorkHelper.WorkResult;
 import org.batfish.client.Command.TestComparisonMode;
 import org.batfish.client.answer.LoadQuestionAnswerElement;
 import org.batfish.client.config.Settings;
@@ -1443,14 +1444,14 @@ public class Client extends AbstractClient implements IClient {
 
     UUID workId = UUID.fromString(parameters.get(0));
 
-    org.batfish.common.Pair<WorkStatusCode, String> response = _workHelper.getWorkStatus(workId);
+    WorkResult response = _workHelper.getWorkStatus(workId);
     if (response == null) {
       return false;
     }
 
     printWorkStatusResponse(response, true);
 
-    logOutput(outWriter, "status: " + response.getFirst());
+    logOutput(outWriter, "status: " + response.getStatus());
 
     return true;
   }
@@ -2034,7 +2035,7 @@ public class Client extends AbstractClient implements IClient {
 
   private boolean pollWork(UUID wItemId) {
 
-    org.batfish.common.Pair<WorkStatusCode, String> response;
+    WorkResult response;
     try (ActiveSpan workStatusSpan =
         GlobalTracer.get().buildSpan("Waiting for work status").startActive()) {
       assert workStatusSpan != null; // avoid unused warning
@@ -2044,7 +2045,7 @@ public class Client extends AbstractClient implements IClient {
         return false;
       }
 
-      WorkStatusCode status = response.getFirst();
+      WorkStatusCode status = response.getStatus();
       Backoff backoff = Backoff.builder().withMaximumBackoff(Duration.ofSeconds(1)).build();
       while (!status.isTerminated() && backoff.hasNext()) {
         printWorkStatusResponse(response, false);
@@ -2057,7 +2058,7 @@ public class Client extends AbstractClient implements IClient {
         if (response == null) {
           return false;
         }
-        status = response.getFirst();
+        status = response.getStatus();
       }
       printWorkStatusResponse(response, false);
     }
@@ -2156,16 +2157,15 @@ public class Client extends AbstractClient implements IClient {
     _logger.outputf("%s %s\n\t%s\n\n", command.commandName(), usage.getFirst(), usage.getSecond());
   }
 
-  private void printWorkStatusResponse(
-      org.batfish.common.Pair<WorkStatusCode, String> response, boolean unconditionalPrint) {
+  private void printWorkStatusResponse(WorkResult response, boolean unconditionalPrint) {
 
     if (unconditionalPrint || _logger.getLogLevel() >= BatfishLogger.LEVEL_INFO) {
-      WorkStatusCode status = response.getFirst();
+      WorkStatusCode status = response.getStatus();
       _logger.outputf("status: %s\n", status);
 
       Task task;
       try {
-        task = BatfishObjectMapper.mapper().readValue(response.getSecond(), Task.class);
+        task = BatfishObjectMapper.mapper().readValue(response.getTaskStr(), Task.class);
       } catch (IOException e) {
         _logger.errorf("Could not deserialize task object: %s\n", e);
         return;
