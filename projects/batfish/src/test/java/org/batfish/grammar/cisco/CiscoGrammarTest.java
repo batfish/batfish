@@ -5759,11 +5759,17 @@ public class CiscoGrammarTest {
   @Test
   public void testPortchannelSubinterfaceIsUp() throws IOException {
     Configuration config = parseConfig("ios-portchannel-subinterface");
+    double eth1Bandwidth = 1E7;
+    assertThat(config, hasInterface("Ethernet1", hasBandwidth(eth1Bandwidth)));
+    assertThat(config, hasInterface("Port-Channel1", hasBandwidth(eth1Bandwidth)));
     assertThat(
         config,
         hasInterface(
             "Port-Channel1.1",
-            allOf(hasInterfaceType(InterfaceType.AGGREGATE_CHILD), isActive(true))));
+            allOf(
+                hasInterfaceType(InterfaceType.AGGREGATE_CHILD),
+                isActive(true),
+                hasBandwidth(eth1Bandwidth))));
   }
 
   @Test
