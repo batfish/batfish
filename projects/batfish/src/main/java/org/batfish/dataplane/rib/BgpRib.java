@@ -228,8 +228,9 @@ public abstract class BgpRib<R extends BgpRoute> extends AbstractRib<R> {
     }
 
     // Continue with remaining tie breakers
+    return
     // Prefer lower originator router ID
-    return Comparator.comparing(R::getOriginatorIp, Comparator.reverseOrder())
+    Comparator.comparing(R::getOriginatorIp, Comparator.reverseOrder())
         // Prefer lower cluster list length. Only applicable to iBGP
         .thenComparing(r -> r.getClusterList().size(), Comparator.reverseOrder())
         // Prefer lower neighbor IP
