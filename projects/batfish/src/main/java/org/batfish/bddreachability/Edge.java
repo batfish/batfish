@@ -13,7 +13,7 @@ import org.batfish.symbolic.state.StateExpr;
 
 /** An edge in the graph modeling network behavior. */
 @ParametersAreNonnullByDefault
-final class Edge {
+public final class Edge {
   private final @Nonnull StateExpr _postState;
   private final @Nonnull StateExpr _preState;
   private final @Nonnull Transition _transition;
