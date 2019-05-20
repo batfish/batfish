@@ -71,7 +71,6 @@ import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
-import org.batfish.datamodel.EdgeType;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -104,6 +103,7 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.vxlan.VxlanNode;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.datamodel.vxlan.VxlanTopologyUtils;
+import org.batfish.question.edges.EdgesQuestion.EdgeType;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -714,22 +714,6 @@ public class EdgesAnswererTest {
             .map(ColumnMetadata::getSchema)
             .collect(ImmutableList.toImmutableList()),
         contains(Schema.INTERFACE, Schema.set(Schema.IP), Schema.INTERFACE, Schema.set(Schema.IP)));
-  }
-
-  @Test
-  public void testTableMetadataLayer2() {
-    List<ColumnMetadata> columnMetadata = getTableMetadata(EdgeType.LAYER2).getColumnMetadata();
-    assertThat(
-        columnMetadata.stream()
-            .map(ColumnMetadata::getName)
-            .collect(ImmutableList.toImmutableList()),
-        contains(COL_INTERFACE, COL_VLAN, COL_REMOTE_INTERFACE, COL_REMOTE_VLAN));
-
-    assertThat(
-        columnMetadata.stream()
-            .map(ColumnMetadata::getSchema)
-            .collect(ImmutableList.toImmutableList()),
-        contains(Schema.INTERFACE, Schema.STRING, Schema.INTERFACE, Schema.STRING));
   }
 
   @Test
