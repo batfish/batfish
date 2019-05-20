@@ -5,9 +5,9 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 
-@SuppressWarnings("deprecation") // todo
 public enum Command {
   ADD_BATFISH_OPTION("add-batfish-option"),
   ANSWER("answer"),
@@ -69,6 +69,26 @@ public enum Command {
   UPLOAD_CUSTOM_OBJECT("upload-custom"),
   VALIDATE_TEMPLATE("validate-template");
 
+  public static class CommandUsage {
+    @Nonnull private final String _usage;
+    @Nonnull private final String _description;
+
+    public CommandUsage(@Nonnull String usage, @Nonnull String description) {
+      _usage = usage;
+      _description = description;
+    }
+
+    @Nonnull
+    public String getDescription() {
+      return _description;
+    }
+
+    @Nonnull
+    public String getUsage() {
+      return _usage;
+    }
+  }
+
   public enum TestComparisonMode {
     COMPAREANSWER,
     COMPAREALL,
@@ -80,9 +100,7 @@ public enum Command {
 
   private static final Map<String, Command> _nameMap = buildNameMap();
 
-  @SuppressWarnings("deprecation") // Client is deprecated anyway
-  private static final Map<Command, org.batfish.common.Pair<String, String>> _usageMap =
-      buildUsageMap();
+  private static final Map<Command, CommandUsage> _usageMap = buildUsageMap();
 
   private static Map<String, Command> buildNameMap() {
     ImmutableMap.Builder<String, Command> map = ImmutableMap.builder();
@@ -93,172 +111,147 @@ public enum Command {
     return map.build();
   }
 
-  @SuppressWarnings("deprecation") // Client is deprecated anyway
-  private static Map<Command, org.batfish.common.Pair<String, String>> buildUsageMap() {
-    Map<Command, org.batfish.common.Pair<String, String>> descs = new TreeMap<>();
+  private static Map<Command, CommandUsage> buildUsageMap() {
+    Map<Command, CommandUsage> descs = new TreeMap<>();
     descs.put(
         ADD_BATFISH_OPTION,
-        new org.batfish.common.Pair<>(
+        new CommandUsage(
             "<option-key> [<option-value> [<option-value>] ... ]",
             "Additional options to pass to Batfish"));
     descs.put(
         ANSWER,
-        new org.batfish.common.Pair<>(
+        new CommandUsage(
             "<template-name> [differential={true,false}] [questionName=name] [param1=value1 [param2=value2] ...]",
             "Answer the template by name for the current snapshot"));
     descs.put(
         ANSWER_REFERENCE,
-        new org.batfish.common.Pair<>(
+        new CommandUsage(
             "<template-name> [differential={true,false}] [questionName=name] [param1=value1 [param2=value2] ...]",
             "Answer the template by name for the reference snapshot"));
     descs.put(
         AUTOCOMPLETE,
-        new org.batfish.common.Pair<>(
+        new CommandUsage(
             "[-maxSuggestions] <completion-type> <query>",
             "Autocomplete information of question parameters"));
-    descs.put(CHECK_API_KEY, new org.batfish.common.Pair<>("", "Check if API Key is valid"));
+    descs.put(CHECK_API_KEY, new CommandUsage("", "Check if API Key is valid"));
     descs.put(
         CONFIGURE_TEMPLATE,
-        new org.batfish.common.Pair<>(
+        new CommandUsage(
             "<new-template-name> <old-template-name> [exceptions=[...],] [assertion={..}]",
             "Create a new template from the old template with provided exceptions and assertion"));
     descs.put(
         DEL_BATFISH_OPTION,
-        new org.batfish.common.Pair<>("<option-key>", "Stop passing this option to Batfish"));
+        new CommandUsage("<option-key>", "Stop passing this option to Batfish"));
+    descs.put(DEL_NETWORK, new CommandUsage("<network-name>", "Delete the specified network"));
+    descs.put(DEL_QUESTION, new CommandUsage("<question-name>", "Delete the specified question"));
+    descs.put(DEL_SNAPSHOT, new CommandUsage("<snapshot-name>", "Delete the specified snapshot"));
+    descs.put(EXIT, new CommandUsage("", "Terminate interactive client session"));
+    descs.put(GEN_DP, new CommandUsage("", "Generate dataplane for the current snapshot"));
     descs.put(
-        DEL_NETWORK,
-        new org.batfish.common.Pair<>("<network-name>", "Delete the specified network"));
-    descs.put(
-        DEL_QUESTION,
-        new org.batfish.common.Pair<>("<question-name>", "Delete the specified question"));
-    descs.put(
-        DEL_SNAPSHOT,
-        new org.batfish.common.Pair<>("<snapshot-name>", "Delete the specified snapshot"));
-    descs.put(EXIT, new org.batfish.common.Pair<>("", "Terminate interactive client session"));
-    descs.put(
-        GEN_DP, new org.batfish.common.Pair<>("", "Generate dataplane for the current snapshot"));
-    descs.put(
-        GEN_REFERENCE_DP,
-        new org.batfish.common.Pair<>("", "Generate dataplane for the reference snapshot"));
+        GEN_REFERENCE_DP, new CommandUsage("", "Generate dataplane for the reference snapshot"));
     descs.put(
         GET,
-        new org.batfish.common.Pair<>(
+        new CommandUsage(
             "<question-type>  [param1=value1 [param2=value2] ...]",
             "Answer the question by type for the current snapshot"));
     descs.put(
         GET_ANSWER,
-        new org.batfish.common.Pair<>(
-            "<question-name>", "Get the answer for a previously answered question"));
+        new CommandUsage("<question-name>", "Get the answer for a previously answered question"));
     descs.put(
         GET_ANSWER_REFERENCE,
-        new org.batfish.common.Pair<>(
+        new CommandUsage(
             "<question-name>",
             "Get the answer for a question previously answered on the reference snapshot"));
     descs.put(
         GET_CONFIGURATION,
-        new org.batfish.common.Pair<>(
+        new CommandUsage(
             "<network-name> <snapshot-name> <configuration-name>",
             "Get the file content of the configuration file"));
     descs.put(
-        GET_NETWORK,
-        new org.batfish.common.Pair<>("<network-name>", "Get the information of the network"));
-    descs.put(GET_OBJECT, new org.batfish.common.Pair<>("<object path>", "Get the object"));
+        GET_NETWORK, new CommandUsage("<network-name>", "Get the information of the network"));
+    descs.put(GET_OBJECT, new CommandUsage("<object path>", "Get the object"));
     descs.put(
         GET_OBJECT_REFERENCE,
-        new org.batfish.common.Pair<>("<object path>", "Get the object from reference snapshot"));
+        new CommandUsage("<object path>", "Get the object from reference snapshot"));
     descs.put(
-        GET_QUESTION_TEMPLATES,
-        new org.batfish.common.Pair<>("", "Get question templates from coordinator"));
+        GET_QUESTION_TEMPLATES, new CommandUsage("", "Get question templates from coordinator"));
     descs.put(
         GET_REFERENCE,
-        new org.batfish.common.Pair<>(
+        new CommandUsage(
             "<question-file>  [param1=value1 [param2=value2] ...]",
             "Answer the question by type for the reference snapshot"));
     descs.put(
-        GET_WORK_STATUS,
-        new org.batfish.common.Pair<>("<work-id>", "Get the status of the specified work id"));
-    descs.put(
-        HELP, new org.batfish.common.Pair<>("[command]", "Print the list of supported commands"));
+        GET_WORK_STATUS, new CommandUsage("<work-id>", "Get the status of the specified work id"));
+    descs.put(HELP, new CommandUsage("[command]", "Print the list of supported commands"));
     descs.put(
         INIT_NETWORK,
-        new org.batfish.common.Pair<>(
+        new CommandUsage(
             "[-setname <network-name> | <network-name-prefix>]", "Initialize a new network"));
     descs.put(
         INIT_REFERENCE_SNAPSHOT,
-        new org.batfish.common.Pair<>(
+        new CommandUsage(
             "[-autoanalyze] <snapshot zipfile or directory> [<snapshot-name>]",
             "Initialize the reference snapshot"));
     descs.put(
         INIT_SNAPSHOT,
-        new org.batfish.common.Pair<>(
+        new CommandUsage(
             "[-autoanalyze] <snapshot zipfile or directory> [<snapshot-name>]",
             "Initialize the snapshot"));
-    descs.put(KILL_WORK, new org.batfish.common.Pair<>("<guid>", "Kill work with the given GUID"));
+    descs.put(KILL_WORK, new CommandUsage("<guid>", "Kill work with the given GUID"));
     descs.put(
         LIST_INCOMPLETE_WORK,
-        new org.batfish.common.Pair<>("", "List all incomplete works for the active network"));
-    descs.put(
-        LIST_NETWORKS,
-        new org.batfish.common.Pair<>("", "List the networks to which you have access"));
+        new CommandUsage("", "List all incomplete works for the active network"));
+    descs.put(LIST_NETWORKS, new CommandUsage("", "List the networks to which you have access"));
     descs.put(
         LIST_QUESTIONS,
-        new org.batfish.common.Pair<>("", "List the questions under current network and snapshot"));
+        new CommandUsage("", "List the questions under current network and snapshot"));
     descs.put(
         LIST_SNAPSHOTS,
-        new org.batfish.common.Pair<>(
-            "[-nometadata]", "List the snapshots within the current network"));
+        new CommandUsage("[-nometadata]", "List the snapshots within the current network"));
     descs.put(
         LOAD_QUESTIONS,
-        new org.batfish.common.Pair<>(
+        new CommandUsage(
             "[-loadremote] [path to local directory containing question json files]",
             "Load questions from local directory, -loadremote loads questions from coordinator, "
                 + "if both are specified, questions from local directory overwrite the remote "
                 + "questions"));
-    descs.put(QUIT, new org.batfish.common.Pair<>("", "Terminate interactive client session"));
+    descs.put(QUIT, new CommandUsage("", "Terminate interactive client session"));
     descs.put(
         SET_BACKGROUND_EXECUCTION,
-        new org.batfish.common.Pair<>(
+        new CommandUsage(
             "<true|false>", "Whether to wait for commands to finish before returning"));
     descs.put(
         SET_BATFISH_LOGLEVEL,
-        new org.batfish.common.Pair<>(
+        new CommandUsage(
             "<debug|info|output|warn|error>", "Set the batfish loglevel. Default is warn"));
     descs.put(
         SET_FIXED_WORKITEM_ID,
-        new org.batfish.common.Pair<>(
+        new CommandUsage(
             "<uuid>", "Fix the UUID for WorkItems. Useful for testing; use carefully"));
     descs.put(
         SET_LOGLEVEL,
-        new org.batfish.common.Pair<>(
+        new CommandUsage(
             "<debug|info|output|warn|error>", "Set the client loglevel. Default is output"));
+    descs.put(SET_NETWORK, new CommandUsage("<network-name>", "Set the current network"));
     descs.put(
-        SET_NETWORK, new org.batfish.common.Pair<>("<network-name>", "Set the current network"));
+        SET_PRETTY_PRINT, new CommandUsage("<true|false>", "Whether to pretty print answers"));
     descs.put(
-        SET_PRETTY_PRINT,
-        new org.batfish.common.Pair<>("<true|false>", "Whether to pretty print answers"));
-    descs.put(
-        SET_REFERENCE_SNAPSHOT,
-        new org.batfish.common.Pair<>("<snapshot-name>", "Set the reference snapshot"));
-    descs.put(
-        SET_SNAPSHOT, new org.batfish.common.Pair<>("<snapshot-name>", "Set the current snapshot"));
-    descs.put(SHOW_API_KEY, new org.batfish.common.Pair<>("", "Show API Key"));
-    descs.put(
-        SHOW_BATFISH_LOGLEVEL, new org.batfish.common.Pair<>("", "Show current batfish loglevel"));
+        SET_REFERENCE_SNAPSHOT, new CommandUsage("<snapshot-name>", "Set the reference snapshot"));
+    descs.put(SET_SNAPSHOT, new CommandUsage("<snapshot-name>", "Set the current snapshot"));
+    descs.put(SHOW_API_KEY, new CommandUsage("", "Show API Key"));
+    descs.put(SHOW_BATFISH_LOGLEVEL, new CommandUsage("", "Show current batfish loglevel"));
     descs.put(
         SHOW_BATFISH_OPTIONS,
-        new org.batfish.common.Pair<>(
-            "", "Show the additional options that will be sent to batfish"));
-    descs.put(SHOW_COORDINATOR_HOST, new org.batfish.common.Pair<>("", "Show coordinator host"));
-    descs.put(SHOW_LOGLEVEL, new org.batfish.common.Pair<>("", "Show current client loglevel"));
-    descs.put(SHOW_NETWORK, new org.batfish.common.Pair<>("", "Show active network"));
-    descs.put(
-        SHOW_REFERENCE_SNAPSHOT, new org.batfish.common.Pair<>("", "Show reference snapshot"));
-    descs.put(SHOW_SNAPSHOT, new org.batfish.common.Pair<>("", "Show current snapshot"));
-    descs.put(
-        SHOW_VERSION, new org.batfish.common.Pair<>("", "Show the version of Client and Service"));
+        new CommandUsage("", "Show the additional options that will be sent to batfish"));
+    descs.put(SHOW_COORDINATOR_HOST, new CommandUsage("", "Show coordinator host"));
+    descs.put(SHOW_LOGLEVEL, new CommandUsage("", "Show current client loglevel"));
+    descs.put(SHOW_NETWORK, new CommandUsage("", "Show active network"));
+    descs.put(SHOW_REFERENCE_SNAPSHOT, new CommandUsage("", "Show reference snapshot"));
+    descs.put(SHOW_SNAPSHOT, new CommandUsage("", "Show current snapshot"));
+    descs.put(SHOW_VERSION, new CommandUsage("", "Show the version of Client and Service"));
     descs.put(
         TEST,
-        new org.batfish.common.Pair<>(
+        new CommandUsage(
             "["
                 + Arrays.stream(TestComparisonMode.values())
                     .map(v -> '-' + v.toString())
@@ -267,10 +260,10 @@ public enum Command {
             "Run the command and compare its output to the ref file (used for testing)"));
     descs.put(
         UPLOAD_CUSTOM_OBJECT,
-        new org.batfish.common.Pair<>("<object-name> <object-file>", "Uploads a custom object"));
+        new CommandUsage("<object-name> <object-file>", "Uploads a custom object"));
     descs.put(
         VALIDATE_TEMPLATE,
-        new org.batfish.common.Pair<>(
+        new CommandUsage(
             "<template-file> [param1=value1 [param2=value2] ...]", "Validate the template"));
     return descs;
   }
@@ -287,7 +280,7 @@ public enum Command {
     return _nameMap;
   }
 
-  public static Map<Command, org.batfish.common.Pair<String, String>> getUsageMap() {
+  public static Map<Command, CommandUsage> getUsageMap() {
     return _usageMap;
   }
 

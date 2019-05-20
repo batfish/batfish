@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
@@ -45,7 +46,6 @@ import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
-@SuppressWarnings("deprecation") // todo: remove Pair
 public class BfCoordWorkHelper {
 
   private final String _coordWorkMgr;
@@ -574,8 +574,28 @@ public class BfCoordWorkHelper {
     return target;
   }
 
+  public static class WorkResult {
+    @Nonnull private final WorkStatusCode _status;
+    @Nonnull private final String _taskStr;
+
+    WorkResult(@Nonnull WorkStatusCode status, @Nonnull String taskStr) {
+      _status = status;
+      _taskStr = taskStr;
+    }
+
+    @Nonnull
+    public WorkStatusCode getStatus() {
+      return _status;
+    }
+
+    @Nonnull
+    public String getTaskStr() {
+      return _taskStr;
+    }
+  }
+
   @Nullable
-  org.batfish.common.Pair<WorkStatusCode, String> getWorkStatus(UUID workId) {
+  WorkResult getWorkStatus(UUID workId) {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_WORKSTATUS);
 
@@ -603,7 +623,7 @@ public class BfCoordWorkHelper {
       }
       String taskStr = jObj.getString(CoordConsts.SVC_KEY_TASKSTATUS);
 
-      return new org.batfish.common.Pair<>(workStatus, taskStr);
+      return new WorkResult(workStatus, taskStr);
     } catch (Exception e) {
       _logger.errorf("exception: ");
       _logger.error(Throwables.getStackTraceAsString(e) + "\n");
