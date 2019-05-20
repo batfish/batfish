@@ -662,24 +662,35 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return answer;
   }
 
-  private static void computeAggregatedInterfaceBandwidth(
-      Interface iface, Map<String, Interface> interfaces) {
-    if (iface.getInterfaceType() == InterfaceType.AGGREGATED) {
-      /* Bandwidth should be sum of bandwidth of channel-group members. */
-      iface.setBandwidth(
-          iface.getChannelGroupMembers().stream()
-              .mapToDouble(ifaceName -> interfaces.get(ifaceName).getBandwidth())
-              .sum());
-    } else if (iface.getInterfaceType() == InterfaceType.AGGREGATE_CHILD) {
-      /* Bandwidth for aggregate child interfaces (e.g. units) should be inherited from the parent. */
-      iface.getDependencies().stream()
-          .filter(d -> d.getType() == DependencyType.BIND)
-          .findFirst()
-          .map(Dependency::getInterfaceName)
-          .map(interfaces::get)
-          .map(Interface::getBandwidth)
-          .ifPresent(iface::setBandwidth);
-    }
+  private static void computeAggregatedInterfaceBandwidths(Map<String, Interface> interfaces) {
+    // Set bandwidths for aggregate interfaces
+    interfaces.values().stream()
+        .filter(iface -> iface.getInterfaceType() == InterfaceType.AGGREGATED)
+        .forEach(
+            iface -> {
+              /* Bandwidth should be sum of bandwidth of channel-group members. */
+              iface.setBandwidth(
+                  iface.getChannelGroupMembers().stream()
+                      .mapToDouble(ifaceName -> interfaces.get(ifaceName).getBandwidth())
+                      .sum());
+            });
+
+    // Now that aggregate interfaces have bandwidths, set bandwidths for aggregate child interfaces
+    interfaces.values().stream()
+        .filter(iface -> iface.getInterfaceType() == InterfaceType.AGGREGATE_CHILD)
+        .forEach(
+            iface -> {
+              /*
+              Bandwidth for aggregate child interfaces (e.g. units) should be inherited from parent.
+              */
+              iface.getDependencies().stream()
+                  .filter(d -> d.getType() == DependencyType.BIND)
+                  .findFirst()
+                  .map(Dependency::getInterfaceName)
+                  .map(interfaces::get)
+                  .map(Interface::getBandwidth)
+                  .ifPresent(iface::setBandwidth);
+            });
   }
 
   public static Warnings buildWarnings(Settings settings) {
@@ -1931,7 +1942,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         (ifaceName, iface) -> populateChannelGroupMembers(interfaces, ifaceName, iface));
 
     /* Compute bandwidth for aggregated interfaces. */
-    interfaces.values().forEach(iface -> computeAggregatedInterfaceBandwidth(iface, interfaces));
+    computeAggregatedInterfaceBandwidths(interfaces);
 
     /*
      * For aggregated logical interfaces, inherit a subset of properties
