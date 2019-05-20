@@ -44,6 +44,7 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
     TopologyProvider topologyProvider = _batfish.getTopologyProvider();
     TopologyContext topologyContext =
         TopologyContext.builder()
+            .setIpsecTopology(topologyProvider.getInitialIpsecTopology(networkSnapshot))
             .setLayer1LogicalTopology(topologyProvider.getLayer1LogicalTopology(networkSnapshot))
             .setLayer2Topology(topologyProvider.getInitialLayer2Topology(networkSnapshot))
             .setLayer3Topology(topology)

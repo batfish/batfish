@@ -6,6 +6,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.bgp.BgpTopology;
+import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 
@@ -22,6 +23,13 @@ public interface TopologyProvider {
    */
   @Nonnull
   BgpTopology getBgpTopology(NetworkSnapshot snapshot);
+
+  /**
+   * Return the {@link IpsecTopology} for a given {@link NetworkSnapshot} which just contains the
+   * edges based on the IPsec settings compatibility
+   */
+  @Nonnull
+  IpsecTopology getInitialIpsecTopology(NetworkSnapshot networkSnapshot);
 
   /**
    * Computes the {@link Layer2Topology} for a given {@link NetworkSnapshot}. The layer-2 topology

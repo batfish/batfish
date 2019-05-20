@@ -522,6 +522,9 @@ public final class Interface extends ComparableStructure<String> {
 
   public static final String NULL_INTERFACE_NAME = "null_interface";
 
+  public static final Set<InterfaceType> TUNNEL_INTERFACE_TYPES =
+      ImmutableSet.of(InterfaceType.TUNNEL, InterfaceType.VPN);
+
   public static final String UNSET_LOCAL_INTERFACE = "unset_local_interface";
 
   public static final String INVALID_LOCAL_INTERFACE = "invalid_local_interface";

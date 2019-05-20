@@ -1,5 +1,9 @@
 package org.batfish.common.topology;
 
+import static org.batfish.common.util.IpsecUtil.initIpsecTopology;
+import static org.batfish.common.util.IpsecUtil.retainCompatibleTunnelEdges;
+import static org.batfish.datamodel.Interface.TUNNEL_INTERFACE_TYPES;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
@@ -34,7 +38,6 @@ import javax.annotation.Nullable;
 import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.batfish.common.util.CollectionUtil;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.common.util.IpsecUtil;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
@@ -44,11 +47,13 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.VniSettings;
+import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.batfish.datamodel.vxlan.VxlanNode;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 
@@ -411,7 +416,8 @@ public final class TopologyUtil {
 
   /**
    * Compute the raw layer 3 topology from information contained in the configurations, and also the
-   * layer-1 and layer-2 topologies if present.
+   * layer-1 and layer-2 topologies if present. It also removes the overlay edges from the computed
+   * layer 3 edges.
    */
   public static @Nonnull Topology computeRawLayer3Topology(
       @Nonnull Optional<Layer1Topology> rawLayer1PhysicalTopology,
@@ -423,18 +429,23 @@ public final class TopologyUtil {
   }
 
   /**
-   * Compute the pruned layer-3 topology from the raw layer-3 topology, configuration information,
-   * and failed edges.
+   * Compute the layer-3 topology from the raw layer-3 topology, configuration information, and
+   * overlay edges.
+   *
+   * @param rawLayer3Topology raw layer 3 {@link Topology}
+   * @param overlayEdges overlay edges to be added to the rawLayer3Topology
+   * @param configurations configurations for which these edges exist
+   * @return
    */
   public static @Nonnull Topology computeLayer3Topology(
-      Topology rawLayer3Topology, Map<String, Configuration> configurations) {
-    return rawLayer3Topology.prune(
-        IpsecUtil.computeFailedIpsecSessionEdges(
-            rawLayer3Topology.getEdges(),
-            IpsecUtil.initIpsecTopology(configurations),
-            configurations),
-        ImmutableSet.of(),
-        ImmutableSet.of());
+      Topology rawLayer3Topology,
+      Set<Edge> overlayEdges,
+      Map<String, Configuration> configurations) {
+    return new Topology(
+        ImmutableSortedSet.<Edge>naturalOrder()
+            .addAll(rawLayer3Topology.getEdges())
+            .addAll(overlayEdges)
+            .build());
   }
 
   private static @Nullable Configuration getConfiguration(
@@ -466,6 +477,17 @@ public final class TopologyUtil {
   }
 
   private TopologyUtil() {}
+
+  /**
+   * Computes the {@link IpsecTopology} from {@link Configuration}s. The returned topology will only
+   * contain the compatible edges which have successfully negotiated {@link IpsecSession}s
+   *
+   * @param configurations {@link Map} of {@link Configuration}s
+   * @return {@link IpsecTopology}
+   */
+  public static IpsecTopology computeIpsecTopology(Map<String, Configuration> configurations) {
+    return retainCompatibleTunnelEdges(initIpsecTopology(configurations), configurations);
+  }
 
   /**
    * Compute the {@link Ip}s owned by each interface. hostname -&gt; interface name -&gt; {@link
@@ -783,6 +805,11 @@ public final class TopologyUtil {
           }
           // don't connect interfaces that have any IP address in common
           if (haveIpInCommon(iface1, iface2)) {
+            continue;
+          }
+          // don't connect if any of the two endpoint interfaces have Tunnel or VPN interfaceTypes
+          if (TUNNEL_INTERFACE_TYPES.contains(iface1.getInterfaceType())
+              || TUNNEL_INTERFACE_TYPES.contains(iface2.getInterfaceType())) {
             continue;
           }
           edges.add(new Edge(iface1, iface2));

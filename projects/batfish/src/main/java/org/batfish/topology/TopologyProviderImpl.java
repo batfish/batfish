@@ -4,6 +4,7 @@ import static org.batfish.datamodel.ospf.OspfTopologyUtils.computeOspfTopology;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.ImmutableSet;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.io.IOException;
@@ -24,6 +25,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.bgp.BgpTopology;
+import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.datamodel.vxlan.VxlanTopologyUtils;
@@ -35,6 +37,7 @@ public final class TopologyProviderImpl implements TopologyProvider {
 
   private final IBatfish _batfish;
   private final Cache<NetworkSnapshot, IpOwners> _ipOwners;
+  private final Cache<NetworkSnapshot, IpsecTopology> _ipsecTopologies;
   private final Cache<NetworkSnapshot, Optional<Layer1Topology>> _layer1LogicalTopologies;
   private final Cache<NetworkSnapshot, Optional<Layer1Topology>> _layer1PhysicalTopologies;
   private final Cache<NetworkSnapshot, Optional<Layer2Topology>> _layer2Topologies;
@@ -49,6 +52,7 @@ public final class TopologyProviderImpl implements TopologyProvider {
   public TopologyProviderImpl(IBatfish batfish, StorageProvider storage) {
     _batfish = batfish;
     _ipOwners = CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
+    _ipsecTopologies = CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
     _layer1LogicalTopologies = CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
     _layer1PhysicalTopologies = CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
     _layer2Topologies =
@@ -100,6 +104,17 @@ public final class TopologyProviderImpl implements TopologyProvider {
     }
   }
 
+  /** Computes {@link IpsecTopology} with edges that have compatible IPsec settings */
+  private IpsecTopology computeInitialIpsecTopology(NetworkSnapshot networkSnapshot) {
+    try (ActiveSpan span =
+        GlobalTracer.get()
+            .buildSpan("TopologyProviderImpl::computeInitialIpsecTopology")
+            .startActive()) {
+      assert span != null; // avoid unused warning
+      return TopologyUtil.computeIpsecTopology(_batfish.loadConfigurations(networkSnapshot));
+    }
+  }
+
   private @Nonnull Optional<Layer2Topology> computeInitialLayer2Topology(
       NetworkSnapshot networkSnapshot) {
     try (ActiveSpan span =
@@ -121,7 +136,7 @@ public final class TopologyProviderImpl implements TopologyProvider {
       assert span != null; // avoid unused warning
       Map<String, Configuration> configurations = _batfish.loadConfigurations(networkSnapshot);
       return TopologyUtil.computeLayer3Topology(
-          getInitialRawLayer3Topology(networkSnapshot), configurations);
+          getInitialRawLayer3Topology(networkSnapshot), ImmutableSet.of(), configurations);
     }
   }
 
@@ -186,6 +201,17 @@ public final class TopologyProviderImpl implements TopologyProvider {
           networkSnapshot, () -> computeLayer1PhysicalTopology(networkSnapshot));
     } catch (ExecutionException e) {
       return computeLayer1PhysicalTopology(networkSnapshot);
+    }
+  }
+
+  @Override
+  @Nonnull
+  public IpsecTopology getInitialIpsecTopology(NetworkSnapshot networkSnapshot) {
+    try {
+      return _ipsecTopologies.get(
+          networkSnapshot, () -> computeInitialIpsecTopology(networkSnapshot));
+    } catch (ExecutionException e) {
+      return computeInitialIpsecTopology(networkSnapshot);
     }
   }
 
