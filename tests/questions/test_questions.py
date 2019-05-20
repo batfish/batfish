@@ -16,12 +16,16 @@ VALID_TAGS = {"acl",  # acl and firewall related
               "configuration",  # produce configuration data
               "differential",  # differential question
               "dataplane",  # need dataplane computation
+              "eigrp",  # EIGRP related
               "hygiene",  # hygiene type check on configs
+              "ipsec",  # IPSec related
+              "isis",  # isis related
               "initialization",  # shows information related to snapshot initialization
               "mlag",  # MLAG related
               "ospf",  # ospf related
               "other",  # does not fit in any other group
               "reachability",  # reachability or flow search type question
+              "rip",  # RIP related
               "routing",  # helps analyze routing
               "specifiers",  # resolves a specifier
               "status",  # checks for pairwise compatibility
@@ -174,8 +178,10 @@ def test_types(question):
 
 
 NO_ORDERED_VARIABLE_NAMES_QUESTIONS = {
+    'questions/stable/bgpEdges.json',
     'questions/stable/definedStructures.json',
     'questions/stable/edges.json',
+    'questions/stable/eigrpEdges.json',
     'questions/stable/ipsecSessionStatus.json',
     'questions/stable/referencedStructures.json',
     'questions/stable/routes.json',
@@ -189,12 +195,17 @@ NO_ORDERED_VARIABLE_NAMES_QUESTIONS = {
     'questions/experimental/filterTable.json',
     'questions/experimental/interfaceMtu.json',
     'questions/experimental/interfaceProperties.json',
+    'questions/stable/ipsecEdges.json',
+    'questions/stable/isisEdges.json',
+    'questions/stable/layer1Edges.json',
+    'questions/stable/layer3Edges.json',
     'questions/experimental/mlagProperties.json',
     'questions/experimental/multipathConsistency.json',
     'questions/experimental/namedStructures.json',
     'questions/experimental/neighbors.json',
     'questions/experimental/nodeProperties.json',
     'questions/experimental/nodes.json',
+    'questions/stable/ospfEdges.json',
     'questions/experimental/ospfProperties.json',
     'questions/experimental/prefixTracer.json',
     'questions/experimental/resolveFilterSpecifier.json',
@@ -203,8 +214,10 @@ NO_ORDERED_VARIABLE_NAMES_QUESTIONS = {
     'questions/experimental/resolveIpsOfLocationSpecifier.json',
     'questions/experimental/resolveLocationSpecifier.json',
     'questions/experimental/resolveNodeSpecifier.json',
+    'questions/stable/ripEdges.json',
     'questions/experimental/searchFilters.json',
     'questions/experimental/switchedVlanProperties.json',
+    'questions/stable/vxlanEdges.json',
     'questions/experimental/vxlanVniProperties.json',
 }
 
