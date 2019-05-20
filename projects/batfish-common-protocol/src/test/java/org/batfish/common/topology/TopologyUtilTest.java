@@ -48,7 +48,6 @@ import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
@@ -280,9 +279,7 @@ public final class TopologyUtilTest {
     Layer2Node n2 = new Layer2Node(s2Name, vniName, null);
 
     assertThat(
-        computeVniInterNodeEdges(
-                vxlanTopology, NetworkConfigurations.of(ImmutableMap.of(s1Name, s1, s2Name, s2)))
-            .collect(ImmutableList.toImmutableList()),
+        computeVniInterNodeEdges(vxlanTopology).collect(ImmutableList.toImmutableList()),
         containsInAnyOrder(new Layer2Edge(n1, n2, null), new Layer2Edge(n2, n1, null)));
   }
 

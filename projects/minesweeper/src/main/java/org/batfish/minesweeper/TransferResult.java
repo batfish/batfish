@@ -4,12 +4,12 @@ import com.microsoft.z3.Expr;
 import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.Nullable;
-import org.batfish.common.Pair;
 import org.batfish.minesweeper.collections.PList;
+import org.batfish.minesweeper.utils.MsPair;
 
 public class TransferResult<U, T> {
 
-  private PList<Pair<String, Expr>> _changedVariables; // should be a map
+  private PList<MsPair<String, Expr>> _changedVariables; // should be a map
 
   private U _returnValue;
 
@@ -32,8 +32,8 @@ public class TransferResult<U, T> {
   }
 
   @Nullable
-  private Expr find(PList<Pair<String, Expr>> vals, String s) {
-    for (Pair<String, Expr> pair : vals) {
+  private Expr find(PList<MsPair<String, Expr>> vals, String s) {
+    for (MsPair<String, Expr> pair : vals) {
       if (pair.getFirst().equals(s)) {
         return pair.getSecond();
       }
@@ -42,36 +42,37 @@ public class TransferResult<U, T> {
   }
 
   // TODO: this really needs to use persistent set data types
-  public PList<Pair<String, Pair<Expr, Expr>>> mergeChangedVariables(TransferResult<U, T> other) {
+  public PList<MsPair<String, MsPair<Expr, Expr>>> mergeChangedVariables(
+      TransferResult<U, T> other) {
     Set<String> seen = new HashSet<>();
-    PList<Pair<String, Pair<Expr, Expr>>> vars = PList.empty();
+    PList<MsPair<String, MsPair<Expr, Expr>>> vars = PList.empty();
 
-    for (Pair<String, Expr> cv1 : this._changedVariables) {
+    for (MsPair<String, Expr> cv1 : this._changedVariables) {
       String s = cv1.getFirst();
       Expr x = cv1.getSecond();
       if (!seen.contains(s)) {
         seen.add(s);
         Expr e = find(other._changedVariables, s);
-        Pair<Expr, Expr> pair = new Pair<>(x, e);
-        vars = vars.plus(new Pair<>(s, pair));
+        MsPair<Expr, Expr> pair = new MsPair<>(x, e);
+        vars = vars.plus(new MsPair<>(s, pair));
       }
     }
 
-    for (Pair<String, Expr> cv1 : other._changedVariables) {
+    for (MsPair<String, Expr> cv1 : other._changedVariables) {
       String s = cv1.getFirst();
       Expr x = cv1.getSecond();
       if (!seen.contains(s)) {
         seen.add(s);
         Expr e = find(this._changedVariables, s);
-        Pair<Expr, Expr> pair = new Pair<>(e, x); // preserve order
-        vars = vars.plus(new Pair<>(s, pair));
+        MsPair<Expr, Expr> pair = new MsPair<>(e, x); // preserve order
+        vars = vars.plus(new MsPair<>(s, pair));
       }
     }
 
     return vars;
   }
 
-  public PList<Pair<String, Expr>> getChangedVariables() {
+  public PList<MsPair<String, Expr>> getChangedVariables() {
     return _changedVariables;
   }
 
@@ -89,7 +90,7 @@ public class TransferResult<U, T> {
 
   public TransferResult<U, T> addChangedVariable(String s, Expr x) {
     TransferResult<U, T> ret = new TransferResult<>(this);
-    ret._changedVariables = ret._changedVariables.plus(new Pair<>(s, x));
+    ret._changedVariables = ret._changedVariables.plus(new MsPair<>(s, x));
     return ret;
   }
 
@@ -100,7 +101,7 @@ public class TransferResult<U, T> {
   }
 
   public boolean isChanged(String s) {
-    for (Pair<String, Expr> pair : this._changedVariables) {
+    for (MsPair<String, Expr> pair : this._changedVariables) {
       if (pair.getFirst().equals(s)) {
         return true;
       }

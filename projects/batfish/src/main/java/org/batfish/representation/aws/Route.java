@@ -6,7 +6,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
-import org.batfish.common.Pair;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
@@ -147,9 +146,9 @@ public class Route implements Serializable {
             // need to create a link between subnet on which route is created
             // and instance containing network interface
             String subnetIfaceName = _target;
-            Pair<InterfaceAddress, InterfaceAddress> instanceLink =
-                awsConfiguration.getNextGeneratedLinkSubnet();
-            InterfaceAddress subnetIfaceAddress = instanceLink.getFirst();
+            Prefix instanceLink = awsConfiguration.getNextGeneratedLinkSubnet();
+            InterfaceAddress subnetIfaceAddress =
+                new InterfaceAddress(instanceLink.getStartIp(), instanceLink.getPrefixLength());
             Utils.newInterface(subnetIfaceName, subnetCfgNode, subnetIfaceAddress);
 
             // set up instance interface
@@ -157,7 +156,8 @@ public class Route implements Serializable {
             String instanceIfaceName = subnet.getId();
             Configuration instanceCfgNode =
                 awsConfiguration.getConfigurationNodes().get(instanceId);
-            InterfaceAddress instanceIfaceAddress = instanceLink.getSecond();
+            InterfaceAddress instanceIfaceAddress =
+                new InterfaceAddress(instanceLink.getEndIp(), instanceLink.getPrefixLength());
             Interface instanceIface =
                 Utils.newInterface(instanceIfaceName, instanceCfgNode, instanceIfaceAddress);
             instanceIface.setIncomingFilter(
@@ -211,13 +211,14 @@ public class Route implements Serializable {
           if (!subnetCfgNode.getDefaultVrf().getInterfaces().containsKey(subnetIfaceName)) {
             // create prefix on which subnet and remote vpc router will
             // connect
-            Pair<InterfaceAddress, InterfaceAddress> peeringLink =
-                awsConfiguration.getNextGeneratedLinkSubnet();
-            InterfaceAddress subnetIfaceAddress = peeringLink.getFirst();
+            Prefix peeringLink = awsConfiguration.getNextGeneratedLinkSubnet();
+            InterfaceAddress subnetIfaceAddress =
+                new InterfaceAddress(peeringLink.getStartIp(), peeringLink.getPrefixLength());
             Utils.newInterface(subnetIfaceName, subnetCfgNode, subnetIfaceAddress);
 
             // set up remote vpc router interface
-            InterfaceAddress remoteVpcIfaceAddress = peeringLink.getSecond();
+            InterfaceAddress remoteVpcIfaceAddress =
+                new InterfaceAddress(peeringLink.getEndIp(), peeringLink.getPrefixLength());
             Interface remoteVpcIface = new Interface(remoteVpcIfaceName, remoteVpcCfgNode);
             remoteVpcCfgNode.getAllInterfaces().put(remoteVpcIfaceName, remoteVpcIface);
             remoteVpcCfgNode

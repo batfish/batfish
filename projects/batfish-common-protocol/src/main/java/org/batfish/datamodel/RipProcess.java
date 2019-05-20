@@ -2,11 +2,11 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import java.io.Serializable;
-import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import org.batfish.common.Pair;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 
 public class RipProcess implements Serializable {
@@ -48,11 +48,12 @@ public class RipProcess implements Serializable {
 
   private SortedSet<String> _interfaces;
 
-  private transient Map<Pair<Ip, Ip>, RipNeighbor> _ripNeighbors;
+  private transient Table<Ip, Ip, RipNeighbor> _ripNeighbors;
 
   public RipProcess() {
     _generatedRoutes = new TreeSet<>();
     _interfaces = new TreeSet<>();
+    _ripNeighbors = HashBasedTable.create();
   }
 
   @JsonProperty(PROP_EXPORT_POLICY)
@@ -74,7 +75,7 @@ public class RipProcess implements Serializable {
   }
 
   @JsonIgnore
-  public Map<Pair<Ip, Ip>, RipNeighbor> getRipNeighbors() {
+  public Table<Ip, Ip, RipNeighbor> getRipNeighbors() {
     return _ripNeighbors;
   }
 
@@ -96,7 +97,8 @@ public class RipProcess implements Serializable {
     _interfaces = interfaces;
   }
 
-  public void setRipNeighbors(Map<Pair<Ip, Ip>, RipNeighbor> ripNeighbors) {
+  @JsonIgnore
+  public void setRipNeighbors(Table<Ip, Ip, RipNeighbor> ripNeighbors) {
     _ripNeighbors = ripNeighbors;
   }
 }

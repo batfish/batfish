@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.batfish.common.BatfishException;
-import org.batfish.common.Pair;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
@@ -85,6 +84,7 @@ import org.batfish.minesweeper.Protocol;
 import org.batfish.minesweeper.TransferParam;
 import org.batfish.minesweeper.TransferResult;
 import org.batfish.minesweeper.collections.PList;
+import org.batfish.minesweeper.utils.MsPair;
 
 /**
  * Class that computes a symbolic transfer function between two symbolic control plane records. The
@@ -879,11 +879,11 @@ class TransferSSA {
    * The [phi] function from SSA that merges variables that may differ across
    * different branches of an If statement.
    */
-  private Pair<Expr, Expr> joinPoint(
+  private MsPair<Expr, Expr> joinPoint(
       TransferParam<SymbolicRoute> p,
       TransferResult<BoolExpr, BoolExpr> r,
       BoolExpr guard,
-      Pair<String, Pair<Expr, Expr>> values) {
+      MsPair<String, MsPair<Expr, Expr>> values) {
     String variableName = values.getFirst();
     Expr trueBranch = values.getSecond().getFirst();
     Expr falseBranch = values.getSecond().getSecond();
@@ -904,7 +904,7 @@ class TransferSSA {
           _enc.mkIf(
               r.getReturnAssignedValue(), variable, _enc.mkIf(guard, (BoolExpr) t, (BoolExpr) f));
       BoolExpr ret = createBoolVariableWith(p, variableName, newValue);
-      return new Pair<>(ret, retAss);
+      return new MsPair<>(ret, retAss);
     }
 
     if (variableName.equals("PREFIX-LEN")) {
@@ -914,7 +914,7 @@ class TransferSSA {
       newValue = _enc.mkIf(r.getReturnAssignedValue(), p.getData().getPrefixLength(), newValue);
       ArithExpr ret = createArithVariableWith(p, "PREFIX-LEN", newValue);
       p.getData().setPrefixLength(ret);
-      return new Pair<>(ret, null);
+      return new MsPair<>(ret, null);
     }
     if (variableName.equals("ADMIN-DIST")) {
       Expr t = (trueBranch == null ? p.getData().getAdminDist() : trueBranch);
@@ -923,7 +923,7 @@ class TransferSSA {
       newValue = _enc.mkIf(r.getReturnAssignedValue(), p.getData().getAdminDist(), newValue);
       ArithExpr ret = createArithVariableWith(p, "ADMIN-DIST", newValue);
       p.getData().setAdminDist(ret);
-      return new Pair<>(ret, null);
+      return new MsPair<>(ret, null);
     }
     if (variableName.equals("LOCAL-PREF")) {
       Expr t = (trueBranch == null ? p.getData().getLocalPref() : trueBranch);
@@ -932,7 +932,7 @@ class TransferSSA {
       newValue = _enc.mkIf(r.getReturnAssignedValue(), p.getData().getLocalPref(), newValue);
       ArithExpr ret = createArithVariableWith(p, "LOCAL-PREF", newValue);
       p.getData().setLocalPref(ret);
-      return new Pair<>(ret, null);
+      return new MsPair<>(ret, null);
     }
     if (variableName.equals("METRIC")) {
       Expr t = (trueBranch == null ? p.getData().getMetric() : trueBranch);
@@ -941,7 +941,7 @@ class TransferSSA {
       newValue = _enc.mkIf(r.getReturnAssignedValue(), p.getData().getMetric(), newValue);
       ArithExpr ret = createArithVariableWith(p, "METRIC", newValue);
       p.getData().setMetric(ret);
-      return new Pair<>(ret, null);
+      return new MsPair<>(ret, null);
     }
     if (variableName.equals("OSPF-TYPE")) {
       Expr t = (trueBranch == null ? p.getData().getOspfType().getBitVec() : trueBranch);
@@ -951,7 +951,7 @@ class TransferSSA {
           _enc.mkIf(r.getReturnAssignedValue(), p.getData().getOspfType().getBitVec(), newValue);
       BitVecExpr ret = createBitVecVariableWith(p, "OSPF-TYPE", 2, newValue);
       p.getData().getOspfType().setBitVec(ret);
-      return new Pair<>(ret, null);
+      return new MsPair<>(ret, null);
     }
 
     for (Map.Entry<CommunityVar, BoolExpr> entry : p.getData().getCommunities().entrySet()) {
@@ -964,7 +964,7 @@ class TransferSSA {
             _enc.mkIf(r.getReturnAssignedValue(), p.getData().getCommunities().get(cvar), newValue);
         BoolExpr ret = createBoolVariableWith(p, cvar.getRegex(), newValue);
         p.getData().getCommunities().put(cvar, ret);
-        return new Pair<>(ret, null);
+        return new MsPair<>(ret, null);
       }
     }
 
@@ -1074,7 +1074,7 @@ class TransferSSA {
         String str = guard.toString();
 
         // If there are updates in the guard, add them to the parameter p before entering branches
-        for (Pair<String, Expr> changed : r.getChangedVariables()) {
+        for (MsPair<String, Expr> changed : r.getChangedVariables()) {
           curP.debug("CHANGED: " + changed.getFirst());
           updateSingleValue(curP, changed.getFirst(), changed.getSecond());
         }
@@ -1102,22 +1102,22 @@ class TransferSSA {
             TransferResult<BoolExpr, BoolExpr> falseBranch =
                 compute(i.getFalseStatements(), p2, initialResult());
             curP.debug("JOIN");
-            PList<Pair<String, Pair<Expr, Expr>>> pairs =
+            PList<MsPair<String, MsPair<Expr, Expr>>> pairs =
                 trueBranch.mergeChangedVariables(falseBranch);
 
             // Extract and deal with the return value first so that other
             // variables have this reflected in their value
             int idx = pairs.find(pair -> pair.getFirst().equals("RETURN"));
             if (idx >= 0) {
-              Pair<String, Pair<Expr, Expr>> ret = pairs.get(idx);
+              MsPair<String, MsPair<Expr, Expr>> ret = pairs.get(idx);
               pairs = pairs.minus(idx);
               pairs = pairs.plus(pairs.size(), ret);
             }
 
-            for (Pair<String, Pair<Expr, Expr>> pair : pairs) {
+            for (MsPair<String, MsPair<Expr, Expr>> pair : pairs) {
               String s = pair.getFirst();
               curP.debug("CHANGED: " + s);
-              Pair<Expr, Expr> x = joinPoint(curP, curResult, guard, pair);
+              MsPair<Expr, Expr> x = joinPoint(curP, curResult, guard, pair);
               curResult = curResult.addChangedVariable(s, x.getFirst());
               if (s.equals("RETURN")) {
                 curResult =

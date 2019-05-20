@@ -7,7 +7,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import org.batfish.common.Pair;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;
@@ -19,6 +18,7 @@ import org.batfish.minesweeper.Graph;
 import org.batfish.minesweeper.GraphEdge;
 import org.batfish.minesweeper.Protocol;
 import org.batfish.minesweeper.abstraction.InterfacePolicy;
+import org.batfish.minesweeper.utils.MsPair;
 
 public class BDDNetwork {
 
@@ -135,12 +135,12 @@ public class BDDNetwork {
         BDDAcl aclIn = _inAcls.get(ge);
         BDDAcl aclOut = _outAcls.get(ge);
         Integer ospfCost = ge.getStart().getOspfCost();
-        SortedSet<Pair<Prefix, Integer>> staticPrefixes = new TreeSet<>();
+        SortedSet<MsPair<Prefix, Integer>> staticPrefixes = new TreeSet<>();
         SortedSet<StaticRoute> staticRoutes = conf.getDefaultVrf().getStaticRoutes();
         for (StaticRoute sr : staticRoutes) {
           Prefix pfx = sr.getNetwork();
           Integer adminCost = sr.getAdministrativeCost();
-          Pair<Prefix, Integer> tup = new Pair<>(pfx, adminCost);
+          MsPair<Prefix, Integer> tup = new MsPair<>(pfx, adminCost);
           staticPrefixes.add(tup);
         }
         InterfacePolicy ipol = new InterfacePolicy(aclIn, bgpIn, null, staticPrefixes);
