@@ -24,7 +24,6 @@ import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -257,12 +256,6 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public InitInfoAnswerElement initInfoRoutes(boolean summary, boolean verboseError) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public void initRemoteRipNeighbors(
-      Map<String, Configuration> configurations, Map<Ip, Set<String>> ipOwners, Topology topology) {
     throw new UnsupportedOperationException();
   }
 
