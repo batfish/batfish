@@ -39,7 +39,7 @@ public class CommandCompleter implements Completer {
       candidates.clear();
       candidates.add(
           new Candidate(
-              " " + Command.getUsageMap().get(Command.getNameMap().get(buffer)).getFirst()));
+              " " + Command.getUsageMap().get(Command.getNameMap().get(buffer)).getUsage()));
     }
   }
 }
