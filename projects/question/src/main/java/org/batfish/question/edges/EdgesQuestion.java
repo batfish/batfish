@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.EdgeType;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.NodeSpecifier;
@@ -80,5 +79,16 @@ public class EdgesQuestion extends Question {
   public NodeSpecifier getRemoteNodeSpecifier() {
     return SpecifierFactories.getNodeSpecifierOrDefault(
         _remoteNodes, AllNodesNodeSpecifier.INSTANCE);
+  }
+
+  public enum EdgeType {
+    BGP,
+    EIGRP,
+    IPSEC,
+    ISIS,
+    LAYER1,
+    LAYER3,
+    OSPF,
+    VXLAN
   }
 }

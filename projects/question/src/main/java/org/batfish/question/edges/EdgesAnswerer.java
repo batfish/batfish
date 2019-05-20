@@ -27,7 +27,6 @@ import org.batfish.datamodel.BgpPeerConfigId.BgpPeerConfigType;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
-import org.batfish.datamodel.EdgeType;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -59,6 +58,7 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.datamodel.vxlan.VxlanNode;
 import org.batfish.datamodel.vxlan.VxlanTopology;
+import org.batfish.question.edges.EdgesQuestion.EdgeType;
 
 public class EdgesAnswerer extends Answerer {
 
@@ -168,9 +168,6 @@ public class EdgesAnswerer extends Answerer {
                 layer1LogicalTopology ->
                     getLayer1Edges(includeNodes, includeRemoteNodes, layer1LogicalTopology))
             .orElse(ImmutableMultiset.of());
-      case LAYER2:
-        // Unsupported until we decide how to present layer2 topology.
-        return ImmutableMultiset.of();
       case LAYER3:
       default:
         return getLayer3Edges(configurations, includeNodes, includeRemoteNodes, topology);
@@ -550,37 +547,6 @@ public class EdgesAnswerer extends Answerer {
                 COL_REMOTE_IPS, Schema.set(Schema.IP), "Remote IPs", Boolean.FALSE, Boolean.TRUE));
         break;
 
-      case LAYER2:
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_INTERFACE,
-                Schema.INTERFACE,
-                "Interface from which the edge originates",
-                Boolean.FALSE,
-                Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_VLAN,
-                Schema.STRING,
-                "VLAN containing the originator",
-                Boolean.FALSE,
-                Boolean.TRUE));
-
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_REMOTE_INTERFACE,
-                Schema.INTERFACE,
-                "Interface at which the edge terminates",
-                Boolean.FALSE,
-                Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_REMOTE_VLAN,
-                Schema.STRING,
-                "VLAN  containing the remote node",
-                Boolean.FALSE,
-                Boolean.TRUE));
-        break;
       case BGP:
         columnBuilder.add(
             new ColumnMetadata(
@@ -734,7 +700,6 @@ public class EdgesAnswerer extends Answerer {
       case OSPF:
       case ISIS:
       case EIGRP:
-      case RIP:
       case LAYER1:
       default:
         columnBuilder.add(
