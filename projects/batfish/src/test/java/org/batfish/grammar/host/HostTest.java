@@ -71,15 +71,15 @@ public class HostTest {
   @Test
   public void testNatIpsecVpnsNotShared() throws IOException {
     Batfish batfish = getBatfishForConfigs("host1-not-shared.json");
-    batfish.loadConfigurations();
-    Topology environmentTopology =
-        batfish.getTopologyProvider().getInitialLayer3Topology(batfish.getNetworkSnapshot());
+    batfish.computeDataPlane();
+    Topology fixedPointLayer3Topology =
+        batfish.getTopologyProvider().getLayer3Topology(batfish.getNetworkSnapshot());
 
     /*
      * NAT settings on host1 (not-shared version) should result in edges between tunnel interfaces and AWS VPNs being pruned
      */
     assertThat(
-        environmentTopology.getEdges(),
+        fixedPointLayer3Topology.getEdges(),
         not(
             hasItems(
                 new Edge(
@@ -99,14 +99,15 @@ public class HostTest {
   @Test
   public void testNatIpsecVpnsShared() throws IOException {
     Batfish batfish = getBatfishForConfigs("host1-shared.json");
-    Topology environmentTopology =
-        batfish.getTopologyProvider().getInitialLayer3Topology(batfish.getNetworkSnapshot());
+    batfish.computeDataPlane();
+    Topology fixedPointLayer3Topology =
+        batfish.getTopologyProvider().getLayer3Topology(batfish.getNetworkSnapshot());
 
     /*
      * NAT settings on host1 (not-shared version) should result in edges between tunnel interfaces and AWS VPNs not being pruned
      */
     assertThat(
-        environmentTopology.getEdges(),
+        fixedPointLayer3Topology.getEdges(),
         hasItems(
             new Edge(
                 new NodeInterfacePair("cisco_host", "Tunnel1"),
@@ -127,7 +128,7 @@ public class HostTest {
     Batfish batfish = getBatfishForConfigs("host1-not-shared.json");
 
     ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology =
-        IpsecUtil.initIpsecTopology(batfish.loadConfigurations());
+        IpsecUtil.initIpsecTopology(batfish.loadConfigurations()).getGraph();
 
     IpsecPeerConfigId tunnel1 = new IpsecPeerConfigId("Tunnel1", "cisco_host");
     IpsecPeerConfigId tunnel2 = new IpsecPeerConfigId("Tunnel2", "cisco_host");
@@ -174,7 +175,7 @@ public class HostTest {
     Batfish batfish = getBatfishForConfigs("host1-shared.json");
 
     ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology =
-        IpsecUtil.initIpsecTopology(batfish.loadConfigurations());
+        IpsecUtil.initIpsecTopology(batfish.loadConfigurations()).getGraph();
 
     IpsecPeerConfigId tunnel1 = new IpsecPeerConfigId("Tunnel1", "cisco_host");
     IpsecPeerConfigId tunnel2 = new IpsecPeerConfigId("Tunnel2", "cisco_host");

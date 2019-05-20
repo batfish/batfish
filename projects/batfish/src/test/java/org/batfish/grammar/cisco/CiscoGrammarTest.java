@@ -4229,7 +4229,8 @@ public class CiscoGrammarTest {
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
-    ValueGraph<IpsecPeerConfigId, IpsecSession> graph = IpsecUtil.initIpsecTopology(configurations);
+    ValueGraph<IpsecPeerConfigId, IpsecSession> graph =
+        IpsecUtil.initIpsecTopology(configurations).getGraph();
 
     Set<EndpointPair<IpsecPeerConfigId>> edges = graph.edges();
 

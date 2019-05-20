@@ -59,7 +59,7 @@ class IpsecSessionStatusAnswerer extends Answerer {
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
     NetworkConfigurations networkConfigurations = NetworkConfigurations.of(configurations);
     ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology =
-        IpsecUtil.initIpsecTopology(configurations);
+        IpsecUtil.initIpsecTopology(configurations).getGraph();
 
     Set<String> initiatorNodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
     Set<String> responderNodes =
