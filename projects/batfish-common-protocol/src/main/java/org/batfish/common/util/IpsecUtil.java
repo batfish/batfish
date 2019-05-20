@@ -386,7 +386,8 @@ public class IpsecUtil {
    * Given an {@link IpsecTopology}, returns a new {@link IpsecTopology} containing only the edges
    * which use tunnel interfaces and are compatible
    *
-   * @param ipsecTopology original IPsec topology's {@link ValueGraph}
+   * @param ipsecTopology {@link IpsecTopology} corresponding to the compatible IPsec edges
+   *     established between Tunnel interfaces
    * @param configurations {@link Map} of {@link Configuration} to configuration names
    * @return {@link IpsecTopology}
    */
@@ -394,7 +395,7 @@ public class IpsecUtil {
       IpsecTopology ipsecTopology, Map<String, Configuration> configurations) {
     NetworkConfigurations networkConfigurations = NetworkConfigurations.of(configurations);
 
-    MutableValueGraph<IpsecPeerConfigId, IpsecSession> pruneIpsecTopology =
+    MutableValueGraph<IpsecPeerConfigId, IpsecSession> prunedIpsecTopology =
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
     ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecGraph = ipsecTopology.getGraph();
     for (IpsecPeerConfigId endPointU : ipsecGraph.nodes()) {
@@ -418,20 +419,20 @@ public class IpsecUtil {
             .filter(ipsecSession -> ipsecSession.getNegotiatedIpsecP2Proposal() != null)
             .ifPresent(
                 ipsecSession ->
-                    pruneIpsecTopology.putEdgeValue(endPointU, endPointV, ipsecSession));
+                    prunedIpsecTopology.putEdgeValue(endPointU, endPointV, ipsecSession));
       }
     }
 
     MutableValueGraph<IpsecPeerConfigId, IpsecSession> bidirCompatibleEdges =
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
 
-    for (EndpointPair<IpsecPeerConfigId> endpointPair : pruneIpsecTopology.edges()) {
+    for (EndpointPair<IpsecPeerConfigId> endpointPair : prunedIpsecTopology.edges()) {
       // if reverse edge exists
       IpsecPeerConfigId nodeU = endpointPair.nodeU();
       IpsecPeerConfigId nodeV = endpointPair.nodeV();
-      if (pruneIpsecTopology.hasEdgeConnecting(nodeV, nodeU)) {
+      if (prunedIpsecTopology.hasEdgeConnecting(nodeV, nodeU)) {
         bidirCompatibleEdges.putEdgeValue(
-            nodeU, nodeV, pruneIpsecTopology.edgeValue(nodeU, nodeV).get());
+            nodeU, nodeV, prunedIpsecTopology.edgeValue(nodeU, nodeV).get());
       }
     }
 

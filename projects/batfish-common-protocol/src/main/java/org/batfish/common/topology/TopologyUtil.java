@@ -1,5 +1,7 @@
 package org.batfish.common.topology;
 
+import static org.batfish.datamodel.Interface.TUNNEL_INTERFACE_TYPES;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -758,7 +760,6 @@ public final class TopologyUtil {
           }
         });
 
-    Set<InterfaceType> tunnelIfaceTypes = ImmutableSet.of(InterfaceType.TUNNEL, InterfaceType.VPN);
     ImmutableSortedSet.Builder<Edge> edges = ImmutableSortedSet.naturalOrder();
     for (Entry<Prefix, List<Interface>> bucketEntry : prefixInterfaces.entrySet()) {
       Prefix p = bucketEntry.getKey();
@@ -787,9 +788,9 @@ public final class TopologyUtil {
           if (haveIpInCommon(iface1, iface2)) {
             continue;
           }
-          // don't connect if two endpoint interfaces have Tunnel or VPN interfaceTypes
-          if (tunnelIfaceTypes.contains(iface1.getInterfaceType())
-              && tunnelIfaceTypes.contains(iface2.getInterfaceType())) {
+          // don't connect if any of the two endpoint interfaces have Tunnel or VPN interfaceTypes
+          if (TUNNEL_INTERFACE_TYPES.contains(iface1.getInterfaceType())
+              || TUNNEL_INTERFACE_TYPES.contains(iface2.getInterfaceType())) {
             continue;
           }
           edges.add(new Edge(iface1, iface2));

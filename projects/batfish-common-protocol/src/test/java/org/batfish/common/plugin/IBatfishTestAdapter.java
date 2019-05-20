@@ -38,6 +38,7 @@ import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.flow.Trace;
+import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
@@ -124,6 +125,11 @@ public class IBatfishTestAdapter implements IBatfish {
 
     @Override
     public BgpTopology getBgpTopology(NetworkSnapshot snapshot) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public IpsecTopology getInitialIpsecTopology(NetworkSnapshot networkSnapshot) {
       throw new UnsupportedOperationException();
     }
 
