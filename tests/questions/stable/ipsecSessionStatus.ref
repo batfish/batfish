@@ -10,6 +10,7 @@
     "instanceName" : "qname",
     "longDescription" : "Shows configuration settings and status for each configured IPSec tunnel in the network. The status is IPSEC_SESSION_ESTABLISHED for tunnels that are expected to be established; it is IKE_PHASE1_FAILED if IKE parameters negotiation failed; it is IKE_PHASE1_KEY_MISMATCH if IKE negotiation was successful but IKE keys do not match; it is IPSEC_PHASE2_FAILED if negotiation of IPsec parameters failed; and it is MISSING_END_POINT if the remote endpoint for a configured IPsec tunnel could not be found in the network.",
     "tags" : [
+      "ipsec",
       "status"
     ],
     "variables" : {
