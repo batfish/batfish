@@ -102,6 +102,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.ArrayUtils;
+import org.batfish.client.Command.CommandUsage;
 import org.batfish.client.answer.LoadQuestionAnswerElement;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -373,60 +374,57 @@ public final class ClientTest {
     checkProcessCommandErrorMessage(GET, parameters, SNAPSHOT_NOT_SET);
   }
 
-  @SuppressWarnings("deprecation") // tests of deprecated code
   @Test
   public void testHelpInvalidParas() throws Exception {
     Command command = HELP;
     String[] parameters = new String[] {"-option1"};
-    org.batfish.common.Pair<String, String> usage = Command.getUsageMap().get(command);
+    CommandUsage usage = Command.getUsageMap().get(command);
     String expected =
         String.format(
             "Invalid arguments: %s []\n%s %s\n\t%s\n\n",
             Arrays.toString(parameters),
             command.commandName(),
-            usage.getFirst(),
-            usage.getSecond());
+            usage.getUsage(),
+            usage.getDescription());
     checkProcessCommandErrorMessage(command, parameters, expected);
   }
 
-  @SuppressWarnings("deprecation") // tests of deprecated code
   @Test
   public void testHelpValidParas() throws Exception {
     String[] parameters = new String[] {"get"};
-    org.batfish.common.Pair<String, String> usage = Command.getUsageMap().get(GET);
+    CommandUsage usage = Command.getUsageMap().get(GET);
     String expected =
-        String.format("%s %s\n\t%s\n\n", GET.commandName(), usage.getFirst(), usage.getSecond());
+        String.format(
+            "%s %s\n\t%s\n\n", GET.commandName(), usage.getUsage(), usage.getDescription());
     testProcessCommandWithValidInput(HELP, parameters, expected);
   }
 
-  @SuppressWarnings("deprecation") // tests of deprecated code
   @Test
   public void testInitNetworkEmptyParasWithOption() throws Exception {
     Command command = INIT_NETWORK;
     String[] args = new String[] {"-setname"};
-    org.batfish.common.Pair<String, String> usage = Command.getUsageMap().get(command);
+    CommandUsage usage = Command.getUsageMap().get(command);
     String expected =
         String.format(
             "Invalid arguments: %s []\n%s %s\n\t%s\n\n",
-            "[-setname]", command.commandName(), usage.getFirst(), usage.getSecond());
+            "[-setname]", command.commandName(), usage.getUsage(), usage.getDescription());
     checkProcessCommandErrorMessage(command, args, expected);
   }
 
-  @SuppressWarnings("deprecation") // tests of deprecated code
   @Test
   public void testInitNetworkInvalidOptions() throws Exception {
     Command command = INIT_NETWORK;
     String invalidOption = "-setnetwork";
     String[] args = new String[] {invalidOption, "parameter1"};
-    org.batfish.common.Pair<String, String> usage = Command.getUsageMap().get(command);
+    CommandUsage usage = Command.getUsageMap().get(command);
     String expected =
         String.format(
             "Invalid arguments: %s %s\n%s %s\n\t%s\n\n",
             "[-setnetwork]",
             "[parameter1]",
             command.commandName(),
-            usage.getFirst(),
-            usage.getSecond());
+            usage.getUsage(),
+            usage.getDescription());
     checkProcessCommandErrorMessage(command, args, expected);
   }
 
@@ -553,18 +551,17 @@ public final class ClientTest {
     validateTypeWithInvalidInput(input, expectedMessage, expectedType);
   }
 
-  @SuppressWarnings("deprecation") // tests of deprecated code
   private void testInvalidInput(Command command, String[] options, String[] parameters)
       throws Exception {
-    org.batfish.common.Pair<String, String> usage = Command.getUsageMap().get(command);
+    CommandUsage usage = Command.getUsageMap().get(command);
     String expected =
         String.format(
             "Invalid arguments: %s %s\n%s %s\n\t%s\n\n",
             Arrays.toString(options),
             Arrays.toString(parameters),
             command.commandName(),
-            usage.getFirst(),
-            usage.getSecond());
+            usage.getUsage(),
+            usage.getDescription());
     checkProcessCommandErrorMessage(command, ArrayUtils.addAll(options, parameters), expected);
   }
 

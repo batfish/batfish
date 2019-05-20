@@ -62,6 +62,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.batfish.client.BfCoordWorkHelper.WorkResult;
+import org.batfish.client.Command.CommandUsage;
 import org.batfish.client.Command.TestComparisonMode;
 import org.batfish.client.answer.LoadQuestionAnswerElement;
 import org.batfish.client.config.Settings;
@@ -129,7 +130,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
 
-@SuppressWarnings({"restriction", "deprecation"}) // todo: remove Pair
+@SuppressWarnings({"restriction"})
 public class Client extends AbstractClient implements IClient {
 
   private static final Set<String> COMPARATORS =
@@ -2153,8 +2154,9 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private void printUsage(Command command) {
-    org.batfish.common.Pair<String, String> usage = Command.getUsageMap().get(command);
-    _logger.outputf("%s %s\n\t%s\n\n", command.commandName(), usage.getFirst(), usage.getSecond());
+    CommandUsage usage = Command.getUsageMap().get(command);
+    _logger.outputf(
+        "%s %s\n\t%s\n\n", command.commandName(), usage.getUsage(), usage.getDescription());
   }
 
   private void printWorkStatusResponse(WorkResult response, boolean unconditionalPrint) {
