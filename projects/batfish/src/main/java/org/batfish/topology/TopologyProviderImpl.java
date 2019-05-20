@@ -1,7 +1,5 @@
 package org.batfish.topology;
 
-import static org.batfish.common.util.IpsecUtil.initIpsecTopology;
-import static org.batfish.common.util.IpsecUtil.retainCompatibleTunnelEdges;
 import static org.batfish.datamodel.ospf.OspfTopologyUtils.computeOspfTopology;
 
 import com.google.common.cache.Cache;
@@ -113,8 +111,7 @@ public final class TopologyProviderImpl implements TopologyProvider {
             .buildSpan("TopologyProviderImpl::computeInitialIpsecTopology")
             .startActive()) {
       assert span != null; // avoid unused warning
-      Map<String, Configuration> configurations = _batfish.loadConfigurations(networkSnapshot);
-      return retainCompatibleTunnelEdges(initIpsecTopology(configurations), configurations);
+      return TopologyUtil.computeIpsecTopology(_batfish.loadConfigurations(networkSnapshot));
     }
   }
 

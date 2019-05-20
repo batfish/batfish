@@ -1,5 +1,7 @@
 package org.batfish.common.topology;
 
+import static org.batfish.common.util.IpsecUtil.initIpsecTopology;
+import static org.batfish.common.util.IpsecUtil.retainCompatibleTunnelEdges;
 import static org.batfish.datamodel.Interface.TUNNEL_INTERFACE_TYPES;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -44,11 +46,13 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.VniSettings;
+import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.batfish.datamodel.vxlan.VxlanNode;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 
@@ -476,6 +480,17 @@ public final class TopologyUtil {
   }
 
   private TopologyUtil() {}
+
+  /**
+   * Computes the {@link IpsecTopology} from {@link Configuration}s. The returned topology will only
+   * contain the compatible edges which have successfully negotiated {@link IpsecSession}s
+   *
+   * @param configurations {@link Map} of {@link Configuration}s
+   * @return {@link IpsecTopology}
+   */
+  public static IpsecTopology computeIpsecTopology(Map<String, Configuration> configurations) {
+    return retainCompatibleTunnelEdges(initIpsecTopology(configurations), configurations);
+  }
 
   /**
    * Compute the {@link Ip}s owned by each interface. hostname -&gt; interface name -&gt; {@link

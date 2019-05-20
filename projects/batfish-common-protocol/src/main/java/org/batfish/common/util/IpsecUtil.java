@@ -1,6 +1,5 @@
 package org.batfish.common.util;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.transformation.TransformationUtil.hasSourceNat;
 import static org.batfish.datamodel.transformation.TransformationUtil.sourceNatPoolIps;
 
@@ -475,7 +474,8 @@ public class IpsecUtil {
   }
 
   /**
-   * Helper to convert IPsec topology to a set of edges
+   * Helper to convert IPsec topology to a set of edges. Only converts the IPsec edges which are
+   * established over tunnel interfaces.
    *
    * @param ipsecTopology {@link IpsecTopology} for which edges are to be computed
    * @param configurations {@link Map} of configuration objects
@@ -484,19 +484,20 @@ public class IpsecUtil {
   public static Set<Edge> toEdgeSet(
       @Nonnull IpsecTopology ipsecTopology, @Nonnull Map<String, Configuration> configurations) {
     NetworkConfigurations nf = NetworkConfigurations.of(configurations);
-    return ipsecTopology.getGraph().edges().stream()
-        .map(
-            endPoint -> {
-              IpsecPeerConfig peerU = nf.getIpsecPeerConfig(endPoint.nodeU());
-              IpsecPeerConfig peerV = nf.getIpsecPeerConfig(endPoint.nodeV());
-              return new Edge(
-                  new NodeInterfacePair(
-                      endPoint.nodeU().getHostName(),
-                      firstNonNull(peerU.getTunnelInterface(), peerU.getSourceInterface())),
-                  new NodeInterfacePair(
-                      endPoint.nodeV().getHostName(),
-                      firstNonNull(peerV.getTunnelInterface(), peerV.getSourceInterface())));
-            })
-        .collect(ImmutableSet.toImmutableSet());
+    ImmutableSet.Builder<Edge> edgesBuilder = ImmutableSet.builder();
+    for (EndpointPair<IpsecPeerConfigId> endPoint : ipsecTopology.getGraph().edges()) {
+      IpsecPeerConfig peerU = nf.getIpsecPeerConfig(endPoint.nodeU());
+      IpsecPeerConfig peerV = nf.getIpsecPeerConfig(endPoint.nodeV());
+      if (peerU != null
+          && peerV != null
+          && peerU.getTunnelInterface() != null
+          && peerV.getTunnelInterface() != null) {
+        edgesBuilder.add(
+            new Edge(
+                new NodeInterfacePair(endPoint.nodeU().getHostName(), peerU.getTunnelInterface()),
+                new NodeInterfacePair(endPoint.nodeV().getHostName(), peerV.getTunnelInterface())));
+      }
+    }
+    return edgesBuilder.build();
   }
 }
