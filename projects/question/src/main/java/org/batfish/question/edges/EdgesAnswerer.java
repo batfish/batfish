@@ -35,8 +35,6 @@ import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPeerConfigId;
 import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.NetworkConfigurations;
-import org.batfish.datamodel.RipNeighbor;
-import org.batfish.datamodel.RipProcess;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
@@ -154,9 +152,6 @@ public class EdgesAnswerer extends Answerer {
             includeNodes,
             includeRemoteNodes,
             _batfish.getTopologyProvider().getInitialOspfTopology(_batfish.getNetworkSnapshot()));
-      case RIP:
-        _batfish.initRemoteRipNeighbors(configurations, ipOwners, topology);
-        return getRipEdges(configurations, includeNodes, includeRemoteNodes);
       case VXLAN:
         VxlanTopology vxlanTopology =
             _batfish.getTopologyProvider().getInitialVxlanTopology(_batfish.getNetworkSnapshot());
@@ -329,39 +324,6 @@ public class EdgesAnswerer extends Answerer {
         }
       }
     }
-    return rows;
-  }
-
-  @VisibleForTesting
-  static Multiset<Row> getRipEdges(
-      Map<String, Configuration> configurations,
-      Set<String> includeNodes,
-      Set<String> includeRemoteNodes) {
-    Multiset<Row> rows = HashMultiset.create();
-    for (Configuration c : configurations.values()) {
-      String hostname = c.getHostname();
-      for (Vrf vrf : c.getVrfs().values()) {
-        RipProcess proc = vrf.getRipProcess();
-        if (proc != null) {
-          for (RipNeighbor ripNeighbor : proc.getRipNeighbors().values()) {
-            RipNeighbor remoteRipNeighbor = ripNeighbor.getRemoteRipNeighbor();
-            if (remoteRipNeighbor != null) {
-              Configuration remoteHost = remoteRipNeighbor.getOwner();
-              String remoteHostname = remoteHost.getHostname();
-              if (includeNodes.contains(hostname) && includeRemoteNodes.contains(remoteHostname)) {
-                rows.add(
-                    getRipEdgeRow(
-                        ripNeighbor.getOwner().getHostname(),
-                        ripNeighbor.getIface().getName(),
-                        remoteRipNeighbor.getOwner().getHostname(),
-                        remoteRipNeighbor.getIface().getName()));
-              }
-            }
-          }
-        }
-      }
-    }
-
     return rows;
   }
 

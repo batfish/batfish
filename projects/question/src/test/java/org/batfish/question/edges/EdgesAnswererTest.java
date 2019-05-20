@@ -27,7 +27,6 @@ import static org.batfish.question.edges.EdgesAnswerer.getLayer3Edges;
 import static org.batfish.question.edges.EdgesAnswerer.getOspfEdgeRow;
 import static org.batfish.question.edges.EdgesAnswerer.getOspfEdges;
 import static org.batfish.question.edges.EdgesAnswerer.getRipEdgeRow;
-import static org.batfish.question.edges.EdgesAnswerer.getRipEdges;
 import static org.batfish.question.edges.EdgesAnswerer.getTableMetadata;
 import static org.batfish.question.edges.EdgesAnswerer.getVxlanEdges;
 import static org.batfish.question.edges.EdgesAnswerer.isisEdgeToRow;
@@ -48,7 +47,6 @@ import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Multiset;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.MutableNetwork;
@@ -84,8 +82,6 @@ import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.RipNeighbor;
-import org.batfish.datamodel.RipProcess;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
@@ -407,56 +403,6 @@ public class EdgesAnswererTest {
     assertThat(
         rows,
         contains(
-            ImmutableList.of(
-                allOf(
-                    hasColumn(
-                        COL_INTERFACE,
-                        equalTo(new NodeInterfacePair("host1", "int1")),
-                        Schema.INTERFACE),
-                    hasColumn(
-                        COL_REMOTE_INTERFACE,
-                        equalTo(new NodeInterfacePair("host2", "int2")),
-                        Schema.INTERFACE)),
-                allOf(
-                    hasColumn(
-                        COL_INTERFACE,
-                        equalTo(new NodeInterfacePair("host2", "int2")),
-                        Schema.INTERFACE),
-                    hasColumn(
-                        COL_REMOTE_INTERFACE,
-                        equalTo(new NodeInterfacePair("host1", "int1")),
-                        Schema.INTERFACE)))));
-  }
-
-  @Test
-  public void testGetRipEdges() {
-    RipProcess rip1 = new RipProcess();
-    RipProcess rip2 = new RipProcess();
-    RipNeighbor ripNeighbor1 = new RipNeighbor(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"));
-    RipNeighbor ripNeighbor2 = new RipNeighbor(Ip.parse("2.2.2.2"), Ip.parse("1.1.1.1"));
-    rip1.setRipNeighbors(ImmutableTable.of(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"), ripNeighbor1));
-    rip2.setRipNeighbors(ImmutableTable.of(Ip.parse("2.2.2.2"), Ip.parse("1.1.1.1"), ripNeighbor2));
-    ripNeighbor1.setOwner(_host1);
-    ripNeighbor2.setOwner(_host2);
-    ripNeighbor1.setIface(_host1.getAllInterfaces().get("int1"));
-    ripNeighbor2.setIface(_host2.getAllInterfaces().get("int2"));
-    ripNeighbor1.setRemoteRipNeighbor(ripNeighbor2);
-    ripNeighbor2.setRemoteRipNeighbor(ripNeighbor1);
-
-    Vrf vrf1 = new Vrf("vrf1");
-    Vrf vrf2 = new Vrf("vrf2");
-
-    vrf1.setRipProcess(rip1);
-    vrf2.setRipProcess(rip2);
-
-    _host1.setVrfs(ImmutableSortedMap.of("vrf1", vrf1));
-    _host2.setVrfs(ImmutableSortedMap.of("vrf2", vrf2));
-
-    Multiset<Row> rows = getRipEdges(_configurations, _includeNodes, _includeRemoteNodes);
-
-    assertThat(
-        rows,
-        containsInAnyOrder(
             ImmutableList.of(
                 allOf(
                     hasColumn(

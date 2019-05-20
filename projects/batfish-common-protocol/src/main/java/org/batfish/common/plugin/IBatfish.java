@@ -18,8 +18,6 @@ import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
@@ -114,9 +112,6 @@ public interface IBatfish extends IPluginConsumer {
   InitInfoAnswerElement initInfoBgpAdvertisements(boolean summary, boolean verboseError);
 
   InitInfoAnswerElement initInfoRoutes(boolean summary, boolean verboseError);
-
-  void initRemoteRipNeighbors(
-      Map<String, Configuration> configurations, Map<Ip, Set<String>> ipOwners, Topology topology);
 
   SortedMap<String, Configuration> loadConfigurations();
 
