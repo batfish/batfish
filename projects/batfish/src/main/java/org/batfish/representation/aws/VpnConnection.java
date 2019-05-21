@@ -19,6 +19,7 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.IkeAuthenticationMethod;
@@ -359,7 +360,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
       if (ipsecTunnel.getVgwBgpAsn() != -1) {
         BgpProcess proc = vpnGatewayCfgNode.getDefaultVrf().getBgpProcess();
         if (proc == null) {
-          proc = new BgpProcess(ipsecTunnel.getVgwInsideAddress());
+          proc = new BgpProcess(ipsecTunnel.getVgwInsideAddress(), ConfigurationFormat.AWS);
           proc.setMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
           vpnGatewayCfgNode.getDefaultVrf().setBgpProcess(proc);
         }
@@ -406,7 +407,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
         // iBGP connection from VPC
         BgpActivePeerConfig.Builder vpcToVgwBgpPeerConfig = BgpActivePeerConfig.builder();
         vpcToVgwBgpPeerConfig.setPeerAddress(vgwToVpcIfaceAddress);
-        BgpProcess vpcProc = new BgpProcess(vpcIfaceAddress);
+        BgpProcess vpcProc = new BgpProcess(vpcIfaceAddress, ConfigurationFormat.AWS);
         vpcNode.getDefaultVrf().setBgpProcess(vpcProc);
         vpcProc.setMultipathEquivalentAsPathMatchMode(
             MultipathEquivalentAsPathMatchMode.EXACT_PATH);

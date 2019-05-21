@@ -250,7 +250,7 @@ public class IspModelingUtilsTest {
             .setLocalIp(Ip.parse("2.2.2.2"))
             .setLocalAs(2L)
             .build();
-    BgpProcess bgpProcess = new BgpProcess(Ip.ZERO);
+    BgpProcess bgpProcess = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
     bgpProcess.getActiveNeighbors().put(Prefix.parse("1.1.1.1/32"), peer);
     configuration.getDefaultVrf().setBgpProcess(bgpProcess);
 
@@ -300,7 +300,7 @@ public class IspModelingUtilsTest {
             .setLocalIp(Ip.parse("2.2.2.2"))
             .setLocalAs(2L)
             .build();
-    BgpProcess bgpProcess = new BgpProcess(Ip.ZERO);
+    BgpProcess bgpProcess = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
     bgpProcess.getActiveNeighbors().put(Prefix.parse("1.1.1.1/32"), peer);
     ispConfiguration.getDefaultVrf().setBgpProcess(bgpProcess);
 
@@ -360,7 +360,7 @@ public class IspModelingUtilsTest {
             .setLocalIp(Ip.parse("2.2.2.2"))
             .setLocalAs(2L)
             .build();
-    BgpProcess bgpProcess = new BgpProcess(Ip.ZERO);
+    BgpProcess bgpProcess = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
     bgpProcess.getActiveNeighbors().put(Prefix.parse("1.1.1.1/32"), peer);
     configuration.getDefaultVrf().setBgpProcess(bgpProcess);
 
@@ -399,7 +399,7 @@ public class IspModelingUtilsTest {
             .setLocalIp(Ip.parse("2.2.2.2"))
             .setLocalAs(2L)
             .build();
-    BgpProcess bgpProcess = new BgpProcess(Ip.ZERO);
+    BgpProcess bgpProcess = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
     bgpProcess.getActiveNeighbors().put(Prefix.parse("1.1.1.1/32"), peer);
     configuration.getDefaultVrf().setBgpProcess(bgpProcess);
 

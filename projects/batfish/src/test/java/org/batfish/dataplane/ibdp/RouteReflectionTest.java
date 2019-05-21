@@ -374,7 +374,7 @@ public class RouteReflectionTest {
     _cb = _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     _ib = _nf.interfaceBuilder();
     _nb = _nf.bgpNeighborBuilder().setLocalAs(2L);
-    _pb = _nf.bgpProcessBuilder();
+    _pb = _nf.bgpProcessBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     _vb = _nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
     If acceptIffBgp = new If();
     Disjunction guard = new Disjunction();

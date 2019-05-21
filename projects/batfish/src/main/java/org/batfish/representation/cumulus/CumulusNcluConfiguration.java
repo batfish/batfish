@@ -729,7 +729,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         return null;
       }
     }
-    org.batfish.datamodel.BgpProcess newProc = new org.batfish.datamodel.BgpProcess(routerId);
+    org.batfish.datamodel.BgpProcess newProc =
+        new org.batfish.datamodel.BgpProcess(routerId, _c.getConfigurationFormat());
     newProc.setMultipathEquivalentAsPathMatchMode(EXACT_PATH);
     newProc.setMultipathEbgp(false);
     newProc.setMultipathIbgp(false);

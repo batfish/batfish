@@ -288,7 +288,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         routerId = Ip.ZERO;
       }
     }
-    BgpProcess proc = new BgpProcess(routerId);
+    BgpProcess proc = new BgpProcess(routerId, _c.getConfigurationFormat());
     boolean multipathEbgp = false;
     boolean multipathIbgp = false;
     boolean multipathMultipleAs = false;

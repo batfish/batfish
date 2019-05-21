@@ -555,7 +555,7 @@ class AbstractionBuilder {
 
       BgpProcess bgp = vrf.getBgpProcess();
       if (bgp != null) {
-        BgpProcess abstractBgp = new BgpProcess(bgp.getRouterId());
+        BgpProcess abstractBgp = new BgpProcess(bgp.getRouterId(), conf.getConfigurationFormat());
         abstractBgp.setMultipathEbgp(bgp.getMultipathEbgp());
         abstractBgp.setMultipathIbgp(bgp.getMultipathIbgp());
         abstractBgp.setOriginationSpace(bgp.getOriginationSpace());

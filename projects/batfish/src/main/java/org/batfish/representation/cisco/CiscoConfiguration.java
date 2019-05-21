@@ -1297,7 +1297,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
       String vrfName) {
     org.batfish.datamodel.Vrf v = c.getVrfs().get(vrfName);
     org.batfish.datamodel.BgpProcess newBgpProcess =
-        new org.batfish.datamodel.BgpProcess(CiscoNxConversions.getNxBgpRouterId(nxBgpVrf, v, _w));
+        new org.batfish.datamodel.BgpProcess(
+            CiscoNxConversions.getNxBgpRouterId(nxBgpVrf, v, _w), c.getConfigurationFormat());
     if (nxBgpVrf.getBestpathCompareRouterId()) {
       newBgpProcess.setTieBreaker(BgpTieBreaker.ROUTER_ID);
     }
@@ -1552,7 +1553,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     org.batfish.datamodel.Vrf v = c.getVrfs().get(vrfName);
     Ip bgpRouterId = getBgpRouterId(c, vrfName, proc);
     org.batfish.datamodel.BgpProcess newBgpProcess =
-        new org.batfish.datamodel.BgpProcess(bgpRouterId);
+        new org.batfish.datamodel.BgpProcess(bgpRouterId, c.getConfigurationFormat());
     BgpTieBreaker tieBreaker = proc.getTieBreaker();
     if (tieBreaker != null) {
       newBgpProcess.setTieBreaker(tieBreaker);

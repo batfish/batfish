@@ -15,6 +15,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 
 /** Represents a bgp process on a router */
@@ -22,6 +23,7 @@ public class BgpProcess implements Serializable {
 
   public static class Builder extends NetworkFactoryBuilder<BgpProcess> {
 
+    private ConfigurationFormat _configurationFormat;
     private Ip _routerId;
     private Vrf _vrf;
 
@@ -32,19 +34,25 @@ public class BgpProcess implements Serializable {
     @Override
     public BgpProcess build() {
       checkArgument(_routerId != null, "Missing %s", PROP_ROUTER_ID);
-      BgpProcess bgpProcess = new BgpProcess(_routerId);
+      checkArgument(_configurationFormat != null, "Missing configuration format");
+      BgpProcess bgpProcess = new BgpProcess(_routerId, _configurationFormat);
       if (_vrf != null) {
         _vrf.setBgpProcess(bgpProcess);
       }
       return bgpProcess;
     }
 
-    public BgpProcess.Builder setRouterId(Ip routerId) {
+    public Builder setConfigurationFormat(@Nonnull ConfigurationFormat format) {
+      _configurationFormat = format;
+      return this;
+    }
+
+    public Builder setRouterId(Ip routerId) {
       _routerId = routerId;
       return this;
     }
 
-    public BgpProcess.Builder setVrf(Vrf vrf) {
+    public Builder setVrf(Vrf vrf) {
       _vrf = vrf;
       return this;
     }
@@ -62,6 +70,8 @@ public class BgpProcess implements Serializable {
     }
   }
 
+  private static final String PROP_EBGP_ADMIN_COST = "ebgpAdminCost";
+  private static final String PROP_IBGP_ADMIN_COST = "ibgpAdminCost";
   private static final String PROP_INTERFACE_NEIGHBORS = "interfaceNeighbors";
   private static final String PROP_PASSIVE_NEIGHBORS = "dynamicNeighbors";
   private static final String PROP_MULTIPATH_EBGP = "multipathEbgp";
@@ -74,6 +84,8 @@ public class BgpProcess implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
+  private final int _ebgpAdminCost;
+  private final int _ibgpAdminCost;
   private Supplier<Set<Long>> _clusterIds;
   @Nonnull private SortedMap<String, BgpUnnumberedPeerConfig> _interfaceNeighbors;
   private boolean _multipathEbgp;
@@ -99,9 +111,20 @@ public class BgpProcess implements Serializable {
 
   private BgpTieBreaker _tieBreaker;
 
-  /** Constructs a BgpProcess */
-  public BgpProcess(@Nonnull Ip routerId) {
+  /**
+   * Constructs a BgpProcess with admin costs corresponding to the given {@link ConfigurationFormat}
+   */
+  public BgpProcess(@Nonnull Ip routerId, @Nonnull ConfigurationFormat configurationFormat) {
+    this(
+        routerId,
+        RoutingProtocol.BGP.getDefaultAdministrativeCost(configurationFormat),
+        RoutingProtocol.IBGP.getDefaultAdministrativeCost(configurationFormat));
+  }
+
+  public BgpProcess(@Nonnull Ip routerId, int ebgpAdminCost, int ibgpAdminCost) {
     _activeNeighbors = new TreeMap<>();
+    _ebgpAdminCost = ebgpAdminCost;
+    _ibgpAdminCost = ibgpAdminCost;
     _interfaceNeighbors = new TreeMap<>();
     _tieBreaker = BgpTieBreaker.ARRIVAL_ORDER;
     _clusterIds = new ClusterIdsSupplier();
@@ -111,9 +134,20 @@ public class BgpProcess implements Serializable {
   }
 
   @JsonCreator
-  private static BgpProcess create(@Nullable @JsonProperty(PROP_ROUTER_ID) Ip routerId) {
+  private static BgpProcess create(
+      @Nullable @JsonProperty(PROP_ROUTER_ID) Ip routerId,
+      @Nullable @JsonProperty(PROP_EBGP_ADMIN_COST) Integer ebgpAdminCost,
+      @Nullable @JsonProperty(PROP_IBGP_ADMIN_COST) Integer ibgpAdminCost) {
     checkArgument(routerId != null, "Missing %s", routerId);
-    return new BgpProcess(routerId);
+    // In the absence of provided values, default to Cisco IOS values
+    return new BgpProcess(
+        routerId,
+        firstNonNull(
+            ebgpAdminCost,
+            RoutingProtocol.BGP.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS)),
+        firstNonNull(
+            ibgpAdminCost,
+            RoutingProtocol.IBGP.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS)));
   }
 
   /**
@@ -148,6 +182,33 @@ public class BgpProcess implements Serializable {
   @Nonnull
   public SortedMap<Prefix, BgpActivePeerConfig> getActiveNeighbors() {
     return _activeNeighbors;
+  }
+
+  /** Returns the admin cost of the given BGP protocol */
+  @JsonIgnore
+  public int getAdminCost(RoutingProtocol protocol) {
+    switch (protocol) {
+      case BGP:
+        return _ebgpAdminCost;
+      case IBGP:
+        return _ibgpAdminCost;
+      default:
+        throw new BatfishException(String.format("Unrecognized BGP protocol %s", protocol));
+    }
+  }
+
+  /** Returns the admin cost for eBGP routes in this process */
+  @JsonProperty(PROP_EBGP_ADMIN_COST)
+  @Nonnull
+  private int getEbgpAdminCost() {
+    return _ebgpAdminCost;
+  }
+
+  /** Returns the admin cost for iBGP routes in this process */
+  @JsonProperty(PROP_IBGP_ADMIN_COST)
+  @Nonnull
+  private int getIbgpAdminCost() {
+    return _ibgpAdminCost;
   }
 
   /** Returns BGP unnumbered peer configurations keyed by peer-interface */
