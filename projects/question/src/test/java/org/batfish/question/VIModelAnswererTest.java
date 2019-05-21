@@ -63,7 +63,8 @@ public class VIModelAnswererTest {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    BgpProcess.Builder pb = nf.bgpProcessBuilder();
+    BgpProcess.Builder pb =
+        nf.bgpProcessBuilder().setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS);
     Configuration c1 = cb.setHostname("c1").build();
     Configuration c2 = cb.setHostname("c2").build();
     Vrf vrf1 = nf.vrfBuilder().setOwner(c1).setName("vrf1").build();
