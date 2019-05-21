@@ -17,7 +17,7 @@ public class BgpRoutingProcessTest {
     NetworkFactory nf = new NetworkFactory();
     BgpRoutingProcess process =
         new BgpRoutingProcess(
-            new BgpProcess(Ip.ZERO),
+            new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS),
             nf.configurationBuilder()
                 .setHostname("c")
                 .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)

@@ -32,7 +32,7 @@ public class BgpProcessConfigurationAnswererTest {
   @Test
   public void testWithNeighbors() {
     // Create process with active, passive, and unnumbered peers
-    BgpProcess proc = new BgpProcess(Ip.ZERO);
+    BgpProcess proc = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
     BgpActivePeerConfig.builder()
         .setBgpProcess(proc)
         .setLocalAs(100L)
@@ -94,7 +94,7 @@ public class BgpProcessConfigurationAnswererTest {
   @Test
   public void getProperties() {
 
-    BgpProcess bgp1 = new BgpProcess(Ip.parse("1.1.1.1"));
+    BgpProcess bgp1 = new BgpProcess(Ip.parse("1.1.1.1"), ConfigurationFormat.CISCO_IOS);
     bgp1.setMultipathEbgp(true);
     bgp1.setTieBreaker(BgpTieBreaker.ARRIVAL_ORDER);
 

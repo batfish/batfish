@@ -19,6 +19,7 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.IkeAuthenticationMethod;
@@ -305,6 +306,10 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
     ImmutableSortedMap.Builder<String, IpsecPeerConfig> ipsecPeerConfigMapBuilder =
         ImmutableSortedMap.naturalOrder();
 
+    // BGP administrative costs
+    int ebgpAdminCost = RoutingProtocol.BGP.getDefaultAdministrativeCost(ConfigurationFormat.AWS);
+    int ibgpAdminCost = RoutingProtocol.IBGP.getDefaultAdministrativeCost(ConfigurationFormat.AWS);
+
     for (int i = 0; i < _ipsecTunnels.size(); i++) {
       int idNum = i + 1;
       String vpnId = _vpnConnectionId + "-" + idNum;
@@ -359,7 +364,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
       if (ipsecTunnel.getVgwBgpAsn() != -1) {
         BgpProcess proc = vpnGatewayCfgNode.getDefaultVrf().getBgpProcess();
         if (proc == null) {
-          proc = new BgpProcess(ipsecTunnel.getVgwInsideAddress());
+          proc = new BgpProcess(ipsecTunnel.getVgwInsideAddress(), ebgpAdminCost, ibgpAdminCost);
           proc.setMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
           vpnGatewayCfgNode.getDefaultVrf().setBgpProcess(proc);
         }
@@ -406,7 +411,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
         // iBGP connection from VPC
         BgpActivePeerConfig.Builder vpcToVgwBgpPeerConfig = BgpActivePeerConfig.builder();
         vpcToVgwBgpPeerConfig.setPeerAddress(vgwToVpcIfaceAddress);
-        BgpProcess vpcProc = new BgpProcess(vpcIfaceAddress);
+        BgpProcess vpcProc = new BgpProcess(vpcIfaceAddress, ebgpAdminCost, ibgpAdminCost);
         vpcNode.getDefaultVrf().setBgpProcess(vpcProc);
         vpcProc.setMultipathEquivalentAsPathMatchMode(
             MultipathEquivalentAsPathMatchMode.EXACT_PATH);
