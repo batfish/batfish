@@ -84,17 +84,6 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     public Set<String> getNodes() {
       return _nodes;
     }
-
-    @Override
-    public String prettyPrint() {
-      StringBuilder sb = new StringBuilder("Results for comparing same name structure\n");
-      for (String name : _equivalenceSets.keySet()) {
-        if (_equivalenceSets.get(name).size() > 0) {
-          sb.append(equivalenceSetToString("  ", name, _equivalenceSets.get(name)));
-        }
-      }
-      return sb.toString();
-    }
   }
 
   public static class CompareSameNameAnswerer extends Answerer {

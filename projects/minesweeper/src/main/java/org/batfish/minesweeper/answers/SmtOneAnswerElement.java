@@ -19,9 +19,4 @@ public class SmtOneAnswerElement extends AnswerElement {
   public VerificationResult getResult() {
     return _result;
   }
-
-  @Override
-  public String prettyPrint() {
-    return _result.prettyPrint(null);
-  }
 }

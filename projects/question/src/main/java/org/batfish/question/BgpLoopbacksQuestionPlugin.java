@@ -70,19 +70,6 @@ public class BgpLoopbacksQuestionPlugin extends QuestionPlugin {
       return sb.toString();
     }
 
-    @Override
-    public String prettyPrint() {
-      StringBuilder sb = new StringBuilder("Results for BGP loopbacks check\n");
-      // if (_exported.size() > 0) {
-      // sb.append(
-      // interfacesToString(" ", "Exported loopbacks", _exported));
-      // }
-      if (_missing.size() > 0) {
-        sb.append(interfacesToString("  ", "Missing loopbacks", _missing));
-      }
-      return sb.toString();
-    }
-
     @JsonIgnore
     public void setExported(SortedMap<String, SortedSet<String>> exported) {
       _exported = exported;

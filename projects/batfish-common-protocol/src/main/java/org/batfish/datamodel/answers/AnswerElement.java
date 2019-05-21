@@ -20,7 +20,7 @@ public abstract class AnswerElement {
     return _summary;
   }
 
-  public String prettyPrint() {
+  public final String prettyPrint() {
     try {
       return BatfishObjectMapper.writePrettyString(this);
     } catch (JsonProcessingException e) {

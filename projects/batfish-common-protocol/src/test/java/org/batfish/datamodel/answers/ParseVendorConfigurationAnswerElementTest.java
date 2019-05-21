@@ -1,7 +1,6 @@
 package org.batfish.datamodel.answers;
 
 import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.util.SortedMap;
@@ -39,20 +38,6 @@ public class ParseVendorConfigurationAnswerElementTest {
     BatfishStackTrace stackTrace = new BatfishStackTrace(exception);
     _element.getErrors().put("error", stackTrace);
     assertThat(_element.getErrors().get("error"), is(stackTrace));
-  }
-
-  @Test
-  public void testPrettyPrint() {
-    BatfishException exception = new BatfishException("sample exception");
-    BatfishStackTrace stackTrace = new BatfishStackTrace(exception);
-    _element.getErrors().put("sampleError", stackTrace);
-    StringBuilder expected = new StringBuilder();
-    expected.append("Results of parsing vendor configurations\n");
-    expected.append("\n  sampleError[Parser errors]\n");
-    for (String line : _element.getErrors().get("sampleError").getLineMap()) {
-      expected.append("    " + line + "\n");
-    }
-    assertThat(_element.prettyPrint(), equalTo(expected.toString()));
   }
 
   @Test

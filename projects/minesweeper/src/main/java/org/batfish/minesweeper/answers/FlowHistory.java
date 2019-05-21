@@ -119,23 +119,6 @@ public class FlowHistory extends AnswerElement {
     return _traces;
   }
 
-  @Override
-  public String prettyPrint() {
-    StringBuilder retString = new StringBuilder("\n");
-    for (String flowStr : _traces.keySet()) {
-      Flow flow = _traces.get(flowStr).getFlow();
-      retString.append(flow.prettyPrint("") + "\n");
-      for (String envTag : _traces.get(flowStr).getPaths().keySet()) {
-        retString.append("  environment:" + envTag + "\n");
-        retString.append(_traces.get(flowStr).getEnvironments().get(envTag) + "\n");
-        for (FlowTrace trace : _traces.get(flowStr).getPaths().get(envTag)) {
-          retString.append(trace.toString("    ") + "\n");
-        }
-      }
-    }
-    return retString.toString();
-  }
-
   @JsonProperty(PROP_TRACES)
   private void setTraces(SortedMap<String, FlowHistoryInfo> traces) {
     _traces = traces;

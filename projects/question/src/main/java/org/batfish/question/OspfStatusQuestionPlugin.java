@@ -111,14 +111,6 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
     public SortedSet<OspfInfo> getOspfStatus() {
       return _ospfStatuses;
     }
-
-    @Override
-    public String prettyPrint() {
-      StringBuilder sb = new StringBuilder("Results for OSPF loopbacks check\n");
-      _ospfStatuses.forEach(
-          info -> sb.append("  " + info.getInterface() + " " + info.getOspfStatus() + "\n"));
-      return sb.toString();
-    }
   }
 
   public static class OspfStatusAnswerer extends Answerer {

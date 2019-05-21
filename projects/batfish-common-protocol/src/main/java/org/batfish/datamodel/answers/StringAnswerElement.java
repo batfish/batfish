@@ -18,11 +18,6 @@ public final class StringAnswerElement extends AnswerElement {
     return _answer;
   }
 
-  @Override
-  public String prettyPrint() {
-    return _answer;
-  }
-
   public void setAnswer(String answer) {
     this._answer = answer;
   }

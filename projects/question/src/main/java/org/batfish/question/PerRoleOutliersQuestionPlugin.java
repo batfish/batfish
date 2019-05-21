@@ -6,14 +6,12 @@ import com.google.auto.service.AutoService;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
-import java.util.Optional;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
-import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -50,65 +48,6 @@ public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_SERVER_OUTLIERS)
     public SortedSet<OutlierSet<NavigableSet<String>>> getServerOutliers() {
       return _serverOutliers;
-    }
-
-    @Override
-    public String prettyPrint() {
-      if (_namedStructureOutliers.size() == 0 && _serverOutliers.size() == 0) {
-        return "";
-      }
-
-      StringBuilder sb = new StringBuilder("Results for per-role outliers\n");
-
-      for (OutlierSet<?> outlier : _serverOutliers) {
-        sb.append("  Hypothesis");
-        Optional<String> role = outlier.getRole();
-        role.ifPresent(s -> sb.append(" for role " + s));
-        sb.append(":\n");
-        sb.append("    every node should have the following set of ");
-        sb.append(outlier.getName() + ": " + outlier.getDefinition() + "\n");
-        sb.append("  Outliers: ");
-        sb.append(outlier.getOutliers() + "\n");
-        sb.append("  Conformers: ");
-        sb.append(outlier.getConformers() + "\n\n");
-      }
-
-      for (NamedStructureOutlierSet<?> outlier : _namedStructureOutliers) {
-        sb.append("  Hypothesis");
-        Optional<String> role = outlier.getRole();
-        role.ifPresent(s -> sb.append(" for role " + s));
-        sb.append(":\n");
-        switch (outlier.getHypothesis()) {
-          case SAME_DEFINITION:
-            sb.append(
-                "    every "
-                    + outlier.getStructType()
-                    + " named "
-                    + outlier.getName()
-                    + " should have the same definition\n");
-            break;
-          case SAME_NAME:
-            if (outlier.getNamedStructure() != null) {
-              sb.append("    every ");
-            } else {
-              sb.append("no ");
-            }
-            sb.append(
-                "node should define a "
-                    + outlier.getStructType()
-                    + " named "
-                    + outlier.getName()
-                    + "\n");
-            break;
-          default:
-            throw new BatfishException("Unexpected hypothesis" + outlier.getHypothesis());
-        }
-        sb.append("  Outliers: ");
-        sb.append(outlier.getOutliers() + "\n");
-        sb.append("  Conformers: ");
-        sb.append(outlier.getConformers() + "\n\n");
-      }
-      return sb.toString();
     }
 
     @JsonProperty(PROP_NAMED_STRUCTURE_OUTLIERS)

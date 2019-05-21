@@ -65,15 +65,6 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
       return sb.toString();
     }
 
-    @Override
-    public String prettyPrint() {
-      StringBuilder sb = new StringBuilder("Results for unique IP assignment check\n");
-      if (_duplicateIps != null) {
-        sb.append(ipsToString());
-      }
-      return sb.toString();
-    }
-
     @JsonProperty(PROP_DUPLICATE_IPS)
     public void setDuplicateIps(SortedMap<Ip, SortedSet<NodeInterfacePair>> duplicateIps) {
       _summary.setNumResults(duplicateIps.size());

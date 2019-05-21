@@ -19,7 +19,6 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.ErrorDetails;
 import org.batfish.common.Version;
-import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.DefinedStructureInfo;
 
@@ -187,66 +186,6 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
   @Nonnull
   public SortedMap<String, Warnings> getWarnings() {
     return _warnings;
-  }
-
-  @Override
-  public String prettyPrint() {
-    StringBuilder sb = new StringBuilder("Results from converting vendor configurations\n");
-    _warnings.forEach(
-        (name, warnings) -> {
-          sb.append("\n  " + name + "[Conversion warnings]\n");
-          for (Warning warning : warnings.getRedFlagWarnings()) {
-            sb.append("    RedFlag " + warning.getTag() + " : " + warning.getText() + "\n");
-          }
-          for (Warning warning : warnings.getUnimplementedWarnings()) {
-            sb.append("    Unimplemented " + warning.getTag() + " : " + warning.getText() + "\n");
-          }
-          for (Warning warning : warnings.getPedanticWarnings()) {
-            sb.append("    Pedantic " + warning.getTag() + " : " + warning.getText() + "\n");
-          }
-        });
-    _errors.forEach(
-        (name, errors) -> {
-          sb.append("\n  " + name + "[Conversion errors]\n");
-          for (String line : errors.getLineMap()) {
-            sb.append("    " + line + "\n");
-          }
-        });
-    _undefinedReferences.forEach(
-        (hostname, byType) -> {
-          sb.append("\n  " + hostname + "[Undefined references]\n");
-          byType.forEach(
-              (type, byName) -> {
-                sb.append("  " + type + ":\n");
-                byName.forEach(
-                    (name, byUsage) -> {
-                      sb.append("    " + name + ":\n");
-                      byUsage.forEach(
-                          (usage, lines) ->
-                              sb.append("      " + usage + ": lines " + lines + "\n"));
-                    });
-              });
-        });
-    _definedStructures.forEach(
-        (hostname, byType) -> {
-          sb.append("\n  " + hostname + "[Defined structures]\n");
-          byType.forEach(
-              (structureType, byName) ->
-                  byName.forEach(
-                      (name, info) -> {
-                        if (info.getNumReferrers() == 0) {
-                          sb.append(
-                              "    "
-                                  + structureType
-                                  + ": "
-                                  + name
-                                  + ":"
-                                  + info.getDefinitionLines()
-                                  + "\n");
-                        }
-                      }));
-        });
-    return sb.toString();
   }
 
   @VisibleForTesting
