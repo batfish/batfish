@@ -1283,7 +1283,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     ParseVendorConfigurationAnswerElement parseAnswer = loadParseVendorConfigurationAnswerElement();
     InitInfoAnswerElement answerElement = mergeParseAnswer(summary, verboseError, parseAnswer);
     mergeConvertAnswer(summary, verboseError, answerElement);
-    _logger.info(answerElement.prettyPrint());
+    _logger.info(answerElement.toString());
     return answerElement;
   }
 
@@ -1292,7 +1292,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     ParseEnvironmentBgpTablesAnswerElement parseAnswer =
         loadParseEnvironmentBgpTablesAnswerElement();
     InitInfoAnswerElement answerElement = mergeParseAnswer(summary, verboseError, parseAnswer);
-    _logger.info(answerElement.prettyPrint());
+    _logger.info(answerElement.toString());
     return answerElement;
   }
 
@@ -1301,7 +1301,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     ParseEnvironmentRoutingTablesAnswerElement parseAnswer =
         loadParseEnvironmentRoutingTablesAnswerElement();
     InitInfoAnswerElement answerElement = mergeParseAnswer(summary, verboseError, parseAnswer);
-    _logger.info(answerElement.prettyPrint());
+    _logger.info(answerElement.toString());
     return answerElement;
   }
 

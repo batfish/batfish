@@ -403,59 +403,6 @@ public final class Flow6 implements Comparable<Flow6> {
     return result;
   }
 
-  public String prettyPrint(String prefixString) {
-    boolean icmp = _ipProtocol == IpProtocol.ICMP;
-    boolean tcp = _ipProtocol == IpProtocol.TCP;
-    boolean udp = _ipProtocol == IpProtocol.UDP;
-    String srcPortStr = "";
-    String dstPortStr = "";
-    String icmpTypeStr = "";
-    String icmpCodeStr = "";
-    String tcpFlagsStr = "";
-    if (tcp || udp) {
-      srcPortStr = " sport:" + NamedPort.nameFromNumber(_srcPort);
-      dstPortStr = " dport:" + NamedPort.nameFromNumber(_dstPort);
-    }
-    if (tcp) {
-      tcpFlagsStr =
-          String.format(
-              " tcpFlags:%d%d%d%d%d%d%d%d",
-              _tcpFlagsCwr,
-              _tcpFlagsEce,
-              _tcpFlagsUrg,
-              _tcpFlagsAck,
-              _tcpFlagsPsh,
-              _tcpFlagsRst,
-              _tcpFlagsSyn,
-              _tcpFlagsFin);
-    }
-    if (icmp) {
-      icmpCodeStr = " icmpCode:" + _icmpCode;
-      icmpTypeStr = " icmpType:" + _icmpType;
-    }
-    String dscpStr = (_dscp != 0) ? " dscp:" + _dscp : "";
-    String ecnStr = (_ecn != 0) ? " ecn:" + _ecn : "";
-
-    return prefixString
-        + "Flow: ingress:"
-        + _ingressNode
-        + " "
-        + _srcIp
-        + "->"
-        + _dstIp
-        + " "
-        + _ipProtocol
-        + srcPortStr
-        + dstPortStr
-        + dscpStr
-        + ecnStr
-        + icmpTypeStr
-        + icmpCodeStr
-        + " state:"
-        + _state
-        + tcpFlagsStr;
-  }
-
   @Override
   public String toString() {
     boolean icmp = _ipProtocol == IpProtocol.ICMP;

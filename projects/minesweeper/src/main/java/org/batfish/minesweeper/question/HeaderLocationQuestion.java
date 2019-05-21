@@ -157,42 +157,6 @@ public class HeaderLocationQuestion extends HeaderQuestion {
     return _notIngressNodeRegex;
   }
 
-  @Override
-  public String prettyPrint() {
-    return String.format("headerlocation %s", prettyPrintParams());
-  }
-
-  @Override
-  protected String prettyPrintParams() {
-    try {
-      String retString = super.prettyPrintParams();
-      if (!(_negate == DEFAULT_NEGATE)) {
-        retString += String.format(", %s=%s", PROP_NEGATE, _negate);
-      }
-      if (!_finalNodeRegex.equals(DEFAULT_FINAL_NODE_REGEX)) {
-        retString += String.format(", %s=%s", PROP_FINAL_NODE_REGEX, _finalNodeRegex);
-      }
-      if (!_finalIfaceRegex.equals(DEFAULT_FINAL_IFACE_REGEX)) {
-        retString += String.format(", %s=%s", PROP_FINAL_IFACE_REGEX, _finalIfaceRegex);
-      }
-      if (!_ingressNodeRegex.equals(DEFAULT_INGRESS_NODE_REGEX)) {
-        retString += String.format(", %s=%s", PROP_INGRESS_NODE_REGEX, _ingressNodeRegex);
-      }
-      if (!_notFinalNodeRegex.equals(DEFAULT_NOT_FINAL_NODE_REGEX)) {
-        retString += String.format(", %s=%s", PROP_NOT_FINAL_NODE_REGEX, _notFinalNodeRegex);
-      }
-      if (!_notFinalIfaceRegex.equals(DEFAULT_NOT_FINAL_IFACE_REGEX)) {
-        retString += String.format(", %s=%s", PROP_NOT_FINAL_IFACE_REGEX, _notFinalIfaceRegex);
-      }
-      if (!_notIngressNodeRegex.equals(DEFAULT_NOT_INGRESS_NODE_REGEX)) {
-        retString += String.format(", %s=%s", PROP_NOT_INGRESS_NODE_REGEX, _notIngressNodeRegex);
-      }
-      return retString;
-    } catch (Exception e) {
-      return "Pretty printing failed. Printing Json\n" + toJsonString();
-    }
-  }
-
   @JsonProperty(NOT_FAIL_NODE1_REGEX_VAR)
   public String getNotFailNode1Regex() {
     return _notFailNode1Regex;

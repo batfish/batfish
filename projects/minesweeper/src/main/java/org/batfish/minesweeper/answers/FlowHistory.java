@@ -7,7 +7,6 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import org.apache.commons.lang3.StringUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -15,16 +14,6 @@ import org.batfish.datamodel.pojo.Environment;
 
 public class FlowHistory extends AnswerElement {
   private static final String PROP_TRACES = "traces";
-
-  private static String getIndentedString(String str, int indentLevel) {
-    String indent = StringUtils.repeat("  ", indentLevel);
-    StringBuilder sb = new StringBuilder();
-    String[] lines = str.split("\n", -1);
-    for (String line : lines) {
-      sb.append(indent + line + "\n");
-    }
-    return sb.toString();
-  }
 
   public static class FlowHistoryInfo {
     private static final String PROP_ENVIRONMENTS = "environments";
@@ -69,32 +58,6 @@ public class FlowHistory extends AnswerElement {
     _traces = new TreeMap<>();
   }
 
-  public static FlowHistory forDifferentialTraces(
-      String baseEnvTag,
-      Environment baseEnv,
-      Map<Flow, Set<FlowTrace>> baseTraces,
-      String deltaEnvTag,
-      Environment deltaEnv,
-      Map<Flow, Set<FlowTrace>> deltaTraces) {
-    FlowHistory flowHistory = new FlowHistory();
-    baseTraces.forEach(
-        (flow, traces) ->
-            traces.forEach(trace -> flowHistory.addFlowTrace(flow, baseEnvTag, baseEnv, trace)));
-    deltaTraces.forEach(
-        (flow, traces) ->
-            traces.forEach(trace -> flowHistory.addFlowTrace(flow, deltaEnvTag, deltaEnv, trace)));
-    return flowHistory;
-  }
-
-  public static FlowHistory forTraces(
-      String envTag, Environment env, Map<Flow, Set<FlowTrace>> traces) {
-    FlowHistory flowHistory = new FlowHistory();
-    traces.forEach(
-        (flow, flowTraces) ->
-            flowTraces.forEach(trace -> flowHistory.addFlowTrace(flow, envTag, env, trace)));
-    return flowHistory;
-  }
-
   public void addFlowTrace(Flow flow, String envTag, Environment environment, FlowTrace trace) {
     String flowText = flow.toString();
     if (!_traces.containsKey(flowText)) {
@@ -119,47 +82,8 @@ public class FlowHistory extends AnswerElement {
     return _traces;
   }
 
-  @Override
-  public String prettyPrint() {
-    StringBuilder retString = new StringBuilder("\n");
-    for (String flowStr : _traces.keySet()) {
-      Flow flow = _traces.get(flowStr).getFlow();
-      retString.append(flow.prettyPrint("") + "\n");
-      for (String envTag : _traces.get(flowStr).getPaths().keySet()) {
-        retString.append("  environment:" + envTag + "\n");
-        retString.append(_traces.get(flowStr).getEnvironments().get(envTag) + "\n");
-        for (FlowTrace trace : _traces.get(flowStr).getPaths().get(envTag)) {
-          retString.append(trace.toString("    ") + "\n");
-        }
-      }
-    }
-    return retString.toString();
-  }
-
   @JsonProperty(PROP_TRACES)
   private void setTraces(SortedMap<String, FlowHistoryInfo> traces) {
     _traces = traces;
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    for (String flowString : _traces.keySet()) {
-      sb.append("Flow: " + flowString + "\n");
-      Map<String, Set<FlowTrace>> envTraceSetMap = _traces.get(flowString).getPaths();
-      for (String environmentName : envTraceSetMap.keySet()) {
-        sb.append(" Environment: " + environmentName + "\n");
-        Set<FlowTrace> traces = envTraceSetMap.get(environmentName);
-        int i = 0;
-        for (FlowTrace trace : traces) {
-          i++;
-          sb.append("  Trace: " + i + "\n");
-          String rawTraceString = trace.toString();
-          String traceString = getIndentedString(rawTraceString, 3);
-          sb.append(traceString);
-        }
-      }
-    }
-    return sb.toString();
   }
 }

@@ -27,11 +27,6 @@ public class JsonDiff {
   public static final String COMMON_ITEM_CODE = "COMMON :: ";
   public static final String REMOVED_ITEM_CODE = "REMOVED :: ";
 
-  public static String getStringWithoutCode(String key) {
-    String[] words = key.split(" :: ");
-    return words[1];
-  }
-
   private final SortedMap<String, Object> _data;
 
   public JsonDiff(JSONArray lhsArray, JSONArray rhsArray) throws JSONException {
@@ -222,7 +217,7 @@ public class JsonDiff {
     return _data;
   }
 
-  private Object getValue(Object object) throws JSONException {
+  private static Object getValue(Object object) throws JSONException {
     if (object instanceof JSONObject) {
       JSONObject j = (JSONObject) object;
       Map<String, Object> map = new TreeMap<>();
@@ -245,9 +240,5 @@ public class JsonDiff {
     } else {
       return object;
     }
-  }
-
-  public String prettyPrint(String prefixStr) {
-    return PrettyPrinter.print(prefixStr, this);
   }
 }

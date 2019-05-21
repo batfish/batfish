@@ -53,7 +53,6 @@ public enum Command {
   SET_FIXED_WORKITEM_ID("set-fixed-workitem-id"),
   SET_LOGLEVEL("set-loglevel"),
   SET_NETWORK("set-network"),
-  SET_PRETTY_PRINT("set-pretty-print"),
   SET_REFERENCE_SNAPSHOT("set-reference-snapshot"),
   SET_SNAPSHOT("set-snapshot"),
   SHOW_API_KEY("show-api-key"),
@@ -233,8 +232,6 @@ public enum Command {
         new CommandUsage(
             "<debug|info|output|warn|error>", "Set the client loglevel. Default is output"));
     descs.put(SET_NETWORK, new CommandUsage("<network-name>", "Set the current network"));
-    descs.put(
-        SET_PRETTY_PRINT, new CommandUsage("<true|false>", "Whether to pretty print answers"));
     descs.put(
         SET_REFERENCE_SNAPSHOT, new CommandUsage("<snapshot-name>", "Set the reference snapshot"));
     descs.put(SET_SNAPSHOT, new CommandUsage("<snapshot-name>", "Set the current snapshot"));

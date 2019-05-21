@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.questions.Question;
 
@@ -96,26 +95,5 @@ public final class BidirectionalTracerouteQuestion extends Question {
   @Override
   public String getName() {
     return "bidirectionalTraceroute";
-  }
-
-  @Override
-  public String prettyPrint() {
-    try {
-      StringBuilder sb = new StringBuilder();
-      sb.append(String.format("bidirectionalTraceroute %s", prettyPrintBase()));
-      if (_sourceLocationStr != null) {
-        sb.append(String.format(", %s=%s", PROP_SOURCE_LOCATION, _sourceLocationStr));
-      }
-      if (_maxTraces != DEFAULT_MAX_TRACES) {
-        sb.append(String.format(", %s=%s", PROP_MAX_TRACES, _maxTraces));
-      }
-      return sb.toString();
-    } catch (Exception e) {
-      try {
-        return "Pretty printing failed. Printing Json\n" + toJsonString();
-      } catch (BatfishException e1) {
-        throw new BatfishException("Both pretty and json printing failed\n", e1);
-      }
-    }
   }
 }

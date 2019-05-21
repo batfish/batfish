@@ -28,7 +28,6 @@ import static org.batfish.client.Command.LOAD_QUESTIONS;
 import static org.batfish.client.Command.SET_BATFISH_LOGLEVEL;
 import static org.batfish.client.Command.SET_LOGLEVEL;
 import static org.batfish.client.Command.SET_NETWORK;
-import static org.batfish.client.Command.SET_PRETTY_PRINT;
 import static org.batfish.client.Command.SET_REFERENCE_SNAPSHOT;
 import static org.batfish.client.Command.SET_SNAPSHOT;
 import static org.batfish.client.Command.SHOW_API_KEY;
@@ -926,7 +925,7 @@ public final class ClientTest {
 
   @Test
   public void testLoadQuestionsNames() throws Exception {
-    Client client = new Client(new String[] {"-runmode", "interactive", "-prettyanswers", "false"});
+    Client client = new Client(new String[] {"-runmode", "interactive"});
     JSONObject testQuestion = new JSONObject();
     testQuestion.put(
         "instance",
@@ -1279,18 +1278,6 @@ public final class ClientTest {
     String[] parameters = new String[] {"parameter1"};
     checkProcessCommandErrorMessage(
         SET_LOGLEVEL, parameters, "Undefined loglevel value: parameter1\n");
-  }
-
-  @Test
-  public void testSetPrettyPrintInvalidParas() throws Exception {
-    testInvalidInput(SET_PRETTY_PRINT, new String[] {}, new String[] {});
-  }
-
-  @Test
-  public void testSetPrettyPrintValidParas() throws Exception {
-    String[] parameters = new String[] {"true"};
-    testProcessCommandWithValidInput(
-        SET_PRETTY_PRINT, parameters, "Set pretty printing answers to true\n");
   }
 
   @Test

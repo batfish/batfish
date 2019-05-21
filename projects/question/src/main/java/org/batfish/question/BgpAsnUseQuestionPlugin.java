@@ -38,20 +38,6 @@ public class BgpAsnUseQuestionPlugin extends QuestionPlugin {
     public SortedSetMultimap<Long, String> getAsns() {
       return _asns;
     }
-
-    @Override
-    public String prettyPrint() {
-      StringBuilder sb = new StringBuilder("Results for BGP ASN use\n");
-      if (_asns != null) {
-        for (Long asn : _asns.keySet()) {
-          sb.append("  " + asn + "\n");
-          for (String node : _asns.get(asn)) {
-            sb.append("    " + node + "\n");
-          }
-        }
-      }
-      return sb.toString();
-    }
   }
 
   public static class BgpAsnUseAnswerer extends Answerer {
@@ -136,14 +122,6 @@ public class BgpAsnUseQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_NODE_REGEX)
     public NodesSpecifier getNodeRegex() {
       return _nodeRegex;
-    }
-
-    @Override
-    public String prettyPrint() {
-      String retString =
-          String.format(
-              "bgpasnuse %snodeRegex='%s' minCount=%d", prettyPrintBase(), _nodeRegex, _minCount);
-      return retString;
     }
   }
 

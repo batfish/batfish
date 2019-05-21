@@ -1,7 +1,6 @@
 package org.batfish.datamodel.answers;
 
 import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -52,28 +51,6 @@ public class InitInfoAnswerElementTest {
     errors.add(stackTrace);
     _element.getErrors().put("error", errors);
     assertThat(_element.getErrors().get("error"), is(errors));
-  }
-
-  @Test
-  public void testPrettyPrint() {
-    String errorMessage = "message is: parser: SampleParser: line 50, sample error\n";
-    BatfishException exception = new BatfishException(errorMessage);
-    BatfishStackTrace stackTrace = new BatfishStackTrace(exception);
-    List<BatfishStackTrace> errors = new ArrayList<>();
-    errors.add(stackTrace);
-    _element.getErrors().put("sampleError", errors);
-    StringBuilder expected = new StringBuilder();
-    expected.append("PARSING SUMMARY\n");
-    expected.append("DETAILED ERRORS\n");
-    for (BatfishStackTrace trace : _element.getErrors().get("sampleError")) {
-      expected.append("  Failed to parse sampleError:\n");
-      for (String line : trace.getLineMap()) {
-        expected.append("    " + line + "\n");
-      }
-    }
-    expected.append("STATISTICS\n");
-    expected.append("  Parsing results:\n");
-    assertThat(_element.prettyPrint(), equalTo(expected.toString()));
   }
 
   @Test

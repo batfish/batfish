@@ -64,18 +64,6 @@ public class AnswerSummary {
     return _numResults;
   }
 
-  public String prettyPrint() {
-    String retString = "";
-    if (_numPassed != 0 || _numFailed != 0) {
-      retString += String.format("Assertions: %d passed, %d failed; ", _numPassed, _numFailed);
-    }
-    retString += String.format("%d (non-assertion) results; ", _numResults);
-    if (!Strings.isNullOrEmpty(_notes)) {
-      retString += String.format("Notes: %s", _notes);
-    }
-    return retString;
-  }
-
   public void reset() {
     _notes = null;
     _numFailed = 0;

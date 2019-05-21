@@ -57,58 +57,6 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       return _serverOutliers;
     }
 
-    @Override
-    public String prettyPrint() {
-      if (_namedStructureOutliers.size() == 0 && _serverOutliers.size() == 0) {
-        return "";
-      }
-
-      StringBuilder sb = new StringBuilder("Results for outliers\n");
-
-      for (OutlierSet<?> outlier : _serverOutliers) {
-        sb.append("  Hypothesis: every node should have the following set of ");
-        sb.append(outlier.getName() + ": " + outlier.getDefinition() + "\n");
-        sb.append("  Outliers: ");
-        sb.append(outlier.getOutliers() + "\n");
-        sb.append("  Conformers: ");
-        sb.append(outlier.getConformers() + "\n\n");
-      }
-
-      for (NamedStructureOutlierSet<?> outlier : _namedStructureOutliers) {
-        switch (outlier.getHypothesis()) {
-          case SAME_DEFINITION:
-            sb.append(
-                "  Hypothesis: every "
-                    + outlier.getStructType()
-                    + " named "
-                    + outlier.getName()
-                    + " should have the same definition\n");
-            break;
-          case SAME_NAME:
-            sb.append("  Hypothesis:");
-            if (outlier.getNamedStructure() != null) {
-              sb.append(" every ");
-            } else {
-              sb.append(" no ");
-            }
-            sb.append(
-                "node should define a "
-                    + outlier.getStructType()
-                    + " named "
-                    + outlier.getName()
-                    + "\n");
-            break;
-          default:
-            throw new BatfishException("Unexpected hypothesis" + outlier.getHypothesis());
-        }
-        sb.append("  Outliers: ");
-        sb.append(outlier.getOutliers() + "\n");
-        sb.append("  Conformers: ");
-        sb.append(outlier.getConformers() + "\n\n");
-      }
-      return sb.toString();
-    }
-
     @JsonProperty(PROP_NAMED_STRUCTURE_OUTLIERS)
     public void setNamedStructureOutliers(
         SortedSet<NamedStructureOutlierSet<?>> namedStructureOutliers) {

@@ -88,39 +88,6 @@ public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
   }
 
   @Override
-  public String prettyPrint() {
-    StringBuilder retString = new StringBuilder("Results of parsing vendor configurations\n");
-
-    for (String name : _warnings.keySet()) {
-      retString.append("\n  " + name + "[Parser warnings]\n");
-      for (Warning warning : _warnings.get(name).getRedFlagWarnings()) {
-        retString.append("    RedFlag " + warning.getTag() + " : " + warning.getText() + "\n");
-      }
-      for (Warning warning : _warnings.get(name).getUnimplementedWarnings()) {
-        retString.append(
-            "    Unimplemented " + warning.getTag() + " : " + warning.getText() + "\n");
-      }
-      for (Warning warning : _warnings.get(name).getPedanticWarnings()) {
-        retString.append("    Pedantic " + warning.getTag() + " : " + warning.getText() + "\n");
-      }
-    }
-    for (String name : _errors.keySet()) {
-      retString.append("\n  " + name + "[Parser errors]\n");
-      for (String line : _errors.get(name).getLineMap()) {
-        retString.append("    " + line + "\n");
-      }
-    }
-    for (String name : _parseTrees.keySet()) {
-      retString.append("\n  " + name + " [Parse trees]\n");
-      for (String sentence : _parseTrees.get(name).getSentences()) {
-        retString.append("    ParseTreeSentence : " + sentence + "\n");
-      }
-    }
-
-    return retString.toString();
-  }
-
-  @Override
   public void setErrors(SortedMap<String, BatfishException.BatfishStackTrace> errors) {
     _errors = errors;
   }

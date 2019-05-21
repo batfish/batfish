@@ -18,9 +18,4 @@ public class JsonDiffAnswerElement extends AnswerElement {
   public JsonDiff getJsonDiff() {
     return _jsonDiff;
   }
-
-  @Override
-  public String prettyPrint() {
-    return "Difference between base and delta\n" + _jsonDiff.prettyPrint("  ");
-  }
 }

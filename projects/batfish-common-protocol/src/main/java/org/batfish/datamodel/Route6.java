@@ -221,39 +221,6 @@ public class Route6 implements Comparable<Route6>, Serializable {
     return result;
   }
 
-  public String prettyPrint(boolean diff) {
-    String node = getNode();
-    String nhnode = getNextHop();
-    Ip6 nextHopIp = getNextHopIp();
-    String nhip;
-    String tag;
-    int tagInt = getTag();
-    if (tagInt == Route6.UNSET_ROUTE_TAG) {
-      tag = "none";
-    } else {
-      tag = Integer.toString(tagInt);
-    }
-    String nhint = getNextHopInterface();
-    if (!nhint.equals(Route6.UNSET_NEXT_HOP_INTERFACE)
-        && nextHopIp.equals(Route6.UNSET_ROUTE_NEXT_HOP_IP)) {
-      // static interface without next hop ip
-      nhnode = "N/A";
-      nhip = "N/A";
-    }
-    nhip = nextHopIp != null ? nextHopIp.toString() : "N/A";
-    String vrf = getVrf();
-    String net = getNetwork().toString();
-    String admin = Integer.toString(getAdministrativeCost());
-    String cost = Integer.toString(getMetric());
-    String prot = getProtocol().protocolName();
-    String diffStr = diff ? getDiffSymbol() + " " : "";
-    String routeStr =
-        String.format(
-            "%s%s vrf:%s net:%s nhip:%s nhint:%s nhnode:%s admin:%s cost:%s tag:%s prot:%s\n",
-            diffStr, node, vrf, net, nhip, nhint, nhnode, admin, cost, tag, prot);
-    return routeStr;
-  }
-
   @JsonProperty(PROP_DIFF_SYMBOL)
   public void setDiffSymbol(String diffSymbol) {
     _diffSymbol = diffSymbol;
