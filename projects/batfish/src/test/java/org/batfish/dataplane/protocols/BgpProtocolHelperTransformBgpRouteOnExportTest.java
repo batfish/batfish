@@ -98,7 +98,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
             .build();
     _sessionProperties = BgpSessionProperties.from(_fromNeighbor, _toNeighbor, false);
     BgpProcess.Builder pb =
-        _nf.bgpProcessBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+        _nf.bgpProcessBuilder().setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS);
     Vrf fromVrf = _nf.vrfBuilder().setOwner(c1).build();
     _fromBgpProcess = pb.setVrf(fromVrf).setRouterId(SOURCE_IP).build();
     Vrf toVrf = _nf.vrfBuilder().setOwner(c2).build();

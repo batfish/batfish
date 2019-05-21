@@ -15,7 +15,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 
 /** Represents a bgp process on a router */
@@ -23,7 +22,8 @@ public class BgpProcess implements Serializable {
 
   public static class Builder extends NetworkFactoryBuilder<BgpProcess> {
 
-    private ConfigurationFormat _configurationFormat;
+    private Integer _ebgpAdminCost;
+    private Integer _ibgpAdminCost;
     private Ip _routerId;
     private Vrf _vrf;
 
@@ -34,16 +34,27 @@ public class BgpProcess implements Serializable {
     @Override
     public BgpProcess build() {
       checkArgument(_routerId != null, "Missing %s", PROP_ROUTER_ID);
-      checkArgument(_configurationFormat != null, "Missing configuration format");
-      BgpProcess bgpProcess = new BgpProcess(_routerId, _configurationFormat);
+      checkArgument(_ebgpAdminCost != null, "Missing %s", PROP_EBGP_ADMIN_COST);
+      checkArgument(_ibgpAdminCost != null, "Missing %s", PROP_IBGP_ADMIN_COST);
+      BgpProcess bgpProcess = new BgpProcess(_routerId, _ebgpAdminCost, _ibgpAdminCost);
       if (_vrf != null) {
         _vrf.setBgpProcess(bgpProcess);
       }
       return bgpProcess;
     }
 
-    public Builder setConfigurationFormat(@Nonnull ConfigurationFormat format) {
-      _configurationFormat = format;
+    public Builder setAdminCostsToVendorDefaults(@Nonnull ConfigurationFormat format) {
+      return setEbgpAdminCost(RoutingProtocol.BGP.getDefaultAdministrativeCost(format))
+          .setIbgpAdminCost(RoutingProtocol.IBGP.getDefaultAdministrativeCost(format));
+    }
+
+    public Builder setEbgpAdminCost(int ebgpAdminCost) {
+      _ebgpAdminCost = ebgpAdminCost;
+      return this;
+    }
+
+    public Builder setIbgpAdminCost(int ibgpAdminCost) {
+      _ibgpAdminCost = ibgpAdminCost;
       return this;
     }
 
@@ -112,7 +123,7 @@ public class BgpProcess implements Serializable {
   private BgpTieBreaker _tieBreaker;
 
   /**
-   * Constructs a BgpProcess with admin costs corresponding to the given {@link ConfigurationFormat}
+   * Constructs a BgpProcess with the default admin costs for the given {@link ConfigurationFormat}
    */
   public BgpProcess(@Nonnull Ip routerId, @Nonnull ConfigurationFormat configurationFormat) {
     this(
@@ -121,6 +132,7 @@ public class BgpProcess implements Serializable {
         RoutingProtocol.IBGP.getDefaultAdministrativeCost(configurationFormat));
   }
 
+  /** Constructs a BgpProcess with the given router ID and admin costs */
   public BgpProcess(@Nonnull Ip routerId, int ebgpAdminCost, int ibgpAdminCost) {
     _activeNeighbors = new TreeMap<>();
     _ebgpAdminCost = ebgpAdminCost;
@@ -193,7 +205,7 @@ public class BgpProcess implements Serializable {
       case IBGP:
         return _ibgpAdminCost;
       default:
-        throw new BatfishException(String.format("Unrecognized BGP protocol %s", protocol));
+        throw new IllegalArgumentException(String.format("Unrecognized BGP protocol %s", protocol));
     }
   }
 

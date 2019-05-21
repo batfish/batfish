@@ -960,7 +960,7 @@ public final class TopologyUtilTest {
     _ib.setOwner(cH2).setVrf(vH2).setName(i1Name).build(); // h2 => b2
 
     BgpProcess.Builder pb =
-        _nf.bgpProcessBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+        _nf.bgpProcessBuilder().setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS);
 
     Configuration cB1 = _cb.setHostname(b1Name).build();
     Vrf vB1 = _vb.setOwner(cB1).build();

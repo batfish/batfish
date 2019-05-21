@@ -283,7 +283,7 @@ public class VirtualRouterTest {
         nf.bgpProcessBuilder()
             .setVrf(vr._vrf)
             .setRouterId(routerId)
-            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
             .build();
     bgpProcess.getActiveNeighbors().put(Prefix.parse("2.2.2.2/32"), evpnPeer);
     vr._vrf
@@ -607,7 +607,7 @@ public class VirtualRouterTest {
     Vrf vrf2 = nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(c2).build();
     // Set bgp processes and neighbors
     BgpProcess.Builder pb =
-        nf.bgpProcessBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+        nf.bgpProcessBuilder().setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS);
     BgpProcess proc1 = pb.setVrf(vrf1).setRouterId(Ip.parse("1.1.1.1")).build();
     BgpProcess proc2 = pb.setVrf(vrf2).setRouterId(Ip.parse("1.1.1.2")).build();
     nf.bgpNeighborBuilder()

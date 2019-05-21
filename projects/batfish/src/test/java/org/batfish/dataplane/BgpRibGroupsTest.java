@@ -147,7 +147,7 @@ public class BgpRibGroupsTest {
         nf.bgpProcessBuilder()
             .setVrf(c1v1)
             .setRouterId(Ip.parse("1.1.1.1"))
-            .setConfigurationFormat(ConfigurationFormat.JUNIPER)
+            .setAdminCostsToVendorDefaults(ConfigurationFormat.JUNIPER)
             .build();
     RibGroup rg =
         new RibGroup(
@@ -193,7 +193,7 @@ public class BgpRibGroupsTest {
         nf.bgpProcessBuilder()
             .setVrf(v2)
             .setRouterId(Ip.parse("2.2.2.2"))
-            .setConfigurationFormat(ConfigurationFormat.JUNIPER)
+            .setAdminCostsToVendorDefaults(ConfigurationFormat.JUNIPER)
             .build();
     nf.bgpNeighborBuilder()
         .setBgpProcess(bgpProc2)
@@ -224,7 +224,7 @@ public class BgpRibGroupsTest {
         nf.bgpProcessBuilder()
             .setVrf(v3)
             .setRouterId(Ip.parse("3.3.3.3"))
-            .setConfigurationFormat(ConfigurationFormat.JUNIPER)
+            .setAdminCostsToVendorDefaults(ConfigurationFormat.JUNIPER)
             .build();
     nf.bgpNeighborBuilder()
         .setBgpProcess(bgpProc3)

@@ -110,7 +110,7 @@ public class PrefixTracerTest {
         nf.bgpProcessBuilder()
             .setVrf(vrf1)
             .setRouterId(neighbor1Ip)
-            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
             .build();
     nf.bgpNeighborBuilder()
         .setBgpProcess(bp)
@@ -133,7 +133,7 @@ public class PrefixTracerTest {
         nf.bgpProcessBuilder()
             .setVrf(vrf2)
             .setRouterId(neighbor2Ip)
-            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
             .build();
     nf.bgpNeighborBuilder()
         .setBgpProcess(bp)

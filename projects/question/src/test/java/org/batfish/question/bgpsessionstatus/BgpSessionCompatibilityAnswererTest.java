@@ -513,7 +513,7 @@ public class BgpSessionCompatibilityAnswererTest {
           nf.bgpProcessBuilder()
               .setVrf(vrf)
               .setRouterId(Ip.ZERO)
-              .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+              .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
               .build();
       configs.put(c.getHostname(), c);
 

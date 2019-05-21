@@ -66,7 +66,7 @@ public class NodeColoredScheduleTest {
     Vrf.Builder vb = nf.vrfBuilder();
     Interface.Builder ib = nf.interfaceBuilder().setOspfEnabled(true).setOspfProcess("1");
     BgpProcess.Builder pb =
-        nf.bgpProcessBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+        nf.bgpProcessBuilder().setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS);
     BgpActivePeerConfig.Builder nb = nf.bgpNeighborBuilder();
     OspfProcess.Builder ob = nf.ospfProcessBuilder().setProcessId("1").setReferenceBandwidth(1e8);
     OspfArea.Builder ospfArea = nf.ospfAreaBuilder().setNumber(0);

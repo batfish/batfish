@@ -62,7 +62,7 @@ public class DeviceTypeTest {
     _nf.bgpProcessBuilder()
         .setVrf(vrf)
         .setRouterId(Ip.ZERO)
-        .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+        .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
         .build();
     postProcessConfiguration(c);
     assertThat(c.getDeviceType(), is(DeviceType.ROUTER));
@@ -75,7 +75,7 @@ public class DeviceTypeTest {
     _nf.bgpProcessBuilder()
         .setVrf(vrf)
         .setRouterId(Ip.ZERO)
-        .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+        .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
         .build();
     postProcessConfiguration(c);
     assertThat(c.getDeviceType(), is(DeviceType.ROUTER));

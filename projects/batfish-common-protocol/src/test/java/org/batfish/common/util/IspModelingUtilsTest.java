@@ -543,7 +543,7 @@ public class IspModelingUtilsTest {
   public void testInterfaceNamesIsp() {
     NetworkFactory nf = new NetworkFactory();
     BgpProcess.Builder pb =
-        nf.bgpProcessBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+        nf.bgpProcessBuilder().setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS);
 
     Configuration.Builder cb = nf.configurationBuilder();
     Configuration configuration1 =
@@ -626,7 +626,7 @@ public class IspModelingUtilsTest {
         nf.bgpProcessBuilder()
             .setRouterId(Ip.parse("1.1.1.1"))
             .setVrf(vrfConf1)
-            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
             .build();
     BgpActivePeerConfig.builder()
         .setBgpProcess(bgpProcess1)
