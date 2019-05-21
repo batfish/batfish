@@ -146,7 +146,11 @@ public class IncrementalDataPlanePluginTest {
     Vrf corevrf = _vb.setOwner(core).build();
     _ib.setOwner(core).setVrf(corevrf);
     _ib.setAddress(new InterfaceAddress(coreId, interfcePrefixBits)).build();
-    BgpProcess coreProc = _pb.setRouterId(coreId).setVrf(corevrf).build();
+    BgpProcess coreProc =
+        _pb.setRouterId(coreId)
+            .setVrf(corevrf)
+            .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
+            .build();
     _nb.setBgpProcess(coreProc)
         .setRemoteAs(1L)
         .setLocalAs(1L)
@@ -160,7 +164,11 @@ public class IncrementalDataPlanePluginTest {
     Vrf n1Vrf = _vb.setOwner(n1).build();
     _ib.setOwner(n1).setVrf(n1Vrf);
     _ib.setAddress(new InterfaceAddress(neighborId1, interfcePrefixBits)).build();
-    BgpProcess n1Proc = _pb.setRouterId(neighborId1).setVrf(n1Vrf).build();
+    BgpProcess n1Proc =
+        _pb.setRouterId(neighborId1)
+            .setVrf(n1Vrf)
+            .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
+            .build();
     _nb.setBgpProcess(n1Proc)
         .setRemoteAs(1L)
         .setLocalAs(1L)
@@ -173,7 +181,11 @@ public class IncrementalDataPlanePluginTest {
     Vrf n2Vrf = _vb.setOwner(n2).build();
     _ib.setOwner(n2).setVrf(n2Vrf);
     _ib.setAddress(new InterfaceAddress(neighborId2, interfcePrefixBits)).build();
-    BgpProcess n2Proc = _pb.setRouterId(neighborId2).setVrf(n2Vrf).build();
+    BgpProcess n2Proc =
+        _pb.setRouterId(neighborId2)
+            .setVrf(n2Vrf)
+            .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
+            .build();
     _nb.setBgpProcess(n2Proc)
         .setRemoteAs(1L)
         .setLocalAs(1L)
@@ -782,7 +794,11 @@ public class IncrementalDataPlanePluginTest {
         .setVrf(vrf1)
         .build();
     // Bgp process and neighbor:
-    BgpProcess bgpp1 = _pb.setVrf(vrf1).setRouterId(Ip.parse("1.1.1.2")).build();
+    BgpProcess bgpp1 =
+        _pb.setVrf(vrf1)
+            .setRouterId(Ip.parse("1.1.1.2"))
+            .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
+            .build();
     _nb.setPeerAddress(lo2Ip)
         .setLocalAs(1L)
         .setLocalIp(lo1Ip)
@@ -817,7 +833,11 @@ public class IncrementalDataPlanePluginTest {
         .setLevel2(IsisLevelSettings.builder().build())
         .setVrf(vrf2)
         .build();
-    BgpProcess bgpp2 = _pb.setVrf(vrf2).setRouterId(Ip.parse("1.1.1.3")).build();
+    BgpProcess bgpp2 =
+        _pb.setVrf(vrf2)
+            .setRouterId(Ip.parse("1.1.1.3"))
+            .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
+            .build();
     // Bgp neighbor:
     _nb.setPeerAddress(lo1Ip)
         .setLocalAs(1L)

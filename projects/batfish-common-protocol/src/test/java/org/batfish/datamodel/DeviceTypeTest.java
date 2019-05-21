@@ -48,7 +48,8 @@ public class DeviceTypeTest {
   public void hostWithBgpIsHost() {
     Configuration c = _cb.setConfigurationFormat(ConfigurationFormat.HOST).build();
     Vrf vrf = _vb.setOwner(c).build();
-    _nf.bgpProcessBuilder().setVrf(vrf).setRouterId(Ip.ZERO).build();
+    // Choose arbitrary BGP admin costs for HOST format
+    vrf.setBgpProcess(new BgpProcess(Ip.ZERO, 10, 100));
     postProcessConfiguration(c);
     assertThat(c.getDeviceType(), is(DeviceType.HOST));
   }
@@ -58,7 +59,11 @@ public class DeviceTypeTest {
     Configuration c = _cb.build();
     _vb.setOwner(c).build();
     Vrf vrf = _vb.setOwner(c).build();
-    _nf.bgpProcessBuilder().setVrf(vrf).setRouterId(Ip.ZERO).build();
+    _nf.bgpProcessBuilder()
+        .setVrf(vrf)
+        .setRouterId(Ip.ZERO)
+        .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
+        .build();
     postProcessConfiguration(c);
     assertThat(c.getDeviceType(), is(DeviceType.ROUTER));
   }
@@ -67,7 +72,11 @@ public class DeviceTypeTest {
   public void configWithBgpIsRouter() {
     Configuration c = _cb.build();
     Vrf vrf = _vb.setOwner(c).build();
-    _nf.bgpProcessBuilder().setVrf(vrf).setRouterId(Ip.ZERO).build();
+    _nf.bgpProcessBuilder()
+        .setVrf(vrf)
+        .setRouterId(Ip.ZERO)
+        .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
+        .build();
     postProcessConfiguration(c);
     assertThat(c.getDeviceType(), is(DeviceType.ROUTER));
   }

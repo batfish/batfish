@@ -525,6 +525,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -901,6 +903,8 @@
               }
             ],
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "198.188.136.21",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -1112,6 +1116,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 200,
+              "ibgpAdminCost" : 200,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -3276,6 +3282,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 170,
+              "ibgpAdminCost" : 170,
               "routerId" : "1.1.1.1",
               "dynamicNeighbors" : {
                 "10.1.1.0/24" : {
@@ -3587,6 +3595,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 170,
+              "ibgpAdminCost" : 170,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : true,
               "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
@@ -3865,6 +3875,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "1.1.1.1",
               "multipathEbgp" : true,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -3971,6 +3983,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -4101,6 +4115,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -4161,6 +4177,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -4297,6 +4315,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : true,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -4659,6 +4679,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 20,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -6452,6 +6474,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -7152,6 +7176,8 @@
               }
             ],
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -7200,6 +7226,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -7260,6 +7288,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -9126,6 +9156,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "207.46.160.15",
               "dynamicNeighbors" : {
                 "10.10.20.0/24" : {
@@ -10979,6 +11011,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -13093,6 +13127,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -14392,6 +14428,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "192.0.2.2",
               "interfaceNeighbors" : {
                 "swp1" : {
@@ -14483,6 +14521,8 @@
           "vrf1" : {
             "name" : "vrf1",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "192.0.2.3",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -14586,6 +14626,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "192.0.2.2",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -14681,6 +14723,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "192.0.2.8",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -15584,6 +15628,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -16065,6 +16111,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "192.0.2.1",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -16489,6 +16537,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "192.0.2.100",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -16722,6 +16772,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -18421,6 +18473,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -18812,6 +18866,8 @@
               }
             ],
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -18944,6 +19000,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -20918,6 +20976,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 170,
+              "ibgpAdminCost" : 170,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : true,
               "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
@@ -21301,6 +21361,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 170,
+              "ibgpAdminCost" : 170,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : true,
               "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
@@ -21499,6 +21561,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 170,
+              "ibgpAdminCost" : 170,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
@@ -23932,6 +23996,8 @@
           "ROUTING_INSTANCE_NAME" : {
             "name" : "ROUTING_INSTANCE_NAME",
             "bgpProcess" : {
+              "ebgpAdminCost" : 170,
+              "ibgpAdminCost" : 170,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
@@ -23976,6 +24042,8 @@
               }
             },
             "bgpProcess" : {
+              "ebgpAdminCost" : 170,
+              "ibgpAdminCost" : 170,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
@@ -24240,6 +24308,8 @@
           "ROUTING_INSTANCE_NAME" : {
             "name" : "ROUTING_INSTANCE_NAME",
             "bgpProcess" : {
+              "ebgpAdminCost" : 170,
+              "ibgpAdminCost" : 170,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
@@ -24250,6 +24320,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 170,
+              "ibgpAdminCost" : 170,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
@@ -26335,6 +26407,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -26850,6 +26924,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "10.10.10.10",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -26978,6 +27054,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -27050,6 +27128,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -27340,6 +27420,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : true,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -27665,6 +27747,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -27805,6 +27889,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "PATH_LENGTH",
@@ -29857,6 +29943,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "0.0.0.0",
               "dynamicNeighbors" : {
                 "10.98.25.0/25" : {
@@ -30307,6 +30395,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -34184,6 +34274,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
               "routerId" : "0.0.0.0",
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
@@ -35653,6 +35745,8 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "ebgpAdminCost" : 170,
+              "ibgpAdminCost" : 170,
               "routerId" : "192.168.1.2",
               "multipathEbgp" : true,
               "multipathEquivalentAsPathMatchMode" : "FIRST_AS",

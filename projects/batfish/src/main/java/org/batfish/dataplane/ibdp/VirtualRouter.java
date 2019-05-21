@@ -504,10 +504,6 @@ public class VirtualRouter implements Serializable {
     ribDeltas.put(_bgpRoutingProcess._ebgpv4StagingRib, RibDelta.builder());
     ribDeltas.put(_bgpRoutingProcess._ibgpv4StagingRib, RibDelta.builder());
 
-    // initialize admin costs for routes
-    int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(_c.getConfigurationFormat());
-    int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(_c.getConfigurationFormat());
-
     Bgpv4Route.Builder outgoingRouteBuilder = new Bgpv4Route.Builder();
     // Process each BGP advertisement
     for (BgpAdvertisement advert : externalAdverts) {
@@ -567,9 +563,9 @@ public class VirtualRouter implements Serializable {
       Bgpv4Rib targetRib =
           ebgp ? _bgpRoutingProcess._ebgpv4StagingRib : _bgpRoutingProcess._ibgpv4StagingRib;
       RoutingProtocol targetProtocol = ebgp ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
+      int admin = _vrf.getBgpProcess().getAdminCost(targetProtocol);
 
       if (received) {
-        int admin = ebgp ? ebgpAdmin : ibgpAdmin;
         AsPath asPath = advert.getAsPath();
         SortedSet<Long> clusterList = advert.getClusterList();
         SortedSet<Community> communities = ImmutableSortedSet.copyOf(advert.getCommunities());
@@ -661,7 +657,6 @@ public class VirtualRouter implements Serializable {
             transformedOutgoingRoute.getLocalPreference());
 
         // Incoming admin
-        int admin = ebgp ? ebgpAdmin : ibgpAdmin;
         transformedIncomingRouteBuilder.setAdmin(admin);
 
         // Incoming metric
@@ -724,10 +719,6 @@ public class VirtualRouter implements Serializable {
       return;
     }
 
-    // default admin costs
-    int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(_c.getConfigurationFormat());
-    int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(_c.getConfigurationFormat());
-
     for (BgpActivePeerConfig peerConfig : bgpProcess.getActiveNeighbors().values()) {
       EvpnAddressFamily evpnAddressFamily = peerConfig.getEvpnAddressFamily();
       if (peerConfig.getLocalAs() == null
@@ -753,7 +744,8 @@ public class VirtualRouter implements Serializable {
                     String.format(
                         "Cannot find VNI settings for VNI: %s", layer3VniConfig.getVni()));
                 EvpnType3Route.Builder type3RouteBuilder = EvpnType3Route.builder();
-                type3RouteBuilder.setAdmin(ebgp ? ebgpAdmin : ibgpAdmin);
+                type3RouteBuilder.setAdmin(
+                    bgpProcess.getAdminCost(ebgp ? RoutingProtocol.BGP : RoutingProtocol.IBGP));
                 type3RouteBuilder.setCommunities(ImmutableSet.of(layer3VniConfig.getRouteTarget()));
                 type3RouteBuilder.setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE);
                 type3RouteBuilder.setOriginatorIp(vniSettings.getSourceAddress());

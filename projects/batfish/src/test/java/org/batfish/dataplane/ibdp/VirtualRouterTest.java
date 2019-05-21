@@ -279,7 +279,12 @@ public class VirtualRouterTest {
                             ExtendedCommunity.target(65500, 10001),
                             false))))
             .build();
-    BgpProcess bgpProcess = nf.bgpProcessBuilder().setVrf(vr._vrf).setRouterId(routerId).build();
+    BgpProcess bgpProcess =
+        nf.bgpProcessBuilder()
+            .setVrf(vr._vrf)
+            .setRouterId(routerId)
+            .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
+            .build();
     bgpProcess.getActiveNeighbors().put(Prefix.parse("2.2.2.2/32"), evpnPeer);
     vr._vrf
         .getVniSettings()
@@ -601,8 +606,10 @@ public class VirtualRouterTest {
     Vrf vrf1 = nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(c1).build();
     Vrf vrf2 = nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(c2).build();
     // Set bgp processes and neighbors
-    BgpProcess proc1 = nf.bgpProcessBuilder().setVrf(vrf1).setRouterId(Ip.parse("1.1.1.1")).build();
-    BgpProcess proc2 = nf.bgpProcessBuilder().setVrf(vrf2).setRouterId(Ip.parse("1.1.1.2")).build();
+    BgpProcess.Builder pb =
+        nf.bgpProcessBuilder().setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS);
+    BgpProcess proc1 = pb.setVrf(vrf1).setRouterId(Ip.parse("1.1.1.1")).build();
+    BgpProcess proc2 = pb.setVrf(vrf2).setRouterId(Ip.parse("1.1.1.2")).build();
     nf.bgpNeighborBuilder()
         .setPeerAddress(Ip.parse("1.1.1.2"))
         .setLocalIp(Ip.parse("1.1.1.1"))
