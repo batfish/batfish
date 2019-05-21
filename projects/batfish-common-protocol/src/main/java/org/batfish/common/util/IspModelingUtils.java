@@ -202,7 +202,11 @@ public final class IspModelingUtils {
                     .build()));
 
     BgpProcess bgpProcess =
-        nf.bgpProcessBuilder().setRouterId(INTERNET_OUT_ADDRESS).setVrf(defaultVrf).build();
+        nf.bgpProcessBuilder()
+            .setRouterId(INTERNET_OUT_ADDRESS)
+            .setVrf(defaultVrf)
+            .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
+            .build();
     bgpProcess.setMultipathEbgp(true);
 
     internetConfiguration.setRoutingPolicies(
@@ -381,6 +385,7 @@ public final class IspModelingUtils {
                     .min(Ip::compareTo)
                     .orElse(null))
             .setVrf(ispConfiguration.getDefaultVrf())
+            .setAdminCostsToVendorDefaults(ConfigurationFormat.CISCO_IOS)
             .build();
     bgpProcess.setMultipathEbgp(true);
 

@@ -6,6 +6,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
@@ -22,6 +23,8 @@ public class BgpProcess implements Serializable {
 
   public static class Builder extends NetworkFactoryBuilder<BgpProcess> {
 
+    private Integer _ebgpAdminCost;
+    private Integer _ibgpAdminCost;
     private Ip _routerId;
     private Vrf _vrf;
 
@@ -32,19 +35,40 @@ public class BgpProcess implements Serializable {
     @Override
     public BgpProcess build() {
       checkArgument(_routerId != null, "Missing %s", PROP_ROUTER_ID);
-      BgpProcess bgpProcess = new BgpProcess(_routerId);
+      checkArgument(_ebgpAdminCost != null, "Missing %s", PROP_EBGP_ADMIN_COST);
+      checkArgument(_ibgpAdminCost != null, "Missing %s", PROP_IBGP_ADMIN_COST);
+      BgpProcess bgpProcess = new BgpProcess(_routerId, _ebgpAdminCost, _ibgpAdminCost);
       if (_vrf != null) {
         _vrf.setBgpProcess(bgpProcess);
       }
       return bgpProcess;
     }
 
-    public BgpProcess.Builder setRouterId(Ip routerId) {
+    /**
+     * Sets {@link #setEbgpAdminCost(int) ebgpAdminCost} and {@link #setIbgpAdminCost(int)
+     * ibgpAdminCost} to default BGP administrative costs for the given {@link ConfigurationFormat}.
+     */
+    public Builder setAdminCostsToVendorDefaults(@Nonnull ConfigurationFormat format) {
+      return setEbgpAdminCost(RoutingProtocol.BGP.getDefaultAdministrativeCost(format))
+          .setIbgpAdminCost(RoutingProtocol.IBGP.getDefaultAdministrativeCost(format));
+    }
+
+    public Builder setEbgpAdminCost(int ebgpAdminCost) {
+      _ebgpAdminCost = ebgpAdminCost;
+      return this;
+    }
+
+    public Builder setIbgpAdminCost(int ibgpAdminCost) {
+      _ibgpAdminCost = ibgpAdminCost;
+      return this;
+    }
+
+    public Builder setRouterId(Ip routerId) {
       _routerId = routerId;
       return this;
     }
 
-    public BgpProcess.Builder setVrf(Vrf vrf) {
+    public Builder setVrf(Vrf vrf) {
       _vrf = vrf;
       return this;
     }
@@ -62,6 +86,8 @@ public class BgpProcess implements Serializable {
     }
   }
 
+  private static final String PROP_EBGP_ADMIN_COST = "ebgpAdminCost";
+  private static final String PROP_IBGP_ADMIN_COST = "ibgpAdminCost";
   private static final String PROP_INTERFACE_NEIGHBORS = "interfaceNeighbors";
   private static final String PROP_PASSIVE_NEIGHBORS = "dynamicNeighbors";
   private static final String PROP_MULTIPATH_EBGP = "multipathEbgp";
@@ -74,6 +100,8 @@ public class BgpProcess implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
+  private final int _ebgpAdminCost;
+  private final int _ibgpAdminCost;
   private Supplier<Set<Long>> _clusterIds;
   @Nonnull private SortedMap<String, BgpUnnumberedPeerConfig> _interfaceNeighbors;
   private boolean _multipathEbgp;
@@ -99,9 +127,23 @@ public class BgpProcess implements Serializable {
 
   private BgpTieBreaker _tieBreaker;
 
-  /** Constructs a BgpProcess */
-  public BgpProcess(@Nonnull Ip routerId) {
+  /**
+   * Constructs a BgpProcess with the default admin costs for the given {@link ConfigurationFormat},
+   * for convenient creation of BGP processes in tests.
+   */
+  @VisibleForTesting
+  public BgpProcess(@Nonnull Ip routerId, @Nonnull ConfigurationFormat configurationFormat) {
+    this(
+        routerId,
+        RoutingProtocol.BGP.getDefaultAdministrativeCost(configurationFormat),
+        RoutingProtocol.IBGP.getDefaultAdministrativeCost(configurationFormat));
+  }
+
+  /** Constructs a BgpProcess with the given router ID and admin costs */
+  public BgpProcess(@Nonnull Ip routerId, int ebgpAdminCost, int ibgpAdminCost) {
     _activeNeighbors = new TreeMap<>();
+    _ebgpAdminCost = ebgpAdminCost;
+    _ibgpAdminCost = ibgpAdminCost;
     _interfaceNeighbors = new TreeMap<>();
     _tieBreaker = BgpTieBreaker.ARRIVAL_ORDER;
     _clusterIds = new ClusterIdsSupplier();
@@ -111,9 +153,20 @@ public class BgpProcess implements Serializable {
   }
 
   @JsonCreator
-  private static BgpProcess create(@Nullable @JsonProperty(PROP_ROUTER_ID) Ip routerId) {
+  private static BgpProcess create(
+      @Nullable @JsonProperty(PROP_ROUTER_ID) Ip routerId,
+      @Nullable @JsonProperty(PROP_EBGP_ADMIN_COST) Integer ebgpAdminCost,
+      @Nullable @JsonProperty(PROP_IBGP_ADMIN_COST) Integer ibgpAdminCost) {
     checkArgument(routerId != null, "Missing %s", routerId);
-    return new BgpProcess(routerId);
+    // In the absence of provided values, default to Cisco IOS values
+    return new BgpProcess(
+        routerId,
+        firstNonNull(
+            ebgpAdminCost,
+            RoutingProtocol.BGP.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS)),
+        firstNonNull(
+            ibgpAdminCost,
+            RoutingProtocol.IBGP.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS)));
   }
 
   /**
@@ -148,6 +201,33 @@ public class BgpProcess implements Serializable {
   @Nonnull
   public SortedMap<Prefix, BgpActivePeerConfig> getActiveNeighbors() {
     return _activeNeighbors;
+  }
+
+  /** Returns the admin cost of the given BGP protocol */
+  @JsonIgnore
+  public int getAdminCost(RoutingProtocol protocol) {
+    switch (protocol) {
+      case BGP:
+        return _ebgpAdminCost;
+      case IBGP:
+        return _ibgpAdminCost;
+      default:
+        throw new IllegalArgumentException(String.format("Unrecognized BGP protocol %s", protocol));
+    }
+  }
+
+  /** Returns the admin cost for eBGP routes in this process */
+  @JsonProperty(PROP_EBGP_ADMIN_COST)
+  @Nonnull
+  private int getEbgpAdminCost() {
+    return _ebgpAdminCost;
+  }
+
+  /** Returns the admin cost for iBGP routes in this process */
+  @JsonProperty(PROP_IBGP_ADMIN_COST)
+  @Nonnull
+  private int getIbgpAdminCost() {
+    return _ibgpAdminCost;
   }
 
   /** Returns BGP unnumbered peer configurations keyed by peer-interface */

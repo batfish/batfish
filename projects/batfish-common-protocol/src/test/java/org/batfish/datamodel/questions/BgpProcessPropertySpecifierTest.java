@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.junit.Test;
@@ -19,7 +20,7 @@ import org.junit.runners.JUnit4;
 public class BgpProcessPropertySpecifierTest {
   @Test
   public void testIsRouteReflector() {
-    BgpProcess emptyProcess = new BgpProcess(Ip.ZERO);
+    BgpProcess emptyProcess = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
     assertFalse("no rr clients", isRouteReflector(emptyProcess));
 
     BgpActivePeerConfig activePeerWithRRC =
@@ -36,17 +37,17 @@ public class BgpProcessPropertySpecifierTest {
     Prefix p30b = Prefix.parse("1.2.3.8/30");
 
     // One active peer RRC
-    BgpProcess hasActiveNeighbor = new BgpProcess(Ip.ZERO);
+    BgpProcess hasActiveNeighbor = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
     hasActiveNeighbor.setNeighbors(ImmutableSortedMap.of(p32a, activePeerWithRRC));
     assertTrue("has active rr client", isRouteReflector(hasActiveNeighbor));
 
     // One passive peer RRC
-    BgpProcess hasPassiveNeighbor = new BgpProcess(Ip.ZERO);
+    BgpProcess hasPassiveNeighbor = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
     hasPassiveNeighbor.setPassiveNeighbors(ImmutableSortedMap.of(p30a, passivePeerWithRRC));
     assertTrue("has passive rr client", isRouteReflector(hasPassiveNeighbor));
 
     // Mix
-    BgpProcess hasNeighborMix = new BgpProcess(Ip.ZERO);
+    BgpProcess hasNeighborMix = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
     hasNeighborMix.setNeighbors(
         ImmutableSortedMap.of(p32a, activePeerWithoutRRC, p32b, activePeerWithRRC));
     hasNeighborMix.setPassiveNeighbors(
@@ -54,7 +55,7 @@ public class BgpProcessPropertySpecifierTest {
     assertTrue("has mix of active and inactive rr client", isRouteReflector(hasNeighborMix));
 
     // Both inactive
-    BgpProcess hasAllInactive = new BgpProcess(Ip.ZERO);
+    BgpProcess hasAllInactive = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
     hasAllInactive.setNeighbors(ImmutableSortedMap.of(p32a, activePeerWithoutRRC));
     hasAllInactive.setPassiveNeighbors(ImmutableSortedMap.of(p30a, passivePeerWithoutRRC));
     assertFalse("has multiple inactive rr clients", isRouteReflector(hasAllInactive));

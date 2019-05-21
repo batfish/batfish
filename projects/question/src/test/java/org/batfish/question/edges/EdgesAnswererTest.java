@@ -278,8 +278,8 @@ public class EdgesAnswererTest {
 
   @Test
   public void testGetBgpEdges() {
-    BgpProcess bgp1 = new BgpProcess(Ip.parse("1.1.1.1"));
-    BgpProcess bgp2 = new BgpProcess(Ip.parse("2.2.2.2"));
+    BgpProcess bgp1 = new BgpProcess(Ip.parse("1.1.1.1"), ConfigurationFormat.CISCO_IOS);
+    BgpProcess bgp2 = new BgpProcess(Ip.parse("2.2.2.2"), ConfigurationFormat.CISCO_IOS);
 
     // Edge between active peers
     Ip ip1 = Ip.parse("1.1.1.1");
