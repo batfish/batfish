@@ -1,6 +1,5 @@
 package org.batfish.question;
 
-import static org.batfish.question.VIModelQuestionPlugin.VERBOSE_BGP_EDGE_COMPARATOR;
 import static org.batfish.question.VIModelQuestionPlugin.VIModelAnswerer.getBgpEdges;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -78,13 +77,26 @@ public class VIModelAnswererTest {
     SortedSet<VerboseBgpEdge> edges =
         getBgpEdges(topology, NetworkConfigurations.of(ImmutableSortedMap.of("c1", c1, "c2", c2)));
     assertThat(edges, hasSize(2));
+    Iterator<VerboseBgpEdge> edgeIterator = edges.iterator();
 
+    // Compare edge from 1 to 2
+    VerboseBgpEdge edge1To2 = edgeIterator.next();
     VerboseBgpEdge expected1To2 =
         new VerboseBgpEdge(peer1, peer2, id1, id2, new IpEdge("c1", ip1, "c2", ip2));
+    assertEdgesEqual(edge1To2, expected1To2);
+
+    // Compare edge from 2 to 1
+    VerboseBgpEdge edge2To1 = edgeIterator.next();
     VerboseBgpEdge expected2To1 =
         new VerboseBgpEdge(peer2, peer1, id2, id1, new IpEdge("c2", ip2, "c1", ip1));
-    Iterator<VerboseBgpEdge> edgeIterator = edges.iterator();
-    assertThat(VERBOSE_BGP_EDGE_COMPARATOR.compare(edgeIterator.next(), expected1To2), equalTo(0));
-    assertThat(VERBOSE_BGP_EDGE_COMPARATOR.compare(edgeIterator.next(), expected2To1), equalTo(0));
+    assertEdgesEqual(edge2To1, expected2To1);
+  }
+
+  private static void assertEdgesEqual(VerboseBgpEdge e1, VerboseBgpEdge e2) {
+    assertThat(e1.getEdgeSummary(), equalTo(e2.getEdgeSummary()));
+    assertThat(e1.getSession1Id(), equalTo(e2.getSession1Id()));
+    assertThat(e1.getSession2Id(), equalTo(e2.getSession2Id()));
+    assertThat(e1.getNode1Session(), equalTo(e2.getNode1Session()));
+    assertThat(e1.getNode2Session(), equalTo(e2.getNode2Session()));
   }
 }

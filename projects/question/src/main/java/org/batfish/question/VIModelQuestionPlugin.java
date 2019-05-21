@@ -57,8 +57,7 @@ import org.batfish.datamodel.questions.Question;
 @AutoService(Plugin.class)
 public class VIModelQuestionPlugin extends QuestionPlugin {
 
-  @VisibleForTesting
-  static final Comparator<VerboseBgpEdge> VERBOSE_BGP_EDGE_COMPARATOR =
+  private static final Comparator<VerboseBgpEdge> VERBOSE_BGP_EDGE_COMPARATOR =
       Comparator.nullsFirst(
           Comparator.comparing(VerboseBgpEdge::getEdgeSummary)
               .thenComparing(VerboseBgpEdge::getSession1Id)
