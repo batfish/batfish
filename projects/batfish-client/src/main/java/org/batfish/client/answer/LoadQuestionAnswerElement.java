@@ -38,20 +38,6 @@ public class LoadQuestionAnswerElement extends AnswerElement {
     return _replaced;
   }
 
-  @Override
-  public String prettyPrint() {
-    if (_numLoaded == 0) {
-      return "WARNING: no question .json files found in provided path\n";
-    } else {
-      StringBuilder sb = new StringBuilder();
-      sb.append("Loaded " + _numLoaded + " questions");
-      if (!_replaced.isEmpty()) {
-        sb.append(" (Added:" + _added.size() + " Replaced:" + _replaced.size() + ")\n");
-      }
-      return sb.toString();
-    }
-  }
-
   @JsonProperty(PROP_ADDED)
   public void setAdded(SortedSet<String> added) {
     _added = added;

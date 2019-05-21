@@ -41,16 +41,6 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
       return _answers;
     }
 
-    @Override
-    public String prettyPrint() {
-      StringBuilder sb = new StringBuilder();
-      for (Map.Entry<String, AnswerElement> entry : _answers.entrySet()) {
-        sb.append("Role " + entry.getKey() + ":\n");
-        sb.append(entry.getValue().prettyPrint());
-      }
-      return sb.toString();
-    }
-
     @JsonProperty(PROP_ANSWERS)
     public void setAnswers(SortedMap<String, AnswerElement> answers) {
       _answers = answers;

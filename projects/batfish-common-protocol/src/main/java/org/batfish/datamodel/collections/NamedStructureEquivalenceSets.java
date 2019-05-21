@@ -145,17 +145,6 @@ public class NamedStructureEquivalenceSets<T> {
     return _structureClassName;
   }
 
-  public String prettyPrint(String indent) {
-    StringBuilder sb = new StringBuilder();
-    for (String name : _sameNamedStructures.keySet()) {
-      sb.append(indent + name + "\n");
-      for (NamedStructureEquivalenceSet<T> set : _sameNamedStructures.get(name)) {
-        sb.append(set.prettyPrint(indent + indent));
-      }
-    }
-    return sb.toString();
-  }
-
   @JsonProperty(PROP_SAME_NAMED_STRUCTURES)
   public void setSameNamedStructures(
       SortedMap<String, SortedSet<NamedStructureEquivalenceSet<T>>> sameNamedStructures) {

@@ -106,10 +106,6 @@ public class FlowTrace implements Comparable<FlowTrace> {
 
   @Override
   public String toString() {
-    return toString("");
-  }
-
-  public String toString(String prefixString) {
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < _hops.size(); i++) {
       FlowTraceHop hop = _hops.get(i);
@@ -117,7 +113,7 @@ public class FlowTrace implements Comparable<FlowTrace> {
       String transformedFlowString = "";
       Flow transformedFlow = hop.getTransformedFlow();
       if (transformedFlow != null) {
-        transformedFlowString = " ***TRANSFORMED:" + transformedFlow.prettyPrint("") + "***";
+        transformedFlowString = " ***TRANSFORMED:" + transformedFlow + "***";
       }
       String routesStr = routes.isEmpty() ? (" --- " + routes) : "";
       String filterOutStr =
@@ -125,8 +121,7 @@ public class FlowTrace implements Comparable<FlowTrace> {
       String filterInStr = hop.getFilterIn() != null ? (" -- [in: " + hop.getFilterIn() + "]") : "";
       Edge edge = hop.getEdge();
       int num = i + 1;
-      sb.append(prefixString)
-          .append("Hop ")
+      sb.append("Hop ")
           .append(num)
           .append(": ")
           .append(edge.getNode1())
@@ -142,7 +137,7 @@ public class FlowTrace implements Comparable<FlowTrace> {
           .append(filterInStr)
           .append("\n");
     }
-    sb.append(prefixString).append(_notes).append("\n");
+    sb.append(_notes).append("\n");
     return sb.toString();
   }
 }

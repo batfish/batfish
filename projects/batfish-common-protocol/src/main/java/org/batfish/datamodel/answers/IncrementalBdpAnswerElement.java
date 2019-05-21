@@ -84,29 +84,6 @@ public class IncrementalBdpAnswerElement extends DataPlaneAnswerElement {
     return _warnings;
   }
 
-  @Override
-  public String prettyPrint() {
-    return "Computation summary:\n"
-        + "   EIGRP-internal iterations: "
-        + _eigrpInternalIterations
-        + "\n"
-        + "   OSPF-internal iterations: "
-        + _ospfInternalIterations
-        + "\n"
-        + "   Dependent-routes iterations: "
-        + _dependentRoutesIterations
-        + "\n"
-        + "   BGP best-path RIB routes by iteration: "
-        + _bgpBestPathRibRoutesByIteration
-        + "\n"
-        + "   BGP multipath RIB routes by iteration: "
-        + _bgpMultipathRibRoutesByIteration
-        + "\n"
-        + "   Main RIB routes by iteration: "
-        + _mainRibRoutesByIteration
-        + "\n";
-  }
-
   @JsonProperty(PROP_BGP_BEST_PATH_RIB_ROUTES_BY_ITERATION)
   public void setBgpBestPathRibRoutesByIteration(
       SortedMap<Integer, Integer> bgpBestPathRibRoutesByIteration) {

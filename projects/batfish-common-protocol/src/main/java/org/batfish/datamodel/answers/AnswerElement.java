@@ -20,7 +20,8 @@ public abstract class AnswerElement {
     return _summary;
   }
 
-  public String prettyPrint() {
+  @Override
+  public String toString() {
     try {
       return BatfishObjectMapper.writePrettyString(this);
     } catch (JsonProcessingException e) {

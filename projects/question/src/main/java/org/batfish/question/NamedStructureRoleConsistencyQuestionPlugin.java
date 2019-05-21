@@ -39,11 +39,6 @@ public class NamedStructureRoleConsistencyQuestionPlugin extends QuestionPlugin 
       return _answers;
     }
 
-    @Override
-    public String prettyPrint() {
-      return "";
-    }
-
     @JsonProperty(PROP_ANSWERS)
     public void setAnswers(List<NamedStructureOutlierSet<?>> answers) {
       _answers = answers;

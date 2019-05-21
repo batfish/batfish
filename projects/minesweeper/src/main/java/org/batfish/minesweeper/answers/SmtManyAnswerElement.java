@@ -2,7 +2,6 @@ package org.batfish.minesweeper.answers;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Map;
 import java.util.SortedMap;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.minesweeper.smt.VerificationResult;
@@ -21,18 +20,5 @@ public class SmtManyAnswerElement extends AnswerElement {
   @JsonProperty(PROP_RESULT)
   public SortedMap<String, VerificationResult> getResult() {
     return _result;
-  }
-
-  @Override
-  public String prettyPrint() {
-    if (_result != null) {
-      for (Map.Entry<String, VerificationResult> e : _result.entrySet()) {
-        VerificationResult r = e.getValue();
-        if (!r.isVerified()) {
-          return r.prettyPrint(e.getKey());
-        }
-      }
-    }
-    return "\nVerified";
   }
 }

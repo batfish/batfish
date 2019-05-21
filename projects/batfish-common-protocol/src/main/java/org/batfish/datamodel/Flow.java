@@ -760,53 +760,6 @@ public final class Flow implements Comparable<Flow>, Serializable {
         getTcpFlagsFin());
   }
 
-  public String prettyPrint(String prefixString) {
-    boolean icmp = _ipProtocol == IpProtocol.ICMP;
-    boolean tcp = _ipProtocol == IpProtocol.TCP;
-    boolean udp = _ipProtocol == IpProtocol.UDP;
-    String srcPortStr = "";
-    String dstPortStr = "";
-    String icmpTypeStr = "";
-    String icmpCodeStr = "";
-    String tcpFlagsStr = "";
-    if (tcp || udp) {
-      srcPortStr = " sport:" + NamedPort.nameFromNumber(_srcPort);
-      dstPortStr = " dport:" + NamedPort.nameFromNumber(_dstPort);
-    }
-    if (tcp) {
-      tcpFlagsStr = tcpFlagsStr();
-    }
-    if (icmp) {
-      icmpCodeStr = " icmpCode:" + _icmpCode;
-      icmpTypeStr = " icmpType:" + _icmpType;
-    }
-    String dscpStr = (_dscp != 0) ? " dscp:" + _dscp : "";
-    String ecnStr = (_ecn != 0) ? " ecn:" + _ecn : "";
-
-    return prefixString
-        + "Flow: ingress:"
-        + _ingressNode
-        + (_ingressVrf != null ? " vrf:" + _ingressVrf : "")
-        + (_ingressInterface != null ? " iface:" + _ingressInterface : "")
-        + " "
-        + _srcIp
-        + "->"
-        + _dstIp
-        + " "
-        + _ipProtocol
-        + srcPortStr
-        + dstPortStr
-        + dscpStr
-        + ecnStr
-        + icmpTypeStr
-        + icmpCodeStr
-        + " packetLength:"
-        + _packetLength
-        + " state:"
-        + _state
-        + tcpFlagsStr;
-  }
-
   public Builder toBuilder() {
     return new Builder(this);
   }
@@ -822,6 +775,8 @@ public final class Flow implements Comparable<Flow>, Serializable {
     String icmpCodeStr = "";
     String tcpFlagsStr = "";
     if (tcp || udp) {
+      assert _srcPort != null;
+      assert _dstPort != null;
       srcPortStr = " srcPort:" + NamedPort.nameFromNumber(_srcPort);
       dstPortStr = " dstPort:" + NamedPort.nameFromNumber(_dstPort);
     }

@@ -225,22 +225,6 @@ public class EigrpMetric implements Serializable {
     return getCost() / ((_mode == EigrpProcessMode.NAMED) ? namedRibScale : 1);
   }
 
-  public String prettyPrint() {
-    if (_mode == CLASSIC) {
-      return "BW "
-          + EIGRP_BANDWIDTH / _classicBandwidth / 1000L
-          + " Mbit, DLY "
-          + _classicDelay * 10L
-          + " usec";
-    } else {
-      return "BW "
-          + _namedBandwidth / 1000L
-          + " Mbit, DLY "
-          + _namedDelay / EIGRP_DELAY_PICO
-          + " usec";
-    }
-  }
-
   @ParametersAreNullableByDefault
   public static class Builder {
     @Nullable private Double _bandwidth;

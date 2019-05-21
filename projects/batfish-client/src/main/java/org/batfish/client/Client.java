@@ -1285,20 +1285,7 @@ public class Client extends AbstractClient implements IClient {
     String answerString =
         _workHelper.getAnswer(_currContainerName, baseTestrig, deltaTestrig, questionName);
 
-    String answerStringToPrint = answerString;
-    if (outWriter == null && _settings.getPrettyPrintAnswers()) {
-      Answer answer;
-      try {
-        answer = BatfishObjectMapper.mapper().readValue(answerString, Answer.class);
-      } catch (IOException e) {
-        throw new BatfishException(
-            "Response does not appear to be valid JSON representation of "
-                + Answer.class.getSimpleName());
-      }
-      answerStringToPrint = answer.prettyPrint();
-    }
-
-    logOutput(outWriter, answerStringToPrint + "\n");
+    logOutput(outWriter, answerString + "\n");
 
     return true;
   }
@@ -1866,17 +1853,12 @@ public class Client extends AbstractClient implements IClient {
     }
 
     // outputting the final answer
-    String answerStringToPrint;
-    if (outWriter == null && _settings.getPrettyPrintAnswers()) {
-      answerStringToPrint = answer.prettyPrint();
-    } else {
-      try {
-        answerStringToPrint = BatfishObjectMapper.writePrettyString(answer);
-      } catch (JsonProcessingException e) {
-        throw new BatfishException("Could not write answer element as string", e);
-      }
+    try {
+      String answerStringToPrint = BatfishObjectMapper.writePrettyString(answer);
+      logOutput(outWriter, answerStringToPrint);
+    } catch (Exception e) {
+      throw new BatfishException("Could not write answer element as string", e);
     }
-    logOutput(outWriter, answerStringToPrint);
 
     return true;
   }
@@ -2094,22 +2076,7 @@ public class Client extends AbstractClient implements IClient {
     } else {
       String answerString = CommonUtil.readFile(Paths.get(downloadedAnsFile));
 
-      // Check if we need to make things pretty
-      // Don't if we are writing to FileWriter, because we need valid JSON in
-      // that case
-      String answerStringToPrint = answerString;
-      if (outWriter == null && _settings.getPrettyPrintAnswers()) {
-        try {
-          Answer answer = BatfishObjectMapper.mapper().readValue(answerString, Answer.class);
-          answerStringToPrint = answer.prettyPrint();
-        } catch (IOException e) {
-          _logger.warnf(
-              "Using Json for pretty printing because could not deserialize response as %s: %s",
-              Answer.class.getSimpleName(), e.getMessage());
-        }
-      }
-
-      logOutput(outWriter, answerStringToPrint);
+      logOutput(outWriter, answerString);
 
       // tests serialization/deserialization when running in debug mode
       if (_logger.getLogLevel() >= BatfishLogger.LEVEL_DEBUG) {
@@ -2320,8 +2287,6 @@ public class Client extends AbstractClient implements IClient {
         return setLogLevel(options, parameters);
       case SET_NETWORK:
         return setNetwork(options, parameters);
-      case SET_PRETTY_PRINT:
-        return setPrettyPrint(options, parameters);
       case SET_SNAPSHOT:
         return setSnapshot(options, parameters);
       case SHOW_API_KEY:
@@ -2668,17 +2633,6 @@ public class Client extends AbstractClient implements IClient {
     _logger.setLogLevel(logLevelStr);
     _settings.setLogLevel(logLevelStr);
     _logger.outputf("Changed client loglevel to %s\n", logLevelStr);
-    return true;
-  }
-
-  private boolean setPrettyPrint(List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 1, 1, Command.SET_PRETTY_PRINT)) {
-      return false;
-    }
-    String ppStr = parameters.get(0).toLowerCase();
-    boolean prettyPrint = Boolean.parseBoolean(ppStr);
-    _settings.setPrettyPrintAnswers(prettyPrint);
-    _logger.outputf("Set pretty printing answers to %s\n", ppStr);
     return true;
   }
 
