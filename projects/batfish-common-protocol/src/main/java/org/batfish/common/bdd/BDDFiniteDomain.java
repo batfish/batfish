@@ -8,7 +8,7 @@ import static org.batfish.common.util.CommonUtil.forEachWithIndex;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
-import com.google.common.math.LongMath;
+import com.google.common.math.IntMath;
 import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.Map;
@@ -26,7 +26,7 @@ public final class BDDFiniteDomain<V> {
   private @Nonnull final BiMap<BDD, V> _bddToValue;
   private @Nonnull final BDD _isValidValue;
   private @Nullable final BDD _varBits;
-  private @Nullable final BDDInteger _var;
+  private @Nonnull final BDDInteger _var;
 
   /** Allocate a variable sufficient for the given set of values. */
   public BDDFiniteDomain(BDDPacket pkt, String varName, Set<V> values) {
@@ -59,7 +59,7 @@ public final class BDDFiniteDomain<V> {
     if (size < 2) {
       return 0;
     }
-    return LongMath.log2(size, RoundingMode.CEILING);
+    return IntMath.log2(size, RoundingMode.CEILING);
   }
 
   private static <V> BiMap<V, BDD> computeValueBdds(BDDInteger var, Set<V> values) {
@@ -111,7 +111,7 @@ public final class BDDFiniteDomain<V> {
     return _isValidValue;
   }
 
-  @Nullable
+  @Nonnull
   public BDDInteger getVar() {
     return _var;
   }
