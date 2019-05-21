@@ -542,6 +542,8 @@ public class IspModelingUtilsTest {
   @Test
   public void testInterfaceNamesIsp() {
     NetworkFactory nf = new NetworkFactory();
+    BgpProcess.Builder pb =
+        nf.bgpProcessBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
 
     Configuration.Builder cb = nf.configurationBuilder();
     Configuration configuration1 =
@@ -553,8 +555,7 @@ public class IspModelingUtilsTest {
         .setAddress(new InterfaceAddress(Ip.parse("1.1.1.1"), 24))
         .build();
     Vrf vrfConf1 = nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(configuration1).build();
-    BgpProcess bgpProcess1 =
-        nf.bgpProcessBuilder().setRouterId(Ip.parse("1.1.1.1")).setVrf(vrfConf1).build();
+    BgpProcess bgpProcess1 = pb.setRouterId(Ip.parse("1.1.1.1")).setVrf(vrfConf1).build();
     BgpActivePeerConfig.builder()
         .setBgpProcess(bgpProcess1)
         .setPeerAddress(Ip.parse("1.1.1.2"))
@@ -572,8 +573,7 @@ public class IspModelingUtilsTest {
         .setAddress(new InterfaceAddress(Ip.parse("2.2.2.2"), 24))
         .build();
     Vrf vrfConf2 = nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(configuration2).build();
-    BgpProcess bgpProcess2 =
-        nf.bgpProcessBuilder().setVrf(vrfConf2).setRouterId(Ip.parse("2.2.2.2")).build();
+    BgpProcess bgpProcess2 = pb.setVrf(vrfConf2).setRouterId(Ip.parse("2.2.2.2")).build();
     BgpActivePeerConfig.builder()
         .setBgpProcess(bgpProcess2)
         .setPeerAddress(Ip.parse("2.2.2.3"))
@@ -623,7 +623,11 @@ public class IspModelingUtilsTest {
         .build();
     Vrf vrfConf1 = nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(configuration1).build();
     BgpProcess bgpProcess1 =
-        nf.bgpProcessBuilder().setRouterId(Ip.parse("1.1.1.1")).setVrf(vrfConf1).build();
+        nf.bgpProcessBuilder()
+            .setRouterId(Ip.parse("1.1.1.1"))
+            .setVrf(vrfConf1)
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
     BgpActivePeerConfig.builder()
         .setBgpProcess(bgpProcess1)
         .setPeerAddress(Ip.parse("1.1.1.2"))
