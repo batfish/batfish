@@ -55,7 +55,6 @@ public class BfConsts {
   public static final String ARG_IGNORE_MANAGEMENT_INTERFACES = "ignoremanagementinterfaces";
   public static final String ARG_LOG_LEVEL = "loglevel";
   public static final String ARG_PEDANTIC_SUPPRESS = "pedanticsuppress";
-  public static final String ARG_PRETTY_PRINT_ANSWER = "ppa";
   public static final String ARG_QUESTION_NAME = "questionname";
   public static final String ARG_RED_FLAG_SUPPRESS = "redflagsuppress";
   public static final String ARG_SNAPSHOT_NAME = "snapshotname";

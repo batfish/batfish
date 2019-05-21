@@ -351,10 +351,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return !_config.getBoolean(BfConsts.ARG_PEDANTIC_SUPPRESS);
   }
 
-  public boolean getPrettyPrintAnswer() {
-    return _config.getBoolean(BfConsts.ARG_PRETTY_PRINT_ANSWER);
-  }
-
   @Override
   public boolean getPrintParseTree() {
     return _config.getBoolean(ARG_PRINT_PARSE_TREES);
@@ -561,7 +557,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_CHECK_BGP_REACHABILITY, true);
     setDefaultProperty(ARG_NO_SHUFFLE, false);
     setDefaultProperty(BfConsts.ARG_PEDANTIC_SUPPRESS, false);
-    setDefaultProperty(BfConsts.ARG_PRETTY_PRINT_ANSWER, false);
     setDefaultProperty(ARG_PARENT_PID, -1);
     setDefaultProperty(ARG_PARSE_REUSE, true);
     setDefaultProperty(ARG_PRINT_PARSE_TREES, false);
@@ -745,8 +740,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     addBooleanOption(BfConsts.ARG_PEDANTIC_SUPPRESS, "suppresses pedantic warnings");
 
-    addBooleanOption(BfConsts.ARG_PRETTY_PRINT_ANSWER, "pretty print answer");
-
     addBooleanOption(ARG_PRINT_PARSE_TREES, "print parse trees");
 
     addBooleanOption(
@@ -844,6 +837,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
           "gsinputrole",
           "gsremoteas",
           "outputenv",
+          "ppa",
           "stext",
           "venv"
         }) {
@@ -913,7 +907,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getIntOptionValue(ARG_MAX_RUNTIME_MS);
     getIntOptionValue(ARG_PARENT_PID);
     getBooleanOptionValue(BfConsts.ARG_PEDANTIC_SUPPRESS);
-    getBooleanOptionValue(BfConsts.ARG_PRETTY_PRINT_ANSWER);
     getBooleanOptionValue(ARG_PRINT_PARSE_TREES);
     getBooleanOptionValue(ARG_PRINT_PARSE_TREE_LINE_NUMS);
     getStringOptionValue(BfConsts.ARG_QUESTION_NAME);
