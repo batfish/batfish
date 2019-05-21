@@ -329,7 +329,6 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
-import org.batfish.common.RedFlagBatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.WellKnownCommunity;
@@ -1422,7 +1421,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       name.append(part.getText());
     }
     if (ctx.range().range_list.size() != 1) {
-      throw new RedFlagBatfishException(
+      throw new BatfishException(
           "got interface range where single interface was expected: '" + ctx.getText() + "'");
     }
     name.append(ctx.range().getText());
