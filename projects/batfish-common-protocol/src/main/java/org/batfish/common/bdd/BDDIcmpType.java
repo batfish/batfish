@@ -37,4 +37,9 @@ public final class BDDIcmpType {
   public BDD leq(int end) {
     return end == IcmpType.UNSET ? _var.getFactory().one() : _var.leq(end);
   }
+
+  /** Returns the {@link BDDInteger} backing this. */
+  public BDDInteger getBDDInteger() {
+    return _var;
+  }
 }
