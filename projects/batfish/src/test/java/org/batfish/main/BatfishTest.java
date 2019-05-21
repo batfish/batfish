@@ -125,8 +125,7 @@ public class BatfishTest {
     assertEquals(answer.getStatus(), AnswerStatus.FAILURE);
     assertEquals(answer.getAnswerElements().size(), 1);
     assertThat(
-        answer.getAnswerElements().get(0).prettyPrint(),
-        containsString("Could not parse question"));
+        answer.getAnswerElements().get(0).toString(), containsString("Could not parse question"));
   }
 
   @Test
@@ -359,8 +358,7 @@ public class BatfishTest {
     assertThat(
         answerElement.getParseStatus().get(Paths.get("iptables", "host1.iptables").toString()),
         equalTo(ParseStatus.FAILED));
-    assertThat(
-        answerElement.getErrors().get("host1").prettyPrint(), containsString(failureMessage));
+    assertThat(answerElement.getErrors().get("host1").toString(), containsString(failureMessage));
     // When host file failed, verify that error message contains both failure messages
     answerElement.getErrors().clear();
     answerElement
@@ -369,10 +367,9 @@ public class BatfishTest {
             "host1",
             new BatfishException("Failed to parse host file: host1").getBatfishStackTrace());
     batfish.readIptableFiles(testRigPath, hostConfigurations, iptablesData, answerElement);
+    assertThat(answerElement.getErrors().get("host1").toString(), containsString(failureMessage));
     assertThat(
-        answerElement.getErrors().get("host1").prettyPrint(), containsString(failureMessage));
-    assertThat(
-        answerElement.getErrors().get("host1").prettyPrint(),
+        answerElement.getErrors().get("host1").toString(),
         containsString("Failed to parse host file: host1"));
     // When the haltonparseerror flag is set to true
     batfish.getSettings().setHaltOnParseError(true);
