@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.List;
 import java.util.Optional;
 import net.sf.javabdd.BDD;
@@ -309,6 +310,30 @@ public class BDDInteger {
 
   public BDD[] getBitvec() {
     return _bitvec;
+  }
+
+  /**
+   * Get the AND of all variables in the factory other than those that belong to this. Use with
+   * {@link BDD#exist} to project a {@link BDD} to this' variables.
+   *
+   * <p>This needs to be recomputed every time new variables are allocated in the factory, so be
+   * careful before caching this. If this is a bottleneck, probably better to implement as a method
+   * of {@link BDD}.
+   */
+  public BDD getOtherVars() {
+    BitSet bitSet = new BitSet(_factory.varNum());
+    for (BDD bit : _bitvec) {
+      bitSet.set(bit.var());
+    }
+
+    BDD result = _factory.one();
+    for (int i = _factory.varNum() - 1; i >= 0; i--) {
+      if (!bitSet.get(i)) {
+        result.andWith(_factory.ithVar(i));
+      }
+    }
+
+    return result;
   }
 
   public BDDFactory getFactory() {
