@@ -90,6 +90,11 @@ public class BDDReachabilityAnalysis {
     }
   }
 
+  /**
+   * Compute the reverse reachability ("X can reach a destination" rather than "a source can reach
+   * X"), starting with the initial roots marked as being able to reach themselves with the
+   * corresponding headerspace BDDs.
+   */
   public Map<StateExpr, BDD> computeReverseReachableStates(Map<StateExpr, BDD> roots) {
     Map<StateExpr, BDD> reverseReachableStates = new HashMap<>(roots);
     backwardFixpoint(reverseReachableStates);
