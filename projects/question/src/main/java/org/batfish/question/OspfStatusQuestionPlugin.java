@@ -111,14 +111,6 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
     public SortedSet<OspfInfo> getOspfStatus() {
       return _ospfStatuses;
     }
-
-    @Override
-    public String prettyPrint() {
-      StringBuilder sb = new StringBuilder("Results for OSPF loopbacks check\n");
-      _ospfStatuses.forEach(
-          info -> sb.append("  " + info.getInterface() + " " + info.getOspfStatus() + "\n"));
-      return sb.toString();
-    }
   }
 
   public static class OspfStatusAnswerer extends Answerer {
@@ -298,15 +290,6 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
 
     public boolean matchesStatus(OspfStatus status) {
       return _statusRegex.matcher(status.toString()).matches();
-    }
-
-    @Override
-    public String prettyPrint() {
-      String retString =
-          String.format(
-              "ospfStatus %snodeRegex=\"%s\", interfaceSpecifier=\"%s\", statuses=\"%s\"",
-              prettyPrintBase(), _nodes, _interfaces, _statusRegex);
-      return retString;
     }
   }
 

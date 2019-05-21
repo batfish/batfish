@@ -583,36 +583,6 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
         _weight);
   }
 
-  public String prettyPrint(String prefix) {
-    String net = getNetwork().toString();
-    String prot = _srcProtocol.protocolName();
-    String routeStr =
-        String.format(
-            "%s%s dstNode:%s dstVrf:%s dstIp:%s srcNode:%s srcVrf:%s srcIp:%s net:%s nhip:%s "
-                + "origin:%s lp:%s med:%s weight:%s asPath:%s communities:%s orIp:%s clst:%s "
-                + "srcProt:%s\n",
-            prefix,
-            _type,
-            _dstNode,
-            _dstVrf,
-            _dstIp,
-            _srcNode,
-            _srcVrf,
-            _srcIp,
-            net,
-            _nextHopIp,
-            _originType,
-            _localPreference,
-            _med,
-            _weight,
-            _asPath,
-            _communities,
-            _originatorIp,
-            _clusterList,
-            prot);
-    return routeStr;
-  }
-
   @Override
   public String toString() {
     String originatorIp =

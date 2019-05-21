@@ -28,19 +28,6 @@ public class ParseTreesQuestionPlugin extends QuestionPlugin {
       return _parseTrees;
     }
 
-    @Override
-    public String prettyPrint() {
-      StringBuilder sb = new StringBuilder();
-      sb.append("Parse trees of vendor configurations\n");
-      for (String name : _parseTrees.keySet()) {
-        sb.append("\n  " + name + " [Parse tree]\n");
-        for (String sentence : _parseTrees.get(name).getSentences()) {
-          sb.append("    " + sentence + "\n");
-        }
-      }
-      return sb.toString();
-    }
-
     public void setParseTrees(SortedMap<String, ParseTreeSentences> parseTrees) {
       _parseTrees = parseTrees;
     }
@@ -76,11 +63,6 @@ public class ParseTreesQuestionPlugin extends QuestionPlugin {
     @Override
     public String getName() {
       return "parsetrees";
-    }
-
-    @Override
-    public String prettyPrint() {
-      return getName();
     }
   }
 

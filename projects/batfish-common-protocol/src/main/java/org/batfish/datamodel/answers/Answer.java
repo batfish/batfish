@@ -68,23 +68,6 @@ public class Answer {
     return _status;
   }
 
-  public String prettyPrint() {
-    StringBuilder string = new StringBuilder();
-    if (_status != null) {
-      string.append("Status: " + _status + "\n");
-    }
-    if (_question != null) {
-      string.append("Question: " + _question.prettyPrint() + "\n");
-    }
-    for (AnswerElement ae : _answerElements) {
-      string.append(ae.prettyPrint() + "\n");
-    }
-    if (_summary != null) {
-      string.append("Summary: " + _summary.prettyPrint() + "\n");
-    }
-    return string.toString();
-  }
-
   @JsonProperty(BfConsts.PROP_ANSWER_ELEMENTS)
   public void setAnswerElements(List<AnswerElement> answerElements) {
     _answerElements = answerElements;
@@ -103,10 +86,5 @@ public class Answer {
   @JsonProperty(BfConsts.PROP_SUMMARY)
   public void setSummary(AnswerSummary summary) {
     _summary = summary;
-  }
-
-  @Override
-  public String toString() {
-    return prettyPrint();
   }
 }

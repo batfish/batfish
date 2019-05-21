@@ -70,11 +70,6 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       _equivalenceSets.put(className, sets);
     }
 
-    private String equivalenceSetToString(
-        String indent, String name, NamedStructureEquivalenceSets<?> nseSets) {
-      return indent + name + "\n" + nseSets.prettyPrint(indent + indent);
-    }
-
     @JsonProperty(PROP_EQUIVALENCE_SETS_MAP)
     public SortedMap<String, NamedStructureEquivalenceSets<?>> getEquivalenceSets() {
       return _equivalenceSets;
@@ -83,17 +78,6 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_NODES)
     public Set<String> getNodes() {
       return _nodes;
-    }
-
-    @Override
-    public String prettyPrint() {
-      StringBuilder sb = new StringBuilder("Results for comparing same name structure\n");
-      for (String name : _equivalenceSets.keySet()) {
-        if (_equivalenceSets.get(name).size() > 0) {
-          sb.append(equivalenceSetToString("  ", name, _equivalenceSets.get(name)));
-        }
-      }
-      return sb.toString();
     }
   }
 

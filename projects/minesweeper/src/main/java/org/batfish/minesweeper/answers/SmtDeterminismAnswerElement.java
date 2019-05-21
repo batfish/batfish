@@ -42,24 +42,4 @@ public class SmtDeterminismAnswerElement extends AnswerElement {
   public SortedSet<String> getForwardingCase2() {
     return _forwardingCase2;
   }
-
-  @Override
-  public String prettyPrint() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("\n");
-    if (_forwardingCase1 == null) {
-      sb.append("Verified\n");
-    } else {
-      sb.append(_flow).append("\n\n");
-      sb.append("Delta forwarding case 1:\n");
-      for (String s : _forwardingCase1) {
-        sb.append("   ").append(s).append("\n");
-      }
-      sb.append("\nDelta forwarding case 2:\n");
-      for (String s : _forwardingCase2) {
-        sb.append("   ").append(s).append("\n");
-      }
-    }
-    return sb.toString();
-  }
 }

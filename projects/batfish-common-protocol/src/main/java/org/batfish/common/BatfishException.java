@@ -47,11 +47,6 @@ public class BatfishException extends RuntimeException {
     public List<String> getLineMap() {
       return _lines;
     }
-
-    @Override
-    public String prettyPrint() {
-      return String.join("\n", _lines);
-    }
   }
 
   private static final long serialVersionUID = 1L;

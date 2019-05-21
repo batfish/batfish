@@ -156,38 +156,6 @@ public class VerificationStats {
     return String.format("%.2f sec", d / 1000);
   }
 
-  public String prettyPrint() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("Statistics:\n");
-    sb.append("------------------------------------\n");
-    sb.append("Num equiv classes:      ").append(getNumEcs()).append("\n");
-    sb.append("Avg. Num nodes:         ").append(fmt(getAvgNumNodes())).append("\n");
-    sb.append("Max. Num nodes:         ").append(fmt(getMaxNumNodes())).append("\n");
-    sb.append("Min. Num nodes:         ").append(fmt(getMinNumNodes())).append("\n");
-    sb.append("Avg. Num edges:         ").append(fmt(getAvgNumEdges())).append("\n");
-    sb.append("Max. Num edges:         ").append(fmt(getMaxNumEdges())).append("\n");
-    sb.append("Min. Num edges:         ").append(fmt(getMinNumEdges())).append("\n");
-    sb.append("Avg. Num vars:          ").append(fmt(getAvgNumVariables())).append("\n");
-    sb.append("Max. Num vars:          ").append(fmt(getMaxNumVariables())).append("\n");
-    sb.append("Min. Num vars:          ").append(fmt(getMinNumVariables())).append("\n");
-    sb.append("Avg. Num constraints:   ").append(fmt(getAvgNumConstraints())).append("\n");
-    sb.append("Max. Num constraints:   ").append(fmt(getMaxNumConstraints())).append("\n");
-    sb.append("Min. Num constraints:   ").append(fmt(getMinNumConstraints())).append("\n");
-    sb.append("Avg. compute ec time:   ").append(fmtSec(getAvgComputeEcTime())).append("\n");
-    sb.append("Max. compute ec time:   ").append(fmtSec(getMaxComputeEcTime())).append("\n");
-    sb.append("Min. compute ec time:   ").append(fmtSec(getMinComputeEcTime())).append("\n");
-    sb.append("Avg. encoding time:     ").append(fmtSec(getAvgEncodingTime())).append("\n");
-    sb.append("Max. encoding time:     ").append(fmtSec(getMaxEncodingTime())).append("\n");
-    sb.append("Min. encoding time:     ").append(fmtSec(getMinEncodingTime())).append("\n");
-    sb.append("Avg. z3 solver time:    ").append(fmtSec(getAvgSolverTime())).append("\n");
-    sb.append("Max. z3 solver time:    ").append(fmtSec(getMaxSolverTime())).append("\n");
-    sb.append("Min. z3 solver time:    ").append(fmtSec(getMinSolverTime())).append("\n");
-    sb.append("Create BDD time:        ").append(fmtSec(getTimeCreateBdds())).append("\n");
-    sb.append("Total Time:             ").append(fmtSec(getTotalTime())).append("\n");
-    sb.append("------------------------------------\n");
-    return sb.toString();
-  }
-
   @JsonProperty(PROP_AVERAGE_NUM_NODES)
   public double getAvgNumNodes() {
     return _avgNumNodes;

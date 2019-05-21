@@ -3927,7 +3927,7 @@ public final class FlatJuniperGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames("pre-defined-junos-applications");
     InitInfoAnswerElement answer = batfish.initInfo(false, true);
     assertThat(
-        answer.prettyPrint(),
+        answer.toString(),
         not(Matchers.containsString("unimplemented pre-defined junos application")));
   }
 
@@ -3936,7 +3936,7 @@ public final class FlatJuniperGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames("pre-defined-junos-application-sets");
     InitInfoAnswerElement answer = batfish.initInfo(false, true);
     assertThat(
-        answer.prettyPrint(),
+        answer.toString(),
         not(Matchers.containsString("unimplemented pre-defined junos application-set")));
   }
 

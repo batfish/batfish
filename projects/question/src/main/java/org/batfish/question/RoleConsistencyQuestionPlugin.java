@@ -41,25 +41,6 @@ public class RoleConsistencyQuestionPlugin extends QuestionPlugin {
       return _answers;
     }
 
-    @Override
-    public String prettyPrint() {
-
-      StringBuffer sb = new StringBuffer();
-
-      for (OutlierSet<?> answer : _answers) {
-        sb.append("  Hypothesis: every node in role ");
-        sb.append(answer.getRole().orElse("<unknown role>"));
-        sb.append(" should have the following definition for property ");
-        sb.append(answer.getName() + ": " + answer.getDefinition() + "\n");
-        sb.append("  Outliers: ");
-        sb.append(answer.getOutliers() + "\n");
-        sb.append("  Conformers: ");
-        sb.append(answer.getConformers() + "\n\n");
-      }
-
-      return sb.toString();
-    }
-
     @JsonProperty(PROP_ANSWERS)
     public void setAnswers(List<OutlierSet<NavigableSet<String>>> answers) {
       _answers = answers;

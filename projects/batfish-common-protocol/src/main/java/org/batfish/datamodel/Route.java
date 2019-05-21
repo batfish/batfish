@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.io.Serializable;
-import javax.annotation.Nullable;
 
 @JsonPropertyOrder({Route.PROP_DIFF_SYMBOL})
 public class Route implements Comparable<Route>, Serializable {
@@ -214,39 +213,6 @@ public class Route implements Comparable<Route>, Serializable {
     result = prime * result + _tag;
     result = prime * result + _vrf.hashCode();
     return result;
-  }
-
-  public String prettyPrint(@Nullable String diffSymbol) {
-    String node = getNode();
-    String nhnode = getNextHop();
-    Ip nextHopIp = getNextHopIp();
-    String nhip;
-    String tag;
-    int tagInt = getTag();
-    if (tagInt == Route.UNSET_ROUTE_TAG) {
-      tag = "none";
-    } else {
-      tag = Integer.toString(tagInt);
-    }
-    String nhint = getNextHopInterface();
-    if (!nhint.equals(Route.UNSET_NEXT_HOP_INTERFACE)
-        && nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
-      // static interface without next hop ip
-      nhnode = "N/A";
-      nhip = "N/A";
-    }
-    nhip = nextHopIp != null ? nextHopIp.toString() : "N/A";
-    String vrf = getVrf();
-    String net = getNetwork().toString();
-    String admin = Integer.toString(getAdministrativeCost());
-    String cost = Long.toString(getMetric());
-    String prot = getProtocol().protocolName();
-    String diffStr = diffSymbol != null ? diffSymbol + " " : "";
-    String routeStr =
-        String.format(
-            "%s%s vrf:%s net:%s nhip:%s nhint:%s nhnode:%s admin:%s cost:%s tag:%s prot:%s\n",
-            diffStr, node, vrf, net, nhip, nhint, nhnode, admin, cost, tag, prot);
-    return routeStr;
   }
 
   @Override

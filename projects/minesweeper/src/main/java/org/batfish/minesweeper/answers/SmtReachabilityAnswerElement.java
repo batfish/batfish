@@ -30,16 +30,4 @@ public class SmtReachabilityAnswerElement extends AnswerElement {
   public FlowHistory getFlowHistory() {
     return _flowHistory;
   }
-
-  @Override
-  public String prettyPrint() {
-    StringBuilder sb = new StringBuilder();
-    if (_result.isVerified()) {
-      sb.append("\nVerified");
-    }
-    if (_result.getStats() != null) {
-      sb.append("\n\n").append(_result.getStats().prettyPrint());
-    }
-    return sb + _flowHistory.prettyPrint();
-  }
 }
