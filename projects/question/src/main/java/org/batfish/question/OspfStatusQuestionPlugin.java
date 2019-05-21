@@ -291,15 +291,6 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
     public boolean matchesStatus(OspfStatus status) {
       return _statusRegex.matcher(status.toString()).matches();
     }
-
-    @Override
-    public String prettyPrint() {
-      String retString =
-          String.format(
-              "ospfStatus %snodeRegex=\"%s\", interfaceSpecifier=\"%s\", statuses=\"%s\"",
-              prettyPrintBase(), _nodes, _interfaces, _statusRegex);
-      return retString;
-    }
   }
 
   @Override

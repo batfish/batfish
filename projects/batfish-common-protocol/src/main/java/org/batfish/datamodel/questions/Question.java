@@ -110,21 +110,6 @@ public abstract class Question implements IQuestion {
     }
   }
 
-  // by default, pretty printing is Json
-  // override this function in derived classes to do something more meaningful
-  public String prettyPrint() {
-    try {
-      return BatfishObjectMapper.writePrettyString(this);
-    } catch (JsonProcessingException e) {
-      throw new BatfishException("Failed to pretty-print question", e);
-    }
-  }
-
-  protected String prettyPrintBase() {
-    // for brevity, print only if the values are non-default
-    return _differential ? "differential=true, " : "";
-  }
-
   public static Question parseQuestion(String rawQuestionText) {
     String questionText = Question.preprocessQuestion(rawQuestionText);
     try {

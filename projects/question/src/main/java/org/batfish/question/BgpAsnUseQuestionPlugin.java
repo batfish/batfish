@@ -123,14 +123,6 @@ public class BgpAsnUseQuestionPlugin extends QuestionPlugin {
     public NodesSpecifier getNodeRegex() {
       return _nodeRegex;
     }
-
-    @Override
-    public String prettyPrint() {
-      String retString =
-          String.format(
-              "bgpasnuse %snodeRegex='%s' minCount=%d", prettyPrintBase(), _nodeRegex, _minCount);
-      return retString;
-    }
   }
 
   @Override

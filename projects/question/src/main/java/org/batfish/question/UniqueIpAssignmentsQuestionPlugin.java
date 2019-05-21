@@ -194,13 +194,6 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
     NodeSpecifier getNodeSpecifier() {
       return SpecifierFactories.getNodeSpecifierOrDefault(_nodes, AllNodesNodeSpecifier.INSTANCE);
     }
-
-    @Override
-    public String prettyPrint() {
-      return String.format(
-          "uniqueipassignments %senabledIpsOnly=%s, interfacesSpecifier=%s, nodeRegex=\"%s\"",
-          prettyPrintBase(), _enabledIpsOnly, _interfaces, _nodes);
-    }
   }
 
   @Override

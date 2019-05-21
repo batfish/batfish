@@ -64,11 +64,6 @@ public class ParseTreesQuestionPlugin extends QuestionPlugin {
     public String getName() {
       return "parsetrees";
     }
-
-    @Override
-    public String prettyPrint() {
-      return getName();
-    }
   }
 
   @Override

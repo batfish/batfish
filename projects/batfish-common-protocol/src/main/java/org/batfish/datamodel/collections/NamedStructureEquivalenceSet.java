@@ -46,10 +46,6 @@ public class NamedStructureEquivalenceSet<T>
     return _nodes.first();
   }
 
-  public String prettyPrint(String indent) {
-    return String.format("%s%s\n", indent, String.join(" ", _nodes));
-  }
-
   @JsonProperty(PROP_NODES)
   public void setNodes(SortedSet<String> nodes) {
     _nodes = nodes;

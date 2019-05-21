@@ -185,14 +185,6 @@ public class BgpLoopbacksQuestionPlugin extends QuestionPlugin {
       return _nodeRegex;
     }
 
-    @Override
-    public String prettyPrint() {
-      String retString =
-          String.format(
-              "%s %s%s=\"%s\"", getName(), prettyPrintBase(), PROP_NODE_REGEX, _nodeRegex);
-      return retString;
-    }
-
     @JsonProperty(PROP_NODE_REGEX)
     public void setNodeRegex(NodesSpecifier nodeRegex) {
       _nodeRegex = nodeRegex;

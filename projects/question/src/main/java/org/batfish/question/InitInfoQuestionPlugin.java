@@ -94,19 +94,6 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
       return _verboseError;
     }
 
-    @Override
-    public String prettyPrint() {
-      return getName()
-          + " "
-          + PROP_SUMMARY
-          + "="
-          + _summary
-          + " "
-          + PROP_VERBOSE_ERROR
-          + "="
-          + _verboseError;
-    }
-
     @JsonProperty(PROP_ENVIRONMENT_BGP_TABLES)
     public void setEnvironmentBgpTables(boolean environmentBgpTables) {
       _environmentBgpTables = environmentBgpTables;
