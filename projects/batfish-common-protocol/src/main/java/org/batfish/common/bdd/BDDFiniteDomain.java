@@ -6,7 +6,8 @@ import static org.batfish.common.bdd.BDDUtils.isAssignment;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.common.util.CommonUtil.forEachWithIndex;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableBiMap;
 import com.google.common.math.LongMath;
 import java.math.RoundingMode;
 import java.util.Arrays;
@@ -21,7 +22,8 @@ import net.sf.javabdd.BDD;
 /** Given a finite set of values, assigns each an integer id that can be tracked via BDD. */
 @ParametersAreNonnullByDefault
 public final class BDDFiniteDomain<V> {
-  private @Nonnull final Map<V, BDD> _valueBdds;
+  private @Nonnull final BiMap<V, BDD> _valueToBdd;
+  private @Nonnull final BiMap<BDD, V> _bddToValue;
   private @Nonnull final BDD _isValidValue;
   private @Nullable final BDD _varBits;
   private @Nullable final BDDInteger _var;
@@ -38,18 +40,19 @@ public final class BDDFiniteDomain<V> {
     _var = var;
     _varBits = Arrays.stream(var.getBitvec()).reduce(BDD::and).orElse(null);
     if (size == 0) {
-      _valueBdds = ImmutableMap.of();
+      _valueToBdd = ImmutableBiMap.of();
       _isValidValue = one;
     } else if (size == 1) {
       V value = values.iterator().next();
-      _valueBdds = ImmutableMap.of(value, one);
+      _valueToBdd = ImmutableBiMap.of(value, one);
       _isValidValue = one;
     } else {
       int bitsRequired = computeBitsRequired(size);
       checkArgument(bitsRequired <= var.getBitvec().length);
-      _valueBdds = computeValueBdds(var, values);
+      _valueToBdd = computeValueBdds(var, values);
       _isValidValue = var.leq(size - 1);
     }
+    _bddToValue = _valueToBdd.inverse();
   }
 
   private static int computeBitsRequired(int size) {
@@ -59,8 +62,8 @@ public final class BDDFiniteDomain<V> {
     return LongMath.log2(size, RoundingMode.CEILING);
   }
 
-  private static <V> Map<V, BDD> computeValueBdds(BDDInteger var, Set<V> values) {
-    ImmutableMap.Builder<V, BDD> builder = ImmutableMap.builder();
+  private static <V> BiMap<V, BDD> computeValueBdds(BDDInteger var, Set<V> values) {
+    ImmutableBiMap.Builder<V, BDD> builder = ImmutableBiMap.builder();
     forEachWithIndex(values, (idx, src) -> builder.put(src, var.value(idx)));
     return builder.build();
   }
@@ -84,26 +87,24 @@ public final class BDDFiniteDomain<V> {
   }
 
   public BDD getConstraintForValue(V value) {
-    return checkNotNull(_valueBdds.get(value), "value not in domain");
+    return checkNotNull(_valueToBdd.get(value), "value not in domain");
   }
 
   public Map<V, BDD> getValueBdds() {
-    return _valueBdds;
+    return _valueToBdd;
   }
 
   public V getValueFromAssignment(BDD bdd) {
     checkArgument(isAssignment(bdd));
-    checkArgument(bdd.imp(_isValidValue).isOne());
 
-    return _valueBdds.entrySet().stream()
-        .filter(entry -> bdd.imp(entry.getValue()).isOne())
-        .map(Entry::getKey)
-        .findFirst()
-        .orElseThrow(() -> new IllegalStateException("No value for valid assignment."));
+    // Exist turns the assignment into just the finite domain.
+    V ret = _bddToValue.get(bdd.exist(_var.getOtherVars()));
+    checkArgument(ret != null, "No value for valid assignment");
+    return ret;
   }
 
   public boolean isEmpty() {
-    return _valueBdds.isEmpty();
+    return _valueToBdd.isEmpty();
   }
 
   public BDD getIsValidConstraint() {
