@@ -6,6 +6,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
@@ -43,6 +44,10 @@ public class BgpProcess implements Serializable {
       return bgpProcess;
     }
 
+    /**
+     * Sets {@link #setEbgpAdminCost(int) ebgpAdminCost} and {@link #setIbgpAdminCost(int)
+     * ibgpAdminCost} to default BGP administrative costs for the given {@link ConfigurationFormat}.
+     */
     public Builder setAdminCostsToVendorDefaults(@Nonnull ConfigurationFormat format) {
       return setEbgpAdminCost(RoutingProtocol.BGP.getDefaultAdministrativeCost(format))
           .setIbgpAdminCost(RoutingProtocol.IBGP.getDefaultAdministrativeCost(format));
@@ -123,8 +128,10 @@ public class BgpProcess implements Serializable {
   private BgpTieBreaker _tieBreaker;
 
   /**
-   * Constructs a BgpProcess with the default admin costs for the given {@link ConfigurationFormat}
+   * Constructs a BgpProcess with the default admin costs for the given {@link ConfigurationFormat},
+   * for convenient creation of BGP processes in tests.
    */
+  @VisibleForTesting
   public BgpProcess(@Nonnull Ip routerId, @Nonnull ConfigurationFormat configurationFormat) {
     this(
         routerId,

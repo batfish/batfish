@@ -1296,9 +1296,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
       CiscoNxBgpVrfConfiguration nxBgpVrf,
       String vrfName) {
     org.batfish.datamodel.Vrf v = c.getVrfs().get(vrfName);
+    int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
+    int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
     org.batfish.datamodel.BgpProcess newBgpProcess =
         new org.batfish.datamodel.BgpProcess(
-            CiscoNxConversions.getNxBgpRouterId(nxBgpVrf, v, _w), c.getConfigurationFormat());
+            CiscoNxConversions.getNxBgpRouterId(nxBgpVrf, v, _w), ebgpAdmin, ibgpAdmin);
     if (nxBgpVrf.getBestpathCompareRouterId()) {
       newBgpProcess.setTieBreaker(BgpTieBreaker.ROUTER_ID);
     }
@@ -1552,8 +1554,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
       final Configuration c, BgpProcess proc, String vrfName) {
     org.batfish.datamodel.Vrf v = c.getVrfs().get(vrfName);
     Ip bgpRouterId = getBgpRouterId(c, vrfName, proc);
+    int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
+    int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
     org.batfish.datamodel.BgpProcess newBgpProcess =
-        new org.batfish.datamodel.BgpProcess(bgpRouterId, c.getConfigurationFormat());
+        new org.batfish.datamodel.BgpProcess(bgpRouterId, ebgpAdmin, ibgpAdmin);
     BgpTieBreaker tieBreaker = proc.getTieBreaker();
     if (tieBreaker != null) {
       newBgpProcess.setTieBreaker(tieBreaker);

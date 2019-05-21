@@ -24,6 +24,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpLink;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.ospf.OspfNeighbor;
 import org.batfish.datamodel.ospf.OspfProcess;
@@ -555,7 +556,11 @@ class AbstractionBuilder {
 
       BgpProcess bgp = vrf.getBgpProcess();
       if (bgp != null) {
-        BgpProcess abstractBgp = new BgpProcess(bgp.getRouterId(), conf.getConfigurationFormat());
+        int ebgpAdmin =
+            RoutingProtocol.BGP.getDefaultAdministrativeCost(conf.getConfigurationFormat());
+        int ibgpAdmin =
+            RoutingProtocol.IBGP.getDefaultAdministrativeCost(conf.getConfigurationFormat());
+        BgpProcess abstractBgp = new BgpProcess(bgp.getRouterId(), ebgpAdmin, ibgpAdmin);
         abstractBgp.setMultipathEbgp(bgp.getMultipathEbgp());
         abstractBgp.setMultipathIbgp(bgp.getMultipathIbgp());
         abstractBgp.setOriginationSpace(bgp.getOriginationSpace());

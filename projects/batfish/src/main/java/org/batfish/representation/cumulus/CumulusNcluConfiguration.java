@@ -729,8 +729,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         return null;
       }
     }
+    int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(_c.getConfigurationFormat());
+    int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(_c.getConfigurationFormat());
     org.batfish.datamodel.BgpProcess newProc =
-        new org.batfish.datamodel.BgpProcess(routerId, _c.getConfigurationFormat());
+        new org.batfish.datamodel.BgpProcess(routerId, ebgpAdmin, ibgpAdmin);
     newProc.setMultipathEquivalentAsPathMatchMode(EXACT_PATH);
     newProc.setMultipathEbgp(false);
     newProc.setMultipathIbgp(false);
