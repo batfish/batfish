@@ -60,8 +60,8 @@ public final class InterfaceLinkLocation implements Location {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(getClass())
-        .add(PROP_INTERFACE_NAME, _interfaceName)
         .add(PROP_NODE_NAME, _nodeName)
+        .add(PROP_INTERFACE_NAME, _interfaceName)
         .toString();
   }
 }
