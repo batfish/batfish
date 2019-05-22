@@ -126,7 +126,7 @@ public class CallbackTests extends BDDTestCase {
       x.andWith(bdd.ithVar(1));
       x.andWith(bdd.ithVar(2));
       x.andWith(bdd.ithVar(3));
-      bdd.reorder(BDDFactory.REORDER_SIFT);
+      bdd.setVarOrder(new int[] {4, 3, 2, 1, 0});
       assertTrue(reorder_called);
       x.free();
       bdd.unregisterReorderCallback(this, m);

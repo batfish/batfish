@@ -716,117 +716,6 @@ public abstract class BDDFactory {
    */
   public abstract int var2Level(int var);
 
-  /** No reordering. */
-  public static final ReorderMethod REORDER_NONE = new ReorderMethod(0, "NONE");
-
-  /** Reordering using a sliding window of 2. */
-  public static final ReorderMethod REORDER_WIN2 = new ReorderMethod(1, "WIN2");
-
-  /** Reordering using a sliding window of 2, iterating until no further progress. */
-  public static final ReorderMethod REORDER_WIN2ITE = new ReorderMethod(2, "WIN2ITE");
-
-  /** Reordering using a sliding window of 3. */
-  public static final ReorderMethod REORDER_WIN3 = new ReorderMethod(5, "WIN3");
-
-  /** Reordering using a sliding window of 3, iterating until no further progress. */
-  public static final ReorderMethod REORDER_WIN3ITE = new ReorderMethod(6, "WIN3ITE");
-
-  /**
-   * Reordering where each block is moved through all possible positions. The best of these is then
-   * used as the new position. Potentially a very slow but good method.
-   */
-  public static final ReorderMethod REORDER_SIFT = new ReorderMethod(3, "SIFT");
-
-  /**
-   * Same as REORDER_SIFT, but the process is repeated until no further progress is done. Can be
-   * extremely slow.
-   */
-  public static final ReorderMethod REORDER_SIFTITE = new ReorderMethod(4, "SIFTITE");
-
-  /** Selects a random position for each variable. Mostly used for debugging purposes. */
-  public static final ReorderMethod REORDER_RANDOM = new ReorderMethod(7, "RANDOM");
-
-  /**
-   * Enumeration class for method reordering techniques. Use the static fields in BDDFactory to
-   * access the different reordering techniques.
-   */
-  public static class ReorderMethod {
-    final int id;
-    final String name;
-
-    private ReorderMethod(int id, String name) {
-      this.id = id;
-      this.name = name;
-    }
-
-    @Override
-    public String toString() {
-      return name;
-    }
-  }
-
-  /**
-   * Reorder the BDD with the given method.
-   *
-   * <p>Compare to bdd_reorder.
-   */
-  public abstract void reorder(ReorderMethod m);
-
-  /**
-   * Enables automatic reordering. If method is REORDER_NONE then automatic reordering is disabled.
-   *
-   * <p>Compare to bdd_autoreorder.
-   */
-  public abstract void autoReorder(ReorderMethod method);
-
-  /**
-   * Enables automatic reordering with the given (maximum) number of reorderings. If method is
-   * REORDER_NONE then automatic reordering is disabled.
-   *
-   * <p>Compare to bdd_autoreorder_times.
-   */
-  public abstract void autoReorder(ReorderMethod method, int max);
-
-  /**
-   * Returns the current reorder method as defined by autoReorder.
-   *
-   * <p>Compare to bdd_getreorder_method.
-   *
-   * @return ReorderMethod
-   */
-  public abstract ReorderMethod getReorderMethod();
-
-  /**
-   * Returns the number of allowed reorderings left. This value can be defined by autoReorder.
-   *
-   * <p>Compare to bdd_getreorder_times.
-   */
-  public abstract int getReorderTimes();
-
-  /**
-   * Disable automatic reordering until enableReorder is called. Reordering is enabled by default as
-   * soon as any variable blocks have been defined.
-   *
-   * <p>Compare to bdd_disable_reorder.
-   */
-  public abstract void disableReorder();
-
-  /**
-   * Enable automatic reordering after a call to disableReorder.
-   *
-   * <p>Compare to bdd_enable_reorder.
-   */
-  public abstract void enableReorder();
-
-  /**
-   * Enables verbose information about reordering. A value of zero means no information, one means
-   * some information and greater than one means lots of information.
-   *
-   * @param v the new verbose level
-   * @return the old verbose level
-   */
-  public abstract int reorderVerbose(int v);
-
   /**
    * This function sets the current variable order to be the one defined by neworder. The variable
    * parameter neworder is interpreted as a sequence of variable indices and the new variable order
@@ -902,74 +791,12 @@ public abstract class BDDFactory {
   }
 
   /**
-   * Swap two variables.
-   *
-   * <p>Compare to bdd_swapvar.
-   */
-  public abstract void swapVar(int v1, int v2);
-
-  /**
    * Duplicate a BDD variable.
    *
    * @param var var to duplicate
    * @return index of new variable
    */
   public abstract int duplicateVar(int var);
-
-  /** ** VARIABLE BLOCKS *** */
-
-  /**
-   * Adds a new variable block for reordering.
-   *
-   * <p>Creates a new variable block with the variables in the variable set var. The variables in
-   * var must be contiguous.
-   *
-   * <p>The fixed parameter sets the block to be fixed (no reordering of its child blocks is
-   * allowed) or free.
-   *
-   * <p>Compare to bdd_addvarblock.
-   */
-  public abstract void addVarBlock(BDD var, boolean fixed);
-  // TODO: handle error code for addVarBlock.
-
-  /**
-   * Adds a new variable block for reordering.
-   *
-   * <p>Creates a new variable block with the variables numbered first through last, inclusive.
-   *
-   * <p>The fixed parameter sets the block to be fixed (no reordering of its child blocks is
-   * allowed) or free.
-   *
-   * <p>Compare to bdd_intaddvarblock.
-   */
-  public abstract void addVarBlock(int first, int last, boolean fixed);
-  // TODO: handle error code for addVarBlock.
-  // TODO: fdd_intaddvarblock (?)
-
-  /**
-   * Add a variable block for all variables.
-   *
-   * <p>Adds a variable block for all BDD variables declared so far. Each block contains one
-   * variable only. More variable blocks can be added later with the use of addVarBlock -- in this
-   * case the tree of variable blocks will have the blocks of single variables as the leafs.
-   *
-   * <p>Compare to bdd_varblockall.
-   */
-  public abstract void varBlockAll();
-
-  /**
-   * Clears all the variable blocks that have been defined by calls to addVarBlock.
-   *
-   * <p>Compare to bdd_clrvarblocks.
-   */
-  public abstract void clearVarBlocks();
-
-  /**
-   * Prints an indented list of the variable blocks.
-   *
-   * <p>Compare to bdd_printorder.
-   */
-  public abstract void printOrder();
 
   /** ** BDD STATS *** */
 
@@ -1009,14 +836,6 @@ public abstract class BDDFactory {
    * @return size of cache
    */
   public abstract int getCacheSize();
-
-  /**
-   * Calculate the gain in size after a reordering. The value returned is (100*(A-B))/A, where A is
-   * previous number of used nodes and B is current number of used nodes.
-   *
-   * <p>Compare to bdd_reorder_gain.
-   */
-  public abstract int reorderGain();
 
   /**
    * Print cache statistics.
@@ -1110,7 +929,7 @@ public abstract class BDDFactory {
   }
 
   /** Singleton object for reorder statistics. */
-  protected ReorderStats reorderstats = new ReorderStats();
+  ReorderStats reorderstats = new ReorderStats();
 
   /**
    * Return the current reordering statistics for this BDD factory.

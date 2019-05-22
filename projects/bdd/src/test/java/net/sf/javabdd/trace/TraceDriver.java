@@ -178,22 +178,6 @@ public class TraceDriver {
     }
   }
 
-  class TracedReorderOperation extends TracedOperation {
-    public BDDFactory.ReorderMethod method;
-
-    @Override
-    public void execute() throws IOException {
-      bdd.reorder(method);
-    }
-
-    @Override
-    public void show() {
-      out.print(index + "\t");
-      out.print("reorder(" + method + ");");
-      out.println();
-    }
-  }
-
   // --------------------------------------------------------------
   class TracedBDDOperation extends TracedOperation {
     public int ops;
@@ -465,7 +449,6 @@ public class TraceDriver {
   private String filename, module;
   private int[] stack;
   private int stack_tos, nodes, cache, vars;
-  private static int auto_reorder = Integer.parseInt(System.getProperty("reorder", "0"));
   private HashMap<String, TracedVariable> map;
   private BDDPairing s2sp, sp2s;
   private TracedVariable last_assignment;
@@ -586,27 +569,6 @@ public class TraceDriver {
         "loading " + module + " from " + filename + " (" + nodes + " nodes, " + vars + " vars)");
 
     bdd = BDDFactory.init(nodes, cache);
-    if (auto_reorder != 0) {
-      out.println("setting auto reorder to " + auto_reorder);
-      bdd.autoReorder(getReorderMethod(auto_reorder));
-      try {
-        java.lang.reflect.Method cb =
-            TraceDriver.class.getDeclaredMethod(
-                "reorder_callback", boolean.class, BDDFactory.ReorderStats.class);
-        bdd.registerReorderCallback(this, cb);
-      } catch (NoSuchMethodException x) {
-        System.out.println("Cannot find callback method");
-      }
-    }
-    // bdd.setNodeNames(new TracedNames() );
-  }
-
-  public static void reorder_callback(boolean prestate, BDDFactory.ReorderStats s) {
-    System.out.print(prestate ? "Start" : "Finish");
-    System.out.println("ing reorder.");
-    if (!prestate) {
-      System.out.println(s);
-    }
   }
 
   // -----------------------------------------------------
@@ -681,14 +643,6 @@ public class TraceDriver {
     return tp;
   }
 
-  private TracedReorderOperation createReorderOperation(BDDFactory.ReorderMethod m) {
-    TracedReorderOperation tp = new TracedReorderOperation();
-    tp.index = op_count;
-    tp.method = m;
-    operations.add(tp);
-    return tp;
-  }
-
   // -----------------------------------------------------
 
   private static final boolean TRACE_LAST_ASSIGNMENT = false;
@@ -707,11 +661,6 @@ public class TraceDriver {
       out.println("Nodes: " + bdd.getNodeNum() + "/" + bdd.getNodeTableSize());
       out.println(bdd.getGCStats());
       bdd.printStat();
-    }
-
-    if (auto_reorder != 0) {
-      out.println("Final variable order:");
-      bdd.printOrder();
     }
   }
 
@@ -812,14 +761,6 @@ public class TraceDriver {
         need(")");
         need(";");
         createSaveOperation(v);
-      } else if (ret.equals("check_point_for_force_reordering")) {
-        need("(");
-        String str = need();
-        int type = Integer.parseInt(str);
-        need(")");
-        need(";");
-        BDDFactory.ReorderMethod m = getReorderMethod(type);
-        createReorderOperation(m);
       } else {
 
         TracedVariable vret = map.get(ret);
@@ -882,40 +823,6 @@ public class TraceDriver {
         }
       }
     }
-  }
-
-  private static BDDFactory.ReorderMethod getReorderMethod(int type) {
-    BDDFactory.ReorderMethod m;
-    switch (type) {
-      case 0:
-        m = BDDFactory.REORDER_NONE;
-        break;
-      case 1:
-        m = BDDFactory.REORDER_WIN2;
-        break;
-      case 2:
-        m = BDDFactory.REORDER_WIN2ITE;
-        break;
-      case 3:
-        m = BDDFactory.REORDER_WIN3;
-        break;
-      case 4:
-        m = BDDFactory.REORDER_WIN3ITE;
-        break;
-      case 5:
-        m = BDDFactory.REORDER_SIFT;
-        break;
-      case 6:
-        m = BDDFactory.REORDER_SIFTITE;
-        break;
-      case 7:
-        m = BDDFactory.REORDER_RANDOM;
-        break;
-      default:
-        m = BDDFactory.REORDER_NONE;
-        break;
-    }
-    return m;
   }
 
   // --------------------------------------------------------------------------------------------
@@ -986,8 +893,6 @@ public class TraceDriver {
     s2sp.set(v1, v2);
     sp2s = bdd.makePair();
     sp2s.set(v2, v1);
-
-    bdd.varBlockAll();
 
     // s2sp.showName();
 

@@ -39,7 +39,6 @@ public class BDDPrimeImplicants implements Iterable<BDD> {
       newOrder[var2SignVar(i)] = var2SignVar(var);
     }
     _factory.setVarOrder(newOrder);
-    _factory.disableReorder();
     _primeImplicants = computePrimeImplicantBDD(bdd, new HashMap<>());
   }
 
