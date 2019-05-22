@@ -19,6 +19,34 @@ public final class Transitions {
 
   public static final Transition ZERO = Zero.INSTANCE;
 
+  public static Transition branch(BDD guard, Transition trueBranch, Transition falseBranch) {
+    if (guard.isOne()) {
+      return trueBranch;
+    } else if (guard.isZero()) {
+      return falseBranch;
+    } else if (falseBranch == ZERO) {
+      return compose(constraint(guard), trueBranch);
+    } else if (trueBranch == ZERO) {
+      return compose(constraint(guard.not()), falseBranch);
+    } else if (trueBranch.equals(falseBranch)) {
+      return trueBranch;
+    } else if (trueBranch instanceof Branch
+        && falseBranch.equals(((Branch) trueBranch).getFalseBranch())) {
+      Branch branch = (Branch) trueBranch;
+      return new Branch(guard.and(branch.getGuard()), branch.getTrueBranch(), falseBranch);
+    } else if (falseBranch instanceof Branch
+        && trueBranch.equals(((Branch) falseBranch).getTrueBranch())) {
+      Branch branch = (Branch) falseBranch;
+      return new Branch(guard.or(branch.getGuard()), trueBranch, branch.getFalseBranch());
+    } else if (trueBranch instanceof Constraint && falseBranch instanceof Constraint) {
+      BDD trueBdd = ((Constraint) trueBranch).getConstraint();
+      BDD falseBdd = ((Constraint) trueBranch).getConstraint();
+      return constraint(guard.ite(trueBdd, falseBdd));
+    } else {
+      return new Branch(guard, trueBranch, falseBranch);
+    }
+  }
+
   public static Transition compose(Transition... transitions) {
     if (Stream.of(transitions).anyMatch(t -> t == ZERO)) {
       return ZERO;
