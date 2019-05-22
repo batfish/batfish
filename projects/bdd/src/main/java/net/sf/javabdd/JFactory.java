@@ -604,11 +604,6 @@ public final class JFactory extends BDDFactory {
     }
   }
 
-  private static class ReorderException extends RuntimeException {
-    /** Version ID for serialization. */
-    private static final long serialVersionUID = 3256727264505772345L;
-  }
-
   private static final int BDDONE = 1;
   private static final int BDDZERO = 0;
 
@@ -932,28 +927,16 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_not(int r) {
-    int res;
-    firstReorder = 1;
     CHECKa(r, BDDZERO);
 
     if (applycache == null) {
       applycache = BddCacheI_init(cachesize);
     }
-    while (true) {
-      try {
-        INITREF();
 
-        res = not_rec(r);
-
-      } catch (ReorderException x) {
-        bdd_checkreorder();
-        res = BDDZERO;
-        /* avoid warning about res being uninitialized */
-      }
-      break;
-    }
-
+    INITREF();
+    int res = not_rec(r);
     checkresize();
+
     return res;
   }
 
@@ -995,9 +978,6 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_ite(int f, int g, int h) {
-    int res;
-    firstReorder = 1;
-
     CHECKa(f, BDDZERO);
     CHECKa(g, BDDZERO);
     CHECKa(h, BDDZERO);
@@ -1006,22 +986,10 @@ public final class JFactory extends BDDFactory {
       applycache = BddCacheI_init(cachesize);
     }
 
-    while (true) {
-      try {
-        INITREF();
-
-        res = ite_rec(f, g, h);
-
-      } catch (ReorderException x) {
-        bdd_checkreorder();
-
-        res = BDDZERO;
-        /* avoid warning about res being uninitialized */
-      }
-      break;
-    }
-
+    INITREF();
+    int res = ite_rec(f, g, h);
     checkresize();
+
     return res;
   }
 
@@ -1122,34 +1090,19 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_replace(int r, bddPair pair) {
-    int res;
-    firstReorder = 1;
-
     CHECKa(r, BDDZERO);
 
     if (replacecache == null) {
       replacecache = BddCacheI_init(cachesize);
     }
+    replacepair = pair.result;
+    replacelast = pair.last;
+    replaceid = (pair.id << 2) | CACHEID_REPLACE;
 
-    while (true) {
-      try {
-        INITREF();
-        replacepair = pair.result;
-        replacelast = pair.last;
-        replaceid = (pair.id << 2) | CACHEID_REPLACE;
-
-        res = replace_rec(r);
-
-      } catch (ReorderException x) {
-        bdd_checkreorder();
-
-        res = BDDZERO;
-        /* avoid warning about res being uninitialized */
-      }
-      break;
-    }
-
+    INITREF();
+    int res = replace_rec(r);
     checkresize();
+
     return res;
   }
 
@@ -1263,9 +1216,6 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_apply(int l, int r, int op) {
-    int res;
-    firstReorder = 1;
-
     CHECKa(l, BDDZERO);
     CHECKa(r, BDDZERO);
 
@@ -1277,36 +1227,23 @@ public final class JFactory extends BDDFactory {
     if (applycache == null) {
       applycache = BddCacheI_init(cachesize);
     }
+    applyop = op;
 
-    while (true) {
-      try {
-        INITREF();
-        applyop = op;
-
-        switch (op) {
-          case bddop_and:
-            res = and_rec(l, r);
-            break;
-          case bddop_or:
-            res = or_rec(l, r);
-            break;
-          default:
-            res = apply_rec(l, r);
-            break;
-        }
-
-      } catch (ReorderException x) {
-        bdd_checkreorder();
-
-        res = BDDZERO;
-        /* avoid warning about res being uninitialized */
-      }
-      break;
+    INITREF();
+    int res;
+    switch (op) {
+      case bddop_and:
+        res = and_rec(l, r);
+        break;
+      case bddop_or:
+        res = or_rec(l, r);
+        break;
+      default:
+        res = apply_rec(l, r);
+        break;
     }
-
-    // validate(res);
-
     checkresize();
+
     return res;
   }
 
@@ -1861,9 +1798,6 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_appex(int l, int r, int opr, int var) {
-    int res;
-    firstReorder = 1;
-
     CHECKa(l, BDDZERO);
     CHECKa(r, BDDZERO);
     CHECKa(var, BDDZERO);
@@ -1876,6 +1810,9 @@ public final class JFactory extends BDDFactory {
     if (var < 2) /* Empty set */ {
       return bdd_apply(l, r, opr);
     }
+    if (varset2vartable(var) < 0) {
+      return BDDZERO;
+    }
 
     if (applycache == null) {
       applycache = BddCacheI_init(cachesize);
@@ -1886,31 +1823,15 @@ public final class JFactory extends BDDFactory {
     if (quantcache == null) {
       quantcache = BddCacheI_init(cachesize);
     }
+    applyop = bddop_or;
+    appexop = opr;
+    appexid = (var << 5) | (appexop << 1); /* FIXME: range! */
+    quantid = (appexid << 3) | CACHEID_APPEX;
 
-    while (true) {
-      if (varset2vartable(var) < 0) {
-        return BDDZERO;
-      }
-      try {
-        INITREF();
-
-        applyop = bddop_or;
-        appexop = opr;
-        appexid = (var << 5) | (appexop << 1); /* FIXME: range! */
-        quantid = (appexid << 3) | CACHEID_APPEX;
-
-        res = opr == bddop_and ? relprod_rec(l, r) : appquant_rec(l, r);
-
-      } catch (ReorderException x) {
-        bdd_checkreorder();
-
-        res = BDDZERO;
-        /* avoid warning about res being uninitialized */
-      }
-      break;
-    }
-
+    INITREF();
+    int res = opr == bddop_and ? relprod_rec(l, r) : appquant_rec(l, r);
     checkresize();
+
     return res;
   }
 
@@ -2298,33 +2219,18 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_constrain(int f, int c) {
-    int res;
-    firstReorder = 1;
-
     CHECKa(f, BDDZERO);
     CHECKa(c, BDDZERO);
 
     if (misccache == null) {
       misccache = BddCacheI_init(cachesize);
     }
+    miscid = CACHEID_CONSTRAIN;
 
-    while (true) {
-      try {
-        INITREF();
-        miscid = CACHEID_CONSTRAIN;
-
-        res = constrain_rec(f, c);
-
-      } catch (ReorderException x) {
-        bdd_checkreorder();
-
-        res = BDDZERO;
-        /* avoid warning about res being uninitialized */
-      }
-      break;
-    }
-
+    INITREF();
+    int res = constrain_rec(f, c);
     checkresize();
+
     return res;
   }
 
@@ -2394,9 +2300,6 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_compose(int f, int g, int var) {
-    int res;
-    firstReorder = 1;
-
     CHECKa(f, BDDZERO);
     CHECKa(g, BDDZERO);
     if (var < 0 || var >= bddvarnum) {
@@ -2404,33 +2307,19 @@ public final class JFactory extends BDDFactory {
       return BDDZERO;
     }
 
-    // compose_rec uses replacecache
     if (replacecache == null) {
+      // compose_rec uses replacecache
       replacecache = BddCacheI_init(cachesize);
     }
-
-    // compose_rec can call ite_rec, which uses applycache
     if (applycache == null) {
+      // compose_rec can call ite_rec, which uses applycache
       applycache = BddCacheI_init(cachesize);
     }
+    composelevel = bddvar2level[var];
+    replaceid = (composelevel << 2) | CACHEID_COMPOSE;
 
-    while (true) {
-      try {
-        INITREF();
-        composelevel = bddvar2level[var];
-        replaceid = (composelevel << 2) | CACHEID_COMPOSE;
-
-        res = compose_rec(f, g);
-
-      } catch (ReorderException x) {
-        bdd_checkreorder();
-
-        res = BDDZERO;
-        /* avoid warning about res being uninitialized */
-      }
-      break;
-    }
-
+    INITREF();
+    int res = compose_rec(f, g);
     checkresize();
     return res;
   }
@@ -2486,9 +2375,6 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_veccompose(int f, bddPair pair) {
-    int res;
-    firstReorder = 1;
-
     CHECKa(f, BDDZERO);
 
     if (applycache == null) {
@@ -2497,26 +2383,14 @@ public final class JFactory extends BDDFactory {
     if (replacecache == null) {
       replacecache = BddCacheI_init(cachesize);
     }
+    replacepair = pair.result;
+    replaceid = (pair.id << 2) | CACHEID_VECCOMPOSE;
+    replacelast = pair.last;
 
-    while (true) {
-      try {
-        INITREF();
-        replacepair = pair.result;
-        replaceid = (pair.id << 2) | CACHEID_VECCOMPOSE;
-        replacelast = pair.last;
-
-        res = veccompose_rec(f);
-
-      } catch (ReorderException x) {
-        bdd_checkreorder();
-
-        res = BDDZERO;
-        /* avoid warning about res being uninitialized */
-      }
-      break;
-    }
-
+    INITREF();
+    int res = veccompose_rec(f);
     checkresize();
+
     return res;
   }
 
@@ -2555,14 +2429,14 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_exist(int r, int var) {
-    int res;
-    firstReorder = 1;
-
     CHECKa(r, BDDZERO);
     CHECKa(var, BDDZERO);
 
     if (var < 2) /* Empty set */ {
       return r;
+    }
+    if (varset2vartable(var) < 0) {
+      return BDDZERO;
     }
 
     if (applycache == null) {
@@ -2571,41 +2445,25 @@ public final class JFactory extends BDDFactory {
     if (quantcache == null) {
       quantcache = BddCacheI_init(cachesize);
     }
+    applyop = bddop_or;
+    quantid = (var << 3) | CACHEID_EXIST; /* FIXME: range */
 
-    while (true) {
-      if (varset2vartable(var) < 0) {
-        return BDDZERO;
-      }
-      try {
-        INITREF();
-
-        quantid = (var << 3) | CACHEID_EXIST; /* FIXME: range */
-        applyop = bddop_or;
-
-        res = quant_rec(r);
-
-      } catch (ReorderException x) {
-        bdd_checkreorder();
-
-        res = BDDZERO;
-        /* avoid warning about res being uninitialized */
-      }
-      break;
-    }
-
+    INITREF();
+    int res = quant_rec(r);
     checkresize();
+
     return res;
   }
 
   private int bdd_forall(int r, int var) {
-    int res;
-    firstReorder = 1;
-
     CHECKa(r, BDDZERO);
     CHECKa(var, BDDZERO);
 
     if (var < 2) /* Empty set */ {
       return r;
+    }
+    if (varset2vartable(var) < 0) {
+      return BDDZERO;
     }
 
     if (applycache == null) {
@@ -2614,35 +2472,17 @@ public final class JFactory extends BDDFactory {
     if (quantcache == null) {
       quantcache = BddCacheI_init(cachesize);
     }
+    quantid = (var << 3) | CACHEID_FORALL;
+    applyop = bddop_and;
 
-    while (true) {
-      if (varset2vartable(var) < 0) {
-        return BDDZERO;
-      }
-      try {
-        INITREF();
-        quantid = (var << 3) | CACHEID_FORALL;
-        applyop = bddop_and;
-
-        res = quant_rec(r);
-
-      } catch (ReorderException x) {
-        bdd_checkreorder();
-
-        res = BDDZERO;
-        /* avoid warning about res being uninitialized */
-      }
-      break;
-    }
-
+    INITREF();
+    int res = quant_rec(r);
     checkresize();
+
     return res;
   }
 
   private int bdd_unique(int r, int var) {
-    int res;
-    firstReorder = 1;
-
     CHECKa(r, BDDZERO);
     CHECKa(var, BDDZERO);
 
@@ -2656,63 +2496,36 @@ public final class JFactory extends BDDFactory {
     if (quantcache == null) {
       quantcache = BddCacheI_init(cachesize);
     }
+    quantid = (var << 3) | CACHEID_UNIQUE;
+    applyop = bddop_xor;
 
-    while (true) {
-      try {
-        INITREF();
-        quantid = (var << 3) | CACHEID_UNIQUE;
-        applyop = bddop_xor;
-
-        res = unique_rec(r, var);
-
-      } catch (ReorderException x) {
-        bdd_checkreorder();
-
-        res = BDDZERO;
-        /* avoid warning about res being uninitialized */
-      }
-      break;
-    }
-
+    INITREF();
+    int res = unique_rec(r, var);
     checkresize();
+
     return res;
   }
 
   private int bdd_restrict(int r, int var) {
-    int res;
-    firstReorder = 1;
-
     CHECKa(r, BDDZERO);
     CHECKa(var, BDDZERO);
 
     if (var < 2) /* Empty set */ {
       return r;
+    }
+    if (varset2svartable(var) < 0) {
+      return BDDZERO;
     }
 
     if (misccache == null) {
       misccache = BddCacheI_init(cachesize);
     }
+    miscid = (var << 3) | CACHEID_RESTRICT;
 
-    while (true) {
-      if (varset2svartable(var) < 0) {
-        return BDDZERO;
-      }
-      try {
-        INITREF();
-        miscid = (var << 3) | CACHEID_RESTRICT;
-
-        res = restrict_rec(r);
-
-      } catch (ReorderException x) {
-        bdd_checkreorder();
-
-        res = BDDZERO;
-        /* avoid warning about res being uninitialized */
-      }
-      break;
-    }
-
+    INITREF();
+    int res = restrict_rec(r);
     checkresize();
+
     return res;
   }
 
@@ -2759,33 +2572,18 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_simplify(int f, int d) {
-    int res;
-    firstReorder = 1;
-
     CHECKa(f, BDDZERO);
     CHECKa(d, BDDZERO);
 
     if (applycache == null) {
       applycache = BddCacheI_init(cachesize);
     }
+    applyop = bddop_or;
 
-    while (true) {
-      try {
-        INITREF();
-        applyop = bddop_or;
-
-        res = simplify_rec(f, d);
-
-      } catch (ReorderException x) {
-        bdd_checkreorder();
-
-        res = BDDZERO;
-        /* avoid warning about res being uninitialized */
-      }
-      break;
-    }
-
+    INITREF();
+    int res = simplify_rec(f, d);
     checkresize();
+
     return res;
   }
 
@@ -2918,9 +2716,6 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_appall(int l, int r, int opr, int var) {
-    int res;
-    firstReorder = 1;
-
     CHECKa(l, BDDZERO);
     CHECKa(r, BDDZERO);
     CHECKa(var, BDDZERO);
@@ -2933,6 +2728,9 @@ public final class JFactory extends BDDFactory {
     if (var < 2) /* Empty set */ {
       return bdd_apply(l, r, opr);
     }
+    if (varset2vartable(var) < 0) {
+      return BDDZERO;
+    }
 
     if (applycache == null) {
       applycache = BddCacheI_init(cachesize);
@@ -2943,37 +2741,19 @@ public final class JFactory extends BDDFactory {
     if (quantcache == null) {
       quantcache = BddCacheI_init(cachesize);
     }
+    applyop = bddop_and;
+    appexop = opr;
+    appexid = (var << 5) | (appexop << 1) | 1; /* FIXME: range! */
+    quantid = (appexid << 3) | CACHEID_APPAL;
 
-    while (true) {
-      if (varset2vartable(var) < 0) {
-        return BDDZERO;
-      }
-      try {
-        INITREF();
-        applyop = bddop_and;
-        appexop = opr;
-        appexid = (var << 5) | (appexop << 1) | 1; /* FIXME: range! */
-        quantid = (appexid << 3) | CACHEID_APPAL;
-
-        res = appquant_rec(l, r);
-
-      } catch (ReorderException x) {
-        bdd_checkreorder();
-
-        res = BDDZERO;
-        /* avoid warning about res being uninitialized */
-      }
-      break;
-    }
-
+    INITREF();
+    int res = appquant_rec(l, r);
     checkresize();
+
     return res;
   }
 
   private int bdd_appuni(int l, int r, int opr, int var) {
-    int res;
-    firstReorder = 1;
-
     CHECKa(l, BDDZERO);
     CHECKa(r, BDDZERO);
     CHECKa(var, BDDZERO);
@@ -2996,26 +2776,15 @@ public final class JFactory extends BDDFactory {
     if (quantcache == null) {
       quantcache = BddCacheI_init(cachesize);
     }
+    applyop = bddop_xor;
+    appexop = opr;
+    appexid = (var << 5) | (appexop << 1) | 1; /* FIXME: range! */
+    quantid = (appexid << 3) | CACHEID_APPUN;
 
-    while (true) {
-      try {
-        INITREF();
-        applyop = bddop_xor;
-        appexop = opr;
-        appexid = (var << 5) | (appexop << 1) | 1; /* FIXME: range! */
-        quantid = (appexid << 3) | CACHEID_APPUN;
-
-        res = appuni_rec(l, r, var);
-
-      } catch (ReorderException x) {
-        bdd_checkreorder();
-        res = BDDZERO;
-        /* avoid warning about res being uninitialized */
-      }
-      break;
-    }
-
+    INITREF();
+    int res = appuni_rec(l, r, var);
     checkresize();
+
     return res;
   }
 
