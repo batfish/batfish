@@ -14,7 +14,6 @@ public class BDDUtils {
   /** Create a new {@link BDDFactory} object with {@code numVariables} boolean variables. */
   public static BDDFactory bddFactory(int numVariables) {
     BDDFactory factory = JFactory.init(10000, 1000);
-    factory.disableReorder();
     factory.setCacheRatio(64);
     factory.setVarNum(numVariables); // reserve 32 1-bit variables
     return factory;

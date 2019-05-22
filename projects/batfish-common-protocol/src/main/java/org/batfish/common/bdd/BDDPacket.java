@@ -108,7 +108,6 @@ public class BDDPacket {
    */
   public BDDPacket() {
     _factory = JFactory.init(JFACTORY_INITIAL_NODE_TABLE_SIZE, JFACTORY_INITIAL_NODE_CACHE_SIZE);
-    _factory.enableReorder();
     _factory.setCacheRatio(JFACTORY_CACHE_RATIO);
     // Do not impose a maximum node table increase
     _factory.setMaxIncrease(0);
