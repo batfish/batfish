@@ -5370,42 +5370,6 @@ public final class JFactory extends BDDFactory {
     out.print(s.toString());
   }
 
-  public void validateAll() {
-    validate_all();
-  }
-
-  public void validateBDD(BDD b) {
-    validate(((BDDImpl) b)._index);
-  }
-
-  private void validate_all() {
-    int n;
-    for (n = bddnodesize - 1; n >= 2; n--) {
-      if (HASREF(n)) {
-        validate(n);
-      }
-    }
-  }
-
-  private void validate(int k) {
-    validate(k, -1);
-  }
-
-  private void validate(int k, int lastLevel) {
-    if (k < 2) {
-      return;
-    }
-    int lev = LEVEL(k);
-    // System.out.println("Level("+k+") = "+lev);
-    if (lev <= lastLevel) {
-      throw new BDDException(lev + " <= " + lastLevel);
-    }
-    // System.out.println("Low:");
-    validate(LOW(k), lev);
-    // System.out.println("High:");
-    validate(HIGH(k), lev);
-  }
-
   @Override
   protected BDDDomain createDomain(int a, BigInteger b) {
     return new bddDomain(a, b);
