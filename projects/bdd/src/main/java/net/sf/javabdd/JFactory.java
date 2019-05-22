@@ -631,7 +631,6 @@ public final class JFactory extends BDDFactory {
   private int gbcollectnum; /* Number of garbage collections */
   private int cachesize; /* Size of the operator caches */
   private long gbcclock; /* Clock ticks used in GBC */
-  private int usednodes_nextreorder; /* When to do reorder next time */
 
   private static final int BDD_MEMORY = (-1); /* Out of memory */
   private static final int BDD_VAR = (-2); /* Unknown variable */
@@ -3469,7 +3468,6 @@ public final class JFactory extends BDDFactory {
     gbcollectnum = 0;
     gbcclock = 0;
     cachesize = cs;
-    usednodes_nextreorder = bddnodesize;
     bddmaxnodeincrease = DEFAULTMAXNODEINC;
 
     bdderrorcond = 0;
