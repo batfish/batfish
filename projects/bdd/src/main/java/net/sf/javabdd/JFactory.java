@@ -4355,8 +4355,6 @@ public final class JFactory extends BDDFactory {
   /* Interaction matrix */
   private imatrix iactmtx;
 
-  private int verbose;
-
   private int bdd_getnodenum() {
     return bddnodesize - bddfreenum;
   }
@@ -5533,79 +5531,5 @@ public final class JFactory extends BDDFactory {
     }
 
     return src;
-  }
-
-  public JFactory cloneFactory() {
-    JFactory INSTANCE = new JFactory();
-    if (applycache != null) {
-      INSTANCE.applycache = this.applycache.copy();
-    }
-    if (quantcache != null) {
-      INSTANCE.quantcache = this.quantcache.copy();
-    }
-    INSTANCE.appexcache = this.appexcache.copy();
-    if (replacecache != null) {
-      INSTANCE.replacecache = this.replacecache.copy();
-    }
-    if (misccache != null) {
-      INSTANCE.misccache = this.misccache.copy();
-    }
-    if (multiopcache != null) {
-      INSTANCE.multiopcache = this.multiopcache.copy();
-    }
-    if (countcache != null) {
-      INSTANCE.countcache = this.countcache.copy();
-    }
-    // TODO: potential difference here (!)
-    INSTANCE.rng = new Random();
-    INSTANCE.verbose = this.verbose;
-    INSTANCE.cachestats.copyFrom(this.cachestats);
-
-    INSTANCE.bddrunning = this.bddrunning;
-    INSTANCE.bdderrorcond = this.bdderrorcond;
-    INSTANCE.bddnodesize = this.bddnodesize;
-    INSTANCE.bddmaxnodesize = this.bddmaxnodesize;
-    INSTANCE.bddmaxnodeincrease = this.bddmaxnodeincrease;
-    INSTANCE.bddfreepos = this.bddfreepos;
-    INSTANCE.bddfreenum = this.bddfreenum;
-    INSTANCE.bddproduced = this.bddproduced;
-    INSTANCE.bddvarnum = this.bddvarnum;
-
-    INSTANCE.gbcollectnum = this.gbcollectnum;
-    INSTANCE.cachesize = this.cachesize;
-    INSTANCE.gbcclock = this.gbcclock;
-    INSTANCE.usednodes_nextreorder = this.usednodes_nextreorder;
-
-    INSTANCE.bddrefstacktop = this.bddrefstacktop;
-    INSTANCE.bddresized = this.bddresized;
-    INSTANCE.minfreenodes = this.minfreenodes;
-    INSTANCE.bddnodes = new int[this.bddnodes.length];
-    System.arraycopy(this.bddnodes, 0, INSTANCE.bddnodes, 0, this.bddnodes.length);
-    INSTANCE.bddrefstack = new int[this.bddrefstack.length];
-    System.arraycopy(this.bddrefstack, 0, INSTANCE.bddrefstack, 0, this.bddrefstack.length);
-    INSTANCE.bddvar2level = new int[this.bddvar2level.length];
-    System.arraycopy(this.bddvar2level, 0, INSTANCE.bddvar2level, 0, this.bddvar2level.length);
-    INSTANCE.bddlevel2var = new int[this.bddlevel2var.length];
-    System.arraycopy(this.bddlevel2var, 0, INSTANCE.bddlevel2var, 0, this.bddlevel2var.length);
-    INSTANCE.bddvarset = new int[this.bddvarset.length];
-    System.arraycopy(this.bddvarset, 0, INSTANCE.bddvarset, 0, this.bddvarset.length);
-
-    INSTANCE.domain = new BDDDomain[this.domain.length];
-    for (int i = 0; i < INSTANCE.domain.length; ++i) {
-      INSTANCE.domain[i] = INSTANCE.createDomain(i, this.domain[i].realsize);
-    }
-    return INSTANCE;
-  }
-
-  /**
-   * Use this function to translate BDD's from a JavaFactory into its clone. This will only work
-   * immediately after cloneFactory() is called, and before any other BDD operations are performed.
-   *
-   * @param that BDD in old factory
-   * @return a BDD in the new factory
-   */
-  public BDD copyNode(BDD that) {
-    BDDImpl b = (BDDImpl) that;
-    return makeBDD(b._index);
   }
 }
