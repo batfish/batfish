@@ -786,24 +786,6 @@ public final class JFactory extends BDDFactory {
     return bddlevel2var[LEVEL(root)];
   }
 
-  int bdd_low(int root) {
-    CHECK(root);
-    if (root < 2) {
-      return bdd_error(BDD_ILLBDD);
-    }
-
-    return LOW(root);
-  }
-
-  int bdd_high(int root) {
-    CHECK(root);
-    if (root < 2) {
-      return bdd_error(BDD_ILLBDD);
-    }
-
-    return HIGH(root);
-  }
-
   private void checkresize() {
     if (bddresized) {
       bdd_operator_noderesize();
