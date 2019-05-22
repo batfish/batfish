@@ -4053,23 +4053,6 @@ public final class JFactory extends BDDFactory {
     }
   }
 
-  private static BddTree bddtree_new(int id) {
-    BddTree t = new BddTree();
-
-    t.firstVar = t.lastVar = t.firstLevel = t.lastLevel = -1;
-    t.fixed = true;
-    // t.interleaved = false;
-    // t.next = t.prev = t.nextlevel = null;
-    // t.seq = null;
-    t.id = id;
-    return t;
-  }
-
-  static class sizePair {
-    int val;
-    BddTree block;
-  }
-
   private int bdd_reorder_gain() {
     if (usednum_before == 0) {
       return 0;
@@ -4374,21 +4357,6 @@ public final class JFactory extends BDDFactory {
     bdd_setvarorder(neworder);
   }
 
-  static class BddTree {
-    int firstVar, lastVar; /* First and last variable in this block */
-    int firstLevel, lastLevel; /* First and last level in this block */
-    int pos; /* Sifting position */
-    int[] seq; /* Sequence of first...last in the current order */
-    boolean fixed; /* Are the sub-blocks fixed or may they be reordered */
-    boolean interleaved; /* Is this block interleaved with the next one */
-    int id; /* A sequential id number given by addblock */
-    BddTree next, prev;
-    BddTree nextlevel;
-  }
-
-  private BddTree vartree;
-  private int blockid;
-
   private int[] extroots;
   private int extrootsize;
 
@@ -4410,23 +4378,15 @@ public final class JFactory extends BDDFactory {
   private imatrix iactmtx;
 
   private int verbose;
-  // bddinthandler reorder_handler;
-  // bddfilehandler reorder_filehandler;
-  // bddsizehandler reorder_nodenum;
 
   /* Number of live nodes before and after a reordering session */
   private int usednum_before;
   private int usednum_after;
 
   private void bdd_reorder_init() {
-    vartree = null;
-
-    bdd_clrvarblocks();
-    // bdd_reorder_hook(bdd_default_reohandler);
     bdd_reorder_verbose(0);
     // reorder_nodenum = bdd_getnodenum;
     usednum_before = usednum_after = 0;
-    blockid = 0;
   }
 
   private int bdd_getnodenum() {
@@ -4439,30 +4399,8 @@ public final class JFactory extends BDDFactory {
     return tmp;
   }
 
-  private static void bddtree_del(BddTree t) {
-    if (t == null) {
-      return;
-    }
-
-    bddtree_del(t.nextlevel);
-    bddtree_del(t.next);
-    t.seq = null;
-  }
-
-  private void bdd_clrvarblocks() {
-    bddtree_del(vartree);
-    vartree = null;
-    blockid = 0;
-  }
-
   private void bdd_setvarorder(int[] neworder) {
     int level;
-
-    /* Do not set order when variable-blocks are used */
-    if (vartree != null) {
-      bdd_error(BDD_VARBLK);
-      return;
-    }
 
     reorder_init();
 
@@ -5463,221 +5401,6 @@ public final class JFactory extends BDDFactory {
     }
     b.append(s);
     return b.toString();
-  }
-
-  private int bdd_addvarblock(int[] v, boolean fixed) {
-    BddTree t;
-    int first, last;
-
-    if (v.length < 1) {
-      return bdd_error(BDD_VARBLK);
-    }
-
-    first = last = v[0];
-
-    for (int i : v) {
-      if (i < first) {
-        first = i;
-      }
-      if (i > last) {
-        last = i;
-      }
-    }
-
-    if ((t = bddtree_addrange(vartree, first, last, fixed, blockid)) == null) {
-      return bdd_error(BDD_VARBLK);
-    }
-
-    vartree = t;
-    return blockid++;
-  }
-
-  private int bdd_intaddvarblock(int first, int last, boolean fixed) {
-    BddTree t;
-
-    if (first < 0 || first >= bddvarnum || last < 0 || last >= bddvarnum) {
-      return bdd_error(BDD_VAR);
-    }
-
-    if ((t = bddtree_addrange(vartree, first, last, fixed, blockid)) == null) {
-      return bdd_error(BDD_VARBLK);
-    }
-
-    vartree = t;
-    return blockid++;
-  }
-
-  private BddTree bddtree_addrange_rec(
-      BddTree t, BddTree prev, int first, int last, boolean fixed, int id) {
-    if (first < 0 || last < 0 || last < first) {
-      return null;
-    }
-
-    /* Empty tree -> build one */
-    if (t == null) {
-      t = bddtree_new(id);
-      t.firstVar = first;
-      t.firstLevel = bddvar2level[first];
-      t.fixed = fixed;
-      t.seq = new int[last - first + 1];
-      t.lastVar = last;
-      t.lastLevel = bddvar2level[last];
-      update_seq(t);
-      t.prev = prev;
-      return t;
-    }
-
-    /* Check for identity */
-    if (first == t.firstVar && last == t.lastVar) {
-      return t;
-    }
-
-    int firstLev = Math.min(bddvar2level[first], bddvar2level[last]);
-    int lastLev = Math.max(bddvar2level[first], bddvar2level[last]);
-
-    /* Inside this section -> insert in next level */
-    if (firstLev >= t.firstLevel && lastLev <= t.lastLevel) {
-      t.nextlevel = bddtree_addrange_rec(t.nextlevel, null, first, last, fixed, id);
-      return t;
-    }
-
-    /* Before this section -> insert */
-    if (lastLev < t.firstLevel) {
-      BddTree tnew = bddtree_new(id);
-      tnew.firstVar = first;
-      tnew.firstLevel = firstLev;
-      tnew.lastVar = last;
-      tnew.lastLevel = lastLev;
-      tnew.fixed = fixed;
-      tnew.seq = new int[last - first + 1];
-      update_seq(tnew);
-      tnew.next = t;
-      tnew.prev = t.prev;
-      t.prev = tnew;
-      return tnew;
-    }
-
-    /* After this this section -> go to next */
-    if (firstLev > t.lastLevel) {
-      t.next = bddtree_addrange_rec(t.next, t, first, last, fixed, id);
-      return t;
-    }
-
-    /* Covering this section -> insert above this level */
-    if (firstLev <= t.firstLevel) {
-      BddTree tnew;
-      BddTree dis = t;
-
-      while (true) {
-        /* Partial cover ->error */
-        if (lastLev >= dis.firstLevel && lastLev < dis.lastLevel) {
-          return null;
-        }
-
-        if (dis.next == null || last < dis.next.firstLevel) {
-          tnew = bddtree_new(id);
-          tnew.firstVar = first;
-          tnew.firstLevel = firstLev;
-          tnew.lastVar = last;
-          tnew.lastLevel = lastLev;
-          tnew.fixed = fixed;
-          tnew.seq = new int[last - first + 1];
-          update_seq(tnew);
-          tnew.nextlevel = t;
-          tnew.next = dis.next;
-          tnew.prev = t.prev;
-          if (dis.next != null) {
-            dis.next.prev = tnew;
-          }
-          dis.next = null;
-          t.prev = null;
-          return tnew;
-        }
-
-        dis = dis.next;
-      }
-    }
-
-    return null;
-  }
-
-  private void update_seq(BddTree t) {
-    int n;
-    int low = t.firstVar;
-    int high = t.lastVar;
-
-    for (n = t.firstVar; n <= t.lastVar; n++) {
-      if (bddvar2level[n] < bddvar2level[low]) {
-        low = n;
-      }
-      if (bddvar2level[n] > bddvar2level[high]) {
-        high = n;
-      }
-    }
-
-    for (n = t.firstVar; n <= t.lastVar; n++) {
-      t.seq[bddvar2level[n] - bddvar2level[low]] = n;
-    }
-
-    t.firstLevel = bddvar2level[low];
-    t.lastLevel = bddvar2level[high];
-  }
-
-  private BddTree bddtree_addrange(BddTree t, int first, int last, boolean fixed, int id) {
-    return bddtree_addrange_rec(t, null, first, last, fixed, id);
-  }
-
-  private void bdd_varblockall() {
-    int n;
-
-    for (n = 0; n < bddvarnum; n++) {
-      bdd_intaddvarblock(n, n, true);
-    }
-  }
-
-  private static void print_order_rec(PrintStream o, BddTree t, int level) {
-    if (t == null) {
-      return;
-    }
-
-    if (t.nextlevel != null) {
-      for (int i = 0; i < level; ++i) {
-        o.print("   ");
-      }
-      // todo: better reorder id printout
-      o.print(right(t.id, 3));
-      if (t.interleaved) {
-        o.print('x');
-      }
-      o.println("{\n");
-
-      print_order_rec(o, t.nextlevel, level + 1);
-
-      for (int i = 0; i < level; ++i) {
-        o.print("   ");
-      }
-      // todo: better reorder id printout
-      o.print(right(t.id, 3));
-      o.println("}\n");
-
-      print_order_rec(o, t.next, level);
-    } else {
-      for (int i = 0; i < level; ++i) {
-        o.print("   ");
-      }
-      // todo: better reorder id printout
-      o.print(right(t.id, 3));
-      if (t.interleaved) {
-        o.print('x');
-      }
-      o.println();
-
-      print_order_rec(o, t.next, level);
-    }
-  }
-
-  private void bdd_fprintorder(PrintStream ofile) {
-    print_order_rec(ofile, vartree, 0);
   }
 
   private void bdd_fprintstat(PrintStream out) {
