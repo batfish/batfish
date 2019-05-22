@@ -2,6 +2,7 @@ package org.batfish.bddreachability.transition;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.base.MoreObjects;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 
@@ -33,5 +34,10 @@ public final class EraseAndSet implements Transition {
   @Override
   public BDD transitBackward(BDD bdd) {
     return bdd.applyEx(_setValue, BDDFactory.and, _eraseVars);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(EraseAndSet.class).add("topVar", _eraseVars.var()).toString();
   }
 }

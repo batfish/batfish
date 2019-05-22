@@ -1,5 +1,6 @@
 package org.batfish.bddreachability.transition;
 
+import com.google.common.base.MoreObjects;
 import net.sf.javabdd.BDD;
 
 /** A transition that branches to two other transitions */
@@ -30,5 +31,13 @@ public final class Branch implements Transition {
     BDD trueBranchIn = _guard.and(_trueBranch.transitBackward(bdd));
     BDD falseBranchIn = _guard.less(_falseBranch.transitBackward(bdd));
     return trueBranchIn.or(falseBranchIn);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(Branch.class)
+        .add("true", _trueBranch)
+        .add("false", _falseBranch)
+        .toString();
   }
 }
