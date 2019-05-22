@@ -1,9 +1,5 @@
 package org.batfish.bddreachability.transition;
 
-import static org.batfish.bddreachability.transition.Transitions.ZERO;
-import static org.batfish.bddreachability.transition.Transitions.branch;
-import static org.batfish.bddreachability.transition.Transitions.compose;
-import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.transformation.Noop.NOOP_SOURCE_NAT;
@@ -40,10 +36,6 @@ public class TransformationToTransitionTest {
   private TransformationToTransition _toTransition;
   private BDD _one;
   private BDD _zero;
-
-  private BDD var(int i) {
-    return _pkt.getFactory().ithVar(i);
-  }
 
   @Before
   public void setup() {
@@ -449,62 +441,5 @@ public class TransformationToTransitionTest {
 
       assertEquals(transition.transitBackward(dstToBdd.toBDD(Ip.parse("5.5.6.6"))), poolBdd);
     }
-  }
-
-  @Test
-  public void testBranchGuardIsOne() {
-    Transition thenTrans = constraint(var(0));
-    Transition elseTrans = constraint(var(1));
-    assertEquals(thenTrans, branch(_one, thenTrans, elseTrans));
-  }
-
-  @Test
-  public void testBranchGuardIsZero() {
-    Transition thenTrans = constraint(var(0));
-    Transition elseTrans = constraint(var(1));
-    assertEquals(elseTrans, branch(_zero, thenTrans, elseTrans));
-  }
-
-  @Test
-  public void testBranchThenIsZero() {
-    BDD guard = var(0);
-    Transition elseTrans = constraint(var(1));
-    assertEquals(compose(constraint(guard.not()), elseTrans), branch(guard, ZERO, elseTrans));
-  }
-
-  @Test
-  public void testBranchElseIsZero() {
-    BDD guard = var(0);
-    Transition thenTrans = constraint(var(1));
-    assertEquals(compose(constraint(guard), thenTrans), branch(guard, thenTrans, ZERO));
-  }
-
-  @Test
-  public void testBranchThenEqualsElse() {
-    BDD guard = var(0);
-    Transition trans = constraint(var(1));
-    assertEquals(trans, branch(guard, trans, trans));
-  }
-
-  @Test
-  public void testBranchNestedThen() {
-    BDD guard1 = var(0);
-    BDD guard2 = var(1);
-    Transition thn = constraint(var(2));
-    Transition els = constraint(var(3));
-    Transition expected = new Branch(guard1.and(guard2), thn, els);
-    Transition actual = branch(guard1, new Branch(guard2, thn, els), els);
-    assertEquals(expected, actual);
-  }
-
-  @Test
-  public void testBranchNestedElse() {
-    BDD guard1 = var(0);
-    BDD guard2 = var(1);
-    Transition thn = constraint(var(2));
-    Transition els = constraint(var(3));
-    Transition expected = new Branch(guard1.or(guard2), thn, els);
-    Transition actual = branch(guard1, thn, new Branch(guard2, thn, els));
-    assertEquals(expected, actual);
   }
 }
