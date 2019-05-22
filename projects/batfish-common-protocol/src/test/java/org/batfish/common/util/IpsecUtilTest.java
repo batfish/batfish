@@ -191,7 +191,7 @@ public class IpsecUtilTest {
                 cb.setConfigurationFormat(AWS).build(),
                 ipsecPeerConfigBuilder.build(),
                 ipsecPeerConfigBuilder.build())
-            .getCloud());
+            .isCloud());
 
     assertTrue(
         getIpsecSession(
@@ -199,7 +199,7 @@ public class IpsecUtilTest {
                 cb.setConfigurationFormat(AWS).build(),
                 ipsecPeerConfigBuilder.build(),
                 ipsecPeerConfigBuilder.build())
-            .getCloud());
+            .isCloud());
 
     assertFalse(
         getIpsecSession(
@@ -207,6 +207,6 @@ public class IpsecUtilTest {
                 cb.setConfigurationFormat(CISCO_IOS).build(),
                 ipsecPeerConfigBuilder.build(),
                 ipsecPeerConfigBuilder.build())
-            .getCloud());
+            .isCloud());
   }
 }

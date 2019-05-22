@@ -50,7 +50,13 @@ public class IpsecSession {
     _responderIpsecP2Policy = responderIpsecP2Policy;
   }
 
-  public boolean getCloud() {
+  /**
+   * Is true when at least one of the peers for this IPsec session is a cloud type configuration
+   * (like AWS)
+   *
+   * @return true for a cloud type {@link IpsecSession}
+   */
+  public boolean isCloud() {
     return _cloud;
   }
 
@@ -122,7 +128,7 @@ public class IpsecSession {
           _responderIpsecP2Policy);
     }
 
-    public boolean getCloud() {
+    public boolean isCloud() {
       return _cloud;
     }
 
@@ -205,5 +211,15 @@ public class IpsecSession {
   public enum IpsecSessionType {
     STATIC,
     DYNAMIC
+  }
+
+  /**
+   * Returns true if the given {@link Configuration} has a cloud type {@link ConfigurationFormat}
+   *
+   * @param configuration {@link Configuration}
+   * @return true if {@link Configuration} is a cloud type node
+   */
+  public static boolean isCloudConfig(Configuration configuration) {
+    return CLOUD_CONFIGURATION_FORMATS.contains(configuration.getConfigurationFormat());
   }
 }

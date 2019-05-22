@@ -165,9 +165,7 @@ public class IpsecUtil {
     IpsecSession.Builder ipsecSessionBuilder = IpsecSession.builder();
 
     ipsecSessionBuilder.setCloud(
-        IpsecSession.CLOUD_CONFIGURATION_FORMATS.contains(initiatorOwner.getConfigurationFormat())
-            || IpsecSession.CLOUD_CONFIGURATION_FORMATS.contains(
-                peerOwner.getConfigurationFormat()));
+        IpsecSession.isCloudConfig(initiatorOwner) || IpsecSession.isCloudConfig(peerOwner));
 
     negotiateIkeP1(initiatorOwner, peerOwner, initiator, candidatePeer, ipsecSessionBuilder);
 
