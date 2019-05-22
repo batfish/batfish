@@ -26,6 +26,7 @@ import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EvpnRoute;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.bgp.BgpTopology.EdgeId;
@@ -39,7 +40,7 @@ import org.batfish.dataplane.rib.RouteAdvertisement;
 @ParametersAreNonnullByDefault
 final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute> {
   /** Configuration for this process */
-  @Nonnull private final BgpProcess _process;
+  @Nonnull final BgpProcess _process;
   /** Parent node configuration */
   @Nonnull private final Configuration _c;
   /** Name of our VRF */
@@ -207,5 +208,17 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute> {
     Queue<RouteAdvertisement<Bgpv4Route>> q = _bgpv4IncomingRoutes.get(edgeId);
     assert q != null; // Invariant of the session being up
     q.addAll(routes);
+  }
+
+  void enqueueBgpMessages(
+      @Nonnull EdgeId edgeId, @Nonnull Stream<RouteAdvertisement<Bgpv4Route>> routes) {
+    Queue<RouteAdvertisement<Bgpv4Route>> q = _bgpv4IncomingRoutes.get(edgeId);
+    assert q != null; // Invariant of the session being up
+    routes.forEach(q::add);
+  }
+
+  @Nonnull
+  public Ip getRouterId() {
+    return _process.getRouterId();
   }
 }

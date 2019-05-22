@@ -406,6 +406,16 @@ class IncrementalBdpEngine {
       NetworkConfigurations networkConfigurations) {
     try (ActiveSpan span =
         GlobalTracer.get()
+            .buildSpan(iterationLabel + ": Init for new BGP iteration")
+            .startActive()) {
+      assert span != null;
+      nodes
+          .values()
+          .parallelStream()
+          .forEach(n -> n.getVirtualRouters().values().forEach(vr -> vr.bgpIteration(allNodes)));
+    }
+    try (ActiveSpan span =
+        GlobalTracer.get()
             .buildSpan(iterationLabel + ": Init BGP generated/aggregate routes")
             .startActive()) {
       assert span != null; // avoid unused warning
@@ -426,7 +436,6 @@ class IncrementalBdpEngine {
           .flatMap(n -> n.getVirtualRouters().values().stream())
           .forEach(
               vr -> {
-                vr.bgpIteration(allNodes);
                 Map<Bgpv4Rib, RibDelta<Bgpv4Route>> deltas =
                     vr.processBgpMessages(bgpTopology, networkConfigurations, nodes);
                 vr.finalizeBgpRoutesAndQueueOutgoingMessages(

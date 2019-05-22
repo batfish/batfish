@@ -1,5 +1,7 @@
 package org.batfish.dataplane.protocols;
 
+import static org.batfish.dataplane.protocols.BgpProtocolHelper.convertGeneratedRouteToBgp;
+import static org.batfish.dataplane.protocols.BgpProtocolHelper.convertNonBgpRouteToBgpRoute;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
@@ -110,14 +112,42 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
    * class variables representing the BGP session.
    */
   private Bgpv4Route.Builder runTransformBgpRoutePreExport(AbstractRoute route) {
-    return BgpProtocolHelper.transformBgpRoutePreExport(
-        _fromNeighbor,
-        _toNeighbor,
-        _sessionProperties,
-        _fromBgpProcess,
-        _toBgpProcess,
-        route,
-        Bgpv4Route.builder());
+    if (route instanceof GeneratedRoute) {
+      return BgpProtocolHelper.transformBgpRoutePreExport(
+          _fromNeighbor,
+          _toNeighbor,
+          _sessionProperties,
+          _fromBgpProcess,
+          _toBgpProcess,
+          convertGeneratedRouteToBgp((GeneratedRoute) route, _fromBgpProcess.getRouterId(), false),
+          Bgpv4Route.builder());
+    } else if (route instanceof Bgpv4Route) {
+      return BgpProtocolHelper.transformBgpRoutePreExport(
+          _fromNeighbor,
+          _toNeighbor,
+          _sessionProperties,
+          _fromBgpProcess,
+          _toBgpProcess,
+          (Bgpv4Route) route,
+          Bgpv4Route.builder());
+    } else {
+      RoutingProtocol protocol =
+          _sessionProperties.isEbgp() ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
+      return BgpProtocolHelper.transformBgpRoutePreExport(
+          _fromNeighbor,
+          _toNeighbor,
+          _sessionProperties,
+          _fromBgpProcess,
+          _toBgpProcess,
+          convertNonBgpRouteToBgpRoute(
+                  route,
+                  _fromBgpProcess.getRouterId(),
+                  _sessionProperties.getTailIp(),
+                  protocol.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS),
+                  protocol)
+              .build(),
+          Bgpv4Route.builder());
+    }
   }
 
   /**
@@ -139,20 +169,6 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
       assertThat(runTransformBgpRoutePreExport(_baseAggRouteBuilder.build()), not(nullValue()));
       assertThat(runTransformBgpRoutePreExport(_baseBgpRouteBuilder.build()), not(nullValue()));
     }
-  }
-
-  /** Test that transformBgpRouteOnExport copies the tag from the input route */
-  @Test
-  public void testTagInTransformedRoute() {
-    setUpPeers(true);
-    AbstractRoute route =
-        StaticRoute.builder()
-            .setNetwork(DEST_NETWORK)
-            .setTag(12345)
-            .setAdministrativeCost(1)
-            .build();
-    Bgpv4Route.Builder transformedRoute = runTransformBgpRoutePreExport(route);
-    assertThat(transformedRoute.getTag(), equalTo(12345));
   }
 
   /**
