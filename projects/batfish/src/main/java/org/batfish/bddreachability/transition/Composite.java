@@ -2,6 +2,7 @@ package org.batfish.bddreachability.transition;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import net.sf.javabdd.BDD;
@@ -58,5 +59,10 @@ public final class Composite implements Transition {
   @Override
   public int hashCode() {
     return _transitions.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(Composite.class).add("transitions", _transitions).toString();
   }
 }
