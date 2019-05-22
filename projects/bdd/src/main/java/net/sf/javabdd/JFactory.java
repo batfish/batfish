@@ -3460,7 +3460,7 @@ public final class JFactory extends BDDFactory {
     SETLOW(1, 1);
     SETHIGH(1, 1);
 
-    bdd_operator_init(cs);
+    bdd_operator_init();
 
     bddfreepos = 2;
     bddfreenum = bddnodesize - 2;
@@ -3552,8 +3552,7 @@ public final class JFactory extends BDDFactory {
   to avoid compiler warning about 'first'
   being clobbered by setjmp */
 
-  private void bdd_operator_init(int cachesize) {
-
+  private void bdd_operator_init() {
     quantvarsetID = 0;
     quantvarset = null;
     cacheratio = 0;
