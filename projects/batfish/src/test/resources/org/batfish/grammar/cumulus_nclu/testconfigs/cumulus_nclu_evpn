@@ -12,16 +12,19 @@ net add bgp l2vpn evpn advertise-default-gw
 net add bgp neighbor swp1 interface remote-as external
 net add bgp l2vpn evpn neighbor swp1 activate
 # VNIs for default VRF
-net add vxlan vni10001 bridge access 5
 net add vxlan vni10001 vxlan id 10001
 net add vxlan vni10001 vxlan local-tunnelip 192.0.2.11
-net add vxlan vni10005 vxlan id 10002
-net add vxlan vni10005 vxlan local-tunnelip 192.0.2.12
+net add vxlan vni10001 bridge access 1
+
+net add vxlan vni10002 vxlan id 10002
+net add vxlan vni10002 vxlan local-tunnelip 192.0.2.12
+net add vxlan vni10002 bridge access 2
 # VNIs for vrf1
 net add vrf vrf1 vni 10004
 net add bgp vrf vrf1 router-id 192.0.1.1
 net add vxlan vni10004 vxlan id 10004
 net add vxlan vni10004 vxlan local-tunnelip 192.0.2.14
+net add vxlan vni10004 bridge access 4
 net commit
 # Unrelated to EVPN vrf
 net add vrf vrf2

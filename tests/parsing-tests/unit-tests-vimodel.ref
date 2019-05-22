@@ -14445,22 +14445,7 @@
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
                   "evpnAddressFamily" : {
-                    "l2Vnis" : [
-                      {
-                        "routeDistinguisher" : "192.0.2.2:1",
-                        "routeTarget" : "2:65500:10004",
-                        "vni" : 10004,
-                        "vrf" : "default"
-                      }
-                    ],
                     "l3Vnis" : [
-                      {
-                        "advertiseV4UnicastRoutes" : false,
-                        "routeDistinguisher" : "192.0.2.2:1",
-                        "routeTarget" : "2:65500:10004",
-                        "vni" : 10004,
-                        "vrf" : "default"
-                      },
                       {
                         "advertiseV4UnicastRoutes" : true,
                         "routeDistinguisher" : "192.0.2.3:0",
