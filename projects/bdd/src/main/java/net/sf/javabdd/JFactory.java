@@ -177,7 +177,7 @@ public final class JFactory extends BDDFactory {
     @Override
     public BDD veccompose(BDDPairing pair) {
       int x = _index;
-      return makeBDD(bdd_veccompose(x, ((bddPair) pair)));
+      return makeBDD(bdd_veccompose(x, (bddPair) pair));
     }
 
     @Override
@@ -315,13 +315,13 @@ public final class JFactory extends BDDFactory {
     @Override
     public BDD replace(BDDPairing pair) {
       int x = _index;
-      return makeBDD(bdd_replace(x, ((bddPair) pair)));
+      return makeBDD(bdd_replace(x, (bddPair) pair));
     }
 
     @Override
     public BDD replaceWith(BDDPairing pair) {
       int x = _index;
-      int y = bdd_replace(x, ((bddPair) pair));
+      int y = bdd_replace(x, (bddPair) pair);
       bdd_delref(x);
       bdd_addref(y);
       _index = y;
@@ -632,40 +632,40 @@ public final class JFactory extends BDDFactory {
   private int cachesize; /* Size of the operator caches */
   private long gbcclock; /* Clock ticks used in GBC */
 
-  private static final int BDD_MEMORY = (-1); /* Out of memory */
-  private static final int BDD_VAR = (-2); /* Unknown variable */
-  private static final int BDD_RANGE = (-3);
+  private static final int BDD_MEMORY = -1; /* Out of memory */
+  private static final int BDD_VAR = -2; /* Unknown variable */
+  private static final int BDD_RANGE = -3;
   /* Variable value out of range (not in domain) */
-  private static final int BDD_DEREF = (-4);
+  private static final int BDD_DEREF = -4;
   /* Removing external reference to unknown node */
-  private static final int BDD_RUNNING = (-5);
+  private static final int BDD_RUNNING = -5;
   /* Called bdd_init() twice whithout bdd_done() */
-  private static final int BDD_FILE = (-6); /* Some file operation failed */
-  private static final int BDD_FORMAT = (-7); /* Incorrect file format */
-  private static final int BDD_ORDER = (-8);
+  private static final int BDD_FILE = -6; /* Some file operation failed */
+  private static final int BDD_FORMAT = -7; /* Incorrect file format */
+  private static final int BDD_ORDER = -8;
   /* Vars. not in order for vector based functions */
-  private static final int BDD_BREAK = (-9); /* User called break */
-  private static final int BDD_VARNUM = (-10);
+  private static final int BDD_BREAK = -9; /* User called break */
+  private static final int BDD_VARNUM = -10;
   /* Different number of vars. for vector pair */
-  private static final int BDD_NODES = (-11);
+  private static final int BDD_NODES = -11;
   /* Tried to set max. number of nodes to be fewer */
   /* than there already has been allocated */
-  private static final int BDD_OP = (-12); /* Unknown operator */
-  private static final int BDD_VARSET = (-13); /* Illegal variable set */
-  private static final int BDD_VARBLK = (-14); /* Bad variable block operation */
-  private static final int BDD_DECVNUM = (-15);
+  private static final int BDD_OP = -12; /* Unknown operator */
+  private static final int BDD_VARSET = -13; /* Illegal variable set */
+  private static final int BDD_VARBLK = -14; /* Bad variable block operation */
+  private static final int BDD_DECVNUM = -15;
   /* Trying to decrease the number of variables */
-  private static final int BDD_REPLACE = (-16);
+  private static final int BDD_REPLACE = -16;
   /* Replacing to already existing variables */
-  private static final int BDD_NODENUM = (-17);
+  private static final int BDD_NODENUM = -17;
   /* Number of nodes reached user defined maximum */
-  private static final int BDD_ILLBDD = (-18); /* Illegal bdd argument */
-  private static final int BDD_SIZE = (-19); /* Illegal size argument */
+  private static final int BDD_ILLBDD = -18; /* Illegal bdd argument */
+  private static final int BDD_SIZE = -19; /* Illegal size argument */
 
-  private static final int BVEC_SIZE = (-20); /* Mismatch in bitvector size */
-  private static final int BVEC_SHIFT = (-21);
+  private static final int BVEC_SIZE = -20; /* Mismatch in bitvector size */
+  private static final int BVEC_SHIFT = -21;
   /* Illegal shift-left/right parameter */
-  private static final int BVEC_DIVZERO = (-22); /* Division by zero */
+  private static final int BVEC_DIVZERO = -22; /* Division by zero */
 
   private static final int BDD_ERRNUM = 24;
 
@@ -702,12 +702,12 @@ public final class JFactory extends BDDFactory {
 
   private static int PAIR(int a, int b) {
     // return Math.abs((a + b) * (a + b + 1) / 2 + a);
-    return ((a + b) * (a + b + 1) / 2 + a);
+    return (a + b) * (a + b + 1) / 2 + a;
   }
 
   private static int TRIPLE(int a, int b, int c) {
     // return Math.abs(PAIR(c, PAIR(a, b)));
-    return (PAIR(c, PAIR(a, b)));
+    return PAIR(c, PAIR(a, b));
   }
 
   private int NODEHASH(int lvl, int l, int h) {
@@ -783,7 +783,7 @@ public final class JFactory extends BDDFactory {
       bdd_error(BDD_ILLBDD);
     }
 
-    return (bddlevel2var[LEVEL(root)]);
+    return bddlevel2var[LEVEL(root)];
   }
 
   int bdd_low(int root) {
@@ -792,7 +792,7 @@ public final class JFactory extends BDDFactory {
       return bdd_error(BDD_ILLBDD);
     }
 
-    return (LOW(root));
+    return LOW(root);
   }
 
   int bdd_high(int root) {
@@ -801,7 +801,7 @@ public final class JFactory extends BDDFactory {
       return bdd_error(BDD_ILLBDD);
     }
 
-    return (HIGH(root));
+    return HIGH(root);
   }
 
   private void checkresize() {
@@ -868,7 +868,7 @@ public final class JFactory extends BDDFactory {
   }
 
   private boolean INVARSET(int a) {
-    return (quantvarset[a] == quantvarsetID); /* unsigned check */
+    return quantvarset[a] == quantvarsetID; /* unsigned check */
   }
 
   private boolean INSVARSET(int a) {
@@ -4399,7 +4399,7 @@ public final class JFactory extends BDDFactory {
       int toBeProcessed = reorder_downSimple(var);
       levelData l = levels[var];
 
-      if (l.nodenum < (l.size) / 3 || l.nodenum >= (l.size * 3) / 2 && l.size < l.maxsize) {
+      if (l.nodenum < l.size / 3 || l.nodenum >= (l.size * 3) / 2 && l.size < l.maxsize) {
         reorder_swapResize(toBeProcessed, var);
         reorder_localGbcResize(toBeProcessed, var);
       } else {
@@ -4708,7 +4708,7 @@ public final class JFactory extends BDDFactory {
   }
 
   private int NODEHASH2(int var, int l, int h) {
-    return (Math.abs(PAIR(l, h) % levels[var].size) + levels[var].start);
+    return Math.abs(PAIR(l, h) % levels[var].size) + levels[var].start;
   }
 
   private boolean resizedInMakenode;
@@ -5028,7 +5028,7 @@ public final class JFactory extends BDDFactory {
 
     for (n = 0; n < bddvarnum; n++) {
       for (m = n; m < bddvarnum; m++) {
-        if ((dep[n]) && (dep[m])) {
+        if (dep[n] && dep[m]) {
           imatrixSet(iactmtx, n, m);
           imatrixSet(iactmtx, m, n);
         }
