@@ -1813,8 +1813,6 @@ public final class JFactory extends BDDFactory {
   }
 
   private int varset2vartable(int r) {
-    int n;
-
     if (r < 2) {
       return bdd_error(BDD_VARSET);
     }
@@ -1829,7 +1827,7 @@ public final class JFactory extends BDDFactory {
     }
 
     quantlast = -1;
-    for (n = r; n > 1; n = HIGH(n)) {
+    for (int n = r; n > 1; n = HIGH(n)) {
       quantvarset[LEVEL(n)] = quantvarsetID;
       if (VERIFY_ASSERTIONS) {
         _assert(quantlast < LEVEL(n));
@@ -1843,8 +1841,6 @@ public final class JFactory extends BDDFactory {
   private static final int INT_MAX = Integer.MAX_VALUE;
 
   private int varset2svartable(int r) {
-    int n;
-
     if (r < 2) {
       return bdd_error(BDD_VARSET);
     }
@@ -1859,7 +1855,7 @@ public final class JFactory extends BDDFactory {
     }
 
     quantlast = 0;
-    for (n = r; !ISCONST(n); ) {
+    for (int n = r; !ISCONST(n); ) {
       if (ISZERO(LOW(n))) {
         quantvarset[LEVEL(n)] = quantvarsetID;
         n = HIGH(n);
@@ -2622,7 +2618,6 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_support(int r) {
-    int n;
     int res = 1;
 
     CHECK(r);
@@ -2657,7 +2652,7 @@ public final class JFactory extends BDDFactory {
     support_rec(r, supportSet);
     bdd_unmark(r);
 
-    for (n = supportMax; n >= supportMin; --n) {
+    for (int n = supportMax; n >= supportMin; --n) {
       if (supportSet[n] == supportID) {
         int tmp;
         bdd_addref(res);
@@ -2863,7 +2858,6 @@ public final class JFactory extends BDDFactory {
 
   private int bdd_fullsatone(int r) {
     int res;
-    int v;
 
     CHECK(r);
     if (r == BDDZERO) {
@@ -2873,7 +2867,7 @@ public final class JFactory extends BDDFactory {
     INITREF();
     res = fullsatone_rec(r);
 
-    for (v = LEVEL(r) - 1; v >= 0; v--) {
+    for (int v = LEVEL(r) - 1; v >= 0; v--) {
       res = PUSHREF(bdd_makenode(v, res, BDDZERO));
     }
 
@@ -2888,18 +2882,16 @@ public final class JFactory extends BDDFactory {
 
     if (LOW(r) != BDDZERO) {
       int res = fullsatone_rec(LOW(r));
-      int v;
 
-      for (v = LEVEL(LOW(r)) - 1; v > LEVEL(r); v--) {
+      for (int v = LEVEL(LOW(r)) - 1; v > LEVEL(r); v--) {
         res = PUSHREF(bdd_makenode(v, res, BDDZERO));
       }
 
       return PUSHREF(bdd_makenode(LEVEL(r), res, BDDZERO));
     } else {
       int res = fullsatone_rec(HIGH(r));
-      int v;
 
-      for (v = LEVEL(HIGH(r)) - 1; v > LEVEL(r); v--) {
+      for (int v = LEVEL(HIGH(r)) - 1; v > LEVEL(r); v--) {
         res = PUSHREF(bdd_makenode(v, res, BDDZERO));
       }
 
@@ -2908,12 +2900,10 @@ public final class JFactory extends BDDFactory {
   }
 
   private void bdd_gbc_rehash() {
-    int n;
-
     bddfreepos = 0;
     bddfreenum = 0;
 
-    for (n = bddnodesize - 1; n >= 2; n--) {
+    for (int n = bddnodesize - 1; n >= 2; n--) {
       if (LOW(n) != INVALID_BDD) {
         int hash2;
 
@@ -2957,15 +2947,14 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_anodecount(int[] r) {
-    int n;
     int[] cou = new int[1];
 
-    for (n = 0; n < r.length; n++) {
-      bdd_markcount(r[n], cou);
+    for (int i : r) {
+      bdd_markcount(i, cou);
     }
 
-    for (n = 0; n < r.length; n++) {
-      bdd_unmark(r[n]);
+    for (int i : r) {
+      bdd_unmark(i);
     }
 
     return cou[0];
@@ -3088,8 +3077,6 @@ public final class JFactory extends BDDFactory {
   }
 
   private void bdd_gbc() {
-    int r;
-    int n;
     long c2, c1 = System.currentTimeMillis();
 
     // if (gbc_handler != NULL)
@@ -3102,11 +3089,11 @@ public final class JFactory extends BDDFactory {
       gbc_handler(true, gcstats);
     }
 
-    for (r = 0; r < bddrefstacktop; r++) {
+    for (int r = 0; r < bddrefstacktop; r++) {
       bdd_mark(bddrefstack[r]);
     }
 
-    for (n = 0; n < bddnodesize; n++) {
+    for (int n = 0; n < bddnodesize; n++) {
       if (HASREF(n)) {
         bdd_mark(n);
       }
@@ -3116,7 +3103,7 @@ public final class JFactory extends BDDFactory {
     bddfreepos = 0;
     bddfreenum = 0;
 
-    for (n = bddnodesize - 1; n >= 2; n--) {
+    for (int n = bddnodesize - 1; n >= 2; n--) {
 
       if (MARKED(n) && LOW(n) != INVALID_BDD) {
         int hash2;
@@ -3375,19 +3362,18 @@ public final class JFactory extends BDDFactory {
     resize_handler(oldsize, newsize);
 
     int[] newnodes;
-    int n;
     newnodes = new int[newsize * __node_size];
     System.arraycopy(bddnodes, 0, newnodes, 0, bddnodes.length);
     bddnodes = newnodes;
     bddnodesize = newsize;
 
     if (doRehash) {
-      for (n = 0; n < oldsize; n++) {
+      for (int n = 0; n < oldsize; n++) {
         SETHASH(n, 0);
       }
     }
 
-    for (n = oldsize; n < bddnodesize; n++) {
+    for (int n = oldsize; n < bddnodesize; n++) {
       SETLOW(n, INVALID_BDD);
       // SETREFCOU(n, 0);
       // SETHASH(n, 0);
@@ -3409,8 +3395,6 @@ public final class JFactory extends BDDFactory {
 
   @Override
   protected void initialize(int initnodesize, int cs) {
-    int n;
-
     if (bddrunning) {
       bdd_error(BDD_RUNNING);
     }
@@ -3421,7 +3405,7 @@ public final class JFactory extends BDDFactory {
 
     bddresized = false;
 
-    for (n = 0; n < bddnodesize; n++) {
+    for (int n = 0; n < bddnodesize; n++) {
       SETLOW(n, INVALID_BDD);
       // SETREFCOU(n, 0);
       // SETHASH(n, 0);
@@ -3449,10 +3433,6 @@ public final class JFactory extends BDDFactory {
     bddmaxnodeincrease = DEFAULTMAXNODEINC;
 
     bdderrorcond = 0;
-
-    if (CACHESTATS) {
-      // cachestats = new CacheStats();
-    }
 
     // bdd_gbc_hook(bdd_default_gbchandler);
     // bdd_error_hook(bdd_default_errhandler);
@@ -3619,14 +3599,12 @@ public final class JFactory extends BDDFactory {
   }
 
   private BddCache BddCacheI_init(int size) {
-    int n;
-
     size = bdd_prime_gte(size);
 
     BddCache cache = new BddCache();
     cache.table = new BddCacheDataI[size];
 
-    for (n = 0; n < size; n++) {
+    for (int n = 0; n < size; n++) {
       cache.table[n] = new BddCacheDataI();
       cache.table[n].a = -1;
     }
@@ -3636,14 +3614,12 @@ public final class JFactory extends BDDFactory {
   }
 
   private BddCache BddCacheMultiOp_init(int size) {
-    int n;
-
     size = bdd_prime_gte(size);
 
     BddCache cache = new BddCache();
     cache.table = new MultiOpBddCacheData[size];
 
-    for (n = 0; n < size; n++) {
+    for (int n = 0; n < size; n++) {
       cache.table[n] = new MultiOpBddCacheData();
       cache.table[n].a = -1;
     }
@@ -3763,8 +3739,7 @@ public final class JFactory extends BDDFactory {
           getCacheName(cache), cache.used(), cache.table.length);
     }
 
-    int n;
-    for (n = 0; n < cache.tablesize; n++) {
+    for (int n = 0; n < cache.tablesize; n++) {
       cache.table[n].a = -1;
     }
   }
@@ -3773,8 +3748,7 @@ public final class JFactory extends BDDFactory {
     if (cache == null) {
       return;
     }
-    int n;
-    for (n = 0; n < cache.tablesize; n++) {
+    for (int n = 0; n < cache.tablesize; n++) {
       int a = cache.table[n].a;
       if (a >= 0 && LOW(a) == INVALID_BDD) {
         cache.table[n].a = -1;
@@ -3786,8 +3760,7 @@ public final class JFactory extends BDDFactory {
     if (cache == null) {
       return;
     }
-    int n;
-    for (n = 0; n < cache.tablesize; n++) {
+    for (int n = 0; n < cache.tablesize; n++) {
       int a = cache.table[n].a;
       if (a < 0) {
         continue;
@@ -3802,8 +3775,7 @@ public final class JFactory extends BDDFactory {
     if (cache == null) {
       return;
     }
-    int n;
-    for (n = 0; n < cache.tablesize; n++) {
+    for (int n = 0; n < cache.tablesize; n++) {
       int a = cache.table[n].a;
       if (a < 0) {
         continue;
@@ -3820,8 +3792,7 @@ public final class JFactory extends BDDFactory {
     if (cache == null) {
       return;
     }
-    int n;
-    for (n = 0; n < cache.tablesize; n++) {
+    for (int n = 0; n < cache.tablesize; n++) {
       int a = cache.table[n].a;
       if (a < 0) {
         continue;
@@ -3883,9 +3854,7 @@ public final class JFactory extends BDDFactory {
   }
 
   private void bdd_resetpair(bddPair p) {
-    int n;
-
-    for (n = 0; n < bddvarnum; n++) {
+    for (int n = 0; n < bddvarnum; n++) {
       p.result[n] = bdd_ithvar(bddlevel2var[n]);
     }
     p.last = 0;
@@ -3949,11 +3918,10 @@ public final class JFactory extends BDDFactory {
 
   private void bdd_pairs_done() {
     bddPair p = pairs;
-    int n;
 
     while (p != null) {
       bddPair next = p.next;
-      for (n = 0; n < bddvarnum; n++) {
+      for (int n = 0; n < bddvarnum; n++) {
         bdd_delref(p.result[n]);
       }
       p.result = null;
@@ -3965,9 +3933,8 @@ public final class JFactory extends BDDFactory {
     pairsid++;
 
     if (pairsid == (INT_MAX >> 2)) {
-      bddPair p;
       pairsid = 0;
-      for (p = pairs; p != null; p = p.next) {
+      for (bddPair p = pairs; p != null; p = p.next) {
         p.id = pairsid++;
       }
       // bdd_operator_reset();
@@ -3983,9 +3950,7 @@ public final class JFactory extends BDDFactory {
   }
 
   private void bdd_pairs_vardown(int level) {
-    bddPair p;
-
-    for (p = pairs; p != null; p = p.next) {
+    for (bddPair p = pairs; p != null; p = p.next) {
       int tmp;
 
       tmp = p.result[level];
@@ -3999,15 +3964,12 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_pairs_resize(int oldsize, int newsize) {
-    bddPair p;
-    int n;
-
-    for (p = pairs; p != null; p = p.next) {
+    for (bddPair p = pairs; p != null; p = p.next) {
       int[] new_result = new int[newsize];
       System.arraycopy(p.result, 0, new_result, 0, oldsize);
       p.result = new_result;
 
-      for (n = oldsize; n < newsize; n++) {
+      for (int n = oldsize; n < newsize; n++) {
         p.result[n] = bdd_ithvar(bddlevel2var[n]);
       }
     }
@@ -4336,11 +4298,9 @@ public final class JFactory extends BDDFactory {
   }
 
   private void bdd_setvarorder(int[] neworder) {
-    int level;
-
     reorder_init();
 
-    for (level = 0; level < bddvarnum; level++) {
+    for (int level = 0; level < bddvarnum; level++) {
       int lowvar = neworder[level];
 
       while (bddvar2level[lowvar] > level) {
@@ -4410,9 +4370,7 @@ public final class JFactory extends BDDFactory {
   }
 
   private void reorder_setLevellookup() {
-    int n;
-
-    for (n = 0; n < bddvarnum; n++) {
+    for (int n = 0; n < bddvarnum; n++) {
       levels[n].maxsize = bddnodesize / bddvarnum;
       levels[n].start = n * levels[n].maxsize;
       levels[n].size = Math.min(levels[n].maxsize, (levels[n].nodenum * 5) / 4);
@@ -4424,16 +4382,14 @@ public final class JFactory extends BDDFactory {
   }
 
   private void reorder_rehashAll() {
-    int n;
-
     reorder_setLevellookup();
     bddfreepos = 0;
 
-    for (n = bddnodesize - 1; n >= 0; n--) {
+    for (int n = bddnodesize - 1; n >= 0; n--) {
       SETHASH(n, 0);
     }
 
-    for (n = bddnodesize - 1; n >= 2; n--) {
+    for (int n = bddnodesize - 1; n >= 2; n--) {
       if (HASREF(n)) {
         int hash2 = NODEHASH2(VARr(n), LOW(n), HIGH(n));
         SETNEXT(n, HASH(hash2));
@@ -4449,9 +4405,8 @@ public final class JFactory extends BDDFactory {
     int var1 = bddlevel2var[bddvar2level[var0] + 1];
     int vl1 = levels[var1].start;
     int size1 = levels[var1].size;
-    int n;
 
-    for (n = 0; n < size1; n++) {
+    for (int n = 0; n < size1; n++) {
       int hash = n + vl1;
       int r = HASH(hash);
       SETHASH(hash, 0);
@@ -4483,11 +4438,10 @@ public final class JFactory extends BDDFactory {
     int var1 = bddlevel2var[bddvar2level[var0] + 1];
     int vl0 = levels[var0].start;
     int size0 = levels[var0].size;
-    int n;
 
     levels[var0].nodenum = 0;
 
-    for (n = 0; n < size0; n++) {
+    for (int n = 0; n < size0; n++) {
       int r;
 
       r = HASH(n + vl0);
@@ -4580,9 +4534,8 @@ public final class JFactory extends BDDFactory {
     int var1 = bddlevel2var[bddvar2level[var0] + 1];
     int vl1 = levels[var1].start;
     int size1 = levels[var1].size;
-    int n;
 
-    for (n = 0; n < size1; n++) {
+    for (int n = 0; n < size1; n++) {
       int hash = n + vl1;
       int r = HASH(hash);
       SETHASH(hash, 0);
@@ -4777,13 +4730,11 @@ public final class JFactory extends BDDFactory {
   }
 
   private int reorder_init() {
-    int n;
-
     reorder_handler(true, reorderstats);
 
     levels = new levelData[bddvarnum];
 
-    for (n = 0; n < bddvarnum; n++) {
+    for (int n = 0; n < bddvarnum; n++) {
       levels[n] = new levelData();
       levels[n].start = -1;
       levels[n].size = 0;
@@ -4911,9 +4862,9 @@ public final class JFactory extends BDDFactory {
 
   private int mark_roots() {
     boolean[] dep = new boolean[bddvarnum];
-    int n;
 
-    for (n = 2, extrootsize = 0; n < bddnodesize; n++) {
+    extrootsize = 0;
+    for (int n = 2; n < bddnodesize; n++) {
       /* This is where we go from .level to .var!
        * - Do NOT use the LEVEL macro here. */
       SETLEVELANDMARK(n, bddlevel2var[LEVELANDMARK(n)]);
@@ -4928,7 +4879,8 @@ public final class JFactory extends BDDFactory {
 
     iactmtx = imatrixNew(bddvarnum);
 
-    for (n = 2, extrootsize = 0; n < bddnodesize; n++) {
+    extrootsize = 0;
+    for (int n = 2; n < bddnodesize; n++) {
 
       if (MARKED(n)) {
         UNMARK(n);
@@ -4959,11 +4911,10 @@ public final class JFactory extends BDDFactory {
 
   private static imatrix imatrixNew(int size) {
     imatrix mtx = new imatrix();
-    int n;
 
     mtx.rows = new byte[size][];
 
-    for (n = 0; n < size; n++) {
+    for (int n = 0; n < size; n++) {
       mtx.rows[n] = new byte[size / 8 + 1];
     }
 
@@ -4989,11 +4940,10 @@ public final class JFactory extends BDDFactory {
       addref_rec(LOW(r), dep);
       addref_rec(HIGH(r), dep);
     } else {
-      int n;
 
       /* Update (from previously found) variable dependencies
        * for the interaction matrix */
-      for (n = 0; n < bddvarnum; n++) {
+      for (int n = 0; n < bddvarnum; n++) {
         dep[n] |= imatrixDepends(iactmtx, VARr(r) & ~MARK_MASK, n);
       }
     }
@@ -5002,10 +4952,8 @@ public final class JFactory extends BDDFactory {
   }
 
   private void addDependencies(boolean[] dep) {
-    int n, m;
-
-    for (n = 0; n < bddvarnum; n++) {
-      for (m = n; m < bddvarnum; m++) {
+    for (int n = 0; n < bddvarnum; n++) {
+      for (int m = n; m < bddvarnum; m++) {
         if (dep[n] && dep[m]) {
           imatrixSet(iactmtx, n, m);
           imatrixSet(iactmtx, m, n);
@@ -5019,14 +4967,12 @@ public final class JFactory extends BDDFactory {
   }
 
   private void reorder_gbc() {
-    int n;
-
     bddfreepos = 0;
     bddfreenum = 0;
 
     /* No need to zero all hash fields - this is done in mark_roots */
 
-    for (n = bddnodesize - 1; n >= 2; n--) {
+    for (int n = bddnodesize - 1; n >= 2; n--) {
 
       if (HASREF(n)) {
         int hash;
@@ -5045,12 +4991,10 @@ public final class JFactory extends BDDFactory {
   }
 
   private void reorder_done() {
-    int n;
-
-    for (n = 0; n < extrootsize; n++) {
+    for (int n = 0; n < extrootsize; n++) {
       SETMARK(extroots[n]);
     }
-    for (n = 2; n < bddnodesize; n++) {
+    for (int n = 2; n < bddnodesize; n++) {
       if (MARKED(n)) {
         UNMARK(n);
       } else {
@@ -5069,9 +5013,7 @@ public final class JFactory extends BDDFactory {
   }
 
   private static void imatrixDelete(imatrix mtx) {
-    int n;
-
-    for (n = 0; n < mtx.size; n++) {
+    for (int n = 0; n < mtx.size; n++) {
       mtx.rows[n] = null;
     }
     mtx.rows = null;
@@ -5116,8 +5058,7 @@ public final class JFactory extends BDDFactory {
   public BDDPairing makePair() {
     bddPair p = new bddPair();
     p.result = new int[bddvarnum];
-    int n;
-    for (n = 0; n < bddvarnum; n++) {
+    for (int n = 0; n < bddvarnum; n++) {
       p.result[n] = bdd_ithvar(bddlevel2var[n]);
     }
 
@@ -5129,9 +5070,7 @@ public final class JFactory extends BDDFactory {
   }
 
   private void bdd_fprintall(PrintStream out) {
-    int n;
-
-    for (n = 0; n < bddnodesize; n++) {
+    for (int n = 0; n < bddnodesize; n++) {
       if (LOW(n) != INVALID_BDD) {
         out.print("[" + right(n, 5) + " - " + right(GETREF(n), 2) + "] ");
         // TODO: labelling of vars
@@ -5144,8 +5083,6 @@ public final class JFactory extends BDDFactory {
   }
 
   private void bdd_fprinttable(PrintStream out, int r) {
-    int n;
-
     out.println("ROOT: " + r);
     if (r < 2) {
       return;
@@ -5153,7 +5090,7 @@ public final class JFactory extends BDDFactory {
 
     bdd_mark(r);
 
-    for (n = 0; n < bddnodesize; n++) {
+    for (int n = 0; n < bddnodesize; n++) {
       if (MARKED(n)) {
         UNMARK(n);
 
@@ -5173,7 +5110,7 @@ public final class JFactory extends BDDFactory {
   private LoadHash[] lh_table;
 
   private int bdd_load(BufferedReader ifile, int[] translate) throws IOException {
-    int n, vnum, tmproot;
+    int vnum, tmproot;
     int root;
 
     lh_nodenum = Integer.parseInt(readNext(ifile));
@@ -5187,7 +5124,7 @@ public final class JFactory extends BDDFactory {
 
     // Not actually used.
     loadvar2level = new int[vnum];
-    for (n = 0; n < vnum; n++) {
+    for (int n = 0; n < vnum; n++) {
       loadvar2level[n] = Integer.parseInt(readNext(ifile));
     }
 
@@ -5197,7 +5134,7 @@ public final class JFactory extends BDDFactory {
 
     lh_table = new LoadHash[lh_nodenum];
 
-    for (n = 0; n < lh_nodenum; n++) {
+    for (int n = 0; n < lh_nodenum; n++) {
       lh_table[n] = new LoadHash();
       lh_table[n].first = -1;
       lh_table[n].next = n + 1;
@@ -5207,7 +5144,7 @@ public final class JFactory extends BDDFactory {
 
     tmproot = bdd_loaddata(ifile, translate);
 
-    for (n = 0; n < lh_nodenum; n++) {
+    for (int n = 0; n < lh_nodenum; n++) {
       bdd_delref(lh_table[n].data);
     }
 
@@ -5226,9 +5163,9 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_loaddata(BufferedReader ifile, int[] translate) throws IOException {
-    int key, var, low, high, root = 0, n;
+    int key, var, low, high, root = 0;
 
-    for (n = 0; n < lh_nodenum; n++) {
+    for (int n = 0; n < lh_nodenum; n++) {
       key = Integer.parseInt(readNext(ifile));
       var = Integer.parseInt(readNext(ifile));
       if (translate != null) {
@@ -5410,13 +5347,11 @@ public final class JFactory extends BDDFactory {
    * ***********************************************************************
    */
   private static int numberOfBits(int src) {
-    int b;
-
     if (src == 0) {
       return 0;
     }
 
-    for (b = 31; b > 0; --b) {
+    for (int b = 31; b > 0; --b) {
       if (BitIsSet(src, b)) {
         return b + 1;
       }
@@ -5428,9 +5363,8 @@ public final class JFactory extends BDDFactory {
   private static boolean isWitness(int witness, int src) {
     int bitNum = numberOfBits(src - 1) - 1;
     int d = 1;
-    int i;
 
-    for (i = bitNum; i >= 0; --i) {
+    for (int i = bitNum; i >= 0; --i) {
       int x = d;
 
       d = u64_mulmod(d, d, src);
@@ -5448,9 +5382,7 @@ public final class JFactory extends BDDFactory {
   }
 
   private boolean isMillerRabinPrime(int src) {
-    int n;
-
-    for (n = 0; n < CHECKTIMES; ++n) {
+    for (int n = 0; n < CHECKTIMES; ++n) {
       int witness = Random(src - 1);
 
       if (isWitness(witness, src)) {
