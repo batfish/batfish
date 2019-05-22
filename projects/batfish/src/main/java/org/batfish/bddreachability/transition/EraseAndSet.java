@@ -2,6 +2,7 @@ package org.batfish.bddreachability.transition;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.base.MoreObjects;
 import net.sf.javabdd.BDD;
 
 /** A transition that erases a variable and then constrains it to have a new value. */
@@ -32,5 +33,10 @@ public final class EraseAndSet implements Transition {
   @Override
   public BDD transitBackward(BDD bdd) {
     return bdd.and(_setValue).exist(_eraseVars);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(EraseAndSet.class).add("topVar", _eraseVars.var()).toString();
   }
 }
