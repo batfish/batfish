@@ -189,6 +189,24 @@ public final class ExtendedCommunity extends Community {
     return _subType == 0x02;
   }
 
+  /**
+   * Return the global administrator value.
+   *
+   * <p>It is the middle part of the extended community (type:globalAdmin:localAdmin)
+   */
+  public long getGlobalAdministrator() {
+    return _globalAdministrator;
+  }
+
+  /**
+   * Return the local administrator value.
+   *
+   * <p>It is the last part of the extended community (type:globalAdmin:localAdmin)
+   */
+  public long getLocalAdministrator() {
+    return _localAdministrator;
+  }
+
   @Override
   public boolean equals(@Nullable Object o) {
     if (this == o) {
