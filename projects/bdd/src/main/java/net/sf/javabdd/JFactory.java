@@ -773,10 +773,6 @@ public final class JFactory extends BDDFactory {
     }
   }
 
-  private void CHECKa(int r, int x) {
-    CHECK(r);
-  }
-
   private int bdd_var(int root) {
     CHECK(root);
     if (root < 2) {
@@ -908,7 +904,7 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_not(int r) {
-    CHECKa(r, BDDZERO);
+    CHECK(r);
 
     if (applycache == null) {
       applycache = BddCacheI_init(cachesize);
@@ -959,9 +955,9 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_ite(int f, int g, int h) {
-    CHECKa(f, BDDZERO);
-    CHECKa(g, BDDZERO);
-    CHECKa(h, BDDZERO);
+    CHECK(f);
+    CHECK(g);
+    CHECK(h);
 
     if (applycache == null) {
       applycache = BddCacheI_init(cachesize);
@@ -1071,7 +1067,7 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_replace(int r, bddPair pair) {
-    CHECKa(r, BDDZERO);
+    CHECK(r);
 
     if (replacecache == null) {
       replacecache = BddCacheI_init(cachesize);
@@ -1197,8 +1193,8 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_apply(int l, int r, int op) {
-    CHECKa(l, BDDZERO);
-    CHECKa(r, BDDZERO);
+    CHECK(l);
+    CHECK(r);
 
     if (op < 0 || op > bddop_invimp) {
       bdd_error(BDD_OP);
@@ -1779,9 +1775,9 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_appex(int l, int r, int opr, int var) {
-    CHECKa(l, BDDZERO);
-    CHECKa(r, BDDZERO);
-    CHECKa(var, BDDZERO);
+    CHECK(l);
+    CHECK(r);
+    CHECK(var);
 
     if (opr < 0 || opr > bddop_invimp) {
       bdd_error(BDD_OP);
@@ -2200,8 +2196,8 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_constrain(int f, int c) {
-    CHECKa(f, BDDZERO);
-    CHECKa(c, BDDZERO);
+    CHECK(f);
+    CHECK(c);
 
     if (misccache == null) {
       misccache = BddCacheI_init(cachesize);
@@ -2281,8 +2277,8 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_compose(int f, int g, int var) {
-    CHECKa(f, BDDZERO);
-    CHECKa(g, BDDZERO);
+    CHECK(f);
+    CHECK(g);
     if (var < 0 || var >= bddvarnum) {
       bdd_error(BDD_VAR);
       return BDDZERO;
@@ -2356,7 +2352,7 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_veccompose(int f, bddPair pair) {
-    CHECKa(f, BDDZERO);
+    CHECK(f);
 
     if (applycache == null) {
       applycache = BddCacheI_init(cachesize);
@@ -2410,8 +2406,8 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_exist(int r, int var) {
-    CHECKa(r, BDDZERO);
-    CHECKa(var, BDDZERO);
+    CHECK(r);
+    CHECK(var);
 
     if (var < 2) /* Empty set */ {
       return r;
@@ -2437,8 +2433,8 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_forall(int r, int var) {
-    CHECKa(r, BDDZERO);
-    CHECKa(var, BDDZERO);
+    CHECK(r);
+    CHECK(var);
 
     if (var < 2) /* Empty set */ {
       return r;
@@ -2464,8 +2460,8 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_unique(int r, int var) {
-    CHECKa(r, BDDZERO);
-    CHECKa(var, BDDZERO);
+    CHECK(r);
+    CHECK(var);
 
     if (var < 2) /* Empty set */ {
       return r;
@@ -2488,8 +2484,8 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_restrict(int r, int var) {
-    CHECKa(r, BDDZERO);
-    CHECKa(var, BDDZERO);
+    CHECK(r);
+    CHECK(var);
 
     if (var < 2) /* Empty set */ {
       return r;
@@ -2553,8 +2549,8 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_simplify(int f, int d) {
-    CHECKa(f, BDDZERO);
-    CHECKa(d, BDDZERO);
+    CHECK(f);
+    CHECK(d);
 
     if (applycache == null) {
       applycache = BddCacheI_init(cachesize);
@@ -2629,7 +2625,7 @@ public final class JFactory extends BDDFactory {
     int n;
     int res = 1;
 
-    CHECKa(r, BDDZERO);
+    CHECK(r);
 
     if (r < 2) {
       return BDDONE;
@@ -2697,9 +2693,9 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_appall(int l, int r, int opr, int var) {
-    CHECKa(l, BDDZERO);
-    CHECKa(r, BDDZERO);
-    CHECKa(var, BDDZERO);
+    CHECK(l);
+    CHECK(r);
+    CHECK(var);
 
     if (opr < 0 || opr > bddop_invimp) {
       bdd_error(BDD_OP);
@@ -2735,9 +2731,9 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_appuni(int l, int r, int opr, int var) {
-    CHECKa(l, BDDZERO);
-    CHECKa(r, BDDZERO);
-    CHECKa(var, BDDZERO);
+    CHECK(l);
+    CHECK(r);
+    CHECK(var);
 
     if (opr < 0 || opr > bddop_invimp) {
       bdd_error(BDD_OP);
@@ -2772,7 +2768,7 @@ public final class JFactory extends BDDFactory {
   private int bdd_satone(int r) {
     int res;
 
-    CHECKa(r, BDDZERO);
+    CHECK(r);
     if (r < 2) {
       return r;
     }
@@ -2805,7 +2801,7 @@ public final class JFactory extends BDDFactory {
   private int bdd_satoneset(int r, int var, int pol) {
     int res;
 
-    CHECKa(r, BDDZERO);
+    CHECK(r);
     if (ISZERO(r)) {
       return r;
     }
@@ -2869,7 +2865,7 @@ public final class JFactory extends BDDFactory {
     int res;
     int v;
 
-    CHECKa(r, BDDZERO);
+    CHECK(r);
     if (r == BDDZERO) {
       return 0;
     }
