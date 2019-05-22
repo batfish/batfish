@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.HashSet;
 import java.util.Set;
 import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory;
 
 /** A transition that erases a variable and then constrains it to have a new value. */
 public final class EraseAndSet implements Transition {
@@ -49,6 +50,6 @@ public final class EraseAndSet implements Transition {
 
   @Override
   public BDD transitBackward(BDD bdd) {
-    return bdd.and(_setValue).exist(_eraseVars);
+    return bdd.applyEx(_setValue, BDDFactory.and, _eraseVars);
   }
 }
