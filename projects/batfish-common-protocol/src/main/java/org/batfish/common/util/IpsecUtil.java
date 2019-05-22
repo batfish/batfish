@@ -3,6 +3,7 @@ package org.batfish.common.util;
 import static org.batfish.datamodel.transformation.TransformationUtil.hasSourceNat;
 import static org.batfish.datamodel.transformation.TransformationUtil.sourceNatPoolIps;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
@@ -154,13 +155,19 @@ public class IpsecUtil {
    * respective fields for IKE P1 proposals, IKE P1 keys and IPSec P2 proposals populated depending
    * on the negotiation.
    */
+  @VisibleForTesting
   @Nonnull
-  private static IpsecSession getIpsecSession(
+  static IpsecSession getIpsecSession(
       Configuration initiatorOwner,
       Configuration peerOwner,
       IpsecStaticPeerConfig initiator,
       IpsecPeerConfig candidatePeer) {
     IpsecSession.Builder ipsecSessionBuilder = IpsecSession.builder();
+
+    ipsecSessionBuilder.setCloud(
+        IpsecSession.CLOUD_CONFIGURATION_FORMATS.contains(initiatorOwner.getConfigurationFormat())
+            || IpsecSession.CLOUD_CONFIGURATION_FORMATS.contains(
+                peerOwner.getConfigurationFormat()));
 
     negotiateIkeP1(initiatorOwner, peerOwner, initiator, candidatePeer, ipsecSessionBuilder);
 

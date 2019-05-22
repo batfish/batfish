@@ -1,11 +1,15 @@
 package org.batfish.datamodel;
 
+import com.google.common.collect.ImmutableSet;
+import java.util.Set;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNullableByDefault;
 
 /** Represents the attributes of the session established between two {@link IpsecPeerConfig}s */
 @ParametersAreNullableByDefault
 public class IpsecSession {
+  public static final Set<ConfigurationFormat> CLOUD_CONFIGURATION_FORMATS =
+      ImmutableSet.of(ConfigurationFormat.AWS);
 
   @Nullable private final IkePhase1Policy _initiatorIkeP1Policy;
 
@@ -21,7 +25,14 @@ public class IpsecSession {
 
   @Nullable private final IpsecPhase2Policy _responderIpsecP2Policy;
 
+  /**
+   * Is true when at least one of the peers for this IPsec session is a cloud type configuration
+   * (like AWS)
+   */
+  private final boolean _cloud;
+
   private IpsecSession(
+      boolean cloud,
       IkePhase1Policy initiatorIkeP1Policy,
       IpsecPhase2Policy initiatorIpsecP2Policy,
       IkePhase1Proposal negotiatedIkeP1Proposal,
@@ -29,6 +40,7 @@ public class IpsecSession {
       IpsecPhase2Proposal negotiatedIpsecP2Proposal,
       IkePhase1Policy responderIkeP1Policy,
       IpsecPhase2Policy responderIpsecP2Policy) {
+    _cloud = cloud;
     _initiatorIkeP1Policy = initiatorIkeP1Policy;
     _initiatorIpsecP2Policy = initiatorIpsecP2Policy;
     _negotiatedIkeP1Proposal = negotiatedIkeP1Proposal;
@@ -36,6 +48,10 @@ public class IpsecSession {
     _negotiatedIpsecP2Proposal = negotiatedIpsecP2Proposal;
     _responderIkeP1Policy = responderIkeP1Policy;
     _responderIpsecP2Policy = responderIpsecP2Policy;
+  }
+
+  public boolean getCloud() {
+    return _cloud;
   }
 
   @Nullable
@@ -78,6 +94,8 @@ public class IpsecSession {
   }
 
   public static class Builder {
+    private boolean _cloud;
+
     private IkePhase1Policy _initiatorIkeP1Policy;
 
     private IpsecPhase2Policy _initiatorIpsecP2Policy;
@@ -94,6 +112,7 @@ public class IpsecSession {
 
     public IpsecSession build() {
       return new IpsecSession(
+          _cloud,
           _initiatorIkeP1Policy,
           _initiatorIpsecP2Policy,
           _negotiatedIkeP1Proposal,
@@ -101,6 +120,10 @@ public class IpsecSession {
           _negotiatedIpsecP2Proposal,
           _responderIkeP1Policy,
           _responderIpsecP2Policy);
+    }
+
+    public boolean getCloud() {
+      return _cloud;
     }
 
     @Nullable
@@ -136,6 +159,11 @@ public class IpsecSession {
     @Nullable
     public IpsecPhase2Proposal getNegotiatedIpsecP2Proposal() {
       return _negotiatedIpsecP2Proposal;
+    }
+
+    public Builder setCloud(boolean cloud) {
+      _cloud = cloud;
+      return this;
     }
 
     public Builder setInitiatorIkeP1Policy(IkePhase1Policy initiatorIkeP1Policy) {

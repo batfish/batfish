@@ -1,9 +1,14 @@
 package org.batfish.common.util;
 
+import static org.batfish.common.util.IpsecUtil.getIpsecSession;
 import static org.batfish.common.util.IpsecUtil.retainCompatibleTunnelEdges;
 import static org.batfish.common.util.IpsecUtil.toEdgeSet;
+import static org.batfish.datamodel.ConfigurationFormat.AWS;
+import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.graph.MutableValueGraph;
@@ -19,6 +24,7 @@ import org.batfish.datamodel.IpsecPeerConfigId;
 import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
+import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.junit.Before;
@@ -171,5 +177,36 @@ public class IpsecUtilTest {
             new Edge(
                 new NodeInterfacePair("host2", "Tunnel2"),
                 new NodeInterfacePair("host1", "Tunnel1"))));
+  }
+
+  @Test
+  public void testGetIpsecSesssionCloud() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb = nf.configurationBuilder();
+    IpsecStaticPeerConfig.Builder ipsecPeerConfigBuilder = IpsecStaticPeerConfig.builder();
+
+    assertTrue(
+        getIpsecSession(
+                cb.setConfigurationFormat(AWS).build(),
+                cb.setConfigurationFormat(AWS).build(),
+                ipsecPeerConfigBuilder.build(),
+                ipsecPeerConfigBuilder.build())
+            .getCloud());
+
+    assertTrue(
+        getIpsecSession(
+                cb.setConfigurationFormat(CISCO_IOS).build(),
+                cb.setConfigurationFormat(AWS).build(),
+                ipsecPeerConfigBuilder.build(),
+                ipsecPeerConfigBuilder.build())
+            .getCloud());
+
+    assertFalse(
+        getIpsecSession(
+                cb.setConfigurationFormat(CISCO_IOS).build(),
+                cb.setConfigurationFormat(CISCO_IOS).build(),
+                ipsecPeerConfigBuilder.build(),
+                ipsecPeerConfigBuilder.build())
+            .getCloud());
   }
 }
