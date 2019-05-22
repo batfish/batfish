@@ -3482,7 +3482,6 @@ public final class JFactory extends BDDFactory {
     // bdd_error_hook(bdd_default_errhandler);
     // bdd_resize_hook(NULL);
     bdd_pairs_init();
-    bdd_reorder_init();
   }
 
   /* Hash value modifiers to distinguish between entries in misccache */
@@ -4041,26 +4040,6 @@ public final class JFactory extends BDDFactory {
     return 0;
   }
 
-  private void bdd_checkreorder() {
-
-    /* Do not reorder before twice as many nodes have been used */
-    usednodes_nextreorder = 2 * (bddnodesize - bddfreenum);
-
-    /* And if very little was gained this time (< 20%) then wait until
-     * even more nodes (upto twice as many again) have been used */
-    if (bdd_reorder_gain() < 20) {
-      usednodes_nextreorder += (usednodes_nextreorder * (20 - bdd_reorder_gain())) / 20;
-    }
-  }
-
-  private int bdd_reorder_gain() {
-    if (usednum_before == 0) {
-      return 0;
-    }
-
-    return (100 * (usednum_before - usednum_after)) / usednum_before;
-  }
-
   @Override
   public boolean isInitialized() {
     return this.bddrunning;
@@ -4379,24 +4358,8 @@ public final class JFactory extends BDDFactory {
 
   private int verbose;
 
-  /* Number of live nodes before and after a reordering session */
-  private int usednum_before;
-  private int usednum_after;
-
-  private void bdd_reorder_init() {
-    bdd_reorder_verbose(0);
-    // reorder_nodenum = bdd_getnodenum;
-    usednum_before = usednum_after = 0;
-  }
-
   private int bdd_getnodenum() {
     return bddnodesize - bddfreenum;
-  }
-
-  private int bdd_reorder_verbose(int v) {
-    int tmp = verbose;
-    verbose = v;
-    return tmp;
   }
 
   private void bdd_setvarorder(int[] neworder) {
