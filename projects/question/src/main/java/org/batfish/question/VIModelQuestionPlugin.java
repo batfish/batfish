@@ -5,12 +5,14 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.Network;
+import com.google.common.graph.ValueGraph;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Objects;
@@ -29,6 +31,7 @@ import org.batfish.common.topology.Layer3Edge;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
+import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
@@ -212,19 +215,27 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
         Layer2Topology layer2Topology) {
       BgpTopology bgpTopology =
           BgpTopologyUtils.initBgpTopology(configs, ipOwners, false, false, null, layer2Topology);
+      return getBgpEdges(bgpTopology.getGraph(), NetworkConfigurations.of(configs));
+    }
+
+    @VisibleForTesting
+    static SortedSet<VerboseBgpEdge> getBgpEdges(
+        ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology, NetworkConfigurations nc) {
       SortedSet<VerboseBgpEdge> bgpEdges = new TreeSet<>(VERBOSE_BGP_EDGE_COMPARATOR);
-      for (EndpointPair<BgpPeerConfigId> session : bgpTopology.getGraph().edges()) {
+      for (EndpointPair<BgpPeerConfigId> session : bgpTopology.edges()) {
         BgpPeerConfigId bgpPeerConfigId = session.source();
         BgpPeerConfigId remoteBgpPeerConfigId = session.target();
-        NetworkConfigurations nc = NetworkConfigurations.of(configs);
+        BgpSessionProperties sessionProperties =
+            bgpTopology.edgeValue(bgpPeerConfigId, remoteBgpPeerConfigId).orElse(null);
+        assert sessionProperties != null; // condition of the edge existing
         String hostname = bgpPeerConfigId.getHostname();
         String remoteHostname = remoteBgpPeerConfigId.getHostname();
         BgpPeerConfig bgpPeerConfig = nc.getBgpPeerConfig(bgpPeerConfigId);
         BgpPeerConfig remoteBgpPeerConfig = nc.getBgpPeerConfig(remoteBgpPeerConfigId);
 
         if (bgpPeerConfig != null && remoteBgpPeerConfig != null) {
-          Ip localIp = bgpPeerConfig.getLocalIp();
-          Ip remoteIp = remoteBgpPeerConfig.getLocalIp();
+          Ip localIp = sessionProperties.getTailIp();
+          Ip remoteIp = sessionProperties.getHeadIp();
           IpEdge ipEdge = new IpEdge(hostname, localIp, remoteHostname, remoteIp);
           bgpEdges.add(
               new VerboseBgpEdge(
