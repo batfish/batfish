@@ -17,7 +17,6 @@ public class BDDOpsTest {
   @Before
   public void init() {
     _factory = JFactory.init(10000, 1000);
-    _factory.disableReorder();
     _factory.setCacheRatio(64);
     _bddOps = new BDDOps(_factory);
   }
