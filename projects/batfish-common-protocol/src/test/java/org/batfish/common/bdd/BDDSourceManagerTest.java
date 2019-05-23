@@ -101,6 +101,8 @@ public class BDDSourceManagerTest {
     IpAccessList acl = config.getIpAccessLists().values().iterator().next();
 
     BDDSourceManager mgr = BDDSourceManager.forIpAccessList(_pkt, config, acl);
+    assertFalse(mgr.isTrivial());
+    assertFalse(mgr.allSourcesTracked());
 
     BDD iface1BDD = mgr.getSourceInterfaceBDD(IFACE1);
     BDD iface2BDD = mgr.getSourceInterfaceBDD(IFACE2);
@@ -118,7 +120,7 @@ public class BDDSourceManagerTest {
   @Test
   public void testForNetwork() {
     /*
-     * Create a network with two configs. Both have two interfaces and
+     * Create a network with two configs. Both have the same interfaces and ACLs
      */
     NetworkFactory nf = new NetworkFactory();
     Configuration config1 = configWithOneAcl(nf);
@@ -140,19 +142,23 @@ public class BDDSourceManagerTest {
   @Test
   public void testAllSourcesTracked() {
     BDDSourceManager mgr = BDDSourceManager.forSources(_pkt, ALL_IFACES, ALL_IFACES);
+    assertFalse(mgr.isTrivial());
     assertTrue(mgr.allSourcesTracked());
 
     mgr = BDDSourceManager.forSources(_pkt, ALL_IFACES, ImmutableSet.of(IFACE1));
+    assertFalse(mgr.isTrivial());
     assertFalse(mgr.allSourcesTracked());
   }
 
   @Test
   public void testSourceBDDs() {
     BDDSourceManager mgr = BDDSourceManager.forSources(_pkt, ALL_IFACES, ALL_IFACES);
+    assertFalse(mgr.isTrivial());
     Map<String, BDD> srcBdds = mgr.getSourceBDDs();
     assertEquals(srcBdds.values().stream().distinct().count(), ALL_IFACES.size());
 
     mgr = BDDSourceManager.forSources(_pkt, ALL_IFACES, ImmutableSet.of(IFACE1));
+    assertFalse(mgr.isTrivial());
     srcBdds = mgr.getSourceBDDs();
     BDD iface1 = srcBdds.get(IFACE1);
     BDD others = srcBdds.get(IFACE2); // some other source
@@ -181,6 +187,7 @@ public class BDDSourceManagerTest {
     String hostname = config.getHostname();
     Map<String, Configuration> configs = ImmutableMap.of(hostname, config);
     BDDSourceManager mgr = BDDSourceManager.forNetwork(_pkt, configs, true).get(hostname);
+    assertFalse(mgr.isTrivial());
     assertTrue(mgr.allSourcesTracked());
     assertEquals(
         mgr.getSourceBDDs().keySet(),
