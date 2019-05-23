@@ -185,4 +185,14 @@ public final class ExtendedCommunityTest {
     assertTrue(ExtendedCommunity.parse("514:65555L:1").isRouteTarget());
     assertFalse(ExtendedCommunity.of(1, 1, 1).isRouteTarget());
   }
+
+  @Test
+  public void testGetGlobalAdmin() {
+    assertThat(ExtendedCommunity.of(1, 2, 3).getGlobalAdministrator(), equalTo(2L));
+  }
+
+  @Test
+  public void testGetLocalAdmin() {
+    assertThat(ExtendedCommunity.of(1, 2, 3).getLocalAdministrator(), equalTo(3L));
+  }
 }
