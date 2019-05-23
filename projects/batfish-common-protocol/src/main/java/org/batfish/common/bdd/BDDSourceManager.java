@@ -243,7 +243,7 @@ public final class BDDSourceManager {
     ImmutableSet.Builder<String> builder = ImmutableSet.builder();
     builder.addAll(activeAndReferenced);
 
-    // add one source as the representative of "everything else"
+    // use the min active but unreferenced source to represent any/all of them
     if (!activeButUnreferenced.isEmpty()) {
       builder.add(activeButUnreferenced.stream().min(Comparator.naturalOrder()).get());
     }
