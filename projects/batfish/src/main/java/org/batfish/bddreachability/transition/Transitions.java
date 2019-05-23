@@ -7,7 +7,6 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.LastHopOutgoingInterfaceManager;
-import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDSourceManager;
 
@@ -18,6 +17,34 @@ public final class Transitions {
   public static final Transition IDENTITY = Identity.INSTANCE;
 
   public static final Transition ZERO = Zero.INSTANCE;
+
+  public static Transition branch(BDD guard, Transition trueBranch, Transition falseBranch) {
+    if (guard.isOne()) {
+      return trueBranch;
+    } else if (guard.isZero()) {
+      return falseBranch;
+    } else if (falseBranch == ZERO) {
+      return compose(constraint(guard), trueBranch);
+    } else if (trueBranch == ZERO) {
+      return compose(constraint(guard.not()), falseBranch);
+    } else if (trueBranch.equals(falseBranch)) {
+      return trueBranch;
+    } else if (trueBranch instanceof Branch
+        && falseBranch.equals(((Branch) trueBranch).getFalseBranch())) {
+      Branch branch = (Branch) trueBranch;
+      return new Branch(guard.and(branch.getGuard()), branch.getTrueBranch(), falseBranch);
+    } else if (falseBranch instanceof Branch
+        && trueBranch.equals(((Branch) falseBranch).getTrueBranch())) {
+      Branch branch = (Branch) falseBranch;
+      return new Branch(guard.or(branch.getGuard()), trueBranch, branch.getFalseBranch());
+    } else if (trueBranch instanceof Constraint && falseBranch instanceof Constraint) {
+      BDD trueBdd = ((Constraint) trueBranch).getConstraint();
+      BDD falseBdd = ((Constraint) falseBranch).getConstraint();
+      return constraint(guard.ite(trueBdd, falseBdd));
+    } else {
+      return new Branch(guard, trueBranch, falseBranch);
+    }
+  }
 
   public static Transition compose(Transition... transitions) {
     if (Stream.of(transitions).anyMatch(t -> t == ZERO)) {
@@ -58,8 +85,10 @@ public final class Transitions {
             Arrays.stream(var.getBitvec()).reduce(var.getFactory().one(), BDD::and), value);
   }
 
+  @Deprecated
   public static Transition or() {
-    throw new BatfishException("Don't call or() with no Transitions -- just use Zero instead.");
+    throw new IllegalArgumentException(
+        "Don't call or() with no Transitions -- just use Zero instead.");
   }
 
   public static Transition or(Transition... transitions) {

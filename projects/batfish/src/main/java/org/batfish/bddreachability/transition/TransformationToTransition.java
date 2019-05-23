@@ -1,6 +1,7 @@
 package org.batfish.bddreachability.transition;
 
 import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
+import static org.batfish.bddreachability.transition.Transitions.branch;
 import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.reverse;
 import static org.batfish.datamodel.transformation.ReturnFlowTransformation.returnFlowTransformation;
@@ -167,12 +168,7 @@ public class TransformationToTransition {
         transformation.getOrElse() == null
             ? Identity.INSTANCE
             : toTransition(transformation.getOrElse());
-    if (guard.isOne()) {
-      return trueBranch;
-    } else if (guard.isZero()) {
-      return falseBranch;
-    }
-    return new Branch(guard, trueBranch, falseBranch);
+    return branch(guard, trueBranch, falseBranch);
   }
 
   private Transition computeSteps(List<TransformationStep> transformationSteps) {

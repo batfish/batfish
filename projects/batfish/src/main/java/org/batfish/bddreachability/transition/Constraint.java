@@ -28,6 +28,10 @@ final class Constraint implements Transition {
     return Objects.equals(_constraint, that._constraint);
   }
 
+  BDD getConstraint() {
+    return _constraint;
+  }
+
   @Override
   public int hashCode() {
     return Objects.hash(_constraint);
