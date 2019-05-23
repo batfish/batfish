@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.datamodel.Configuration;
@@ -29,9 +28,10 @@ import org.batfish.datamodel.acl.OriginatingFromDevice;
  * any. If it didn't enter through any node, it originated from the device itself.
  *
  * <p>To minize to the number of BDD variables used, we consider which sources are active and which
- * are referenced by ACLs on the node. If a source is active and referenced, then we assign it a
- * unique identifier. All inactive interface sources are assigned the same identifier. We allocate
- * enough BDD variables to distinguish between the unique identifiers.
+ * are referenced by ACLs on the node. All inactive sources are assigned the zero BDD. If a source
+ * is active and referenced, then we assign it a unique identifier. All active but unreferenced
+ * sources share a single identifier. We allocate enough BDD variables to distinguish between the
+ * identifiers.
  *
  * <p>We need these identifiers in two contexts: to record the source of a packet as it enters a
  * node, and to check the source of a packet when an ACL includes a {@link
@@ -256,13 +256,14 @@ public final class BDDSourceManager {
   }
 
   private BDD getSourceBDD(String source) {
-    if (isTrivial()) {
-      return _trueBDD;
+    if (_activeButUnreferenced.contains(source)) {
+      return _activeButUnreferencedRepresentative == null
+          ? _trueBDD
+          : _finiteDomain.getConstraintForValue(_activeButUnreferencedRepresentative);
+    } else {
+      // default to false for inactive sources, which are not tracked
+      return _finiteDomain.getValueBdds().getOrDefault(source, _falseBDD);
     }
-    String key =
-        _activeButUnreferenced.contains(source) ? _activeButUnreferencedRepresentative : source;
-    BDD bdd = _finiteDomain.getValueBdds().getOrDefault(key, _falseBDD);
-    return bdd;
   }
 
   public BDD getSourceInterfaceBDD(String iface) {
@@ -270,20 +271,18 @@ public final class BDDSourceManager {
   }
 
   public Map<String, BDD> getSourceBDDs() {
-    if (isTrivial()) {
-      return toImmutableMap(_activeButUnreferenced, Function.identity(), (src) -> _trueBDD);
-    }
-
     ImmutableMap.Builder<String, BDD> builder = ImmutableMap.builder();
     builder.putAll(_finiteDomain.getValueBdds());
 
     if (!_activeButUnreferenced.isEmpty()) {
       checkState(
-          _activeButUnreferencedRepresentative != null,
+          isTrivial() || _activeButUnreferencedRepresentative != null,
           "nontrivial source manager with active-but-unreferenced sources must have a representative");
 
       BDD representativeBdd =
-          _finiteDomain.getConstraintForValue(_activeButUnreferencedRepresentative);
+          _activeButUnreferencedRepresentative == null
+              ? _trueBDD
+              : _finiteDomain.getConstraintForValue(_activeButUnreferencedRepresentative);
       _activeButUnreferenced.stream()
           .filter(src -> !src.equals(_activeButUnreferencedRepresentative))
           .forEach(src -> builder.put(src, representativeBdd));
