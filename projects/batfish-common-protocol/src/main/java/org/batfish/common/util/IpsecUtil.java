@@ -21,11 +21,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
@@ -52,9 +52,9 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Hop;
-import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.ipsec.IpsecTopology;
 
+@ParametersAreNonnullByDefault
 public class IpsecUtil {
 
   /**
@@ -543,17 +543,20 @@ public class IpsecUtil {
         continue;
       }
 
-      Optional<IpsecSession> ipsecSession = ipsecTopology.getGraph().edgeValue(peerIdU, peerIdV);
-      if (!ipsecSession.isPresent()) {
+      IpsecSession ipsecSession = ipsecTopology.getGraph().edgeValue(peerIdU, peerIdV).orElse(null);
+      if (ipsecSession == null) {
         continue;
       }
-      IpsecPhase2Proposal ipsecPhase2Proposal = ipsecSession.get().getNegotiatedIpsecP2Proposal();
+      IpsecPhase2Proposal ipsecPhase2Proposal = ipsecSession.getNegotiatedIpsecP2Proposal();
       if (ipsecPhase2Proposal == null) {
         continue;
       }
 
-      if (ipsecSession.get().isCloud()
-          || reachableIpsecEdge(
+      // not checking reachability for cloud type IPsec sessions, it is a workaround till we are
+      // confident that ISP modeling will let us do traceroutes properly between cloud type
+      // networks
+      if (ipsecSession.isCloud()
+          || isIpsecPeerReachable(
               peerIdU.getHostName(),
               peerU,
               peerIdV.getHostName(),
@@ -563,7 +566,7 @@ public class IpsecUtil {
                   : IpProtocol.ESP,
               configurations,
               tracerouteEngine)) {
-        reachableIpsecTopology.putEdgeValue(peerIdU, peerIdV, ipsecSession.get());
+        reachableIpsecTopology.putEdgeValue(peerIdU, peerIdV, ipsecSession);
       }
     }
     return new IpsecTopology(reachableIpsecTopology);
@@ -573,7 +576,7 @@ public class IpsecUtil {
    * Returns true if the edge between peerU and peerV can be established and also can carry actual
    * IPsec encrypted data
    */
-  private static boolean reachableIpsecEdge(
+  private static boolean isIpsecPeerReachable(
       String hostnameU,
       IpsecPeerConfig peerU,
       String hostnameV,
@@ -639,32 +642,23 @@ public class IpsecUtil {
 
     Flow flowForIpsecNegotiation =
         flowBuilder.setIpProtocol(IpProtocol.UDP).setDstPort(IpsecSession.IPSEC_UDP_PORT).build();
-    List<Trace> traces =
-        tracerouteEngine
-            .computeTraces(ImmutableSet.of(flowForIpsecNegotiation), false)
-            .get(flowForIpsecNegotiation);
-    if (traces.stream()
-        .noneMatch(
-            trace -> {
-              List<Hop> hops = trace.getHops();
-              return !hops.isEmpty()
-                  && hops.get(hops.size() - 1).getNode().getName().equals(receiver)
-                  && trace.getDisposition() == FlowDisposition.ACCEPTED;
-            })) {
+    if (!isSuccessfulTraceroute(flowForIpsecNegotiation, receiver, tracerouteEngine)) {
       return false;
     }
 
     Flow flowForActualIpsecTraffic = flowBuilder.setIpProtocol(ipSecProtocol).build();
-    traces =
-        tracerouteEngine
-            .computeTraces(ImmutableSet.of(flowForActualIpsecTraffic), false)
-            .get(flowForActualIpsecTraffic);
-    return traces.stream()
+    return isSuccessfulTraceroute(flowForActualIpsecTraffic, receiver, tracerouteEngine);
+  }
+
+  /** Returns true if the given flow is accepted at the destination node */
+  private static boolean isSuccessfulTraceroute(
+      Flow flow, String destinationNode, TracerouteEngine tracerouteEngine) {
+    return tracerouteEngine.computeTraces(ImmutableSet.of(flow), false).get(flow).stream()
         .anyMatch(
             trace -> {
               List<Hop> hops = trace.getHops();
               return !hops.isEmpty()
-                  && hops.get(hops.size() - 1).getNode().getName().equals(receiver)
+                  && hops.get(hops.size() - 1).getNode().getName().equals(destinationNode)
                   && trace.getDisposition() == FlowDisposition.ACCEPTED;
             });
   }

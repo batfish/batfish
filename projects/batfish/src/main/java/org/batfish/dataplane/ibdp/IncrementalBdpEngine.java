@@ -30,6 +30,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BdpOscillationException;
 import org.batfish.common.Version;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
+import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
@@ -131,21 +132,19 @@ class IncrementalBdpEngine {
                   .setLayer3Topology(currentTopologyContext.getLayer3Topology())
                   .build();
 
+          TracerouteEngine trEngCurrentL3Topogy =
+              new TracerouteEngineImpl(
+                  partialDataplane, currentTopologyContext.getLayer3Topology());
+
           // Update topologies
           // IPsec
           IpsecTopology newIpsecTopology =
               retainReachableIpsecEdges(
-                  initialTopologyContext.getIpsecTopology(),
-                  configurations,
-                  new TracerouteEngineImpl(
-                      partialDataplane, currentTopologyContext.getLayer3Topology()));
+                  initialTopologyContext.getIpsecTopology(), configurations, trEngCurrentL3Topogy);
           // VXLAN
           VxlanTopology newVxlanTopology =
               prunedVxlanTopology(
-                  initialTopologyContext.getVxlanTopology(),
-                  configurations,
-                  new TracerouteEngineImpl(
-                      partialDataplane, currentTopologyContext.getLayer3Topology()));
+                  initialTopologyContext.getVxlanTopology(), configurations, trEngCurrentL3Topogy);
           // Layer-2
           Optional<Layer2Topology> newLayer2Topology =
               currentTopologyContext
