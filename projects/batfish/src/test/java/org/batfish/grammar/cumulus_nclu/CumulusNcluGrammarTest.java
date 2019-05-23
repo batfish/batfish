@@ -5,6 +5,7 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasExportPolicy;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasSendCommunity;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasInterfaceNeighbors;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpRouteThat;
@@ -241,6 +242,7 @@ public final class CumulusNcluGrammarTest {
         BgpUnnumberedPeerConfig.builder()
             .setLocalIp(BGP_UNNUMBERED_IP)
             .setPeerInterface("swp1")
+            .setSendCommunity(true)
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance())
             .setExportPolicy(computeBgpPeerExportPolicyName(DEFAULT_VRF_NAME, "swp1"));
     Map<String, BgpUnnumberedPeerConfig> expectedPeers1 =
@@ -315,6 +317,7 @@ public final class CumulusNcluGrammarTest {
     assertThat(pc, hasLocalAs(65500L));
     assertThat(pc, hasRemoteAs(equalTo(ALL_AS_NUMBERS.difference(LongSpace.of(65500L)))));
     assertThat(pc, hasExportPolicy(peerExportPolicyName));
+    assertThat(pc, hasSendCommunity(true));
 
     // ARP response for link-local address for BGP unnumbered interface
     assertThat(c, hasInterface(peerInterface, hasAdditionalArpIps(containsIp(BGP_UNNUMBERED_IP))));

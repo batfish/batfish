@@ -106,4 +106,15 @@ final class BgpNeighborMatchersImpl {
       return actual.getRemoteAsns();
     }
   }
+
+  static final class HasSendCommunity extends FeatureMatcher<BgpPeerConfig, Boolean> {
+    HasSendCommunity(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "A BgpPeerConfig with sendCommunity:", "sendCommunity");
+    }
+
+    @Override
+    protected Boolean featureValueOf(BgpPeerConfig actual) {
+      return actual.getSendCommunity();
+    }
+  }
 }
