@@ -8,7 +8,6 @@ import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasSendCommunity;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasInterfaceNeighbors;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
-import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpRouteThat;
 import static org.batfish.datamodel.matchers.BgpUnnumberedPeerConfigMatchers.hasPeerInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
@@ -295,8 +294,8 @@ public final class CumulusNcluGrammarTest {
             .setOriginatorIp(Ip.parse("192.0.2.1"))
             .build();
 
-    assertThat(n1Routes, hasItem(isBgpRouteThat(equalTo(expectedRoute1))));
-    assertThat(n2Routes, hasItem(isBgpRouteThat(equalTo(expectedRoute2))));
+    assertThat(n1Routes, hasItem(equalTo(expectedRoute1)));
+    assertThat(n2Routes, hasItem(equalTo(expectedRoute2)));
   }
 
   @Test

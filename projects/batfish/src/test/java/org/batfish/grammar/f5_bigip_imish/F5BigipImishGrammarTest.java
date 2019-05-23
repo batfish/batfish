@@ -16,7 +16,7 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasOriginType;
-import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpRouteThat;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
@@ -337,8 +337,8 @@ public final class F5BigipImishGrammarTest {
     assertThat(routes2, hasItem(isKernelRouteThat(hasPrefix(Prefix.strict("10.0.0.2/32")))));
 
     // kernel routes should be redistributed
-    assertThat(routes1, hasItem(isBgpRouteThat(hasPrefix(Prefix.strict("10.0.0.2/32")))));
-    assertThat(routes2, hasItem(isBgpRouteThat(hasPrefix(Prefix.strict("10.0.0.1/32")))));
+    assertThat(routes1, hasItem(isBgpv4RouteThat(hasPrefix(Prefix.strict("10.0.0.2/32")))));
+    assertThat(routes2, hasItem(isBgpv4RouteThat(hasPrefix(Prefix.strict("10.0.0.1/32")))));
   }
 
   @Test
