@@ -183,7 +183,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
             .setLocalAs(localAs)
             .setLocalIp(BgpProcess.BGP_UNNUMBERED_IP)
             .setPeerInterface(peerInterface)
-            .setRemoteAsns(computeRemoteAsns(neighbor, localAs));
+            .setRemoteAsns(computeRemoteAsns(neighbor, localAs))
+            .setSendCommunity(true);
     builder.setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.instance());
 
     BgpL2vpnEvpnAddressFamily evpnConfig = bgpVrf.getL2VpnEvpn();
