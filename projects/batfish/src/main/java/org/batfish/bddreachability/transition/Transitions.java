@@ -18,32 +18,48 @@ public final class Transitions {
 
   public static final Transition ZERO = Zero.INSTANCE;
 
-  public static Transition branch(BDD guard, Transition trueBranch, Transition falseBranch) {
+  public static Transition branch(BDD guard, Transition thn, Transition els) {
     if (guard.isOne()) {
-      return trueBranch;
-    } else if (guard.isZero()) {
-      return falseBranch;
-    } else if (falseBranch == ZERO) {
-      return compose(constraint(guard), trueBranch);
-    } else if (trueBranch == ZERO) {
-      return compose(constraint(guard.not()), falseBranch);
-    } else if (trueBranch.equals(falseBranch)) {
-      return trueBranch;
-    } else if (trueBranch instanceof Branch
-        && falseBranch.equals(((Branch) trueBranch).getFalseBranch())) {
-      Branch branch = (Branch) trueBranch;
-      return new Branch(guard.and(branch.getGuard()), branch.getTrueBranch(), falseBranch);
-    } else if (falseBranch instanceof Branch
-        && trueBranch.equals(((Branch) falseBranch).getTrueBranch())) {
-      Branch branch = (Branch) falseBranch;
-      return new Branch(guard.or(branch.getGuard()), trueBranch, branch.getFalseBranch());
-    } else if (trueBranch instanceof Constraint && falseBranch instanceof Constraint) {
-      BDD trueBdd = ((Constraint) trueBranch).getConstraint();
-      BDD falseBdd = ((Constraint) falseBranch).getConstraint();
-      return constraint(guard.ite(trueBdd, falseBdd));
-    } else {
-      return new Branch(guard, trueBranch, falseBranch);
+      return thn;
     }
+    if (guard.isZero()) {
+      return els;
+    }
+    if (els == ZERO) {
+      return compose(constraint(guard), thn);
+    }
+    if (thn == ZERO) {
+      return compose(constraint(guard.not()), els);
+    }
+    if (thn.equals(els)) {
+      return thn;
+    }
+    if (thn instanceof Branch) {
+      Branch thnBranch = (Branch) thn;
+      if (els.equals(thnBranch.getFalseBranch())) {
+        return branch(guard.and(thnBranch.getGuard()), thnBranch.getTrueBranch(), els);
+      }
+      if (els.equals(thnBranch.getTrueBranch())) {
+        return branch(guard.imp(thnBranch.getGuard()), els, thnBranch.getFalseBranch());
+      }
+      // fall through
+    }
+    if (els instanceof Branch) {
+      Branch elsBranch = (Branch) els;
+      if (thn.equals(elsBranch.getTrueBranch())) {
+        return branch(guard.or(elsBranch.getGuard()), thn, elsBranch.getFalseBranch());
+      }
+      if (thn.equals(elsBranch.getFalseBranch())) {
+        return branch(elsBranch.getGuard().diff(guard), elsBranch.getTrueBranch(), thn);
+      }
+      // fall through
+    }
+    if (thn instanceof Constraint && els instanceof Constraint) {
+      BDD trueBdd = ((Constraint) thn).getConstraint();
+      BDD falseBdd = ((Constraint) els).getConstraint();
+      return constraint(guard.ite(trueBdd, falseBdd));
+    }
+    return new Branch(guard, thn, els);
   }
 
   public static Transition compose(Transition... transitions) {
