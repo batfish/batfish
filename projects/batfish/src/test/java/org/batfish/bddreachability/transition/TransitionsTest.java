@@ -219,6 +219,31 @@ public class TransitionsTest {
   }
 
   @Test
+  public void testMergeComposed_Constraint_EraseAndSet() {
+    BDD v0 = var(0);
+    BDD v1 = var(1);
+    Constraint constraint = new Constraint(v0);
+    EraseAndSet eas = new EraseAndSet(v1,v1);
+    Transition actual = mergeComposed(constraint, eas);
+    Transition expected = eraseAndSet(v1, v0.and(v1));
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testMergeComposed_Constraint_RemoveSourceConstraint() {
+    BDDSourceManager mgr =
+        BDDSourceManager.forSources(
+            PKT, ImmutableSet.of("a", "b", "c", "d"), ImmutableSet.of("a", "b"));
+    BDD bdd = var(0);
+    Constraint constraint = new Constraint(bdd);
+    RemoveSourceConstraint remove = new RemoveSourceConstraint(mgr);
+    checkState(!mgr.hasSourceConstraint(bdd));
+    Transition actual = mergeComposed(constraint, remove);
+    Transition expected = eraseAndSet(mgr.getFiniteDomain().getVar(), bdd);
+    assertEquals(expected, actual);
+  }
+
+  @Test
   public void testMergeComposedEraseAndSetSameVars() {
     BDD v0 = var(0);
     BDD v1 = var(1);
@@ -259,20 +284,6 @@ public class TransitionsTest {
     Transition actual = mergeComposed(remove, add);
     Transition expected =
         eraseAndSet(mgr.getFiniteDomain().getVar(), mgr.getSourceInterfaceBDD("a"));
-    assertEquals(expected, actual);
-  }
-
-  @Test
-  public void testMergeComposed_Constraint_RemoveSourceConstraint() {
-    BDDSourceManager mgr =
-        BDDSourceManager.forSources(
-            PKT, ImmutableSet.of("a", "b", "c", "d"), ImmutableSet.of("a", "b"));
-    BDD bdd = var(0);
-    Constraint constraint = new Constraint(bdd);
-    RemoveSourceConstraint remove = new RemoveSourceConstraint(mgr);
-    checkState(!mgr.hasSourceConstraint(bdd));
-    Transition actual = mergeComposed(constraint, remove);
-    Transition expected = eraseAndSet(mgr.getFiniteDomain().getVar(), bdd);
     assertEquals(expected, actual);
   }
 

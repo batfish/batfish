@@ -135,6 +135,24 @@ public final class Transitions {
       BDD bdd2 = ((Constraint) t2).getConstraint();
       return constraint(bdd1.and(bdd2));
     }
+    if (t1 instanceof Constraint && t2 instanceof EraseAndSet) {
+      BDD constraintBdd = ((Constraint) t1).getConstraint();
+      EraseAndSet eas = (EraseAndSet) t2;
+      BDD eraseVars = eas.getEraseVars();
+      if (constraintBdd.exist(eraseVars).equals(constraintBdd)) {
+        // constraint doesn't refer to eraseVars
+        return eraseAndSet(eraseVars, constraintBdd.and(eas.getSetValue()));
+      }
+      // fall through
+    }
+    if (t1 instanceof Constraint && t2 instanceof RemoveSourceConstraint) {
+      BDD constraintBdd = ((Constraint) t1).getConstraint();
+      BDDSourceManager mgr = ((RemoveSourceConstraint) t2).getSourceManager();
+      if (!mgr.hasSourceConstraint(constraintBdd)) {
+        return eraseAndSet(mgr.getFiniteDomain().getVar(), constraintBdd);
+      }
+      // fall through
+    }
     if (t1 instanceof EraseAndSet && t2 instanceof Constraint) {
       EraseAndSet eas = (EraseAndSet) t1;
       BDD vars = eas.getEraseVars();
@@ -171,14 +189,6 @@ public final class Transitions {
 
       BDDInteger var = mgr.getFiniteDomain().getVar();
       return eraseAndSet(var, add.getSourceBdd());
-    }
-    if (t1 instanceof Constraint && t2 instanceof RemoveSourceConstraint) {
-      BDD constraintBdd = ((Constraint) t1).getConstraint();
-      BDDSourceManager mgr = ((RemoveSourceConstraint) t2).getSourceManager();
-      if (!mgr.hasSourceConstraint(constraintBdd)) {
-        return eraseAndSet(mgr.getFiniteDomain().getVar(), constraintBdd);
-      }
-      // fall through
     }
     // couldn't merge
     return null;
