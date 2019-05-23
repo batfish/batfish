@@ -36,10 +36,10 @@ public final class Transitions {
     }
     if (thn instanceof Branch) {
       Branch thnBranch = (Branch) thn;
-      if (els.equals(((Branch) thn).getFalseBranch())) {
+      if (els.equals(thnBranch.getFalseBranch())) {
         return branch(guard.and(thnBranch.getGuard()), thnBranch.getTrueBranch(), els);
       }
-      if (els.equals(((Branch) thn).getTrueBranch())) {
+      if (els.equals(thnBranch.getTrueBranch())) {
         return branch(guard.imp(thnBranch.getGuard()), els, thnBranch.getFalseBranch());
       }
       // fall through
