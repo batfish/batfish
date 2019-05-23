@@ -74,7 +74,6 @@ public class BgpProtocolHelper {
     builder.setReceivedFromRouteReflectorClient(
         !sessionProperties.isEbgp() && toNeighbor.getRouteReflectorClient());
 
-    // Extract original route's asPath and communities if it had them
     SortedSet<Community> communities = route.getCommunities();
     // Do not export route if it has NO_ADVERTISE community, or if its AS path contains the remote
     // peer's AS and local peer has not set getAllowRemoteOut
@@ -172,7 +171,7 @@ public class BgpProtocolHelper {
   /** Perform BGP import transformations on a given route after receiving an advertisement */
   @Nullable
   public static <R extends BgpRoute, B extends BgpRoute.Builder<B, R>> B transformBgpRouteOnImport(
-      @Nonnull BgpPeerConfigId toConfigId,
+      BgpPeerConfigId toConfigId,
       BgpPeerConfig toNeighbor,
       BgpSessionProperties sessionProperties,
       BgpRoute route,
@@ -280,9 +279,7 @@ public class BgpProtocolHelper {
    */
   public static <R extends BgpRoute, B extends BgpRoute.Builder<B, R>>
       void transformBgpRoutePostExport(
-          @Nonnull B routeBuilder,
-          @Nonnull BgpPeerConfig fromNeighbor,
-          @Nonnull BgpSessionProperties sessionProperties) {
+          B routeBuilder, BgpPeerConfig fromNeighbor, BgpSessionProperties sessionProperties) {
     if (sessionProperties.isEbgp()) {
       // if eBGP, prepend as-path sender's as-path number
       routeBuilder.setAsPath(

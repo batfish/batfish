@@ -1391,7 +1391,7 @@ public class VirtualRouter implements Serializable {
             .map(
                 adv -> {
                   Bgpv4Route bgpRoute =
-                      exportBgpRoute(
+                      exportNonBgpRouteToBgp(
                           adv.getRoute(),
                           ourConfigId,
                           remoteConfigId,
@@ -1751,7 +1751,7 @@ public class VirtualRouter implements Serializable {
                   }
                   // Run pre-export transform, export policy, & post-export transform
                   return exportBgpRoute(
-                      new AnnotatedRoute<>(bgpv4Route, _name),
+                      annotateRoute(bgpv4Route),
                       localConfigId,
                       remoteConfigId,
                       localConfig,
@@ -1863,8 +1863,20 @@ public class VirtualRouter implements Serializable {
     return _prefixTracer;
   }
 
+  /**
+   * Given an {@link AbstractRoute}, run it through the BGP outbound transformations and export
+   * routing policy.
+   *
+   * @param exportCandidate a route to try and export
+   * @param ourConfig {@link BgpPeerConfig} that sends the route
+   * @param allNodes all nodes in the network
+   * @param sessionProperties {@link BgpSessionProperties} representing the <em>incoming</em> edge:
+   *     i.e. the edge from {@code remoteConfig} to {@code ourConfig}
+   * @return The transformed route as a {@link Bgpv4Route}, or {@code null} if the route should not
+   *     be exported.
+   */
   @Nullable
-  private Bgpv4Route exportBgpRoute(
+  private Bgpv4Route exportNonBgpRouteToBgp(
       @Nonnull AnnotatedRoute<AbstractRoute> exportCandidate,
       @Nonnull BgpPeerConfigId ourConfigId,
       @Nonnull BgpPeerConfigId remoteConfigId,
@@ -1932,8 +1944,8 @@ public class VirtualRouter implements Serializable {
   }
 
   /**
-   * Given an {@link AbstractRoute}, run it through the BGP outbound transformations and export
-   * routing policy.
+   * Given a {@link BgpRoute}, run it through the BGP outbound transformations and export routing
+   * policy.
    *
    * @param exportCandidate a route to try and export
    * @param ourConfig {@link BgpPeerConfig} that sends the route
@@ -1941,8 +1953,9 @@ public class VirtualRouter implements Serializable {
    * @param allNodes all nodes in the network
    * @param sessionProperties {@link BgpSessionProperties} representing the <em>incoming</em> edge:
    *     i.e. the edge from {@code remoteConfig} to {@code ourConfig}
-   * @return The transformed route as a {@link Bgpv4Route}, or {@code null} if the route should not
-   *     be exported.
+   * @param builder a builder for the output route, of the desired route type
+   * @return The transformed route as a {@link BgpRoute}, or {@code null} if the route should not be
+   *     exported.
    */
   @Nullable
   private <R extends BgpRoute, B extends BgpRoute.Builder<B, R>> R exportBgpRoute(
@@ -1983,12 +1996,11 @@ public class VirtualRouter implements Serializable {
             ourConfigId.getVrfName(),
             Direction.OUT);
 
-    VirtualRouter remoteVr = getRemoteBgpNeighborVR(remoteConfigId, allNodes);
     if (!shouldExport) {
       // This route could not be exported due to export policy
       _prefixTracer.filtered(
           exportCandidate.getNetwork(),
-          requireNonNull(remoteVr).getHostname(),
+          remoteConfigId.getHostname(),
           remoteIp,
           remoteConfigId.getVrfName(),
           ourConfig.getExportPolicy(),
@@ -2004,7 +2016,7 @@ public class VirtualRouter implements Serializable {
     R transformedOutgoingRoute = transformedOutgoingRouteBuilder.build();
     _prefixTracer.sentTo(
         transformedOutgoingRoute.getNetwork(),
-        requireNonNull(remoteVr).getHostname(),
+        remoteConfigId.getHostname(),
         remoteIp,
         remoteConfigId.getVrfName(),
         ourConfig.getExportPolicy());
@@ -2151,6 +2163,7 @@ public class VirtualRouter implements Serializable {
     _bgpRoutingProcess.enqueueBgpMessages(edgeId, routes);
   }
 
+  /** Temporary wrapper for {@link BgpRoutingProcess#enqueueBgpMessages(EdgeId, Stream)} */
   private void enqueueBgpMessages(
       @Nonnull EdgeId edgeId, @Nonnull Stream<RouteAdvertisement<Bgpv4Route>> routes) {
     _bgpRoutingProcess.enqueueBgpMessages(edgeId, routes);

@@ -210,6 +210,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute> {
     q.addAll(routes);
   }
 
+  /**
+   * Message passing method between BGP processes. Take a stream of BGP {@link RouteAdvertisement}s
+   * and puts them onto a local queue corresponding to the session between given neighbors.
+   */
   void enqueueBgpMessages(
       @Nonnull EdgeId edgeId, @Nonnull Stream<RouteAdvertisement<Bgpv4Route>> routes) {
     Queue<RouteAdvertisement<Bgpv4Route>> q = _bgpv4IncomingRoutes.get(edgeId);
