@@ -28,7 +28,7 @@ final class Constraint implements Transition {
     return Objects.equals(_constraint, that._constraint);
   }
 
-  public BDD getConstraint() {
+  BDD getConstraint() {
     return _constraint;
   }
 

@@ -7,7 +7,6 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.LastHopOutgoingInterfaceManager;
-import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDSourceManager;
 
@@ -40,7 +39,7 @@ public final class Transitions {
       return new Branch(guard.or(branch.getGuard()), trueBranch, branch.getFalseBranch());
     } else if (trueBranch instanceof Constraint && falseBranch instanceof Constraint) {
       BDD trueBdd = ((Constraint) trueBranch).getConstraint();
-      BDD falseBdd = ((Constraint) trueBranch).getConstraint();
+      BDD falseBdd = ((Constraint) falseBranch).getConstraint();
       return constraint(guard.ite(trueBdd, falseBdd));
     } else {
       return new Branch(guard, trueBranch, falseBranch);
@@ -86,8 +85,10 @@ public final class Transitions {
             Arrays.stream(var.getBitvec()).reduce(var.getFactory().one(), BDD::and), value);
   }
 
+  @Deprecated
   public static Transition or() {
-    throw new BatfishException("Don't call or() with no Transitions -- just use Zero instead.");
+    throw new IllegalArgumentException(
+        "Don't call or() with no Transitions -- just use Zero instead.");
   }
 
   public static Transition or(Transition... transitions) {

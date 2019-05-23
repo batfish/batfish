@@ -121,6 +121,14 @@ public class TransitionsTest {
   }
 
   @Test
+  public void testBranchConstraints() {
+    BDD guard = var(0);
+    BDD thn = var(1);
+    BDD els = var(2);
+    assertEquals(constraint(guard.ite(thn, els)), branch(guard, constraint(thn), constraint(els)));
+  }
+
+  @Test
   public void testBranchThenEqualsElse() {
     BDD guard = var(0);
     Transition trans = constraint(var(1));
