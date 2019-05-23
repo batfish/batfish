@@ -81,7 +81,6 @@ class IncrementalBdpEngine {
       Map<Ip, Set<String>> ipOwners = computeIpNodeOwners(configurations, true);
       Map<Ip, Map<String, Set<String>>> ipVrfOwners =
           computeIpVrfOwners(true, computeNodeInterfaces(configurations));
-
       TopologyContext initialTopologyContext =
           callerTopologyContext
               .toBuilder()

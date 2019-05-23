@@ -363,6 +363,7 @@ public final class FixedPointTopologyTest {
 
   @Test
   public void testFixedPointL3NoIpsecNegotiation() {
+    // setup network which block IPsec negotiation
     Map<String, Configuration> configurations =
         generateIpsecTunnelConfigurations(true, false, false);
     Topology layer3Topology = TopologyUtil.synthesizeL3Topology(configurations);
@@ -392,6 +393,7 @@ public final class FixedPointTopologyTest {
 
   @Test
   public void testFixedPointL3NoIpsecTraffic() {
+    // setup network which block IPsec traffic
     Map<String, Configuration> configurations =
         generateIpsecTunnelConfigurations(false, true, false);
     Topology layer3Topology = TopologyUtil.synthesizeL3Topology(configurations);
@@ -420,6 +422,7 @@ public final class FixedPointTopologyTest {
 
   @Test
   public void testFixedPointL3WithIpsec() {
+    // setup network which allows IPsec
     Map<String, Configuration> configurations =
         generateIpsecTunnelConfigurations(false, false, false);
     Topology layer3Topology = TopologyUtil.synthesizeL3Topology(configurations);
@@ -463,6 +466,7 @@ public final class FixedPointTopologyTest {
 
   @Test
   public void testFixedPointL3NoIpsecTrafficCloud() {
+    // setup network which blocks IPsec traffic but is cloud based
     Map<String, Configuration> configurations =
         generateIpsecTunnelConfigurations(false, true, true);
     Topology layer3Topology = TopologyUtil.synthesizeL3Topology(configurations);

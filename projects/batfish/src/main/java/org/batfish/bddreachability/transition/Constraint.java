@@ -2,6 +2,7 @@ package org.batfish.bddreachability.transition;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import net.sf.javabdd.BDD;
 
@@ -27,6 +28,10 @@ final class Constraint implements Transition {
     return Objects.equals(_constraint, that._constraint);
   }
 
+  BDD getConstraint() {
+    return _constraint;
+  }
+
   @Override
   public int hashCode() {
     return Objects.hash(_constraint);
@@ -40,5 +45,10 @@ final class Constraint implements Transition {
   @Override
   public BDD transitBackward(BDD bdd) {
     return _constraint.and(bdd);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(Constraint.class).add("topVar", _constraint.var()).toString();
   }
 }

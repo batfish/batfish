@@ -1,6 +1,7 @@
 package org.batfish.bddreachability.transition;
 
 import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
+import static org.batfish.bddreachability.transition.Transitions.branch;
 import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.reverse;
 import static org.batfish.datamodel.transformation.ReturnFlowTransformation.returnFlowTransformation;
@@ -9,6 +10,7 @@ import com.google.common.collect.RangeSet;
 import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.List;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
@@ -153,6 +155,7 @@ public class TransformationToTransition {
         : reverse(toTransition(returnFlowTransformation(transformation)));
   }
 
+  @Nonnull
   private Transition computeTransition(Transformation transformation) {
     BDD guard = _ipAccessListToBdd.toBdd(transformation.getGuard());
     Transition steps = computeSteps(transformation.getTransformationSteps());
@@ -160,18 +163,16 @@ public class TransformationToTransition {
     Transition trueBranch =
         transformation.getAndThen() == null
             ? steps
-            : new Composite(steps, toTransition(transformation.getAndThen()));
+            : Transitions.compose(steps, toTransition(transformation.getAndThen()));
     Transition falseBranch =
         transformation.getOrElse() == null
             ? Identity.INSTANCE
             : toTransition(transformation.getOrElse());
-    return new Branch(guard, trueBranch, falseBranch);
+    return branch(guard, trueBranch, falseBranch);
   }
 
   private Transition computeSteps(List<TransformationStep> transformationSteps) {
-    return transformationSteps.stream()
-        .map(_stepToTransition::visit)
-        .reduce(Composite::new)
-        .orElse(Identity.INSTANCE);
+    return Transitions.compose(
+        transformationSteps.stream().map(_stepToTransition::visit).toArray(Transition[]::new));
   }
 }
