@@ -46,8 +46,9 @@ public final class BDDSourceManager {
    * the finite domain doesn't track each active but unreferenced source. Instead, it tracks a
    * single representative value that represents all of them.
    *
-   * <p>{@code null} when (1) there are no referenced sources, or (2) there are no active but
-   * unreferenced sources.
+   * <p>{@code null} when we don't need BDDs to distinguish between active and referenced sources vs
+   * active but unreferenced sources. This is true when either (1) there are no active and
+   * referenced sources, or (2) there are no active but unreferenced sources.
    */
   private final @Nullable String _activeButUnreferencedRepresentative;
 
