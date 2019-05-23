@@ -1,8 +1,16 @@
 package org.batfish.bddreachability.transition;
 
+import static com.google.common.base.Preconditions.checkState;
+
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.Stack;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
@@ -80,10 +88,100 @@ public final class Transitions {
     if (nonIdentityTransitions.isEmpty()) {
       return IDENTITY;
     }
-    if (nonIdentityTransitions.size() == 1) {
-      return nonIdentityTransitions.get(0);
+    List<Transition> mergedTransitions = mergeCompositeTransitions(nonIdentityTransitions);
+    if (mergedTransitions.size() == 1) {
+      return mergedTransitions.get(0);
     }
-    return new Composite(nonIdentityTransitions);
+    return new Composite(mergedTransitions);
+  }
+
+  static List<Transition> mergeCompositeTransitions(List<Transition> transitions) {
+    if (transitions.size() < 2) {
+      return transitions;
+    }
+
+    Stack<Transition> stack = new Stack<>();
+    for (Transition transition : transitions) {
+      stack.push(transition);
+
+      while (stack.size() > 1) {
+        Transition second = stack.pop();
+        Transition first = stack.pop();
+        @Nullable Transition merged = mergeComposed(first, second);
+        if (merged == null) {
+          stack.push(first);
+          stack.push(second);
+          break;
+        } else {
+          stack.push(merged);
+        }
+      }
+    }
+    return stack;
+  }
+
+  static @Nullable Transition mergeComposed(Transition t1, Transition t2) {
+    if (t1 == ZERO || t2 == ZERO) {
+      return ZERO;
+    }
+    if (t1 == IDENTITY) {
+      return t2;
+    }
+    if (t2 == IDENTITY) {
+      return t1;
+    }
+    if (t1 instanceof Constraint && t2 instanceof Constraint) {
+      BDD bdd1 = ((Constraint) t1).getConstraint();
+      BDD bdd2 = ((Constraint) t2).getConstraint();
+      return constraint(bdd1.and(bdd2));
+    }
+    if (t1 instanceof EraseAndSet && t2 instanceof Constraint) {
+      EraseAndSet eas = (EraseAndSet) t1;
+      BDD vars = eas.getEraseVars();
+      BDD value = eas.getSetValue();
+      BDD constraint = ((Constraint) t2).getConstraint();
+      return new EraseAndSet(vars, value.and(constraint));
+    }
+    if (t1 instanceof EraseAndSet && t2 instanceof EraseAndSet) {
+      EraseAndSet eas1 = (EraseAndSet) t1;
+      EraseAndSet eas2 = (EraseAndSet) t2;
+      BDD vars1 = eas1.getEraseVars();
+      BDD vars2 = eas2.getEraseVars();
+      BDD val1 = eas1.getSetValue();
+      BDD val2 = eas2.getSetValue();
+      if (vars1.equals(vars2)) {
+        return eas2;
+      } else if (vars1.exist(vars2).equals(vars1)) {
+        return eraseAndSet(vars1.and(vars2), val1.and(val2));
+      } else {
+        // variables sets are different but overlap. probably would only happen as a result of
+        // previous merges
+        return eraseAndSet(vars1.and(vars2), val1.exist(vars2).and(val2));
+      }
+    }
+    if (t1 instanceof RemoveSourceConstraint && t2 instanceof AddSourceConstraint) {
+      RemoveSourceConstraint remove = (RemoveSourceConstraint) t1;
+      AddSourceConstraint add = (AddSourceConstraint) t2;
+      BDDSourceManager mgr = remove.getSourceManager();
+
+      // each node has its own source mgr, but all mgrs are backed by a single BDDInteger
+      checkState(
+          mgr.getFiniteDomain().getVar() == add.getSourceManager().getFiniteDomain().getVar(),
+          "all source managers should have the same BDDInteger");
+
+      BDDInteger var = mgr.getFiniteDomain().getVar();
+      return eraseAndSet(var, add.getSourceBdd());
+    }
+    if (t1 instanceof Constraint && t2 instanceof RemoveSourceConstraint) {
+      BDD constraintBdd = ((Constraint) t1).getConstraint();
+      BDDSourceManager mgr = ((RemoveSourceConstraint) t2).getSourceManager();
+      if (!mgr.hasSourceConstraint(constraintBdd)) {
+        return eraseAndSet(mgr.getFiniteDomain().getVar(), constraintBdd);
+      }
+      // fall through
+    }
+    // couldn't merge
+    return null;
   }
 
   public static Transition constraint(BDD bdd) {
@@ -91,20 +189,91 @@ public final class Transitions {
   }
 
   public static Transition eraseAndSet(BDD var, BDD value) {
-    return value.isOne() ? IDENTITY : new EraseAndSet(var, value);
+    return var.isOne() ? constraint(value) : new EraseAndSet(var, value);
   }
 
   public static Transition eraseAndSet(BDDInteger var, BDD value) {
-    return value.isOne()
-        ? IDENTITY
-        : new EraseAndSet(
-            Arrays.stream(var.getBitvec()).reduce(var.getFactory().one(), BDD::and), value);
+    if (var.getBitvec().length == 0) {
+      return constraint(value);
+    } else {
+      return new EraseAndSet(
+          Arrays.stream(var.getBitvec()).reduce(var.getFactory().one(), BDD::and), value);
+    }
   }
 
   @Deprecated
   public static Transition or() {
     throw new IllegalArgumentException(
         "Don't call or() with no Transitions -- just use Zero instead.");
+  }
+
+  @VisibleForTesting
+  static Collection<Transition> mergeDisjuncts(List<Transition> origDisjuncts) {
+    if (origDisjuncts.size() < 2) {
+      return origDisjuncts;
+    }
+
+    Set<Transition> disjuncts = new HashSet<>(origDisjuncts);
+
+    // keep merge until we can't merge any more
+    while (tryMergeDisjunctSet(disjuncts)) {}
+
+    return disjuncts;
+  }
+
+  private static boolean tryMergeDisjunctSet(Set<Transition> disjuncts) {
+    if (disjuncts.size() < 2) {
+      return false;
+    }
+
+    for (Transition t1 : disjuncts) {
+      for (Transition t2 : disjuncts) {
+        if (t1 == t2) {
+          continue;
+        }
+        @Nullable Transition merged = tryMergeDisjuncts(t1, t2);
+        if (merged != null) {
+          disjuncts.remove(t1);
+          disjuncts.remove(t2);
+          disjuncts.add(merged);
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  @VisibleForTesting
+  static Transition tryMergeDisjuncts(Transition t1, Transition t2) {
+    if (t1 == IDENTITY && t2 instanceof Constraint) {
+      return t1;
+    }
+    if (t1 instanceof Constraint && t2 == IDENTITY) {
+      return t2;
+    }
+    if (t1 instanceof Constraint && t2 instanceof Constraint) {
+      Constraint c1 = (Constraint) t1;
+      Constraint c2 = (Constraint) t2;
+      return constraint(c1.getConstraint().or(c2.getConstraint()));
+    }
+    if (t1 instanceof EraseAndSet && t2 instanceof EraseAndSet) {
+      EraseAndSet eas1 = (EraseAndSet) t1;
+      EraseAndSet eas2 = (EraseAndSet) t2;
+
+      BDD vars1 = eas1.getEraseVars();
+      BDD vars2 = eas2.getEraseVars();
+
+      BDD val1 = eas1.getSetValue();
+      BDD val2 = eas2.getSetValue();
+
+      if (vars1.equals(vars2)) {
+        return eraseAndSet(vars1, val1.or(val2));
+      }
+
+      // fall through
+    }
+    // couldn't merge
+    return null;
   }
 
   public static Transition or(Transition... transitions) {
@@ -119,10 +288,11 @@ public final class Transitions {
     if (nonZeroTransitions.isEmpty()) {
       return ZERO;
     }
-    if (nonZeroTransitions.size() == 1) {
-      return nonZeroTransitions.get(0);
+    Collection<Transition> mergedTransitions = mergeDisjuncts(nonZeroTransitions);
+    if (mergedTransitions.size() == 1) {
+      return Iterables.getOnlyElement(mergedTransitions);
     }
-    return new Or(nonZeroTransitions);
+    return new Or(mergedTransitions);
   }
 
   public static Transition addLastHopConstraint(

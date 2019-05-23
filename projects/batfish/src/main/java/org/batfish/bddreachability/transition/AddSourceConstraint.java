@@ -29,15 +29,23 @@ public final class AddSourceConstraint implements Transition {
     _sourceBdd = mgr.getOriginatingFromDeviceBDD();
   }
 
+  BDDSourceManager getSourceManager() {
+    return _mgr;
+  }
+
+  BDD getSourceBdd() {
+    return _sourceBdd;
+  }
+
   @Override
   public BDD transitForward(BDD bdd) {
-    assert !_mgr.hasSourceConstraint(bdd);
+    assert !_mgr.hasSourceConstraint(bdd) : "source constraint should not be present";
     return bdd.and(_sourceBdd);
   }
 
   @Override
   public BDD transitBackward(BDD bdd) {
-    assert _mgr.hasIsValidConstraint(bdd);
+    assert _mgr.hasIsValidConstraint(bdd) : "source constraint should be present";
     return _mgr.existsSource(bdd.and(_sourceBdd));
   }
 }

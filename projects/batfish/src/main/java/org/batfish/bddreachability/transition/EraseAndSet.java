@@ -3,6 +3,7 @@ package org.batfish.bddreachability.transition;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.base.MoreObjects;
+import java.util.Objects;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 
@@ -12,18 +13,36 @@ public final class EraseAndSet implements Transition {
   private final BDD _setValue;
 
   EraseAndSet(BDD eraseVars, BDD setValue) {
-    checkArgument((!eraseVars.isOne() && !eraseVars.isZero()), "No variables to erase");
-
-    checkArgument(!setValue.isOne(), "Value is one (always true). Use Identity instead");
-
-    /* Require that the erased variables include the set variables. We consider it an error to
-     * set a variable that wasn't erased. If we want to set a variable that wasn't erased, use a
-     * different transition class.
-     */
-    checkArgument(setValue.exist(eraseVars).isOne(), "Erasing the value should result in one");
-
+    checkArgument(
+        (!eraseVars.isOne() && !eraseVars.isZero()),
+        "No variables to erase. Use Constraint instead");
     _eraseVars = eraseVars;
     _setValue = setValue;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof EraseAndSet)) {
+      return false;
+    }
+    EraseAndSet other = (EraseAndSet) o;
+    return _eraseVars.equals(other._eraseVars) && _setValue.equals(other._setValue);
+  }
+
+  BDD getEraseVars() {
+    return _eraseVars;
+  }
+
+  BDD getSetValue() {
+    return _setValue;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_eraseVars, _setValue);
   }
 
   @Override
@@ -38,6 +57,9 @@ public final class EraseAndSet implements Transition {
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(EraseAndSet.class).add("topVar", _eraseVars.var()).toString();
+    return MoreObjects.toStringHelper(EraseAndSet.class)
+        .add("eraseVars", _eraseVars)
+        .add("valueVars", _setValue.support())
+        .toString();
   }
 }
