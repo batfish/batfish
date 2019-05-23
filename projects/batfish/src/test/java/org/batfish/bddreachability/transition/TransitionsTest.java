@@ -223,7 +223,7 @@ public class TransitionsTest {
     BDD v0 = var(0);
     BDD v1 = var(1);
     Constraint constraint = new Constraint(v0);
-    EraseAndSet eas = new EraseAndSet(v1,v1);
+    EraseAndSet eas = new EraseAndSet(v1, v1);
     Transition actual = mergeComposed(constraint, eas);
     Transition expected = eraseAndSet(v1, v0.and(v1));
     assertEquals(expected, actual);
