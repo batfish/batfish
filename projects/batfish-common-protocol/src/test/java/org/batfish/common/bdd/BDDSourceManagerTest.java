@@ -67,6 +67,7 @@ public class BDDSourceManagerTest {
   @Test
   public void testNoReferencedSources() {
     BDDSourceManager mgr = BDDSourceManager.forSources(_pkt, IFACES_1_2, ImmutableSet.of());
+    assertTrue(mgr.isTrivial());
     assertTrue(mgr.getSourceInterfaceBDD(IFACE1).isOne());
     assertTrue(mgr.getSourceInterfaceBDD(IFACE2).isOne());
   }
@@ -200,7 +201,8 @@ public class BDDSourceManagerTest {
     String hostname = config.getHostname();
     Map<String, Configuration> configs = ImmutableMap.of(hostname, config);
     BDDSourceManager mgr = BDDSourceManager.forNetwork(_pkt, configs, true).get(hostname);
-    assertTrue(!mgr.allSourcesTracked());
+    assertTrue(mgr.isTrivial());
+    assertFalse(mgr.allSourcesTracked());
     assertEquals(
         mgr.getSourceBDDs().keySet(),
         ImmutableSet.of(IFACE1, IFACE2, IFACE3, SOURCE_ORIGINATING_FROM_DEVICE));

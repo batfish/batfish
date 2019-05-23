@@ -1,5 +1,6 @@
 package org.batfish.common.bdd;
 
+import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referencedSources;
@@ -13,6 +14,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.datamodel.Configuration;
@@ -44,7 +46,8 @@ public final class BDDSourceManager {
    * the finite domain doesn't track each active but unreferenced source. Instead, it tracks a
    * single representative value that represents all of them.
    *
-   * <p>{@code null} when there are no active but unreferenced sources.
+   * <p>{@code null} when (1) there are no referenced sources, or (2) there are no active but
+   * unreferenced sources.
    */
   private final @Nullable String _activeButUnreferencedRepresentative;
 
@@ -57,7 +60,9 @@ public final class BDDSourceManager {
       BDDFiniteDomain<String> finiteDomain, Set<String> activeButUnreferenced) {
     _activeButUnreferenced = ImmutableSet.copyOf(activeButUnreferenced);
     _activeButUnreferencedRepresentative =
-        _activeButUnreferenced.stream().sorted().findFirst().orElse(null);
+        finiteDomain.isEmpty()
+            ? null
+            : _activeButUnreferenced.stream().sorted().findFirst().orElse(null);
     _falseBDD = finiteDomain.getIsValidConstraint().getFactory().zero();
     _trueBDD = finiteDomain.getIsValidConstraint().getFactory().one();
     _finiteDomain = finiteDomain;
@@ -231,10 +236,14 @@ public final class BDDSourceManager {
    */
   private static Set<String> valuesToTrack(
       Set<String> activeAndReferenced, Set<String> activeButUnreferenced) {
+    if (activeAndReferenced.isEmpty()) {
+      return ImmutableSet.of();
+    }
 
     ImmutableSet.Builder<String> builder = ImmutableSet.builder();
     builder.addAll(activeAndReferenced);
 
+    // add one source as the representative of "everything else"
     if (!activeButUnreferenced.isEmpty()) {
       builder.add(activeButUnreferenced.stream().min(Comparator.naturalOrder()).get());
     }
@@ -261,10 +270,18 @@ public final class BDDSourceManager {
   }
 
   public Map<String, BDD> getSourceBDDs() {
+    if (isTrivial()) {
+      return toImmutableMap(_activeButUnreferenced, Function.identity(), (src) -> _trueBDD);
+    }
+
     ImmutableMap.Builder<String, BDD> builder = ImmutableMap.builder();
     builder.putAll(_finiteDomain.getValueBdds());
 
-    if (_activeButUnreferencedRepresentative != null) {
+    if (!_activeButUnreferenced.isEmpty()) {
+      checkState(
+          _activeButUnreferencedRepresentative != null,
+          "nontrivial source manager with active-but-unreferenced sources must have a representative");
+
       BDD representativeBdd =
           _finiteDomain.getConstraintForValue(_activeButUnreferencedRepresentative);
       _activeButUnreferenced.stream()
@@ -331,6 +348,6 @@ public final class BDDSourceManager {
    * Return whether each source is tracked separately (i.e. each has its own value in the domain).
    */
   public boolean allSourcesTracked() {
-    return _activeButUnreferencedRepresentative == null;
+    return !isTrivial() && _activeButUnreferenced.isEmpty();
   }
 }
