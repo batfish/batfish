@@ -7,6 +7,8 @@ import static org.batfish.common.topology.TopologyUtil.computeLayer3Topology;
 import static org.batfish.common.topology.TopologyUtil.computeNodeInterfaces;
 import static org.batfish.common.topology.TopologyUtil.computeRawLayer3Topology;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
+import static org.batfish.common.util.IpsecUtil.retainReachableIpsecEdges;
+import static org.batfish.common.util.IpsecUtil.toEdgeSet;
 import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.prunedVxlanTopology;
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
@@ -29,12 +31,10 @@ import org.batfish.common.BdpOscillationException;
 import org.batfish.common.Version;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.common.topology.Layer2Topology;
-import org.batfish.common.util.IpsecUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.NetworkConfigurations;
@@ -42,6 +42,7 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.IncrementalBdpAnswerElement;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.eigrp.EigrpTopology;
+import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.batfish.datamodel.isis.IsisTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.vxlan.VxlanTopology;
@@ -80,6 +81,7 @@ class IncrementalBdpEngine {
       Map<Ip, Set<String>> ipOwners = computeIpNodeOwners(configurations, true);
       Map<Ip, Map<String, Set<String>>> ipVrfOwners =
           computeIpVrfOwners(true, computeNodeInterfaces(configurations));
+
       TopologyContext initialTopologyContext =
           callerTopologyContext
               .toBuilder()
@@ -91,9 +93,6 @@ class IncrementalBdpEngine {
                       configurations, callerTopologyContext.getLayer3Topology()))
               .setVxlanTopology(VxlanTopologyUtils.initialVxlanTopology(configurations))
               .build();
-
-      Set<Edge> prunedIpsecGraphEdges =
-          IpsecUtil.toEdgeSet(initialTopologyContext.getIpsecTopology(), configurations);
 
       // Generate our nodes, keyed by name, sorted for determinism
       SortedMap<String, Node> nodes =
@@ -134,6 +133,13 @@ class IncrementalBdpEngine {
                   .build();
 
           // Update topologies
+          // IPsec
+          IpsecTopology newIpsecTopology =
+              retainReachableIpsecEdges(
+                  initialTopologyContext.getIpsecTopology(),
+                  configurations,
+                  new TracerouteEngineImpl(
+                      partialDataplane, currentTopologyContext.getLayer3Topology()));
           // VXLAN
           VxlanTopology newVxlanTopology =
               prunedVxlanTopology(
@@ -153,9 +159,8 @@ class IncrementalBdpEngine {
                       initialTopologyContext.getRawLayer1PhysicalTopology(),
                       newLayer2Topology,
                       configurations),
-                  prunedIpsecGraphEdges,
+                  toEdgeSet(newIpsecTopology, configurations),
                   configurations);
-          // TODO: update prunedIpsecGraphEdges by traceroute using newLayer3Topology
 
           // Initialize BGP topology
           BgpTopology newBgpTopology =
@@ -173,6 +178,7 @@ class IncrementalBdpEngine {
                   .setLayer2Topology(newLayer2Topology)
                   .setLayer3Topology(newLayer3Topology)
                   .setVxlanTopology(newVxlanTopology)
+                  .setIpsecTopology(newIpsecTopology)
                   .build();
 
           boolean isOscillating =

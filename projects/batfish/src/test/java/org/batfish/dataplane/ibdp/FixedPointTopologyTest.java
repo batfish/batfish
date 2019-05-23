@@ -3,6 +3,7 @@ package org.batfish.dataplane.ibdp;
 import static org.batfish.common.topology.TopologyUtil.computeLayer2Topology;
 import static org.batfish.common.topology.TopologyUtil.computeLayer3Topology;
 import static org.batfish.common.topology.TopologyUtil.computeRawLayer3Topology;
+import static org.batfish.datamodel.IpsecSession.IPSEC_UDP_PORT;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
@@ -32,23 +33,32 @@ import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Node;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyContainer;
+import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPeerConfigId;
 import org.batfish.datamodel.IpsecPhase2Proposal;
+import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.vxlan.VxlanNode;
@@ -219,55 +229,40 @@ public final class FixedPointTopologyTest {
         hasItem(Edge.of(H1_NAME, E1_NAME, H2_NAME, E2_NAME)));
   }
 
-  @Test
-  public void testFixedPointIpsecTopology() {
-    // the setup network contains bidirectional underlay edges between host1:interface1 and
-    // host2:interface2, and also overlay edges between host1:Tunnel1 and host2:Tunnel2
-    IpsecStaticPeerConfig ipsecPeerConfig1 =
-        IpsecStaticPeerConfig.builder()
-            .setSourceInterface("Interface1")
-            .setTunnelInterface("Tunnel1")
-            .build();
-    IpsecStaticPeerConfig ipsecPeerConfig2 =
-        IpsecStaticPeerConfig.builder()
-            .setSourceInterface("Interface2")
-            .setTunnelInterface("Tunnel2")
-            .build();
-    MutableValueGraph<IpsecPeerConfigId, IpsecSession> graph =
-        ValueGraphBuilder.directed().allowsSelfLoops(false).build();
-    IpsecSession establishedSession =
-        IpsecSession.builder().setNegotiatedIpsecP2Proposal(new IpsecPhase2Proposal()).build();
-    // populate IPsec topology
-    graph.putEdgeValue(
-        new IpsecPeerConfigId("peer1", "host1"),
-        new IpsecPeerConfigId("peer2", "host2"),
-        establishedSession);
-    graph.putEdgeValue(
-        new IpsecPeerConfigId("peer2", "host2"),
-        new IpsecPeerConfigId("peer1", "host1"),
-        establishedSession);
-
+  /**
+   * Helper to create a two node network with underlay edges between host1:Interface1 and
+   * host2:Interface2, and also overlay edges between Tunnel interfaces on the two nodes. Adds
+   * {@link IpsecPeerConfig}s for the tunnels
+   *
+   * @param blockIpsecNegotiation if true adds an incoming ACL on host2:Interface2 blocking UDP
+   *     traffic on port 500
+   * @param blockIpsecTunnelTraffic if true adds an incoming ACL on host2:Interface2 blocking AH
+   *     traffic
+   * @param cloud if true sets the {@link ConfigurationFormat} on the nodes as cloud
+   * @return {@link Map} of {@link Configuration}s
+   */
+  private static Map<String, Configuration> generateIpsecTunnelConfigurations(
+      boolean blockIpsecNegotiation, boolean blockIpsecTunnelTraffic, boolean cloud) {
     NetworkFactory nf = new NetworkFactory();
 
     Configuration host1 =
         nf.configurationBuilder()
             .setHostname("host1")
-            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setConfigurationFormat(cloud ? ConfigurationFormat.AWS : ConfigurationFormat.CISCO_IOS)
             .build();
     Configuration host2 =
         nf.configurationBuilder()
             .setHostname("host2")
-            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setConfigurationFormat(cloud ? ConfigurationFormat.AWS : ConfigurationFormat.CISCO_IOS)
             .build();
     Vrf vrf1 = nf.vrfBuilder().setOwner(host1).build();
     Vrf vrf2 = nf.vrfBuilder().setOwner(host2).build();
-    Interface iface1 =
-        nf.interfaceBuilder()
-            .setName("Interface1")
-            .setOwner(host1)
-            .setVrf(vrf1)
-            .setAddress(new InterfaceAddress(Ip.parse("1.1.1.1"), 24))
-            .build();
+    nf.interfaceBuilder()
+        .setName("Interface1")
+        .setOwner(host1)
+        .setVrf(vrf1)
+        .setAddress(new InterfaceAddress(Ip.parse("1.1.1.1"), 24))
+        .build();
     Interface tunnel1 =
         nf.interfaceBuilder()
             .setName("Tunnel1")
@@ -291,14 +286,90 @@ public final class FixedPointTopologyTest {
             .setAddress(new InterfaceAddress(Ip.parse("11.12.13.2"), 24))
             .build();
     tunnel2.setInterfaceType(InterfaceType.TUNNEL);
+
+    IpsecStaticPeerConfig ipsecPeerConfig1 =
+        IpsecStaticPeerConfig.builder()
+            .setSourceInterface("Interface1")
+            .setTunnelInterface("Tunnel1")
+            .setLocalAddress(Ip.parse("1.1.1.1"))
+            .build();
+    IpsecStaticPeerConfig ipsecPeerConfig2 =
+        IpsecStaticPeerConfig.builder()
+            .setSourceInterface("Interface2")
+            .setTunnelInterface("Tunnel2")
+            .setLocalAddress(Ip.parse("1.1.1.2"))
+            .build();
     host1.setIpsecPeerConfigs(ImmutableSortedMap.of("peer1", ipsecPeerConfig1));
     host2.setIpsecPeerConfigs(ImmutableSortedMap.of("peer2", ipsecPeerConfig2));
 
-    Topology layer3Topology = new Topology(ImmutableSortedSet.of(new Edge(iface1, iface2)));
+    if (blockIpsecNegotiation) {
+      iface2.setIncomingFilter(
+          nf.aclBuilder()
+              .setOwner(host2)
+              .setLines(
+                  ImmutableList.of(
+                      IpAccessListLine.rejecting(
+                          AclLineMatchExprs.match(
+                              HeaderSpace.builder()
+                                  .setIpProtocols(ImmutableSet.of(IpProtocol.UDP))
+                                  .setDstPorts(
+                                      ImmutableSet.of(new SubRange(IPSEC_UDP_PORT, IPSEC_UDP_PORT)))
+                                  .build()))))
+              .build());
+    }
+    if (blockIpsecTunnelTraffic) {
+      iface2.setIncomingFilter(
+          nf.aclBuilder()
+              .setOwner(host2)
+              .setLines(
+                  ImmutableList.of(
+                      IpAccessListLine.rejecting(
+                          AclLineMatchExprs.match(
+                              HeaderSpace.builder()
+                                  .setIpProtocols(ImmutableSet.of(IpProtocol.AHP))
+                                  .build()))))
+              .build());
+    }
+    return ImmutableMap.of("host1", host1, "host2", host2);
+  }
+
+  /**
+   * Helper to return a simple IPsec topology
+   *
+   * @param cloud if true sets the {@link IpsecSession} to be of cloud type
+   * @return {@link IpsecTopology}
+   */
+  private static IpsecTopology getIpsecTopology(boolean cloud) {
+    MutableValueGraph<IpsecPeerConfigId, IpsecSession> graph =
+        ValueGraphBuilder.directed().allowsSelfLoops(false).build();
+    IpsecPhase2Proposal ipsecPhase2Proposal = new IpsecPhase2Proposal();
+    ipsecPhase2Proposal.setProtocols(ImmutableSortedSet.of(IpsecProtocol.AH));
+    IpsecSession establishedSession =
+        IpsecSession.builder()
+            .setNegotiatedIpsecP2Proposal(ipsecPhase2Proposal)
+            .setCloud(cloud)
+            .build();
+    // populate IPsec topology
+    graph.putEdgeValue(
+        new IpsecPeerConfigId("peer1", "host1"),
+        new IpsecPeerConfigId("peer2", "host2"),
+        establishedSession);
+    graph.putEdgeValue(
+        new IpsecPeerConfigId("peer2", "host2"),
+        new IpsecPeerConfigId("peer1", "host1"),
+        establishedSession);
+    return new IpsecTopology(graph);
+  }
+
+  @Test
+  public void testFixedPointL3NoIpsecNegotiation() {
+    Map<String, Configuration> configurations =
+        generateIpsecTunnelConfigurations(true, false, false);
+    Topology layer3Topology = TopologyUtil.synthesizeL3Topology(configurations);
 
     TopologyContext topologyContext =
         TopologyContext.builder()
-            .setIpsecTopology(new IpsecTopology(graph))
+            .setIpsecTopology(getIpsecTopology(false))
             .setLayer3Topology(layer3Topology)
             .build();
     IncrementalBdpEngine engine =
@@ -307,23 +378,130 @@ public final class FixedPointTopologyTest {
             new BatfishLogger(BatfishLogger.LEVELSTR_DEBUG, false));
 
     ComputeDataPlaneResult dp =
-        engine.computeDataPlane(
-            ImmutableMap.of("host1", host1, "host2", host2), topologyContext, ImmutableSet.of());
+        engine.computeDataPlane(configurations, topologyContext, ImmutableSet.of());
     TopologyContainer topologies = dp._topologies;
 
     assertThat(topologies, instanceOf(TopologyContext.class));
     TopologyContext fixPointTopoContext = (TopologyContext) topologies;
-    // Ipsec topology should not change after fixed point since we are not pruning based on
-    // reachability
+
+    // Ipsec topology should be empty
+    assertThat(fixPointTopoContext.getIpsecTopology(), equalTo(IpsecTopology.EMPTY));
+    // Layer 3 topology should not be affected
+    assertThat(fixPointTopoContext.getLayer3Topology(), equalTo(layer3Topology));
+  }
+
+  @Test
+  public void testFixedPointL3NoIpsecTraffic() {
+    Map<String, Configuration> configurations =
+        generateIpsecTunnelConfigurations(false, true, false);
+    Topology layer3Topology = TopologyUtil.synthesizeL3Topology(configurations);
+
+    TopologyContext topologyContext =
+        TopologyContext.builder()
+            .setIpsecTopology(getIpsecTopology(false))
+            .setLayer3Topology(layer3Topology)
+            .build();
+    IncrementalBdpEngine engine =
+        new IncrementalBdpEngine(
+            new IncrementalDataPlaneSettings(),
+            new BatfishLogger(BatfishLogger.LEVELSTR_DEBUG, false));
+
+    ComputeDataPlaneResult dp =
+        engine.computeDataPlane(configurations, topologyContext, ImmutableSet.of());
+    TopologyContainer topologies = dp._topologies;
+
+    assertThat(topologies, instanceOf(TopologyContext.class));
+    TopologyContext fixPointTopoContext = (TopologyContext) topologies;
+    // Ipsec topology should be empty
+    assertThat(fixPointTopoContext.getIpsecTopology(), equalTo(IpsecTopology.EMPTY));
+    // Layer 3 topology should not be affected
+    assertThat(fixPointTopoContext.getLayer3Topology(), equalTo(layer3Topology));
+  }
+
+  @Test
+  public void testFixedPointL3WithIpsec() {
+    Map<String, Configuration> configurations =
+        generateIpsecTunnelConfigurations(false, false, false);
+    Topology layer3Topology = TopologyUtil.synthesizeL3Topology(configurations);
+
+    TopologyContext topologyContext =
+        TopologyContext.builder()
+            .setIpsecTopology(getIpsecTopology(false))
+            .setLayer3Topology(layer3Topology)
+            .build();
+    IncrementalBdpEngine engine =
+        new IncrementalBdpEngine(
+            new IncrementalDataPlaneSettings(),
+            new BatfishLogger(BatfishLogger.LEVELSTR_DEBUG, false));
+
+    ComputeDataPlaneResult dp =
+        engine.computeDataPlane(configurations, topologyContext, ImmutableSet.of());
+    TopologyContainer topologies = dp._topologies;
+
+    assertThat(topologies, instanceOf(TopologyContext.class));
+    TopologyContext fixPointTopoContext = (TopologyContext) topologies;
+    // All compatible Ipsec edges should be reachable
     assertThat(fixPointTopoContext.getIpsecTopology(), equalTo(topologyContext.getIpsecTopology()));
     // Layer 3 topology should now contain the overlay IPsec tunnel edges
     assertThat(
         fixPointTopoContext.getLayer3Topology().getEdges(),
         equalTo(
             ImmutableSortedSet.of(
-                new Edge(iface1, iface2),
-                new Edge(iface2, iface1),
-                new Edge(tunnel1, tunnel2),
-                new Edge(tunnel2, tunnel1))));
+                new Edge(
+                    new NodeInterfacePair("host1", "Interface1"),
+                    new NodeInterfacePair("host2", "Interface2")),
+                new Edge(
+                    new NodeInterfacePair("host2", "Interface2"),
+                    new NodeInterfacePair("host1", "Interface1")),
+                new Edge(
+                    new NodeInterfacePair("host1", "Tunnel1"),
+                    new NodeInterfacePair("host2", "Tunnel2")),
+                new Edge(
+                    new NodeInterfacePair("host2", "Tunnel2"),
+                    new NodeInterfacePair("host1", "Tunnel1")))));
+  }
+
+  @Test
+  public void testFixedPointL3NoIpsecTrafficCloud() {
+    Map<String, Configuration> configurations =
+        generateIpsecTunnelConfigurations(false, true, true);
+    Topology layer3Topology = TopologyUtil.synthesizeL3Topology(configurations);
+
+    TopologyContext topologyContext =
+        TopologyContext.builder()
+            .setIpsecTopology(getIpsecTopology(true))
+            .setLayer3Topology(layer3Topology)
+            .build();
+    IncrementalBdpEngine engine =
+        new IncrementalBdpEngine(
+            new IncrementalDataPlaneSettings(),
+            new BatfishLogger(BatfishLogger.LEVELSTR_DEBUG, false));
+
+    ComputeDataPlaneResult dp =
+        engine.computeDataPlane(configurations, topologyContext, ImmutableSet.of());
+    TopologyContainer topologies = dp._topologies;
+
+    assertThat(topologies, instanceOf(TopologyContext.class));
+    TopologyContext fixPointTopoContext = (TopologyContext) topologies;
+    // Cloud Ipsec sessions are always assumed to be reachable
+    // All compatible Ipsec edges should be reachable
+    assertThat(fixPointTopoContext.getIpsecTopology(), equalTo(topologyContext.getIpsecTopology()));
+    // Layer 3 topology should now contain the overlay IPsec tunnel edges
+    assertThat(
+        fixPointTopoContext.getLayer3Topology().getEdges(),
+        equalTo(
+            ImmutableSortedSet.of(
+                new Edge(
+                    new NodeInterfacePair("host1", "Interface1"),
+                    new NodeInterfacePair("host2", "Interface2")),
+                new Edge(
+                    new NodeInterfacePair("host2", "Interface2"),
+                    new NodeInterfacePair("host1", "Interface1")),
+                new Edge(
+                    new NodeInterfacePair("host1", "Tunnel1"),
+                    new NodeInterfacePair("host2", "Tunnel2")),
+                new Edge(
+                    new NodeInterfacePair("host2", "Tunnel2"),
+                    new NodeInterfacePair("host1", "Tunnel1")))));
   }
 }

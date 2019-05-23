@@ -10,6 +10,8 @@ import javax.annotation.ParametersAreNullableByDefault;
 public class IpsecSession {
   public static final Set<ConfigurationFormat> CLOUD_CONFIGURATION_FORMATS =
       ImmutableSet.of(ConfigurationFormat.AWS);
+  /** Port on which IKE (Phase 1) and IPsec(Phase 2) parameters are exchanged through UDP */
+  public static final int IPSEC_UDP_PORT = 500;
 
   @Nullable private final IkePhase1Policy _initiatorIkeP1Policy;
 
