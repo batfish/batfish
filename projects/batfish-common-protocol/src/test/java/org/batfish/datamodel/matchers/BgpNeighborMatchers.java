@@ -17,6 +17,7 @@ import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasExportPolicy;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasLocalAs;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasLocalIp;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasRemoteAs;
+import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasSendCommunity;
 import org.hamcrest.Matcher;
 
 /** Matchers for {@link BgpPeerConfig} */
@@ -129,5 +130,13 @@ public class BgpNeighborMatchers {
    */
   public static Matcher<BgpPeerConfig> hasRemoteAs(Matcher<? super LongSpace> subMatcher) {
     return new HasRemoteAs(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the {@link BgpPeerConfig}'s sendCommunity is equal to the
+   * given value.
+   */
+  public static Matcher<BgpPeerConfig> hasSendCommunity(boolean value) {
+    return new HasSendCommunity(equalTo(value));
   }
 }

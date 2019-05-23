@@ -14477,7 +14477,7 @@
                   "peerInterface" : "swp1",
                   "remoteAsns" : "1-65499,65501-4294967295",
                   "routeReflectorClient" : false,
-                  "sendCommunity" : false
+                  "sendCommunity" : true
                 }
               },
               "multipathEbgp" : false,
