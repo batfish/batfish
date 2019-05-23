@@ -142,8 +142,8 @@ public class TransitionsTest {
     BDD guard2 = var(1);
     Transition thn = constraint(var(2));
     Transition els = constraint(var(3));
-    Transition expected = branch(guard1.and(guard2), thn, els);
     Transition actual = branch(guard1, new Branch(guard2, thn, els), els);
+    Transition expected = branch(guard1.and(guard2), thn, els);
     assertEquals(expected, actual);
   }
 
@@ -154,8 +154,8 @@ public class TransitionsTest {
     BDD guard2 = var(1);
     Transition t1 = constraint(var(2));
     Transition t2 = constraint(var(3));
-    Transition expected = branch(guard1.imp(guard2), t1, t2);
     Transition actual = branch(guard1, new Branch(guard2, t1, t2), t1);
+    Transition expected = branch(guard1.not().or(guard2), t1, t2);
     assertEquals(expected, actual);
   }
 
@@ -166,8 +166,8 @@ public class TransitionsTest {
     BDD guard2 = var(1);
     Transition thn = constraint(var(2));
     Transition els = constraint(var(3));
-    Transition expected = branch(guard1.or(guard2), thn, els);
     Transition actual = branch(guard1, thn, new Branch(guard2, thn, els));
+    Transition expected = branch(guard1.or(guard2), thn, els);
     assertEquals(expected, actual);
   }
 
@@ -178,8 +178,8 @@ public class TransitionsTest {
     BDD guard2 = var(1);
     Transition t1 = constraint(var(2));
     Transition t2 = constraint(var(3));
-    Transition expected = branch(guard2.diff(guard1), t2, t1);
     Transition actual = branch(guard1, t1, new Branch(guard2, t2, t1));
+    Transition expected = branch(guard1.not().and(guard2), t2, t1);
     assertEquals(expected, actual);
   }
 }
