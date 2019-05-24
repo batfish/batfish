@@ -5,6 +5,7 @@ import static org.batfish.datamodel.transformation.TransformationUtil.hasSourceN
 import static org.batfish.datamodel.transformation.TransformationUtil.sourceNatPoolIps;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
@@ -52,6 +53,8 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Hop;
+import org.batfish.datamodel.flow.Trace;
+import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.ipsec.IpsecTopology;
 
 @ParametersAreNonnullByDefault
@@ -597,7 +600,7 @@ public class IpsecUtil {
             .get(peerV.getSourceInterface())
             .getVrfName();
 
-    return ipsecFlowDelivered(
+    return canInitiateIpsecSessionAndTraffic(
             hostnameU,
             vrfU,
             peerU.getLocalAddress(),
@@ -605,7 +608,7 @@ public class IpsecUtil {
             peerV.getLocalAddress(),
             tracerouteEngine,
             ipsecProtocol)
-        && ipsecFlowDelivered(
+        && canInitiateIpsecSessionAndTraffic(
             hostnameV,
             vrfV,
             peerV.getLocalAddress(),
@@ -619,7 +622,7 @@ public class IpsecUtil {
    * Returns true if IPsec negotiation data can flow from the sender to the receiver and also the
    * actual IPsec encrypted data can also flow from the sender to the receiver
    */
-  private static boolean ipsecFlowDelivered(
+  private static boolean canInitiateIpsecSessionAndTraffic(
       String sender,
       String senderVrf,
       Ip srcIp,
@@ -642,24 +645,52 @@ public class IpsecUtil {
 
     Flow flowForIpsecNegotiation =
         flowBuilder.setIpProtocol(IpProtocol.UDP).setDstPort(IpsecSession.IPSEC_UDP_PORT).build();
-    if (!isSuccessfulTraceroute(flowForIpsecNegotiation, receiver, tracerouteEngine)) {
+    if (!isSuccessfulBiTraceroute(flowForIpsecNegotiation, sender, receiver, tracerouteEngine)) {
       return false;
     }
 
     Flow flowForActualIpsecTraffic = flowBuilder.setIpProtocol(ipSecProtocol).build();
-    return isSuccessfulTraceroute(flowForActualIpsecTraffic, receiver, tracerouteEngine);
+    return isSuccessfulBiTraceroute(flowForActualIpsecTraffic, sender, receiver, tracerouteEngine);
   }
 
-  /** Returns true if the given flow is accepted at the destination node */
-  private static boolean isSuccessfulTraceroute(
-      Flow flow, String destinationNode, TracerouteEngine tracerouteEngine) {
-    return tracerouteEngine.computeTraces(ImmutableSet.of(flow), false).get(flow).stream()
+  /**
+   * Returns true if a bi-directional Traceroute succeeds from the sourceNode to the destinationNode
+   */
+  private static boolean isSuccessfulBiTraceroute(
+      Flow flow, String sourceNode, String destinationNode, TracerouteEngine tracerouteEngine) {
+    List<TraceAndReverseFlow> forwardTracesAndReverseFlows =
+        tracerouteEngine.computeTracesAndReverseFlows(ImmutableSet.of(flow), false).get(flow);
+
+    List<TraceAndReverseFlow> reverseTraces =
+        forwardTracesAndReverseFlows.stream()
+            .filter(
+                traceAndReverseFlow ->
+                    traceAndReverseFlow.getTrace().getDisposition() == FlowDisposition.ACCEPTED)
+            .filter(
+                traceAndReverseFlow ->
+                    traceAndReverseFlow.getReverseFlow() != null
+                        && traceAndReverseFlow
+                            .getReverseFlow()
+                            .getIngressNode()
+                            .equals(destinationNode))
+            .flatMap(
+                traceAndReverseFlow ->
+                    tracerouteEngine
+                        .computeTracesAndReverseFlows(
+                            ImmutableSet.of(traceAndReverseFlow.getReverseFlow()),
+                            traceAndReverseFlow.getNewFirewallSessions(),
+                            false)
+                        .get(traceAndReverseFlow.getReverseFlow()).stream())
+            .collect(ImmutableList.toImmutableList());
+
+    return reverseTraces.stream()
         .anyMatch(
-            trace -> {
-              List<Hop> hops = trace.getHops();
+            traceAndReverseFlow -> {
+              Trace reverseTrace = traceAndReverseFlow.getTrace();
+              List<Hop> hops = reverseTrace.getHops();
               return !hops.isEmpty()
-                  && hops.get(hops.size() - 1).getNode().getName().equals(destinationNode)
-                  && trace.getDisposition() == FlowDisposition.ACCEPTED;
+                  && hops.get(hops.size() - 1).getNode().getName().equals(sourceNode)
+                  && reverseTrace.getDisposition() == FlowDisposition.ACCEPTED;
             });
   }
 }
