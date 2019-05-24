@@ -567,7 +567,7 @@ public final class TopologyUtilTest {
     i2.setAccessVlan(2);
 
     ImmutableSet.Builder<Layer2Edge> builder = ImmutableSet.builder();
-    computeLayer2SelfEdges(c1, builder);
+    computeLayer2SelfEdges(c1, builder::add);
 
     assertThat(
         builder.build(),
@@ -607,7 +607,7 @@ public final class TopologyUtilTest {
                 .build());
 
     ImmutableSet.Builder<Layer2Edge> builder = ImmutableSet.builder();
-    computeLayer2SelfEdges(c1, builder);
+    computeLayer2SelfEdges(c1, builder::add);
 
     assertThat(
         builder.build(),
@@ -649,7 +649,7 @@ public final class TopologyUtilTest {
                 .build());
 
     ImmutableSet.Builder<Layer2Edge> builder = ImmutableSet.builder();
-    computeLayer2SelfEdges(c1, builder);
+    computeLayer2SelfEdges(c1, builder::add);
 
     assertThat(
         builder.build(),
