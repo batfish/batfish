@@ -25,6 +25,7 @@ import com.google.common.collect.Lists;
 import java.util.Collection;
 import java.util.List;
 import net.sf.javabdd.BDD;
+import org.batfish.common.bdd.BDDFiniteDomain;
 import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
@@ -234,12 +235,16 @@ public class TransitionsTest {
     BDDSourceManager mgr =
         BDDSourceManager.forSources(
             PKT, ImmutableSet.of("a", "b", "c", "d"), ImmutableSet.of("a", "b"));
+    BDDFiniteDomain<String> finiteDomain = mgr.getFiniteDomain();
     BDD bdd = var(0);
     Constraint constraint = new Constraint(bdd);
     RemoveSourceConstraint remove = new RemoveSourceConstraint(mgr);
     checkState(!mgr.hasSourceConstraint(bdd));
     Transition actual = mergeComposed(constraint, remove);
-    Transition expected = eraseAndSet(mgr.getFiniteDomain().getVar(), bdd);
+    Transition expected =
+        compose(
+            constraint(bdd.and(finiteDomain.getIsValidConstraint())),
+            eraseAndSet(finiteDomain.getVar(), PKT.getFactory().one()));
     assertEquals(expected, actual);
   }
 
@@ -305,11 +310,10 @@ public class TransitionsTest {
 
   @Test
   public void testMergeCompositeTransitions2() {
-    BDD v0 = var(0);
     BDD v1 = var(1);
     BDD v2 = var(2);
     BDD v3 = var(3);
-    Transition t0 = constraint(v0);
+    Transition t0 = constraint(v1);
     Transition t1 = eraseAndSet(v1, v1);
     Transition t2 = constraint(v2);
     Transition t3 = constraint(v3);

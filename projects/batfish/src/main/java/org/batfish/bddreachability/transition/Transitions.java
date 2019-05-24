@@ -149,19 +149,17 @@ public final class Transitions {
     if (t1 instanceof Constraint && t2 instanceof RemoveSourceConstraint) {
       BDD constraintBdd = ((Constraint) t1).getConstraint();
       BDDSourceManager mgr = ((RemoveSourceConstraint) t2).getSourceManager();
-      if (!mgr.hasSourceConstraint(constraintBdd)) {
-        BDDFiniteDomain<String> finiteDomain = mgr.getFiniteDomain();
-        // this drops is the isValid constraint for the reverse direction.
-        return eraseAndSet(finiteDomain.getVar(), constraintBdd);
-      }
-      // fall through
+      BDDFiniteDomain<String> finiteDomain = mgr.getFiniteDomain();
+      return compose(
+          constraint(constraintBdd.and(finiteDomain.getIsValidConstraint())),
+          eraseAndSet(finiteDomain.getVar(), constraintBdd.getFactory().one()));
     }
     if (t1 instanceof EraseAndSet && t2 instanceof Constraint) {
       EraseAndSet eas = (EraseAndSet) t1;
       BDD vars = eas.getEraseVars();
       BDD value = eas.getSetValue();
       BDD constraint = ((Constraint) t2).getConstraint();
-      return new EraseAndSet(vars, value.and(constraint));
+      return eraseAndSet(vars, value.and(constraint));
     }
     if (t1 instanceof EraseAndSet && t2 instanceof EraseAndSet) {
       EraseAndSet eas1 = (EraseAndSet) t1;
@@ -202,7 +200,13 @@ public final class Transitions {
   }
 
   public static Transition eraseAndSet(BDD var, BDD value) {
-    return var.isOne() ? constraint(value) : new EraseAndSet(var, value);
+    if (var.isOne()) {
+      return constraint(value);
+    } else if (value.isZero()) {
+      return ZERO;
+    } else {
+      return new EraseAndSet(var, value);
+    }
   }
 
   public static Transition eraseAndSet(BDDInteger var, BDD value) {

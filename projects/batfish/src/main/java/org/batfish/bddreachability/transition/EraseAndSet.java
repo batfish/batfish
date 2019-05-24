@@ -13,6 +13,7 @@ public final class EraseAndSet implements Transition {
   private final BDD _setValue;
 
   EraseAndSet(BDD eraseVars, BDD setValue) {
+    checkArgument(!setValue.isZero(), "Value is zero BDD. Use ZERO instead");
     checkArgument(
         (!eraseVars.isOne() && !eraseVars.isZero()),
         "No variables to erase. Use Constraint instead");
@@ -47,12 +48,14 @@ public final class EraseAndSet implements Transition {
 
   @Override
   public BDD transitForward(BDD bdd) {
-    return bdd.exist(_eraseVars).and(_setValue);
+    return _setValue.isOne() ? bdd.exist(_eraseVars) : bdd.exist(_eraseVars).and(_setValue);
   }
 
   @Override
   public BDD transitBackward(BDD bdd) {
-    return bdd.applyEx(_setValue, BDDFactory.and, _eraseVars);
+    return _setValue.isOne()
+        ? bdd.exist(_eraseVars)
+        : bdd.applyEx(_setValue, BDDFactory.and, _eraseVars);
   }
 
   @Override
