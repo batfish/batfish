@@ -37,6 +37,8 @@ public final class Layer2Topology {
     private final Set<Layer2Node> _nodes = new HashSet<>();
     private final UnionFind<Layer2Node> _broadcastDomains = new UnionFind<>(ImmutableSet.of());
 
+    private Builder() {}
+
     private void addNodeIfMissing(Layer2Node node) {
       if (!_nodes.contains(node)) {
         _broadcastDomains.addElement(node);

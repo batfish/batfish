@@ -47,6 +47,12 @@ public final class Layer2Node implements Comparable<Layer2Node>, Serializable {
   @Override
   public int compareTo(Layer2Node o) {
     // compareTo is hot for some networks, so inlining the comparator is worth it
+    if (this == o) {
+      return 0;
+    }
+    if (o == null) {
+      return 1;
+    }
     int r = _hostname.compareTo(o._hostname);
     if (r != 0) {
       return r;
