@@ -1,5 +1,6 @@
 package org.batfish.grammar.palo_alto;
 
+import static org.batfish.datamodel.Interface.DependencyType.BIND;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopInterface;
@@ -18,6 +19,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilter
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasZone;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDependencies;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
@@ -39,6 +41,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -70,6 +73,7 @@ import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IkeHashingAlgorithm;
+import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
@@ -517,11 +521,17 @@ public class PaloAltoGrammarTest {
     assertThat(
         c,
         hasInterface(
-            interfaceNameUnit1, hasAllAddresses(contains(new InterfaceAddress("1.1.1.1/24")))));
+            interfaceNameUnit1,
+            allOf(
+                hasAllAddresses(contains(new InterfaceAddress("1.1.1.1/24"))),
+                hasDependencies(contains(new Dependency("ethernet1/1", BIND))))));
     assertThat(
         c,
         hasInterface(
-            interfaceNameUnit2, hasAllAddresses(contains(new InterfaceAddress("1.1.2.1/24")))));
+            interfaceNameUnit2,
+            allOf(
+                hasAllAddresses(contains(new InterfaceAddress("1.1.2.1/24"))),
+                hasDependencies(contains(new Dependency("ethernet1/1", BIND))))));
   }
 
   @Test
