@@ -70125,6 +70125,33 @@
             "                UNITS:'units'",
             "                name = (variable",
             "                  VARIABLE:'ethernet1/1.5')",
+            "                (if_common",
+            "                  (if_comment",
+            "                    COMMENT:'comment'",
+            "                    text = (variable",
+            "                      DOUBLE_QUOTED_STRING:'\"subif comment\"')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line_config_devices",
+            "    SET:'set'",
+            "    CONFIG:'config'",
+            "    DEVICES:'devices'",
+            "    name = (variable",
+            "      VARIABLE:'localhost.localdomain')",
+            "    (statement_config_devices",
+            "      (s_network",
+            "        NETWORK:'network'",
+            "        (sn_interface",
+            "          INTERFACE:'interface'",
+            "          (sni_ethernet",
+            "            ETHERNET:'ethernet'",
+            "            name = (variable",
+            "              VARIABLE:'ethernet1/1')",
+            "            (snie_layer3",
+            "              LAYER3:'layer3'",
+            "              (sniel3_units",
+            "                UNITS:'units'",
+            "                name = (variable",
+            "                  VARIABLE:'ethernet1/1.5')",
             "                (sniel3_common",
             "                  (sniel3_mtu",
             "                    MTU:'mtu'",
@@ -81401,7 +81428,8 @@
                 14,
                 15,
                 16,
-                17
+                17,
+                18
               ],
               "numReferrers" : 0
             },
@@ -81409,7 +81437,8 @@
               "definitionLines" : [
                 15,
                 16,
-                17
+                17,
+                18
               ],
               "numReferrers" : 0
             }

@@ -29587,6 +29587,7 @@
             },
             "allowedVlans" : "",
             "autostate" : true,
+            "description" : "subif comment",
             "mtu" : 1500,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
