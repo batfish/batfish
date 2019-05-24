@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import java.util.Collection;
 import java.util.List;
 import net.sf.javabdd.BDD;
 
@@ -11,10 +12,10 @@ import net.sf.javabdd.BDD;
  * A {@link Transition} with multiple subtransitions -- a packet can transit this transition if it
  * can transit any of its subtransitions.
  */
-public class Or implements Transition {
+public final class Or implements Transition {
   private final List<Transition> _transitions;
 
-  Or(List<Transition> transitions) {
+  Or(Collection<Transition> transitions) {
     checkArgument(!transitions.isEmpty(), "Cannot construct Or of 0 Transitions. Use Zero instead");
     checkArgument(
         transitions.size() != 1,
