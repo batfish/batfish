@@ -1,9 +1,11 @@
 package org.batfish.common.util;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.transformation.TransformationUtil.hasSourceNat;
 import static org.batfish.datamodel.transformation.TransformationUtil.sourceNatPoolIps;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
@@ -24,14 +26,19 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.IpsecDynamicPeerConfig;
@@ -39,12 +46,18 @@ import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPeerConfigId;
 import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
+import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
+import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.flow.Hop;
+import org.batfish.datamodel.flow.Trace;
+import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.ipsec.IpsecTopology;
 
+@ParametersAreNonnullByDefault
 public class IpsecUtil {
 
   /**
@@ -504,5 +517,180 @@ public class IpsecUtil {
       }
     }
     return edgesBuilder.build();
+  }
+
+  /**
+   * Prunes the given {@link IpsecTopology} to retain only the edges which allow traffic needed to
+   * negotiate IPsec parameters and which also allow the actual IPsec encrypted packets
+   *
+   * @param ipsecTopology {@link IpsecTopology} to be pruned
+   * @param configurations {@link Map} of configurations
+   * @param tracerouteEngine {@link TracerouteEngine} to be used to checking connectivity
+   * @return pruned {@link IpsecTopology}
+   */
+  public static @Nonnull IpsecTopology retainReachableIpsecEdges(
+      IpsecTopology ipsecTopology,
+      Map<String, Configuration> configurations,
+      TracerouteEngine tracerouteEngine) {
+    MutableValueGraph<IpsecPeerConfigId, IpsecSession> reachableIpsecTopology =
+        ValueGraphBuilder.directed().allowsSelfLoops(false).build();
+    NetworkConfigurations nf = NetworkConfigurations.of(configurations);
+
+    for (EndpointPair<IpsecPeerConfigId> endpointPair : ipsecTopology.getGraph().edges()) {
+      IpsecPeerConfigId peerIdU = endpointPair.nodeU();
+      IpsecPeerConfigId peerIdV = endpointPair.nodeV();
+
+      IpsecPeerConfig peerU = nf.getIpsecPeerConfig(peerIdU);
+      IpsecPeerConfig peerV = nf.getIpsecPeerConfig(peerIdV);
+      if (peerU == null || peerV == null) {
+        continue;
+      }
+
+      IpsecSession ipsecSession = ipsecTopology.getGraph().edgeValue(peerIdU, peerIdV).orElse(null);
+      if (ipsecSession == null) {
+        continue;
+      }
+      IpsecPhase2Proposal ipsecPhase2Proposal = ipsecSession.getNegotiatedIpsecP2Proposal();
+      if (ipsecPhase2Proposal == null) {
+        continue;
+      }
+
+      // not checking reachability for cloud type IPsec sessions, it is a workaround till we are
+      // confident that ISP modeling will let us do traceroutes properly between cloud type
+      // networks
+      if (ipsecSession.isCloud()
+          || isIpsecPeerReachable(
+              peerIdU.getHostName(),
+              peerU,
+              peerIdV.getHostName(),
+              peerV,
+              ipsecPhase2Proposal.getProtocols().contains(IpsecProtocol.AH)
+                  ? IpProtocol.AHP
+                  : IpProtocol.ESP,
+              configurations,
+              tracerouteEngine)) {
+        reachableIpsecTopology.putEdgeValue(peerIdU, peerIdV, ipsecSession);
+      }
+    }
+    return new IpsecTopology(reachableIpsecTopology);
+  }
+
+  /**
+   * Returns true if the edge between peerU and peerV can be established and also can carry actual
+   * IPsec encrypted data
+   */
+  private static boolean isIpsecPeerReachable(
+      String hostnameU,
+      IpsecPeerConfig peerU,
+      String hostnameV,
+      IpsecPeerConfig peerV,
+      IpProtocol ipsecProtocol,
+      Map<String, Configuration> configurations,
+      TracerouteEngine tracerouteEngine) {
+    String vrfU =
+        configurations
+            .get(hostnameU)
+            .getAllInterfaces()
+            .get(peerU.getSourceInterface())
+            .getVrfName();
+    String vrfV =
+        configurations
+            .get(hostnameV)
+            .getAllInterfaces()
+            .get(peerV.getSourceInterface())
+            .getVrfName();
+
+    return canInitiateIpsecSessionAndTraffic(
+            hostnameU,
+            vrfU,
+            peerU.getLocalAddress(),
+            hostnameV,
+            peerV.getLocalAddress(),
+            tracerouteEngine,
+            ipsecProtocol)
+        && canInitiateIpsecSessionAndTraffic(
+            hostnameV,
+            vrfV,
+            peerV.getLocalAddress(),
+            hostnameU,
+            peerU.getLocalAddress(),
+            tracerouteEngine,
+            ipsecProtocol);
+  }
+
+  /**
+   * Returns true if IPsec negotiation data can flow from the sender to the receiver and also the
+   * actual IPsec encrypted data can also flow from the sender to the receiver
+   */
+  private static boolean canInitiateIpsecSessionAndTraffic(
+      String sender,
+      String senderVrf,
+      Ip srcIp,
+      String receiver,
+      Ip dstIp,
+      TracerouteEngine tracerouteEngine,
+      IpProtocol ipSecProtocol) {
+    checkArgument(
+        ImmutableSet.of(IpProtocol.AHP, IpProtocol.ESP).contains(ipSecProtocol),
+        "IPsec reachability can be checked only for AH or ESP");
+
+    Flow.Builder flowBuilder =
+        Flow.builder()
+            .setTag("IPsec reachability check")
+            .setIngressNode(sender)
+            .setIngressVrf(senderVrf)
+            .setSrcIp(srcIp)
+            .setDstIp(dstIp)
+            .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number());
+
+    Flow flowForIpsecNegotiation =
+        flowBuilder.setIpProtocol(IpProtocol.UDP).setDstPort(IpsecSession.IPSEC_UDP_PORT).build();
+    if (!isSuccessfulBiTraceroute(flowForIpsecNegotiation, sender, receiver, tracerouteEngine)) {
+      return false;
+    }
+
+    Flow flowForActualIpsecTraffic = flowBuilder.setIpProtocol(ipSecProtocol).build();
+    return isSuccessfulBiTraceroute(flowForActualIpsecTraffic, sender, receiver, tracerouteEngine);
+  }
+
+  /**
+   * Returns true if a bi-directional Traceroute succeeds from the sourceNode to the destinationNode
+   */
+  private static boolean isSuccessfulBiTraceroute(
+      Flow flow, String sourceNode, String destinationNode, TracerouteEngine tracerouteEngine) {
+    List<TraceAndReverseFlow> forwardTracesAndReverseFlows =
+        tracerouteEngine.computeTracesAndReverseFlows(ImmutableSet.of(flow), false).get(flow);
+
+    List<TraceAndReverseFlow> reverseTraces =
+        forwardTracesAndReverseFlows.stream()
+            .filter(
+                traceAndReverseFlow ->
+                    traceAndReverseFlow.getTrace().getDisposition() == FlowDisposition.ACCEPTED)
+            .filter(
+                traceAndReverseFlow ->
+                    traceAndReverseFlow.getReverseFlow() != null
+                        && traceAndReverseFlow
+                            .getReverseFlow()
+                            .getIngressNode()
+                            .equals(destinationNode))
+            .flatMap(
+                traceAndReverseFlow ->
+                    tracerouteEngine
+                        .computeTracesAndReverseFlows(
+                            ImmutableSet.of(traceAndReverseFlow.getReverseFlow()),
+                            traceAndReverseFlow.getNewFirewallSessions(),
+                            false)
+                        .get(traceAndReverseFlow.getReverseFlow()).stream())
+            .collect(ImmutableList.toImmutableList());
+
+    return reverseTraces.stream()
+        .anyMatch(
+            traceAndReverseFlow -> {
+              Trace reverseTrace = traceAndReverseFlow.getTrace();
+              List<Hop> hops = reverseTrace.getHops();
+              return !hops.isEmpty()
+                  && hops.get(hops.size() - 1).getNode().getName().equals(sourceNode)
+                  && reverseTrace.getDisposition() == FlowDisposition.ACCEPTED;
+            });
   }
 }
