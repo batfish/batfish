@@ -29,6 +29,8 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.Interface.Dependency;
+import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -550,7 +552,14 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     convertVirtualSystems();
 
     for (Entry<String, Interface> i : _interfaces.entrySet()) {
-      _c.getAllInterfaces().put(i.getKey(), toInterface(i.getValue()));
+      org.batfish.datamodel.Interface viIface = toInterface(i.getValue());
+      _c.getAllInterfaces().put(viIface.getName(), viIface);
+
+      for (Entry<String, Interface> unit : i.getValue().getUnits().entrySet()) {
+        org.batfish.datamodel.Interface viUnit = toInterface(unit.getValue());
+        viUnit.addDependency(new Dependency(viIface.getName(), DependencyType.BIND));
+        _c.getAllInterfaces().put(viUnit.getName(), viUnit);
+      }
     }
 
     // Vrf conversion uses interfaces, so must be done after interface exist in VI model
