@@ -40,9 +40,8 @@ public final class Layer2Topology {
     private Builder() {}
 
     private void addNodeIfMissing(Layer2Node node) {
-      if (!_nodes.contains(node)) {
+      if (_nodes.add(node)) {
         _broadcastDomains.addElement(node);
-        _nodes.add(node);
       }
     }
 
