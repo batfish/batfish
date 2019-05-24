@@ -1431,12 +1431,7 @@ public final class CumulusNcluGrammarTest {
                 10002,
                 DEFAULT_VRF_NAME,
                 RouteDistinguisher.from(routerId, 1),
-                ExtendedCommunity.target(65500, 10002)),
-            new Layer2VniConfig(
-                10004,
-                DEFAULT_VRF_NAME,
-                RouteDistinguisher.from(routerId, 2),
-                ExtendedCommunity.target(65500, 10004)));
+                ExtendedCommunity.target(65500, 10002)));
 
     ImmutableSortedSet<Layer3VniConfig> expectedL3Vnis =
         ImmutableSortedSet.of(
@@ -1452,12 +1447,6 @@ public final class CumulusNcluGrammarTest {
                 DEFAULT_VRF_NAME,
                 RouteDistinguisher.from(routerId, 1),
                 ExtendedCommunity.target(65500, 10002),
-                false),
-            new Layer3VniConfig(
-                10004,
-                DEFAULT_VRF_NAME,
-                RouteDistinguisher.from(routerId, 2),
-                ExtendedCommunity.target(65500, 10004),
                 false),
             // VRF1's explicitly defined l3-VNI with advertise-ipv4-unicast
             new Layer3VniConfig(

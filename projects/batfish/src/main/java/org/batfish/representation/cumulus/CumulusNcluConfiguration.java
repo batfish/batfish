@@ -193,30 +193,31 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
       ImmutableSet.Builder<Layer2VniConfig> l2Vnis = ImmutableSet.builder();
       ImmutableSet.Builder<Layer3VniConfig> l3Vnis = ImmutableSet.builder();
       ImmutableMap.Builder<Integer, Integer> vniToIndexBuilder = ImmutableMap.builder();
-      if (evpnConfig.getAdvertiseAllVni()) {
-        CommonUtil.forEachWithIndex(
-            // Keep indices in deterministic order
-            ImmutableList.sortedCopyOf(
-                Comparator.nullsLast(Comparator.comparing(Vxlan::getId)), _vxlans.values()),
-            (index, vxlan) -> {
-              if (vxlan.getId() == null) {
-                return;
-              }
-              vniToIndexBuilder.put(vxlan.getId(), index);
-              RouteDistinguisher rd = RouteDistinguisher.from(newProc.getRouterId(), index);
-              ExtendedCommunity rt = ExtendedCommunity.target(localAs, vxlan.getId());
-              if (vxlan.getLocalTunnelip() != null) {
-                // Advertise L2 VNIs
-                l2Vnis.add(new Layer2VniConfig(vxlan.getId(), bgpVrf.getVrfName(), rd, rt));
-                if (evpnConfig.getAdvertiseDefaultGw()) {
-                  // Advertise VTEP gateway IP address for the L2 VNI as type 3 route
-                  l3Vnis.add(
-                      new Layer3VniConfig(vxlan.getId(), bgpVrf.getVrfName(), rd, rt, false));
-                }
-              }
-            });
-      }
+      CommonUtil.forEachWithIndex(
+          // Keep indices in deterministic order
+          ImmutableList.sortedCopyOf(
+              Comparator.nullsLast(Comparator.comparing(Vxlan::getId)), _vxlans.values()),
+          (index, vxlan) -> {
+            if (vxlan.getId() == null) {
+              return;
+            }
+            vniToIndexBuilder.put(vxlan.getId(), index);
+          });
       Map<Integer, Integer> vniToIndex = vniToIndexBuilder.build();
+
+      if (evpnConfig.getAdvertiseAllVni()) {
+        for (VniSettings vxlan : _c.getVrfs().get(bgpVrf.getVrfName()).getVniSettings().values()) {
+          RouteDistinguisher rd =
+              RouteDistinguisher.from(newProc.getRouterId(), vniToIndex.get(vxlan.getVni()));
+          ExtendedCommunity rt = ExtendedCommunity.target(localAs, vxlan.getVni());
+          // Advertise L2 VNIs
+          l2Vnis.add(new Layer2VniConfig(vxlan.getVni(), bgpVrf.getVrfName(), rd, rt));
+          if (evpnConfig.getAdvertiseDefaultGw()) {
+            // Advertise VTEP gateway IP address for the L2 VNI as type 3 route
+            l3Vnis.add(new Layer3VniConfig(vxlan.getVni(), bgpVrf.getVrfName(), rd, rt, false));
+          }
+        }
+      }
       // Advertise the L3 VNI per vrf if one is configured
       assert _bgpProcess != null; // Since we are in neighbor conversion, this must be true
       Iterables.concat(ImmutableSet.of(_bgpProcess.getDefaultVrf()), _bgpProcess.getVrfs().values())
