@@ -65,7 +65,7 @@ public final class Layer2Edge implements Comparable<Layer2Edge> {
   }
 
   @Override
-  public int compareTo(Layer2Edge o) {
+  public int compareTo(@Nonnull Layer2Edge o) {
     return Comparator.comparing(Layer2Edge::getNode1)
         .thenComparing(Layer2Edge::getNode2)
         .thenComparing(Layer2Edge::getEncapsulatedVlanId, nullsFirst(naturalOrder()))

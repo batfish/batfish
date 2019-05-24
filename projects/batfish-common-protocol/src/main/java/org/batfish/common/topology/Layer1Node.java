@@ -9,9 +9,11 @@ import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.NetworkConfigurations;
 
+@ParametersAreNonnullByDefault
 public final class Layer1Node implements Comparable<Layer1Node> {
   private static final String PROP_HOSTNAME = "hostname";
   private static final String PROP_INTERFACE_NAME = "interfaceName";
@@ -27,7 +29,7 @@ public final class Layer1Node implements Comparable<Layer1Node> {
 
   private final String _interfaceName;
 
-  public Layer1Node(@Nonnull String hostname, @Nonnull String interfaceName) {
+  public Layer1Node(String hostname, String interfaceName) {
     _hostname = hostname;
     _interfaceName = interfaceName;
   }
@@ -40,7 +42,7 @@ public final class Layer1Node implements Comparable<Layer1Node> {
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(@Nullable Object obj) {
     if (this == obj) {
       return true;
     }
