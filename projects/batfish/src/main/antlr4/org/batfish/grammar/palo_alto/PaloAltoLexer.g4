@@ -351,9 +351,9 @@ LIFETIME
     'lifetime'
 ;
 
-LINK_STATUS
+LINK_STATE
 :
-    'link-status'
+    'link-state'
 ;
 
 LLDP

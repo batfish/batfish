@@ -20,7 +20,7 @@ sni_ethernet
     (
         snie_comment
         | snie_layer3
-        | snie_link_status
+        | snie_link_state
     )
 ;
 
@@ -38,9 +38,9 @@ snie_layer3
     )
 ;
 
-snie_link_status
+snie_link_state
 :
-    LINK_STATUS
+    LINK_STATE
     (
         AUTO
         | DOWN
