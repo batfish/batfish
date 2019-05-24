@@ -18,7 +18,9 @@ s_shared
 // Common syntax between set shared and set vsys
 ss_common
 :
-    s_service
+    s_address
+    | s_address_group
+    | s_service
     | s_service_group
     | ss_log_settings
 ;

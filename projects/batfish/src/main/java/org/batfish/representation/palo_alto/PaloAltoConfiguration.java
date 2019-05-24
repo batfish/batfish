@@ -72,6 +72,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   public static final String NULL_VRF_NAME = "~NULL_VRF~";
 
+  public static final String PANORAMA_VSYS_NAME = "panorama";
+
   public static final String SHARED_VSYS_NAME = "~SHARED_VSYS~";
 
   private Configuration _c;
