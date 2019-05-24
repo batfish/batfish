@@ -1,5 +1,6 @@
 package org.batfish.representation.palo_alto;
 
+import com.google.common.base.MoreObjects;
 import java.io.Serializable;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -86,5 +87,10 @@ public final class Vsys implements Serializable {
   /** Returns a map of zone name to zone for the zones in this vsys. */
   public SortedMap<String, Zone> getZones() {
     return _zones;
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(Vsys.class).add("name", _name).toString();
   }
 }
