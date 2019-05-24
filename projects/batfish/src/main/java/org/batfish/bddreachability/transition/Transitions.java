@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.LastHopOutgoingInterfaceManager;
+import org.batfish.common.bdd.BDDFiniteDomain;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDSourceManager;
 
@@ -149,7 +150,9 @@ public final class Transitions {
       BDD constraintBdd = ((Constraint) t1).getConstraint();
       BDDSourceManager mgr = ((RemoveSourceConstraint) t2).getSourceManager();
       if (!mgr.hasSourceConstraint(constraintBdd)) {
-        return eraseAndSet(mgr.getFiniteDomain().getVar(), constraintBdd);
+        BDDFiniteDomain<String> finiteDomain = mgr.getFiniteDomain();
+        // this drops is the isValid constraint for the reverse direction.
+        return eraseAndSet(finiteDomain.getVar(), constraintBdd);
       }
       // fall through
     }
