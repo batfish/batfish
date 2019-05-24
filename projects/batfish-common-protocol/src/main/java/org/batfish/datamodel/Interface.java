@@ -5,6 +5,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -513,6 +514,14 @@ public final class Interface extends ComparableStructure<String> {
     @Override
     public int hashCode() {
       return Objects.hash(_interfaceName, _type.ordinal());
+    }
+
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(Dependency.class)
+          .add("interfaceName", _interfaceName)
+          .add("type", _type)
+          .toString();
     }
   }
 

@@ -722,10 +722,14 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterSniel3_units(Sniel3_unitsContext ctx) {
     String name = ctx.name.getText();
-    _currentInterface = _configuration.getInterfaces().computeIfAbsent(name, Interface::new);
+    _currentInterface = _currentParentInterface.getUnits().computeIfAbsent(name, Interface::new);
     _currentInterface.setParent(_currentParentInterface);
-    _currentParentInterface.getUnits().put(name, _currentInterface);
     defineStructure(INTERFACE, name, ctx);
+  }
+
+  @Override
+  public void exitSniel3_units(Sniel3_unitsContext ctx) {
+    _currentInterface = _currentParentInterface;
   }
 
   @Override
