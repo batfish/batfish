@@ -6,11 +6,13 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -30,6 +32,35 @@ public final class Layer2Topology {
 
   public static final Layer2Topology EMPTY = new Layer2Topology(ImmutableMap.of());
   private static final String PROP_REPRESENTATIVE_BY_NODE = "representativeByNode";
+
+  public static final class Builder {
+    private final Set<Layer2Node> _nodes = new HashSet<>();
+    private final UnionFind<Layer2Node> _broadcastDomains = new UnionFind<>(ImmutableSet.of());
+
+    private Builder() {}
+
+    private void addNodeIfMissing(Layer2Node node) {
+      if (!_nodes.contains(node)) {
+        _broadcastDomains.addElement(node);
+        _nodes.add(node);
+      }
+    }
+
+    public Builder addEdge(Layer2Edge edge) {
+      Layer2Node node1 = edge.getNode1();
+      Layer2Node node2 = edge.getNode2();
+      addNodeIfMissing(node1);
+      addNodeIfMissing(node2);
+      _broadcastDomains.union(node1, node2);
+      return this;
+    }
+
+    public Layer2Topology build() {
+      return new Layer2Topology(
+          _nodes.stream()
+              .collect(ImmutableMap.toImmutableMap(Function.identity(), _broadcastDomains::find)));
+    }
+  }
 
   private static final class Layer2RepresentativeEntry {
 
@@ -67,6 +98,10 @@ public final class Layer2Topology {
   // node -> representative
   private final Map<Layer2Node, Layer2Node> _representativeByNode;
 
+  public static Builder builder() {
+    return new Builder();
+  }
+
   @JsonCreator
   private static @Nonnull Layer2Topology create(
       @JsonProperty(PROP_REPRESENTATIVE_BY_NODE)
@@ -97,16 +132,11 @@ public final class Layer2Topology {
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue)));
   }
 
-  public static @Nonnull Layer2Topology fromEdges(Set<Layer2Edge> edges) {
-    ImmutableSet<Layer2Node> nodes =
-        edges.stream()
-            .flatMap(e -> Stream.of(e.getNode1(), e.getNode2()))
-            .collect(ImmutableSet.toImmutableSet());
-    UnionFind<Layer2Node> unionFind = new UnionFind<>(nodes);
-    edges.forEach(e -> unionFind.union(e.getNode1(), e.getNode2()));
-
-    return new Layer2Topology(
-        nodes.stream().collect(ImmutableMap.toImmutableMap(Function.identity(), unionFind::find)));
+  @VisibleForTesting
+  static @Nonnull Layer2Topology fromEdges(Set<Layer2Edge> edges) {
+    Builder builder = builder();
+    edges.forEach(builder::addEdge);
+    return builder.build();
   }
 
   /**

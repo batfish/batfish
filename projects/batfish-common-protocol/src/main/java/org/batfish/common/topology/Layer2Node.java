@@ -1,20 +1,16 @@
 package org.batfish.common.topology;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
-import static java.util.Comparator.naturalOrder;
-import static java.util.Comparator.nullsFirst;
 import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
-import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public final class Layer2Node implements Comparable<Layer2Node>, Serializable {
-
   private static final String PROP_HOSTNAME = "hostname";
   private static final String PROP_INTERFACE_NAME = "interfaceName";
   private static final String PROP_SWITCHPORT_VLAN_ID = "switchportVlanId";
@@ -29,11 +25,11 @@ public final class Layer2Node implements Comparable<Layer2Node>, Serializable {
         requireNonNull(hostname), requireNonNull(interfaceName), switchportVlanId);
   }
 
-  private final String _hostname;
+  private final @Nonnull String _hostname;
 
-  private final String _interfaceName;
+  private final @Nonnull String _interfaceName;
 
-  private final Integer _switchportVlanId;
+  private final @Nullable Integer _switchportVlanId;
 
   public Layer2Node(@Nonnull Layer1Node layer1Node, @Nullable Integer vlanId) {
     _hostname = layer1Node.getHostname();
@@ -50,10 +46,31 @@ public final class Layer2Node implements Comparable<Layer2Node>, Serializable {
 
   @Override
   public int compareTo(Layer2Node o) {
-    return Comparator.comparing(Layer2Node::getHostname)
-        .thenComparing(Layer2Node::getInterfaceName)
-        .thenComparing(Layer2Node::getSwitchportVlanId, nullsFirst(naturalOrder()))
-        .compare(this, o);
+    // compareTo is hot for some networks, so inlining the comparator is worth it
+    if (this == o) {
+      return 0;
+    }
+    if (o == null) {
+      return 1;
+    }
+    int r = _hostname.compareTo(o._hostname);
+    if (r != 0) {
+      return r;
+    }
+    r = _interfaceName.compareTo(o._interfaceName);
+    if (r != 0) {
+      return r;
+    }
+    if (_switchportVlanId == null && o._switchportVlanId == null) {
+      return 0;
+    }
+    if (_switchportVlanId == null) {
+      return -1;
+    }
+    if (o._switchportVlanId == null) {
+      return 1;
+    }
+    return _switchportVlanId.compareTo(o._switchportVlanId);
   }
 
   @Override
