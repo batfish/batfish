@@ -14,19 +14,25 @@ sn_interface
     )
 ;
 
+/* A set of commands you can run on ANY interface, top-level or unit. */
+if_common
+:
+    if_comment
+;
+
+if_comment
+:
+    COMMENT text = variable
+;
+
 sni_ethernet
 :
     ETHERNET name = variable
     (
-        snie_comment
+        if_common
         | snie_layer3
         | snie_link_state
     )
-;
-
-snie_comment
-:
-    COMMENT text = variable
 ;
 
 snie_layer3
@@ -86,7 +92,8 @@ sniel3_units
 :
     UNITS name = variable
     (
-        sniel3_common
+        if_common
+        | sniel3_common
         | sniel3u_tag
     )
 ;

@@ -532,6 +532,9 @@ public class PaloAltoGrammarTest {
             allOf(
                 hasAllAddresses(contains(new InterfaceAddress("1.1.2.1/24"))),
                 hasDependencies(contains(new Dependency("ethernet1/1", BIND))))));
+
+    // Confirm comment is extracted
+    assertThat(c, hasInterface(interfaceNameUnit1, hasDescription("unit 1")));
   }
 
   @Test
