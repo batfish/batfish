@@ -233,7 +233,10 @@ public final class Transitions {
     Set<Transition> disjuncts = new HashSet<>(origDisjuncts);
 
     // keep merge until we can't merge any more
-    while (tryMergeDisjunctSet(disjuncts)) {}
+    boolean merged = tryMergeDisjunctSet(disjuncts);
+    while (merged) {
+      merged = tryMergeDisjunctSet(disjuncts);
+    }
 
     return disjuncts;
   }
