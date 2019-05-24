@@ -808,6 +808,9 @@
         "ospf-disable" : [
           "configs/juniper_ospf_disable"
         ],
+        "paloalto_interfaces" : [
+          "configs/palo_alto/interfaces"
+        ],
         "peer_template" : [
           "configs/peer_template"
         ],
@@ -1157,6 +1160,7 @@
         "configs/nxos_route_map_continue" : "PASSED",
         "configs/nxos_system" : "PASSED",
         "configs/openflow" : "PASSED",
+        "configs/palo_alto/interfaces" : "PASSED",
         "configs/peer_template" : "PASSED",
         "configs/pim" : "PASSED",
         "configs/pim_snooping" : "PASSED",
@@ -70081,6 +70085,54 @@
             "  EOF:<EOF>)"
           ]
         },
+        "configs/palo_alto/interfaces" : {
+          "sentences" : [
+            "(palo_alto_configuration",
+            "  (set_line_config_devices",
+            "    SET:'set'",
+            "    CONFIG:'config'",
+            "    DEVICES:'devices'",
+            "    name = (variable",
+            "      VARIABLE:'localhost.localdomain')",
+            "    (statement_config_devices",
+            "      (s_deviceconfig",
+            "        DEVICECONFIG:'deviceconfig'",
+            "        (sd_system",
+            "          SYSTEM:'system'",
+            "          (sds_hostname",
+            "            HOSTNAME:'hostname'",
+            "            name = (variable",
+            "              DOUBLE_QUOTED_STRING:'\"paloalto_interfaces\"')))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line_config_devices",
+            "    SET:'set'",
+            "    CONFIG:'config'",
+            "    DEVICES:'devices'",
+            "    name = (variable",
+            "      VARIABLE:'localhost.localdomain')",
+            "    (statement_config_devices",
+            "      (s_network",
+            "        NETWORK:'network'",
+            "        (sn_interface",
+            "          INTERFACE:'interface'",
+            "          (sni_ethernet",
+            "            ETHERNET:'ethernet'",
+            "            name = (variable",
+            "              VARIABLE:'ethernet1/1')",
+            "            (snie_layer3",
+            "              LAYER3:'layer3'",
+            "              (sniel3_units",
+            "                UNITS:'units'",
+            "                name = (variable",
+            "                  VARIABLE:'ethernet1/1.5')",
+            "                (sniel3_common",
+            "                  (sniel3_mtu",
+            "                    MTU:'mtu'",
+            "                    mtu = DEC:'1500'))))))))",
+            "    NEWLINE:'\\n')",
+            "  EOF:<EOF>)"
+          ]
+        },
         "configs/peer_template" : {
           "sentences" : [
             "(cisco_configuration",
@@ -75263,6 +75315,7 @@
         "nxos_system" : "PASSED",
         "openflow" : "PASSED",
         "ospf-disable" : "PASSED",
+        "paloalto_interfaces" : "WARNINGS",
         "peer_template" : "WARNINGS",
         "pim" : "PASSED",
         "pim_snooping" : "PASSED",
@@ -81339,6 +81392,29 @@
         },
         "configs/nxos_system" : { },
         "configs/openflow" : { },
+        "configs/palo_alto/interfaces" : {
+          "interface" : {
+            "ethernet1/1" : {
+              "definitionLines" : [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17
+              ],
+              "numReferrers" : 0
+            },
+            "ethernet1/1.5" : {
+              "definitionLines" : [
+                15,
+                16,
+                17
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "configs/peer_template" : {
           "bgp template peer" : {
             "RAAS" : {
@@ -82494,6 +82570,9 @@
         ],
         "configs/openflow" : [
           "openflow"
+        ],
+        "configs/palo_alto/interfaces" : [
+          "paloalto_interfaces"
         ],
         "configs/peer_template" : [
           "peer_template"
@@ -89584,6 +89663,18 @@
             }
           ]
         },
+        "paloalto_interfaces" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Interface ethernet1/1 is not in a virtual-router, placing in ~NULL_VRF~ and shutting it down."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Interface ethernet1/1.5 is not in a virtual-router, placing in ~NULL_VRF~ and shutting it down."
+            }
+          ]
+        },
         "peer_template" : {
           "Red flags" : [
             {
@@ -89894,6 +89985,7 @@
         "configs/nxos_route_map_continue" : "PASSED",
         "configs/nxos_system" : "PASSED",
         "configs/openflow" : "PASSED",
+        "configs/palo_alto/interfaces" : "PASSED",
         "configs/peer_template" : "PASSED",
         "configs/pim" : "PASSED",
         "configs/pim_snooping" : "PASSED",
