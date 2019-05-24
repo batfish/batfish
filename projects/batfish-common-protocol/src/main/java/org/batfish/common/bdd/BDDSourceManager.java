@@ -252,6 +252,10 @@ public final class BDDSourceManager {
     return builder.build();
   }
 
+  public BDDFiniteDomain<String> getFiniteDomain() {
+    return _finiteDomain;
+  }
+
   public BDD getOriginatingFromDeviceBDD() {
     return getSourceBDD(SOURCE_ORIGINATING_FROM_DEVICE);
   }
