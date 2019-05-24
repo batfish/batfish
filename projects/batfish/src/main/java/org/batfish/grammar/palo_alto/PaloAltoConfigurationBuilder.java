@@ -85,7 +85,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Snicp_global_protectContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snicp_ike_crypto_profilesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snicp_ipsec_crypto_profilesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_commentContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_link_statusContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_link_stateContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_mtuContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_unitsContext;
@@ -703,7 +703,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void exitSnie_link_status(Snie_link_statusContext ctx) {
+  public void exitSnie_link_state(Snie_link_stateContext ctx) {
     _currentInterface.setActive((ctx.DOWN() == null));
   }
 
