@@ -9,8 +9,10 @@ import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.NetworkConfigurations;
 
+@ParametersAreNonnullByDefault
 public final class Layer1Edge implements Comparable<Layer1Edge> {
   private static final String PROP_NODE1 = "node1";
   private static final String PROP_NODE2 = "node2";
@@ -25,7 +27,7 @@ public final class Layer1Edge implements Comparable<Layer1Edge> {
 
   private final Layer1Node _node2;
 
-  public Layer1Edge(@Nonnull Layer1Node node1, @Nonnull Layer1Node node2) {
+  public Layer1Edge(Layer1Node node1, Layer1Node node2) {
     _node1 = node1;
     _node2 = node2;
   }
@@ -48,7 +50,7 @@ public final class Layer1Edge implements Comparable<Layer1Edge> {
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(@Nullable Object obj) {
     if (this == obj) {
       return true;
     }
