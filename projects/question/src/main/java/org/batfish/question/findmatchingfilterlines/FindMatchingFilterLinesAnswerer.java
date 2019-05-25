@@ -2,21 +2,18 @@ package org.batfish.question.findmatchingfilterlines;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.toHeaderSpaceBuilder;
-import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referencedSources;
 import static org.batfish.datamodel.table.TableMetadata.toColumnMap;
 import static org.batfish.question.FilterQuestionUtils.getSpecifiedFilters;
-import static org.batfish.question.FilterQuestionUtils.resolveSources;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
@@ -25,6 +22,7 @@ import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
+import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
@@ -48,7 +46,6 @@ import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.IpSpaceSpecifier;
-import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierFactories;
 
@@ -108,7 +105,6 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
       @Nullable LineAction action,
       Multimap<String, String> acls,
       SpecifierContext ctxt) {
-    Map<String, ColumnMetadata> metadataMap = toColumnMap(COLUMN_METADATA);
     Map<String, Configuration> configs = ctxt.getConfigs();
     List<Row> rows = new ArrayList<>();
 
@@ -124,47 +120,71 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
     BDD headerSpaceBdd =
         new IpAccessListToBddImpl(bddPacket, emptyMgr, ImmutableMap.of(), ImmutableMap.of())
             .toBdd(headerSpaceMatcher);
+    Map<String, BDDSourceManager> mgrMap = BDDSourceManager.forNetwork(bddPacket, configs);
 
     for (String nodeName : acls.keySet()) {
-      Configuration node = configs.get(nodeName);
-      Set<String> inactiveIfaces =
-          Sets.difference(node.getAllInterfaces().keySet(), node.activeInterfaces());
-      Set<String> activeSources =
-          Sets.difference(
-              resolveSources(ctxt, LocationSpecifier.ALL_LOCATIONS, node.getHostname()),
-              inactiveIfaces);
-      for (String aclName : acls.get(nodeName)) {
-        IpAccessList acl = node.getIpAccessLists().get(aclName);
-        Set<String> referencedSources = referencedSources(node.getIpAccessLists(), acl);
-        BDDSourceManager mgr =
-            BDDSourceManager.forSources(bddPacket, activeSources, referencedSources);
-        if (mgr.isValidValue().isZero()) {
-          continue;
-        }
+      rows.addAll(
+          getRowsForNode(
+              configs.get(nodeName),
+              bddPacket,
+              mgrMap.get(nodeName),
+              acls.get(nodeName),
+              headerSpaceBdd,
+              action));
+    }
+    return rows;
+  }
 
-        IpAccessListToBdd bddConverter =
-            new IpAccessListToBddImpl(bddPacket, mgr, node.getIpAccessLists(), node.getIpSpaces());
+  private static List<Row> getRowsForNode(
+      Configuration node,
+      BDDPacket bddPacket,
+      BDDSourceManager mgr,
+      Collection<String> acls,
+      BDD headerSpaceBdd,
+      @Nullable LineAction action) {
+    List<Row> rows = new ArrayList<>();
+    String nodeName = node.getHostname();
+    MemoizedIpAccessListToBdd bddConverter =
+        new MemoizedIpAccessListToBdd(bddPacket, mgr, node.getIpAccessLists(), node.getIpSpaces());
+    for (String aclName : acls) {
+      rows.addAll(
+          getRowsForAcl(
+              node.getIpAccessLists().get(aclName),
+              headerSpaceBdd,
+              bddConverter,
+              action,
+              nodeName));
+    }
+    return rows;
+  }
 
-        List<IpAccessListLine> lines = acl.getLines();
-        for (int lineIndex = 0; lineIndex < lines.size(); lineIndex++) {
-          IpAccessListLine line = lines.get(lineIndex);
-          if (action != null && action != line.getAction()) {
-            continue;
-          }
-          BDD lineBdd = bddConverter.toBdd(line.getMatchCondition());
+  private static List<Row> getRowsForAcl(
+      IpAccessList acl,
+      BDD headerSpaceBdd,
+      IpAccessListToBdd bddConverter,
+      @Nullable LineAction action,
+      String nodeName) {
+    List<Row> rows = new ArrayList<>();
+    Map<String, ColumnMetadata> metadataMap = toColumnMap(COLUMN_METADATA);
 
-          // If there is any overlap between the header space BDD and this line, add it to getRows
-          if (!headerSpaceBdd.and(lineBdd).isZero()) {
-            rows.add(
-                Row.builder(metadataMap)
-                    .put(COL_NODE, nodeName)
-                    .put(COL_FILTER, acl.getName())
-                    .put(COL_LINE, firstNonNull(line.getName(), line.toString()))
-                    .put(COL_LINE_INDEX, lineIndex)
-                    .put(COL_ACTION, line.getAction())
-                    .build());
-          }
-        }
+    List<IpAccessListLine> lines = acl.getLines();
+    for (int lineIndex = 0; lineIndex < lines.size(); lineIndex++) {
+      IpAccessListLine line = lines.get(lineIndex);
+      if (action != null && action != line.getAction()) {
+        continue;
+      }
+      BDD lineBdd = bddConverter.toBdd(line.getMatchCondition());
+
+      // If there is any overlap between the header space BDD and this line, add it to getRows
+      if (!headerSpaceBdd.and(lineBdd).isZero()) {
+        rows.add(
+            Row.builder(metadataMap)
+                .put(COL_NODE, nodeName)
+                .put(COL_FILTER, acl.getName())
+                .put(COL_LINE, firstNonNull(line.getName(), line.toString()))
+                .put(COL_LINE_INDEX, lineIndex)
+                .put(COL_ACTION, line.getAction())
+                .build());
       }
     }
     return rows;
