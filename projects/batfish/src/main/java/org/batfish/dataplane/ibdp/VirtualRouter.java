@@ -1919,7 +1919,7 @@ public class VirtualRouter implements Serializable {
       // This route could not be exported due to export policy
       _prefixTracer.filtered(
           exportCandidate.getNetwork(),
-          requireNonNull(remoteVr).getHostname(),
+          remoteConfigId.getHostname(),
           remoteIp,
           remoteConfigId.getVrfName(),
           ourConfig.getExportPolicy(),
@@ -1935,7 +1935,7 @@ public class VirtualRouter implements Serializable {
     Bgpv4Route transformedOutgoingRoute = transformedOutgoingRouteBuilder.build();
     _prefixTracer.sentTo(
         transformedOutgoingRoute.getNetwork(),
-        requireNonNull(remoteVr).getHostname(),
+        remoteConfigId.getHostname(),
         remoteIp,
         remoteConfigId.getVrfName(),
         ourConfig.getExportPolicy());

@@ -241,11 +241,11 @@ public class BgpProtocolHelper {
    * Convert a route that is neither a {@link BgpRoute} nor a {@link GeneratedRoute} to a {@link
    * Bgpv4Route.Builder}.
    *
-   * <p>Intended for converting main RIB routes into their BGP equivalents and merging into local
-   * BGP RIB.
+   * <p>Intended for converting main RIB routes into their BGP equivalents before passing {@code
+   * routeDecorator} to the export policy
    *
-   * <p>The route returned will be will be an eBGP route, with default local preference, incomplete
-   * origin type, and most other fields unset.
+   * <p>The builder returned will will have default local preference, incomplete origin type, and
+   * most other fields unset.
    */
   @Nonnull
   public static Bgpv4Route.Builder convertNonBgpRouteToBgpRoute(
@@ -267,8 +267,7 @@ public class BgpProtocolHelper {
         // TODO: support customization of route preference
         .setLocalPreference(BgpRoute.DEFAULT_LOCAL_PREFERENCE)
         .setReceivedFromIp(protocol == RoutingProtocol.BGP ? nextHopIp : Ip.ZERO)
-        .setNextHopIp(nextHopIp)
-        .setTag(route.getTag());
+        .setNextHopIp(nextHopIp);
     // Let everything else default to unset/empty/etc.
   }
 
