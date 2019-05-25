@@ -121,7 +121,7 @@ public final class Transitions {
     return stack;
   }
 
-  static @Nullable Transition mergeComposed(Transition t1, Transition t2) {
+  public static @Nullable Transition mergeComposed(Transition t1, Transition t2) {
     if (t1 == ZERO || t2 == ZERO) {
       return ZERO;
     }
