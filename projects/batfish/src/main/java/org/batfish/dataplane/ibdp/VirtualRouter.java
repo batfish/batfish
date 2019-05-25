@@ -1914,7 +1914,6 @@ public class VirtualRouter implements Serializable {
             ourConfigId.getVrfName(),
             Direction.OUT);
 
-    VirtualRouter remoteVr = getRemoteBgpNeighborVR(remoteConfigId, allNodes);
     if (!shouldExport) {
       // This route could not be exported due to export policy
       _prefixTracer.filtered(
