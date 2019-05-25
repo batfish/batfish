@@ -11,6 +11,7 @@ sn_interface
     INTERFACE
     (
         sni_ethernet
+        | sni_tunnel
     )
 ;
 
@@ -33,6 +34,11 @@ sni_ethernet
         | snie_layer3
         | snie_link_state
     )
+;
+
+sni_tunnel
+:
+    TUNNEL snit_units?
 ;
 
 snie_layer3
@@ -101,4 +107,17 @@ sniel3_units
 sniel3u_tag
 :
     TAG tag = DEC
+;
+
+snit_unit
+:
+    name = variable
+    (
+        if_common
+    )?
+;
+
+snit_units
+:
+    UNITS snit_unit?
 ;
