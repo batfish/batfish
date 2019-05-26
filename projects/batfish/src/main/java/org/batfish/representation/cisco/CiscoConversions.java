@@ -11,7 +11,10 @@ import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpDefa
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpGenerationPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerImportPolicyName;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeIcmpObjectGroupAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeProtocolObjectGroupAclName;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeServiceObjectAclName;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeServiceObjectGroupAclName;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -746,7 +749,7 @@ class CiscoConversions {
                 IpAccessListLine.accepting()
                     .setMatchCondition(icmpTypeObjectGroup.toAclLineMatchExpr())
                     .build()))
-        .setName(computeProtocolObjectGroupAclName(icmpTypeObjectGroup.getName()))
+        .setName(computeIcmpObjectGroupAclName(icmpTypeObjectGroup.getName()))
         .setSourceName(icmpTypeObjectGroup.getName())
         .setSourceType(CiscoStructureType.ICMP_TYPE_OBJECT_GROUP.getDescription())
         .build();
@@ -772,7 +775,7 @@ class CiscoConversions {
                 IpAccessListLine.accepting()
                     .setMatchCondition(serviceObject.toAclLineMatchExpr())
                     .build()))
-        .setName(CiscoConfiguration.computeServiceObjectAclName(serviceObject.getName()))
+        .setName(computeServiceObjectAclName(serviceObject.getName()))
         .setSourceName(serviceObject.getName())
         .setSourceType(CiscoStructureType.SERVICE_OBJECT.getDescription())
         .build();
@@ -785,7 +788,7 @@ class CiscoConversions {
                 IpAccessListLine.accepting()
                     .setMatchCondition(serviceObjectGroup.toAclLineMatchExpr())
                     .build()))
-        .setName(CiscoConfiguration.computeServiceObjectGroupAclName(serviceObjectGroup.getName()))
+        .setName(computeServiceObjectGroupAclName(serviceObjectGroup.getName()))
         .setSourceName(serviceObjectGroup.getName())
         .setSourceType(CiscoStructureType.SERVICE_OBJECT_GROUP.getDescription())
         .build();
