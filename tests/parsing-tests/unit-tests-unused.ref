@@ -3269,7 +3269,6 @@
         "Source_Lines" : {
           "filename" : "configs/palo_alto/interfaces",
           "lines" : [
-            15,
             16,
             17,
             18
