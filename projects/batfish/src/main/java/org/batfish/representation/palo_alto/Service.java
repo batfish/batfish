@@ -1,5 +1,7 @@
 package org.batfish.representation.palo_alto;
 
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeServiceGroupMemberAclName;
+
 import com.google.common.collect.ImmutableList;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -75,7 +77,7 @@ public final class Service implements ServiceGroupMember {
     headerSpaceBuilder.setDstPorts(_ports.stream().map(SubRange::new).collect(Collectors.toSet()));
     headerSpaceBuilder.setIpProtocols(ImmutableList.of(_protocol));
     return IpAccessList.builder()
-        .setName(_name)
+        .setName(computeServiceGroupMemberAclName(vsys.getName(), _name))
         .setLines(
             ImmutableList.of(
                 IpAccessListLine.builder()
