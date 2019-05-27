@@ -2,12 +2,22 @@ package org.batfish.job;
 
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Ordering;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.function.Function;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.AsPathAccessList;
+import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Ip6AccessList;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.Route6FilterList;
+import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.representation.aws.AwsConfiguration;
@@ -25,6 +35,36 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     super(settings);
     _configObject = configObject;
     _name = name;
+  }
+
+  /**
+   * Sanity checks the given map from name-of-thing to thing-with-name for name consistency. If the
+   * names are not consistent, warns and does not convert them.
+   *
+   * <p>Hopefully this will only happen during new parser development, and will help authors of
+   * those new parsers get it right.
+   */
+  private static <T> ImmutableSortedMap<String, T> verifyAndToImmutableMap(
+      @Nullable Map<String, T> map, Function<T, String> keyFn, Warnings w) {
+    if (map == null || map.isEmpty()) {
+      return ImmutableSortedMap.of();
+    }
+    return map.entrySet().stream()
+        .filter(
+            e -> {
+              String key = keyFn.apply(e.getValue());
+              if (key.equals(e.getKey())) {
+                return true;
+              }
+              w.redFlag(
+                  String.format(
+                      "Batfish internal error: invalid entry %s -> %s named %s",
+                      e.getKey(), e.getValue(), key));
+              return false;
+            })
+        .collect(
+            ImmutableSortedMap.toImmutableSortedMap(
+                Ordering.natural(), Entry::getKey, Entry::getValue));
   }
 
   /**
@@ -46,12 +86,15 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     }
     c.simplifyRoutingPolicies();
     c.computeRoutingPolicySources(w);
-    c.setAsPathAccessLists(ImmutableSortedMap.copyOf(c.getAsPathAccessLists()));
-    c.setCommunityLists(ImmutableSortedMap.copyOf(c.getCommunityLists()));
-    c.setIpAccessLists(ImmutableSortedMap.copyOf(c.getIpAccessLists()));
-    c.setIp6AccessLists(ImmutableSortedMap.copyOf(c.getIp6AccessLists()));
-    c.setRouteFilterLists(ImmutableSortedMap.copyOf(c.getRouteFilterLists()));
-    c.setRoute6FilterLists(ImmutableSortedMap.copyOf(c.getRoute6FilterLists()));
+    c.setAsPathAccessLists(
+        verifyAndToImmutableMap(c.getAsPathAccessLists(), AsPathAccessList::getName, w));
+    c.setCommunityLists(verifyAndToImmutableMap(c.getCommunityLists(), CommunityList::getName, w));
+    c.setIpAccessLists(verifyAndToImmutableMap(c.getIpAccessLists(), IpAccessList::getName, w));
+    c.setIp6AccessLists(verifyAndToImmutableMap(c.getIp6AccessLists(), Ip6AccessList::getName, w));
+    c.setRouteFilterLists(
+        verifyAndToImmutableMap(c.getRouteFilterLists(), RouteFilterList::getName, w));
+    c.setRoute6FilterLists(
+        verifyAndToImmutableMap(c.getRoute6FilterLists(), Route6FilterList::getName, w));
   }
 
   @Override

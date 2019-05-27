@@ -94,14 +94,19 @@ sniel3_null
     null_rest_of_line
 ;
 
-sniel3_units
+sniel3_unit
 :
-    UNITS name = variable
+    name = variable
     (
         if_common
         | sniel3_common
         | sniel3u_tag
     )
+;
+
+sniel3_units
+:
+    UNITS sniel3_unit?
 ;
 
 sniel3u_tag
