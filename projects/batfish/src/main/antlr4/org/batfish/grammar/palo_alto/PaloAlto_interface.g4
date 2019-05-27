@@ -38,7 +38,10 @@ sni_ethernet
 
 sni_tunnel
 :
-    TUNNEL snit_units?
+    TUNNEL (
+        if_common
+        | snit_units
+    )?
 ;
 
 snie_layer3
