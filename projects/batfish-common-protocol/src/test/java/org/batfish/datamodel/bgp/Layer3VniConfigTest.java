@@ -8,7 +8,6 @@ import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.bgp.Layer3VniConfig.Builder;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.junit.Rule;
 import org.junit.Test;
@@ -20,85 +19,36 @@ public class Layer3VniConfigTest {
 
   @Test
   public void testEquals() {
-    Layer3VniConfig vni =
-        new Builder()
+    Layer3VniConfig.Builder builder =
+        Layer3VniConfig.builder()
             .setVni(1)
             .setVrf("v")
             .setRouteDistinguisher(RouteDistinguisher.from(65555L, 1))
             .setRouteTarget(ExtendedCommunity.of(0, 1, 1))
             .setImportRouteTarget(importRtPatternForAnyAs(1))
-            .setAdvertisev4Unicast(false)
-            .build();
+            .setAdvertiseV4Unicast(false);
+    Layer3VniConfig vni = builder.build();
     new EqualsTester()
-        .addEqualityGroup(
-            vni,
-            vni,
-            new Builder()
-                .setVni(1)
-                .setVrf("v")
-                .setRouteDistinguisher(RouteDistinguisher.from(65555L, 1))
-                .setRouteTarget(ExtendedCommunity.of(0, 1, 1))
-                .setImportRouteTarget(importRtPatternForAnyAs(1))
-                .setAdvertisev4Unicast(false)
-                .build())
-        .addEqualityGroup(
-            new Builder()
-                .setVni(2)
-                .setVrf("v")
-                .setRouteDistinguisher(RouteDistinguisher.from(65555L, 1))
-                .setRouteTarget(ExtendedCommunity.of(0, 1, 1))
-                .setImportRouteTarget(importRtPatternForAnyAs(1))
-                .setAdvertisev4Unicast(false)
-                .build())
-        .addEqualityGroup(
-            new Builder()
-                .setVni(1)
-                .setVrf("v2")
-                .setRouteDistinguisher(RouteDistinguisher.from(65555L, 1))
-                .setRouteTarget(ExtendedCommunity.of(0, 1, 1))
-                .setImportRouteTarget(importRtPatternForAnyAs(1))
-                .setAdvertisev4Unicast(false)
-                .build())
-        .addEqualityGroup(
-            new Builder()
-                .setVni(1)
-                .setVrf("v")
-                .setRouteDistinguisher(RouteDistinguisher.from(65555L, 2))
-                .setRouteTarget(ExtendedCommunity.of(0, 1, 1))
-                .setImportRouteTarget(importRtPatternForAnyAs(1))
-                .setAdvertisev4Unicast(false)
-                .build())
-        .addEqualityGroup(
-            new Builder()
-                .setVni(1)
-                .setVrf("v")
-                .setRouteDistinguisher(RouteDistinguisher.from(65555L, 0))
-                .setRouteTarget(ExtendedCommunity.of(0, 2, 1))
-                .setImportRouteTarget("^2:1$")
-                .setAdvertisev4Unicast(false)
-                .build())
-        .addEqualityGroup(
-            new Builder()
-                .setVni(1)
-                .setVrf("v")
-                .setRouteDistinguisher(RouteDistinguisher.from(65555L, 0))
-                .setRouteTarget(ExtendedCommunity.of(0, 1, 1))
-                .setImportRouteTarget(importRtPatternForAnyAs(1))
-                .setAdvertisev4Unicast(true)
-                .build())
+        .addEqualityGroup(vni, vni, builder.build())
+        .addEqualityGroup(builder.setVni(2).build())
+        .addEqualityGroup(builder.setVrf("v2").build())
+        .addEqualityGroup(builder.setRouteDistinguisher(RouteDistinguisher.from(65555L, 2)).build())
+        .addEqualityGroup(builder.setRouteTarget(ExtendedCommunity.of(0, 2, 1)).build())
+        .addEqualityGroup(builder.setImportRouteTarget(importRtPatternForAnyAs(2)).build())
+        .addEqualityGroup(builder.setAdvertiseV4Unicast(true).build())
         .testEquals();
   }
 
   @Test
   public void testJavaSerialization() {
     Layer3VniConfig vni =
-        new Builder()
+        Layer3VniConfig.builder()
             .setVni(1)
             .setVrf("v")
             .setRouteDistinguisher(RouteDistinguisher.from(65555L, 1))
             .setRouteTarget(ExtendedCommunity.of(0, 1, 1))
             .setImportRouteTarget(importRtPatternForAnyAs(1))
-            .setAdvertisev4Unicast(false)
+            .setAdvertiseV4Unicast(false)
             .build();
     assertThat(SerializationUtils.clone(vni), equalTo(vni));
   }
@@ -106,13 +56,13 @@ public class Layer3VniConfigTest {
   @Test
   public void testJsonSerialization() throws IOException {
     Layer3VniConfig vni =
-        new Builder()
+        Layer3VniConfig.builder()
             .setVni(1)
             .setVrf("v")
             .setRouteDistinguisher(RouteDistinguisher.from(65555L, 1))
             .setRouteTarget(ExtendedCommunity.of(0, 1, 1))
             .setImportRouteTarget(importRtPatternForAnyAs(1))
-            .setAdvertisev4Unicast(false)
+            .setAdvertiseV4Unicast(false)
             .build();
     assertThat(BatfishObjectMapper.clone(vni, Layer3VniConfig.class), equalTo(vni));
   }

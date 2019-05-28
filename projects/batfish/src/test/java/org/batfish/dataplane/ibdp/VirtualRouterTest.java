@@ -67,7 +67,6 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Layer3VniConfig;
-import org.batfish.datamodel.bgp.Layer3VniConfig.Builder;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.eigrp.EigrpMetric;
@@ -273,13 +272,13 @@ public class VirtualRouterTest {
                 new EvpnAddressFamily(
                     ImmutableSet.of(),
                     ImmutableSet.of(
-                        new Builder()
+                        Layer3VniConfig.builder()
                             .setVni(1)
                             .setVrf(DEFAULT_VRF_NAME)
                             .setRouteDistinguisher(RouteDistinguisher.from(routerId, 2))
                             .setRouteTarget(ExtendedCommunity.target(65500, 10001))
                             .setImportRouteTarget(Layer3VniConfig.importRtPatternForAnyAs(1))
-                            .setAdvertisev4Unicast(false)
+                            .setAdvertiseV4Unicast(false)
                             .build())))
             .build();
     BgpProcess bgpProcess =

@@ -28,28 +28,28 @@ public final class Layer3VniConfig implements Serializable, Comparable<Layer3Vni
   private static final String PROP_ROUTE_DISTINGUISHER = "routeDistinguisher";
   private static final String PROP_ROUTE_TARGET = "routeTarget";
   private static final String PROP_IMPORT_ROUTE_TARGET = "importRouteTarget";
-  private static final String PROP_ADVERTISE_V4_UNICAST = "advertiseV4UnicastRoutes";
+  private static final String PROP_ADVERTISE_V4_UNICAST = "advertiseV4Unicast";
 
   private final int _vni;
   @Nonnull private final String _vrf;
   @Nonnull private final RouteDistinguisher _rd;
   @Nonnull private final ExtendedCommunity _routeTarget;
   @Nonnull private final String _importRouteTarget;
-  private final boolean _advertisev4Unicast;
+  private final boolean _advertiseV4Unicast;
 
-  public Layer3VniConfig(
+  private Layer3VniConfig(
       int vni,
       String vrf,
       RouteDistinguisher rd,
       ExtendedCommunity routeTarget,
       String importRouteTarget,
-      boolean advertisev4Unicast) {
+      boolean advertiseV4Unicast) {
     _vni = vni;
     _vrf = vrf;
     _rd = rd;
     _routeTarget = routeTarget;
     _importRouteTarget = importRouteTarget;
-    _advertisev4Unicast = advertisev4Unicast;
+    _advertiseV4Unicast = advertiseV4Unicast;
   }
 
   @JsonCreator
@@ -59,7 +59,7 @@ public final class Layer3VniConfig implements Serializable, Comparable<Layer3Vni
       @Nullable @JsonProperty(PROP_ROUTE_DISTINGUISHER) RouteDistinguisher rd,
       @Nullable @JsonProperty(PROP_ROUTE_TARGET) ExtendedCommunity routeTarget,
       @Nullable @JsonProperty(PROP_IMPORT_ROUTE_TARGET) String importRouteTarget,
-      @Nullable @JsonProperty(PROP_ADVERTISE_V4_UNICAST) Boolean advertisev4Unicast) {
+      @Nullable @JsonProperty(PROP_ADVERTISE_V4_UNICAST) Boolean advertiseV4Unicast) {
     checkArgument(vni != null, "Missing %s", PROP_VNI);
     checkArgument(vrf != null, "Missing %s", PROP_VRF);
     checkArgument(rd != null, "Missing %s", PROP_ROUTE_DISTINGUISHER);
@@ -71,7 +71,7 @@ public final class Layer3VniConfig implements Serializable, Comparable<Layer3Vni
         .setRouteDistinguisher(rd)
         .setRouteTarget(routeTarget)
         .setImportRouteTarget(importRouteTarget)
-        .setAdvertisev4Unicast(firstNonNull(advertisev4Unicast, Boolean.FALSE))
+        .setAdvertiseV4Unicast(firstNonNull(advertiseV4Unicast, Boolean.FALSE))
         .build();
   }
 
@@ -112,8 +112,8 @@ public final class Layer3VniConfig implements Serializable, Comparable<Layer3Vni
    * #getRouteDistinguisher()}
    */
   @JsonProperty(PROP_ADVERTISE_V4_UNICAST)
-  public boolean getAdvertisev4Unicast() {
-    return _advertisev4Unicast;
+  public boolean getAdvertiseV4Unicast() {
+    return _advertiseV4Unicast;
   }
 
   @Override
@@ -129,7 +129,8 @@ public final class Layer3VniConfig implements Serializable, Comparable<Layer3Vni
         && Objects.equals(_vrf, vniConfig._vrf)
         && Objects.equals(_rd, vniConfig._rd)
         && Objects.equals(_routeTarget, vniConfig._routeTarget)
-        && _advertisev4Unicast == vniConfig._advertisev4Unicast;
+        && Objects.equals(_importRouteTarget, vniConfig._importRouteTarget)
+        && _advertiseV4Unicast == vniConfig._advertiseV4Unicast;
   }
 
   @Override
@@ -142,7 +143,7 @@ public final class Layer3VniConfig implements Serializable, Comparable<Layer3Vni
     return Comparator.comparing(Layer3VniConfig::getVrf)
         .thenComparing(Layer3VniConfig::getRouteDistinguisher)
         .thenComparing(Layer3VniConfig::getRouteTarget)
-        .thenComparing(Layer3VniConfig::getAdvertisev4Unicast)
+        .thenComparing(Layer3VniConfig::getAdvertiseV4Unicast)
         .compare(this, o);
   }
 
@@ -153,7 +154,7 @@ public final class Layer3VniConfig implements Serializable, Comparable<Layer3Vni
         .add(PROP_VRF, _vrf)
         .add(PROP_ROUTE_DISTINGUISHER, _rd)
         .add(PROP_ROUTE_TARGET, _routeTarget)
-        .add(PROP_ADVERTISE_V4_UNICAST, _advertisev4Unicast)
+        .add(PROP_ADVERTISE_V4_UNICAST, _advertiseV4Unicast)
         .toString();
   }
 
@@ -164,6 +165,10 @@ public final class Layer3VniConfig implements Serializable, Comparable<Layer3Vni
     return String.format("^\\d+:%d$", vni);
   }
 
+  public static Builder builder() {
+    return new Builder();
+  }
+
   public static final class Builder {
 
     @Nullable private Integer _vni;
@@ -171,7 +176,9 @@ public final class Layer3VniConfig implements Serializable, Comparable<Layer3Vni
     @Nullable private RouteDistinguisher _rd;
     @Nullable private ExtendedCommunity _routeTarget;
     @Nullable private String _importRouteTarget;
-    private boolean _advertisev4Unicast;
+    private boolean _advertiseV4Unicast;
+
+    private Builder() {}
 
     public Builder setVni(int vni) {
       _vni = vni;
@@ -198,8 +205,8 @@ public final class Layer3VniConfig implements Serializable, Comparable<Layer3Vni
       return this;
     }
 
-    public Builder setAdvertisev4Unicast(boolean advertisev4Unicast) {
-      _advertisev4Unicast = advertisev4Unicast;
+    public Builder setAdvertiseV4Unicast(boolean advertisev4Unicast) {
+      _advertiseV4Unicast = advertisev4Unicast;
       return this;
     }
 
@@ -216,7 +223,7 @@ public final class Layer3VniConfig implements Serializable, Comparable<Layer3Vni
         throw new IllegalArgumentException(
             String.format("Invalid patthern %s for %s", importRt, PROP_IMPORT_ROUTE_TARGET));
       }
-      return new Layer3VniConfig(_vni, _vrf, _rd, _routeTarget, importRt, _advertisev4Unicast);
+      return new Layer3VniConfig(_vni, _vrf, _rd, _routeTarget, importRt, _advertiseV4Unicast);
     }
   }
 }

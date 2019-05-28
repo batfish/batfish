@@ -58,7 +58,6 @@ import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Layer2VniConfig;
 import org.batfish.datamodel.bgp.Layer3VniConfig;
-import org.batfish.datamodel.bgp.Layer3VniConfig.Builder;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -217,13 +216,13 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
           if (evpnConfig.getAdvertiseDefaultGw()) {
             // Advertise VTEP gateway IP address for the L2 VNI as type 3 route
             l3Vnis.add(
-                new Builder()
+                Layer3VniConfig.builder()
                     .setVni(vxlan.getVni())
                     .setVrf(bgpVrf.getVrfName())
                     .setRouteDistinguisher(rd)
                     .setRouteTarget(rt)
                     .setImportRouteTarget(importRtPatternForAnyAs(vxlan.getVni()))
-                    .setAdvertisev4Unicast(false)
+                    .setAdvertiseV4Unicast(false)
                     .build());
           }
         }
@@ -242,13 +241,13 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
                           vniToIndex.get(l3Vni));
                   ExtendedCommunity rt = ExtendedCommunity.target(localAs, l3Vni);
                   l3Vnis.add(
-                      new Builder()
+                      Layer3VniConfig.builder()
                           .setVni(l3Vni)
                           .setVrf(aBgpVrf.getVrfName())
                           .setRouteDistinguisher(rd)
                           .setRouteTarget(rt)
                           .setImportRouteTarget(importRtPatternForAnyAs(l3Vni))
-                          .setAdvertisev4Unicast(evpnConfig.getAdvertiseIpv4Unicast() != null)
+                          .setAdvertiseV4Unicast(evpnConfig.getAdvertiseIpv4Unicast() != null)
                           .build());
                 }
               });
