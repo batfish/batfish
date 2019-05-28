@@ -3834,6 +3834,12 @@ public class CiscoGrammarTest {
                 IkePhase1ProposalMatchers.hasHashingAlgorithm(IkeHashingAlgorithm.SHA1),
                 IkePhase1ProposalMatchers.hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP2),
                 IkePhase1ProposalMatchers.hasLifeTimeSeconds(86400))));
+    assertThat(
+        c,
+        hasIkePhase1Proposal(
+            "30",
+            IkePhase1ProposalMatchers.hasAuthenticationMethod(
+                IkeAuthenticationMethod.RSA_ENCRYPTED_NONCES)));
   }
 
   @Test

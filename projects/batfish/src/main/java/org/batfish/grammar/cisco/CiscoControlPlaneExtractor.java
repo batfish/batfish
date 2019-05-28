@@ -2048,6 +2048,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitCispol_authentication(Cispol_authenticationContext ctx) {
     if (ctx.PRE_SHARE() != null) {
       _currentIsakmpPolicy.setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS);
+    } else if (ctx.RSA_ENCR() != null) {
+      _currentIsakmpPolicy.setAuthenticationMethod(IkeAuthenticationMethod.RSA_ENCRYPTED_NONCES);
     } else if (ctx.RSA_SIG() != null) {
       _currentIsakmpPolicy.setAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES);
     } else {
