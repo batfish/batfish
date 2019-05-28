@@ -119,8 +119,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
           _sessionProperties,
           _fromBgpProcess,
           _toBgpProcess,
-          convertGeneratedRouteToBgp((GeneratedRoute) route, _fromBgpProcess.getRouterId(), false),
-          Bgpv4Route.builder());
+          convertGeneratedRouteToBgp((GeneratedRoute) route, _fromBgpProcess.getRouterId(), false));
     } else if (route instanceof Bgpv4Route) {
       return BgpProtocolHelper.transformBgpRoutePreExport(
           _fromNeighbor,
@@ -128,8 +127,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
           _sessionProperties,
           _fromBgpProcess,
           _toBgpProcess,
-          (Bgpv4Route) route,
-          Bgpv4Route.builder());
+          (Bgpv4Route) route);
     } else {
       RoutingProtocol protocol =
           _sessionProperties.isEbgp() ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
@@ -145,8 +143,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
                   _sessionProperties.getTailIp(),
                   protocol.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS),
                   protocol)
-              .build(),
-          Bgpv4Route.builder());
+              .build());
     }
   }
 
