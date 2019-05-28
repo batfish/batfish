@@ -43,6 +43,7 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesQuestion.Action;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.IpSpaceSpecifier;
@@ -102,7 +103,7 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
   @VisibleForTesting
   static List<Row> getRows(
       PacketHeaderConstraints phc,
-      @Nullable LineAction action,
+      @Nullable Action action,
       Multimap<String, String> acls,
       SpecifierContext ctxt) {
     Map<String, Configuration> configs = ctxt.getConfigs();
@@ -141,7 +142,7 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
       BDDSourceManager mgr,
       Collection<String> acls,
       BDD headerSpaceBdd,
-      @Nullable LineAction action) {
+      @Nullable Action action) {
     List<Row> rows = new ArrayList<>();
     String nodeName = node.getHostname();
     MemoizedIpAccessListToBdd bddConverter =
@@ -162,7 +163,7 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
       IpAccessList acl,
       BDD headerSpaceBdd,
       IpAccessListToBdd bddConverter,
-      @Nullable LineAction action,
+      @Nullable Action action,
       String nodeName) {
     List<Row> rows = new ArrayList<>();
     Map<String, ColumnMetadata> metadataMap = toColumnMap(COLUMN_METADATA);
@@ -170,7 +171,7 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
     List<IpAccessListLine> lines = acl.getLines();
     for (int lineIndex = 0; lineIndex < lines.size(); lineIndex++) {
       IpAccessListLine line = lines.get(lineIndex);
-      if (action != null && action != line.getAction()) {
+      if (!actionMatches(action, line.getAction())) {
         continue;
       }
       BDD lineBdd = bddConverter.toBdd(line.getMatchCondition());
@@ -213,5 +214,11 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
                 .map(Entry::getIpSpace)
                 .collect(ImmutableList.toImmutableList())),
         EmptyIpSpace.INSTANCE);
+  }
+
+  private static boolean actionMatches(@Nullable Action action, LineAction lineAction) {
+    return action == null
+        || action == Action.PERMIT && lineAction == LineAction.PERMIT
+        || action == Action.DENY && lineAction == LineAction.DENY;
   }
 }

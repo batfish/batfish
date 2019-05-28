@@ -1,14 +1,12 @@
 package org.batfish.question.findmatchingfilterlines;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.specifier.AllFiltersFilterSpecifier;
@@ -27,7 +25,7 @@ public final class FindMatchingFilterLinesQuestion extends Question {
 
   private static final boolean DEFAULT_IGNORE_COMPOSITES = true;
 
-  @Nullable private final LineAction _action;
+  @Nullable private final Action _action;
   @Nullable private final String _filters;
   @Nonnull private final FilterSpecifier _filterSpecifier;
   @Nonnull private final PacketHeaderConstraints _headerConstraints;
@@ -35,30 +33,27 @@ public final class FindMatchingFilterLinesQuestion extends Question {
   @Nullable private final String _nodes;
   @Nonnull private final NodeSpecifier _nodeSpecifier;
 
+  /** Enum representing options for {@link FindMatchingFilterLinesQuestion#getAction()} */
+  public enum Action {
+    PERMIT,
+    DENY
+  }
+
   @JsonCreator
   private static FindMatchingFilterLinesQuestion create(
-      @JsonProperty(PROP_ACTION) @Nullable String action,
+      @JsonProperty(PROP_ACTION) @Nullable Action action,
       @JsonProperty(PROP_FILTERS) @Nullable String filters,
       @JsonProperty(PROP_HEADERS) @Nullable PacketHeaderConstraints headerConstraints,
       @JsonProperty(PROP_IGNORE_COMPOSITES) @Nullable Boolean ignoreComposites,
       @JsonProperty(PROP_NODES) @Nullable String nodes) {
-    LineAction lineAction = null;
-    if (action != null) {
-      if (action.equalsIgnoreCase("permit")) {
-        lineAction = LineAction.PERMIT;
-      } else if (action.equalsIgnoreCase("deny")) {
-        lineAction = LineAction.DENY;
-      }
-      checkArgument(lineAction != null, "Unrecognized action: ", action);
-    }
     return new FindMatchingFilterLinesQuestion(
-        nodes, filters, lineAction, headerConstraints, ignoreComposites);
+        nodes, filters, action, headerConstraints, ignoreComposites);
   }
 
   FindMatchingFilterLinesQuestion(
       @Nullable String nodes,
       @Nullable String filters,
-      @Nullable LineAction action,
+      @Nullable Action action,
       @Nullable PacketHeaderConstraints headerConstraints,
       @Nullable Boolean ignoreComposites) {
     _action = action;
@@ -88,7 +83,7 @@ public final class FindMatchingFilterLinesQuestion extends Question {
 
   @JsonProperty(PROP_ACTION)
   @Nullable
-  public LineAction getAction() {
+  public Action getAction() {
     return _action;
   }
 

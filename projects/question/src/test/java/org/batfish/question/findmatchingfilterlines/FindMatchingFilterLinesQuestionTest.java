@@ -7,8 +7,8 @@ import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.PacketHeaderConstraints;
+import org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesQuestion.Action;
 import org.junit.Test;
 
 public class FindMatchingFilterLinesQuestionTest {
@@ -26,7 +26,7 @@ public class FindMatchingFilterLinesQuestionTest {
         new FindMatchingFilterLinesQuestion(
             "nodes",
             "filters",
-            LineAction.PERMIT,
+            Action.PERMIT,
             PacketHeaderConstraints.builder()
                 .setIpProtocols(ImmutableSet.of(IpProtocol.TCP))
                 .build(),

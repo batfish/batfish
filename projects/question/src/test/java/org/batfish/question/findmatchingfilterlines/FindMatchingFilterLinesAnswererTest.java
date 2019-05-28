@@ -35,6 +35,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.table.Row;
+import org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesQuestion.Action;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.SpecifierContext;
 import org.hamcrest.Matcher;
@@ -225,7 +226,7 @@ public class FindMatchingFilterLinesAnswererTest {
       // Answerer with action PERMIT should not give row for c1 acl2
       FindMatchingFilterLinesAnswerer answerer =
           new FindMatchingFilterLinesAnswerer(
-              new FindMatchingFilterLinesQuestion(null, null, LineAction.PERMIT, null, null),
+              new FindMatchingFilterLinesQuestion(null, null, Action.PERMIT, null, null),
               mockBatfish);
       assertThat(
           answerer.answer().getRows().getData(), containsInAnyOrder(c1Acl1Matcher, c2Acl1Matcher));
