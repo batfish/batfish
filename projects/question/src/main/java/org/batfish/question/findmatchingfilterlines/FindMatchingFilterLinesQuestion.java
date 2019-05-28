@@ -20,7 +20,7 @@ public final class FindMatchingFilterLinesQuestion extends Question {
   private static final String PROP_ACTION = "action";
   private static final String PROP_FILTERS = "filters";
   private static final String PROP_HEADERS = "headers";
-  private static final String PROP_IGNORE_COMPOSITES = "ignoreComposites";
+  static final String PROP_IGNORE_COMPOSITES = "ignoreComposites";
   private static final String PROP_NODES = "nodes";
 
   private static final boolean DEFAULT_IGNORE_COMPOSITES = true;

@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.toHeaderSpaceBuilder;
 import static org.batfish.datamodel.table.TableMetadata.toColumnMap;
 import static org.batfish.question.FilterQuestionUtils.getSpecifiedFilters;
+import static org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesQuestion.PROP_IGNORE_COMPOSITES;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -91,7 +92,9 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
     // Throw if no filters matched
     if (specifiedAcls.values().isEmpty()) {
       throw new IllegalArgumentException(
-          "Did not find any filters that meet the specified criteria. (Tips: Set 'ignoreGenerated' to false if you want to analyze combined filters; use 'resolveFilterSpecifier' question to see which filters your nodes and filters match.)");
+          String.format(
+              "Did not find any filters that meet the specified criteria. (Tips: Set '%s' to false if you want to analyze combined filters; use 'resolveFilterSpecifier' question to see which filters your nodes and filters match.)",
+              PROP_IGNORE_COMPOSITES));
     }
 
     TableAnswerElement answer = new TableAnswerElement(createMetadata(question));
