@@ -94,9 +94,7 @@ public class BDDReachabilityGraphOptimizerTest {
     Edge e1 = new Edge(STATE1, STATE2, IDENTITY);
     Edge e2 = new Edge(STATE2, STATE3, IDENTITY);
     assertThat(
-        optimize(
-            ImmutableSet.of(e1, e2), ImmutableSet.of(STATE1,STATE2), false),
-        contains(e1));
+        optimize(ImmutableSet.of(e1, e2), ImmutableSet.of(STATE1, STATE2), false), contains(e1));
   }
 
   @Test
