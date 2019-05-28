@@ -1392,12 +1392,7 @@ public class VirtualRouter implements Serializable {
                 adv -> {
                   Bgpv4Route bgpRoute =
                       exportNonBgpRouteToBgp(
-                          adv.getRoute(),
-                          ourConfigId,
-                          remoteConfigId,
-                          ourConfig,
-                          allNodes,
-                          session);
+                          adv.getRoute(), ourConfigId, remoteConfigId, ourConfig, session);
                   return bgpRoute == null
                       ? null
                       : RouteAdvertisement.<Bgpv4Route>builder()
@@ -1869,7 +1864,6 @@ public class VirtualRouter implements Serializable {
    *
    * @param exportCandidate a route to try and export
    * @param ourConfig {@link BgpPeerConfig} that sends the route
-   * @param allNodes all nodes in the network
    * @param sessionProperties {@link BgpSessionProperties} representing the <em>incoming</em> edge:
    *     i.e. the edge from {@code remoteConfig} to {@code ourConfig}
    * @return The transformed route as a {@link Bgpv4Route}, or {@code null} if the route should not
@@ -1881,7 +1875,6 @@ public class VirtualRouter implements Serializable {
       @Nonnull BgpPeerConfigId ourConfigId,
       @Nonnull BgpPeerConfigId remoteConfigId,
       @Nonnull BgpPeerConfig ourConfig,
-      @Nonnull Map<String, Node> allNodes,
       @Nonnull BgpSessionProperties sessionProperties) {
 
     RoutingPolicy exportPolicy = _c.getRoutingPolicies().get(ourConfig.getExportPolicy());
