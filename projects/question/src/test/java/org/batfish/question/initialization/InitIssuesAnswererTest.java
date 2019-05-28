@@ -253,10 +253,14 @@ public class InitIssuesAnswererTest {
     String text = "line text";
     String context = "parser context";
     String comment = "comment";
+    String redFlag = "red flag";
+    String unimplemented = "unimplemented";
     int line = 86420;
 
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
     Warnings warnings = new Warnings(true, true, true);
+    warnings.redFlag(redFlag);
+    warnings.unimplemented(unimplemented);
     warnings.getParseWarnings().add(new ParseWarning(line, text, context, comment));
     pvcae.setWarnings(ImmutableSortedMap.of(node, warnings));
     // Answerer using TestBatfish that should produce a single parse warning
@@ -282,7 +286,35 @@ public class InitIssuesAnswererTest {
                         COL_LINE_TEXT,
                         text,
                         COL_PARSER_CONTEXT,
-                        context))));
+                        context))
+                .add(
+                    Row.of(
+                        COL_NODES,
+                        null,
+                        COL_FILELINES,
+                        ImmutableList.of(new FileLines(node, ImmutableSortedSet.of())),
+                        COL_TYPE,
+                        IssueType.ParseWarningRedFlag.toString(),
+                        COL_DETAILS,
+                        redFlag,
+                        COL_LINE_TEXT,
+                        null,
+                        COL_PARSER_CONTEXT,
+                        null))
+                .add(
+                    Row.of(
+                        COL_NODES,
+                        null,
+                        COL_FILELINES,
+                        ImmutableList.of(new FileLines(node, ImmutableSortedSet.of())),
+                        COL_TYPE,
+                        IssueType.ParseWarningUnimplemented.toString(),
+                        COL_DETAILS,
+                        unimplemented,
+                        COL_LINE_TEXT,
+                        null,
+                        COL_PARSER_CONTEXT,
+                        null))));
   }
 
   @Test
