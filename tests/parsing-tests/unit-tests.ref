@@ -811,6 +811,9 @@
         "paloalto_interfaces" : [
           "configs/palo_alto/interfaces"
         ],
+        "paloalto_policy" : [
+          "configs/palo_alto/policy"
+        ],
         "peer_template" : [
           "configs/peer_template"
         ],
@@ -1161,6 +1164,7 @@
         "configs/nxos_system" : "PASSED",
         "configs/openflow" : "PASSED",
         "configs/palo_alto/interfaces" : "PASSED",
+        "configs/palo_alto/policy" : "PASSED",
         "configs/peer_template" : "PASSED",
         "configs/pim" : "PASSED",
         "configs/pim_snooping" : "PASSED",
@@ -70162,6 +70166,41 @@
             "  EOF:<EOF>)"
           ]
         },
+        "configs/palo_alto/policy" : {
+          "sentences" : [
+            "(palo_alto_configuration",
+            "  (set_line_config_devices",
+            "    SET:'set'",
+            "    CONFIG:'config'",
+            "    DEVICES:'devices'",
+            "    name = (variable",
+            "      VARIABLE:'localhost.localdomain')",
+            "    (statement_config_devices",
+            "      (s_deviceconfig",
+            "        DEVICECONFIG:'deviceconfig'",
+            "        (sd_system",
+            "          SYSTEM:'system'",
+            "          (sds_hostname",
+            "            HOSTNAME:'hostname'",
+            "            name = (variable",
+            "              DOUBLE_QUOTED_STRING:'\"paloalto_policy\"')))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line_policy_panorama",
+            "    SET:'set'",
+            "    POLICY:'policy'",
+            "    PANORAMA:'panorama'",
+            "    (ss_common",
+            "      (s_address",
+            "        ADDRESS:'address'",
+            "        name = (variable",
+            "          VARIABLE:'rfc1918_10')",
+            "        (sa_ip_netmask",
+            "          IP_NETMASK:'ip-netmask'",
+            "          IP_PREFIX:'10.0.0.0/8')))",
+            "    NEWLINE:'\\n')",
+            "  EOF:<EOF>)"
+          ]
+        },
         "configs/peer_template" : {
           "sentences" : [
             "(cisco_configuration",
@@ -75345,6 +75384,7 @@
         "openflow" : "PASSED",
         "ospf-disable" : "PASSED",
         "paloalto_interfaces" : "WARNINGS",
+        "paloalto_policy" : "PASSED",
         "peer_template" : "WARNINGS",
         "pim" : "PASSED",
         "pim_snooping" : "PASSED",
@@ -81445,6 +81485,18 @@
             }
           }
         },
+        "configs/palo_alto/policy" : {
+          "address object" : {
+            "panorama~rfc1918_10" : {
+              "definitionLines" : [
+                15,
+                16,
+                17
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "configs/peer_template" : {
           "bgp template peer" : {
             "RAAS" : {
@@ -82603,6 +82655,9 @@
         ],
         "configs/palo_alto/interfaces" : [
           "paloalto_interfaces"
+        ],
+        "configs/palo_alto/policy" : [
+          "paloalto_policy"
         ],
         "configs/peer_template" : [
           "peer_template"
@@ -90016,6 +90071,7 @@
         "configs/nxos_system" : "PASSED",
         "configs/openflow" : "PASSED",
         "configs/palo_alto/interfaces" : "PASSED",
+        "configs/palo_alto/policy" : "PASSED",
         "configs/peer_template" : "PASSED",
         "configs/pim" : "PASSED",
         "configs/pim_snooping" : "PASSED",

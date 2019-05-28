@@ -446,9 +446,19 @@ OPEN_BRACKET
     '['
 ;
 
+PANORAMA
+:
+    'panorama'
+;
+
 PANORAMA_SERVER
 :
     'panorama-server'
+;
+
+POLICY
+:
+    'policy'
 ;
 
 PORT
