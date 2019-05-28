@@ -288,23 +288,20 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         String zoneName = computeObjectName(vsysName, zone.getName());
         _c.getZones().put(zoneName, toZone(zoneName, zone));
 
-        String aclName = computeOutgoingFilterName(zoneName);
-        _c.getIpAccessLists().put(aclName, generateOutgoingFilter(aclName, zone, vsys));
+        IpAccessList acl = generateOutgoingFilter(computeOutgoingFilterName(zoneName), zone, vsys);
+        _c.getIpAccessLists().put(acl.getName(), acl);
       }
 
       // Services
       for (Service service : vsys.getServices().values()) {
-        String serviceGroupAclName = computeServiceGroupMemberAclName(vsysName, service.getName());
-        _c.getIpAccessLists()
-            .put(serviceGroupAclName, service.toIpAccessList(LineAction.PERMIT, this, vsys));
+        IpAccessList acl = service.toIpAccessList(LineAction.PERMIT, this, vsys);
+        _c.getIpAccessLists().put(acl.getName(), acl);
       }
 
       // Service groups
       for (ServiceGroup serviceGroup : vsys.getServiceGroups().values()) {
-        String serviceGroupAclName =
-            computeServiceGroupMemberAclName(vsysName, serviceGroup.getName());
-        _c.getIpAccessLists()
-            .put(serviceGroupAclName, serviceGroup.toIpAccessList(LineAction.PERMIT, this, vsys));
+        IpAccessList acl = serviceGroup.toIpAccessList(LineAction.PERMIT, this, vsys);
+        _c.getIpAccessLists().put(acl.getName(), acl);
       }
     }
     _c.setLoggingServers(loggingServers);

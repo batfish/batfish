@@ -67,7 +67,7 @@ public final class ServiceGroup implements ServiceGroupMember {
       }
     }
     return IpAccessList.builder()
-        .setName(_name)
+        .setName(computeServiceGroupMemberAclName(vsys.getName(), _name))
         .setLines(lines)
         .setSourceName(_name)
         .setSourceType(PaloAltoStructureType.SERVICE_GROUP.getDescription())

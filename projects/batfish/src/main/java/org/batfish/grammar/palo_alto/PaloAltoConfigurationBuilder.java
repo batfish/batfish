@@ -91,7 +91,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Snicp_ipsec_crypto_profilesC
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_link_stateContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_mtuContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_unitsContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_unitContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3u_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvr_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvr_routing_tableContext;
@@ -734,7 +734,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void enterSniel3_units(Sniel3_unitsContext ctx) {
+  public void enterSniel3_unit(Sniel3_unitContext ctx) {
     String name = ctx.name.getText();
     _currentInterface = _currentParentInterface.getUnits().computeIfAbsent(name, Interface::new);
     _currentInterface.setParent(_currentParentInterface);
@@ -742,7 +742,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void exitSniel3_units(Sniel3_unitsContext ctx) {
+  public void exitSniel3_unit(Sniel3_unitContext ctx) {
     _currentInterface = _currentParentInterface;
   }
 
