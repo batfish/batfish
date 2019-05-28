@@ -8,6 +8,7 @@ import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.BgpRoute.Builder;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
@@ -16,11 +17,12 @@ import org.batfish.datamodel.bgp.community.ExtendedCommunity;
  * A generic EVPN route containing the common properties among the different types of EVPN routes
  */
 @ParametersAreNonnullByDefault
-public abstract class EvpnRoute extends BgpRoute {
+public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>>
+    extends BgpRoute<B, R> {
 
   /** Builder for {@link EvpnRoute} */
   @ParametersAreNonnullByDefault
-  public abstract static class Builder<B extends Builder<B, R>, R extends EvpnRoute>
+  public abstract static class Builder<B extends Builder<B, R>, R extends EvpnRoute<B, R>>
       extends BgpRoute.Builder<B, R> {
 
     @Nullable protected RouteDistinguisher _routeDistinguisher;
@@ -104,4 +106,7 @@ public abstract class EvpnRoute extends BgpRoute {
         .filter(ExtendedCommunity::isRouteTarget)
         .collect(ImmutableSet.toImmutableSet());
   }
+
+  @Override
+  public abstract B toBuilder();
 }

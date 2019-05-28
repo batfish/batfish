@@ -8,7 +8,7 @@ import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 
 /** RIB implementation for all types of EVPN routes */
 @ParametersAreNonnullByDefault
-public final class EvpnRib<R extends EvpnRoute> extends BgpRib<R> {
+public final class EvpnRib<R extends EvpnRoute<?, ?>> extends BgpRib<R> {
 
   private static final long serialVersionUID = 1L;
 
