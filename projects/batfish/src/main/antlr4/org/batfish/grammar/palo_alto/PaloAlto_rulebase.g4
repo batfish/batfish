@@ -8,10 +8,12 @@ options {
 
 s_rulebase
 :
-    RULEBASE
-    (
-        sr_security
-    )
+    RULEBASE rulebase_inner
+;
+
+rulebase_inner
+:
+    sr_security
 ;
 
 sr_security

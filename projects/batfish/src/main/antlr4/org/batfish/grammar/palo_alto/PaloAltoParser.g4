@@ -97,11 +97,22 @@ s_policy_panorama
     PANORAMA
     (
         ss_common
-        /* TODO: there's panorama-specific stuff here. */
+        | panorama_post_rulebase
+        | panorama_pre_rulebase
     )
 ;
 
 s_policy_shared
 :
     SHARED /* TODO */
+;
+
+panorama_post_rulebase
+:
+    POST_RULEBASE rulebase_inner
+;
+
+panorama_pre_rulebase
+:
+    PRE_RULEBASE rulebase_inner
 ;

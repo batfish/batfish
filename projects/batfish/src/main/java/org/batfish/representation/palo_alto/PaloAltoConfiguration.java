@@ -325,14 +325,47 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   /** Generate outgoing IpAccessList for the specified zone */
   private IpAccessList generateOutgoingFilter(String name, Zone toZone, Vsys vsys) {
     List<IpAccessListLine> lines = new TreeList<>();
-    Map<String, Rule> rules = toZone.getVsys().getRules();
 
-    for (Rule rule : rules.values()) {
-      if (!rule.getDisabled()
-          && (rule.getTo().contains(toZone.getName())
-              || rule.getTo().contains(CATCHALL_ZONE_NAME))) {
-        lines.add(toIpAccessListLine(rule, vsys));
-      }
+    @Nullable Vsys panorama = _virtualSystems.get(PANORAMA_VSYS_NAME);
+    if (panorama != null) {
+      panorama
+          .getPreRules()
+          .values()
+          .forEach(
+              rule -> {
+                if (!rule.getDisabled()
+                    && (rule.getTo().contains(toZone.getName())
+                        || rule.getTo().contains(CATCHALL_ZONE_NAME))) {
+                  lines.add(toIpAccessListLine(rule, panorama));
+                }
+              });
+    }
+
+    toZone
+        .getVsys()
+        .getRules()
+        .values()
+        .forEach(
+            rule -> {
+              if (!rule.getDisabled()
+                  && (rule.getTo().contains(toZone.getName())
+                      || rule.getTo().contains(CATCHALL_ZONE_NAME))) {
+                lines.add(toIpAccessListLine(rule, vsys));
+              }
+            });
+
+    if (panorama != null) {
+      panorama
+          .getPostRules()
+          .values()
+          .forEach(
+              rule -> {
+                if (!rule.getDisabled()
+                    && (rule.getTo().contains(toZone.getName())
+                        || rule.getTo().contains(CATCHALL_ZONE_NAME))) {
+                  lines.add(toIpAccessListLine(rule, panorama));
+                }
+              });
     }
 
     // Intrazone traffic is allowed by default
