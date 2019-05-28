@@ -14,9 +14,9 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Returns lines in filters (ACLs and firewall rules) that match packets in common with a given header constraint.",
+    "description" : "Returns lines in filters (ACLs and firewall rules) that match any packet within the specified header constraints.",
     "instanceName" : "qname",
-    "longDescription" : "Finds all lines in the specified filters that match any packets in common with the given packet header constraint. Does not consider whether those packets can reach those lines in the context of prior lines in the filter.",
+    "longDescription" : "Finds all lines in the specified filters that match any packet within the specified header constraints.",
     "orderedVariableNames" : [
       "nodes",
       "filters",
@@ -29,11 +29,23 @@
     ],
     "variables" : {
       "action" : {
-        "description" : "Show filter lines with this action. Options are: permit|deny. By default returns lines with either action",
+        "allowedValues" : [
+          "deny",
+          "permit"
+        ],
+        "description" : "Show filter lines with this action. By default returns lines with either action",
         "displayName" : "Action",
         "optional" : true,
         "type" : "string",
-        "value" : "deny"
+        "value" : "deny",
+        "values" : [
+          {
+            "name" : "deny"
+          },
+          {
+            "name" : "permit"
+          }
+        ]
       },
       "filters" : {
         "description" : "Specifier for filters to check",
