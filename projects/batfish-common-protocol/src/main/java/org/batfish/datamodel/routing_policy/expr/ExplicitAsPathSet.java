@@ -77,7 +77,7 @@ public final class ExplicitAsPathSet extends AsPathSetExpr {
     } else if (environment.getReadFromIntermediateBgpAttributes()) {
       asPath = environment.getIntermediateBgpAttributes().getAsPath();
     } else if (environment.getOriginalRoute() instanceof BgpRoute) {
-      BgpRoute bgpRoute = (BgpRoute) environment.getOriginalRoute();
+      BgpRoute<?, ?> bgpRoute = (BgpRoute<?, ?>) environment.getOriginalRoute();
       asPath = bgpRoute.getAsPath();
     }
     if (asPath == null) {

@@ -85,6 +85,9 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_config_devicesConte
 import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_policy_panoramaContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sn_virtual_routerContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_ethernetContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_loopbackContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_tunnelContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_vlanContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snicp_global_protectContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snicp_ike_crypto_profilesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snicp_ipsec_crypto_profilesContext;
@@ -93,6 +96,9 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_mtuContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_unitContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3u_tagContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snil_unitContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snit_unitContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sniv_unitContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvr_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvr_routing_tableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_admin_distContext;
@@ -684,6 +690,48 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void enterSni_loopback(Sni_loopbackContext ctx) {
+    String name = ctx.LOOPBACK().getText();
+    _currentParentInterface = _configuration.getInterfaces().computeIfAbsent(name, Interface::new);
+    _currentInterface = _currentParentInterface;
+    defineStructure(INTERFACE, name, ctx);
+  }
+
+  @Override
+  public void exitSni_loopback(Sni_loopbackContext ctx) {
+    _currentParentInterface = null;
+    _currentInterface = null;
+  }
+
+  @Override
+  public void enterSni_tunnel(Sni_tunnelContext ctx) {
+    String name = ctx.TUNNEL().getText();
+    _currentParentInterface = _configuration.getInterfaces().computeIfAbsent(name, Interface::new);
+    _currentInterface = _currentParentInterface;
+    defineStructure(INTERFACE, name, ctx);
+  }
+
+  @Override
+  public void exitSni_tunnel(Sni_tunnelContext ctx) {
+    _currentParentInterface = null;
+    _currentInterface = null;
+  }
+
+  @Override
+  public void enterSni_vlan(Sni_vlanContext ctx) {
+    String name = ctx.VLAN().getText();
+    _currentParentInterface = _configuration.getInterfaces().computeIfAbsent(name, Interface::new);
+    _currentInterface = _currentParentInterface;
+    defineStructure(INTERFACE, name, ctx);
+  }
+
+  @Override
+  public void exitSni_vlan(Sni_vlanContext ctx) {
+    _currentParentInterface = null;
+    _currentInterface = null;
+  }
+
+  @Override
   public void enterSnicp_global_protect(Snicp_global_protectContext ctx) {
     String name = ctx.name.getText();
     _currentCrytoProfile = _configuration.getCryptoProfileOrCreate(name, Type.GLOBAL_PROTECT_APP);
@@ -749,6 +797,45 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSniel3u_tag(Sniel3u_tagContext ctx) {
     _currentInterface.setTag(toInteger(ctx.tag));
+  }
+
+  @Override
+  public void enterSnil_unit(Snil_unitContext ctx) {
+    String name = ctx.name.getText();
+    _currentInterface = _currentParentInterface.getUnits().computeIfAbsent(name, Interface::new);
+    _currentInterface.setParent(_currentParentInterface);
+    defineStructure(INTERFACE, name, ctx);
+  }
+
+  @Override
+  public void exitSnil_unit(Snil_unitContext ctx) {
+    _currentInterface = _currentParentInterface;
+  }
+
+  @Override
+  public void enterSnit_unit(Snit_unitContext ctx) {
+    String name = ctx.name.getText();
+    _currentInterface = _currentParentInterface.getUnits().computeIfAbsent(name, Interface::new);
+    _currentInterface.setParent(_currentParentInterface);
+    defineStructure(INTERFACE, name, ctx);
+  }
+
+  @Override
+  public void exitSnit_unit(Snit_unitContext ctx) {
+    _currentInterface = _currentParentInterface;
+  }
+
+  @Override
+  public void enterSniv_unit(Sniv_unitContext ctx) {
+    String name = ctx.name.getText();
+    _currentInterface = _currentParentInterface.getUnits().computeIfAbsent(name, Interface::new);
+    _currentInterface.setParent(_currentParentInterface);
+    defineStructure(INTERFACE, name, ctx);
+  }
+
+  @Override
+  public void exitSniv_unit(Sniv_unitContext ctx) {
+    _currentInterface = _currentParentInterface;
   }
 
   @Override

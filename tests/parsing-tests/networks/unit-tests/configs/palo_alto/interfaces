@@ -21,6 +21,20 @@ config {
               }
             }
           }
+          loopback {
+            comment "loopback comment";
+            units;
+          }
+          tunnel {
+            units {
+              tunnel.3 {
+                comment "tunnel.3 comment";
+              }
+            }
+          }
+          vlan {
+            comment "vlan comment";
+          }
         }
       }
     }

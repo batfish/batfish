@@ -11,6 +11,9 @@ sn_interface
     INTERFACE
     (
         sni_ethernet
+        | sni_loopback
+        | sni_tunnel
+        | sni_vlan
     )
 ;
 
@@ -33,6 +36,32 @@ sni_ethernet
         | snie_layer3
         | snie_link_state
     )
+;
+
+sni_loopback
+:
+    LOOPBACK
+    (
+        if_common
+        | snil_units
+    )?
+;
+
+sni_tunnel
+:
+    TUNNEL (
+        if_common
+        | snit_units
+    )?
+;
+
+sni_vlan
+:
+    VLAN
+    (
+        if_common
+        | sniv_units
+    )?
 ;
 
 snie_layer3
@@ -106,4 +135,43 @@ sniel3_units
 sniel3u_tag
 :
     TAG tag = DEC
+;
+
+snil_unit
+:
+    name = variable
+    (
+        if_common
+    )?
+;
+
+snil_units
+:
+    UNITS snil_unit?
+;
+
+snit_unit
+:
+    name = variable
+    (
+        if_common
+    )?
+;
+
+snit_units
+:
+    UNITS snit_unit?
+;
+
+sniv_unit
+:
+    name = variable
+    (
+        if_common
+    )?
+;
+
+sniv_units
+:
+    UNITS sniv_unit?
 ;

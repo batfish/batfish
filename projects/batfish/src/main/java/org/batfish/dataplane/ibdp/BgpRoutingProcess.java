@@ -38,7 +38,7 @@ import org.batfish.dataplane.rib.RibDelta.Builder;
 import org.batfish.dataplane.rib.RouteAdvertisement;
 
 @ParametersAreNonnullByDefault
-final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute> {
+final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?, ?>> {
   /** Configuration for this process */
   @Nonnull final BgpProcess _process;
   /** Parent node configuration */
@@ -70,9 +70,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute> {
    */
   Bgpv4Rib _ibgpv4StagingRib;
   /** Helper RIB containing paths obtained with EVPN over eBGP */
-  EvpnRib<EvpnRoute> _ebgpEvpnRib;
+  EvpnRib<EvpnRoute<?, ?>> _ebgpEvpnRib;
   /** Helper RIB containing paths obtained with EVPN over iBGP */
-  EvpnRib<EvpnRoute> _ibgpEvpnRib;
+  EvpnRib<EvpnRoute<?, ?>> _ibgpEvpnRib;
 
   /**
    * @param process the {@link BgpProcess} -- configuration for this routing process
@@ -171,8 +171,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute> {
 
   @Nonnull
   @Override
-  public RibDelta<BgpRoute> getUpdatesForMainRib() {
-    return RibDelta.<BgpRoute>builder().from(_bgpv4DeltaBuilder.build()).build();
+  public RibDelta<BgpRoute<?, ?>> getUpdatesForMainRib() {
+    return RibDelta.<BgpRoute<?, ?>>builder().from(_bgpv4DeltaBuilder.build()).build();
   }
 
   @Override

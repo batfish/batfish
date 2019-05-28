@@ -42,14 +42,15 @@ public class BgpProtocolHelper {
    *     i.e. the edge from {@code toNeighbor} to {@code fromNeighbor}
    */
   @Nullable
-  public static <R extends BgpRoute, B extends BgpRoute.Builder<B, R>> B transformBgpRoutePreExport(
-      BgpPeerConfig fromNeighbor,
-      BgpPeerConfig toNeighbor,
-      BgpSessionProperties sessionProperties,
-      BgpProcess fromBgpProcess,
-      BgpProcess toBgpProcess,
-      BgpRoute route,
-      B builder) {
+  public static <R extends BgpRoute<B, R>, B extends BgpRoute.Builder<B, R>>
+      B transformBgpRoutePreExport(
+          BgpPeerConfig fromNeighbor,
+          BgpPeerConfig toNeighbor,
+          BgpSessionProperties sessionProperties,
+          BgpProcess fromBgpProcess,
+          BgpProcess toBgpProcess,
+          BgpRoute<B, R> route,
+          B builder) {
 
     // sessionProperties represents incoming edge, so fromNeighbor's IP is its headIp
     Ip fromNeighborIp = sessionProperties.getHeadIp();
@@ -170,13 +171,14 @@ public class BgpProtocolHelper {
 
   /** Perform BGP import transformations on a given route after receiving an advertisement */
   @Nullable
-  public static <R extends BgpRoute, B extends BgpRoute.Builder<B, R>> B transformBgpRouteOnImport(
-      BgpPeerConfigId toConfigId,
-      BgpPeerConfig toNeighbor,
-      BgpSessionProperties sessionProperties,
-      BgpRoute route,
-      ConfigurationFormat configFormat,
-      B builder) {
+  public static <R extends BgpRoute<B, R>, B extends BgpRoute.Builder<B, R>>
+      B transformBgpRouteOnImport(
+          BgpPeerConfigId toConfigId,
+          BgpPeerConfig toNeighbor,
+          BgpSessionProperties sessionProperties,
+          BgpRoute<B, R> route,
+          ConfigurationFormat configFormat,
+          B builder) {
 
     if (route.getAsPath().containsAs(requireNonNull(toNeighbor.getLocalAs()))
         && !toNeighbor.getAllowLocalAsIn()) {
@@ -276,7 +278,7 @@ public class BgpProtocolHelper {
    * fromNeighbor} to {@code toNeighbor} after export policy as applied and route is accepted, but
    * before route is sent onto the wire.
    */
-  public static <R extends BgpRoute, B extends BgpRoute.Builder<B, R>>
+  public static <R extends BgpRoute<B, R>, B extends BgpRoute.Builder<B, R>>
       void transformBgpRoutePostExport(
           B routeBuilder, BgpPeerConfig fromNeighbor, BgpSessionProperties sessionProperties) {
     if (sessionProperties.isEbgp()) {

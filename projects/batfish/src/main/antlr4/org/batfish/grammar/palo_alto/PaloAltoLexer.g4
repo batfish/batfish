@@ -366,6 +366,11 @@ LOG_SETTINGS
     'log-settings'
 ;
 
+LOOPBACK
+:
+    'loopback'
+;
+
 MD5
 :
     'md5'
@@ -661,6 +666,11 @@ TO
     'to'
 ;
 
+TUNNEL
+:
+    'tunnel'
+;
+
 TYPE
 :
     'type'
@@ -696,14 +706,19 @@ VIRTUAL_ROUTER
     'virtual-router'
 ;
 
-YES
+VLAN
 :
-    'yes'
+    'vlan'
 ;
 
 VSYS
 :
     'vsys'
+;
+
+YES
+:
+    'yes'
 ;
 
 ZONE
