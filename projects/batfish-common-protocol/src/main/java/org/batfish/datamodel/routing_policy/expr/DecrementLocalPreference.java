@@ -30,7 +30,7 @@ public final class DecrementLocalPreference extends LongExpr {
 
   @Override
   public long evaluate(Environment environment) {
-    BgpRoute oldRoute = (BgpRoute) environment.getOriginalRoute();
+    BgpRoute<?, ?> oldRoute = (BgpRoute) environment.getOriginalRoute();
     long oldLp = oldRoute.getLocalPreference();
     long newVal = oldLp - _subtrahend;
     return newVal;

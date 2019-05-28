@@ -735,7 +735,7 @@ public class VirtualRouter implements Serializable {
               layer3VniConfig -> {
                 boolean ebgp =
                     !peerConfig.getRemoteAsns().equals(LongSpace.of(peerConfig.getLocalAs()));
-                EvpnRib<EvpnRoute> ribForThisRoute =
+                EvpnRib<EvpnRoute<?, ?>> ribForThisRoute =
                     ebgp ? _bgpRoutingProcess._ebgpEvpnRib : _bgpRoutingProcess._ibgpEvpnRib;
                 VniSettings vniSettings = _vrf.getVniSettings().get(layer3VniConfig.getVni());
                 checkState(
@@ -1950,7 +1950,7 @@ public class VirtualRouter implements Serializable {
    *     exported.
    */
   @Nullable
-  private <R extends BgpRoute, B extends BgpRoute.Builder<B, R>> R exportBgpRoute(
+  private <R extends BgpRoute<B, R>, B extends BgpRoute.Builder<B, R>> R exportBgpRoute(
       @Nonnull AnnotatedRoute<R> exportCandidate,
       @Nonnull BgpPeerConfigId ourConfigId,
       @Nonnull BgpPeerConfigId remoteConfigId,
