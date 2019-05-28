@@ -4,11 +4,13 @@ import static org.batfish.bddreachability.BDDReachabilityGraphOptimizer.optimize
 import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 
 import com.google.common.collect.ImmutableSet;
+import java.util.Collection;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.JFactory;
@@ -75,21 +77,26 @@ public class BDDReachabilityGraphOptimizerTest {
   @Test
   public void testStatesToKeep() {
     Edge edge = new Edge(STATE1, STATE2, IDENTITY);
-    assertThat(optimize(ImmutableSet.of(edge), ImmutableSet.of(STATE1, STATE2)), contains(edge));
+    assertThat(
+        optimize(ImmutableSet.of(edge), ImmutableSet.of(STATE1, STATE2), false), contains(edge));
   }
 
   @Test
   public void testPruneRoot() {
+    Edge e1 = new Edge(STATE1, STATE2, IDENTITY);
+    Edge e2 = new Edge(STATE2, STATE3, IDENTITY);
     assertThat(
-        optimize(ImmutableSet.of(new Edge(STATE1, STATE2, IDENTITY)), ImmutableSet.of(STATE2)),
-        empty());
+        optimize(ImmutableSet.of(e1, e2), ImmutableSet.of(STATE2, STATE3), false), contains(e2));
   }
 
   @Test
   public void testPruneLeaf() {
+    Edge e1 = new Edge(STATE1, STATE2, IDENTITY);
+    Edge e2 = new Edge(STATE2, STATE3, IDENTITY);
     assertThat(
-        optimize(ImmutableSet.of(new Edge(STATE1, STATE2, IDENTITY)), ImmutableSet.of(STATE1)),
-        empty());
+        optimize(
+            ImmutableSet.of(e1, e2), ImmutableSet.of(STATE1,STATE2), false),
+        contains(e1));
   }
 
   @Test
@@ -98,7 +105,8 @@ public class BDDReachabilityGraphOptimizerTest {
     assertThat(
         optimize(
             ImmutableSet.of(new Edge(STATE1, STATE2, IDENTITY), new Edge(STATE2, STATE3, IDENTITY)),
-            ImmutableSet.of(STATE1)),
+            ImmutableSet.of(STATE1),
+            false),
         empty());
   }
 
@@ -108,7 +116,8 @@ public class BDDReachabilityGraphOptimizerTest {
     Edge edge2 = new Edge(STATE2, STATE3, CONSTRAINT1);
     Edge merged = new Edge(STATE1, STATE3, constraint(BDD0.and(BDD1)));
     assertThat(
-        optimize(ImmutableSet.of(edge1, edge2), ImmutableSet.of(STATE1, STATE3)), contains(merged));
+        optimize(ImmutableSet.of(edge1, edge2), ImmutableSet.of(STATE1, STATE3), false),
+        contains(merged));
   }
 
   @Test
@@ -117,7 +126,7 @@ public class BDDReachabilityGraphOptimizerTest {
     Edge edge1 = new Edge(STATE1, STATE2, CONSTRAINT0);
     Edge edge2 = new Edge(STATE2, STATE3, DUMMY);
     assertThat(
-        optimize(ImmutableSet.of(edge1, edge2), ImmutableSet.of(STATE1, STATE3)),
+        optimize(ImmutableSet.of(edge1, edge2), ImmutableSet.of(STATE1, STATE3), false),
         containsInAnyOrder(edge1, edge2));
   }
 
@@ -125,35 +134,63 @@ public class BDDReachabilityGraphOptimizerTest {
   public void testSpliceAndDrop() {
     Edge edge1 = new Edge(STATE1, STATE2, constraint(BDD0));
     Edge edge2 = new Edge(STATE2, STATE3, constraint(BDD0.not()));
-    assertThat(optimize(ImmutableSet.of(edge1, edge2), ImmutableSet.of(STATE1, STATE3)), empty());
+    assertThat(
+        optimize(ImmutableSet.of(edge1, edge2), ImmutableSet.of(STATE1, STATE3), false), empty());
   }
 
   @Test
   public void testDropSelfLoopIdentity() {
     assertThat(
-        optimize(ImmutableSet.of(new Edge(STATE1, STATE1, IDENTITY)), ImmutableSet.of(STATE1)),
+        optimize(
+            ImmutableSet.of(new Edge(STATE1, STATE1, IDENTITY)), ImmutableSet.of(STATE1), false),
         empty());
   }
 
   @Test
   public void testDropSelfLoopConstraint() {
     assertThat(
-        optimize(ImmutableSet.of(new Edge(STATE1, STATE1, CONSTRAINT1)), ImmutableSet.of(STATE1)),
+        optimize(
+            ImmutableSet.of(new Edge(STATE1, STATE1, CONSTRAINT1)), ImmutableSet.of(STATE1), false),
         empty());
   }
 
   @Test
-  public void testKeepSelfLoop() {
+  public void testKeepSelfLoop_Edge() {
+    // keep a self-loop when not sure the edge is safe to remove
     Edge edge = new Edge(STATE1, STATE1, DUMMY);
-    assertThat(optimize(ImmutableSet.of(edge), ImmutableSet.of(STATE1)), contains(edge));
+    assertThat(optimize(ImmutableSet.of(edge), ImmutableSet.of(STATE1), false), contains(edge));
+  }
+
+  @Test
+  public void testKeepSelfLoop_keepSelfLoops() {
+    // keep a self-loop for loop detection
+    Edge edge = new Edge(STATE1, STATE1, IDENTITY);
+    assertThat(optimize(ImmutableSet.of(edge), ImmutableSet.of(STATE1), true), contains(edge));
   }
 
   @Test
   public void testCycle() {
+    // cycles can be completely removed when keepLoops is false
     Edge edge1 = new Edge(STATE1, STATE2, IDENTITY);
     Edge edge2 = new Edge(STATE2, STATE3, IDENTITY);
     Edge edge3 = new Edge(STATE3, STATE1, IDENTITY);
-    assertThat(optimize(ImmutableSet.of(edge1, edge2, edge3), ImmutableSet.of()), empty());
+    assertThat(optimize(ImmutableSet.of(edge1, edge2, edge3), ImmutableSet.of(), false), empty());
+  }
+
+  @Test
+  public void testCycle_keepSelfLoops() {
+    // cycles can be optimized to a single node with a self-loop when keepLoops is true
+    Edge edge1 = new Edge(STATE1, STATE2, IDENTITY);
+    Edge edge2 = new Edge(STATE2, STATE3, IDENTITY);
+    Edge edge3 = new Edge(STATE3, STATE1, IDENTITY);
+    Collection<Edge> optimize =
+        optimize(ImmutableSet.of(edge1, edge2, edge3), ImmutableSet.of(), true);
+    assertThat(
+        optimize,
+        anyOf(
+            contains(new Edge(STATE1, STATE1, IDENTITY)),
+            contains(new Edge(STATE2, STATE2, IDENTITY)),
+            contains(new Edge(STATE3, STATE3, IDENTITY))));
   }
 
   @Test
@@ -163,7 +200,8 @@ public class BDDReachabilityGraphOptimizerTest {
     Edge edge3 = new Edge(STATE3, STATE1, CONSTRAINT2);
     Edge edge4 = new Edge(STATE4, STATE1, CONSTRAINT3);
     assertThat(
-        optimize(ImmutableSet.of(edge1, edge2, edge3, edge4), ImmutableSet.of(STATE4, STATE2)),
+        optimize(
+            ImmutableSet.of(edge1, edge2, edge3, edge4), ImmutableSet.of(STATE4, STATE2), false),
         containsInAnyOrder(
             new Edge(STATE4, STATE1, CONSTRAINT3),
             new Edge(STATE1, STATE2, CONSTRAINT0),

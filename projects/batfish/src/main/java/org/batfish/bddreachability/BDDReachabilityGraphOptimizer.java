@@ -25,11 +25,36 @@ import org.batfish.bddreachability.transition.Constraint;
 import org.batfish.bddreachability.transition.Transition;
 import org.batfish.symbolic.state.StateExpr;
 
-/** Performs topological optimizations on the reachability graph. */
+/**
+ * Performs topological optimizations on the reachability graph: removing nodes (composing each
+ * in-edge with each out-edge) and removing edges.
+ */
 public class BDDReachabilityGraphOptimizer {
+
+  /**
+   * Optimize a reachability graph by removing nodes and/or edges.
+   *
+   * @param edges The original collection of edges that comprise the graph.
+   * @param statesToKeep States that must not be removed, e.g. because they may input or output
+   *     points.
+   * @param keepSelfLoops When true, self-loops will not be removed. When doing loop detection,
+   *     loops should be preserved, but for other analyses it may be safe to remove them.
+   * @return Edges of the optimized graph.
+   */
+  public static Collection<Edge> optimize(
+      Collection<Edge> edges, Set<StateExpr> statesToKeep, boolean keepSelfLoops) {
+    BDDReachabilityGraphOptimizer opt =
+        new BDDReachabilityGraphOptimizer(edges, statesToKeep, keepSelfLoops);
+    assert opt.checkInvariants();
+    opt.optimize();
+    assert opt.checkInvariants();
+    return opt._outEdges.values();
+  }
+
   private final Multimap<StateExpr, Edge> _outEdges;
   private final Multimap<StateExpr, Edge> _inEdges;
   private final Set<StateExpr> _statesToKeep;
+  private final boolean _keepSelfLoops;
 
   private int _origEdges = 0;
   private int _rootsPruned = 0;
@@ -38,10 +63,12 @@ public class BDDReachabilityGraphOptimizer {
   private int _splicedAndDropped = 0;
   private int _selfLoops = 0;
 
-  private BDDReachabilityGraphOptimizer(Collection<Edge> edges, Set<StateExpr> statesToKeep) {
+  private BDDReachabilityGraphOptimizer(
+      Collection<Edge> edges, Set<StateExpr> statesToKeep, boolean keepSelfLoops) {
     _outEdges = computeEdgeMap(edges, Edge::getPreState);
     _inEdges = computeEdgeMap(edges, Edge::getPostState);
     _statesToKeep = statesToKeep;
+    _keepSelfLoops = keepSelfLoops;
     _origEdges = _outEdges.size();
   }
 
@@ -55,14 +82,6 @@ public class BDDReachabilityGraphOptimizer {
   private boolean checkInvariants() {
     assert ImmutableSet.copyOf(_outEdges.values()).equals(ImmutableSet.copyOf(_inEdges.values()));
     return true;
-  }
-
-  public static Collection<Edge> optimize(Collection<Edge> edges, Set<StateExpr> statesToKeep) {
-    BDDReachabilityGraphOptimizer opt = new BDDReachabilityGraphOptimizer(edges, statesToKeep);
-    assert opt.checkInvariants();
-    opt.optimize();
-    assert opt.checkInvariants();
-    return opt._outEdges.values();
   }
 
   private void printStats() {
@@ -91,7 +110,9 @@ public class BDDReachabilityGraphOptimizer {
     while (!candidates.isEmpty()) {
       StateExpr candidate = candidates.poll();
       candidateSet.remove(candidate);
-      removeSelfLoops(candidate);
+      if (!_keepSelfLoops) {
+        removeSelfLoops(candidate);
+      }
       if (!_statesToKeep.contains(candidate)) {
         tryToRemove(candidate).filter(candidateSet::add).forEach(candidates::add);
       }
@@ -99,8 +120,9 @@ public class BDDReachabilityGraphOptimizer {
   }
 
   private void removeSelfLoops(StateExpr candidate) {
+    checkState(!_keepSelfLoops);
     for (Edge edge : _inEdges.get(candidate)) {
-      if (edge.getPreState().equals(candidate) && shouldDrop(edge)) {
+      if (isRemovableSelfLoop(edge)) {
         // self-loop that adds nothing
         _selfLoops++;
         removeEdge(edge);
@@ -133,7 +155,10 @@ public class BDDReachabilityGraphOptimizer {
       assert candidate.equals(inEdge.getPostState());
       assert candidate.equals(outEdge.getPreState());
 
-      checkState(!inEdge.equals(outEdge), "encountered self-loop");
+      if (inEdge.equals(outEdge)) {
+        // self-loop. handled elsewhere
+        return Stream.of();
+      }
 
       @Nullable Transition merged = mergeComposed(inEdge.getTransition(), outEdge.getTransition());
       if (merged == null) {
@@ -148,7 +173,7 @@ public class BDDReachabilityGraphOptimizer {
       StateExpr next = outEdge.getPostState();
 
       Edge edge = new Edge(prev, next, merged);
-      if (shouldDrop(edge)) {
+      if (edge.getTransition() == ZERO) {
         _splicedAndDropped++;
         return Stream.of(prev, next);
       } else {
@@ -182,25 +207,22 @@ public class BDDReachabilityGraphOptimizer {
     checkState(_outEdges.remove(edge.getPreState(), edge));
   }
 
-  private static boolean shouldDrop(Edge edge) {
-    if (edge.getTransition() == ZERO) {
+  private boolean isRemovableSelfLoop(Edge edge) {
+    checkState(!_keepSelfLoops);
+    if (!edge.getPreState().equals(edge.getPostState())) {
+      return false;
+    }
+    Transition t = edge.getTransition();
+    if (t == ZERO || t == IDENTITY) {
       return true;
     }
-    if (edge.getPreState().equals(edge.getPostState())) {
-      // self-loop.
-      Transition t = edge.getTransition();
-      if (t == IDENTITY) {
-        return true;
-      }
-      if (t instanceof Constraint
-          || t instanceof AddSourceConstraint
-          || t instanceof AddLastHopConstraint
-          || t instanceof AddNoLastHopConstraint) {
-        // forall x,y. x.or(x.and(y)) == x
-        return true;
-      }
+    if (t instanceof Constraint
+        || t instanceof AddSourceConstraint
+        || t instanceof AddLastHopConstraint
+        || t instanceof AddNoLastHopConstraint) {
+      // forall x,y. x.or(x.and(y)) == x
+      return true;
     }
-
     return false;
   }
 }
