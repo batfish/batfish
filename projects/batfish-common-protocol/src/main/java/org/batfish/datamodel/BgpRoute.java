@@ -13,15 +13,17 @@ import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.BgpRoute.Builder;
 import org.batfish.datamodel.bgp.community.Community;
 
 /** A generic BGP route containing the common properties among different types of BGP routes */
 @ParametersAreNonnullByDefault
-public abstract class BgpRoute extends AbstractRoute {
+public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>>
+    extends AbstractRoute {
 
   /** Builder for {@link BgpRoute} */
   @ParametersAreNonnullByDefault
-  public abstract static class Builder<B extends Builder<B, R>, R extends BgpRoute>
+  public abstract static class Builder<B extends Builder<B, R>, R extends BgpRoute<B, R>>
       extends AbstractRouteBuilder<B, R> {
 
     @Nonnull protected AsPath _asPath;
@@ -382,4 +384,7 @@ public abstract class BgpRoute extends AbstractRoute {
   public int getWeight() {
     return _weight;
   }
+
+  @Override
+  public abstract B toBuilder();
 }

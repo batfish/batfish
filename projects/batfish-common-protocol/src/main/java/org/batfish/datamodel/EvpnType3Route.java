@@ -16,7 +16,7 @@ import org.batfish.datamodel.bgp.community.Community;
 
 /** An EVPN type 3 route */
 @ParametersAreNonnullByDefault
-public final class EvpnType3Route extends EvpnRoute {
+public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, EvpnType3Route> {
 
   private static final long serialVersionUID = 1L;
 

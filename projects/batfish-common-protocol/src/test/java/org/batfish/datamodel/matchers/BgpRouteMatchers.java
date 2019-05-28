@@ -23,7 +23,7 @@ public final class BgpRouteMatchers {
    * Provides a matcher that matches when the supplied {@code subMatcher} matches the {@link
    * BgpRoute}'s communities.
    */
-  public static @Nonnull Matcher<BgpRoute> hasCommunities(
+  public static @Nonnull Matcher<BgpRoute<?, ?>> hasCommunities(
       Matcher<? super Set<Community>> subMatcher) {
     return new HasCommunities(subMatcher);
   }
@@ -32,7 +32,7 @@ public final class BgpRouteMatchers {
    * Provides a matcher that matches when the supplied {@code expectedOriginType} is equal to the
    * {@link BgpRoute}'s originType.
    */
-  public static @Nonnull Matcher<BgpRoute> hasOriginType(OriginType expectedOriginType) {
+  public static @Nonnull Matcher<BgpRoute<?, ?>> hasOriginType(OriginType expectedOriginType) {
     return new HasOriginType(equalTo(expectedOriginType));
   }
 
@@ -40,7 +40,7 @@ public final class BgpRouteMatchers {
    * Provides a matcher that matches when the supplied {@code expectedWeight} is equal to the {@link
    * BgpRoute}'s weight.
    */
-  public static @Nonnull Matcher<BgpRoute> hasWeight(int expectedWeight) {
+  public static @Nonnull Matcher<BgpRoute<?, ?>> hasWeight(int expectedWeight) {
     return new HasWeight(equalTo(expectedWeight));
   }
 
