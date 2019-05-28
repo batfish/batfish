@@ -21,6 +21,13 @@ config {
               }
             }
           }
+          tunnel {
+            units {
+              tunnel.3 {
+                comment "tunnel.3 comment";
+              }
+            }
+          }
         }
       }
     }
