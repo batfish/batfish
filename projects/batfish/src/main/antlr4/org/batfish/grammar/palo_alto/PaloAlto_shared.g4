@@ -15,7 +15,7 @@ s_shared
     )
 ;
 
-// Common syntax between set shared and set vsys
+// Common syntax between vsys, panorama, and other shared contexts
 ss_common
 :
     s_address
