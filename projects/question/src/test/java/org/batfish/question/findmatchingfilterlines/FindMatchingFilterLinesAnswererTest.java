@@ -6,7 +6,8 @@ import static org.batfish.question.findmatchingfilterlines.FindMatchingFilterLin
 import static org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesAnswerer.COL_LINE;
 import static org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesAnswerer.COL_LINE_INDEX;
 import static org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesAnswerer.COL_NODE;
-import static org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesAnswerer.getRows;
+import static org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesAnswerer.getRowsForAcl;
+import static org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesAnswerer.toHeaderSpaceBdd;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -14,12 +15,15 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
+import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.BDDSourceManager;
+import org.batfish.common.bdd.IpAccessListToBdd;
+import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -30,9 +34,7 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
-import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.table.Row;
 import org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesQuestion.Action;
@@ -67,7 +69,7 @@ public class FindMatchingFilterLinesAnswererTest {
   }
 
   @Test
-  public void testHeaderSpaceWithDstIps() {
+  public void testGetRowsForAcl() {
     // Set up ACL containing two lines, make sure header constraints filter to the right line
 
     // First line accepts TCP to 1.1.1.0/24
@@ -83,68 +85,50 @@ public class FindMatchingFilterLinesAnswererTest {
     HeaderSpace headerSpace2 =
         HeaderSpace.builder().setDstIps(prefix2.toIpSpace()).setIpProtocols(protocols2).build();
 
-    // Set up config and ACL
-    NetworkFactory nf = new NetworkFactory();
-    Configuration c =
-        nf.configurationBuilder()
-            .setHostname("c")
-            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
-            .build();
-    nf.aclBuilder()
-        .setOwner(c)
-        .setName("acl")
-        .setLines(
-            ImmutableList.of(
-                IpAccessListLine.builder()
-                    .setName("line1")
-                    .setAction(LineAction.PERMIT)
-                    .setMatchCondition(new MatchHeaderSpace(headerSpace1))
-                    .build(),
-                IpAccessListLine.builder()
-                    .setName("line2")
-                    .setAction(LineAction.PERMIT)
-                    .setMatchCondition(new MatchHeaderSpace(headerSpace2))
-                    .build()))
-        .build();
+    List<IpAccessListLine> aclLines =
+        ImmutableList.of(
+            IpAccessListLine.acceptingHeaderSpace(headerSpace1),
+            IpAccessListLine.rejectingHeaderSpace(headerSpace2));
 
-    // Set up expected row matchers for first line
-    Matcher<Row> line1Matchers =
-        allOf(
-            hasColumn(COL_NODE, "c", Schema.STRING),
-            hasColumn(COL_FILTER, "acl", Schema.STRING),
-            hasColumn(COL_LINE, "line1", Schema.STRING),
-            hasColumn(COL_LINE_INDEX, 0, Schema.INTEGER),
-            hasColumn(COL_ACTION, LineAction.PERMIT.toString(), Schema.STRING));
+    BDDPacket pkt = new BDDPacket();
+    IpAccessListToBdd bddConverter =
+        new IpAccessListToBddImpl(
+            pkt, BDDSourceManager.empty(pkt), ImmutableMap.of(), ImmutableMap.of());
+
     {
       // Constrain dstIp to a superset of first line's dstIps (that still doesn't intersect prefix2)
-      PacketHeaderConstraints phc =
-          PacketHeaderConstraints.builder()
-              .setDstIp(Prefix.create(ip1, prefix1.getPrefixLength() - 8).toString())
+      HeaderSpace headerSpace =
+          HeaderSpace.builder()
+              .setDstIps(Prefix.create(ip1, prefix1.getPrefixLength() - 8).toIpSpace())
               .build();
-      MockSpecifierContext ctxt =
-          MockSpecifierContext.builder().setConfigs(ImmutableMap.of("c", c)).build();
-      List<Row> rows = getRows(phc, null, ImmutableMultimap.of("c", "acl"), ctxt);
-      assertThat(rows, contains(line1Matchers));
+      List<Integer> rows =
+          getRowsForAcl(aclLines, toHeaderSpaceBdd(headerSpace, pkt), bddConverter, null);
+      assertThat(rows, contains(0));
     }
     {
       // Constrain dstIp to a subset of first line's dstIps
-      PacketHeaderConstraints phc =
-          PacketHeaderConstraints.builder()
-              .setDstIp(Prefix.create(ip1, prefix1.getPrefixLength() + 4).toString())
+      HeaderSpace headerSpace =
+          HeaderSpace.builder()
+              .setDstIps(Prefix.create(ip1, prefix1.getPrefixLength() + 4).toIpSpace())
               .build();
-      MockSpecifierContext ctxt =
-          MockSpecifierContext.builder().setConfigs(ImmutableMap.of("c", c)).build();
-      List<Row> rows = getRows(phc, null, ImmutableMultimap.of("c", "acl"), ctxt);
-      assertThat(rows, contains(line1Matchers));
+      List<Integer> rows =
+          getRowsForAcl(aclLines, toHeaderSpaceBdd(headerSpace, pkt), bddConverter, null);
+      assertThat(rows, contains(0));
     }
     {
       // Constrain protocol to TCP
-      PacketHeaderConstraints phc =
-          PacketHeaderConstraints.builder().setIpProtocols(ImmutableSet.of(IpProtocol.TCP)).build();
-      MockSpecifierContext ctxt =
-          MockSpecifierContext.builder().setConfigs(ImmutableMap.of("c", c)).build();
-      List<Row> rows = getRows(phc, null, ImmutableMultimap.of("c", "acl"), ctxt);
-      assertThat(rows, contains(line1Matchers));
+      HeaderSpace headerSpace =
+          HeaderSpace.builder().setIpProtocols(ImmutableSet.of(IpProtocol.TCP)).build();
+      List<Integer> rows =
+          getRowsForAcl(aclLines, toHeaderSpaceBdd(headerSpace, pkt), bddConverter, null);
+      assertThat(rows, contains(0));
+    }
+    {
+      // Constrain action to PERMIT
+      HeaderSpace headerSpace = HeaderSpace.builder().build();
+      List<Integer> rows =
+          getRowsForAcl(aclLines, toHeaderSpaceBdd(headerSpace, pkt), bddConverter, Action.PERMIT);
+      assertThat(rows, contains(0));
     }
   }
 
@@ -222,15 +206,6 @@ public class FindMatchingFilterLinesAnswererTest {
       FindMatchingFilterLinesAnswerer answerer =
           new FindMatchingFilterLinesAnswerer(
               new FindMatchingFilterLinesQuestion(null, "acl1", null, null, null), mockBatfish);
-      assertThat(
-          answerer.answer().getRows().getData(), containsInAnyOrder(c1Acl1Matcher, c2Acl1Matcher));
-    }
-    {
-      // Answerer with action PERMIT should not give row for c1 acl2
-      FindMatchingFilterLinesAnswerer answerer =
-          new FindMatchingFilterLinesAnswerer(
-              new FindMatchingFilterLinesQuestion(null, null, Action.PERMIT, null, null),
-              mockBatfish);
       assertThat(
           answerer.answer().getRows().getData(), containsInAnyOrder(c1Acl1Matcher, c2Acl1Matcher));
     }

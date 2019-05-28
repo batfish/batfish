@@ -29,7 +29,6 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
@@ -72,6 +71,8 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
               "Action performed by the line (e.g., PERMIT or DENY)",
               true,
               false));
+
+  private static final Map<String, ColumnMetadata> METADATA_MAP = toColumnMap(COLUMN_METADATA);
 
   FindMatchingFilterLinesAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
@@ -117,13 +118,9 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
             .setSrcIps(resolveIpSpace(phc.getSrcIps(), ctxt))
             .setDstIps(resolveIpSpace(phc.getDstIps(), ctxt))
             .build();
-    AclLineMatchExpr headerSpaceMatcher = new MatchHeaderSpace(headerSpace);
-
     BDDPacket bddPacket = new BDDPacket();
-    BDDSourceManager emptyMgr = BDDSourceManager.empty(bddPacket);
-    BDD headerSpaceBdd =
-        new IpAccessListToBddImpl(bddPacket, emptyMgr, ImmutableMap.of(), ImmutableMap.of())
-            .toBdd(headerSpaceMatcher);
+    BDD headerSpaceBdd = toHeaderSpaceBdd(headerSpace, bddPacket);
+
     Map<String, BDDSourceManager> mgrMap = BDDSourceManager.forNetwork(bddPacket, configs);
 
     for (String nodeName : acls.keySet()) {
@@ -151,47 +148,47 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
     MemoizedIpAccessListToBdd bddConverter =
         new MemoizedIpAccessListToBdd(bddPacket, mgr, node.getIpAccessLists(), node.getIpSpaces());
     for (String aclName : acls) {
-      rows.addAll(
-          getRowsForAcl(
-              node.getIpAccessLists().get(aclName),
-              headerSpaceBdd,
-              bddConverter,
-              action,
-              nodeName));
+      List<IpAccessListLine> aclLines = node.getIpAccessLists().get(aclName).getLines();
+      getRowsForAcl(aclLines, headerSpaceBdd, bddConverter, action)
+          .forEach(
+              lineIndex -> {
+                IpAccessListLine line = aclLines.get(lineIndex);
+                rows.add(
+                    Row.builder(METADATA_MAP)
+                        .put(COL_NODE, nodeName)
+                        .put(COL_FILTER, aclName)
+                        .put(COL_LINE, firstNonNull(line.getName(), line.toString()))
+                        .put(COL_LINE_INDEX, lineIndex)
+                        .put(COL_ACTION, line.getAction())
+                        .build());
+              });
     }
     return rows;
   }
 
-  private static List<Row> getRowsForAcl(
-      IpAccessList acl,
+  /**
+   * Returns the indices of the lines in the given list of {@link IpAccessListLine}s that match the
+   * given {@code headerSpaceBdd} and {@link Action}.
+   */
+  @VisibleForTesting
+  static List<Integer> getRowsForAcl(
+      List<IpAccessListLine> aclLines,
       BDD headerSpaceBdd,
       IpAccessListToBdd bddConverter,
-      @Nullable Action action,
-      String nodeName) {
-    List<Row> rows = new ArrayList<>();
-    Map<String, ColumnMetadata> metadataMap = toColumnMap(COLUMN_METADATA);
-
-    List<IpAccessListLine> lines = acl.getLines();
-    for (int lineIndex = 0; lineIndex < lines.size(); lineIndex++) {
-      IpAccessListLine line = lines.get(lineIndex);
+      @Nullable Action action) {
+    List<Integer> rowNumbers = new ArrayList<>();
+    for (int lineIndex = 0; lineIndex < aclLines.size(); lineIndex++) {
+      IpAccessListLine line = aclLines.get(lineIndex);
       if (!actionMatches(action, line.getAction())) {
         continue;
       }
+      // If there is any overlap between the header space BDD and this line, include it
       BDD lineBdd = bddConverter.toBdd(line.getMatchCondition());
-
-      // If there is any overlap between the header space BDD and this line, add it to getRows
       if (!headerSpaceBdd.and(lineBdd).isZero()) {
-        rows.add(
-            Row.builder(metadataMap)
-                .put(COL_NODE, nodeName)
-                .put(COL_FILTER, acl.getName())
-                .put(COL_LINE, firstNonNull(line.getName(), line.toString()))
-                .put(COL_LINE_INDEX, lineIndex)
-                .put(COL_ACTION, line.getAction())
-                .build());
+        rowNumbers.add(lineIndex);
       }
     }
-    return rows;
+    return rowNumbers;
   }
 
   /** Creates {@link TableMetadata} from the question. */
@@ -223,5 +220,13 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
     return action == null
         || action == Action.PERMIT && lineAction == LineAction.PERMIT
         || action == Action.DENY && lineAction == LineAction.DENY;
+  }
+
+  @VisibleForTesting
+  static BDD toHeaderSpaceBdd(HeaderSpace headerSpace, BDDPacket pkt) {
+    AclLineMatchExpr headerSpaceMatcher = new MatchHeaderSpace(headerSpace);
+    BDDSourceManager emptyMgr = BDDSourceManager.empty(pkt);
+    return new IpAccessListToBddImpl(pkt, emptyMgr, ImmutableMap.of(), ImmutableMap.of())
+        .toBdd(headerSpaceMatcher);
   }
 }
