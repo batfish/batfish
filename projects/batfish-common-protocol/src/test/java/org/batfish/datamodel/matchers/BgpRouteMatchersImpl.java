@@ -5,6 +5,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.bgp.community.Community;
 import org.hamcrest.FeatureMatcher;
@@ -45,9 +46,9 @@ final class BgpRouteMatchersImpl {
     }
   }
 
-  static final class IsBgpRouteThat extends IsInstanceThat<AbstractRoute, BgpRoute> {
-    IsBgpRouteThat(Matcher<? super BgpRoute> subMatcher) {
-      super(BgpRoute.class, subMatcher);
+  static final class IsBgpv4RouteThat extends IsInstanceThat<AbstractRoute, Bgpv4Route> {
+    IsBgpv4RouteThat(Matcher<? super Bgpv4Route> subMatcher) {
+      super(Bgpv4Route.class, subMatcher);
     }
   }
 

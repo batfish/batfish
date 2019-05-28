@@ -36,7 +36,7 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEquivalentAsPathMatchMode;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasWeight;
-import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpRouteThat;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkePhase1Policy;
@@ -1485,8 +1485,8 @@ public class CiscoGrammarTest {
     IncrementalDataPlane dp = (IncrementalDataPlane) batfish.loadDataPlane();
     Set<AbstractRoute> r1Routes = dp.getRibs().get("r1").get(DEFAULT_VRF_NAME).getRoutes();
     Set<AbstractRoute> r2Routes = dp.getRibs().get("r2").get(DEFAULT_VRF_NAME).getRoutes();
-    assertThat(r1Routes, hasItem(isBgpRouteThat(hasPrefix(Prefix.parse("8.8.8.8/32")))));
-    assertThat(r2Routes, hasItem(isBgpRouteThat(hasPrefix(Prefix.parse("7.7.7.7/32")))));
+    assertThat(r1Routes, hasItem(isBgpv4RouteThat(hasPrefix(Prefix.parse("8.8.8.8/32")))));
+    assertThat(r2Routes, hasItem(isBgpv4RouteThat(hasPrefix(Prefix.parse("7.7.7.7/32")))));
   }
 
   /**
