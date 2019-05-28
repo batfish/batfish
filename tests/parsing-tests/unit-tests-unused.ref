@@ -3324,7 +3324,7 @@
       },
       {
         "Structure_Type" : "address object",
-        "Structure_Name" : "panorama~rfc1918_10",
+        "Structure_Name" : "rfc1918_10~panorama",
         "Source_Lines" : {
           "filename" : "configs/palo_alto/policy",
           "lines" : [

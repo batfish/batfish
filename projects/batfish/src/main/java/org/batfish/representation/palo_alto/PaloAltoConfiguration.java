@@ -225,10 +225,10 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   /**
    * Generate unique object name (no collision across vsys namespaces) given a vsys name and
-   * original object name
+   * original object name.
    */
   public static String computeObjectName(String vsysName, String objectName) {
-    return String.format("%s~%s", vsysName, objectName);
+    return String.format("%s~%s", objectName, vsysName);
   }
 
   /** Generate egress IpAccessList name given an interface or zone name */
@@ -237,22 +237,29 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Extract object name from a name with an embedded namespace. For example: nameWithNamespace
-   * might be `vsys1~SERVICE1`, where `SERVICE1` is the object name extracted and returned.
+   * Extract object name from a name with an embedded namespace. For example: {@code
+   * nameWithNamespace} might be `SERVICE1~vsys1`, where `SERVICE1` is the object name extracted and
+   * returned.
+   *
+   * <p>Note that {@code nameWithNamespace} is expected to have the user object name
+   * <strong>first</strong> to enable users to recognize their objects in Batfish output.
    */
   private static String extractObjectName(String nameWithNamespace) {
     String[] parts = nameWithNamespace.split("~", -1);
-    return parts[parts.length - 1];
+    return parts[0];
   }
 
   // Visible for testing
 
   /**
-   * Generate IpAccessList name for the specified serviceGroupMemberName in the specified vsysName
+   * Generate the {@link IpAccessList} name for the specified {@code serviceGroupMemberName} in the
+   * specified {@code vsysName}.
+   *
+   * <p>Note that this is <strong>not</strong> a generated name, just a namespaced name.
    */
   public static String computeServiceGroupMemberAclName(
       String vsysName, String serviceGroupMemberName) {
-    return String.format("~%s~SERVICE_GROUP_MEMBER~%s~", vsysName, serviceGroupMemberName);
+    return String.format("%s~%s~SERVICE_GROUP_MEMBER", serviceGroupMemberName, vsysName);
   }
 
   /** Convert vsys components to vendor independent model */

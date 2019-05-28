@@ -81596,7 +81596,7 @@
         },
         "configs/palo_alto/policy" : {
           "address object" : {
-            "panorama~rfc1918_10" : {
+            "rfc1918_10~panorama" : {
               "definitionLines" : [
                 15,
                 16,
