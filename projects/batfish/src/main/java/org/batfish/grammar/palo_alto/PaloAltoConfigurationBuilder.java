@@ -5,6 +5,7 @@ import static org.batfish.representation.palo_alto.PaloAltoConfiguration.CATCHAL
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.CATCHALL_SERVICE_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.CATCHALL_ZONE_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT_VSYS_NAME;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.PANORAMA_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_GROUP;
@@ -81,6 +82,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_ntp_serversContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsd_serversContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsn_ntp_server_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_config_devicesContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_policy_panoramaContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sn_virtual_routerContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_ethernetContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_tunnelContext;
@@ -645,6 +647,17 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
         _w.redFlag("Multiple devices encountered: " + deviceName);
       }
     }
+  }
+
+  @Override
+  public void enterSet_line_policy_panorama(Set_line_policy_panoramaContext ctx) {
+    _currentVsys =
+        _configuration.getVirtualSystems().computeIfAbsent(PANORAMA_VSYS_NAME, Vsys::new);
+  }
+
+  @Override
+  public void exitSet_line_policy_panorama(Set_line_policy_panoramaContext ctx) {
+    _currentVsys = _defaultVsys;
   }
 
   @Override

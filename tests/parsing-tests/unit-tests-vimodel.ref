@@ -29716,6 +29716,26 @@
           }
         }
       },
+      "paloalto_policy" : {
+        "configurationFormat" : "PALO_ALTO_NESTED",
+        "name" : "paloalto_policy",
+        "defaultCrossZoneAction" : "DENY",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "ipSpaceMetadata" : {
+          "rfc1918_10" : {
+            "sourceName" : "rfc1918_10",
+            "sourceType" : "address object"
+          }
+        },
+        "ipSpaces" : {
+          "rfc1918_10" : {
+            "class" : "org.batfish.datamodel.PrefixIpSpace",
+            "prefix" : "10.0.0.0/8"
+          }
+        },
+        "vendorFamily" : { }
+      },
       "peer_template" : {
         "configurationFormat" : "CISCO_NX",
         "name" : "peer_template",
