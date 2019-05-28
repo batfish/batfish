@@ -47,6 +47,9 @@ import org.junit.rules.ExpectedException;
 public class FindMatchingFilterLinesAnswererTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
+  private static FindMatchingFilterLinesQuestion UNCONSTRAINED_QUESTION =
+      new FindMatchingFilterLinesQuestion(null, null, null, null, null);
+
   @Test
   public void testThrowsIfNoFiltersMatch() {
     // Config with no ACLs; should see exception because no filters match question specifications
@@ -58,7 +61,7 @@ public class FindMatchingFilterLinesAnswererTest {
             .build();
     MockBatfish batfish = new MockBatfish(ImmutableSortedMap.of("c", c));
     FindMatchingFilterLinesAnswerer answerer =
-        new FindMatchingFilterLinesAnswerer(new FindMatchingFilterLinesQuestion(), batfish);
+        new FindMatchingFilterLinesAnswerer(UNCONSTRAINED_QUESTION, batfish);
     _thrown.expect(IllegalArgumentException.class);
     answerer.answer();
   }
@@ -201,7 +204,7 @@ public class FindMatchingFilterLinesAnswererTest {
     {
       // Unfiltered getRows should have all three lines
       FindMatchingFilterLinesAnswerer answerer =
-          new FindMatchingFilterLinesAnswerer(new FindMatchingFilterLinesQuestion(), mockBatfish);
+          new FindMatchingFilterLinesAnswerer(UNCONSTRAINED_QUESTION, mockBatfish);
       assertThat(
           answerer.answer().getRows().getData(),
           containsInAnyOrder(c1Acl1Matcher, c1Acl2Matcher, c2Acl1Matcher));

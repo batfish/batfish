@@ -16,7 +16,8 @@ public class FindMatchingFilterLinesQuestionTest {
   @Test
   public void testJsonSerialization() throws IOException {
     // Default parameters
-    FindMatchingFilterLinesQuestion q = new FindMatchingFilterLinesQuestion();
+    FindMatchingFilterLinesQuestion q =
+        new FindMatchingFilterLinesQuestion(null, null, null, null, null);
     FindMatchingFilterLinesQuestion clone =
         BatfishObjectMapper.clone(q, FindMatchingFilterLinesQuestion.class);
     assertQuestionsEqual(q, clone);

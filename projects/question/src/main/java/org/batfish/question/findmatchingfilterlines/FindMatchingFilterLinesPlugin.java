@@ -17,6 +17,6 @@ public class FindMatchingFilterLinesPlugin extends QuestionPlugin {
 
   @Override
   protected Question createQuestion() {
-    return new FindMatchingFilterLinesQuestion();
+    return new FindMatchingFilterLinesQuestion(null, null, null, null, null);
   }
 }

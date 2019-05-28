@@ -67,10 +67,6 @@ public final class FindMatchingFilterLinesQuestion extends Question {
         SpecifierFactories.getNodeSpecifierOrDefault(nodes, AllNodesNodeSpecifier.INSTANCE);
   }
 
-  FindMatchingFilterLinesQuestion() {
-    this(null, null, null, null, null);
-  }
-
   @Override
   public boolean getDataPlane() {
     return false;
