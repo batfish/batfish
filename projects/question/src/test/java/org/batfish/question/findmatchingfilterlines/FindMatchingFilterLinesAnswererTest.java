@@ -7,10 +7,10 @@ import static org.batfish.question.findmatchingfilterlines.FindMatchingFilterLin
 import static org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesAnswerer.COL_LINE_INDEX;
 import static org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesAnswerer.COL_NODE;
 import static org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesAnswerer.getRowsForAcl;
-import static org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesAnswerer.toHeaderSpaceBdd;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -20,8 +20,11 @@ import com.google.common.collect.ImmutableSortedMap;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
+import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.plugin.IBatfishTestAdapter;
@@ -94,6 +97,7 @@ public class FindMatchingFilterLinesAnswererTest {
     IpAccessListToBdd bddConverter =
         new IpAccessListToBddImpl(
             pkt, BDDSourceManager.empty(pkt), ImmutableMap.of(), ImmutableMap.of());
+    HeaderSpaceToBDD hsConverter = new HeaderSpaceToBDD(pkt, ImmutableMap.of());
 
     {
       // Constrain dstIp to a superset of first line's dstIps (that still doesn't intersect prefix2)
@@ -101,9 +105,8 @@ public class FindMatchingFilterLinesAnswererTest {
           HeaderSpace.builder()
               .setDstIps(Prefix.create(ip1, prefix1.getPrefixLength() - 8).toIpSpace())
               .build();
-      List<Integer> rows =
-          getRowsForAcl(aclLines, toHeaderSpaceBdd(headerSpace, pkt), bddConverter, null);
-      assertThat(rows, contains(0));
+      IntStream rows = getRowsForAcl(aclLines, hsConverter.toBDD(headerSpace), bddConverter, null);
+      assertThat(rows.boxed().collect(Collectors.toList()), contains(0));
     }
     {
       // Constrain dstIp to a subset of first line's dstIps
@@ -111,24 +114,36 @@ public class FindMatchingFilterLinesAnswererTest {
           HeaderSpace.builder()
               .setDstIps(Prefix.create(ip1, prefix1.getPrefixLength() + 4).toIpSpace())
               .build();
-      List<Integer> rows =
-          getRowsForAcl(aclLines, toHeaderSpaceBdd(headerSpace, pkt), bddConverter, null);
-      assertThat(rows, contains(0));
+      IntStream rows = getRowsForAcl(aclLines, hsConverter.toBDD(headerSpace), bddConverter, null);
+      assertThat(rows.boxed().collect(Collectors.toList()), contains(0));
     }
     {
       // Constrain protocol to TCP
       HeaderSpace headerSpace =
           HeaderSpace.builder().setIpProtocols(ImmutableSet.of(IpProtocol.TCP)).build();
-      List<Integer> rows =
-          getRowsForAcl(aclLines, toHeaderSpaceBdd(headerSpace, pkt), bddConverter, null);
-      assertThat(rows, contains(0));
+      IntStream rows = getRowsForAcl(aclLines, hsConverter.toBDD(headerSpace), bddConverter, null);
+      assertThat(rows.boxed().collect(Collectors.toList()), contains(0));
     }
     {
-      // Constrain action to PERMIT
+      // Constrain action to DENY
       HeaderSpace headerSpace = HeaderSpace.builder().build();
-      List<Integer> rows =
-          getRowsForAcl(aclLines, toHeaderSpaceBdd(headerSpace, pkt), bddConverter, Action.PERMIT);
-      assertThat(rows, contains(0));
+      IntStream rows =
+          getRowsForAcl(aclLines, hsConverter.toBDD(headerSpace), bddConverter, Action.DENY);
+      assertThat(rows.boxed().collect(Collectors.toList()), contains(1));
+    }
+    {
+      // Constrain dstIp to 3.3.3.0/24 (shouldn't match either line)
+      HeaderSpace headerSpace =
+          HeaderSpace.builder().setDstIps(Prefix.parse("3.3.3.0/24").toIpSpace()).build();
+      IntStream rows = getRowsForAcl(aclLines, hsConverter.toBDD(headerSpace), bddConverter, null);
+      assertThat(rows.boxed().collect(Collectors.toList()), empty());
+    }
+    {
+      // Constrain srcIp to 3.3.3.0/24 (should match both lines)
+      HeaderSpace headerSpace =
+          HeaderSpace.builder().setSrcIps(Prefix.parse("3.3.3.0/24").toIpSpace()).build();
+      IntStream rows = getRowsForAcl(aclLines, hsConverter.toBDD(headerSpace), bddConverter, null);
+      assertThat(rows.boxed().collect(Collectors.toList()), contains(0, 1));
     }
   }
 
