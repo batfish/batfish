@@ -121,7 +121,11 @@ public final class Transitions {
     return stack;
   }
 
-  static @Nullable Transition mergeComposed(Transition t1, Transition t2) {
+  /**
+   * Try to compose two transitions by merging into a single atomic transition (i.e. without using
+   * {@link Composite}). If it cannot be done, return {@code null}.
+   */
+  public static @Nullable Transition mergeComposed(Transition t1, Transition t2) {
     if (t1 == ZERO || t2 == ZERO) {
       return ZERO;
     }

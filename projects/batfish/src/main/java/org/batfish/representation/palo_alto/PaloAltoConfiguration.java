@@ -6,8 +6,10 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.SortedMultiset;
+import com.google.common.collect.Streams;
 import com.google.common.collect.TreeMultiset;
 import java.util.Collection;
 import java.util.Collections;
@@ -323,7 +325,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   /** Generate outgoing IpAccessList for the specified zone */
   private IpAccessList generateOutgoingFilter(String name, Zone toZone, Vsys vsys) {
     List<IpAccessListLine> lines = new TreeList<>();
-    SortedMap<String, Rule> rules = toZone.getVsys().getRules();
+    Map<String, Rule> rules = toZone.getVsys().getRules();
 
     for (Rule rule : rules.values()) {
       if (!rule.getDisabled()
@@ -563,6 +565,32 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return newZone;
   }
 
+  /**
+   * Attach interfaces to zones. This is not done during extraction in case the file is structured
+   * so that zones are defined first.
+   */
+  private void attachInterfacesToZones() {
+    Map<String, Interface> allInterfaces =
+        Streams.concat(
+                getInterfaces().entrySet().stream(),
+                getInterfaces().values().stream().flatMap(i -> i.getUnits().entrySet().stream()))
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+    // Assign the appropriate zone to each interface
+    for (Vsys vsys : getVirtualSystems().values()) {
+      for (Zone zone : vsys.getZones().values()) {
+        for (String ifname : zone.getInterfaceNames()) {
+          Interface iface = allInterfaces.get(ifname);
+          if (iface != null) {
+            iface.setZone(zone);
+          } else {
+            // do nothing. Assume that an undefined reference was logged elsewhere.
+            assert true;
+          }
+        }
+      }
+    }
+  }
+
   @Override
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
     String hostname = getHostname();
@@ -571,6 +599,9 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     _c.setDefaultInboundAction(LineAction.PERMIT);
     _c.setDnsServers(getDnsServers());
     _c.setNtpServers(getNtpServers());
+
+    // Before processing any Vsys, ensure that interfaces are attached to zones.
+    attachInterfacesToZones();
 
     // Handle converting items within virtual systems
     convertVirtualSystems();

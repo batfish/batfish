@@ -7470,6 +7470,15 @@
               "class" : "org.batfish.datamodel.IpWildcardIpSpace",
               "ipWildcard" : "1.1.1.1"
             }
+          },
+          "~RSA_PUB_a.example.com~" : {
+            "keyHash" : "395e74fd95a53ac96667b78ef3c2d38b6e95981d3779d20d5b6f4a53baa98d32",
+            "keyType" : "RSA_PUB_KEY",
+            "localInterface" : "unset_local_interface",
+            "remoteIdentity" : {
+              "class" : "org.batfish.datamodel.IpIpSpace",
+              "ip" : "1.2.3.4"
+            }
           }
         },
         "ikePhase1Policies" : {
@@ -7484,6 +7493,23 @@
               "ipWildcard" : "1.2.3.4"
             },
             "selfIdentity" : "2.3.4.6"
+          },
+          "~RSA_PUB_a.example.com~" : {
+            "name" : "~RSA_PUB_a.example.com~",
+            "ikePhase1Key" : {
+              "keyHash" : "395e74fd95a53ac96667b78ef3c2d38b6e95981d3779d20d5b6f4a53baa98d32",
+              "keyType" : "RSA_PUB_KEY",
+              "localInterface" : "unset_local_interface",
+              "remoteIdentity" : {
+                "class" : "org.batfish.datamodel.IpIpSpace",
+                "ip" : "1.2.3.4"
+              }
+            },
+            "localInterface" : "unset_local_interface",
+            "remoteIdentity" : {
+              "class" : "org.batfish.datamodel.IpIpSpace",
+              "ip" : "1.2.3.4"
+            }
           }
         },
         "ikePhase1Proposals" : {
@@ -13861,7 +13887,8 @@
             "name" : "swp2",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.datamodel.IpIpSpace",
+              "ip" : "169.254.0.1"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -13887,7 +13914,8 @@
             "name" : "swp3",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.datamodel.IpIpSpace",
+              "ip" : "169.254.0.1"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -14405,6 +14433,56 @@
                 ]
               }
             ]
+          },
+          "~BGP_PEER_EXPORT_POLICY:default:swp2~" : {
+            "name" : "~BGP_PEER_EXPORT_POLICY:default:swp2~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "peer-export policy main conditional: exitAccept if true / exitReject if false",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                  "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:default~"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
+          },
+          "~BGP_PEER_EXPORT_POLICY:default:swp3~" : {
+            "name" : "~BGP_PEER_EXPORT_POLICY:default:swp3~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "peer-export policy main conditional: exitAccept if true / exitReject if false",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                  "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:default~"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -14461,6 +14539,70 @@
                   "localIp" : "169.254.0.1",
                   "peerInterface" : "swp1",
                   "remoteAsns" : "1-65499,65501-4294967295",
+                  "routeReflectorClient" : false,
+                  "sendCommunity" : true
+                },
+                "swp2" : {
+                  "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
+                  "additionalPathsReceive" : false,
+                  "additionalPathsSelectAll" : false,
+                  "additionalPathsSend" : false,
+                  "advertiseExternal" : false,
+                  "advertiseInactive" : false,
+                  "allowLocalAsIn" : false,
+                  "allowRemoteAsOut" : false,
+                  "defaultMetric" : 0,
+                  "ebgpMultihop" : false,
+                  "enforceFirstAs" : false,
+                  "evpnAddressFamily" : {
+                    "l3Vnis" : [
+                      {
+                        "advertiseV4UnicastRoutes" : true,
+                        "routeDistinguisher" : "192.0.2.3:0",
+                        "routeTarget" : "2:65500:10001",
+                        "vni" : 10001,
+                        "vrf" : "vrf1"
+                      }
+                    ]
+                  },
+                  "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:swp2~",
+                  "ipv4UnicastAddressFamily" : { },
+                  "localAs" : 65500,
+                  "localIp" : "169.254.0.1",
+                  "peerInterface" : "swp2",
+                  "remoteAsns" : "65500",
+                  "routeReflectorClient" : false,
+                  "sendCommunity" : true
+                },
+                "swp3" : {
+                  "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
+                  "additionalPathsReceive" : false,
+                  "additionalPathsSelectAll" : false,
+                  "additionalPathsSend" : false,
+                  "advertiseExternal" : false,
+                  "advertiseInactive" : false,
+                  "allowLocalAsIn" : false,
+                  "allowRemoteAsOut" : false,
+                  "defaultMetric" : 0,
+                  "ebgpMultihop" : false,
+                  "enforceFirstAs" : false,
+                  "evpnAddressFamily" : {
+                    "l3Vnis" : [
+                      {
+                        "advertiseV4UnicastRoutes" : true,
+                        "routeDistinguisher" : "192.0.2.3:0",
+                        "routeTarget" : "2:65500:10001",
+                        "vni" : 10001,
+                        "vrf" : "vrf1"
+                      }
+                    ]
+                  },
+                  "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:swp3~",
+                  "ipv4UnicastAddressFamily" : { },
+                  "localAs" : 65500,
+                  "localIp" : "169.254.0.1",
+                  "peerInterface" : "swp3",
+                  "remoteAsns" : "65000",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 }

@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
+import static org.batfish.datamodel.IkePhase1Policy.PREFIX_RSA_PUB;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Interface.computeInterfaceType;
 import static org.batfish.datamodel.Interface.isRealInterfaceName;
@@ -81,6 +82,7 @@ import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute6;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkePhase1Key;
+import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
@@ -3488,11 +3490,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
             cryptoNamedRsaPubKey -> {
               IkePhase1Key ikePhase1Key = toIkePhase1Key(cryptoNamedRsaPubKey);
               ikePhase1KeysBuilder.put(
-                  String.format("~RSA_PUB_%s~", cryptoNamedRsaPubKey.getName()), ikePhase1Key);
-              c.getIkePhase1Policies()
-                  .put(
-                      String.format("~RSA_PUB_%s~", cryptoNamedRsaPubKey.getName()),
-                      toIkePhase1Policy(cryptoNamedRsaPubKey, this, ikePhase1Key));
+                  String.format("~%s_%s~", PREFIX_RSA_PUB, cryptoNamedRsaPubKey.getName()),
+                  ikePhase1Key);
+
+              IkePhase1Policy ikePhase1Policy =
+                  toIkePhase1Policy(cryptoNamedRsaPubKey, this, ikePhase1Key);
+              c.getIkePhase1Policies().put(ikePhase1Policy.getName(), ikePhase1Policy);
             });
 
     c.setIkePhase1Keys(ikePhase1KeysBuilder.build());
