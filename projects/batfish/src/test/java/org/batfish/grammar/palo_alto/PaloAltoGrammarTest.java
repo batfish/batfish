@@ -77,6 +77,8 @@ import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
@@ -894,6 +896,12 @@ public class PaloAltoGrammarTest {
     assertThat(c, hasIpAccessList(serviceGroup2AclName, accepts(service1Flow, null, c)));
     assertThat(c, hasIpAccessList(serviceGroup2AclName, accepts(service2Flow, null, c)));
     assertThat(c, hasIpAccessList(serviceGroup2AclName, rejects(service3Flow1, null, c)));
+
+    // Verify transitive name.
+    IpAccessList service1 = c.getIpAccessLists().get(service1AclName);
+    IpAccessList sg1 = c.getIpAccessLists().get(serviceGroup1AclName);
+    IpAccessListLine line1 = sg1.getLines().get(0);
+    assertThat(line1.getName(), equalTo(service1.getSourceName()));
   }
 
   @Test
