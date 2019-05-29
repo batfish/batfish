@@ -58,6 +58,8 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ble_advertise_default_
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Ble_advertise_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bn_interfaceContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bni_remote_as_externalContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bni_remote_as_internalContext;
+import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bni_remote_as_numberContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bob_accessContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bob_pvidContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Bob_vidsContext;
@@ -800,6 +802,17 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   @Override
   public void exitBni_remote_as_external(Bni_remote_as_externalContext ctx) {
     _currentBgpInterfaceNeighbor.setRemoteAsType(RemoteAsType.EXTERNAL);
+  }
+
+  @Override
+  public void exitBni_remote_as_internal(Bni_remote_as_internalContext ctx) {
+    _currentBgpInterfaceNeighbor.setRemoteAsType(RemoteAsType.INTERNAL);
+  }
+
+  @Override
+  public void exitBni_remote_as_number(Bni_remote_as_numberContext ctx) {
+    _currentBgpInterfaceNeighbor.setRemoteAsType(RemoteAsType.EXPLICIT);
+    _currentBgpInterfaceNeighbor.setRemoteAs(toLong(ctx.as));
   }
 
   @Override
