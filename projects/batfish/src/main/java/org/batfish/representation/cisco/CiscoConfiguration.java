@@ -415,6 +415,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, CryptoMapSet> _cryptoMapSets;
 
+  private final Map<String, CryptoNamedRsaPubKey> _cryptoNamedRsaPubKeys;
+
   private final List<Ip> _dhcpRelayServers;
 
   private NavigableSet<String> _dnsServers;
@@ -561,6 +563,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _asPathSets = new TreeMap<>();
     _cf = new CiscoFamily();
     _communitySets = new TreeMap<>();
+    _cryptoNamedRsaPubKeys = new TreeMap<>();
     _cryptoMapSets = new HashMap<>();
     _dhcpRelayServers = new ArrayList<>();
     _dnsServers = new TreeSet<>();
@@ -745,6 +748,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, CryptoMapSet> getCryptoMapSets() {
     return _cryptoMapSets;
+  }
+
+  public Map<String, CryptoNamedRsaPubKey> getCryptoNamedRsaPubKeys() {
+    return _cryptoNamedRsaPubKeys;
   }
 
   public Vrf getDefaultVrf() {
@@ -3474,6 +3481,19 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _keyrings
         .values()
         .forEach(keyring -> ikePhase1KeysBuilder.put(keyring.getName(), toIkePhase1Key(keyring)));
+    // RSA pub named keys to IKE phase 1 key and IKE phase 1 policy
+    _cryptoNamedRsaPubKeys
+        .values()
+        .forEach(
+            cryptoNamedRsaPubKey -> {
+              IkePhase1Key ikePhase1Key = toIkePhase1Key(cryptoNamedRsaPubKey);
+              ikePhase1KeysBuilder.put(
+                  String.format("~RSA_PUB_%s~", cryptoNamedRsaPubKey.getName()), ikePhase1Key);
+              c.getIkePhase1Policies()
+                  .put(
+                      String.format("~RSA_PUB_%s~", cryptoNamedRsaPubKey.getName()),
+                      toIkePhase1Policy(cryptoNamedRsaPubKey, this, ikePhase1Key));
+            });
 
     c.setIkePhase1Keys(ikePhase1KeysBuilder.build());
 

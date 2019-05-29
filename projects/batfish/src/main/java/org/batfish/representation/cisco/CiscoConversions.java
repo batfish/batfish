@@ -50,6 +50,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeKeyType;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
@@ -612,6 +613,38 @@ class CiscoConversions {
       ikePhase1Key.setRemoteIdentity(keyring.getRemoteIdentity().toIpSpace());
     }
     return ikePhase1Key;
+  }
+
+  static IkePhase1Key toIkePhase1Key(CryptoNamedRsaPubKey rsaPubKey) {
+    IkePhase1Key ikePhase1Key = new IkePhase1Key();
+    ikePhase1Key.setKeyHash(rsaPubKey.getKey());
+    ikePhase1Key.setKeyType(IkeKeyType.RSA_PUB_KEY);
+    if (rsaPubKey.getAddress() != null) {
+      ikePhase1Key.setRemoteIdentity(rsaPubKey.getAddress().toIpSpace());
+    }
+    return ikePhase1Key;
+  }
+
+  static IkePhase1Policy toIkePhase1Policy(
+      CryptoNamedRsaPubKey rsaPubKey,
+      CiscoConfiguration oldConfig,
+      IkePhase1Key ikePhase1KeyFromRsaPubKey) {
+    IkePhase1Policy ikePhase1Policy = new IkePhase1Policy(rsaPubKey.getName());
+    ikePhase1Policy.setIkePhase1Proposals(
+        oldConfig.getIsakmpPolicies().values().stream()
+            .filter(
+                isakmpPolicy ->
+                    isakmpPolicy.getAuthenticationMethod()
+                        == IkeAuthenticationMethod.RSA_ENCRYPTED_NONCES)
+            .map(isakmpPolicy -> isakmpPolicy.getName().toString())
+            .collect(ImmutableList.toImmutableList()));
+    if (rsaPubKey.getAddress() != null) {
+      ikePhase1Policy.setRemoteIdentity(rsaPubKey.getAddress().toIpSpace());
+    }
+    ikePhase1Policy.setIkePhase1Key(ikePhase1KeyFromRsaPubKey);
+    // RSA pub key is not per interface so unsetting local interface
+    ikePhase1Policy.setLocalInterface(UNSET_LOCAL_INTERFACE);
+    return ikePhase1Policy;
   }
 
   static IkePhase1Policy toIkePhase1Policy(

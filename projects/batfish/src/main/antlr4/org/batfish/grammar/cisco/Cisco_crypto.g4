@@ -507,9 +507,15 @@ ckp_named_key
 :
    NAMED_KEY name = variable_permissive NEWLINE
    (
-      ckpn_key_string
+      ckpn_address
+      | ckpn_key_string
       | ckpn_null
    )*
+;
+
+ckpn_address
+:
+   ADDRESS ip_address = IP_ADDRESS NEWLINE
 ;
 
 ckpn_key_string

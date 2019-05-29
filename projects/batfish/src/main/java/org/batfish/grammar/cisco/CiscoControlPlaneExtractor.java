@@ -542,6 +542,9 @@ import org.batfish.grammar.cisco.CiscoParser.Cisprf_keyringContext;
 import org.batfish.grammar.cisco.CiscoParser.Cisprf_local_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.Cisprf_matchContext;
 import org.batfish.grammar.cisco.CiscoParser.Cisprf_self_identityContext;
+import org.batfish.grammar.cisco.CiscoParser.Ckp_named_keyContext;
+import org.batfish.grammar.cisco.CiscoParser.Ckpn_addressContext;
+import org.batfish.grammar.cisco.CiscoParser.Ckpn_key_stringContext;
 import org.batfish.grammar.cisco.CiscoParser.Ckr_local_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.Ckr_pskContext;
 import org.batfish.grammar.cisco.CiscoParser.Clb_docsis_policyContext;
@@ -1174,6 +1177,7 @@ import org.batfish.representation.cisco.CommunitySetElemHalves;
 import org.batfish.representation.cisco.CommunitySetElemIosRegex;
 import org.batfish.representation.cisco.CryptoMapEntry;
 import org.batfish.representation.cisco.CryptoMapSet;
+import org.batfish.representation.cisco.CryptoNamedRsaPubKey;
 import org.batfish.representation.cisco.DistributeList;
 import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco.DynamicIpBgpPeerGroup;
@@ -1524,6 +1528,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private String _currentCryptoMapName;
 
   private Integer _currentCryptoMapSequenceNum;
+
+  private CryptoNamedRsaPubKey _currentCryptoNamedRsaPubKey;
 
   private DynamicIpBgpPeerGroup _currentDynamicIpPeerGroup;
 
@@ -1947,6 +1953,29 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           toIpsecAuthenticationAlgorithm(ctx.ipsec_authentication()));
       _currentIpsecTransformSet.getProtocols().add(toProtocol(ctx.ipsec_authentication()));
     }
+  }
+
+  @Override
+  public void enterCkp_named_key(Ckp_named_keyContext ctx) {
+    _currentCryptoNamedRsaPubKey = new CryptoNamedRsaPubKey(ctx.name.getText());
+  }
+
+  @Override
+  public void enterCkpn_address(Ckpn_addressContext ctx) {
+    _currentCryptoNamedRsaPubKey.setAddress(toIp(ctx.ip_address));
+  }
+
+  @Override
+  public void enterCkpn_key_string(Ckpn_key_stringContext ctx) {
+    _currentCryptoNamedRsaPubKey.setKey(
+        CommonUtil.sha256Digest(ctx.certificate().getText() + CommonUtil.salt()));
+  }
+
+  @Override
+  public void exitCkp_named_key(Ckp_named_keyContext ctx) {
+    _configuration
+        .getCryptoNamedRsaPubKeys()
+        .put(_currentCryptoNamedRsaPubKey.getName(), _currentCryptoNamedRsaPubKey);
   }
 
   private IpsecProtocol toProtocol(Ipsec_authenticationContext ctx) {

@@ -3808,6 +3808,12 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testJane() throws IOException {
+    Configuration c = parseConfig("jane");
+    System.out.print(c);
+  }
+
+  @Test
   public void testIsakmpPolicyIos() throws IOException {
     Configuration c = parseConfig("ios-crypto");
     // test for IKE phase1 proposals
