@@ -3,21 +3,20 @@ package org.batfish.bddreachability;
 import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
 import static org.batfish.bddreachability.transition.Transitions.ZERO;
-import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.mergeComposed;
+import static org.batfish.bddreachability.transition.Transitions.or;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import java.util.ArrayDeque;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.batfish.bddreachability.transition.AddLastHopConstraint;
@@ -68,7 +67,7 @@ public class BDDReachabilityGraphOptimizer {
   private BDDReachabilityGraphOptimizer(
       Collection<Edge> edges, Set<StateExpr> statesToKeep, boolean keepSelfLoops) {
     _edges = computeEdgeTable(edges);
-    _statesToKeep = statesToKeep;
+    _statesToKeep = ImmutableSet.copyOf(statesToKeep);
     _keepSelfLoops = keepSelfLoops;
     _origEdges = _edges.size();
   }
@@ -99,17 +98,19 @@ public class BDDReachabilityGraphOptimizer {
   }
 
   private void optimize() {
-    Queue<StateExpr> candidates =
-        new ArrayDeque<>(Sets.union(_edges.rowKeySet(), _edges.columnKeySet()));
-    Set<StateExpr> candidateSet = new HashSet<>(candidates);
-    while (!candidates.isEmpty()) {
-      StateExpr candidate = candidates.poll();
+    Set<StateExpr> candidateSet =
+        _edges.cellSet().stream()
+            .flatMap(cell -> Stream.of(cell.getRowKey(), cell.getColumnKey()))
+            .collect(Collectors.toSet());
+    Queue<StateExpr> candidateQueue = new ArrayDeque<>(candidateSet);
+    while (!candidateQueue.isEmpty()) {
+      StateExpr candidate = candidateQueue.poll();
       candidateSet.remove(candidate);
       if (!_keepSelfLoops) {
         removeSelfLoops(candidate);
       }
       if (!_statesToKeep.contains(candidate)) {
-        tryToRemove(candidate).filter(candidateSet::add).forEach(candidates::add);
+        tryToRemove(candidate).filter(candidateSet::add).forEach(candidateQueue::add);
       }
     }
   }
@@ -127,6 +128,10 @@ public class BDDReachabilityGraphOptimizer {
     }
   }
 
+  /**
+   * Try to remove the candidate state, and return any neighboring states whose degrees changed as a
+   * result.
+   */
   private Stream<StateExpr> tryToRemove(StateExpr candidate) {
     assert !_statesToKeep.contains(candidate);
     Map<StateExpr, Transition> inEdges = _edges.column(candidate);
@@ -175,17 +180,13 @@ public class BDDReachabilityGraphOptimizer {
         Transition oldTransition = _edges.put(prev, next, composed);
 
         if (oldTransition == null) {
-          // prev and next didn't have an edge between them, so this didn't change their degree
+          // There wasn't already an edge from prev to next, so this didn't change their degree
           _nodesSpliced++;
           return Stream.of();
         } else {
-          // prev and next did have an edge, so we need to merge it.
-          Transition merged = compose(composed, oldTransition);
-          if (merged == ZERO) {
-            _edges.remove(prev, next);
-          } else {
-            _edges.put(prev, next, merged);
-          }
+          // there already was an edge from prev to next did have an edge, so merge with it.
+          // their degrees change, so mark them dirty
+          _edges.put(prev, next, or(composed, oldTransition));
           return Stream.of(prev, next);
         }
       }

@@ -211,18 +211,8 @@ public class BDDReachabilityGraphOptimizerTest {
     Edge edge1 = new Edge(STATE1, STATE2, CONSTRAINT0);
     Edge edge2 = new Edge(STATE2, STATE3, CONSTRAINT1);
     Edge edge3 = new Edge(STATE1, STATE3, CONSTRAINT2);
-    assertThat(
-        optimize(ImmutableSet.of(edge1, edge2, edge3), ImmutableSet.of(STATE1, STATE3), false),
-        contains(new Edge(STATE1, STATE3, constraint(BDD0.and(BDD1).and(BDD2)))));
-  }
-
-  @Test
-  public void conflictWithExistingEdge() {
-    Edge edge1 = new Edge(STATE1, STATE2, CONSTRAINT0);
-    Edge edge2 = new Edge(STATE2, STATE3, CONSTRAINT1);
-    Edge edge3 = new Edge(STATE1, STATE3, constraint(BDD0.xor(BDD1)));
-    assertThat(
-        optimize(ImmutableSet.of(edge1, edge2, edge3), ImmutableSet.of(STATE1, STATE3), false),
-        empty());
+    Collection<Edge> optimize =
+        optimize(ImmutableSet.of(edge1, edge2, edge3), ImmutableSet.of(STATE1, STATE3), false);
+    assertThat(optimize, contains(new Edge(STATE1, STATE3, constraint(BDD0.and(BDD1).or(BDD2)))));
   }
 }
