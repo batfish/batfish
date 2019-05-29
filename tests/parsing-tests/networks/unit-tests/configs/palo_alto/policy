@@ -11,6 +11,7 @@ config {
   }
 }
 policy {
+  shared;
   panorama {
     address {
       rfc1918_10 {

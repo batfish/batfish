@@ -70263,6 +70263,11 @@
             "            name = (variable",
             "              DOUBLE_QUOTED_STRING:'\"paloalto_policy\"')))))",
             "    NEWLINE:'\\n')",
+            "  (set_line_policy_shared",
+            "    SET:'set'",
+            "    POLICY:'policy'",
+            "    SHARED:'shared'",
+            "    NEWLINE:'\\n')",
             "  (set_line_policy_panorama",
             "    SET:'set'",
             "    POLICY:'policy'",
@@ -81598,9 +81603,9 @@
           "address object" : {
             "rfc1918_10~panorama" : {
               "definitionLines" : [
-                15,
                 16,
-                17
+                17,
+                18
               ],
               "numReferrers" : 0
             }

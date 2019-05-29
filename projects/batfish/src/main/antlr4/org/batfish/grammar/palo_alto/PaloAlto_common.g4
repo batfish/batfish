@@ -35,16 +35,17 @@ src_or_dst_list_item
     )
 ;
 
-variable
+port_or_range
 :
-    ~NEWLINE
+    range = RANGE
+    | port = DEC
 ;
 
-variable_comma_separated_dec
+variable_port_list
 :
-    DEC
+    port_or_range
     (
-        COMMA DEC
+        COMMA port_or_range
     )*
 ;
 
@@ -69,4 +70,9 @@ variable_list_item
         CLOSE_BRACKET
         | NEWLINE
     )
+;
+
+variable
+:
+    ~NEWLINE
 ;

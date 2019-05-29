@@ -35,11 +35,13 @@ import static org.batfish.representation.palo_alto.PaloAltoConfiguration.NULL_VR
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeServiceGroupMemberAclName;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_GROUP_OR_APPLICATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_APPLICATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
 import static org.hamcrest.Matchers.allOf;
@@ -77,6 +79,8 @@ import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
@@ -368,6 +372,21 @@ public class PaloAltoGrammarTest {
         ccae2,
         hasUndefinedReference(
             filename2, PaloAltoStructureType.ADDRESS_GROUP_OR_ADDRESS_OBJECT, "addr3"));
+  }
+
+  @Test
+  public void testApplications() throws IOException {
+    String hostname = "applications";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // Confirm undefined application is detected
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, APPLICATION_GROUP_OR_APPLICATION, "undefined", RULE_APPLICATION));
   }
 
   @Test
@@ -671,6 +690,7 @@ public class PaloAltoGrammarTest {
     String if3name = "ethernet1/3";
     String if4name = "ethernet1/4";
     Flow z1ToZ1permitted = createFlow("1.1.2.255", "1.1.1.2");
+    Flow z1ToZ1rejectedSource = createFlow("2.2.2.2", "1.1.1.2");
     Flow z1ToZ1rejectedDestination = createFlow("1.1.2.2", "1.1.1.3");
     Flow z1ToZ1rejectedService = createFlow("1.1.2.2", "1.1.1.3", IpProtocol.TCP, 1, 999);
     Flow z2ToZ1permitted = createFlow("1.1.4.255", "1.1.1.2");
@@ -686,6 +706,9 @@ public class PaloAltoGrammarTest {
     assertThat(
         c,
         hasInterface(if1name, hasOutgoingFilter(rejects(z1ToZ1rejectedDestination, if2name, c))));
+    // Confirm intrazone flow not matching allow rule (source address negated) is rejected
+    assertThat(
+        c, hasInterface(if1name, hasOutgoingFilter(rejects(z1ToZ1rejectedSource, if2name, c))));
 
     // Confirm interzone flow matching allow rule is accepted
     assertThat(c, hasInterface(if1name, hasOutgoingFilter(accepts(z2ToZ1permitted, if4name, c))));
@@ -875,6 +898,7 @@ public class PaloAltoGrammarTest {
     assertThat(c, hasIpAccessList(service1AclName, rejects(service2Flow, null, c)));
 
     assertThat(c, hasIpAccessList(service2AclName, accepts(service2Flow, null, c)));
+    assertThat(c, hasIpAccessList(service2AclName, accepts(service3Flow2, null, c)));
     assertThat(c, hasIpAccessList(service2AclName, rejects(service3Flow1, null, c)));
 
     assertThat(c, hasIpAccessList(service3AclName, accepts(service3Flow1, null, c)));
@@ -893,6 +917,12 @@ public class PaloAltoGrammarTest {
     assertThat(c, hasIpAccessList(serviceGroup2AclName, accepts(service1Flow, null, c)));
     assertThat(c, hasIpAccessList(serviceGroup2AclName, accepts(service2Flow, null, c)));
     assertThat(c, hasIpAccessList(serviceGroup2AclName, rejects(service3Flow1, null, c)));
+
+    // Verify transitive name.
+    IpAccessList service1 = c.getIpAccessLists().get(service1AclName);
+    IpAccessList sg1 = c.getIpAccessLists().get(serviceGroup1AclName);
+    IpAccessListLine line1 = sg1.getLines().get(0);
+    assertThat(line1.getName(), equalTo(service1.getSourceName()));
   }
 
   @Test

@@ -406,6 +406,16 @@ NDP_PROXY
     'ndp-proxy'
 ;
 
+NEGATE_DESTINATION
+:
+    'negate-destination'
+;
+
+NEGATE_SOURCE
+:
+    'negate-source'
+;
+
 NETMASK
 :
     'netmask'
@@ -775,6 +785,11 @@ LINE_COMMENT
 NEWLINE
 :
     F_Newline+
+;
+
+RANGE
+:
+    F_Digit+ '-' F_Digit+
 ;
 
 SINGLE_QUOTED_STRING
