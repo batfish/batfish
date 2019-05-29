@@ -10,6 +10,9 @@ crypto isakmp policy 10
   authentication rsa-sig
   lifetime 14400
 !
+crypto isakmp policy 30
+  authentication rsa-encr
+!
 crypto keyring ISAKMP-KEYRING-ADDRESS
   pre-shared-key address 1.2.3.4 key psk1
   local-address 2.3.4.6

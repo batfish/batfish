@@ -11011,6 +11011,11 @@ RSA
    'rsa'
 ;
 
+RSA_ENCR
+:
+   'rsa-encr'
+;
+
 RSA_SIG
 :
    'rsa-sig'
@@ -15350,6 +15355,11 @@ M_Authentication_PPP
 M_Authentication_PRE_SHARE
 :
    'pre-share' -> type ( PRE_SHARE ) , popMode
+;
+
+M_Authentication_RSA_ENCR
+:
+   'rsa-encr' -> type ( RSA_ENCR ) , popMode
 ;
 
 M_Authentication_RSA_SIG

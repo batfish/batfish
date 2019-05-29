@@ -411,6 +411,7 @@ cispol_authentication
    AUTHENTICATION
    (
       PRE_SHARE
+      | RSA_ENCR
       | RSA_SIG
    ) NEWLINE
 ;
