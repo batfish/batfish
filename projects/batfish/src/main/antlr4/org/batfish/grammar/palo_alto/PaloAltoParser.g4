@@ -16,6 +16,7 @@ palo_alto_configuration
         set_line_config_devices
         | set_line_config_general
         | set_line_policy_panorama
+        | set_line_policy_shared
     )+ NEWLINE? EOF
 ;
 
@@ -69,5 +70,16 @@ statement_config_general
 
 set_line_policy_panorama
 :
-    SET POLICY PANORAMA ss_common NEWLINE
+    SET POLICY PANORAMA
+    (
+        ss_common
+    )
+    NEWLINE
+;
+
+set_line_policy_shared
+:
+    SET POLICY SHARED
+    /* TODO */
+    NEWLINE
 ;
