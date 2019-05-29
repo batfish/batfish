@@ -37,10 +37,11 @@ set rulebase security rules RULE2 application any
 set rulebase security rules RULE2 action allow
 
 # Override default behavior with default deny
-set rulebase security rules RULE3 from any
-set rulebase security rules RULE3 to any
-set rulebase security rules RULE3 source any
-set rulebase security rules RULE3 destination any
-set rulebase security rules RULE3 service any
-set rulebase security rules RULE3 application any
-set rulebase security rules RULE3 action deny
+# This last rule comes before the others alphabetically but should be processed last
+set rulebase security rules 3rd_RULE from any
+set rulebase security rules 3rd_RULE to any
+set rulebase security rules 3rd_RULE source any
+set rulebase security rules 3rd_RULE destination any
+set rulebase security rules 3rd_RULE service any
+set rulebase security rules 3rd_RULE application any
+set rulebase security rules 3rd_RULE action deny
