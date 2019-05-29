@@ -78,6 +78,7 @@ public class BDDReachabilityGraphOptimizer {
     return tbl;
   }
 
+  @SuppressWarnings("unused")
   private void printStats() {
     System.out.println(
         String.format(
