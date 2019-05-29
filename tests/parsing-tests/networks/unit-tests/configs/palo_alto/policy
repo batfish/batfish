@@ -11,8 +11,8 @@ config {
   }
 }
 policy {
+  shared;
   panorama {
-    shared;
     address {
       rfc1918_10 {
         ip-netmask 10.0.0.0/8;
