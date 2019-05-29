@@ -19,7 +19,7 @@ public final class Vsys implements Serializable {
   private final String _name;
 
   // Note: this is a LinkedHashMap to preserve insertion order
-  private Map<String, Rule> _rules;
+  private LinkedHashMap<String, Rule> _rules; // NOPMD
 
   private final SortedMap<String, Service> _services;
 
