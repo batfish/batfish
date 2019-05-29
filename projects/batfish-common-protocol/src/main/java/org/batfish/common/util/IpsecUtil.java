@@ -32,6 +32,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
+import org.batfish.datamodel.IkeKeyType;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
@@ -246,10 +247,28 @@ public class IpsecUtil {
       if (initiatorPhase1Key == null || responderPhase1Key == null) {
         return;
       }
-      if (initiatorPhase1Key.getKeyType().equals(responderPhase1Key.getKeyType())
-          && initiatorPhase1Key.getKeyHash().equals(responderPhase1Key.getKeyHash())) {
-        ipsecSessionBuilder.setNegotiatedIkeP1Key(initiatorIkePhase1Policy.getIkePhase1Key());
-      }
+      negotiateIkePhase1Key(initiatorPhase1Key, responderPhase1Key, ipsecSessionBuilder);
+    }
+  }
+
+  static void negotiateIkePhase1Key(
+      IkePhase1Key initiatorKey,
+      IkePhase1Key responderKey,
+      IpsecSession.Builder ipsecSessionBuilder) {
+    if (!responderKey.getKeyType().equals(initiatorKey.getKeyType())) {
+      return;
+    }
+    IkePhase1Key negotiatedIkePhase1Key = new IkePhase1Key();
+    negotiatedIkePhase1Key.setKeyType(initiatorKey.getKeyType());
+    if (responderKey.getKeyType().equals(IkeKeyType.RSA_PUB_KEY)) {
+      // RSA pub keys will not be equal and there is no common negotiated key
+      // so creating an empty negotiated key
+      ipsecSessionBuilder.setNegotiatedIkeP1Key(negotiatedIkePhase1Key);
+      return;
+    }
+    if (responderKey.getKeyHash().equals(initiatorKey.getKeyHash())) {
+      negotiatedIkePhase1Key.setKeyHash(initiatorKey.getKeyHash());
+      ipsecSessionBuilder.setNegotiatedIkeP1Key(negotiatedIkePhase1Key);
     }
   }
 
