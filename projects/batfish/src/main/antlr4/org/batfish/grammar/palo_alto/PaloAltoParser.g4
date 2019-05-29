@@ -11,13 +11,16 @@ options {
 
 palo_alto_configuration
 :
-    NEWLINE?
     (
-        set_line_config_devices
-        | set_line_config_general
-        | set_line_policy_panorama
-        | set_line_policy_shared
-    )+ NEWLINE? EOF
+        set_line
+        /* TODO: delete line, etc. */
+        | newline
+    )+ EOF
+;
+
+newline
+:
+   NEWLINE
 ;
 
 s_null
@@ -35,12 +38,12 @@ s_null
  */
 set_line_config_devices
 :
-    SET (CONFIG DEVICES name = variable)? statement_config_devices NEWLINE
+    (CONFIG DEVICES name = variable)? statement_config_devices
 ;
 
 set_line_config_general
 :
-    SET CONFIG? statement_config_general NEWLINE
+    CONFIG? statement_config_general
 ;
 
 /*
@@ -69,18 +72,37 @@ statement_config_general
     s_shared
 ;
 
-set_line_policy_panorama
+set_line
 :
-    SET POLICY PANORAMA
-    (
-        ss_common
-    )
-    NEWLINE
+    SET set_line_tail NEWLINE
 ;
 
-set_line_policy_shared
+set_line_tail
 :
-    SET POLICY SHARED
-    /* TODO */
-    NEWLINE
+    set_line_config_devices
+    | set_line_config_general
+    | s_policy
+;
+
+s_policy
+:
+    POLICY
+    (
+        s_policy_panorama
+        | s_policy_shared
+    )
+;
+
+s_policy_panorama
+:
+    PANORAMA
+    (
+        ss_common
+        /* TODO: there's panorama-specific stuff here. */
+    )
+;
+
+s_policy_shared
+:
+    SHARED /* TODO */
 ;

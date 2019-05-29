@@ -2,6 +2,8 @@ package org.batfish.representation.palo_alto;
 
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -18,7 +20,8 @@ public final class Vsys implements Serializable {
 
   private final String _name;
 
-  private SortedMap<String, Rule> _rules;
+  // Note: this is a LinkedHashMap to preserve insertion order
+  private LinkedHashMap<String, Rule> _rules; // NOPMD
 
   private final SortedMap<String, Service> _services;
 
@@ -33,7 +36,7 @@ public final class Vsys implements Serializable {
     _addressGroups = new TreeMap<>();
     _addressObjects = new TreeMap<>();
     _applications = new TreeMap<>();
-    _rules = new TreeMap<>();
+    _rules = new LinkedHashMap<>();
     _services = new TreeMap<>();
     _serviceGroups = new TreeMap<>();
     _syslogServerGroups = new TreeMap<>();
@@ -60,8 +63,8 @@ public final class Vsys implements Serializable {
     return _name;
   }
 
-  /** Returns a map of rule name to rule for the rules in this vsys. */
-  public SortedMap<String, Rule> getRules() {
+  /** Returns a {@code Map} of rule name to rule for the rules in this vsys. */
+  public Map<String, Rule> getRules() {
     return _rules;
   }
 
