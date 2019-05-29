@@ -802,11 +802,13 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   @Override
   public void exitBni_remote_as_external(Bni_remote_as_externalContext ctx) {
     _currentBgpInterfaceNeighbor.setRemoteAsType(RemoteAsType.EXTERNAL);
+    _currentBgpInterfaceNeighbor.setRemoteAs(null);
   }
 
   @Override
   public void exitBni_remote_as_internal(Bni_remote_as_internalContext ctx) {
     _currentBgpInterfaceNeighbor.setRemoteAsType(RemoteAsType.INTERNAL);
+    _currentBgpInterfaceNeighbor.setRemoteAs(null);
   }
 
   @Override
