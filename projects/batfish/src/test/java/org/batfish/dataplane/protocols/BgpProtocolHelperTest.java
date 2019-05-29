@@ -54,6 +54,10 @@ public class BgpProtocolHelperTest {
             _process,
             null),
         nullValue());
+  }
+
+  @Test
+  public void testTransformOnImportAllowAsIn() {
     assertThat(
         "AS path loop allowed",
         transformBgpRouteOnImport(
@@ -64,6 +68,10 @@ public class BgpProtocolHelperTest {
             _process,
             null),
         notNullValue());
+  }
+
+  @Test
+  public void testTransformOnImportEbgp() {
     assertThat(
         "No AS path loop, eBGP",
         transformBgpRouteOnImport(
@@ -75,17 +83,19 @@ public class BgpProtocolHelperTest {
                 null)
             .getProtocol(),
         equalTo(RoutingProtocol.BGP));
+  }
+
+  @Test
+  public void testTransformOnImportIbgp() {
     assertThat(
         "No AS path loop, iBGP",
-        transformBgpRouteOnImport(
-                _baseBgpRouteBuilder.setAsPath(AsPath.empty()).build(),
-                1L,
-                false,
-                false,
-                _process,
-                null)
+        transformBgpRouteOnImport(_baseBgpRouteBuilder.build(), 1L, false, false, _process, null)
             .getProtocol(),
         equalTo(RoutingProtocol.IBGP));
+  }
+
+  @Test
+  public void testTransformOnImportClearAdminSetInterface() {
     final Builder builder =
         transformBgpRouteOnImport(
             _baseBgpRouteBuilder.setAdmin(Integer.MAX_VALUE).build(),
