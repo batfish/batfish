@@ -7470,6 +7470,15 @@
               "class" : "org.batfish.datamodel.IpWildcardIpSpace",
               "ipWildcard" : "1.1.1.1"
             }
+          },
+          "~RSA_PUB_a.example.com~" : {
+            "keyHash" : "395e74fd95a53ac96667b78ef3c2d38b6e95981d3779d20d5b6f4a53baa98d32",
+            "keyType" : "RSA_PUB_KEY",
+            "localInterface" : "unset_local_interface",
+            "remoteIdentity" : {
+              "class" : "org.batfish.datamodel.IpIpSpace",
+              "ip" : "1.2.3.4"
+            }
           }
         },
         "ikePhase1Policies" : {
@@ -7484,6 +7493,23 @@
               "ipWildcard" : "1.2.3.4"
             },
             "selfIdentity" : "2.3.4.6"
+          },
+          "~RSA_PUB_a.example.com~" : {
+            "name" : "~RSA_PUB_a.example.com~",
+            "ikePhase1Key" : {
+              "keyHash" : "395e74fd95a53ac96667b78ef3c2d38b6e95981d3779d20d5b6f4a53baa98d32",
+              "keyType" : "RSA_PUB_KEY",
+              "localInterface" : "unset_local_interface",
+              "remoteIdentity" : {
+                "class" : "org.batfish.datamodel.IpIpSpace",
+                "ip" : "1.2.3.4"
+              }
+            },
+            "localInterface" : "unset_local_interface",
+            "remoteIdentity" : {
+              "class" : "org.batfish.datamodel.IpIpSpace",
+              "ip" : "1.2.3.4"
+            }
           }
         },
         "ikePhase1Proposals" : {

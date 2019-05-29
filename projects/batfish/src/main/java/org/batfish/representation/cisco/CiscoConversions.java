@@ -2,6 +2,7 @@ package org.batfish.representation.cisco;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Collections.singletonList;
+import static org.batfish.datamodel.IkePhase1Policy.PREFIX_RSA_PUB;
 import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 import static org.batfish.representation.cisco.CiscoConfiguration.MATCH_DEFAULT_ROUTE;
@@ -615,7 +616,7 @@ class CiscoConversions {
     return ikePhase1Key;
   }
 
-  static IkePhase1Key toIkePhase1Key(CryptoNamedRsaPubKey rsaPubKey) {
+  static IkePhase1Key toIkePhase1Key(@Nonnull CryptoNamedRsaPubKey rsaPubKey) {
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
     ikePhase1Key.setKeyHash(rsaPubKey.getKey());
     ikePhase1Key.setKeyType(IkeKeyType.RSA_PUB_KEY);
@@ -626,10 +627,12 @@ class CiscoConversions {
   }
 
   static IkePhase1Policy toIkePhase1Policy(
-      CryptoNamedRsaPubKey rsaPubKey,
-      CiscoConfiguration oldConfig,
-      IkePhase1Key ikePhase1KeyFromRsaPubKey) {
-    IkePhase1Policy ikePhase1Policy = new IkePhase1Policy(rsaPubKey.getName());
+      @Nonnull CryptoNamedRsaPubKey rsaPubKey,
+      @Nonnull CiscoConfiguration oldConfig,
+      @Nonnull IkePhase1Key ikePhase1KeyFromRsaPubKey) {
+    IkePhase1Policy ikePhase1Policy =
+        new IkePhase1Policy(String.format("~%s_%s~", PREFIX_RSA_PUB, rsaPubKey.getName()));
+
     ikePhase1Policy.setIkePhase1Proposals(
         oldConfig.getIsakmpPolicies().values().stream()
             .filter(
