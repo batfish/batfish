@@ -3857,7 +3857,10 @@ public class CiscoGrammarTest {
                 hasRemoteIdentity(containsIp(Ip.parse("1.2.3.4"))),
                 hasSelfIdentity(equalTo(Ip.parse("2.3.4.6"))),
                 hasLocalInterface(equalTo("TenGigabitEthernet0/0")),
-                hasIkePhase1Proposals(equalTo(ImmutableList.of("10", "20"))))));
+                // TODO: filter proposals during conversion so that they match IKE Phase 1
+                // proposal's
+                // authentication method
+                hasIkePhase1Proposals(equalTo(ImmutableList.of("10", "20", "30"))))));
 
     assertThat(
         c,
@@ -3870,7 +3873,7 @@ public class CiscoGrammarTest {
                 hasRemoteIdentity(containsIp(Ip.parse("1.2.3.4"))),
                 hasSelfIdentity(equalTo(Ip.parse("2.3.4.6"))),
                 hasLocalInterface(equalTo("TenGigabitEthernet0/0")),
-                hasIkePhase1Proposals(equalTo(ImmutableList.of("10", "20"))))));
+                hasIkePhase1Proposals(equalTo(ImmutableList.of("10", "20", "30"))))));
   }
 
   private static CommunitySetExpr communityListToMatchCondition(
