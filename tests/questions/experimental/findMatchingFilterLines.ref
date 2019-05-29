@@ -40,10 +40,12 @@
         "value" : "deny",
         "values" : [
           {
-            "name" : "deny"
+            "description" : "Return only lines that permit packets",
+            "name" : "permit"
           },
           {
-            "name" : "permit"
+            "description" : "Return only lines that deny packets",
+            "name" : "deny"
           }
         ]
       },

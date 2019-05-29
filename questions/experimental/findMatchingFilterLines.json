@@ -23,9 +23,15 @@
         "variables": {
             "action": {
                 "description": "Show filter lines with this action. By default returns lines with either action",
-                "allowedValues": [
-                    "permit",
-                    "deny"
+                "values": [
+                    {
+                        "name": "permit",
+                        "description": "Return only lines that permit packets"
+                    },
+                    {
+                        "name": "deny",
+                        "description": "Return only lines that deny packets"
+                    }
                 ],
                 "optional": true,
                 "type": "string",
