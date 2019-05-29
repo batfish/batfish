@@ -51,7 +51,7 @@ public final class ServiceGroup implements ServiceGroupMember {
                 action,
                 new PermittedByAcl(
                     computeServiceGroupMemberAclName(vsysName, memberReference.getName())),
-                _name));
+                memberReference.getName()));
       } else if (serviceName.equals(CATCHALL_SERVICE_NAME)) {
         lines.clear();
         lines.add(new IpAccessListLine(action, TrueExpr.INSTANCE, _name));
