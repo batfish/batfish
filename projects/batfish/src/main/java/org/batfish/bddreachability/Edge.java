@@ -83,8 +83,8 @@ public final class Edge {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(Edge.class)
-        .add("postState", _postState)
         .add("preState", _preState)
+        .add("postState", _postState)
         .add("transition", _transition)
         .toString();
   }

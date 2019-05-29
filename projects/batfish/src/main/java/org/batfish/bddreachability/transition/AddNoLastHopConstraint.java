@@ -9,7 +9,7 @@ import org.batfish.bddreachability.LastHopOutgoingInterfaceManager;
  * A {@link Transition} that constrains the last-hop variable to be the value indicating no last hop
  * (i.e. for originating entering an interface).
  */
-final class AddNoLastHopConstraint implements Transition {
+public final class AddNoLastHopConstraint implements Transition {
   private final LastHopOutgoingInterfaceManager _mgr;
   private final BDD _noLastHopConstraint;
 
