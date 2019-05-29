@@ -216,6 +216,11 @@ INTERFACE
   'interface'
 ;
 
+INTERNAL
+:
+  'internal'
+;
+
 IP
 :
   'ip'
