@@ -777,6 +777,11 @@ NEWLINE
     F_Newline+
 ;
 
+RANGE
+:
+    F_Digit+ '-' F_Digit+
+;
+
 SINGLE_QUOTED_STRING
 :
     '\'' ~'\''* '\''

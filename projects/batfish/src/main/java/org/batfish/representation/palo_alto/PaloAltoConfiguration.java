@@ -301,13 +301,13 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
       // Services
       for (Service service : vsys.getServices().values()) {
-        IpAccessList acl = service.toIpAccessList(LineAction.PERMIT, this, vsys);
+        IpAccessList acl = service.toIpAccessList(LineAction.PERMIT, this, vsys, _w);
         _c.getIpAccessLists().put(acl.getName(), acl);
       }
 
       // Service groups
       for (ServiceGroup serviceGroup : vsys.getServiceGroups().values()) {
-        IpAccessList acl = serviceGroup.toIpAccessList(LineAction.PERMIT, this, vsys);
+        IpAccessList acl = serviceGroup.toIpAccessList(LineAction.PERMIT, this, vsys, _w);
         _c.getIpAccessLists().put(acl.getName(), acl);
       }
     }

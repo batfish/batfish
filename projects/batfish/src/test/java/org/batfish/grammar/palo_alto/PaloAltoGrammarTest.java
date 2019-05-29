@@ -875,6 +875,7 @@ public class PaloAltoGrammarTest {
     assertThat(c, hasIpAccessList(service1AclName, rejects(service2Flow, null, c)));
 
     assertThat(c, hasIpAccessList(service2AclName, accepts(service2Flow, null, c)));
+    assertThat(c, hasIpAccessList(service2AclName, accepts(service3Flow2, null, c)));
     assertThat(c, hasIpAccessList(service2AclName, rejects(service3Flow1, null, c)));
 
     assertThat(c, hasIpAccessList(service3AclName, accepts(service3Flow1, null, c)));
