@@ -692,7 +692,7 @@ public class PaloAltoGrammarTest {
     Flow z1ToZ1permitted = createFlow("1.1.2.255", "1.1.1.2");
     Flow z1ToZ1rejectedSource = createFlow("2.2.2.2", "1.1.1.2");
     Flow z1ToZ1rejectedDestination = createFlow("1.1.2.2", "1.1.1.3");
-    Flow z1ToZ1rejectedService = createFlow("1.1.2.2", "1.1.1.3", IpProtocol.TCP, 1, 999);
+    Flow z1ToZ1rejectedService = createFlow("1.1.2.2", "1.1.1.2", IpProtocol.TCP, 1, 999);
     Flow z2ToZ1permitted = createFlow("1.1.4.255", "1.1.1.2");
     Flow noZoneToZ1rejected = createFlow("1.1.3.2", "1.1.1.2");
 
