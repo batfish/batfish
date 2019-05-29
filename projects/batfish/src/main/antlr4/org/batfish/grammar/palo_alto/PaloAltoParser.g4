@@ -69,5 +69,10 @@ statement_config_general
 
 set_line_policy_panorama
 :
-    SET POLICY PANORAMA ss_common NEWLINE
+    SET POLICY PANORAMA
+    (
+        SHARED
+        | ss_common
+    )
+    NEWLINE
 ;

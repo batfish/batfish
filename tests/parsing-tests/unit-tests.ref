@@ -70267,6 +70267,12 @@
             "    SET:'set'",
             "    POLICY:'policy'",
             "    PANORAMA:'panorama'",
+            "    SHARED:'shared'",
+            "    NEWLINE:'\\n')",
+            "  (set_line_policy_panorama",
+            "    SET:'set'",
+            "    POLICY:'policy'",
+            "    PANORAMA:'panorama'",
             "    (ss_common",
             "      (s_address",
             "        ADDRESS:'address'",
@@ -81598,9 +81604,9 @@
           "address object" : {
             "rfc1918_10~panorama" : {
               "definitionLines" : [
-                15,
                 16,
-                17
+                17,
+                18
               ],
               "numReferrers" : 0
             }
