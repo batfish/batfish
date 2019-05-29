@@ -7,7 +7,7 @@ import java.util.Objects;
 import net.sf.javabdd.BDD;
 
 /** A transition that applies a constraint. */
-final class Constraint implements Transition {
+public final class Constraint implements Transition {
   private final BDD _constraint;
 
   Constraint(BDD constraint) {

@@ -6,7 +6,7 @@ import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.LastHopOutgoingInterfaceManager;
 
 /** A {@link Transition} that adds a last-hop outgoing interface constraint. */
-final class AddLastHopConstraint implements Transition {
+public final class AddLastHopConstraint implements Transition {
   private final LastHopOutgoingInterfaceManager _mgr;
   private final BDD _lastHopConstraint;
 

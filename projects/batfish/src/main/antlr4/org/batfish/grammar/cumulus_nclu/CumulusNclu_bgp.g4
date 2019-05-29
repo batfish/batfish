@@ -103,12 +103,27 @@ b_neighbor
 
 bn_interface
 :
-  INTERFACE bni_remote_as_external
+  INTERFACE
+  (
+     bni_remote_as_external
+     | bni_remote_as_internal
+     | bni_remote_as_number
+  )
 ;
 
 bni_remote_as_external
 :
   REMOTE_AS EXTERNAL NEWLINE
+;
+
+bni_remote_as_internal
+:
+  REMOTE_AS INTERNAL NEWLINE
+;
+
+bni_remote_as_number
+:
+  REMOTE_AS as = uint32 NEWLINE
 ;
 
 b_router_id
