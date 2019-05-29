@@ -456,21 +456,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void exitPalo_alto_configuration(Palo_alto_configurationContext ctx) {
-    // Assign the appropriate zone to each interface
-    for (Vsys vsys : _configuration.getVirtualSystems().values()) {
-      for (Zone zone : vsys.getZones().values()) {
-        for (String ifname : zone.getInterfaceNames()) {
-          Interface iface = _configuration.getInterfaces().get(ifname);
-          if (iface != null) {
-            iface.setZone(zone);
-          }
-        }
-      }
-    }
-  }
-
-  @Override
   public void enterS_address(S_addressContext ctx) {
     String name = ctx.name.getText();
     if (_currentVsys.getAddressGroups().get(name) != null) {

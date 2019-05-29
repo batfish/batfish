@@ -1222,8 +1222,20 @@ public class PaloAltoGrammarTest {
     // Confirm zones contain the correct interfaces
     assertThat(
         c,
-        hasZone(zoneName, hasMemberInterfaces(containsInAnyOrder("ethernet1/1", "ethernet1/2"))));
+        hasZone(
+            zoneName,
+            hasMemberInterfaces(
+                containsInAnyOrder("ethernet1/1", "ethernet1/2", "ethernet1/3.1"))));
     assertThat(c, hasZone(zoneEmptyName, hasMemberInterfaces(empty())));
+
+    // Confirm interfaces have the correct zones
+    assertThat(
+        c,
+        allOf(
+            hasInterface("ethernet1/1", hasZoneName("z1")),
+            hasInterface("ethernet1/2", hasZoneName("z1")),
+            hasInterface("ethernet1/3.1", hasZoneName("z1")),
+            hasInterface("ethernet1/3", hasZoneName(nullValue()))));
   }
 
   @Test
