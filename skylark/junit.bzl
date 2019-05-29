@@ -55,7 +55,7 @@ def _impl(ctx):
     classes = ",".join(
         [_AsClassName(x) for x in ctx.attr.srcs],
     )
-    ctx.file_action(output = ctx.outputs.out, content = _OUTPUT % (
+    ctx.actions.write(output = ctx.outputs.out, content = _OUTPUT % (
         classes,
         ctx.attr.outname,
     ))
