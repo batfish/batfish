@@ -382,6 +382,10 @@ public class PaloAltoGrammarTest {
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
+    // Confirm reference count is correct for defined structures
+    assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.APPLICATION, "app1", 0));
+    assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.APPLICATION, "app2", 1));
+
     // Confirm undefined application is detected
     assertThat(
         ccae,
