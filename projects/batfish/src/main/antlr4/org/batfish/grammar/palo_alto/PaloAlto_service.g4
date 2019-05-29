@@ -24,7 +24,7 @@ sserv_description
 
 sserv_port
 :
-    PORT variable_comma_separated_dec
+    PORT variable_port_list
 ;
 
 sserv_protocol
@@ -39,5 +39,5 @@ sserv_protocol
 
 sserv_source_port
 :
-    SOURCE_PORT variable_comma_separated_dec
+    SOURCE_PORT variable_port_list
 ;

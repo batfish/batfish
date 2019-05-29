@@ -51,6 +51,7 @@ import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_authenticationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_dh_groupContext;
@@ -60,6 +61,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_hashContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_lifetimeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.If_commentContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Port_or_rangeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_address_groupContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_serviceContext;
@@ -1032,8 +1034,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSserv_port(Sserv_portContext ctx) {
-    for (TerminalNode item : ctx.variable_comma_separated_dec().DEC()) {
-      _currentService.getPorts().add(toInteger(item.getSymbol()));
+    for (Port_or_rangeContext item : ctx.variable_port_list().port_or_range()) {
+      if (item.port != null) {
+        _currentService.addPort(toInteger(item.port));
+      } else {
+        assert item.range != null;
+        _currentService.addPorts(new SubRange(item.range.getText()));
+      }
     }
   }
 
@@ -1050,8 +1057,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSserv_source_port(Sserv_source_portContext ctx) {
-    for (TerminalNode item : ctx.variable_comma_separated_dec().DEC()) {
-      _currentService.getSourcePorts().add(toInteger(item.getSymbol()));
+    for (Port_or_rangeContext item : ctx.variable_port_list().port_or_range()) {
+      if (item.port != null) {
+        _currentService.addSourcePort(toInteger(item.port));
+      } else {
+        assert item.range != null;
+        _currentService.addSourcePorts(new SubRange(item.range.getText()));
+      }
     }
   }
 
