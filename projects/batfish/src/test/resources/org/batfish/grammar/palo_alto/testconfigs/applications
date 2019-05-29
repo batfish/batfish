@@ -1,3 +1,8 @@
 set deviceconfig system hostname applications
 
-set config devices localhost.localdomain vsys vsys1 rulebase security rules rule1 application undefined
+set config devices localhost.localdomain vsys vsys1 application app1
+# `config devices localhost.localdomain` is implied
+set vsys vsys1 application app2 description "this is a description"
+
+set vsys vsys1 rulebase security rules rule1 application undefined
+set vsys vsys1 rulebase security rules rule2 application app2
