@@ -66,6 +66,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationConte
 import org.batfish.grammar.palo_alto.PaloAltoParser.Port_or_rangeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_address_groupContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.S_policy_panoramaContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_serviceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_service_groupContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_sharedContext;
@@ -86,7 +87,6 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_ntp_serversContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsd_serversContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsn_ntp_server_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_config_devicesContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_policy_panoramaContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sn_virtual_routerContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_ethernetContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_loopbackContext;
@@ -645,13 +645,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void enterSet_line_policy_panorama(Set_line_policy_panoramaContext ctx) {
+  public void enterS_policy_panorama(S_policy_panoramaContext ctx) {
     _currentVsys =
         _configuration.getVirtualSystems().computeIfAbsent(PANORAMA_VSYS_NAME, Vsys::new);
   }
 
   @Override
-  public void exitSet_line_policy_panorama(Set_line_policy_panoramaContext ctx) {
+  public void exitS_policy_panorama(S_policy_panoramaContext ctx) {
     _currentVsys = _defaultVsys;
   }
 
