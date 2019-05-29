@@ -54,7 +54,7 @@ public final class Vsys implements Serializable {
     return _name;
   }
 
-  /** Returns a {@code LinkedHashMap} of rule name to rule for to rules in this vsys. */
+  /** Returns a {@code LinkedHashMap} of rule name to rule for the rules in this vsys. */
   public LinkedHashMap<String, Rule> getRules() {
     return _rules;
   }

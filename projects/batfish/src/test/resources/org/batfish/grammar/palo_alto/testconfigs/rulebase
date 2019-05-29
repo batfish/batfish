@@ -36,7 +36,7 @@ set rulebase security rules RULE2 application any
 set rulebase security rules RULE2 action allow
 
 # Override default behavior with default deny
-# This rule comes before the others alphabetically but should be processed last
+# This last rule comes before the others alphabetically but should be processed last
 set rulebase security rules 3rd_RULE from any
 set rulebase security rules 3rd_RULE to any
 set rulebase security rules 3rd_RULE source any
