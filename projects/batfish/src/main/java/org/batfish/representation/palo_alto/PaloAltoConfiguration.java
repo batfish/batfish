@@ -11,7 +11,6 @@ import com.google.common.collect.SortedMultiset;
 import com.google.common.collect.TreeMultiset;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -318,7 +317,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   /** Generate outgoing IpAccessList for the specified zone */
   private IpAccessList generateOutgoingFilter(String name, Zone toZone, Vsys vsys) {
     List<IpAccessListLine> lines = new TreeList<>();
-    LinkedHashMap<String, Rule> rules = toZone.getVsys().getRules();
+    Map<String, Rule> rules = toZone.getVsys().getRules();
 
     for (Rule rule : rules.values()) {
       if (!rule.getDisabled()
