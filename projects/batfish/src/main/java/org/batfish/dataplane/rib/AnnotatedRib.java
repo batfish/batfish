@@ -30,4 +30,9 @@ public abstract class AnnotatedRib<R extends AbstractRoute> extends AbstractRib<
 
   @Override
   public abstract int comparePreference(AnnotatedRoute<R> lhs, AnnotatedRoute<R> rhs);
+
+  @SuppressWarnings("unchecked") // Since R is a supertype, this cast should be fine
+  public boolean containsRoute(AnnotatedRoute<? extends R> route) {
+    return super.containsRoute((AnnotatedRoute<R>) route);
+  }
 }

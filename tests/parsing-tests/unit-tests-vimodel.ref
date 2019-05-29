@@ -13861,7 +13861,8 @@
             "name" : "swp2",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.datamodel.IpIpSpace",
+              "ip" : "169.254.0.1"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -13887,7 +13888,8 @@
             "name" : "swp3",
             "active" : true,
             "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
+              "class" : "org.batfish.datamodel.IpIpSpace",
+              "ip" : "169.254.0.1"
             },
             "allowedVlans" : "",
             "autostate" : true,
@@ -14405,6 +14407,56 @@
                 ]
               }
             ]
+          },
+          "~BGP_PEER_EXPORT_POLICY:default:swp2~" : {
+            "name" : "~BGP_PEER_EXPORT_POLICY:default:swp2~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "peer-export policy main conditional: exitAccept if true / exitReject if false",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                  "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:default~"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
+          },
+          "~BGP_PEER_EXPORT_POLICY:default:swp3~" : {
+            "name" : "~BGP_PEER_EXPORT_POLICY:default:swp3~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "peer-export policy main conditional: exitAccept if true / exitReject if false",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                  "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:default~"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -14462,6 +14514,70 @@
                   "localIp" : "169.254.0.1",
                   "peerInterface" : "swp1",
                   "remoteAsns" : "1-65499,65501-4294967295",
+                  "routeReflectorClient" : false,
+                  "sendCommunity" : true
+                },
+                "swp2" : {
+                  "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
+                  "additionalPathsReceive" : false,
+                  "additionalPathsSelectAll" : false,
+                  "additionalPathsSend" : false,
+                  "advertiseExternal" : false,
+                  "advertiseInactive" : false,
+                  "allowLocalAsIn" : false,
+                  "allowRemoteAsOut" : false,
+                  "defaultMetric" : 0,
+                  "ebgpMultihop" : false,
+                  "enforceFirstAs" : false,
+                  "evpnAddressFamily" : {
+                    "l3Vnis" : [
+                      {
+                        "advertiseV4UnicastRoutes" : true,
+                        "routeDistinguisher" : "192.0.2.3:0",
+                        "routeTarget" : "2:65500:10001",
+                        "vni" : 10001,
+                        "vrf" : "vrf1"
+                      }
+                    ]
+                  },
+                  "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:swp2~",
+                  "ipv4UnicastAddressFamily" : { },
+                  "localAs" : 65500,
+                  "localIp" : "169.254.0.1",
+                  "peerInterface" : "swp2",
+                  "remoteAsns" : "65500",
+                  "routeReflectorClient" : false,
+                  "sendCommunity" : true
+                },
+                "swp3" : {
+                  "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
+                  "additionalPathsReceive" : false,
+                  "additionalPathsSelectAll" : false,
+                  "additionalPathsSend" : false,
+                  "advertiseExternal" : false,
+                  "advertiseInactive" : false,
+                  "allowLocalAsIn" : false,
+                  "allowRemoteAsOut" : false,
+                  "defaultMetric" : 0,
+                  "ebgpMultihop" : false,
+                  "enforceFirstAs" : false,
+                  "evpnAddressFamily" : {
+                    "l3Vnis" : [
+                      {
+                        "advertiseV4UnicastRoutes" : true,
+                        "routeDistinguisher" : "192.0.2.3:0",
+                        "routeTarget" : "2:65500:10001",
+                        "vni" : 10001,
+                        "vrf" : "vrf1"
+                      }
+                    ]
+                  },
+                  "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:swp3~",
+                  "ipv4UnicastAddressFamily" : { },
+                  "localAs" : 65500,
+                  "localIp" : "169.254.0.1",
+                  "peerInterface" : "swp3",
+                  "remoteAsns" : "65000",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true
                 }
@@ -29547,6 +29663,271 @@
             ]
           }
         }
+      },
+      "paloalto_interfaces" : {
+        "configurationFormat" : "PALO_ALTO_NESTED",
+        "name" : "paloalto_interfaces",
+        "defaultCrossZoneAction" : "DENY",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "interfaces" : {
+          "ethernet1/1" : {
+            "name" : "ethernet1/1",
+            "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "outgoingFilter" : "~ethernet1/1~OUTGOING_FILTER~",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "~NULL_VRF~"
+          },
+          "ethernet1/1.5" : {
+            "name" : "ethernet1/1.5",
+            "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "description" : "subif comment",
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "outgoingFilter" : "~ethernet1/1.5~OUTGOING_FILTER~",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "~NULL_VRF~"
+          },
+          "loopback" : {
+            "name" : "loopback",
+            "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "description" : "loopback comment",
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "outgoingFilter" : "~loopback~OUTGOING_FILTER~",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "~NULL_VRF~"
+          },
+          "tunnel" : {
+            "name" : "tunnel",
+            "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "outgoingFilter" : "~tunnel~OUTGOING_FILTER~",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "~NULL_VRF~"
+          },
+          "tunnel.3" : {
+            "name" : "tunnel.3",
+            "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "description" : "tunnel.3 comment",
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "outgoingFilter" : "~tunnel.3~OUTGOING_FILTER~",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "~NULL_VRF~"
+          },
+          "vlan" : {
+            "name" : "vlan",
+            "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "description" : "vlan comment",
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "outgoingFilter" : "~vlan~OUTGOING_FILTER~",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "~NULL_VRF~"
+          }
+        },
+        "ipAccessLists" : {
+          "~ethernet1/1.5~OUTGOING_FILTER~" : {
+            "name" : "~ethernet1/1.5~OUTGOING_FILTER~",
+            "lines" : [
+              {
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                }
+              }
+            ]
+          },
+          "~ethernet1/1~OUTGOING_FILTER~" : {
+            "name" : "~ethernet1/1~OUTGOING_FILTER~",
+            "lines" : [
+              {
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                }
+              }
+            ]
+          },
+          "~loopback~OUTGOING_FILTER~" : {
+            "name" : "~loopback~OUTGOING_FILTER~",
+            "lines" : [
+              {
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                }
+              }
+            ]
+          },
+          "~tunnel.3~OUTGOING_FILTER~" : {
+            "name" : "~tunnel.3~OUTGOING_FILTER~",
+            "lines" : [
+              {
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                }
+              }
+            ]
+          },
+          "~tunnel~OUTGOING_FILTER~" : {
+            "name" : "~tunnel~OUTGOING_FILTER~",
+            "lines" : [
+              {
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                }
+              }
+            ]
+          },
+          "~vlan~OUTGOING_FILTER~" : {
+            "name" : "~vlan~OUTGOING_FILTER~",
+            "lines" : [
+              {
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                }
+              }
+            ]
+          }
+        },
+        "vendorFamily" : { },
+        "vrfs" : {
+          "~NULL_VRF~" : {
+            "name" : "~NULL_VRF~",
+            "interfaces" : [
+              "ethernet1/1",
+              "ethernet1/1.5",
+              "loopback",
+              "tunnel",
+              "tunnel.3",
+              "vlan"
+            ]
+          }
+        }
+      },
+      "paloalto_policy" : {
+        "configurationFormat" : "PALO_ALTO_NESTED",
+        "name" : "paloalto_policy",
+        "defaultCrossZoneAction" : "DENY",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "ipSpaceMetadata" : {
+          "rfc1918_10" : {
+            "sourceName" : "rfc1918_10",
+            "sourceType" : "address object"
+          }
+        },
+        "ipSpaces" : {
+          "rfc1918_10" : {
+            "class" : "org.batfish.datamodel.PrefixIpSpace",
+            "prefix" : "10.0.0.0/8"
+          }
+        },
+        "vendorFamily" : { }
       },
       "peer_template" : {
         "configurationFormat" : "CISCO_NX",

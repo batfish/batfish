@@ -351,9 +351,9 @@ LIFETIME
     'lifetime'
 ;
 
-LINK_STATUS
+LINK_STATE
 :
-    'link-status'
+    'link-state'
 ;
 
 LLDP
@@ -364,6 +364,11 @@ LLDP
 LOG_SETTINGS
 :
     'log-settings'
+;
+
+LOOPBACK
+:
+    'loopback'
 ;
 
 MD5
@@ -399,6 +404,16 @@ MTU
 NDP_PROXY
 :
     'ndp-proxy'
+;
+
+NEGATE_DESTINATION
+:
+    'negate-destination'
+;
+
+NEGATE_SOURCE
+:
+    'negate-source'
 ;
 
 NETMASK
@@ -446,9 +461,19 @@ OPEN_BRACKET
     '['
 ;
 
+PANORAMA
+:
+    'panorama'
+;
+
 PANORAMA_SERVER
 :
     'panorama-server'
+;
+
+POLICY
+:
+    'policy'
 ;
 
 PORT
@@ -651,6 +676,11 @@ TO
     'to'
 ;
 
+TUNNEL
+:
+    'tunnel'
+;
+
 TYPE
 :
     'type'
@@ -686,14 +716,19 @@ VIRTUAL_ROUTER
     'virtual-router'
 ;
 
-YES
+VLAN
 :
-    'yes'
+    'vlan'
 ;
 
 VSYS
 :
     'vsys'
+;
+
+YES
+:
+    'yes'
 ;
 
 ZONE
@@ -750,6 +785,11 @@ LINE_COMMENT
 NEWLINE
 :
     F_Newline+
+;
+
+RANGE
+:
+    F_Digit+ '-' F_Digit+
 ;
 
 SINGLE_QUOTED_STRING

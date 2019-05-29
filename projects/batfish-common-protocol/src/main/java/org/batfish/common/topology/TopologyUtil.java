@@ -9,7 +9,6 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
@@ -29,6 +28,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -68,11 +68,7 @@ public final class TopologyUtil {
 
   // Precondition: at least one of i1 and i2 is a trunk
   private static void addLayer2TrunkEdges(
-      Interface i1,
-      Interface i2,
-      ImmutableSet.Builder<Layer2Edge> edges,
-      Layer1Node node1,
-      Layer1Node node2) {
+      Interface i1, Interface i2, Consumer<Layer2Edge> edges, Layer1Node node1, Layer1Node node2) {
     Integer i1Tag = i1.getEncapsulationVlan();
     Integer i2Tag = i2.getEncapsulationVlan();
     if (i1.getSwitchportMode() == SwitchportMode.TRUNK
@@ -83,36 +79,36 @@ public final class TopologyUtil {
               vlan -> {
                 if (Objects.equals(i1.getNativeVlan(), vlan) && trunkWithNativeVlanAllowed(i2)) {
                   // This frame will not be tagged by i1, and i2 accepts untagged frames.
-                  edges.add(new Layer2Edge(node1, vlan, node2, vlan, null /* untagged */));
+                  edges.accept(new Layer2Edge(node1, vlan, node2, vlan, null /* untagged */));
                 } else if (i2.getAllowedVlans().contains(vlan)) {
                   // This frame will be tagged by i1 and we can directly check whether i2 allows.
-                  edges.add(new Layer2Edge(node1, vlan, node2, vlan, vlan));
+                  edges.accept(new Layer2Edge(node1, vlan, node2, vlan, vlan));
                 }
               });
     } else if (i1Tag != null) {
       // i1 is a tagged layer-3 interface, and the other side is a trunk. The only possible edge is
       // i2 receiving frames for a non-native allowed vlan.
       if (!i1Tag.equals(i2.getNativeVlan()) && i2.getAllowedVlans().contains(i1Tag)) {
-        edges.add(new Layer2Edge(node1, null, node2, i1Tag, i1Tag));
+        edges.accept(new Layer2Edge(node1, null, node2, i1Tag, i1Tag));
       }
     } else if (i2Tag != null) {
       // i1 is a trunk, and the other side is a tagged layer-3 interface. The only possible edge is
       // i2 receiving frames for from a non-native allowed vlan of i1.
       if (!i2Tag.equals(i1.getNativeVlan()) && i1.getAllowedVlans().contains(i2Tag)) {
-        edges.add(new Layer2Edge(node1, i2Tag, node2, null, i2Tag));
+        edges.accept(new Layer2Edge(node1, i2Tag, node2, null, i2Tag));
       }
     } else if (trunkWithNativeVlanAllowed(i1)) {
       // i1 is a trunk, but the other side is not and does not use tags. The only edge that will
       // come up is i2 receiving untagged packets.
       Integer node2VlanId =
           i2.getSwitchportMode() == SwitchportMode.ACCESS ? i2.getAccessVlan() : null;
-      edges.add(new Layer2Edge(node1, i1.getNativeVlan(), node2, node2VlanId, null));
+      edges.accept(new Layer2Edge(node1, i1.getNativeVlan(), node2, node2VlanId, null));
     } else if (trunkWithNativeVlanAllowed(i2)) {
       // i1 is not a trunk and does not use tags, but the other side is a trunk. The only edge that
       // will come up is the other side receiving untagged packets and treating them as native VLAN.
       Integer node1VlanId =
           i1.getSwitchportMode() == SwitchportMode.ACCESS ? i1.getAccessVlan() : null;
-      edges.add(new Layer2Edge(node1, node1VlanId, node2, i2.getNativeVlan(), null));
+      edges.accept(new Layer2Edge(node1, node1VlanId, node2, i2.getNativeVlan(), null));
     }
   }
 
@@ -139,7 +135,7 @@ public final class TopologyUtil {
   private static void computeLayer2EdgesForLayer1Edge(
       @Nonnull Layer1Edge layer1Edge,
       @Nonnull Map<String, Configuration> configurations,
-      @Nonnull ImmutableSet.Builder<Layer2Edge> edges,
+      @Nonnull Consumer<Layer2Edge> edges,
       Map<Layer1Node, Set<Layer1Node>> parentChildrenMap) {
     Layer1Node node1 = layer1Edge.getNode1();
     Layer1Node node2 = layer1Edge.getNode2();
@@ -161,7 +157,7 @@ public final class TopologyUtil {
   private static void tryComputeLayer2EdgesForLayer1ChildEdge(
       Layer1Edge layer1MappedEdge,
       Map<String, Configuration> configurations,
-      Builder<Layer2Edge> edges) {
+      Consumer<Layer2Edge> edges) {
     Layer1Node node1 = layer1MappedEdge.getNode1();
     Layer1Node node2 = layer1MappedEdge.getNode2();
     Interface i1 = getInterface(node1, configurations);
@@ -181,19 +177,19 @@ public final class TopologyUtil {
           i1.getSwitchportMode() == SwitchportMode.ACCESS ? i1.getAccessVlan() : null;
       Integer node2VlanId =
           i2.getSwitchportMode() == SwitchportMode.ACCESS ? i2.getAccessVlan() : null;
-      edges.add(new Layer2Edge(node1, node1VlanId, node2, node2VlanId, null));
+      edges.accept(new Layer2Edge(node1, node1VlanId, node2, node2VlanId, null));
     }
   }
 
   private static void tryAddLayer2TaggedNonTrunkEdge(
-      Interface i1, Interface i2, Builder<Layer2Edge> edges, Layer1Node node1, Layer1Node node2) {
+      Interface i1, Interface i2, Consumer<Layer2Edge> edges, Layer1Node node1, Layer1Node node2) {
     Integer i1Tag = i1.getEncapsulationVlan();
     Integer i2Tag = i2.getEncapsulationVlan();
     // precondition: i1Tag != null || i2Tag != null
     if (i1Tag == null || i2Tag == null || !i1Tag.equals(i2Tag)) {
       return;
     }
-    edges.add(new Layer2Edge(node1, null, node2, null, i1Tag));
+    edges.accept(new Layer2Edge(node1, null, node2, null, i1Tag));
   }
 
   @VisibleForTesting
@@ -203,7 +199,7 @@ public final class TopologyUtil {
 
   @VisibleForTesting
   static void computeLayer2SelfEdges(
-      @Nonnull Configuration config, @Nonnull ImmutableSet.Builder<Layer2Edge> edges) {
+      @Nonnull Configuration config, @Nonnull Consumer<Layer2Edge> edges) {
     String hostname = config.getHostname();
     Map<Integer, ImmutableList.Builder<String>> switchportsByVlanBuilder = new HashMap<>();
     config.getAllInterfaces().values().stream()
@@ -234,9 +230,9 @@ public final class TopologyUtil {
               (i, i1Name) -> {
                 for (int j = i + 1; j < interfaceNames.size(); j++) {
                   String i2Name = interfaceNames.get(j);
-                  edges.add(
+                  edges.accept(
                       new Layer2Edge(hostname, i1Name, vlanId, hostname, i2Name, vlanId, null));
-                  edges.add(
+                  edges.accept(
                       new Layer2Edge(hostname, i2Name, vlanId, hostname, i1Name, vlanId, null));
                 }
               });
@@ -254,15 +250,15 @@ public final class TopologyUtil {
               String irbName = irbInterface.getName();
               int vlanId = irbInterface.getVlan();
               computeSelfSwitchportNonSwitchportEdges(switchportsByVlan, hostname, irbName, vlanId)
-                  .forEach(edges::add);
+                  .forEach(edges::accept);
               // Link IRB to VNI in same VLAN
               Optional.ofNullable(vniSettingsByVlan.get(vlanId))
                   .map(vniSettings -> computeVniName(vniSettings.getVni()))
                   .ifPresent(
                       vniName -> {
-                        edges.add(
+                        edges.accept(
                             new Layer2Edge(hostname, irbName, null, hostname, vniName, null, null));
-                        edges.add(
+                        edges.accept(
                             new Layer2Edge(hostname, vniName, null, hostname, irbName, null, null));
                       });
             });
@@ -271,7 +267,7 @@ public final class TopologyUtil {
         (vlanId, vniSettings) -> {
           String vniName = computeVniName(vniSettings.getVni());
           computeSelfSwitchportNonSwitchportEdges(switchportsByVlan, hostname, vniName, vlanId)
-              .forEach(edges::add);
+              .forEach(edges::accept);
         });
   }
 
@@ -289,10 +285,10 @@ public final class TopologyUtil {
         .getOrDefault(vlanId, ImmutableList.of())
         .forEach(
             switchportName -> {
-              edges.add(
+              edges.accept(
                   new Layer2Edge(
                       hostname, nonSwitchportName, null, hostname, switchportName, vlanId, null));
-              edges.add(
+              edges.accept(
                   new Layer2Edge(
                       hostname, switchportName, vlanId, hostname, nonSwitchportName, null, null));
             });
@@ -312,7 +308,7 @@ public final class TopologyUtil {
       @Nonnull Layer1Topology layer1LogicalTopology,
       VxlanTopology vxlanTopology,
       @Nonnull Map<String, Configuration> configurations) {
-    ImmutableSet.Builder<Layer2Edge> edges = ImmutableSet.builder();
+    Layer2Topology.Builder l2TopologyBuilder = Layer2Topology.builder();
 
     // Compute mapping from parent interface -> child interfaces
     Map<Layer1Node, Set<Layer1Node>> parentChildrenMap = computeParentChildrenMap(configurations);
@@ -324,15 +320,15 @@ public final class TopologyUtil {
         .forEach(
             layer1Edge ->
                 computeLayer2EdgesForLayer1Edge(
-                    layer1Edge, configurations, edges, parentChildrenMap));
+                    layer1Edge, configurations, l2TopologyBuilder::addEdge, parentChildrenMap));
 
     // Then add edges within each node to connect switchports and VNIs on the same VLAN(s).
-    configurations.values().forEach(c -> computeLayer2SelfEdges(c, edges));
+    configurations.values().forEach(c -> computeLayer2SelfEdges(c, l2TopologyBuilder::addEdge));
 
     // Finally add edges between connected VNIs on different nodes
-    computeVniInterNodeEdges(vxlanTopology).forEach(edges::add);
+    computeVniInterNodeEdges(vxlanTopology).forEach(l2TopologyBuilder::addEdge);
 
-    return Layer2Topology.fromEdges(edges.build());
+    return l2TopologyBuilder.build();
   }
 
   /**

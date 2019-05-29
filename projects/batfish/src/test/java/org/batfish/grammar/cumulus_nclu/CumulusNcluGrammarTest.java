@@ -8,7 +8,6 @@ import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasSendCommunity;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasInterfaceNeighbors;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
-import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpRouteThat;
 import static org.batfish.datamodel.matchers.BgpUnnumberedPeerConfigMatchers.hasPeerInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
@@ -295,8 +294,8 @@ public final class CumulusNcluGrammarTest {
             .setOriginatorIp(Ip.parse("192.0.2.1"))
             .build();
 
-    assertThat(n1Routes, hasItem(isBgpRouteThat(equalTo(expectedRoute1))));
-    assertThat(n2Routes, hasItem(isBgpRouteThat(equalTo(expectedRoute2))));
+    assertThat(n1Routes, hasItem(equalTo(expectedRoute1)));
+    assertThat(n2Routes, hasItem(equalTo(expectedRoute2)));
   }
 
   @Test
@@ -318,6 +317,14 @@ public final class CumulusNcluGrammarTest {
     assertThat(pc, hasRemoteAs(equalTo(ALL_AS_NUMBERS.difference(LongSpace.of(65500L)))));
     assertThat(pc, hasExportPolicy(peerExportPolicyName));
     assertThat(pc, hasSendCommunity(true));
+
+    BgpUnnumberedPeerConfig pc2 =
+        c.getDefaultVrf().getBgpProcess().getInterfaceNeighbors().get("swp2");
+    assertThat(pc2, hasRemoteAs(equalTo(LongSpace.of(65500L))));
+
+    BgpUnnumberedPeerConfig pc3 =
+        c.getDefaultVrf().getBgpProcess().getInterfaceNeighbors().get("swp3");
+    assertThat(pc3, hasRemoteAs(equalTo(LongSpace.of(65000L))));
 
     // ARP response for link-local address for BGP unnumbered interface
     assertThat(c, hasInterface(peerInterface, hasAdditionalArpIps(containsIp(BGP_UNNUMBERED_IP))));
@@ -441,7 +448,7 @@ public final class CumulusNcluGrammarTest {
     assertThat(
         "Ensure interface neighbor is extracted",
         proc.getDefaultVrf().getInterfaceNeighbors().keySet(),
-        contains("swp1"));
+        containsInAnyOrder("swp1", "swp2", "swp3"));
     BgpInterfaceNeighbor in = proc.getDefaultVrf().getInterfaceNeighbors().get("swp1");
     assertThat("Ensure interface neighbor has correct name", in.getName(), equalTo("swp1"));
     assertThat(

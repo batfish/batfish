@@ -36,7 +36,7 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEquivalentAsPathMatchMode;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasWeight;
-import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpRouteThat;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkePhase1Policy;
@@ -1485,8 +1485,8 @@ public class CiscoGrammarTest {
     IncrementalDataPlane dp = (IncrementalDataPlane) batfish.loadDataPlane();
     Set<AbstractRoute> r1Routes = dp.getRibs().get("r1").get(DEFAULT_VRF_NAME).getRoutes();
     Set<AbstractRoute> r2Routes = dp.getRibs().get("r2").get(DEFAULT_VRF_NAME).getRoutes();
-    assertThat(r1Routes, hasItem(isBgpRouteThat(hasPrefix(Prefix.parse("8.8.8.8/32")))));
-    assertThat(r2Routes, hasItem(isBgpRouteThat(hasPrefix(Prefix.parse("7.7.7.7/32")))));
+    assertThat(r1Routes, hasItem(isBgpv4RouteThat(hasPrefix(Prefix.parse("8.8.8.8/32")))));
+    assertThat(r2Routes, hasItem(isBgpv4RouteThat(hasPrefix(Prefix.parse("7.7.7.7/32")))));
   }
 
   /**
@@ -3834,6 +3834,12 @@ public class CiscoGrammarTest {
                 IkePhase1ProposalMatchers.hasHashingAlgorithm(IkeHashingAlgorithm.SHA1),
                 IkePhase1ProposalMatchers.hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP2),
                 IkePhase1ProposalMatchers.hasLifeTimeSeconds(86400))));
+    assertThat(
+        c,
+        hasIkePhase1Proposal(
+            "30",
+            IkePhase1ProposalMatchers.hasAuthenticationMethod(
+                IkeAuthenticationMethod.RSA_ENCRYPTED_NONCES)));
   }
 
   @Test
@@ -3851,7 +3857,9 @@ public class CiscoGrammarTest {
                 hasRemoteIdentity(containsIp(Ip.parse("1.2.3.4"))),
                 hasSelfIdentity(equalTo(Ip.parse("2.3.4.6"))),
                 hasLocalInterface(equalTo("TenGigabitEthernet0/0")),
-                hasIkePhase1Proposals(equalTo(ImmutableList.of("10", "20"))))));
+                // TODO: filter proposals during conversion so that they match IKE Phase 1 policy's
+                // key type
+                hasIkePhase1Proposals(equalTo(ImmutableList.of("10", "20", "30"))))));
 
     assertThat(
         c,
@@ -3864,7 +3872,7 @@ public class CiscoGrammarTest {
                 hasRemoteIdentity(containsIp(Ip.parse("1.2.3.4"))),
                 hasSelfIdentity(equalTo(Ip.parse("2.3.4.6"))),
                 hasLocalInterface(equalTo("TenGigabitEthernet0/0")),
-                hasIkePhase1Proposals(equalTo(ImmutableList.of("10", "20"))))));
+                hasIkePhase1Proposals(equalTo(ImmutableList.of("10", "20", "30"))))));
   }
 
   private static CommunitySetExpr communityListToMatchCondition(

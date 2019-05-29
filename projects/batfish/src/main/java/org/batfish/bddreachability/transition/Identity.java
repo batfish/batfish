@@ -9,6 +9,11 @@ public final class Identity implements Transition {
   private Identity() {}
 
   @Override
+  public String toString() {
+    return "IDENTITY";
+  }
+
+  @Override
   public BDD transitForward(BDD bdd) {
     return bdd;
   }

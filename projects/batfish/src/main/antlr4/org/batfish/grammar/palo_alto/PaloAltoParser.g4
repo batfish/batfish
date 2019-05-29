@@ -2,7 +2,7 @@ parser grammar PaloAltoParser;
 
 /* This is only needed if parser grammar is spread across files */
 import
-PaloAlto_address, PaloAlto_address_group, PaloAlto_common, PaloAlto_deviceconfig, PaloAlto_network, PaloAlto_rulebase, PaloAlto_service, PaloAlto_service_group, PaloAlto_shared, PaloAlto_vsys, PaloAlto_zone;
+PaloAlto_address, PaloAlto_address_group, PaloAlto_common, PaloAlto_deviceconfig, PaloAlto_interface, PaloAlto_network, PaloAlto_rulebase, PaloAlto_service, PaloAlto_service_group, PaloAlto_shared, PaloAlto_vsys, PaloAlto_zone;
 
 options {
     superClass = 'org.batfish.grammar.BatfishParser';
@@ -11,11 +11,16 @@ options {
 
 palo_alto_configuration
 :
-    NEWLINE?
     (
-        set_line_config_devices
-        | set_line_config_general
-    )+ NEWLINE? EOF
+        set_line
+        /* TODO: delete line, etc. */
+        | newline
+    )+ EOF
+;
+
+newline
+:
+   NEWLINE
 ;
 
 s_null
@@ -33,12 +38,12 @@ s_null
  */
 set_line_config_devices
 :
-    SET (CONFIG DEVICES name = variable)? statement_config_devices NEWLINE
+    (CONFIG DEVICES name = variable)? statement_config_devices
 ;
 
 set_line_config_general
 :
-    SET CONFIG? statement_config_general NEWLINE
+    CONFIG? statement_config_general
 ;
 
 /*
@@ -64,4 +69,39 @@ statement_config_devices
 statement_config_general
 :
     s_shared
+;
+
+set_line
+:
+    SET set_line_tail NEWLINE
+;
+
+set_line_tail
+:
+    set_line_config_devices
+    | set_line_config_general
+    | s_policy
+;
+
+s_policy
+:
+    POLICY
+    (
+        s_policy_panorama
+        | s_policy_shared
+    )
+;
+
+s_policy_panorama
+:
+    PANORAMA
+    (
+        ss_common
+        /* TODO: there's panorama-specific stuff here. */
+    )
+;
+
+s_policy_shared
+:
+    SHARED /* TODO */
 ;

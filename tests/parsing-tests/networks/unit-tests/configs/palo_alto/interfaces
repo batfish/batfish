@@ -1,0 +1,42 @@
+!RANCID-CONTENT-TYPE: paloalto
+config {
+  devices {
+    localhost.localdomain {
+      deviceconfig {
+        system {
+          hostname "paloalto_interfaces";
+        }
+      }
+      network {
+        interface {
+          ethernet {
+            ethernet1/1 {
+              layer3 {
+                units {
+                  ethernet1/1.5 {
+                    comment "subif comment";
+                    mtu 1500;
+                  }
+                }
+              }
+            }
+          }
+          loopback {
+            comment "loopback comment";
+            units;
+          }
+          tunnel {
+            units {
+              tunnel.3 {
+                comment "tunnel.3 comment";
+              }
+            }
+          }
+          vlan {
+            comment "vlan comment";
+          }
+        }
+      }
+    }
+  }
+}

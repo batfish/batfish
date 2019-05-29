@@ -5,12 +5,14 @@ import static org.batfish.representation.palo_alto.PaloAltoConfiguration.CATCHAL
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.CATCHALL_SERVICE_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.CATCHALL_ZONE_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT_VSYS_NAME;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.PANORAMA_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_GROUP_OR_ADDRESS_OBJECT;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_GROUP_OR_ADDRESS_OBJECT_OR_NONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_GROUP_OR_APPLICATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.RULE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_GROUP;
@@ -19,12 +21,14 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ADDRESS_GROUP_STATIC;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULEBASE_SERVICE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_APPLICATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_DESTINATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_FROM_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_SELF_REF;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_SOURCE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_TO_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SERVICE_GROUP_MEMBER;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ZONE_INTERFACE;
 
@@ -49,6 +53,7 @@ import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_authenticationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_dh_groupContext;
@@ -56,9 +61,12 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_encryptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_encryption_algoContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_hashContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_lifetimeContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.If_commentContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Port_or_rangeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_address_groupContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.S_policy_panoramaContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_serviceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_service_groupContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_sharedContext;
@@ -81,15 +89,20 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsn_ntp_server_addressConte
 import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_config_devicesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sn_virtual_routerContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_ethernetContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_loopbackContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_tunnelContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_vlanContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snicp_global_protectContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snicp_ike_crypto_profilesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snicp_ipsec_crypto_profilesContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_commentContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_link_statusContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_link_stateContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_mtuContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_unitsContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_unitContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3u_tagContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snil_unitContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snit_unitContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sniv_unitContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvr_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvr_routing_tableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_admin_distContext;
@@ -105,6 +118,8 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_destinationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_disabledContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_fromContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_negate_destinationContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_negate_sourceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_serviceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_sourceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_toContext;
@@ -238,6 +253,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     return unquote(ctx.getText());
   }
 
+  /** Return token text with enclosing quotes removed, if applicable */
+  private String getText(TerminalNode t) {
+    return unquote(t.getText());
+  }
+
+  /** Return token text with enclosing quotes removed, if applicable */
+  private String getText(Token t) {
+    return unquote(t.getText());
+  }
+
   /**
    * Helper function to add the correct service reference type for a given reference. For references
    * that may be pointing to built-in services, this is needed to make sure we don't create false
@@ -314,8 +339,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     return convProblem(IkeHashingAlgorithm.class, ctx, null);
   }
 
-  private static int toInteger(Token t) {
-    return Integer.parseInt(t.getText());
+  private int toInteger(Token t) {
+    return Integer.parseInt(getText(t));
   }
 
   private IpsecAuthenticationAlgorithm toIpsecAuthenticationAlgorithm(
@@ -338,7 +363,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   /** Convert source or destination list item into an appropriate IpSpace */
   private RuleEndpoint toRuleEndpoint(Src_or_dst_list_itemContext ctx) {
-    String text = ctx.getText();
+    String text = getText(ctx);
     if (ctx.ANY() != null) {
       return new RuleEndpoint(RuleEndpoint.Type.Any, text);
     } else if (ctx.IP_ADDRESS() != null) {
@@ -428,6 +453,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void exitIf_comment(If_commentContext ctx) {
+    _currentInterface.setComment(getText(ctx.text));
+  }
+
+  @Override
   public void enterPalo_alto_configuration(Palo_alto_configurationContext ctx) {
     _configuration = new PaloAltoConfiguration();
     _configuration.getVirtualSystems().computeIfAbsent(SHARED_VSYS_NAME, Vsys::new);
@@ -436,23 +466,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void exitPalo_alto_configuration(Palo_alto_configurationContext ctx) {
-    // Assign the appropriate zone to each interface
-    for (Vsys vsys : _configuration.getVirtualSystems().values()) {
-      for (Zone zone : vsys.getZones().values()) {
-        for (String ifname : zone.getInterfaceNames()) {
-          Interface iface = _configuration.getInterfaces().get(ifname);
-          if (iface != null) {
-            iface.setZone(zone);
-          }
-        }
-      }
-    }
-  }
-
-  @Override
   public void enterS_address(S_addressContext ctx) {
-    String name = ctx.name.getText();
+    String name = getText(ctx.name);
     if (_currentVsys.getAddressGroups().get(name) != null) {
       _w.redFlag(
           String.format(
@@ -475,7 +490,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterS_address_group(S_address_groupContext ctx) {
-    String name = ctx.name.getText();
+    String name = getText(ctx.name);
     if (_currentVsys.getAddressObjects().get(name) != null) {
       _w.redFlag(
           String.format(
@@ -516,7 +531,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     if (_currentAddressObject == null) {
       return;
     }
-    _currentAddressObject.setDescription(ctx.description.getText());
+    _currentAddressObject.setDescription(getText(ctx.description));
   }
 
   @Override
@@ -530,9 +545,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       return;
     }
     if (ctx.IP_ADDRESS() != null) {
-      _currentAddressObject.setIpSpace(Ip.parse(ctx.IP_ADDRESS().getText()).toIpSpace());
+      _currentAddressObject.setIpSpace(Ip.parse(getText(ctx.IP_ADDRESS())).toIpSpace());
     } else if (ctx.IP_PREFIX() != null) {
-      _currentAddressObject.setIpSpace(Prefix.parse(ctx.IP_PREFIX().getText()).toIpSpace());
+      _currentAddressObject.setIpSpace(Prefix.parse(getText(ctx.IP_PREFIX())).toIpSpace());
     } else {
       _w.redFlag("Cannot understand what follows 'ip-netmask' in " + getFullText(ctx));
     }
@@ -543,7 +558,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     if (_currentAddressObject == null) {
       return;
     }
-    String[] ips = ctx.IP_RANGE().getText().split("-");
+    String[] ips = getText(ctx.IP_RANGE()).split("-");
     _currentAddressObject.setIpSpace(IpRange.range(Ip.parse(ips[0]), Ip.parse(ips[1])));
   }
 
@@ -552,7 +567,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     if (_currentAddressGroup == null) {
       return;
     }
-    _currentAddressGroup.setDescription(ctx.description.getText());
+    _currentAddressGroup.setDescription(getText(ctx.description));
   }
 
   @Override
@@ -566,7 +581,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       return;
     }
     for (VariableContext var : ctx.variable()) {
-      String objectName = var.getText();
+      String objectName = getText(var);
       if (objectName.equals(_currentAddressGroup.getName())) {
         _w.redFlag(
             String.format(
@@ -585,7 +600,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterSds_default_gateway(Sds_default_gatewayContext ctx) {
-    _configuration.setMgmtIfaceGateway(Ip.parse(ctx.IP_ADDRESS().getText()));
+    _configuration.setMgmtIfaceGateway(Ip.parse(getText(ctx.IP_ADDRESS())));
   }
 
   @Override
@@ -595,12 +610,12 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterSds_ip_address(Sds_ip_addressContext ctx) {
-    _configuration.setMgmtIfaceAddress(Ip.parse(ctx.IP_ADDRESS().getText()));
+    _configuration.setMgmtIfaceAddress(Ip.parse(getText(ctx.IP_ADDRESS())));
   }
 
   @Override
   public void enterSds_netmask(Sds_netmaskContext ctx) {
-    _configuration.setMgmtIfaceNetmask(Ip.parse(ctx.IP_ADDRESS().getText()));
+    _configuration.setMgmtIfaceNetmask(Ip.parse(getText(ctx.IP_ADDRESS())));
   }
 
   @Override
@@ -611,25 +626,25 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSdsn_ntp_server_address(Sdsn_ntp_server_addressContext ctx) {
     if (_currentNtpServerPrimary) {
-      _configuration.setNtpServerPrimary(ctx.address.getText());
+      _configuration.setNtpServerPrimary(getText(ctx.address));
     } else {
-      _configuration.setNtpServerSecondary(ctx.address.getText());
+      _configuration.setNtpServerSecondary(getText(ctx.address));
     }
   }
 
   @Override
   public void exitSdsd_servers(Sdsd_serversContext ctx) {
     if (ctx.primary_name != null) {
-      _configuration.setDnsServerPrimary(ctx.primary_name.getText());
+      _configuration.setDnsServerPrimary(getText(ctx.primary_name));
     } else if (ctx.secondary_name != null) {
-      _configuration.setDnsServerSecondary(ctx.secondary_name.getText());
+      _configuration.setDnsServerSecondary(getText(ctx.secondary_name));
     }
   }
 
   @Override
   public void enterSet_line_config_devices(Set_line_config_devicesContext ctx) {
     if (ctx.name != null) {
-      String deviceName = ctx.name.getText();
+      String deviceName = getText(ctx.name);
       _currentDeviceName = firstNonNull(_currentDeviceName, deviceName);
       if (!_currentDeviceName.equals(deviceName)) {
         /* Do not currently handle multiple device names, which presumably happens only if multiple
@@ -637,6 +652,17 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
         _w.redFlag("Multiple devices encountered: " + deviceName);
       }
     }
+  }
+
+  @Override
+  public void enterS_policy_panorama(S_policy_panoramaContext ctx) {
+    _currentVsys =
+        _configuration.getVirtualSystems().computeIfAbsent(PANORAMA_VSYS_NAME, Vsys::new);
+  }
+
+  @Override
+  public void exitS_policy_panorama(S_policy_panoramaContext ctx) {
+    _currentVsys = _defaultVsys;
   }
 
   @Override
@@ -652,7 +678,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterSni_ethernet(Sni_ethernetContext ctx) {
-    String name = ctx.name.getText();
+    String name = getText(ctx.name);
     _currentParentInterface = _configuration.getInterfaces().computeIfAbsent(name, Interface::new);
     _currentInterface = _currentParentInterface;
     defineStructure(INTERFACE, name, ctx);
@@ -665,8 +691,50 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void enterSni_loopback(Sni_loopbackContext ctx) {
+    String name = getText(ctx.LOOPBACK());
+    _currentParentInterface = _configuration.getInterfaces().computeIfAbsent(name, Interface::new);
+    _currentInterface = _currentParentInterface;
+    defineStructure(INTERFACE, name, ctx);
+  }
+
+  @Override
+  public void exitSni_loopback(Sni_loopbackContext ctx) {
+    _currentParentInterface = null;
+    _currentInterface = null;
+  }
+
+  @Override
+  public void enterSni_tunnel(Sni_tunnelContext ctx) {
+    String name = getText(ctx.TUNNEL());
+    _currentParentInterface = _configuration.getInterfaces().computeIfAbsent(name, Interface::new);
+    _currentInterface = _currentParentInterface;
+    defineStructure(INTERFACE, name, ctx);
+  }
+
+  @Override
+  public void exitSni_tunnel(Sni_tunnelContext ctx) {
+    _currentParentInterface = null;
+    _currentInterface = null;
+  }
+
+  @Override
+  public void enterSni_vlan(Sni_vlanContext ctx) {
+    String name = getText(ctx.VLAN());
+    _currentParentInterface = _configuration.getInterfaces().computeIfAbsent(name, Interface::new);
+    _currentInterface = _currentParentInterface;
+    defineStructure(INTERFACE, name, ctx);
+  }
+
+  @Override
+  public void exitSni_vlan(Sni_vlanContext ctx) {
+    _currentParentInterface = null;
+    _currentInterface = null;
+  }
+
+  @Override
   public void enterSnicp_global_protect(Snicp_global_protectContext ctx) {
-    String name = ctx.name.getText();
+    String name = getText(ctx.name);
     _currentCrytoProfile = _configuration.getCryptoProfileOrCreate(name, Type.GLOBAL_PROTECT_APP);
   }
 
@@ -677,7 +745,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterSnicp_ike_crypto_profiles(Snicp_ike_crypto_profilesContext ctx) {
-    String name = ctx.name.getText();
+    String name = getText(ctx.name);
     _currentCrytoProfile = _configuration.getCryptoProfileOrCreate(name, Type.IKE);
   }
 
@@ -688,7 +756,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterSnicp_ipsec_crypto_profiles(Snicp_ipsec_crypto_profilesContext ctx) {
-    String name = ctx.name.getText();
+    String name = getText(ctx.name);
     _currentCrytoProfile = _configuration.getCryptoProfileOrCreate(name, Type.IPSEC);
   }
 
@@ -698,39 +766,77 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void exitSnie_comment(Snie_commentContext ctx) {
-    _currentInterface.setComment(getText(ctx.text));
-  }
-
-  @Override
-  public void exitSnie_link_status(Snie_link_statusContext ctx) {
+  public void exitSnie_link_state(Snie_link_stateContext ctx) {
     _currentInterface.setActive((ctx.DOWN() == null));
   }
 
   @Override
   public void exitSniel3_ip(Sniel3_ipContext ctx) {
-    InterfaceAddress address = new InterfaceAddress(ctx.address.getText());
+    InterfaceAddress address = new InterfaceAddress(getText(ctx.address));
     _currentInterface.setAddress(address);
     _currentInterface.getAllAddresses().add(address);
   }
 
   @Override
   public void exitSniel3_mtu(Sniel3_mtuContext ctx) {
-    _currentInterface.setMtu(Integer.parseInt(ctx.mtu.getText()));
+    _currentInterface.setMtu(Integer.parseInt(getText(ctx.mtu)));
   }
 
   @Override
-  public void enterSniel3_units(Sniel3_unitsContext ctx) {
-    String name = ctx.name.getText();
-    _currentInterface = _configuration.getInterfaces().computeIfAbsent(name, Interface::new);
+  public void enterSniel3_unit(Sniel3_unitContext ctx) {
+    String name = getText(ctx.name);
+    _currentInterface = _currentParentInterface.getUnits().computeIfAbsent(name, Interface::new);
     _currentInterface.setParent(_currentParentInterface);
-    _currentParentInterface.getUnits().put(name, _currentInterface);
     defineStructure(INTERFACE, name, ctx);
+  }
+
+  @Override
+  public void exitSniel3_unit(Sniel3_unitContext ctx) {
+    _currentInterface = _currentParentInterface;
   }
 
   @Override
   public void exitSniel3u_tag(Sniel3u_tagContext ctx) {
     _currentInterface.setTag(toInteger(ctx.tag));
+  }
+
+  @Override
+  public void enterSnil_unit(Snil_unitContext ctx) {
+    String name = getText(ctx.name);
+    _currentInterface = _currentParentInterface.getUnits().computeIfAbsent(name, Interface::new);
+    _currentInterface.setParent(_currentParentInterface);
+    defineStructure(INTERFACE, name, ctx);
+  }
+
+  @Override
+  public void exitSnil_unit(Snil_unitContext ctx) {
+    _currentInterface = _currentParentInterface;
+  }
+
+  @Override
+  public void enterSnit_unit(Snit_unitContext ctx) {
+    String name = getText(ctx.name);
+    _currentInterface = _currentParentInterface.getUnits().computeIfAbsent(name, Interface::new);
+    _currentInterface.setParent(_currentParentInterface);
+    defineStructure(INTERFACE, name, ctx);
+  }
+
+  @Override
+  public void exitSnit_unit(Snit_unitContext ctx) {
+    _currentInterface = _currentParentInterface;
+  }
+
+  @Override
+  public void enterSniv_unit(Sniv_unitContext ctx) {
+    String name = getText(ctx.name);
+    _currentInterface = _currentParentInterface.getUnits().computeIfAbsent(name, Interface::new);
+    _currentInterface.setParent(_currentParentInterface);
+    defineStructure(INTERFACE, name, ctx);
+  }
+
+  @Override
+  public void exitSniv_unit(Sniv_unitContext ctx) {
+    _currentInterface = _currentParentInterface;
   }
 
   @Override
@@ -744,7 +850,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSnvr_interface(Snvr_interfaceContext ctx) {
     for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
-      String name = var.getText();
+      String name = getText(var);
       _currentVirtualRouter.getInterfaceNames().add(name);
       _configuration.referenceStructure(
           INTERFACE, name, VIRTUAL_ROUTER_INTERFACE, getLine(var.start));
@@ -758,27 +864,30 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSnvrrt_admin_dist(Snvrrt_admin_distContext ctx) {
-    _currentStaticRoute.setAdminDistance(Integer.parseInt(ctx.distance.getText()));
+    _currentStaticRoute.setAdminDistance(Integer.parseInt(getText(ctx.distance)));
   }
 
   @Override
   public void exitSnvrrt_destination(Snvrrt_destinationContext ctx) {
-    _currentStaticRoute.setDestination(Prefix.parse(ctx.destination.getText()));
+    _currentStaticRoute.setDestination(Prefix.parse(getText(ctx.destination)));
   }
 
   @Override
   public void exitSnvrrt_interface(Snvrrt_interfaceContext ctx) {
-    _currentStaticRoute.setNextHopInterface(ctx.iface.getText());
+    String name = getText(ctx.iface);
+    _currentStaticRoute.setNextHopInterface(name);
+    _configuration.referenceStructure(
+        INTERFACE, name, STATIC_ROUTE_INTERFACE, getLine(ctx.iface.start));
   }
 
   @Override
   public void exitSnvrrt_metric(Snvrrt_metricContext ctx) {
-    _currentStaticRoute.setMetric(Integer.parseInt(ctx.metric.getText()));
+    _currentStaticRoute.setMetric(Integer.parseInt(getText(ctx.metric)));
   }
 
   @Override
   public void exitSnvrrt_nexthop(Snvrrt_nexthopContext ctx) {
-    _currentStaticRoute.setNextHopIp(Ip.parse(ctx.address.getText()));
+    _currentStaticRoute.setNextHopIp(Ip.parse(getText(ctx.address)));
   }
 
   @Override
@@ -811,14 +920,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
       String name = getText(var);
       if (!name.equals(CATCHALL_APPLICATION_NAME)) {
-        _w.redFlag("Unhandled application: " + name);
+        _configuration.referenceStructure(
+            APPLICATION_GROUP_OR_APPLICATION, name, RULE_APPLICATION, getLine(var.start));
       }
+      _currentRule.getApplications().add(name);
     }
   }
 
   @Override
   public void exitSrs_description(Srs_descriptionContext ctx) {
-    _currentRule.setDescription(ctx.description.getText());
+    _currentRule.setDescription(getText(ctx.description));
   }
 
   @Override
@@ -850,7 +961,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSrs_from(Srs_fromContext ctx) {
     for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
-      String zoneName = var.getText();
+      String zoneName = getText(var);
       _currentRule.getFrom().add(zoneName);
 
       if (!zoneName.equals(CATCHALL_ZONE_NAME)) {
@@ -862,9 +973,19 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void exitSrs_negate_destination(Srs_negate_destinationContext ctx) {
+    _currentRule.setNegateDestination(ctx.YES() != null);
+  }
+
+  @Override
+  public void exitSrs_negate_source(Srs_negate_sourceContext ctx) {
+    _currentRule.setNegateSource(ctx.YES() != null);
+  }
+
+  @Override
   public void exitSrs_service(Srs_serviceContext ctx) {
     for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
-      String serviceName = var.getText();
+      String serviceName = getText(var);
       _currentRule.getService().add(new ServiceOrServiceGroupReference(serviceName));
       referenceService(var, RULEBASE_SERVICE);
     }
@@ -924,8 +1045,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSserv_port(Sserv_portContext ctx) {
-    for (TerminalNode item : ctx.variable_comma_separated_dec().DEC()) {
-      _currentService.getPorts().add(toInteger(item.getSymbol()));
+    for (Port_or_rangeContext item : ctx.variable_port_list().port_or_range()) {
+      if (item.port != null) {
+        _currentService.addPort(toInteger(item.port));
+      } else {
+        assert item.range != null;
+        _currentService.addPorts(new SubRange(getText(item.range)));
+      }
     }
   }
 
@@ -942,8 +1068,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSserv_source_port(Sserv_source_portContext ctx) {
-    for (TerminalNode item : ctx.variable_comma_separated_dec().DEC()) {
-      _currentService.getSourcePorts().add(toInteger(item.getSymbol()));
+    for (Port_or_rangeContext item : ctx.variable_port_list().port_or_range()) {
+      if (item.port != null) {
+        _currentService.addSourcePort(toInteger(item.port));
+      } else {
+        assert item.range != null;
+        _currentService.addSourcePorts(new SubRange(getText(item.range)));
+      }
     }
   }
 
@@ -1004,13 +1135,12 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSslss_server(Sslss_serverContext ctx) {
-    _currentSyslogServer.setAddress(ctx.address.getText());
+    _currentSyslogServer.setAddress(getText(ctx.address));
   }
 
   @Override
   public void enterS_vsys(S_vsysContext ctx) {
-    _currentVsys =
-        _configuration.getVirtualSystems().computeIfAbsent(ctx.name.getText(), Vsys::new);
+    _currentVsys = _configuration.getVirtualSystems().computeIfAbsent(getText(ctx.name), Vsys::new);
   }
 
   @Override
@@ -1022,7 +1152,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   public void exitSzn_layer3(Szn_layer3Context ctx) {
     if (ctx.variable_list() != null) {
       for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
-        String name = var.getText();
+        String name = getText(var);
         _currentZone.getInterfaceNames().add(name);
         _configuration.referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
       }
@@ -1036,7 +1166,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void visitErrorNode(ErrorNode errorNode) {
     Token token = errorNode.getSymbol();
-    String lineText = errorNode.getText().replace("\n", "").replace("\r", "").trim();
+    String lineText = getText(errorNode).replace("\n", "").replace("\r", "").trim();
     int line = getLine(token);
     _configuration.setUnrecognized(true);
 

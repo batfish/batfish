@@ -6,8 +6,10 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.SortedMultiset;
+import com.google.common.collect.Streams;
 import com.google.common.collect.TreeMultiset;
 import java.util.Collection;
 import java.util.Collections;
@@ -22,13 +24,20 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.collections4.list.TreeList;
 import org.batfish.common.VendorConversionException;
+import org.batfish.common.Warnings;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DefinedStructureInfo;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.Interface.Dependency;
+import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -44,6 +53,7 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
@@ -69,6 +79,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   public static final String DEFAULT_VSYS_NAME = "vsys1";
 
   public static final String NULL_VRF_NAME = "~NULL_VRF~";
+
+  public static final String PANORAMA_VSYS_NAME = "panorama";
 
   public static final String SHARED_VSYS_NAME = "~SHARED_VSYS~";
 
@@ -221,10 +233,10 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   /**
    * Generate unique object name (no collision across vsys namespaces) given a vsys name and
-   * original object name
+   * original object name.
    */
   public static String computeObjectName(String vsysName, String objectName) {
-    return String.format("%s~%s", vsysName, objectName);
+    return String.format("%s~%s", objectName, vsysName);
   }
 
   /** Generate egress IpAccessList name given an interface or zone name */
@@ -233,22 +245,29 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Extract object name from a name with an embedded namespace. For example: nameWithNamespace
-   * might be `vsys1~SERVICE1`, where `SERVICE1` is the object name extracted and returned.
+   * Extract object name from a name with an embedded namespace. For example: {@code
+   * nameWithNamespace} might be `SERVICE1~vsys1`, where `SERVICE1` is the object name extracted and
+   * returned.
+   *
+   * <p>Note that {@code nameWithNamespace} is expected to have the user object name
+   * <strong>first</strong> to enable users to recognize their objects in Batfish output.
    */
   private static String extractObjectName(String nameWithNamespace) {
     String[] parts = nameWithNamespace.split("~", -1);
-    return parts[parts.length - 1];
+    return parts[0];
   }
 
   // Visible for testing
 
   /**
-   * Generate IpAccessList name for the specified serviceGroupMemberName in the specified vsysName
+   * Generate the {@link IpAccessList} name for the specified {@code serviceGroupMemberName} in the
+   * specified {@code vsysName}.
+   *
+   * <p>Note that this is <strong>not</strong> a generated name, just a namespaced name.
    */
   public static String computeServiceGroupMemberAclName(
       String vsysName, String serviceGroupMemberName) {
-    return String.format("~%s~SERVICE_GROUP_MEMBER~%s~", vsysName, serviceGroupMemberName);
+    return String.format("%s~%s~SERVICE_GROUP_MEMBER", serviceGroupMemberName, vsysName);
   }
 
   /** Convert vsys components to vendor independent model */
@@ -284,23 +303,20 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         String zoneName = computeObjectName(vsysName, zone.getName());
         _c.getZones().put(zoneName, toZone(zoneName, zone));
 
-        String aclName = computeOutgoingFilterName(zoneName);
-        _c.getIpAccessLists().put(aclName, generateOutgoingFilter(aclName, zone, vsys));
+        IpAccessList acl = generateOutgoingFilter(computeOutgoingFilterName(zoneName), zone, vsys);
+        _c.getIpAccessLists().put(acl.getName(), acl);
       }
 
       // Services
       for (Service service : vsys.getServices().values()) {
-        String serviceGroupAclName = computeServiceGroupMemberAclName(vsysName, service.getName());
-        _c.getIpAccessLists()
-            .put(serviceGroupAclName, service.toIpAccessList(LineAction.PERMIT, this, vsys));
+        IpAccessList acl = service.toIpAccessList(LineAction.PERMIT, this, vsys, _w);
+        _c.getIpAccessLists().put(acl.getName(), acl);
       }
 
       // Service groups
       for (ServiceGroup serviceGroup : vsys.getServiceGroups().values()) {
-        String serviceGroupAclName =
-            computeServiceGroupMemberAclName(vsysName, serviceGroup.getName());
-        _c.getIpAccessLists()
-            .put(serviceGroupAclName, serviceGroup.toIpAccessList(LineAction.PERMIT, this, vsys));
+        IpAccessList acl = serviceGroup.toIpAccessList(LineAction.PERMIT, this, vsys, _w);
+        _c.getIpAccessLists().put(acl.getName(), acl);
       }
     }
     _c.setLoggingServers(loggingServers);
@@ -309,7 +325,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   /** Generate outgoing IpAccessList for the specified zone */
   private IpAccessList generateOutgoingFilter(String name, Zone toZone, Vsys vsys) {
     List<IpAccessListLine> lines = new TreeList<>();
-    SortedMap<String, Rule> rules = toZone.getVsys().getRules();
+    Map<String, Rule> rules = toZone.getVsys().getRules();
 
     for (Rule rule : rules.values()) {
       if (!rule.getDisabled()
@@ -329,35 +345,43 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return IpAccessList.builder().setName(name).setLines(lines).build();
   }
 
+  @Nullable
+  private static IpSpace ipSpaceFromRuleEndpoints(
+      Collection<RuleEndpoint> endpoints, Vsys vsys, Warnings w) {
+    return AclIpSpace.union(
+        endpoints.stream()
+            .map(source -> ruleEndpointToIpSpace(source, vsys, w))
+            .collect(Collectors.toList()));
+  }
+
   /** Convert specified firewall rule into an IpAccessListLine */
   private IpAccessListLine toIpAccessListLine(Rule rule, Vsys vsys) {
-    List<AclLineMatchExpr> conjuncts = new TreeList<>();
+    assert !rule.getDisabled(); // handled by caller.
+
     IpAccessListLine.Builder ipAccessListLineBuilder =
-        IpAccessListLine.builder().setName(rule.getName());
-    if (rule.getAction() == LineAction.PERMIT) {
-      ipAccessListLineBuilder.accepting();
-    } else {
-      ipAccessListLineBuilder.rejecting();
-    }
+        IpAccessListLine.builder().setName(rule.getName()).setAction(rule.getAction());
 
-    // TODO(https://github.com/batfish/batfish/issues/2097): need to handle matching specified
-    // applications
-
-    // Construct headerspace match expression
-    HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();
-    for (RuleEndpoint source : rule.getSource()) {
-      IpSpace ipSpace = ruleEndpointToIpSpace(source, vsys);
-      if (ipSpace != null) {
-        headerSpaceBuilder.addSrcIp(ipSpace);
+    List<AclLineMatchExpr> conjuncts = new TreeList<>();
+    // Match SRC IPs if specified.
+    IpSpace srcIps = ipSpaceFromRuleEndpoints(rule.getSource(), vsys, _w);
+    if (srcIps != null) {
+      AclLineMatchExpr match =
+          new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(srcIps).build());
+      if (rule.getNegateSource()) {
+        match = new NotMatchExpr(match);
       }
+      conjuncts.add(match);
     }
-    for (RuleEndpoint destination : rule.getDestination()) {
-      IpSpace ipSpace = ruleEndpointToIpSpace(destination, vsys);
-      if (ipSpace != null) {
-        headerSpaceBuilder.addDstIp(ipSpace);
+    // Match DST IPs if specified.
+    IpSpace dstIps = ipSpaceFromRuleEndpoints(rule.getDestination(), vsys, _w);
+    if (dstIps != null) {
+      AclLineMatchExpr match =
+          new MatchHeaderSpace(HeaderSpace.builder().setDstIps(dstIps).build());
+      if (rule.getNegateDestination()) {
+        match = new NotMatchExpr(match);
       }
+      conjuncts.add(match);
     }
-    conjuncts.add(new MatchHeaderSpace(headerSpaceBuilder.build()));
 
     // Construct source zone (source interface) match expression
     SortedSet<String> ruleFroms = rule.getFrom();
@@ -374,6 +398,9 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       }
       conjuncts.add(new MatchSrcInterface(srcInterfaces));
     }
+
+    // TODO(https://github.com/batfish/batfish/issues/2097): need to handle matching specified
+    // applications
 
     // Construct service match expression
     SortedSet<ServiceOrServiceGroupReference> ruleServices = rule.getService();
@@ -409,7 +436,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /** Converts {@link RuleEndpoint} to {@code IpSpace} */
-  private IpSpace ruleEndpointToIpSpace(RuleEndpoint endpoint, Vsys vsys) {
+  @Nonnull
+  private static IpSpace ruleEndpointToIpSpace(RuleEndpoint endpoint, Vsys vsys, Warnings w) {
     String endpointValue = endpoint.getValue();
     // Palo Alto allows object references that look like IP addresses, ranges, etc.
     // Devices use objects over constants when possible, so, check to see if there is a matching
@@ -434,11 +462,11 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
           return IpRange.range(Ip.parse(ips[0]), Ip.parse(ips[1]));
         case REFERENCE:
           // Undefined reference
-          _w.redFlag("No matching address group/object found for RuleEndpoint: " + endpoint);
-          return null;
+          w.redFlag("No matching address group/object found for RuleEndpoint: " + endpoint);
+          return EmptyIpSpace.INSTANCE;
         default:
-          _w.redFlag("Could not convert RuleEndpoint to IpSpace: " + endpoint);
-          return null;
+          w.redFlag("Could not convert RuleEndpoint to IpSpace: " + endpoint);
+          return EmptyIpSpace.INSTANCE;
       }
     }
   }
@@ -537,6 +565,32 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return newZone;
   }
 
+  /**
+   * Attach interfaces to zones. This is not done during extraction in case the file is structured
+   * so that zones are defined first.
+   */
+  private void attachInterfacesToZones() {
+    Map<String, Interface> allInterfaces =
+        Streams.concat(
+                getInterfaces().entrySet().stream(),
+                getInterfaces().values().stream().flatMap(i -> i.getUnits().entrySet().stream()))
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+    // Assign the appropriate zone to each interface
+    for (Vsys vsys : getVirtualSystems().values()) {
+      for (Zone zone : vsys.getZones().values()) {
+        for (String ifname : zone.getInterfaceNames()) {
+          Interface iface = allInterfaces.get(ifname);
+          if (iface != null) {
+            iface.setZone(zone);
+          } else {
+            // do nothing. Assume that an undefined reference was logged elsewhere.
+            assert true;
+          }
+        }
+      }
+    }
+  }
+
   @Override
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
     String hostname = getHostname();
@@ -546,11 +600,21 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     _c.setDnsServers(getDnsServers());
     _c.setNtpServers(getNtpServers());
 
+    // Before processing any Vsys, ensure that interfaces are attached to zones.
+    attachInterfacesToZones();
+
     // Handle converting items within virtual systems
     convertVirtualSystems();
 
     for (Entry<String, Interface> i : _interfaces.entrySet()) {
-      _c.getAllInterfaces().put(i.getKey(), toInterface(i.getValue()));
+      org.batfish.datamodel.Interface viIface = toInterface(i.getValue());
+      _c.getAllInterfaces().put(viIface.getName(), viIface);
+
+      for (Entry<String, Interface> unit : i.getValue().getUnits().entrySet()) {
+        org.batfish.datamodel.Interface viUnit = toInterface(unit.getValue());
+        viUnit.addDependency(new Dependency(viIface.getName(), DependencyType.BIND));
+        _c.getAllInterfaces().put(viUnit.getName(), viUnit);
+      }
     }
 
     // Vrf conversion uses interfaces, so must be done after interface exist in VI model
@@ -585,6 +649,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     markConcreteStructure(PaloAltoStructureType.IPSEC_CRYPTO_PROFILE);
     markConcreteStructure(
         PaloAltoStructureType.INTERFACE,
+        PaloAltoStructureUsage.STATIC_ROUTE_INTERFACE,
         PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE,
         PaloAltoStructureUsage.ZONE_INTERFACE);
     markConcreteStructure(PaloAltoStructureType.RULE, PaloAltoStructureUsage.RULE_SELF_REF);
@@ -623,6 +688,13 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         PaloAltoStructureUsage.ADDRESS_GROUP_STATIC,
         PaloAltoStructureUsage.RULE_DESTINATION,
         PaloAltoStructureUsage.RULE_SOURCE);
+
+    // Applications or Application-Groups
+    markAbstractStructureFromUnknownNamespace(
+        PaloAltoStructureType.APPLICATION_GROUP_OR_APPLICATION,
+        ImmutableList.of(
+            PaloAltoStructureType.APPLICATION_GROUP, PaloAltoStructureType.APPLICATION),
+        PaloAltoStructureUsage.RULE_APPLICATION);
 
     return ImmutableList.of(_c);
   }

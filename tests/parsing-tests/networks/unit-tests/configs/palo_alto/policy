@@ -1,0 +1,22 @@
+!RANCID-CONTENT-TYPE: paloalto
+config {
+  devices {
+    localhost.localdomain {
+      deviceconfig {
+        system {
+          hostname "paloalto_policy";
+        }
+      }
+    }
+  }
+}
+policy {
+  shared;
+  panorama {
+    address {
+      rfc1918_10 {
+        ip-netmask 10.0.0.0/8;
+      }
+    }
+  }
+}

@@ -200,7 +200,7 @@ public class BgpTopologyUtilsTest {
 
     // Should see session if they're connected
     Layer2Edge edge = new Layer2Edge(NODE1, iface1, null, NODE2, iface2, null, null);
-    Layer2Topology connectedLayer2Topology = Layer2Topology.fromEdges(ImmutableSet.of(edge));
+    Layer2Topology connectedLayer2Topology = Layer2Topology.builder().addEdge(edge).build();
     bgpTopology =
         initBgpTopology(_configs, ImmutableMap.of(), true, false, null, connectedLayer2Topology)
             .getGraph();
@@ -215,7 +215,8 @@ public class BgpTopologyUtilsTest {
     // Node 1 and 2 both have layer 2 edges but are not connected to any common node
     Layer2Edge edge1To3 = new Layer2Edge(NODE2, iface2, null, "node3", "iface3", null, null);
     Layer2Edge edge2To4 = new Layer2Edge(NODE2, iface2, null, "node4", "iface4", null, null);
-    Layer2Topology disconnected = Layer2Topology.fromEdges(ImmutableSet.of(edge1To3, edge2To4));
+    Layer2Topology disconnected =
+        Layer2Topology.builder().addEdge(edge1To3).addEdge(edge2To4).build();
     bgpTopology =
         initBgpTopology(_configs, ImmutableMap.of(), true, false, null, disconnected).getGraph();
     assertThat(bgpTopology.nodes(), hasSize(2));
@@ -243,7 +244,7 @@ public class BgpTopologyUtilsTest {
     _node2BgpProcess.setInterfaceNeighbors(ImmutableSortedMap.of(iface2, peer2));
 
     Layer2Edge edge = new Layer2Edge(NODE1, iface1, null, NODE2, iface2, null, null);
-    Layer2Topology connectedLayer2Topology = Layer2Topology.fromEdges(ImmutableSet.of(edge));
+    Layer2Topology connectedLayer2Topology = Layer2Topology.builder().addEdge(edge).build();
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
         initBgpTopology(_configs, ImmutableMap.of(), true, false, null, connectedLayer2Topology)
             .getGraph();
@@ -277,7 +278,7 @@ public class BgpTopologyUtilsTest {
     _node2BgpProcess.setInterfaceNeighbors(ImmutableSortedMap.of(iface2, peer2));
 
     Layer2Edge edge = new Layer2Edge(NODE1, iface1, null, NODE2, iface2, null, null);
-    Layer2Topology connectedLayer2Topology = Layer2Topology.fromEdges(ImmutableSet.of(edge));
+    Layer2Topology connectedLayer2Topology = Layer2Topology.builder().addEdge(edge).build();
 
     // Shouldn't see session come up because of incompatible remote AS
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =

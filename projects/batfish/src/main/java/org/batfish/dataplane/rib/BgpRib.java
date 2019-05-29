@@ -30,7 +30,7 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
  * routes
  */
 @ParametersAreNonnullByDefault
-public abstract class BgpRib<R extends BgpRoute> extends AbstractRib<R> {
+public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
 
   private static final long serialVersionUID = 1L;
   /** Main RIB to use for IGP cost estimation */

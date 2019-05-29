@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.apache.commons.collections4.list.TreeList;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
@@ -36,7 +37,8 @@ public final class ServiceGroup implements ServiceGroupMember {
   }
 
   @Override
-  public IpAccessList toIpAccessList(LineAction action, PaloAltoConfiguration pc, Vsys vsys) {
+  public IpAccessList toIpAccessList(
+      LineAction action, PaloAltoConfiguration pc, Vsys vsys, Warnings w) {
     List<IpAccessListLine> lines = new TreeList<>();
     for (ServiceOrServiceGroupReference memberReference : _references) {
       // Check for matching object before using built-ins
@@ -49,7 +51,7 @@ public final class ServiceGroup implements ServiceGroupMember {
                 action,
                 new PermittedByAcl(
                     computeServiceGroupMemberAclName(vsysName, memberReference.getName())),
-                _name));
+                memberReference.getName()));
       } else if (serviceName.equals(CATCHALL_SERVICE_NAME)) {
         lines.clear();
         lines.add(new IpAccessListLine(action, TrueExpr.INSTANCE, _name));
@@ -67,7 +69,7 @@ public final class ServiceGroup implements ServiceGroupMember {
       }
     }
     return IpAccessList.builder()
-        .setName(_name)
+        .setName(computeServiceGroupMemberAclName(vsys.getName(), _name))
         .setLines(lines)
         .setSourceName(_name)
         .setSourceType(PaloAltoStructureType.SERVICE_GROUP.getDescription())

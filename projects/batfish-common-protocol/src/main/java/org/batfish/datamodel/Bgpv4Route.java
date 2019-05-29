@@ -19,7 +19,7 @@ import org.batfish.datamodel.bgp.community.Community;
  * present only in BGP advertisements on the wire)
  */
 @ParametersAreNonnullByDefault
-public final class Bgpv4Route extends BgpRoute {
+public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
 
   private static final long serialVersionUID = 1L;
 
