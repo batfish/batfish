@@ -48,7 +48,7 @@ public class BgpProcessPropertySpecifier extends PropertySpecifier {
               new PropertyDescriptor<>(
                   BgpProcessPropertySpecifier::isRouteReflector,
                   Schema.BOOLEAN,
-                  "Whether any BGP peer is configured as a route reflector client"))
+                  "Whether any BGP peer in this process is configured as a route reflector client"))
           .put(
               MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE,
               new PropertyDescriptor<>(
@@ -80,7 +80,7 @@ public class BgpProcessPropertySpecifier extends PropertySpecifier {
                           process.getPassiveNeighbors().keySet(),
                           process.getInterfaceNeighbors().keySet()),
                   Schema.set(Schema.STRING),
-                  "TODO: description ... what is reported for each type of neighbor"))
+                  "All peers configured on this process, identified by peer address (for active and dynamic peers) or peer interface (for BGP unnumbered peers)"))
           // skip router-id; included as part of process identity
           .put(
               TIE_BREAKER,
