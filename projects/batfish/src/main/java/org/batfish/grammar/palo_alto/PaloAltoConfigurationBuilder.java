@@ -81,6 +81,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_ip_rangeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_dynamicContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_staticContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sapp_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_default_gatewayContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_hostnameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_ip_addressContext;
@@ -528,6 +529,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitS_application(S_applicationContext ctx) {
     _currentApplication = null;
+  }
+
+  @Override
+  public void exitSapp_description(Sapp_descriptionContext ctx) {
+    _currentApplication.setDescription(getText(ctx.description));
   }
 
   @Override

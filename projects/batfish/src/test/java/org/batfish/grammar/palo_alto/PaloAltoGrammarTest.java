@@ -94,6 +94,7 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.palo_alto.AddressGroup;
 import org.batfish.representation.palo_alto.AddressObject;
+import org.batfish.representation.palo_alto.Application;
 import org.batfish.representation.palo_alto.CryptoProfile;
 import org.batfish.representation.palo_alto.CryptoProfile.Type;
 import org.batfish.representation.palo_alto.Interface;
@@ -375,7 +376,22 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testApplications() throws IOException {
+  public void testApplications() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("applications");
+
+    Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+    Map<String, Application> applications = vsys.getApplications();
+
+    // Should have two applications, including an empty one
+    assertThat(applications.keySet(), equalTo(ImmutableSet.of("app1", "app2")));
+
+    // Check that descriptions are extracted
+    assertThat(applications.get("app1").getDescription(), nullValue());
+    assertThat(applications.get("app2").getDescription(), equalTo("this is a description"));
+  }
+
+  @Test
+  public void testApplicationsReference() throws IOException {
     String hostname = "applications";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
