@@ -116,17 +116,21 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
           .put(
               CHANNEL_GROUP,
               new PropertyDescriptor<>(
-                  Interface::getChannelGroup, Schema.STRING, "TODO: Description"))
+                  Interface::getChannelGroup,
+                  Schema.STRING,
+                  "Name of the aggregated interface (such as a portchannel) to which this interface belongs"))
           .put(
               CHANNEL_GROUP_MEMBERS,
               new PropertyDescriptor<>(
                   Interface::getChannelGroupMembers,
                   Schema.list(Schema.STRING),
-                  "TODO: Description"))
+                  "Names of interfaces that this interface aggregates"))
           .put(
               DECLARED_NAMES,
               new PropertyDescriptor<>(
-                  Interface::getDeclaredNames, Schema.list(Schema.STRING), " TODO: Description"))
+                  Interface::getDeclaredNames,
+                  Schema.list(Schema.STRING),
+                  "Any aliases explicitly defined for this interface"))
           .put(
               DESCRIPTION,
               new PropertyDescriptor<>(
