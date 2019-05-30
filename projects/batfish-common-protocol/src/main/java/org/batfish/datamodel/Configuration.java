@@ -322,18 +322,6 @@ public final class Configuration implements Serializable {
     return _authenticationKeyChains;
   }
 
-  /** Returns the lowest IP across all interfaces for now. We'll improve it later. */
-  @JsonIgnore
-  @Nullable
-  public Ip getCanonicalIp() {
-    return getVrfs().values().stream()
-        .flatMap(v -> v.getInterfaces().values().stream())
-        .flatMap(i -> i.getAllAddresses().stream())
-        .map(InterfaceAddress::getIp)
-        .min(Ip::compareTo)
-        .orElse(null);
-  }
-
   public Set<String> activeInterfaces() {
     return _interfaces.values().stream()
         .filter(Interface::getActive)
