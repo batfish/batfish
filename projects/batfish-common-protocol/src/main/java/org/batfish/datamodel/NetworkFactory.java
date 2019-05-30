@@ -68,7 +68,7 @@ public class NetworkFactory {
   }
 
   public BgpProcess.Builder bgpProcessBuilder() {
-    return new BgpProcess.Builder(this);
+    return BgpProcess.builder(this);
   }
 
   public Configuration.Builder configurationBuilder() {
