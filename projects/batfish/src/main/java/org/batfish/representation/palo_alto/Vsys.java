@@ -27,6 +27,8 @@ public final class Vsys implements Serializable {
 
   private final Set<String> _importedInterfaces;
 
+  private final Set<String> _importedVsyses;
+
   private final String _name;
 
   // Note: these are all LinkedHashMaps to preserve insertion order.
@@ -50,6 +52,7 @@ public final class Vsys implements Serializable {
     _addressObjects = new TreeMap<>();
     _applications = new TreeMap<>();
     _importedInterfaces = new HashSet<>();
+    _importedVsyses = new HashSet<>();
     _rules = new LinkedHashMap<>();
     _preRules = new LinkedHashMap<>();
     _postRules = new LinkedHashMap<>();
@@ -82,6 +85,11 @@ public final class Vsys implements Serializable {
   /** Returns the interfaces imported for this vsys. */
   public Set<String> getImportedInterfaces() {
     return _importedInterfaces;
+  }
+
+  /** Returns the sibling vsyses imported for this vsys. */
+  public Set<String> getImportedVsyses() {
+    return _importedVsyses;
   }
 
   /** Returns the name of this vsys. */
