@@ -118,13 +118,13 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
               new PropertyDescriptor<>(
                   Interface::getChannelGroup,
                   Schema.STRING,
-                  "Name of the aggregated interface (such as a portchannel) to which this interface belongs"))
+                  "Name of the aggregated interface (e.g., a port channel) to which this interface belongs"))
           .put(
               CHANNEL_GROUP_MEMBERS,
               new PropertyDescriptor<>(
                   Interface::getChannelGroupMembers,
                   Schema.list(Schema.STRING),
-                  "Names of interfaces that this interface aggregates"))
+                  "For aggregated interfaces (e.g., a port channel), names of constituent interfaces"))
           .put(
               DECLARED_NAMES,
               new PropertyDescriptor<>(
@@ -157,9 +157,7 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
           .put(
               INCOMING_FILTER_NAME,
               new PropertyDescriptor<>(
-                  Interface::getIncomingFilterName,
-                  Schema.STRING,
-                  "Name of the IPv4 filter for incoming packets"))
+                  Interface::getIncomingFilterName, Schema.STRING, "Name of the input IPv4 filter"))
           // Uncomment after we've fixed interface types
           // .put(INTERFACE_TYPE, new PropertyDescriptor<>(Interface::getInterfaceType,
           // Schema.STRING))
@@ -185,39 +183,38 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
           .put(
               OSPF_COST,
               new PropertyDescriptor<>(
-                  Interface::getOspfCost, Schema.INTEGER, "Configured (explicitly) OSPF cost"))
+                  Interface::getOspfCost, Schema.INTEGER, "OSPF cost if explicitly configured"))
           .put(
               OSPF_ENABLED,
               new PropertyDescriptor<>(
                   Interface::getOspfEnabled, Schema.BOOLEAN, "Whether OSPF is enabled"))
-          .put(
-              OSPF_HELLO_MULTIPLIER,
-              new PropertyDescriptor<>(
-                  Interface::getOspfHelloMultiplier,
-                  Schema.INTEGER,
-                  "Number of OSPF packets to send during the dead interval for fast OSPF updates"))
+          // skipped ospf hello multiplier.
           .put(
               OSPF_PASSIVE,
               new PropertyDescriptor<>(
-                  Interface::getOspfPassive, Schema.BOOLEAN, "Whether OSPF is enabled passively"))
+                  Interface::getOspfPassive,
+                  Schema.BOOLEAN,
+                  "Whether interface is in OSPF passive mode"))
           .put(
               OSPF_POINT_TO_POINT,
               new PropertyDescriptor<>(
                   Interface::getOspfPointToPoint,
                   Schema.BOOLEAN,
-                  "Whether OSPF runs point-to-point"))
+                  "Whether OSPF should operate as if its on a point-to-point link"))
           // skip outgoing filter
           .put(
               OUTGOING_FILTER_NAME,
               new PropertyDescriptor<>(
                   Interface::getOutgoingFilterName,
                   Schema.STRING,
-                  "Name of the IPv4 filter for outgoing packets"))
+                  "Name of the output IPv4 filter"))
           // skip getOwner
           .put(
               PRIMARY_ADDRESS,
               new PropertyDescriptor<>(
-                  Interface::getAddress, Schema.STRING, "Primary IPv4 address assignment"))
+                  Interface::getAddress,
+                  Schema.STRING,
+                  "Primary IPv4 address along with the prefix length"))
           .put(
               PROXY_ARP,
               new PropertyDescriptor<>(
@@ -229,14 +226,16 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
           .put(
               RIP_PASSIVE,
               new PropertyDescriptor<>(
-                  Interface::getRipPassive, Schema.BOOLEAN, "Whether RIP is enabled passively"))
+                  Interface::getRipPassive,
+                  Schema.BOOLEAN,
+                  "Whether interface is in RIP passive mode"))
           // skip routing policy
           .put(
               ROUTING_POLICY_NAME,
               new PropertyDescriptor<>(
                   Interface::getRoutingPolicyName,
                   Schema.STRING,
-                  "Name of the policy used for policy routing"))
+                  "Name of the policy used for policy routing (PBR or FBF)"))
           .put(
               SPANNING_TREE_PORTFAST,
               new PropertyDescriptor<>(
