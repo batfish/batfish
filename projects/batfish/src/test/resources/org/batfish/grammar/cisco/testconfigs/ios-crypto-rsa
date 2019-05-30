@@ -1,0 +1,18 @@
+!
+hostname ios-crypto-rsa
+!
+crypto isakmp policy 10
+  hash md5
+  group 1
+  encr aes
+  authentication rsa-encr
+!
+crypto key pubkey-chain rsa
+ named-key testrsa
+  address 1.2.3.4
+  key-string
+   305C300D 06092A86 4886F70D 01010105 00034B00 30480241 00D7808D C5FF14AC
+   0D2B55AC 5D199F2F 7CB4B355 C555E07B 6D0DECBE 4519B1F0 75B12D6F 902D6E9F
+   B6FDAD8D 654EF851 5701D5D7 EDA047ED 9A2A619D 5639DF18 EB020301 0001
+  quit
+!
