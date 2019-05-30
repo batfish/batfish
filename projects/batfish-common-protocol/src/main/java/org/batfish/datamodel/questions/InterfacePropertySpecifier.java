@@ -140,7 +140,7 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
               new PropertyDescriptor<>(
                   Interface::getDhcpRelayAddresses,
                   Schema.list(Schema.IP),
-                  "IPv4 addresses of DHCP relay servers"))
+                  "IPv4 addresses to which incoming DHCP requests are relayed"))
           .put(
               ENCAPSULATION_VLAN,
               new PropertyDescriptor<>(
@@ -179,7 +179,9 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
           .put(
               OSPF_AREA_NAME,
               new PropertyDescriptor<>(
-                  Interface::getOspfAreaName, Schema.INTEGER, "OSPF area of the interface"))
+                  Interface::getOspfAreaName,
+                  Schema.INTEGER,
+                  "OSPF area to which the interface belongs"))
           .put(
               OSPF_COST,
               new PropertyDescriptor<>(
