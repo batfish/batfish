@@ -616,7 +616,7 @@ class CiscoConversions {
     return ikePhase1Key;
   }
 
-  static IkePhase1Key toIkePhase1Key(@Nonnull CryptoNamedRsaPubKey rsaPubKey) {
+  static IkePhase1Key toIkePhase1Key(@Nonnull NamedRsaPubKey rsaPubKey) {
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
     ikePhase1Key.setKeyHash(rsaPubKey.getKey());
     ikePhase1Key.setKeyType(IkeKeyType.RSA_PUB_KEY);
@@ -627,11 +627,10 @@ class CiscoConversions {
   }
 
   static IkePhase1Policy toIkePhase1Policy(
-      @Nonnull CryptoNamedRsaPubKey rsaPubKey,
+      @Nonnull NamedRsaPubKey rsaPubKey,
       @Nonnull CiscoConfiguration oldConfig,
       @Nonnull IkePhase1Key ikePhase1KeyFromRsaPubKey) {
-    IkePhase1Policy ikePhase1Policy =
-        new IkePhase1Policy(String.format("~%s_%s~", PREFIX_RSA_PUB, rsaPubKey.getName()));
+    IkePhase1Policy ikePhase1Policy = new IkePhase1Policy(getRsaPubKeyGeneratedName(rsaPubKey));
 
     ikePhase1Policy.setIkePhase1Proposals(
         oldConfig.getIsakmpPolicies().values().stream()
@@ -648,6 +647,10 @@ class CiscoConversions {
     // RSA pub key is not per interface so unsetting local interface
     ikePhase1Policy.setLocalInterface(UNSET_LOCAL_INTERFACE);
     return ikePhase1Policy;
+  }
+
+  static String getRsaPubKeyGeneratedName(NamedRsaPubKey namedRsaPubKey) {
+    return String.format("~%s_%s~", PREFIX_RSA_PUB, namedRsaPubKey.getName());
   }
 
   static IkePhase1Policy toIkePhase1Policy(

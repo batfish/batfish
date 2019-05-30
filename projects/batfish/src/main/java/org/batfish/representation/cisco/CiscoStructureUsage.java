@@ -143,6 +143,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   MLAG_CONFIGURATION_LOCAL_INTERFACE("mlag configuration local-interface"),
   MLAG_CONFIGURATION_PEER_LINK("mlag configuration peer-link"),
   MSDP_PEER_SA_LIST("msdp peer sa-list"),
+  NAMED_RSA_PUB_KEY_SELF_REF("named rsa pubkey"),
   NETWORK_OBJECT_GROUP_GROUP_OBJECT("object-group network group-object"),
   NETWORK_OBJECT_GROUP_NETWORK_OBJECT("object-group network network-object object"),
   NTP_ACCESS_GROUP("ntp access-group"),

@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
-import static org.batfish.datamodel.IkePhase1Policy.PREFIX_RSA_PUB;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Interface.computeInterfaceType;
 import static org.batfish.datamodel.Interface.isRealInterfaceName;
@@ -15,6 +14,7 @@ import static org.batfish.representation.cisco.CiscoConversions.convertCryptoMap
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpExportPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpImportPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.generateGenerationPolicy;
+import static org.batfish.representation.cisco.CiscoConversions.getRsaPubKeyGeneratedName;
 import static org.batfish.representation.cisco.CiscoConversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveKeyringIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveTunnelIfaceNames;
@@ -417,7 +417,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, CryptoMapSet> _cryptoMapSets;
 
-  private final Map<String, CryptoNamedRsaPubKey> _cryptoNamedRsaPubKeys;
+  private final Map<String, NamedRsaPubKey> _cryptoNamedRsaPubKeys;
 
   private final List<Ip> _dhcpRelayServers;
 
@@ -752,7 +752,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _cryptoMapSets;
   }
 
-  public Map<String, CryptoNamedRsaPubKey> getCryptoNamedRsaPubKeys() {
+  public Map<String, NamedRsaPubKey> getCryptoNamedRsaPubKeys() {
     return _cryptoNamedRsaPubKeys;
   }
 
@@ -3487,14 +3487,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _cryptoNamedRsaPubKeys
         .values()
         .forEach(
-            cryptoNamedRsaPubKey -> {
-              IkePhase1Key ikePhase1Key = toIkePhase1Key(cryptoNamedRsaPubKey);
-              ikePhase1KeysBuilder.put(
-                  String.format("~%s_%s~", PREFIX_RSA_PUB, cryptoNamedRsaPubKey.getName()),
-                  ikePhase1Key);
+            namedRsaPubKey -> {
+              IkePhase1Key ikePhase1Key = toIkePhase1Key(namedRsaPubKey);
+              ikePhase1KeysBuilder.put(getRsaPubKeyGeneratedName(namedRsaPubKey), ikePhase1Key);
 
               IkePhase1Policy ikePhase1Policy =
-                  toIkePhase1Policy(cryptoNamedRsaPubKey, this, ikePhase1Key);
+                  toIkePhase1Policy(namedRsaPubKey, this, ikePhase1Key);
               c.getIkePhase1Policies().put(ikePhase1Policy.getName(), ikePhase1Policy);
             });
 
