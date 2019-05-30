@@ -13,5 +13,19 @@ s_vsys
         s_rulebase
         | s_zone
         | ss_common
+        | sv_import
     )
+;
+
+sv_import
+:
+    IMPORT
+    (
+        svi_visible_vsys
+    )?
+;
+
+svi_visible_vsys
+:
+    VISIBLE_VSYS variable_list
 ;

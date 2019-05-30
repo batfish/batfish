@@ -746,6 +746,11 @@ VIRTUAL_ROUTER
     'virtual-router'
 ;
 
+VISIBLE_VSYS
+:
+    'visible-vsys'
+;
+
 VLAN
 :
     'vlan'

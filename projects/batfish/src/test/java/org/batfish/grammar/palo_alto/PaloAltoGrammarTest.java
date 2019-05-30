@@ -1190,6 +1190,15 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testVsysImport() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("vsys-import");
+
+    // Confirm vsys imports are extracted correctly
+    assertThat(c.getVirtualSystems().get("vsys1").getImportedVsyses(), emptyIterable());
+    assertThat(c.getVirtualSystems().get("vsys2").getImportedVsyses(), contains("vsys1"));
+  }
+
+  @Test
   public void testVsysService() throws IOException {
     String hostname = "vsys-service";
     Configuration c = parseConfig(hostname);
