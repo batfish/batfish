@@ -14,6 +14,7 @@ import static org.batfish.representation.cisco.CiscoConversions.convertCryptoMap
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpExportPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpImportPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.generateGenerationPolicy;
+import static org.batfish.representation.cisco.CiscoConversions.getRsaPubKeyGeneratedName;
 import static org.batfish.representation.cisco.CiscoConversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveKeyringIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveTunnelIfaceNames;
@@ -81,6 +82,7 @@ import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute6;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkePhase1Key;
+import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
@@ -415,6 +417,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, CryptoMapSet> _cryptoMapSets;
 
+  private final Map<String, NamedRsaPubKey> _cryptoNamedRsaPubKeys;
+
   private final List<Ip> _dhcpRelayServers;
 
   private NavigableSet<String> _dnsServers;
@@ -561,6 +565,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _asPathSets = new TreeMap<>();
     _cf = new CiscoFamily();
     _communitySets = new TreeMap<>();
+    _cryptoNamedRsaPubKeys = new TreeMap<>();
     _cryptoMapSets = new HashMap<>();
     _dhcpRelayServers = new ArrayList<>();
     _dnsServers = new TreeSet<>();
@@ -745,6 +750,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, CryptoMapSet> getCryptoMapSets() {
     return _cryptoMapSets;
+  }
+
+  public Map<String, NamedRsaPubKey> getCryptoNamedRsaPubKeys() {
+    return _cryptoNamedRsaPubKeys;
   }
 
   public Vrf getDefaultVrf() {
@@ -3474,6 +3483,18 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _keyrings
         .values()
         .forEach(keyring -> ikePhase1KeysBuilder.put(keyring.getName(), toIkePhase1Key(keyring)));
+    // RSA pub named keys to IKE phase 1 key and IKE phase 1 policy
+    _cryptoNamedRsaPubKeys
+        .values()
+        .forEach(
+            namedRsaPubKey -> {
+              IkePhase1Key ikePhase1Key = toIkePhase1Key(namedRsaPubKey);
+              ikePhase1KeysBuilder.put(getRsaPubKeyGeneratedName(namedRsaPubKey), ikePhase1Key);
+
+              IkePhase1Policy ikePhase1Policy =
+                  toIkePhase1Policy(namedRsaPubKey, this, ikePhase1Key);
+              c.getIkePhase1Policies().put(ikePhase1Policy.getName(), ikePhase1Policy);
+            });
 
     c.setIkePhase1Keys(ikePhase1KeysBuilder.build());
 
@@ -3840,6 +3861,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_TRANSFORM_SET,
         CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET);
     markConcreteStructure(CiscoStructureType.KEYRING, CiscoStructureUsage.ISAKMP_PROFILE_KEYRING);
+    markConcreteStructure(
+        CiscoStructureType.NAMED_RSA_PUB_KEY, CiscoStructureUsage.NAMED_RSA_PUB_KEY_SELF_REF);
 
     // class-map
     markConcreteStructure(
