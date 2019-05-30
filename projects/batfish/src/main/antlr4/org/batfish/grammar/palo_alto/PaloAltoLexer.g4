@@ -221,6 +221,11 @@ ESP
     'esp'
 ;
 
+EXTERNAL
+:
+    'external'
+;
+
 ETHERNET
 :
     'ethernet'

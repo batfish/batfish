@@ -65,6 +65,7 @@ import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.SortedMap;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -106,6 +107,7 @@ import org.batfish.representation.palo_alto.PaloAltoStructureType;
 import org.batfish.representation.palo_alto.PaloAltoStructureUsage;
 import org.batfish.representation.palo_alto.ServiceBuiltIn;
 import org.batfish.representation.palo_alto.Vsys;
+import org.batfish.representation.palo_alto.Zone;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -1301,6 +1303,20 @@ public class PaloAltoGrammarTest {
             hasInterface("ethernet1/2", hasZoneName("z1")),
             hasInterface("ethernet1/3.1", hasZoneName("z1")),
             hasInterface("ethernet1/3", hasZoneName(nullValue()))));
+  }
+
+  @Test
+  public void testZoneExternal() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("zone-external");
+
+    // Make sure the vsys and zones we're going to check exist
+    assertThat(c.getVirtualSystems(), hasKey("vsys3"));
+    SortedMap<String, Zone> zones = c.getVirtualSystems().get("vsys3").getZones();
+    assertThat(zones.keySet(), containsInAnyOrder("SIBLING_VSYS_ZONE", "SHARED_GATEWAY_ZONE"));
+
+    // Make sure the external zones are correctly populated with the specified external names
+    assertThat(zones.get("SIBLING_VSYS_ZONE").getExternalNames(), contains("vsys1", "vsys2"));
+    assertThat(zones.get("SHARED_GATEWAY_ZONE").getExternalNames(), contains("sg1"));
   }
 
   @Test

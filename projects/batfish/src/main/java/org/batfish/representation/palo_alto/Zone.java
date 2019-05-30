@@ -1,12 +1,15 @@
 package org.batfish.representation.palo_alto;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
 public final class Zone implements Serializable {
 
   private static final long serialVersionUID = 1L;
+
+  private final Set<String> _externalNames;
 
   private final Set<String> _interfaceNames;
 
@@ -16,8 +19,13 @@ public final class Zone implements Serializable {
 
   public Zone(String name, Vsys vsys) {
     _name = name;
+    _externalNames = new HashSet<>();
     _interfaceNames = new TreeSet<>();
     _vsys = vsys;
+  }
+
+  public Set<String> getExternalNames() {
+    return _externalNames;
   }
 
   public Set<String> getInterfaceNames() {
