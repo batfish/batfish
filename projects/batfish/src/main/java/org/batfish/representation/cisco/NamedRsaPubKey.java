@@ -5,13 +5,14 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 
-public class CryptoNamedRsaPubKey implements Serializable {
+/** Used during IKE phase 1 negotiation for authentication */
+public class NamedRsaPubKey implements Serializable {
   private static final long serialVersionUID = 1L;
   @Nonnull private String _name;
   @Nullable private Ip _address;
   @Nullable private String _key;
 
-  public CryptoNamedRsaPubKey(@Nonnull String name) {
+  public NamedRsaPubKey(@Nonnull String name) {
     _name = name;
   }
 

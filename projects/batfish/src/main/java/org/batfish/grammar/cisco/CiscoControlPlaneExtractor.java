@@ -52,6 +52,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.ISAKMP_PROFILE
 import static org.batfish.representation.cisco.CiscoStructureType.KEYRING;
 import static org.batfish.representation.cisco.CiscoStructureType.L2TP_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureType.MAC_ACCESS_LIST;
+import static org.batfish.representation.cisco.CiscoStructureType.NAMED_RSA_PUB_KEY;
 import static org.batfish.representation.cisco.CiscoStructureType.NAT_POOL;
 import static org.batfish.representation.cisco.CiscoStructureType.NETWORK_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureType.NETWORK_OBJECT_GROUP;
@@ -206,6 +207,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.MANAGEMENT_TE
 import static org.batfish.representation.cisco.CiscoStructureUsage.MLAG_CONFIGURATION_LOCAL_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.MLAG_CONFIGURATION_PEER_LINK;
 import static org.batfish.representation.cisco.CiscoStructureUsage.MSDP_PEER_SA_LIST;
+import static org.batfish.representation.cisco.CiscoStructureUsage.NAMED_RSA_PUB_KEY_SELF_REF;
 import static org.batfish.representation.cisco.CiscoStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.NTP_ACCESS_GROUP;
@@ -1177,7 +1179,6 @@ import org.batfish.representation.cisco.CommunitySetElemHalves;
 import org.batfish.representation.cisco.CommunitySetElemIosRegex;
 import org.batfish.representation.cisco.CryptoMapEntry;
 import org.batfish.representation.cisco.CryptoMapSet;
-import org.batfish.representation.cisco.CryptoNamedRsaPubKey;
 import org.batfish.representation.cisco.DistributeList;
 import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco.DynamicIpBgpPeerGroup;
@@ -1223,6 +1224,7 @@ import org.batfish.representation.cisco.MatchSemantics;
 import org.batfish.representation.cisco.MlagConfiguration;
 import org.batfish.representation.cisco.NamedBgpPeerGroup;
 import org.batfish.representation.cisco.NamedCommunitySet;
+import org.batfish.representation.cisco.NamedRsaPubKey;
 import org.batfish.representation.cisco.NatPool;
 import org.batfish.representation.cisco.NetworkObjectAddressSpecifier;
 import org.batfish.representation.cisco.NetworkObjectGroup;
@@ -1529,7 +1531,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private Integer _currentCryptoMapSequenceNum;
 
-  private CryptoNamedRsaPubKey _currentCryptoNamedRsaPubKey;
+  private NamedRsaPubKey _currentNamedRsaPubKey;
 
   private DynamicIpBgpPeerGroup _currentDynamicIpPeerGroup;
 
@@ -1957,25 +1959,36 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterCkp_named_key(Ckp_named_keyContext ctx) {
-    _currentCryptoNamedRsaPubKey = new CryptoNamedRsaPubKey(ctx.name.getText());
+    String keyName = ctx.name.getText();
+    _currentNamedRsaPubKey =
+        _configuration.getCryptoNamedRsaPubKeys().computeIfAbsent(keyName, NamedRsaPubKey::new);
+    defineStructure(NAMED_RSA_PUB_KEY, keyName, ctx);
+    /* RSA pub keys are dynamically matched and not explicitly referenced, so adding a
+    self-reference here */
+    _configuration.referenceStructure(
+        NAMED_RSA_PUB_KEY, keyName, NAMED_RSA_PUB_KEY_SELF_REF, ctx.name.start.getLine());
   }
 
   @Override
   public void enterCkpn_address(Ckpn_addressContext ctx) {
-    _currentCryptoNamedRsaPubKey.setAddress(toIp(ctx.ip_address));
+    if (ctx.NO() != null) {
+      return;
+    }
+    _currentNamedRsaPubKey.setAddress(toIp(ctx.ip_address));
   }
 
   @Override
   public void enterCkpn_key_string(Ckpn_key_stringContext ctx) {
-    _currentCryptoNamedRsaPubKey.setKey(
+    if (ctx.NO() != null) {
+      return;
+    }
+    _currentNamedRsaPubKey.setKey(
         CommonUtil.sha256Digest(ctx.certificate().getText() + CommonUtil.salt()));
   }
 
   @Override
   public void exitCkp_named_key(Ckp_named_keyContext ctx) {
-    _configuration
-        .getCryptoNamedRsaPubKeys()
-        .put(_currentCryptoNamedRsaPubKey.getName(), _currentCryptoNamedRsaPubKey);
+    _currentNamedRsaPubKey = null;
   }
 
   private IpsecProtocol toProtocol(Ipsec_authenticationContext ctx) {

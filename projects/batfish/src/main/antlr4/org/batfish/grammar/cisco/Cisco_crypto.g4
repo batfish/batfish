@@ -509,26 +509,17 @@ ckp_named_key
    (
       ckpn_address
       | ckpn_key_string
-      | ckpn_null
    )*
 ;
 
 ckpn_address
 :
-   ADDRESS ip_address = IP_ADDRESS NEWLINE
+   NO? ADDRESS ip_address = IP_ADDRESS NEWLINE
 ;
 
 ckpn_key_string
 :
-   KEY_STRING certificate QUIT NEWLINE
-;
-
-ckpn_null
-:
-   NO?
-   (
-      ADDRESS
-   ) null_rest_of_line
+   NO? KEY_STRING certificate QUIT NEWLINE
 ;
 
 ckr_local_address
