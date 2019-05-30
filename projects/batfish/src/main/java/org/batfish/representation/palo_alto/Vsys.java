@@ -16,6 +16,8 @@ public final class Vsys implements Serializable {
 
   private final SortedMap<String, AddressObject> _addressObjects;
 
+  private final SortedMap<String, Application> _applications;
+
   private final String _name;
 
   // Note: this is a LinkedHashMap to preserve insertion order
@@ -33,6 +35,7 @@ public final class Vsys implements Serializable {
     _name = name;
     _addressGroups = new TreeMap<>();
     _addressObjects = new TreeMap<>();
+    _applications = new TreeMap<>();
     _rules = new LinkedHashMap<>();
     _services = new TreeMap<>();
     _serviceGroups = new TreeMap<>();
@@ -48,6 +51,11 @@ public final class Vsys implements Serializable {
   /** Returns a map of address object name to {@link AddressObject} object */
   public SortedMap<String, AddressObject> getAddressObjects() {
     return _addressObjects;
+  }
+
+  /** Returns a map of application name to {@link Application} object */
+  public SortedMap<String, Application> getApplications() {
+    return _applications;
   }
 
   /** Returns the name of this vsys. */
