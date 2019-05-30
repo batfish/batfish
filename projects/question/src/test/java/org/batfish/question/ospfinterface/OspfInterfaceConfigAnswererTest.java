@@ -3,7 +3,6 @@ package org.batfish.question.ospfinterface;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_AREA_NAME;
 import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_COST;
-import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_HELLO_MULTIPLIER;
 import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_PASSIVE;
 import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_POINT_TO_POINT;
 import static org.batfish.question.ospfinterface.OspfInterfaceConfigurationAnswerer.COLUMNS_FROM_PROP_SPEC;
@@ -87,8 +86,7 @@ public class OspfInterfaceConfigAnswererTest {
         allOf(
             hasColumn(OSPF_PASSIVE, equalTo(true), Schema.BOOLEAN),
             hasColumn(OSPF_COST, equalTo(2), Schema.INTEGER),
-            hasColumn(OSPF_POINT_TO_POINT, equalTo(true), Schema.BOOLEAN),
-            hasColumn(OSPF_HELLO_MULTIPLIER, equalTo(2), Schema.INTEGER)));
+            hasColumn(OSPF_POINT_TO_POINT, equalTo(true), Schema.BOOLEAN)));
   }
 
   @Test
@@ -107,7 +105,6 @@ public class OspfInterfaceConfigAnswererTest {
                 .add(OSPF_PASSIVE)
                 .add(OSPF_COST)
                 .add(OSPF_POINT_TO_POINT)
-                .add(OSPF_HELLO_MULTIPLIER)
                 .build()));
   }
 }

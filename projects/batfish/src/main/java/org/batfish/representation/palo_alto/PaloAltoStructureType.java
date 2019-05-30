@@ -21,6 +21,7 @@ public enum PaloAltoStructureType implements StructureType {
   SERVICE_GROUP("service-group"),
   SERVICE_OR_SERVICE_GROUP("service or service-group"),
   SERVICE_OR_SERVICE_GROUP_OR_NONE("service or service-group or none"),
+  SHARED_GATEWAY("shared-gateway"),
   ZONE("zone");
 
   private final String _description;
