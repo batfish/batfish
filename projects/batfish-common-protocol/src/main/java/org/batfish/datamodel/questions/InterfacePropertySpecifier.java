@@ -52,7 +52,6 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
   public static final String OSPF_AREA_NAME = "OSPF_Area_Name";
   public static final String OSPF_COST = "OSPF_Cost";
   public static final String OSPF_ENABLED = "OSPF_Enabled";
-  public static final String OSPF_HELLO_MULTIPLIER = "OSPF_Hello_Multiplier";
   public static final String OSPF_PASSIVE = "OSPF_Passive";
   public static final String OSPF_POINT_TO_POINT = "OSPF_Point_To_Point";
   public static final String OUTGOING_FILTER_NAME = "Outgoing_Filter_Name";
