@@ -74,7 +74,6 @@ public class NodePropertySpecifier extends PropertySpecifier {
               AUTHENTICATION_KEY_CHAINS,
               new PropertyDescriptor<>(
                   Configuration::getAuthenticationKeyChains, Schema.set(Schema.STRING)))
-          .put(CANONICAL_IP, new PropertyDescriptor<>(Configuration::getCanonicalIp, Schema.IP))
           .put(
               COMMUNITY_LISTS,
               new PropertyDescriptor<>(Configuration::getCommunityLists, Schema.set(Schema.STRING)))
@@ -113,9 +112,6 @@ public class NodePropertySpecifier extends PropertySpecifier {
           .put(
               IP_ACCESS_LISTS,
               new PropertyDescriptor<>(Configuration::getIpAccessLists, Schema.set(Schema.STRING)))
-          .put(
-              IP_SPACES,
-              new PropertyDescriptor<>(Configuration::getIpSpaces, Schema.set(Schema.STRING)))
           .put(
               IP_6_ACCESS_LISTS,
               new PropertyDescriptor<>(Configuration::getIp6AccessLists, Schema.set(Schema.STRING)))
