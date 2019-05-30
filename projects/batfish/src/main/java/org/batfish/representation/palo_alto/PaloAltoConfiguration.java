@@ -518,37 +518,29 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     newIface.setActive(iface.getActive());
     newIface.setDescription(iface.getComment());
 
-    String ifAclName = computeOutgoingFilterName(iface.getName());
     Zone zone = iface.getZone();
+    List<IpAccessListLine> lines;
     if (zone != null) {
       newIface.setZoneName(zone.getName());
-      newIface.setOutgoingFilter(
-          IpAccessList.builder()
-              .setOwner(_c)
-              .setName(ifAclName)
-              .setLines(
-                  ImmutableList.of(
-                      IpAccessListLine.accepting()
-                          .setMatchCondition(
-                              new PermittedByAcl(
-                                  computeOutgoingFilterName(
-                                      computeObjectName(zone.getVsys().getName(), zone.getName()))))
-                          .build()))
-              .build());
+      lines =
+          ImmutableList.of(
+              IpAccessListLine.accepting(
+                  new PermittedByAcl(
+                      computeOutgoingFilterName(
+                          computeObjectName(zone.getVsys().getName(), zone.getName())))));
     } else {
       // Do not allow any traffic exiting an unzoned interface
-      newIface.setOutgoingFilter(
-          IpAccessList.builder()
-              .setOwner(_c)
-              .setName(ifAclName)
-              .setLines(
-                  ImmutableList.of(
-                      IpAccessListLine.builder()
-                          .rejecting()
-                          .setMatchCondition(TrueExpr.INSTANCE)
-                          .build()))
-              .build());
+      lines = ImmutableList.of(IpAccessListLine.rejecting("Not in a zone", TrueExpr.INSTANCE));
     }
+    /* TODO: correct and uncomment.
+    IpAccessList outgoing =
+        IpAccessList.builder()
+            .setOwner(_c)
+            .setName(computeOutgoingFilterName(iface.getName()))
+            .setLines(lines)
+            .build();
+     */
+    assert lines != null; // suppress unused warning
     return newIface;
   }
 
