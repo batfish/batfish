@@ -1147,7 +1147,6 @@ public class PaloAltoGrammarTest {
     assertThat(vsyses, hasKey("sg1"));
     assertThat(vsyses, hasKey("sg2"));
     assertThat(vsyses, hasKey("sg3"));
-    assertThat(vsyses, hasKey("sg_invalid"));
 
     // Confirm display names show up as well
     assertThat(c.getVirtualSystems().get("sg1").getDisplayName(), equalTo("shared-gateway1"));
@@ -1169,7 +1168,6 @@ public class PaloAltoGrammarTest {
     assertThat(ccae, hasDefinedStructure(filename, SHARED_GATEWAY, "sg1"));
     assertThat(ccae, hasDefinedStructure(filename, SHARED_GATEWAY, "sg2"));
     assertThat(ccae, hasDefinedStructure(filename, SHARED_GATEWAY, "sg3"));
-    assertThat(ccae, hasDefinedStructure(filename, SHARED_GATEWAY, "sg_invalid"));
 
     // Confirm structure references are counted correctly
     assertThat(ccae, hasNumReferrers(filename, INTERFACE, "ethernet1/1", 2));

@@ -15,6 +15,3 @@ set network shared-gateway sg2 zone sg2_ZONE network layer3 ethernet1/2
 set network shared-gateway sg3 import network interface ethernet1/3
 set network shared-gateway sg3 display-name "invalid shared gateway"
 set network shared-gateway sg3 zone sg3_ZONE network layer3 ethernet1/3
-
-# Invalid shared-gateway name
-set network shared-gateway sg_invalid display-name "my shared gateway with an invalid name"
