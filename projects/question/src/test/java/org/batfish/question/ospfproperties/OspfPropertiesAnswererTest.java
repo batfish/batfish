@@ -5,6 +5,8 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultiset;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multiset;
 import java.util.stream.Stream;
 import org.batfish.datamodel.Configuration;
@@ -25,7 +27,7 @@ public class OspfPropertiesAnswererTest {
   public void getProperties() {
     OspfProcess ospf1 =
         OspfProcess.builder().setProcessId("uber-proc").setReferenceBandwidth(1e8).build();
-    ospf1.setExportPolicy("my-policy");
+    ospf1.setExportPolicySources(ImmutableSortedSet.of("my-policy"));
     ospf1.setReferenceBandwidth(42.0);
 
     Vrf vrf1 = new Vrf("vrf1");
@@ -55,7 +57,7 @@ public class OspfPropertiesAnswererTest {
             .put(OspfPropertiesAnswerer.COL_VRF, "vrf1")
             .put(OspfPropertiesAnswerer.COL_PROCESS_ID, "uber-proc")
             .put(property2, 42.0)
-            .put(property1, "my-policy")
+            .put(property1, ImmutableSet.of("my-policy"))
             .build();
 
     assertThat(propertyRows, equalTo(ImmutableMultiset.of(expectedRow)));

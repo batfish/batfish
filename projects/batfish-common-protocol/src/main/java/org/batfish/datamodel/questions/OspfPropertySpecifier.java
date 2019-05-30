@@ -27,10 +27,6 @@ public class OspfPropertySpecifier extends PropertySpecifier {
   public static final String AREA_BORDER_ROUTER = "Area_Border_Router";
   public static final String AREAS = "Areas";
   public static final String EXPORT_POLICY_SOURCES = "Export_Policy_Sources";
-  public static final String MAX_METRIC_EXTERNAL_NETWORKS = "Max_Metric_External_Networks";
-  public static final String MAX_METRIC_STUB_NETWORKS = "Max_Metric_Stub_Networks";
-  public static final String MAX_METRIC_SUMMARY_NETWORKS = "Max_Metric_Summary_Networks";
-  public static final String MAX_METRIC_TRANSIT_LINKS = "Max_Metric_Transit_Links";
   public static final String REFERENCE_BANDWIDTH = "Reference_Bandwidth";
   public static final String RFC_1583_COMPATIBLE = "RFC1583_Compatible";
   public static final String ROUTER_ID = "Router_ID";
@@ -62,7 +58,7 @@ public class OspfPropertySpecifier extends PropertySpecifier {
               new PropertyDescriptor<>(
                   OspfProcess::getReferenceBandwidth,
                   Schema.DOUBLE,
-                  "Reference bandwidth in bits/s used to calculate interface OSPF cost"))
+                  "Reference bandwidth in bits/sec used to calculate interface OSPF cost"))
           .put(
               RFC_1583_COMPATIBLE,
               new PropertyDescriptor<>(
