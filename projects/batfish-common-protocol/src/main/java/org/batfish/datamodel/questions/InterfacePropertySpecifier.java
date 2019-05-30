@@ -217,6 +217,12 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
                   Schema.STRING,
                   "Primary IPv4 address along with the prefix length"))
           .put(
+              PRIMARY_NETWORK,
+              new PropertyDescriptor<>(
+                  Interface::getPrimaryNetwork,
+                  Schema.STRING,
+                  "Primary IPv4 subnet, in canonical form"))
+          .put(
               PROXY_ARP,
               new PropertyDescriptor<>(
                   Interface::getProxyArp, Schema.BOOLEAN, "Whether proxy ARP is enabled"))
