@@ -34,7 +34,7 @@ public class OspfPropertiesAnswererTest {
     Configuration conf1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
     conf1.setVrfs(ImmutableMap.of("vrf1", vrf1));
 
-    String property1 = OspfPropertySpecifier.EXPORT_POLICY;
+    String property1 = OspfPropertySpecifier.EXPORT_POLICY_SOURCES;
     String property2 = OspfPropertySpecifier.REFERENCE_BANDWIDTH;
 
     OspfPropertiesQuestion question =
