@@ -176,6 +176,11 @@ DISABLED
     'disabled'
 ;
 
+DISPLAY_NAME
+:
+    'display-name'
+;
+
 DNS
 :
     'dns'
@@ -304,6 +309,11 @@ IKE
 IKE_CRYPTO_PROFILES
 :
     'ike-crypto-profiles'
+;
+
+IMPORT
+:
+    'import'
 ;
 
 INTERFACE
@@ -481,6 +491,16 @@ PORT
     'port'
 ;
 
+POST_RULEBASE
+:
+    'post-rulebase'
+;
+
+PRE_RULEBASE
+:
+    'pre-rulebase'
+;
+
 PRIMARY
 :
     'primary'
@@ -616,6 +636,11 @@ SHARED
     'shared'
 ;
 
+SHARED_GATEWAY
+:
+    'shared-gateway'
+;
+
 SOURCE
 :
     'source'
@@ -714,6 +739,11 @@ UPDATE_SERVER
 VIRTUAL_ROUTER
 :
     'virtual-router'
+;
+
+VISIBLE_VSYS
+:
+    'visible-vsys'
 ;
 
 VLAN

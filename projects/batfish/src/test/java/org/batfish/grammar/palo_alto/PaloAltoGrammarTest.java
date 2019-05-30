@@ -40,7 +40,9 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFA
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.SHARED_GATEWAY;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IMPORT_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_APPLICATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
@@ -52,6 +54,7 @@ import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
@@ -94,6 +97,7 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.palo_alto.AddressGroup;
 import org.batfish.representation.palo_alto.AddressObject;
+import org.batfish.representation.palo_alto.Application;
 import org.batfish.representation.palo_alto.CryptoProfile;
 import org.batfish.representation.palo_alto.CryptoProfile.Type;
 import org.batfish.representation.palo_alto.Interface;
@@ -375,12 +379,34 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testApplications() throws IOException {
+  public void testApplications() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("applications");
+
+    Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+    Map<String, Application> applications = vsys.getApplications();
+
+    // Should have two applications, including an empty one
+    assertThat(applications.keySet(), equalTo(ImmutableSet.of("app1", "app2")));
+
+    // Check that descriptions are extracted
+    assertThat(applications.get("app1").getDescription(), nullValue());
+    assertThat(applications.get("app2").getDescription(), equalTo("this is a description"));
+  }
+
+  @Test
+  public void testApplicationsReference() throws IOException {
     String hostname = "applications";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    String app1Name = computeObjectName(DEFAULT_VSYS_NAME, "app1");
+    String app2Name = computeObjectName(DEFAULT_VSYS_NAME, "app2");
+
+    // Confirm reference count is correct for defined structures
+    assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.APPLICATION, app1Name, 0));
+    assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.APPLICATION, app2Name, 1));
 
     // Confirm undefined application is detected
     assertThat(
@@ -1113,6 +1139,45 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testSharedGateway() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("shared-gateway");
+
+    // Confirm shared-gateways show up in the vendor model
+    Map<String, Vsys> vsyses = c.getVirtualSystems();
+    assertThat(vsyses, hasKey("sg1"));
+    assertThat(vsyses, hasKey("sg2"));
+    assertThat(vsyses, hasKey("sg3"));
+
+    // Confirm display names show up as well
+    assertThat(c.getVirtualSystems().get("sg1").getDisplayName(), equalTo("shared-gateway1"));
+    assertThat(c.getVirtualSystems().get("sg2").getDisplayName(), equalTo("shared gateway2"));
+    assertThat(
+        c.getVirtualSystems().get("sg3").getDisplayName(), equalTo("invalid shared gateway"));
+  }
+
+  @Test
+  public void testSharedGatewayReference() throws IOException {
+    String hostname = "shared-gateway";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // Confirm structure definitions are recorded correctly, even for badly named shared-gateway
+    assertThat(ccae, hasDefinedStructure(filename, SHARED_GATEWAY, "sg1"));
+    assertThat(ccae, hasDefinedStructure(filename, SHARED_GATEWAY, "sg2"));
+    assertThat(ccae, hasDefinedStructure(filename, SHARED_GATEWAY, "sg3"));
+
+    // Confirm structure references are counted correctly
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "ethernet1/1", 2));
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "ethernet1/2", 1));
+
+    // Confirm the undefined interface is properly detected as an undefined reference
+    assertThat(ccae, hasUndefinedReference(filename, INTERFACE, "ethernet1/3", IMPORT_INTERFACE));
+  }
+
+  @Test
   public void testVirtualRouterInterfaces() throws IOException {
     String hostname = "virtual-router-interfaces";
     Configuration c = parseConfig(hostname);
@@ -1120,6 +1185,15 @@ public class PaloAltoGrammarTest {
     assertThat(c, hasVrf("default", hasInterfaces(hasItem("ethernet1/1"))));
     assertThat(c, hasVrf("somename", hasInterfaces(hasItems("ethernet1/2", "ethernet1/3"))));
     assertThat(c, hasVrf("some other name", hasInterfaces(emptyIterable())));
+  }
+
+  @Test
+  public void testVsysImport() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("vsys-import");
+
+    // Confirm vsys imports are extracted correctly
+    assertThat(c.getVirtualSystems().get("vsys1").getImportedVsyses(), emptyIterable());
+    assertThat(c.getVirtualSystems().get("vsys2").getImportedVsyses(), contains("vsys1"));
   }
 
   @Test
