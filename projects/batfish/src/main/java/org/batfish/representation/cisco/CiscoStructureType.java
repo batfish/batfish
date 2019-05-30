@@ -47,6 +47,7 @@ public enum CiscoStructureType implements StructureType {
   KEYRING("crypto keyring"),
   L2TP_CLASS("l2tp-class"),
   MAC_ACCESS_LIST("mac acl"),
+  NAMED_RSA_PUB_KEY("crypto named rsa pubkey"),
   NAT_POOL("nat pool"),
   NETWORK_OBJECT("object network"),
   NETWORK_OBJECT_GROUP("object-group network"),

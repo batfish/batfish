@@ -36,6 +36,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUA
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ZONE_INTERFACE;
 
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -67,11 +68,14 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_hashContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_lifetimeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.If_commentContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Panorama_post_rulebaseContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Panorama_pre_rulebaseContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Port_or_rangeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_address_groupContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_applicationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_policy_panoramaContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.S_rulebaseContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_serviceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_service_groupContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_sharedContext;
@@ -189,6 +193,17 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   private Interface _currentParentInterface;
 
+  /** Indicates which rulebase that new rules go into. */
+  private enum RulebaseId {
+    /** Vsys.getRules(). */
+    DEFAULT,
+    /** Vsys.getPreRules(). */
+    PRE,
+    /** Vsys.getPostRules(). */
+    POST
+  }
+
+  private RulebaseId _currentRuleScope;
   private Rule _currentRule;
 
   private Service _currentService;
@@ -480,6 +495,26 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     _configuration.getVirtualSystems().computeIfAbsent(SHARED_VSYS_NAME, Vsys::new);
     _defaultVsys = _configuration.getVirtualSystems().computeIfAbsent(DEFAULT_VSYS_NAME, Vsys::new);
     _currentVsys = _defaultVsys;
+  }
+
+  @Override
+  public void enterPanorama_pre_rulebase(Panorama_pre_rulebaseContext ctx) {
+    _currentRuleScope = RulebaseId.PRE;
+  }
+
+  @Override
+  public void exitPanorama_pre_rulebase(Panorama_pre_rulebaseContext ctx) {
+    _currentRuleScope = null;
+  }
+
+  @Override
+  public void enterPanorama_post_rulebase(Panorama_post_rulebaseContext ctx) {
+    _currentRuleScope = RulebaseId.POST;
+  }
+
+  @Override
+  public void exitPanorama_post_rulebase(Panorama_post_rulebaseContext ctx) {
+    _currentRuleScope = null;
   }
 
   @Override
@@ -990,7 +1025,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterSr_security(Sr_securityContext ctx) {
     String name = getText(ctx.name);
-    _currentRule = _currentVsys.getRules().computeIfAbsent(name, n -> new Rule(n, _currentVsys));
+    Map<String, Rule> rulebase;
+    if (_currentRuleScope == RulebaseId.DEFAULT) {
+      rulebase = _currentVsys.getRules();
+    } else if (_currentRuleScope == RulebaseId.PRE) {
+      rulebase = _currentVsys.getPreRules();
+    } else {
+      assert _currentRuleScope == RulebaseId.POST;
+      rulebase = _currentVsys.getPostRules();
+    }
+    _currentRule = rulebase.computeIfAbsent(name, n -> new Rule(n, _currentVsys));
 
     // Use constructed name so same-named defs across vsys are unique
     String uniqueName = computeObjectName(_currentVsys.getName(), name);
@@ -1120,6 +1164,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
         _configuration.referenceStructure(ZONE, uniqueName, RULE_TO_ZONE, getLine(var.start));
       }
     }
+  }
+
+  @Override
+  public void enterS_rulebase(S_rulebaseContext ctx) {
+    _currentRuleScope = RulebaseId.DEFAULT;
+  }
+
+  @Override
+  public void exitS_rulebase(S_rulebaseContext ctx) {
+    _currentRuleScope = null;
   }
 
   @Override

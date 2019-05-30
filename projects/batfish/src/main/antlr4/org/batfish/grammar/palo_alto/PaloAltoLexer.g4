@@ -491,6 +491,16 @@ PORT
     'port'
 ;
 
+POST_RULEBASE
+:
+    'post-rulebase'
+;
+
+PRE_RULEBASE
+:
+    'pre-rulebase'
+;
+
 PRIMARY
 :
     'primary'

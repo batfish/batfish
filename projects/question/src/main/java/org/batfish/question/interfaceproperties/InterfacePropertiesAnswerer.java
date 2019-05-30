@@ -1,5 +1,7 @@
 package org.batfish.question.interfaceproperties;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -55,7 +57,9 @@ public class InterfacePropertiesAnswerer extends Answerer {
                         new ColumnMetadata(
                             getColumnName(prop),
                             InterfacePropertySpecifier.JAVA_MAP.get(prop).getSchema(),
-                            "Property " + prop,
+                            firstNonNull(
+                                InterfacePropertySpecifier.JAVA_MAP.get(prop).getDescription(),
+                                "Property " + prop),
                             false,
                             true))
                 .collect(Collectors.toList()))

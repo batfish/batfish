@@ -19186,11 +19186,10 @@
             "            name = (variable_permissive",
             "              VARIABLE:'a.example.com')",
             "            NEWLINE:'\\n'",
-            "            (ckpn_null",
+            "            (ckpn_address",
             "              ADDRESS:'address'",
-            "              (null_rest_of_line",
-            "                IP_ADDRESS:'1.2.3.4'",
-            "                NEWLINE:'\\n'))",
+            "              ip_address = IP_ADDRESS:'1.2.3.4'",
+            "              NEWLINE:'\\n')",
             "            (ckpn_key_string",
             "              KEY_STRING:'key-string'",
             "              (certificate",
@@ -76646,6 +76645,27 @@
               "numReferrers" : 0
             }
           },
+          "crypto named rsa pubkey" : {
+            "a.example.com" : {
+              "definitionLines" : [
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211
+              ],
+              "numReferrers" : 1
+            }
+          },
           "crypto-dynamic-map-set" : {
             "asadynamicmaps" : {
               "definitionLines" : [
@@ -83801,6 +83821,13 @@
             "VRF:MMS:RMT:UPM:1143" : {
               "isakmp profile keyring" : [
                 188
+              ]
+            }
+          },
+          "crypto named rsa pubkey" : {
+            "a.example.com" : {
+              "named rsa pubkey" : [
+                198
               ]
             }
           },

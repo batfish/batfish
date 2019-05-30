@@ -29,8 +29,12 @@ public final class Vsys implements Serializable {
 
   private final String _name;
 
-  // Note: this is a LinkedHashMap to preserve insertion order
+  // Note: these are all LinkedHashMaps to preserve insertion order.
   private LinkedHashMap<String, Rule> _rules; // NOPMD
+  // Panorama only: rules to prepend to every rulebase
+  private final LinkedHashMap<String, Rule> _preRules; // NOPMD
+  // Panorama only: rules to append to every rulebase
+  private final LinkedHashMap<String, Rule> _postRules; // NOPMD
 
   private final SortedMap<String, Service> _services;
 
@@ -47,6 +51,8 @@ public final class Vsys implements Serializable {
     _applications = new TreeMap<>();
     _importedInterfaces = new HashSet<>();
     _rules = new LinkedHashMap<>();
+    _preRules = new LinkedHashMap<>();
+    _postRules = new LinkedHashMap<>();
     _services = new TreeMap<>();
     _serviceGroups = new TreeMap<>();
     _syslogServerGroups = new TreeMap<>();
@@ -86,6 +92,24 @@ public final class Vsys implements Serializable {
   /** Returns a {@code Map} of rule name to rule for the rules in this vsys. */
   public Map<String, Rule> getRules() {
     return _rules;
+  }
+
+  /**
+   * Returns a map of rule name to rule for the pre-rulebase rules.
+   *
+   * <p>This should be panorama Vsys.
+   */
+  public Map<String, Rule> getPreRules() {
+    return _preRules;
+  }
+
+  /**
+   * Returns a map of rule name to rule for the post-rulebase rules.
+   *
+   * <p>This should be panorama Vsys.
+   */
+  public Map<String, Rule> getPostRules() {
+    return _postRules;
   }
 
   /** Returns a map of service name to service for the services in this vsys. */
