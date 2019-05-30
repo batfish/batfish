@@ -682,6 +682,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     markConcreteStructure(PaloAltoStructureType.IPSEC_CRYPTO_PROFILE);
     markConcreteStructure(
         PaloAltoStructureType.INTERFACE,
+        PaloAltoStructureUsage.IMPORT_INTERFACE,
         PaloAltoStructureUsage.STATIC_ROUTE_INTERFACE,
         PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE,
         PaloAltoStructureUsage.ZONE_INTERFACE);

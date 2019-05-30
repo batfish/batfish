@@ -2,13 +2,18 @@ package org.batfish.representation.palo_alto;
 
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 
+@ParametersAreNonnullByDefault
 public final class Vsys implements Serializable {
   private static final long serialVersionUID = 1L;
 
@@ -17,6 +22,10 @@ public final class Vsys implements Serializable {
   private final SortedMap<String, AddressObject> _addressObjects;
 
   private final SortedMap<String, Application> _applications;
+
+  private String _displayName;
+
+  private final Set<String> _importedInterfaces;
 
   private final String _name;
 
@@ -40,6 +49,7 @@ public final class Vsys implements Serializable {
     _addressGroups = new TreeMap<>();
     _addressObjects = new TreeMap<>();
     _applications = new TreeMap<>();
+    _importedInterfaces = new HashSet<>();
     _rules = new LinkedHashMap<>();
     _preRules = new LinkedHashMap<>();
     _postRules = new LinkedHashMap<>();
@@ -62,6 +72,16 @@ public final class Vsys implements Serializable {
   /** Returns a map of application name to {@link Application} object */
   public SortedMap<String, Application> getApplications() {
     return _applications;
+  }
+
+  /** Returns the display name for this vsys. */
+  public @Nullable String getDisplayName() {
+    return _displayName;
+  }
+
+  /** Returns the interfaces imported for this vsys. */
+  public Set<String> getImportedInterfaces() {
+    return _importedInterfaces;
   }
 
   /** Returns the name of this vsys. */
@@ -122,6 +142,11 @@ public final class Vsys implements Serializable {
   /** Returns a map of zone name to zone for the zones in this vsys. */
   public SortedMap<String, Zone> getZones() {
     return _zones;
+  }
+
+  /** Sets the display name for this vsys. */
+  public void setDisplayName(String displayName) {
+    _displayName = displayName;
   }
 
   @Override
