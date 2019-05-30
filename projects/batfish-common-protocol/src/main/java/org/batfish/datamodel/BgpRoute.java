@@ -85,6 +85,11 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     }
 
     @Nullable
+    public String getNextHopInterface() {
+      return _nextHopInterface;
+    }
+
+    @Nullable
     public Ip getOriginatorIp() {
       return _originatorIp;
     }

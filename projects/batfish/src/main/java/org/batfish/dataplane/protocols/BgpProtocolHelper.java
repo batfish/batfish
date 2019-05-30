@@ -1,7 +1,5 @@
 package org.batfish.dataplane.protocols;
 
-import static java.util.Objects.requireNonNull;
-
 import com.google.common.collect.ImmutableList;
 import java.util.Set;
 import java.util.SortedSet;
@@ -14,12 +12,10 @@ import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpPeerConfig;
-import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
-import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
@@ -49,9 +45,11 @@ public class BgpProtocolHelper {
           BgpSessionProperties sessionProperties,
           BgpProcess fromBgpProcess,
           BgpProcess toBgpProcess,
-          BgpRoute<B, R> route,
-          B builder) {
+          BgpRoute<B, R> route) {
 
+    // TODO: instead of doing many copies, use `toBuilder()` and clear/overwrite necessary fields
+    // Make a new blank builder
+    B builder = route.toBuilder().newBuilder();
     // sessionProperties represents incoming edge, so fromNeighbor's IP is its headIp
     Ip fromNeighborIp = sessionProperties.getHeadIp();
     RoutingProtocol routeProtocol = route.getProtocol();
@@ -173,38 +171,25 @@ public class BgpProtocolHelper {
   @Nullable
   public static <R extends BgpRoute<B, R>, B extends BgpRoute.Builder<B, R>>
       B transformBgpRouteOnImport(
-          BgpPeerConfigId toConfigId,
-          BgpPeerConfig toNeighbor,
-          BgpSessionProperties sessionProperties,
           BgpRoute<B, R> route,
-          ConfigurationFormat configFormat,
-          B builder) {
-
-    if (route.getAsPath().containsAs(requireNonNull(toNeighbor.getLocalAs()))
-        && !toNeighbor.getAllowLocalAsIn()) {
-      // skip routes containing peer's AS unless
-      // disable-peer-as-check (getAllowRemoteAsOut) is set
+          Long localAs,
+          boolean allowLocalAsIn,
+          boolean isEbgp,
+          BgpProcess toProcess,
+          @Nullable String peerInterface) {
+    // skip routes containing peer's AS unless explicitly allowed
+    if (route.getAsPath().containsAs(localAs) && !allowLocalAsIn) {
       return null;
     }
-    RoutingProtocol targetProtocol =
-        sessionProperties.isEbgp() ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
 
-    builder.setOriginatorIp(route.getOriginatorIp());
-    builder.setReceivedFromIp(route.getReceivedFromIp());
-    builder.addClusterList(route.getClusterList());
-    builder.setReceivedFromRouteReflectorClient(route.getReceivedFromRouteReflectorClient());
-    builder.setAsPath(route.getAsPath());
-    builder.addCommunities(route.getCommunities());
-    builder.setProtocol(targetProtocol);
-    builder.setNetwork(route.getNetwork());
-    if (toConfigId.getPeerInterface() != null) {
-      builder.setNextHopInterface(toConfigId.getPeerInterface());
+    RoutingProtocol targetProtocol = isEbgp ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
+    B builder = route.toBuilder();
+
+    if (peerInterface != null) {
+      builder.setNextHopInterface(peerInterface);
     }
-    builder.setNextHopIp(route.getNextHopIp());
-    builder.setLocalPreference(route.getLocalPreference());
-    builder.setAdmin(targetProtocol.getDefaultAdministrativeCost(configFormat));
-    builder.setMetric(route.getMetric());
-    builder.setOriginType(route.getOriginType());
+    builder.setAdmin(toProcess.getAdminCost(targetProtocol));
+    builder.setProtocol(targetProtocol);
     builder.setSrcProtocol(targetProtocol);
 
     return builder;

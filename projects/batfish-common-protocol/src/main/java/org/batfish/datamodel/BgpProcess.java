@@ -28,7 +28,7 @@ public class BgpProcess implements Serializable {
     private Ip _routerId;
     private Vrf _vrf;
 
-    Builder(NetworkFactory networkFactory) {
+    private Builder(@Nullable NetworkFactory networkFactory) {
       super(networkFactory, BgpProcess.class);
     }
 
@@ -167,6 +167,14 @@ public class BgpProcess implements Serializable {
         firstNonNull(
             ibgpAdminCost,
             RoutingProtocol.IBGP.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS)));
+  }
+
+  public static Builder builder() {
+    return new Builder(null);
+  }
+
+  static Builder builder(@Nullable NetworkFactory nf) {
+    return new Builder(nf);
   }
 
   /**
