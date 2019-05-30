@@ -3,6 +3,7 @@ package org.batfish.representation.cumulus;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Comparator.naturalOrder;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
+import static org.batfish.datamodel.bgp.Layer3VniConfig.importRtPatternForAnyAs;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.VI_PROTOCOLS_MAP;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -214,7 +215,15 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
           l2Vnis.add(new Layer2VniConfig(vxlan.getVni(), bgpVrf.getVrfName(), rd, rt));
           if (evpnConfig.getAdvertiseDefaultGw()) {
             // Advertise VTEP gateway IP address for the L2 VNI as type 3 route
-            l3Vnis.add(new Layer3VniConfig(vxlan.getVni(), bgpVrf.getVrfName(), rd, rt, false));
+            l3Vnis.add(
+                Layer3VniConfig.builder()
+                    .setVni(vxlan.getVni())
+                    .setVrf(bgpVrf.getVrfName())
+                    .setRouteDistinguisher(rd)
+                    .setRouteTarget(rt)
+                    .setImportRouteTarget(importRtPatternForAnyAs(vxlan.getVni()))
+                    .setAdvertiseV4Unicast(false)
+                    .build());
           }
         }
       }
@@ -232,12 +241,14 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
                           vniToIndex.get(l3Vni));
                   ExtendedCommunity rt = ExtendedCommunity.target(localAs, l3Vni);
                   l3Vnis.add(
-                      new Layer3VniConfig(
-                          l3Vni,
-                          aBgpVrf.getVrfName(),
-                          rd,
-                          rt,
-                          evpnConfig.getAdvertiseIpv4Unicast() != null));
+                      Layer3VniConfig.builder()
+                          .setVni(l3Vni)
+                          .setVrf(aBgpVrf.getVrfName())
+                          .setRouteDistinguisher(rd)
+                          .setRouteTarget(rt)
+                          .setImportRouteTarget(importRtPatternForAnyAs(l3Vni))
+                          .setAdvertiseV4Unicast(evpnConfig.getAdvertiseIpv4Unicast() != null)
+                          .build());
                 }
               });
 

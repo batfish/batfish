@@ -28,12 +28,14 @@ public class EvpnAddressFamilyTest {
             new EvpnAddressFamily(
                 ImmutableSet.of(),
                 ImmutableSet.of(
-                    new Layer3VniConfig(
-                        1,
-                        "v",
-                        RouteDistinguisher.from(1L, 1),
-                        ExtendedCommunity.of(0, 1, 1),
-                        false))))
+                    Layer3VniConfig.builder()
+                        .setVni(1)
+                        .setVrf("v")
+                        .setRouteDistinguisher(RouteDistinguisher.from(1L, 1))
+                        .setRouteTarget(ExtendedCommunity.of(0, 1, 1))
+                        .setImportRouteTarget(Layer3VniConfig.importRtPatternForAnyAs(1))
+                        .setAdvertiseV4Unicast(false)
+                        .build())))
         .addEqualityGroup(new Object())
         .testEquals();
   }

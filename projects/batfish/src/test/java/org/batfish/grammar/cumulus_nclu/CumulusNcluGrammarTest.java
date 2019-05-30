@@ -1443,25 +1443,31 @@ public final class CumulusNcluGrammarTest {
     ImmutableSortedSet<Layer3VniConfig> expectedL3Vnis =
         ImmutableSortedSet.of(
             // All defined VXLAN VNIs as l3 because of advertise-default-gw
-            new Layer3VniConfig(
-                10001,
-                DEFAULT_VRF_NAME,
-                RouteDistinguisher.from(routerId, 0),
-                ExtendedCommunity.target(65500, 10001),
-                false),
-            new Layer3VniConfig(
-                10002,
-                DEFAULT_VRF_NAME,
-                RouteDistinguisher.from(routerId, 1),
-                ExtendedCommunity.target(65500, 10002),
-                false),
+            Layer3VniConfig.builder()
+                .setVni(10001)
+                .setVrf(DEFAULT_VRF_NAME)
+                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 0))
+                .setRouteTarget(ExtendedCommunity.target(65500, 10001))
+                .setImportRouteTarget(Layer3VniConfig.importRtPatternForAnyAs(10001))
+                .setAdvertiseV4Unicast(false)
+                .build(),
+            Layer3VniConfig.builder()
+                .setVni(10002)
+                .setVrf(DEFAULT_VRF_NAME)
+                .setRouteDistinguisher(RouteDistinguisher.from(routerId, 1))
+                .setRouteTarget(ExtendedCommunity.target(65500, 10002))
+                .setImportRouteTarget(Layer3VniConfig.importRtPatternForAnyAs(10002))
+                .setAdvertiseV4Unicast(false)
+                .build(),
             // VRF1's explicitly defined l3-VNI with advertise-ipv4-unicast
-            new Layer3VniConfig(
-                10004,
-                "vrf1",
-                RouteDistinguisher.from(Ip.parse("192.0.1.1"), 2),
-                ExtendedCommunity.target(65500, 10004),
-                true));
+            Layer3VniConfig.builder()
+                .setVni(10004)
+                .setVrf("vrf1")
+                .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("192.0.1.1"), 2))
+                .setRouteTarget(ExtendedCommunity.target(65500, 10004))
+                .setImportRouteTarget(Layer3VniConfig.importRtPatternForAnyAs(10004))
+                .setAdvertiseV4Unicast(true)
+                .build());
 
     assertThat(bgpPeer.getEvpnAddressFamily().getL2VNIs(), equalTo(expectedL2Vnis));
     assertThat(bgpPeer.getEvpnAddressFamily().getL3VNIs(), equalTo(expectedL3Vnis));
