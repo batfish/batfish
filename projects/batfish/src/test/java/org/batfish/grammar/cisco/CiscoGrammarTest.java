@@ -3899,13 +3899,12 @@ public class CiscoGrammarTest {
   @Test
   public void testCiscoCryptoRsaReferrers() throws IOException {
     String hostname = "ios-crypto-rsa";
-    String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
 
-    /* Confirm prefix-list is referenced */
-    assertThat(ccae, hasNumReferrers(filename, NAMED_RSA_PUB_KEY, "testrsa", 1));
+    /* Confirm RSA pubkey is referenced */
+    assertThat(
+        batfish.loadConvertConfigurationAnswerElementOrReparse(),
+        hasNumReferrers("configs/" + hostname, NAMED_RSA_PUB_KEY, "testrsa", 1));
   }
 
   private static CommunitySetExpr communityListToMatchCondition(
