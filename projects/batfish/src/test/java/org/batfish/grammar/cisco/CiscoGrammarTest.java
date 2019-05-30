@@ -77,6 +77,7 @@ import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstIps;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstPorts;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
 import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasTrackActions;
+import static org.batfish.datamodel.matchers.IkePhase1KeyMatchers.hasKeyType;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase1Key;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase1Proposals;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasLocalInterface;
@@ -193,6 +194,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.IPV6_ACCESS_LI
 import static org.batfish.representation.cisco.CiscoStructureType.IP_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.KEYRING;
 import static org.batfish.representation.cisco.CiscoStructureType.MAC_ACCESS_LIST;
+import static org.batfish.representation.cisco.CiscoStructureType.NAMED_RSA_PUB_KEY;
 import static org.batfish.representation.cisco.CiscoStructureType.NETWORK_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureType.NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.PREFIX6_LIST;
@@ -295,6 +297,7 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeHashingAlgorithm;
+import org.batfish.datamodel.IkeKeyType;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Dependency;
@@ -3873,6 +3876,35 @@ public class CiscoGrammarTest {
                 hasSelfIdentity(equalTo(Ip.parse("2.3.4.6"))),
                 hasLocalInterface(equalTo("TenGigabitEthernet0/0")),
                 hasIkePhase1Proposals(equalTo(ImmutableList.of("10", "20", "30"))))));
+  }
+
+  @Test
+  public void testCiscoCryptoRsa() throws IOException {
+    Configuration c = parseConfig("ios-crypto-rsa");
+
+    assertThat(
+        c,
+        hasIkePhase1Policy(
+            "~RSA_PUB_testrsa~",
+            allOf(
+                hasIkePhase1Key(
+                    allOf(
+                        hasKeyType(IkeKeyType.RSA_PUB_KEY),
+                        IkePhase1KeyMatchers.hasRemoteIdentity(Ip.parse("1.2.3.4").toIpSpace()))),
+                hasRemoteIdentity(containsIp(Ip.parse("1.2.3.4"))),
+                hasLocalInterface(equalTo(Interface.UNSET_LOCAL_INTERFACE)),
+                hasIkePhase1Proposals(equalTo(ImmutableList.of("10"))))));
+  }
+
+  @Test
+  public void testCiscoCryptoRsaReferrers() throws IOException {
+    String hostname = "ios-crypto-rsa";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    /* Confirm RSA pubkey is referenced */
+    assertThat(
+        batfish.loadConvertConfigurationAnswerElementOrReparse(),
+        hasNumReferrers("configs/" + hostname, NAMED_RSA_PUB_KEY, "testrsa", 1));
   }
 
   private static CommunitySetExpr communityListToMatchCondition(
