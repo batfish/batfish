@@ -251,6 +251,11 @@ public class IpsecUtil {
     }
   }
 
+  /**
+   * Negotiates key for IKE phase 1 and sets it in the provided ipsecSessionBuilder. Negotiated IKE
+   * P1 key in the ipsecSessionBuilder will be null if no valid key was detected or negotiated
+   */
+  @VisibleForTesting
   static void negotiateIkePhase1Key(
       IkePhase1Key initiatorKey,
       IkePhase1Key responderKey,
@@ -266,6 +271,7 @@ public class IpsecUtil {
       ipsecSessionBuilder.setNegotiatedIkeP1Key(negotiatedIkePhase1Key);
       return;
     }
+    // key type should be pre shared key, so checking for equality
     if (responderKey.getKeyHash().equals(initiatorKey.getKeyHash())) {
       negotiatedIkePhase1Key.setKeyHash(initiatorKey.getKeyHash());
       ipsecSessionBuilder.setNegotiatedIkeP1Key(negotiatedIkePhase1Key);
