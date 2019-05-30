@@ -82,7 +82,7 @@ public final class SwitchedVlanPropertiesAnswerer extends Answerer {
    */
   public static List<ColumnMetadata> createColumnMetadata() {
     return ImmutableList.<ColumnMetadata>builder()
-        .add(new ColumnMetadata(COL_NODE, Schema.NODE, COL_VLAN_ID, true, false))
+        .add(new ColumnMetadata(COL_NODE, Schema.NODE, COL_NODE, true, false))
         .add(new ColumnMetadata(COL_VLAN_ID, Schema.INTEGER, COL_VLAN_ID, true, false))
         .add(
             new ColumnMetadata(

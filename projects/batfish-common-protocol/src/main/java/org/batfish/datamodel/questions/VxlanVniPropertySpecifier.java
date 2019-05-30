@@ -40,18 +40,29 @@ public class VxlanVniPropertySpecifier extends PropertySpecifier {
       new ImmutableMap.Builder<String, PropertyDescriptor<VxlanVniPropertiesRow>>()
           .put(
               LOCAL_VTEP_IP,
-              new PropertyDescriptor<>(VxlanVniPropertiesRow::getLocalVtepIp, Schema.IP))
+              new PropertyDescriptor<>(
+                  VxlanVniPropertiesRow::getLocalVtepIp,
+                  Schema.IP,
+                  "IPv4 address of the local VTEP"))
           .put(
               MULTICAST_GROUP,
-              new PropertyDescriptor<>(VxlanVniPropertiesRow::getMulticastGroup, Schema.IP))
+              new PropertyDescriptor<>(
+                  VxlanVniPropertiesRow::getMulticastGroup,
+                  Schema.IP,
+                  "IPv4 address of the multicast group"))
           .put(VLAN, new PropertyDescriptor<>(VxlanVniPropertiesRow::getVlan, Schema.INTEGER))
           .put(
               VTEP_FLOOD_LIST,
               new PropertyDescriptor<>(
-                  VxlanVniPropertiesRow::getVtepFloodList, Schema.list(Schema.IP)))
+                  VxlanVniPropertiesRow::getVtepFloodList,
+                  Schema.list(Schema.IP),
+                  "All IPv4 addresses in the VTEP flood list"))
           .put(
               VXLAN_PORT,
-              new PropertyDescriptor<>(VxlanVniPropertiesRow::getVxlanPort, Schema.INTEGER))
+              new PropertyDescriptor<>(
+                  VxlanVniPropertiesRow::getVxlanPort,
+                  Schema.INTEGER,
+                  "Port number for VXLAN tunnels"))
           .build();
 
   public static final VxlanVniPropertySpecifier ALL = new VxlanVniPropertySpecifier(".*");
