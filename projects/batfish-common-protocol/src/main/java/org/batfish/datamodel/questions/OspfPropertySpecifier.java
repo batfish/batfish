@@ -56,31 +56,7 @@ public class OspfPropertySpecifier extends PropertySpecifier {
                   OspfProcess::getExportPolicySources,
                   Schema.set(Schema.STRING),
                   "Names of policies that determine which routes are exported into OSPF"))
-          // All max-metrics go from Long to String
-          .put(
-              MAX_METRIC_EXTERNAL_NETWORKS,
-              new PropertyDescriptor<>(
-                  OspfProcess::getMaxMetricExternalNetworks,
-                  Schema.INTEGER,
-                  "Max OSPF metric for external networks"))
-          .put(
-              MAX_METRIC_STUB_NETWORKS,
-              new PropertyDescriptor<>(
-                  OspfProcess::getMaxMetricStubNetworks,
-                  Schema.INTEGER,
-                  "Max OSPF metric for stub networks"))
-          .put(
-              MAX_METRIC_SUMMARY_NETWORKS,
-              new PropertyDescriptor<>(
-                  OspfProcess::getMaxMetricSummaryNetworks,
-                  Schema.INTEGER,
-                  "Max OSPF metric for summary networks"))
-          .put(
-              MAX_METRIC_TRANSIT_LINKS,
-              new PropertyDescriptor<>(
-                  OspfProcess::getMaxMetricTransitLinks,
-                  Schema.INTEGER,
-                  "Max OSPF metric for transit links"))
+          // skip all max metrics
           .put(
               REFERENCE_BANDWIDTH,
               new PropertyDescriptor<>(
