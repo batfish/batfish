@@ -765,9 +765,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       if (_currentVsys.getImportedInterfaces().contains(name)) {
         _currentZone.getInterfaceNames().add(name);
       } else {
-        _w.redFlag(
-            String.format(
-                "Cannot add interface %s to a shared-gateway zone before it is imported.", name));
+        _w.redFlag("Cannot add an interface to a shared-gateway zone before it is imported");
       }
       _configuration.referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
     }
