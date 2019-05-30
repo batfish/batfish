@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.answers.Schema;
@@ -23,16 +24,30 @@ public abstract class PropertySpecifier {
   public static class PropertyDescriptor<T> {
     @Nonnull Function<T, Object> _getter;
     @Nonnull Schema _schema;
+    @Nullable String _description;
 
     public PropertyDescriptor(Function<T, Object> getter, Schema schema) {
-      _getter = getter;
-      _schema = schema;
+      this(getter, schema, null);
     }
 
+    public PropertyDescriptor(
+        Function<T, Object> getter, Schema schema, @Nullable String description) {
+      _getter = getter;
+      _schema = schema;
+      _description = description;
+    }
+
+    @Nullable
+    public String getDescription() {
+      return _description;
+    }
+
+    @Nonnull
     public Function<T, Object> getGetter() {
       return _getter;
     }
 
+    @Nonnull
     public Schema getSchema() {
       return _schema;
     }
