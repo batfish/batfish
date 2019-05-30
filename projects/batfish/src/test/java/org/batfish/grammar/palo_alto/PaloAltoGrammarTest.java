@@ -1142,12 +1142,12 @@ public class PaloAltoGrammarTest {
   public void testSharedGateway() {
     PaloAltoConfiguration c = parsePaloAltoConfig("shared-gateway");
 
-    // Confirm only shared-gateways with valid names show up in the vendor model
+    // Confirm shared-gateways show up in the vendor model
     Map<String, Vsys> vsyses = c.getVirtualSystems();
     assertThat(vsyses, hasKey("sg1"));
     assertThat(vsyses, hasKey("sg2"));
     assertThat(vsyses, hasKey("sg3"));
-    assertThat(vsyses, not(hasKey("sg_invalid")));
+    assertThat(vsyses, hasKey("sg_invalid"));
 
     // Confirm display names show up as well
     assertThat(c.getVirtualSystems().get("sg1").getDisplayName(), equalTo("shared-gateway1"));

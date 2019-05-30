@@ -37,7 +37,6 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ZONE_I
 
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
@@ -172,8 +171,6 @@ import org.batfish.representation.palo_alto.Zone;
 import org.batfish.vendor.StructureType;
 
 public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
-
-  private static final Pattern SHARED_GATEWAY_NAME_PATTERN = Pattern.compile("sg\\d+");
 
   private PaloAltoConfiguration _configuration;
 
@@ -715,12 +712,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterSn_shared_gateway(Sn_shared_gatewayContext ctx) {
     String name = getText(ctx.name);
-    if (SHARED_GATEWAY_NAME_PATTERN.matcher(name).matches()) {
-      _currentVsys = _configuration.getVirtualSystems().computeIfAbsent(name, Vsys::new);
-    } else {
-      _currentVsys = new Vsys(name);
-      _w.redFlag(String.format("%s is invalid as a shared-gateway name", name));
-    }
+    _currentVsys = _configuration.getVirtualSystems().computeIfAbsent(name, Vsys::new);
     defineStructure(SHARED_GATEWAY, name, ctx);
   }
 
